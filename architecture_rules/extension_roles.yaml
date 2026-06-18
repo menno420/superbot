@@ -182,6 +182,9 @@ extensions:
   counters:
     role: product_subsystem
     note: Dynamic server counters.
+  security:
+    role: product_subsystem
+    note: Security tiers 1+2 — raid detection + account-age filter (Q-0111).
   setup:
     role: bootstrap
     backs: server_management

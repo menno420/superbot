@@ -1,24 +1,24 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T02:06:04Z",
+    "generated_at": "2026-06-18T02:18:43Z",
     "build": {
-      "commit": "b3e3c75",
-      "subject": "fix(dashboard): regenerate dashboard.json to include the image_moderation subsystem",
-      "committed_at": "2026-06-18T01:42:17Z",
+      "commit": "82d7eb5",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/hopeful-allen-1darl5",
+      "committed_at": "2026-06-18T02:10:08Z",
       "branch": "claude/hopeful-allen-1darl5"
     },
     "counts": {
-      "functions": 35,
+      "functions": 36,
       "ideas": 87,
       "bugs": 15,
       "updates": 60,
       "env_vars": 37,
-      "cogs": 42,
-      "commands": 305,
-      "setting_keys": 92,
-      "setting_domains": 14,
-      "typed_settings": 73,
-      "visible_subsystems": 35,
+      "cogs": 43,
+      "commands": 306,
+      "setting_keys": 103,
+      "setting_domains": 15,
+      "typed_settings": 84,
+      "visible_subsystems": 36,
       "synonyms": 87
     }
   },
@@ -512,7 +512,6 @@
         "fishlog"
       ],
       "related_subsystems": [
-        "economy",
         "mining"
       ],
       "capabilities": [
@@ -787,6 +786,32 @@
         "proof_channel.access.revoke",
         "proof_channel.access.timed",
         "proof_channel.settings.configure"
+      ]
+    },
+    {
+      "key": "security",
+      "display_name": "Server Security",
+      "description": "Raid detection + account-age screening on member join",
+      "emoji": "🛡️",
+      "visibility_tier": "administrator",
+      "visibility_mode": "normal",
+      "category": "moderation",
+      "tags": [
+        "security",
+        "raid",
+        "moderation",
+        "safety"
+      ],
+      "entry_points": [
+        "security"
+      ],
+      "related_subsystems": [
+        "moderation",
+        "logging",
+        "welcome"
+      ],
+      "capabilities": [
+        "security.settings.configure"
       ]
     },
     {
@@ -1663,6 +1688,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-18-fishing-codex-followups.md",
+      "date": "2026-06-18",
+      "title": "Session — fishing post-merge fixes (Codex review on #1039)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-18-cog-routing-pagination.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — Setup cog-routing select: paginate instead of truncating at 25",
@@ -2117,14 +2150,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-gitattributes-union-ledger.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — fix the ledger-file merge-conflict livelock (.gitattributes merge=union)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "env_usage": [
@@ -2194,7 +2219,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 179,
+          "line": 180,
           "layer": "config",
           "has_default": true
         },
@@ -2216,7 +2241,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 178,
+          "line": 179,
           "layer": "config",
           "has_default": true
         }
@@ -2249,7 +2274,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 162,
+          "line": 163,
           "layer": "config",
           "has_default": true
         },
@@ -2351,7 +2376,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 205,
+          "line": 206,
           "layer": "config",
           "has_default": true
         }
@@ -2367,7 +2392,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 208,
+          "line": 209,
           "layer": "config",
           "has_default": true
         }
@@ -2383,7 +2408,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 211,
+          "line": 212,
           "layer": "config",
           "has_default": true
         }
@@ -2543,7 +2568,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 104,
+          "line": 105,
           "layer": "config",
           "has_default": true
         }
@@ -2623,7 +2648,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 105,
+          "line": 106,
           "layer": "config",
           "has_default": true
         }
@@ -2641,7 +2666,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 161,
+          "line": 162,
           "layer": "config",
           "has_default": true
         },
@@ -2682,7 +2707,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 188,
+          "line": 189,
           "layer": "config",
           "has_default": true
         },
@@ -2705,7 +2730,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 192,
+          "line": 193,
           "layer": "config",
           "has_default": true
         },
@@ -2744,7 +2769,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 160,
+          "line": 161,
           "layer": "config",
           "has_default": true
         },
@@ -2768,7 +2793,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 159,
+          "line": 160,
           "layer": "config",
           "has_default": true
         },
@@ -6190,6 +6215,25 @@
       ]
     },
     {
+      "cog": "SecurityCog",
+      "file": "disbot/cogs/security_cog.py",
+      "subsystem": "security",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "security",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show the current server-security policy (raid + account-age).",
+          "classification": "primary_entrypoint",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "ServerManagementCog",
       "file": "disbot/cogs/server_management_cog.py",
       "subsystem": "server_management",
@@ -7258,6 +7302,99 @@
       ]
     },
     {
+      "domain": "security",
+      "purpose": "Settings keys owned by the Security subsystem (cogs.security_cog).",
+      "keys": [
+        {
+          "constant": "SECURITY_ENABLED",
+          "key": "security_enabled",
+          "type": "bool",
+          "hint": "Master switch for server security (raid detection + account-age filter). When off, neither tier runs regardless of its own toggle. Off by default — a fresh server is unaffected.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "SECURITY_RAID_ENABLED",
+          "key": "security_raid_enabled",
+          "type": "bool",
+          "hint": "Tier 1: watch the join rate and alert staff on a suspected raid.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "SECURITY_RAID_JOIN_COUNT",
+          "key": "security_raid_join_count",
+          "type": "int",
+          "hint": "",
+          "allowed_values": [],
+          "default": 10
+        },
+        {
+          "constant": "SECURITY_RAID_WINDOW_SECONDS",
+          "key": "security_raid_window_seconds",
+          "type": "int",
+          "hint": "",
+          "allowed_values": [],
+          "default": 60
+        },
+        {
+          "constant": "SECURITY_RAID_SLOWMODE_SECONDS",
+          "key": "security_raid_slowmode_seconds",
+          "type": "int",
+          "hint": "",
+          "allowed_values": [],
+          "default": 10
+        },
+        {
+          "constant": "SECURITY_RAID_LOCKDOWN_SECONDS",
+          "key": "security_raid_lockdown_seconds",
+          "type": "int",
+          "hint": "",
+          "allowed_values": [],
+          "default": 300
+        },
+        {
+          "constant": "SECURITY_RAID_SLOWMODE_CHANNEL",
+          "key": "security_raid_slowmode_channel",
+          "type": "str",
+          "hint": "Channel whose slowmode is raised during a raid lockdown. Leave unset for alert-only (no slowmode applied).",
+          "allowed_values": [],
+          "default": ""
+        },
+        {
+          "constant": "SECURITY_AGE_ENABLED",
+          "key": "security_age_enabled",
+          "type": "bool",
+          "hint": "Tier 2: screen joining accounts younger than the threshold.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "SECURITY_AGE_MIN_DAYS",
+          "key": "security_age_min_days",
+          "type": "int",
+          "hint": "",
+          "allowed_values": [],
+          "default": 7
+        },
+        {
+          "constant": "SECURITY_AGE_ACTION",
+          "key": "security_age_action",
+          "type": "str",
+          "hint": "Action on a too-young account: 'alert' (staff alert only) or 'kick' (reject via moderation, with an alert).",
+          "allowed_values": []
+        },
+        {
+          "constant": "SECURITY_ALERT_CHANNEL",
+          "key": "security_alert_channel",
+          "type": "str",
+          "hint": "Channel where staff security alerts (raid suspected / young account) are posted. Leave unset to run detection silently (events still fire).",
+          "allowed_values": [],
+          "default": ""
+        }
+      ]
+    },
+    {
       "domain": "welcome",
       "purpose": "Settings keys owned by the Welcome subsystem (cogs.welcome_cog).",
       "keys": [
@@ -7600,6 +7737,12 @@
             "display_name": "Image moderation",
             "category": "moderation",
             "emoji": "🖼️"
+          },
+          {
+            "key": "security",
+            "display_name": "Server Security",
+            "category": "moderation",
+            "emoji": "🛡️"
           }
         ]
       },
@@ -7609,7 +7752,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 35,
+    "total_visible": 36,
     "internal_count": 0
   },
   "synonyms": [

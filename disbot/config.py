@@ -92,6 +92,7 @@ INITIAL_EXTENSIONS = [
     "cogs.community_spotlight_cog",
     "cogs.welcome_cog",
     "cogs.counters_cog",
+    "cogs.security_cog",
     "cogs.setup_cog",
     "cogs.server_management_cog",
     "cogs.hermes_cog",
