@@ -82,6 +82,11 @@ from utils.db.games.deathmatch import (
     get_deathmatch_stats,
     update_deathmatch,
 )
+from utils.db.games.fishing import (
+    get_fishing_log,
+    record_catch,
+    top_fishers,
+)
 from utils.db.games.game_xp import (
     add_game_xp,
     get_game_xp,
@@ -333,6 +338,9 @@ __all__ = [
     "set_skill_points",
     "get_structures",
     "set_structure_level",
+    "get_fishing_log",
+    "record_catch",
+    "top_fishers",
     "apply_inventory_deltas",
     "get_gear_wear",
     "set_gear_wear",

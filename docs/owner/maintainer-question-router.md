@@ -6418,3 +6418,25 @@ fishing-skill) · loadout-preset UI · fish value/use (sell/cook) · boat "stuff
 **Home:** [`planning/fishing-open-world-expansion-plan-2026-06-18.md`](../planning/fishing-open-world-expansion-plan-2026-06-18.md)
 · this Q-block. Related: Q-0172 (fishing = the canonical self-build), Q-0173 (the seed-grid world the boat
 travels), the V-13/V-14 ecosystem vision.
+
+### Q-0176 — DISCUSS: should `auto-merge-enabler` skip a PR already labelled `needs-hermes-review`? (2026-06-18)
+
+> **PROPOSED — agent-surfaced (fishing dispatch run, 2026-06-18). Not applied — executable-config
+> change (the workflow), so it ships as a proposal per CLAUDE.md.**
+
+**Context:** the fishing PR #1033 was opened via the GitHub MCP (`create_pull_request`) and labelled
+`needs-hermes-review` (Q-0117 — a substantial new ecosystem subsystem must not self-merge). Per Q-0127
+an MCP/app-token PR should NOT trigger the `auto-merge-enabler` workflow — yet auto-merge **was** armed
+on it (actor `menno420`, the enabler). The born-red session gate held the merge (the card was
+`in-progress`), so nothing leaked, and the routine disarmed auto-merge manually. But the failure mode is
+real: a session that flips its card to `complete` *before* noticing/disarming auto-merge on a
+review-gated PR would let it merge **unreviewed**.
+
+**Proposal:** the `auto-merge-enabler` workflow already excludes `do-not-automerge` (Q-0114) and
+`needs-hermes-review` is meant to be a carve-out (Q-0117) — make that explicit and robust: **skip arming
+auto-merge whenever the PR carries `needs-hermes-review` at arm time** (and re-check labels if the enabler
+can be re-triggered), so a reviewer-gated PR is never armed in the first place. Defense-in-depth for the
+born-red gate, not a replacement.
+
+**Home:** this Q-block. Related: Q-0117 (Hermes review-merge gate), Q-0123/Q-0127 (auto-merge-enabler arm
+rules), Q-0114 (`do-not-automerge` carve-out), Q-0133 (born-red gate).
