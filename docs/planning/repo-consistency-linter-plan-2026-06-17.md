@@ -33,12 +33,20 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
 
 ## Build order
 
-1. **PR 1 — the harness + rule 1 (edit-in-place), warn-only.** The framework (`Rule`, the YAML
-   allowlist loader, the CLI, the test fixtures) + the highest-value rule. Run it across the tree,
-   triage hits into *real fixes* vs. *allowlist entries*, and record the count.
+1. **PR 1 — the harness + rule 1 (edit-in-place), warn-only.** ✅ **SHIPPED 2026-06-18** —
+   `scripts/check_consistency.py` (the `Finding`/`Rule` framework, the
+   `architecture_rules/consistency_exceptions.yml` allowlist loader, the `--mode`/`--file` CLI) +
+   rule 1. The rule scopes to `views/` panel button/select callbacks, flags an **ephemeral** new
+   message (`response.send_message` / `followup.send`) when the callback **never edits in place** and
+   the send isn't an early-return guard (`send; return` validation toasts are excluded). **First-run
+   count: 45 candidates** (allowlist left empty — warn-only, triage in follow-up). Genuine signal
+   confirmed (e.g. `DiagnosticsPanel.refresh_btn` shows "list refreshed" as an ephemeral instead of
+   re-rendering the panel). Tests: `tests/unit/scripts/test_check_consistency.py` (positive +
+   edits-in-place/guard/non-ephemeral/non-callback negatives + allowlist + live-tree warn-only).
 2. **PR 2 — rule 2 (back button)**, same pattern; **PR 3 — rule 3 (panel base-class)**.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
-   `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only.
+   `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
+   the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.
 
 ## Verification (each PR)
 
