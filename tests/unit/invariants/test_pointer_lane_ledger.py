@@ -76,6 +76,11 @@ ORPHAN_POINTERS: frozenset[str] = frozenset(
         "counters.total_channel",
         "counters.humans_channel",
         "counters.bots_channel",
+        # security tiers 1+2 (Q-0111) — alert + raid-slowmode channel pointers
+        # stored as scalars (same v1 disposition as welcome/counters; a binding
+        # is the phase-2 convergence step the plan governs).
+        "security.alert_channel",
+        "security.raid_slowmode_channel",
         # moderation public-log channel — pointer in wrong lane, no binding
         # declared (settings map "Bugs/inconsistencies" High finding).
         "moderation.public_log_channel",

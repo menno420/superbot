@@ -498,6 +498,33 @@ SUBSYSTEMS: dict[str, dict] = {
             "counters.settings.configure",
         ],
     },
+    # security tiers 1+2 (owner decision Q-0111): the automated join-screening
+    # layer (raid detection + account-age filter) beneath manual moderation.
+    # Admin-configured, deliberately hub-less for the same reason as
+    # welcome/counters — surfaced via its Help hook + `!settings` → Security +
+    # the `!security` summary. Actions route through moderation_service; the two
+    # DECLINED tiers (alt-detection / VPN blocking) are deliberately absent.
+    "security": {
+        "display_name": "Server Security",
+        "description": "Raid detection + account-age screening on member join",
+        "emoji": "🛡️",
+        "color": GENERAL_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "moderation",
+        "tags": ["security", "raid", "moderation", "safety"],
+        "entry_points": ["security"],
+        "default_channels": ["mod-log", "general"],
+        "related_subsystems": ["moderation", "logging", "welcome"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 33,
+        "capabilities": [
+            "security.settings.configure",
+        ],
+    },
     "blackjack": {
         "display_name": "Blackjack",
         "description": "Blackjack card game",

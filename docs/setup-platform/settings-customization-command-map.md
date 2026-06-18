@@ -829,6 +829,70 @@ Compute/rename logic lives in `services/counter_service.py` (no DB writes).
     welcome-paired quick-win).
 24. **recommended_PR_phase**: safety-lane slot 6 (this PR).
 
+### security
+
+security tiers 1+2 (owner decision Q-0111) — the automated join-screening layer
+beneath manual moderation: **raid detection** (join-rate lockdown + staff alert)
+and an **account-age filter** (alert/kick on too-young accounts). Detection lives
+in `services/security_service.py` (a pure `RaidTracker` + account-age helpers);
+the one consequential action (a kick) routes through `moderation_service` — no
+parallel audit path. Deliberately hub-less (same rationale as welcome/counters).
+The two DECLINED tiers (alt-detection / VPN blocking) own no settings and are
+deliberately absent — no external calls, no PII stored.
+
+1. **cog_module**: `disbot/cogs/security_cog.py` (+ `disbot/cogs/security/`
+   subpackage with `schemas.py`).
+2. **subsystem**: `security`
+3. **current_commands**: `!security` (read-only policy summary).
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: none (config via `!settings` → Security).
+6. **help_menu_discoverable**: Yes — `SUBSYSTEMS["security"]` lists `security`;
+   discoverable via the `build_help_menu_view` hook (administrator tier).
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (policy summary).
+9. **existing_SettingSpec_declarations**: `enabled`, `alert_channel`,
+   `raid_enabled`, `raid_join_count`, `raid_window_seconds`,
+   `raid_slowmode_channel`, `raid_slowmode_seconds`, `raid_lockdown_seconds`,
+   `age_enabled`, `age_min_days`, `age_action`
+   (`disbot/cogs/security/schemas.py`). The master flag + both tier flags default
+   OFF; defaults + bounds are the single source of truth in
+   `disbot/services/security_config.py`.
+10. **existing_settings_keys**: `SECURITY_ENABLED`, `SECURITY_ALERT_CHANNEL`,
+    `SECURITY_RAID_ENABLED`, `SECURITY_RAID_JOIN_COUNT`,
+    `SECURITY_RAID_WINDOW_SECONDS`, `SECURITY_RAID_SLOWMODE_CHANNEL`,
+    `SECURITY_RAID_SLOWMODE_SECONDS`, `SECURITY_RAID_LOCKDOWN_SECONDS`,
+    `SECURITY_AGE_ENABLED`, `SECURITY_AGE_MIN_DAYS`, `SECURITY_AGE_ACTION`
+    (`disbot/utils/settings_keys/security.py`). Stored as scalar guild settings —
+    **no migration**. The two channel settings carry `input_hint="channel"`.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capability `security.settings.configure`; the `!security` summary is
+    `manage_guild`-gated.
+14. **hardcoded_or_env_only_behavior**: none — every threshold/action is operator
+    config (the numeric values are clamped to guardrail ranges in
+    `security_config`); a fresh guild is unaffected (master + both tiers OFF).
+15. **current_resource_dependencies**: the alert/slowmode channels are
+    operator-supplied ids; a raid lockdown needs Manage Channels (slowmode) and a
+    kick needs Kick Members — both fail open if missing.
+16. **target_settings_fields**: the master flag + the two tier flags + their
+    thresholds + the action enum + two channel pointers (`mock_security_alerts`
+    is the reviewed UX target).
+17. **target_bindings**: none in v1.
+18. **target_access_controls**: administrator floor for config; runtime actions
+    route through moderation's authority (kick) / channel edits (slowmode).
+19. **acceptance_or_validation_rules**: numeric thresholds are bounded
+    (`raid_join_count` 2-100, `raid_window_seconds` 5-3600, `age_min_days`
+    1-365, slowmode 0-21600); `age_action` ∈ {`alert`, `kick`}; channel ids must
+    be numeric or empty.
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars). Actions
+    (kick / slowmode) are not settings mutations.
+21. **target_help_or_menu_route**: Help direct-nav (policy summary), Settings →
+    Security group.
+22. **provisionable_resources**: none.
+23. **priority**: `P1` — band slot 9 of the safety/community lane.
+24. **recommended_PR_phase**: safety-lane slot 9 (this PR).
+
 ### games
 
 1. **cog_module**: `disbot/cogs/games_cog.py`.
