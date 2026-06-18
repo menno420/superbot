@@ -263,10 +263,10 @@ async def test_str_with_allowed_values_dispatches_to_enum_view():
     assert interaction.response.sent_modals == []
     # An ephemeral message with a view was sent instead.
     assert len(interaction.response.sent_messages) == 1
-    from views.settings.edit_enum import EnumSettingSelectView
+    from views.paginated_select import PaginatedSelectView
 
     msg = interaction.response.sent_messages[0]
-    assert isinstance(msg["view"], EnumSettingSelectView)
+    assert isinstance(msg["view"], PaginatedSelectView)
 
 
 @pytest.mark.asyncio

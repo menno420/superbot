@@ -33,19 +33,25 @@ def test_panels_do_not_shadow_view_refresh():
         assert "_rerender" in vars(panel), f"{panel.__name__} lost its _rerender helper"
 
 
-def test_remove_and_delete_selects_construct_without_parent_collision():
+def test_windowed_select_constructs_without_parent_collision():
     # discord.ui.Item.parent is read-only in discord.py 2.7; a select that
-    # assigned self.parent raised AttributeError at construction time.
-    # _DeleteRoleSelect retired 2026-06-18 (role-delete moved onto the shared
-    # PaginatedSelectView); _TimeRemoveSelect / _XpRemoveSelect still own the
-    # pattern this guard protects.
-    from views.roles.time_roles_panel import _TimeRemoveSelect
-    from views.roles.xp_roles_panel import _XpRemoveSelect
+    # assigned self.parent raised AttributeError at construction time. Every
+    # bespoke remove/delete select in these panels has now been retired onto the
+    # shared PaginatedSelectView (role-delete + _TimeRemoveSelect / _XpRemoveSelect
+    # all gone, 2026-06-18), so the pattern is structurally avoided: its
+    # _WindowSelect stores no panel reference on a read-only attribute. Pin that
+    # the shared primitive constructs cleanly.
+    import discord
 
-    panel = MagicMock()
+    from views.paginated_select import PaginatedSelectView
 
-    trs = _TimeRemoveSelect(panel, [{"role_name": "Veteran", "days_required": 30}])
-    assert trs._panel is panel
+    async def _noop(_interaction, _values):  # pragma: no cover - never invoked
+        return None
 
-    xrs = _XpRemoveSelect(panel, [{"role_name": "Veteran", "level_required": 5}])
-    assert xrs._panel is panel
+    view = PaginatedSelectView(
+        MagicMock(),
+        [discord.SelectOption(label="Veteran", value="Veteran")],
+        _noop,
+    )
+    # The select item is added; no AttributeError on construction.
+    assert any(isinstance(item, discord.ui.Select) for item in view.children)

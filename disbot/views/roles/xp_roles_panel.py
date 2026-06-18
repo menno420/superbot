@@ -13,6 +13,7 @@ from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.ui_constants import ECONOMY_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
+from views.paginated_select import PaginatedSelectView
 from views.roles.time_roles_panel import _row_is_stale
 from views.selectors import RoleSelector
 
@@ -115,12 +116,49 @@ class XpRolesPanel(BaseView):
                 ephemeral=True,
             )
             return
-        view = _XpRemoveView(self, xp_rows)
+        options = [
+            discord.SelectOption(
+                label=r["role_name"],
+                value=r["role_name"],
+                description=f"Level {r['level_required']}",
+            )
+            for r in xp_rows
+        ]
         await interaction.response.send_message(
             "Select an XP threshold role to remove:",
-            view=view,
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self._remove_threshold,
+                placeholder="Choose an XP threshold to remove…",
+            ),
             ephemeral=True,
         )
+
+    async def _remove_threshold(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        role_name = values[0]
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        # Audited seam: the field-specific clear (preserves any days_required on
+        # the row; drops it only when no time tier remains) + audit emit live in
+        # role_automation. The cache invalidate also runs there; this local call
+        # keeps the panel's invalidator wiring pinned by test_xp_cog_caching.
+        await role_automation.clear_xp_threshold(
+            guild_id=interaction.guild.id,
+            role_name=role_name,
+            actor_id=interaction.user.id,
+        )
+        invalidate_xp_threshold_roles(interaction.guild.id)
+        await safe_followup(
+            interaction,
+            f"✅ Removed XP threshold for **{role_name}**.",
+            ephemeral=True,
+        )
+        await self._rerender()
 
 
 class _XpRolePickView(BaseView):
@@ -203,46 +241,3 @@ class XpLevelModal(discord.ui.Modal, title="Set XP Threshold"):  # type: ignore[
         if not await safe_defer(interaction):
             return
         await self.parent._rerender()
-
-
-class _XpRemoveSelect(discord.ui.Select):
-    def __init__(self, parent: XpRolesPanel, rows: list[dict]) -> None:
-        self._panel = parent
-        options = [
-            discord.SelectOption(
-                label=r["role_name"],
-                value=r["role_name"],
-                description=f"Level {r['level_required']}",
-            )
-            for r in rows
-        ][:25]
-        super().__init__(
-            placeholder="Choose an XP threshold to remove…",
-            options=options,
-        )
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        # Audited seam: the field-specific clear (preserves any days_required on
-        # the row; drops it only when no time tier remains) + audit emit live in
-        # role_automation. The cache invalidate also runs there; this local call
-        # keeps the panel's invalidator wiring pinned by test_xp_cog_caching.
-        await role_automation.clear_xp_threshold(
-            guild_id=interaction.guild.id,
-            role_name=self.values[0],
-            actor_id=interaction.user.id,
-        )
-        invalidate_xp_threshold_roles(interaction.guild.id)
-        await safe_followup(
-            interaction,
-            f"✅ Removed XP threshold for **{self.values[0]}**.",
-            ephemeral=True,
-        )
-        await self._panel._rerender()
-
-
-class _XpRemoveView(discord.ui.View):
-    def __init__(self, parent: XpRolesPanel, rows: list[dict]) -> None:
-        super().__init__(timeout=60)
-        self.add_item(_XpRemoveSelect(parent, rows))

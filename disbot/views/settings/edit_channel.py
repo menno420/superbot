@@ -6,7 +6,7 @@ numeric Discord channel ID (or ``""`` to clear).  The widget renders
 a native :class:`discord.ui.ChannelSelect` so the operator picks a
 channel by name instead of typing an ID.
 
-Mutation path mirrors :class:`views.settings.edit_enum.EnumSettingSelectView`:
+Mutation path mirrors :func:`views.settings.edit_enum.build_enum_select_view`:
 
   1. Operator picks a setting in the SubsystemSettingsView's edit
      dropdown.

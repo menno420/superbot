@@ -35,10 +35,10 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
         # economy family (4 views, 2026-06-10) and the mining family
         # (2 views, same day) moved onto BaseView — ratchet 17 → 13 → 11.
         # The remaining entries are NOT lifecycle duplication: the settings
-        # selects + roles removes are ephemeral capability/pipeline-gated
-        # follow-ups (no local interaction_check/on_timeout); btd6 panels
-        # carry bespoke admin checks; rank_view has a documented direct
-        # subclass reason. Migrate only with a concrete gain.
+        # selects are ephemeral capability/pipeline-gated follow-ups (no local
+        # interaction_check/on_timeout); btd6 panels carry bespoke admin checks;
+        # rank_view has a documented direct subclass reason. Migrate only with a
+        # concrete gain.
         # Relocated (not new debt): the `!list` paginator moved from
         # cogs/channel_cog.py to views/channels/list_panel.py in the P0-4
         # channel-ownership convergence (cogs/ are not scanned by this ratchet,
@@ -48,11 +48,11 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
         ("views/channels/list_panel.py", "_ChannelListPaginatorView"),
         # _DeleteRoleView retired 2026-06-18: the role-delete picker moved onto
         # the shared BaseView-based PaginatedSelectView (fixes the >25-roles
-        # #1040 truncation and ratchets this debt down).
-        ("views/roles/time_roles_panel.py", "_TimeRemoveView"),
-        ("views/roles/xp_roles_panel.py", "_XpRemoveView"),
+        # #1040 truncation and ratchets this debt down). _TimeRemoveView,
+        # _XpRemoveView and EnumSettingSelectView followed (2026-06-18): the
+        # time/xp threshold-remove pickers and the enum-setting edit picker are
+        # now PaginatedSelectView (windowed, BaseView-based).
         ("views/settings/edit_channel.py", "ChannelSettingSelectView"),
-        ("views/settings/edit_enum.py", "EnumSettingSelectView"),
         ("views/settings/edit_number_presets.py", "NumericPresetsView"),
         ("views/settings/edit_role.py", "RoleSettingSelectView"),
         ("views/setup/launcher.py", "SetupLauncherView"),
