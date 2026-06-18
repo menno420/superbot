@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T15:51:36Z",
+    "generated_at": "2026-06-18T18:35:27Z",
     "build": {
-      "commit": "ebe3e79b",
-      "subject": "Merge pull request #1048 from menno420/claude/funny-franklin-xyjake",
-      "committed_at": "2026-06-18T17:26:42Z",
+      "commit": "3b9172bb",
+      "subject": "Merge pull request #1050 from menno420/claude/funny-franklin-xxetov",
+      "committed_at": "2026-06-18T20:27:23Z",
       "branch": "main"
     },
     "counts": {
@@ -1744,6 +1744,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-18-consistency-linter-embedded-windowed-select.md",
+      "date": "2026-06-18",
+      "title": "Session — consistency-linter: embedded windowed-select helper + bounded-catalog triage",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-18-cog-routing-pagination.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — Setup cog-routing select: paginate instead of truncating at 25",
@@ -2139,14 +2147,6 @@
       "file": "2026-06-16-idea-backlog-hygiene.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — idea-backlog hygiene (tie off the #995 deferrals) + validate the union fix",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-hook-cwd-robust.md",
-      "date": "2026-06-16",
-      "title": "Session — make the settings.json hooks cwd-robust (Q-0150)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
