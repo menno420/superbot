@@ -6,7 +6,7 @@ lists every target by name and performs the deletes after an explicit
 confirmation click.
 
 Multi-channel delete (audit P1-10) is the sibling of the restrict
-panel's multi-lock — both adopt ``views.selectors.MultiSelect``.  Because
+panel's multi-lock — both adopt ``views.selectors.attach_multi_select``.  Because
 deletion is destructive and irreversible, the confirm step names every
 channel that will be removed before anything happens.
 """
@@ -30,7 +30,7 @@ from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.channels._helpers import _build_channel_options
 from views.navigation import attach_back_button
-from views.selectors import MultiSelect
+from views.selectors import attach_multi_select
 
 logger = logging.getLogger("bot")
 
@@ -58,14 +58,15 @@ class _DeleteSubView(BaseView):
             except ValueError:
                 continue
 
-        self.channel_select = MultiSelect(
+        attach_multi_select(
+            self,
             options,
             self._on_channels_selected,
             placeholder="Select one or more channels to delete…",
             min_values=1,
-            row=0,
+            select_row=0,
+            nav_row=2,
         )
-        self.add_item(self.channel_select)
 
         async def _build_parent(
             _interaction: discord.Interaction,
@@ -89,7 +90,7 @@ class _DeleteSubView(BaseView):
         interaction: discord.Interaction,
         values: list[str],
     ) -> None:
-        # ``MultiSelect`` hands back option *value* strings; our options
+        # The windowed multi-select hands back option *value* strings; our options
         # carry int channel ids, so coerce. ``_option_names`` is int-keyed
         # — without this the confirm/result embeds fall back to raw ids
         # instead of channel names.

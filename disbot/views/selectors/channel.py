@@ -1,78 +1,70 @@
 """Reusable text-channel picker.
 
-Discord caps Select options at 25.  Callers pass any-length channel
-iterable and the selector truncates with a documented footer.  When
-adoption demands paging, an embedded page-cursor selector is the
-right extension (Phase D follow-up).
+Discord caps a ``Select`` at 25 options.  :func:`attach_channel_select`
+attaches a *windowed* channel picker to a host view — any-length channel
+iterable is paginated (◀/▶ nav past 25) instead of front-truncated, so the
+tail is never silently dropped (the #1040 class).  It is the embedded sibling
+of :class:`views.paginated_select.PaginatedSelectView`, built on
+:func:`views.paginated_select.attach_windowed_select`.
 """
 
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Iterable
-from typing import Any
 
 import discord
+
+from views.paginated_select import SelectWindow, attach_windowed_select
 
 # Async callback signature: (interaction, selected_channel_id) -> None.
 OnSelect = Callable[[discord.Interaction, int], Awaitable[None]]
 
 
-class ChannelSelector(discord.ui.Select):
-    """Select widget listing up to 25 text channels.
+def attach_channel_select(
+    view: discord.ui.View,
+    channels: Iterable[discord.abc.GuildChannel],
+    on_select: OnSelect,
+    *,
+    placeholder: str = "Select a channel…",
+    select_row: int | None = None,
+    nav_row: int | None = None,
+) -> SelectWindow:
+    """Attach a windowed single text/voice-channel picker to ``view``.
 
     Parameters
     ----------
     channels:
-        Any iterable of ``discord.TextChannel``.  Truncated to 25
-        entries (Discord's hard cap on Select options).
+        Any iterable of channels; paginated past 25 (never truncated).
     on_select:
-        Awaitable invoked with ``(interaction, channel_id)`` once the
-        user picks.  Default-emits nothing; the caller must reply or
-        defer.
-    placeholder:
-        Optional placeholder string.  Defaults to "Select a channel…".
-    custom_id:
-        Optional ``custom_id``.  Defaults to a non-persistent value;
-        for persistent panels pass an explicit ``<subsystem>:<action>``
-        string.
+        Awaitable invoked with ``(interaction, channel_id)`` once the user
+        picks.  The callback must reply to or defer the interaction.
+    select_row / nav_row:
+        Optional explicit action-rows so an embedding host can fit the select
+        and its ◀/▶ nav into its own 5-row budget.
     """
+    options = [
+        discord.SelectOption(label=f"#{ch.name}"[:100], value=str(ch.id))
+        for ch in channels
+    ]
 
-    def __init__(
-        self,
-        channels: Iterable[discord.TextChannel],
-        on_select: OnSelect,
-        *,
-        placeholder: str = "Select a channel…",
-        custom_id: str | None = None,
-        row: int | None = None,
-    ) -> None:
-        bounded = list(channels)[:25]
-        options = [
-            discord.SelectOption(label=f"#{ch.name}"[:100], value=str(ch.id))
-            for ch in bounded
-        ]
-        # dict[str, Any] (not object) so **kwargs unpacks into Select.__init__
-        # without mypy demanding str|int|list|bool per declared param.
-        kwargs: dict[str, Any] = {
-            "placeholder": placeholder,
-            "options": options,
-            "min_values": 1,
-            "max_values": 1,
-        }
-        if custom_id is not None:
-            kwargs["custom_id"] = custom_id
-        if row is not None:
-            kwargs["row"] = row
-        super().__init__(**kwargs)
-        self._on_select = on_select
-
-    async def callback(self, interaction: discord.Interaction) -> None:
+    async def _dispatch(interaction: discord.Interaction, values: list[str]) -> None:
         try:
-            channel_id = int(self.values[0])
+            channel_id = int(values[0])
         except (IndexError, ValueError):
             await interaction.response.send_message(
                 "Invalid selection.",
                 ephemeral=True,
             )
             return
-        await self._on_select(interaction, channel_id)
+        await on_select(interaction, channel_id)
+
+    return attach_windowed_select(
+        view,
+        options,
+        _dispatch,
+        placeholder=placeholder,
+        min_values=1,
+        max_values=1,
+        select_row=select_row,
+        nav_row=nav_row,
+    )

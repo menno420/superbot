@@ -31,6 +31,8 @@ select_option_truncation:
       reason: "valid_towers[:8] is an error-message hint list, not a select."
     - pattern: views/diagnostic/automation_panel.py::_build_panel_embed
       reason: "rules[:25] feeds an embed rule-line summary, not a select."
+    - pattern: views/channels/visibility_panel.py::_SubsystemToggleView._rebuild_buttons
+      reason: "visible_subsystems[:20] caps the toggle *button* grid (4 rows×5), not a select; the file's channel picker is windowed via attach_multi_select."
     - pattern: views/mining/workshop_panel.py::build_workshop_embed
       reason: "ready[:12] is a craftables embed display, not a select."
     - pattern: views/setup/sections/preset_select.py::build_preview_embed

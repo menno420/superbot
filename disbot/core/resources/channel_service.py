@@ -89,7 +89,7 @@ def build_select_options(
     guild: discord.Guild,
     *,
     include_voice: bool = True,
-    limit: int = 25,
+    limit: int | None = 25,
 ) -> list[discord.SelectOption]:
     """Build up to ``limit`` :class:`discord.SelectOption` items, name-sorted.
 
@@ -97,6 +97,11 @@ def build_select_options(
     default both text and voice channels are included (matching the
     legacy behavior); pass ``include_voice=False`` for text-only
     pickers.
+
+    Pass ``limit=None`` for the *full* list — appropriate for callers that
+    feed the result into a windowed select (``views.paginated_select``),
+    which paginates past Discord's 25-option cap instead of front-truncating
+    (the #1040 silent-drop class).
     """
     channels: Iterable[discord.abc.GuildChannel] = (
         ch
@@ -105,8 +110,9 @@ def build_select_options(
         or (include_voice and isinstance(ch, discord.VoiceChannel))
     )
     sorted_channels = sorted(channels, key=lambda c: c.name)
+    bounded = sorted_channels if limit is None else sorted_channels[:limit]
     options: list[discord.SelectOption] = []
-    for ch in sorted_channels[:limit]:
+    for ch in bounded:
         emoji = safe_select_emoji(
             "🔊" if isinstance(ch, discord.VoiceChannel) else "💬",
         )

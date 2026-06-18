@@ -17,7 +17,7 @@ from utils import db
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
-from views.selectors import MultiRoleSelector
+from views.selectors import attach_multi_role_select
 
 
 class RoleExemptionsPanel(BaseView):
@@ -31,14 +31,14 @@ class RoleExemptionsPanel(BaseView):
         # Shared role picker — converged off the bespoke native RoleSelect
         # onto the reusable primitive, which excludes @everyone via the
         # default role_feasibility filter (a no-op exemption target).
-        self.add_item(
-            MultiRoleSelector(
-                list(getattr(ctx.guild, "roles", []) or []),
-                self._on_roles_selected,
-                placeholder="Select role(s) to configure…",
-                min_values=0,
-                row=0,
-            ),
+        attach_multi_role_select(
+            self,
+            list(getattr(ctx.guild, "roles", []) or []),
+            self._on_roles_selected,
+            placeholder="Select role(s) to configure…",
+            min_values=0,
+            select_row=0,
+            nav_row=4,
         )
 
         if parent is not None:

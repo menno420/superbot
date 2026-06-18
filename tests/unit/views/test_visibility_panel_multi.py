@@ -14,10 +14,16 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import discord
 import pytest
 
 from services import governance_service
-from views.selectors import MultiSelect
+
+
+def _windowed_select(view) -> discord.ui.Select:
+    """The windowed multi-select the panel attached to itself."""
+    return next(c for c in view.children if isinstance(c, discord.ui.Select))
+
 
 _ONE_SUBSYSTEM = [("economy", {"display_name": "Economy"})]
 
@@ -67,8 +73,8 @@ def _interaction():
 
 def test_picker_is_multiselect():
     view = _build_picker((10, "a"), (20, "b"))
-    assert isinstance(view.channel_select, MultiSelect)
-    assert view.channel_select.min_values == 1
+    sel = _windowed_select(view)
+    assert sel.min_values == 1
 
 
 @pytest.mark.asyncio

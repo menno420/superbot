@@ -19,7 +19,11 @@ import discord
 import pytest
 
 from services.lifecycle import contracts as lc
-from views.selectors import MultiSelect
+
+
+def _windowed_select(view) -> discord.ui.Select:
+    """The windowed multi-select the panel attached to itself."""
+    return next(c for c in view.children if isinstance(c, discord.ui.Select))
 
 
 def _result(*steps: lc.StepResult) -> lc.LifecycleResult:
@@ -57,10 +61,10 @@ def _build_view(options: list[discord.SelectOption]):
 
 def test_restrict_picker_is_multiselect():
     view = _build_view(_options((10, "alpha"), (20, "beta")))
-    assert isinstance(view.channel_select, MultiSelect)
-    # min 1, and max defaults to "all options".
-    assert view.channel_select.min_values == 1
-    assert view.channel_select.max_values == 2
+    sel = _windowed_select(view)
+    # min 1, and max defaults to "all options" on the page.
+    assert sel.min_values == 1
+    assert sel.max_values == 2
 
 
 @pytest.mark.asyncio

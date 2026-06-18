@@ -23,7 +23,11 @@ import discord
 import pytest
 
 from services.lifecycle import SUCCESS, LifecycleResult, StepResult
-from views.selectors import MultiSelect
+
+
+def _windowed_select(view) -> discord.ui.Select:
+    """The windowed multi-select the panel attached to itself."""
+    return next(c for c in view.children if isinstance(c, discord.ui.Select))
 
 
 def _options(*pairs: tuple[int, str]) -> list[discord.SelectOption]:
@@ -83,9 +87,9 @@ async def _click(view, label: str, interaction) -> None:
 
 def test_delete_picker_is_multiselect():
     view = _build_view(_options((10, "alpha"), (20, "beta")))
-    assert isinstance(view.channel_select, MultiSelect)
-    assert view.channel_select.min_values == 1
-    assert view.channel_select.max_values == 2
+    sel = _windowed_select(view)
+    assert sel.min_values == 1
+    assert sel.max_values == 2
 
 
 @pytest.mark.asyncio
