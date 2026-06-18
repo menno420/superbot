@@ -242,7 +242,10 @@ def test_back_allowlist_suppresses_by_class(mod, tmp_path, monkeypatch):
     cfg = {
         "back_button": {
             "exceptions": [
-                {"pattern": "views/settings_hub.py::SettingsHub", "reason": "top of stack"},
+                {
+                    "pattern": "views/settings_hub.py::SettingsHub",
+                    "reason": "top of stack",
+                },
             ],
         },
     }
@@ -290,16 +293,24 @@ def test_base_view_subclass_is_clean(mod, tmp_path, monkeypatch):
 
 def test_base_game_state_path_is_allowlisted(mod, tmp_path, monkeypatch):
     # views/rps and views/blackjack are the game-state lifecycle allowlist.
-    assert _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/rps/x.py") == []
     assert (
-        _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/blackjack/y.py")
+        _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/rps/x.py")
+        == []
+    )
+    assert (
+        _base_findings(
+            mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/blackjack/y.py"
+        )
         == []
     )
 
 
 def test_base_framework_home_is_allowlisted(mod, tmp_path, monkeypatch):
     # views/base.py defines BaseView/HubView, which extend discord.ui.View.
-    assert _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/base.py") == []
+    assert (
+        _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/base.py")
+        == []
+    )
 
 
 def test_base_allowlist_suppresses_by_class(mod, tmp_path, monkeypatch):
@@ -307,7 +318,10 @@ def test_base_allowlist_suppresses_by_class(mod, tmp_path, monkeypatch):
     cfg = {
         "panel_base_class": {
             "exceptions": [
-                {"pattern": "views/picker.py::PickerView", "reason": "game-state lifecycle"},
+                {
+                    "pattern": "views/picker.py::PickerView",
+                    "reason": "game-state lifecycle",
+                },
             ],
         },
     }
@@ -391,7 +405,9 @@ def test_trunc_non_select_view_is_out_of_scope(mod, tmp_path, monkeypatch):
 
 
 def test_trunc_only_scans_views(mod, tmp_path, monkeypatch):
-    assert _trunc_findings(mod, tmp_path, monkeypatch, _TRUNCATES, rel="cogs/x.py") == []
+    assert (
+        _trunc_findings(mod, tmp_path, monkeypatch, _TRUNCATES, rel="cogs/x.py") == []
+    )
 
 
 def test_trunc_allowlist_suppresses_by_file_prefix(mod, tmp_path, monkeypatch):
@@ -399,8 +415,64 @@ def test_trunc_allowlist_suppresses_by_file_prefix(mod, tmp_path, monkeypatch):
     cfg = {
         "select_option_truncation": {
             "exceptions": [
-                {"pattern": "views/role_picker.py", "reason": "intentional top-N display"},
+                {
+                    "pattern": "views/role_picker.py",
+                    "reason": "intentional top-N display",
+                },
             ],
         },
     }
-    assert mod.rule_select_option_truncation([tmp_path / "views/role_picker.py"], cfg) == []
+    assert (
+        mod.rule_select_option_truncation([tmp_path / "views/role_picker.py"], cfg)
+        == []
+    )
+
+
+def test_trunc_finding_carries_enclosing_qualname(mod, tmp_path, monkeypatch):
+    """The truncation finding names its enclosing class/method so an allowlist
+    can scope an exception to one callback (the ``::Class.method`` suffix)."""
+    findings = _trunc_findings(mod, tmp_path, monkeypatch, _TRUNCATES)
+    assert findings[0].qualname == "RolePicker.__init__"
+
+
+# Two slices in one file: a genuine select truncation (RolePicker.__init__) and
+# a top-N embed display (build_embed) — the ::qualname allowlist must suppress
+# only the display, leaving the real select flagged.
+_MIXED = """\
+import discord
+
+
+class RolePicker(discord.ui.Select):
+    def __init__(self, roles):
+        options = [discord.SelectOption(label=r.name, value=str(r.id)) for r in roles]
+        super().__init__(options=options[:25])
+
+
+def build_embed(rows):
+    embed = discord.Embed(title="Top")
+    for row in rows[:10]:
+        embed.add_field(name=row.name, value=str(row.score))
+    return embed
+"""
+
+
+def test_trunc_qualname_allowlist_suppresses_only_scoped_callback(
+    mod, tmp_path, monkeypatch
+):
+    _write(mod, tmp_path, monkeypatch, "views/role_picker.py", _MIXED)
+    cfg = {
+        "select_option_truncation": {
+            "exceptions": [
+                {
+                    "pattern": "views/role_picker.py::build_embed",
+                    "reason": "top-N embed display, not a select",
+                },
+            ],
+        },
+    }
+    findings = mod.rule_select_option_truncation(
+        [tmp_path / "views/role_picker.py"], cfg
+    )
+    # The display slice is suppressed; the genuine select truncation remains.
+    quals = {f.qualname for f in findings}
+    assert quals == {"RolePicker.__init__"}
