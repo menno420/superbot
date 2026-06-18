@@ -12,6 +12,10 @@ rules that no import graph can catch (owner directive Q-0170, 2026-06-17):
   3. **panel base-class** — a view extending ``discord.ui.View`` directly outside
      the ``views/rps``/``views/blackjack`` game-state allowlist and the framework
      home (``views/base.py``), instead of ``BaseView``/``HubView``/``PersistentView``.
+  4. **select-option truncation** — a select-building view that *front-truncates* a
+     collection (``options[:25]``, ``roles[:25]``) instead of paginating.  A Discord
+     select caps at 25 options, so the slice silently drops every entry past the cap
+     (the #1040 class).  Windowed pagination (``x[start:start+N]``) is not flagged.
 
 It is **warn-first and disposable** (Q-0105): every finding is a warning, nothing
 fails CI yet.  A rule graduates to an error + a ``code-quality`` wire-in only once
@@ -494,6 +498,110 @@ def rule_panel_base_class(files: list[Path], exceptions: dict) -> list[Finding]:
 
 
 # ---------------------------------------------------------------------------
+# Rule 4 — select-option truncation
+# ---------------------------------------------------------------------------
+
+
+# A Discord select accepts at most 25 options; embed fields cap at 25 and an
+# action row at 5 — every component-collection limit is <= 25.  A *front* slice
+# to a constant <= 25 (``x[:25]``) therefore truncates a component collection and
+# silently drops the tail.  A windowed page (``x[start:start+25]`` — variable
+# bounds) is the correct pagination pattern and must NOT be flagged; a
+# string-length slice (``label[:100]``, N > 25) is a Discord text limit, not a
+# component drop, and is excluded by the threshold.
+_SELECT_OPTION_LIMIT = 25
+
+
+def _builds_select_options(tree: ast.Module) -> bool:
+    """True if the module constructs a ``SelectOption`` anywhere.
+
+    Scopes rule 4 to genuine select-building views, so a leaderboard ``rows[:10]``
+    in a non-select view is not mistaken for an option truncation.
+    """
+    for sub in ast.walk(tree):
+        if isinstance(sub, ast.Call) and _call_name(sub) == "SelectOption":
+            return True
+    return False
+
+
+def _is_front_truncation(node: ast.Subscript) -> bool:
+    """True if *node* is ``expr[:N]`` / ``expr[0:N]`` with constant ``N`` <= 25.
+
+    Front truncation drops the tail past ``N``.  A windowed page (a non-constant
+    upper bound such as ``start + PAGE``) or a step slice is not a truncation and
+    returns ``False``; a string-length slice (``N`` > 25) is below the threshold.
+    """
+    sl = node.slice
+    if not isinstance(sl, ast.Slice) or sl.step is not None:
+        return False
+    # Lower bound must be absent or a literal 0 (a real front slice).
+    if sl.lower is not None and not (
+        isinstance(sl.lower, ast.Constant) and sl.lower.value == 0
+    ):
+        return False
+    upper = sl.upper
+    return (
+        isinstance(upper, ast.Constant)
+        and isinstance(upper.value, int)
+        and not isinstance(upper.value, bool)
+        and 0 < upper.value <= _SELECT_OPTION_LIMIT
+    )
+
+
+def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[Finding]:
+    """Flag a front-truncating slice in a select-building view (the #1040 class).
+
+    A Discord select caps at 25 options, so ``options[:25]`` (or any ``[:N<=25]``)
+    silently drops every entry past the cap instead of paginating — the bug that
+    hid routable cogs in the setup cog-routing picker (#1040).  The fix is a
+    windowed page (``x[start:start+N]``), which this rule does not flag.
+
+    Warn-only.  Allowlist a genuine top-N display (e.g. an error message that
+    intentionally lists only the first few of many) in ``consistency_exceptions.yml``.
+    """
+    cfg = exceptions.get("select_option_truncation", {})
+    findings: list[Finding] = []
+
+    for filepath in files:
+        try:
+            rel = str(filepath.relative_to(DISBOT_ROOT))
+        except ValueError:
+            continue
+        if not rel.startswith("views/") or "test" in rel.lower():
+            continue
+        try:
+            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
+        except (SyntaxError, OSError):
+            continue
+
+        if not _builds_select_options(tree):
+            continue
+
+        for sub in ast.walk(tree):
+            if not isinstance(sub, ast.Subscript) or not _is_front_truncation(sub):
+                continue
+            if _is_allowlisted(rel, "", cfg):
+                continue
+            findings.append(
+                Finding(
+                    file=filepath,
+                    line=sub.lineno,
+                    rule="select_option_truncation",
+                    message=(
+                        "front-truncating slice `[:N]` (N≤25) in a select-building "
+                        "view silently drops options past Discord's 25-option cap "
+                        "(the #1040 class) — paginate with a windowed page "
+                        "`x[start:start+N]` (see `views/setup/sections/cog_routing.py` "
+                        "`_CogPickView`), or allowlist a genuine top-N display in "
+                        "consistency_exceptions.yml"
+                    ),
+                ),
+            )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
 # Rule registry — add a (name, fn) entry per future rule
 # ---------------------------------------------------------------------------
 
@@ -520,6 +628,11 @@ RULES: list[Rule] = [
         "panel_base_class",
         rule_panel_base_class,
         "views extending discord.ui.View directly outside the game-state allowlist",
+    ),
+    Rule(
+        "select_option_truncation",
+        rule_select_option_truncation,
+        "select-building views that front-truncate a collection instead of paginating",
     ),
 ]
 
