@@ -374,3 +374,40 @@ def test_degree_without_paragon_or_paragon_without_degree_stays_general(text):
     assert (
         decision.task is AITask.GENERAL_NL_ANSWER
     ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Live miss 2026-06-18: "which MK affects the sniper" routed GENERAL because
+    # single-word tower aliases (sniper, boomerang, glue) are dropped from the
+    # entity matcher, so the deterministic MK floor never ran and the model
+    # grounding-refused. The "mk"/"monkey knowledge" cue + a tower alias (even a
+    # short single word) must route BTD6 so the MK floor answers.
+    [
+        "which MK affects the sniper",
+        "Which MK affects the sniper",
+        "which monkey knowledge affects the boomerang",
+        "what mk apply to the glue gunner",  # multi-word tower, still BTD6
+        "which mk affects the dart monkey",
+    ],
+)
+def test_mk_tower_questions_route_to_btd6_answer(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Conservatism: the MK cue gate keeps non-BTD6 "mk"/tower-word chatter out.
+    [
+        "is mk11 a good game",  # "mk11" — no \bmk\b boundary, not BTD6
+        "do you like the sniper rifle in cod",  # tower word, no MK cue
+    ],
+)
+def test_mk_tower_conservatism_stays_general(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"

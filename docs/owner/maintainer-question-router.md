@@ -6381,15 +6381,45 @@ can run "make changes" tasks, so the loop needs a bar + a budget-aware consumer.
    dispatcher. **Why:** only ~15 routine fires/day (~12 dispatch, ~1–2 reconciliation) — too scarce to
    spend on false positives. Auto-dispatch is a later, separate owner decision.
 
-**Open for the owner:** does Codex stay **comment-only**, or is its "open a fix PR" mode wanted? (Its
-auto-PRs can collide with in-flight PRs + consume review.) Complementary fix — `@codex review` on the
-**final head** (codex idea doc) — lands its *code* reviews on the complete diff, not the born-red opener.
+**RESOLVED (owner, 2026-06-17/18):** the comment-only-vs-auto-PR question is **moot — Codex is
+structurally comment-only.** It cannot push a branch or open a PR autonomously (a human must press
+"create PR" in the Codex UI); its "make changes" output is a *comment* describing a sandbox diff, never
+a repo change. **Decision: trial it as-is** (auto-review on). The only safeguard needed: **agents read
+Codex's proposed edits in its *comment*, not in a phantom branch/PR** (plan Part A § "Where Codex's edits
+live"). Still open — the `@codex review`-on-**final-head** tweak (codex idea doc) to land its *code*
+reviews on the complete diff, not the born-red opener.
 
 **Home:** [`planning/codex-review-integration-plan-2026-06-17.md`](../planning/codex-review-integration-plan-2026-06-17.md)
 · [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) · this
 Q-block. Related: Q-0171 (Codex live), Q-0120 (verify bot output vs source), Q-0117 (Hermes review-merge gate).
 
-### Q-0175 — DISCUSS: should `auto-merge-enabler` skip a PR already labelled `needs-hermes-review`? (2026-06-18)
+### Q-0175 — Fishing v1 + the boat / open-world expansion (the unified-character world) (2026-06-18)
+
+> **DIRECTED (design brain-dump) — owner-in-session, 2026-06-18:** the fishing / open-world vision,
+> captured *"before I forget… this should give the planners something to do."* The owner is the designer;
+> the plan captures his intent faithfully — build against his answers to the open questions.
+
+**Decision (Phase 1 — buildable):**
+- **Fishing v1:** **21 fish ranked by size**, **7 levels, 3 fish/level** — the starting rod/character
+  catches the 3 smallest; each level unlocks +3 bigger fish (`3 × 7 = 21`). Scales later; leveling reuses
+  the existing tier / `game_xp` systems.
+- **Unified character + swappable gear types:** one character; **named loadout presets per activity type**
+  (mining/fishing/exploration/…), each a deterministic saved slot ("put on fishing gear" swaps to it).
+  **Gear is never required** — any activity works with any gear; matching gear only **increases bonuses**.
+
+**Captured for LATER (Phase 2+, not now):** the **boat** as a second home base (stores rods; also for
+exploration); **bounded boat travel** (short timer, locked-in — can fish, not land things, can't leave
+till arrival); **real destinations** updating **coordinates + biome** (ties the seed-grid world Q-0173),
+each with a **specialty** + bonuses, **some** location-locked eventually.
+
+**Open (owner deciding — do NOT resolve unprompted):** the catch mechanic · leveling shape (rod-tier vs
+fishing-skill) · loadout-preset UI · fish value/use (sell/cook) · boat "stuff" while traveling.
+
+**Home:** [`planning/fishing-open-world-expansion-plan-2026-06-18.md`](../planning/fishing-open-world-expansion-plan-2026-06-18.md)
+· this Q-block. Related: Q-0172 (fishing = the canonical self-build), Q-0173 (the seed-grid world the boat
+travels), the V-13/V-14 ecosystem vision.
+
+### Q-0176 — DISCUSS: should `auto-merge-enabler` skip a PR already labelled `needs-hermes-review`? (2026-06-18)
 
 > **PROPOSED — agent-surfaced (fishing dispatch run, 2026-06-18). Not applied — executable-config
 > change (the workflow), so it ships as a proposal per CLAUDE.md.**

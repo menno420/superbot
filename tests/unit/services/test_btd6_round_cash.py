@@ -158,6 +158,27 @@ def test_round_cash_range_exposes_cumulative_identity(lo, hi):
     assert res["range_cash"] == pytest.approx(delta)
 
 
+def test_round_cash_range_identity_sentence_is_correct_and_inclusive():
+    # The model explained a (correct) range_cash by subtracting the cumulative AT
+    # the start round, dropping that round's earnings, and quoted figures that did
+    # not match range_cash. The tool now hands it a finished identity sentence
+    # built from the inclusive endpoints (cumulative going INTO the start round).
+    res = round_cash(8, 66)
+    assert res["found"] is True
+    identity = res["identity"]
+    # The quoted figures are exactly the published, self-auditable endpoints.
+    assert f"${res['range_cash']:,.2f}" in identity
+    assert f"${res['cumulative_at_end']:,.2f}" in identity
+    assert f"${res['cumulative_before_start']:,.2f}" in identity
+    # It steers the model off the exact mistake (subtracting cumulative AT start).
+    assert "going INTO" in identity
+    assert "Do NOT subtract the cumulative AT round 8" in identity
+
+
+def test_round_cash_single_round_has_no_range_identity():
+    assert "identity" not in round_cash(80)
+
+
 def test_round_cash_range_from_round_one_uses_starting_cash_baseline():
     res = round_cash(1, 10)
     # No round 0 exists; the baseline before round 1 is the Medium $650 start.
