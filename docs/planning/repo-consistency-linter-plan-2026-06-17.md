@@ -80,6 +80,20 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    channels move/visibility panels, access/explorer): `PaginatedSelectView` is a *standalone*
    view, so they need either a new windowed-*embedded*-select helper or per-view ◀/▶ nav — a
    design step that warrants its own focused PR.
+   **Embedded windowing helper — BUILT (#1050, 2026-06-18):** refactored
+   `views/paginated_select.py` to share one windowing core — a `SelectWindow` controller that
+   manages a *band* of items (windowed `Select` + ◀/▶ nav) inside **any host view**, removing only
+   its own items on a page flip so it composes with a multi-control panel. `PaginatedSelectView`
+   is now a thin wrapper over it (constructor unchanged); new
+   `attach_windowed_select(view, options, on_select, *, select_row, nav_row, …)` is the embedded
+   path. Triaged the **28 candidates → 15**: dogfooded the helper on `access_map`'s feature
+   drill-down (`_attach_feature_detail_select`) + **allowlisted 12** fixed-catalog btd6/mining
+   selects (btd6 tower roster + live-events feed; the curated mining taxonomy
+   market/recipe/workshop/gear selects). The **15 remaining** are all genuinely guild-scaled: the
+   shared `views/selectors/` primitives (the **API-ripple set** — convert each to an `attach_*`
+   helper + update its ~8 consumers as one focused PR) + the per-panel embedded selects (channels
+   move/visibility/create, settings subsystem_view edit/reset, setup channels, access/explorer,
+   diagnostic automation). Each per-panel one is a small swap now the helper exists.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.

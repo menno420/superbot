@@ -45,6 +45,7 @@ from services.help_projection import (
 )
 from utils.ui_constants import ADMIN_COLOR
 from views.base import BaseView, interaction_is_admin
+from views.paginated_select import attach_windowed_select
 
 logger = logging.getLogger("bot.views.server_management.access_map")
 
@@ -249,6 +250,7 @@ class _AudienceTierSelect(discord.ui.Select):
     def __init__(self, current_tier: str) -> None:
         super().__init__(
             placeholder="Simulate audience…",
+            row=0,
             options=[
                 discord.SelectOption(
                     label=label,
@@ -264,28 +266,29 @@ class _AudienceTierSelect(discord.ui.Select):
         await view.rerender(interaction, tier=self.values[0])
 
 
-class _FeatureDetailSelect(discord.ui.Select):
-    """Drill into one feature's full decision source chain (ephemeral)."""
+def _attach_feature_detail_select(
+    view: discord.ui.View,
+    decisions: tuple[AccessDecision, ...],
+) -> None:
+    """Attach the per-feature drill-down select to ``view``, paginated.
 
-    def __init__(self, decisions: tuple[AccessDecision, ...]) -> None:
-        options = [
-            discord.SelectOption(
-                label=f"{_STATE_GLYPH.get(d.effective, '·')} {d.feature}"[:100],
-                value=d.feature,
-            )
-            for d in decisions[:25]  # Discord's option cap; map shows the rest
-        ]
-        super().__init__(
-            placeholder="Inspect a feature's source chain…",
-            options=options
-            or [
-                discord.SelectOption(label="(no features)", value="-"),
-            ],
+    The access map can list more than Discord's 25-option select cap, so the
+    options are *windowed* (◀/▶ nav) rather than front-truncated — every
+    feature stays inspectable (the #1040 select-truncation class). Picking a
+    feature opens its decision source chain as an ephemeral (a genuine new
+    message — a drill-down detail, not a panel re-render).
+    """
+    by_feature = {d.feature: d for d in decisions}
+    options = [
+        discord.SelectOption(
+            label=f"{_STATE_GLYPH.get(d.effective, '·')} {d.feature}"[:100],
+            value=d.feature,
         )
-        self._by_feature = {d.feature: d for d in decisions}
+        for d in decisions
+    ]
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        decision = self._by_feature.get(self.values[0])
+    async def _on_pick(interaction: discord.Interaction, values: list[str]) -> None:
+        decision = by_feature.get(values[0]) if values else None
         if decision is None:
             await interaction.response.send_message(
                 "That feature is not in the current projection.",
@@ -315,6 +318,15 @@ class _FeatureDetailSelect(discord.ui.Select):
             )
         embed.set_footer(text=SIMULATION_LIMIT_NOTE)
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    attach_windowed_select(
+        view,
+        options,
+        _on_pick,
+        placeholder="Inspect a feature's source chain…",
+        select_row=1,
+        nav_row=2,
+    )
 
 
 class _AccessPanelBase(BaseView):
@@ -360,7 +372,7 @@ class AccessMapView(_AccessPanelBase):
     ) -> None:
         super().__init__(author, tier=tier)
         self.add_item(_AudienceTierSelect(tier))
-        self.add_item(_FeatureDetailSelect(decisions))
+        _attach_feature_detail_select(self, decisions)
 
     async def rerender(
         self,
