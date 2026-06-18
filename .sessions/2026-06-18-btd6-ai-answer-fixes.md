@@ -1,9 +1,9 @@
 # 2026-06-18 — BTD6 AI answer fixes (owner live-test screenshots)
 
-> **Status:** `in-progress`
-> Owner-live session. Fixing 4 BTD6 AI answer bugs the owner spotted in #general screenshots.
+> **Status:** `complete`
+> Owner-live session. Fixed 4 BTD6 AI answer bugs the owner spotted in #general screenshots.
 
-**PR:** (this PR) — BTD6 answer wording/grounding fixes.
+**PR:** #1035 — BTD6 answer wording/grounding fixes.
 **Branch:** `claude/zen-wright-77q0ru`
 
 ## What I'm about to do / did
