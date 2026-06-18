@@ -66,6 +66,7 @@ EVT_GAME_LEVEL_UP = "game_xp.level_up"
 # call award() — no schema or service change needed.
 GAME_MINING = "mining"
 GAME_CRAFTING = "crafting"
+GAME_FISHING = "fishing"
 
 # Per-game, per-UTC-day full-rate budget; beyond it, awards scale by
 # CAPPED_RATE (floor 1). One constant to retune or disable (set to 0 to
@@ -79,6 +80,7 @@ _AWARDS: dict[str, int] = {
     "mine": 3,
     "harvest": 2,
     "explore": 4,
+    "fish": 5,
     "depth_record": 25,
     "craft": 8,
     "quick_craft": 8,

@@ -56,11 +56,19 @@ SCOPE_OPTIONS: list[discord.SelectOption] = [
 ]
 
 
-def _operator_visible_cogs() -> list[str]:
-    """Return SUBSYSTEMS keys whose visibility is not internal.
+# Discord caps a single select at 25 options, so the operator-visible cog list
+# is paged into windows of this size by ``_CogPickView`` rather than truncated.
+_COG_PAGE_SIZE = 25
 
-    Capped at Discord's 25-option select limit so the operator-facing
-    pick always fits a single select.
+
+def _operator_visible_cogs() -> list[str]:
+    """Return every SUBSYSTEMS key whose visibility is not internal.
+
+    The full sorted list — once this crossed Discord's 25-option select limit
+    the previous ``[:25]`` truncation silently dropped routable cogs
+    (``moderation``/``role``/``settings``/``xp``/…). ``_CogPickView`` paginates
+    the list into ≤25-option windows instead, so every visible cog stays
+    reachable.
     """
     visible = [
         name
@@ -68,13 +76,13 @@ def _operator_visible_cogs() -> list[str]:
         if meta.get("visibility_mode", "normal") != "internal"
     ]
     visible.sort()
-    return visible[:25]
+    return visible
 
 
-def _cog_options() -> list[discord.SelectOption]:
-    """Build Discord SelectOption entries for the visible cogs."""
+def _cog_options(cog_names: list[str]) -> list[discord.SelectOption]:
+    """Build Discord SelectOption entries for one page of visible cogs."""
     options: list[discord.SelectOption] = []
-    for name in _operator_visible_cogs():
+    for name in cog_names:
         meta = SUBSYSTEMS.get(name, {})
         label = meta.get("display_name", name)[:100]
         description = (meta.get("description") or "")[:100] or None
@@ -165,7 +173,11 @@ class _EnableDisableSelect(discord.ui.Select):
 
 
 class _CogPickSelect(discord.ui.Select):
-    """Cog picker — pre-scoped to the operator's earlier pick."""
+    """Cog picker — pre-scoped to the operator's earlier pick.
+
+    Shows one page of the operator-visible cogs; ``_CogPickView`` owns the
+    paging so the select never exceeds Discord's 25-option limit.
+    """
 
     def __init__(
         self,
@@ -173,12 +185,18 @@ class _CogPickSelect(discord.ui.Select):
         scope_kind: str,
         scope_id: int | None,
         scope_name: str,
+        cog_names: list[str],
+        page: int = 0,
+        page_count: int = 1,
     ) -> None:
+        placeholder = f"Pick a cog for {scope_kind} scope…"
+        if page_count > 1:
+            placeholder = f"Pick a cog ({scope_kind}) — page {page + 1}/{page_count}…"
         super().__init__(
-            placeholder=f"Pick a cog for {scope_kind} scope…",
+            placeholder=placeholder,
             min_values=1,
             max_values=1,
-            options=_cog_options(),
+            options=_cog_options(cog_names),
         )
         self._scope_kind = scope_kind
         self._scope_id = scope_id
@@ -208,6 +226,92 @@ class _CogPickSelect(discord.ui.Select):
         )
 
 
+class _CogPageButton(discord.ui.Button):
+    """Prev/Next nav for the paged cog picker."""
+
+    def __init__(self, *, delta: int, label: str, disabled: bool) -> None:
+        super().__init__(
+            style=discord.ButtonStyle.secondary,
+            label=label,
+            disabled=disabled,
+        )
+        self._delta = delta
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view = self.view
+        if isinstance(view, _CogPickView):
+            await view.change_page(interaction, self._delta)
+
+
+class _CogPickView(BaseView):
+    """Paged cog picker — renders one ≤25-option select plus Prev/Next nav.
+
+    Replaces the old single-select that truncated to 25 cogs and silently
+    dropped everything past it. The full operator-visible list is paged so
+    every routable cog stays reachable.
+    """
+
+    def __init__(
+        self,
+        user: object,
+        *,
+        scope_kind: str,
+        scope_id: int | None,
+        scope_name: str,
+    ) -> None:
+        super().__init__(user, public=False, timeout=120)
+        self._scope_kind = scope_kind
+        self._scope_id = scope_id
+        self._scope_name = scope_name
+        self._cogs = _operator_visible_cogs()
+        self._page = 0
+        self._render()
+
+    @property
+    def page_count(self) -> int:
+        if not self._cogs:
+            return 1
+        return -(-len(self._cogs) // _COG_PAGE_SIZE)  # ceil division
+
+    def _page_cogs(self) -> list[str]:
+        start = self._page * _COG_PAGE_SIZE
+        return self._cogs[start : start + _COG_PAGE_SIZE]
+
+    def _render(self) -> None:
+        self.clear_items()
+        page_count = self.page_count
+        self.add_item(
+            _CogPickSelect(
+                scope_kind=self._scope_kind,
+                scope_id=self._scope_id,
+                scope_name=self._scope_name,
+                cog_names=self._page_cogs(),
+                page=self._page,
+                page_count=page_count,
+            ),
+        )
+        if page_count > 1:
+            self.add_item(
+                _CogPageButton(
+                    delta=-1,
+                    label="◀ Prev",
+                    disabled=self._page == 0,
+                ),
+            )
+            self.add_item(
+                _CogPageButton(
+                    delta=1,
+                    label="Next ▶",
+                    disabled=self._page >= page_count - 1,
+                ),
+            )
+
+    async def change_page(self, interaction: discord.Interaction, delta: int) -> None:
+        self._page = max(0, min(self._page + delta, self.page_count - 1))
+        self._render()
+        await interaction.response.edit_message(view=self)
+
+
 # ---------------------------------------------------------------------------
 # Scope-picker view
 # ---------------------------------------------------------------------------
@@ -224,13 +328,11 @@ class _CategoryPickSelect(discord.ui.ChannelSelect):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         picked = self.values[0]
-        view = BaseView(interaction.user, public=False, timeout=120)
-        view.add_item(
-            _CogPickSelect(
-                scope_kind="category",
-                scope_id=picked.id,
-                scope_name=picked.name,
-            ),
+        view = _CogPickView(
+            interaction.user,
+            scope_kind="category",
+            scope_id=picked.id,
+            scope_name=picked.name,
         )
         await interaction.response.send_message(
             f"Pick a cog to override in category **{picked.name}**:",
@@ -250,13 +352,11 @@ class _ChannelPickSelect(discord.ui.ChannelSelect):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         picked = self.values[0]
-        view = BaseView(interaction.user, public=False, timeout=120)
-        view.add_item(
-            _CogPickSelect(
-                scope_kind="channel",
-                scope_id=picked.id,
-                scope_name=picked.name,
-            ),
+        view = _CogPickView(
+            interaction.user,
+            scope_kind="channel",
+            scope_id=picked.id,
+            scope_name=picked.name,
         )
         await interaction.response.send_message(
             f"Pick a cog to override in #{picked.name}:",
@@ -277,13 +377,11 @@ class _ScopeSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> None:
         scope = self.values[0]
         if scope == "guild":
-            view = BaseView(interaction.user, public=False, timeout=120)
-            view.add_item(
-                _CogPickSelect(
-                    scope_kind="guild",
-                    scope_id=None,
-                    scope_name="guild",
-                ),
+            view = _CogPickView(
+                interaction.user,
+                scope_kind="guild",
+                scope_id=None,
+                scope_name="guild",
             )
             await interaction.response.send_message(
                 "Pick a cog to set the guild default for:",

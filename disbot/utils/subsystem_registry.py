@@ -214,6 +214,38 @@ SUBSYSTEMS: dict[str, dict] = {
             "mining.resource.view",
         ],
     },
+    # Fishing minigame (ecosystem #2, PR 1 — the core loop). Deliberately
+    # hub-less for PR 1 — surfaced via its Help hook (a static overview) +
+    # the typed `!fish`/`!fishlog`/`!fishtop` commands, exactly like
+    # `welcome`/`counters`. Folding `🎣 Fishing` into an actionable Games /
+    # Explore-hub panel is a later plan slice
+    # (docs/planning/fishing-open-world-expansion-plan-2026-06-18.md), at which point it
+    # gains parent_hub + an actionable panel (the Games actionability contract).
+    "fishing": {
+        "display_name": "Fishing",
+        "description": "Fishing minigame — cast a line, build your collection",
+        "emoji": "🎣",
+        "color": GAME_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "games",
+        "tags": ["fishing", "minigame", "activities"],
+        "entry_points": ["fish", "fishlog"],
+        "default_channels": ["games", "bot-commands"],
+        "related_subsystems": ["mining"],
+        # No hard dependency: fishing v1 writes only the catch log + game_xp
+        # (no coins — fish value is a deferred owner question, Q-0175), so it must
+        # not be locked out when an admin disables the economy subsystem.
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 21,
+        "capabilities": [
+            "fishing.catch.fish",
+            "fishing.collection.view",
+        ],
+    },
     "xp": {
         "display_name": "XP & Levels",
         "description": "Experience points, levels, and leaderboards",

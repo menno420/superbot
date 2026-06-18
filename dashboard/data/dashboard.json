@@ -1,24 +1,24 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T01:41:48Z",
+    "generated_at": "2026-06-18T02:12:27Z",
     "build": {
-      "commit": "dd7f67c",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/security-tiers-1-2",
-      "committed_at": "2026-06-18T01:39:15Z",
+      "commit": "b1cd329",
+      "subject": "chore(security): refresh generated artifacts after merging main",
+      "committed_at": "2026-06-18T01:43:57Z",
       "branch": "claude/security-tiers-1-2"
     },
     "counts": {
-      "functions": 34,
+      "functions": 35,
       "ideas": 86,
       "bugs": 15,
       "updates": 60,
       "env_vars": 37,
-      "cogs": 41,
-      "commands": 302,
+      "cogs": 42,
+      "commands": 305,
       "setting_keys": 95,
       "setting_domains": 14,
       "typed_settings": 76,
-      "visible_subsystems": 34,
+      "visible_subsystems": 35,
       "synonyms": 87
     }
   },
@@ -492,6 +492,31 @@
       "capabilities": [
         "deathmatch.game.challenge",
         "deathmatch.stat.view"
+      ]
+    },
+    {
+      "key": "fishing",
+      "display_name": "Fishing",
+      "description": "Fishing minigame — cast a line, build your collection",
+      "emoji": "🎣",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "games",
+      "tags": [
+        "fishing",
+        "minigame",
+        "activities"
+      ],
+      "entry_points": [
+        "fish",
+        "fishlog"
+      ],
+      "related_subsystems": [
+        "mining"
+      ],
+      "capabilities": [
+        "fishing.catch.fish",
+        "fishing.collection.view"
       ]
     },
     {
@@ -1614,6 +1639,38 @@
   ],
   "updates": [
     {
+      "file": "2026-06-18-fishing-reconcile-q0175.md",
+      "date": "2026-06-18",
+      "title": "Session — reconcile shipped fishing v1 to the owner's design (Q-0175)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-18-fishing-ecosystem-pr1.md",
+      "date": "2026-06-18",
+      "title": "Session — fishing ecosystem #2, PR 1 (the core loop)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-18-fishing-codex-followups.md",
+      "date": "2026-06-18",
+      "title": "Session — fishing post-merge fixes (Codex review on #1039)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-18-cog-routing-pagination.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — Setup cog-routing select: paginate instead of truncating at 25",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-18-btd6-round-cash-identity-fix.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — BTD6 round_cash identity ABR fix (Codex P2 on #1035)",
@@ -2060,38 +2117,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-fix-deathmatch-challenge-timer.md",
-      "date": "2026-06-16",
-      "title": "Session — fix BUG-0013: deathmatch 1v1 challenge timer overwrites the live duel",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-fix-coglist-resolution-loop.md",
-      "date": "2026-06-16",
-      "title": "Session — fix BUG-0014: `!coglist` infinite \"assumed from\" command-resolution loop",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-extension-taxonomy-crosswalk.md",
-      "date": "2026-06-16",
-      "title": "Session — extension-taxonomy crosswalk (Q-0151c, owner-approved)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-economy-faucet-sink-diagnostic.md",
-      "date": "2026-06-16",
-      "title": "Session — games-economy faucet/sink diagnostic (`!platform economy`)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "env_usage": [
@@ -2161,7 +2186,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 178,
+          "line": 179,
           "layer": "config",
           "has_default": true
         },
@@ -2183,7 +2208,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 177,
+          "line": 178,
           "layer": "config",
           "has_default": true
         }
@@ -2216,7 +2241,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 161,
+          "line": 162,
           "layer": "config",
           "has_default": true
         },
@@ -2318,7 +2343,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 204,
+          "line": 205,
           "layer": "config",
           "has_default": true
         }
@@ -2334,7 +2359,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 207,
+          "line": 208,
           "layer": "config",
           "has_default": true
         }
@@ -2350,7 +2375,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 210,
+          "line": 211,
           "layer": "config",
           "has_default": true
         }
@@ -2510,7 +2535,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 103,
+          "line": 104,
           "layer": "config",
           "has_default": true
         }
@@ -2590,7 +2615,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 104,
+          "line": 105,
           "layer": "config",
           "has_default": true
         }
@@ -2608,7 +2633,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 160,
+          "line": 161,
           "layer": "config",
           "has_default": true
         },
@@ -2643,7 +2668,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 187,
+          "line": 188,
           "layer": "config",
           "has_default": true
         },
@@ -2666,7 +2691,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 191,
+          "line": 192,
           "layer": "config",
           "has_default": true
         },
@@ -2705,7 +2730,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 159,
+          "line": 160,
           "layer": "config",
           "has_default": true
         },
@@ -2729,7 +2754,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 158,
+          "line": 159,
           "layer": "config",
           "has_default": true
         },
@@ -4463,6 +4488,51 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        }
+      ]
+    },
+    {
+      "cog": "FishingCog",
+      "file": "disbot/cogs/fishing_cog.py",
+      "subsystem": "fishing",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "fish",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Cast a line and catch a fish — level up to unlock bigger fish.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "fishlog",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "fishdex"
+          ],
+          "brief": "Show your fishing collection — every species you've caught.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "fishtop",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "topfishers"
+          ],
+          "brief": "Show this server's top anglers by total fish caught.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         }
       ]
     },
@@ -7362,6 +7432,12 @@
             "emoji": "⚔️"
           },
           {
+            "key": "fishing",
+            "display_name": "Fishing",
+            "category": "games",
+            "emoji": "🎣"
+          },
+          {
             "key": "games",
             "display_name": "Games",
             "category": "games",
@@ -7542,7 +7618,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 34,
+    "total_visible": 35,
     "internal_count": 0
   },
   "synonyms": [
