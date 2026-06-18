@@ -99,6 +99,9 @@ living ledger (`docs/current-state.md`).
   wording · how-many-bloons refusal · ABR/standard RBE labeling · income-range identity ·
   `btd6_context_service` / `btd6_data_service` / `ai_tools` · 2026-06-18 · **PR #1035 (merged)**
 - `claude/zen-wright-77q0ru` · BTD6 `round_cash` identity ABR fix (Codex P2 on #1035) — gate identity
-  to reconciling ranges · `btd6_data_service` · 2026-06-18 · **PR (this session)**
+  to reconciling ranges · `btd6_data_service` · 2026-06-18 · **PR #1037 (merged)**
+- `claude/zen-wright-77q0ru` · BTD6 "which MK affects <tower>" — list class-wide MK + fix sniper
+  routing miss · `btd6_data_service` / `btd6_context_service` / `ai_task_router` · 2026-06-18 ·
+  **PR (this session)**
 
 _(move claims here with their PR # as they close, then prune older entries)_

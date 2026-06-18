@@ -1905,38 +1905,49 @@ def deterministic_mk_reference_reply(message_text: str) -> str | None:
     if tower is None:
         return None
 
-    # The in-game Monkey Knowledge tab a tower's category sits under — Primary /
-    # Military / Magic / Support tab points that buff *every* tower in the class
-    # (e.g. "Come On Everybody", "Flanking Maneuvers") affect this tower too but
-    # never name it, so they are not in the reference list. Naming the tab lets
-    # the answer disclose that scope instead of reading as a missing entry — the
-    # "why isn't Come On Everybody in the Glue Gunner list" confusion.
+    # A complete "which MK affects <tower>" answer has two parts:
+    #   1. points that NAME the tower or one of its upgrades, and
+    #   2. CLASS-WIDE points that buff every tower in the tower's class without
+    #      naming it (e.g. "Come On Everybody!" → all Primary towers).
+    # The owner reported part 2 missing: "which MK affects the glue gunner" must
+    # include Come On Everybody (2026-06-18). Both halves are deterministic
+    # relations, so the floor owns the labelled answer.
     tab = tower.category.title()
-    tab_note = (
-        f"This lists only Monkey Knowledge that *names* the {tower.canonical}. "
-        f"Tab-wide points in the **{tab}** tab (which buff every {tab} tower, "
-        f"e.g. attack-speed or cost effects) also apply to it but aren't listed "
-        f"here — ask about {tab} Monkey Knowledge to see those."
+    named = sorted(
+        btd6_data_service.monkey_knowledge_referencing(tower),
+        key=lambda mk: mk.canonical.lower(),
+    )
+    class_wide = sorted(
+        btd6_data_service.monkey_knowledge_class_wide(tower.category),
+        key=lambda mk: mk.canonical.lower(),
     )
 
-    rows = btd6_data_service.monkey_knowledge_referencing(tower)
-    if not rows:
+    if not named and not class_wide:
         return (
-            f"**No Monkey Knowledge specifically references the "
-            f"{tower.canonical}.** Monkey Knowledge points name a tower or one "
-            "of its upgrades in their description; none currently name this one. "
-            + tab_note
+            f"**No Monkey Knowledge specifically affects the "
+            f"{tower.canonical}.** No point names it or one of its upgrades, and "
+            f"no {tab}-tab point buffs the whole {tab} class."
         )
 
-    ordered = sorted(rows, key=lambda mk: mk.canonical.lower())
+    total = len(named) + len(class_wide)
     lines = [
-        f"**Monkey Knowledge points that reference the {tower.canonical} "
-        f"({len(ordered)})** — these name the {tower.canonical} or one of its "
-        "upgrades:",
+        f"**Monkey Knowledge that affects the {tower.canonical} ({total})** — "
+        f"both points that name it and class-wide {tab} points that buff every "
+        f"{tab} tower:",
     ]
-    lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in ordered)
-    lines.append("")
-    lines.append(tab_note)
+    if named:
+        lines.append("")
+        lines.append(
+            f"__Names the {tower.canonical} or an upgrade ({len(named)}):__",
+        )
+        lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in named)
+    if class_wide:
+        lines.append("")
+        lines.append(
+            f"__Class-wide {tab} Monkey Knowledge — buffs every {tab} tower "
+            f"({len(class_wide)}):__",
+        )
+        lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in class_wide)
     reply = "\n".join(lines)
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 

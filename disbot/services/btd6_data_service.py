@@ -1558,6 +1558,40 @@ def monkey_knowledge_referencing(
     return _mk_index().get(tower.canonical, ())
 
 
+# A class-wide Monkey Knowledge point buffs EVERY tower in a class (e.g. "Come
+# On Everybody!" → all Primary towers). It is detected by an explicit class-scope
+# phrase in the description — "all Primary towers", "Military Monkeys" — NOT by
+# "references no tower": that looser test wrongly catches tower-specific points
+# the name index missed (Icy Chill → Ice Monkey, Charged Chinooks → Heli) and
+# power/economy points (Targeted Pineapples, More Cash), none of which affect an
+# arbitrary tower in the class. Owner ask: "which MK affects the glue gunner"
+# must include Come On Everybody, which names no tower (2026-06-18).
+def _mk_class_scope_re(category: str) -> re.Pattern[str]:
+    cat = re.escape(category.strip().lower())
+    return re.compile(
+        rf"\b(?:all|every)\s+{cat}\b|\b{cat}\s+(?:towers?|monkeys?)\b",
+        re.I,
+    )
+
+
+def monkey_knowledge_class_wide(
+    category: str,
+) -> tuple[MonkeyKnowledgeEntry, ...]:
+    """Monkey Knowledge that buffs every tower in ``category`` (a tower category:
+    ``primary`` / ``military`` / ``magic`` / ``support``).
+
+    These sit in the matching MK tab and scope to the whole class via an explicit
+    phrase ("all Primary towers", "Military Monkeys"). They affect a given tower
+    in the class without naming it, so the "MK that affects <tower>" answer must
+    include them alongside :func:`monkey_knowledge_referencing`. Order follows the
+    category roster; empty when none scope to the class.
+    """
+    tab = category.strip().title()
+    pattern = _mk_class_scope_re(category)
+    rows = monkey_knowledge_by_category().get(tab, ())
+    return tuple(mk for mk in rows if pattern.search(mk.description))
+
+
 # Round-set selection. "default" = the standard 1-140 (rounds.json, wiki-
 # sourced); "alternate" = ABR (abr_rounds.json, game-sourced sidecar). Aliases
 # accept the names players actually type; anything else resolves to None and

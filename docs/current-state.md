@@ -207,6 +207,10 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1037 (2026-06-18, BTD6 round_cash identity ABR fix — Codex P2 on #1035)** — gated the inclusive
+  range `identity` sentence to emit only when the cumulative subtraction reconciles with `range_cash`;
+  it was contradicting `range_cash` for ABR ranges spanning the unplayed rounds 1-2 (the cumulative
+  totals start at round 3). Self-validating, so the existing `cumulative_note` covers the excluded case.
 - **#1036 (2026-06-18, fishing v1 + open-world expansion plan — Q-0175, docs-only)** — captured the
   owner's fishing/boat brain-dump as a buildable plan: Phase 1 (fishing v1 — 21 fish, 7 levels × 3 fish,
   reuses tier/`game_xp`; one character with named swappable gear-type loadouts, gear never required —
