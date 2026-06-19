@@ -91,11 +91,14 @@ back_button:
     - pattern: views/xp/main_panel.py::_XpHubView
       reason: "Root XP hub opened directly by the xp cog command; top of its stack."
 
-# select_option_truncation: a `views/...py` path prefix whose front-truncating
-# slice is a *genuine* top-N display (an error message intentionally listing only
-# the first few of many), NOT a select that should paginate. Fix real selects to
-# paginate (see `views/setup/sections/cog_routing.py` `_CogPickView`) — only
-# allowlist a deliberate display truncation.
+# select_option_truncation: a `views/...py` OR `cogs/...py` path prefix whose
+# front-truncating slice is a *genuine* top-N display (an error message or embed
+# field intentionally listing only the first few of many), NOT a select that
+# should paginate. The rule scans both `views/` (graduated — a finding fails CI)
+# and `cogs/` (warn-only; extended 2026-06-19 for the BUG-0017 cog-layer blind
+# spot). Fix real selects to paginate (see `views/setup/sections/cog_routing.py`
+# `_CogPickView`, or the windowed `disbot/cogs/admin/cog_manager.py`
+# `attach_windowed_select`) — only allowlist a deliberate display truncation.
 select_option_truncation:
   exceptions:
     # --- Embed / text displays, NOT selects (the slice feeds an embed field or
@@ -172,6 +175,14 @@ select_option_truncation:
       reason: "repair/craft selects are bounded by the curated gear+recipe catalog; under 25."
     - pattern: views/mining/gear_panel.py::_ItemSelect.__init__
       reason: "owned items in one slot, bounded by the curated per-slot gear catalog; under 25 (24 + unequip sentinel)."
+    # --- disbot/cogs/ scope (extended for the BUG-0017 cog-layer blind spot,
+    #     2026-06-19). The cog scope is warn-only until it soaks clean. The Cog
+    #     Manager dropdown (BUG-0017) is already windowed (#1120) so it produces
+    #     zero findings — the rule is now its regression guard. The only first-run
+    #     cog hit is a top-N embed display (not a select), allowlisted by ::qualname
+    #     so the file's real `_GameSelect` select stays checked. ---
+    - pattern: cogs/community_spotlight_cog.py::_build_main_embed
+      reason: "top_xp[:3] / top_coins[:3] are the top-3 XP/coins leaderboard EMBED fields, not a select; the file's `_GameSelect` builds its options from the fixed `_GAMES` list (no slice)."
 
 # panel_base_class: a view extending `discord.ui.View` directly outside the
 # rps/blackjack/games/ai path lanes. These entries MIRROR the arch checker's

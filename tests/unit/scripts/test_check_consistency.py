@@ -437,6 +437,32 @@ def build_embed(rows):
     return embed
 """
 
+# A cog module that builds a select AND front-truncates its option source — the
+# BUG-0017 cog-layer class (the Cog Manager dropdown that dropped 22/46 cogs via
+# `options[:25]`). The rule scans `cogs/` too now, so this IS flagged — warn-only.
+_COG_TRUNCATES = """\
+import discord
+
+
+class _CogSelect(discord.ui.Select):
+    def __init__(self, cogs):
+        options = [discord.SelectOption(label=c, value=c) for c in cogs]
+        super().__init__(options=options[:25])
+"""
+
+# A cog module with a bare top-N slice but NO SelectOption — the module-gate keeps
+# leaderboard `[:10]` slices in non-select cogs OUT (no false positive).
+_COG_NO_SELECT = """\
+import discord
+
+
+def build_leaderboard_embed(rows):
+    embed = discord.Embed(title="Top")
+    for row in rows[:10]:
+        embed.add_field(name=row.name, value=str(row.score))
+    return embed
+"""
+
 
 def _trunc_findings(mod, tmp_path, monkeypatch, src, *, rel="views/role_picker.py"):
     _write(mod, tmp_path, monkeypatch, rel, src)
@@ -462,10 +488,74 @@ def test_trunc_non_select_view_is_out_of_scope(mod, tmp_path, monkeypatch):
     assert _trunc_findings(mod, tmp_path, monkeypatch, _NON_SELECT) == []
 
 
-def test_trunc_only_scans_views(mod, tmp_path, monkeypatch):
-    assert (
-        _trunc_findings(mod, tmp_path, monkeypatch, _TRUNCATES, rel="cogs/x.py") == []
+def test_trunc_flags_front_slice_in_cog_select(mod, tmp_path, monkeypatch):
+    # The cog scope was extended for the BUG-0017 cog-layer blind spot: a cog that
+    # builds a select AND front-truncates its options IS flagged now (it used to be
+    # explicitly out of scope). The module-gate still applies.
+    findings = _trunc_findings(
+        mod, tmp_path, monkeypatch, _COG_TRUNCATES, rel="cogs/x.py"
     )
+    assert len(findings) == 1
+    assert findings[0].rule == "select_option_truncation"
+    assert findings[0].qualname == "_CogSelect.__init__"
+
+
+def test_trunc_cog_finding_is_warn_only(mod, tmp_path, monkeypatch):
+    # The cog scope is NEW and not yet soaked, so its findings are emitted
+    # `force_warning` and `run_checks` keeps them at `warning` even though the rule
+    # has graduated to `error` for `views/`. This is what stops the cog coverage
+    # from failing CI before it graduates separately.
+    _write(mod, tmp_path, monkeypatch, "cogs/x.py", _COG_TRUNCATES)
+    raw = mod.rule_select_option_truncation([tmp_path / "cogs/x.py"], {})
+    assert raw and all(f.force_warning for f in raw)
+    stamped = mod.run_checks([tmp_path / "cogs/x.py"], {})
+    cog_findings = [f for f in stamped if f.rule == "select_option_truncation"]
+    assert cog_findings and all(f.severity == "warning" for f in cog_findings)
+
+
+def test_trunc_cog_without_select_is_out_of_scope(mod, tmp_path, monkeypatch):
+    # The SelectOption module-gate keeps a leaderboard `[:10]` in a non-select cog
+    # OUT — exactly the false positive the gate exists to prevent.
+    assert (
+        _trunc_findings(mod, tmp_path, monkeypatch, _COG_NO_SELECT, rel="cogs/lb.py")
+        == []
+    )
+
+
+def test_trunc_cog_allowlist_suppresses_by_qualname(mod, tmp_path, monkeypatch):
+    # A genuine top-N display in a cog (an embed slice in a file that also builds a
+    # select) is allowlisted by `cogs/...::qualname`, the live `community_spotlight`
+    # pattern.
+    _write(mod, tmp_path, monkeypatch, "cogs/x.py", _COG_TRUNCATES)
+    cfg = {
+        "select_option_truncation": {
+            "exceptions": [
+                {
+                    "pattern": "cogs/x.py::_CogSelect.__init__",
+                    "reason": "intentional top-N display in a cog",
+                },
+            ],
+        },
+    }
+    assert mod.rule_select_option_truncation([tmp_path / "cogs/x.py"], cfg) == []
+
+
+def test_all_files_includes_both_views_and_cogs(mod):
+    # `_all_files()` widened to include `disbot/cogs/` (for the select-truncation
+    # cog scope); the views-only rules self-restrict by their own `views/` guard.
+    rels = {str(p.relative_to(mod.DISBOT_ROOT)) for p in mod._all_files()}
+    assert any(r.startswith("views/") for r in rels)
+    assert any(r.startswith("cogs/") for r in rels)
+
+
+def test_views_only_rules_skip_cogs(mod, tmp_path, monkeypatch):
+    # Even though `_all_files()` now yields cog files, the non-select rules must
+    # not flag a cog — they guard on `rel.startswith("views/")`. A cog shaped like
+    # an edit_in_place / direct-View violation stays clean for those rules.
+    _write(mod, tmp_path, monkeypatch, "cogs/score_cog.py", _BAD)
+    assert mod.rule_edit_in_place([tmp_path / "cogs/score_cog.py"], {}) == []
+    _write(mod, tmp_path, monkeypatch, "cogs/picker_cog.py", _DIRECT_VIEW)
+    assert mod.rule_panel_base_class([tmp_path / "cogs/picker_cog.py"], {}) == []
 
 
 def test_trunc_allowlist_suppresses_by_file_prefix(mod, tmp_path, monkeypatch):

@@ -12,10 +12,14 @@ rules that no import graph can catch (owner directive Q-0170, 2026-06-17):
   3. **panel base-class** — a view extending ``discord.ui.View`` directly outside
      the ``views/rps``/``views/blackjack`` game-state allowlist and the framework
      home (``views/base.py``), instead of ``BaseView``/``HubView``/``PersistentView``.
-  4. **select-option truncation** — a select-building view that *front-truncates* a
-     collection (``options[:25]``, ``roles[:25]``) instead of paginating.  A Discord
-     select caps at 25 options, so the slice silently drops every entry past the cap
-     (the #1040 class).  Windowed pagination (``x[start:start+N]``) is not flagged.
+  4. **select-option truncation** — a select-building view *or cog* that
+     *front-truncates* a collection (``options[:25]``, ``roles[:25]``) instead of
+     paginating.  A Discord select caps at 25 options, so the slice silently drops
+     every entry past the cap (the #1040 / BUG-0017 class).  Windowed pagination
+     (``x[start:start+N]``) is not flagged.  The ``views/`` scope is graduated (a
+     finding fails CI); the ``cogs/`` scope is newer and stays warn-only until it
+     soaks clean (the BUG-0017 cog-layer blind spot — the Cog Manager dropdown
+     dropping 22/46 cogs).
 
 It is **warn-first and disposable** (Q-0105): every finding is a warning, nothing
 fails CI yet.  A rule graduates to an error + a ``code-quality`` wire-in only once
@@ -73,6 +77,12 @@ class Finding:
     message: str
     qualname: str = ""
     severity: str = "warning"  # every rule is warn-only until it graduates
+    # When True, ``run_checks`` keeps this finding at ``warning`` even if its rule
+    # has graduated to ``error``.  This lets a single graduated rule cover a NEW,
+    # not-yet-soaked scope (e.g. ``select_option_truncation`` extended to
+    # ``disbot/cogs/``) warn-only while its proven scope (``views/``) keeps failing
+    # CI — graduating the new scope is a separate, later flip once it stays clean.
+    force_warning: bool = False
 
     def display(self, root: Path) -> str:
         try:
@@ -626,15 +636,32 @@ def _front_truncations_with_scope(
     return results
 
 
+# The scopes rule 4 scans.  ``views/`` is the proven, GRADUATED scope (a finding
+# fails CI).  ``cogs/`` is the NEW scope (extended for the BUG-0017 cog-layer
+# blind spot — the Cog Manager dropdown that silently dropped 22/46 cogs via
+# ``options[:25]``); its findings are emitted ``force_warning`` (warn-only) until
+# the cog scope has soaked clean for a few sessions and is graduated separately.
+_SELECT_TRUNCATION_SCOPES = ("views/", "cogs/")
+
+
 def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[Finding]:
-    """Flag a front-truncating slice in a select-building view (the #1040 class).
+    """Flag a front-truncating slice in a select-building view OR cog (the #1040 class).
 
     A Discord select caps at 25 options, so ``options[:25]`` (or any ``[:N<=25]``)
     silently drops every entry past the cap instead of paginating — the bug that
-    hid routable cogs in the setup cog-routing picker (#1040).  The fix is a
-    windowed page (``x[start:start+N]``), which this rule does not flag.
+    hid routable cogs in the setup cog-routing picker (#1040) and, in the cog
+    layer, the Cog Manager dropdown (**BUG-0017**: 22/46 cogs dropped).  The fix
+    is a windowed page (``x[start:start+N]``), which this rule does not flag.
 
-    Warn-only.  Allowlist a genuine top-N display (e.g. an error message that
+    The rule scans both ``views/`` (the GRADUATED scope — a finding fails CI) and
+    ``cogs/`` (the NEW scope extended for BUG-0017).  Cog findings are emitted
+    **warn-only** (``force_warning``) regardless of the rule's graduated severity,
+    so the not-yet-soaked cog coverage cannot fail CI before it graduates on its
+    own.  The ``SelectOption`` module-gate is kept for both: a file is scanned only
+    if it actually constructs a ``discord.SelectOption``, so a leaderboard
+    ``rows[:10]`` in a cog that never builds a select is NOT flagged.
+
+    Allowlist a genuine top-N display (e.g. an error message or an embed field that
     intentionally lists only the first few of many) in ``consistency_exceptions.yml``.
     """
     cfg = exceptions.get("select_option_truncation", {})
@@ -645,8 +672,12 @@ def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[F
             rel = str(filepath.relative_to(DISBOT_ROOT))
         except ValueError:
             continue
-        if not rel.startswith("views/") or "test" in rel.lower():
+        if not rel.startswith(_SELECT_TRUNCATION_SCOPES) or "test" in rel.lower():
             continue
+        # Cog-scope coverage is NEW and not yet soaked: emit warn-only so it never
+        # fails CI before the cog scope graduates separately (the views/ scope,
+        # already graduated, keeps the rule's error severity).
+        force_warning = rel.startswith("cogs/")
         try:
             tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
         except (SyntaxError, OSError):
@@ -664,6 +695,7 @@ def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[F
                     line=sub.lineno,
                     rule="select_option_truncation",
                     qualname=qualname,
+                    force_warning=force_warning,
                     message=(
                         "front-truncating slice `[:N]` (N≤25) in a select-building "
                         "view silently drops options past Discord's 25-option cap "
@@ -744,7 +776,17 @@ RULES: list[Rule] = [
 
 
 def _all_files() -> list[Path]:
-    return sorted((DISBOT_ROOT / "views").rglob("*.py"))
+    # ``views/`` is the original scope (rules 1–3 + the graduated select rule);
+    # ``cogs/`` is scanned only by ``select_option_truncation`` (extended for the
+    # BUG-0017 cog-layer blind spot).  The other rules self-restrict to ``views/``
+    # by their own ``rel.startswith("views/")`` guard, so including cog files here
+    # widens only the select-truncation rule, as intended.
+    return sorted(
+        [
+            *(DISBOT_ROOT / "views").rglob("*.py"),
+            *(DISBOT_ROOT / "cogs").rglob("*.py"),
+        ],
+    )
 
 
 def _counts_by_rule(findings: list[Finding]) -> dict[str, int]:
@@ -760,9 +802,11 @@ def run_checks(files: list[Path], exceptions: dict) -> list[Finding]:
         rule_findings: list[Finding] = rule.fn(files, exceptions)  # type: ignore[operator]
         # Stamp each finding with its rule's current severity, so graduating a
         # rule to ``error`` (flip ``Rule.severity``) actually makes ``--mode
-        # strict`` fail on it — no per-rule wiring needed.
+        # strict`` fail on it — no per-rule wiring needed.  A finding that opted
+        # into ``force_warning`` (a not-yet-soaked NEW scope of a graduated rule)
+        # stays ``warning`` so it never fails CI before that scope graduates.
         for f in rule_findings:
-            f.severity = rule.severity
+            f.severity = "warning" if f.force_warning else rule.severity
         findings += rule_findings
     return findings
 

@@ -184,6 +184,28 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    is still open. **Next on this lane:** execute the AI-nav plan PR 1 (runtime/Q-0086 session) to
    start clearing rule 1's 17, then graduate `edit_in_place` once it reaches 0; add rule 5+ only as a
    fresh mechanical-consistency shape surfaces (a candidate: extend rule 4 to `disbot/cogs/`).
+   **Rule 4 extended to `disbot/cogs/` — SHIPPED (#1133, 2026-06-19):** the candidate above became
+   real — **BUG-0017** (the Cog Manager dropdown silently dropped 22/46 cogs via `options[:25]`) was
+   exactly the surfaced cog-level select truncation the rule-4 row's follow-up note anticipated.
+   `select_option_truncation` now scans **both** `views/` (the graduated scope — a finding fails CI)
+   **and** `cogs/`; the `SelectOption` module-gate is kept for both, so leaderboard `[:10]` slices in
+   non-select cogs stay OUT. The cog scope is emitted **warn-only** via a new `Finding.force_warning`
+   flag (`run_checks` keeps a `force_warning` finding at `warning` even though the rule's severity is
+   `error` for views) — graduating the cog scope is a separate later flip once it soaks clean, per the
+   step-3 discipline. **First-run cog-scope count: 2** — both `top_xp[:3]`/`top_coins[:3]` in
+   `cogs/community_spotlight_cog.py::_build_main_embed`, which are top-3 leaderboard **embed** fields
+   (not selects), allowlisted by `::qualname` so the file's real `_GameSelect` stays checked. BUG-0017's
+   Cog Manager dropdown was already windowed (#1120, `attach_windowed_select`) so it produces **zero**
+   findings — the rule is now its regression guard. *Net new genuine cog truncations: 0.*
+   **`panel_base_class` for cogs — evaluated, NOT extended.** Cogs are `commands.Cog` subclasses, so
+   the rule does not apply to the cogs themselves. A handful of cog *modules* do define helper view
+   classes that subclass `discord.ui.View` directly (`cogs/logging/select_view.py`,
+   `cogs/logging/provision_view.py`, `cogs/deathmatch_cog.py` `_DuelView`/`_ChallengeView`,
+   `cogs/settings_cog.py` `_DisabledHelpHookView`). Those are a *separate, larger* triage surface
+   (each needs its own allowlist/migration call against the arch ground truth) and are out of scope for
+   this warn-only select-truncation extension — so `panel_base_class` was **deliberately not** extended
+   to cogs here (forced filler ≠ work). A future focused PR could take the in-cog-view triage if the
+   owner wants it.
 
 ## Verification (each PR)
 
