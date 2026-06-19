@@ -438,8 +438,20 @@ def rule_back_button(files: list[Path], exceptions: dict) -> list[Finding]:
 
 
 # Direct ``discord.ui.View`` subclassing is sanctioned only in the framework home
-# (where ``BaseView``/``HubView`` are defined) and the game-state lifecycle lanes.
-_BASE_CLASS_ALLOWED_PATHS = ("views/rps/", "views/blackjack/", "views/base.py")
+# (where ``BaseView``/``HubView`` are defined) and the documented specialized-lifecycle
+# lanes.  These MIRROR the arch checker's own ground truth — the path exemptions in
+# ``architecture_rules/canonical_helpers.yaml § base_view.exemptions`` (game-state
+# views in rps/blackjack/games + the ai/* policy/tools/behavior surfaces, all with a
+# documented "specialized lifecycle ownership" reason).  Keeping the two checkers in
+# sync is the Q-0120 rule: a consistency verdict that re-flags an already-decided
+# arch exemption is the *consistency tool's* false positive, not new debt.
+_BASE_CLASS_ALLOWED_PATHS = (
+    "views/rps/",
+    "views/blackjack/",
+    "views/games/",
+    "views/ai/",
+    "views/base.py",
+)
 _DIRECT_VIEW_BASES = frozenset({"discord.ui.View", "ui.View", "View"})
 
 

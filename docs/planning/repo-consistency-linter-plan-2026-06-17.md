@@ -115,11 +115,23 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    on the whole `views/` tree (graduation candidate after a few quiet sessions, step 3b). Each migration
    fits the host's 5-row budget (nav only renders when a list spans >25, so the common case is a plain
    select). Tests refactored for the new `attach_*`/`dispatch_*` API; CI mirror green (10658 passed);
-   arch 0. **▶ Next consistency-linter slice:** graduation prep for rule 4 (flip to error + wire into
-   `code-quality.yml` once it stays at 0 across a couple more sessions), **or** the `panel_base_class`
-   double-win (migrate the settings select-views onto `BaseView` — retires both a `panel_base_class`
-   finding and a `baseview_inheritance` arch-debt row, as #1048 did), **or** triage the `edit_in_place`
-   warn-only backlog.
+   arch 0.
+   **Rule 3 (`panel_base_class`) reconciled to the arch ground truth — SHIPPED (#1057, 2026-06-19):**
+   the rule flagged **26** but the arch `baseview_inheritance` ratchet (the ERROR-tracked source of
+   truth) already **path-exempts `views/ai/` + `views/games/`** (`canonical_helpers.yaml §
+   base_view.exemptions`, "specialized lifecycle") and pins the rest to the 8-entry frozenset in
+   `tests/unit/views/test_view_base_class_conformance.py`. So 18 ai/games findings + 8 documented
+   per-view exceptions were the *consistency tool re-flagging already-decided arch exemptions* — a
+   Q-0120 divergence. Fix (reconcile, **not** migrate — the "double-win" targets turned out to be
+   documented "migrate only with a concrete gain" exceptions): mirrored the two path exemptions in the
+   rule's `_BASE_CLASS_ALLOWED_PATHS` and allowlisted the 8 per-view exceptions in
+   `consistency_exceptions.yml` (each reason citing the conformance frozenset). `panel_base_class`
+   warn-only **26 → 0** — now agreeing with the arch ground truth (graduation candidate). **▶ Next
+   consistency-linter slice:** graduation prep for rules 3 + 4 (both now at 0 — flip to error + wire
+   into `code-quality.yml` once they stay clean across a couple more sessions), **or** triage the
+   `edit_in_place` (45) / `back_button` (7) warn-only backlogs. *Genuine* `panel_base_class` migrations
+   only arise if a NEW direct subclass lands outside the exempted paths (the conformance ratchet
+   catches that); the existing set is all documented exceptions, so do not force a low-value migration.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.

@@ -305,6 +305,16 @@ def test_base_game_state_path_is_allowlisted(mod, tmp_path, monkeypatch):
     )
 
 
+def test_base_arch_exempted_paths_are_allowlisted(mod, tmp_path, monkeypatch):
+    # views/ai and views/games mirror the arch checker's documented
+    # specialized-lifecycle path exemptions (canonical_helpers.yaml §
+    # base_view.exemptions) — the consistency rule must not re-flag them (Q-0120).
+    for rel in ("views/ai/policy/chooser.py", "views/games/deathmatch_panel.py"):
+        assert (
+            _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel=rel) == []
+        )
+
+
 def test_base_framework_home_is_allowlisted(mod, tmp_path, monkeypatch):
     # views/base.py defines BaseView/HubView, which extend discord.ui.View.
     assert (
