@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Moderation — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Submission moderation</h1>
+<p class="text-slate-400 mb-6 text-sm">
+  Owner-only review queue for public bug/suggestion submissions. Nothing here is shown
+  publicly — approving mirrors the item to a GitHub issue; rejecting discards it.
+</p>
+
+{% if flash %}
+  <div class="mb-6 rounded-lg px-4 py-3 text-sm {{ 'bg-emerald-900/60 text-emerald-200 border border-emerald-800' if flash.ok else 'bg-rose-900/60 text-rose-200 border border-rose-800' }}">
+    {{ flash.message }}
+  </div>
+{% endif %}
+
+{% if not authorized %}
+  {# Logged in, but not the bot owner — honest "owner only", never the data. #}
+  <div class="rounded-xl border border-amber-800 bg-amber-950/40 p-6">
+    <h2 class="font-semibold text-amber-200">Owner only</h2>
+    <p class="text-sm text-amber-100/80 mt-1">
+      Submission moderation is restricted to the bot owner. Your per-server management
+      lives under <a class="underline hover:text-amber-50" href="/admin">the control panel</a>.
+    </p>
+  </div>
+{% elif not store_configured %}
+  {# The submissions DB has no DSN yet — dormant-by-default, same as the control API. #}
+  <div class="rounded-xl border border-dashed border-slate-700 p-6">
+    <h2 class="font-semibold">Submissions store not configured</h2>
+    <p class="text-sm text-slate-400 mt-1 max-w-xl">
+      Set <code>SUBMISSIONS_DB_DSN</code> on this dev-site service (a separate,
+      dashboard-owned Postgres) to start reviewing submissions. Until then the public
+      <code>/submit</code> form on the bot site has nowhere to write, and this queue is
+      empty by design.
+    </p>
+  </div>
+{% else %}
+  {% if not mirror_configured %}
+    <div class="mb-6 rounded-lg border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm text-amber-100/90">
+      <strong>Approve is disabled.</strong> Set <code>GITHUB_ISSUE_MIRROR_TOKEN</code>
+      (a fine-grained PAT scoped to <code>menno420/superbot</code>, Issues: Read &amp;
+      write only) to mirror approved submissions to GitHub. Reject still works.
+    </div>
+  {% endif %}
+
+  {% if load_error %}
+    <div class="mb-6 rounded-lg border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-100/90">
+      Couldn't read the submissions store right now — try again shortly.
+    </div>
+  {% endif %}
+
+  <p class="text-slate-400 mb-4 text-sm">
+    {{ pending|length }} pending submission{{ '' if pending|length == 1 else 's' }},
+    oldest first.
+  </p>
+
+  <ul class="space-y-4">
+    {% for p in pending %}
+      <li class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+        <div class="flex items-center gap-2 flex-wrap">
+          <code class="text-xs text-slate-500">#{{ p.id }}</code>
+          <span class="text-[10px] uppercase rounded px-2 py-0.5 {{ 'bg-rose-900 text-rose-300' if p.kind == 'bug' else 'bg-sky-900 text-sky-300' }}">
+            {{ p.kind }}
+          </span>
+          {% if p.surface %}
+            <span class="text-[10px] uppercase rounded px-2 py-0.5 bg-slate-800 text-slate-400">{{ p.surface }}</span>
+          {% endif %}
+          <span class="ml-auto text-xs text-slate-500">{{ p.submitted_at }}</span>
+        </div>
+
+        {# Jinja autoescaping renders all user-submitted text escaped (plan §4.2). #}
+        <h3 class="mt-2 font-semibold">{{ p.title }}</h3>
+        <p class="mt-1 text-sm text-slate-300 whitespace-pre-wrap break-words">{{ p.body }}</p>
+
+        {% if p.contact %}
+          <p class="mt-2 text-xs text-slate-500">
+            Contact (never published): <span class="text-slate-400">{{ p.contact }}</span>
+          </p>
+        {% endif %}
+
+        <div class="mt-4 flex items-center gap-3">
+          {% if mirror_configured %}
+            <form method="post" action="/admin/moderation/{{ p.id }}/approve">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+              <button type="submit"
+                class="rounded bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-sm font-medium">
+                Approve &amp; mirror to GitHub
+              </button>
+            </form>
+          {% else %}
+            <button type="button" disabled title="Set GITHUB_ISSUE_MIRROR_TOKEN to enable"
+              class="rounded bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-500 cursor-not-allowed">
+              Approve (mirror not configured)
+            </button>
+          {% endif %}
+          <form method="post" action="/admin/moderation/{{ p.id }}/reject">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <button type="submit"
+              class="rounded bg-rose-700 hover:bg-rose-600 px-3 py-1.5 text-sm font-medium">
+              Reject
+            </button>
+          </form>
+        </div>
+      </li>
+    {% else %}
+      <li class="rounded-xl border border-dashed border-slate-700 p-6 text-center text-slate-500">
+        Nothing to review — the pending queue is empty.
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}

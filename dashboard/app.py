@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hmac
 import json
+import os
 import secrets
 import sys
 from pathlib import Path
@@ -38,13 +39,51 @@ if str(BASE_DIR) not in sys.path:
 
 import auth  # noqa: E402  - after the sys.path shim above
 import control_client  # noqa: E402  - after the sys.path shim above
+import github_mirror  # noqa: E402  - after the sys.path shim above
 import ratelimit  # noqa: E402  - after the sys.path shim above
+import submissions_db  # noqa: E402  - after the sys.path shim above
 import websession  # noqa: E402  - after the sys.path shim above
 
 # Abuse-brakes for the public live surface (R3 hardening). Coarse + per-process;
 # the bot still authority-checks every write, so these only blunt bursts.
 _LOGIN_LIMITER = ratelimit.SlidingWindowLimiter(max_events=10, window_seconds=300.0)
 _EDIT_LIMITER = ratelimit.SlidingWindowLimiter(max_events=40, window_seconds=60.0)
+# Moderation actions (approve/reject) reuse the same per-actor edit-budget shape, but on
+# a separate limiter so a burst of moderation clicks can't exhaust the per-guild editor
+# budget (and vice-versa).
+_MODERATION_LIMITER = ratelimit.SlidingWindowLimiter(max_events=40, window_seconds=60.0)
+
+# Bot-owner gate for the dev-site owner-only ring (submission moderation, plan §2.4).
+# The dev site MUST NOT import ``disbot`` (decoupling — plan §0 / architecture.md), so
+# the owner id is read from the environment here — the SAME ``BOT_OWNER_USER_ID`` env
+# var + hardcoded default the bot uses (``disbot/config.py``), kept in sync by env, not
+# by import.
+_BOT_OWNER_DEFAULT = "340415158583296000"
+
+
+def _bot_owner_id() -> str | None:
+    """The configured bot-owner Discord id (str), or ``None`` if explicitly disabled.
+
+    Read at call time (not import) so a deployment can override it and tests can
+    monkeypatch the env. A blank/garbage value disables the owner ring (fails closed —
+    :func:`_is_bot_owner` then matches nobody).
+    """
+    raw = os.environ.get("BOT_OWNER_USER_ID", _BOT_OWNER_DEFAULT).strip()
+    return raw or None
+
+
+def _is_bot_owner(session: dict[str, Any]) -> bool:
+    """``True`` only when the signed-in user's id equals the configured bot owner.
+
+    Mirrors the bot's identity model: authority is the authoritative Discord *user id*
+    from the verified OAuth session, never a claim in the request body — so it cannot be
+    spoofed. Fails closed when logged out or when no owner is configured.
+    """
+    owner = _bot_owner_id()
+    if owner is None:
+        return False
+    user = session.get("user") or {}
+    return str(user.get("id")) == owner
 
 
 def _client_ip(request: Request) -> str:
@@ -90,10 +129,16 @@ app = FastAPI(title="SuperBot Dashboard", docs_url=None, redoc_url=None)
 
 
 def session_context(request: Request) -> dict[str, Any]:
-    """Login state merged into every template (the nav login button / avatar)."""
+    """Login state merged into every template (the nav login button / avatar).
+
+    ``is_bot_owner`` gates the owner-only Moderation nav link — the link is only shown
+    to the signed-in bot owner (the route itself re-checks, so this is a UX filter).
+    """
+    session = websession.read(request)
     return {
-        "current_user": websession.read(request).get("user"),
+        "current_user": session.get("user"),
         "login_enabled": auth.is_configured(),
+        "is_bot_owner": _is_bot_owner(session),
     }
 
 
@@ -667,6 +712,249 @@ def admin_home(request: Request):
     if flash is not None:
         websession.write(resp, session)  # persist the flash pop
     return resp
+
+
+# ===========================================================================
+# Submission moderation — the owner-only ring (plan §2.3 / §2.4 / §4.1)
+#
+# The public bot site's /submit form INSERTs `pending` rows into the separate,
+# dashboard-owned submissions DB; they are NEVER shown publicly. This page is the
+# ONLY place they surface: the owner reviews the pending queue and approves/rejects
+# each. On approve the dev site mirrors the row to ONE GitHub issue (github_mirror),
+# records the URL, and flips status='approved'; reject just flips status='rejected'.
+#
+# Owner-gated (restricted to BOT_OWNER_USER_ID — the stricter ring than the
+# any-admin per-guild editors), CSRF-protected, and rate-limited — reusing the same
+# dashboard machinery as the per-guild editors. Unmoderated user input is rendered
+# ESCAPED by the template (plan §4.2); this layer never renders it.
+#
+# IMPORTANT (route order): `/admin/moderation` is registered BEFORE the dynamic
+# `/admin/{guild_id}` route so the literal path wins — otherwise "moderation" would be
+# captured as a guild id.
+# ===========================================================================
+
+
+def _moderation_context(request: Request) -> dict[str, Any]:
+    """Shared template context for the moderation page (pending rows + flags).
+
+    Degrades honestly: when the submissions store is dormant
+    (``SUBMISSIONS_DB_DSN`` unset) it shows a "set this up" state with no query; the
+    page never errors. ``mirror_configured`` drives whether **approve** is offered
+    (approve needs the GitHub mirror token; reject works regardless).
+    """
+    return {
+        "data": load_data(),
+        "page": "moderation",
+        "store_configured": submissions_db.is_configured(),
+        "mirror_configured": github_mirror.is_configured(),
+    }
+
+
+def _moderation_redirect(
+    session: dict[str, Any],
+    flash: dict[str, Any],
+) -> RedirectResponse:
+    """PRG redirect back to the moderation page, carrying a one-shot flash."""
+    session["flash"] = flash
+    resp = RedirectResponse("/admin/moderation", status_code=303)
+    websession.write(resp, session)
+    return resp
+
+
+@app.get("/admin/moderation", response_class=HTMLResponse)
+async def admin_moderation(request: Request):
+    """Owner-only submission moderation queue — list `pending`, approve / reject.
+
+    Logged-out → bounce to ``/admin`` (the sign-in surface). Logged-in but not the
+    bot owner → a 403-style "owner only" page (never the queue). Owner → the pending
+    queue, or a dormant "set this up" state when the store has no DSN.
+    """
+    session = websession.read(request)
+    if session.get("user") is None:
+        return RedirectResponse("/admin", status_code=302)
+    ctx = _moderation_context(request)
+    if not _is_bot_owner(session):
+        # An admin who is not the owner: honest "this ring is owner-only", not the data.
+        return templates.TemplateResponse(
+            request,
+            "moderation.html",
+            {**ctx, "authorized": False, "pending": [], "csrf_token": None},
+        )
+    pending: list[dict[str, Any]] = []
+    load_error = False
+    if ctx["store_configured"]:
+        try:
+            pending = await submissions_db.list_pending()
+        except Exception:  # noqa: BLE001 - a DB hiccup shows an error banner, not a 500
+            load_error = True
+    csrf_token = _ensure_csrf(session)
+    flash = session.pop("flash", None)
+    resp = templates.TemplateResponse(
+        request,
+        "moderation.html",
+        {
+            **ctx,
+            "authorized": True,
+            "pending": pending,
+            "load_error": load_error,
+            "csrf_token": csrf_token,
+            "flash": flash,
+        },
+    )
+    # Always persist: the CSRF token (minted above) must survive to the POST, and any
+    # popped flash is consumed here.
+    websession.write(resp, session)
+    return resp
+
+
+async def _moderate(
+    request: Request,
+    submission_id: int,
+    decision: str,
+    csrf_token: str | None,
+) -> RedirectResponse:
+    """Shared moderation POST: owner gate + CSRF + rate-limit → DB (+ mirror on approve).
+
+    ``decision`` is ``submissions_db.STATUS_APPROVED`` or ``STATUS_REJECTED``.
+
+    **Approve** is a guarded sequence: mirror the row to a GitHub issue → record the
+    URL → only then flip ``status='approved'``. The row stays ``pending`` if the mirror
+    fails, so the owner can retry; ``attach_issue_url`` (URL-IS-NULL guard) +
+    ``set_status`` (status='pending' guard) make a double-click idempotent (plan §4.2).
+    **Reject** simply flips ``status='rejected'``.
+    """
+    session = websession.read(request)
+    if session.get("user") is None:
+        return RedirectResponse("/admin", status_code=303)
+    if not _is_bot_owner(session):
+        return RedirectResponse("/admin", status_code=303)
+    if not _csrf_ok(session, csrf_token):
+        return _moderation_redirect(
+            session,
+            {
+                "ok": False,
+                "status": 400,
+                "message": "Your session expired or the form was stale — reload and try again.",
+            },
+        )
+    actor_key = str((session.get("user") or {}).get("id") or _client_ip(request))
+    if not _MODERATION_LIMITER.allow(actor_key):
+        return _moderation_redirect(
+            session,
+            {
+                "ok": False,
+                "status": 429,
+                "message": "Too many moderation actions too quickly — slow down a moment.",
+            },
+        )
+    if not submissions_db.is_configured():
+        return _moderation_redirect(
+            session,
+            {
+                "ok": False,
+                "status": 503,
+                "message": "The submissions store is not configured (SUBMISSIONS_DB_DSN unset).",
+            },
+        )
+    moderator = str((session.get("user") or {}).get("id") or "")
+
+    if decision == submissions_db.STATUS_REJECTED:
+        try:
+            changed = await submissions_db.set_status(
+                submission_id,
+                submissions_db.STATUS_REJECTED,
+                moderated_by=moderator,
+            )
+        except Exception:  # noqa: BLE001 - surface a flash, never a 500
+            return _moderation_redirect(
+                session,
+                {
+                    "ok": False,
+                    "status": 502,
+                    "message": "Couldn't reach the submissions store.",
+                },
+            )
+        msg = (
+            f"Rejected submission #{submission_id}."
+            if changed
+            else f"Submission #{submission_id} was already moderated — no change."
+        )
+        return _moderation_redirect(
+            session,
+            {"ok": True, "status": 200, "message": msg},
+        )
+
+    # --- approve: mirror → attach URL → flip status (guarded, idempotent) ---
+    if not github_mirror.is_configured():
+        return _moderation_redirect(
+            session,
+            {
+                "ok": False,
+                "status": 503,
+                "message": "Approve is disabled — set GITHUB_ISSUE_MIRROR_TOKEN to mirror to GitHub.",
+            },
+        )
+    pending = await submissions_db.list_pending()
+    row = next((r for r in pending if int(r["id"]) == submission_id), None)
+    if row is None:
+        # Not pending anymore (already moderated, or never existed) — idempotent no-op.
+        return _moderation_redirect(
+            session,
+            {
+                "ok": True,
+                "status": 200,
+                "message": f"Submission #{submission_id} is no longer pending — no change.",
+            },
+        )
+    try:
+        issue_url = await github_mirror.create_issue(row)
+    except Exception:  # noqa: BLE001 - leave the row pending so the owner can retry
+        return _moderation_redirect(
+            session,
+            {
+                "ok": False,
+                "status": 502,
+                "message": f"GitHub issue creation failed — #{submission_id} left pending, retry.",
+            },
+        )
+    await submissions_db.attach_issue_url(submission_id, issue_url)
+    await submissions_db.set_status(
+        submission_id,
+        submissions_db.STATUS_APPROVED,
+        moderated_by=moderator,
+    )
+    return _moderation_redirect(
+        session,
+        {
+            "ok": True,
+            "status": 200,
+            "message": f"Approved #{submission_id} → mirrored to {issue_url}",
+        },
+    )
+
+
+@app.post("/admin/moderation/{submission_id}/approve")
+async def post_moderation_approve(request: Request, submission_id: int):
+    """Approve a pending submission → mirror to a GitHub issue → flip approved."""
+    form = await _form(request)
+    return await _moderate(
+        request,
+        submission_id,
+        submissions_db.STATUS_APPROVED,
+        form.get("csrf_token"),
+    )
+
+
+@app.post("/admin/moderation/{submission_id}/reject")
+async def post_moderation_reject(request: Request, submission_id: int):
+    """Reject a pending submission → flip status='rejected' (no mirror)."""
+    form = await _form(request)
+    return await _moderate(
+        request,
+        submission_id,
+        submissions_db.STATUS_REJECTED,
+        form.get("csrf_token"),
+    )
 
 
 @app.get("/admin/{guild_id}/overview", response_class=HTMLResponse)

@@ -25,6 +25,9 @@
           {% if current_user %}
             <a href="/me" class="text-sm hover:text-sky-300 {{ 'text-sky-400 font-semibold' if page == 'me' else 'text-slate-300' }}">My overview</a>
             <a href="/admin" class="text-sm hover:text-sky-300 {{ 'text-sky-400 font-semibold' if page == 'admin' else 'text-slate-300' }}">Control panel</a>
+            {% if is_bot_owner %}
+              <a href="/admin/moderation" class="text-sm hover:text-sky-300 {{ 'text-sky-400 font-semibold' if page == 'moderation' else 'text-slate-300' }}">Moderation</a>
+            {% endif %}
             <span class="text-xs text-slate-400">{{ current_user.global_name or current_user.username }}</span>
             <a href="/auth/logout" class="text-sm rounded bg-slate-700 hover:bg-slate-600 px-3 py-1">Sign out</a>
           {% elif login_enabled %}
