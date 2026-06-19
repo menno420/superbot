@@ -1,9 +1,9 @@
 """Shared economy data + helpers.
 
 Pure-function helpers + lookup tables used by both ``cogs/economy_cog``
-and the views under ``views/economy/``.  Hosted here (rather than in
-the cog) so the views can import them without creating a circular
-dependency back through the cog module.
+and the views under ``views/economy/``.  Hosted in ``services/`` (the
+shared-logic layer) so the views can import them without reaching into
+``cogs/`` — the layer boundary that ``views → cogs`` must not cross.
 """
 
 from __future__ import annotations

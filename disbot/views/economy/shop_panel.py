@@ -15,9 +15,9 @@ from __future__ import annotations
 
 import discord
 
-from cogs.economy._helpers import SHOP_ITEMS, _build_economy_embed
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import shop_purchase_workflow
+from services.economy_helpers import SHOP_ITEMS, _build_economy_embed
 from utils import db
 from utils.helpers import post_log_embed
 from utils.ui_constants import SUCCESS_COLOR, WARNING_COLOR

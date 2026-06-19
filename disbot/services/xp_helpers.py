@@ -1,10 +1,9 @@
 """Shared XP helpers (S4.2-followup extraction).
 
 These were top-level helpers in ``cogs/xp_cog.py`` consumed by the rank
-command, the rank view, the hub panel, and the config panel.  Lifted
-here per the F-3 convention so they live alongside the listener body
-and are importable by both the cog and ``views/xp/*`` without
-creating a circular import through ``cogs.xp_cog``.
+command, the rank view, the hub panel, and the config panel.  Hosted in
+``services/`` (the shared-logic layer) so they live importable by both
+the cog and ``views/xp/*`` without ``views`` reaching back into ``cogs``.
 
 Public-ish names (no leading underscore in spirit, but kept consistent
 with the historical naming so the diff stays small):

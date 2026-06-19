@@ -9,9 +9,13 @@ from __future__ import annotations
 
 import discord
 
-from cogs.xp._helpers import _build_rank_embed
+from services.xp_helpers import _build_rank_embed
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# an ephemeral nav wrapper with a bespoke on_timeout that disables the
+# dropdown AND calls self.stop() to release the view, and no invoker lock
+# (the !rank card is shared/read-only), so BaseView's lifecycle is a mismatch.
 class _RankView(discord.ui.View):
     """Navigation dropdown for the rank card — lets users switch stat views."""
 

@@ -19,9 +19,14 @@ import time
 
 import discord
 
-from cogs.economy._helpers import _WORK_COOLDOWN, JOBS, _build_economy_embed, _job_pay
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import economy_service, xp_service
+from services.economy_helpers import (
+    _WORK_COOLDOWN,
+    JOBS,
+    _build_economy_embed,
+    _job_pay,
+)
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
