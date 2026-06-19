@@ -1,17 +1,21 @@
-"""Shared moderation helpers (S4.3 extraction).
+"""Shared moderation helpers (S4.3 extraction; relocated to ``services/`` in A2).
 
 These were top-level helpers in ``cogs/moderation_cog.py`` consumed by
 the cog (panel embed + help-menu hook) and the 7 modals (interaction-
-time permission check).  Lifted here per the F-3 convention so they
-live alongside future moderation domain modules and are importable by
-both the cog and ``views/moderation/*`` without creating a circular
-import through ``cogs.moderation_cog``.
+time permission check).  They now live in ``services/`` so both the cog
+and ``views/moderation/*`` import them from the same allowed layer
+(views may import services), clearing the tracked ``views → cogs``
+layer-boundary debt without creating a circular import through
+``cogs.moderation_cog``.
 
-Names (kept identical to the pre-extraction layout so the diff stays
+Names (kept identical to the pre-relocation layout so the diff stays
 focused on relocation):
 
     _build_mod_panel_embed       — embed factory for the mod panel
     _can_act_on_interaction      — interaction-time hierarchy / owner check
+    _sweepable_channel           — narrow a surface's channel for the sweep
+    render_warn_outcome_lines    — operator-facing warn reply line(s)
+    render_cleanup_outcome_line  — operator-facing post-action sweep line
 """
 
 from __future__ import annotations

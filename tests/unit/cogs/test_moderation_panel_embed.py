@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from cogs.moderation._helpers import _build_mod_panel_embed
+from services.moderation_helpers import _build_mod_panel_embed
 
 _READINESS = "🤖 Bot readiness"
 
