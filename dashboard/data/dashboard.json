@@ -1,16 +1,18 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T09:38:25Z",
+    "generated_at": "2026-06-19T10:56:29Z",
     "build": {
-      "commit": "334247e6",
-      "subject": "Merge pull request #1084 from menno420/claude/fleet-a8-baseview",
-      "committed_at": "2026-06-19T11:30:07Z",
-      "branch": "claude/reconcile-1080-band"
+      "commit": "9c5ec88c",
+      "subject": "Merge pull request #1099 from menno420/claude/focused-goldberg-mviel4",
+      "committed_at": "2026-06-19T12:45:44Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 36,
-      "ideas": 89,
-      "bugs": 15,
+      "ideas": 91,
+      "bugs": 16,
+      "reviews": 0,
+      "reviews_open": 0,
       "updates": 60,
       "env_vars": 37,
       "cogs": 43,
@@ -976,6 +978,20 @@
       "summary": "This session added the standard outward-facing governance files (`LICENSE`, `SECURITY.md`,"
     },
     {
+      "file": "ledger-window-scale-to-marker-2026-06-19.md",
+      "title": "Idea — scale the ledger-checker window to \"merges since the last reconciliation marker\"",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "`scripts/check_current_state_ledger.py` checks a **fixed window** of the last `DEFAULT_WINDOW = 15`"
+    },
+    {
+      "file": "website-two-site-split-2026-06-19.md",
+      "title": "Idea: split the dashboard into two audience-targeted sites",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "Split the single developer dashboard (`dashboard/`) into **two sites by audience**:"
+    },
+    {
       "file": "product-lanes-gated-balance-flag-2026-06-18.md",
       "title": "Idea — a \"⚑ Product lanes gated\" balance flag (companion to PLAN-BACKLOG-THIN)",
       "status": "ideas",
@@ -1594,6 +1610,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0016",
+      "title": "reconciliation-trigger workflow issue-body says \"multiple-of-20\" / \"next ~9 PRs\" (stale cadence copy)",
+      "status": "OPEN",
+      "summary": "the auto-opened reconcile trigger issue (e.g. #1095) reads *\"A multiple-of-20 PR band was crossed\"* and *\"plans the next ~9 PRs\"*. Both numbers are stale: the Q-0107 cadence was raised 20 → 30 (Q-0134, 2026-06-14) and the planning horizon is the full band (depth ≥ the cadence, Q…"
+    },
+    {
       "id": "BUG-0015",
       "title": "\"d67 dart paragon\" misread as upgrade path \"0-6-7\" (paragon degree ignored)",
       "status": "FIXED",
@@ -1684,7 +1706,16 @@
       "summary": "user asked \"@SuperBot lets say i have 8094$ at round 60, what is the cash that i will get by going to round 68\" → bot replied \"I don't have verified BTD6 data to answer that for the current game version (55.1). I won't state names or numbers I can't ground in my data — try askin…"
     }
   ],
+  "reviews": [],
   "updates": [
+    {
+      "file": "2026-06-19-website-split-planning-brief.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split: planning brief",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
     {
       "file": "2026-06-19-ultracode-fleet-brief.md",
       "date": "2026-06-19",
@@ -1700,6 +1731,78 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-reconcile-band1080.md",
+      "date": "2026-06-19",
+      "title": "Session — 2026-06-19 · band-#1080 Q-0107 docs reconciliation pass",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-fleet-b8-procedures-skills.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet B8: procedures→skills batches 3–4",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-b7-review-inbox.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet B7: owner-review-inbox Phase 1 (/reviews)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-b6-sha-pin-actions.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet B6: SHA-pin third-party GitHub Actions",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-b5-autospec-fidelity.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet B5: autospec mock-fidelity AST guard",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-b4-plan-backlog.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet B4: automate the PLAN-BACKLOG-THIN flag (Q-0164)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-b3-routine-permission-surface.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet B3: routine permission-surface lint",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-b2-ledger-hygiene.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet B2: ledger-hygiene duplicate-claim / idea-link linter",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-b1-governance-files-guard.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet B1: governance-files presence + path-freshness guard",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-19-fleet-a8-baseview.md",
@@ -1723,6 +1826,22 @@
       "title": "2026-06-19 — Fleet A6: move governance exception types into utils/governance_exceptions",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-a5-deathmatch-cycle.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet A5: untangle deathmatch circular import",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-a4-diagnostic-embeds.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet A4: move diagnostic embeds into services/",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": true
     },
     {
@@ -2068,102 +2187,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-dashboard-vision-reconcile.md",
-      "date": "2026-06-17",
-      "title": "Session — dashboard vision-roadmap reconcile (+ Phase C parallel-collision close-out)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-dashboard-r3-hardening.md",
-      "date": "2026-06-17",
-      "title": "Session — dashboard R3: live-surface hardening (rate-limiting + CSRF)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-dashboard-phase-e-read-endpoints.md",
-      "date": "2026-06-17",
-      "title": "Session — dashboard Phase E: control-API read endpoints (stop the editors writing blind)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-dashboard-phase-c-read-workspace.md",
-      "date": "2026-06-17",
-      "title": "Session — dashboard Phase C: the read workspace (personal overview + server health + authority preview)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-dashboard-json-structural-drift-reporter.md",
-      "date": "2026-06-17",
-      "title": "dashboard.json structural-drift reporter + freshness catch-up",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-command-manifest-spine-slice1.md",
-      "date": "2026-06-17",
-      "title": "Session — manifest spine, slice 1 (typed CommandManifest over the ledger)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-character-preview-tool.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Character preview tool + vault-cap decision",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-17-btd6-roster-floor-bosses-maps.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — BTD6 answerability floor: boss roster + map filter + boss immunity",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-video-frame-extraction-tooling.md",
-      "date": "2026-06-16",
-      "title": "Session — video frame-extraction tooling (so future sessions can see uploads immediately)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-thin-architecture-atlas.md",
-      "date": "2026-06-16",
-      "title": "Session — thin architecture atlas (PR 2) + role in context_map",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-skills-rate-limit-rework.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — rate-limit rework: lean morning-briefing + idea-spotlight",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-settings-readmodel-and-vision.md",
-      "date": "2026-06-16",
-      "title": "Session — `/settings` typed read-model (SettingSpec) + main-website vision",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "env_usage": [
@@ -2204,14 +2227,13 @@
       "required": true,
       "usage_count": 2,
       "layers": [
-        "cogs",
         "services"
       ],
       "usages": [
         {
-          "file": "disbot/cogs/diagnostic/_platform_embeds.py",
+          "file": "disbot/services/diagnostic_embeds.py",
           "line": 1265,
-          "layer": "cogs",
+          "layer": "services",
           "has_default": false
         },
         {
