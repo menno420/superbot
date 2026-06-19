@@ -54,6 +54,23 @@ and the **same** `CONTROL_API_TOKEN` on the bot worker. The login session is a s
 HMAC-signed cookie (`websession.py`) and forms are parsed with `urllib` — **no** `itsdangerous` /
 `python-multipart`, so the app stays verifiable with just fastapi + jinja2 + httpx.
 
+## Submission moderation (owner-gated)
+
+The dev site is also the **moderation home** for the public bot site's `/submit` form. Public
+submissions land in a **separate, dashboard-owned** Postgres (the `submissions` table —
+`botsite/migrations/001_submissions.sql`, *not* the bot's DB) as `status='pending'` and are
+**never shown publicly**. The owner reviews them on the **owner-gated `/admin/moderation`** page
+(restricted to `BOT_OWNER_USER_ID`; CSRF-protected; all fields rendered **escaped**) and approves
+or rejects each. On **approve**, the dev site mirrors the row to a GitHub issue via
+`dashboard/github_mirror.py` using the matching `.github/ISSUE_TEMPLATE/` shape and records
+`github_issue_url`; **reject** just flips the status. The **`GITHUB_ISSUE_MIRROR_TOKEN`** (a
+fine-grained PAT, `menno420/superbot` only, Issues:write) and the full submissions DSN live
+**only here** — never on the public bot site, which holds at most an **INSERT-only** role on that
+one table. Full design: the website two-site-split plan
+([`../docs/planning/website-two-site-split-plan-2026-06-19.md`](../docs/planning/website-two-site-split-plan-2026-06-19.md)
+§2.3 / §4) + the deploy/env recipe
+[`../docs/operations/botsite-deploy.md`](../docs/operations/botsite-deploy.md).
+
 ## Run locally
 
 ```bash

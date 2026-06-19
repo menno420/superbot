@@ -61,3 +61,59 @@ only — never a value**; the values live in Railway service variables
 | `SETUP_ADVISOR_OPENAI_MODEL` | config, services | `disbot/config.py:161` *(default)*<br>`disbot/services/setup_ai_advisor.py:173` *(default)* |
 | `SETUP_ADVISOR_PROVIDER` | config, core, services | `disbot/config.py:160` *(default)*<br>`disbot/core/runtime/ai/feature_flags.py:129` *(default)*<br>`disbot/services/setup_ai_advisor.py:393` *(default)* |
 | `STRICT_DISABLED` | bot1 | `disbot/bot1.py:172` *(default)* |
+
+<!-- END GENERATED REGION — everything ABOVE this line is rewritten by
+     scripts/scan_env_usage.py --write-doc. The "Website tier" section BELOW is
+     hand-maintained (those vars are read by the web services, not by disbot/, so the
+     bot-source scanner never emits them). Keep it out of the `| `NAME` |` table form so
+     the freshness drift check (scripts/check_generated_artifacts_fresh.py `_ENV_VAR_ROW`)
+     doesn't see these names and false-flag them as "missing from a fresh scan." -->
+
+## Website tier (web services — not read by the bot source)
+
+> **Hand-maintained, not generated.** The variables below are read by the **web** services
+> (`botsite/` and `dashboard/`), not by `disbot/`, so the bot-source scanner above never lists
+> them. They are deliberately written as prose (not a `| name |` table row) so the env-vars
+> freshness check doesn't mistake them for missing bot vars. The authoritative deploy/secret-scope
+> home is [`botsite-deploy.md`](botsite-deploy.md) (§ env + § rollout) and the website
+> two-site-split plan's §4.4 secret matrix; this section is the discoverable name index.
+>
+> **If you regenerate the bot section above** (`scripts/scan_env_usage.py --write-doc` rewrites the
+> whole file), **re-add this section afterward** — the generator only emits bot-source vars.
+
+The crisp split: the **public** bot site (`botsite/`) holds **exactly one** secret — an
+**INSERT-only** DB role on one table. Everything else lives only on the owner-gated **dev** site
+(`dashboard/`). Per-service secret-holding is the plan's §4.4 matrix.
+
+**Submissions intake (the `/submit` flow → moderation → GitHub mirror):**
+
+- **`SUBMISSIONS_DB_DSN`** — Postgres DSN for the **dashboard-owned** submissions DB (a *separate*
+  store from the bot's Postgres, so decoupling holds). Read by `botsite/submissions_db.py`
+  (`_DSN_ENV`) and `dashboard/submissions_db.py`. **Least-privilege role differs per service:**
+  the **public bot site** gets an **INSERT-only** role (it can only `insert_pending`); the
+  **dev site** gets a **full** role (SELECT + UPDATE, to list/moderate). **Dormant by default** —
+  unset means `/submit` shows "temporarily unavailable" and nothing connects.
+- **`SUBMISSIONS_IP_SALT`** — *optional.* Salt for the **salted IP hash** stored for abuse
+  forensics (never the raw IP). Read by `botsite/submissions_db.py` (`_IP_SALT_ENV`); falls back to
+  a per-process salt when unset (a usable within-run dedup key, since the hash is for forensics,
+  not identity).
+- **`GITHUB_ISSUE_MIRROR_TOKEN`** — the GitHub-issue mirror token. **Dev site only — never on the
+  public bot site, never in the repo, never in `site.json`.** A **fine-grained PAT scoped to only
+  `menno420/superbot` with the single permission Issues: Read & write** (no code, no actions, no
+  metadata-write). The mirror call runs server-side on owner approval, so the token never reaches a
+  browser or the public service.
+- **(optional) captcha keys** — *fast-follow lever, not v1.* If honeypot + rate-limit prove
+  insufficient (plan §4.2 / §7.6), a Cloudflare Turnstile / hCaptcha pair (e.g. a public site key +
+  a secret verify key) can be added on the public site. Not set in v1 — recorded here so the name
+  surface is known when/if it lands.
+
+**Dev-site control panel + login (existing, dormant unless configured — see `dashboard/README.md`):**
+
+- **`DISCORD_OAUTH_CLIENT_ID`**, **`DISCORD_OAUTH_CLIENT_SECRET`**, **`DISCORD_OAUTH_REDIRECT_URI`**
+  — Discord OAuth for the `/admin` control panel + the owner-gated `/admin/moderation`. Dev site
+  only.
+- **`DASHBOARD_SESSION_SECRET`** — HMAC key for the stdlib signed session cookie
+  (`dashboard/websession.py`). Dev site only.
+- **`CONTROL_API_TOKEN`** (+ optional **`CONTROL_API_URL`**) — bearer for the bot's private control
+  API; set on **both** the dev site and the bot worker. **Never on the public bot site.** (Also
+  listed in the bot section above as read by `disbot/control_api.py`.)

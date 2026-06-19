@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T14:12:55Z",
+    "generated_at": "2026-06-19T14:27:26Z",
     "build": {
-      "commit": "51332c1",
-      "subject": "Website command browser (S1.1+P2): born-red session card + claim",
-      "committed_at": "2026-06-19T14:08:55Z",
+      "commit": "03317c9",
+      "subject": "Close-out: flip session card to complete + Q-0089 idea + enders",
+      "committed_at": "2026-06-19T14:26:41Z",
       "branch": "claude/website-command-browser"
     }
   },
