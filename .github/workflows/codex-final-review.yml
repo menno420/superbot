@@ -1,0 +1,80 @@
+name: codex-final-review
+
+# Request a Codex review of the FINAL head (the complete diff) on a born-red session PR.
+#
+# The problem (verified on #1097/#1100, 2026-06-19; idea: codex-automated-pr-review-2026-06-17.md):
+# Codex's auto-review fires only on three events — PR opened, draft marked ready, or a
+# `@codex review` comment. A plain push is NOT a trigger. In the born-red flow (Q-0133) the
+# PR opens on the card-first commit *before* the code lands, so Codex permanently reviews the
+# incomplete opener and never sees the complete diff — and it re-flags the born-red card itself
+# ("mark the card ready / implementation missing"), noise the loop already knows about.
+#
+# The fix (owner decision 2026-06-19): when the session card flips to a ready status — the same
+# signal the born-red merge-gate uses, i.e. the deliberate final commit — post `@codex review`
+# so Codex evaluates the final head. The PR usually auto-merges before Codex finishes; that is
+# accepted (owner chose "accept post-merge review"): routines scan recently-merged PRs for Codex
+# comments and fix the real ones first (Q-0174).
+#
+# Carve-outs mirror auto-merge-enabler (never fire on labelled PRs). Idempotent: posts at most
+# once per PR (a hidden marker guards re-posting on a later synchronize).
+#
+# Provenance + reliability (Q-0105): added 2026-06-19. UNVERIFIED — watch the first few PRs to
+# confirm it fires exactly once, on the final head, and that Codex re-reviews the complete diff.
+# Delete this workflow if it misfires or proves chatty; `@codex review` can always be typed by hand.
+
+on:
+  pull_request:
+    types: [synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: codex-final-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  request-codex-review:
+    if: >-
+      github.repository == 'menno420/superbot' &&
+      github.event.pull_request.draft == false &&
+      startsWith(github.head_ref, 'claude/') &&
+      !contains(github.event.pull_request.labels.*.name, 'needs-hermes-review') &&
+      !contains(github.event.pull_request.labels.*.name, 'do-not-automerge')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for the base..head card diff)
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect session-card flip to ready
+        id: gate
+        run: |
+          if python3 scripts/check_session_gate.py --require-ready-card \
+              --base "${{ github.event.pull_request.base.sha }}" \
+              --head "${{ github.event.pull_request.head.sha }}"; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Request Codex review on the final head (once)
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          # PAT preferred (consistent with auto-merge-enabler); GITHUB_TOKEN is a working fallback
+          # for posting a comment. ROUTINE_PAT needs Pull requests: write.
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          marker="<!-- codex-final-review -->"
+          if gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json comments \
+              --jq '.comments[].body' | grep -qF "$marker"; then
+            echo "Codex final-head review already requested on PR #$PR — skipping."
+            exit 0
+          fi
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "@codex review
+
+$marker Session card flipped to a ready status — requesting a Codex review of the final (complete) diff rather than the born-red opening commit. This PR may auto-merge before the review lands; that is expected — routines scan recently-merged PRs for Codex comments and fix real findings first (Q-0174)."
+          echo "Requested Codex final-head review on PR #$PR."

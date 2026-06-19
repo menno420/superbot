@@ -92,3 +92,31 @@ def test_main_ready_card_passes(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
     assert gate.main([]) == 0
     assert "merge unblocked" in capsys.readouterr().out
+
+
+# --- --require-ready-card (Codex final-review trigger) ----------------------
+
+
+def test_require_ready_card_no_card_does_not_trigger(monkeypatch, capsys):
+    """No session card → no Codex trigger (exit 1), unlike the default not-gated pass."""
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [])
+    assert gate.main(["--require-ready-card"]) == 1
+    assert "no Codex final-review trigger" in capsys.readouterr().out
+
+
+def test_require_ready_card_held_does_not_trigger(monkeypatch, capsys, tmp_path):
+    """A still-in-progress (born-red) card must NOT fire `@codex review`."""
+    card = tmp_path / "2026-06-14-x.md"
+    card.write_text("# x\n\n> **Status:** `in-progress`\n", encoding="utf-8")
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
+    assert gate.main(["--require-ready-card"]) == 1
+    assert "not ready" in capsys.readouterr().out
+
+
+def test_require_ready_card_complete_triggers(monkeypatch, capsys, tmp_path):
+    """A card flipped to complete is the final-head signal → exit 0 (trigger)."""
+    card = tmp_path / "2026-06-14-x.md"
+    card.write_text("# x\n\n> **Status:** `complete`\n", encoding="utf-8")
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
+    assert gate.main(["--require-ready-card"]) == 0
+    assert "Codex final-review trigger" in capsys.readouterr().out

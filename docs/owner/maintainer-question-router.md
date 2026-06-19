@@ -6558,3 +6558,44 @@ vs add a provider). Listed for completeness; the build run defaults them per the
 
 **Home:** the [plan §7](../planning/website-two-site-split-plan-2026-06-19.md) + this Q-block. Related:
 Q-0178 (the four decided choices + its own "still open" list), Q-0155/Q-0156 (dashboard auth/live-editor).
+
+### Q-0180 — Codex reviews the final head: auto-post `@codex review` when the session card flips to complete (2026-06-19)
+
+> **DIRECTED + APPLIED in-session (owner, 2026-06-19):** the owner asked whether Codex re-reviews a PR
+> after the final commits and whether to "make every final push mention @codex in the PR for a forced
+> review." Investigated → confirmed the gap → owner picked **the automated Action** + **accept
+> post-merge review**. Applied directly per the CLAUDE.md in-session-directive exception (Q-0106) — the
+> owner is the live reviewer. *(This was the long-standing "still open" item from Q-0171/Q-0174 + the
+> #1031 session idea — now built.)*
+
+**Context (verified empirically this session on #1097/#1100):** Codex's auto-review fires on exactly
+three events — **PR opened · draft marked ready · a `@codex review` comment**; **a plain push is NOT a
+trigger.** In the born-red flow (Q-0133) the PR opens on the **card-first commit before the code lands**,
+so Codex permanently reviews the *incomplete opener* and **never re-reviews the final head** — and it
+re-flags the born-red card itself ("mark the card ready / implementation missing"). Direct proof: on
+**#1097** Codex left a **P1 "mark the session card ready before merge"** on the opening commit
+`51b0a6e…` (a pure born-red false positive, now `is_outdated`) and never reviewed the final head
+`da4df4f…`; same shape on #1100.
+
+**Decision:** A new workflow **`.github/workflows/codex-final-review.yml`** posts **`@codex review`** the
+moment a `claude/*` PR's **session card flips to a ready status** — the same born-red signal the merge-gate
+keys off (`scripts/check_session_gate.py --require-ready-card`, added this session), i.e. the deliberate
+final commit. This makes Codex evaluate the **complete diff** instead of the born-red opener. Idempotent
+(a hidden `<!-- codex-final-review -->` marker → posts at most once/PR); carve-outs mirror
+`auto-merge-enabler` (never fires on `needs-hermes-review` / `do-not-automerge`).
+
+**The merge race — accepted (owner choice):** the card-flip-to-green is also what lets auto-merge fire, so
+the `@codex review` comment often lands as the PR is merging; Codex's review then posts on the
+**merged** PR. That is fine by design — **routines already scan recently-merged PRs for Codex comments
+and fix the real ones first (Q-0174)**. So this is a *second reviewer that catches things for the next
+session*, not a pre-merge gate (the owner explicitly chose "accept post-merge review" over holding the
+merge for an external bot's latency).
+
+**Reliability (Q-0105):** UNVERIFIED — watch the first few PRs to confirm it fires exactly once, on the
+final head, and that Codex re-reviews the complete diff. Delete the workflow if it misfires or is chatty;
+`@codex review` can always be typed by hand.
+
+**Home:** `.github/workflows/codex-final-review.yml` · `scripts/check_session_gate.py` (`--require-ready-card`)
+· [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) · this
+Q-block. Related: Q-0171 (Codex live), Q-0174 (routines check Codex first; the post-merge consumer),
+Q-0133 (born-red card = the trigger signal), Q-0120 (verify bot output vs source).

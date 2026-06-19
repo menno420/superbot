@@ -137,11 +137,37 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SuperBot session merge-gate.")
     parser.add_argument("--base", help="base commit SHA (CI: PR base)")
     parser.add_argument("--head", help="head commit SHA (CI: PR head)")
+    parser.add_argument(
+        "--require-ready-card",
+        action="store_true",
+        help=(
+            "Codex-trigger mode: exit 0 ONLY when the PR adds at least one session "
+            "card AND every added card is in a ready status (the 'card just flipped "
+            "to complete' signal). A PR with no card, or any held card, exits 1. Used "
+            "by codex-final-review.yml to fire `@codex review` on the final head."
+        ),
+    )
     args = parser.parse_args(argv)
 
     cards = added_session_cards(args.base, args.head)
     if not cards:
+        if args.require_ready_card:
+            print(
+                "check_session_gate: no session card — no Codex final-review trigger.",
+            )
+            return 1
         print("check_session_gate: no new session card in this PR — not gated. ✓")
+        return 0
+
+    if args.require_ready_card:
+        held = held_cards(cards)
+        if held:
+            print("check_session_gate: session card not ready — no Codex trigger yet.")
+            return 1
+        names = ", ".join(c.name for c in cards)
+        print(
+            f"check_session_gate: session card ready — Codex final-review trigger ✓ ({names})",
+        )
         return 0
 
     held = held_cards(cards)
