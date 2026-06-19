@@ -144,6 +144,16 @@ Current broad captures:
   `SUBSYSTEM = "btd6"` class attribute, or a command-surface-ledger join), deleting the override map
   and self-describing every cog including sub-cogs. → relates `scripts/scan_commands.py` ·
   `core/runtime/command_surface_ledger.py` · `utils/subsystem_registry.py`.
+- [`idea-subsystem-tag-on-ideas-2026-06-19.md`](./idea-subsystem-tag-on-ideas-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from building S1.1 of the website command browser):** the public
+  command browser links each command to its subsystem's open **ideas** ("what's planned" teasers +
+  the finished/in-progress badge), but idea files carry no subsystem field, so the producer falls back
+  to a filename-slug **heuristic** that cross-matches single common-word keys (`chain`/`channel`).
+  Add an optional **`Subsystem:` front-matter tag** on idea files (registry-validated); prefer it,
+  keep the heuristic as fallback — the "explicit tag, heuristic fallback" shape S1.1 recommended. The
+  redaction lens keeps even a stray match safe, so this is precision, not safety. Counterpart to
+  `cog-declares-its-subsystem` (cogs declare; this is *ideas* declare). → relates
+  `scripts/export_dashboard_data.py` (`_subsystem_open_work`) · `tests/unit/scripts/`.
 - [`ledger-dedup-linter-2026-06-16.md`](./ledger-dedup-linter-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the merge=union fix #1003):** #1003 made the append-only
   ledgers (`active-work.md`, `ideas/README.md`) auto-merge via git `merge=union`, whose one downside is

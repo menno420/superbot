@@ -25,12 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/website-command-browser` · **website-split S1.1 + P2 — interactive command browser** (ultracode
-  build, the headline user-facing deliverable) — S1.1 enriches per-command data
-  (`description`/`use_cases`/`examples`/`status`/`linked_ideas`/`notes`) in `build_site_subset`; P2 renders
-  it as clickable cards → detail view with client-side search/filter · `scripts/export_dashboard_data.py` ·
-  `scripts/check_dashboard_data.py` · `botsite/data/site.json` · `botsite/templates/{commands,features,_command_detail}.html`
-  · `tests/unit/scripts/` + `tests/unit/botsite/test_commands_page.py` · 2026-06-19 · **auto-merge on green**
 - `claude/bold-cori-y7ben5` · **website-split: review the external research + lock the open decisions**
   (owner-directed) — resolve **Q-0179** (control panel → bot site) + lock plan §7's 6 decisions + fold the
   owner's external-research layout/UX guidance into the plan · `docs/owner/maintainer-question-router.md` ·
