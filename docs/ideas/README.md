@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`website-two-site-split-2026-06-19.md`](./website-two-site-split-2026-06-19.md) —
+  **owner-directed (2026-06-19, Q-0178):** split the single dashboard into a **public bot site** (users;
+  command reference, changelog, public bug/suggestion form → DB → owner-approve → mirror to GitHub) and a
+  **dev/repo site** (the current dashboard, all pages public read-only, owner-gated edits); 2 Railway
+  services. Structured into the required-output brief
+  [`planning/website-two-site-split-planning-brief-2026-06-19.md`](../planning/website-two-site-split-planning-brief-2026-06-19.md)
+  for the next planning session. → relates `dashboard/` · `scripts/export_dashboard_data.py`.
 - [`governance-files-presence-guard-2026-06-19.md`](./governance-files-presence-guard-2026-06-19.md) —
   **session idea (2026-06-19, Q-0089, from the repo governance/supply-chain baseline session):** a tiny
   stdlib `scripts/check_governance_files.py` that asserts the new root governance files (`LICENSE` ·
