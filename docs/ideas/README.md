@@ -45,6 +45,13 @@ Current broad captures:
   `export_dashboard_data.py`. Paired with a **direction**: refocus the dev site on *projects*, not the
   bot (the public site owns the bot). → refines the website-two-site-split plan.
   [mockup](./assets/dev-site-status-donut-mockup-2026-06-19.png).
+- [`cog-chooser-customize-before-invite-2026-06-19.md`](./cog-chooser-customize-before-invite-2026-06-19.md) —
+  **owner-directed (2026-06-19):** a public-site **"customize before you invite"** cog chooser — pick
+  sections (games / moderation / server-mgmt) → toggle the relevant cogs on/off (all-on-deselect *or*
+  all-off-select). Maps onto **existing data + seam**: the site catalogue's categories + every
+  subsystem's per-guild `enabled` setting. Design crux = *how the pre-invite selection reaches the bot*
+  (recommend a seeded setup-link v1; OAuth-state pre-config rides the control-API security review). →
+  pre-invite sibling of the Q-0179 manage-my-server panel.
 - [`sector-scoped-lean-boot-for-cheap-models-2026-06-19.md`](./sector-scoped-lean-boot-for-cheap-models-2026-06-19.md) —
   **owner-directed (2026-06-19; B1-priority next session):** make Sonnet usable by cutting the orientation
   tax — a **sector-scoped lean boot** (declare your sector → load only its invariants + folio + active plan
