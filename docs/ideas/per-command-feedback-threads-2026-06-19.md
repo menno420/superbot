@@ -1,6 +1,6 @@
 # Per-command AI-moderated feedback threads ("Codex for the bot's features")
 
-> **Status:** `idea` — **owner-directed (2026-06-19)**, captured during the website two-site-split fan-out.
+> **Status:** `ideas` — **owner-directed (2026-06-19)**, captured during the website two-site-split fan-out.
 > A real new feature, distinct from the v1 static-notes placeholder. Ready to promote to a `docs/planning/`
 > plan + build after the v1 bot site lands (Q-0172: any agent may promote → build, flagged self-initiated).
 
