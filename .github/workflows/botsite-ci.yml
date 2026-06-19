@@ -1,0 +1,72 @@
+name: Botsite CI
+
+# Runs the public bot-site test suite + type-check. Twin of dashboard-ci.yml, for the
+# second web service (`botsite/`, the website two-site split). Provenance: owner-directed
+# 2026-06-19 (website-split foundation follow-through).
+#
+# Why a separate workflow (same reason as the dashboard): the main `code-quality.yml`
+# installs only the BOT's requirements.txt, so the bot-site tests (`tests/unit/botsite/`)
+# `importorskip` fastapi/httpx and silently SKIP, and bot-site code is never type-checked
+# (CI runs `mypy disbot/` only). Black/isort/ruff already cover `botsite/` in the main job
+# (it is not in their exclude list), so this workflow adds exactly the two missing pieces:
+# real test execution + `mypy botsite/`.
+#
+# Centralization note (owner mandate, 2026-06-19): this is deliberately a near-twin of
+# dashboard-ci.yml rather than a merge of the two — keeping the working dashboard CI
+# untouched (correctness first). The better centralized form — one `web-ci.yml` with a
+# matrix over {dashboard, botsite} — is designed in
+# `docs/planning/web-tier-centralization-proposal-2026-06-19.md`; implement it as a focused
+# follow-up, then delete this file + dashboard-ci.yml.
+#
+# `paths`-filtered so it only runs when bot-site code/tests change (cheap). It is NOT a
+# required merge check (making it one is an owner repo-Settings step — see the plan).
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "botsite/**"
+      - "tests/unit/botsite/**"
+      - ".github/workflows/botsite-ci.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "botsite/**"
+      - "tests/unit/botsite/**"
+      - ".github/workflows/botsite-ci.yml"
+
+concurrency:
+  group: botsite-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  botsite-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            botsite/requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Bot reqs: tests/conftest.py imports disbot (registry validation) before any
+          # bot-site test collects. Bot-site reqs: fastapi/jinja2 so the tests actually
+          # run instead of importorskip-skipping. mypy/pytest pinned to match CI.
+          pip install -r requirements.txt -r botsite/requirements.txt
+          pip install mypy==2.1.0 pytest==9.0.3 pytest-asyncio==1.4.0
+
+      - name: Type-check botsite (mypy)
+        run: mypy botsite/
+
+      - name: Run botsite tests
+        run: pytest tests/unit/botsite -v
