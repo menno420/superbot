@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T21:09:59Z",
+    "generated_at": "2026-06-19T21:21:07Z",
     "build": {
-      "commit": "c1f6acfd",
-      "subject": "reconcile: open born-red session card for the band-#1140 Q-0107 pass",
-      "committed_at": "2026-06-19T21:02:35Z",
-      "branch": "claude/reconcile-1140-band"
+      "commit": "cffb19bb",
+      "subject": "Merge pull request #1142 from menno420/claude/reconcile-1140-band",
+      "committed_at": "2026-06-19T23:18:02Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 36,
-      "ideas": 101,
+      "ideas": 102,
       "bugs": 18,
       "reviews": 0,
       "reviews_open": 0,
@@ -982,6 +982,14 @@
       ]
     },
     {
+      "file": "band-pr-merge-status-helper-2026-06-19.md",
+      "title": "Reconciliation helper: classify a band's PRs as merged / closed-unmerged / open",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The reconciliation routine's ledger step relies on `check_current_state_ledger.py`, which greps",
+      "subsystems": null
+    },
+    {
       "file": "explore-hub-federated-world-2026-06-19.md",
       "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
       "status": "ideas",
@@ -1843,7 +1851,7 @@
   "bugs": [
     {
       "id": "BUG-0018",
-      "title": "committed botsite/data/site.json drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (immediate) / root-fix RECOMMENDED",
+      "title": "committed botsite/data/site.json drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (root)",
       "status": "unknown",
       "summary": "tests/unit/scripts/test_export_dashboard_data.py::test_committed_site_json_matches_a_fresh_build failed on main — commands drifted — re-export. The committed site.json's commands[].linked_ideas no longer matched a fresh build."
     },
@@ -2081,6 +2089,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-site-json-drift-rootfix.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — BUG-0018 root-fix: stop `site.json` hard-equality test reddening on idea-doc churn",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-router-status-tool.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — router_status.py: a question-router digest tool",
@@ -2100,9 +2116,9 @@
       "file": "2026-06-19-reconcile-band1140.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Docs reconciliation: the band-#1140 Q-0107 cadence pass",
-      "status": "in-progress",
-      "run_type": "",
-      "self_initiated": false
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-19-reconcile-band1110.md",
@@ -2420,14 +2436,6 @@
       "file": "2026-06-18-standalone-select-pagination.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — Migrate standalone-ephemeral select pickers onto `PaginatedSelectView`",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-reconcile-band1050.md",
-      "date": "2026-06-18",
-      "title": "Session — 2026-06-18 · twelfth Q-0107 reconciliation pass (band-#1050)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
