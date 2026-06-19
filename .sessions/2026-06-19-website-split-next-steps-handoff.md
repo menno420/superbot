@@ -1,6 +1,6 @@
 # 2026-06-19 — Website split: rollout + next-steps handoff doc
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 Owner-requested follow-up to the ultracode review session (#1122, merged). Persist the verbal
 handoff as a durable, reachable doc so the next session picks up the website rollout without
