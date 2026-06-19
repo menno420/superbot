@@ -175,10 +175,34 @@ def test_only_scans_views(mod, tmp_path, monkeypatch):
     assert findings == []
 
 
-def test_real_tree_runs_clean_or_warns_only(mod):
-    """The live tree must parse and produce only warnings (never errors)."""
+def test_real_tree_produces_no_graduated_rule_errors(mod):
+    """The live tree must parse and surface zero error-severity findings.
+
+    The three GRADUATED rules (back_button / panel_base_class /
+    select_option_truncation) carry ``severity="error"``, so any finding from
+    them on the live tree would be an error — and `--mode strict` (now wired into
+    CI) would fail. This test mirrors that CI gate locally: it must stay clean, or
+    a regression reintroduced a front-truncated select / direct-`discord.ui.View`
+    panel / back-affordance-less hub. Warn-only rules (edit_in_place) may still
+    produce warnings — those don't fail CI.
+    """
     findings = mod.run_checks(mod._all_files(), mod._load_exceptions())
-    assert all(f.severity == "warning" for f in findings)
+    errors = [f for f in findings if f.severity == "error"]
+    assert errors == [], (
+        "graduated consistency rule(s) flagged the live tree: "
+        + "; ".join(f.display(mod.REPO_ROOT) for f in errors)
+    )
+
+
+def test_graduated_rules_carry_error_severity(mod):
+    """The three graduated rules are CI-enforced (severity='error'); the AI-nav
+    rule stays warn-only until its redesign plan ships."""
+    by_name = {r.name: r for r in mod.RULES}
+    for name in ("back_button", "panel_base_class", "select_option_truncation"):
+        assert by_name[name].severity == "error", f"{name} should be graduated"
+        # A graduated rule carries no leftover blocker note.
+        assert by_name[name].graduation_blocker == ""
+    assert by_name["edit_in_place"].severity == "warning"
 
 
 # ---------------------------------------------------------------------------

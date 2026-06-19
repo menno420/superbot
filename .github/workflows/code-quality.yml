@@ -122,6 +122,17 @@ jobs:
         if: steps.changes.outputs.code == 'true'
         run: ruff check . --exclude .github,tests,venv,env,build,dist
 
+      # UX/interaction consistency linter (Q-0170). Only the GRADUATED rules are
+      # CI-enforced: `--mode strict` exits 1 on an *error*-severity finding
+      # (back_button / panel_base_class / select_option_truncation), while
+      # warn-only rules (edit_in_place) still just print. AST-only over
+      # disbot/views/; needs PyYAML (from requirements.txt), so it runs in the
+      # deps-installed block. Disposable (Q-0105): if a graduated rule proves
+      # noisy, flip its `Rule.severity` back to "warning" in check_consistency.py.
+      - name: Run consistency linter (graduated rules)
+        if: steps.changes.outputs.code == 'true'
+        run: python scripts/check_consistency.py --mode strict
+
       - name: Cache mypy incremental cache
         if: steps.changes.outputs.code == 'true'
         uses: actions/cache@v5
