@@ -29,32 +29,52 @@ def test_mining_hub_view_has_no_root_overview_button():
 
 
 def test_mining_hub_view_action_buttons_still_present():
-    """The Mine / Harvest / Explore / Inventory / Stats action buttons remain —
-    the no-op Overview is removed, and (Option A declutter, 2026-06-15) Build /
-    Recipes / Forge / Market moved into the Workshop sub-hub.
+    """The six Option A top-level actions remain (declutter PR2, 2026-06-19):
+    Mine · Harvest · Explore (open-world sub-hub) · Character (sub-hub) · Gear ·
+    Workshop (sub-hub). Inventory / Stats / Skills / Vault / Home moved into the
+    Character sub-hub; Descend / Ascend + the old mining-explore folded into the
+    Mine action.
     """
     view = MiningHubView()
     ids = [getattr(c, "custom_id", None) for c in view.children]
     expected = {
         "mining:mine",
         "mining:harvest",
-        "mining:explore",
-        "mining:inventory",
-        "mining:stats",
+        "mining:explore_hub",
+        "mining:character",
+        "mining:gear",
         "mining:workshop",
     }
     for expected_id in expected:
         assert expected_id in ids, f"Missing action button {expected_id!r}; got {ids}"
 
 
-def test_mining_hub_view_button_count_after_declutter():
-    """After the Option A declutter (2026-06-15) merged with Slice C's Home:
-    the Workshop sub-hub absorbed Build/Craft/Recipes (consolidated) + Forge +
-    Market — four buttons off the main hub — while Home (Slice C) was added.
-    Pinned so the panel can't quietly re-bloat. (Character/Skills/Vault move next.)
+def test_mining_hub_view_is_exactly_the_six_option_a_actions():
+    """The Option A declutter (PR2, 2026-06-19): the main hub is exactly six
+    buttons. Everything else moved into the Character / Explore / Workshop
+    sub-hubs or the Mine action. Pinned so the panel can't quietly re-bloat.
     """
     view = MiningHubView()
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    ids = [getattr(c, "custom_id", None) for c in buttons]
-    assert "mining:home" in ids  # Slice C's Home button survived the merge
-    assert len(buttons) == 13
+    ids = {getattr(c, "custom_id", None) for c in buttons}
+    assert ids == {
+        "mining:mine",
+        "mining:harvest",
+        "mining:explore_hub",
+        "mining:character",
+        "mining:gear",
+        "mining:workshop",
+    }
+    assert len(buttons) == 6
+    # The moved/folded actions are gone from the persistent main panel.
+    for gone in (
+        "mining:inventory",
+        "mining:stats",
+        "mining:skills",
+        "mining:vault",
+        "mining:home",
+        "mining:descend",
+        "mining:ascend",
+        "mining:explore",  # old depth-event explore (now in the Mine action)
+    ):
+        assert gone not in ids, f"{gone!r} should have moved off the main hub"

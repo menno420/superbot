@@ -15,7 +15,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
-from views.mining import main_panel
+from views.mining import character_hub, main_panel
+from views.mining.character_hub import MiningCharacterHubView
 from views.mining.gear_panel import MiningGearView, render_gear_doll
 from views.mining.main_panel import MiningHubView
 
@@ -79,9 +80,11 @@ async def test_render_gear_doll_is_additive_without_pillow():
 
 
 def test_render_inventory_file_attaches_in_place():
+    # The inventory card helper moved with the Inventory button into the
+    # Character sub-hub (Option A declutter, 2026-06-15).
     embed = discord.Embed(title="Inventory")
     with patch("utils.mining_render.render_inventory_card", return_value=b"PNG"):
-        file = main_panel._render_inventory_file("Digger", {"gold": 4}, embed)
+        file = character_hub._render_inventory_file("Digger", {"gold": 4}, embed)
     assert isinstance(file, discord.File)
     assert file.filename == "inventory.png"
     assert embed.image.url == "attachment://inventory.png"
@@ -90,7 +93,7 @@ def test_render_inventory_file_attaches_in_place():
 def test_render_inventory_file_is_additive_without_pillow():
     embed = discord.Embed(title="Inventory")
     with patch("utils.mining_render.render_inventory_card", return_value=None):
-        file = main_panel._render_inventory_file("Digger", {"gold": 4}, embed)
+        file = character_hub._render_inventory_file("Digger", {"gold": 4}, embed)
     assert file is None
     assert embed.image.url is None
 
@@ -127,30 +130,31 @@ async def test_edit_in_place_clears_the_image_by_default():
 
 @pytest.mark.asyncio
 async def test_inventory_button_renders_card_in_place_no_ephemeral_followup():
-    view = MiningHubView()
+    # The Inventory button moved into the Character sub-hub (Option A declutter).
+    view = MiningCharacterHubView(_AUTHOR, 99)
     interaction = MagicMock()
     interaction.user = _AUTHOR
     interaction.guild_id = 99
     interaction.followup = MagicMock()
     interaction.followup.send = AsyncMock()
-    btn = _button(view, custom_id="mining:inventory")
+    btn = _button(view, label="📦 Inventory")
     with (
         patch(
-            "views.mining.main_panel.safe_defer",
+            "views.mining.character_hub.safe_defer",
             new_callable=AsyncMock,
             return_value=True,
         ),
         patch(
-            "views.mining.main_panel.db.get_mining_inventory",
+            "views.mining.character_hub.db.get_mining_inventory",
             new_callable=AsyncMock,
             return_value={"gold": 4},
         ),
         patch(
-            "views.mining.main_panel._render_inventory_file",
+            "views.mining.character_hub._render_inventory_file",
             return_value=MagicMock(spec=discord.File),
         ),
         patch(
-            "views.mining.main_panel.safe_edit", new_callable=AsyncMock,
+            "views.mining.character_hub.safe_edit", new_callable=AsyncMock,
         ) as safe_edit,
     ):
         await btn.callback(interaction)
