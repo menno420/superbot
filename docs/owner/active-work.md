@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/kind-einstein-jlywgm` · **`scripts/router_status.py`** (grooming-ender — executes the #1102
+  Q-0089 idea) — stdlib digest of the question router: next free Q-number + the OPEN owner-decision
+  queue · `scripts/router_status.py` + `tests/unit/scripts/test_router_status.py` · 2026-06-19 ·
+  **auto-merge on green**
+
 - `claude/kind-einstein-jlywgm` · **route the website-split control-panel-placement decision**
   (continuation after the plan merged #1100) — router **Q-0179** (DISCUSS): the one owner-intent fork
   the plan §7.4 discovered that Q-0178's "still open" list omits · `docs/owner/maintainer-question-router.md`
