@@ -1,6 +1,6 @@
 # 2026-06-19 — Stand up the public bot site DARK on Railway (owner-delegated)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 Owner-delegated unattended task ("wire the website … you have my Railway account token, full
 permissions … I'll see what happened when I wake up"). Executed the website-split **rollout step 2 —
