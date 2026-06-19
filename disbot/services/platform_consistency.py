@@ -446,11 +446,9 @@ async def _collect_rollout_audit() -> SectionResult:
     """Section 3: feature_flag_audit table reachable if migration exists."""
     name = "Rollout / audit"
     try:
-        from utils.db import pool
+        from utils.db import platform_consistency as pc_db
 
-        oid = await pool.get().fetchval(
-            "SELECT to_regclass('feature_flag_audit')",
-        )
+        oid = await pc_db.table_oid("feature_flag_audit")
     except Exception as exc:  # noqa: BLE001 — collector is fail-safe
         return SectionResult(
             name=name,
@@ -467,11 +465,9 @@ async def _collect_rollout_audit() -> SectionResult:
         )
 
     try:
-        from utils.db import pool
+        from utils.db import platform_consistency as pc_db
 
-        count = await pool.get().fetchval(
-            "SELECT COUNT(*) FROM feature_flag_audit",
-        )
+        count = await pc_db.feature_flag_audit_count()
     except Exception as exc:  # noqa: BLE001 — collector is fail-safe
         return SectionResult(
             name=name,
@@ -705,14 +701,10 @@ async def _collect_participation() -> SectionResult:
     """Section 7: participation storage / cache / mutation / audit."""
     name = "Participation"
     try:
-        from utils.db import pool
+        from utils.db import platform_consistency as pc_db
 
-        part_oid = await pool.get().fetchval(
-            "SELECT to_regclass('user_participation')",
-        )
-        audit_oid = await pool.get().fetchval(
-            "SELECT to_regclass('user_participation_audit')",
-        )
+        part_oid = await pc_db.table_oid("user_participation")
+        audit_oid = await pc_db.table_oid("user_participation_audit")
     except Exception as exc:  # noqa: BLE001 — collector is fail-safe
         return SectionResult(
             name=name,
@@ -837,12 +829,9 @@ async def _collect_migrations() -> SectionResult:
     db_versions: set[int] | None = None
     db_error: str | None = None
     try:
-        from utils.db import pool
+        from utils.db import platform_consistency as pc_db
 
-        rows = await pool.get().fetch(
-            "SELECT version FROM schema_migrations ORDER BY version",
-        )
-        db_versions = {int(r["version"]) for r in rows}
+        db_versions = set(await pc_db.applied_migration_versions())
     except Exception as exc:  # noqa: BLE001 — collector is fail-safe
         db_error = f"{type(exc).__name__}: {exc}"
 
