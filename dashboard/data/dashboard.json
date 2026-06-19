@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T05:23:08Z",
+    "generated_at": "2026-06-19T09:38:25Z",
     "build": {
-      "commit": "00466a09",
-      "subject": "Merge pull request #1060 from menno420/claude/ai-panel-inplace-nav-plan",
-      "committed_at": "2026-06-19T05:28:59Z",
-      "branch": "main"
+      "commit": "334247e6",
+      "subject": "Merge pull request #1084 from menno420/claude/fleet-a8-baseview",
+      "committed_at": "2026-06-19T11:30:07Z",
+      "branch": "claude/reconcile-1080-band"
     },
     "counts": {
       "functions": 36,
-      "ideas": 88,
+      "ideas": 89,
       "bugs": 15,
       "updates": 60,
       "env_vars": 37,
@@ -969,6 +969,13 @@
   ],
   "ideas": [
     {
+      "file": "governance-files-presence-guard-2026-06-19.md",
+      "title": "Idea: contributor-doc / governance-files presence + freshness guard",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "This session added the standard outward-facing governance files (`LICENSE`, `SECURITY.md`,"
+    },
+    {
       "file": "product-lanes-gated-balance-flag-2026-06-18.md",
       "title": "Idea — a \"⚑ Product lanes gated\" balance flag (companion to PLAN-BACKLOG-THIN)",
       "status": "ideas",
@@ -1679,6 +1686,78 @@
   ],
   "updates": [
     {
+      "file": "2026-06-19-ultracode-fleet-brief.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Ultracode fleet brief",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-repo-governance-supply-chain-baseline.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Repo structure: governance + supply-chain + CI baseline",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-fleet-a8-baseview.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet A8: BaseView inheritance / justify direct discord.ui.View (7 view files)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-a7-db-wrappers.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet A7: wrap raw SQL in utils/db helpers",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-a6-governance-exceptions.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet A6: move governance exception types into utils/governance_exceptions",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-a3-blackjack-state.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet A3: move blackjack state/persistence into services/, break the actions↔_state cycle",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-a2-moderation-helpers.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet A2: move moderation _helpers from cogs into services/",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-fleet-a1-economy-xp-helpers.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fleet A1: move economy/xp _helpers from cogs into services/",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-consistency-rule-graduation.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Consistency-linter rule graduation (3 ELIGIBLE rules → error + CI)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-19-consistency-panel-base-class-reconcile.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Consistency-linter: reconcile `panel_base_class` with the arch ground truth",
@@ -1693,6 +1772,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-consistency-graduation-tracker.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Consistency-linter graduation tracker",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-19-consistency-edit-in-place-triage.md",
@@ -2074,86 +2161,6 @@
       "file": "2026-06-16-settings-readmodel-and-vision.md",
       "date": "2026-06-16",
       "title": "Session — `/settings` typed read-model (SettingSpec) + main-website vision",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-runtime-lock-early-release.md",
-      "date": "2026-06-16",
-      "title": "Session — runtime lock: release early on shutdown (fix ~85s deploy downtime)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-routine-permission-allowlist.md",
-      "date": "2026-06-16",
-      "title": "Session — expand the routine permission allow-list (owner-directed)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-reconcile-band990.md",
-      "date": "2026-06-16",
-      "title": "Session — 2026-06-16 · tenth Q-0107 docs reconciliation (band-#990)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-railway-logs-retry.md",
-      "date": "2026-06-16",
-      "title": "Session — railway_logs.py: retry/backoff on transient 5xx",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-pr-mergeability-keepers.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — PR mergeability keepers: auto-update behind + red-on-conflict",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-night-queue.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — Night work queue for the dispatch routine",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-myprofile-pr-b-writes.md",
-      "date": "2026-06-16",
-      "title": "Session — myprofile PR B: self-service writes (first UI consumer of ParticipationMutationPipeline)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-myprofile-card-pra.md",
-      "date": "2026-06-16",
-      "title": "Session — myprofile PR A: read-only profile card (`/myprofile`)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-multiuser-control-panel-design.md",
-      "date": "2026-06-16",
-      "title": "Session — Free multi-user control panel: identity & authority design",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-model-tpm-confirmed-result.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — TPM result confirmed (5-mini 500K) + reconcile the compaction guidance",
       "status": "complete",
       "run_type": "",
       "self_initiated": false

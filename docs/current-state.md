@@ -199,14 +199,34 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 >
-> **Last reconciliation pass:** PR #1050 (2026-06-18, twelfth Q-0107 cadence pass —
-> [the pass record + next-band queue](planning/reconciliation-pass-2026-06-18-band1050.md)). The next
-> **docs-only review + planning reconciliation** is due once merged PRs cross #1080 (every
+> **Last reconciliation pass:** PR #1094 (2026-06-19, thirteenth Q-0107 cadence pass —
+> [the pass record + next-band queue](planning/reconciliation-pass-2026-06-19-band1080.md)). The next
+> **docs-only review + planning reconciliation** is due once merged PRs cross #1110 (every
 > multiple of **30** — Q-0107 cadence raised 10→20 on 2026-06-12, then 20→30 on 2026-06-14 per
 > Q-0134; `check_reconciliation_due.py` flags it, and `.github/workflows/reconciliation-trigger.yml`
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1094 (2026-06-19, consistency-linter graduation — 3 rules flipped to error, Q-0170)** — the
+  `back_button` / `panel_base_class` / `select_option_truncation` rules ran clean across #1056→#1062,
+  so each `Rule.severity` flipped `"warning"`→`"error"` and `python3.10 scripts/check_consistency.py
+  --mode strict` is now wired into `code-quality.yml` (deps block) + the `check_quality.py` local
+  mirror — a finding from any of the three now **fails CI**. `edit_in_place` stays warn-only (BLOCKED
+  on the AI-nav redesign, [plan](planning/ai-panel-inplace-navigation-plan-2026-06-19.md)).
+- **#1081 · #1083 · #1084 · #1087 · #1092 (2026-06-19, ultracode-fleet wave A — helper extraction)** —
+  the executed half of the [ultracode-fleet plan](planning/ultracode-fleet-plan-2026-06-19.md): paired
+  helper-extraction / refactor slices — moderation helpers (#1081), governance exceptions (#1083),
+  BaseView conformance (#1084), `utils/db` wrappers (#1087), blackjack state (#1092). (Wave B — the
+  guard/tooling slices #1082/#1085/#1086/#1088–#1091/#1093 — is the in-flight open set; verify on live GitHub.)
+- **#1064 · #1079 (2026-06-19, repo-governance + supply-chain baseline + ultracode-fleet plan)** —
+  #1064 added the open-source governance / supply-chain baseline (CodeQL workflow, `dependabot.yml`,
+  issue/PR templates, LICENSE, SECURITY.md, CONTRIBUTING.md, CITATION.cff, dashboard-CI) + the
+  [repo-structure-improvement plan](planning/repo-structure-improvement-plan-2026-06-19.md); #1079
+  added the ultracode-fleet plan that spawned waves A/B.
+- **#1065–#1073 · #1075–#1078 (2026-06-19, dependabot dependency-bump band)** — the dependency bumps
+  the new `dependabot.yml` (#1064) immediately raised: GitHub Actions majors (cache-5, codeql-action-4,
+  github-script-9, checkout-7, setup-python-6) + pip deps (anthropic, uvicorn, httpx, fastapi, jinja2 —
+  root + dashboard `requirements`). (#1074, the python-minor-patch dev group, is still open — verify on live GitHub.)
 - **#1061 (2026-06-19, dashboard generated-data refresh)** — `Merge pull request #1061 from
   menno420/bot/dashboard-refresh` — the per-source-merge `dashboard-data-refresh` workflow (Q-0167)
   regenerated the committed `dashboard/data/dashboard.json` from live source.
@@ -283,51 +303,7 @@ Source code and merged PRs win over anything written here.
   range `identity` sentence to emit only when the cumulative subtraction reconciles with `range_cash`;
   it was contradicting `range_cash` for ABR ranges spanning the unplayed rounds 1-2 (the cumulative
   totals start at round 3). Self-validating, so the existing `cumulative_note` covers the excluded case.
-- **#1036 (2026-06-18, fishing v1 + open-world expansion plan — Q-0175, docs-only)** — captured the
-  owner's fishing/boat brain-dump as a buildable plan: Phase 1 (fishing v1 — 21 fish, 7 levels × 3 fish,
-  reuses tier/`game_xp`; one character with named swappable gear-type loadouts, gear never required —
-  only boosts bonuses) + Phase 2+ (boat as 2nd home base · bounded travel · seed-grid destinations with
-  coordinates/biome, ties Q-0173); indexed on the roadmap.
-- **#1035 (2026-06-18, BTD6 AI answer fixes — owner live-test screenshots)** — fixed 4 owner-spotted
-  BTD6 answer bugs at the deterministic data/grounding/tool layer: MK reference reply grammar +
-  tab-wide scope note (Come On Everybody / Flanking Maneuvers disclosure); grounded the total bloons
-  entering a round so "how many bloons spawn on rN" is answerable instead of refused (the derived sum
-  tripped the value-only faithfulness guard); `round_composition` `roundset_label` so ABR vs standard
-  figures don't read as self-contradiction; `round_cash` ready-to-quote inclusive-range `identity`
-  sentence (a same-day P2 follow-up gated it to ranges where the cumulative subtraction reconciles —
-  it was emitting a contradictory identity for ABR ranges that span the unplayed rounds 1-2).
-- **#1034 (2026-06-18, Codex edits-live note — Q-0174 resolved, docs-only)** — documented that Codex
-  has no write access: its "make changes" output is a comment describing a diff in its own sandbox, so
-  agents read the proposed change from the comment, verify against `main`, and apply it themselves
-  (never hunt for a phantom Codex branch/PR); Q-0174 resolved → trial comment-only as-is.
-- **#1032 (2026-06-17, settle decisions + Codex integration — docs-only)** — settled **Q-0173** (the
-  mining grid world = a seed-deterministic procedural grid we generate, not literal Minecraft-terrain
-  replication) and **Q-0174** (Codex review integration: routines check Codex first but verify, the
-  "real bug" bar, the issue-only Hermes 6H PR-check spec); fixed 3 verified-real Codex-flagged drift
-  items (`/session-close` 10th-PR→30-PR cadence · `roadmap.md` "decade queue" → full-band wording ·
-  a session card's `Previous-slice review` → `Previous-session review`).
-- **#1031 (2026-06-17, local character-render preview tool — Q-0172, self-initiated)** —
-  `scripts/preview_character.py` renders the live V-16 compositor (`utils/character_render.py`) to a PNG
-  locally so sprite positioning is a render→look→tune-`manifest.json`→re-render loop instead of manual
-  Discord uploads; Q-0105 dev tool (stdlib + Pillow, not CI-wired, disposable). Also recorded the
-  owner's vault-cap decision (keep it soft / warning-only).
-- **#1030 (2026-06-17, Hermes plain-language house style — Q-0168)** — promoted the owner-approved
-  sample to a canonical `_house-style.md` (5 rules + the morning-briefing exemplar) and rewrote the
-  owner-facing output skills (`morning-briefing`/`repo-health`/`open-questions`/`idea-spotlight`/
-  `review-merge`) to cite it and speak plainly (jargon translated, grouped not listed); the commands +
-  rate-limit budgets are unchanged. Owner manual step: redeploy on the VPS.
-- **#1029 (2026-06-17, idea→plan gate opened — Q-0172)** — the owner directive that removed the
-  old idea→plan→build approval gate: any agent may now promote a `docs/ideas/` idea into a
-  `docs/planning/` plan and build it without owner approval, flagged on the run-report
-  `⚑ Self-initiated:` line for review; `scripts/check_phase_gate.py` is now **advisory-only** (a
-  "bugs-first season" readout, no longer a block). Recorded in the CLAUDE.md working agreement +
-  router Q-0172; also slimmed the Hermes dispatch-skill batch-1 docs. Safety brakes (irreversible/external) unchanged.
-- **#1028 (2026-06-17, procedures→skills conversion plan — docs-only)** — captured the 33-procedure
-  skills-conversion inventory (A/B/C buckets) as an executable plan
-  (`planning/procedures-to-skills-conversion-plan-2026-06-17.md`): the thin-pointer convention, the
-  must-NOT-move safety list, the batched build order. Owner-confirmed approach (relocate procedures to
-  on-demand skills, keep a thin pointer + the binding rules in CLAUDE.md). Extends Q-0170.
-- **Older merges (#1026 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(The twelfth Q-0107 pass — band-#1050, 2026-06-18 — added the missing #1022 and #1029 entries and trimmed the live ledger back to the 20 newest, moving #1026 … #975 to the archive.)*
+- **Older merges (#1036 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(The thirteenth Q-0107 pass — band-#1080, 2026-06-19 — added the repo-governance/supply-chain + ultracode-fleet-A + dependabot band (#1064–#1094) and trimmed the live ledger back to the 20 newest, moving #1036 … #1028 to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 

@@ -583,6 +583,13 @@ Current broad captures:
   from **real drift** (an older PR never recorded — actionable), and gate `--strict` on drift
   only. Removes the standing false-red `/session-close --strict` hits on every session whose
   newest sibling merge lags. Workflow lane; small. Pairs with the two shipped guard slices.
+- [`ledger-window-scale-to-marker-2026-06-19.md`](./ledger-window-scale-to-marker-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the band-#1080 reconciliation pass):** scale
+  `check_current_state_ledger.py`'s default window from a fixed 15 to **every merge newer than the
+  `Last reconciliation pass: #M` marker** (floored at 15), so a fast band that exceeds 15 merges can't
+  silently report "all present ✓" while older drift goes unrecorded. This pass found 21 missing in the
+  band but window-15 flagged only 13; the rest were caught only by a manual full-band grep. Stdlib,
+  disposable; pairs with the benign-lag + range-scope precision tweaks.
 - [`ledger-checker-range-scope-2026-06-13.md`](./ledger-checker-range-scope-2026-06-13.md) —
   **✅ implemented (2026-06-14, paired with the print-subjects slice):**
   `check_current_state_ledger.py`'s `known_ledger_numbers` now expands `#AAA–#BBB` ranges only
