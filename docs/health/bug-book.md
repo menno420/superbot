@@ -17,7 +17,7 @@
 > Owner-reported inconsistencies he hasn't formalized yet (see current-state
 > 2026-06-10 standing invite) land here as they surface.
 
-## BUG-0018 — committed `botsite/data/site.json` drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (immediate) / root-fix RECOMMENDED
+## BUG-0018 — committed `botsite/data/site.json` drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (root)
 
 - **Symptom:** `tests/unit/scripts/test_export_dashboard_data.py::test_committed_site_json_matches_a_fresh_build`
   failed on `main` — `commands drifted — re-export`. The committed `site.json`'s
@@ -35,16 +35,21 @@
   --targets site` — bringing the committed file back in step; the test (and the full suite) go green.
 - **Stays-fixed guard:** the failing test itself **is** the guard (it failed pre-regen, passes
   after). No new test needed.
-- **Root-fix RECOMMENDED (not done — a contract decision, left for the owner / reconciliation
-  routine):** a hard byte-equality test over a high-churn derived field will keep reddening `main`
-  on every idea-doc PR. The clean durable fix is one of: (a) **exclude `linked_ideas` from the hard
-  `commands` comparison** (treat it like volatile `meta`) and cover it by the **warn-only**
-  generated-artifact freshness umbrella (`check_generated_artifacts_fresh.py`, #1027) instead; or
-  (b) **auto-regenerate `site.json` in CI / a pre-commit hook** so it can't drift. Recommend (a):
-  the freshness umbrella already exists for exactly this "a generated file rotted" class, and it's
-  warn-only by design (Q-0105) — the hard test should pin only the *stable* command fields.
-- **Status:** FIXED 2026-06-19 (dispatch run) — immediate regen landed; the recurring root cause is
-  documented for a follow-up contract decision.
+- **Root-fix DONE (recommendation (a), 2026-06-19 dispatch run):** a hard byte-equality test over a
+  high-churn derived field would keep reddening `main` on every idea-doc PR. Implemented (a):
+  `test_committed_site_json_matches_a_fresh_build` now **excludes the idea/bug-derived command fields
+  (`linked_ideas` *and* `status`)** from the hard `commands` comparison — the stable command fields
+  (name/aliases/category/cooldown/permissions/usage/description/use_cases/examples/notes) stay pinned.
+  Both excluded fields derive from `docs/ideas/`/the bug book (`status` flips `finished`↔`in-progress`
+  with a subsystem's open work), so both churned. Their structural identity is already covered by the
+  **warn-only** generated-artifact freshness umbrella (`check_generated_artifacts_fresh.py`, #1027) —
+  the "a generated file rotted" class it exists for (Q-0105). Option (b) (auto-regen in CI) was not
+  taken: it would re-introduce a per-PR churn commit the umbrella avoids.
+- **Stays-fixed guard:** the relaxed test still fails on any *stable*-field drift (a real un-exported
+  source change); the freshness umbrella warns on derived-field identity drift. The original immediate
+  regen guard is preserved for the stable families.
+- **Status:** FIXED (root) 2026-06-19 (dispatch run) — the recurring trap is closed at the test
+  contract, not just regenerated.
 
 ## BUG-0017 — interactive Cog Manager dropdown silently drops cogs past the 25th (`options[:25]`) — FIXED
 
