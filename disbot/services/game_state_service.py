@@ -39,7 +39,13 @@ import json
 import logging
 from typing import Any
 
-from utils.db import pool
+# A7: ``pool`` is no longer called directly here — every query moved behind
+# ``utils.db.games.game_state``. The import is kept so the historical
+# test-patch seam ``services.game_state_service.pool.<primitive>`` (used by
+# tests/unit/services/test_game_state_service.py) still resolves; those
+# patches mutate the shared pool module the db helpers call through.
+from utils.db import pool  # noqa: F401
+from utils.db.games import game_state as game_state_db
 
 logger = logging.getLogger("bot.game_state")
 
@@ -72,16 +78,13 @@ async def save(
     (the existing best-effort checkpoint behaviour).
     """
     payload = json.dumps(state)
-    await pool.execute(
-        """INSERT INTO game_state
-             (guild_id, user_id, channel_id, subsystem, state, version)
-           VALUES ($1, $2, $3, $4, $5::jsonb, $6)
-           ON CONFLICT (guild_id, user_id, channel_id, subsystem)
-           DO UPDATE SET
-               state      = EXCLUDED.state,
-               version    = EXCLUDED.version,
-               updated_at = NOW()""",
-        (guild_id, user_id, channel_id, subsystem, payload, version),
+    await game_state_db.upsert_checkpoint(
+        guild_id,
+        user_id,
+        channel_id,
+        subsystem,
+        payload,
+        version,
         conn=conn,
     )
 
@@ -93,11 +96,11 @@ async def load(
     subsystem: str,
 ) -> dict[str, Any] | None:
     """Return the latest checkpoint for this (user, channel, subsystem) or None."""
-    row = await pool.fetchone(
-        """SELECT state FROM game_state
-           WHERE guild_id=$1 AND user_id=$2
-             AND channel_id=$3 AND subsystem=$4""",
-        (guild_id, user_id, channel_id, subsystem),
+    row = await game_state_db.fetch_checkpoint(
+        guild_id,
+        user_id,
+        channel_id,
+        subsystem,
     )
     if row is None:
         return None
@@ -121,11 +124,11 @@ async def clear(
     ``game_wager_workflow`` releases a wager's escrow row in the same
     transaction that pays out the pot, so a settle is all-or-nothing.
     """
-    await pool.execute(
-        """DELETE FROM game_state
-           WHERE guild_id=$1 AND user_id=$2
-             AND channel_id=$3 AND subsystem=$4""",
-        (guild_id, user_id, channel_id, subsystem),
+    await game_state_db.delete_checkpoint(
+        guild_id,
+        user_id,
+        channel_id,
+        subsystem,
         conn=conn,
     )
 
@@ -153,33 +156,13 @@ async def fetch_rows_for_update(
     guild (a tournament payout).  Each returned dict carries the
     decoded ``state`` plus ``user_id`` / ``channel_id``.
     """
-    clauses = ["guild_id=$1", "subsystem=$2"]
-    params: list[Any] = [guild_id, subsystem]
-    if channel_id is not None:
-        params.append(channel_id)
-        clauses.append(f"channel_id=${len(params)}")
-    if user_ids is not None:
-        params.append(list(user_ids))
-        clauses.append(f"user_id = ANY(${len(params)}::bigint[])")
-    sql = (
-        "SELECT user_id, channel_id, state, version FROM game_state WHERE "
-        + " AND ".join(clauses)
-        + " FOR UPDATE"
+    return await game_state_db.lock_rows_for_settlement(
+        guild_id,
+        subsystem,
+        conn=conn,
+        channel_id=channel_id,
+        user_ids=user_ids,
     )
-    rows = await pool.fetchall(sql, tuple(params), conn=conn)
-    result: list[dict[str, Any]] = []
-    for r in rows:
-        raw = r["state"]
-        state = json.loads(raw) if isinstance(raw, str) else raw
-        result.append(
-            {
-                "user_id": r["user_id"],
-                "channel_id": r["channel_id"],
-                "state": state,
-                "version": r["version"],
-            },
-        )
-    return result
 
 
 async def list_active_for_subsystem(
@@ -193,36 +176,7 @@ async def list_active_for_subsystem(
     row dict contains: guild_id, user_id, channel_id, state (decoded
     dict), version, updated_at.
     """
-    if guild_id is None:
-        rows = await pool.get().fetch(
-            """SELECT guild_id, user_id, channel_id, state, version, updated_at
-               FROM game_state
-               WHERE subsystem=$1""",
-            subsystem,
-        )
-    else:
-        rows = await pool.get().fetch(
-            """SELECT guild_id, user_id, channel_id, state, version, updated_at
-               FROM game_state
-               WHERE subsystem=$1 AND guild_id=$2""",
-            subsystem,
-            guild_id,
-        )
-    result: list[dict[str, Any]] = []
-    for r in rows:
-        raw = r["state"]
-        state = json.loads(raw) if isinstance(raw, str) else raw
-        result.append(
-            {
-                "guild_id": r["guild_id"],
-                "user_id": r["user_id"],
-                "channel_id": r["channel_id"],
-                "state": state,
-                "version": r["version"],
-                "updated_at": r["updated_at"],
-            },
-        )
-    return result
+    return await game_state_db.list_active(subsystem, guild_id=guild_id)
 
 
 # ---------------------------------------------------------------------------
@@ -242,30 +196,7 @@ async def list_stale(cutoff_hours: int = GAME_STATE_TTL_HOURS) -> list[dict[str,
     via :func:`clear_by_id` (the natural key may have been reused by
     a brand-new game with the same player/channel/subsystem).
     """
-    rows = await pool.get().fetch(
-        """SELECT id, guild_id, user_id, channel_id, subsystem,
-                  state, version, updated_at
-             FROM game_state
-            WHERE updated_at < NOW() - make_interval(hours => $1)""",
-        cutoff_hours,
-    )
-    result: list[dict[str, Any]] = []
-    for r in rows:
-        raw = r["state"]
-        state = json.loads(raw) if isinstance(raw, str) else raw
-        result.append(
-            {
-                "id": r["id"],
-                "guild_id": r["guild_id"],
-                "user_id": r["user_id"],
-                "channel_id": r["channel_id"],
-                "subsystem": r["subsystem"],
-                "state": state,
-                "version": r["version"],
-                "updated_at": r["updated_at"],
-            },
-        )
-    return result
+    return await game_state_db.list_stale(cutoff_hours)
 
 
 async def clear_by_id(row_id: int) -> None:
@@ -275,4 +206,4 @@ async def clear_by_id(row_id: int) -> None:
     listed without racing a freshly-restarted game that already
     upserted at the same natural key.
     """
-    await pool.execute("DELETE FROM game_state WHERE id=$1", (row_id,))
+    await game_state_db.delete_checkpoint_by_id(row_id)
