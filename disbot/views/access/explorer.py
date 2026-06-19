@@ -47,6 +47,7 @@ import discord
 from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
 from utils.ui_constants import ADMIN_COLOR, UTILITY_COLOR
 from views.base import HubView
+from views.paginated_select import attach_windowed_select
 
 logger = logging.getLogger("bot.views.access.explorer")
 
@@ -61,7 +62,12 @@ _SCOPE_LABELS = {
 def _resolve_default_subsystem_options(
     visible_subsystems: set[str],
 ) -> list[discord.SelectOption]:
-    """Build select options for every subsystem the invoker can see."""
+    """Build select options for every subsystem the invoker can see.
+
+    The full set can exceed Discord's 25-option select cap, so the caller
+    *windows* these options (◀/▶ nav) rather than front-truncating — every
+    visible subsystem stays selectable (the #1040 class).
+    """
     options: list[discord.SelectOption] = []
     for name, meta in all_subsystems_sorted():
         if name not in visible_subsystems:
@@ -74,7 +80,7 @@ def _resolve_default_subsystem_options(
                 emoji=meta.get("emoji") or None,
             ),
         )
-    return options[:25]  # Discord's hard cap
+    return options
 
 
 async def _build_context_for_scope(
@@ -220,33 +226,34 @@ def build_explanation_embed(
     return embed
 
 
-class _SubsystemSelect(discord.ui.Select):
-    def __init__(self, options: list[discord.SelectOption]) -> None:
-        super().__init__(
-            placeholder="Choose a subsystem…",
-            min_values=1,
-            max_values=1,
-            options=options
-            or [
-                discord.SelectOption(
-                    label="No visible subsystems",
-                    value="__none__",
-                    description="Governance hid every subsystem from you.",
-                ),
-            ],
-            custom_id="access:select_subsystem",
-            row=0,
-        )
+def _attach_subsystem_select(
+    view: AccessExplorerView,
+    options: list[discord.SelectOption],
+) -> None:
+    """Attach the windowed subsystem picker to ``view``.
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        view = self.view
-        if not isinstance(view, AccessExplorerView):
+    The visible-subsystem set can exceed Discord's 25-option cap, so the
+    options are *windowed* (◀/▶ nav) rather than front-truncated — every
+    visible subsystem stays selectable (the #1040 class).
+    """
+
+    async def _on_pick(interaction: discord.Interaction, values: list[str]) -> None:
+        if not values:
             return
-        view.selected_subsystem = self.values[0]
+        view.selected_subsystem = values[0]
         await interaction.response.edit_message(
             embed=view.build_overview_embed(),
             view=view,
         )
+
+    attach_windowed_select(
+        view,
+        options,
+        _on_pick,
+        placeholder="Choose a subsystem…",
+        select_row=0,
+        nav_row=3,
+    )
 
 
 class _ScopeSelect(discord.ui.Select):
@@ -305,7 +312,7 @@ class AccessExplorerView(HubView):
         self.selected_subsystem: str | None = None
         self.selected_scope: str = "channel"
         options = _resolve_default_subsystem_options(self._visible_subsystems)
-        self.add_item(_SubsystemSelect(options))
+        _attach_subsystem_select(self, options)
         self.add_item(_ScopeSelect())
 
     def build_overview_embed(self) -> discord.Embed:

@@ -38,6 +38,7 @@ from services.guild_snapshot import GuildSnapshot
 from services.setup_operations import SetupOperation
 from services.setup_sections import REGISTRY, SetupSection
 from views.base import BaseView
+from views.paginated_select import attach_windowed_select
 from views.setup.scan_panel import (
     classify_snapshot,
     first_match,
@@ -283,58 +284,50 @@ class _ChannelPickView(BaseView):
 # ---------------------------------------------------------------------------
 
 
-class _BindingPickSelect(discord.ui.Select):
-    """Select listing every declared CHANNEL binding across subsystems."""
+def _attach_binding_select(
+    view: discord.ui.View,
+    bindings: list[tuple[str, Any]],
+    snapshot: GuildSnapshot | None,
+) -> None:
+    """Attach the declared-CHANNEL-binding picker to ``view``, paginated.
 
-    def __init__(
-        self,
-        bindings: list[tuple[str, Any]],
-        snapshot: GuildSnapshot | None,
-    ) -> None:
-        self._index: dict[str, tuple[str, Any]] = {}
-        self._snapshot = snapshot
-
-        options: list[discord.SelectOption] = []
-        # Discord limits a select to 25 options.  Truncate quietly; the
-        # embed lists everything regardless so the operator sees the
-        # full set.
-        for sub, binding in bindings[:25]:
-            key = f"{sub}::{binding.name}"
-            label = f"{sub}.{binding.name}"
-            match = _scan_match_for(snapshot, binding.name)
-            description = (
-                f"likely #{match.name}"[:100]
-                if match is not None
-                else (binding.hint or "")[:100]
-            )
-            options.append(
-                discord.SelectOption(
-                    label=label[:100],
-                    value=key,
-                    description=description or None,
-                ),
-            )
-            self._index[key] = (sub, binding)
-
-        super().__init__(
-            placeholder="Pick a binding to set…",
-            min_values=1,
-            max_values=1,
-            options=options
-            or [discord.SelectOption(label="(no channel bindings)", value="_none")],
+    More than Discord's 25-option select cap can be declared across all
+    subsystems, so the options are *windowed* (◀/▶ nav) rather than
+    front-truncated — every binding stays selectable (the #1040 class).
+    Picking a binding opens its channel picker as an ephemeral.
+    """
+    index: dict[str, tuple[str, Any]] = {}
+    options: list[discord.SelectOption] = []
+    for sub, binding in bindings:
+        key = f"{sub}::{binding.name}"
+        label = f"{sub}.{binding.name}"
+        match = _scan_match_for(snapshot, binding.name)
+        description = (
+            f"likely #{match.name}"[:100]
+            if match is not None
+            else (binding.hint or "")[:100]
         )
+        options.append(
+            discord.SelectOption(
+                label=label[:100],
+                value=key,
+                description=description or None,
+            ),
+        )
+        index[key] = (sub, binding)
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        key = self.values[0]
-        if key == "_none":
+    async def _on_pick(interaction: discord.Interaction, values: list[str]) -> None:
+        key = values[0] if values else ""
+        entry = index.get(key)
+        if entry is None:
             await interaction.response.send_message(
                 "No channel bindings declared by any subsystem.",
                 ephemeral=True,
             )
             return
-        sub, binding = self._index[key]
-        match = _scan_match_for(self._snapshot, binding.name)
-        view = _ChannelPickView(
+        sub, binding = entry
+        match = _scan_match_for(snapshot, binding.name)
+        picker = _ChannelPickView(
             interaction.user,
             subsystem=sub,
             binding_name=binding.name,
@@ -345,9 +338,18 @@ class _BindingPickSelect(discord.ui.Select):
             prefix += f" · scan suggests `#{match.name}`"
         await interaction.response.send_message(
             f"Pick a channel for {prefix}.",
-            view=view,
+            view=picker,
             ephemeral=True,
         )
+
+    attach_windowed_select(
+        view,
+        options,
+        _on_pick,
+        placeholder="Pick a binding to set…",
+        select_row=0,
+        nav_row=1,
+    )
 
 
 class ChannelsSectionView(BaseView):
@@ -361,7 +363,7 @@ class ChannelsSectionView(BaseView):
         timeout: int = 300,
     ) -> None:
         super().__init__(author, public=False, timeout=timeout)
-        self.add_item(_BindingPickSelect(_all_channel_bindings(), snapshot))
+        _attach_binding_select(self, _all_channel_bindings(), snapshot)
 
 
 # ---------------------------------------------------------------------------

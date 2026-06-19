@@ -25,7 +25,7 @@ from utils import db as db_pkg
 from utils.db import settings as settings_db
 from views.settings.subsystem_view import (
     SubsystemSettingsView,
-    _EditSettingSelect,
+    dispatch_edit_setting,
 )
 
 # ---------------------------------------------------------------------------
@@ -173,12 +173,8 @@ async def test_int_dispatches_to_number_modal(monkeypatch):
             ),
         ),
     )
-    select = _EditSettingSelect(
-        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings],
-    )
-    select._values = ["warn_threshold"]
     interaction = _FakeInteraction(guild=_FakeGuild())
-    await select.callback(interaction)
+    await dispatch_edit_setting(interaction, "moderation", "warn_threshold")
     assert len(interaction.response.sent_modals) == 1
     from views.settings.edit_number import NumberSettingModal
 
@@ -200,12 +196,8 @@ async def test_float_dispatches_to_number_modal():
             ),
         ),
     )
-    select = _EditSettingSelect(
-        "rate", [spec for spec in schema_mod.get_schema("rate").settings],
-    )
-    select._values = ["multiplier"]
     interaction = _FakeInteraction(guild=_FakeGuild())
-    await select.callback(interaction)
+    await dispatch_edit_setting(interaction, "rate", "multiplier")
     from views.settings.edit_number import NumberSettingModal
 
     assert isinstance(interaction.response.sent_modals[0], NumberSettingModal)
@@ -226,12 +218,8 @@ async def test_str_without_allowed_values_dispatches_to_text_modal():
             ),
         ),
     )
-    select = _EditSettingSelect(
-        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings],
-    )
-    select._values = ["dm_template"]
     interaction = _FakeInteraction(guild=_FakeGuild())
-    await select.callback(interaction)
+    await dispatch_edit_setting(interaction, "moderation", "dm_template")
     from views.settings.edit_text import TextSettingModal
 
     assert isinstance(interaction.response.sent_modals[0], TextSettingModal)
@@ -253,12 +241,8 @@ async def test_str_with_allowed_values_dispatches_to_enum_view():
             ),
         ),
     )
-    select = _EditSettingSelect(
-        "cleanup", [spec for spec in schema_mod.get_schema("cleanup").settings],
-    )
-    select._values = ["strictness"]
     interaction = _FakeInteraction(guild=_FakeGuild())
-    await select.callback(interaction)
+    await dispatch_edit_setting(interaction, "cleanup", "strictness")
     # No modal — the enum widget is a follow-up view.
     assert interaction.response.sent_modals == []
     # An ephemeral message with a view was sent instead.
@@ -304,12 +288,8 @@ async def test_bool_dispatches_to_toggle_directly(monkeypatch, _isolated_state):
 
     monkeypatch.setattr(edit_boolean, "toggle_setting", _spy_toggle)
 
-    select = _EditSettingSelect(
-        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings],
-    )
-    select._values = ["dm_on_action"]
     interaction = _FakeInteraction(guild=_FakeGuild())
-    await select.callback(interaction)
+    await dispatch_edit_setting(interaction, "moderation", "dm_on_action")
     assert captured.get("called") is True
     # No modal opened.
     assert interaction.response.sent_modals == []
@@ -330,13 +310,9 @@ async def test_unknown_setting_in_select_rejected():
             ),
         ),
     )
-    select = _EditSettingSelect(
-        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings],
-    )
     # Pick a value that wouldn't appear in options — defensive against
     # client-side tampering.
-    select._values = ["no_such_setting"]
     interaction = _FakeInteraction(guild=_FakeGuild())
-    await select.callback(interaction)
+    await dispatch_edit_setting(interaction, "moderation", "no_such_setting")
     last = interaction.response.sent_messages[-1]
     assert "Unknown setting" in (last.get("content") or "")

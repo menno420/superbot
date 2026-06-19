@@ -27,40 +27,54 @@ from services.lifecycle import SUCCESS
 from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
+from views.paginated_select import attach_windowed_select
 from views.selectors import attach_multi_select
 
 logger = logging.getLogger("bot")
 
 
 def _category_options(guild: discord.Guild) -> list[discord.SelectOption]:
-    """A single-select destination list: top level + each category (25-cap)."""
+    """A single-select destination list: top level + each category.
+
+    Windowed by the caller (◀/▶ nav) rather than front-truncated, so a guild
+    with more than Discord's 25-category cap keeps every destination
+    selectable (the #1040 class).
+    """
     opts = [discord.SelectOption(label="— Top level (no category) —", value="0")]
     for cat in sorted(getattr(guild, "categories", []), key=lambda c: c.position):
         opts.append(discord.SelectOption(label=cat.name[:100], value=str(cat.id)))
-    return opts[:25]
+    return opts
 
 
 _OnCategoryPick = Callable[[discord.Interaction, int | None, str], Awaitable[None]]
 
 
-class _CategorySelect(discord.ui.Select):
-    """Destination-category picker for the Move operation."""
+def _attach_category_select(
+    view: discord.ui.View,
+    guild: discord.Guild,
+    on_pick: _OnCategoryPick,
+    *,
+    select_row: int,
+    nav_row: int,
+) -> None:
+    """Attach the windowed destination-category picker for the Move operation."""
+    options = _category_options(guild)
+    labels = {o.value: o.label for o in options}
 
-    def __init__(self, on_pick: _OnCategoryPick, options, *, row: int) -> None:
-        super().__init__(
-            placeholder="Destination category (for Move)…",
-            options=options,
-            row=row,
-        )
-        self._on_pick = on_pick
+    async def _on_select(interaction: discord.Interaction, values: list[str]) -> None:
+        raw = values[0] if values else "0"
+        cid = int(raw)
+        name = labels.get(raw, "?")
+        await on_pick(interaction, None if cid == 0 else cid, name)
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        cid = int(self.values[0])
-        name = next(
-            (o.label for o in self.options if o.value == self.values[0]),
-            "?",
-        )
-        await self._on_pick(interaction, None if cid == 0 else cid, name)
+    attach_windowed_select(
+        view,
+        options,
+        _on_select,
+        placeholder="Destination category (for Move)…",
+        select_row=select_row,
+        nav_row=nav_row,
+    )
 
 
 class _MoveSubView(BaseView):
@@ -96,12 +110,12 @@ class _MoveSubView(BaseView):
             select_row=0,
             nav_row=4,
         )
-        self.add_item(
-            _CategorySelect(
-                self._on_category_picked,
-                _category_options(ctx.guild),
-                row=1,
-            ),
+        _attach_category_select(
+            self,
+            ctx.guild,
+            self._on_category_picked,
+            select_row=1,
+            nav_row=3,
         )
 
         async def _build_parent(

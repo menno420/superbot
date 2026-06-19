@@ -1,7 +1,9 @@
 """PR #7 — tests for input_hint-based dispatch and the three new widgets.
 
-The dispatcher in ``views.settings.subsystem_view._EditSettingSelect``
-gained three new branches keyed off ``SettingSpec.input_hint``:
+The dispatcher ``views.settings.subsystem_view.dispatch_edit_setting``
+(extracted from the old ``_EditSettingSelect`` callback when the edit picker
+moved onto the shared windowed select, Lane A2) routes off
+``SettingSpec.input_hint`` with three branches:
 
 * ``"channel"`` → ``ChannelSettingSelectView``
 * ``"role"`` → ``RoleSettingSelectView``
@@ -23,7 +25,7 @@ from core.runtime.subsystem_schema import SettingSpec
 from views.settings.edit_channel import ChannelSettingSelectView
 from views.settings.edit_number_presets import NumericPresetsView
 from views.settings.edit_role import RoleSettingSelectView
-from views.settings.subsystem_view import _EditSettingSelect
+from views.settings.subsystem_view import dispatch_edit_setting
 
 # ---------------------------------------------------------------------------
 # SettingSpec carries the new fields with safe defaults
@@ -53,10 +55,9 @@ def test_setting_spec_accepts_input_hint_and_presets():
 # ---------------------------------------------------------------------------
 
 
-def _make_select(spec: SettingSpec) -> _EditSettingSelect:
-    select = _EditSettingSelect("xp", [spec])
-    select._values = [spec.name]  # type: ignore[attr-defined]
-    return select
+async def _dispatch(spec: SettingSpec, interaction: MagicMock) -> None:
+    """Route ``spec`` through the extracted dispatcher (was the select callback)."""
+    await dispatch_edit_setting(interaction, "xp", spec.name)
 
 
 def _patch_schema(spec: SettingSpec):
@@ -100,10 +101,9 @@ async def test_dispatch_channel_hint_opens_channel_select():
         default="",
         input_hint="channel",
     )
-    select = _make_select(spec)
     interaction = _mock_interaction()
     with _patch_schema(spec), _patch_resolution("123"):
-        await select.callback(interaction)
+        await _dispatch(spec, interaction)
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs
     assert isinstance(kwargs["view"], ChannelSettingSelectView)
@@ -118,10 +118,9 @@ async def test_dispatch_role_hint_opens_role_select():
         default="",
         input_hint="role",
     )
-    select = _make_select(spec)
     interaction = _mock_interaction()
     with _patch_schema(spec), _patch_resolution(""):
-        await select.callback(interaction)
+        await _dispatch(spec, interaction)
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs
     assert isinstance(kwargs["view"], RoleSettingSelectView)
@@ -137,10 +136,9 @@ async def test_dispatch_numeric_presets_opens_presets_view():
         input_hint="numeric_presets",
         presets=(0, 15, 30, 60),
     )
-    select = _make_select(spec)
     interaction = _mock_interaction()
     with _patch_schema(spec), _patch_resolution(30):
-        await select.callback(interaction)
+        await _dispatch(spec, interaction)
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs
     assert isinstance(kwargs["view"], NumericPresetsView)
@@ -159,10 +157,9 @@ async def test_dispatch_numeric_presets_with_empty_presets_falls_back_to_modal()
         input_hint="numeric_presets",
         presets=(),
     )
-    select = _make_select(spec)
     interaction = _mock_interaction()
     with _patch_schema(spec), _patch_resolution(30):
-        await select.callback(interaction)
+        await _dispatch(spec, interaction)
     interaction.response.send_modal.assert_awaited_once()
     interaction.response.send_message.assert_not_called()
 
@@ -178,10 +175,9 @@ async def test_unknown_input_hint_falls_through_to_default_routing():
         default=60,
         input_hint="not-a-known-mode",
     )
-    select = _make_select(spec)
     interaction = _mock_interaction()
     with _patch_schema(spec), _patch_resolution(30):
-        await select.callback(interaction)
+        await _dispatch(spec, interaction)
     interaction.response.send_modal.assert_awaited_once()
 
 

@@ -14,7 +14,9 @@ internal ``_parent``.
 The create panel's *name* picker is now the shared windowed
 ``views.selectors.attach_multi_select`` (audit P1-10) rather than the old
 single-select ``_NameSelect``; its wiring is covered by
-``test_create_panel_multi.py``.
+``test_create_panel_multi.py``.  Its *category* picker is likewise now the
+shared windowed ``views.paginated_select.attach_windowed_select`` (Lane A2)
+rather than a bespoke ``_CategorySelect`` — see ``test_create_panel_multi.py``.
 """
 
 from __future__ import annotations
@@ -22,7 +24,6 @@ from __future__ import annotations
 import discord
 
 from views.channels._helpers import _ChannelSelect
-from views.channels.create_panel import _CategorySelect
 
 
 class _FakeOwner:
@@ -43,11 +44,4 @@ def test_channel_select_uses_owner_view_not_parent():
     sel = _ChannelSelect([_opt()], owner, placeholder="pick")
     assert sel._owner_view is owner
     # discord.py's own _parent must NOT be shadowed by the parent view.
-    assert getattr(sel, "_parent", None) is not owner
-
-
-def test_category_select_uses_owner_view_not_parent():
-    owner = _FakeOwner()
-    sel = _CategorySelect([_opt(label="Gaming", value="Gaming")], owner)
-    assert sel._owner_view is owner
     assert getattr(sel, "_parent", None) is not owner

@@ -8,9 +8,12 @@ name under that one category in a single pass (audit P1-10 — the
 create-side sibling of the restrict/delete/visibility multi-select
 panels), then summarises the per-channel outcome.
 
-``_CategorySelect`` stays single-select on purpose: a batch of channels
-shares one category.  ``_CustomNameModal`` appends to the chosen set
-rather than replacing it, so custom and preset names compose.
+The category picker stays single-select on purpose: a batch of channels
+shares one category.  It is the shared windowed
+``views.paginated_select.attach_windowed_select`` (◀/▶ nav over a long
+category list — no front-truncation, the #1040 class).  ``_CustomNameModal``
+appends to the chosen set rather than replacing it, so custom and preset
+names compose.
 """
 
 from __future__ import annotations
@@ -29,6 +32,7 @@ from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.channels._helpers import _CATEGORY_PRESETS, _NAME_PRESETS
 from views.navigation import attach_back_button
+from views.paginated_select import attach_windowed_select
 from views.selectors import attach_multi_select
 
 logger = logging.getLogger("bot")
@@ -52,14 +56,16 @@ class _CreateSubView(BaseView):
         self.custom_names: list[str] = []
         self.chosen_cat: str | None = None
 
-        # Category options: existing guild categories first, then presets
+        # Category options: existing guild categories first, then presets.
+        # Windowed below (◀/▶) — no front-truncation, so a guild with many
+        # categories keeps every one selectable (the #1040 class).
         existing_cats = [c.name for c in ctx.guild.categories]
         cat_options = [
             discord.SelectOption(label=c, description="Existing category")
-            for c in existing_cats[:15]
+            for c in existing_cats
         ]
         for p in _CATEGORY_PRESETS:
-            if p not in existing_cats and len(cat_options) < 24:
+            if p not in existing_cats:
                 cat_options.append(
                     discord.SelectOption(label=p, description="New category"),
                 )
@@ -78,8 +84,14 @@ class _CreateSubView(BaseView):
             select_row=0,
             nav_row=3,
         )
-        self.cat_select = _CategorySelect(cat_options, self)
-        self.add_item(self.cat_select)
+        attach_windowed_select(
+            self,
+            cat_options,
+            self._on_category_picked,
+            placeholder="Pick a category…",
+            select_row=1,
+            nav_row=4,
+        )
 
         async def _build_parent(
             _interaction: discord.Interaction,
@@ -112,6 +124,20 @@ class _CreateSubView(BaseView):
         values: list[str],
     ) -> None:
         self.selected_presets = values
+        try:
+            await interaction.response.edit_message(
+                embed=self.build_embed(),
+                view=self,
+            )
+        except discord.HTTPException:
+            await safe_defer(interaction)
+
+    async def _on_category_picked(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        self.chosen_cat = values[0] if values else None
         try:
             await interaction.response.edit_message(
                 embed=self.build_embed(),
@@ -321,35 +347,6 @@ class _CreateSubView(BaseView):
             view=manager,
         )
         self.stop()
-
-
-class _CategorySelect(discord.ui.Select):
-    """Category picker used by _CreateSubView (single — one per batch)."""
-
-    def __init__(self, options: list[discord.SelectOption], view):
-        super().__init__(
-            placeholder="Pick a category…",
-            min_values=1,
-            max_values=1,
-            options=options,
-            row=1,
-        )
-        # NB: must NOT be ``self._parent``.  discord.py 2.7+ owns
-        # ``Item._parent`` for check propagation — ``View`` dispatch calls
-        # ``item._parent._run_checks(interaction)``.  Shadowing it with the
-        # parent *view* made dispatch call ``View._run_checks`` (which does
-        # not exist) and crashed every select callback with AttributeError.
-        self._owner_view = view
-
-    async def callback(self, interaction: discord.Interaction):
-        self._owner_view.chosen_cat = self.values[0]  # type: ignore[attr-defined]
-        try:
-            await interaction.response.edit_message(
-                embed=self._owner_view.build_embed(),  # type: ignore[attr-defined]
-                view=self._owner_view,  # type: ignore[attr-defined, arg-type]
-            )
-        except discord.HTTPException:
-            await safe_defer(interaction)
 
 
 class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):  # type: ignore[call-arg]
