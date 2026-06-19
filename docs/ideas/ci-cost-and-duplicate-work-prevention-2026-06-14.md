@@ -86,6 +86,24 @@ mechanics needed adjusting:
 3. **WIP issue.** Manifest as a `wip-claim` issue (no CI, no merge risk). Adds a surface agents
    must also check.
 
+## Real incident (2026-06-19) — the open-PR scan is the load-bearing guard
+
+A worked demonstration that the **"check open PRs before starting"** step (not the claim file itself)
+is what prevents duplicate work: during an ultracode fleet run, lane **B4 (PR #1133)** rebuilt the
+consistency-linter cog-scope extension that a concurrent session had **already merged ~8 minutes
+earlier as #1128** (and more completely). Two failures stacked:
+
+1. **The claim ledger was blind.** `docs/owner/active-work.md` was reset to a stale state mid-run, so
+   the orchestrator's claim never reached other sessions — and an *uncommitted* working-tree claim is
+   invisible regardless. The ledger is necessary but **insufficient** on its own.
+2. **The open-PR scan was skipped.** Running `list_pull_requests` (open + recently-merged) would have
+   surfaced #1128 immediately. #1133 was correctly closed as a duplicate.
+
+**Durable fix:** the orchestrator pre-flight overlap check is now a Rules-of-engagement item in
+[`ultracode-fleet-plan-2026-06-19.md`](../planning/ultracode-fleet-plan-2026-06-19.md) — scan open +
+recently-merged PRs (and grep recent merges per lane scope) *before* dispatch, treating the claim
+ledger as a hint, not a source of truth.
+
 ## Follow-up: make the test suite parallel-safe, then re-enable xdist — DONE (2026-06-14)
 
 xdist cuts pytest from ~109s serial to ~35s (~3×), but the first attempt (PR #814) had to be
