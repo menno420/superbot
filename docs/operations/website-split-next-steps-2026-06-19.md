@@ -17,7 +17,11 @@ The plan ([`../planning/website-two-site-split-plan-2026-06-19.md`](../planning/
   explicit `> **Subsystem:**` tag), and the `env-vars.md` web-tier marker drift. Full record:
   [`website-split-review-2026-06-19.md`](website-split-review-2026-06-19.md).
 
-**State:** both web apps are **dormant-by-default** — safe no-ops until their env is set. Nothing is live yet.
+**State:** both web apps are **dormant-by-default** — safe no-ops until their env is set.
+**Update 2026-06-19 — the bot site is now STOOD UP DARK:** live on its Railway URL
+(**https://botsite-production-1ea7.up.railway.app**), secret-free, all routes HTTP 200, `/submit`
+dormant (no DSN). See [`botsite-deploy.md`](botsite-deploy.md) ▶ Live status. The submissions DB + the
+dev-site env are still unprovisioned (owner steps below), so end-to-end intake is not live yet.
 
 ## 2. Left to do
 
@@ -38,16 +42,19 @@ The plan ([`../planning/website-two-site-split-plan-2026-06-19.md`](../planning/
   is the owner-paced batch — confirm it should be pursued.
 
 ### 2b. The rollout — turns the build into a live website (owner/infra; plan §6 + [`botsite-deploy.md`](botsite-deploy.md))
-- [ ] Provision the **new Railway service**, Root Directory = `botsite/` (own `requirements.txt` + `Procfile`;
+- [x] Provision the **new Railway service**, Root Directory = `botsite/` (own `requirements.txt` + `Procfile`;
   honor the no-`static/` gotcha). Dark-launch on the Railway URL first — verifiable in prod, not "the website" yet.
+  **DONE 2026-06-19** — service `botsite` @ `main`, Root Dir = `botsite`, secret-free; live at
+  `botsite-production-1ea7.up.railway.app` (all routes 200, `/submit` dormant). See `botsite-deploy.md` ▶ Live status.
 - [ ] Provision the **dashboard-owned submissions Postgres**; apply `botsite/migrations/001_submissions.sql`
   (idempotent `CREATE TABLE IF NOT EXISTS`).
 - [ ] Set env vars per the **Website tier** section of [`env-vars.md`](env-vars.md): `SUBMISSIONS_DB_DSN`
   (INSERT-only role on the public site, full role on the dev site), `SUBMISSIONS_IP_SALT`,
   `GITHUB_ISSUE_MIRROR_TOKEN` (dev-site only; fine-grained PAT, repo-scoped to `menno420/superbot`,
   **Issues: Read & write only**).
-- [ ] Verify the dark site, then **cut over the marketing domain**. **Rollback at every step:** delete/pause
-  the service · `DROP TABLE submissions` · revert DNS. The dev site is untouched throughout (additive).
+- [x] **Verify the dark site** — DONE 2026-06-19 (all 7 routes HTTP 200, `/submit` correctly dormant). —
+  [ ] then **cut over the marketing domain** (owner; deferred to cutover per Q-0178). **Rollback at every step:**
+  delete/pause the service · `DROP TABLE submissions` · revert DNS. The dev site is untouched throughout (additive).
 
 ### 2c. Deferred-by-design slices — gated on ONE prerequisite
 - [ ] **The control-API public-exposure security review** (plan §3 / §4.4 / §7.2 / §7.4) — unlocks both:
