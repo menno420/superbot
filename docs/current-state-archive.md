@@ -86,6 +86,11 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1028 (2026-06-17, procedures→skills conversion plan — docs-only)** — captured the 33-procedure
+  skills-conversion inventory (A/B/C buckets) as an executable plan
+  (`planning/procedures-to-skills-conversion-plan-2026-06-17.md`): the thin-pointer convention, the
+  must-NOT-move safety list, the batched build order. Owner-confirmed approach (relocate procedures to
+  on-demand skills, keep a thin pointer + the binding rules in CLAUDE.md). Extends Q-0170.
 - **#1026 (2026-06-17, autonomous-routines review + workflow hardening)** — first-unattended-run review:
   hardened the routine prompts (full-band planning depth + the ⚠️ PLAN BACKLOG THIN flag Q-0164;
   drift-on-sight Q-0166; `Run type:` labels Q-0165), added the `dashboard-data-refresh` workflow (Q-0167
