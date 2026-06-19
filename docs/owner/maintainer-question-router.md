@@ -6693,10 +6693,12 @@ shallow ultracode-review verification (cheap proxy over ground truth) and the #7
 **Reliability (Q-0105):** the check is UNVERIFIED — heuristic; a plan may *extend* existing code, so hits
 are review candidates, not proof. Confirm across a few sessions; **delete if noisy.**
 
-**Proposed (NOT yet applied — owner to greenlight; executable-config zone, Q-0106):** (1) run the check in
-the `/session-close` doc-audit (Q-0104) so every session surfaces its own rebadge candidates; (2) a
-diff-aware Stop-hook step mapping a session's touched `disbot/` files → the plans that name them →
-"rebadge if you shipped it."
+**Applied (owner-directed in-session 2026-06-19):** (1) the check now runs in `/session-close` Step 4 (the
+quality gate) so every session surfaces its own rebadge candidates — and **A3/A4 were rebadged `historical`
+on the spot** (both SHIPPED in #1044, verified present + wired + tested). **Still proposed (owner to
+greenlight; executable-config zone, Q-0106):** (2) a diff-aware Stop-hook step mapping a session's touched
+`disbot/` files → the plans that name them → "rebadge if you shipped it" (it edits the Stop hook in
+`settings.json`, so it waits for an explicit greenlight + a watched first fire).
 
 **Home:** `docs/operations/ground-truth-audit-protocol.md` · `scripts/check_plan_code_drift.py` · this
 Q-block. Related: Q-0104 (session-close doc audit), Q-0120 (verify bot output vs source), Q-0107

@@ -1,6 +1,11 @@
 # Plan — games-economy faucet/sink diagnostic (observe the loop's balance)
 
-> **Status:** `plan` — promoted from the
+> **Status:** `historical` — **▶ SHIPPED in #1044** (verified present + wired + tested 2026-06-19:
+> `economy_flow_by_reason` in `utils/db/economy.py` · the `economy_flow_service` read model
+> (`build_flow_report` / `EconomyFlowReport`) · the `!platform economy` subcommand in
+> `cogs/diagnostic/platform_group.py` · `tests/unit/services/test_economy_flow_service.py`). The §6
+> follow-ups (windowed/timeseries view, inflation health-finding) remain captured, not part of this slice.
+> Original plan retained below for provenance. Promoted from the
 > [idea capture](../ideas/games-economy-faucet-sink-diagnostic-2026-06-14.md) (now `historical`)
 > by the band-#930 reconciliation pass (2026-06-15). Routing: **S1 Bot / games + observability**.
 > Approved-to-build basis: the idea's gate ("promote once a sink-heavy slice lands") is **cleared**

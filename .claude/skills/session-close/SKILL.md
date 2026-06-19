@@ -101,6 +101,7 @@ Run these in order and fix any failures before proceeding:
 python3.10 scripts/check_docs.py --strict
 python3.10 scripts/check_session_log.py --strict      # Q-0089 idea + Q-0102 review present
 python3.10 scripts/check_current_state_ledger.py --strict  # merged PRs are in the ledger
+python3.10 scripts/check_plan_code_drift.py            # Q-0181: a plan-badged doc whose code already shipped? rebadge -> historical
 python3.10 scripts/check_reconciliation_due.py        # Q-0107: is a 30th-PR docs/planning pass due? (cadence 30, Q-0134)
 python3.10 scripts/check_quality.py --check-only
 ```
@@ -117,7 +118,11 @@ review` section it names. The session card carries a `> **Status:**` badge:
 close — `check_session_gate` holds the merge until it is a ready token
 (`complete`/`done`/`ready`/`final`/`merged`/`shipped`). If `check_current_state_ledger`
 flags a merged PR, **verify its #number against live GitHub** then add it to
-`docs/current-state.md` § Recently shipped (or an aggregated range entry).
+`docs/current-state.md` § Recently shipped (or an aggregated range entry). If
+`check_plan_code_drift` flags a **STRONG** candidate whose work your session shipped, **verify the
+deliverables exist (don't trust the heuristic blindly), then rebadge that plan `historical`** — badge
++ a SHIPPED banner + move its row in `planning/README.md` — per
+`docs/operations/ground-truth-audit-protocol.md`.
 
 **Documentation audit (Q-0104) — the judgment half.** The checks above are the automated
 half. Also ask yourself: *"is anything important from this session captured only in chat?"*
