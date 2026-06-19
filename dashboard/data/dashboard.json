@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T13:15:55Z",
+    "generated_at": "2026-06-19T14:06:01Z",
     "build": {
-      "commit": "2f6089a",
-      "subject": "Website split foundation: born-red session card (S1+S2+P1)",
-      "committed_at": "2026-06-19T13:13:03Z",
-      "branch": "worktree-agent-a2c7cd0ecd504a3e0"
+      "commit": "72047ab4",
+      "subject": "Merge pull request #1110 from menno420/claude/website-identity-and-ops-prep",
+      "committed_at": "2026-06-19T16:02:28Z",
+      "branch": "claude/jolly-johnson-8vfdl2"
     },
     "counts": {
       "functions": 36,
-      "ideas": 91,
+      "ideas": 92,
       "bugs": 16,
       "reviews": 0,
       "reviews_open": 0,
@@ -986,6 +986,13 @@
       "summary": "`scripts/check_current_state_ledger.py` checks a **fixed window** of the last `DEFAULT_WINDOW = 15`"
     },
     {
+      "file": "public-data-contract-field-snapshot-2026-06-19.md",
+      "title": "Public-data-contract field-level snapshot test",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The foundation build (S1) guards the public `botsite/data/site.json` subset at the"
+    },
+    {
       "file": "website-two-site-split-2026-06-19.md",
       "title": "Idea: split the dashboard into two audience-targeted sites",
       "status": "ideas",
@@ -1750,11 +1757,19 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-19-website-identity-and-fanout-enablers.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website split: owner identity vision + fan-out enablers",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-19-website-foundation-s1s2p1.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website two-site split: serial foundation (S1 + S2 + P1)",
-      "status": "in-progress",
-      "run_type": "",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2177,14 +2192,6 @@
       "file": "2026-06-17-night-queue-mk-category-roster.md",
       "date": "2026-06-17",
       "title": "Session — night-queue buffer slices + slot-4 reframe (three §7.6 floor builders)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-night-queue-hero-ability-roster.md",
-      "date": "2026-06-17",
-      "title": "Session — night-queue slot 5: hero ability roster floor (slot 4 reframed)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false

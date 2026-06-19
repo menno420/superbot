@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`loop-health-gh-unavailable-fallback-2026-06-19.md`](./loop-health-gh-unavailable-fallback-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the band-#1110 reconciliation pass):** `check_loop_health.py`
+  (Q-0135) SKIPs on every reconciliation pass because the in-container routine has no `gh` — give it a
+  `gh`-absent fallback (read the newest `reconcile` issue's author via the GitHub REST API, the same read
+  the agent does by hand) so the control-plane ROUTINE_PAT row is verifiable *by the script*, not only by a
+  manual MCP read no checker can see. Disposable (Q-0105). → relates `scripts/check_loop_health.py` ·
+  `operations/autonomous-routines.md` § "Control-plane state".
 - [`per-command-feedback-threads-2026-06-19.md`](./per-command-feedback-threads-2026-06-19.md) —
   **owner-directed (2026-06-19):** every command/cog on the bot site carries an optional **feedback thread**
   (anyone posts questions/bugs/improvements), gated by an **Anthropic-API moderation pass** (clean-up +
