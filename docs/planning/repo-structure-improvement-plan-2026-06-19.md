@@ -76,6 +76,10 @@ clean. This is exactly the class the dashboard CI job now guards against.
 
 ## Prioritized backlog (the work beyond this session)
 
+> **Operationalized for parallel execution:** the file-disjoint, fleet-ready partition of this backlog
+> (plus the architecture boundary-debt burndown) is `docs/planning/ultracode-fleet-plan-2026-06-19.md`
+> — a coordination brief for a multi-agent ("ultracode") run.
+
 Batched into the repo's 2–3-PR plan convention. Impact/effort are relative; "route" names the gate.
 
 ### P0 — governance & legal (highest leverage, lowest risk) — ✅ done this session
