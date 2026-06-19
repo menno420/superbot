@@ -6665,3 +6665,39 @@ final head, and that Codex re-reviews the complete diff. Delete the workflow if 
 · [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) · this
 Q-block. Related: Q-0171 (Codex live), Q-0174 (routines check Codex first; the post-merge consumer),
 Q-0133 (born-red card = the trigger signal), Q-0120 (verify bot output vs source).
+
+### Q-0181 — Verify docs/claims against the *code*, not their own badges: the ground-truth audit protocol + plan-code-drift check (2026-06-19)
+
+> **DIRECTED + APPLIED in-session (owner, 2026-06-19):** after the 2026-06-19 review found two plans
+> (A3 `games-economy-faucet-sink-diagnostic`, A4 `p0-2-content-free-media-diagnostics`) whose code had
+> shipped but were still badged `plan`, the owner asked *why* the earlier docs-cleanup didn't check each
+> plan against the code, and for a durable way to force ground-truth verification. Applied directly per the
+> CLAUDE.md in-session-directive exception (Q-0106) — the owner is the live reviewer.
+
+**Root cause:** *"make the docs correct / up to date"* was executed as **internal consistency** (routing,
+reachability, obvious-stale badges) rather than **truth against the code**. 5 of the task's 6 points are
+doc-organisation, so "completed/outdated" inherited the docs-only reading; the rebadge-on-ship convention
+relies on a human remembering, and nothing re-derived badge truth from code. Same failure class as the
+shallow ultracode-review verification (cheap proxy over ground truth) and the #763 / #1125 ledger checkers.
+
+**Decision — two artifacts:**
+- **`docs/operations/ground-truth-audit-protocol.md`** — the reusable contract for any "verify / make
+  correct / audit" task: verify against the code at a pinned commit (never a badge / PR-title / self-report),
+  read every file in scope (fan out auditors for breadth), cite `file:line`, treat a badge as a claim to
+  *disprove*, "done fast = red flag." Template instance: `docs/audits/repo-wide-audit-2026-05-29.md` (the
+  22-auditor fan-out the owner pointed at as the depth bar).
+- **`scripts/check_plan_code_drift.py`** — automates the badge-drift slice: flags every `plan`-badged doc
+  whose named implementation already exists in `disbot/` (`STRONG` = named file + plan-specific symbol).
+  Advisory; `--strict` to gate once trusted. Catches A3/A4 automatically; narrows 36 plans → ~7 candidates.
+
+**Reliability (Q-0105):** the check is UNVERIFIED — heuristic; a plan may *extend* existing code, so hits
+are review candidates, not proof. Confirm across a few sessions; **delete if noisy.**
+
+**Proposed (NOT yet applied — owner to greenlight; executable-config zone, Q-0106):** (1) run the check in
+the `/session-close` doc-audit (Q-0104) so every session surfaces its own rebadge candidates; (2) a
+diff-aware Stop-hook step mapping a session's touched `disbot/` files → the plans that name them →
+"rebadge if you shipped it."
+
+**Home:** `docs/operations/ground-truth-audit-protocol.md` · `scripts/check_plan_code_drift.py` · this
+Q-block. Related: Q-0104 (session-close doc audit), Q-0120 (verify bot output vs source), Q-0107
+(reconciliation pass), Q-0166 (fix drift on sight).
