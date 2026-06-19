@@ -31,6 +31,39 @@ This already matches the in-flight direction: the fishing plan (Q-0175) reuses `
 character, and swappable gear-type loadouts — i.e. it was *already* drifting toward "one character across
 games." This idea codifies that into an explicit world model instead of letting each lane re-decide it.
 
+## Progression & gear model (owner direction — 2026-06-19, raw but decided)
+
+The owner's answer to "what's shared vs. siloed" is **both, separated by which pool** — three XP tracks,
+each with a distinct job:
+
+| Track | Earned by | Spent on | Purpose |
+|---|---|---|---|
+| **Message XP** | chatting (the existing social/level track) | — | drives **negotiation leverage vs. the AI Dungeon Master** (chat more → bargain better) — fuses the chat-AI and the game world. |
+| **Global game XP** | playing *any* game (slow trickle) | **global** game skills | a leg-up that applies everywhere — *including games you haven't started yet*. |
+| **Per-game XP** | playing *that* game (fast) | *that game's* skill tree only | keeps each game its own mastery climb. |
+
+- **Keep the existing `game_xp` vs message-XP split.** Message-XP stays as-is; the new hook is its
+  DM-negotiation use. `game_xp` becomes the **global** pool; the **per-game** track is the new layer.
+  Mining already has a skill tree — it is the working prototype.
+- **The leg-up comes from the global pool + shared resources/gear, never from per-game competence.** A
+  master miner picking up a rod starts the *fishing tree at zero* (still a real game to learn) but isn't
+  helpless (global skills + good materials + a generalist loadout). That knife-edge is what keeps it *one
+  world* and *each its own game*.
+- **Earning split:** every game feeds its own tree (fast) **and** the global pool (slow trickle).
+- **Skill division of labor** (so neither tree feels pointless): global = broad utilities (stamina, carry,
+  luck, xp-gain); per-game = signature mechanics (mining: vein-sense/fortune; fishing: line-tension/rare-bait).
+
+**Gear — hybrid (some shared, some game-bound):**
+- A **generalist loadout** that works across games is possible and encouraged.
+- An **auto-equip-strongest-for-this-game** option exists but **defaults OFF** and **prompts on first
+  equip** (never silently re-optimize someone's gear). This per-user toggle lives in **per-user config** —
+  the same surface as the memory controls (see `honcho-memory-evaluation`).
+
+**Interdependence without dependency (the world philosophy):** no game is required to play another, but
+they *feed* each other through resource loops — fish → food enabling deeper mining; mine/chop → materials
+for a better rod/boat. **Loops are accelerators, never gates** — the line never to cross is *"can't mine
+past depth N without food."*
+
 ## Open design questions (for the dedicated planning session — do not decide unprompted)
 
 1. **What the hub *is*** — a Discord HubView that routes into each game (Mine · Fish · Explore · …), or a
