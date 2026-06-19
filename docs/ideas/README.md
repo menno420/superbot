@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`sector-scoped-lean-boot-for-cheap-models-2026-06-19.md`](./sector-scoped-lean-boot-for-cheap-models-2026-06-19.md) —
+  **owner-directed (2026-06-19; B1-priority next session):** make Sonnet usable by cutting the orientation
+  tax — a **sector-scoped lean boot** (declare your sector → load only its invariants + folio + active plan
+  + Next-action, skip the rest), built on the owner's existing 5-sector partition (Q-0137) via the
+  agent-context compiler. Unlocks the separate Sonnet weekly bucket; also flags verifying the file-ignore
+  mechanism (`.claudeignore` / settings deny-globs) to keep tests/data/generated files out of context. →
+  relates `planning/procedures-to-skills-conversion-plan` · `.claude/rules/context-compiler.md`.
 - [`ai-correction-report-and-ticket-service-2026-06-19.md`](./ai-correction-report-and-ticket-service-2026-06-19.md) —
   **owner-directed (2026-06-19, brainstorm; needs its own extensive session):** when a user corrects the
   AI, have it **report the correction to the owner** (a write into the owner review inbox, never the public
