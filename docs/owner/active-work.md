@@ -25,6 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/website-submit-form` · **website-split unit P4** — public `/submit` bug/suggestion
+  form + intake (fills P1's `botsite/submit.py` stub) · exclusive: `botsite/submit.py` ·
+  `botsite/ratelimit.py` · `botsite/templates/submit.html` · `tests/unit/botsite/test_submit.py`
+  (+ 1 stale stub assertion updated in `tests/unit/botsite/test_app.py`) · 2026-06-19 ·
+  **PR pending (born-red)**
+
 - `claude/bold-cori-y7ben5` · **website-split: review the external research + lock the open decisions**
   (owner-directed) — resolve **Q-0179** (control panel → bot site) + lock plan §7's 6 decisions + fold the
   owner's external-research layout/UX guidance into the plan · `docs/owner/maintainer-question-router.md` ·
