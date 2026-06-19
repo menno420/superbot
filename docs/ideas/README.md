@@ -18,6 +18,17 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 capture reaches its lifecycle outcome (§5) by being _implemented_, it is re-badged `historical`
 during grooming** (it stays listed here, annotated ✅) so the active backlog reflects only live ideas.
 
+**Optional `Subsystem:` tag (authoritative idea↔command link).** An idea may declare which bot
+subsystem(s) it touches with a front-matter header line — `> **Subsystem:** economy, mining` (or
+`> **Area:** …`) — using **subsystem-registry keys**. The bot-site command browser
+(`scripts/export_dashboard_data.py` → `_subsystem_open_work`) **prefers this explicit tag** over its
+filename-slug heuristic, which fixes generic-word cross-matches (e.g. an agent-workflow
+"executor-chain" idea slug matching the Word-Chain game's `chain` subsystem). Use the sentinel
+`> **Subsystem:** none` for agent-workflow / meta ideas that touch **no** bot subsystem (links to
+nothing). The tag is **optional** — un-tagged ideas keep the safe (title+status-only) heuristic — and
+only the header block is read, so a `**Subsystem:**` *example* in an idea's body is ignored. See
+[`idea-subsystem-tag-on-ideas-2026-06-19.md`](./idea-subsystem-tag-on-ideas-2026-06-19.md).
+
 Current broad captures:
 
 - [`loop-health-gh-unavailable-fallback-2026-06-19.md`](./loop-health-gh-unavailable-fallback-2026-06-19.md) —

@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T14:06:01Z",
+    "generated_at": "2026-06-19T15:31:30Z",
     "build": {
-      "commit": "72047ab4",
-      "subject": "Merge pull request #1110 from menno420/claude/website-identity-and-ops-prep",
-      "committed_at": "2026-06-19T16:02:28Z",
-      "branch": "claude/jolly-johnson-8vfdl2"
+      "commit": "e83c38b",
+      "subject": "fix(botsite): strip C1 control chars in submission sanitiser",
+      "committed_at": "2026-06-19T15:21:58Z",
+      "branch": "claude/cool-feynman-cvqrbj"
     },
     "counts": {
       "functions": 36,
-      "ideas": 92,
+      "ideas": 96,
       "bugs": 16,
       "reviews": 0,
       "reviews_open": 0,
@@ -976,644 +976,768 @@
       "title": "Idea: contributor-doc / governance-files presence + freshness guard",
       "status": "ideas",
       "date": "2026-06-19",
-      "summary": "This session added the standard outward-facing governance files (`LICENSE`, `SECURITY.md`,"
+      "summary": "This session added the standard outward-facing governance files (`LICENSE`, `SECURITY.md`,",
+      "subsystems": null
+    },
+    {
+      "file": "idea-subsystem-tag-on-ideas-2026-06-19.md",
+      "title": "Explicit `subsystem:` tag on idea files (make idea↔command linking authoritative)",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The website command browser (plan unit S1.1, shipped this session) links each command to its",
+      "subsystems": null
+    },
+    {
+      "file": "idea-to-cog-command-mapping-2026-06-19.md",
+      "title": "Map every idea (and bug) to its cog / command",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The site's vision (website plan §\"Site identity & experience\") wants, per command:",
+      "subsystems": null
     },
     {
       "file": "ledger-window-scale-to-marker-2026-06-19.md",
       "title": "Idea — scale the ledger-checker window to \"merges since the last reconciliation marker\"",
       "status": "ideas",
       "date": "2026-06-19",
-      "summary": "`scripts/check_current_state_ledger.py` checks a **fixed window** of the last `DEFAULT_WINDOW = 15`"
+      "summary": "`scripts/check_current_state_ledger.py` checks a **fixed window** of the last `DEFAULT_WINDOW = 15`",
+      "subsystems": null
+    },
+    {
+      "file": "loop-health-gh-unavailable-fallback-2026-06-19.md",
+      "title": "Idea — `check_loop_health.py` should fall back when `gh` is unavailable",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The Q-0107 reconciliation routine's STEP 2 control-plane reconcile says to run",
+      "subsystems": null
+    },
+    {
+      "file": "per-command-feedback-threads-2026-06-19.md",
+      "title": "Per-command AI-moderated feedback threads (\"Codex for the bot's features\")",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "On the bot site, every command (and cog) carries an **optional feedback box**: **anyone** can leave a",
+      "subsystems": null
     },
     {
       "file": "public-data-contract-field-snapshot-2026-06-19.md",
       "title": "Public-data-contract field-level snapshot test",
       "status": "ideas",
       "date": "2026-06-19",
-      "summary": "The foundation build (S1) guards the public `botsite/data/site.json` subset at the"
+      "summary": "The foundation build (S1) guards the public `botsite/data/site.json` subset at the",
+      "subsystems": null
     },
     {
       "file": "website-two-site-split-2026-06-19.md",
       "title": "Idea: split the dashboard into two audience-targeted sites",
       "status": "ideas",
       "date": "2026-06-19",
-      "summary": "Split the single developer dashboard (`dashboard/`) into **two sites by audience**:"
+      "summary": "Split the single developer dashboard (`dashboard/`) into **two sites by audience**:",
+      "subsystems": null
     },
     {
       "file": "product-lanes-gated-balance-flag-2026-06-18.md",
       "title": "Idea — a \"⚑ Product lanes gated\" balance flag (companion to PLAN-BACKLOG-THIN)",
       "status": "ideas",
       "date": "2026-06-18",
-      "summary": "been mostly gated (owner / creds / `needs-hermes-review` / data) and the *buffer* (S3/S4/S5"
+      "summary": "been mostly gated (owner / creds / `needs-hermes-review` / data) and the *buffer* (S3/S4/S5",
+      "subsystems": null
     },
     {
       "file": "agent-tooling-automation-shortlist-2026-06-17.md",
       "title": "Agent tooling + automation shortlist — Claude skills, scripts, a repo-native discovery aid",
       "status": "ideas",
       "date": "2026-06-17",
-      "summary": "The owner is right that we've under-used Claude Code's automation surface. We *do* have a few project"
+      "summary": "The owner is right that we've under-used Claude Code's automation surface. We *do* have a few project",
+      "subsystems": null
     },
     {
       "file": "codex-automated-pr-review-2026-06-17.md",
       "title": "Codex automated PR review — a second independent reviewer on every PR",
       "status": "ideas",
       "date": "2026-06-17",
-      "summary": "Codex is **enabled and working** on `menno420/superbot`. What we observed + what it means for us:"
+      "summary": "Codex is **enabled and working** on `menno420/superbot`. What we observed + what it means for us:",
+      "subsystems": null
     },
     {
       "file": "generated-artifact-freshness-umbrella-2026-06-17.md",
       "title": "Generated-artifact freshness umbrella — one soft-drift reporter for every committed generated file",
       "status": "historical",
       "date": "2026-06-17",
-      "summary": "PR #1025 added a **warn-only structural-drift reporter** for one committed generated artifact"
+      "summary": "PR #1025 added a **warn-only structural-drift reporter** for one committed generated artifact",
+      "subsystems": null
     },
     {
       "file": "ledger-bookkeeping-tally-soft-lint-2026-06-17.md",
       "title": "Idea — soft-lint the unbounded \"running tally\" drift class",
       "status": "ideas",
       "date": "2026-06-17",
-      "summary": "The `docs/current-state.md` \"Older merges → archive\" pointer line had silently accreted a ~2,000-word"
+      "summary": "The `docs/current-state.md` \"Older merges → archive\" pointer line had silently accreted a ~2,000-word",
+      "subsystems": null
     },
     {
       "file": "owner-review-inbox-2026-06-17.md",
       "title": "Owner review inbox — a channel to post ideas/reviews that sessions read and resolve",
       "status": "ideas",
       "date": "2026-06-17",
-      "summary": "The owner's intended role is **ideas, bug reports, and function/cog reviews** — *not* planning. But"
+      "summary": "The owner's intended role is **ideas, bug reports, and function/cog reviews** — *not* planning. But",
+      "subsystems": null
     },
     {
       "file": "repo-consistency-linter-2026-06-17.md",
       "title": "Repo consistency linter — \"CI for inconsistencies\" (UX + pattern drift, not just layers)",
       "status": "ideas",
       "date": "2026-06-17",
-      "summary": "The owner wants *\"something like CI but specifically to find inconsistencies\"* — and notes we have"
+      "summary": "The owner wants *\"something like CI but specifically to find inconsistencies\"* — and notes we have",
+      "subsystems": null
     },
     {
       "file": "architecture-atlas-and-structure-review-2026-06-16.md",
       "title": "Architecture atlas & structure review — capture + agent judgment",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "The owner uploaded an external repo-architecture review (the *\"SuperBot repository-architectuuratlas"
+      "summary": "The owner uploaded an external repo-architecture review (the *\"SuperBot repository-architectuuratlas",
+      "subsystems": null
     },
     {
       "file": "autospec-mock-fidelity-guard-2026-06-16.md",
       "title": "Idea — signature-faithful mocks / autospec guard for service+DB facades",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "The BTD6 event drill-down had been crashing on **every** click in production"
+      "summary": "The BTD6 event drill-down had been crashing on **every** click in production",
+      "subsystems": null
     },
     {
       "file": "btd6-ct-event-detail-relics-map-2026-06-16.md",
       "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "PR #953 made BTD6 **Live Events** current-event-first: the overview drills into a rich per-event"
+      "summary": "PR #953 made BTD6 **Live Events** current-event-first: the overview drills into a rich per-event",
+      "subsystems": null
     },
     {
       "file": "btd6-shorthand-corpus-eval-2026-06-16.md",
       "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "Five live-reported BTD6 bugs share **one root cause**: a community-shorthand question is **not"
+      "summary": "Five live-reported BTD6 bugs share **one root cause**: a community-shorthand question is **not",
+      "subsystems": null
     },
     {
       "file": "button-command-surface-parity-2026-06-16.md",
       "title": "Idea — button ↔ text-command surface parity audit",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "The admin panel had a **📋 Cog List** button (opening `_CogManagerView`) but **no text command**"
+      "summary": "The admin panel had a **📋 Cog List** button (opening `_CogManagerView`) but **no text command**",
+      "subsystems": null
     },
     {
       "file": "close-timeout-align-with-platform-grace-2026-06-16.md",
       "title": "Idea — align the lifecycle close-timeout with the platform's kill-grace (defense-in-depth)",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "PR #948 fixed the ~85s deploy downtime by releasing the runtime lock **early** (the moment"
+      "summary": "PR #948 fixed the ~85s deploy downtime by releasing the runtime lock **early** (the moment",
+      "subsystems": null
     },
     {
       "file": "cog-declares-its-subsystem-2026-06-16.md",
       "title": "Cogs declare their subsystem (kill the dashboard's name-derivation guesswork)",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "The dashboard derives each cog's subsystem key from its **class name**"
+      "summary": "The dashboard derives each cog's subsystem key from its **class name**",
+      "subsystems": null
     },
     {
       "file": "dashboard-registry-coverage-check-2026-06-16.md",
       "title": "Dashboard cog↔registry coverage check",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "The dashboard joins each scanned cog to the SUBSYSTEMS registry by its `subsystem` key"
+      "summary": "The dashboard joins each scanned cog to the SUBSYSTEMS registry by its `subsystem` key",
+      "subsystems": null
     },
     {
       "file": "dashboard-subcog-parent-subsystem-2026-06-16.md",
       "title": "Dashboard: map sub-cogs to their parent subsystem",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "`scripts/check_dashboard_data.py` (#990) allow-lists the real cogs whose `subsystem` doesn't resolve"
+      "summary": "`scripts/check_dashboard_data.py` (#990) allow-lists the real cogs whose `subsystem` doesn't resolve",
+      "subsystems": null
     },
     {
       "file": "deterministic-floor-catalogue-2026-06-16.md",
       "title": "Idea — a generated \"deterministic floor catalogue\" index",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "`btd6_context_service._BTD6_LIST_BUILDERS` now grows roughly **one member per dispatch run**"
+      "summary": "`btd6_context_service._BTD6_LIST_BUILDERS` now grows roughly **one member per dispatch run**",
+      "subsystems": null
     },
     {
       "file": "developer-dashboard-2026-06-16.md",
       "title": "Developer dashboard (personal website) for SuperBot",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "Owner (2026-06-16): *\"build me a personal website that's linked to my project\"* — a"
+      "summary": "Owner (2026-06-16): *\"build me a personal website that's linked to my project\"* — a",
+      "subsystems": null
     },
     {
       "file": "diagnostic-cog-platform-group-extraction-2026-06-16.md",
       "title": "Idea — extract the `!platform` command group into a cog mixin",
       "status": "historical",
       "date": "2026-06-16",
-      "summary": "`disbot/cogs/diagnostic_cog.py` is the Discord-facing home of the whole `!platform` admin surface"
+      "summary": "`disbot/cogs/diagnostic_cog.py` is the Discord-facing home of the whole `!platform` admin surface",
+      "subsystems": null
     },
     {
       "file": "docs-ledger-parsing-helper-2026-06-16.md",
       "title": "Idea — a shared `docs_ledger` markdown-parsing helper (one source of truth for the ledger regexes)",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "The repo's markdown ledgers (`.sessions/` Status badges, `docs/health/bug-book.md` `## BUG-NNNN`"
+      "summary": "The repo's markdown ledgers (`.sessions/` Status badges, `docs/health/bug-book.md` `## BUG-NNNN`",
+      "subsystems": null
     },
     {
       "file": "env-map-deploy-readiness-cross-check-2026-06-16.md",
       "title": "Idea — turn the env-usage map into a deploy-readiness check (required-but-unset detection)",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "`scripts/scan_env_usage.py` (#969) now knows, statically and authoritatively, **which env vars the"
+      "summary": "`scripts/scan_env_usage.py` (#969) now knows, statically and authoritatively, **which env vars the",
+      "subsystems": null
     },
     {
       "file": "honcho-memory-evaluation-2026-06-16.md",
       "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "Today the bot's AI answers each request cold. **Per-user memory** would let it *remember a Discord"
+      "summary": "Today the bot's AI answers each request cold. **Per-user memory** would let it *remember a Discord",
+      "subsystems": null
     },
     {
       "file": "idea-spotlight-verdict-loop-2026-06-16.md",
       "title": "Idea: close the idea-spotlight loop — track the owner's verdicts",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "The new `superbot-idea-spotlight` skill surfaces one active idea per day and asks the owner to"
+      "summary": "The new `superbot-idea-spotlight` skill surfaces one active idea per day and asks the owner to",
+      "subsystems": null
     },
     {
       "file": "ledger-dedup-linter-2026-06-16.md",
       "title": "Ledger dedup linter (companion to the merge=union fix)",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "PR #1003 marked the two append-only coordination ledgers — `docs/owner/active-work.md` (claim ledger)"
+      "summary": "PR #1003 marked the two append-only coordination ledgers — `docs/owner/active-work.md` (claim ledger)",
+      "subsystems": null
     },
     {
       "file": "ledger-guard-exempt-reconciliation-prs-2026-06-16.md",
       "title": "Idea — the ledger guard should exempt self-referential reconciliation PRs",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "`scripts/check_current_state_ledger.py --strict` flags every recently-merged PR that is missing"
+      "summary": "`scripts/check_current_state_ledger.py --strict` flags every recently-merged PR that is missing",
+      "subsystems": null
     },
     {
       "file": "meter-external-moderation-calls-2026-06-16.md",
       "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "`image_moderation` (PR #941, Q-0108) calls OpenAI's `omni-moderation-latest` endpoint **once per"
+      "summary": "`image_moderation` (PR #941, Q-0108) calls OpenAI's `omni-moderation-latest` endpoint **once per",
+      "subsystems": null
     },
     {
       "file": "reference-integrity-invariants-2026-06-16.md",
       "title": "Idea — a shared \"declaration → real target\" reference-integrity invariant",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "BUG-0014 (the `!coglist` infinite loop) was, at its core, a **dangling reference**:"
+      "summary": "BUG-0014 (the `!coglist` infinite loop) was, at its core, a **dangling reference**:",
+      "subsystems": null
     },
     {
       "file": "round-range-comparison-bare-range-list-2026-06-16.md",
       "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "The §7.5 round-range cash comparison floor (`deterministic_round_range_comparison_reply`, #955)"
+      "summary": "The §7.5 round-range cash comparison floor (`deterministic_round_range_comparison_reply`, #955)",
+      "subsystems": null
     },
     {
       "file": "routine-permission-surface-lint-2026-06-16.md",
       "title": "Idea — a lint that flags routine-common commands that would hit the `ask` permission brake",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "An **unattended** routine (dispatch / reconciliation) that hits a Claude Code permission prompt"
+      "summary": "An **unattended** routine (dispatch / reconciliation) that hits a Claude Code permission prompt",
+      "subsystems": null
     },
     {
       "file": "server-owner-configurable-moderation-dms-2026-06-16.md",
       "title": "Idea — server-owner-configurable moderation/warning DMs",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "Deciding the `/myprofile` onboarding gate (Q-0147), the owner set a **standing rule** for *all*"
+      "summary": "Deciding the `/myprofile` onboarding gate (Q-0147), the owner set a **standing rule** for *all*",
+      "subsystems": null
     },
     {
       "file": "sessionstart-surface-soft-check-signals-2026-06-16.md",
       "title": "Surface `check_docs` soft signals in the SessionStart banner",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "This repo keeps adding **read-only / soft signals that only help if someone runs them by hand**:"
+      "summary": "This repo keeps adding **read-only / soft signals that only help if someone runs them by hand**:",
+      "subsystems": null
     },
     {
       "file": "success-metric-alignment-with-verified-success-2026-06-16.md",
       "title": "Idea: align our session success proxy with the research's \"verified success\"",
       "status": "ideas",
       "date": "2026-06-16",
-      "summary": "persistent returns to expertise\" research (~400K Claude Code sessions), owner asked"
+      "summary": "persistent returns to expertise\" research (~400K Claude Code sessions), owner asked",
+      "subsystems": null
     },
     {
       "file": "control-plane-single-source-pointer-2026-06-15.md",
       "title": "Idea — collapse the current-state control-plane bullet to a pure pointer (one source of truth)",
       "status": "historical",
       "date": "2026-06-15",
-      "summary": "The autonomous-loop control-plane truth lives in **two** prose homes:"
+      "summary": "The autonomous-loop control-plane truth lives in **two** prose homes:",
+      "subsystems": null
     },
     {
       "file": "decade-queue-lead-with-the-active-thread-2026-06-15.md",
       "title": "Idea — plan the decade queue *lead* from the prior band's dominant thread, not from the static priority list",
       "status": "ideas",
       "date": "2026-06-15",
-      "summary": "Bands #820 → #840 → #870 → #900 all ended the same way: the planned top slots (P1-1 full matrix,"
+      "summary": "Bands #820 → #840 → #870 → #900 all ended the same way: the planned top slots (P1-1 full matrix,",
+      "subsystems": null
     },
     {
       "file": "dispatch-phase-gate-precheck-2026-06-15.md",
       "title": "Dispatch-side phase-gate pre-check — don't fire agent-feature work orders in fix-phase",
       "status": "ideas",
       "date": "2026-06-15",
-      "summary": "A feature work order arrived via the dispatch fire endpoint. The executor side did the"
+      "summary": "A feature work order arrived via the dispatch fire endpoint. The executor side did the",
+      "subsystems": null
     },
     {
       "file": "executor-chain-trigger-via-workflow-2026-06-15.md",
       "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
       "status": "ideas",
       "date": "2026-06-15",
-      "summary": "The night-executor's STEP 3 self-chaining contract says: *\"open a `continue` issue with explicit"
+      "summary": "The night-executor's STEP 3 self-chaining contract says: *\"open a `continue` issue with explicit",
+      "subsystems": []
     },
     {
       "file": "agent-env-credential-smoke-check-2026-06-14.md",
       "title": "Idea: agent-env external-credential smoke check (preflight)",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "Railway access (PR #840) · **Lane:** small / decided — implementable"
+      "summary": "Railway access (PR #840) · **Lane:** small / decided — implementable",
+      "subsystems": null
     },
     {
       "file": "ci-cost-and-duplicate-work-prevention-2026-06-14.md",
       "title": "Code-quality CI cost + duplicate-work prevention (early-claim convention)",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "The owner observed (Actions usage metrics, June): `code-quality.yml` dwarfs every other"
+      "summary": "The owner observed (Actions usage metrics, June): `code-quality.yml` dwarfs every other",
+      "subsystems": null
     },
     {
       "file": "cogs-layer-view-residence-guard-2026-06-14.md",
       "title": "Idea — a guard for `discord.ui.View` subclasses mislayered in `cogs/`",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "The baseview-conformance ratchet (`tests/unit/views/test_view_base_class_conformance.py`"
+      "summary": "The baseview-conformance ratchet (`tests/unit/views/test_view_base_class_conformance.py`",
+      "subsystems": null
     },
     {
       "file": "dispatch-resolution-json-hermes-2026-06-14.md",
       "title": "Dispatch resolution — `dispatch_menu.py --json` wired into the Hermes dispatch skill",
       "status": "historical",
       "date": "2026-06-14",
-      "summary": "invited the capture). **Owning area:** S3 AI-Memory / S5 Operations (the dispatch mechanism)."
+      "summary": "invited the capture). **Owning area:** S3 AI-Memory / S5 Operations (the dispatch mechanism).",
+      "subsystems": null
     },
     {
       "file": "effective-check-constraint-test-helper-2026-06-14.md",
       "title": "Idea — a shared `effective_check_constraint(table, column)` test helper",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "Several invariant tests pin a Python `frozenset` to a SQL `CHECK (col IN (...))` literal so the"
+      "summary": "Several invariant tests pin a Python `frozenset` to a SQL `CHECK (col IN (...))` literal so the",
+      "subsystems": null
     },
     {
       "file": "external-cron-trigger-for-routines-2026-06-14.md",
       "title": "Idea: drive the autonomous cron from an external scheduler (not GitHub `schedule:`)",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "The autonomous loop's overnight cadence (`executor-nightly.yml`, `backup-db.yml`) relies on"
+      "summary": "The autonomous loop's overnight cadence (`executor-nightly.yml`, `backup-db.yml`) relies on",
+      "subsystems": null
     },
     {
       "file": "games-economy-faucet-sink-diagnostic-2026-06-14.md",
       "title": "Idea — games economy faucet/sink diagnostic (observe the loop's balance)",
       "status": "historical",
       "date": "2026-06-14",
-      "summary": "The mining brainstorm's §7.5 thesis is a **closed, self-balancing loop**: ore is the *faucet*"
+      "summary": "The mining brainstorm's §7.5 thesis is a **closed, self-balancing loop**: ore is the *faucet*",
+      "subsystems": null
     },
     {
       "file": "grounding-completeness-claim-primitive-2026-06-14.md",
       "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "1) Faster Reload … 5) MOAB Eliminator. These are every tier on that path; do not claim the path"
+      "summary": "1) Faster Reload … 5) MOAB Eliminator. These are every tier on that path; do not claim the path",
+      "subsystems": null
     },
     {
       "file": "ledger-checker-print-pr-subjects-2026-06-14.md",
       "title": "Idea — `check_current_state_ledger` should print each missing PR's merge-commit subject",
       "status": "historical",
       "date": "2026-06-14",
-      "summary": "`scripts/check_current_state_ledger.py --strict` reports *which* PR numbers are missing from"
+      "summary": "`scripts/check_current_state_ledger.py --strict` reports *which* PR numbers are missing from",
+      "subsystems": null
     },
     {
       "file": "ledger-guard-benign-lag-vs-drift-2026-06-14.md",
       "title": "Idea — the ledger guard should distinguish *benign newest-merge lag* from real drift",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "`scripts/check_current_state_ledger.py` treats **any** recent merged PR absent from the"
+      "summary": "`scripts/check_current_state_ledger.py` treats **any** recent merged PR absent from the",
+      "subsystems": null
     },
     {
       "file": "media-quota-health-finding-2026-06-14.md",
       "title": "Idea — media provider-outcome → persistent health finding (2026-06-14)",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "PR #854 added **process-local** provider-outcome counters"
+      "summary": "PR #854 added **process-local** provider-outcome counters",
+      "subsystems": null
     },
     {
       "file": "readiness-map-claim-vs-source-guard-2026-06-14.md",
       "title": "Idea — a doc-claim ↔ source guard for readiness maps & ownership rows",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "Production-readiness maps and `ownership.md` rows make **routing claims** about source:"
+      "summary": "Production-readiness maps and `ownership.md` rows make **routing claims** about source:",
+      "subsystems": null
     },
     {
       "file": "reconciliation-prebrief-at-session-start-2026-06-14.md",
       "title": "Idea — a reconciliation pre-brief dropped at SessionStart",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "Every reconciliation pass re-derives the same thing **by hand** before it can write its §1"
+      "summary": "Every reconciliation pass re-derives the same thing **by hand** before it can write its §1",
+      "subsystems": null
     },
     {
       "file": "reconciliation-slot-carry-tracker-2026-06-14.md",
       "title": "Idea — a slot-carry tracker so the carried-plan-slot escalation fires on data",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "The band-#870 pass §6 noticed something only by **manually diffing three consecutive pass"
+      "summary": "The band-#870 pass §6 noticed something only by **manually diffing three consecutive pass",
+      "subsystems": null
     },
     {
       "file": "routine-activity-visibility-2026-06-14.md",
       "title": "Routine-activity visibility — see active/running sessions at a glance",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "normal sessions in the **Recents** tab. To find a running routine the owner must open the"
+      "summary": "normal sessions in the **Recents** tab. To find a running routine the owner must open the",
+      "subsystems": null
     },
     {
       "file": "routine-dispatch-and-staged-reconciliation-2026-06-14.md",
       "title": "Routine dispatch, staged deep-clean reconciliation, and planning sectors",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "ecosystem / workflow substrate (the *real artifact*) + operations. Expect refinement as the"
+      "summary": "ecosystem / workflow substrate (the *real artifact*) + operations. Expect refinement as the",
+      "subsystems": null
     },
     {
       "file": "routine-system-improvements-2026-06-14.md",
       "title": "Routine-system improvements — field notes from a live run (2026-06-14)",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "The **repo orientation already works** — a 2-word trigger (\"auth probe\") still"
+      "summary": "The **repo orientation already works** — a 2-word trigger (\"auth probe\") still",
+      "subsystems": null
     },
     {
       "file": "scheduled-maintenance-registry-2026-06-14.md",
       "title": "Idea: a central scheduled-maintenance registry (retire single-loop cogs)",
       "status": "ideas",
       "date": "2026-06-14",
-      "summary": "P0-2 PR 1 (#829) needed a periodic job: physically purge expired"
+      "summary": "P0-2 PR 1 (#829) needed a periodic job: physically purge expired",
+      "subsystems": null
     },
     {
       "file": "backup-integrity-check-2026-06-13.md",
       "title": "Idea: backup dump integrity check",
       "status": "historical",
       "date": "2026-06-13",
-      "summary": "After `backup-db.yml` produces the `.sql.gz`, add a verification step that confirms the"
+      "summary": "After `backup-db.yml` produces the `.sql.gz`, add a verification step that confirms the",
+      "subsystems": null
     },
     {
       "file": "hermes-bug-triage-flow-2026-06-13.md",
       "title": "Idea: Hermes-mediated bug-triage flow (curated, batched bug intake)",
       "status": "ideas",
       "date": "2026-06-13",
-      "summary": "intake. Companion: `docs/operations/autonomous-routines.md`, `docs/operations/hermes-dispatch-bridge.md`."
+      "summary": "intake. Companion: `docs/operations/autonomous-routines.md`, `docs/operations/hermes-dispatch-bridge.md`.",
+      "subsystems": null
     },
     {
       "file": "ledger-checker-range-scope-2026-06-13.md",
       "title": "Idea — scope the ledger guard's range-expansion to the Recently-shipped section",
       "status": "historical",
       "date": "2026-06-13",
-      "summary": "`scripts/check_current_state_ledger.py` should expand `#AAA–#BBB` ranges into \"present\""
+      "summary": "`scripts/check_current_state_ledger.py` should expand `#AAA–#BBB` ranges into \"present\"",
+      "subsystems": null
     },
     {
       "file": "live-decade-queue-pointer-invariant-2026-06-13.md",
       "title": "Idea — a \"one live decade queue\" machine-checkable invariant",
       "status": "ideas",
       "date": "2026-06-13",
-      "summary": "Add a small invariant (extend `scripts/check_docs.py`, or a new"
+      "summary": "Add a small invariant (extend `scripts/check_docs.py`, or a new",
+      "subsystems": null
     },
     {
       "file": "readiness-maps-cite-regen-command-2026-06-13.md",
       "title": "Readiness/audit maps should cite a regeneration command, not freeze counts",
       "status": "ideas",
       "date": "2026-06-13",
-      "summary": "The `docs/planning/production-readiness/*` maps are dated audit snapshots that embed"
+      "summary": "The `docs/planning/production-readiness/*` maps are dated audit snapshots that embed",
+      "subsystems": null
     },
     {
       "file": "safety-community-operator-landing-2026-06-13.md",
       "title": "Safety & Community — one operator landing",
       "status": "ideas",
       "date": "2026-06-13",
-      "summary": "The safety/community lane (Q-0108–Q-0112) is **one platform** in the"
+      "summary": "The safety/community lane (Q-0108–Q-0112) is **one platform** in the",
+      "subsystems": null
     },
     {
       "file": "autonomous-improvement-loop-vision-2026-06-12.md",
       "title": "Vision: the fully-autonomous self-improvement loop",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "workflow (the *real artifact*, per `.claude/CLAUDE.md` Working agreement & `docs/collaboration-model.md`)."
+      "summary": "workflow (the *real artifact*, per `.claude/CLAUDE.md` Working agreement & `docs/collaboration-model.md`).",
+      "subsystems": null
     },
     {
       "file": "claude-code-plugins-evaluation-2026-06-12.md",
       "title": "Claude Code plugins — ecosystem evaluation & adoption shortlist (2026-06-12)",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "A plugin is a git-distributed bundle that can carry **skills, agents, hooks,"
+      "summary": "A plugin is a git-distributed bundle that can carry **skills, agents, hooks,",
+      "subsystems": null
     },
     {
       "file": "community-platform-features-2026-06-12.md",
       "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "The uploaded research identifies a cluster of \"community server management\" features"
+      "summary": "The uploaded research identifies a cluster of \"community server management\" features",
+      "subsystems": null
     },
     {
       "file": "executable-verification-over-prose-verified-2026-06-12.md",
       "title": "Idea: executable invariants replace prose \"verified\" status claims",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "Docs and plans still use prose “verified” checklist items that drift over time. That directly caused a missed touch-point during the 2026-06-09/lane merges: an execution plan list was marked verified but omitted a real registration surface, and only a doc-pin test caught it late…"
+      "summary": "Docs and plans still use prose “verified” checklist items that drift over time. That directly caused a missed touch-point during the 2026-06-09/lane merges: an execution plan list was marked verified but omitted a real registration surface, and only a doc-pin test caught it late…",
+      "subsystems": null
     },
     {
       "file": "hermes-claude-dispatch-bridge-2026-06-12.md",
       "title": "Idea: Hermes → Claude Code (web) dispatch bridge",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "control plane (not the bot runtime)."
+      "summary": "control plane (not the bot runtime).",
+      "subsystems": null
     },
     {
       "file": "lane-scoped-session-state-2026-06-12.md",
       "title": "Idea: lane-scoped session state to cut parallel-session merge tax",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "Parallel sessions keep colliding on shared artifacts: the journal, `current-state.md`, and the Q-router can race, producing duplicate Q-numbers, overwritten ledger bullets, and post-hoc merge resolution. The current resolution (UNION / answered-entry-wins / renumber-to-tail) wor…"
+      "summary": "Parallel sessions keep colliding on shared artifacts: the journal, `current-state.md`, and the Q-router can race, producing duplicate Q-numbers, overwritten ledger bullets, and post-hoc merge resolution. The current resolution (UNION / answered-entry-wins / renumber-to-tail) wor…",
+      "subsystems": null
     },
     {
       "file": "portable-agent-memory-package-2026-06-12.md",
       "title": "Vision: a portable agent-memory + workflow package (open source)",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "the workflow substrate itself (the *real artifact*, per `.claude/CLAUDE.md`)."
+      "summary": "the workflow substrate itself (the *real artifact*, per `.claude/CLAUDE.md`).",
+      "subsystems": null
     },
     {
       "file": "repo-manageability-2026-06-12.md",
       "title": "Repo-manageability ideas — 2026-06-12",
       "status": "historical",
       "date": "2026-06-12",
-      "summary": "The review-map (#715) + the seven readiness maps (#717–#723) made the repo *navigable* and"
+      "summary": "The review-map (#715) + the seven readiness maps (#717–#723) made the repo *navigable* and",
+      "subsystems": null
     },
     {
       "file": "review-unit-tagging-2026-06-12.md",
       "title": "Review-unit tagging — make the repo-review-map a signal, not just a doc (2026-06-12)",
       "status": "historical",
       "date": "2026-06-12",
-      "summary": "The new [`repo-review-map.md`](../repo-review-map.md) defines the unit of independent"
+      "summary": "The new [`repo-review-map.md`](../repo-review-map.md) defines the unit of independent",
+      "subsystems": null
     },
     {
       "file": "server-safety-and-automod-2026-06-12.md",
       "title": "Server safety, automod, logging, and image moderation (2026-06-12)",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "Competitor bots (Carl-bot, Dyno, Arcane, YAGPDB, Koya, Double Counter) give server staff"
+      "summary": "Competitor bots (Carl-bot, Dyno, Arcane, YAGPDB, Koya, Double Counter) give server staff",
+      "subsystems": null
     },
     {
       "file": "single-canonical-execution-pointer-2026-06-12.md",
       "title": "Idea: single-canonical-execution-pointer invariant",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "A session can start while two execution-order artifacts coexist: an older plan and a newer superseding plan. The prompt then becomes ambiguous (“execute the multi-lane plan”), and agents may implement the wrong ordering."
+      "summary": "A session can start while two execution-order artifacts coexist: an older plan and a newer superseding plan. The prompt then becomes ambiguous (“execute the multi-lane plan”), and agents may implement the wrong ordering.",
+      "subsystems": null
     },
     {
       "file": "ux-lab-interface-gallery-2026-06-12.md",
       "title": "UX Lab / Interface Gallery — a living Discord-UX sandbox cog",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "The maintainer is the **vision/taste layer** of this project (collaboration model): he"
+      "summary": "The maintainer is the **vision/taste layer** of this project (collaboration model): he",
+      "subsystems": null
     },
     {
       "file": "wager-flow-map-2026-06-12.md",
       "title": "Wager / money-flow map — generated trace of game coin paths",
       "status": "ideas",
       "date": "2026-06-12",
-      "summary": "The single biggest cost of the P0-1 session was **hand-tracing where game money moves**."
+      "summary": "The single biggest cost of the P0-1 session was **hand-tracing where game money moves**.",
+      "subsystems": null
     },
     {
       "file": "ai-panel-inplace-navigation-2026-06-11.md",
       "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
       "status": "ideas",
       "date": "2026-06-11",
-      "summary": "Context: he was walking the AI enablement flow (`!aimenu` → settings → policy →"
+      "summary": "Context: he was walking the AI enablement flow (`!aimenu` → settings → policy →",
+      "subsystems": null
     },
     {
       "file": "gap-analysis-2026-06-11.md",
       "title": "Gap analysis — what's missing and on no list (2026-06-11)",
       "status": "ideas",
       "date": "2026-06-11",
-      "summary": "1. **Cross-server character identity — the unasked architectural question of"
+      "summary": "1. **Cross-server character identity — the unasked architectural question of",
+      "subsystems": null
     },
     {
       "file": "voice-mode-planning-capture-2026-06-11.md",
       "title": "Voice-mode planning capture — 2026-06-11",
       "status": "ideas",
       "date": "2026-06-11",
-      "summary": "The session produced a broad set of product and UX ideas. The strongest recurring direction was:"
+      "summary": "The session produced a broad set of product and UX ideas. The strongest recurring direction was:",
+      "subsystems": null
     },
     {
       "file": "bot-self-test-walker-2026-06-10.md",
       "title": "Bot self-testing: the command walker + AI eval mode",
       "status": "ideas",
       "date": "2026-06-10",
-      "summary": "Two adjustments from the agent (accepted in-conversation, see the session log):"
+      "summary": "Two adjustments from the agent (accepted in-conversation, see the session log):",
+      "subsystems": null
     },
     {
       "file": "competitive-teardown-2026-06-10.md",
       "title": "Competitive teardown — game/economy bots + open-source ecosystems (V-14 dossier)",
       "status": "reference",
       "date": "2026-06-10",
-      "summary": "1. **Ecosystem #2 recommendation: FISHING.** Dank Memer — the largest economy"
+      "summary": "1. **Ecosystem #2 recommendation: FISHING.** Dank Memer — the largest economy",
+      "subsystems": null
     },
     {
       "file": "superbot-vision-2026-06-10.md",
       "title": "SuperBot product vision — owner statement + agent response (2026-06-10)",
       "status": "ideas",
       "date": "2026-06-10",
-      "summary": "bot should *feel smart* — it correctly recognises your server layout and channel"
+      "summary": "bot should *feel smart* — it correctly recognises your server layout and channel",
+      "subsystems": null
     },
     {
       "file": "fun-and-ease-brainstorm-2026-06-09.md",
       "title": "Fun & ease-of-use brainstorm — ideas capture (2026-06-09)",
       "status": "ideas",
       "date": "2026-06-09",
-      "summary": "This brainstorm is **additive** to the existing idea space. Checked against:"
+      "summary": "This brainstorm is **additive** to the existing idea space. Checked against:",
+      "subsystems": null
     },
     {
       "file": "cog-improvement-audit-2026-06-08.md",
       "title": "Cog improvement audit (2026-06-08)",
       "status": "ideas",
       "date": "2026-06-08",
-      "summary": "cog. It should be extracted into a **standalone service / feature** that"
+      "summary": "cog. It should be extracted into a **standalone service / feature** that",
+      "subsystems": null
     },
     {
       "file": "owner-vision-ideas-2026-06-08.md",
       "title": "Owner vision — ideas capture (2026-06-08)",
       "status": "ideas",
       "date": "2026-06-08",
-      "summary": "Full Texas Hold'em table with a lobby, blinds, and hand progression. Currency"
+      "summary": "Full Texas Hold'em table with a lobby, blinds, and hand progression. Currency",
+      "subsystems": null
     },
     {
       "file": "future-product-direction-2026-06-07.md",
       "title": "SuperBot future product direction — source-aware brainstorm",
       "status": "ideas",
       "date": "2026-06-07",
-      "summary": "SuperBot's strongest long-term direction is a **coherent, explainable Discord control"
+      "summary": "SuperBot's strongest long-term direction is a **coherent, explainable Discord control",
+      "subsystems": null
     },
     {
       "file": "ai-extra-tool-capability-ideas.md",
       "title": "AI Extra Tool Capability Ideas Backlog",
       "status": "ideas",
       "date": "",
-      "summary": "This document is intentionally separate from the current implementation plans because the existing docs already have narrow ownership:"
+      "summary": "This document is intentionally separate from the current implementation plans because the existing docs already have narrow ownership:",
+      "subsystems": null
     },
     {
       "file": "mining_exploration_brainstorm.md",
       "title": "Mining & Exploration — Brainstorm & Roadmap",
       "status": "ideas",
       "date": "",
-      "summary": "| Layer | File | Role |"
+      "summary": "| Layer | File | Role |",
+      "subsystems": null
     },
     {
       "file": "rps-tournament-service-refactor.md",
       "title": "Idea — refactor RPS tournament orchestration out of the cog",
       "status": "ideas",
       "date": "",
-      "summary": "`disbot/cogs/rps_tournament_cog.py` still owns too much runtime state + business flow, even"
+      "summary": "`disbot/cogs/rps_tournament_cog.py` still owns too much runtime state + business flow, even",
+      "subsystems": null
     },
     {
       "file": "settings-presets-and-ai-template-advisor.md",
       "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
       "status": "ideas",
       "date": "",
-      "summary": "Wherever feasible, every setting editor offers, in this order:"
+      "summary": "Wherever feasible, every setting editor offers, in this order:",
+      "subsystems": null
     },
     {
       "file": "setup-wizard-onboarding-planner-spec.md",
       "title": "Idea — full setup-wizard server-onboarding planner (target scope)",
       "status": "ideas",
       "date": "",
-      "summary": "The complete Setup Wizard should be a **guided server-onboarding planner**, not just a settings"
+      "summary": "The complete Setup Wizard should be a **guided server-onboarding planner**, not just a settings",
+      "subsystems": null
     }
   ],
   "bugs": [
@@ -1725,6 +1849,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-website-submit-form.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split, unit P4 (public `/submit` intake)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-split-review-refactor.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split: ultracode review-and-refactor pass",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-website-split-planning-brief.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website two-site split: planning brief",
@@ -1757,6 +1897,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-19-website-moderation-mirror.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split: P5 moderation UI + P6 GitHub-issue mirror",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-website-identity-and-fanout-enablers.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website split: owner identity vision + fan-out enablers",
@@ -1768,6 +1916,30 @@
       "file": "2026-06-19-website-foundation-s1s2p1.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website two-site split: serial foundation (S1 + S2 + P1)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-deploy-redaction-docs.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split: P7 + P8 (redaction audit + deploy/env docs)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-command-browser.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website: interactive command browser (S1.1 + P2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-changelog-status.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Bot-site changelog + status pages (P3)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -1794,6 +1966,14 @@
       "title": "2026-06-19 — Repo structure: governance + supply-chain + CI baseline",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-reconcile-band1110.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Docs reconciliation (band-#1110, fourteenth Q-0107 pass)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -1931,6 +2111,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-feedback-threads-and-idea-mapping-capture.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Capture: per-command feedback threads + idea→cog/command mapping",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
     },
     {
       "file": "2026-06-19-consistency-rule-graduation.md",
@@ -2130,70 +2318,6 @@
       "title": "2026-06-18 — BTD6 AI answer fixes (owner live-test screenshots)",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-settle-decisions-codex.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Settle mining/seed decisions + surface Codex's reviews",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-routine-review-and-workflow-hardening.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Routine review + autonomous-workflow hardening",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-reconcile-band1020.md",
-      "date": "2026-06-17",
-      "title": "Session — 2026-06-17 · band-#1020 Q-0107 docs reconciliation",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-procedures-to-skills-plan.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Procedures→skills conversion plan",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-paragon-ability-roster-floor.md",
-      "date": "2026-06-17",
-      "title": "Session — 2026-06-17 · paragon-ability + boss tier-HP deterministic floors (BUG-0009 §7.5/§7.6)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-night-queue-relic-roster.md",
-      "date": "2026-06-17",
-      "title": "Session — night-queue slot 3: relic category/effect roster floor",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-night-queue-power-cost-comparison.md",
-      "date": "2026-06-17",
-      "title": "Session — night-queue slot 2: power (activated-ability) cost comparison floor",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-night-queue-mk-category-roster.md",
-      "date": "2026-06-17",
-      "title": "Session — night-queue buffer slices + slot-4 reframe (three §7.6 floor builders)",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],

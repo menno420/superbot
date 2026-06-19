@@ -234,6 +234,48 @@ def _status_badge(text: str) -> str | None:
     return None
 
 
+# Optional authoritative idea->subsystem link (idea-subsystem-tag-on-ideas-2026-06-19):
+# ``> **Subsystem:** key1, key2`` (or ``**Area:**``). When present it overrides the
+# filename-slug heuristic in :func:`_subsystem_open_work`, killing the generic-word
+# cross-matches the heuristic is prone to (e.g. a workflow "executor-chain" idea matching
+# the Word-Chain game's ``chain`` subsystem).
+_SUBSYSTEM_TAG_RE = re.compile(
+    r"\*\*(?:Subsystem|Area)s?:\*\*\s*`?\s*([A-Za-z0-9 ,_-]+?)\s*`?\s*(?:[—–|]|$)",
+)
+# Sentinels meaning "explicitly tagged, but touches NO bot subsystem" -> links to nothing
+# (for agent-workflow / meta ideas that the slug heuristic would otherwise cross-match).
+_SUBSYSTEM_TAG_NONE: frozenset[str] = frozenset({"none", "-", "n/a", "na"})
+
+
+def _subsystem_tags(text: str) -> list[str] | None:
+    """Return the explicit subsystem keys an idea declares, or ``None`` when untagged.
+
+    Reads an optional ``> **Subsystem:** key1, key2`` (or ``**Area:**``) line — the
+    authoritative idea->subsystem link. Keys are lower-cased + comma-split. A ``none`` /
+    ``-`` sentinel returns ``[]`` ("tagged, links to nothing"). An **absent** line returns
+    ``None`` so the caller falls back to the filename-slug heuristic. Keys are not
+    validated here (unknown keys simply never match a real subsystem — fail-safe).
+
+    Only the **front-matter header** is scanned — the leading block above the first
+    ``## `` section heading or code fence — so a ``**Subsystem:**`` *example* deeper in an
+    idea's prose (e.g. the proposal that documents this very tag) is never mistaken for a
+    real tag.
+    """
+    for line in text.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("## ") or stripped.startswith("```"):
+            break  # left the front-matter header — body examples are not tags
+        if "**Subsystem:" not in line and "**Area:" not in line:
+            continue
+        match = _SUBSYSTEM_TAG_RE.search(line)
+        if not match:
+            continue
+        keys = [k.strip() for k in match.group(1).strip().lower().split(",") if k.strip()]
+        # [] when only the none/- sentinel was given ("tagged, links to nothing").
+        return [k for k in keys if k not in _SUBSYSTEM_TAG_NONE]
+    return None
+
+
 # Run-report ``**Run type:**`` marker (Q-0165): ``routine · dispatch`` -> "routine",
 # ``manual`` -> "manual". Lets the updates feed distinguish autonomous routine runs from
 # the owner's own sessions.
@@ -365,6 +407,7 @@ def parse_ideas(ideas_dir: Path) -> list[dict]:
                 "status": _status_badge(text) or "ideas",
                 "date": _date_from_name(path.name),
                 "summary": _truncate(_first_paragraph(text), 280),
+                "subsystems": _subsystem_tags(text),
             },
         )
     ideas.sort(key=lambda e: e["date"], reverse=True)
@@ -862,12 +905,13 @@ def _subsystem_open_work(
 ) -> dict[str, dict]:
     """Map each subsystem key -> its linked open ideas + whether it has open work.
 
-    The linking is the plan's **heuristic name-match fallback** (no explicit
-    subsystem tag exists on idea/bug records yet), tuned to keep false positives low:
-    a subsystem matches an idea when every token of its key (``rps_tournament`` ->
-    ``rps`` + ``tournament``) appears as a whole token in the idea's **filename
-    slug** — the curated, topical part — rather than the free-text title (which drags
-    in generic-word false matches). Bugs match on their (short, topical) title.
+    The linking prefers an idea's **explicit** ``Subsystem:`` tag
+    (:func:`_subsystem_tags`) when present, and falls back to a **heuristic name-match**
+    for un-tagged ideas, tuned to keep false positives low: a subsystem matches an
+    un-tagged idea when every token of its key (``rps_tournament`` -> ``rps`` +
+    ``tournament``) appears as a whole token in the idea's **filename slug** — the
+    curated, topical part — rather than the free-text title (which drags in generic-word
+    false matches). Bugs match on their (short, topical) title.
     Returns, per subsystem key::
 
         {"in_progress": bool, "ideas": [{"title", "status"}, ...]}
@@ -877,11 +921,11 @@ def _subsystem_open_work(
     raw idea body). Subsystems with no linked open work are absent from the map (the
     caller defaults them to ``finished`` / ``[]``).
 
-    Caveat (honest): a single-word subsystem key that is also a common slug word can
-    still cross-match an unrelated idea (e.g. ``chain`` ~ an agent "self-chaining"
-    workflow idea). It is a best-effort "what's planned" teaser, not an authoritative
-    link; the durable fix is an explicit subsystem tag on idea front-matter (a
-    fast-follow). Surfacing title+status only keeps even a stray match safe.
+    The explicit tag is the durable fix for the heuristic's one weakness — a single-word
+    subsystem key that is also a common slug word cross-matching an unrelated idea (e.g.
+    ``chain`` ~ an agent "self-chaining" workflow idea). Tag such an idea ``Subsystem:
+    none`` and it links to nothing; tag a real one ``Subsystem: <key>`` and the link
+    becomes authoritative. Un-tagged ideas keep the (safe, title+status-only) heuristic.
     """
 
     def _tokens(text: str) -> set[str]:
@@ -895,13 +939,20 @@ def _subsystem_open_work(
         b for b in bugs if (b.get("status") or "").upper() in _OPEN_BUG_STATUSES
     ]
 
+    def _idea_matches(idea: dict, key: str, key_parts: list[str]) -> bool:
+        """Explicit ``Subsystem:`` tag wins; un-tagged ideas use the slug heuristic."""
+        tags = idea.get("subsystems")
+        if tags is not None:  # explicitly tagged ([] means "links to nothing")
+            return key in tags
+        slug = _tokens(idea.get("file", ""))
+        return all(part in slug for part in key_parts)
+
     result: dict[str, dict] = {}
     for key in keys:
         key_parts = key.split("_")
         linked_ideas: list[dict] = []
         for idea in open_ideas:
-            slug = _tokens(idea.get("file", ""))
-            if all(part in slug for part in key_parts):
+            if _idea_matches(idea, key, key_parts):
                 linked_ideas.append(
                     {
                         "title": idea.get("title") or "",

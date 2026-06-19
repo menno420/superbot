@@ -331,6 +331,57 @@ def test_subsystem_open_work_ignores_closed_bug(mod):
     assert work == {}  # a FIXED bug is not open work
 
 
+def test_subsystem_tags_reads_header_only(mod):
+    # A real tag in the front-matter blockquote is read; a `**Subsystem:**` *example*
+    # below the first `## ` / in a code fence is NOT (the proposal that documents the tag
+    # would otherwise self-tag every subsystem it names).
+    tagged = (
+        "# Title\n\n> **Status:** `ideas`\n> **Subsystem:** economy, mining\n\n"
+        "## Body\n\n> **Subsystem:** welcome  <- an example, must be ignored\n"
+        "```markdown\n> **Subsystem:** admin\n```\n"
+    )
+    assert mod._subsystem_tags(tagged) == ["economy", "mining"]
+    # `none` / `-` sentinel → [] ("tagged, links to nothing").
+    assert mod._subsystem_tags("# T\n\n> **Subsystem:** none\n\n## B\n") == []
+    # `**Area:**` is an accepted alias.
+    assert mod._subsystem_tags("# T\n\n> **Area:** rps_tournament\n\n## B\n") == [
+        "rps_tournament",
+    ]
+    # Absent tag → None (caller falls back to the slug heuristic).
+    assert mod._subsystem_tags("# T\n\n> **Status:** `ideas`\n\n## B\n") is None
+
+
+def test_subsystem_open_work_prefers_explicit_tag(mod):
+    catalogue = [{"key": "chain"}, {"key": "economy"}]
+    ideas = [
+        # Slug says "chain" but the explicit `none` tag wins → links to nothing (the
+        # executor-self-chaining false-positive this mechanism exists to kill).
+        {
+            "file": "executor-chain-trigger.md",
+            "title": "Executor self-chaining",
+            "status": "ideas",
+            "subsystems": [],
+        },
+        # Explicit tag links to `economy` even though the slug has no economy token.
+        {
+            "file": "shop-revamp-2026-06-19.md",
+            "title": "Shop revamp",
+            "status": "ideas",
+            "subsystems": ["economy"],
+        },
+        # An unknown tag key matches no real subsystem (fail-safe).
+        {
+            "file": "misc-2026-06-19.md",
+            "title": "Misc",
+            "status": "ideas",
+            "subsystems": ["not_a_real_subsystem"],
+        },
+    ]
+    work = mod._subsystem_open_work(ideas, bugs=[], catalogue=catalogue)
+    assert "chain" not in work  # the none-tagged idea linked nothing
+    assert work["economy"]["ideas"] == [{"title": "Shop revamp", "status": "ideas"}]
+
+
 def test_site_subset_command_enrichment_shapes_are_honest(mod):
     subset = mod.build_site_subset(mod.build_data())
     cmds = subset["commands"]

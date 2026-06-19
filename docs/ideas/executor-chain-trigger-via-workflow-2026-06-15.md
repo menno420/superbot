@@ -1,6 +1,8 @@
 # Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue
 
 > **Status:** `ideas` — captured 2026-06-15. Class: workflow / autonomous-loop reliability. Root-cause fix.
+> **Subsystem:** none — agent-workflow/CI, not a bot subsystem (explicit tag stops the slug heuristic
+> cross-matching the Word-Chain game's `chain` subsystem; see `idea-subsystem-tag-on-ideas-2026-06-19.md`).
 > Provenance: surfaced live with the owner while diagnosing "why doesn't the routine always start on its trigger?"
 
 ## The problem
