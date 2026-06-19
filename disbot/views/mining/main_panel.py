@@ -4,22 +4,26 @@ Pattern B placement per ``docs/architecture.md`` §"PersistentView
 placement": the view lives in views/ and the cog re-exports for the
 persistent-view registry side-effect.
 
+Option A declutter (owner-directed, 2026-06-15;
+``docs/planning/mining-hub-redesign-2026-06-15.md``): the main hub is six
+buttons — **⛏️ Mine · 🌲 Harvest · 🗺️ Explore · 🧍 Character · 🧰 Gear ·
+🔨 Workshop** — and everything else moved into a sub-hub or the Mine action:
+
+- **🧍 Character** sub-hub (``character_hub``): Overview · Inventory · Stats ·
+  Skills · Vault · Home.
+- **🗺️ Explore** sub-hub (``explore_hub``): the open-world explorer (Fishing /
+  Roam / Quests), a stub for now. *Distinct* from the old depth-tied mining
+  random-event "explore", which folded into the Mine action.
+- **🔨 Workshop** sub-hub (``workshop_hub``): Craft · Repair · Forge · Market.
+- **Mine** (``MineView``) absorbed Descend / Ascend + the old mining-explore
+  random-event as an interim until PR3's grid Mine.
+
 The Mine button opens a fresh ephemeral ``MineView`` from
-``views.mining.mine_view``.  Harvest / Explore / Inventory / Stats
-buttons call DB helpers directly — no cog round-trip needed.  The
-Build button opens ``_BuildModal`` which loads the current recipes
-list and validates the user's inventory.
+``views.mining.mine_view``.
 
 Navigation rule (PR #1 menu-lifecycle fix): the hub does not ship a
-root-level "↩ Overview" button. Such a button would be a no-op when
-the hub is already on its root state, violating the architecture
-rule that root panels must not show no-op Overview controls. Action
-buttons themselves are the navigation surface; after a Harvest /
-Explore / Inventory / Stats action, the embed shows the result and
-the user can click any action button to take the next step. The
-``_MineResultsView`` in ``views.mining.mine_view`` retains its own
-"↩ Mining Menu" button because it IS a child screen returning to
-this hub's root.
+root-level "↩ Overview" button. Action buttons themselves are the
+navigation surface; sub-hubs return via their own "↩ Mining Hub" button.
 """
 
 from __future__ import annotations
@@ -31,35 +35,19 @@ from core.runtime.persistent_views import PersistentView, register
 from services import mining_workflow
 from utils import db, equipment
 from utils.mining import capacity, items, workshop, world
-from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
+from utils.ui_constants import MINING_COLOR, SUCCESS_COLOR
 from views.mining.mine_view import MineView, _build_mine_prompt_embed
 
-# Display labels for the typed Inventory panel, keyed by ItemKind.value
-# (string keys keep this rendering table independent of the enum).
-_KIND_LABELS: dict[str, str] = {
-    "resource": "⛏️ Resources",
-    "tool": "🛠️ Tools",
-    "consumable": "🧨 Consumables",
-    "structure": "🏛️ Structures",
-    "treasure": "💎 Treasure",
-}
-
 # The hub's routing guide — shared by the stateless fallback embed and the
-# per-player live overview so the action list has one home.
+# per-player live overview so the action list has one home. Six top-level
+# actions; each detailed list lives on its sub-hub (Option A declutter).
 _ACTIONS_GUIDE = (
-    "**⛏️ Mine** — start a mining session\n"
+    "**⛏️ Mine** — dig for ore, move between depths, explore for events\n"
     "**🌲 Harvest** — chop wood\n"
-    "**🗺️ Explore** — discover random events\n"
-    "**📦 Inventory** — view your mining resources\n"
-    "**📊 Stats** — view your mining statistics\n"
-    "**🔨 Workshop** — craft & build · repair · 🔥 forge · 🛒 market (all here)\n"
-    "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
-    "(deeper = richer, gated by your light)\n"
-    "**🏦 Vault** — stash loot safely, separate from your pack\n"
+    "**🗺️ Explore** — the open-world explorer (fishing, roam, quests — early)\n"
+    "**🧍 Character** — you: overview · inventory · stats · skills · vault · home\n"
     "**🧰 Gear** — equip your best tools, lights, and combat gear\n"
-    "**🌳 Skills** — spend skill points to specialize your character\n"
-    "**🏠 Home** — build it to personalize your Character card\n"
-    "**🧍 Character** — your full character overview"
+    "**🔨 Workshop** — craft & build · repair · 🔥 forge · 🛒 market (all here)"
 )
 
 
@@ -129,9 +117,6 @@ async def build_overview_embed(
     return embed
 
 
-_INVENTORY_FILENAME = "inventory.png"
-
-
 async def _edit_in_place(
     interaction: discord.Interaction,
     *,
@@ -141,11 +126,10 @@ async def _edit_in_place(
 ) -> None:
     """Edit the hub's anchor message in place, owning its optional image.
 
-    The inventory card and the gear paper-doll render *into* this one message
-    (``image=...``) instead of a separate ephemeral follow-up that piles up on
-    every click (the owner's 2026-06-15 "too many ephemeral panels"). Every
-    other action passes no image, which clears a prior card so it never lingers
-    on the next screen.
+    The gear paper-doll renders *into* this one message (``image=...``) instead
+    of a separate ephemeral follow-up that piles up on every click (the owner's
+    2026-06-15 "too many ephemeral panels"). Every other action passes no image,
+    which clears a prior card so it never lingers on the next screen.
     """
     await safe_edit(
         interaction,
@@ -155,35 +139,9 @@ async def _edit_in_place(
     )
 
 
-def _render_inventory_file(
-    display_name: str,
-    inventory: dict[str, int],
-    embed: discord.Embed,
-) -> discord.File | None:
-    """Render the PIL inventory card and wire it into *embed* as the in-place
-    image.  Returns the File to attach (or ``None`` without Pillow — additive,
-    the text embed already carries the full inventory).
-    """
-    import io
-
-    from utils.mining_render import build_card_spec, render_inventory_card
-
-    spec = build_card_spec(
-        f"{display_name}'s Mining Inventory",
-        items.sort_inventory(inventory),
-        classify_kind=lambda n: items.classify(n).value,
-        footer=f"Net worth: {items.total_value(inventory)}",
-    )
-    png = render_inventory_card(spec)
-    if png is None:
-        return None
-    embed.set_image(url=f"attachment://{_INVENTORY_FILENAME}")
-    return discord.File(io.BytesIO(png), filename=_INVENTORY_FILENAME)
-
-
 @register
 class MiningHubView(PersistentView):
-    """Persistent, stateless mining hub panel."""
+    """Persistent, stateless mining hub panel — the six Option A top actions."""
 
     SUBSYSTEM = "mining"
 
@@ -257,7 +215,7 @@ class MiningHubView(PersistentView):
     @discord.ui.button(
         label="🗺️ Explore",
         style=discord.ButtonStyle.primary,
-        custom_id="mining:explore",
+        custom_id="mining:explore_hub",
         row=0,
     )
     async def explore_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
@@ -270,35 +228,26 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        result = await mining_workflow.explore(
-            interaction.user.id,
-            interaction.guild_id,
+        # Option A: this opens the open-world explorer sub-hub (stub). It is a
+        # DIFFERENT concept from the old depth-tied mining random-event explore,
+        # which folded into the Mine action. New custom_id (mining:explore_hub)
+        # so the persistent panel doesn't reuse the old mining:explore id.
+        from views.mining.explore_hub import (
+            MiningExploreHubView,
+            build_explore_hub_embed,
         )
-        description = (
-            f"{interaction.user.mention} {result.text}\n"
-            f"_{world.describe_position(result.depth)}_"
-        )
-        if result.wear.notes:
-            description += "\n" + "\n".join(result.wear.notes)
-        if result.xp_note:
-            description += "\n" + result.xp_note
-        if result.pack_warning:
-            description += "\n" + result.pack_warning
-        embed = discord.Embed(
-            title="⛏️ Mining Hub",
-            description=description,
-            color=SUCCESS_COLOR if result.amount >= 0 else ERROR_COLOR,
-        )
-        embed.set_footer(text="Pick another action above to continue.")
-        await _edit_in_place(interaction, embed=embed, view=self)
+
+        embed = build_explore_hub_embed()
+        view = MiningExploreHubView(interaction.user, interaction.guild_id)
+        await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
-        label="📦 Inventory",
+        label="🧍 Character",
         style=discord.ButtonStyle.grey,
-        custom_id="mining:inventory",
+        custom_id="mining:character",
         row=1,
     )
-    async def inventory_btn(
+    async def character_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
@@ -312,47 +261,24 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        user_id = str(interaction.user.id)
-        inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
-        embed = discord.Embed(
-            title=f"📦 {interaction.user.name}'s Mining Inventory",
-            color=MINING_COLOR,
+        # Option A: the Character sub-hub groups Overview / Inventory / Stats /
+        # Skills / Vault / Home (Home placed here per the 2026-06-19 deviation).
+        from views.mining.character_hub import (
+            MiningCharacterHubView,
+            build_character_hub_embed,
         )
-        if not inventory:
-            # Empty-state UX rule (mother-hub-map.md): explain what the
-            # feature does and what the next step is.
-            embed.description = (
-                "Your mining inventory is empty. Use `!mine` in the mining "
-                "channel to start collecting items."
-            )
-            embed.set_footer(text="Pick another action above to continue.")
-        else:
-            for kind, rows in items.summarize_inventory(inventory):
-                embed.add_field(
-                    name=_KIND_LABELS.get(kind.value, kind.value.title()),
-                    value="\n".join(f"**{name.title()}** ×{qty}" for name, qty in rows),
-                    inline=False,
-                )
-            embed.set_footer(
-                text=(
-                    f"Net worth: {items.total_value(inventory)}  •  "
-                    "Pick another action above to continue."
-                ),
-            )
-        image = (
-            _render_inventory_file(interaction.user.display_name, inventory, embed)
-            if inventory
-            else None
-        )
-        await _edit_in_place(interaction, embed=embed, view=self, image=image)
+
+        embed = build_character_hub_embed()
+        view = MiningCharacterHubView(interaction.user, interaction.guild_id)
+        await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
-        label="📊 Stats",
-        style=discord.ButtonStyle.grey,
-        custom_id="mining:stats",
+        label="🧰 Gear",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:gear",
         row=1,
     )
-    async def stats_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+    async def gear_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
         if interaction.guild_id is None:
@@ -362,19 +288,19 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        user_id = str(interaction.user.id)
-        inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
-        total_items = sum(inventory.values())
-        unique_items = len(inventory)
-        embed = discord.Embed(
-            title=f"📊 {interaction.user.name}'s Mining Stats",
-            color=MINING_COLOR,
+        # Lazy import: views→views child panel (mirrors the Workshop button).
+        from views.mining.gear_panel import (
+            MiningGearView,
+            build_gear_embed,
+            render_gear_doll,
         )
-        embed.add_field(name="Total Items Collected", value=str(total_items))
-        embed.add_field(name="Unique Items", value=str(unique_items))
-        embed.add_field(name="Net Worth", value=str(items.total_value(inventory)))
-        embed.set_footer(text="Pick another action above to continue.")
-        await _edit_in_place(interaction, embed=embed, view=self)
+
+        embed = await build_gear_embed(interaction.user.id, interaction.guild_id)
+        view = await MiningGearView.create(interaction.user, interaction.guild_id)
+        # V-16: the paper-doll renders *into* this message (one self-replacing
+        # panel) instead of a separate ephemeral follow-up that stacks per click.
+        doll = await render_gear_doll(embed, interaction.user.id, interaction.guild_id)
+        await _edit_in_place(interaction, embed=embed, view=view, image=doll)
 
     @discord.ui.button(
         label="🔨 Workshop",
@@ -406,215 +332,6 @@ class MiningHubView(PersistentView):
         embed = build_workshop_hub_embed()
         view = MiningWorkshopHubView(interaction.user, interaction.guild_id)
         await _edit_in_place(interaction, embed=embed, view=view)
-
-    @discord.ui.button(
-        label="⬇️ Descend",
-        style=discord.ButtonStyle.success,
-        custom_id="mining:descend",
-        row=2,
-    )
-    async def descend_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        result = await mining_workflow.descend(
-            interaction.user.id,
-            interaction.guild_id,
-        )
-        if not result.moved:
-            description = (
-                f"{interaction.user.mention} can't descend any deeper.\n"
-                f"_{result.hint}_"
-            )
-            color = ERROR_COLOR
-        else:
-            description = (
-                f"{interaction.user.mention} descended to "
-                f"**{world.describe_position(result.depth)}**."
-            )
-            if result.xp_note:
-                description += "\n" + result.xp_note
-            color = SUCCESS_COLOR
-        embed = discord.Embed(
-            title="⛏️ Mining Hub",
-            description=description,
-            color=color,
-        )
-        embed.set_footer(text="Pick another action above to continue.")
-        await _edit_in_place(interaction, embed=embed, view=self)
-
-    @discord.ui.button(
-        label="⬆️ Ascend",
-        style=discord.ButtonStyle.secondary,
-        custom_id="mining:ascend",
-        row=2,
-    )
-    async def ascend_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        result = await mining_workflow.ascend(
-            interaction.user.id,
-            interaction.guild_id,
-        )
-        if not result.moved:
-            description = f"{interaction.user.mention} is already at the **Surface**."
-            color = MINING_COLOR
-        else:
-            description = (
-                f"{interaction.user.mention} climbed up to "
-                f"**{world.describe_position(result.depth)}**."
-            )
-            color = SUCCESS_COLOR
-        embed = discord.Embed(
-            title="⛏️ Mining Hub",
-            description=description,
-            color=color,
-        )
-        embed.set_footer(text="Pick another action above to continue.")
-        await _edit_in_place(interaction, embed=embed, view=self)
-
-    @discord.ui.button(
-        label="🏦 Vault",
-        style=discord.ButtonStyle.primary,
-        custom_id="mining:vault",
-        row=2,
-    )
-    async def vault_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        # Lazy import: views→views child panel (mirrors the Market button).
-        from views.mining.vault_panel import MiningVaultView, build_vault_embed
-
-        embed = await build_vault_embed(interaction.user.id, interaction.guild_id)
-        view = MiningVaultView(interaction.user, interaction.guild_id)
-        await _edit_in_place(interaction, embed=embed, view=view)
-
-    @discord.ui.button(
-        label="🧰 Gear",
-        style=discord.ButtonStyle.primary,
-        custom_id="mining:gear",
-        row=3,
-    )
-    async def gear_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        # Lazy import: views→views child panel (mirrors the Market button).
-        from views.mining.gear_panel import (
-            MiningGearView,
-            build_gear_embed,
-            render_gear_doll,
-        )
-
-        embed = await build_gear_embed(interaction.user.id, interaction.guild_id)
-        view = await MiningGearView.create(interaction.user, interaction.guild_id)
-        # V-16: the paper-doll renders *into* this message (one self-replacing
-        # panel) instead of a separate ephemeral follow-up that stacks per click.
-        doll = await render_gear_doll(embed, interaction.user.id, interaction.guild_id)
-        await _edit_in_place(interaction, embed=embed, view=view, image=doll)
-
-    @discord.ui.button(
-        label="🧍 Character",
-        style=discord.ButtonStyle.grey,
-        custom_id="mining:character",
-        row=3,
-    )
-    async def character_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        # Read-only character overview, shown in place on the hub.
-        from views.mining.character_panel import build_character_embed
-
-        embed = await build_character_embed(
-            interaction.user.id,
-            interaction.guild_id,
-            name=interaction.user.display_name,
-        )
-        embed.set_footer(text="Pick another action above to continue.")
-        await _edit_in_place(interaction, embed=embed, view=self)
-
-    @discord.ui.button(
-        label="🌳 Skills",
-        style=discord.ButtonStyle.primary,
-        custom_id="mining:skills",
-        row=3,
-    )
-    async def skills_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        # Lazy import: views→views child panel (mirrors the Market button).
-        from views.mining.skills_panel import MiningSkillsView, build_skills_embed
-
-        embed = await build_skills_embed(interaction.user.id, interaction.guild_id)
-        view = MiningSkillsView(interaction.user, interaction.guild_id)
-        await _edit_in_place(interaction, embed=embed, view=view)
-
-    @discord.ui.button(
-        label="🏠 Home",
-        style=discord.ButtonStyle.primary,
-        custom_id="mining:home",
-        row=4,
-    )
-    async def home_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        # Lazy import: views→views child panel (mirrors the Forge button).
-        from views.mining.home_panel import MiningHomeView, build_home_embed
-
-        embed = await build_home_embed(interaction.user.id, interaction.guild_id)
-        view = MiningHomeView(interaction.user, interaction.guild_id)
-        await safe_edit(interaction, embed=embed, view=view)
 
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]

@@ -71,10 +71,16 @@ this **replaces** the old linear Descend/Ascend.
 
 1. **PR 1 — in-place image cards** ✅ (PR #911) — inventory/gear cards stop stacking as
    ephemerals (independent; already green).
-2. **PR 2 — hub declutter** (confirmed, turn-key): main hub → the 6; new **Character** +
-   **Workshop** sub-hubs; **Craft** consolidation; **Explore** stub. Mine keeps current
-   behaviour as an interim (Descend/Ascend fold into the Mine action, off the main hub) until
-   PR 3. *Best done live with the owner once the test-bot token is restored.*
+2. **PR 2 — hub declutter** ✅ **SHIPPED (2026-06-19, PR #1131)**: main hub → the 6 (⛏️ Mine ·
+   🌲 Harvest · 🗺️ Explore · 🧍 Character · 🧰 Gear · 🔨 Workshop); new **Character** sub-hub
+   (`views/mining/character_hub.py` — Overview/Inventory/Stats/Skills/Vault/**Home**) + the
+   **Workshop** sub-hub (shipped earlier) + **Explore** open-world *stub* sub-hub
+   (`views/mining/explore_hub.py` — Fishing/Roam/Quests "coming soon"). Descend/Ascend AND the
+   old depth-tied mining random-event explore folded into the Mine action (`MineView`) as an
+   interim until PR 3. **Deviations (owner review):** (a) **Home** placed in the Character
+   sub-hub (it personalizes the Character card; the plan list predated #910); (b) the main hub's
+   new 🗺️ Explore (open-world stub, `custom_id mining:explore_hub`) is a *different concept*
+   from the depth-event explore that folded into Mine — routing documented in PR #1131.
 3. **PR 3 — grid Mine** (new mechanic): the (x,y,z) world model + 6-direction movement +
    discovery. Needs the v1 sign-off above first.
 4. **Later — open-world Explore**: fishing / quests / roam — own design pass.

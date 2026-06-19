@@ -153,7 +153,13 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
 **Active games plans** (live buildable set — full index: [`planning/README.md`](../planning/README.md)):
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
   Phase 1 (fishing v1 + gear-switching) buildable; the loadout/value/minigame tail is owner-design-gated (Q-0175).
-- [mining-hub-redesign](../planning/mining-hub-redesign-2026-06-15.md) — owner-picked Option A sub-hub split (not yet built).
+- [mining-hub-redesign](../planning/mining-hub-redesign-2026-06-15.md) — owner-picked Option A sub-hub split.
+  **PR2 (hub declutter) shipped:** the main hub is now six buttons (⛏️ Mine · 🌲 Harvest · 🗺️ Explore ·
+  🧍 Character · 🧰 Gear · 🔨 Workshop); a **Character** sub-hub (`views/mining/character_hub.py`)
+  groups Overview/Inventory/Stats/Skills/Vault/Home and an **Explore** stub sub-hub
+  (`views/mining/explore_hub.py`) previews the open-world explorer (Fishing/Roam/Quests — early).
+  Descend/Ascend + the depth-event explore folded into the Mine action (`MineView`). **PR3 (grid Mine)
+  is owner-sign-off-gated, not built.**
 - [games-economy-faucet-sink-diagnostic-plan](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) —
   read-only economy faucet/sink read model (turn-key).
 - *Shipped → `historical`:* [mining-structures-skill-tree-plan](../planning/mining-structures-skill-tree-plan-2026-06-14.md)
