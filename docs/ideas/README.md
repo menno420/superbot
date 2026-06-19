@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`premature-closure-self-check-2026-06-19.md`](./premature-closure-self-check-2026-06-19.md) —
+  **owner-directed (2026-06-19, brainstorm):** teach a session to smell its own **"done."** Premature
+  closure — declaring "done / verified / no questions" while latent uncertainty remains — showed up three
+  ways in one session (the owner's catch: *"no questions"* → a probe → plenty of questions; the docs-cleanup
+  that finished fast but shallow; verification-by-proxy). The idea: a session-close **"are you sure?"
+  self-audit** (+ an independent reviewer) — the system performing the probe the owner currently does. →
+  relates `ground-truth-audit-protocol` · `autonomous-improvement-loop-vision` · Q-0102.
 - [`sector-scoped-lean-boot-for-cheap-models-2026-06-19.md`](./sector-scoped-lean-boot-for-cheap-models-2026-06-19.md) —
   **owner-directed (2026-06-19; B1-priority next session):** make Sonnet usable by cutting the orientation
   tax — a **sector-scoped lean boot** (declare your sector → load only its invariants + folio + active plan
