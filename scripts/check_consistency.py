@@ -34,8 +34,16 @@ Provenance / reliability (Q-0105):
 Usage::
 
     python scripts/check_consistency.py                  # report mode (exit 0)
-    python scripts/check_consistency.py --mode strict    # exit 1 on errors (none yet)
+    python scripts/check_consistency.py --mode strict    # exit 1 on graduated (error) rules
+    python scripts/check_consistency.py --list-rules     # per-rule graduation tracker
     python scripts/check_consistency.py --file disbot/views/x.py
+
+Graduation (Q-0170 plan, step 3): each ``Rule`` carries a ``severity`` — a rule
+ships ``"warning"`` and graduates to ``"error"`` once it has run clean across a
+couple of sessions.  Flipping that one field is the *whole* graduation step: every
+finding inherits it, ``--mode strict`` then fails on it, and the pre-PR suite
+(``check_quality.py``) already runs ``--mode strict``, so no workflow edit is
+needed.  ``--list-rules`` prints the live tracker (severity · count · status).
 """
 
 from __future__ import annotations
@@ -682,6 +690,16 @@ class Rule:
     name: str
     fn: object
     description: str = field(default="")
+    # Graduation (Q-0170 plan, step 3): a rule ships warn-only and graduates to an
+    # ``error`` once it runs clean on a fresh tree across a couple of sessions.
+    # Flipping ``severity`` to ``"error"`` is the *entire* graduation step — every
+    # finding inherits it (see :func:`run_checks`) so ``--mode strict`` then fails on
+    # it, and the pre-PR suite (``check_quality.py``) already runs ``--mode strict``,
+    # so no workflow edit is needed at graduation.  ``graduation`` is a one-line
+    # human note: the clean-since marker for a candidate, or the blocker for a rule
+    # that can't graduate yet (e.g. an open backlog).
+    severity: str = "warning"
+    graduation: str = field(default="")
 
 
 RULES: list[Rule] = [
@@ -689,21 +707,32 @@ RULES: list[Rule] = [
         "edit_in_place",
         rule_edit_in_place,
         "panel callbacks that reply with a standalone ephemeral instead of editing in place",
+        graduation=(
+            "BLOCKED — 17 views/ai/ findings until the AI-nav redesign ships "
+            "(planning/ai-panel-inplace-navigation-plan-2026-06-19.md); allowlisting "
+            "them would mute the bug the rule exists to catch"
+        ),
     ),
     Rule(
         "back_button",
         rule_back_button,
         "HubView navigation panels with child controls but no back/nav affordance",
+        graduation="CANDIDATE — clean since 2026-06-19 (#1059); graduate after a couple clean sessions",
     ),
     Rule(
         "panel_base_class",
         rule_panel_base_class,
         "views extending discord.ui.View directly outside the game-state allowlist",
+        graduation=(
+            "CANDIDATE — clean since 2026-06-19 (#1057); mirrors the arch "
+            "baseview_inheritance ratchet, so already enforced upstream"
+        ),
     ),
     Rule(
         "select_option_truncation",
         rule_select_option_truncation,
         "select-building views that front-truncate a collection instead of paginating",
+        graduation="CANDIDATE — clean since 2026-06-19 (#1056); graduate after a couple clean sessions",
     ),
 ]
 
@@ -727,8 +756,31 @@ def _counts_by_rule(findings: list[Finding]) -> dict[str, int]:
 def run_checks(files: list[Path], exceptions: dict) -> list[Finding]:
     findings: list[Finding] = []
     for rule in RULES:
-        findings += rule.fn(files, exceptions)  # type: ignore[operator]
+        rule_findings: list[Finding] = rule.fn(files, exceptions)  # type: ignore[operator]
+        # The rule fns build warn-only Findings; the rule's graduation severity is
+        # the source of truth, so a graduated rule's findings become errors here.
+        for f in rule_findings:
+            f.severity = rule.severity
+        findings += rule_findings
     return findings
+
+
+def list_rules(files: list[Path], exceptions: dict) -> int:
+    """Print the per-rule graduation tracker (severity · live count · status).
+
+    The turn-key readout for the Q-0170 plan's graduation step: a future session
+    reads this to decide whether a CANDIDATE rule has stayed clean long enough to
+    flip to ``error`` (graduation = changing that rule's ``severity`` in RULES).
+    """
+    counts = _counts_by_rule(run_checks(files, exceptions))
+    print("\ncheck_consistency — rule graduation tracker\n")
+    for rule in RULES:
+        count = counts.get(rule.name, 0)
+        tag = "error" if rule.severity == "error" else "warn "
+        clean = "clean ✓" if count == 0 else f"{count} open"
+        print(f"  [{tag}] {rule.name:<26} {clean:<10} {rule.graduation or '—'}")
+    print()
+    return 0
 
 
 def main() -> int:
@@ -743,6 +795,11 @@ def main() -> int:
         "--file",
         type=Path,
         help="Check a single file (relative or absolute)",
+    )
+    parser.add_argument(
+        "--list-rules",
+        action="store_true",
+        help="Print the per-rule graduation tracker (severity, live count, status) and exit",
     )
     parser.add_argument(
         "files",
@@ -768,6 +825,10 @@ def main() -> int:
         return 0
 
     exceptions = _load_exceptions()
+
+    if args.list_rules:
+        return list_rules(files, exceptions)
+
     findings = run_checks(files, exceptions)
 
     errors = [f for f in findings if f.severity == "error"]
@@ -793,6 +854,16 @@ def main() -> int:
             print(f.display(REPO_ROOT))
 
     print()
+    candidates = [
+        r.name for r in RULES if r.severity == "warning" and counts.get(r.name, 0) == 0
+    ]
+    if candidates:
+        print(
+            "Graduation candidates (clean, warn-only): "
+            + ", ".join(candidates)
+            + " — run `--list-rules` for status.",
+        )
+        print()
     if args.mode == "strict" and errors:
         return 1
     return 0

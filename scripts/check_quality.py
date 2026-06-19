@@ -145,6 +145,19 @@ def run_check_docs() -> int:
     )
 
 
+def run_check_consistency() -> int:
+    # The Q-0170 UX-consistency linter. `--mode strict` fails only on rules that
+    # have GRADUATED to error severity (see scripts/check_consistency.py § Rule) —
+    # while every rule is still warn-only this is a no-op gate (exit 0), so running
+    # it in the pre-PR suite now means a rule's graduation is purely a `severity`
+    # flip in that file, no wire-in edit. Warn-only findings stay advisory (the
+    # report mode surfaces them); only graduated rules block.
+    return _run(
+        "check_consistency",
+        [_PY, str(REPO_ROOT / "scripts" / "check_consistency.py"), "--mode", "strict"],
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="SuperBot quality checker")
     parser.add_argument(
@@ -178,6 +191,8 @@ def main() -> int:
     if not args.fix_only:
         if run_check_docs() != 0:
             failed.append("check_docs")
+        if run_check_consistency() != 0:
+            failed.append("check_consistency")
         if args.full:
             if run_mypy() != 0:
                 failed.append("mypy")

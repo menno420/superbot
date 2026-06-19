@@ -510,3 +510,47 @@ def test_trunc_qualname_allowlist_suppresses_only_scoped_callback(
     # The display slice is suppressed; the genuine select truncation remains.
     quals = {f.qualname for f in findings}
     assert quals == {"RolePicker.__init__"}
+
+
+# ---------------------------------------------------------------------------
+# Graduation rails — per-rule severity + the --list-rules tracker
+# ---------------------------------------------------------------------------
+
+
+def _rule(mod, name):
+    return next(r for r in mod.RULES if r.name == name)
+
+
+def test_findings_inherit_graduated_rule_severity(mod, tmp_path, monkeypatch):
+    """run_checks stamps each finding with its rule's severity, so flipping a
+    rule to ``error`` (graduation) makes its findings errors — the whole flip."""
+    _write(mod, tmp_path, monkeypatch, "views/score.py", _BAD)
+    monkeypatch.setattr(_rule(mod, "edit_in_place"), "severity", "error")
+    findings = mod.run_checks([tmp_path / "views/score.py"], {})
+    assert findings and all(
+        f.severity == "error" for f in findings if f.rule == "edit_in_place"
+    )
+
+
+def test_warn_only_rule_findings_stay_warning(mod, tmp_path, monkeypatch):
+    """A warn-only rule (the default) never produces errors."""
+    _write(mod, tmp_path, monkeypatch, "views/score.py", _BAD)
+    findings = mod.run_checks([tmp_path / "views/score.py"], {})
+    assert findings and all(f.severity == "warning" for f in findings)
+
+
+def test_every_rule_carries_a_graduation_note(mod):
+    """The tracker is only useful if every rule records its status/blocker."""
+    assert all(r.graduation for r in mod.RULES)
+
+
+def test_list_rules_reports_severity_and_status(mod, capsys):
+    """``--list-rules`` prints one line per rule with its severity + status."""
+    rc = mod.list_rules(mod._all_files(), mod._load_exceptions())
+    out = capsys.readouterr().out
+    assert rc == 0
+    for rule in mod.RULES:
+        assert rule.name in out
+    # edit_in_place is the blocked rule; the candidates run clean.
+    assert "BLOCKED" in out
+    assert "CANDIDATE" in out

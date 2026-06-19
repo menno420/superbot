@@ -167,6 +167,30 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.
+   **Graduation rails BUILT (#1063, 2026-06-19):** the flip is now a *one-field* change. Each `Rule`
+   in `check_consistency.py` carries a `severity` (`"warning"` → `"error"`); `run_checks` stamps every
+   finding with its rule's severity, so `--mode strict` fails on a graduated rule. The pre-PR suite
+   (`scripts/check_quality.py`) now runs `check_consistency --mode strict` — a **no-op gate while all
+   rules are warn-only**, live the instant a rule's `severity` flips. So graduation = change that one
+   field (no wire-in edit); the only remaining workflow decision is whether to *also* add the strict
+   step to `code-quality.yml` so it gates auto-merge (the pre-PR suite is advisory). `--list-rules`
+   prints the per-rule tracker below; each rule also carries a one-line `graduation` blocker/candidate
+   note in `RULES`.
+
+   **Graduation tracker** (live readout: `python3.10 scripts/check_consistency.py --list-rules`):
+
+   | Rule | Severity | Status | Blocker / clean-since |
+   |------|----------|--------|-----------------------|
+   | `edit_in_place` | warn | **BLOCKED** | 17 `views/ai/` findings until the AI-nav redesign ships ([plan](ai-panel-inplace-navigation-plan-2026-06-19.md)) — allowlisting them would mute the bug |
+   | `back_button` | warn | **CANDIDATE** | clean since 2026-06-19 (#1059); graduate after a couple clean sessions |
+   | `panel_base_class` | warn | **CANDIDATE** | clean since 2026-06-19 (#1057); already enforced upstream by the arch `baseview_inheritance` ratchet |
+   | `select_option_truncation` | warn | **CANDIDATE** | clean since 2026-06-19 (#1056); graduate after a couple clean sessions |
+
+   **▶ Next consistency-linter slice:** a future session that confirms a CANDIDATE rule has stayed at
+   0 across a couple more sessions flips its `severity` to `"error"` (one line) — `back_button` /
+   `select_option_truncation` first, then optionally add the strict step to `code-quality.yml`.
+   `panel_base_class` is the lowest-value flip (the arch ratchet already errors on it). Rule 1 stays
+   blocked until the AI-nav plan's PR 2 clears its 17.
 
 ## Verification (each PR)
 
