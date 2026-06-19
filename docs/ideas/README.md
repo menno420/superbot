@@ -584,19 +584,18 @@ Current broad captures:
   resolve to it. Turns a convention every pass must remember into a CI guard; motivated by the
   three pointers this pass hand-verified. Workflow lane; quick-win when capacity allows.
 - [`ledger-guard-benign-lag-vs-drift-2026-06-14.md`](./ledger-guard-benign-lag-vs-drift-2026-06-14.md) —
-  **session idea (2026-06-14, Q-0089, from the ledger-guard-hardening slice):** have
-  `check_current_state_ledger.py` distinguish **benign newest-merge lag** (the newest ~2 merges,
-  or anything newer than the `Last reconciliation pass: #M` marker — expected, informational)
-  from **real drift** (an older PR never recorded — actionable), and gate `--strict` on drift
-  only. Removes the standing false-red `/session-close --strict` hits on every session whose
-  newest sibling merge lags. Workflow lane; small. Pairs with the two shipped guard slices.
+  **✅ IMPLEMENTED 2026-06-19 (Q-0015 grooming):** `check_current_state_ledger.py` now parses the
+  `Last reconciliation pass:** PR #N` marker (`marker_pr`), partitions missing PRs into **drift**
+  (`pr <= N`, actionable) vs **benign lag** (`pr > N`, informational) via `classify_missing`, and
+  `--strict` exits 1 **only on drift** — removing the standing false-red `/session-close --strict`
+  hit on newest-merge lag (the live run, red on 23 lag PRs, now exits 0). Benign lag is still printed
+  so the reconciliation routine reads the band. Shipped with its window-scale sibling below.
 - [`ledger-window-scale-to-marker-2026-06-19.md`](./ledger-window-scale-to-marker-2026-06-19.md) —
-  **session idea (2026-06-19, Q-0089, from the band-#1080 reconciliation pass):** scale
-  `check_current_state_ledger.py`'s default window from a fixed 15 to **every merge newer than the
-  `Last reconciliation pass: #M` marker** (floored at 15), so a fast band that exceeds 15 merges can't
-  silently report "all present ✓" while older drift goes unrecorded. This pass found 21 missing in the
-  band but window-15 flagged only 13; the rest were caught only by a manual full-band grep. Stdlib,
-  disposable; pairs with the benign-lag + range-scope precision tweaks.
+  **✅ IMPLEMENTED 2026-06-19 (Q-0015 grooming):** `check_current_state_ledger.py`'s default window is
+  now sized to the band since the `Last reconciliation pass:** PR #N` marker (`band_window` =
+  `max(DEFAULT_WINDOW, <merges newer than #N>)`), so a fast band can't hide an older drift past a fixed
+  edge (`--window N` stays an explicit override). The live run auto-sized to the full 23-merge band vs
+  the old fixed 15. Same marker mechanism as the benign-lag sibling above; both verified + unit-tested.
 - [`ledger-checker-range-scope-2026-06-13.md`](./ledger-checker-range-scope-2026-06-13.md) —
   **✅ implemented (2026-06-14, paired with the print-subjects slice):**
   `check_current_state_ledger.py`'s `known_ledger_numbers` now expands `#AAA–#BBB` ranges only

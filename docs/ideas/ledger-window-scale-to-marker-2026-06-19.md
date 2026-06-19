@@ -1,8 +1,12 @@
 # Idea — scale the ledger-checker window to "merges since the last reconciliation marker"
 
-> **Status:** `ideas` — capture, **not** a plan, **not** approval. Source code and the
-> binding contracts win over this file. Small/safe grooming-lane candidate (a tooling
-> precision tweak for the reconciliation/`session-close` loop).
+> **Status:** `historical` — ✅ **IMPLEMENTED 2026-06-19** (Q-0015 grooming pass). Source code wins.
+> `scripts/check_current_state_ledger.py` now sizes the default window to the band since the
+> `Last reconciliation pass:** PR #N` marker via `band_window(marker)` = `max(DEFAULT_WINDOW,
+> <merges newer than #N>)`; `--window N` stays an explicit override. Shipped together with its
+> sibling `ledger-guard-benign-lag-vs-drift-2026-06-14` (same marker mechanism). Verified against
+> ground truth: the live run auto-sized to the full 23-merge band (vs the old fixed 15). Tests in
+> `test_check_current_state_ledger.py`.
 
 ## The friction (observed this session, 2026-06-19, band-#1080 reconciliation pass)
 

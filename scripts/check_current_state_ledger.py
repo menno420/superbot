@@ -15,6 +15,16 @@ Advisory by default (exit 0) like `check_doc_freshness.py` — a brand-new merge
 lags the ledger by a session, so this must never hard-fail CI. Run `--strict` to gate
 explicitly (e.g. from `/session-close`). Pure stdlib, like `check_docs.py`.
 
+Benign lag vs. real drift (idea `ledger-guard-benign-lag-vs-drift-2026-06-14`): a missing PR
+*newer* than the `Last reconciliation pass:** PR #N` marker is **benign lag** — genuinely merged,
+but the *next* reconciliation pass owns recording it, not the current session — so `--strict`
+does **not** fail on it (it removes the standing false-red `/session-close --strict` hit on every
+session whose newest sibling merge lags). A missing PR *at/under* the marker is **real drift** and
+still fails `--strict`. The default window is also sized to the whole band since the marker (floored
+at 15, idea `ledger-window-scale-to-marker-2026-06-19`) so a fast band can't hide an older drift past
+a fixed window edge. The benign-lag list is still *printed* so the reconciliation routine reads the
+full band to record.
+
 Reliability (Q-0105, added 2026-06-12): **unverified** — confirm its flags against live
 GitHub across a few sessions before trusting it. If it proves unreliable (false positives
 from an unusual commit-subject format, or a missed real drift) over multiple sessions,
@@ -32,8 +42,8 @@ load-bearing. (Idea: ``docs/ideas/ledger-checker-range-scope-2026-06-13.md``.)
 
 Usage:
     python3.10 scripts/check_current_state_ledger.py            # advisory report (exit 0)
-    python3.10 scripts/check_current_state_ledger.py --strict   # exit 1 if drift found
-    python3.10 scripts/check_current_state_ledger.py --window N # check the last N merges
+    python3.10 scripts/check_current_state_ledger.py --strict   # exit 1 only if real drift found
+    python3.10 scripts/check_current_state_ledger.py --window N # override the auto-sized window
 """
 
 from __future__ import annotations
@@ -53,6 +63,15 @@ DEFAULT_WINDOW = 15
 # Range-expansion is scoped to the ledger proper (this header onward) + the archive, so a
 # forward-looking planning range in the ``▶ Next action`` pointer can't mask a merged band.
 RECENTLY_SHIPPED_HEADER = "## Recently shipped"
+
+# The ``Last reconciliation pass:** PR #N`` marker is the **lag/drift boundary** (same line
+# ``check_reconciliation_due.py`` keys the cadence off): everything up to and including #N has
+# been reconciled into the ledger, so a *missing* PR newer than #N is **benign lag** (the next
+# pass records it — not this session's job) while a missing PR at/under #N is **real drift** (a
+# past pass should already have it). It also sizes the default window so a fast band can't hide
+# drift past a fixed edge. Ideas: ``ledger-guard-benign-lag-vs-drift-2026-06-14`` +
+# ``ledger-window-scale-to-marker-2026-06-19``. Disposable (Q-0105) like the rest of this guard.
+_MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
 
 # A PR reference in a commit subject: "Merge pull request #734" (GitHub web),
 # "Merge PR #734: ..." (MCP merges with a custom title — the dominant style
@@ -184,40 +203,111 @@ def find_missing(window: int = DEFAULT_WINDOW) -> list[int]:
     ]
 
 
+def marker_pr(current_state_text: str | None = None) -> int | None:
+    """The ``Last reconciliation pass:** PR #N`` marker — the lag/drift boundary, or None."""
+    text = _read(CURRENT_STATE) if current_state_text is None else current_state_text
+    m = _MARKER_RE.search(text)
+    return int(m.group(1)) if m else None
+
+
+def band_window(marker: int | None) -> int:
+    """Default window sized to the band since the marker, floored at ``DEFAULT_WINDOW``.
+
+    A fixed window silently truncates a fast band — band-#1080 had ~21 merges vs a window of 15,
+    so an older unrecorded merge could hide just past the window edge while the guard reported
+    "last 15 all present ✓" (idea ``ledger-window-scale-to-marker-2026-06-19``). Scaling to
+    "merges newer than #N" makes the run self-size to the reconciliation cadence; the 15 floor
+    keeps a sane look-back below the marker so genuine drift there is still seen.
+    """
+    if marker is None:
+        return DEFAULT_WINDOW
+    merged = _git_merged_pr_map(DEFAULT_WINDOW * 6)
+    band = sum(1 for pr in merged if pr > marker)
+    return max(DEFAULT_WINDOW, band)
+
+
+def classify_missing(
+    missing: list[int],
+    marker: int | None,
+) -> tuple[list[int], list[int]]:
+    """Split missing PRs into ``(drift, lag)`` on the reconciliation marker.
+
+    A PR **newer** than the marker is *benign lag* — genuinely merged, but the **next**
+    reconciliation pass is responsible for recording it, so its absence at session-close is
+    expected, not actionable. A PR **at/under** the marker is *real drift* — a past pass should
+    already have recorded it. With no marker, everything is treated as drift (the prior, conservative
+    behaviour). This is what lets ``--strict`` stop false-redding ``/session-close`` on the routine
+    newest-merge lag (idea ``ledger-guard-benign-lag-vs-drift-2026-06-14``).
+    """
+    if marker is None:
+        return list(missing), []
+    drift = [pr for pr in missing if pr <= marker]
+    lag = [pr for pr in missing if pr > marker]
+    return drift, lag
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="current-state ledger drift guard.")
-    parser.add_argument("--strict", action="store_true", help="exit 1 if drift found")
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="exit 1 if real drift (not benign lag) found",
+    )
     parser.add_argument(
         "--window",
         type=int,
-        default=DEFAULT_WINDOW,
-        help=f"check the last N merged PRs (default {DEFAULT_WINDOW})",
+        default=None,
+        help="check the last N merged PRs (default: the band since the reconciliation "
+        f"marker, floored at {DEFAULT_WINDOW})",
     )
     args = parser.parse_args(argv)
 
-    missing = find_missing(args.window)
+    marker = marker_pr()
+    window = args.window if args.window is not None else band_window(marker)
+
+    missing = find_missing(window)
     if not missing:
-        print(
-            f"check_current_state_ledger: last {args.window} merged PRs all present ✓",
-        )
+        print(f"check_current_state_ledger: last {window} merged PRs all present ✓")
         return 0
 
-    # Show each missing PR's merge-commit subject so the reconciler can write an honest
-    # ledger entry without the manual `git log --grep "#N"` loop (Q-0089 grooming idea).
-    subjects = _git_merged_pr_map(args.window)
-    print(
-        f"check_current_state_ledger: {len(missing)} recent merged PR(s) not in "
-        "current-state.md / current-state-archive.md:",
-    )
-    for pr in missing:
-        subject = subjects.get(pr, "(no merge commit found — closed/unmerged?)")
-        print(f"  - #{pr}  {subject}")
-    print(
-        "\nThis is the living-ledger drift class. Add each to docs/current-state.md "
-        "§ Recently shipped (or archive) before closing the session "
-        "(verify the #number against live GitHub first).",
-    )
-    return 1 if args.strict else 0
+    drift, lag = classify_missing(missing, marker)
+    # Show each PR's merge-commit subject so the reconciler can write an honest ledger entry
+    # without the manual `git log --grep "#N"` loop (Q-0089 grooming idea).
+    subjects = _git_merged_pr_map(window)
+
+    def _render(pr: int) -> str:
+        return f"  - #{pr}  {subjects.get(pr, '(no merge commit found — closed/unmerged?)')}"
+
+    # Benign lag is always *printed* (the reconciliation routine reads this list to record the
+    # band) but never fails --strict — it is the next pass's job, not this session's.
+    if lag:
+        print(
+            f"check_current_state_ledger: {len(lag)} merged PR(s) newer than the "
+            f"reconciliation marker #{marker} — benign lag, the next reconciliation "
+            "pass records these (informational, not drift):",
+        )
+        for pr in lag:
+            print(_render(pr))
+
+    if drift:
+        if lag:
+            print()
+        boundary = (
+            f" (at/under marker #{marker} — real drift)" if marker is not None else ""
+        )
+        print(
+            f"check_current_state_ledger: {len(drift)} recent merged PR(s) not in "
+            f"current-state.md / current-state-archive.md{boundary}:",
+        )
+        for pr in drift:
+            print(_render(pr))
+        print(
+            "\nThis is the living-ledger drift class. Add each to docs/current-state.md "
+            "§ Recently shipped (or archive) before closing the session "
+            "(verify the #number against live GitHub first).",
+        )
+
+    return 1 if (args.strict and drift) else 0
 
 
 if __name__ == "__main__":
