@@ -56,6 +56,18 @@ def test_index_renders(client):
     assert "How it works" in resp.text
 
 
+def test_add_to_discord_ctas_link_to_install_url(client, app_module):
+    # All the "Add to Discord" CTAs (nav + hero + repeat) point at the real Discord
+    # install link — wired from one source (app.ADD_TO_DISCORD_URL), not the "/"
+    # placeholder. Guards against a silent regression back to a dead button.
+    install = app_module.ADD_TO_DISCORD_URL
+    assert install.startswith("https://discord.com/oauth2/authorize?client_id=")
+    resp = client.get("/")
+    assert resp.status_code == 200
+    # The hero + repeat CTAs live on the landing; the nav CTA comes from base.html.
+    assert resp.text.count(install) >= 2
+
+
 def test_index_shows_honest_catalogue_counts_not_server_totals(client, app_module):
     # The capability band renders catalogue counts (commands/features/games) — never
     # server/user totals (plan layout note: those need the deferred live source).

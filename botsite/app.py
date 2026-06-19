@@ -58,6 +58,15 @@ from submit import router as submit_router  # noqa: E402  - after the shim
 
 app = FastAPI(title="SuperBot", docs_url=None, redoc_url=None)
 
+# The bot's public install link — the Discord "Add App" / OAuth2 authorize URL. The
+# bare ``client_id`` link uses the app's *default install settings* (scopes +
+# permissions) configured in the Discord developer portal, so it is the canonical
+# one-click invite. Injected into every template via ``site_context`` so all the
+# "Add to Discord" CTAs share one source (no duplicated magic strings in templates).
+ADD_TO_DISCORD_URL = (
+    "https://discord.com/oauth2/authorize?client_id=1403818430758654132"
+)
+
 
 def site_context(request: Request) -> dict[str, Any]:
     """Context merged into every template — the build/freshness band the nav shows.
@@ -70,6 +79,7 @@ def site_context(request: Request) -> dict[str, Any]:
     return {
         "build": data_loader.build_meta(data),
         "site_counts": data.get("counts", {}),
+        "add_url": ADD_TO_DISCORD_URL,
     }
 
 
