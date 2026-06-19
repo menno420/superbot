@@ -6,6 +6,7 @@
 > [`planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md`](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md).
 > Routing: **S1 Bot / games + observability**. Raised 2026-06-14 from the mining Vault session
 > (#884) + the structures/skill-tree plan. Kept here for provenance.
+> **Subsystem:** economy, games, mining — the economy faucet/sink read model.
 
 ## The gap
 

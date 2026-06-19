@@ -1,0 +1,193 @@
+# docs/planning — the plan index (read this before reading any plan)
+
+> **Status:** `living-ledger` — the durable map of `docs/planning/`. **Last updated:** 2026-06-19.
+> Source code + merged PRs win over this file; `docs/current-state.md` owns *what is live right now*;
+> [`docs/roadmap.md`](../roadmap.md) owns *cross-area sequencing*. **This page owns one thing: which
+> plan files are ACTIVE vs. HISTORICAL, and where each active plan is homed.**
+
+## Why this exists
+
+`docs/planning/` holds ~85 files. Most are **not** the current plan — they are shipped-plan records,
+reconciliation snapshots, sim-pinned number files, and superseded roadmaps kept for history. A new
+agent that opens the folder and starts reading hits stale/shipped plans before reaching live work.
+This index fixes that: **read the Active section, ignore the rest unless you're chasing history.**
+
+**The badge is the authority signal.** Every doc carries a `> **Status:**` badge (`plan` =
+buildable spec · `historical` = superseded, do not act · `reference` = stable companion · `audit` =
+dated snapshot). When a plan's work ships, it is rebadged `historical` in place (links stay intact) and
+moves from "Active" to "Historical" below — **it is never deleted**, so provenance survives.
+
+> **One-fact-one-home:** this page restates nothing — it links the authoritative plan + its folio.
+> A plan's own body, the folio, and `current-state.md` win over any one-line summary here.
+
+---
+
+## Active plans — by sector
+
+The buildable / in-flight / current-spec set. Each homes to **exactly one** of the five planning
+sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Later` horizons are in
+[`roadmap.md`](../roadmap.md). `gate` = what must clear before it is startable.
+
+### S1 — Bot product
+
+| Plan | Status / gate | Folio · related ideas |
+|---|---|---|
+| [fishing-open-world-expansion](fishing-open-world-expansion-plan-2026-06-18.md) | Phase 1 (fishing v1 + gear-switching) **▶ buildable**; the unified-loadout / value-cook-sell / minigame tail is **owner-design-gated (Q-0175)** | [games](../subsystems/games.md) · `mining_exploration_brainstorm` |
+| [mining-hub-redesign](mining-hub-redesign-2026-06-15.md) | owner-picked Option A; **not yet built** (no hub-redesign commits) — ▶ startable | [games](../subsystems/games.md) · `voice-mode-planning-capture` |
+| [games-economy-faucet-sink-diagnostic](games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) | read-only economy-flow read model; gate cleared (#905/#910/#912) — **▶ turn-key** | [games](../subsystems/games.md) · `games-economy-faucet-sink-diagnostic` |
+| [myprofile-foundation](myprofile-foundation-plan-2026-06-10.md) | PR A/B shipped (#938/#940); only **PR C onboarding** remains, **owner-gated (Q-0147)** | [settings](../subsystems/settings-bindings-provisioning.md) |
+| [settings-pointer-lane-convergence](settings-pointer-lane-convergence-plan-2026-06-13.md) | P0-3; families 1+2 done, **pointer retirement gated** | [settings](../subsystems/settings-bindings-provisioning.md) |
+| [ai-panel-inplace-navigation](ai-panel-inplace-navigation-plan-2026-06-19.md) | 2–3 PRs; **`needs-hermes-review` + wants a live guild walk**; blocks graduating the consistency linter's `edit_in_place` rule | [ai](../subsystems/ai.md) · `ai-panel-inplace-navigation` |
+| [p0-2-content-free-media-diagnostics](p0-2-content-free-media-diagnostics-plan-2026-06-14.md) | one media-diagnostics gap; ▶ buildable | [media-youtube](../subsystems/media-youtube.md) · `media-quota-health-finding` |
+| [safety-community-family](safety-community-family-plan-2026-06-13.md) | lane entry doc; automod/logging/welcome **shipped** + image-mod #941 + security tiers 1+2 #929 **shipped 2026-06-18**; remainder = **NL event scheduler** (plan-first, Q-0112) | roadmap safety lane · `server-safety-and-automod`, `community-platform-features` |
+
+### S2 — BTD6
+
+| Plan | Status / gate | Folio · related ideas |
+|---|---|---|
+| [ai-btd6-answerability-roadmap](ai-btd6-answerability-roadmap-2026-06-09.md) | Phases 1–3 shipped; Phases 4/5 (settings UI · dashboard) **gated** on per-exposure asks | [btd6](../subsystems/btd6.md) |
+| [ai-roadmap](ai-roadmap-2026-06-07.md) | the **AI-area authority** (Phase 0–11, planning-only); orchestration foundation shipped, §7 workflow families next | [ai](../subsystems/ai.md) · [btd6](../subsystems/btd6.md) · *referenced by `agent/index.yml`* |
+
+### S3 — AI-Memory system (the mechanism)
+
+| Plan | Status / gate | Related ideas |
+|---|---|---|
+| [repo-consistency-linter](repo-consistency-linter-plan-2026-06-17.md) | active buildable lane (Q-0170); rules 2/3/4 **graduated to error** (#1094); `edit_in_place` warn-only, **blocked on the AI-nav plan** | `repo-consistency-linter` |
+| [codex-review-integration](codex-review-integration-plan-2026-06-17.md) | partially wired (CI posts @codex on card flip); Hermes-timer + routine-fix-first remain | `codex-automated-pr-review` |
+| [portable-substrate-kit-extraction](portable-substrate-kit-extraction-2026-06-13.md) | owner-approved OSS arc; in-repo layers shipped, **external package not yet extracted** — **owner-action** (demoted from the plannable queue after its fourth band-carry) | `portable-agent-memory-package`, `autonomous-improvement-loop-vision`. Review companion: [portable-agent-substrate-revision](portable-agent-substrate-revision-2026-06-13.md) |
+
+### S4 — Documentation system (the content)
+
+| Plan | Status / gate | Related ideas |
+|---|---|---|
+| [procedures-to-skills-conversion](procedures-to-skills-conversion-plan-2026-06-17.md) | relocate ~25% of always-loaded `CLAUDE.md` into on-demand skills; **batch 1 shipped (#1029/#1093), batches 2–4 next** | `agent-tooling-automation-shortlist` |
+| [repo-structure-improvement](repo-structure-improvement-plan-2026-06-19.md) | governance baseline shipped (#1064/#1082); remaining items buildable | `governance-files-presence-guard` |
+| [extension-taxonomy-crosswalk](extension-taxonomy-crosswalk-plan-2026-06-16.md) | crosswalk PR1 **shipped #958**; the thin-atlas **PR2** is the live remainder | `architecture-atlas-and-structure-review` |
+| [ultracode-fleet](ultracode-fleet-plan-2026-06-19.md) | parallel-build fleet coordination brief; Wave A shipped, Wave B in-flight (near-consumed) | — |
+
+### S5 — Operations / control-plane
+
+| Plan | Status / gate | Related ideas |
+|---|---|---|
+| [web-tier-centralization-proposal](web-tier-centralization-proposal-2026-06-19.md) | web-CI matrix consolidation (`dashboard-ci` + `botsite-ci` → one matrix); **owner-greenlight gated** | tracked in [website-split-next-steps §2a](../operations/website-split-next-steps-2026-06-19.md) |
+
+### Dashboard / control-API / website — the cross-cutting initiative
+
+The project's **dominant active thread** spans S1 (user surface) + S5 (control-plane) and was previously
+unrouted from the roadmap/folios. It is homed here. **Live-now status: `docs/current-state.md` ▶
+Next action.** Remaining website work has its own durable handoff:
+**[`operations/website-split-next-steps-2026-06-19.md`](../operations/website-split-next-steps-2026-06-19.md)**.
+
+| Plan | Status / gate |
+|---|---|
+| [developer-dashboard-plan](developer-dashboard-plan.md) | **LIVE in production**; read-only surfaces all shipped; Phases 2/4 + Phase 3b value-mgmt **owner/creds-gated** |
+| [dashboard-vision-finalized-state](dashboard-vision-finalized-state.md) | the **north-star** convergence doc (write side activated) |
+| [dashboard-live-editor-plan](dashboard-live-editor-plan.md) | live help/panel editor; foundation shipped, **write side owner-paced** (control-API + OAuth) |
+| [manifest-spine-execution-plan](manifest-spine-execution-plan-2026-06-17.md) | owner-approved "Build it" (Q-0162); panel-layout editor PR4 **owner-paced** (control-API write side) |
+| [owner-review-inbox-plan](owner-review-inbox-plan-2026-06-17.md) | Phase 1 shipped (#1091 `/reviews`); Phases 2–3 owner-paced |
+| [website-two-site-split-plan](website-two-site-split-plan-2026-06-19.md) | v1 build **code-complete + reviewed** (#1109–#1123); remaining = rollout + the control-API security-review-gated slices → tracked in the next-steps handoff |
+
+### Horizon backlog drafts (Later / Someday — routed, not stale)
+
+The 2026-06-08 product-growth roadmap drafts are **active as routed backlog** — each is wired into
+[`roadmap.md`](../roadmap.md) as a Later/Someday horizon, not a buildable plan:
+[economy-marketplace-rewards](economy-marketplace-rewards-roadmap-2026-06-08.md) ·
+[games-mining-idle](games-mining-idle-roadmap-2026-06-08.md) ·
+[social-community-progression](social-community-progression-roadmap-2026-06-08.md) ·
+[integrations-media-voice-website](integrations-media-voice-website-roadmap-2026-06-08.md) ·
+[ux-discoverability-mobile](ux-discoverability-mobile-roadmap-2026-06-08.md) ·
+[server-management-extension-routing](server-management-extension-routing-2026-06-08.md) ·
+[pets-companions](pets-companions-plan-2026-06-09.md) ·
+[rpg-survival-difficulty-design](rpg-survival-difficulty-design-2026-06-10.md).
+
+[superbot-ideas-lab-2026-06-05](superbot-ideas-lab-2026-06-05.md) is mostly advisory, but its **§2
+operating decisions + §6 rejection ledger are binding** "do-not-propose" — read before proposing UX/feature ideas.
+
+### Production-readiness (the risk-ranked tier — [index](production-readiness/README.md))
+
+| Doc | Status |
+|---|---|
+| [hardening-roadmap](production-readiness/hardening-roadmap-2026-06-12.md) | the **live P-tier spine** (P0 ✅ · P1-1 offline/P1-2/P1-3 ✅ · open: absence-guard Layer B + live battery) |
+| [btd6-production-readiness-map](production-readiness/btd6-production-readiness-map-2026-06-12.md) | **has unique open findings** — absence-claim Layer B, the BUG-0009 model-faithfulness class |
+| [settings-bindings-provisioning-production-readiness-map](production-readiness/settings-bindings-provisioning-production-readiness-map-2026-06-12.md) | marginal open — `moderation.mod_log` binding, governance role-pointer home (router **Q-0119**) |
+| [p1-3-contract-invariants-disposition](production-readiness/p1-3-contract-invariants-disposition-2026-06-15.md) | closing record for §P1-3 (cited live by current-state) |
+
+*The other five per-subsystem readiness maps (ai · games · health-diagnostics · media-youtube ·
+server-management) are **superseded** — their blockers shipped; they are rebadged `historical` (see below).*
+
+---
+
+## Historical / superseded — kept for provenance, **do not act on these**
+
+Everything in `docs/planning/` **not listed in "Active" above** is historical or a reference satellite.
+Each carries a `historical` (or `reference`) badge and a banner pointing at its replacement. Grouped:
+
+- **Executed plans (work shipped):** [mining-structures-skill-tree](mining-structures-skill-tree-plan-2026-06-14.md)
+  (all slices shipped — Vault #884 · skill tree #891 · Forge #905 · Home/respec/titles #910/#912) ·
+  [help-overlay-editor-ui](help-overlay-editor-ui-plan-2026-06-10.md) (#677/#679) ·
+  [mining-wire-exploration](mining-wire-exploration-plan.md) (#606) ·
+  [games-wager-money-safety](games-wager-money-safety-plan-2026-06-12.md) (#748) ·
+  [moderation-dm-config](moderation-dm-config-plan-2026-06-17.md) (#1023) ·
+  [ux-lab-interface-gallery](ux-lab-interface-gallery-plan-2026-06-12.md) (#758/#760/#762 → durable artifact `ux/pattern-library.md`) ·
+  [server-management-pr14-hub](server-management-pr14-hub-plan.md) (#584).
+- **Server-management initiative** (structurally complete through PR14; only the gated PR13 AI tail
+  remains): the authoritative record is [server-management-status](server-management-status-2026-06-05.md)
+  (`historical`, *referenced by `agent/index.yml`*); the
+  [roadmap](server-management-roadmap-2026-06-05.md) + [implementation-plan](server-management-implementation-plan-2026-06-05.md)
+  are superseded scope docs (the status tracker wins).
+- **Completed area audits / mapping campaigns:** [help-cog-customization-audit](help-cog-customization-audit-2026-06-09.md) ·
+  [settings-cog-centralization-audit](settings-cog-centralization-audit-2026-06-09.md) ·
+  [adaptive-setup-access-routine-platform](adaptive-setup-access-routine-platform-2026-06-08.md) ·
+  [platform-mapping-a-user-surface](platform-mapping-a-user-surface.md) ·
+  [platform-mapping-b-admin-surface](platform-mapping-b-admin-surface.md) ·
+  [platform-surface-mapping-standard](platform-surface-mapping-standard-2026-06-09.md) ·
+  [untapped-runtime-services-workflows-map](untapped-runtime-services-workflows-map-2026-06-10.md) ·
+  [untapped-docs-tests-verification-map](untapped-docs-tests-verification-map-2026-06-10.md) ·
+  [btd6-conversation-grounding](btd6-conversation-grounding-plan-2026-06-10.md) (slice 1 #668; tail demand-driven).
+- **Superseded routing / inventory docs:** [docs-restructure-brief](docs-restructure-brief-2026-06-08.md)
+  (→ this README + [repo-structure-improvement](repo-structure-improvement-plan-2026-06-19.md)) ·
+  [idea-roadmap-inventory](idea-roadmap-inventory-2026-06-08.md) (→ [ideas/README](../ideas/README.md)) ·
+  [loose-ends-audit-roadmap](loose-ends-audit-roadmap.md) (→ `building-roadmap/mother-hub-map.md`) ·
+  [next-session-sector-roadmap-mapping](next-session-sector-roadmap-mapping-2026-06-14.md) (#877 → the sectorized roadmap) ·
+  [website-two-site-split-planning-brief](website-two-site-split-planning-brief-2026-06-19.md) (→ the plan it produced) ·
+  [superbot-audit-consolidation](superbot-audit-consolidation-2026-06-05.md) (the 06-05 audit-burst reconciliation).
+- **Multi-PR session execution records (already `historical`):**
+  [consolidated-implementation-plan](consolidated-implementation-plan-2026-06-10.md) ·
+  [consolidated-productive-session-plan](consolidated-productive-session-plan-2026-06-09.md) ·
+  [multi-lane-execution-plan](multi-lane-execution-plan-2026-06-09.md).
+- **Sim-pinned number records (`reference` satellites of the shipped mining features):**
+  `forge-numbers` · `gear-set-numbers` · `home-numbers` · `respec-numbers` · `titles-numbers` —
+  the source of truth is the `disbot/utils/mining/*` code + its tests; these pin the design numbers.
+- **Superseded production-readiness maps:** `ai-` · `games-` · `health-diagnostics-` · `media-youtube-` ·
+  `server-management-` (their blockers shipped; the live spine is `hardening-roadmap` above).
+- **Reconciliation-pass snapshots:** the 30-PR cadence (Q-0107/Q-0134) writes one dated band snapshot.
+  **Only the newest is live** — currently [reconciliation-pass-2026-06-19-band1110](reconciliation-pass-2026-06-19-band1110.md)
+  (its §4 is the live next-band queue). **All earlier passes are `historical`** — read only for band history.
+
+---
+
+## Where current truth lives (not here)
+
+| Question | Authoritative home |
+|---|---|
+| What is live right now? | [`docs/current-state.md`](../current-state.md) ▶ Next action + Recently-shipped |
+| Cross-area sequencing / horizons? | [`docs/roadmap.md`](../roadmap.md) (by sector) |
+| Per-area state, rules, next candidates? | the area's [`docs/subsystems/<area>.md`](../subsystems/README.md) folio |
+| Remaining website work? | [`operations/website-split-next-steps-2026-06-19.md`](../operations/website-split-next-steps-2026-06-19.md) |
+| Captured-but-unapproved ideas? | [`docs/ideas/README.md`](../ideas/README.md) |
+| Retired snapshots (cartography, stability, 06-05 burst)? | [`docs/archive/README.md`](../archive/README.md) |
+
+**Living-ledger audits that stay in `docs/audits/`** (not plans — companions to binding docs, still
+updated): `helper-debt-inventory` · `mutation_boundary_audit` · `ui-view-adoption-audit` ·
+`untested-surface-checklist` (script-coupled) · `direct-db-exception-ledger`. These are routed from
+[`AGENT_ORIENTATION.md`](../AGENT_ORIENTATION.md) § "Living inventories"; the rest of `docs/audits/` is
+dated `historical` snapshots.
+
+## Adding / retiring a plan
+
+- **New plan** → drop the file here with a `plan` badge, then **add one row to the right sector table
+  above** + its folio's "Plans" list. A plan with no inbound link is invisible (and orphans
+  `check_docs --strict` unless badged `historical`/`archive`).
+- **Plan shipped/superseded** → rebadge it `historical` **in place** (keep the file + its inbound links),
+  add a one-line banner to its replacement, and move its row from "Active" to "Historical" above.
+- **Verify** after editing: `python3.10 scripts/check_docs.py --strict`.

@@ -7,6 +7,7 @@
 > **Routed (2026-06-12):** placed on `docs/roadmap.md` § AI at the **Later** horizon
 > (UX debt, owner-requested). State: `captured → on the roadmap`. Next step when picked
 > up = a `docs/planning/` slice (wants its own session with runtime context).
+> **Subsystem:** ai — the views/ai/ panel family.
 
 ## What the owner said (live session, 2026-06-11)
 

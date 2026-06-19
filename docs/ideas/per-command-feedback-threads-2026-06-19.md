@@ -3,6 +3,7 @@
 > **Status:** `ideas` — **owner-directed (2026-06-19)**, captured during the website two-site-split fan-out.
 > A real new feature, distinct from the v1 static-notes placeholder. Ready to promote to a `docs/planning/`
 > plan + build after the v1 bot site lands (Q-0172: any agent may promote → build, flagged self-initiated).
+> **Subsystem:** none — bot-site feedback feature (dashboard/site infra, not a bot subsystem).
 
 ## The vision (owner's words, 2026-06-19)
 

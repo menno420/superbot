@@ -2,6 +2,7 @@
 
 > **Status:** `ideas` — captured 2026-06-16 (Q-0089 session ender, from the AI §7.6 capability/bloon
 > roster-floor PR #975). Small/safe/decided-lane agent-tooling enhancement. Owner of the area: AI / BTD6 floor.
+> **Subsystem:** btd6 — the BTD6 deterministic-floor builder family.
 
 ## The friction
 

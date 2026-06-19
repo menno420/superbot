@@ -67,7 +67,10 @@ read **`docs/helper-policy.md`** first.
 > 5. `docs/owner/maintainer-question-router.md` when product/owner intent is unclear.
 >
 > Everything under `docs/planning/` and `docs/audits/` is **historical context, read
-> on demand** — never a top-to-bottom read. When in doubt, source files win over docs.
+> on demand** — never a top-to-bottom read. **To tell an *active* plan from a shipped/superseded
+> one, read [`docs/planning/README.md`](planning/README.md) — the plan index** (active plans by
+> sector + a historical inventory). The doc's own `> **Status:**` badge (`plan` = act on it ·
+> `historical` = do not) is the per-file signal. When in doubt, source files win over docs.
 
 ### Any task
 
@@ -296,7 +299,6 @@ top before trusting the contents.
   here** — don't restate its PR numbers (they drift). Start here before the roadmap/plan.
 - `docs/archive/games-actionability-roadmap.md` (status: complete — historical now)
 - `docs/audits/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
-- `docs/audits/ui-view-adoption-audit.md` (snapshot — companion to `helper-debt-inventory.md`)
 - `docs/audits/mutation_boundary_audit.md` — mutation boundary audit results.
   Run against the codebase post-hardening session (2026-05-24).
 

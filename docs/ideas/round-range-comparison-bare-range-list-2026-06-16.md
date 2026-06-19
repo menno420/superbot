@@ -2,6 +2,7 @@
 
 > **Status:** `ideas` — captured 2026-06-16 (Q-0089 session ender, the §7.5 round-range floor #955).
 > Small/safe/decided-lane enhancement to a just-shipped builder. Owner of the area: AI / BTD6 floor.
+> **Subsystem:** btd6 — BTD6 round-cash comparison floor.
 
 ## The gap
 

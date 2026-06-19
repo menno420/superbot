@@ -2,6 +2,7 @@
 
 > **Status:** `ideas` — captured 2026-06-19 (session idea, Q-0089, from building S1.1 of the
 > website command browser). Source + merged PRs win.
+> **Subsystem:** none — the idea-tag mechanism itself (export tooling) — header tag (the `**Subsystem:**` in the body is an example, not read).
 
 ## The gap
 

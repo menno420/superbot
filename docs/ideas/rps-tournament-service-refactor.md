@@ -4,6 +4,7 @@
 > plan, not approval.** Captured 2026-06-13 from GitHub issue **#229** (owner-authored
 > 2026-05-20) so the decomposition lives in the repo, then the issue was closed (GitHub issues
 > are not this repo's planning home — `docs/` is). Promote to a `docs/planning/` plan before building.
+> **Subsystem:** rps_tournament — the RPS tournament cog/service.
 
 ## Problem
 

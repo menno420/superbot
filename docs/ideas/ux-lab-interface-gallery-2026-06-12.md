@@ -5,6 +5,7 @@
 > [`../planning/ux-lab-interface-gallery-plan-2026-06-12.md`](../planning/ux-lab-interface-gallery-plan-2026-06-12.md)
 > (owner-commissioned design session, 2026-06-12); scheduling + audience are open in
 > router **Q-0116**. Source code and binding contracts win over anything here.
+> **Subsystem:** ux_lab — the !uxlab gallery cog.
 
 ---
 

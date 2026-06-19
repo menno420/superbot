@@ -1,6 +1,7 @@
 # Past-day verification — 2026-06-10 end-of-day
 
-> **Status:** `audit` — a dated end-of-day verification snapshot of the
+> **Status:** `historical` — a dated end-of-day verification snapshot of the
+> **Superseded 2026-06-19 (was active):** Dated end-of-day green verdict (#648–#668). Do not act on this — current map: [planning/README](../planning/README.md).
 > 2026-06-10 parallel-agent burst (**21 merged PRs, #648–#668**). Findings
 > reflect `main` @ `09a4b16` (the #668 merge). Source and merged PRs win over
 > this file. Produced by the past-day verification + docs-cleanup session

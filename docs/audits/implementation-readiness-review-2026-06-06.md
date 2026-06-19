@@ -1,6 +1,7 @@
 # Implementation Readiness Review — 2026-06-06
 
-> **Status:** `audit` — verified audit snapshot. This review classifies the current plans and
+> **Status:** `historical` — verified audit snapshot. This review classifies the current plans and
+> **Superseded 2026-06-19 (was active):** Point-in-time readiness verdict (names the long-past PR10 lane). Do not act on this — current map: [planning/README](../planning/README.md).
 > status documents; it does not replace binding contracts, subsystem folios, or the
 > server-management status tracker. Source code and merged commits win.
 >

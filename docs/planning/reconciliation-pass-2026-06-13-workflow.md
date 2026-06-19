@@ -1,6 +1,7 @@
 # Workflow reconciliation + close-out pass — 2026-06-13 (interim, by-judgment)
 
-> **Status:** `plan` — an **interim, owner-requested** reconciliation + workflow-hardening pass
+> **Status:** `historical` — an **interim, owner-requested** reconciliation + workflow-hardening pass
+> **Superseded 2026-06-19 (was active):** Interim workflow pass, long superseded; the live queue is the newest band pass. Do not act on this — current map: [planning/README](README.md).
 > (not the Q-0107 cadence pass; the **#780 marker is untouched**). The maintainer asked for a thorough
 > reassessment — "find everything we didn't properly finish, catch forgotten steps, make the workflow
 > more structured." The routine doc sanctions opening a pass off-cycle "whenever the docs visibly need

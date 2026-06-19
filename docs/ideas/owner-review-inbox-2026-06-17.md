@@ -4,6 +4,7 @@
 > build later" via `AskUserQuestion`). Decision provenance: **Q-0169**. Plan:
 > [`owner-review-inbox-plan-2026-06-17.md`](../planning/owner-review-inbox-plan-2026-06-17.md).
 > Source code + the binding contracts win over this file.
+> **Subsystem:** none — the dashboard review board (infra, not a bot subsystem).
 
 ## The problem (owner, 2026-06-17)
 

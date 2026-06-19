@@ -5,6 +5,7 @@
 > Dedup-checked against `competitive-teardown-2026-06-10.md`, `gap-analysis-2026-06-11.md`,
 > `fun-and-ease-brainstorm-2026-06-09.md`, and the roadmap. **Not a plan, not approval.**
 > Route through `ideas/README.md` before touching any code.
+> **Subsystem:** automod, moderation, security, image_moderation — the safety/community lane.
 
 ## Context
 

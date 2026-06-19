@@ -3,6 +3,7 @@
 > **Status:** `ideas`. **Not a plan, not approved.** Capture of the Q-0089 session
 > idea from the P0-1 wager-money-safety session (PR #748). Source code + the binding
 > contracts win over this file. Quick-win / read-only tooling lane.
+> **Subsystem:** economy, games — the game wager/money path.
 
 ## The gap (lived this session)
 

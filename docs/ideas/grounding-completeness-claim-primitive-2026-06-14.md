@@ -3,6 +3,7 @@
 > **Status:** `ideas` — capture, **not** a plan, **not** approval. Source code + the binding
 > contracts win. Mid-sized AI-faithfulness idea; routes to the AI orchestration §7 / absence-claim
 > guard family. Contributed 2026-06-14 (Q-0089) from the path/line-resolution session (#855).
+> **Subsystem:** btd6 — BTD6-AI grounding faithfulness.
 
 ## Where it comes from
 

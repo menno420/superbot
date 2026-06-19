@@ -5,6 +5,7 @@
 > conservatism negatives). The hero-per-level-stats sub-item below stays `captured` at low
 > priority. A captured late discovery from the BUG-0015 session (2026-06-16, PR #963). Source +
 > the binding contracts + `docs/current-state.md` win over this file.
+> **Subsystem:** btd6 — the BTD6 shorthand router corpus.
 
 ## The recurring class this would guard
 

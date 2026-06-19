@@ -91,6 +91,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/great-carson-4hsr7l` · **planning/audit/idea map cleanup** (docs-only) — new
+  `docs/planning/README.md` plan index + 40 stale plans/recon/readiness-maps/audits rebadged `historical`
+  + 27 idea subsystem tags + roadmap/folio/ledger de-stale · 2026-06-19 · **PR #1124 (auto-merge on green)**
 - `claude/magical-rubin-bq71go` · manifest spine **PR3** — control-API `GET /control/manifest` read +
   cross-manifest reconciliation (`dangling_panel_action`) + AST-vs-panel-registry drift guard +
   deploy-SHA badge · 2026-06-17 · **PR #1020 (auto-merge on green)**

@@ -3,6 +3,7 @@
 > **Status:** `ideas` — capture. **Owner-directed (2026-06-19), decisions in router Q-0178; structured
 > into a planning brief.** Source code + binding contracts win. Not the plan — the plan is the next
 > session's job (see the brief).
+> **Subsystem:** none — the dashboard/website split (infra, not a bot subsystem).
 
 ## The idea
 

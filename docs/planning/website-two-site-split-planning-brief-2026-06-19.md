@@ -1,6 +1,7 @@
 # Website two-site split — planning brief for the next session
 
-> **Status:** `plan` — a **brief**, not the plan itself: it specifies the **required output** the next
+> **Status:** `historical` — a **brief**, not the plan itself: it specifies the **required output** the next
+> **Superseded 2026-06-19 (was active):** Superseded by the plan it produced — website-two-site-split-plan-2026-06-19. Do not act on this — current map: [planning/README](README.md).
 > (planning) session must produce, plus the owner-decided constraints it must honor. Owner-directed
 > 2026-06-19; decisions recorded in router **Q-0178**. Source code + merged PRs win. The next session
 > reads this, then produces the full implementation plan + the ultracode decomposition.

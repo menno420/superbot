@@ -1,6 +1,7 @@
 # Platform mapping B — admin/platform surface
 
-> **Status:** `audit` — run 2026-06-10 at HEAD `560e35198c46e5d624344b73e94d17dd16d77dcd` (source baseline includes merged PR #639).
+> **Status:** `historical` — run 2026-06-10 at HEAD `560e35198c46e5d624344b73e94d17dd16d77dcd` (source baseline includes merged PR #639).
+> **Superseded 2026-06-19 (was active):** Mapping campaign complete (#644); findings shipped via the consolidated-implementation-plan. Do not act on this — current map: [planning/README](README.md).
 >
 > Mapping-only Agent B report under the [platform-surface mapping standard](platform-surface-mapping-standard-2026-06-09.md). Source and merged PRs win. Live GitHub was verified through the GitHub API because `gh` and a git remote are unavailable.
 >

@@ -7,6 +7,7 @@
 > Source: maintainer in chat, 2026-06-10, reacting to four live free-text
 > editor modals (`moderation.warn_timeout_minutes`, `ai.ai_default_model`,
 > `moderation.dm_template`, `ai.ai_guild_instruction_profile`).
+> **Subsystem:** ai, settings — AI-cog settings + the settings surface.
 
 ## 1. The decided posture (Q-0070 — decision, not an idea)
 

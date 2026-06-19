@@ -9,6 +9,7 @@
 > the faucet/sink diagnostic (#937) and myprofile PR A (#938). Routing: **S4 docs / S1 platform —
 > diagnostic slice**. Near-term, not speculative: `diagnostic_cog.py` is at **799/800 LOC**, so
 > the *next* `!platform` subcommand is blocked until this is done.
+> **Subsystem:** diagnostic — the !platform command group.
 
 ## The friction (a real, dated blocker)
 

@@ -6,6 +6,7 @@
 > `owner-vision-ideas-2026-06-08.md`, `competitive-teardown-2026-06-10.md`,
 > `fun-and-ease-brainstorm-2026-06-09.md`, and the roadmap.
 > **Not a plan, not approval.** Route through `ideas/README.md` before touching code.
+> **Subsystem:** welcome, counters, community — the welcome/counters/community lane.
 
 ## Context
 

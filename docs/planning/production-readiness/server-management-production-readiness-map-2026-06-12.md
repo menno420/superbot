@@ -1,6 +1,7 @@
 # Server Management — Production-Readiness Map (2026-06-12)
 
-> **Status:** `audit` — source-verified production-readiness snapshot, not a replacement for the living server-management status tracker.
+> **Status:** `historical` — source-verified production-readiness snapshot, not a replacement for the living server-management status tracker.
+> **Superseded 2026-06-19 (was active):** Superseded — P0-4 channel-ownership #820/#825 shipped. Live spine: hardening-roadmap. Do not act on this — current map: [planning/README](../README.md).
 >
 > **Scope:** setup, channel management, role management, moderation, cleanup, and the unified Server Management Hub. Source code and merged PRs win over this document.
 >

@@ -3,6 +3,7 @@
 > **Status:** `ideas` — a brainstorm capture, **not** a plan and **not** approval.
 > Session idea (2026-06-19, Q-0089), from the website two-site-split foundation build
 > (PR #1109, units S1+S2+P1).
+> **Subsystem:** none — the site.json redaction guard (export tooling).
 
 ## The gap
 

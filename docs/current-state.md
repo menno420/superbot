@@ -223,7 +223,9 @@ Source code and merged PRs win over anything written here.
   back-half fan-out)** — the file-disjoint back half on the #1109 foundation: S1.1+P2 interactive command
   browser (#1112), P3 changelog/status templates (#1114, #1116), P4 public `/submit` intake (#1117), P5+P6
   dev-site moderation UI + GitHub-issue mirror (#1118), P7+P8 redaction-audit + deploy/env docs (#1113), and
-  the `env-vars.md` freshness fix (#1119). Reviewed + refactored in the ultracode pass (this session — see
+  the `env-vars.md` freshness fix (#1119), capped by the **rollout + next-steps handoff** doc
+  ([`operations/website-split-next-steps-2026-06-19.md`](operations/website-split-next-steps-2026-06-19.md),
+  #1123). Reviewed + refactored in the ultracode pass (see
   [`operations/website-split-review-2026-06-19.md`](operations/website-split-review-2026-06-19.md)): the
   test-isolation `sys.modules` collision, the `_clean` C1 gap, the `chain` idea-mis-map, and the
   `env-vars.md` web-tier marker. All newer than the #1110 reconciliation marker (recorded on sight, Q-0166).
@@ -233,8 +235,8 @@ Source code and merged PRs win over anything written here.
   a question-router digest reporting the next free Q + the open queue (#1103); Codex reviews the **final head**
   (`@codex review` on the session-card flip, #1105); the `pr-conflict-guard` now polls through GitHub's
   UNKNOWN-mergeability window (#1106); `.gitignore` ignores transient background-agent worktrees (#1108).
-- **#1101 (2026-06-19, dashboard generated-data refresh)** — `Merge pull request #1101 from
-  menno420/bot/dashboard-refresh` — the per-source-merge `dashboard-data-refresh` workflow (Q-0167) regen.
+- **#1101 · #1121 (2026-06-19, dashboard generated-data refresh)** — the per-source-merge
+  `dashboard-data-refresh` workflow (Q-0167) regen of `dashboard.json` (two cadence refreshes).
 - **#1098 (2026-06-19, band-#1080 Q-0107 reconciliation pass)** — the docs-only reconciliation
   ([record](planning/reconciliation-pass-2026-06-19-band1080.md)): reconciled the ledger, planned the next
   band, reset the `Last reconciliation pass` marker to #1094.
