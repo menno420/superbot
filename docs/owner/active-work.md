@@ -83,6 +83,12 @@ living ledger (`docs/current-state.md`).
   `scripts/check_consistency.py` · `tests/unit/scripts/test_check_consistency.py` ·
   `docs/current-state.md` · 2026-06-18 · **auto-merge on green**
 
+- `claude/website-deploy-redaction-docs` · website two-site-split **fan-out P7 + P8** (docs only) —
+  the §4.1 redaction-audit record + the `botsite/` deploy/env docs; sole fan-out unit editing the
+  plan (mark §5 back-half shipped + §9 links) · `docs/operations/dashboard-redaction-audit.md` ·
+  `docs/operations/botsite-deploy.md` · `docs/operations/env-vars.md` · `dashboard/README.md` ·
+  `docs/planning/website-two-site-split-plan-2026-06-19.md` · 2026-06-19 · **auto-merge on green**
+
 ## Recently cleared
 
 - `claude/magical-rubin-bq71go` · manifest spine **PR3** — control-API `GET /control/manifest` read +
