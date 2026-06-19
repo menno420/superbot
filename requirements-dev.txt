@@ -23,3 +23,10 @@ pytest-xdist==3.6.1
 # Developer/agent-only — NOT a bot-runtime dep and NOT installed in CI; the tool
 # degrades to an AST fallback when grimp is absent. See docs/context-map-tooling.md.
 grimp==3.14
+
+# pip-tools (`pip-compile`) — regenerates the dashboard lockfile
+# (dashboard/requirements.txt) from dashboard/requirements.in. Developer/agent-only,
+# NOT installed in CI's jobs and NOT a runtime dep: CI installs the already-compiled
+# lockfile, it never recompiles. Pinned so regeneration is reproducible across agents
+# (a newer resolver could pin a different closure). See dashboard/requirements.in.
+pip-tools==7.5.3
