@@ -126,6 +126,10 @@ async def _refresh_or_followup(
     await safe_followup(interaction, f"✅ {confirm_message}", ephemeral=True)
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# a staff-role interaction_check (not BaseView's invoker lock), a 300s
+# timeout, and conditional button removal in __init__ keyed on the
+# strategy's current visibility.
 class StrategyReviewView(discord.ui.View):
     """Per-strategy review controls. Staff-only."""
 

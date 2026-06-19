@@ -153,6 +153,11 @@ class _OverrideButton(discord.ui.Button):
         await interaction.response.send_modal(modal)
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# an ephemeral, pipeline-gated follow-up posted only after the parent panel
+# already authorized the actor, so it needs neither BaseView's invoker
+# interaction_check nor its on_timeout message-edit (the ephemeral message
+# is auto-dismissed by Discord).
 class NumericPresetsView(discord.ui.View):
     """Ephemeral follow-up view: preset buttons + override.
 

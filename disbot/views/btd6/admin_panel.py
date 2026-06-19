@@ -79,6 +79,10 @@ async def build_admin_embed() -> discord.Embed:
 # ---------------------------------------------------------------------------
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# a bespoke two-tier interaction_check (opener id + staff role) plus a
+# 600s (10-min) operator timeout that diverges from BaseView's invoker-only
+# 180s default, driven by the async create() registry factory.
 class BTD6AdminView(discord.ui.View):
     """Ephemeral staff-only admin panel. Fresh instance per click."""
 
