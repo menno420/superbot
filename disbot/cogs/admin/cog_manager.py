@@ -29,6 +29,7 @@ from discord.ext import commands
 
 from utils.ui_constants import INFO_COLOR
 from views.base import HubView
+from views.paginated_select import attach_windowed_select
 
 if TYPE_CHECKING:
     from cogs.admin_cog import AdminCog
@@ -124,70 +125,40 @@ async def _do_reload(bot: commands.Bot, module: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-class _CogManagerSelect(discord.ui.Select):
-    """Dropdown listing every ``*_cog.py`` discovered under ``COGS_DIR``.
+def _build_cog_options(loaded: set[str]) -> list[discord.SelectOption]:
+    """Build a :class:`discord.SelectOption` per ``*_cog.py`` under ``COGS_DIR``.
 
-    Selecting an option stashes the choice on the parent view; the
-    Load / Unload / Reload buttons act on that selection. Status icons
-    in the option label show the current state at panel-render time —
-    refresh after each mutation to keep them current.
+    One option per discovered cog — *not* front-truncated to Discord's 25-option
+    cap. The :class:`_CogManagerView` windows the full list with
+    :func:`views.paginated_select.attach_windowed_select` so every cog stays
+    reachable even when there are more than 25 (there are currently ~46; the old
+    ``options[:25]`` silently dropped every cog sorting past the 25th — the #1040
+    select-option-truncation class, in the cog layer this time).
+
+    Status glyphs in each label reflect load/syntax state at panel-render time.
     """
-
-    def __init__(self, loaded: set[str]) -> None:
-        options: list[discord.SelectOption] = []
-        for fname in sorted(os.listdir(COGS_DIR)):
-            if not fname.endswith("_cog.py") or fname.startswith("__"):
-                continue
-            short = fname[:-3]
-            module = f"cogs.{short}"
-            load_glyph = "✅" if module in loaded else "❌"
-            syntax_glyph = "🟢" if _syntax_ok(fname) else "🔴"
-            protected_glyph = "🛡" if module in _PROTECTED_COGS else ""
-            label = f"{load_glyph}{syntax_glyph}{protected_glyph} {short}"[:100]
-            options.append(
-                discord.SelectOption(
-                    label=label,
-                    value=module,
-                    description=(
-                        "Protected core cog — panel unload denied"
-                        if module in _PROTECTED_COGS
-                        else None
-                    ),
+    options: list[discord.SelectOption] = []
+    for fname in sorted(os.listdir(COGS_DIR)):
+        if not fname.endswith("_cog.py") or fname.startswith("__"):
+            continue
+        short = fname[:-3]
+        module = f"cogs.{short}"
+        load_glyph = "✅" if module in loaded else "❌"
+        syntax_glyph = "🟢" if _syntax_ok(fname) else "🔴"
+        protected_glyph = "🛡" if module in _PROTECTED_COGS else ""
+        label = f"{load_glyph}{syntax_glyph}{protected_glyph} {short}"[:100]
+        options.append(
+            discord.SelectOption(
+                label=label,
+                value=module,
+                description=(
+                    "Protected core cog — panel unload denied"
+                    if module in _PROTECTED_COGS
+                    else None
                 ),
-            )
-        if not options:
-            options.append(
-                discord.SelectOption(label="No cogs found", value="__none__"),
-            )
-        super().__init__(
-            placeholder="Choose a cog…",
-            min_values=1,
-            max_values=1,
-            options=options[:25],  # Discord cap
-            custom_id="admin:cogmgr:select",
-            row=0,
+            ),
         )
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        view = self.view
-        if not isinstance(view, _CogManagerView):
-            await interaction.response.send_message(
-                "This dropdown is no longer attached to the cog manager.",
-                ephemeral=True,
-            )
-            return
-        value = self.values[0]
-        if value == "__none__":
-            await interaction.response.send_message(
-                "No cogs available.",
-                ephemeral=True,
-            )
-            return
-        view.selected_module = value
-        await interaction.response.edit_message(
-            embed=view.build_embed(),
-            view=view,
-        )
+    return options
 
 
 class _CogManagerView(HubView):
@@ -222,7 +193,18 @@ class _CogManagerView(HubView):
 
     def _add_components(self) -> None:
         loaded = set(self.cog.bot.extensions.keys())
-        self.add_item(_CogManagerSelect(loaded))
+        # Windowed select (◀/▶ paging) instead of a front-truncated
+        # ``options[:25]`` — so all ~46 cogs stay selectable. select_row=0
+        # and nav_row=3 leave row 1 (Load/Unload/Reload), row 2 (Refresh),
+        # and row 4 (the opener's Back button) clear.
+        attach_windowed_select(
+            self,
+            _build_cog_options(loaded),
+            self._on_cog_selected,
+            placeholder="Choose a cog…",
+            select_row=0,
+            nav_row=3,
+        )
 
         load = discord.ui.Button(  # type: ignore[var-annotated]
             label="Load",
@@ -259,6 +241,29 @@ class _CogManagerView(HubView):
         )
         refresh.callback = self._on_refresh  # type: ignore[method-assign]
         self.add_item(refresh)
+
+    async def _on_cog_selected(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        """Windowed-select callback — stash the chosen cog and re-render.
+
+        ``values`` is the windowed select's cleaned value list (the empty-state
+        sentinel is already filtered out by the window), so an empty list means
+        no real cog was picked.
+        """
+        if not values:
+            await interaction.response.send_message(
+                "No cogs available.",
+                ephemeral=True,
+            )
+            return
+        self.selected_module = values[0]
+        await interaction.response.edit_message(
+            embed=self.build_embed(),
+            view=self,
+        )
 
     def build_embed(self) -> discord.Embed:
         loaded = set(self.cog.bot.extensions.keys())
