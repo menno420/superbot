@@ -297,13 +297,19 @@ def check_site_subset(
 ) -> list[Issue]:
     """Validate the public ``botsite/data/site.json`` subset (plan §5 / §2.2).
 
-    Two assertions, both **fail-closed**:
+    Three assertions, all **fail-closed**:
 
-    * **whitelist** — the committed file's top-level keys must be a *subset* of the
-      producer's :data:`SITE_TOPLEVEL_KEYS`. A new (un-whitelisted) top-level key is
-      the leak class this guards: it would mean the producer started emitting a
+    * **top-level whitelist** — the committed file's top-level keys must be a *subset*
+      of the producer's :data:`SITE_TOPLEVEL_KEYS`. A new (un-whitelisted) top-level
+      key is the leak class this guards: it would mean the producer started emitting a
       family that was never vetted as public. This is an **error** — the redaction
       guarantee for non-negotiable #1.
+    * **per-command field whitelist** (plan S1.1) — every ``commands[*]`` record's
+      fields must be a *subset* of the producer's :data:`SITE_COMMAND_FIELDS`. The
+      interactive browser enriched each command with description/examples/status/
+      linked-ideas; this assertion is the standing guard that a *future* enrichment
+      can't slip a per-guild value or dev-only field onto the public command surface
+      without being vetted into the whitelist first. Also an **error**.
     * **counts** — ``counts.commands`` / ``features`` / ``games`` must equal the
       lengths in the committed file (the count-drift class, mirrored from
       :func:`check_count_integrity`).
@@ -317,7 +323,8 @@ def check_site_subset(
             return issues
         committed = json.loads(site_path.read_text(encoding="utf-8"))
 
-    allowed: set[str] = set(_export_module().SITE_TOPLEVEL_KEYS)
+    export = _export_module()
+    allowed: set[str] = set(export.SITE_TOPLEVEL_KEYS)
     extra = set(committed) - allowed
     if extra:
         issues.append(
@@ -326,6 +333,23 @@ def check_site_subset(
                 f"site.json has top-level key(s) {sorted(extra)} not in the public "
                 f"whitelist {sorted(allowed)} — a non-public family must never reach "
                 f"the marketing site (plan §2.2); fix build_site_subset / the whitelist",
+            ),
+        )
+
+    # Per-command field whitelist — fail-closed on any un-whitelisted command field.
+    allowed_cmd_fields: set[str] = set(export.SITE_COMMAND_FIELDS)
+    extra_cmd_fields: set[str] = set()
+    for cmd in committed.get("commands", []):
+        if isinstance(cmd, dict):
+            extra_cmd_fields |= set(cmd) - allowed_cmd_fields
+    if extra_cmd_fields:
+        issues.append(
+            _err(
+                "site_command_field_not_whitelisted",
+                f"site.json commands carry field(s) {sorted(extra_cmd_fields)} not in "
+                f"the public per-command whitelist {sorted(allowed_cmd_fields)} — a "
+                f"command field must never leak a per-guild value or dev-only datum "
+                f"(plan S1.1); fix _site_commands / SITE_COMMAND_FIELDS",
             ),
         )
 

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Commands — SuperBot{% endblock %}
+{% block description %}Browse every SuperBot command — search, filter by category, and click any command to see what it does, its aliases, permissions, examples, and what's planned.{% endblock %}
+{% block content %}
+
+{#
+  Interactive command reference (plan unit P2). Renders the S1.1-enriched
+  site.json.commands as clickable cards → an expanding detail view, with fast
+  CLIENT-SIDE search + category filtering so nothing takes long to find.
+
+  Progressive enhancement: each command is a native <details> element, so it is
+  clickable and expands to its detail WITHOUT JavaScript. The inline script only
+  adds the search box + category filter on top; with JS off, every command is
+  simply shown and individually expandable. No `static/` dir (the #970 gotcha) —
+  the script is inlined at the end of this block.
+
+  `groups` (from data_loader.commands_by_category) is a list of (category, [cmds])
+  tuples; we flatten it into one searchable, sorted card list. Every value here is
+  repo-level metadata — no per-guild value (the site.json whitelist guarantees it).
+#}
+
+{% set all_commands = [] %}
+{% for _category, cmds in groups %}{% for c in cmds %}{{ all_commands.append((_category, c)) or '' }}{% endfor %}{% endfor %}
+{% set categories = groups | map(attribute=0) | list %}
+
+<section class="mb-8">
+  <h1 class="text-3xl font-bold">Commands</h1>
+  <p class="mt-2 text-slate-400">
+    {{ all_commands | length }} commands across {{ categories | length }} categories.
+    Click any command for details — search or filter to find one fast.
+  </p>
+</section>
+
+{# ── Search + category filter (enhanced by the inline script; degrade-safe) ──── #}
+<div class="mb-6 space-y-3">
+  <input
+    id="cmd-search"
+    type="search"
+    placeholder="Search commands, aliases, descriptions…"
+    autocomplete="off"
+    class="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm placeholder-slate-500 focus:border-sky-500 focus:outline-none"
+  />
+  <div id="cmd-filters" class="flex flex-wrap gap-2">
+    <button type="button" data-category="" class="cmd-filter rounded-full border border-sky-600 bg-sky-600/20 px-3 py-1 text-xs font-medium text-sky-300">All</button>
+    {% for category in categories %}
+      <button type="button" data-category="{{ category }}" class="cmd-filter rounded-full border border-slate-700 px-3 py-1 text-xs font-medium text-slate-300 hover:border-slate-500">{{ category }}</button>
+    {% endfor %}
+  </div>
+</div>
+
+{# ── Command cards ───────────────────────────────────────────────────────────── #}
+<div id="cmd-list" class="space-y-2">
+  {% for category, cmd in all_commands %}
+    {# data-* attributes drive client-side filtering; data-search is a lowercased
+       haystack of name + aliases + usage so the search is instant + forgiving. #}
+    <details
+      class="cmd-card group rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 open:bg-slate-900/70"
+      data-category="{{ category }}"
+      data-search="{{ (cmd.name ~ ' ' ~ (cmd.aliases | join(' ')) ~ ' ' ~ (cmd.usage or '') ~ ' ' ~ (cmd.description or '')) | lower }}"
+    >
+      <summary class="flex cursor-pointer list-none items-center gap-3">
+        <code class="font-semibold text-sky-300">!{{ cmd.name }}</code>
+        {# Status badge — finished vs in-progress (instant maturity signal). #}
+        {% if cmd.status == 'in-progress' %}
+          <span class="rounded-full bg-amber-900/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">in&#8209;progress</span>
+        {% else %}
+          <span class="rounded-full bg-emerald-900/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">finished</span>
+        {% endif %}
+        <span class="hidden truncate text-sm text-slate-400 sm:inline">{{ cmd.usage }}</span>
+        <span class="ml-auto text-xs text-slate-600 transition-transform group-open:rotate-90">▸</span>
+      </summary>
+      {% include "_command_detail.html" %}
+    </details>
+  {% endfor %}
+</div>
+
+{# Friendly empty state when the search/filter matches nothing (JS toggles it). #}
+<p id="cmd-empty" class="mt-6 hidden text-center text-sm text-slate-500">
+  No commands match — try a different search or category.
+</p>
+
+{# ── Progressive-enhancement script (inline; no static/ dir — the #970 gotcha) ── #}
+<script>
+  (function () {
+    var search = document.getElementById("cmd-search");
+    var list = document.getElementById("cmd-list");
+    var empty = document.getElementById("cmd-empty");
+    var filterButtons = Array.prototype.slice.call(document.querySelectorAll(".cmd-filter"));
+    var cards = Array.prototype.slice.call(list.querySelectorAll(".cmd-card"));
+    var activeCategory = "";
+
+    function apply() {
+      var query = (search.value || "").trim().toLowerCase();
+      var visible = 0;
+      cards.forEach(function (card) {
+        var matchesCategory = !activeCategory || card.getAttribute("data-category") === activeCategory;
+        var matchesQuery = !query || (card.getAttribute("data-search") || "").indexOf(query) !== -1;
+        var show = matchesCategory && matchesQuery;
+        card.style.display = show ? "" : "none";
+        if (show) visible++;
+      });
+      empty.style.display = visible ? "none" : "";
+    }
+
+    search.addEventListener("input", apply);
+
+    filterButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        activeCategory = button.getAttribute("data-category") || "";
+        filterButtons.forEach(function (b) {
+          var on = b === button;
+          b.classList.toggle("border-sky-600", on);
+          b.classList.toggle("bg-sky-600/20", on);
+          b.classList.toggle("text-sky-300", on);
+          b.classList.toggle("border-slate-700", !on);
+          b.classList.toggle("text-slate-300", !on);
+        });
+        apply();
+      });
+    });
+  })();
+</script>
+{% endblock %}

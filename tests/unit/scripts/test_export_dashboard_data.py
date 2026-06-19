@@ -249,9 +249,130 @@ def test_site_subset_commands_carry_no_per_guild_value(mod):
             "cooldown",
             "permissions",
             "usage",
+            # S1.1 enrichment fields (the interactive browser):
+            "description",
+            "use_cases",
+            "examples",
+            "status",
+            "linked_ideas",
+            "notes",
         }
         # cooldown is reserved (not statically resolvable) — None, never fabricated.
         assert cmd["cooldown"] is None
+
+
+# ---------------------------------------------------------------------------
+# S1.1 — per-command enrichment (description / examples / status / linked_ideas)
+# ---------------------------------------------------------------------------
+
+
+def test_command_description_first_paragraph_and_sphinx_strip(mod):
+    doc = (
+        "Open the access explorer for the invoker.\n"
+        "It is read-only and ephemeral.\n\n"
+        "PR E1 — implementation note that must NOT appear in the first paragraph.\n"
+    )
+    desc = mod._command_description(doc)
+    assert desc == "Open the access explorer for the invoker. It is read-only and ephemeral."
+    # Sphinx cross-reference roles are reduced to their human label.
+    assert mod._command_description("Open :class:`AccessExplorerView` now.") == (
+        "Open AccessExplorerView now."
+    )
+    # A docstring-less command yields None — never invented prose.
+    assert mod._command_description("") is None
+    assert mod._command_description("   \n  ") is None
+
+
+def test_command_examples_only_backticked_bang_invocations(mod):
+    doc = (
+        "Sell raw resources for coins (e.g. `!sell diamond 5`).\n"
+        "Also `!sellall` works. A bare !notanexample in prose is ignored.\n"
+        "Duplicate `!sell diamond 5` is de-duplicated.\n"
+    )
+    examples = mod._command_examples(doc)
+    assert examples == ["!sell diamond 5", "!sellall"]
+    # No docstring → no fabricated examples.
+    assert mod._command_examples("") == []
+
+
+def test_subsystem_open_work_links_ideas_title_and_status_only(mod):
+    catalogue = [{"key": "mining"}, {"key": "welcome"}, {"key": "admin"}]
+    ideas = [
+        {"file": "mining-roadmap-2026-06-16.md", "title": "Mining roadmap", "status": "ideas"},
+        # historical/closed ideas must NOT count as open work.
+        {"file": "old-mining-thing.md", "title": "Old mining", "status": "historical"},
+        {"file": "welcome-feeds.md", "title": "Welcome feeds", "status": "planned"},
+    ]
+    bugs = [{"id": "BUG-1", "title": "admin panel crash", "status": "OPEN"}]
+    work = mod._subsystem_open_work(ideas, bugs, catalogue)
+    # mining: one OPEN idea linked (the historical one excluded), in-progress.
+    assert work["mining"]["in_progress"] is True
+    assert work["mining"]["ideas"] == [{"title": "Mining roadmap", "status": "ideas"}]
+    # welcome: linked via a 'planned' idea.
+    assert work["welcome"]["in_progress"] is True
+    # admin: no idea, but an OPEN bug → in-progress with empty linked-ideas list.
+    assert work["admin"]["in_progress"] is True
+    assert work["admin"]["ideas"] == []
+    # A subsystem with no open work is absent from the map.
+    assert "general" not in work
+    # Redaction: linked ideas carry ONLY title + status — never the raw body/file.
+    for entry in work.values():
+        for idea in entry["ideas"]:
+            assert set(idea) == {"title", "status"}
+
+
+def test_subsystem_open_work_ignores_closed_bug(mod):
+    catalogue = [{"key": "counting"}]
+    work = mod._subsystem_open_work(
+        ideas=[],
+        bugs=[{"id": "BUG-1", "title": "counting bug", "status": "FIXED"}],
+        catalogue=catalogue,
+    )
+    assert work == {}  # a FIXED bug is not open work
+
+
+def test_site_subset_command_enrichment_shapes_are_honest(mod):
+    subset = mod.build_site_subset(mod.build_data())
+    cmds = subset["commands"]
+    assert cmds
+    for cmd in cmds:
+        # use_cases / notes are reserved null (no honest static source); never faked.
+        assert cmd["use_cases"] is None
+        assert cmd["notes"] is None
+        # status is one of the two honest maturity tokens.
+        assert cmd["status"] in {
+            mod.COMMAND_STATUS_FINISHED,
+            mod.COMMAND_STATUS_IN_PROGRESS,
+        }
+        # examples + linked_ideas are always lists.
+        assert isinstance(cmd["examples"], list)
+        assert isinstance(cmd["linked_ideas"], list)
+        # every example is a backticked-style bang invocation lifted verbatim.
+        assert all(e.startswith("!") for e in cmd["examples"])
+        # description is either None or a non-empty string.
+        assert cmd["description"] is None or (
+            isinstance(cmd["description"], str) and cmd["description"]
+        )
+        # linked ideas carry title + status only (redaction).
+        for idea in cmd["linked_ideas"]:
+            assert set(idea) == {"title", "status"}
+    # The real repo has at least some enrichment (proves the wiring is live, not inert).
+    assert any(c["examples"] for c in cmds), "expected some commands to expose examples"
+    assert any(c["description"] for c in cmds), "expected some commands to have a description"
+    assert any(
+        c["status"] == mod.COMMAND_STATUS_IN_PROGRESS for c in cmds
+    ), "expected some commands flagged in-progress by linked open work"
+
+
+def test_build_site_subset_degrades_without_repo_docstrings(mod, tmp_path):
+    # With a repo_root that has no disbot/ tree, the docstring map is empty — the
+    # subset still builds, every command just has no description/examples.
+    subset = mod.build_site_subset(mod.build_data(), repo_root=tmp_path)
+    for cmd in subset["commands"]:
+        assert cmd["description"] is None
+        assert cmd["examples"] == []
+    # The subset is still structurally valid (top-level keys intact).
+    assert set(subset) == set(mod.SITE_TOPLEVEL_KEYS)
 
 
 def test_site_subset_catalogue_is_metadata_only(mod):

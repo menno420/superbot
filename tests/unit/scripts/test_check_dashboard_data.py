@@ -247,6 +247,55 @@ def test_site_subset_flags_count_mismatch(mod):
     assert any(i.code == "site_count_mismatch" and i.severity == "error" for i in issues)
 
 
+def test_site_subset_fails_closed_on_unwhitelisted_command_field(mod):
+    # The S1.1 per-command leak class: a command field outside SITE_COMMAND_FIELDS is
+    # an ERROR (it could be a per-guild value or a dev-only datum sneaking onto the
+    # public command surface).
+    forged = {
+        "meta": {},
+        "counts": {"commands": 1, "features": 0, "games": 0},
+        "catalogue": [],
+        "commands": [{"name": "ping", "guild_override_value": "leak"}],
+        "bot_changelog": [],
+    }
+    issues = mod.check_site_subset(forged)
+    assert any(
+        i.code == "site_command_field_not_whitelisted" and i.severity == "error"
+        for i in issues
+    )
+    field_issue = next(
+        i for i in issues if i.code == "site_command_field_not_whitelisted"
+    )
+    assert "guild_override_value" in field_issue.message
+
+
+def test_site_subset_enriched_command_fields_pass(mod):
+    # The full S1.1-enriched command shape must pass the per-command whitelist.
+    enriched = {
+        "meta": {},
+        "counts": {"commands": 1, "features": 0, "games": 0},
+        "catalogue": [],
+        "commands": [
+            {
+                "name": "ping",
+                "aliases": [],
+                "category": "utility",
+                "cooldown": None,
+                "permissions": "user",
+                "usage": "Ping the bot.",
+                "description": "Report the bot's WebSocket latency.",
+                "use_cases": None,
+                "examples": ["!ping"],
+                "status": "finished",
+                "linked_ideas": [],
+                "notes": None,
+            },
+        ],
+        "bot_changelog": [],
+    }
+    assert mod.check_site_subset(enriched) == []
+
+
 def test_live_site_subset_is_clean(mod):
     # The freshly-built subset must pass its own whitelist + count guard.
     fresh = mod._export_module().build_site_subset(mod._build_fresh())
