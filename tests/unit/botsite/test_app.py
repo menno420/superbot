@@ -58,14 +58,24 @@ def test_index_renders(client):
 
 def test_add_to_discord_ctas_link_to_install_url(client, app_module):
     # All the "Add to Discord" CTAs (nav + hero + repeat) point at the real Discord
-    # install link — wired from one source (app.ADD_TO_DISCORD_URL), not the "/"
+    # install link — wired from one source (chrome.ADD_TO_DISCORD_URL), not the "/"
     # placeholder. Guards against a silent regression back to a dead button.
-    install = app_module.ADD_TO_DISCORD_URL
+    install = app_module.chrome.ADD_TO_DISCORD_URL
     assert install.startswith("https://discord.com/oauth2/authorize?client_id=")
     resp = client.get("/")
     assert resp.status_code == 200
     # The hero + repeat CTAs live on the landing; the nav CTA comes from base.html.
     assert resp.text.count(install) >= 2
+
+
+def test_submit_page_shares_chrome_with_working_install_cta(client, app_module):
+    # /submit is rendered by submit.py's SEPARATE Jinja env; it must share
+    # chrome.site_context so base.html's nav "Add to Discord" button isn't a dead
+    # href="" there. (Regression caught on PR #1152: the separate env had no context
+    # processor, so the public feedback page shipped a dead install button.)
+    resp = client.get("/submit")
+    assert resp.status_code == 200
+    assert app_module.chrome.ADD_TO_DISCORD_URL in resp.text
 
 
 def test_index_shows_honest_catalogue_counts_not_server_totals(client, app_module):
