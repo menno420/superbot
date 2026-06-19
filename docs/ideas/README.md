@@ -52,13 +52,19 @@ Current broad captures:
   hard part the owner named: **audience routing, fail-closed** — the AI must classify *who each report is
   for* (owner / this server's mods / public) and never leak a server-private issue to the public website.
   Rails already exist (owner-review-inbox · submissions DB · Hermes triage); it's the AI's first *write*
-  capability, so gated by Q-0048. → relates `planning/owner-review-inbox-plan` · `per-command-feedback-threads`.
+  capability, so gated by Q-0048. **PARTIALLY PROMOTED (band-#1140 pass):** the *board* it writes into is
+  planned ([`planning/feedback-board-generalization-plan-2026-06-19`](../planning/feedback-board-generalization-plan-2026-06-19.md));
+  the AI audience-router stays plan-the-questions-first → routed as **Q-0183**. → relates
+  `planning/owner-review-inbox-plan` · `per-command-feedback-threads`.
 - [`explore-hub-federated-world-2026-06-19.md`](./explore-hub-federated-world-2026-06-19.md) —
   **owner-directed (2026-06-19, brainstorm):** the **Explore hub** as the missing spine — a *federated*
   open world where mining/fishing/pets/quests share one character, currency, and a light survival/adventure
   overlay, **but each subsystem still feels like its own complete game**. Codifies the direction the fishing
   plan is already drifting toward (shared `game_xp` · unified character · swappable loadouts); homes four
-  separate gated lanes under one world model. → relates `planning/{fishing-open-world-expansion,mining-hub-redesign,rpg-survival-difficulty-design}`.
+  separate gated lanes under one world model. **PROMOTED → plan (band-#1140 pass, Q-0172):**
+  [`planning/explore-hub-federated-world-plan-2026-06-19`](../planning/explore-hub-federated-world-plan-2026-06-19.md)
+  (ungated spine: top-level hub + world registry + global/per-game XP split; deferred layers routed as
+  **Q-0182**). → relates `planning/{explore-hub-federated-world-plan,fishing-open-world-expansion,mining-hub-redesign,rpg-survival-difficulty-design}`.
 - [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) —
   **session idea (2026-06-19, Q-0089, from the planning-map cleanup):** a stdlib
   `scripts/check_plan_homing.py` asserting every non-`historical` `docs/planning/` doc is linked from a
@@ -74,6 +80,13 @@ Current broad captures:
   the agent does by hand) so the control-plane ROUTINE_PAT row is verifiable *by the script*, not only by a
   manual MCP read no checker can see. Disposable (Q-0105). → relates `scripts/check_loop_health.py` ·
   `operations/autonomous-routines.md` § "Control-plane state".
+- [`band-pr-merge-status-helper-2026-06-19.md`](./band-pr-merge-status-helper-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the band-#1140 reconciliation pass):** a stdlib
+  `scripts/band_pr_status.py` (or a `--band-status` mode on `check_current_state_ledger.py`) that classifies
+  every PR in a band as **merged / closed-unmerged / open** — so the reconcile ledger step doesn't hand-check
+  merged-vs-superseded (this pass had to verify #1133 was closed-unmerged by `git branch --contains`). Closes
+  a #763-class ground-truth gap (Q-0120/Q-0181). Disposable (Q-0105). → relates
+  `scripts/check_current_state_ledger.py` · the reconciliation routine.
 - [`per-command-feedback-threads-2026-06-19.md`](./per-command-feedback-threads-2026-06-19.md) —
   **owner-directed (2026-06-19):** every command/cog on the bot site carries an optional **feedback thread**
   (anyone posts questions/bugs/improvements), gated by an **Anthropic-API moderation pass** (clean-up +

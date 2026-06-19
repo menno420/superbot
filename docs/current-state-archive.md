@@ -86,6 +86,51 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1061 (2026-06-19, dashboard generated-data refresh)** — `Merge pull request #1061 from
+  menno420/bot/dashboard-refresh` — the per-source-merge `dashboard-data-refresh` workflow (Q-0167)
+  regenerated the committed `dashboard/data/dashboard.json` from live source.
+- **#1060 (2026-06-19, consistency-linter — AI-nav idea → executable plan, Q-0172 self-initiated)** —
+  promoted [`ideas/ai-panel-inplace-navigation-2026-06-11.md`](ideas/ai-panel-inplace-navigation-2026-06-11.md)
+  into [`planning/ai-panel-inplace-navigation-plan-2026-06-19.md`](planning/ai-panel-inplace-navigation-plan-2026-06-19.md)
+  (the only blocker for graduating consistency rule 1 `edit_in_place`); updated the ideas-README + roadmap.
+- **#1055 (2026-06-18, dashboard generated-data refresh)** — `Merge pull request #1055 from
+  menno420/bot/dashboard-refresh` — the per-source-merge `dashboard-data-refresh` workflow regen.
+- **#1053 (2026-06-18, twelfth Q-0107 reconciliation pass — band-#1050)** — the docs-only
+  reconciliation pass ([record](planning/reconciliation-pass-2026-06-18-band1050.md)): reconciled the
+  ledger (added #1022/#1029, trimmed to the 20 newest → archive), planned the next band, reset the
+  `Last reconciliation pass` marker to #1050.
+- **#1052 (2026-06-18, dashboard generated-data refresh)** — `Merge pull request #1052 from
+  menno420/bot/dashboard-refresh` — the per-source-merge `dashboard-data-refresh` workflow (Q-0167)
+  regenerated the committed `dashboard/data/dashboard.json` from live source.
+- **#1050 (2026-06-18, consistency-linter — embedded windowed-select helper + bounded-catalog triage)** —
+  the design step the #1048 handoff named: refactored `views/paginated_select.py` to share **one**
+  windowing core — a `SelectWindow` controller that manages a *band* of items (a windowed `Select` +
+  ◀/▶ nav) inside **any host view**, removing only its own items on a page flip so it composes with a
+  multi-control panel; `PaginatedSelectView` is now a thin wrapper over it (constructor unchanged) and a
+  new `attach_windowed_select(view, options, on_select, …)` exposes the embedded path. **Triaged the 28
+  `select_option_truncation` candidates → 15**: dogfooded the helper on `access_map`'s feature
+  drill-down (`_FeatureDetailSelect` → `_attach_feature_detail_select`, a genuinely-dynamic select that
+  could exceed 25), and **allowlisted 12** backed by a fixed in-repo catalog / game-data roster (btd6
+  tower roster + live-events feed; the curated mining taxonomy market/recipe/workshop/gear selects) —
+  same standard as the existing btd6-catalog allowlist entries (not the #1040 bug). The **15 remaining**
+  are all genuinely guild-scaled embedded selects — the shared `views/selectors/` primitives
+  (role/channel/multi/multi_role/subsystem; the API-ripple set) + the channels move/visibility/create
+  panels, `settings/subsystem_view` edit/reset selects, `setup/sections/channels`, `access/explorer`,
+  and `diagnostic/automation_panel` — see the ▶ Next-action handoff.
+- **#1049 (2026-06-18, dashboard refresh)** — `Merge pull request #1049 from
+  menno420/bot/dashboard-refresh` (newest-merge lag catch-up; recorded on sight per Q-0166).
+- **#1048 (2026-06-18, consistency-linter — standalone select pickers → `PaginatedSelectView`)** —
+  migrated the three cleanly-standalone single-select ephemeral pickers onto the shared
+  `views/paginated_select.py` primitive: `settings/edit_enum` (`EnumSettingSelectView`/`_EnumSelect`
+  → the `build_enum_select_view` factory), `roles/time_roles_panel` (`_TimeRemoveView`), and
+  `roles/xp_roles_panel` (`_XpRemoveView`). Each retired **both** its `select_option_truncation`
+  (31→28) and `panel_base_class` (29→26) consistency finding and fixed the latent #1040 >25-option
+  silent-drop; the `baseview_inheritance` arch debt ratcheted 12→9. The remaining
+  `select_option_truncation` candidates are all embedded in multi-control views (need an
+  embedded-windowing design step — see the ▶ Next-action handoff).
+- **#1046 (2026-06-18, dashboard generated-data refresh)** — `chore(dashboard): refresh generated
+  data` — regenerated the committed `dashboard/data/dashboard.json` from live source (the cadence-regen
+  routed to the docs-reconciliation routine in #1025).
 - **#1045 (2026-06-18, dashboard-data-refresh CI fix)** — `fix(ci): make dashboard-data-refresh
   actually work` — corrected the dashboard-data-refresh workflow to use the PR-flow auto-merge path so
   the generated-data refresh lands instead of stalling.

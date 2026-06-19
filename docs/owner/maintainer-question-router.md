@@ -6703,3 +6703,106 @@ greenlight; executable-config zone, Q-0106):** (2) a diff-aware Stop-hook step m
 **Home:** `docs/operations/ground-truth-audit-protocol.md` · `scripts/check_plan_code_drift.py` · this
 Q-block. Related: Q-0104 (session-close doc audit), Q-0120 (verify bot output vs source), Q-0107
 (reconciliation pass), Q-0166 (fix drift on sight).
+
+---
+
+### Q-0182 — DISCUSS: the federated Explore-hub world model — four open design questions (2026-06-19)
+
+> **PROPOSED — surfaced by the band-#1140 reconciliation pass** from the owner's 2026-06-19
+> brainstorm ([`ideas/explore-hub-federated-world-2026-06-19.md`](../ideas/explore-hub-federated-world-2026-06-19.md)).
+> Routed for live owner review per the owner's #1140-fire directive ("surface the open questions
+> … into the question router (DISCUSS lane)"). The spine those answers do NOT gate is already
+> planned ([explore-hub plan](../planning/explore-hub-federated-world-plan-2026-06-19.md), Q-0172).
+
+**Context:** the owner wants one world where each subsystem (mining/fishing/pets/survival) is both
+part of a shared world *and* its own complete game. The progression model (three XP tracks: message
+XP → AI-DM negotiation; global game XP; per-game XP) and the hybrid-gear direction are **decided**
+(idea doc § "Progression & gear model"). What remains undecided is the **world's shape**:
+
+1. **What the hub *is*** — a flat Discord `HubView` that routes into each game (Mine · Fish ·
+   Explore · …), **or** a richer **map/biome/location** model where destinations gate which game is
+   reachable where? (The plan builds the flat router first and treats the map as a deferred layer.)
+2. **How the survival/adventure overlay attaches** without forcing it on cozy players — difficulty
+   modes (Easy ≡ today, byte-identical, per the rpg-survival plan), opt-in stakes, optional quests?
+3. **Where each existing subsystem docks** into the hub (the mining-hub redesign Option A already
+   split into Character + Explore sub-hubs — the Explore world hub is the parent of those).
+4. **Cross-game identity** — a single profile characterizing a player across games as the world's
+   front-end. (The plan builds a read-only cross-game card; the question is how rich it should be.)
+
+**Agent note:** these gate the *deferred* layers only (gear auto-equip, survival overlay, biome
+map). The ungated spine — top-level Explore hub + world registry + the global/per-game XP split —
+is buildable now and planned. **Home:** the explore-hub plan + this Q-block. Related: Q-0175
+(fishing), Q-0040 (AI dungeon master from bounded menus), Q-0080 (stranger-grade identity).
+
+---
+
+### Q-0183 — DISCUSS: the AI correction-report → audience-routed ticket service (plan-the-questions-first) (2026-06-19)
+
+> **PROPOSED — surfaced by the band-#1140 reconciliation pass** from the owner's 2026-06-19
+> brainstorm ([`ideas/ai-correction-report-and-ticket-service-2026-06-19.md`](../ideas/ai-correction-report-and-ticket-service-2026-06-19.md)).
+> The owner explicitly flagged this as **needing its own extensive session — capture/route only,
+> NOT a build plan yet** (#1140-fire directive: "the AI-ticket service stays plan-the-questions-first
+> — don't write its build plan yet, just route its questions"). The *board* it writes into is
+> planned separately ([feedback-board generalization](../planning/feedback-board-generalization-plan-2026-06-19.md)).
+
+**The vision:** when a user corrects the AI (today it can only deny/acknowledge), let the AI **file
+the correction for review**, growing into an **AI ticket service** (users send bug reports · server
+problems · moderation issues *through* the AI, which triages and routes each to the right audience).
+
+**The hard part (owner-named) — audience routing, fail-closed:** can the AI correctly classify *who
+each report is for* — owner-private · this server's mods · the public bug tracker — with a guard
+that **fails closed** so a server-private issue can NEVER leak to the public site? (Unsure →
+owner-private, never public — the website-split redaction discipline applied to *outbound* reports.)
+
+**Open questions the dedicated session must answer (do NOT decide unprompted):**
+1. The **report schema** (kind: correction/bug/server-problem/moderation · subject · evidence).
+2. The **audience classifier** + its **fail-closed default** (unsure → owner-private).
+3. **Redaction** — a server's private detail must never cross into a public/GitHub artifact.
+4. A mandatory **human approve step** before any report becomes public or a GitHub issue.
+5. **Dedup** + **abuse/cost controls** (stranger-grade Q-0080; spend ceiling Q-0082).
+6. The **"correct response"** back to the reporting user (acknowledge · "filed" · resolution).
+7. **Submission moderation** is a *second* gate that fails **OPEN** (clean-on-suspicion → allow;
+   three-way: confident-foul → block · maybe-prank → allow + soft-flag · clean → allow). The two
+   gates have **opposite** safe defaults and must NOT be flattened into one "when unsure, block."
+
+**Why gated (correct, not over-caution):** this is the AI's **first real write/external capability**
+— per Q-0048 read-only AI ships freely but writes/external need a per-exposure design + lift, so a
+dedicated session is the rule. **Home:** the idea doc + this Q-block. Related: Q-0048 (AI write
+gate), Q-0121 (Hermes triage write scope), Q-0082 (spend), the website-split redaction contract.
+
+---
+
+### Q-0184 — DISCUSS: bot memory — global (across servers) vs. per-guild scope (2026-06-19)
+
+> **PROPOSED — surfaced by the band-#1140 reconciliation pass** from
+> [`ideas/honcho-memory-evaluation-2026-06-16.md`](../ideas/honcho-memory-evaluation-2026-06-16.md).
+> Routed for live owner review per the #1140-fire directive.
+
+**Context:** the memory idea currently proposes **user-chosen scope** — each user picks **global**
+(memory follows them across servers) or **per-guild** (this server only), as the *user's* choice,
+not a system-wide default. The owner separately wants memory kept **light** (conclusion-style,
+opt-in, bounded under the Q-0082 spend ceiling) to control API cost.
+
+**The question for the owner:** is **user-chosen global-vs-per-guild scope** the right model, or
+should the bot default to **per-guild only** (simpler, privacy-safest, no cross-server data flow)
+with global as a later opt-in — or **global by default**? This also fixes the surface the hybrid-gear
+auto-equip toggle (Q-0182) lives on — the idea docs route both per-user preferences to the **same
+per-user config surface**. **Home:** the honcho-memory idea doc + this Q-block. Related: Q-0082
+(spend ceiling), Q-0080 (stranger-grade), P0-2 (data minimization/retention), Q-0182 (per-user config).
+
+---
+
+### Q-0185 — DISCUSS: the public bot-site's one-line pitch (2026-06-19)
+
+> **PROPOSED — surfaced by the band-#1140 reconciliation pass** per the #1140-fire directive
+> ("…and the public bot-site's one-line pitch"). The website split is built/in-flight
+> ([website-two-site-split plan](../planning/website-two-site-split-plan-2026-06-19.md), Q-0178/Q-0179);
+> the marketing pages need a headline.
+
+**The question:** what is the **one-line pitch** for the public bot site — the single sentence a
+visitor reads first that says what SuperBot *is*? The repo description is *"The best bot ever made"*;
+the bot is a multi-feature Discord bot (moderation · server setup/access · economy & games incl.
+mining/fishing/blackjack · a BTD6-knowledgeable AI assistant · welcome cards). The owner's voice and
+audience should drive the wording — agents should **not** invent the public-facing brand line.
+**Home:** this Q-block + the website-split plan's "Layout & UX guidance" section. Related: Q-0042
+(staged Someday website), Q-0178 (two-site split), Q-0179 (control-panel placement).

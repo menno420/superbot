@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T20:02:31Z",
+    "generated_at": "2026-06-19T21:09:59Z",
     "build": {
-      "commit": "e1e10591",
-      "subject": "Merge pull request #1136 from menno420/claude/great-carson-4hsr7l",
-      "committed_at": "2026-06-19T22:00:06Z",
-      "branch": "main"
+      "commit": "c1f6acfd",
+      "subject": "reconcile: open born-red session card for the band-#1140 Q-0107 pass",
+      "committed_at": "2026-06-19T21:02:35Z",
+      "branch": "claude/reconcile-1140-band"
     },
     "counts": {
       "functions": 36,
-      "ideas": 100,
+      "ideas": 101,
       "bugs": 18,
       "reviews": 0,
       "reviews_open": 0,
@@ -1050,6 +1050,14 @@
       "subsystems": []
     },
     {
+      "file": "premature-closure-self-check-2026-06-19.md",
+      "title": "Premature-closure self-check — teach a session to smell its own \"done\"",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "An agent declaring **\"done / complete / verified / no questions\"** while latent uncertainty or unverified",
+      "subsystems": []
+    },
+    {
       "file": "public-data-contract-field-snapshot-2026-06-19.md",
       "title": "Public-data-contract field-level snapshot test",
       "status": "ideas",
@@ -2057,6 +2065,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-ultracode-fleet-orchestration.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Ultracode fleet orchestration (mining hub + codex-review; the B4 collision)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-19-ultracode-fleet-brief.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Ultracode fleet brief",
@@ -2081,6 +2097,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-reconcile-band1140.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Docs reconciliation: the band-#1140 Q-0107 cadence pass",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-reconcile-band1110.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Docs reconciliation (band-#1110, fourteenth Q-0107 pass)",
@@ -2094,6 +2118,14 @@
       "title": "Session — 2026-06-19 · band-#1080 Q-0107 docs reconciliation pass",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-recon-trigger-and-voice-pack.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Trigger + guide the #1140 recon pass; build the voice-brainstorm pack",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2132,6 +2164,14 @@
       "file": "2026-06-19-mining-hub-declutter.md",
       "date": "2026-06-19",
       "title": "Session — mining hub declutter (Option A PR2)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-mechanize-lane-overlap-check.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Mechanize the fleet overlap-check (`check_lane_overlap.py`)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2391,38 +2431,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-paginated-select-primitive.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — Paginated-select primitive (the #1040 select-truncation class, root fix)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-fishing-reconcile-q0175.md",
-      "date": "2026-06-18",
-      "title": "Session — reconcile shipped fishing v1 to the owner's design (Q-0175)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-18-fishing-ecosystem-pr1.md",
-      "date": "2026-06-18",
-      "title": "Session — fishing ecosystem #2, PR 1 (the core loop)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-18-fishing-codex-followups.md",
-      "date": "2026-06-18",
-      "title": "Session — fishing post-merge fixes (Codex review on #1039)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
