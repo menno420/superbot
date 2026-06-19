@@ -1,6 +1,7 @@
 # Games production-readiness map — 2026-06-12
 
-> **Status:** `audit` — verified production-readiness review; docs-only. Source code and merged
+> **Status:** `historical` — verified production-readiness review; docs-only. Source code and merged
+> **Superseded 2026-06-19 (was active):** Superseded — wager P0-1 #748 + P1-3 invariant #917 shipped. Live spine: hardening-roadmap. Do not act on this — current map: [planning/README](../README.md).
 > PRs win over older documentation.  This review does **not** require restart-safe game
 > state and does **not** propose Redis; ADR-002 makes loss of in-flight game state an
 > accepted limitation.  The production requirement is that interrupted games do not

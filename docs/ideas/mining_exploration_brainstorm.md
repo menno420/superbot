@@ -1,6 +1,7 @@
 # Mining & Exploration — Brainstorm & Roadmap
 
 > **Status:** `ideas`
+> **Subsystem:** mining — the mining character platform.
 
 > Status: **brainstorm / design notes**, not a binding contract. The
 > binding docs (`architecture.md`, `ownership.md`, `runtime_contracts.md`)

@@ -1,6 +1,7 @@
 # BTD6 conversation-carryover grounding — design plan
 
-> **Status:** `plan` — **slice 1 (§3) EXECUTED 2026-06-10 in PR #668**, same day, after the
+> **Status:** `historical` — **slice 1 (§3) EXECUTED 2026-06-10 in PR #668**, same day, after the
+> **Superseded 2026-06-19 (was active):** Slice 1 shipped #668; the remaining window/eval-pin tail is demand-driven, not active. Do not act on this — current map: [planning/README](README.md).
 > maintainer asked what else could ship without his testing ("anything else you
 > can do right now") — the act-envelope call: deterministic, read-only, no new
 > state, regression-pinned. §4's first open question resolved in-code: the gate

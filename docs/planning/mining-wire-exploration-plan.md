@@ -1,6 +1,7 @@
 # Mining — wire `!explore` to the depth/loadout engine
 
-> **Status:** `plan` — **implemented 2026-06-08, merged in #606**. `!explore` (both the command
+> **Status:** `historical` — **implemented 2026-06-08, merged in #606**. `!explore` (both the command
+> **Superseded 2026-06-19 (was active):** Implemented #606. Do not act on this — current map: [planning/README](README.md).
 > and the hub's Explore button) now resolves through the loadout/depth engine via a pure
 > `exploration.explore_from_state()` seam, with unit tests; the engine is no longer dormant.
 > *(The equipment step then evolved the seam to read the player's **equipped** gear — slots →

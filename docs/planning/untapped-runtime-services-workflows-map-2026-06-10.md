@@ -1,6 +1,7 @@
 # Untapped Runtime / Services / Workflows Map — 2026-06-10
 
-> **Status:** `audit` — mapping-only runtime/services/workflows report.
+> **Status:** `historical` — mapping-only runtime/services/workflows report.
+> **Superseded 2026-06-19 (was active):** Mapping complete #646; findings reconciled into the consolidated-implementation-plan. Do not act on this — current map: [planning/README](README.md).
 >
 > **Merged as #646 (2026-06-10) and reconciled the same day.** §2's "no open PRs"
 > is a mapping-time fact — the open set at mapping time was this PR and its sibling

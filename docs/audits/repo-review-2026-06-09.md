@@ -1,6 +1,7 @@
 # Repo review — 2026-06-09 (full-repo consistency, docs structure, plan executability)
 
-> **Status:** `audit` — a dated review snapshot; findings reflect 2026-06-09 only.
+> **Status:** `historical` — a dated review snapshot; findings reflect 2026-06-09 only.
+> **Superseded 2026-06-19 (was active):** Dated full-repo review; the in-session fixes shipped. Do not act on this — current map: [planning/README](../planning/README.md).
 > Requested by the maintainer ("thorough review … errors or inconsistencies … review of
 > my documentation structure and how easy it is to navigate … how well you can execute
 > the plans that already exist"). Everything **fixable in-session was fixed in the same

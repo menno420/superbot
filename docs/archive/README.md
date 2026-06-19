@@ -24,3 +24,11 @@ were either shipped, replaced, or rolled into the living docs.
 > Anything genuinely current was routed to `docs/current-state.md`, the folios, or the
 > active trackers before these were archived. If you need a fact from here, verify it
 > against source first.
+
+## Related: in-place `historical` docs under `docs/planning/` and `docs/audits/`
+
+Most retired plans/audits are **not** moved into this folder — they are rebadged `historical`
+**in place** (so their inbound links stay intact) and indexed in the plan index
+[`docs/planning/README.md`](../planning/README.md) (active vs. historical, by sector). That index is
+the place to tell a live plan from a shipped/superseded one; the `> **Status:**` badge on each file is
+the per-file signal. This `docs/archive/` folder holds only the physically-relocated early snapshots above.

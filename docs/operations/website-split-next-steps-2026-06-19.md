@@ -29,9 +29,13 @@ The plan ([`../planning/website-two-site-split-plan-2026-06-19.md`](../planning/
   extract the auto-managed-PR predicate. Designed in
   [`../planning/web-tier-centralization-proposal-2026-06-19.md`](../planning/web-tier-centralization-proposal-2026-06-19.md).
   *Clean win; buildable as its own both-legs-verified PR on greenlight.*
-- [ ] **Full idea→subsystem mapping** — the *mechanism* shipped; mapping all ~80 ideas
+- [ ] **Full idea→subsystem mapping** — the *mechanism* shipped (the `> **Subsystem:**` header tag,
+  read by `export_dashboard_data._subsystem_tags`). **27 high-value ideas were tagged in the 2026-06-19
+  planning-map cleanup** — the keys the filename-slug heuristic *missed* (image_moderation · btd6 ×4 ·
+  economy/games · ai · diagnostic · ux_lab · the safety lane) plus `Subsystem: none` for the website/meta
+  cluster. The remaining ~50 are mostly workflow/meta (correctly `none`). Finishing the long tail
   ([`../ideas/idea-to-cog-command-mapping-2026-06-19.md`](../ideas/idea-to-cog-command-mapping-2026-06-19.md))
-  is the owner-paced batch. Confirm it should be pursued in batches.
+  is the owner-paced batch — confirm it should be pursued.
 
 ### 2b. The rollout — turns the build into a live website (owner/infra; plan §6 + [`botsite-deploy.md`](botsite-deploy.md))
 - [ ] Provision the **new Railway service**, Root Directory = `botsite/` (own `requirements.txt` + `Procfile`;
@@ -77,6 +81,12 @@ The plan ([`../planning/website-two-site-split-plan-2026-06-19.md`](../planning/
 4. **Per-command status-badge granularity (session idea, Q-0089).** Today one open idea marks *all* of a
    cog's commands `in-progress` (the badge is subsystem-wide). A tiny optional per-command override would make
    the headline maturity badge honest at the command level. Cheap, additive, reuses the redaction lens.
+5. **Close the field-level redaction gap** ([`../ideas/public-data-contract-field-snapshot-2026-06-19.md`](../ideas/public-data-contract-field-snapshot-2026-06-19.md)).
+   `build_site_subset` fails closed at the *top-level family* boundary and (since S1.1) the *per-command field*
+   boundary — but a new field added to another allowed family (`catalogue`/`meta`/`counts`) would pass
+   silently. A tiny stdlib snapshot test pinning the exact leaf-field set per public family extends
+   redaction-by-construction from keys to leaves. Decided-lane, disposable (Q-0105) — the one remaining
+   redaction hole.
 
 ## References
 - [`website-split-review-2026-06-19.md`](website-split-review-2026-06-19.md) — the build review (invariants + refactors + flags).

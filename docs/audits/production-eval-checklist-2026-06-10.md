@@ -1,6 +1,7 @@
 # Production eval checklist — the 2026-06-09/10 burst
 
-> **Status:** `audit` — the maintainer's **dedicated eval session** working doc.
+> **Status:** `historical` — the maintainer's **dedicated eval session** working doc.
+> **Superseded 2026-06-19 (was active):** Point-in-time #606–#672; its persistent successor is audits/untested-surface-checklist.md. Do not act on this — current map: [planning/README](../planning/README.md).
 > Companion to [`past-day-verification-2026-06-10.md`](past-day-verification-2026-06-10.md) §6
 > (which named this walk "the single highest-value next action").
 > Covers everything user-visible from PRs **#606–#672**. Tick boxes as you go;

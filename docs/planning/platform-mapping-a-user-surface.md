@@ -1,6 +1,7 @@
 # Platform mapping A — user surface
 
-> **Status:** `audit` — run 2026-06-09 at HEAD `560e35198c46e5d624344b73e94d17dd16d77dcd`. Mapping-only report for Agent A’s user-facing scope. The binding standard was read from live PR #641 because it was not present at this checkout; its pre-allocated Agent A link is included in this branch.
+> **Status:** `historical` — run 2026-06-09 at HEAD `560e35198c46e5d624344b73e94d17dd16d77dcd`. Mapping-only report for Agent A’s user-facing scope. The binding standard was read from live PR #641 because it was not present at this checkout; its pre-allocated Agent A link is included in this branch.
+> **Superseded 2026-06-19 (was active):** Mapping campaign complete (#643); findings shipped via the consolidated-implementation-plan. Do not act on this — current map: [planning/README](README.md).
 >
 > **Post-campaign note (2026-06-10):** the live-PR claims in this report are
 > **mapping-time state** — #638–#645 (including #640/#641/#642, named "open" below)

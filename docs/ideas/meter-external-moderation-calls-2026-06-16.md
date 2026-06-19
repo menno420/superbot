@@ -2,6 +2,7 @@
 
 > **Status:** `ideas` — session idea (Q-0089) surfaced while building image moderation
 > (PR #941). **Not a plan, not approval.** Route through `ideas/README.md` before any code.
+> **Subsystem:** image_moderation — the image-moderation call's cost metering.
 
 ## The gap
 

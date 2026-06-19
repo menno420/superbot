@@ -2,6 +2,7 @@
 
 > **Status:** `ideas` — captured 2026-06-13 (Q-0089 session idea, from the welcome+counters
 > slot-6 session). Not a plan; not approved. Source + merged PRs win.
+> **Subsystem:** moderation, automod, security, logging, welcome, counters — the safety lane operator landing.
 
 ## The gap
 

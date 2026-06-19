@@ -3,6 +3,7 @@
 > **Status:** `ideas` — **owner-directed (2026-06-19)**, captured during the website two-site-split fan-out.
 > Near-term effort: *"start correctly mapping each idea to a command or cog as fast as possible (not
 > rushing)."* Foundational to the bot site's discoverability + status features.
+> **Subsystem:** none — owner-directed mapping tooling over the export script + registry.
 
 ## Why
 

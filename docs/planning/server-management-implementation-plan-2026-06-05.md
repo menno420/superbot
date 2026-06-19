@@ -1,6 +1,7 @@
 # Server Management Implementation Plan
 
-> **Status:** `plan`
+> **Status:** `historical`
+> **Superseded 2026-06-19 (was active):** Shipped through PR14 #584 (only the gated PR13 AI tail remains); authoritative record = server-management-status-2026-06-05. Do not act on this — current map: [planning/README](README.md).
 
 > Converts `docs/planning/server-management-roadmap-2026-06-05.md` into a
 > dependency-ordered, repo-grounded, highest-value-first implementation sequence.

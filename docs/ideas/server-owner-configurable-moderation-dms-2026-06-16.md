@@ -2,6 +2,7 @@
 
 > **Status:** `ideas` — capture only, not approved. Routing: **safety / community lane**.
 > Captured 2026-06-16 from the owner's **Q-0147** decision (the standing DM policy).
+> **Subsystem:** moderation — moderation-DM config (shipped #1023).
 
 ## The owner's standing DM policy (the decision this came from)
 

@@ -1,6 +1,7 @@
 # Mining — structures (§7.5) + capped skill tree (§7.4): turn-key build plan
 
-> **Status:** `plan` — promotes the mining brainstorm's §7.4 (skill tree) and §7.5 (Forge / Vault /
+> **Status:** `historical` — promotes the mining brainstorm's §7.4 (skill tree) and §7.5 (Forge / Vault /
+> **Superseded 2026-06-19 (was active):** ALL SLICES SHIPPED — Vault #884 · skill tree #891 · Forge #905 · Home/respec/titles #910/#912. Do **not** rebuild these. Do not act on this — current map: [planning/README](README.md).
 > Home structures) from `ideas` into **executable, PR-sized slices**. Source-verified 2026-06-14
 > against live code. **Folio:** [`subsystems/games.md`](../subsystems/games.md) · **Vision:**
 > [`ideas/mining_exploration_brainstorm.md`](../ideas/mining_exploration_brainstorm.md) §7. Source +

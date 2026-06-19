@@ -1,6 +1,7 @@
 # PR #704 — live-test screenshot triage (2026-06-11 → reviewed 2026-06-14)
 
-> **Status:** `audit` — a dated triage of the 11 Discord screenshots in PR #704 (owner's live
+> **Status:** `historical` — a dated triage of the 11 Discord screenshots in PR #704 (owner's live
+> **Superseded 2026-06-19 (was active):** Dated #704 triage; the AI grounding-consistency finding fed the P1-1 lane. Do not act on this — current map: [planning/README](../planning/README.md).
 > testing, 2026-06-11), reviewed 2026-06-14 (the screenshots had sat un-triaged with zero comments).
 > Findings reflect the 2026-06-11 bot state; **much shipped since** (e.g. #855 BTD6 path-resolution).
 > This doc preserves the findings so #704 can be closed without losing them.
