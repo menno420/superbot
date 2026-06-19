@@ -12,6 +12,7 @@ Sources (all read-only, never imported):
 * Bot-function catalogue  <- ``disbot/utils/subsystem_registry.py`` (AST-parsed)
 * Ideas                   <- ``docs/ideas/*.md`` (title + Status badge + date)
 * Bugs                    <- ``docs/health/bug-book.md`` (``## BUG-NNNN ...``)
+* Reviews                 <- ``docs/owner/review-inbox.md`` (``## REV-NNNN — area — STATUS``)
 * Updates feed            <- ``.sessions/*.md`` (date + title + Status badge)
 * Env-var usage map       <- ``disbot/**/*.py`` via ``scripts/scan_env_usage.py``
                              (names + code locations only — never a value)
@@ -103,6 +104,11 @@ _STATUS_RE = re.compile(
 # Bug headings use em/en-dash separators: ``## BUG-0014 — title — STATUS``.
 _BUG_HEAD_RE = re.compile(r"^##\s+(BUG-\d+)\s*[—–]\s*(.+?)\s*$")
 _BUG_STATUS_RE = re.compile(r"[—–]\s*([A-Za-z][A-Za-z ]*)\s*$")
+# Review-inbox headings: ``## REV-0001 — <area> — STATUS`` (area in the middle,
+# status last). The bracketed body is split on the *last* dash for the status,
+# leaving everything before it as the area (so a hyphenated area survives).
+_REVIEW_HEAD_RE = re.compile(r"^##\s+(REV-\d+)\s*[—–]\s*(.+?)\s*$")
+_REVIEW_STATUS_RE = re.compile(r"[—–]\s*([A-Za-z][A-Za-z ]*?)(?:\s*\([^)]*\))?\s*$")
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -319,6 +325,59 @@ def _bug_summary(lines: list[str], start: int) -> str:
     return _truncate(_strip_md(" ".join(collected)), 280)
 
 
+def parse_reviews(text: str) -> list[dict]:
+    """Parse the review-inbox markdown into id/area/status/summary records.
+
+    Mirrors :func:`parse_bugs` but for the owner-review-inbox shape
+    ``## REV-NNNN — <area> — STATUS`` (decision Q-0169): the bracketed body is
+    split on the *last* dash so a hyphenated area survives, the status is
+    normalised to ``OPEN`` / ``RESOLVED`` (everything else passes through
+    verbatim), and the summary is the ``- **Review (owner):**`` bullet beneath
+    the heading. The page groups by area and shows open vs. resolved.
+    """
+    reviews: list[dict] = []
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        head = _REVIEW_HEAD_RE.match(line)
+        if not head:
+            continue
+        review_id, rest = head.group(1), head.group(2)
+        status = "unknown"
+        status_match = _REVIEW_STATUS_RE.search(rest)
+        if status_match and len(status_match.group(1).strip()) <= 24:
+            status = status_match.group(1).strip()
+            rest = rest[: status_match.start()].rstrip()
+        reviews.append(
+            {
+                "id": review_id,
+                "area": _strip_md(rest) or "general",
+                "status": status,
+                "summary": _review_summary(lines, index),
+            },
+        )
+    return reviews
+
+
+def _review_summary(lines: list[str], start: int) -> str:
+    """Return the 'Review (owner)' bullet beneath a review heading, truncated."""
+    collected: list[str] = []
+    capturing = False
+    for line in lines[start + 1 : start + 60]:
+        if line.startswith("## "):
+            break
+        stripped = line.strip()
+        if not capturing:
+            if stripped.lower().startswith("- **review"):
+                cleaned = re.sub(r"^- \*\*review[^:]*:\*\*", "", stripped, flags=re.I)
+                collected.append(cleaned)
+                capturing = True
+            continue
+        if not stripped or stripped.startswith("- **"):
+            break
+        collected.append(stripped)
+    return _truncate(_strip_md(" ".join(collected)), 280)
+
+
 def parse_updates(sessions_dir: Path, limit: int = 60) -> list[dict]:
     """Parse ``.sessions/*.md`` logs into a newest-first updates feed."""
     updates: list[dict] = []
@@ -381,6 +440,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
     registry = repo_root / "disbot" / "utils" / "subsystem_registry.py"
     ideas_dir = repo_root / "docs" / "ideas"
     bug_book = repo_root / "docs" / "health" / "bug-book.md"
+    review_inbox = repo_root / "docs" / "owner" / "review-inbox.md"
     sessions_dir = repo_root / ".sessions"
 
     catalogue = (
@@ -390,6 +450,11 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
     )
     ideas = parse_ideas(ideas_dir) if ideas_dir.is_dir() else []
     bugs = parse_bugs(bug_book.read_text(encoding="utf-8")) if bug_book.exists() else []
+    reviews = (
+        parse_reviews(review_inbox.read_text(encoding="utf-8"))
+        if review_inbox.exists()
+        else []
+    )
     updates = parse_updates(sessions_dir) if sessions_dir.is_dir() else []
 
     scan_root = repo_root / "disbot"
@@ -454,6 +519,10 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
                 "functions": len(catalogue),
                 "ideas": len(ideas),
                 "bugs": len(bugs),
+                "reviews": len(reviews),
+                "reviews_open": sum(
+                    1 for r in reviews if r["status"].upper() == "OPEN"
+                ),
                 "updates": len(updates),
                 "env_vars": len(env_usage),
                 "cogs": sum(1 for c in cogs if c.get("is_cog")),
@@ -468,6 +537,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         "catalogue": catalogue,
         "ideas": ideas,
         "bugs": bugs,
+        "reviews": reviews,
         "updates": updates,
         "env_usage": env_usage,
         "cogs": cogs,
