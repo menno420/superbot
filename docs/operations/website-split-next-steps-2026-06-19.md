@@ -19,7 +19,7 @@ The plan ([`../planning/website-two-site-split-plan-2026-06-19.md`](../planning/
 
 **State:** both web apps are **dormant-by-default** — safe no-ops until their env is set.
 **Update 2026-06-19 — the bot site is now STOOD UP DARK:** live on its Railway URL
-(**https://botsite-production-1ea7.up.railway.app**), secret-free, all routes HTTP 200, `/submit`
+(**https://superbot-app.up.railway.app**), secret-free, all routes HTTP 200, `/submit`
 dormant (no DSN). See [`botsite-deploy.md`](botsite-deploy.md) ▶ Live status. The submissions DB + the
 dev-site env are still unprovisioned (owner steps below), so end-to-end intake is not live yet.
 
@@ -45,7 +45,7 @@ dev-site env are still unprovisioned (owner steps below), so end-to-end intake i
 - [x] Provision the **new Railway service**, Root Directory = `botsite/` (own `requirements.txt` + `Procfile`;
   honor the no-`static/` gotcha). Dark-launch on the Railway URL first — verifiable in prod, not "the website" yet.
   **DONE 2026-06-19** — service `botsite` @ `main`, Root Dir = `botsite`, secret-free; live at
-  `botsite-production-1ea7.up.railway.app` (all routes 200, `/submit` dormant). See `botsite-deploy.md` ▶ Live status.
+  `superbot-app.up.railway.app` (all routes 200, `/submit` dormant). See `botsite-deploy.md` ▶ Live status.
 - [ ] Provision the **dashboard-owned submissions Postgres**; apply `botsite/migrations/001_submissions.sql`
   (idempotent `CREATE TABLE IF NOT EXISTS`).
 - [ ] Set env vars per the **Website tier** section of [`env-vars.md`](env-vars.md): `SUBMISSIONS_DB_DSN`

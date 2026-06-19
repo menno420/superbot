@@ -17,7 +17,7 @@ project (`reliable-grace`) via the public GraphQL API, mirroring the `dashboard`
 | Railway service | `botsite` (`e5bbedfc-8438-49c2-b543-5ed95617e2ef`), same project, `production` env |
 | Source / branch | `menno420/superbot` @ **`main`** — auto-redeploys on push (like `dashboard` / `worker`) |
 | Build scope | **Root Directory = `botsite`** · start = `botsite/Procfile` (`uvicorn app:app …`) · `RAILPACK_PYTHON_VERSION` unset (repo `.python-version` `3.13.13` is the single source) |
-| **Public URL** | **https://botsite-production-1ea7.up.railway.app** |
+| **Public URL** | **https://superbot-app.up.railway.app** |
 | Secrets | **none** — only Railway's auto-injected `RAILWAY_*`. No `SUBMISSIONS_DB_DSN`, no OAuth, no tokens (the §4.4 public posture, by construction) |
 | Verified live | `/` · `/commands` · `/features` · `/changelog` · `/status` · `/submit` · `/healthz` all return **HTTP 200**; `/submit` shows the **dormant** "temporarily unavailable" state (no DSN) — dormant-by-default confirmed in prod |
 
