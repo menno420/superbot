@@ -201,3 +201,64 @@ def test_drift_findings_are_only_warnings_against_live(mod):
 def test_main_drift_exits_zero(mod):
     # --drift reports warnings but never fails the run.
     assert mod.main(["--drift"]) == 0
+
+
+# ---------------------------------------------------------------------------
+# site.json subset guard (--site) — the redaction whitelist (plan §5 / §2.2)
+# ---------------------------------------------------------------------------
+
+
+def test_site_subset_clean_when_whitelisted(mod):
+    clean = {
+        "meta": {},
+        "counts": {"commands": 1, "features": 0, "games": 0},
+        "catalogue": [],
+        "commands": [{"name": "ping"}],
+        "bot_changelog": [],
+    }
+    assert mod.check_site_subset(clean) == []
+
+
+def test_site_subset_fails_closed_on_unwhitelisted_key(mod):
+    # The leak class: a non-public family appearing at the top level is an ERROR.
+    forged = {
+        "meta": {},
+        "counts": {},
+        "catalogue": [],
+        "commands": [],
+        "bot_changelog": [],
+        "env_usage": ["SECRET_TOKEN"],  # must never reach the public site
+    }
+    issues = mod.check_site_subset(forged)
+    assert [i.code for i in issues] == ["site_key_not_whitelisted"]
+    assert issues[0].severity == "error"
+    assert "env_usage" in issues[0].message
+
+
+def test_site_subset_flags_count_mismatch(mod):
+    forged = {
+        "meta": {},
+        "counts": {"commands": 99},  # wrong
+        "catalogue": [],
+        "commands": [{"name": "ping"}],
+        "bot_changelog": [],
+    }
+    issues = mod.check_site_subset(forged)
+    assert any(i.code == "site_count_mismatch" and i.severity == "error" for i in issues)
+
+
+def test_live_site_subset_is_clean(mod):
+    # The freshly-built subset must pass its own whitelist + count guard.
+    fresh = mod._export_module().build_site_subset(mod._build_fresh())
+    errors = [i for i in mod.check_site_subset(fresh) if i.severity == "error"]
+    assert errors == [], f"fresh site.json subset has errors: {errors}"
+
+
+def test_committed_site_json_passes_guard(mod):
+    # The committed botsite/data/site.json must pass the guard as shipped.
+    errors = [i for i in mod.check_site_subset() if i.severity == "error"]
+    assert errors == [], f"committed site.json has errors: {errors}"
+
+
+def test_main_site_exits_zero(mod):
+    assert mod.main(["--site"]) == 0

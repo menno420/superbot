@@ -132,5 +132,22 @@ def test_main_list_prints_registry(mod, capsys):
     assert mod.main(["--list"]) == 0
     out = capsys.readouterr().out
     assert "dashboard.json" in out
+    assert "site.json" in out
     assert "env-vars.md" in out
     assert "context-packs" in out
+
+
+# ---------------------------------------------------------------------------
+# site.json artifact (the public subset — plan §5 / §2.2)
+# ---------------------------------------------------------------------------
+def test_site_json_is_registered(mod):
+    labels = {a.label for a in mod.REGISTRY}
+    assert "site.json" in labels
+
+
+def test_site_json_committed_is_fresh(mod):
+    # The committed botsite/data/site.json must be in sync with the producer.
+    findings = mod.drift_site_json()
+    assert findings == [], "\n".join(
+        f"[{d.surface}] {d.message}" for d in findings
+    )

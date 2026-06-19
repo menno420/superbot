@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}SuperBot — the Discord bot{% endblock %}</title>
+    <meta
+      name="description"
+      content="{% block description %}SuperBot — a feature-rich Discord bot: games, moderation, AI tools, and more.{% endblock %}"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html { scroll-behavior: smooth; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
+  </head>
+  <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+    <header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur sticky top-0 z-10">
+      <nav class="mx-auto max-w-6xl px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <a href="/" class="font-bold text-lg mr-2">🤖 SuperBot</a>
+        {% set nav_items = [('features', 'Features'), ('commands', 'Commands'), ('changelog', 'Changelog'), ('status', 'Status')] %}
+        {% for key, label in nav_items %}
+          <a
+            href="/{{ key }}"
+            class="text-sm hover:text-sky-300 {{ 'text-sky-400 font-semibold' if page == key else 'text-slate-300' }}"
+          >{{ label }}</a>
+        {% endfor %}
+        <div class="ml-auto flex items-center gap-3">
+          {# Small status dot → /status. "Generated" posture: green = a build is known
+             (as of last deploy), slate = no build meta. No live claim here (plan §3). #}
+          <a
+            href="/status"
+            title="Status (as of last deploy)"
+            class="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200"
+          >
+            <span class="inline-block h-2.5 w-2.5 rounded-full {{ 'bg-emerald-500' if build and build.commit else 'bg-slate-500' }}"></span>
+            <span class="hidden sm:inline">Status</span>
+          </a>
+          {# Persistent, distinctively-styled "Add to Discord" CTA (layout guidance). #}
+          <a
+            href="/"
+            class="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 font-semibold shadow"
+          >Add to Discord</a>
+        </div>
+      </nav>
+    </header>
+    <main class="mx-auto max-w-6xl w-full px-4 py-8 flex-1">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="border-t border-slate-800 mx-auto max-w-6xl w-full px-4 py-6 text-xs text-slate-500">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        {# Freshness badge — honest "generated" lineage (plan §3): the data is a
+           build-time snapshot, never a real-time claim. #}
+        <span class="rounded bg-slate-800 px-2 py-0.5 text-slate-400">generated</span>
+        <span>
+          {% if build and build.commit %}
+            as of last deploy · build <code>{{ build.commit }}</code>{% if build.committed_at %} · {{ build.committed_at }}{% endif %}
+          {% else %}
+            build info unavailable
+          {% endif %}
+        </span>
+        <span class="ml-auto">
+          <a class="underline hover:text-slate-300" href="https://github.com/menno420/superbot">source</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T10:56:29Z",
+    "generated_at": "2026-06-19T13:15:55Z",
     "build": {
-      "commit": "9c5ec88c",
-      "subject": "Merge pull request #1099 from menno420/claude/focused-goldberg-mviel4",
-      "committed_at": "2026-06-19T12:45:44Z",
-      "branch": "main"
+      "commit": "2f6089a",
+      "subject": "Website split foundation: born-red session card (S1+S2+P1)",
+      "committed_at": "2026-06-19T13:13:03Z",
+      "branch": "worktree-agent-a2c7cd0ecd504a3e0"
     },
     "counts": {
       "functions": 36,
@@ -21,7 +21,8 @@
       "setting_domains": 15,
       "typed_settings": 84,
       "visible_subsystems": 36,
-      "synonyms": 87
+      "synonyms": 87,
+      "bot_changelog": 3
     }
   },
   "catalogue": [
@@ -1709,11 +1710,51 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-19-website-two-site-split-plan.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split: the implementation plan (Q-0178)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-website-split-planning-brief.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website two-site split: planning brief",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-split-decisions-locked.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website split: review the external research + lock the open decisions",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-split-decision-routing.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website split: route the control-panel-placement decision (Q-0179)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-website-plan-disjoint-tighten.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Pre-ultracode: make the website-plan §5 decomposition truly file-disjoint",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-website-foundation-s1s2p1.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split: serial foundation (S1 + S2 + P1)",
+      "status": "in-progress",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -1723,6 +1764,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-router-status-tool.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — router_status.py: a question-router digest tool",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-19-repo-governance-supply-chain-baseline.md",
@@ -1915,6 +1964,22 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-conflict-guard-unknown-race-fix.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Fix the pr-conflict-guard UNKNOWN-mergeability race",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-codex-final-head-review.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Codex reviews the final head, not the born-red opener",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-19-ai-panel-inplace-nav-plan.md",
@@ -2123,70 +2188,26 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    }
+  ],
+  "bot_changelog": [
+    {
+      "date": "2026-06-19",
+      "title": "New public bot website",
+      "kind": "improvement",
+      "summary": "A brand-new public website for the bot is taking shape — a marketing + reference site"
     },
     {
-      "file": "2026-06-17-moderation-dm-per-action.md",
-      "date": "2026-06-17",
-      "title": "Session — per-action moderation DMs (Q-0147 standing DM policy)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
+      "date": "2026-06-12",
+      "title": "Owner review inbox on the dashboard",
+      "kind": "improvement",
+      "summary": "The developer dashboard now surfaces an owner review inbox, so feedback and review"
     },
     {
-      "file": "2026-06-17-manifest-spine-pr3-control-read-reconcile.md",
-      "date": "2026-06-17",
-      "title": "Manifest spine PR3 — control-API manifest read + cross-manifest reconciliation",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-manifest-spine-pr2-panel-registry.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Manifest spine PR2: panel registry + PanelManifest",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-idea-gate-open.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Open the idea→plan gate (Q-0172) + skills batch-1 slim",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-hermes-house-style.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Hermes plain-language house style — rollout (Q-0168)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-global-settings-tier.md",
-      "date": "2026-06-17",
-      "title": "Session — global settings tier (per-guild → global → default)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-generated-artifact-freshness-umbrella.md",
-      "date": "2026-06-17",
-      "title": "Session — generated-artifact freshness umbrella (one drift reporter for every committed generated file)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-dashboard-vision-review.md",
-      "date": "2026-06-17",
-      "title": "Session — review the dashboard vision plan + control-panel session close",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
+      "date": "2026-06-08",
+      "title": "Command-alias suggestions",
+      "kind": "feature",
+      "summary": "You can now suggest a friendly alias for any command from the dashboard's Aliases page,"
     }
   ],
   "env_usage": [

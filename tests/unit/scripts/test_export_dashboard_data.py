@@ -147,3 +147,183 @@ def test_build_data_includes_cogs_section(mod):
         for cmd in cog["commands"]:
             assert set(cmd) >= {"name", "type", "button_backed", "aliases"}
             assert cmd["type"] in {"prefix", "slash", "both"}
+
+
+# ---------------------------------------------------------------------------
+# S1 — bot changelog parser (docs/bot-changelog.md → site.json.bot_changelog)
+# ---------------------------------------------------------------------------
+
+SAMPLE_CHANGELOG = """# Bot changelog
+
+## 2026-06-19 — New game: Blackjack (feature)
+
+You can now play Blackjack against the bot.
+
+## 2026-06-10 — Faster help menu (improvement)
+
+The help menu opens faster now.
+
+## 2026-05-01 — Untagged entry
+
+No kind tag here.
+"""
+
+
+def test_parse_bot_changelog_extracts_date_title_kind_summary(mod):
+    entries = mod.parse_bot_changelog(SAMPLE_CHANGELOG)
+    assert [e["date"] for e in entries] == ["2026-06-19", "2026-06-10", "2026-05-01"]
+    assert entries[0]["title"] == "New game: Blackjack"
+    assert entries[0]["kind"] == "feature"
+    assert "Blackjack against the bot" in entries[0]["summary"]
+    assert entries[1]["kind"] == "improvement"
+    # An entry with no kind tag → kind == "" (never fabricated), title intact.
+    assert entries[2]["kind"] == ""
+    assert entries[2]["title"] == "Untagged entry"
+
+
+def test_parse_bot_changelog_empty_source(mod):
+    assert mod.parse_bot_changelog("# Bot changelog\n\nNo entries yet.\n") == []
+
+
+def test_build_data_includes_bot_changelog(mod):
+    data = mod.build_data()
+    assert "bot_changelog" in data
+    assert data["meta"]["counts"]["bot_changelog"] == len(data["bot_changelog"])
+    for entry in data["bot_changelog"]:
+        assert set(entry) == {"date", "title", "kind", "summary"}
+        assert entry["kind"] in {"", "feature", "fix", "improvement"}
+
+
+# ---------------------------------------------------------------------------
+# S1 — the public site.json subset (redaction by construction, plan §2.2 / §5)
+# ---------------------------------------------------------------------------
+
+
+def test_site_subset_toplevel_keys_are_exactly_the_whitelist(mod):
+    subset = mod.build_site_subset(mod.build_data())
+    # The hard guarantee: nothing but the whitelisted families, ever.
+    assert set(subset) == set(mod.SITE_TOPLEVEL_KEYS)
+    assert set(subset) == {"meta", "counts", "catalogue", "commands", "bot_changelog"}
+
+
+def test_site_subset_omits_every_dev_only_family(mod):
+    subset = mod.build_site_subset(mod.build_data())
+    for forbidden in (
+        "env_usage",
+        "settings",
+        "access",
+        "reviews",
+        "ideas",
+        "bugs",
+        "cogs",
+        "synonyms",
+    ):
+        assert forbidden not in subset, f"{forbidden} leaked into site.json"
+
+
+def test_site_subset_meta_carries_build_only_no_private_counts(mod):
+    meta = mod.build_site_subset(mod.build_data())["meta"]
+    # Only build provenance + the generation stamp — never the dashboard's full
+    # meta.counts (which include server-revealing internals like env_vars).
+    assert set(meta) <= {"generated_at", "build"}
+    assert "counts" not in meta
+
+
+def test_site_subset_counts_are_catalogue_only(mod):
+    counts = mod.build_site_subset(mod.build_data())["counts"]
+    # Catalogue totals ONLY — never server/user totals (plan §5 / layout note).
+    assert set(counts) == {"commands", "features", "games"}
+    for forbidden in ("guilds", "servers", "users", "members", "env_vars"):
+        assert forbidden not in counts
+
+
+def test_site_subset_commands_carry_no_per_guild_value(mod):
+    subset = mod.build_site_subset(mod.build_data())
+    assert subset["commands"], "expected a non-empty command reference"
+    for cmd in subset["commands"]:
+        assert set(cmd) == set(mod.SITE_COMMAND_FIELDS)
+        assert set(cmd) == {
+            "name",
+            "aliases",
+            "category",
+            "cooldown",
+            "permissions",
+            "usage",
+        }
+        # cooldown is reserved (not statically resolvable) — None, never fabricated.
+        assert cmd["cooldown"] is None
+
+
+def test_site_subset_catalogue_is_metadata_only(mod):
+    subset = mod.build_site_subset(mod.build_data())
+    assert subset["catalogue"], "expected a non-empty catalogue"
+    for entry in subset["catalogue"]:
+        # Public metadata only — internal wiring fields must not be present.
+        for forbidden in ("capabilities", "entry_points", "visibility_mode"):
+            assert forbidden not in entry
+        assert "badges" in entry
+        assert isinstance(entry["is_game"], bool)
+
+
+def test_site_subset_counts_match_lengths(mod):
+    subset = mod.build_site_subset(mod.build_data())
+    assert subset["counts"]["commands"] == len(subset["commands"])
+    assert subset["counts"]["features"] == len(subset["catalogue"])
+    assert subset["counts"]["games"] == sum(
+        1 for e in subset["catalogue"] if e.get("is_game")
+    )
+
+
+def test_build_site_subset_raises_if_a_disallowed_key_is_added(mod):
+    # The producer's own defensive guard: a future edit that adds an un-whitelisted
+    # key must fail in the producer, not silently ship. We simulate by monkeypatching
+    # SITE_TOPLEVEL_KEYS to a stricter set so the real subset trips it.
+    original = mod.SITE_TOPLEVEL_KEYS
+    try:
+        mod.SITE_TOPLEVEL_KEYS = frozenset({"meta"})  # type: ignore[misc]
+        with pytest.raises(ValueError, match="disallowed top-level keys"):
+            mod.build_site_subset(mod.build_data())
+    finally:
+        mod.SITE_TOPLEVEL_KEYS = original  # type: ignore[misc]
+
+
+def test_committed_site_json_matches_a_fresh_build(mod):
+    # The committed botsite/data/site.json must be regenerable-identical (modulo
+    # the volatile meta) to a fresh subset — the freshness guarantee S1 registers.
+    import json
+
+    committed = json.loads(mod.SITE_OUTPUT_FILE.read_text(encoding="utf-8"))
+    fresh = mod.build_site_subset(mod.build_data())
+    # Compare the stable families; meta carries the volatile build SHA/timestamp.
+    for family in ("counts", "catalogue", "commands", "bot_changelog"):
+        assert committed[family] == fresh[family], f"{family} drifted — re-export"
+
+
+def test_cli_targets_site_writes_only_site_json(mod, tmp_path):
+    dash = tmp_path / "dashboard.json"
+    site = tmp_path / "site.json"
+    rc = mod.main(
+        [
+            "--targets",
+            "site",
+            "--output",
+            str(dash),
+            "--site-output",
+            str(site),
+        ],
+    )
+    assert rc == 0
+    assert site.exists()
+    assert not dash.exists()  # --targets site must not write the dashboard payload
+
+
+def test_cli_targets_both_writes_both(mod, tmp_path):
+    dash = tmp_path / "dashboard.json"
+    site = tmp_path / "site.json"
+    rc = mod.main(["--output", str(dash), "--site-output", str(site)])
+    assert rc == 0
+    assert dash.exists() and site.exists()
+    import json
+
+    site_data = json.loads(site.read_text(encoding="utf-8"))
+    assert set(site_data) == set(mod.SITE_TOPLEVEL_KEYS)

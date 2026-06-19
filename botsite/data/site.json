@@ -1,0 +1,3212 @@
+{
+  "meta": {
+    "generated_at": "2026-06-19T13:15:55Z",
+    "build": {
+      "commit": "2f6089a",
+      "subject": "Website split foundation: born-red session card (S1+S2+P1)",
+      "committed_at": "2026-06-19T13:13:03Z",
+      "branch": "worktree-agent-a2c7cd0ecd504a3e0"
+    }
+  },
+  "counts": {
+    "commands": 306,
+    "features": 36,
+    "games": 8
+  },
+  "catalogue": [
+    {
+      "key": "ai",
+      "display_name": "AI Platform",
+      "description": "Read-only AI gateway diagnostics: provider state, feature flags, task routing, and request/failure counters. Does not own AI provider logic — that lives in core/runtime/ai/.",
+      "emoji": "🤖",
+      "category": "admin",
+      "tags": [
+        "ai",
+        "platform",
+        "diagnostics",
+        "providers"
+      ],
+      "badges": [
+        "admin"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "admin",
+      "display_name": "Administration",
+      "description": "Cog management, server stats, diagnostics",
+      "emoji": "⚙️",
+      "category": "admin",
+      "tags": [
+        "admin",
+        "cogs",
+        "management",
+        "diagnostics"
+      ],
+      "badges": [
+        "admin"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "diagnostic",
+      "display_name": "Diagnostics",
+      "description": "Bot health, latency, and system diagnostics",
+      "emoji": "🩺",
+      "category": "admin",
+      "tags": [
+        "diagnostics",
+        "health",
+        "latency",
+        "debug"
+      ],
+      "badges": [
+        "admin"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "logging",
+      "display_name": "Server Logging",
+      "description": "Per-guild moderation/cleanup event logging — channel selection, auto-create, and audit (S7)",
+      "emoji": "📝",
+      "category": "admin",
+      "tags": [
+        "logging",
+        "audit",
+        "moderation",
+        "cleanup"
+      ],
+      "badges": [
+        "admin"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "server_management",
+      "display_name": "Server Management",
+      "description": "Unified hub for moderation, channels, roles, cleanup, setup",
+      "emoji": "🧭",
+      "category": "admin",
+      "tags": [
+        "admin",
+        "hub",
+        "navigation",
+        "operations"
+      ],
+      "badges": [
+        "admin"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "settings",
+      "display_name": "Settings Manager",
+      "description": "Read-only browsing of platform settings, bindings, and audit history (S5)",
+      "emoji": "⚙️",
+      "category": "admin",
+      "tags": [
+        "settings",
+        "configuration",
+        "audit",
+        "platform"
+      ],
+      "badges": [
+        "admin"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "ux_lab",
+      "display_name": "UX Lab",
+      "description": "Interface gallery — browse UI patterns, all fake & safe",
+      "emoji": "🧪",
+      "category": "admin",
+      "tags": [
+        "admin",
+        "design",
+        "gallery",
+        "patterns"
+      ],
+      "badges": [
+        "admin"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "community",
+      "display_name": "Community",
+      "description": "Progression, roles, and community activities",
+      "emoji": "🌱",
+      "category": "community",
+      "tags": [
+        "community",
+        "hub",
+        "progression"
+      ],
+      "badges": [
+        "community"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "community_spotlight",
+      "display_name": "Community Spotlight",
+      "description": "Live server activity dashboard — leaders, level-ups, game stats",
+      "emoji": "🌟",
+      "category": "community",
+      "tags": [
+        "spotlight",
+        "activity",
+        "leaderboard",
+        "community"
+      ],
+      "badges": [
+        "community"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "counters",
+      "display_name": "Server Counters",
+      "description": "Live member-count channels (total · humans · bots)",
+      "emoji": "📊",
+      "category": "community",
+      "tags": [
+        "counters",
+        "stats",
+        "members",
+        "community"
+      ],
+      "badges": [
+        "community"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "welcome",
+      "display_name": "Welcome",
+      "description": "Member greetings, farewells, and an optional entry role",
+      "emoji": "👋",
+      "category": "community",
+      "tags": [
+        "welcome",
+        "greeting",
+        "onboarding",
+        "community"
+      ],
+      "badges": [
+        "community"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "economy",
+      "display_name": "Economy",
+      "description": "Daily coins, work, shop, balance",
+      "emoji": "💰",
+      "category": "economy",
+      "tags": [
+        "economy",
+        "currency",
+        "coins",
+        "progression"
+      ],
+      "badges": [
+        "economy"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "inventory",
+      "display_name": "Inventory",
+      "description": "Item management and crafting",
+      "emoji": "🎒",
+      "category": "economy",
+      "tags": [
+        "inventory",
+        "items",
+        "crafting"
+      ],
+      "badges": [
+        "economy"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "mining",
+      "display_name": "Mining",
+      "description": "Mining minigame and resource collection",
+      "emoji": "⛏️",
+      "category": "economy",
+      "tags": [
+        "mining",
+        "resources",
+        "minigame"
+      ],
+      "badges": [
+        "economy"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "btd6",
+      "display_name": "BTD6 Assistant",
+      "description": "Deterministic Bloons Tower Defense 6 assistant — tower/hero/map lookups, round threat summaries, and CHIMPS-mode guidance. Built on validated fixtures; consumes the AI gateway only when explicitly enabled (Module 5).",
+      "emoji": "🐵",
+      "category": "games",
+      "tags": [
+        "games",
+        "btd6",
+        "bloons",
+        "tower defense"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "blackjack",
+      "display_name": "Blackjack",
+      "description": "Blackjack card game",
+      "emoji": "🃏",
+      "category": "games",
+      "tags": [
+        "games",
+        "blackjack",
+        "cards"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "counting",
+      "display_name": "Counting",
+      "description": "Collaborative counting game",
+      "emoji": "🔢",
+      "category": "games",
+      "tags": [
+        "games",
+        "counting",
+        "community"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "deathmatch",
+      "display_name": "Deathmatch",
+      "description": "1v1 duel battles",
+      "emoji": "⚔️",
+      "category": "games",
+      "tags": [
+        "games",
+        "duel",
+        "pvp",
+        "deathmatch"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "fishing",
+      "display_name": "Fishing",
+      "description": "Fishing minigame — cast a line, build your collection",
+      "emoji": "🎣",
+      "category": "games",
+      "tags": [
+        "fishing",
+        "minigame",
+        "activities"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "games",
+      "display_name": "Games",
+      "description": "Competitive games and channel activities",
+      "emoji": "🎮",
+      "category": "games",
+      "tags": [
+        "games",
+        "hub",
+        "activities"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "rps_tournament",
+      "display_name": "Rock Paper Scissors",
+      "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
+      "emoji": "✂️",
+      "category": "games",
+      "tags": [
+        "games",
+        "rps",
+        "tournament"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "chain",
+      "display_name": "Word Chain",
+      "description": "Word-chaining game",
+      "emoji": "🔗",
+      "category": "games",
+      "tags": [
+        "games",
+        "words",
+        "chain"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "channel",
+      "display_name": "Channels",
+      "description": "Channel and category creation, deletion, and restrictions",
+      "emoji": "📐",
+      "category": "management",
+      "tags": [
+        "channels",
+        "management",
+        "permissions"
+      ],
+      "badges": [
+        "management"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "role",
+      "display_name": "Roles",
+      "description": "Time-based and XP-based automatic role assignment",
+      "emoji": "🎭",
+      "category": "management",
+      "tags": [
+        "roles",
+        "assignment",
+        "automation"
+      ],
+      "badges": [
+        "management"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "automod",
+      "display_name": "Automod",
+      "description": "Spam, invite links, excessive caps, and mass-mention filtering",
+      "emoji": "🛡️",
+      "category": "moderation",
+      "tags": [
+        "automod",
+        "moderation",
+        "safety",
+        "spam",
+        "filter"
+      ],
+      "badges": [
+        "moderation"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "cleanup",
+      "display_name": "Cleanup",
+      "description": "Prohibited words, command deletion, channel hygiene",
+      "emoji": "🧹",
+      "category": "moderation",
+      "tags": [
+        "cleanup",
+        "words",
+        "moderation",
+        "hygiene"
+      ],
+      "badges": [
+        "moderation"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "image_moderation",
+      "display_name": "Image moderation",
+      "description": "Scan uploaded images for sexual, violent, harassment, or hate content",
+      "emoji": "🖼️",
+      "category": "moderation",
+      "tags": [
+        "image",
+        "moderation",
+        "safety",
+        "nsfw",
+        "filter"
+      ],
+      "badges": [
+        "moderation"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "moderation",
+      "display_name": "Moderation",
+      "description": "Warnings, timeouts, bans, mod logs",
+      "emoji": "🔨",
+      "category": "moderation",
+      "tags": [
+        "moderation",
+        "safety",
+        "logs",
+        "warn",
+        "ban"
+      ],
+      "badges": [
+        "moderation"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "proof_channel",
+      "display_name": "Proof Channel",
+      "description": "Proof submission and exclusive access sessions",
+      "emoji": "📋",
+      "category": "moderation",
+      "tags": [
+        "proof",
+        "events",
+        "access"
+      ],
+      "badges": [
+        "moderation"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "security",
+      "display_name": "Server Security",
+      "description": "Raid detection + account-age screening on member join",
+      "emoji": "🛡️",
+      "category": "moderation",
+      "tags": [
+        "security",
+        "raid",
+        "moderation",
+        "safety"
+      ],
+      "badges": [
+        "moderation"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "leaderboard",
+      "display_name": "Leaderboard",
+      "description": "Server leaderboards for XP, coins, and games",
+      "emoji": "🏆",
+      "category": "progression",
+      "tags": [
+        "leaderboard",
+        "rankings",
+        "stats"
+      ],
+      "badges": [
+        "progression"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "xp",
+      "display_name": "XP & Levels",
+      "description": "Experience points, levels, and leaderboards",
+      "emoji": "⭐",
+      "category": "progression",
+      "tags": [
+        "xp",
+        "levels",
+        "progression",
+        "leaderboard"
+      ],
+      "badges": [
+        "progression"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "four_twenty",
+      "display_name": "420",
+      "description": "A leafy little easter-egg panel — wisdom and number trivia",
+      "emoji": "🍃",
+      "category": "utility",
+      "tags": [
+        "fun",
+        "easter-egg",
+        "420"
+      ],
+      "badges": [
+        "utility"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "general",
+      "display_name": "General",
+      "description": "General bot commands and information",
+      "emoji": "💬",
+      "category": "utility",
+      "tags": [
+        "general",
+        "info",
+        "community"
+      ],
+      "badges": [
+        "utility"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "help",
+      "display_name": "Help",
+      "description": "Interactive help menu and command discovery",
+      "emoji": "📚",
+      "category": "utility",
+      "tags": [
+        "help",
+        "commands",
+        "discovery"
+      ],
+      "badges": [
+        "utility"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "utility",
+      "display_name": "Utility",
+      "description": "General utility commands",
+      "emoji": "🔧",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "tools",
+        "general"
+      ],
+      "badges": [
+        "utility"
+      ],
+      "is_game": false
+    }
+  ],
+  "commands": [
+    {
+      "name": "access",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the read-only access-policy explorer."
+    },
+    {
+      "name": "admin",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the Admin control panel (administrator only)."
+    },
+    {
+      "name": "adminmenu",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the interactive admin control panel."
+    },
+    {
+      "name": "ai",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the AI Platform panel."
+    },
+    {
+      "name": "aimenu",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the AI Platform panel (alias for ``!ai``)."
+    },
+    {
+      "name": "aimenu",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the AI Platform panel (administrator only)."
+    },
+    {
+      "name": "check_database",
+      "aliases": [
+        "checkdb"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Verify that all expected PostgreSQL tables exist."
+    },
+    {
+      "name": "cog",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Load, unload, or reload a cog by name (underscores and _cog suffix optional)."
+    },
+    {
+      "name": "coglist",
+      "aliases": [
+        "cogs",
+        "listcogs",
+        "cogslist"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the interactive cog manager — the panel's 📋 Cog List button."
+    },
+    {
+      "name": "create",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Preview + create a new log channel for any registered route."
+    },
+    {
+      "name": "diagnostic_bot_status",
+      "aliases": [
+        "diag_status"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Display bot health and performance metrics."
+    },
+    {
+      "name": "diagnostics",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": ""
+    },
+    {
+      "name": "diagnostics",
+      "aliases": [
+        "diag"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the interactive diagnostics hub panel."
+    },
+    {
+      "name": "find_command",
+      "aliases": [
+        "findcmd"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Search for commands by keyword in their name or description."
+    },
+    {
+      "name": "forget",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Flush the chat-memory cache for THIS channel."
+    },
+    {
+      "name": "latency",
+      "aliases": [
+        "ping"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Report the bot's WebSocket latency."
+    },
+    {
+      "name": "lifecycle",
+      "aliases": [
+        "lc"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Lifecycle state (phase, pending request, recent events)."
+    },
+    {
+      "name": "list_commands_detailed",
+      "aliases": [
+        "listcmds"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "List all registered commands with details, paginated by cog."
+    },
+    {
+      "name": "loadall",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Load all unloaded cogs, skipping already-loaded ones."
+    },
+    {
+      "name": "logging",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the logging admin panel (S7d)."
+    },
+    {
+      "name": "loglevel",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)."
+    },
+    {
+      "name": "platform",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the Platform / Diagnostics hub (administrator only)."
+    },
+    {
+      "name": "policy",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show the effective AI policy for a channel (dry-run resolver)."
+    },
+    {
+      "name": "providers",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": ""
+    },
+    {
+      "name": "query_logs",
+      "aliases": [
+        "querylogs"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Query recent logs from the logs table. !query_logs [INFO|ERROR|...] [limit]"
+    },
+    {
+      "name": "readiness",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Run the full AI readiness chain check."
+    },
+    {
+      "name": "recent_errors",
+      "aliases": [
+        "errors"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Retrieve the most recent ERROR-level log entries."
+    },
+    {
+      "name": "restart",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Request a graceful restart through the lifecycle service."
+    },
+    {
+      "name": "routes",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the Phase 9b Routes subpage directly."
+    },
+    {
+      "name": "routing",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": ""
+    },
+    {
+      "name": "server-management",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the Server Management hub (moderation, channels, roles, cleanup, setup)."
+    },
+    {
+      "name": "servermanagement",
+      "aliases": [
+        "servermenu",
+        "guildmenu"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the unified Server Management hub."
+    },
+    {
+      "name": "serverstats",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Display server statistics."
+    },
+    {
+      "name": "set",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the channel-select view for ``mod`` or ``cleanup`` binding."
+    },
+    {
+      "name": "settings",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the AI Platform settings panel directly."
+    },
+    {
+      "name": "settings",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the Settings Manager hub (browse + edit/reset scalars)."
+    },
+    {
+      "name": "settings",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the Settings Manager hub (administrator only)."
+    },
+    {
+      "name": "slashes",
+      "aliases": [
+        "slashlist"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "List currently-registered slash commands (admin only)."
+    },
+    {
+      "name": "status",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": ""
+    },
+    {
+      "name": "status",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show this guild's server-logging configuration + counters."
+    },
+    {
+      "name": "support-report",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Render a copy-pasteable support report from recent audit (PR-H)."
+    },
+    {
+      "name": "syncslash",
+      "aliases": [
+        "syncs"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Sync the app-command tree for slash commands (owner only)."
+    },
+    {
+      "name": "system_info",
+      "aliases": [
+        "sysinfo"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Display system-level stats."
+    },
+    {
+      "name": "test",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Send a synthetic warn embed to the configured log channel."
+    },
+    {
+      "name": "test_notification",
+      "aliases": [
+        "testnotify"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Send a test notification via the webhook reporter."
+    },
+    {
+      "name": "unloadall",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Unload all loaded cogs except this one."
+    },
+    {
+      "name": "uxlab",
+      "aliases": [
+        "interfacelab"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the UX Lab — the interface gallery + limit probe bench."
+    },
+    {
+      "name": "uxlab",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the UX Lab — browse interface patterns (admin)."
+    },
+    {
+      "name": "validate_json_files",
+      "aliases": [
+        "validatejson"
+      ],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Validate the structure of all JSON files in the data directory."
+    },
+    {
+      "name": "why-no-response",
+      "aliases": [],
+      "category": "admin",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show the most recent denials / skips for this guild."
+    },
+    {
+      "name": "community",
+      "aliases": [],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Community hub — XP, Roles, and community activities."
+    },
+    {
+      "name": "community",
+      "aliases": [],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Community hub (XP, Roles, and community games)."
+    },
+    {
+      "name": "counters",
+      "aliases": [],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show the current server-counter channels for this server."
+    },
+    {
+      "name": "spotlight",
+      "aliases": [
+        "activity"
+      ],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the Community Spotlight — live XP, coins, games, and level-ups."
+    },
+    {
+      "name": "welcome",
+      "aliases": [],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show the current welcome (greeting) policy for this server."
+    },
+    {
+      "name": "ascend",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Climb one mining band back toward the surface."
+    },
+    {
+      "name": "balance",
+      "aliases": [
+        "bal",
+        "wallet"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your (or another user's) current coin balance."
+    },
+    {
+      "name": "build",
+      "aliases": [
+        "craft"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Build / craft an item from recipes (one shared, atomic implementation)."
+    },
+    {
+      "name": "buildable",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Lists only what the user can currently build based on their inventory."
+    },
+    {
+      "name": "buildlist",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Shows all craftable structures from recipes.json."
+    },
+    {
+      "name": "buy",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Buy gear with coins (e.g. `!buy iron sword`)."
+    },
+    {
+      "name": "character",
+      "aliases": [
+        "profile",
+        "char"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your full mining character — location, gear, stats, wealth."
+    },
+    {
+      "name": "chop",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Chop wood. If you have an 'axe', you'll collect double."
+    },
+    {
+      "name": "daily",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Claim your daily reward. Higher streaks unlock better odds!"
+    },
+    {
+      "name": "descend",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Descend one mining band deeper (gated by your equipped light)."
+    },
+    {
+      "name": "economy",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Economy hub (daily, work, shop, balance)."
+    },
+    {
+      "name": "economymenu",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the interactive economy control panel."
+    },
+    {
+      "name": "equip",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Equip a tool, light, or charm so its stats apply to your character."
+    },
+    {
+      "name": "explore",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Discover random events or items (driven by your gear and depth)."
+    },
+    {
+      "name": "fastmine",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "One quick mining swing — no buttons (the old !fastmine, reborn)."
+    },
+    {
+      "name": "forge",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Forge — build it to unlock higher-tier gear crafting."
+    },
+    {
+      "name": "gear",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your equipped gear, its condition, and the stats it grants."
+    },
+    {
+      "name": "give",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Admin-only: give resources to a user."
+    },
+    {
+      "name": "home",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Home — build it to personalize your Character card."
+    },
+    {
+      "name": "inventory",
+      "aliases": [
+        "inv"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your (or another user's) unified inventory hub."
+    },
+    {
+      "name": "joblist",
+      "aliases": [
+        "jobs"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show all jobs, requirements, and your mastery for each."
+    },
+    {
+      "name": "market",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the mining market — sellable resources + the gear shop."
+    },
+    {
+      "name": "mine",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Start mining with interactive buttons."
+    },
+    {
+      "name": "mineinv",
+      "aliases": [
+        "mineinventory"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your unified inventory (compatibility alias for !inventory)."
+    },
+    {
+      "name": "minemenu",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the mining hub panel."
+    },
+    {
+      "name": "minestats",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Shows your total mining items and number of unique items."
+    },
+    {
+      "name": "quickcraft",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Re-craft the last gear item that broke and equip it."
+    },
+    {
+      "name": "repair",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Repair a worn gear item for coins (e.g. `!repair pickaxe`)."
+    },
+    {
+      "name": "reset_inventory",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Admin-only: reset a user's inventory in THIS guild (PR M3 — guild-scoped)."
+    },
+    {
+      "name": "sell",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Sell raw resources for coins (e.g. `!sell diamond 5`)."
+    },
+    {
+      "name": "sellall",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Sell every raw resource in your inventory for coins."
+    },
+    {
+      "name": "setlogchannel",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Set the economy log channel. Usage: !setlogchannel #channel"
+    },
+    {
+      "name": "shop",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Browse and buy items from the shop."
+    },
+    {
+      "name": "skill",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Spend a skill point into a branch (e.g. `!skill mining`)."
+    },
+    {
+      "name": "skills",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open your skill tree — spend points to specialize your character."
+    },
+    {
+      "name": "stash",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Deposit an item into your vault (e.g. `!stash diamond 5`)."
+    },
+    {
+      "name": "titles",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open your titles — equip an earned title on your Character card."
+    },
+    {
+      "name": "unequip",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Clear an equipment slot (tool, light, charm, or a combat piece)."
+    },
+    {
+      "name": "unstash",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Withdraw an item from your vault (e.g. `!unstash diamond 5`)."
+    },
+    {
+      "name": "use",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Use a special item from your inventory (e.g., torch, dynamite)."
+    },
+    {
+      "name": "vault",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open your vault — a safe stash separate from your mining pack."
+    },
+    {
+      "name": "vaultupgrade",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Buy one vault-capacity tier with coins (e.g. more room to stash)."
+    },
+    {
+      "name": "work",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the job selector and earn coins + XP (1 h cooldown)."
+    },
+    {
+      "name": "workshop",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the workshop — repair worn gear, craft replacements."
+    },
+    {
+      "name": "announcechannel",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Set/clear the BTD6 new-version announcement channel (administrator)."
+    },
+    {
+      "name": "ask",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Deterministic Q&A. Module 5 adds optional AI augmentation."
+    },
+    {
+      "name": "bjstart",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Manually start a pending Blackjack tournament early."
+    },
+    {
+      "name": "bjstatus",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the current tournament status."
+    },
+    {
+      "name": "bjtournament",
+      "aliases": [
+        "bjtourn"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Start a Blackjack tournament. !bjtournament [entry_fee] [rounds] [mins]"
+    },
+    {
+      "name": "blackjack",
+      "aliases": [
+        "bj"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Play blackjack. !bj [bet] or !bj @player [bet]"
+    },
+    {
+      "name": "browse",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Browse published BTD6 strategies (PR-F)."
+    },
+    {
+      "name": "btd6",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the BTD6 panel."
+    },
+    {
+      "name": "btd6events",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "BTD6 live events, leaderboards, and data-source diagnostics."
+    },
+    {
+      "name": "btd6menu",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the BTD6 panel (alias for ``!btd6``)."
+    },
+    {
+      "name": "btd6menu",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the BTD6 panel."
+    },
+    {
+      "name": "btd6ops",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "BTD6 ingestion operations (staff readable; toggles are admin)."
+    },
+    {
+      "name": "btd6ref",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "BTD6 reference lookups (towers / heroes / rounds / relics / CT)."
+    },
+    {
+      "name": "btd6strat",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "BTD6 strategy memory (browse / submit / review)."
+    },
+    {
+      "name": "chain",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Manage message chains and word limits in your server."
+    },
+    {
+      "name": "chainmenu",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the interactive chain management panel."
+    },
+    {
+      "name": "count_info",
+      "aliases": [
+        "ci"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Displays the current count and configuration."
+    },
+    {
+      "name": "count_rules",
+      "aliases": [
+        "cr"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Displays the counting game rules."
+    },
+    {
+      "name": "countingmenu",
+      "aliases": [
+        "cm"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the interactive counting game management panel."
+    },
+    {
+      "name": "create",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Create a chain in a specified channel or the current channel if none is provided."
+    },
+    {
+      "name": "ct",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Browse active Contested Territory events and their relic tiles."
+    },
+    {
+      "name": "ctteam",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "View or set this server's CT team (paste the bracket group id / URL)."
+    },
+    {
+      "name": "delete",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Delete a chain from a specified channel or the current channel if none is provided."
+    },
+    {
+      "name": "diagnostics",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "dm_challenge",
+      "aliases": [
+        "deathmatch",
+        "challenge",
+        "dm"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Challenge another user to a deathmatch duel."
+    },
+    {
+      "name": "dm_help",
+      "aliases": [
+        "deathmatch_help"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Display help information for Deathmatch commands."
+    },
+    {
+      "name": "end_match",
+      "aliases": [
+        "em"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Ends the counting match in the specified channel and deletes the channel."
+    },
+    {
+      "name": "event",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show one specific BTD6 event with its tower restrictions."
+    },
+    {
+      "name": "fish",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Cast a line and catch a fish — level up to unlock bigger fish."
+    },
+    {
+      "name": "fishlog",
+      "aliases": [
+        "fishdex"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your fishing collection — every species you've caught."
+    },
+    {
+      "name": "fishtop",
+      "aliases": [
+        "topfishers"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show this server's top anglers by total fish caught."
+    },
+    {
+      "name": "games",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Games hub — competitive games and channel activities."
+    },
+    {
+      "name": "games",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Games hub (competitive + activities)."
+    },
+    {
+      "name": "grounding",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the grounding facts that fed an AI response (PR-D)."
+    },
+    {
+      "name": "hero",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "latest-data",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show newest fact envelope per entity_kind (PR-D)."
+    },
+    {
+      "name": "leaderboard",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Top-N race or boss leaderboard. No event_id = newest active."
+    },
+    {
+      "name": "list",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List all active chains and word limits in the server."
+    },
+    {
+      "name": "live",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show recent live events for ``kind`` (race / boss / ct / odyssey / event)."
+    },
+    {
+      "name": "mine",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List my own strategy submissions in this guild (PR-F)."
+    },
+    {
+      "name": "pending",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List pending strategy submissions with review buttons."
+    },
+    {
+      "name": "readiness",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "refresh-source",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Manually refresh one Ninja Kiwi source (staff-only)."
+    },
+    {
+      "name": "relic",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias)."
+    },
+    {
+      "name": "removelimit",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Remove the word limit from a specified channel or the current channel if none is provided."
+    },
+    {
+      "name": "reset_count",
+      "aliases": [
+        "rc"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Resets the count to the starting value."
+    },
+    {
+      "name": "round",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "rps",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Quick RPS. !rps [bet] or !rps @player [bet]"
+    },
+    {
+      "name": "rpsbot",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Starts matches against the bot. Delegator — see _bot_matches."
+    },
+    {
+      "name": "rpshelp",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Displays help information for RPS tournament commands."
+    },
+    {
+      "name": "rpsmatchup",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Manually creates a match between two specific members."
+    },
+    {
+      "name": "rpsregister",
+      "aliases": [
+        "rpsreg"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Starts the registration period with a reaction role message. !rpsregister [@role] [entry_fee]"
+    },
+    {
+      "name": "rpssettings",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Updates bot settings."
+    },
+    {
+      "name": "rpsstart",
+      "aliases": [
+        "rpsbegin"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Starts the RPS tournament. Usage: !rps_start [mode] [best_of]"
+    },
+    {
+      "name": "runs",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "seed-data",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Seed the Postgres data store from the bundled files (administrator)."
+    },
+    {
+      "name": "set_skip_numbers",
+      "aliases": [
+        "ssn"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Set the skip step N for a 'skip' match (count climbs 1, 1+N, 1+2N, …)."
+    },
+    {
+      "name": "setlimit",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Set a word limit in a specified channel or the current channel if none is provided."
+    },
+    {
+      "name": "source-health",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show source registry freshness (PR-D)."
+    },
+    {
+      "name": "source_disable",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "source_enable",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "sources",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List BTD6 source registry rows."
+    },
+    {
+      "name": "start_match",
+      "aliases": [
+        "sm"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Starts a new counting match with the specified mode."
+    },
+    {
+      "name": "status",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "strategies",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List strategy memory entries available in this guild."
+    },
+    {
+      "name": "strategy",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show one strategy in detail (PR-F)."
+    },
+    {
+      "name": "strategy-audit",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the per-strategy audit log (PR-F)."
+    },
+    {
+      "name": "submit",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open a strategy submission modal (slash-only on Discord)."
+    },
+    {
+      "name": "test-intent",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "toggle_reset_on_wrong_count",
+      "aliases": [
+        "trwc"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Toggles the 'reset on wrong count' feature."
+    },
+    {
+      "name": "toggle_turns",
+      "aliases": [
+        "tt"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Toggles the 'taking turns' mode."
+    },
+    {
+      "name": "tower",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": ""
+    },
+    {
+      "name": "why-no-response",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the most recent BTD6 denials / skips for this guild."
+    },
+    {
+      "name": "assignroles",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Manually run time-based role assignment for all members."
+    },
+    {
+      "name": "bulkcreate",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Create multiple channels. Usage: !bulkcreate <ch1> [ch2...] [category]"
+    },
+    {
+      "name": "bulkdelete",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>"
+    },
+    {
+      "name": "channelinfo",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Channel details. Usage: !channelinfo <name|id>"
+    },
+    {
+      "name": "channelmenu",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the interactive channel management panel."
+    },
+    {
+      "name": "clone",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Clone a channel. Usage: !clone <name|id> <new_name>"
+    },
+    {
+      "name": "create",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Create a channel with role access. Usage: !create <name> <@role> <True/False> [category]"
+    },
+    {
+      "name": "createrole",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Create a role (use !roles → Create instead)."
+    },
+    {
+      "name": "debugroles",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Print all role names for verification."
+    },
+    {
+      "name": "del",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Delete a specific channel. Usage: !del <name|id>"
+    },
+    {
+      "name": "deleterole",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Delete a role by name or mention."
+    },
+    {
+      "name": "evt",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Create or delete an event channel. Usage: !evt <name|id> <create/delete>"
+    },
+    {
+      "name": "list",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "List all categories and channels, including uncategorized."
+    },
+    {
+      "name": "listreactroles",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "List all active reaction roles in this server."
+    },
+    {
+      "name": "lock",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Lock a channel. Usage: !lock <name|id>"
+    },
+    {
+      "name": "move",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Move a channel to a category. Usage: !move <channel name|id> <category name|id>"
+    },
+    {
+      "name": "permissions",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Modify channel permissions. Usage: !permissions <name|id> <@role> <allow/deny>"
+    },
+    {
+      "name": "reactroles",
+      "aliases": [
+        "reaktionsrollen"
+      ],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>"
+    },
+    {
+      "name": "refreshmembers",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Force-fetch all members from Discord."
+    },
+    {
+      "name": "removereactrole",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>"
+    },
+    {
+      "name": "rename",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Rename a channel. Usage: !rename <old name|id> <new_name>"
+    },
+    {
+      "name": "rolecreator",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the role hub (use !roles instead)."
+    },
+    {
+      "name": "rolemenu",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the role hub (use !roles instead)."
+    },
+    {
+      "name": "roles",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the role management hub."
+    },
+    {
+      "name": "rolesettings",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the role management hub (alias for !roles)."
+    },
+    {
+      "name": "set",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Set access for a channel/category. Usage: !set <name|id> <@role> <True/False>"
+    },
+    {
+      "name": "setrole",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Add or update a time-based role threshold."
+    },
+    {
+      "name": "unlock",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Unlock a channel. Usage: !unlock <name|id>"
+    },
+    {
+      "name": "unsetrole",
+      "aliases": [],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Remove a role from time-based assignment."
+    },
+    {
+      "name": "+prize",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "staff",
+      "usage": "Grant a winner exclusive access to #proof. Usage: +prize @winner"
+    },
+    {
+      "name": "-prize",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "staff",
+      "usage": "End the prize session and make #proof read-only again. Usage: -prize"
+    },
+    {
+      "name": "add",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Adds a word to the prohibited words list."
+    },
+    {
+      "name": "automod",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show the current automod policy for this server."
+    },
+    {
+      "name": "ban",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Ban a member from the server."
+    },
+    {
+      "name": "cleanup",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the Cleanup hub panel — overview + routing to subviews."
+    },
+    {
+      "name": "cleanuphistory",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Clean matching channel history by keyword, commands, or prohibited words."
+    },
+    {
+      "name": "clearwarnings",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Clear all warnings for a member."
+    },
+    {
+      "name": "imagemod",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show the current image-moderation policy for this server."
+    },
+    {
+      "name": "kick",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Kick a member from the server."
+    },
+    {
+      "name": "list",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Shows all prohibited words."
+    },
+    {
+      "name": "moderation",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Open the Moderation hub (moderator only)."
+    },
+    {
+      "name": "modlogs",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Show moderation log history for a member."
+    },
+    {
+      "name": "modmenu",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Show the interactive moderation action panel."
+    },
+    {
+      "name": "prizemenu",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "staff",
+      "usage": "Open the interactive prize channel management panel."
+    },
+    {
+      "name": "prizestatus",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "staff",
+      "usage": "Show current #proof channel permissions."
+    },
+    {
+      "name": "remove",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Removes a word from the prohibited words list."
+    },
+    {
+      "name": "security",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show the current server-security policy (raid + account-age)."
+    },
+    {
+      "name": "timedprize",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "staff",
+      "usage": "Grant timed access to #proof; auto-unlocks after duration minutes. Usage: timedprize @winner <minutes>"
+    },
+    {
+      "name": "timeout",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Timeout a member for a given number of minutes."
+    },
+    {
+      "name": "unban",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Unban a user by their Discord user ID."
+    },
+    {
+      "name": "warn",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "moderator",
+      "usage": "Warn a user. Escalates at the configured threshold (default: timeout)."
+    },
+    {
+      "name": "word",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Manage prohibited words. Subcommands: add, remove, list."
+    },
+    {
+      "name": "wordmenu",
+      "aliases": [],
+      "category": "moderation",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Open the interactive prohibited words management panel."
+    },
+    {
+      "name": "access",
+      "aliases": [
+        "whyhere"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Explain which subsystems you can use in a channel/thread (IL-1)."
+    },
+    {
+      "name": "anchors",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show last restoration outcome and active anchor counts per subsystem."
+    },
+    {
+      "name": "automation",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open the automation management + diagnostics panel."
+    },
+    {
+      "name": "backfill",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Dry-run (default) or `apply` the legacy-pointer → binding backfill."
+    },
+    {
+      "name": "bindings",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Subsystem bindings (Phase 2b) — taxonomy + per-guild histograms."
+    },
+    {
+      "name": "bugreport",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Report a bug — Hermes dispatches a Claude Code session to fix it automatically."
+    },
+    {
+      "name": "caches",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Cache state: F-1 guild_config + governance.cache."
+    },
+    {
+      "name": "cleanup-preview",
+      "aliases": [
+        "cleanuppreview",
+        "cleanup-policy"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Dry-run preview of the cleanup policy resolved for a location (IL-2)."
+    },
+    {
+      "name": "command-access",
+      "aliases": [
+        "commandaccess"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show the live command-access decision for a channel."
+    },
+    {
+      "name": "consistency",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Unified platform readiness diagnostic — read-only (Phase 2 PR-10)."
+    },
+    {
+      "name": "counting-health",
+      "aliases": [
+        "countinghealth"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Surface counting persistence health from task_outcome_total (IL-3)."
+    },
+    {
+      "name": "customization",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Customization catalogue across subsystems (S2)."
+    },
+    {
+      "name": "dispatch",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Send a raw Hermes work order to the Claude Code Routine (owner only)."
+    },
+    {
+      "name": "economy",
+      "aliases": [
+        "coinflow"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Faucet/sink coin-economy view (`!platform economy [days]`): minted"
+    },
+    {
+      "name": "finding",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Transition a persistent finding: `resolve` / `ignore` / `reopen` <fingerprint>."
+    },
+    {
+      "name": "findings",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Persistent operational-health findings (open / resolved / ignored / all)."
+    },
+    {
+      "name": "flag",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open the editable per-guild flag manager (Phase 6.5a)."
+    },
+    {
+      "name": "flags",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Feature flags: declarations + Phase 2d evaluator state per flag."
+    },
+    {
+      "name": "force",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Overrides channel restrictions and runs a command (admins only)."
+    },
+    {
+      "name": "health",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Deterministic operational health snapshot (admin-gated, redacted)."
+    },
+    {
+      "name": "identity",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Run the identity-contract validator and show findings."
+    },
+    {
+      "name": "lifecycle",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Lifecycle state: phase, pending request, recent events."
+    },
+    {
+      "name": "locks",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "scope_locks snapshot; pass a prefix to filter (e.g. `counting`)."
+    },
+    {
+      "name": "media",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Content-free media (YouTube) diagnostics."
+    },
+    {
+      "name": "migrations",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Platform migration checkpoints (Phase 2 PR-5) — status + summary."
+    },
+    {
+      "name": "paragon",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open the BTD6 Paragon degree calculator."
+    },
+    {
+      "name": "participation-schemas",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Registered ParticipationSchema instances (Phase 1b)."
+    },
+    {
+      "name": "platform",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Runtime introspection group."
+    },
+    {
+      "name": "provisioning",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5)."
+    },
+    {
+      "name": "resource-requirements",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Declared ResourceRequirement entries across subsystems (Phase 1c)."
+    },
+    {
+      "name": "resources",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Resource runtime (Phase 2a) — taxonomy + cached status histogram."
+    },
+    {
+      "name": "runtime",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "High-level runtime snapshot: every registered diagnostic provider."
+    },
+    {
+      "name": "schemas",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Registered SubsystemSchema instances (Phase 1a)."
+    },
+    {
+      "name": "sessions",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Active session counts (DB-backed); optionally filtered by subsystem."
+    },
+    {
+      "name": "setting",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Explain one scalar setting for this guild."
+    },
+    {
+      "name": "settings-registry",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Declared SettingSpec catalogue + this guild's current values (S1)."
+    },
+    {
+      "name": "setup",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open or resume the linear setup wizard."
+    },
+    {
+      "name": "setup",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open the setup wizard (owner, delegated admin, or admin)."
+    },
+    {
+      "name": "setup-delegate",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Grant a member delegated setup-admin authority (owner only)."
+    },
+    {
+      "name": "setup-depth",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Pick the wizard depth (owner/delegated admin only)."
+    },
+    {
+      "name": "setup-hub",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open the legacy section-list hub (compat)."
+    },
+    {
+      "name": "setup-readiness",
+      "aliases": [
+        "readiness",
+        "ready"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Per-guild setup-readiness inventory (PR H)."
+    },
+    {
+      "name": "setup-reset",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Clear all staged setup operations (owner/delegated admin only)."
+    },
+    {
+      "name": "setup-skip",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Mark a setup section as skipped (owner/delegated admin only)."
+    },
+    {
+      "name": "setup-status",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Quick at-a-glance setup state (read-only)."
+    },
+    {
+      "name": "setup-undelegate",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Revoke delegated setup-admin authority (owner only)."
+    },
+    {
+      "name": "setup-unskip",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Remove a section from the skipped set (owner/delegated admin only)."
+    },
+    {
+      "name": "slow",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show the most recent slow-path entries (S3.2 ring buffer)."
+    },
+    {
+      "name": "startup",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Settled-startup health report (extension load, gateway, DB, …)."
+    },
+    {
+      "name": "status",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "High-level platform status: uptime, cogs, governance, scheduler."
+    },
+    {
+      "name": "tasks",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Managed background-task snapshot (core.runtime.tasks)."
+    },
+    {
+      "name": "views",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Registered PersistentView classes (by subsystem)."
+    },
+    {
+      "name": "givexp",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Give XP to a user (admin only)."
+    },
+    {
+      "name": "leaderboard",
+      "aliases": [
+        "lb",
+        "rankings",
+        "minelb",
+        "miningleaderboard",
+        "dm_leaderboard",
+        "dm_lb",
+        "rpslb",
+        "countlb",
+        "counting_leaderboard"
+      ],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show a leaderboard. !leaderboard [xp|coins|mining|deathmatch|rps|counting]"
+    },
+    {
+      "name": "rank",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show rank in a category."
+    },
+    {
+      "name": "resetxp",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Reset a user's XP to zero (admin only)."
+    },
+    {
+      "name": "xpconfig",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the XP configuration panel (admin only)."
+    },
+    {
+      "name": "xpmenu",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the XP panel showing your rank and quick admin actions."
+    },
+    {
+      "name": "420",
+      "aliases": [
+        "fourtwenty",
+        "fourtwenty420"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the 🍃 420 panel — rotating wisdom and number trivia."
+    },
+    {
+      "name": "avatar",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Display a user's avatar."
+    },
+    {
+      "name": "clear",
+      "aliases": [
+        "purge"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Purge messages. Max 100."
+    },
+    {
+      "name": "eightball",
+      "aliases": [
+        "8ball"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Ask the Magic 8-Ball a yes/no question."
+    },
+    {
+      "name": "fact",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Sends a random interesting fact."
+    },
+    {
+      "name": "generalmenu",
+      "aliases": [
+        "gmenu"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the interactive General panel."
+    },
+    {
+      "name": "greet",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Greets you with a random greeting."
+    },
+    {
+      "name": "help",
+      "aliases": [
+        "hilfe"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Shows available commands. Pass a category name for details."
+    },
+    {
+      "name": "help",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show available commands (optionally narrow to one category)."
+    },
+    {
+      "name": "info",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show server or user info. !info [server|user] [@mention]"
+    },
+    {
+      "name": "invite",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Generate a one-use server invite."
+    },
+    {
+      "name": "joke",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Sends a random joke."
+    },
+    {
+      "name": "motivate",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Sends a motivational message."
+    },
+    {
+      "name": "myprofile",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "View your per-server profile card."
+    },
+    {
+      "name": "myprofile",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "View your profile: participation, subscriptions, preferences, visibility."
+    },
+    {
+      "name": "poll",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Create a simple reaction poll."
+    },
+    {
+      "name": "quote",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Sends a random famous quote."
+    },
+    {
+      "name": "remind",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Set a reminder. !remind <minutes> <message>"
+    },
+    {
+      "name": "serverinfo",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Alias for !info server."
+    },
+    {
+      "name": "trivia",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Asks a trivia question with a reveal button."
+    },
+    {
+      "name": "userinfo",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Alias for !info user [@member]."
+    },
+    {
+      "name": "utility",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Utility hub (server info, polls, reminders)."
+    },
+    {
+      "name": "utilitymenu",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the interactive utility panel."
+    }
+  ],
+  "bot_changelog": [
+    {
+      "date": "2026-06-19",
+      "title": "New public bot website",
+      "kind": "improvement",
+      "summary": "A brand-new public website for the bot is taking shape — a marketing + reference site"
+    },
+    {
+      "date": "2026-06-12",
+      "title": "Owner review inbox on the dashboard",
+      "kind": "improvement",
+      "summary": "The developer dashboard now surfaces an owner review inbox, so feedback and review"
+    },
+    {
+      "date": "2026-06-08",
+      "title": "Command-alias suggestions",
+      "kind": "feature",
+      "summary": "You can now suggest a friendly alias for any command from the dashboard's Aliases page,"
+    }
+  ]
+}

@@ -140,7 +140,12 @@ _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 # 2026-06-14: 18 -> 19 — the one sanctioned *raise*: repo-sector-map.md is a genuine
 # top-level navigation peer to repo-navigation-map.md / repo-review-map.md (the 3-tap nav
 # top layer, owner-directed Q-0137). Keep raising reserved for true top-level nav docs only.
-_TOP_LEVEL_DOCS_BUDGET = 19
+# 2026-06-19: 19 -> 20 — sanctioned raise: bot-changelog.md is a genuine top-level content
+# peer (the curated user-facing changelog the public bot site renders), pinned to this path
+# by the website two-site-split plan (§1/§5, owner-directed Q-0178/Q-0179). Not a
+# plan/audit/historical snapshot (those still belong in subdirs) — a durable, frequently
+# updated ledger alongside current-state.md / roadmap.md.
+_TOP_LEVEL_DOCS_BUDGET = 20
 
 # Soft cap on `current-state.md` § Recently shipped (newest-first merged-PR bullets).
 # Keeps the 2nd-most-read doc lean — overflow is archived to current-state-archive.md.
