@@ -86,6 +86,34 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1042 (2026-06-18, repo-consistency-linter PR 1 — Q-0170)** — the owner-directed "CI but for
+  UX/interaction inconsistencies" tool, `scripts/check_consistency.py` (stdlib AST over `disbot/views/`,
+  `check_architecture`-style `Rule` registry + an `architecture_rules/consistency_exceptions.yml`
+  allowlist, warn-only/disposable per Q-0105). PR 1 = the harness + **rule 1 (edit-in-place)**: a panel
+  button/select callback that delivers its result as a standalone ephemeral instead of editing the panel
+  in place (45 first-run candidates, allowlist empty). Built one rule per PR; rules 2+3 followed (#1043).
+- **#1041 (2026-06-18, fishing reconciliation Codex follow-ups)** — addressed the Codex review on the
+  fishing-v1→#1036-spec reconciliation: migration hygiene (the value-column drop), the legacy-count
+  guard (a player who fished under the superseded interim catalog can have rows the current 21-fish
+  catalog doesn't, so `!fishlog`/`!fishtop` count only current-catalog species), and a dependency tidy.
+- **#1040 (2026-06-18, setup cog-routing picker pagination)** — the cog-routing select hard-capped at
+  `visible[:25]`; the routable-subsystem registry has grown past 25 (35), so the cap silently dropped
+  every cog past the 25th (moderation, role, settings, …) — an operator literally could not route them.
+  `_operator_visible_cogs()` now returns the full sorted list and a new `_CogPickView(BaseView)` pages
+  it into ≤25-option windows with ◀ Prev / Next ▶ nav. Bug already on `main`; a registry-drift class.
+- **#1039 (2026-06-18, fishing v1 reconciled to the owner's #1036 design — Q-0175)** — the interim
+  fishing v1 (#1033: 14 fish, 5 rarity tiers, coins per catch) was built before the owner's #1036 spec
+  landed and contradicted it. Reconciled the shipped code to the spec: the 21-size-ranked-fish
+  `data/fishing/fish.json`, the level/size-band deterministic-roll catch (7 levels × 3), a no-coins
+  collection log (`economy_service` dropped from the fishing path; migration 076 drops the value cols).
+- **#1038 (2026-06-18, BTD6 "which MK affects <tower>" — owner live-test)** — the model no longer
+  assembles the class-wide MK list itself; `btd6_data_service`/`btd6_context_service` derive and list the
+  class-wide Monkey Knowledge for a tower deterministically, and a sniper routing miss (the question
+  not reaching the BTD6 path) was fixed in `ai_task_router`.
+- **#1037 (2026-06-18, BTD6 round_cash identity ABR fix — Codex P2 on #1035)** — gated the inclusive
+  range `identity` sentence to emit only when the cumulative subtraction reconciles with `range_cash`;
+  it was contradicting `range_cash` for ABR ranges spanning the unplayed rounds 1-2 (the cumulative
+  totals start at round 3). Self-validating, so the existing `cumulative_note` covers the excluded case.
 - **#1036 (2026-06-18, fishing v1 + open-world expansion plan — Q-0175, docs-only)** — captured the
   owner's fishing/boat brain-dump as a buildable plan: Phase 1 (fishing v1 — 21 fish, 7 levels × 3 fish,
   reuses tier/`game_xp`; one character with named swappable gear-type loadouts, gear never required —
