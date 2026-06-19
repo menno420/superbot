@@ -22,6 +22,12 @@ name: pr-conflict-guard
 # Provenance + reliability (Q-0105): added 2026-06-16, owner-directed. UNVERIFIED — confirm the
 # first DIRTY PR actually shows the red `conflict-guard` status and that it clears on resolution.
 # Delete this workflow if it flaps or misreports; conflicts are also visible in the PR UI banner.
+#
+# 2026-06-19 fix: the push:main sweep queried mergeability the instant main moved and saw UNKNOWN
+# (GitHub computes it ASYNCHRONOUSLY — the query is what triggers it), so it skipped the very PR
+# that had just become DIRTY (the #1104 miss — log: "#1104 mergeability not computed yet -> skip").
+# The sweep now polls through that UNKNOWN window (resolve_state) before deciding. Still confirm on
+# the next real DIRTY PR that the red status now appears within ~30s of the conflicting merge.
 
 on:
   push:
@@ -77,16 +83,39 @@ jobs:
             fi
           }
 
+          # Poll through the UNKNOWN window GitHub shows right after main moves: mergeability is
+          # computed ASYNCHRONOUSLY and a query is what triggers it, so the push:main sweep (which
+          # runs seconds after a merge) would otherwise see UNKNOWN and skip the very PR that just
+          # went DIRTY — the #1104 miss. Returns a settled state, or UNKNOWN only if it never settles.
+          resolve_state() {  # $1=num -> echoes mergeStateStatus
+            local num="$1" s tries=0
+            while :; do
+              s=$(gh pr view "$num" --repo "$GITHUB_REPOSITORY" --json mergeStateStatus \
+                    --jq '.mergeStateStatus' 2>/dev/null || echo "")
+              case "$s" in
+                UNKNOWN|"") : ;;                        # not computed yet — keep polling
+                *)          printf '%s' "$s"; return 0 ;;
+              esac
+              tries=$((tries + 1))
+              if [ "$tries" -ge 10 ]; then printf '%s' "UNKNOWN"; return 0; fi
+              sleep 3
+            done
+          }
+
           if [ "${EVENT:-}" = "pull_request" ]; then
-            line=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-                     --json mergeStateStatus,headRefOid \
-                     --jq '"\(.mergeStateStatus) \(.headRefOid)"' || true)
-            post "$PR_NUMBER" "$(printf '%s' "$line" | awk '{print $1}')" "$(printf '%s' "$line" | awk '{print $2}')"
+            sha=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+                    --json headRefOid --jq '.headRefOid' 2>/dev/null || true)
+            post "$PR_NUMBER" "$(resolve_state "$PR_NUMBER")" "$sha"
           else
             prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open \
                     --json number,mergeStateStatus,headRefOid \
                     --jq '.[] | "\(.number) \(.mergeStateStatus) \(.headRefOid)"' || true)
             if [ -z "${prs:-}" ]; then echo "no open PRs to evaluate"; exit 0; fi
-            printf '%s\n' "$prs" | while read -r num state sha; do post "$num" "$state" "$sha"; done
+            # Every open PR is briefly UNKNOWN right after main moves — re-resolve those by polling
+            # instead of skipping them (the bug this fixes).
+            printf '%s\n' "$prs" | while read -r num state sha; do
+              case "$state" in UNKNOWN|"") state="$(resolve_state "$num")" ;; esac
+              post "$num" "$state" "$sha"
+            done
           fi
           exit 0
