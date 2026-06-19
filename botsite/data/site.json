@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T15:41:43Z",
+    "generated_at": "2026-06-19T16:18:57Z",
     "build": {
-      "commit": "0194ec1",
-      "subject": "docs: ultracode website-split review-and-refactor report",
-      "committed_at": "2026-06-19T15:38:16Z",
+      "commit": "4708986",
+      "subject": "session: close-out — flip card to complete + Q-0089/Q-0102/Q-0104 enders",
+      "committed_at": "2026-06-19T15:48:48Z",
       "branch": "claude/cool-feynman-cvqrbj"
     }
   },

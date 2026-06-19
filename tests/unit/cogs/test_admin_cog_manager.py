@@ -120,8 +120,53 @@ def test_cog_manager_view_has_select_and_four_buttons():
     view = _CogManagerView(_admin_cog(), _author())
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
+    # Exactly one windowed select is live at a time (one page's worth).
     assert len(selects) == 1
-    assert {b.label for b in buttons} == {"Load", "Unload", "Reload", "🔄 Refresh"}
+    # The four action buttons are always present; the windowed select may also
+    # add ◀ Prev / Next ▶ nav buttons when the cog list spans >1 page.
+    labels = {b.label for b in buttons}
+    assert {"Load", "Unload", "Reload", "🔄 Refresh"} <= labels
+    assert labels - {"Load", "Unload", "Reload", "🔄 Refresh"} <= {"◀ Prev", "Next ▶"}
+
+
+def test_cog_manager_view_windows_more_than_25_cogs_no_silent_drop():
+    """Regression for the #1040-class truncation bug in the cog layer.
+
+    There are ~46 ``*_cog.py`` files but a Discord select caps at 25 options.
+    The old panel did ``options[:25]``, which silently dropped every cog sorting
+    past the 25th so the owner could never load/unload/reload it from the panel.
+    The windowed select must (a) cap the visible page at 25 and (b) expose paging
+    so the *full* set stays reachable.
+    """
+    view = _CogManagerView(_admin_cog(), _author())
+    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
+    # Page is capped at Discord's 25 — never the raw (larger) cog count.
+    assert len(select.options) <= 25
+    # With >25 cogs, paging nav must exist so nothing is silently dropped.
+    nav = {
+        b.label
+        for b in view.children
+        if isinstance(b, discord.ui.Button) and b.label in {"◀ Prev", "Next ▶"}
+    }
+    assert nav == {"◀ Prev", "Next ▶"}, (
+        "windowed cog select must show ◀/▶ paging when >25 cogs exist"
+    )
+
+
+@pytest.mark.asyncio
+async def test_cog_select_callback_stashes_selection_and_rerenders():
+    """Picking a cog in the windowed select stashes it and edits the panel."""
+    view = _CogManagerView(_admin_cog(), _author())
+
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+    interaction.response.send_message = AsyncMock()
+
+    await view._on_cog_selected(interaction, ["cogs.general_cog"])
+
+    assert view.selected_module == "cogs.general_cog"
+    interaction.response.edit_message.assert_awaited_once()
 
 
 def test_cog_manager_view_select_options_label_loaded_state():

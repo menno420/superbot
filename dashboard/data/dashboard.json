@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T15:41:43Z",
+    "generated_at": "2026-06-19T16:18:57Z",
     "build": {
-      "commit": "0194ec1",
-      "subject": "docs: ultracode website-split review-and-refactor report",
-      "committed_at": "2026-06-19T15:38:16Z",
+      "commit": "4708986",
+      "subject": "session: close-out — flip card to complete + Q-0089/Q-0102/Q-0104 enders",
+      "committed_at": "2026-06-19T15:48:48Z",
       "branch": "claude/cool-feynman-cvqrbj"
     },
     "counts": {
       "functions": 36,
       "ideas": 96,
-      "bugs": 16,
+      "bugs": 17,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -1742,9 +1742,15 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0017",
+      "title": "interactive Cog Manager dropdown silently drops cogs past the 25th (options[:25])",
+      "status": "FIXED",
+      "summary": "the owner Cog Manager panel (!coglist / Admin hub → 📋 Cog List) lists every *_cog.py in a single Discord select, but a select caps at 25 options. There are currently 46 cogs, so the panel could only ever show the first 25 (alphabetically); the 22 cogs sorting from health_mainten…"
+    },
+    {
       "id": "BUG-0016",
       "title": "reconciliation-trigger workflow issue-body says \"multiple-of-20\" / \"next ~9 PRs\" (stale cadence copy)",
-      "status": "OPEN",
+      "status": "FIXED",
       "summary": "the auto-opened reconcile trigger issue (e.g. #1095) reads *\"A multiple-of-20 PR band was crossed\"* and *\"plans the next ~9 PRs\"*. Both numbers are stale: the Q-0107 cadence was raised 20 → 30 (Q-0134, 2026-06-14) and the planning horizon is the full band (depth ≥ the cadence, Q…"
     },
     {
@@ -1860,7 +1866,7 @@
       "file": "2026-06-19-website-split-review-refactor.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website two-site split: ultracode review-and-refactor pass",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
@@ -1980,6 +1986,14 @@
       "file": "2026-06-19-reconcile-band1080.md",
       "date": "2026-06-19",
       "title": "Session — 2026-06-19 · band-#1080 Q-0107 docs reconciliation pass",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-funny-franklin-bug0016.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Dispatch: BUG-0016 + BUG-0017 (two bugs-first fixes)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -2308,14 +2322,6 @@
       "file": "2026-06-18-btd6-mk-affects-tower.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — BTD6 \"which MK affects <tower>\" — class-wide MK + routing",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-btd6-ai-answer-fixes.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — BTD6 AI answer fixes (owner live-test screenshots)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
