@@ -11,9 +11,9 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
-from cogs.xp._helpers import _guild_xp_settings
 from core.runtime.config_arbitration import get_xp_announce_channel
 from core.runtime.interaction_helpers import safe_edit
+from services.xp_helpers import _guild_xp_settings
 from utils.ui_constants import UTILITY_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button

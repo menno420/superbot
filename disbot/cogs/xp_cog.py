@@ -5,10 +5,10 @@ import logging
 import discord
 from discord.ext import commands
 
-from cogs.xp._helpers import _STAT_TYPES, _build_rank_embed
 from core.runtime.interaction_helpers import help_ctx_shim
 from services import xp_service
 from services.rank_providers import get_provider
+from services.xp_helpers import _STAT_TYPES, _build_rank_embed
 from utils import embeds as em
 from utils.ui_constants import ECONOMY_COLOR
 from views.base import send_panel

@@ -10,7 +10,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
-from cogs.xp._helpers import _build_rank_embed
+from services.xp_helpers import _build_rank_embed
 from views.base import HubView
 
 
