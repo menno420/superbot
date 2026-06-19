@@ -1,0 +1,35 @@
+# Dashboard service dependencies — HUMAN-EDITED SOURCE (pip-tools input).
+#
+# This lists the dashboard's *direct* deps as version ranges. The installable,
+# fully-pinned lockfile is the GENERATED `dashboard/requirements.txt` (every
+# transitive dep pinned to an exact version) — that is what CI and Railway install.
+#
+# Editing flow:
+#   1. edit THIS file (add / loosen / tighten a direct dep)
+#   2. regenerate the lock:
+#        python3.10 -m piptools compile dashboard/requirements.in \
+#            --output-file dashboard/requirements.txt
+#   3. commit BOTH files in the same change
+#
+# Why a lockfile: ranges let a fresh CI/Railway install resolve to a brand-new
+# release that breaks us — the httpx 0.28 break (2026-06-19) is the worked example.
+# Pinning the full closure makes installs reproducible.
+#
+# NOTE — deliberately NO `--generate-hashes`: CI installs this alongside the bot's
+# (unhashed) root `requirements.txt` in a single `pip install` command, and pip's
+# hash-checking mode is all-or-nothing. Hashes arrive with the bot lock (the 2nd PR
+# of the Q-0177 lock plan), when the install can be split.
+#
+# Kept separate from the bot's root requirements.txt so CI's bot install and the
+# bot's Railway build are unaffected (the dashboard is a separate Railway service).
+
+fastapi>=0.137.2,<1.0
+uvicorn[standard]>=0.49.0,<1.0
+jinja2>=3.1.6,<4.0
+# httpx: the Discord OAuth token/identity calls + the bot control-API client, and
+# the test suite's Starlette TestClient transport.
+httpx>=0.28.1,<1.0
+# NOTE: the OAuth login session is a small stdlib HMAC-signed cookie
+# (dashboard/websession.py) and the editor forms are parsed with urllib
+# (dashboard/app.py::_form) — deliberately NO itsdangerous / python-multipart, so
+# the whole app stays verifiable with just fastapi + jinja2 + httpx installed.

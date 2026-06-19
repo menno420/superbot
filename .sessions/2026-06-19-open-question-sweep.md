@@ -65,6 +65,19 @@ answer back into the router (faithful preservation — the answers' durable home
   (one source of truth; public visibility already covered). Q-0177 #3 pointer README left untouched
   (owner's prior "optional, not now").
 
+### Builds this session (owner-authorized "work on something of your choice" → "yes continue")
+
+1. **`router_status.py` open-sub-part detector** (commit `764c64e`) — full write-up in the
+   💡 Session idea section below; closes the exact gap this sweep hit.
+2. **pip-tools dashboard lockfile — Q-0177 #1, PR 1 of 2.** `dashboard/requirements.in` (human-edited
+   ranges) compiles to `dashboard/requirements.txt` (28 deps, exact pins) — the lockfile CI / Railway
+   install, so a fresh install can no longer drift to a breaking release (the httpx-0.28 class).
+   `.in`→`.txt` layout chosen over the plan's `.lock` sketch (pip-tools standard; **zero CI path
+   change**). `pip-tools==7.5.3` pinned in `requirements-dev.txt`; `dashboard-ci.yml` comment flags the
+   lockfile. **No `--generate-hashes` yet** — CI installs it in one `pip` command with the bot's
+   unhashed reqs and pip's hash mode is all-or-nothing → hashes wait for **PR 2 (bot lock)**. Verified:
+   combined fresh-resolution dry-run (no bot-reqs conflict) + `mypy dashboard/` + 43 dashboard tests.
+
 ## Decisions made alone
 
 - None of product substance — the substantive choices are the owner's panel answers. Judgment
@@ -74,12 +87,13 @@ answer back into the router (faithful preservation — the answers' durable home
 
 ## Flagged for maintainer / known limits
 
-- The answers are **recorded, not yet built**. Each unblocks a lane that is its own future
+- Most answers are **recorded, not yet built** — each unblocks a lane that is its own future
   session: fishing-plan update (skill+rod leveling, sell+cook economy reconnect, instant-roll
-  v1) · BTD6 boot auto-seed (runtime, `btd6_cog.cog_load`) · pip-tools lockfile 2-PR plan ·
-  website wave build · the small `code-quality` deps lockfile follow-ups.
-- Still-open sub-parts remain owner-deciding: Q-0173 (move-cost · yield mapping), Q-0175
-  (loadout-preset UI · boat travel). Not resolved unprompted.
+  v1) · BTD6 boot auto-seed (runtime, `btd6_cog.cog_load`) · website wave build. **Built this
+  session:** the `router_status.py` detector + the **pip-tools dashboard lockfile (Q-0177 #1 PR 1)**;
+  **PR 2 (bot-root lock)** is the remaining lockfile follow-up.
+- All previously still-open sub-parts are now **resolved** (Q-0173 grid + Q-0175 loadout/boat); the
+  only genuinely-open router block left is **Q-0137** (Hermes-dispatch wiring, a design conversation).
 
 ## Context delta
 
@@ -119,11 +133,12 @@ the owner?" is answerable without a manual router crawl.
 ## 📤 Run report
 
 - **Did:** asked the router's open questions via 3 recommendation-bearing panels + new website-wave
-  questions, recorded every answer into the router, then built the open-sub-part detector into
-  `router_status.py` (the Q-0089 idea) · **Outcome:** shipped
-- **Shipped:** no PR yet — pushed to `claude/charming-hypatia-a5qhku`: the router/plan recordings
-  (`08ea68a`, `7e44778`, `e5c30f7`) + the `router_status.py` open-sub-part detector + tests; owner
-  to confirm opening the session PR
+  questions, recorded every answer into the router, then (owner: "work on something of your choice" →
+  "yes continue and open the PR") shipped two builds — the `router_status.py` open-sub-part detector
+  and the **pip-tools dashboard lockfile** (Q-0177 #1, PR 1 of 2) · **Outcome:** shipped
+- **Shipped:** pushed to `claude/charming-hypatia-a5qhku`: router/plan recordings (`08ea68a`,
+  `7e44778`, `e5c30f7`) + `router_status.py` detector + tests (`764c64e`) + the dashboard lockfile
+  (`requirements.in`/`.txt`, dev-dep, CI comment, plan); **session PR opened** (owner-authorized)
 - **Run type:** `manual`
 - **⚑ Owner decisions needed:** `none` — every open question + sub-part is now resolved (panel or
   single-clean-option record). The tool confirms only **Q-0137** (Hermes-dispatch wiring, "PARTLY
@@ -131,19 +146,21 @@ the owner?" is answerable without a manual router crawl.
   explicit deferrals also stay parked: Q-0175 boat travel (Phase 2), Q-0177 #3 pointer README, the
   *later* depth-gated encounters session
 - **⚑ Owner manual steps:** none
-- **⚑ Self-initiated:** `router_status.py` open-sub-part detector — the Q-0089 idea promoted to a
-  build (owner authorized open-ended "work on something of your choice"; flagged here for
-  transparency per Q-0172). Read-only/stdlib/disposable; no runtime/`disbot/` code
-- **↪ Next:** build the now-unblocked lanes in their own sessions — BTD6 boot auto-seed (contained,
-  one file) · pip-tools dashboard lockfile · website additive wave (cmd-ref + `/submit` + seeded
-  changelog) · fishing-plan update (skill+rod · sell+cook economy reconnect · instant-roll v1)
+- **⚑ Self-initiated:** two builds, both under the owner's open-ended "work on something of your
+  choice" authorization (flagged for transparency per Q-0172): (1) `router_status.py` open-sub-part
+  detector — read-only/stdlib/disposable, no `disbot/` code; (2) **pip-tools dashboard lockfile**
+  (Q-0177 #1 PR 1) — config/deps only, no `disbot/` runtime code, verified green
+- **↪ Next:** build the now-unblocked lanes in their own sessions — **pip-tools PR 2 (bot-root
+  lock)** · BTD6 boot auto-seed (contained, one file) · website additive wave (cmd-ref + `/submit` +
+  seeded changelog) · fishing-plan update (skill+rod · sell+cook economy reconnect · instant-roll v1)
 
 ## 📊 Telemetry
 
 | Metric | Value |
 |---|---|
-| PRs merged this session | 0 (recording pushed to branch; PR pending owner go) |
+| PRs merged this session | 0 at write-time (session PR opened, owner-authorized; auto-merges on green) |
+| Builds shipped | 2 (`router_status.py` detector; pip-tools dashboard lockfile, Q-0177 #1 PR 1) |
 | CI-red rounds | 0 |
-| Repo-rule trips | 0 |
-| New ideas contributed | 1 (`check_open_questions.py`) |
-| Ideas groomed | 0 |
+| Repo-rule trips | 0 (do-not-duplicate gate redirected the idea into an extension, as intended) |
+| New ideas contributed | 1 (open-question index → built as the `router_status.py` extension) |
+| Ideas groomed | 1 (Q-0177 #1 lockfile: routed plan → shipped PR 1 of 2) |

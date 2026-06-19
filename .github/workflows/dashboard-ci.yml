@@ -54,6 +54,9 @@ jobs:
           # Bot reqs: tests/conftest.py imports disbot (registry validation) before any
           # dashboard test collects. Dashboard reqs: fastapi/httpx so the tests actually
           # run instead of importorskip-skipping. mypy/pytest pinned to match CI.
+          # NOTE: dashboard/requirements.txt is a pip-compiled LOCKFILE (exact pins,
+          # regenerated from dashboard/requirements.in — see that file's header), so this
+          # install is reproducible and can't drift to a new breaking release.
           pip install -r requirements.txt -r dashboard/requirements.txt
           pip install mypy==2.1.0 pytest==9.0.3 pytest-asyncio==1.4.0
 
