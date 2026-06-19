@@ -72,7 +72,10 @@ Lane B can run **concurrently with Lane A**. Each is a small, low-risk, no-owner
 
 - **`core/runtime → services` (arch-fix-11, ~13 runtime files)** — serial; one careful PR, done *after*
   Lane A lands. Breaking these breaks the whole bot. Same for `utils/db/pool.py` (arch-fix-6).
-- **Consistency-linter graduation** (flipping rules to `error`) — PR #1063 is on the rails; let it settle.
+- **Consistency-linter graduation** (flipping rules to `error`) — **done (#1094):** `back_button` /
+  `panel_base_class` / `select_option_truncation` are graduated + wired into `code-quality.yml`. (The
+  stale rails PR #1063 was closed as superseded in the band-#1080 reconciliation pass.) `edit_in_place`
+  stays warn-only, BLOCKED on the AI-nav redesign.
 - **`.claude/CLAUDE.md` / `.claude/settings.json` edits** — owner-live only (Q-0106).
 - **Gated product lanes** — BTD6 floors (exhausted), fishing follow-ons, dashboard *writes* / control-API,
   anything `needs-hermes-review` or creds-gated.
