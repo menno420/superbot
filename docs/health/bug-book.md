@@ -17,6 +17,38 @@
 > Owner-reported inconsistencies he hasn't formalized yet (see current-state
 > 2026-06-10 standing invite) land here as they surface.
 
+## BUG-0017 — interactive Cog Manager dropdown silently drops cogs past the 25th (`options[:25]`) — FIXED
+
+- **Symptom:** the owner Cog Manager panel (`!coglist` / Admin hub → 📋 Cog List) lists every
+  `*_cog.py` in a single Discord select, but a select caps at **25** options. There are currently
+  **46** cogs, so the panel could only ever show the first 25 (alphabetically); the **22** cogs
+  sorting from `health_maintenance_cog` onward (… `image_moderation`, `inventory`, `leaderboard`,
+  `logging`, `mining`, `moderation`, `paragon`, `role`, `security`, `settings`, `setup`, `welcome`,
+  `xp`, …) were **unreachable** from the panel — the owner had to fall back to the `!cog <op> <name>`
+  prefix escape hatch.
+- **Where:** `disbot/cogs/admin/cog_manager.py` — `_CogManagerSelect.__init__` did
+  `options=options[:25]  # Discord cap`, front-truncating instead of paginating.
+- **Root cause:** the #1040 **select-option-truncation class** (silent front-truncate of a
+  >25-item collection feeding a `Select`), here in the **cog layer** — which the consistency
+  linter's `select_option_truncation` rule does **not** scan (it is scoped to `views/`), so the
+  guard that exists for exactly this class never saw it.
+- **Fix (root, one source of truth):** replaced the bespoke `_CogManagerSelect` + `options[:25]`
+  with the project's windowing primitive `views.paginated_select.attach_windowed_select` (◀ Prev /
+  Next ▶ paging), so the **full** cog list stays selectable (`select_row=0`, `nav_row=3` leave the
+  Load/Unload/Reload row, the Refresh row, and the opener's row-4 Back button clear). Option-building
+  moved to a module-level `_build_cog_options(loaded)` helper.
+- **Stays-fixed guard (same PR):** `tests/unit/cogs/test_admin_cog_manager.py` ::
+  `test_cog_manager_view_windows_more_than_25_cogs_no_silent_drop` — asserts the visible page is
+  capped at 25 **and** that ◀/▶ paging is present when >25 cogs exist (fails against the old
+  `options[:25]` behaviour, which exposed no nav). Plus `…_cog_select_callback_stashes_selection…`
+  pins the new windowed-select callback.
+- **Follow-up (routed, not in this PR):** the linter blind spot itself — extend the
+  `select_option_truncation` rule (and likely `panel_base_class`) to scan `disbot/cogs/` so a future
+  cog-layer truncation is caught in CI, not by inspection. Tracked in current-state's
+  consistency-linter lane (a named candidate).
+- **Status:** FIXED 2026-06-19 (dispatch run) — found by code inspection while gauging the
+  "extend rule 4 to cogs" candidate; fixed at the root the same session.
+
 ## BUG-0016 — reconciliation-trigger workflow issue-body says "multiple-of-20" / "next ~9 PRs" (stale cadence copy) — FIXED
 
 - **Symptom:** the auto-opened `reconcile` trigger issue (e.g. #1095) reads *"A multiple-of-20 PR
