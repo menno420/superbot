@@ -1,6 +1,6 @@
 # 2026-06-19 — Website two-site split, unit P4 (public `/submit` intake)
 
-> **Status:** `in-progress`
+> **Status:** `complete` — PR #1117 (auto-merge armed, SQUASH).
 
 ## What I'm about to do
 Build unit **P4** of the website two-site split (plan
