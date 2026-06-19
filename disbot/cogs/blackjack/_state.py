@@ -1,147 +1,57 @@
-"""Blackjack state — data classes, module dicts, constants (S4.5).
+"""Blackjack state — back-compat re-export shim (fleet unit A3).
 
-Imports nothing from cogs.blackjack_cog (would create a cycle).  Imports
-from services.blackjack_engine (pure card primitives) and from
-utils.tournaments (TournamentRegistration base class).
+The canonical home is now :mod:`services.blackjack_state`.  This module
+re-exports every public name so that ``cogs.blackjack_cog`` and the test
+suite (``from cogs.blackjack._state import _active, _Game, …``) keep
+resolving to the *same objects* — re-import preserves identity, so the
+module-level state dicts (``_active`` / ``_pvp`` / ``_tournaments``) remain
+the single shared instances the cog mutates and the views read.
 
-The four data classes here are the natural-key carriers for blackjack
-state.  The three module dicts are the runtime owners:
-
-    _active        (user_id, guild_id) → _Game        (any mode)
-    _pvp           frozenset({p1,p2})  → _PvPState    (PvP match state)
-    _tournaments   guild_id            → _BjTournament (registration state)
-
-Importing this module multiple times preserves identity of the dicts —
-mutations from cog code and from views/blackjack/* both go through the
-same objects.
-
-Constants prefixed BLACKJACK_*_SUBSYSTEM / VERSION are persisted in
-game_state rows (migration 015).  Bumping them requires a migration.
+New code should import directly from :mod:`services.blackjack_state`; this
+shim exists only to avoid touching the (untouched) cog module and the
+existing tests.
 """
 
 from __future__ import annotations
 
-import discord
+from services.blackjack_state import (  # noqa: F401 — re-exported
+    BLACKJACK_PVP_ESCROW_SUBSYSTEM,
+    BLACKJACK_PVP_ESCROW_VERSION,
+    BLACKJACK_PVP_SUBSYSTEM,
+    BLACKJACK_PVP_VERSION,
+    BLACKJACK_SOLO_SUBSYSTEM,
+    BLACKJACK_SOLO_VERSION,
+    BLACKJACK_TOURNAMENT_SUBSYSTEM,
+    BLACKJACK_TOURNAMENT_VERSION,
+    FREE_WIN_COINS,
+    TOURN_BET_PER_ROUND,
+    TOURN_START_CHIPS,
+    _active,
+    _BjTournament,
+    _Game,
+    _pvp,
+    _PvPState,
+    _tournaments,
+    _TournPlayerState,
+)
 
-from services.blackjack_engine import new_deck as _new_deck
-from utils.tournaments import TournamentRegistration
-
-# ---------------------------------------------------------------------------
-# Public constants (referenced by cog, views, persistence, and tests)
-# ---------------------------------------------------------------------------
-
-FREE_WIN_COINS = 50
-TOURN_START_CHIPS = 1000
-TOURN_BET_PER_ROUND = 200
-
-BLACKJACK_SOLO_SUBSYSTEM = "blackjack_solo"
-BLACKJACK_SOLO_VERSION = 1
-
-BLACKJACK_PVP_SUBSYSTEM = "blackjack_pvp"
-BLACKJACK_PVP_VERSION = 1
-
-# P0-1 — escrow subsystem for D1 escrow-at-accept.  One ``{"bet": stake,
-# "peer": other_id}`` row per player so the existing ``bet``-keyed
-# recovery refunds each player their own stake.  Wagered money moves only
-# through ``services.game_wager_workflow``.
-BLACKJACK_PVP_ESCROW_SUBSYSTEM = "blackjack_pvp_escrow"
-BLACKJACK_PVP_ESCROW_VERSION = 1
-
-BLACKJACK_TOURNAMENT_SUBSYSTEM = "blackjack_tournament"
-BLACKJACK_TOURNAMENT_VERSION = 1
-
-
-# ---------------------------------------------------------------------------
-# Game state classes
-# ---------------------------------------------------------------------------
-
-
-class _Game:
-    def __init__(
-        self,
-        user_id: int,
-        guild_id: int,
-        bet: int,
-        tournament_chips: int | None = None,
-        *,
-        channel_id: int | None = None,
-    ):
-        self.user_id = user_id
-        self.guild_id = guild_id
-        self.bet = bet
-        self.doubled = False
-        self.tournament_chips = tournament_chips  # None = normal game
-        self.channel_id = channel_id  # PR G2 — needed for game_state persistence
-        self.deck = _new_deck()
-        self.player: list[str] = [self.deck.pop(), self.deck.pop()]
-        self.dealer: list[str] = [self.deck.pop(), self.deck.pop()]
-        # PvP linkage (set externally by _start_pvp)
-        self.pvp_peer_id: int | None = None
-        self.pvp_state: _PvPState | None = None
-
-    def hit(self) -> str:
-        card = self.deck.pop()
-        self.player.append(card)
-        return card
-
-    def dealer_play(self):
-        from services.blackjack_engine import hand_value as _hand_value
-
-        while _hand_value(self.dealer) < 17:
-            self.dealer.append(self.deck.pop())
-
-
-class _PvPState:
-    def __init__(self, p1: int, p2: int, guild_id: int, bet: int, channel_id: int):
-        self.p1 = p1
-        self.p2 = p2
-        self.guild_id = guild_id
-        self.bet = bet
-        self.channel_id = channel_id
-        self.results: dict[int, int] = {}  # user_id → final hand value (-1 = bust)
-        self.messages: dict[int, discord.Message] = {}
-
-
-class _BjTournament(TournamentRegistration):
-    def __init__(
-        self,
-        host_id: int,
-        guild_id: int,
-        announce_id: int,
-        entry_fee: int,
-        rounds: int,
-        duration_mins: int,
-    ):
-        super().__init__(host_id, guild_id, announce_id, entry_fee, duration_mins)
-        self.rounds = rounds
-        self.results: dict[int, int] = {}  # user_id → final chips
-        self.category: discord.CategoryChannel | None = None
-
-
-class _TournPlayerState:
-    def __init__(
-        self,
-        user_id: int,
-        guild_id: int,
-        rounds: int,
-        *,
-        channel_id: int | None = None,
-    ):
-        self.user_id = user_id
-        self.guild_id = guild_id
-        self.chips = TOURN_START_CHIPS
-        self.rounds_left = rounds
-        self.done = False
-        # PR G5 — recorded so ``_check_tourn_done`` can clear the
-        # persisted entry-fee row precisely without needing a list
-        # sweep at natural tournament completion.
-        self.channel_id = channel_id
-
-
-# ---------------------------------------------------------------------------
-# Runtime state dicts (mutated by both the cog and views/blackjack/*)
-# ---------------------------------------------------------------------------
-
-_active: dict[tuple[int, int], _Game] = {}  # (user_id, guild_id) → game
-_pvp: dict[frozenset, _PvPState] = {}  # frozenset({p1, p2}) → state
-_tournaments: dict[int, _BjTournament] = {}  # guild_id → tournament
+__all__ = [
+    "BLACKJACK_PVP_ESCROW_SUBSYSTEM",
+    "BLACKJACK_PVP_ESCROW_VERSION",
+    "BLACKJACK_PVP_SUBSYSTEM",
+    "BLACKJACK_PVP_VERSION",
+    "BLACKJACK_SOLO_SUBSYSTEM",
+    "BLACKJACK_SOLO_VERSION",
+    "BLACKJACK_TOURNAMENT_SUBSYSTEM",
+    "BLACKJACK_TOURNAMENT_VERSION",
+    "FREE_WIN_COINS",
+    "TOURN_BET_PER_ROUND",
+    "TOURN_START_CHIPS",
+    "_Game",
+    "_PvPState",
+    "_BjTournament",
+    "_TournPlayerState",
+    "_active",
+    "_pvp",
+    "_tournaments",
+]
