@@ -141,6 +141,17 @@ def test_terminal_fixed_mentioning_recommendation_is_not_flagged(mod):
     assert mod.find_rootfix_backlog(text) == []
 
 
+def test_prose_root_marker_does_not_suppress_a_deferred_status(mod):
+    # A still-deferred status that mentions "(root)" as prose (not the terminal
+    # FIXED (root) label) must still flag — only the terminal label bypasses the checks.
+    text = (
+        "## BUG-0204 — interim — FIXED (immediate)\n\n"
+        "- **Status:** FIXED (immediate) — root-fix RECOMMENDED; add (root) after the durable fix.\n"
+    )
+    flagged = {item.bug_id for item in mod.find_rootfix_backlog(text)}
+    assert flagged == {"BUG-0204"}
+
+
 def test_title_with_root_word_and_partially_does_not_false_positive(mod):
     # Belt-and-braces: a title carrying both "root" and "partially" with a plain FIXED
     # status is terminal — the title is never scanned for status signals.
