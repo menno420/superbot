@@ -510,3 +510,67 @@ def test_trunc_qualname_allowlist_suppresses_only_scoped_callback(
     # The display slice is suppressed; the genuine select truncation remains.
     quals = {f.qualname for f in findings}
     assert quals == {"RolePicker.__init__"}
+
+
+# ---------------------------------------------------------------------------
+# Graduation tracker (the #1060 session idea)
+# ---------------------------------------------------------------------------
+
+
+def _rule(mod, **kw):
+    """A throwaway Rule whose check fn returns *n* synthetic findings."""
+    n = kw.pop("count", 0)
+
+    def fn(files, exceptions):
+        return [
+            mod.Finding(file=Path("x.py"), line=i + 1, rule=kw["name"], message="m")
+            for i in range(n)
+        ]
+
+    return mod.Rule(fn=fn, **kw)
+
+
+def test_graduation_eligible_when_zero_findings_and_no_blocker(mod):
+    rule = _rule(mod, name="r", count=0)
+    state, detail = mod.graduation_status(rule, 0)
+    assert state == "ELIGIBLE"
+    assert "error" in detail
+
+
+def test_graduation_not_ready_with_open_findings(mod):
+    rule = _rule(mod, name="r", count=3)
+    state, detail = mod.graduation_status(rule, 3)
+    assert state == "NOT READY"
+    assert "3" in detail
+
+
+def test_graduation_blocked_reports_the_specific_blocker(mod):
+    rule = _rule(mod, name="r", graduation_blocker="needs the FOO redesign")
+    # A hard blocker wins even at zero findings (the count alone is not enough).
+    state, detail = mod.graduation_status(rule, 0)
+    assert state == "BLOCKED"
+    assert detail == "needs the FOO redesign"
+
+
+def test_graduation_graduated_when_severity_is_error(mod):
+    rule = _rule(mod, name="r", severity="error")
+    state, _ = mod.graduation_status(rule, 0)
+    assert state == "GRADUATED"
+
+
+def test_run_checks_stamps_findings_with_rule_severity(mod, tmp_path, monkeypatch):
+    """A rule flipped to ``error`` produces error-severity findings (graduation)."""
+    _write(mod, tmp_path, monkeypatch, "views/score.py", _BAD)
+    # Temporarily graduate edit_in_place to error and confirm the finding inherits it.
+    target = next(r for r in mod.RULES if r.name == "edit_in_place")
+    monkeypatch.setattr(target, "severity", "error")
+    findings = mod.run_checks([tmp_path / "views/score.py"], {})
+    edit_findings = [f for f in findings if f.rule == "edit_in_place"]
+    assert edit_findings and all(f.severity == "error" for f in edit_findings)
+
+
+def test_live_edit_in_place_rule_is_blocked_on_the_ai_nav_plan(mod):
+    """The real edit_in_place rule documents its graduation blocker (the AI-nav plan)."""
+    rule = next(r for r in mod.RULES if r.name == "edit_in_place")
+    assert rule.severity == "warning"
+    assert "ai-panel-inplace-navigation-plan" in rule.graduation_blocker

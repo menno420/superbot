@@ -167,6 +167,15 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.
+   **Graduation tracker (the #1060 idea, BUILT 2026-06-19):** each `Rule` now carries a `severity`
+   (graduating = flip it from `"warning"` to `"error"`, which makes `--mode strict` fail on a finding —
+   `run_checks` stamps every finding with its rule's severity, so no per-rule wiring is needed) and a
+   `graduation_blocker` string. `python3.10 scripts/check_consistency.py --graduation` prints, per rule,
+   `findings=N` + one of **ELIGIBLE / NOT READY / BLOCKED (by what) / GRADUATED** — so "why is this
+   still warn-only?" is a one-hop answer. Current state: `back_button` / `panel_base_class` /
+   `select_option_truncation` are **ELIGIBLE** (0 findings — flip to error after a couple more clean
+   sessions, then wire into `code-quality.yml`); `edit_in_place` is **BLOCKED** on the AI-nav redesign
+   ([plan](ai-panel-inplace-navigation-plan-2026-06-19.md) PR 2 clears the 17 `views/ai/` findings).
 
 ## Verification (each PR)
 
