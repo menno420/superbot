@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the planning-map cleanup):** a stdlib
+  `scripts/check_plan_homing.py` asserting every non-`historical` `docs/planning/` doc is linked from a
+  **routing** doc (roadmap · a folio · current-state · the new plan index) — not merely *reachable* from
+  anywhere. Closes the gap that let the dashboard/website cluster (~8 active plans) go unrouted for ~30 PRs
+  while `check_docs --strict` stayed green. The plan-level complement to `check_sector_map.py` (folio
+  homing) + `check_plan_backlog.py` (depth). Disposable (Q-0105). → relates `scripts/check_docs.py` ·
+  `docs/planning/README.md`.
 - [`loop-health-gh-unavailable-fallback-2026-06-19.md`](./loop-health-gh-unavailable-fallback-2026-06-19.md) —
   **session idea (2026-06-19, Q-0089, from the band-#1110 reconciliation pass):** `check_loop_health.py`
   (Q-0135) SKIPs on every reconciliation pass because the in-container routine has no `gh` — give it a
