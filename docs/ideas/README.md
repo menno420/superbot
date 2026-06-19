@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`sector-scoped-lean-boot-for-cheap-models-2026-06-19.md`](./sector-scoped-lean-boot-for-cheap-models-2026-06-19.md) —
+  **owner-directed (2026-06-19; B1-priority next session):** make Sonnet usable by cutting the orientation
+  tax — a **sector-scoped lean boot** (declare your sector → load only its invariants + folio + active plan
+  + Next-action, skip the rest), built on the owner's existing 5-sector partition (Q-0137) via the
+  agent-context compiler. Unlocks the separate Sonnet weekly bucket; also flags verifying the file-ignore
+  mechanism (`.claudeignore` / settings deny-globs) to keep tests/data/generated files out of context. →
+  relates `planning/procedures-to-skills-conversion-plan` · `.claude/rules/context-compiler.md`.
 - [`ai-correction-report-and-ticket-service-2026-06-19.md`](./ai-correction-report-and-ticket-service-2026-06-19.md) —
   **owner-directed (2026-06-19, brainstorm; needs its own extensive session):** when a user corrects the
   AI, have it **report the correction to the owner** (a write into the owner review inbox, never the public
@@ -324,8 +331,9 @@ Current broad captures:
   pointer. → relates `docs/operations/autonomous-routines.md` · Q-0135.
 - [`honcho-memory-evaluation-2026-06-16.md`](./honcho-memory-evaluation-2026-06-16.md) —
   **bot / AI-lane idea (2026-06-16, owner wants to look into soon):** give SuperBot's AI **per-user
-  memory** — remember a Discord user across conversations (V-04) — via Honcho-style
-  conclusion-extraction memory (better + cheaper than dumping raw history; matters under the Q-0082
+  memory** — remember a Discord user across conversations (V-04). **Owner policy (2026-06-19): opt-in,
+  user-chosen global/per-guild scope, declared `remember this:` storage as the cheap/accurate v1;
+  Honcho-style conclusion-extraction is an optional *later* inference layer** (matters under the Q-0082
   spend ceiling). Evaluated for Hermes first and rejected there (now a footnote) — it's a **bot**
   idea, not a Hermes one. Next: promote to a `docs/planning/` plan when the AI lane has capacity.
 - [`executor-chain-trigger-via-workflow-2026-06-15.md`](./executor-chain-trigger-via-workflow-2026-06-15.md) —

@@ -40,7 +40,12 @@ fail-closed whitelist) — the ticket router needs an equivalent, applied to *ou
 facets — **type** (bug · idea · suggestion · comment · correction · moderation-flag) and **source/location**
 (which server · who · which front door) — so it filters cleanly by type and origin. This is the **owner
 review inbox (`/reviews`, shipped #1091) generalized** — add `type` + `location` facets to its schema and
-it *is* the unified board. **Owner board = the full firehose (all servers, filterable); the public bot-site
+it *is* the unified board. **⚠ Gating prerequisite (verified against `dashboard/app.py` +
+`dashboard-redaction-audit.md`):** the shipped `/reviews` route is currently **public** — public-safe
+*only* because it mirrors already-public markdown. Generalizing it to carry server-private facets
+(who · which server · moderation reports) **requires moving it behind owner auth first**; the unified
+board must be an **owner-gated/admin surface**, never the public route. Skip that and the fail-closed
+audience model below is silently violated. **Owner board = the full firehose (all servers, filterable); the public bot-site
 shows only items explicitly promoted** (the website-split redaction model: owner sees all, public sees a
 whitelist).
 
