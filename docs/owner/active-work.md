@@ -152,10 +152,4 @@ living ledger (`docs/current-state.md`).
   `scripts/check_consistency.py` · `architecture_rules/consistency_exceptions.yml` ·
   `docs/current-state.md` · 2026-06-18 · **PR #1042 (auto-merge on green)**
 
-- `claude/cool-feynman-cvqrbj` · ULTRACODE review-and-refactor of the website two-site-split build
-  (#1109–#1119) — test-isolation bare-name collision fix · `submissions_db._clean` C1 hardening ·
-  idea→subsystem explicit-tag mechanism · env-vars.md marker-aware generator · review report ·
-  `tests/support/` + `botsite/submissions_db.py` + `scripts/{export_dashboard_data,scan_env_usage}.py`
-  + `botsite/data/site.json` + `docs/operations/` · 2026-06-19 · **PR (this session)**
-
 _(move claims here with their PR # as they close, then prune older entries)_
