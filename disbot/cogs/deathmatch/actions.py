@@ -20,10 +20,17 @@ Bot-duel stats rule (PR 6, plan §13):
 from __future__ import annotations
 
 import random
+from typing import TYPE_CHECKING
 
 import discord
 
-from cogs.deathmatch_cog import Deathmatch
+if TYPE_CHECKING:
+    # Type-only — ``Deathmatch`` is used solely to annotate the ``cog``
+    # parameter of ``has_existing_duel``; at runtime that helper only reads
+    # ``cog.active_duels`` (a dict). Guarding the import behind TYPE_CHECKING
+    # removes the module-level ``actions → deathmatch_cog`` runtime edge that
+    # closed the actions ↔ deathmatch_cog ↔ deathmatch_panel import cycle.
+    from cogs.deathmatch_cog import Deathmatch
 
 # ---------------------------------------------------------------------------
 # Bot AI v1
