@@ -96,3 +96,7 @@ superbot_btd6_data/
 
 # Local Claude Code settings (personal, not committed)
 .claude/settings.local.json
+
+# Transient per-agent git worktrees created by the Agent tool's worktree isolation
+# (parallel fleet runs). These are ephemeral checkouts, never committed.
+.claude/worktrees/
