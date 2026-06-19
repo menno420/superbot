@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T17:59:11Z",
+    "generated_at": "2026-06-19T18:11:11Z",
     "build": {
-      "commit": "a1f3bb3",
+      "commit": "86a2818",
       "subject": "Merge remote-tracking branch 'origin/main' into claude/groom-ledger-lag-drift",
-      "committed_at": "2026-06-19T17:56:35Z",
+      "committed_at": "2026-06-19T18:11:07Z",
       "branch": "claude/groom-ledger-lag-drift"
     }
   },
@@ -676,6 +676,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
+        {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
         },
@@ -709,6 +713,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
+        {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
         },
@@ -741,6 +749,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
         {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
@@ -858,6 +870,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
+        {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
         },
@@ -920,6 +936,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
         {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
@@ -1067,6 +1087,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
+        {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
         },
@@ -1097,6 +1121,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
         {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
@@ -1144,6 +1172,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
         {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
@@ -1226,6 +1258,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
         {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
@@ -1322,6 +1358,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
+        {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
         },
@@ -1413,6 +1453,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
+        {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
         },
@@ -1462,6 +1506,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
         {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
@@ -1631,6 +1679,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI reports corrections → an audience-routed AI ticket service",
+          "status": "ideas"
+        },
+        {
           "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
           "status": "ideas"
         },
@@ -1762,6 +1814,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -1805,6 +1861,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -1824,6 +1884,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -1842,6 +1906,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -1863,6 +1931,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -1886,6 +1958,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -1904,6 +1980,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -1942,6 +2022,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2000,6 +2084,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2018,6 +2106,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2038,6 +2130,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2056,6 +2152,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2076,6 +2176,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2095,6 +2199,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2113,6 +2221,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2170,6 +2282,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2188,6 +2304,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2210,6 +2330,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2228,6 +2352,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2248,6 +2376,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2266,6 +2398,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2288,6 +2424,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2306,6 +2446,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2328,6 +2472,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2346,6 +2494,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2406,6 +2558,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2424,6 +2580,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2446,6 +2606,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2465,6 +2629,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2483,6 +2651,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2505,6 +2677,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2523,6 +2699,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2543,6 +2723,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
         }
@@ -2561,6 +2745,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -2599,6 +2787,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
           "status": "ideas"
@@ -3332,8 +3524,13 @@
       "description": "Cast a line and catch a fish — level up to unlock bigger fish.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -3348,8 +3545,13 @@
       "description": "Show your fishing collection — every species you've caught.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -3364,8 +3566,13 @@
       "description": "Show this server's top anglers by total fish caught.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -3380,6 +3587,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Wager / money-flow map — generated trace of game coin paths",
           "status": "ideas"
@@ -3399,6 +3610,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
         {
           "title": "Wager / money-flow map — generated trace of game coin paths",
           "status": "ideas"
