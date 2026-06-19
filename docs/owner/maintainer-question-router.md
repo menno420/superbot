@@ -6355,8 +6355,17 @@ rejected). Licensing stays clean — a seed is just a number; we ship no Minecra
 
 **Still open (owner deciding — do NOT resolve unprompted):** ~~one shared grid vs. per-depth-level~~
 → **RESOLVED 2026-06-19 (owner, question panel): ONE shared seed-deterministic grid** (same world for
-everyone, shareable — consistent with the Q-0173 intent). *Still open:* do moves cost a turn / trigger
-encounters · how cell yields map to the existing depth bands (`utils/mining/world.py`, currently 1-D).
+everyone, shareable — consistent with the Q-0173 intent).
+→ **Movement / encounters — RESOLVED 2026-06-19 (owner, question panel):** the v1 grid ships with **free
+movement, no encounters** (smallest surface, no new balance system). **Encounters ARE wanted as a later,
+own-session layer** — the owner's shape: **depth-gated random encounters** ("after a certain depth you
+can get random encounters, but not too many" → sparse, depth-gated, never spammy). A forward design note
+for the encounters session; do **not** build it into the grid-navigation PR.
+→ **Cell-yield → depth mapping — RESOLVED 2026-06-19 (owner, question panel): the vertical axis maps to
+the existing depth bands** (down a row = today's deeper/richer band, so all tuned ore tables/balance +
+the 'descend' metaphor carry over unchanged; horizontal = lateral variety within a band; each cell's
+exact yield stays seed-determined). `utils/mining/world.py` (currently 1-D) keeps its band economy as
+the Y axis.
 
 **Home:** [`planning/mining-hub-redesign-2026-06-15.md`](../planning/mining-hub-redesign-2026-06-15.md)
 § "Mine — 3D grid navigator" · this Q-block. Related: Q-0172 (fishing/open-world is the sibling Explore lane).

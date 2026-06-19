@@ -44,9 +44,26 @@ answer back into the router (faithful preservation — the answers' durable home
 
 ## Shipped
 
-- `docs/owner/maintainer-question-router.md` — recorded all 9 answers into their Q-blocks
-  (flipped the two literal `Status: Open` blocks Q-0077/Q-0096; trimmed the "still open"
-  sub-lists on Q-0173/Q-0175; appended decisions to Q-0171/Q-0176/Q-0177/Q-0179).
+- `docs/owner/maintainer-question-router.md` — recorded all answers into their Q-blocks across
+  three commits: (1) the 9 panel answers (`08ea68a` — flipped the two literal `Status: Open` blocks
+  Q-0077/Q-0096; appended decisions to Q-0171/Q-0176/Q-0177/Q-0179); (2) the 4 single-clean-answer
+  follow-ups (`7e44778` — Q-0175 loadout UI/boat, Q-0177 #2 control-API hardening, Q-0177 #4
+  roadmap-mirror); (3) the two mining-grid forks (Q-0173 — grid scope, depth mapping, movement/
+  encounters), routed into `docs/planning/mining-hub-redesign-2026-06-15.md` as their build home.
+
+### Follow-up answers (owner, second round, same session)
+
+- **Q-0173 mining grid (the two genuine forks, panel):** grid scope = **one shared grid** · depth
+  mapping = **vertical axis = existing depth bands** (preserves the tuned economy + descent metaphor;
+  per-cell seeded variety within a band) · movement = **free, no encounters in v1**; encounters are
+  **wanted as a later own-session layer**, shaped **depth-gated + sparse** ("after a certain depth,
+  not too many"). Routed to the mining-hub-redesign plan.
+- **Single-clean-answer records (no panel, per owner directive):** Q-0175 loadout UI = **reuse the
+  Gear-panel pattern + `!loadout`, manual swap v1** · Q-0175 boat = **Phase-2 deferred** · Q-0177 #2
+  control-API hardening = **security gate: no public exposure of writes without signing + idempotency
+  + rotation, folded into the Q-0179 migration** · Q-0177 #4 roadmap→issue mirror = **do not adopt**
+  (one source of truth; public visibility already covered). Q-0177 #3 pointer README left untouched
+  (owner's prior "optional, not now").
 
 ## Decisions made alone
 
@@ -102,8 +119,10 @@ the owner?" is answerable without a manual router crawl.
 - **Shipped:** no PR yet — router-recording change pushed to `claude/charming-hypatia-a5qhku`;
   owner to confirm opening the session PR
 - **Run type:** `manual`
-- **⚑ Owner decisions needed:** the still-open sub-parts only — Q-0173 (move-cost · yield→depth
-  mapping) · Q-0175 (loadout-preset UI · boat travel); not resolved unprompted
+- **⚑ Owner decisions needed:** `none` — every open question + sub-part is now resolved (panel or
+  single-clean-option record). Only the owner's own explicit deferrals remain parked: Q-0175 boat
+  travel (Phase 2), Q-0177 #3 pointer README ("optional, not now"), and the *later* depth-gated
+  encounters session (owner wants it, just not in grid PR 3)
 - **⚑ Owner manual steps:** none
 - **⚑ Self-initiated:** none (owner-directed Q-collection; recording the answers is faithful
   preservation, not an unprompted build)
