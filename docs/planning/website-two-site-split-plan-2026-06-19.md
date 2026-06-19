@@ -2,9 +2,18 @@
 
 > **Status:** `plan` — the implementation plan executing the **brief**
 > ([`website-two-site-split-planning-brief-2026-06-19.md`](website-two-site-split-planning-brief-2026-06-19.md))
-> and the owner decisions in router **Q-0178**. Owner-directed 2026-06-19. Source code + merged PRs win
-> over this document. The next step after this plan is an **ultracode build run** on the disjoint
-> back-half units in §5.
+> and the owner decisions in router **Q-0178** + **Q-0179**. Owner-directed 2026-06-19. Source code +
+> merged PRs win over this document. The next step after this plan is an **ultracode build run** on the
+> disjoint back-half units in §5.
+>
+> **▶ Open decisions LOCKED 2026-06-19** (owner, via the question panel — full record in §7): control
+> panel → **bot site** (Q-0179, realized as a gated surface isolated from the secret-free public marketing
+> pages, gated on the control-API security review) · domains **deferred** to cutover (build on Railway
+> URLs) · live-widget source = **generated build-meta v1** (live aggregator deferred behind the security
+> review) · submissions DB = **separate dashboard-owned Postgres** · changelog = **curated** · `/submit`
+> spam = **honeypot + rate-limit v1**. The build run is now decision-unblocked. A short **Layout & UX
+> guidance** section (folded from the owner's 2026-06-19 external research) gives the build run concrete
+> page specs.
 >
 > **North-star alignment:** this split is the IA realisation of the four-zone model in
 > [`dashboard-vision-finalized-state.md`](dashboard-vision-finalized-state.md) — the **Public** zone
@@ -68,7 +77,7 @@ means both sites render the **same `dashboard.json` family**, each with its own 
 | `/updates` | **both (split by run-type)** | dev keeps the full `.sessions/` **repo/session updates** feed; bot gets a curated **bot changelog** (see below) |
 | `/env` | **dev** | Env-usage map (names only) — dev/owner; never user-facing |
 | `/healthz` | **both** | Each Railway service needs its own liveness probe |
-| `/me`, `/admin/*`, `/auth/*` (control panel) | **dev (v1)** | Per-guild editors; OAuth + bot-authority-gated. *(Open decision §7.4: a per-server control panel is arguably a bot-USER feature — but it is already built + audited on the dev site, so v1 leaves it there with zero migration.)* |
+| `/me`, `/admin/*`, `/auth/*` (control panel) | **bot (gated zone)** | Per-guild editors; OAuth + bot-authority-gated. **Decided (Q-0179, 2026-06-19): the control panel's home is the bot site** — per-server management is a bot-USER feature. Realized as a gated "manage my server" surface **isolated** from the secret-free public marketing pages (§2.4 / §4.4); the migration slice is gated on the control-API public-exposure security review (§3), and the existing dev-site panel keeps serving until it ships (no gap). |
 
 **New bot-site pages** (none exist yet; all read the public data subset + the new sources):
 
@@ -123,6 +132,12 @@ not *whether a change is user-relevant* — every `.sessions/` log is dev/repo c
                       │  control panel ──(private net, CONTROL_API_TOKEN)┼──▶ bot worker control API
                       └─────────────────────────────────────────────────┘
 ```
+
+> **Q-0179 update (decided 2026-06-19): the per-server control panel moves to the bot-site side** as a
+> gated surface **isolated** from the public marketing pages (see §2.4, §4.4, §7.4). The diagram above
+> shows the *pre-decision* placement (panel on the dev site); the secret-isolation invariant and the
+> security-review prerequisite are in §4.4 / §7.4. The dev site retains submission moderation + the GitHub
+> mirror + the owner-only ring (env-value mgmt, control board).
 
 - **Dev site = the *current* `dashboard/` service, untouched in its deploy shape** (root dir
   `dashboard/`, same Procfile, same auto-redeploy). We only **add** (moderation page, public-subset
@@ -207,15 +222,17 @@ public page without an explicit owner approval.
 |---|---|---|
 | Bot site — all pages | **none (public)** | Read-only marketing/reference; the only write is `/submit` → `pending` intake (no login, abuse-gated §4.2) |
 | Dev site — read pages | **none (public read-only)** | The existing value-free catalogues; the redaction audit (§4.1) certifies each |
-| Dev site — `/admin/*` editors | **Discord OAuth + bot-side live authority** | Unchanged. Per-guild edits gated by the bot's live-member capability check; the global-settings + env-value + control-board surfaces are **owner-gated** (the stricter ring) |
+| `/admin/*` editors (→ bot-site gated manager) | **Discord OAuth + bot-side live authority** | Per-guild edits gated by the bot's live-member capability check. **Q-0179: relocating to the bot-site gated manager** (§7.4), isolated from the public marketing pages; unchanged until that slice ships. The **owner-only** ring (global-settings + env-value + control-board) stays on the dev site (the stricter ring) |
 | Dev site — `/admin/moderation` | **owner-gated** | New. Same OAuth, restricted to `config.BOT_OWNER_USER_ID` (mirrors the existing global-settings owner gate) |
 
-**Surfacing a wording mismatch (don't guess — §7.4):** Q-0178 says the dev site is "owner-gated for
+**Resolved wording mismatch (Q-0179, decided 2026-06-19):** Q-0178 said the dev site is "owner-gated for
 edits (existing Discord-OAuth owner auth)", but today's `/admin` is a **multi-user, any-guild-admin**
-control panel (the bot re-checks each editor's authority per guild), *not* owner-only. v1 keeps that
-existing, audited multi-user panel (the bot is the authority either way); the **new** owner-only gate
-applies to **moderation + env-value mgmt + control board**. Whether the per-server panel should instead
-become a bot-site *user* feature is §7.4.
+control panel (the bot re-checks each editor's authority per guild), *not* owner-only. The owner resolved
+the fork: **the per-server panel is a bot-USER feature → its home is the bot site** (§7.4). It moves as a
+gated surface **isolated** from the public marketing pages, keeping the multi-user, bot-is-the-authority
+model; the migration is gated on the control-API public-exposure security review and the existing dev-site
+panel serves until it ships (no gap). The **owner-only** gate (the stricter ring) applies to **submission
+moderation + env-value mgmt + control board**, which stay on the dev site.
 
 ---
 
@@ -238,15 +255,16 @@ bites:
 - **Hard rule:** the **public** bot site must **never** read the bot's **private control API** directly.
   The control API is private-network-only, token-gated, the owner's "don't rush" zone — exposing it to a
   public service (or copying its token there) violates the whole security model.
-- **Recommended live-widget source:** the **dev site becomes the trusted status aggregator.** It can
-  (optionally, if the owner enables the control token there) poll the bot's `/control/ping` on the
-  private network, **redact to a tiny non-sensitive shape** (`{online: bool, build_sha, checked_at}` —
-  *no* guild data, *no* counts that reveal private info), cache it, and expose it as a **public,
-  rate-limited, read-only** `/status.json`. The bot site fetches *that* (or falls back to its generated
-  `meta.build` + a "last generated" label when the aggregator is unavailable).
-- **Fallback (no control token anywhere):** the bot site shows the **generated** build/trust band only,
-  honestly labelled "as of last deploy" — no live claim. *Exact live source = open decision §7.2,
-  gated on the control-API public-exposure security review the brief calls for.*
+- **v1 source (DECIDED §7.2 — generated build-meta):** the status/trust band renders the **generated**
+  `meta.build` (online-as-of-last-deploy · build SHA/date), honestly labelled "as of last deploy" — **no
+  live claim**. This is the v1 path: zero new secrets, zero control-API exposure, ships in the first wave.
+- **Post-review follow-up (NOT v1 — the live aggregator):** *later, and only after the control-API
+  public-exposure security review (§7.2)*, the **dev site** may become the trusted status aggregator — poll
+  the bot's `/control/ping` on the private network (iff the owner enables the control token there),
+  **redact to a tiny non-sensitive shape** (`{online: bool, build_sha, checked_at}` — *no* guild data, *no*
+  counts that reveal private info), cache it, and expose it as a **public, rate-limited, read-only**
+  `/status.json` that the bot site fetches. The public bot site still **never** touches the private control
+  API — it reads the dev site's redacted `/status.json`. This is a deferred slice, not a v1 dependency.
 
 **Freshness labelling (vision's freshness contract — applied to the public site too):** every widget
 declares its lineage with one of two honest badges — **"generated"** (commit/export-time) or
@@ -328,6 +346,34 @@ The public service holds exactly **one** secret — an **INSERT-only** DB role o
 compromise of the bot site cannot read submissions, cannot reach GitHub, cannot reach the bot, cannot
 touch the bot's DB. That is the security payoff of the split done this way.
 
+**Q-0179 redistribution (decided 2026-06-19 — control panel → bot site).** Moving the per-server panel to
+the bot side does **not** dissolve this payoff — it relocates it. The bot-site *domain* now fronts **two
+surfaces that must be isolated at the process + secret-scope level**: the **public marketing pages** (still
+holding only the INSERT-only submissions DSN — the table column above is unchanged for them) and a
+**gated "manage my server" manager** that holds `DISCORD_OAUTH_*` / session-secret + `CONTROL_API_TOKEN`.
+
+**The isolation boundary must be a *separate service*, not a same-process router (explicit decision).** A
+router mounted inside the public marketing app would share that app's runtime process and environment —
+so a marketing-surface compromise *would* reach `CONTROL_API_TOKEN`, **defeating the invariant**. Therefore
+the gated manager is its **own Railway service** (own process, own env/secret scope, own deploy), reachable
+under the bot-site domain (e.g. a `manage.` host or a path routed to that service at the edge) but **never
+sharing a process with the marketing pages**. The invariant holds verbatim — *the **public marketing
+surface** holds exactly one secret (the INSERT-only DSN)* — because the only thing holding the OAuth/control
+secrets is the separate manager service.
+
+**Topology consequence (updates Q-0178's "2 Railway services").** This slice makes it **3 services**:
+(1) the public marketing bot site, (2) the gated manager service, (3) the dev site. That growth is the
+cost of the owner's "move the panel to the bot site" choice done securely. *Two alternatives if 3 services
+is unwanted:* keep the per-server panel on the **dev site** (the original agent recommendation — strictly 2
+services, the audience split is slightly less clean), or accept a **same-process router** on the bot site
+(2 services, but the marketing surface and the control token then share a process — the weaker boundary
+above). The **secure default recorded here is the separate manager service**; owner can pick an alternative.
+
+The **dev site** keeps `GITHUB_ISSUE_MIRROR_TOKEN` + the moderation gate + the owner-only ring. This whole
+migration is **gated on the control-API public-exposure security review** (§3, §7.2 / §7.4) — exposing a
+control-API-writing editor on a user-facing surface is precisely what that review covers — so it lands as a
+security-reviewed slice *after* the first additive build wave (which stays 2 services, secret-free public).
+
 ---
 
 ## 5. Decomposition into file-disjoint build units  *(deliverable 5)*
@@ -408,36 +454,85 @@ The split is **additive**, which is what makes it safe:
 
 ---
 
-## 7. Open decisions — surfaced, not guessed  *(deliverable 7)*
+## 7. Decisions — resolved 2026-06-19  *(deliverable 7)*
 
-Each carries a **recommendation** so the build run has a default if the owner doesn't weigh in, per the
-"approving a goal approves the path" rule — but these are the genuine forks.
+All six were resolved by the owner on **2026-06-19** (via the question panel, against the recommendations
+each carried). They are cross-checked against the owner-provided external research (ChatGPT, 2026-06-19),
+which independently reached the same recommendation on five of six and endorsed this whole approach as its
+recommended "strong audience split with separate domains" (rejecting a unified single-site and an
+API-first/heavy-JS rebuild). The build run executes the **Decided** lines below, not the recommendations.
 
-1. **Domains / branding.** Bot site (e.g. `superbot.<tld>` / `getsuperbot.<tld>`) vs dev site (keep
-   `superbot-dashboard.up.railway.app` or `dev.superbot.<tld>`). *Recommendation:* a clean apex/marketing
-   domain for the bot site; keep the existing Railway domain for the dev site v1. **Owner owns the domain
-   purchase/DNS.**
-2. **Exact live-widget data source** (gated on the control-API public-exposure security review the brief
-   requires). *Recommendation:* **dev-site-aggregated, redacted, cached, public `/status.json`** — the
-   public bot site **never** touches the private control API. Fallback to generated build-meta when the
-   aggregator/token is absent. **Do not expose the control API publicly.**
-3. **Submissions DB store** — the bot's Postgres vs a separate one. *Recommendation:* a **separate,
-   dashboard-owned Postgres** (submissions aren't bot-domain data; a separate store preserves the
-   bot-decoupling rule and lets the public service hold an **INSERT-only** role on one table). Sharing the
-   bot's DB would either re-couple the web tier to the bot's DB or force every write through a new bot
-   control-API endpoint for non-bot data — both worse.
-4. **Per-server control-panel placement** (the Q-0178 "owner-gated" wording vs today's multi-user
-   guild-admin panel). *Recommendation:* **leave the existing audited multi-user control panel on the dev
-   site for v1** (zero migration, the bot is the authority regardless); make **moderation + env-value +
-   control board** the new owner-only surfaces. Revisit moving/mirroring the per-server panel to the bot
-   site as a bot-user feature later. **This is the one place the owner's words and the current build
-   differ — confirm the intent.**
-5. **Bot-changelog source** — a curated `docs/bot-changelog.md` vs auto-derived from session updates via
-   the run-type seam. *Recommendation:* **curated file**, seeded from the substantive shipped/`manual`
-   items; auto-derivation leaks dev-internal noise into a user surface.
-6. **Captcha for `/submit`** — honeypot+rate-limit only (v1) vs add Turnstile/hCaptcha now.
-   *Recommendation:* **honeypot + rate-limit for v1** (no third-party JS/secret on the public site);
-   add a captcha only if abuse appears. (The moderation gate already prevents spam-as-publication.)
+1. **Domains / branding — DECIDED: deferred.** No domain yet; the build stands both services up on their
+   **Railway-generated URLs**, and the owner sets DNS/branding at cutover (non-blocking — §6 already
+   dark-launches the bot site on its Railway URL). When chosen, the sites get **separate** domains
+   (subdomain `bot.`/`dev.` *or* apex-for-bot + `dev.` subdomain — owner's call; the research leans
+   subdomains). **Owner owns the domain purchase/DNS.**
+2. **Exact live-widget data source — DECIDED: generated build-meta for v1.** The status/trust band renders
+   the **generated** build/uptime meta, honestly labelled "as of last deploy." The **live** dev-site
+   aggregator (redacted, cached, public `/status.json`) is a **fast-follow deferred behind the control-API
+   public-exposure security review** — the public bot site **never** touches the private control API. (This
+   is the §3 fallback chosen as the v1 default; it matches the research's "generated snapshot first.")
+3. **Submissions DB store — DECIDED: a separate, dashboard-owned Postgres.** Submissions aren't bot-domain
+   data; a separate store preserves the bot-decoupling rule and lets the public service hold an
+   **INSERT-only** role on one table. (Owner provisions it on Railway at build time.)
+4. **Per-server control-panel placement — DECIDED: → the bot site (Q-0179, option 2).** Per-server
+   management is a bot-**USER** feature, so the control panel's home is the bot site (not the dev
+   engine-room). Realized as a **gated "manage my server" surface isolated from the secret-free public
+   marketing pages** (§2.4 / §4.4), keeping the multi-user, bot-is-the-authority model. **Gated on the
+   control-API public-exposure security review** (§3) → it lands as a security-reviewed slice *after* the
+   first additive build wave; the existing dev-site panel keeps serving until then (no gap). *(The agent
+   recommendation had been "leave on dev for v1"; the owner picked the audience-clean move. If the owner
+   instead wants a single merged app rather than an isolated manager, that supersedes the isolation
+   realization.)*
+5. **Bot-changelog source — DECIDED: a curated `docs/bot-changelog.md`**, seeded from the substantive
+   shipped/`manual` items. Auto-deriving from session updates via the run-type seam leaks dev-internal
+   noise into a user surface (the seam classifies *how a session ran*, not user-relevance — §1).
+6. **Captcha for `/submit` — DECIDED: honeypot + rate-limit for v1** (no third-party JS/secret on the
+   public site); add a captcha (Turnstile/hCaptcha) only if abuse appears. The moderation gate already
+   prevents spam-as-publication, and the research notes honeypot+rate-limit blocks ~99.5% of automated
+   spam.
+
+## Layout & UX guidance — folded from the owner's external research (2026-06-19)
+
+Concrete page-level defaults for the build run, from the owner-provided research (ChatGPT, 2026-06-19),
+treated as **input verified against this plan** (Q-0120), not as orders. They fill the layout detail the
+architecture sections deliberately left open; the build run may refine them.
+
+- **Bot-site navigation.** Top bar: logo left, primary links right (*Features · Commands · Games ·
+  Changelog · Status · Submit*) + a **persistent "Add to Discord" CTA** styled distinctively. Mobile:
+  collapse to a hamburger + a fixed "Add" button; a small status dot (green/amber/red) in the header links
+  to `/status`. **Dev site keeps its existing sidebar** (engine-room framing).
+- **Homepage structure.** Hero (headline + one-line benefit + "Add to Discord") → **3–5 feature cards**
+  (icon · benefit · deep link, grouped by category: Games · Moderation · AI · BTD6 tools) → a **capability
+  band** built from the **honest catalogue counts** `site.json` actually exposes (e.g. "N commands across
+  M features / K games") → a 3-step "how it works" (Invite → Configure → Enjoy) → a repeat CTA.
+  Marketing-first (the research's pick; matches the plan's "marketing router-landing"). **Note (do not
+  fake social proof):** `site.json` holds repo/catalogue counts, **not** live server/user totals — those
+  would need the deferred live source (§3, post-security-review), so v1 must **not** render
+  server/user numbers; use the catalogue counts or omit the band until a reviewed live source exists.
+- **Command reference (`/commands`).** A **filterable table** (command · description · cooldown ·
+  permissions · category) with a search box, category accordions, and a sticky header; on mobile, stacked
+  cards. Anchor links per command.
+- **Feature showcase (`/features`).** Category tabs/accordion over the `/functions` + `/games` catalogues,
+  user-framed; per-feature card (icon · name · short benefit · optional badge like *beta* · deep link).
+  *(This already merges the dev `/functions` + `/games` into one user-facing page — the research's
+  "important improvement #1", which the plan adopted in §1.)*
+- **Changelog (`/changelog`).** A timeline grouped by date; each entry tagged feature/fix/improvement;
+  link out to the GitHub release/PR — but **don't surface raw internal PR numbers as user-facing
+  identifiers**.
+- **Submission form (`/submit`).** Fields: *category* (bug/suggestion) · *title* · *description* (rendered
+  escaped) · ***surface*** (the §2.3 schema field — bot / dashboard / CI / other — that maps to the
+  issue-template dropdown; shown for bugs, stored nullable for suggestions) · optional *contact*; a hidden
+  **honeypot** + server-side validation (§4.2); friendly copy that submissions are reviewed and not all
+  suggestions ship, plus a one-line privacy note; redirect to a thank-you page on success. *(The form's
+  fields must cover every non-defaulted `submissions` column in §2.3 so the GitHub mirror can populate the
+  template — `surface` is the one the earlier draft omitted.)*
+- **Cross-cutting.** Friendly **empty/error states** (no internal error text leaked); **freshness badges**
+  ("generated" vs "live", §3) on every data widget; an **accurate privacy note** — the public site reads no
+  Discord/guild personal data, and the **only** data it collects is what you submit on `/submit`: your
+  optional *contact* (never published) and a **salted IP hash** kept for abuse prevention (§4.2). Do **not**
+  claim "no personal data is collected" (the contact + IP-hash flow is pseudonymous personal data); state
+  the retention/abuse purpose plainly instead.
 
 ---
 

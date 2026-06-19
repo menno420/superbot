@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/bold-cori-y7ben5` · **website-split: review the external research + lock the open decisions**
+  (owner-directed) — resolve **Q-0179** (control panel → bot site) + lock plan §7's 6 decisions + fold the
+  owner's external-research layout/UX guidance into the plan · `docs/owner/maintainer-question-router.md` ·
+  `docs/planning/website-two-site-split-plan-2026-06-19.md` · `docs/current-state.md` · 2026-06-19 ·
+  **auto-merge on green**
 - `claude/kind-einstein-jlywgm` · **`scripts/router_status.py`** (grooming-ender — executes the #1102
   Q-0089 idea) — stdlib digest of the question router: next free Q-number + the OPEN owner-decision
   queue · `scripts/router_status.py` + `tests/unit/scripts/test_router_status.py` · 2026-06-19 ·
