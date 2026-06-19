@@ -115,6 +115,27 @@ STEP 1 — GO-SIGNAL: the triggering `reconcile` issue IS your go-signal — do 
   re-gate on check_reconciliation_due: the issue means reconciliation is wanted, whether the
   cadence fired or an agent spotted drift.) Note its number.
 
+STEP 1b — CHECK CODEX FIRST (first priority, before the reconcile pass — Q-0174). Scan the few
+  most-recent merged PRs (and any open ones) for UNRESOLVED Codex/bot review comments. Codex cannot
+  push a branch or open a PR — it leaves a COMMENT (a summary + a proposed diff + a `[View task →]`
+  link, describing changes in its own sandbox copy). READ ITS COMMENT, do NOT hunt for a Codex
+  branch/PR (there is none). For each flag, apply the "real bug" bar — ACTIONABLE only if ALL hold:
+    (a) VERIFIED against current `main` source — real *now*, not an artifact. Reject the born-red
+        timing class (Codex reviews the card-first commit *before* the code lands → "implementation
+        missing / flip the card / script doesn't exist"), an `is_outdated` thread, a since-fixed line.
+    (b) A genuine defect: a correctness bug · an architecture/ownership violation · a docs-vs-code
+        contradiction or stale-fact drift that would mislead an agent (the kind this routine owns —
+        e.g. the `/session-close` cadence Codex caught) · a security/safety/privacy gap.
+    (c) NOT a nitpick / preference / false positive / anything the repo's checkers already pass.
+  ROUTE BY SHAPE (you are docs-only, Q-0107): a verified-real DOCS defect → fix it now in this pass
+  (it jumps the queue). A verified-real RUNTIME bug → do NOT fix it here; append it OPEN to
+  docs/health/bug-book.md (step 3) for the dispatch routine, citing the PR/file/line + which bar
+  clause it meets. A born-red false-positive is acknowledged-and-skipped, not "fixed." Bounded read
+  (the recent PRs, not the whole history). Unsure → skip it (the Q-0174 Hermes pr-check skill opens
+  an issue for genuinely-unclear ones); never act blindly — the bot is one input, verified against
+  shipped source (Q-0120). The full bar lives in
+  docs/planning/codex-review-integration-plan-2026-06-17.md.
+
 STEP 2 — RECONCILE (the Q-0107 pass):
   - Ledger: run `python3.10 scripts/check_current_state_ledger.py --strict`; fix all drift (add
     missing merged-PR entries; trim Recently-shipped past the ratchet into the archive).
