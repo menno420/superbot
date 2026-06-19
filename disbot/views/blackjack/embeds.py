@@ -9,15 +9,15 @@ from __future__ import annotations
 
 import discord
 
-from cogs.blackjack._state import (
+from services.blackjack_engine import hand_str as _hand_str
+from services.blackjack_engine import hand_value as _hand_value
+from services.blackjack_engine import rank_value as _rank_value
+from services.blackjack_state import (
     FREE_WIN_COINS,
     TOURN_BET_PER_ROUND,
     _BjTournament,
     _Game,
 )
-from services.blackjack_engine import hand_str as _hand_str
-from services.blackjack_engine import hand_value as _hand_value
-from services.blackjack_engine import rank_value as _rank_value
 from utils.ui_constants import SUCCESS_COLOR
 
 

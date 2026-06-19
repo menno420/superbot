@@ -30,8 +30,11 @@ from dataclasses import dataclass
 import discord
 from discord.ext import commands
 
-from cogs.blackjack._persistence import _save_game_state
-from cogs.blackjack._state import (
+from core.runtime import tasks
+from services import economy_service, tournament_state_service
+from services.blackjack_engine import is_blackjack as _is_blackjack
+from services.blackjack_persistence import _save_game_state
+from services.blackjack_state import (
     FREE_WIN_COINS,
     _active,
     _BjTournament,
@@ -39,9 +42,6 @@ from cogs.blackjack._state import (
     _pvp,
     _tournaments,
 )
-from core.runtime import tasks
-from services import economy_service, tournament_state_service
-from services.blackjack_engine import is_blackjack as _is_blackjack
 from utils import db
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
 from views.blackjack.embeds import _game_embed, _tourn_embed
