@@ -1,11 +1,20 @@
 #!/usr/bin/env python3.10
-"""Export the developer dashboard's read-only data to JSON (stdlib only).
+"""Export the read-only web data to JSON (stdlib only) — both sites' producer.
 
 The developer dashboard (``docs/planning/developer-dashboard-plan.md``) is a
 decoupled web app under ``dashboard/`` that must **not** import ``disbot/``. This
 script is the seam between the two: it reads the repo's existing structured
-sources and serialises them to ``dashboard/data/dashboard.json``, which the
-FastAPI app renders.
+sources and serialises them. It is the **single producer** for both web tiers
+(``docs/planning/website-two-site-split-plan-2026-06-19.md`` §2.2 — one producer,
+two artifacts, no shared package):
+
+* ``dashboard/data/dashboard.json`` — the **full** payload (developer dashboard).
+* ``botsite/data/site.json`` — a **minimized public subset** (the marketing bot
+  site). It is an explicit *whitelist* of user-safe families only (see
+  :data:`SITE_TOPLEVEL_KEYS` / :func:`build_site_subset`); it physically cannot
+  contain a dev-only family (``env_usage`` / ``settings`` / ``access`` / ``reviews``
+  / ``ideas`` / raw ``bugs``) or any per-guild value — *redaction by construction*,
+  the strongest guarantee for the split's non-negotiable #1.
 
 Sources (all read-only, never imported):
 
@@ -14,14 +23,17 @@ Sources (all read-only, never imported):
 * Bugs                    <- ``docs/health/bug-book.md`` (``## BUG-NNNN ...``)
 * Reviews                 <- ``docs/owner/review-inbox.md`` (``## REV-NNNN — area — STATUS``)
 * Updates feed            <- ``.sessions/*.md`` (date + title + Status badge)
+* Bot changelog           <- ``docs/bot-changelog.md`` (``## YYYY-MM-DD — title``,
+                             curated user-facing changes — plan §7.5)
 * Env-var usage map       <- ``disbot/**/*.py`` via ``scripts/scan_env_usage.py``
                              (names + code locations only — never a value)
 
-Pure stdlib so it runs in CI with no extra dependencies and the dashboard's web
-dependencies (fastapi, uvicorn, ...) never enter the bot's ``requirements.txt``.
-Re-run after the sources change::
+Pure stdlib so it runs in CI with no extra dependencies and the web tiers' deps
+(fastapi, uvicorn, ...) never enter the bot's ``requirements.txt``.
+Re-run after the sources change (writes BOTH artifacts by default)::
 
-    python3.10 scripts/export_dashboard_data.py
+    python3.10 scripts/export_dashboard_data.py                 # both artifacts
+    python3.10 scripts/export_dashboard_data.py --targets site  # only site.json
 
 Reliability (Q-0105): **unverified** — confirm the JSON against the live sources
 a few times across sessions before trusting it, and delete this seam if it proves
@@ -42,6 +54,34 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_FILE = REPO_ROOT / "dashboard" / "data" / "dashboard.json"
+SITE_OUTPUT_FILE = REPO_ROOT / "botsite" / "data" / "site.json"
+
+# The ONLY top-level keys the public ``site.json`` subset is allowed to carry
+# (plan §5 / §2.2). This is the redaction guarantee for the marketing bot site:
+# :func:`build_site_subset` constructs exactly these and nothing else, and the
+# freshness/whitelist guard (``check_generated_artifacts_fresh`` /
+# ``check_dashboard_data``) asserts the committed file's keys are a SUBSET of this
+# set — so a new key in the producer fails closed instead of silently leaking a
+# private family onto the public site. Deliberately OMITS ``env_usage``,
+# ``settings``, ``access``, ``reviews``, ``ideas``, raw ``bugs``, and ``cogs``
+# (the dashboard-only families).
+SITE_TOPLEVEL_KEYS: frozenset[str] = frozenset(
+    {"meta", "counts", "catalogue", "commands", "bot_changelog"},
+)
+# Per-command fields the public ``commands`` reference exposes (no per-guild value
+# ever appears — these are repo-level command metadata). ``usage`` is the one-line
+# description (the AST scanner's ``brief``); ``category`` + ``permissions`` are
+# joined from the command's subsystem catalogue entry; ``cooldown`` is reserved
+# (the AST scanner does not statically resolve runtime cooldown decorators today,
+# so it is emitted as ``null`` rather than fabricated — see :func:`build_site_subset`).
+SITE_COMMAND_FIELDS: tuple[str, ...] = (
+    "name",
+    "aliases",
+    "category",
+    "cooldown",
+    "permissions",
+    "usage",
+)
 
 
 def _load_scan_env_usage() -> Callable[..., list[dict]]:
@@ -399,6 +439,64 @@ def parse_updates(sessions_dir: Path, limit: int = 60) -> list[dict]:
     return updates[:limit]
 
 
+# Bot-changelog headings: ``## YYYY-MM-DD — <title>``, with an optional trailing
+# ``(feature)`` / ``(fix)`` / ``(improvement)`` kind tag inside the title (plan §7.5).
+# The user-facing curated source — NOT the .sessions/ dev feed.
+_CHANGELOG_HEAD_RE = re.compile(r"^##\s+(\d{4}-\d{2}-\d{2})\s*[—–-]\s*(.+?)\s*$")
+_CHANGELOG_KIND_RE = re.compile(
+    r"\((feature|fix|improvement)\)\s*$",
+    re.IGNORECASE,
+)
+_VALID_CHANGELOG_KINDS = frozenset({"feature", "fix", "improvement"})
+
+
+def parse_bot_changelog(text: str) -> list[dict]:
+    """Parse ``docs/bot-changelog.md`` into date/title/kind/summary records.
+
+    The **curated, user-facing** changelog (plan §7.5 / Q-0179): one record per
+    ``## YYYY-MM-DD — <title>`` heading, newest-first. An optional trailing
+    ``(feature)`` / ``(fix)`` / ``(improvement)`` tag in the title sets ``kind``
+    (default ``""``); the summary is the first body paragraph beneath the heading.
+    Deliberately separate from :func:`parse_updates` — that feeds the dev site's
+    ``/updates`` from ``.sessions/`` logs (how a session ran), while this is the
+    hand-curated "what's new for users" source the public ``/changelog`` renders.
+    """
+    entries: list[dict] = []
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        head = _CHANGELOG_HEAD_RE.match(line)
+        if not head:
+            continue
+        date, title = head.group(1), head.group(2).strip()
+        kind = ""
+        kind_match = _CHANGELOG_KIND_RE.search(title)
+        if kind_match:
+            kind = kind_match.group(1).lower()
+            title = title[: kind_match.start()].rstrip()
+        entries.append(
+            {
+                "date": date,
+                "title": _strip_md(title),
+                "kind": kind if kind in _VALID_CHANGELOG_KINDS else "",
+                "summary": _truncate(_changelog_summary(lines, index), 280),
+            },
+        )
+    entries.sort(key=lambda e: e["date"], reverse=True)
+    return entries
+
+
+def _changelog_summary(lines: list[str], start: int) -> str:
+    """Return the first body paragraph beneath a changelog heading."""
+    for line in lines[start + 1 : start + 30]:
+        if line.startswith("## "):
+            break
+        stripped = line.strip()
+        if not stripped or stripped[0] in "#>-*":
+            continue
+        return _strip_md(stripped)
+    return ""
+
+
 def _git_meta(repo_root: Path) -> dict[str, str]:
     """Return the build commit context the data was generated from, or ``{}``.
 
@@ -442,6 +540,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
     bug_book = repo_root / "docs" / "health" / "bug-book.md"
     review_inbox = repo_root / "docs" / "owner" / "review-inbox.md"
     sessions_dir = repo_root / ".sessions"
+    bot_changelog_file = repo_root / "docs" / "bot-changelog.md"
 
     catalogue = (
         parse_catalogue(registry.read_text(encoding="utf-8"))
@@ -456,6 +555,11 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         else []
     )
     updates = parse_updates(sessions_dir) if sessions_dir.is_dir() else []
+    bot_changelog = (
+        parse_bot_changelog(bot_changelog_file.read_text(encoding="utf-8"))
+        if bot_changelog_file.exists()
+        else []
+    )
 
     scan_root = repo_root / "disbot"
     env_usage = (
@@ -532,6 +636,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
                 "typed_settings": len(specs),
                 "visible_subsystems": access.get("total_visible", 0),
                 "synonyms": sum(len(s["synonyms"]) for s in synonyms),
+                "bot_changelog": len(bot_changelog),
             },
         },
         "catalogue": catalogue,
@@ -539,6 +644,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         "bugs": bugs,
         "reviews": reviews,
         "updates": updates,
+        "bot_changelog": bot_changelog,
         "env_usage": env_usage,
         "cogs": cogs,
         "settings": settings,
@@ -547,14 +653,166 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# Public subset (botsite/data/site.json) — plan §5 / §2.2
+# ---------------------------------------------------------------------------
+# Game categories the marketing "features showcase" treats as games (the
+# `/features` page merges the function catalogue + games; the public counts
+# expose only catalogue counts, never server/user totals — plan layout note).
+_GAME_CATEGORIES: frozenset[str] = frozenset({"games"})
+# Public catalogue fields — declared metadata only (name/description/category/
+# badges). Omits internal-only fields like ``capabilities`` and ``entry_points``
+# (operator wiring, not user marketing) and ``visibility_mode`` (an internal flag).
+_SITE_CATALOGUE_FIELDS: tuple[str, ...] = (
+    "key",
+    "display_name",
+    "description",
+    "emoji",
+    "category",
+    "tags",
+)
+
+
+def _site_catalogue(catalogue: list[dict]) -> list[dict]:
+    """Project the full catalogue to the public, user-safe metadata subset.
+
+    ``badges`` is a small derived, user-facing list (currently the category), kept
+    deliberately generic so the showcase can render a chip without leaking the
+    internal ``visibility_tier`` / ``capabilities``.
+    """
+    out: list[dict] = []
+    for entry in catalogue:
+        projected = {f: entry.get(f) for f in _SITE_CATALOGUE_FIELDS if f in entry}
+        category = entry.get("category")
+        projected["badges"] = [category] if category else []
+        projected["is_game"] = category in _GAME_CATEGORIES
+        out.append(projected)
+    return out
+
+
+def _site_commands(cogs: list[dict], catalogue: list[dict]) -> list[dict]:
+    """Build the public command reference (no per-guild value, ever).
+
+    Each command exposes exactly :data:`SITE_COMMAND_FIELDS`. ``category`` and
+    ``permissions`` are joined from the command's owning subsystem catalogue entry
+    (``category`` = the subsystem category; ``permissions`` = its declared
+    ``visibility_tier`` — the honest static "who can see this" signal, NOT a
+    per-guild grant). ``usage`` is the command's one-line description (the AST
+    scanner's ``brief``). ``cooldown`` is reserved/``None`` — runtime cooldown
+    decorators are not statically resolved by the scanner today, so it is left
+    unset rather than fabricated. Subcommands are skipped (the reference lists
+    top-level commands; a later page can expand groups).
+    """
+    sysmap = {c.get("key"): c for c in catalogue}
+    out: list[dict] = []
+    for cog in cogs:
+        subsystem = cog.get("subsystem") or ""
+        sys_entry = sysmap.get(subsystem, {})
+        for cmd in cog.get("commands", []):
+            out.append(
+                {
+                    "name": cmd.get("name"),
+                    "aliases": list(cmd.get("aliases") or []),
+                    "category": sys_entry.get("category") or "other",
+                    "cooldown": None,
+                    "permissions": sys_entry.get("visibility_tier") or "",
+                    "usage": cmd.get("brief") or "",
+                },
+            )
+    out.sort(key=lambda c: ((c.get("category") or ""), (c.get("name") or "")))
+    return out
+
+
+def build_site_subset(data: dict) -> dict:
+    """Derive the public ``site.json`` subset from the full dashboard payload.
+
+    Returns a dict whose top-level keys are **exactly** :data:`SITE_TOPLEVEL_KEYS`
+    — redaction by construction (plan §2.2). It carries only user-safe families:
+    a slim ``meta`` (build provenance only), public catalogue ``counts``
+    (commands/features/games — never server/user totals), a metadata-only
+    ``catalogue``, a value-free ``commands`` reference, and the curated
+    ``bot_changelog``. Everything dev-only (``env_usage`` / ``settings`` /
+    ``access`` / ``reviews`` / ``ideas`` / raw ``bugs`` / ``cogs``) is dropped.
+    """
+    meta = data.get("meta", {})
+    catalogue = data.get("catalogue", [])
+    cogs = data.get("cogs", [])
+
+    site_catalogue = _site_catalogue(catalogue)
+    site_commands = _site_commands(cogs, catalogue)
+    games = sum(1 for e in site_catalogue if e.get("is_game"))
+
+    subset = {
+        # meta: build provenance only (sha/subject/date) + generation stamp. NO
+        # private counts here — the public counts live in the separate ``counts``
+        # family below, scoped to catalogue totals only.
+        "meta": {
+            "generated_at": meta.get("generated_at", ""),
+            "build": meta.get("build", {}),
+        },
+        # counts: catalogue totals ONLY (plan §5). Never server/user totals — those
+        # would require the deferred live source (plan §3, post-security-review).
+        "counts": {
+            "commands": len(site_commands),
+            "features": len(site_catalogue),
+            "games": games,
+        },
+        "catalogue": site_catalogue,
+        "commands": site_commands,
+        "bot_changelog": data.get("bot_changelog", []),
+    }
+    # Defensive: guarantee the contract the CI whitelist asserts. If a future edit
+    # adds a key here, this raises in the producer/tests before it can ship.
+    extra = set(subset) - SITE_TOPLEVEL_KEYS
+    if extra:
+        raise ValueError(
+            f"site.json subset produced disallowed top-level keys: {sorted(extra)} "
+            f"(allowed: {sorted(SITE_TOPLEVEL_KEYS)})",
+        )
+    return subset
+
+
+def _write_json(out: Path, payload: dict) -> str:
+    """Write ``payload`` as pretty JSON to ``out`` and return its repo-relative path."""
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    return str(out.relative_to(REPO_ROOT) if out.is_relative_to(REPO_ROOT) else out)
+
+
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry point: write the JSON payload (or print its summary)."""
-    parser = argparse.ArgumentParser(description="Export dashboard data to JSON.")
-    parser.add_argument("--output", default=str(OUTPUT_FILE), help="output JSON path")
+    """CLI entry point: write the JSON artifact(s) (or print the summary).
+
+    By default writes **both** ``dashboard.json`` (full) and ``site.json`` (public
+    subset) from one in-memory build (plan §2.2 — single producer). ``--targets``
+    selects which to emit; ``--check`` prints the full payload's meta and writes
+    nothing.
+    """
+    parser = argparse.ArgumentParser(
+        description="Export the web data to JSON (dashboard full payload + bot-site public subset).",
+    )
+    parser.add_argument(
+        "--targets",
+        choices=("both", "dashboard", "site"),
+        default="both",
+        help="which artifact(s) to write (default: both)",
+    )
+    parser.add_argument(
+        "--output",
+        default=str(OUTPUT_FILE),
+        help="dashboard.json output path",
+    )
+    parser.add_argument(
+        "--site-output",
+        default=str(SITE_OUTPUT_FILE),
+        help="site.json (public subset) output path",
+    )
     parser.add_argument(
         "--check",
         action="store_true",
-        help="print the meta summary without writing the file",
+        help="print the meta summary without writing any file",
     )
     args = parser.parse_args(argv)
 
@@ -563,14 +821,13 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(data["meta"], indent=2))
         return 0
 
-    out = Path(args.output)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-    rel = out.relative_to(REPO_ROOT) if out.is_relative_to(REPO_ROOT) else out
-    print(f"wrote {rel} — {data['meta']['counts']}")
+    if args.targets in ("both", "dashboard"):
+        rel = _write_json(Path(args.output), data)
+        print(f"wrote {rel} — {data['meta']['counts']}")
+    if args.targets in ("both", "site"):
+        subset = build_site_subset(data)
+        rel = _write_json(Path(args.site_output), subset)
+        print(f"wrote {rel} — {subset['counts']}")
     return 0
 
 

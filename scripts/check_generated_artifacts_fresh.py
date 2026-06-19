@@ -144,6 +144,63 @@ def drift_dashboard_json() -> list[Drift]:
     ]
 
 
+# Structural identifier sets for the public site.json subset — only identity is
+# compared (never order/volatile churn), mirroring the dashboard.json surfaces.
+_SITE_SURFACES: dict[str, Callable[[dict[str, Any]], set[Any]]] = {
+    "catalogue keys": lambda d: {e.get("key") for e in d.get("catalogue", [])},
+    "command names": lambda d: {c.get("name") for c in d.get("commands", [])},
+    "changelog dates": lambda d: {e.get("date") for e in d.get("bot_changelog", [])},
+}
+
+
+def drift_site_json() -> list[Drift]:
+    """``botsite/data/site.json`` — the public subset (plan §5 / §2.2).
+
+    Two kinds of finding (both surfaced here, so one report covers the artifact):
+
+    * **whitelist** — the committed file's top-level keys must be a subset of the
+      producer's ``SITE_TOPLEVEL_KEYS``; a stray key is the leak class (a non-public
+      family reaching the marketing site) and is reported even though this umbrella
+      is warn-only by default (``--strict`` turns it into an exit-1 cadence gate).
+    * **structural freshness** — catalogue keys / command names / changelog dates
+      present in a fresh subset but missing from the committed file (a source change
+      that shipped but was never re-exported), and vice-versa. The volatile churn
+      (build SHA, timestamps) is ignored, like the dashboard.json reporter.
+    """
+    mod = _load_module("dashboard", REPO_ROOT / "scripts" / "check_dashboard_data.py")
+    site_path = mod.SITE_DATA_FILE
+    if not site_path.exists():
+        return [
+            Drift(
+                "site.json",
+                "artifact",
+                f"{site_path.relative_to(REPO_ROOT)} does not exist — re-run "
+                f"scripts/export_dashboard_data.py",
+            ),
+        ]
+    committed = json.loads(site_path.read_text(encoding="utf-8"))
+    fresh = mod._export_module().build_site_subset(mod._build_fresh())
+
+    findings: list[Drift] = []
+    # whitelist (reuse the canonical assertion in check_dashboard_data)
+    findings.extend(
+        Drift("site.json", "whitelist", issue.message)
+        for issue in mod.check_site_subset(committed, site_path=site_path)
+    )
+    # structural freshness
+    for surface_name, surface in _SITE_SURFACES.items():
+        findings.extend(
+            _set_drift(
+                "site.json",
+                surface_name,
+                surface(committed),
+                surface(fresh),
+                "re-run scripts/export_dashboard_data.py",
+            ),
+        )
+    return findings
+
+
 _ENV_VAR_ROW = re.compile(r"^\|\s*`([A-Z][A-Z0-9_]*)`", re.MULTILINE)
 
 
@@ -244,6 +301,12 @@ REGISTRY: tuple[Artifact, ...] = (
         "dashboard/data/dashboard.json",
         "scripts/export_dashboard_data.py",
         drift_dashboard_json,
+    ),
+    Artifact(
+        "site.json",
+        "botsite/data/site.json",
+        "scripts/export_dashboard_data.py",
+        drift_site_json,
     ),
     Artifact(
         "env-vars.md",
