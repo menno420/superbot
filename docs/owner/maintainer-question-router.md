@@ -6525,3 +6525,36 @@ live-widget data source (gated on a control-API public-exposure security review)
 **Home:** the [planning brief](../planning/website-two-site-split-planning-brief-2026-06-19.md) + this
 Q-block; idea capture [`website-two-site-split-2026-06-19.md`](../ideas/website-two-site-split-2026-06-19.md).
 Related: the developer-dashboard initiative + Q-0155/Q-0156 (dashboard auth/live-editor lane).
+
+---
+
+### Q-0179 — Website split: where does the per-server control panel live? (2026-06-19)
+
+> **OPEN — DISCUSS lane, owner decides.** Surfaced by the website two-site-split *plan* (#1100, §7.4),
+> which the planning session grounded against the live dashboard. Routes a genuine owner-intent fork that
+> Q-0178's "still open" list does **not** include. Not blocking the plan, but **needed before the
+> ultracode build run wires the control panel one way.** Agent recommends; owner decides.
+
+**The fork.** Q-0178 (decision 3) says the dev site is "owner-gated for edits (existing Discord-OAuth
+owner auth)." But the *existing*, already-shipped, already-audited `/admin` control panel is
+**multi-user**: *any* Discord user signs in and edits the servers **they** administer (the bot re-checks
+each editor's live authority per guild — the browser is never trusted). So "owner-gated" as written does
+not match what is built. Two readings, materially different products:
+
+1. **Keep the existing multi-user per-server control panel on the dev site (v1 — agent recommendation).**
+   Zero migration; already built + audited; "owner-gated" reads loosely as "edits require the OAuth gate
+   and the bot is the authority." The **new** owner-only surfaces are moderation + env-value mgmt + the
+   control board. Lowest-risk, no-downtime.
+2. **Treat the per-server control panel as a bot-USER feature → move/mirror it to the public bot site.**
+   Cleaner audience separation (a server owner managing their server is a bot user, not a developer), but
+   it is migration + re-auth work and re-opens the public-surface security review for the live editors.
+
+**Recommendation:** (1) for v1 — leave it on the dev site, build the split around it, and revisit moving
+it to the bot site as a later, separate slice once the bot site exists. **Owner: confirm (1), or pick (2).**
+
+**Still-open siblings (implementation-level, not router-gating — defaults live in plan §7):** the
+bot-changelog source (curated file vs auto-derived) and the public-form captcha (honeypot+rate-limit v1
+vs add a provider). Listed for completeness; the build run defaults them per the plan unless you say so.
+
+**Home:** the [plan §7](../planning/website-two-site-split-plan-2026-06-19.md) + this Q-block. Related:
+Q-0178 (the four decided choices + its own "still open" list), Q-0155/Q-0156 (dashboard auth/live-editor).
