@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T22:24:55Z",
+    "generated_at": "2026-06-19T05:23:08Z",
     "build": {
-      "commit": "2e0d5b5e",
-      "subject": "Merge pull request #1054 from menno420/claude/funny-franklin-y1p0k4",
-      "committed_at": "2026-06-18T23:29:09Z",
+      "commit": "00466a09",
+      "subject": "Merge pull request #1060 from menno420/claude/ai-panel-inplace-nav-plan",
+      "committed_at": "2026-06-19T05:28:59Z",
       "branch": "main"
     },
     "counts": {
@@ -1679,6 +1679,46 @@
   ],
   "updates": [
     {
+      "file": "2026-06-19-consistency-panel-base-class-reconcile.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Consistency-linter: reconcile `panel_base_class` with the arch ground truth",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-consistency-linter-lane-a2.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Consistency-linter Lane A2: window the per-panel embedded selects",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-consistency-edit-in-place-triage.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Consistency-linter: triage the `edit_in_place` backlog (rule 1)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-consistency-back-button-triage.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Consistency-linter: triage the `back_button` backlog (rule 2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-ai-panel-inplace-nav-plan.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Promote the AI-panel in-place-navigation idea to an executable plan",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-18-standalone-select-pagination.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — Migrate standalone-ephemeral select pickers onto `PaginatedSelectView`",
@@ -2114,46 +2154,6 @@
       "file": "2026-06-16-model-tpm-confirmed-result.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — TPM result confirmed (5-mini 500K) + reconcile the compaction guidance",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-model-comparison-gpt5mini.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — gpt-5-mini vs gpt-5.4-mini comparison + apply_context_fixes --set-model fix",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-ledger-reconcile-932-939.md",
-      "date": "2026-06-16",
-      "title": "Session — ledger reconcile (#932–#936, #939 into current-state)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-journal-session-lessons.md",
-      "date": "2026-06-16",
-      "title": "Session — journal: durable lessons from the security-tiers session",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-install-skills-staleness-guard.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — install-skills.sh staleness guard (stale-skill root cause)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-image-moderation.md",
-      "date": "2026-06-16",
-      "title": "Session — Image moderation (Q-0108) — the safety-community family's last buildable slice",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
