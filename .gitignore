@@ -96,3 +96,7 @@ superbot_btd6_data/
 
 # Local Claude Code settings (personal, not committed)
 .claude/settings.local.json
+
+# Transient git worktrees created by background agents (isolation: worktree).
+# Registered under .git/worktrees and auto-cleaned; never tracked in the parent repo.
+.claude/worktrees/
