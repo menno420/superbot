@@ -36,6 +36,12 @@ Usage::
     python scripts/check_consistency.py                  # report mode (exit 0)
     python scripts/check_consistency.py --mode strict    # exit 1 on errors (none yet)
     python scripts/check_consistency.py --file disbot/views/x.py
+    python scripts/check_consistency.py --graduation     # per-rule graduation tracker
+
+A rule graduates by flipping its ``Rule.severity`` from ``"warning"`` to
+``"error"`` (which makes ``--mode strict`` fail on a finding) once it has run
+clean across a few sessions; ``--graduation`` reports, per rule, whether it is
+``ELIGIBLE`` / ``NOT READY`` / ``BLOCKED`` (and by what) / ``GRADUATED``.
 """
 
 from __future__ import annotations
@@ -682,6 +688,16 @@ class Rule:
     name: str
     fn: object
     description: str = field(default="")
+    # The severity the rule's findings carry.  Every rule starts ``"warning"``
+    # (warn-first, Q-0105) and graduates to ``"error"`` — at which point a finding
+    # fails ``--mode strict`` — only once it has run clean across a few sessions.
+    severity: str = "warning"
+    # The *specific* thing blocking graduation to ``error``, if any (e.g. a plan
+    # that must ship to clear a rule's remaining findings).  Empty means the only
+    # gate left is the "stay clean a couple more sessions" soak — the
+    # ``--graduation`` report turns "why is this still warn-only?" into one hop
+    # (the per-rule graduation-blocker tracker, the #1060 session idea).
+    graduation_blocker: str = field(default="")
 
 
 RULES: list[Rule] = [
@@ -689,6 +705,11 @@ RULES: list[Rule] = [
         "edit_in_place",
         rule_edit_in_place,
         "panel callbacks that reply with a standalone ephemeral instead of editing in place",
+        graduation_blocker=(
+            "the 17 remaining views/ai/ findings need the AI-nav redesign — "
+            "docs/planning/ai-panel-inplace-navigation-plan-2026-06-19.md (PR 2 "
+            "clears the chooser sub-trees; allowlisting them would mute the bug)"
+        ),
     ),
     Rule(
         "back_button",
@@ -727,8 +748,53 @@ def _counts_by_rule(findings: list[Finding]) -> dict[str, int]:
 def run_checks(files: list[Path], exceptions: dict) -> list[Finding]:
     findings: list[Finding] = []
     for rule in RULES:
-        findings += rule.fn(files, exceptions)  # type: ignore[operator]
+        rule_findings: list[Finding] = rule.fn(files, exceptions)  # type: ignore[operator]
+        # Stamp each finding with its rule's current severity, so graduating a
+        # rule to ``error`` (flip ``Rule.severity``) actually makes ``--mode
+        # strict`` fail on it — no per-rule wiring needed.
+        for f in rule_findings:
+            f.severity = rule.severity
+        findings += rule_findings
     return findings
+
+
+# ---------------------------------------------------------------------------
+# Graduation tracker — the self-explaining "why is this still warn-only?" view
+# ---------------------------------------------------------------------------
+
+
+def graduation_status(rule: Rule, count: int) -> tuple[str, str]:
+    """The graduation state of *rule* given its current finding *count*.
+
+    Returns ``(state, detail)`` where ``state`` is one of ``GRADUATED`` /
+    ``BLOCKED`` / ``NOT READY`` / ``ELIGIBLE``.  This makes the graduation queue
+    self-documenting (the #1060 session idea): a later session reads one line to
+    know whether a warn-only rule can flip to ``error`` and, if not, exactly what
+    blocks it.
+    """
+    if rule.severity == "error":
+        return "GRADUATED", "enforced — a finding fails `--mode strict`"
+    if rule.graduation_blocker:
+        return "BLOCKED", rule.graduation_blocker
+    if count > 0:
+        return "NOT READY", f"{count} warn-only finding(s) — triage to 0 first"
+    return (
+        "ELIGIBLE",
+        "0 findings on a clean tree — flip `Rule.severity` to 'error' after it "
+        "stays clean a couple more sessions, then wire into code-quality.yml",
+    )
+
+
+def print_graduation_report(findings: list[Finding]) -> None:
+    """Print the per-rule graduation tracker (counts + state + blocker)."""
+    counts = _counts_by_rule(findings)
+    print("\ncheck_consistency — graduation tracker\n")
+    for rule in RULES:
+        count = counts.get(rule.name, 0)
+        state, detail = graduation_status(rule, count)
+        print(f"  {rule.name}  [{rule.severity}]  findings={count}")
+        print(f"      → {state}: {detail}")
+    print()
 
 
 def main() -> int:
@@ -745,6 +811,11 @@ def main() -> int:
         help="Check a single file (relative or absolute)",
     )
     parser.add_argument(
+        "--graduation",
+        action="store_true",
+        help="Print the per-rule graduation tracker (count + state + blocker) and exit 0",
+    )
+    parser.add_argument(
         "files",
         nargs="*",
         type=Path,
@@ -752,7 +823,14 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if args.files:
+    if args.graduation:
+        # Graduation is a whole-tree decision: a filtered subset (--file /
+        # positional) would report findings=0 / ELIGIBLE for a rule that is clean
+        # only in that subset while the rest of views/ still has open findings —
+        # falsely licensing a flip to error.  Always scan the full tree here,
+        # ignoring any file filter.
+        files = _all_files()
+    elif args.files:
         files = [
             (REPO_ROOT / f).resolve()
             for f in args.files
@@ -769,6 +847,10 @@ def main() -> int:
 
     exceptions = _load_exceptions()
     findings = run_checks(files, exceptions)
+
+    if args.graduation:
+        print_graduation_report(findings)
+        return 0
 
     errors = [f for f in findings if f.severity == "error"]
     warnings = [f for f in findings if f.severity == "warning"]
