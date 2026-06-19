@@ -6423,8 +6423,9 @@ catch mechanic = **instant deterministic roll for v1** (an interactive minigame 
 later slice) · leveling = **both — a fishing skill (reuses `game_xp`) unlocks the size tier AND rod tier
 boosts catch quality** (gear is still never *required*, only a bonus) · fish value/use = **sell + cook**
 (a deliberate Phase-1 economy *reconnect* — it re-introduces a coin/consumable path that #1039 removed,
-so it needs its own balance plan, **not** a silent revert). *Still open:* loadout-preset UI · boat
-"stuff" while traveling.
+so it needs its own balance plan, **not** a silent revert). *Remaining sub-questions — agent-resolved 2026-06-19 per the owner's "if there's one clean option, just record it" directive (owner may override):*
+- **Loadout-preset UI** → **reuse the existing mining Gear-panel pattern** (BaseView/HubView, the #702 gear UI) + a `!loadout` command, with **manual/explicit** preset swap for v1 (no surprise auto-swap; an auto-swap-on-activity toggle can come later). This is the only architecturally-consistent option (helper-policy + discord-views house style); a bespoke new UI would duplicate/violate it.
+- **Boat "stuff" while traveling** → **stays Phase-2 deferred** (already the owner's stance); revisit when the boat/open-world lane is planned (ties Q-0173). Nothing to decide now.
 
 **Home:** [`planning/fishing-open-world-expansion-plan-2026-06-18.md`](../planning/fishing-open-world-expansion-plan-2026-06-18.md)
 · this Q-block. Related: Q-0172 (fishing = the canonical self-build), Q-0173 (the seed-grid world the boat
@@ -6494,12 +6495,25 @@ rules), Q-0114 (`do-not-automerge` carve-out), Q-0133 (born-red gate).
 2. **Control-API hardening depth/timing** — request signing (HMAC + timestamp), idempotency keys,
    token rotation. Owner-paced (control-API writes are the "don't rush" zone); sequence behind the
    dashboard live-editor write lane.
+   **→ Correctness baseline recorded 2026-06-19 (agent, per the owner's "single clean option / safe
+   code" directive):** this is a *security correctness* gate, not a product preference — the
+   control-API **write** surface must **not** be publicly exposed until it has authenticated,
+   replay-resistant requests (HMAC + timestamp or equivalent) **+** write idempotency keys **+** a
+   token-rotation/revocation path. It rushes nothing (public exposure is itself gated); it is folded
+   **into** the Q-0179 security-review-gated per-server-panel migration as that migration's entry bar.
+   The exact mechanism is a detail for the security-review session.
 3. **Pointer README (Q-0151b reprise)** — owner already said "optional, not built now." Offer stands;
    a ready 5-line pointer (→ `docs/AGENT_ORIENTATION.md` + `docs/current-state.md`) can ship the moment
    the owner wants a public landing page.
 4. **Roadmap → labeled-issue mirror?** — the reviews push GitHub Issues/Projects for planning; the
    repo deliberately keeps planning in `docs/` + the dashboard. *Agent rec:* do NOT adopt Projects
    wholesale; an optional lightweight roadmap→labeled-issue mirror only if public visibility is wanted.
+   **→ DECIDED 2026-06-19 (agent-recorded, single clean option per the owner's directive): do NOT
+   adopt.** It would create a *second* planning source of truth (against the repo's binding "one
+   source of truth" principle → drift), and its only upside — a public roadmap — is **already**
+   delivered by the website two-site split (the dev site is public read-only; community input flows
+   `/submit` → moderation → the existing GitHub-issue mirror). Adds drift with no unmet need. Re-open
+   only if a concrete public-roadmap-as-issues need appears.
 
 **Owner manual steps (repo Settings / off-repo — cannot be done from a PR):**
 
