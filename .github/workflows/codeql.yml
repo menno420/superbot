@@ -1,0 +1,50 @@
+name: CodeQL
+
+# Static analysis (SAST) for the Python tree. Provenance: owner-greenlit in-session
+# 2026-06-19 (Q-0177), part of the repo governance/supply-chain baseline. Findings are
+# published to the repo's Security → Code scanning tab; this workflow is NOT a required
+# merge check (making it one is an owner repo-Settings step — see the plan). Action
+# versions are major-tag pinned to match the repo convention (checkout@v5); SHA-pinning
+# is a tracked hardening follow-up. Free for public repositories.
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "23 3 * * 1" # weekly, Monday 03:23 UTC
+
+# Mirror code-quality's cost discipline: cancel superseded PR runs; never cancel main.
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  analyze:
+    name: Analyze (python)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          # 'security-extended' adds more security queries than the default set without
+          # the maintainability/quality noise. Dial to 'default' if it is too chatty, or
+          # to 'security-and-quality' for the full set.
+          queries: security-extended
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"

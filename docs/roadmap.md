@@ -626,6 +626,13 @@ secrets set? is Hermes up? **Every recent silent failure lived here.** Entry:
 [autonomous routines + control-plane state ledger](operations/autonomous-routines.md). *The "forgotten
 sector" (Q-0137); under-planned before — populated here.*
 
+- **Now (governance/supply-chain baseline, Q-0177)** — the
+  [repo-structure improvement plan](planning/repo-structure-improvement-plan-2026-06-19.md) shipped the
+  outward-facing layer the repo lacked: `LICENSE` (MIT) · `SECURITY.md` · `CONTRIBUTING.md` ·
+  `CITATION.cff` · `.github/dependabot.yml` · CodeQL · a **dashboard-CI** job (the dashboard tests were
+  silently `importorskip`-skipped) · issue/PR templates. **Routed next:** dependency-lock strategy ·
+  control-API hardening (HMAC/idempotency/rotation) · making CodeQL/dashboard-CI required + enabling
+  Dependabot alerts (owner repo-Settings steps).
 - **Now** — the read-only **Railway log-triage skill** (Railway access verified live #840 — the
   reserved decade-queue slot; look-but-don't-touch ops graduation) · **verify the daily backup cron
   end-to-end** (the next scheduled `backup-db.yml` run confirms the cron path after the #862

@@ -1,0 +1,42 @@
+name: 💡 Feature request
+description: Suggest an improvement or new capability.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Note: SuperBot's roadmap and most planning live in
+        [`docs/`](https://github.com/menno420/superbot/tree/main/docs) and the developer
+        dashboard. A feature request here is welcome; larger ideas may be routed into a
+        `docs/ideas/` capture or a `docs/planning/` plan.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: The user-facing need, not the implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Bot product (commands / games / moderation)
+        - AI / BTD6
+        - Developer dashboard
+        - Tooling / workflow / docs
+        - Other / not sure
+    validations:
+      required: false

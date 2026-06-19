@@ -54,8 +54,15 @@ def app_module():
     return module
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def client(app_module):
+    # Function-scoped so every test starts with a clean cookie jar. httpx >=0.28
+    # persists per-request ``cookies=`` into the client's jar (older httpx treated
+    # them as ephemeral); a module-scoped client therefore leaked an earlier test's
+    # login cookie into the later "requires login" assertions, which then saw a
+    # logged-in session and returned 200 instead of the expected /admin redirect.
+    # The expensive step (importing the app) stays module-scoped via ``app_module``;
+    # constructing a TestClient around it is cheap.
     return TestClient(app_module.app)
 
 
