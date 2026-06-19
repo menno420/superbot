@@ -618,3 +618,69 @@ def test_graduation_mode_ignores_file_filter(mod, monkeypatch, capsys):
     assert "graduation tracker" in out
     # base.py alone has no edit_in_place finding; full-tree mode must still BLOCK it.
     assert "edit_in_place" in out and "BLOCKED" in out
+
+
+# ---------------------------------------------------------------------------
+# Per-rule scope — rules 3+4 also scan cogs/ (BUG-0017 was a cog-layer blind spot)
+# ---------------------------------------------------------------------------
+
+
+def test_panel_base_class_default_scope_skips_cogs(mod, tmp_path, monkeypatch):
+    """With the default ``views/`` scope, a cog-layer direct-View is NOT flagged.
+
+    This is exactly the BUG-0017 blind spot: before the scope widened, a
+    ``discord.ui.View`` subclass in ``cogs/`` slipped past the rule entirely.
+    """
+    _write(mod, tmp_path, monkeypatch, "cogs/widget_cog.py", _DIRECT_VIEW)
+    assert mod.rule_panel_base_class([tmp_path / "cogs/widget_cog.py"], {}) == []
+
+
+def test_panel_base_class_cog_scope_flags_direct_view(mod, tmp_path, monkeypatch):
+    """With ``cogs/`` in the rule's roots, a cog-layer direct-View IS flagged."""
+    _write(mod, tmp_path, monkeypatch, "cogs/widget_cog.py", _DIRECT_VIEW)
+    findings = mod.rule_panel_base_class(
+        [tmp_path / "cogs/widget_cog.py"], {}, ("views/", "cogs/")
+    )
+    assert len(findings) == 1
+    assert findings[0].rule == "panel_base_class"
+    assert findings[0].qualname == "PickerView"
+
+
+def test_select_option_truncation_cog_scope_flags_truncation(mod, tmp_path, monkeypatch):
+    """With ``cogs/`` in scope, a cog-layer ``[:25]`` select truncation IS flagged
+    (the BUG-0017 / #1040 class living in the cog layer)."""
+    _write(mod, tmp_path, monkeypatch, "cogs/widget_cog.py", _TRUNCATES)
+    findings = mod.rule_select_option_truncation(
+        [tmp_path / "cogs/widget_cog.py"], {}, ("views/", "cogs/")
+    )
+    assert len(findings) == 1
+    assert findings[0].rule == "select_option_truncation"
+
+
+def test_select_option_truncation_default_scope_skips_cogs(mod, tmp_path, monkeypatch):
+    """The default ``views/`` scope leaves a cog-layer truncation unflagged."""
+    _write(mod, tmp_path, monkeypatch, "cogs/widget_cog.py", _TRUNCATES)
+    assert mod.rule_select_option_truncation([tmp_path / "cogs/widget_cog.py"], {}) == []
+
+
+def test_registry_scopes_rules_3_and_4_to_cogs(mod):
+    """The registry opts rules 3+4 into the cog layer and keeps rules 1+2 views-only.
+
+    Rule 1 (edit_in_place) is warn-only / blocked on the AI-nav redesign and
+    rule 2 (back_button)'s HubView nav panels live in ``views/``; rules 3+4 are
+    the patterns that also occur in the cog layer (BUG-0017).
+    """
+    by_name = {r.name: r for r in mod.RULES}
+    assert by_name["edit_in_place"].roots == ("views/",)
+    assert by_name["back_button"].roots == ("views/",)
+    assert by_name["panel_base_class"].roots == ("views/", "cogs/")
+    assert by_name["select_option_truncation"].roots == ("views/", "cogs/")
+
+
+def test_all_files_includes_the_cog_layer(mod):
+    """``_all_files`` collects the union of all rules' roots, so cog files are in
+    the scan set (rules 3+4 re-filter to their own roots via ``_iter_parsed``)."""
+    files = mod._all_files()
+    rels = {str(f.relative_to(mod.DISBOT_ROOT)) for f in files}
+    assert any(r.startswith("cogs/") for r in rels)
+    assert any(r.startswith("views/") for r in rels)

@@ -172,6 +172,12 @@ select_option_truncation:
       reason: "repair/craft selects are bounded by the curated gear+recipe catalog; under 25."
     - pattern: views/mining/gear_panel.py::_ItemSelect.__init__
       reason: "owned items in one slot, bounded by the curated per-slot gear catalog; under 25 (24 + unequip sentinel)."
+    # --- Cog layer (rule 4 now scans `cogs/` too — BUG-0017). An embed top-N
+    #     display in a module that ALSO builds a select, so the module-wide
+    #     select-builder gate sweeps it in; scoped by ::qualname so the module's
+    #     real select stays checked. ---
+    - pattern: cogs/community_spotlight_cog.py::_build_main_embed
+      reason: "top_xp[:3]/top_coins[:3] are top-3 leaderboard embed fields, not selects; the module's only real select (_GameSelect) is a fixed 4-game catalog."
 
 # panel_base_class: a view extending `discord.ui.View` directly outside the
 # rps/blackjack/games/ai path lanes. These entries MIRROR the arch checker's
@@ -203,3 +209,20 @@ panel_base_class:
       reason: "Documented arch exception (conformance frozenset): setup launcher with specialized lifecycle."
     - pattern: views/xp/rank_view.py::_RankView
       reason: "Documented arch exception (conformance frozenset): documented direct-subclass reason in the module."
+    # --- Cog layer (rule 3 now scans `cogs/` too — BUG-0017). These are NOT in
+    #     the views/-scoped `baseview_inheritance` conformance frozenset above —
+    #     they are cog-layer specialized-lifecycle direct subclasses, each with
+    #     its own interaction_check / on_timeout / ephemeral self-stop lifecycle
+    #     where BaseView adds no concrete gain (same standard as the views/ entries
+    #     above). Documented per class; the rule now CATCHES any new cog-layer
+    #     direct-View class, which must be migrated or consciously allowlisted. ---
+    - pattern: cogs/deathmatch_cog.py::_DuelView
+      reason: "Game-state duel view (the cog-layer counterpart of the views/games/ path exemption): own interaction_check + on_timeout + Attack/Defend turn lifecycle."
+    - pattern: cogs/deathmatch_cog.py::_ChallengeView
+      reason: "Game-state challenge view: own interaction_check + on_timeout + Accept/Decline lifecycle over a 30s challenge window."
+    - pattern: cogs/logging/provision_view.py::LogChannelProvisionView
+      reason: "Invoker-locked ephemeral preview-then-confirm view with its own lifecycle (self-stops after confirm); same class as the views/settings/edit_* ephemeral follow-ups, BaseView adds no concrete gain."
+    - pattern: cogs/logging/select_view.py::LogChannelSelectView
+      reason: "Invoker-locked ephemeral ChannelSelect+Clear view that self-stops after a successful interaction; ephemeral specialized lifecycle, BaseView adds no concrete gain."
+    - pattern: cogs/settings_cog.py::_DisabledHelpHookView
+      reason: "Intentionally empty no-controls container; the help cog appends its own '↩ Back to Help' button. A BaseView wrapper would change its deliberate empty-container semantics."

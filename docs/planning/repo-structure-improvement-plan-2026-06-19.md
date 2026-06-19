@@ -45,7 +45,7 @@ surface) is the verified ground truth.
 | Add a root `README` | **Intentionally absent** (`repo-navigation-map.md`: "docs/ is the documentation surface"); owner Q-0151b = *optional 5-line pointer, not built now*. | **Deliberately decided → routed, not forced** (ready 5-line pointer in Q-0177 for owner's call). |
 | Enable Dependabot | **No `.github/dependabot.yml`.** Runtime deps are version *ranges*; no freshness watch. | **Genuine gap → SHIPPED** (also closes gap-analysis §6 toolchain-rot-watch). |
 | Enable CodeQL / code scanning | **No SAST workflow.** | **Genuine gap → SHIPPED** (`codeql.yml`, non-blocking). |
-| Pin runtime deps / lockfile | **Confirmed:** `requirements.txt` + `dashboard/requirements.txt` use ranges; only `requirements-dev.txt` is pinned. **Live proof:** a fresh dashboard install resolved `httpx 0.28` and broke 2 tests this session (see below). | **Genuine gap → ROUTED** (strategy decision, Q-0177). |
+| Pin runtime deps / lockfile | **Confirmed:** `requirements.txt` + `dashboard/requirements.txt` use ranges; only `requirements-dev.txt` is pinned. **Live proof:** a fresh dashboard install resolved `httpx 0.28` and broke 2 tests this session (see below). | **Genuine gap → ROUTED (Q-0177 → (a)); dashboard lock SHIPPED 2026-06-19, bot lock = PR 2.** |
 | Run dashboard tests in CI | **Confirmed:** `code-quality.yml` installs only the bot's `requirements.txt`, so `tests/unit/dashboard/` `importorskip` and **skip**; dashboard is never type-checked. | **Genuine gap → SHIPPED** (`dashboard-ci.yml`). |
 | Issue forms + PR template | **Absent** (`.github/` had only `workflows/`). | **Gap → SHIPPED** (config keeps planning in docs by design). |
 | Mirror planning into GitHub Issues/Projects | **Deliberate:** planning lives in `docs/` + the developer dashboard (the chosen surface; a public bug form + GitHub-issue mirror are already planned). | **Reframed → do NOT adopt GitHub Projects naively.** Optional lightweight roadmap→labeled-issue mirror only (P3). |
@@ -87,12 +87,17 @@ LICENSE / SECURITY / CONTRIBUTING / CITATION. *Owner manual follow-ups* (repo Se
 from a PR): enable **GitHub private vulnerability reporting**; confirm the MIT copyright holder name.
 
 ### P1 — supply-chain & CI parity — mostly done this session; two follow-ups
-1. **Dependency reproducibility (ROUTED, Q-0177).** Adopt a constraints/lock strategy so fresh
-   installs don't drift (the `httpx 0.28` break is the worked example). Options in Q-0177:
-   (a) `pip-tools` compiled `requirements.lock` for bot + dashboard; (b) tighten the existing ranges
-   to known-good ceilings; (c) keep ranges + rely on Dependabot + the new dashboard CI as the
-   early-warning net. *Recommendation:* (a) for the dashboard first (it deploys separately and just
-   broke), then the bot. **2-PR plan** once the option is chosen.
+1. **Dependency reproducibility (ROUTED → Q-0177 chose (a); PR 1 of 2 SHIPPED 2026-06-19).** Adopt
+   `pip-tools` compiled lockfiles so fresh installs don't drift (the `httpx 0.28` break is the worked
+   example). **PR 1 (dashboard) — done:** `dashboard/requirements.in` (human-edited ranges) compiles
+   to a fully-pinned `dashboard/requirements.txt` lockfile (28 deps) that CI/Railway install. Layout
+   chosen over the original `.lock` sketch because `.in`→`.txt` is the pip-tools standard and needs
+   **zero CI path change** (the job already installs `dashboard/requirements.txt`); verified by a
+   combined fresh-resolution dry-run (no conflict with the bot reqs) + green `mypy dashboard/` + 43
+   dashboard tests. **Deliberately no `--generate-hashes` yet:** CI installs the dashboard lock in the
+   *same* `pip` command as the bot's unhashed root reqs, and pip's hash mode is all-or-nothing — hashes
+   wait for **PR 2 (bot lock)**, which can split the install. `pip-tools==7.5.3` pinned in
+   `requirements-dev.txt`; the regen command lives in the `.in` header.
 2. **Make the new checks *required* + enable Dependabot security updates (owner manual step).**
    `codeql` and `dashboard-ci` are non-blocking until the owner adds them to branch protection;
    Dependabot *alerts + security updates* are a repo-Settings toggle. Listed in Q-0177.

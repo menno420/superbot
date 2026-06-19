@@ -46,15 +46,26 @@ this **replaces** the old linear Descend/Ascend.
   current level (each cell rolls its own resource odds + occasional event/treasure, revealed on
   visit = light fog-of-war); Up/Down change depth (old `0–3` becomes the z-axis, still gated by
   light, deeper = richer); `Mine here` digs the current cell.
-- **Open design questions:** one shared grid vs. per-level · fixed size vs. procedural/infinite ·
-  do moves cost a turn / trigger encounters · how cell yields relate to the existing depth-band
-  tables (`utils/mining/world.py`, currently 1-D depth).
+- **Open design questions — ALL RESOLVED (owner, Q-0173, question panel, 2026-06-19):** see the
+  four DECIDED bullets below.
 - **World model — DECIDED (owner, Q-0173, 2026-06-17):** a **seed-deterministic procedural grid we
   generate ourselves** — any number ("seed") feeds our own generator, so `seed 12345` gives everyone
   the same world (deterministic · **shareable** · effectively infinite). This resolves "fixed vs
   procedural/infinite" above → **procedural.** NOT literal Minecraft terrain (no API fetches it;
   replicating it needs Cubiomes for biomes — a *later* upgrade — or a Java generator, rejected as too
-  heavy for Railway). The other open questions above stay owner-pending.
+  heavy for Railway).
+- **Grid scope — DECIDED (owner, Q-0173, 2026-06-19): ONE shared grid** per seed (same world for
+  everyone, shareable) — not per-level, not per-player.
+- **Depth mapping — DECIDED (owner, Q-0173, 2026-06-19): the vertical axis = the existing depth bands.**
+  Down a row = today's deeper/richer band, so the tuned `utils/mining/world.py` ore tables/balance and
+  the "descend" metaphor carry over unchanged; horizontal (N/S/E/W) = lateral variety within a band;
+  each cell's exact yield stays seed-determined. (This supersedes the "Proposed v1" each-cell-rolls-its-
+  own-band sketch above.)
+- **Movement / encounters — DECIDED (owner, Q-0173, 2026-06-19): v1 = free movement, NO encounters**
+  (smallest surface, no new balance system). **Encounters ARE wanted, as a separate later session** —
+  the owner's shape: **depth-gated, sparse** random encounters ("after a certain depth you can get
+  random encounters, but not too many"). Build PR 3 encounter-free; capture encounters as their own
+  follow-up plan.
 
 ## Build order
 
