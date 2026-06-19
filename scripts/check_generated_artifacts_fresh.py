@@ -210,19 +210,25 @@ def _env_names(doc_text: str) -> set[str]:
 
 
 def drift_env_vars_doc() -> list[Drift]:
-    """``docs/operations/env-vars.md`` vs a fresh ``scan_env_usage`` render.
+    """``docs/operations/env-vars.md`` generated head vs a fresh ``scan_env_usage`` render.
 
     Compares only the env-var *name* set (the same regex applied to both the fresh
     render and the committed file, so there is no extraction asymmetry); the code
     ``file:line`` locations the doc also carries are volatile and intentionally ignored.
+    Only the **generated head** (above ``END_MARKER``) is compared — the hand-maintained
+    web-tier tail below it carries vars the scanner can't see, by design, so it must not
+    register as drift (the #1119 footgun fix).
     """
     mod = _load_module("env", REPO_ROOT / "scripts" / "scan_env_usage.py")
     committed_path = REPO_ROOT / "docs" / "operations" / "env-vars.md"
+    committed_head = committed_path.read_text(encoding="utf-8").split(
+        mod.END_MARKER, 1
+    )[0]
     fresh_doc = mod.render_doc(mod.scan_env_usage())
     return _set_drift(
         "env-vars.md",
         "env-var names",
-        _env_names(committed_path.read_text(encoding="utf-8")),
+        _env_names(committed_head),
         _env_names(fresh_doc),
         "re-run scripts/scan_env_usage.py --write-doc",
     )

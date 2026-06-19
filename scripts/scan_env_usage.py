@@ -231,6 +231,43 @@ def _format_summary(records: list[dict]) -> str:
 
 DOC_PATH = REPO_ROOT / "docs" / "operations" / "env-vars.md"
 
+# Everything ABOVE this marker is generated from the disbot scan and is rewritten on
+# every ``--write-doc``; everything BELOW it is hand-maintained and PRESERVED across
+# regenerations. This is the fix for the recurring footgun (#1119): the scanner only
+# sees ``disbot/`` env-vars, so the **web-tier** vars (the submissions DB / GitHub mirror
+# / dashboard OAuth secrets) have no generated home — they previously lived in a hand tail
+# that a regenerate clobbered (and the byte-equality freshness test then rejected). The
+# marker lets the two coexist: the generated head stays scanner-canonical, the web-tier
+# tail is owner-maintained, and the freshness checks (test + drift guard) compare only the
+# head. See docs/operations/botsite-deploy.md for the web-tier deploy recipe.
+END_MARKER = (
+    "<!-- END GENERATED — everything below is hand-maintained (web-tier env vars the "
+    "disbot scanner can't see); the scanner preserves it across --write-doc. -->"
+)
+
+# The version-controlled default for the hand-maintained tail: the **Website tier** the
+# scanner can't emit. Written on the first marker-aware ``--write-doc`` and PRESERVED (with
+# any owner edits) on every run thereafter. Kept in sync with the §4.4 secret matrix in
+# docs/planning/website-two-site-split-plan-2026-06-19.md + docs/operations/botsite-deploy.md.
+_DEFAULT_WEBSITE_TAIL = """## Website tier (hand-maintained — not from the disbot scan)
+
+These power the **two web services** (the public bot site + the dev dashboard) of the
+website two-site split, not the bot worker, so the `disbot/` scanner above never emits
+them. They are **dormant by default** — each service is a safe no-op until its var is set
+(see [`botsite-deploy.md`](botsite-deploy.md) and the plan's §4.4 secret matrix). Names +
+purpose only — never a value.
+
+| Variable | Service(s) | Purpose / scope |
+|---|---|---|
+| `SUBMISSIONS_DB_DSN` | bot site (INSERT-only role) · dev site (full role) | The dashboard-owned submissions Postgres. The public site holds an **INSERT-only** role; the dev site holds the read/moderate role. Unset → `/submit` + moderation are dormant. |
+| `SUBMISSIONS_IP_SALT` | bot site | Salt for the stored `source_ip_hash` (abuse forensics) — never the raw IP. Falls back to a per-process random salt when unset. |
+| `GITHUB_ISSUE_MIRROR_TOKEN` | dev site only | Fine-grained PAT, repo-scoped to `menno420/superbot`, **Issues: Read & write only**. Mirrors an approved submission to one GitHub issue. **Never** on the public bot site. Unset → approve is disabled. |
+| `BOT_OWNER_USER_ID` | dev site (also read by the bot) | Gates the owner-only moderation ring (`/admin/moderation`). Blank/garbage fails closed (matches nobody). |
+| `DISCORD_OAUTH_CLIENT_ID` / `DISCORD_OAUTH_CLIENT_SECRET` / `DASHBOARD_SESSION_SECRET` | dev site (future gated manager) | Discord OAuth + signed-session secret for the per-guild control panel. Unset → the control zone is dormant. |
+| `CONTROL_API_TOKEN` | dev site · bot worker | Bearer for the bot's private control API (per-guild writes, over the private network). Never on the public bot site. |
+| `TURNSTILE_SECRET` / `HCAPTCHA_SECRET` *(optional)* | bot site | Reserved for a fast-follow `/submit` captcha (honeypot + rate-limit is the v1 default — plan §4.2 / §7 decision 6). Unset → no captcha. |
+"""
+
 
 def render_doc(records: list[dict]) -> str:
     """Render the env-var inventory as a committed operations reference doc.
@@ -267,7 +304,8 @@ def render_doc(records: list[dict]) -> str:
         for record in rows:
             layers = ", ".join(record["layers"])
             usages = "<br>".join(
-                f"`{u['file']}:{u['line']}`" + (" *(default)*" if u["has_default"] else "")
+                f"`{u['file']}:{u['line']}`"
+                + (" *(default)*" if u["has_default"] else "")
                 for u in record["usages"]
             )
             block.append(f"| `{record['name']}` | {layers} | {usages} |")
@@ -275,10 +313,35 @@ def render_doc(records: list[dict]) -> str:
         return block
 
     if required:
-        out += _table("Required (read without a default — the deploy must set these)", required)
+        out += _table(
+            "Required (read without a default — the deploy must set these)", required
+        )
     if optional:
         out += _table("Optional (a default is always supplied)", optional)
-    return "\n".join(out).rstrip() + "\n"
+    # End the generated region with the marker; everything below it (in the committed
+    # file) is the hand-maintained web-tier tail, preserved by main() across regenerations.
+    return "\n".join(out).rstrip() + "\n\n" + END_MARKER + "\n"
+
+
+def _hand_tail(existing: str | None) -> str:
+    """The hand-maintained tail to keep below :data:`END_MARKER`.
+
+    Preserves whatever the committed file already carries after the marker (so owner
+    edits survive a regeneration); falls back to :data:`_DEFAULT_WEBSITE_TAIL` when the
+    file is absent or has no marker yet (the first marker-aware write).
+    """
+    if existing and END_MARKER in existing:
+        return existing.split(END_MARKER, 1)[1].lstrip("\n")
+    return _DEFAULT_WEBSITE_TAIL.lstrip("\n")
+
+
+def _compose_doc(records: list[dict], *, existing: str | None = None) -> str:
+    """The full env-vars.md: the regenerated head + the preserved hand-maintained tail."""
+    if existing is None and DOC_PATH.exists():
+        existing = DOC_PATH.read_text(encoding="utf-8")
+    head = render_doc(records)  # ends with END_MARKER + "\n"
+    tail = _hand_tail(existing)
+    return head + "\n" + tail if tail else head
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -301,7 +364,7 @@ def main(argv: list[str] | None = None) -> int:
     records = scan_env_usage()
     if args.write_doc:
         DOC_PATH.parent.mkdir(parents=True, exist_ok=True)
-        DOC_PATH.write_text(render_doc(records), encoding="utf-8")
+        DOC_PATH.write_text(_compose_doc(records), encoding="utf-8")
         print(f"wrote {DOC_PATH.relative_to(REPO_ROOT)} — {len(records)} variables")
     elif args.json:
         print(json.dumps(records, indent=2, ensure_ascii=False))
