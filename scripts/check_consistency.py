@@ -17,6 +17,13 @@ rules that no import graph can catch (owner directive Q-0170, 2026-06-17):
      select caps at 25 options, so the slice silently drops every entry past the cap
      (the #1040 class).  Windowed pagination (``x[start:start+N]``) is not flagged.
 
+Scope is **per-rule** (each :class:`Rule` carries a ``roots`` tuple).  Rules 1-2
+scan only ``views/``; rules 3-4 also scan ``cogs/`` — cogs define inline
+``discord.ui.View`` subclasses and select-building UI, so the cog layer is a real
+blind spot for those two patterns (BUG-0017, the Cog-Manager ``options[:25]``
+silent drop, lived in ``cogs/admin/cog_manager.py`` and slipped past the linter
+precisely because rules 3-4 were once ``views/``-only).
+
 It is **warn-first and disposable** (Q-0105): every finding is a warning, nothing
 fails CI yet.  A rule graduates to an error + a ``code-quality`` wire-in only once
 it runs clean on a fresh tree across a few sessions (the Q-0120 / ``dead-unresolved``
@@ -275,11 +282,50 @@ def _guarded_send_lines(fn: ast.AST) -> set[int]:
 
 
 # ---------------------------------------------------------------------------
+# Shared scan loop
+# ---------------------------------------------------------------------------
+
+
+def _iter_parsed(
+    files: list[Path],
+    roots: tuple[str, ...],
+) -> list[tuple[Path, str, ast.Module]]:
+    """Yield ``(path, rel, tree)`` for each parseable file under one of *roots*.
+
+    Centralises the per-rule scan boilerplate (relativize to ``DISBOT_ROOT``,
+    skip tests, skip files outside the rule's roots, parse) so a rule opts into
+    additional scope just by widening its :attr:`Rule.roots` — no copy-pasted
+    loop.  *roots* are ``DISBOT_ROOT``-relative path prefixes (e.g. ``"views/"``,
+    ``"cogs/"``); a file matches if its rel-path starts with any of them.
+    """
+    out: list[tuple[Path, str, ast.Module]] = []
+    for filepath in files:
+        try:
+            rel = str(filepath.relative_to(DISBOT_ROOT))
+        except ValueError:
+            continue
+        if "test" in rel.lower():
+            continue
+        if not rel.startswith(roots):
+            continue
+        try:
+            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
+        except (SyntaxError, OSError):
+            continue
+        out.append((filepath, rel, tree))
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Rule 1 — edit-in-place
 # ---------------------------------------------------------------------------
 
 
-def rule_edit_in_place(files: list[Path], exceptions: dict) -> list[Finding]:
+def rule_edit_in_place(
+    files: list[Path],
+    exceptions: dict,
+    roots: tuple[str, ...] = ("views/",),
+) -> list[Finding]:
     """Flag panel callbacks whose result is a standalone ephemeral, not an edit.
 
     A button/select callback that sends a *new* ephemeral message and never edits
@@ -290,18 +336,7 @@ def rule_edit_in_place(files: list[Path], exceptions: dict) -> list[Finding]:
     cfg = exceptions.get("edit_in_place", {})
     findings: list[Finding] = []
 
-    for filepath in files:
-        try:
-            rel = str(filepath.relative_to(DISBOT_ROOT))
-        except ValueError:
-            continue
-        if not rel.startswith("views/") or "test" in rel.lower():
-            continue
-        try:
-            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
-        except (SyntaxError, OSError):
-            continue
-
+    for filepath, rel, tree in _iter_parsed(files, roots):
         for cls in ast.walk(tree):
             if not isinstance(cls, ast.ClassDef) or not _is_view_class(cls):
                 continue
@@ -411,7 +446,11 @@ def _is_hub_view_class(node: ast.ClassDef) -> bool:
     return any(base.rsplit(".", 1)[-1] == "HubView" for base in _class_bases(node))
 
 
-def rule_back_button(files: list[Path], exceptions: dict) -> list[Finding]:
+def rule_back_button(
+    files: list[Path],
+    exceptions: dict,
+    roots: tuple[str, ...] = ("views/",),
+) -> list[Finding]:
     """Flag a ``HubView`` navigation panel with child controls but no back affordance.
 
     A ``HubView`` subclass that declares its own ``@ui.button``/``@ui.select``
@@ -426,18 +465,7 @@ def rule_back_button(files: list[Path], exceptions: dict) -> list[Finding]:
     cfg = exceptions.get("back_button", {})
     findings: list[Finding] = []
 
-    for filepath in files:
-        try:
-            rel = str(filepath.relative_to(DISBOT_ROOT))
-        except ValueError:
-            continue
-        if not rel.startswith("views/") or "test" in rel.lower():
-            continue
-        try:
-            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
-        except (SyntaxError, OSError):
-            continue
-
+    for filepath, rel, tree in _iter_parsed(files, roots):
         if _module_has_back_affordance(tree):
             continue
 
@@ -499,7 +527,11 @@ def _extends_view_directly(node: ast.ClassDef) -> bool:
     return any(base in _DIRECT_VIEW_BASES for base in _class_bases(node))
 
 
-def rule_panel_base_class(files: list[Path], exceptions: dict) -> list[Finding]:
+def rule_panel_base_class(
+    files: list[Path],
+    exceptions: dict,
+    roots: tuple[str, ...] = ("views/",),
+) -> list[Finding]:
     """Flag a view extending ``discord.ui.View`` directly outside the allowlist.
 
     ``docs/architecture.md`` § Views states (in prose) that UI views must extend
@@ -512,18 +544,8 @@ def rule_panel_base_class(files: list[Path], exceptions: dict) -> list[Finding]:
     cfg = exceptions.get("panel_base_class", {})
     findings: list[Finding] = []
 
-    for filepath in files:
-        try:
-            rel = str(filepath.relative_to(DISBOT_ROOT))
-        except ValueError:
-            continue
-        if not rel.startswith("views/") or "test" in rel.lower():
-            continue
+    for filepath, rel, tree in _iter_parsed(files, roots):
         if rel.startswith(_BASE_CLASS_ALLOWED_PATHS):
-            continue
-        try:
-            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
-        except (SyntaxError, OSError):
             continue
 
         for cls in ast.walk(tree):
@@ -626,7 +648,11 @@ def _front_truncations_with_scope(
     return results
 
 
-def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[Finding]:
+def rule_select_option_truncation(
+    files: list[Path],
+    exceptions: dict,
+    roots: tuple[str, ...] = ("views/",),
+) -> list[Finding]:
     """Flag a front-truncating slice in a select-building view (the #1040 class).
 
     A Discord select caps at 25 options, so ``options[:25]`` (or any ``[:N<=25]``)
@@ -640,18 +666,7 @@ def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[F
     cfg = exceptions.get("select_option_truncation", {})
     findings: list[Finding] = []
 
-    for filepath in files:
-        try:
-            rel = str(filepath.relative_to(DISBOT_ROOT))
-        except ValueError:
-            continue
-        if not rel.startswith("views/") or "test" in rel.lower():
-            continue
-        try:
-            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
-        except (SyntaxError, OSError):
-            continue
-
+    for filepath, rel, tree in _iter_parsed(files, roots):
         if not _builds_select_options(tree):
             continue
 
@@ -698,6 +713,11 @@ class Rule:
     # ``--graduation`` report turns "why is this still warn-only?" into one hop
     # (the per-rule graduation-blocker tracker, the #1060 session idea).
     graduation_blocker: str = field(default="")
+    # The ``DISBOT_ROOT``-relative path prefixes the rule scans.  Default is
+    # ``views/`` (where panels live); rules whose pattern also occurs in the cog
+    # layer (inline ``discord.ui.View`` subclasses + select builders) widen this
+    # to ``("views/", "cogs/")`` — BUG-0017's cog-layer ``options[:25]`` is why.
+    roots: tuple[str, ...] = ("views/",)
 
 
 RULES: list[Rule] = [
@@ -723,17 +743,22 @@ RULES: list[Rule] = [
         "HubView navigation panels with child controls but no back/nav affordance",
         severity="error",
     ),
+    # Rules 3-4 also scan ``cogs/`` (cogs define inline view classes + select
+    # builders): BUG-0017 was a cog-layer ``options[:25]`` that slipped past the
+    # once-``views/``-only linter — the routed follow-up that widened the scope.
     Rule(
         "panel_base_class",
         rule_panel_base_class,
         "views extending discord.ui.View directly outside the game-state allowlist",
         severity="error",
+        roots=("views/", "cogs/"),
     ),
     Rule(
         "select_option_truncation",
         rule_select_option_truncation,
         "select-building views that front-truncate a collection instead of paginating",
         severity="error",
+        roots=("views/", "cogs/"),
     ),
 ]
 
@@ -744,7 +769,17 @@ RULES: list[Rule] = [
 
 
 def _all_files() -> list[Path]:
-    return sorted((DISBOT_ROOT / "views").rglob("*.py"))
+    """Every ``.py`` under the union of all rules' scan roots.
+
+    Each rule re-filters this list to its own :attr:`Rule.roots` via
+    :func:`_iter_parsed`, so collecting the union here just guarantees a rule's
+    files are present when it runs the full-tree scan.
+    """
+    roots = {root for rule in RULES for root in rule.roots}
+    files: list[Path] = []
+    for root in sorted(roots):
+        files += (DISBOT_ROOT / root.rstrip("/")).rglob("*.py")
+    return sorted(set(files))
 
 
 def _counts_by_rule(findings: list[Finding]) -> dict[str, int]:
@@ -757,7 +792,7 @@ def _counts_by_rule(findings: list[Finding]) -> dict[str, int]:
 def run_checks(files: list[Path], exceptions: dict) -> list[Finding]:
     findings: list[Finding] = []
     for rule in RULES:
-        rule_findings: list[Finding] = rule.fn(files, exceptions)  # type: ignore[operator]
+        rule_findings: list[Finding] = rule.fn(files, exceptions, rule.roots)  # type: ignore[operator]
         # Stamp each finding with its rule's current severity, so graduating a
         # rule to ``error`` (flip ``Rule.severity``) actually makes ``--mode
         # strict`` fail on it — no per-rule wiring needed.

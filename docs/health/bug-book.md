@@ -17,6 +17,35 @@
 > Owner-reported inconsistencies he hasn't formalized yet (see current-state
 > 2026-06-10 standing invite) land here as they surface.
 
+## BUG-0018 — committed `botsite/data/site.json` drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (immediate) / root-fix RECOMMENDED
+
+- **Symptom:** `tests/unit/scripts/test_export_dashboard_data.py::test_committed_site_json_matches_a_fresh_build`
+  failed on `main` — `commands drifted — re-export`. The committed `site.json`'s
+  `commands[].linked_ideas` no longer matched a fresh build.
+- **Where:** `botsite/data/site.json` (committed generated artifact) vs.
+  `scripts/export_dashboard_data.py:build_site_subset` (its producer). The test asserts
+  byte-equality (modulo volatile `meta`) of the `counts`/`catalogue`/`commands`/`bot_changelog`
+  families.
+- **Root cause:** `commands[].linked_ideas` is **derived from `docs/ideas/`**, which churns far
+  more often than `site.json` is regenerated. Every idea-doc PR that adds/restatuses an idea
+  linked to a command (here #1115/#1124/#1126's idea additions) silently drifts `site.json`, so
+  the **hard** equality test goes red between regenerations — a recurring trap, not a one-off.
+  The drift was 963 insertions / 80 deletions, **all** `linked_ideas` (status/title) + meta.
+- **Fix (immediate, this PR):** regenerated the artifact — `python3.10 scripts/export_dashboard_data.py
+  --targets site` — bringing the committed file back in step; the test (and the full suite) go green.
+- **Stays-fixed guard:** the failing test itself **is** the guard (it failed pre-regen, passes
+  after). No new test needed.
+- **Root-fix RECOMMENDED (not done — a contract decision, left for the owner / reconciliation
+  routine):** a hard byte-equality test over a high-churn derived field will keep reddening `main`
+  on every idea-doc PR. The clean durable fix is one of: (a) **exclude `linked_ideas` from the hard
+  `commands` comparison** (treat it like volatile `meta`) and cover it by the **warn-only**
+  generated-artifact freshness umbrella (`check_generated_artifacts_fresh.py`, #1027) instead; or
+  (b) **auto-regenerate `site.json` in CI / a pre-commit hook** so it can't drift. Recommend (a):
+  the freshness umbrella already exists for exactly this "a generated file rotted" class, and it's
+  warn-only by design (Q-0105) — the hard test should pin only the *stable* command fields.
+- **Status:** FIXED 2026-06-19 (dispatch run) — immediate regen landed; the recurring root cause is
+  documented for a follow-up contract decision.
+
 ## BUG-0017 — interactive Cog Manager dropdown silently drops cogs past the 25th (`options[:25]`) — FIXED
 
 - **Symptom:** the owner Cog Manager panel (`!coglist` / Admin hub → 📋 Cog List) lists every
@@ -42,12 +71,16 @@
   capped at 25 **and** that ◀/▶ paging is present when >25 cogs exist (fails against the old
   `options[:25]` behaviour, which exposed no nav). Plus `…_cog_select_callback_stashes_selection…`
   pins the new windowed-select callback.
-- **Follow-up (routed, not in this PR):** the linter blind spot itself — extend the
-  `select_option_truncation` rule (and likely `panel_base_class`) to scan `disbot/cogs/` so a future
-  cog-layer truncation is caught in CI, not by inspection. Tracked in current-state's
-  consistency-linter lane (a named candidate).
+- **Follow-up (routed) — DONE 2026-06-19 (dispatch run):** the linter blind spot itself was closed.
+  `scripts/check_consistency.py` rule scope is now **per-rule** (`Rule.roots`); `select_option_truncation`
+  (rule 4) and `panel_base_class` (rule 3) carry `roots=("views/", "cogs/")`, so a cog-layer truncation
+  or direct-`discord.ui.View` panel is now caught in CI (both rules are GRADUATED → `--mode strict`).
+  Extending scope surfaced 7 existing cog-layer findings, all triaged to 0 (2 spotlight top-N embed
+  displays + 5 documented specialized-lifecycle cog views — allowlisted in
+  `consistency_exceptions.yml`); rules 1+2 stay `views/`-only by design.
 - **Status:** FIXED 2026-06-19 (dispatch run) — found by code inspection while gauging the
-  "extend rule 4 to cogs" candidate; fixed at the root the same session.
+  "extend rule 4 to cogs" candidate; fixed at the root the same session, and the routed linter-scope
+  follow-up shipped the same day (above).
 
 ## BUG-0016 — reconciliation-trigger workflow issue-body says "multiple-of-20" / "next ~9 PRs" (stale cadence copy) — FIXED
 

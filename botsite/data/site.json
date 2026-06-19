@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T18:11:11Z",
+    "generated_at": "2026-06-19T18:38:52Z",
     "build": {
-      "commit": "86a2818",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/groom-ledger-lag-drift",
-      "committed_at": "2026-06-19T18:11:07Z",
-      "branch": "claude/groom-ledger-lag-drift"
+      "commit": "ee9b4cc8",
+      "subject": "consistency-linter: extend rules 3+4 to the cog layer; fix BUG-0018 (stale site.json)",
+      "committed_at": "2026-06-19T18:23:39Z",
+      "branch": "claude/funny-franklin-z3cvh8"
     }
   },
   "counts": {
