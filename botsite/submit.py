@@ -42,12 +42,19 @@ _BASE_DIR = Path(__file__).resolve().parent
 if str(_BASE_DIR) not in sys.path:
     sys.path.insert(0, str(_BASE_DIR))
 
+import chrome  # noqa: E402  - sibling, after the sys.path shim above
 import ratelimit  # noqa: E402  - sibling, after the sys.path shim above
 import submissions_db  # noqa: E402  - sibling, after the sys.path shim above
 
-# The form's own templates dir (the app mounts its own Jinja env; this router renders
-# its single template directly, so it stays self-contained — no app.py coupling).
-_templates = Jinja2Templates(directory=str(_BASE_DIR / "templates"))
+# The form's own templates dir + the SHARED chrome context processor
+# (``chrome.site_context``) so base.html's nav/footer render identically here as on the
+# marketing app — notably the "Add to Discord" install button, which a separate Jinja
+# env would otherwise render as an empty href. Still self-contained: ``chrome`` is a
+# sibling module (no app.py coupling).
+_templates = Jinja2Templates(
+    directory=str(_BASE_DIR / "templates"),
+    context_processors=[chrome.site_context],
+)
 
 # Hidden field a human never sees/fills; any value means an automated submitter.
 _HONEYPOT_FIELD = "website"

@@ -53,39 +53,19 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
+import chrome  # noqa: E402  - sibling, after the sys.path shim above
 import data_loader  # noqa: E402  - after the sys.path shim above
 from submit import router as submit_router  # noqa: E402  - after the shim
 
 app = FastAPI(title="SuperBot", docs_url=None, redoc_url=None)
 
-# The bot's public install link — the Discord "Add App" / OAuth2 authorize URL. The
-# bare ``client_id`` link uses the app's *default install settings* (scopes +
-# permissions) configured in the Discord developer portal, so it is the canonical
-# one-click invite. Injected into every template via ``site_context`` so all the
-# "Add to Discord" CTAs share one source (no duplicated magic strings in templates).
-ADD_TO_DISCORD_URL = (
-    "https://discord.com/oauth2/authorize?client_id=1403818430758654132"
-)
-
-
-def site_context(request: Request) -> dict[str, Any]:
-    """Context merged into every template — the build/freshness band the nav shows.
-
-    Carries the generated-build provenance so the chrome can render the honest
-    "generated · as of last deploy" freshness badge (plan §3) without each route
-    re-deriving it. The public site never claims live state here.
-    """
-    data = data_loader.load_site_data()
-    return {
-        "build": data_loader.build_meta(data),
-        "site_counts": data.get("counts", {}),
-        "add_url": ADD_TO_DISCORD_URL,
-    }
-
-
+# The shared template chrome (the freshness band + the "Add to Discord" install URL)
+# lives in ``chrome.py`` so BOTH this app's Jinja env and the /submit router's own Jinja
+# env inject the same context — otherwise a page rendered by one env shows empty chrome
+# (the /submit dead-install-button regression). See ``chrome.site_context``.
 templates = Jinja2Templates(
     directory=str(BASE_DIR / "templates"),
-    context_processors=[site_context],
+    context_processors=[chrome.site_context],
 )
 
 
