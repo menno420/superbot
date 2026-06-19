@@ -18,20 +18,27 @@ Bot-duel stats rule (plan §13):
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 import discord
 
-from cogs.deathmatch.actions import (
-    can_challenge_human,
-    has_existing_duel,
-    make_duel_key,
-    pick_bot_action,
-)
-from cogs.deathmatch_cog import Deathmatch, _ChallengeView, _Duel
 from utils import db, equipment
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 from views.games.common import BackToPanelButton
+
+if TYPE_CHECKING:
+    # Type-only — the panel reuses the deathmatch cog's ``_Duel`` state class
+    # and the ``Deathmatch`` cog type for annotations. Importing them at module
+    # level is the ``views → cogs`` layer-boundary violation (ticket
+    # arch-fix-13); the runtime uses (`_Duel`/`_ChallengeView` instantiation,
+    # the `actions` helper calls, the `Deathmatch` isinstance check) are done
+    # via lazy function-body imports below. Only module-level imports are
+    # layer-checked, so this keeps the panel free of a module-level cogs edge
+    # while every symbol stays importable from its existing home (the test
+    # contract — including the `cogs.deathmatch_cog._tick_duel_gear_wear`
+    # string patch — is unchanged).
+    from cogs.deathmatch_cog import Deathmatch, _Duel
 
 logger = logging.getLogger("bot.views.games.deathmatch_panel")
 
@@ -178,6 +185,11 @@ class _BotDuelView(discord.ui.View):
         player_stats: equipment.EffectiveStats | None = None,
     ) -> None:
         super().__init__(timeout=120.0)
+        # Lazy import — ``_Duel`` lives in the deathmatch cog; importing it in a
+        # function body keeps the panel free of a module-level ``views → cogs``
+        # edge (only module-level imports are layer-checked).
+        from cogs.deathmatch_cog import _Duel
+
         self.player = player
         self.bot_user = bot_user
         # ``_Duel`` expects two discord.Member arguments; ClientUser
@@ -230,6 +242,9 @@ class _BotDuelView(discord.ui.View):
         interaction: discord.Interaction,
         player_action: str,
     ) -> None:
+        # Lazy import — keeps the bot-AI helper edge out of module scope.
+        from cogs.deathmatch.actions import pick_bot_action
+
         choice = pick_bot_action(self.duel.player2_hp)
         if choice == "attack":
             damage, critical = self.duel.attack(self.bot_user.id, self.player.id)
@@ -323,6 +338,17 @@ class _DeathmatchOpponentSelect(discord.ui.UserSelect):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        # Lazy imports — the PvP-challenge path reuses the deathmatch cog's
+        # ``_ChallengeView`` and the ``actions`` validation helpers. Importing
+        # them in the function body keeps the panel free of a module-level
+        # ``views → cogs`` edge.
+        from cogs.deathmatch.actions import (
+            can_challenge_human,
+            has_existing_duel,
+            make_duel_key,
+        )
+        from cogs.deathmatch_cog import _ChallengeView
+
         opponent = self.values[0]
         if not isinstance(opponent, discord.Member):
             await interaction.response.send_message(
@@ -380,6 +406,10 @@ class _DeathmatchOpponentSelect(discord.ui.UserSelect):
 def _resolve_deathmatch_cog(
     interaction: discord.Interaction,
 ) -> Deathmatch | None:
+    # Lazy imports — the ``Deathmatch`` cog type is needed at runtime for the
+    # isinstance narrowing; importing it (and the help-cog resolver) in the
+    # function body keeps the panel free of a module-level ``views → cogs`` edge.
+    from cogs.deathmatch_cog import Deathmatch
     from cogs.help_cog import _cog_for_subsystem
 
     cog = _cog_for_subsystem(interaction.client, "deathmatch")  # type: ignore[arg-type]
