@@ -27,6 +27,17 @@ Current broad captures:
   the agent does by hand) so the control-plane ROUTINE_PAT row is verifiable *by the script*, not only by a
   manual MCP read no checker can see. Disposable (Q-0105). → relates `scripts/check_loop_health.py` ·
   `operations/autonomous-routines.md` § "Control-plane state".
+- [`per-command-feedback-threads-2026-06-19.md`](./per-command-feedback-threads-2026-06-19.md) —
+  **owner-directed (2026-06-19):** every command/cog on the bot site carries an optional **feedback thread**
+  (anyone posts questions/bugs/improvements), gated by an **Anthropic-API moderation pass** (clean-up +
+  foul-language block/rewrite) — "Codex for the bot's features." Goals: owner leaves inline thoughts to
+  review later · users see if an issue was already raised · honest feedback for all. Supersedes the v1
+  static `notes` field; reuses the submissions store + moderation pipeline. → relates website plan P2/§2.3/§4.
+- [`idea-to-cog-command-mapping-2026-06-19.md`](./idea-to-cog-command-mapping-2026-06-19.md) —
+  **owner-directed (2026-06-19):** map every idea (and bug) to its **cog/command** (explicit tag + a
+  validator; heuristic as interim fallback) — the truth source for the site's per-command **status**
+  (`in-progress` if any related ideas/bugs) and **linked-ideas** discoverability. "As fast as possible,
+  not rushing." → relates `export_dashboard_data.py` · the subsystem registry · website plan S1.1.
 - [`website-two-site-split-2026-06-19.md`](./website-two-site-split-2026-06-19.md) —
   **owner-directed (2026-06-19, Q-0178):** split the single dashboard into a **public bot site** (users;
   command reference, changelog, public bug/suggestion form → DB → owner-approve → mirror to GitHub) and a
