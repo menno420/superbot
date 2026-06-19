@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T16:18:57Z",
+    "generated_at": "2026-06-19T20:02:31Z",
     "build": {
-      "commit": "4708986",
-      "subject": "session: close-out — flip card to complete + Q-0089/Q-0102/Q-0104 enders",
-      "committed_at": "2026-06-19T15:48:48Z",
-      "branch": "claude/cool-feynman-cvqrbj"
+      "commit": "e1e10591",
+      "subject": "Merge pull request #1136 from menno420/claude/great-carson-4hsr7l",
+      "committed_at": "2026-06-19T22:00:06Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 36,
-      "ideas": 96,
-      "bugs": 17,
+      "ideas": 100,
+      "bugs": 18,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -972,6 +972,28 @@
   ],
   "ideas": [
     {
+      "file": "ai-correction-report-and-ticket-service-2026-06-19.md",
+      "title": "AI reports corrections → an audience-routed AI ticket service",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "public site.",
+      "subsystems": [
+        "ai"
+      ]
+    },
+    {
+      "file": "explore-hub-federated-world-2026-06-19.md",
+      "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "Mining, fishing, pets, and RPG-survival are each planned as **separate lanes** today",
+      "subsystems": [
+        "games",
+        "mining",
+        "fishing"
+      ]
+    },
+    {
       "file": "governance-files-presence-guard-2026-06-19.md",
       "title": "Idea: contributor-doc / governance-files presence + freshness guard",
       "status": "ideas",
@@ -985,7 +1007,7 @@
       "status": "ideas",
       "date": "2026-06-19",
       "summary": "The website command browser (plan unit S1.1, shipped this session) links each command to its",
-      "subsystems": null
+      "subsystems": []
     },
     {
       "file": "idea-to-cog-command-mapping-2026-06-19.md",
@@ -993,12 +1015,12 @@
       "status": "ideas",
       "date": "2026-06-19",
       "summary": "The site's vision (website plan §\"Site identity & experience\") wants, per command:",
-      "subsystems": null
+      "subsystems": []
     },
     {
       "file": "ledger-window-scale-to-marker-2026-06-19.md",
       "title": "Idea — scale the ledger-checker window to \"merges since the last reconciliation marker\"",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-19",
       "summary": "`scripts/check_current_state_ledger.py` checks a **fixed window** of the last `DEFAULT_WINDOW = 15`",
       "subsystems": null
@@ -1017,7 +1039,15 @@
       "status": "ideas",
       "date": "2026-06-19",
       "summary": "On the bot site, every command (and cog) carries an **optional feedback box**: **anyone** can leave a",
-      "subsystems": null
+      "subsystems": []
+    },
+    {
+      "file": "plan-homing-guard-2026-06-19.md",
+      "title": "A `check_plan_homing.py` guard — no active plan goes unrouted",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The planning-map cleanup found the project's **dominant active thread** — the dashboard / control-API /",
+      "subsystems": []
     },
     {
       "file": "public-data-contract-field-snapshot-2026-06-19.md",
@@ -1025,7 +1055,15 @@
       "status": "ideas",
       "date": "2026-06-19",
       "summary": "The foundation build (S1) guards the public `botsite/data/site.json` subset at the",
-      "subsystems": null
+      "subsystems": []
+    },
+    {
+      "file": "sector-scoped-lean-boot-for-cheap-models-2026-06-19.md",
+      "title": "Sector-scoped lean boot — make cheap models (Sonnet) usable by cutting the orientation tax",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "On the x20 plan the maintainer still runs short on the **weekly all-models** bucket, while the separate",
+      "subsystems": []
     },
     {
       "file": "website-two-site-split-2026-06-19.md",
@@ -1033,7 +1071,7 @@
       "status": "ideas",
       "date": "2026-06-19",
       "summary": "Split the single developer dashboard (`dashboard/`) into **two sites by audience**:",
-      "subsystems": null
+      "subsystems": []
     },
     {
       "file": "product-lanes-gated-balance-flag-2026-06-18.md",
@@ -1081,7 +1119,7 @@
       "status": "ideas",
       "date": "2026-06-17",
       "summary": "The owner's intended role is **ideas, bug reports, and function/cog reviews** — *not* planning. But",
-      "subsystems": null
+      "subsystems": []
     },
     {
       "file": "repo-consistency-linter-2026-06-17.md",
@@ -1113,7 +1151,9 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "PR #953 made BTD6 **Live Events** current-event-first: the overview drills into a rich per-event",
-      "subsystems": null
+      "subsystems": [
+        "btd6"
+      ]
     },
     {
       "file": "btd6-shorthand-corpus-eval-2026-06-16.md",
@@ -1121,7 +1161,9 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "Five live-reported BTD6 bugs share **one root cause**: a community-shorthand question is **not",
-      "subsystems": null
+      "subsystems": [
+        "btd6"
+      ]
     },
     {
       "file": "button-command-surface-parity-2026-06-16.md",
@@ -1169,7 +1211,9 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "`btd6_context_service._BTD6_LIST_BUILDERS` now grows roughly **one member per dispatch run**",
-      "subsystems": null
+      "subsystems": [
+        "btd6"
+      ]
     },
     {
       "file": "developer-dashboard-2026-06-16.md",
@@ -1177,7 +1221,7 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "Owner (2026-06-16): *\"build me a personal website that's linked to my project\"* — a",
-      "subsystems": null
+      "subsystems": []
     },
     {
       "file": "diagnostic-cog-platform-group-extraction-2026-06-16.md",
@@ -1185,7 +1229,9 @@
       "status": "historical",
       "date": "2026-06-16",
       "summary": "`disbot/cogs/diagnostic_cog.py` is the Discord-facing home of the whole `!platform` admin surface",
-      "subsystems": null
+      "subsystems": [
+        "diagnostic"
+      ]
     },
     {
       "file": "docs-ledger-parsing-helper-2026-06-16.md",
@@ -1209,7 +1255,9 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "Today the bot's AI answers each request cold. **Per-user memory** would let it *remember a Discord",
-      "subsystems": null
+      "subsystems": [
+        "ai"
+      ]
     },
     {
       "file": "idea-spotlight-verdict-loop-2026-06-16.md",
@@ -1241,7 +1289,9 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "`image_moderation` (PR #941, Q-0108) calls OpenAI's `omni-moderation-latest` endpoint **once per",
-      "subsystems": null
+      "subsystems": [
+        "image_moderation"
+      ]
     },
     {
       "file": "reference-integrity-invariants-2026-06-16.md",
@@ -1257,7 +1307,9 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "The §7.5 round-range cash comparison floor (`deterministic_round_range_comparison_reply`, #955)",
-      "subsystems": null
+      "subsystems": [
+        "btd6"
+      ]
     },
     {
       "file": "routine-permission-surface-lint-2026-06-16.md",
@@ -1273,7 +1325,9 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "Deciding the `/myprofile` onboarding gate (Q-0147), the owner set a **standing rule** for *all*",
-      "subsystems": null
+      "subsystems": [
+        "moderation"
+      ]
     },
     {
       "file": "sessionstart-surface-soft-check-signals-2026-06-16.md",
@@ -1377,7 +1431,11 @@
       "status": "historical",
       "date": "2026-06-14",
       "summary": "The mining brainstorm's §7.5 thesis is a **closed, self-balancing loop**: ore is the *faucet*",
-      "subsystems": null
+      "subsystems": [
+        "economy",
+        "games",
+        "mining"
+      ]
     },
     {
       "file": "grounding-completeness-claim-primitive-2026-06-14.md",
@@ -1385,7 +1443,9 @@
       "status": "ideas",
       "date": "2026-06-14",
       "summary": "1) Faster Reload … 5) MOAB Eliminator. These are every tier on that path; do not claim the path",
-      "subsystems": null
+      "subsystems": [
+        "btd6"
+      ]
     },
     {
       "file": "ledger-checker-print-pr-subjects-2026-06-14.md",
@@ -1398,7 +1458,7 @@
     {
       "file": "ledger-guard-benign-lag-vs-drift-2026-06-14.md",
       "title": "Idea — the ledger guard should distinguish *benign newest-merge lag* from real drift",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-14",
       "summary": "`scripts/check_current_state_ledger.py` treats **any** recent merged PR absent from the",
       "subsystems": null
@@ -1513,7 +1573,14 @@
       "status": "ideas",
       "date": "2026-06-13",
       "summary": "The safety/community lane (Q-0108–Q-0112) is **one platform** in the",
-      "subsystems": null
+      "subsystems": [
+        "moderation",
+        "automod",
+        "security",
+        "logging",
+        "welcome",
+        "counters"
+      ]
     },
     {
       "file": "autonomous-improvement-loop-vision-2026-06-12.md",
@@ -1537,7 +1604,11 @@
       "status": "ideas",
       "date": "2026-06-12",
       "summary": "The uploaded research identifies a cluster of \"community server management\" features",
-      "subsystems": null
+      "subsystems": [
+        "welcome",
+        "counters",
+        "community"
+      ]
     },
     {
       "file": "executable-verification-over-prose-verified-2026-06-12.md",
@@ -1593,7 +1664,12 @@
       "status": "ideas",
       "date": "2026-06-12",
       "summary": "Competitor bots (Carl-bot, Dyno, Arcane, YAGPDB, Koya, Double Counter) give server staff",
-      "subsystems": null
+      "subsystems": [
+        "automod",
+        "moderation",
+        "security",
+        "image_moderation"
+      ]
     },
     {
       "file": "single-canonical-execution-pointer-2026-06-12.md",
@@ -1609,7 +1685,9 @@
       "status": "ideas",
       "date": "2026-06-12",
       "summary": "The maintainer is the **vision/taste layer** of this project (collaboration model): he",
-      "subsystems": null
+      "subsystems": [
+        "ux_lab"
+      ]
     },
     {
       "file": "wager-flow-map-2026-06-12.md",
@@ -1617,7 +1695,10 @@
       "status": "ideas",
       "date": "2026-06-12",
       "summary": "The single biggest cost of the P0-1 session was **hand-tracing where game money moves**.",
-      "subsystems": null
+      "subsystems": [
+        "economy",
+        "games"
+      ]
     },
     {
       "file": "ai-panel-inplace-navigation-2026-06-11.md",
@@ -1625,7 +1706,9 @@
       "status": "ideas",
       "date": "2026-06-11",
       "summary": "Context: he was walking the AI enablement flow (`!aimenu` → settings → policy →",
-      "subsystems": null
+      "subsystems": [
+        "ai"
+      ]
     },
     {
       "file": "gap-analysis-2026-06-11.md",
@@ -1705,7 +1788,9 @@
       "status": "ideas",
       "date": "",
       "summary": "This document is intentionally separate from the current implementation plans because the existing docs already have narrow ownership:",
-      "subsystems": null
+      "subsystems": [
+        "ai"
+      ]
     },
     {
       "file": "mining_exploration_brainstorm.md",
@@ -1713,7 +1798,9 @@
       "status": "ideas",
       "date": "",
       "summary": "| Layer | File | Role |",
-      "subsystems": null
+      "subsystems": [
+        "mining"
+      ]
     },
     {
       "file": "rps-tournament-service-refactor.md",
@@ -1721,7 +1808,9 @@
       "status": "ideas",
       "date": "",
       "summary": "`disbot/cogs/rps_tournament_cog.py` still owns too much runtime state + business flow, even",
-      "subsystems": null
+      "subsystems": [
+        "rps_tournament"
+      ]
     },
     {
       "file": "settings-presets-and-ai-template-advisor.md",
@@ -1729,7 +1818,10 @@
       "status": "ideas",
       "date": "",
       "summary": "Wherever feasible, every setting editor offers, in this order:",
-      "subsystems": null
+      "subsystems": [
+        "ai",
+        "settings"
+      ]
     },
     {
       "file": "setup-wizard-onboarding-planner-spec.md",
@@ -1741,6 +1833,12 @@
     }
   ],
   "bugs": [
+    {
+      "id": "BUG-0018",
+      "title": "committed botsite/data/site.json drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (immediate) / root-fix RECOMMENDED",
+      "status": "unknown",
+      "summary": "tests/unit/scripts/test_export_dashboard_data.py::test_committed_site_json_matches_a_fresh_build failed on main — commands drifted — re-export. The committed site.json's commands[].linked_ideas no longer matched a fresh build."
+    },
     {
       "id": "BUG-0017",
       "title": "interactive Cog Manager dropdown silently drops cogs past the 25th (options[:25])",
@@ -1879,6 +1977,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-website-split-next-steps-handoff.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website split: rollout + next-steps handoff doc",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-website-split-decisions-locked.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website split: review the external research + lock the open decisions",
@@ -1989,6 +2095,54 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-rebadge-a3a4-session-close-wiring.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Rebadge A3/A4 `historical` + wire drift check into /session-close",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-planning-map-cleanup.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Planning/audit/idea map cleanup — a durable plan index + de-stale the route",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-plan-code-drift-check.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Ground-truth audit protocol + plan-code-drift check",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-open-question-sweep.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Open-question sweep (question panel)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-mining-hub-declutter.md",
+      "date": "2026-06-19",
+      "title": "Session — mining hub declutter (Option A PR2)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-groom-ledger-lag-drift.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Groom: ledger guard distinguishes benign lag from real drift",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-19-funny-franklin-bug0016.md",
@@ -2159,6 +2313,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-consistency-linter-cog-scope.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Consistency linter: extend rules 3+4 to the cog layer",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-consistency-graduation-tracker.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Consistency-linter graduation tracker",
@@ -2189,6 +2351,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-codex-review-integration.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Codex review integration (routine fix-first + Hermes 6H pr-check skill)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
     },
     {
       "file": "2026-06-19-codex-final-head-review.md",
@@ -2253,78 +2423,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-18-dashboard-refresh-deploy-unblock.md",
-      "date": "2026-06-18",
-      "title": "Session — fix the deploy-freezing dashboard-data-refresh workflow",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-18-consistency-rule4-select-truncation.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — Consistency linter rule 4: select-option truncation",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-18-consistency-linter-selectors-windowing.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — Consistency-linter Lane A1: window the `views/selectors/` API-ripple set",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-consistency-linter-rules-2-3.md",
-      "date": "2026-06-18",
-      "title": "Session — 2026-06-18 · consistency linter PR 2 + PR 3 (back-button + panel base-class rules)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-consistency-linter-pr1.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — Repo consistency linter PR 1 (harness + edit-in-place rule) + ledger reconcile",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-consistency-linter-embedded-windowed-select.md",
-      "date": "2026-06-18",
-      "title": "Session — consistency-linter: embedded windowed-select helper + bounded-catalog triage",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-cog-routing-pagination.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — Setup cog-routing select: paginate instead of truncating at 25",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-btd6-round-cash-identity-fix.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — BTD6 round_cash identity ABR fix (Codex P2 on #1035)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-18-btd6-mk-affects-tower.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — BTD6 \"which MK affects <tower>\" — class-wide MK + routing",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
