@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T21:21:07Z",
+    "generated_at": "2026-06-19T23:13:19Z",
     "build": {
-      "commit": "cffb19bb",
-      "subject": "Merge pull request #1142 from menno420/claude/reconcile-1140-band",
-      "committed_at": "2026-06-19T23:18:02Z",
+      "commit": "a7d40295",
+      "subject": "Merge pull request #1154 from menno420/claude/botsite-submit-cta-fix",
+      "committed_at": "2026-06-20T00:38:42Z",
       "branch": "main"
     },
     "counts": {
       "functions": 36,
-      "ideas": 102,
+      "ideas": 104,
       "bugs": 18,
       "reviews": 0,
       "reviews_open": 0,
@@ -988,6 +988,22 @@
       "date": "2026-06-19",
       "summary": "The reconciliation routine's ledger step relies on `check_current_state_ledger.py`, which greps",
       "subsystems": null
+    },
+    {
+      "file": "cog-chooser-customize-before-invite-2026-06-19.md",
+      "title": "Public-site cog chooser — \"customize the bot before you invite it\"",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "On the **public site**, let people **customize the bot before inviting it to their server** — a general",
+      "subsystems": []
+    },
+    {
+      "file": "dev-site-project-status-donut-2026-06-19.md",
+      "title": "Dev-site project-status donut + refocus the dev site on *projects*, not the bot",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "A status graph on the **developer site** (`dashboard/`) showing **plans & execution at a glance** —",
+      "subsystems": []
     },
     {
       "file": "explore-hub-federated-world-2026-06-19.md",
@@ -2345,6 +2361,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-dev-site-status-donut-idea.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Capture owner's dev-site project-status-donut idea (+ mockup)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-consistency-rule-graduation.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Consistency-linter rule graduation (3 ELIGIBLE rules → error + CI)",
@@ -2425,20 +2449,12 @@
       "self_initiated": true
     },
     {
-      "file": "2026-06-19-ai-panel-inplace-nav-plan.md",
+      "file": "2026-06-19-bug-book-rootfix-backlog-guard.md",
       "date": "2026-06-19",
-      "title": "2026-06-19 — Promote the AI-panel in-place-navigation idea to an executable plan",
+      "title": "2026-06-19 — Self-initiated tooling: bug-book deferred-root-fix backlog guard",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-18-standalone-select-pagination.md",
-      "date": "2026-06-18",
-      "title": "2026-06-18 — Migrate standalone-ephemeral select pickers onto `PaginatedSelectView`",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
