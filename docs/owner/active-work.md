@@ -25,6 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/botsite-dark-launch` · **website-split rollout step 2** — stand the public bot site up DARK
+  on Railway (owner-delegated, Railway token) · ops (Railway `botsite` service) + docs
+  (`botsite-deploy.md` ▶ Live status · `website-split-next-steps.md` §2b ticks) · 2026-06-19
 - `claude/website-submit-form` · **website-split unit P4** — public `/submit` bug/suggestion
   form + intake (fills P1's `botsite/submit.py` stub) · exclusive: `botsite/submit.py` ·
   `botsite/ratelimit.py` · `botsite/templates/submit.html` · `tests/unit/botsite/test_submit.py`
