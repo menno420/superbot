@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T14:06:01Z",
+    "generated_at": "2026-06-19T15:40:31Z",
     "build": {
-      "commit": "72047ab4",
-      "subject": "Merge pull request #1110 from menno420/claude/website-identity-and-ops-prep",
-      "committed_at": "2026-06-19T16:02:28Z",
-      "branch": "claude/jolly-johnson-8vfdl2"
+      "commit": "faf5a318",
+      "subject": "Merge pull request #1120 from menno420/claude/funny-franklin-ys04tp",
+      "committed_at": "2026-06-19T17:22:43Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 36,
-      "ideas": 92,
-      "bugs": 16,
+      "ideas": 96,
+      "bugs": 17,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -979,11 +979,39 @@
       "summary": "This session added the standard outward-facing governance files (`LICENSE`, `SECURITY.md`,"
     },
     {
+      "file": "idea-subsystem-tag-on-ideas-2026-06-19.md",
+      "title": "Explicit `subsystem:` tag on idea files (make idea↔command linking authoritative)",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The website command browser (plan unit S1.1, shipped this session) links each command to its"
+    },
+    {
+      "file": "idea-to-cog-command-mapping-2026-06-19.md",
+      "title": "Map every idea (and bug) to its cog / command",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The site's vision (website plan §\"Site identity & experience\") wants, per command:"
+    },
+    {
       "file": "ledger-window-scale-to-marker-2026-06-19.md",
       "title": "Idea — scale the ledger-checker window to \"merges since the last reconciliation marker\"",
       "status": "ideas",
       "date": "2026-06-19",
       "summary": "`scripts/check_current_state_ledger.py` checks a **fixed window** of the last `DEFAULT_WINDOW = 15`"
+    },
+    {
+      "file": "loop-health-gh-unavailable-fallback-2026-06-19.md",
+      "title": "Idea — `check_loop_health.py` should fall back when `gh` is unavailable",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "The Q-0107 reconciliation routine's STEP 2 control-plane reconcile says to run"
+    },
+    {
+      "file": "per-command-feedback-threads-2026-06-19.md",
+      "title": "Per-command AI-moderated feedback threads (\"Codex for the bot's features\")",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "On the bot site, every command (and cog) carries an **optional feedback box**: **anyone** can leave a"
     },
     {
       "file": "public-data-contract-field-snapshot-2026-06-19.md",
@@ -1618,9 +1646,15 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0017",
+      "title": "interactive Cog Manager dropdown silently drops cogs past the 25th (options[:25])",
+      "status": "FIXED",
+      "summary": "the owner Cog Manager panel (!coglist / Admin hub → 📋 Cog List) lists every *_cog.py in a single Discord select, but a select caps at 25 options. There are currently 46 cogs, so the panel could only ever show the first 25 (alphabetically); the 22 cogs sorting from health_mainten…"
+    },
+    {
       "id": "BUG-0016",
       "title": "reconciliation-trigger workflow issue-body says \"multiple-of-20\" / \"next ~9 PRs\" (stale cadence copy)",
-      "status": "OPEN",
+      "status": "FIXED",
       "summary": "the auto-opened reconcile trigger issue (e.g. #1095) reads *\"A multiple-of-20 PR band was crossed\"* and *\"plans the next ~9 PRs\"*. Both numbers are stale: the Q-0107 cadence was raised 20 → 30 (Q-0134, 2026-06-14) and the planning horizon is the full band (depth ≥ the cadence, Q…"
     },
     {
@@ -1725,6 +1759,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-website-submit-form.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split, unit P4 (public `/submit` intake)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-website-split-planning-brief.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website two-site split: planning brief",
@@ -1757,6 +1799,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-19-website-moderation-mirror.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split: P5 moderation UI + P6 GitHub-issue mirror",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-website-identity-and-fanout-enablers.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website split: owner identity vision + fan-out enablers",
@@ -1768,6 +1818,30 @@
       "file": "2026-06-19-website-foundation-s1s2p1.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website two-site split: serial foundation (S1 + S2 + P1)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-deploy-redaction-docs.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website two-site split: P7 + P8 (redaction audit + deploy/env docs)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-command-browser.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Website: interactive command browser (S1.1 + P2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-website-changelog-status.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Bot-site changelog + status pages (P3)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -1797,9 +1871,25 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-reconcile-band1110.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Docs reconciliation (band-#1110, fourteenth Q-0107 pass)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-reconcile-band1080.md",
       "date": "2026-06-19",
       "title": "Session — 2026-06-19 · band-#1080 Q-0107 docs reconciliation pass",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-19-funny-franklin-bug0016.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Dispatch: BUG-0016 + BUG-0017 (two bugs-first fixes)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -1931,6 +2021,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-19-feedback-threads-and-idea-mapping-capture.md",
+      "date": "2026-06-19",
+      "title": "2026-06-19 — Capture: per-command feedback threads + idea→cog/command mapping",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
     },
     {
       "file": "2026-06-19-consistency-rule-graduation.md",
@@ -2130,70 +2228,6 @@
       "title": "2026-06-18 — BTD6 AI answer fixes (owner live-test screenshots)",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-settle-decisions-codex.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Settle mining/seed decisions + surface Codex's reviews",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-routine-review-and-workflow-hardening.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Routine review + autonomous-workflow hardening",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-reconcile-band1020.md",
-      "date": "2026-06-17",
-      "title": "Session — 2026-06-17 · band-#1020 Q-0107 docs reconciliation",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-procedures-to-skills-plan.md",
-      "date": "2026-06-17",
-      "title": "2026-06-17 — Procedures→skills conversion plan",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-paragon-ability-roster-floor.md",
-      "date": "2026-06-17",
-      "title": "Session — 2026-06-17 · paragon-ability + boss tier-HP deterministic floors (BUG-0009 §7.5/§7.6)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-night-queue-relic-roster.md",
-      "date": "2026-06-17",
-      "title": "Session — night-queue slot 3: relic category/effect roster floor",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-night-queue-power-cost-comparison.md",
-      "date": "2026-06-17",
-      "title": "Session — night-queue slot 2: power (activated-ability) cost comparison floor",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-17-night-queue-mk-category-roster.md",
-      "date": "2026-06-17",
-      "title": "Session — night-queue buffer slices + slot-4 reframe (three §7.6 floor builders)",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
