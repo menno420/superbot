@@ -31,6 +31,20 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`ai-correction-report-and-ticket-service-2026-06-19.md`](./ai-correction-report-and-ticket-service-2026-06-19.md) —
+  **owner-directed (2026-06-19, brainstorm; needs its own extensive session):** when a user corrects the
+  AI, have it **report the correction to the owner** (a write into the owner review inbox, never the public
+  site) — the first step toward an **AI ticket service** (bug reports · server problems · moderation). The
+  hard part the owner named: **audience routing, fail-closed** — the AI must classify *who each report is
+  for* (owner / this server's mods / public) and never leak a server-private issue to the public website.
+  Rails already exist (owner-review-inbox · submissions DB · Hermes triage); it's the AI's first *write*
+  capability, so gated by Q-0048. → relates `planning/owner-review-inbox-plan` · `per-command-feedback-threads`.
+- [`explore-hub-federated-world-2026-06-19.md`](./explore-hub-federated-world-2026-06-19.md) —
+  **owner-directed (2026-06-19, brainstorm):** the **Explore hub** as the missing spine — a *federated*
+  open world where mining/fishing/pets/quests share one character, currency, and a light survival/adventure
+  overlay, **but each subsystem still feels like its own complete game**. Codifies the direction the fishing
+  plan is already drifting toward (shared `game_xp` · unified character · swappable loadouts); homes four
+  separate gated lanes under one world model. → relates `planning/{fishing-open-world-expansion,mining-hub-redesign,rpg-survival-difficulty-design}`.
 - [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) —
   **session idea (2026-06-19, Q-0089, from the planning-map cleanup):** a stdlib
   `scripts/check_plan_homing.py` asserting every non-`historical` `docs/planning/` doc is linked from a
