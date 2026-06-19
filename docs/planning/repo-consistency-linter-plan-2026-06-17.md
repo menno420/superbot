@@ -172,10 +172,18 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    `run_checks` stamps every finding with its rule's severity, so no per-rule wiring is needed) and a
    `graduation_blocker` string. `python3.10 scripts/check_consistency.py --graduation` prints, per rule,
    `findings=N` + one of **ELIGIBLE / NOT READY / BLOCKED (by what) / GRADUATED** — so "why is this
-   still warn-only?" is a one-hop answer. Current state: `back_button` / `panel_base_class` /
-   `select_option_truncation` are **ELIGIBLE** (0 findings — flip to error after a couple more clean
-   sessions, then wire into `code-quality.yml`); `edit_in_place` is **BLOCKED** on the AI-nav redesign
-   ([plan](ai-panel-inplace-navigation-plan-2026-06-19.md) PR 2 clears the 17 `views/ai/` findings).
+   still warn-only?" is a one-hop answer.
+   **The 3 ELIGIBLE rules GRADUATED 2026-06-19 (#1094):** `back_button` / `panel_base_class` /
+   `select_option_truncation` ran clean (0 findings) across #1056→#1062 (5–6 sessions), so their
+   `Rule.severity` is flipped `"warning"`→`"error"` and `python3.10 scripts/check_consistency.py
+   --mode strict` is wired into **`code-quality.yml`** (deps block — needs PyYAML) + the
+   `check_quality.py` local CI mirror. A finding from any of the three now **fails CI**; the
+   `--graduation` report reads **GRADUATED** for each. `edit_in_place` stays **BLOCKED** on the
+   AI-nav redesign ([plan](ai-panel-inplace-navigation-plan-2026-06-19.md) PR 2 clears the 17
+   `views/ai/` findings) — it remains warn-only so its findings don't fail CI while the real bug
+   is still open. **Next on this lane:** execute the AI-nav plan PR 1 (runtime/Q-0086 session) to
+   start clearing rule 1's 17, then graduate `edit_in_place` once it reaches 0; add rule 5+ only as a
+   fresh mechanical-consistency shape surfaces (a candidate: extend rule 4 to `disbot/cogs/`).
 
 ## Verification (each PR)
 

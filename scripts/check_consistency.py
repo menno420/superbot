@@ -34,7 +34,7 @@ Provenance / reliability (Q-0105):
 Usage::
 
     python scripts/check_consistency.py                  # report mode (exit 0)
-    python scripts/check_consistency.py --mode strict    # exit 1 on errors (none yet)
+    python scripts/check_consistency.py --mode strict    # exit 1 on GRADUATED-rule findings
     python scripts/check_consistency.py --file disbot/views/x.py
     python scripts/check_consistency.py --graduation     # per-rule graduation tracker
 
@@ -711,20 +711,29 @@ RULES: list[Rule] = [
             "clears the chooser sub-trees; allowlisting them would mute the bug)"
         ),
     ),
+    # The three rules below GRADUATED 2026-06-19 (#1094): they ran clean (0 findings)
+    # across #1056→#1062 and the `--graduation` tracker confirmed each ELIGIBLE, so
+    # their `severity` is flipped `"warning"`→`"error"`. A finding now fails
+    # `--mode strict` (wired into code-quality.yml + check_quality.py). Reverting a
+    # graduation = flip the `severity` back to `"warning"` (the rule is disposable per
+    # the Q-0105 header if it ever proves noisy).
     Rule(
         "back_button",
         rule_back_button,
         "HubView navigation panels with child controls but no back/nav affordance",
+        severity="error",
     ),
     Rule(
         "panel_base_class",
         rule_panel_base_class,
         "views extending discord.ui.View directly outside the game-state allowlist",
+        severity="error",
     ),
     Rule(
         "select_option_truncation",
         rule_select_option_truncation,
         "select-building views that front-truncate a collection instead of paginating",
+        severity="error",
     ),
 ]
 
@@ -803,7 +812,7 @@ def main() -> int:
         "--mode",
         choices=["report", "strict"],
         default="report",
-        help="report: always exit 0; strict: exit 1 if any errors (none yet — warn-only)",
+        help="report: always exit 0; strict: exit 1 on a GRADUATED rule's finding",
     )
     parser.add_argument(
         "--file",

@@ -145,6 +145,15 @@ def run_check_docs() -> int:
     )
 
 
+def run_check_consistency() -> int:
+    # CI runs `python scripts/check_consistency.py --mode strict` (in the deps block).
+    # Only GRADUATED rules fail strict (error severity); warn-only rules just print.
+    return _run(
+        "check_consistency",
+        [_PY, str(REPO_ROOT / "scripts" / "check_consistency.py"), "--mode", "strict"],
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="SuperBot quality checker")
     parser.add_argument(
@@ -178,6 +187,8 @@ def main() -> int:
     if not args.fix_only:
         if run_check_docs() != 0:
             failed.append("check_docs")
+        if run_check_consistency() != 0:
+            failed.append("check_consistency")
         if args.full:
             if run_mypy() != 0:
                 failed.append("mypy")
