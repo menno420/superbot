@@ -25,11 +25,15 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/kind-einstein-jlywgm` · **route the website-split control-panel-placement decision**
+  (continuation after the plan merged #1100) — router **Q-0179** (DISCUSS): the one owner-intent fork
+  the plan §7.4 discovered that Q-0178's "still open" list omits · `docs/owner/maintainer-question-router.md`
+  · 2026-06-19 · **auto-merge on green**
 - `claude/kind-einstein-jlywgm` · **website two-site split — implementation plan** (owner-directed,
   executes the #1099 brief + Q-0178) — the full plan + file-disjoint ultracode decomposition for the
   follow-up build run; docs-only · `docs/planning/website-two-site-split-plan-2026-06-19.md` ·
-  forward-links the brief + `docs/current-state.md` ▶ Next action · 2026-06-19 · **PR #1100,
-  auto-merge on green** (next = the ultracode build run on the plan's §5 units)
+  forward-links the brief + `docs/current-state.md` ▶ Next action · 2026-06-19 · **merged #1100**
+  (next = the ultracode build run on the plan's §5 units)
 - `claude/focused-goldberg-mviel4` · **website two-site split — planning brief** (owner-directed) —
   spec for the next planning session + idea capture + router Q-0178 · `docs/planning/website-two-site-split-planning-brief-2026-06-19.md`
   · 2026-06-19 · **merged #1099**
