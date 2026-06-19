@@ -67,6 +67,30 @@ edit_in_place:
     - pattern: views/setup/template_picker.py::TemplateConfigView._cancel
       reason: "Terminal 'cancelled — not installed' confirmation toast."
 
+# back_button: a HubView whose module references no back/nav affordance. Triaged
+# 2026-06-19: all current findings are top-of-stack ROOT panels — opened directly
+# by a cog command (no parent to return to), so they correctly have no back
+# button. The rule's real target is a *child* sub-panel missing a back affordance;
+# it will still catch a future one (these allowlists are scoped per root class).
+# Re-verify a root's status before allowlisting a new one: if it is opened FROM
+# another panel, it needs a back button (fix it), not an allowlist entry.
+back_button:
+  exceptions:
+    - pattern: views/access/explorer.py::AccessExplorerView
+      reason: "Root access-explorer panel opened directly by the settings cog command (send_panel); no parent to return to."
+    - pattern: views/channels/main_panel.py::_ChannelManagerView
+      reason: "Root of the channels navigation stack — its sub-panels (create/delete/visibility/move) restore back TO it; it has no parent itself."
+    - pattern: views/cleanup/policy_panel.py::CleanupPolicyPanelView
+      reason: "Root cleanup-policy panel opened directly by the cleanup cog command; no parent to return to."
+    - pattern: views/diagnostic/automation_panel.py::AutomationPanelView
+      reason: "Root `!platform automation` panel opened via open_panel from the platform command group (not a child of the diagnostics/platform hub); no parent."
+    - pattern: views/diagnostic/hub_panel.py::_DiagnosticsHubView
+      reason: "Root diagnostics hub opened directly by the diagnostic cog command; top of its stack."
+    - pattern: views/games/deathmatch_panel.py::DeathmatchPanelView
+      reason: "Root deathmatch game panel opened directly by the deathmatch cog command; no parent."
+    - pattern: views/xp/main_panel.py::_XpHubView
+      reason: "Root XP hub opened directly by the xp cog command; top of its stack."
+
 # select_option_truncation: a `views/...py` path prefix whose front-truncating
 # slice is a *genuine* top-N display (an error message intentionally listing only
 # the first few of many), NOT a select that should paginate. Fix real selects to
