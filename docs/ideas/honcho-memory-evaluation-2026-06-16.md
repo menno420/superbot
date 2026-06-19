@@ -14,6 +14,28 @@ user across conversations* — their preferences, past questions, running contex
 instead of starting from scratch every time. This is the V-04 "per-user preferences" vision item made
 real for the AI surface.
 
+## Owner-specified memory policy (2026-06-19) — opt-in, user-controlled
+
+The owner specified *how* this memory must behave (the policy; Honcho below is one possible *how-built*):
+
+- **Always opt-in.** Memory is never silently on. A per-user **enable/disable** toggle lives in the
+  **per-user configuration** surface (the same home as the auto-gear-swap toggle in
+  `explore-hub-federated-world`).
+- **User-chosen scope.** Each user picks **global** (across servers) or **per-guild** (this server only) —
+  scope is the *user's* choice, not a system-wide default.
+- **Declared memory.** Users can author facts directly: **`remember this: …`**. Declared memory is the
+  natural v1 — **cheaper** (no inference pass), **more accurate** (no hallucinated "facts"), and **more
+  trustworthy** (they see exactly what is stored). It is *literally* the "keep API costs low" answer.
+  *Inferred* memory (the Honcho-style conclusion extraction below) is an optional, budgeted later layer.
+- **See + forget controls.** If users can add, they must review and delete:
+  `what do you remember about me?` / `forget …` (or `forget everything`). For a public bot this is
+  table-stakes (right-to-be-forgotten), not polish.
+- **Server-level override.** A server admin can disable bot memory server-wide; **most-restrictive-wins**
+  (server-off beats user-on). Cheap to design in now, painful to retrofit.
+
+*(Source: owner brainstorm 2026-06-19. The Honcho evaluation below is the tooling / how-built companion to
+this policy.)*
+
 ## What Honcho is (the tool that fits)
 
 Honcho (Plastic Labs, open-source) is an agent **memory / social-cognition layer**: it models each

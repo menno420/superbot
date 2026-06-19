@@ -207,6 +207,19 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1126 (2026-06-19, ideas — owner brainstorm capture)** — captured two owner-directed idea docs from a
+  live brainstorm (the **federated Explore hub**: one world / each subsystem its own game; and the **AI
+  correction-report → audience-routed ticket service**), indexed in `ideas/README` with subsystem tags.
+  Later extended in-place with the owner's approved design (the three-track XP + hybrid-gear model; the
+  unified tagged feedback board + dual-gate submission moderation; the opt-in/declared memory policy on
+  `honcho-memory-evaluation`). Docs-only; recorded on sight.
+- **#1125 (2026-06-19, tooling — ledger-drift checker hardening)** — reworked
+  `scripts/check_current_state_ledger.py` (detection window now **scales to the reconciliation marker**;
+  sharper benign-lag-vs-drift split) + its tests, and refreshed the `ledger-guard-benign-lag` /
+  `ledger-window-scale-to-marker` idea docs (tooling + docs; recorded on sight).
+- **#1124 (2026-06-19, docs — planning/audit/idea map cleanup)** — a durable plan index, rebadged stale
+  plans/audits, idea subsystem tags, and de-staled routing pointers across `docs/planning/`,
+  `docs/subsystems/`, and `roadmap.md` (80 files, docs-only; recorded on sight).
 - **#1115 (2026-06-19, ideas — per-command feedback threads + idea→command mapping)** — captured two
   workflow/product ideas (per-command feedback threads · an idea→cog-command mapping) with their idea docs
   + README index entries (docs-only; merged to `main` just after this pass's marker — recorded on sight).
