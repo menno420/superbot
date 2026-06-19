@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Reviews — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Review inbox</h1>
+<p class="text-slate-400 mb-6 text-sm">
+  {{ data.meta.counts.get("reviews_open", 0) }} open of
+  {{ data.meta.counts.get("reviews", 0) }} owner reviews — read-only mirror of the
+  review inbox (<code>docs/owner/review-inbox.md</code>). The owner posts a "change
+  X about this cog" review here; sessions act on the open ones and mark them
+  <code>RESOLVED (#PR)</code>. Posting from the dashboard arrives in Phase 2.
+</p>
+
+<section>
+  <h2 class="text-lg font-semibold mb-3">Open
+    <span class="text-sm font-normal text-slate-500">({{ open_reviews|length }})</span>
+  </h2>
+  {% for area, items in open_by_area %}
+    <div class="mb-5">
+      <h3 class="text-xs uppercase tracking-wide text-slate-500 mb-2">{{ area }}</h3>
+      <ul class="space-y-3">
+        {% for r in items %}
+          <li class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+            <div class="flex items-center gap-2 flex-wrap">
+              <code class="text-xs text-slate-500">{{ r.id }}</code>
+              <span class="font-semibold">{{ r.area }}</span>
+              <span class="ml-auto text-[10px] uppercase rounded px-2 py-0.5 shrink-0 bg-rose-900 text-rose-300">{{ r.status }}</span>
+            </div>
+            {% if r.summary %}
+              <p class="mt-2 text-sm text-slate-400">{{ r.summary }}</p>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    <p class="text-slate-500 text-sm">No open reviews.</p>
+  {% endfor %}
+</section>
+
+{% if resolved_reviews %}
+  <section class="mt-10">
+    <h2 class="text-lg font-semibold mb-3">Resolved
+      <span class="text-sm font-normal text-slate-500">({{ resolved_reviews|length }})</span>
+    </h2>
+    <ul class="space-y-3">
+      {% for r in resolved_reviews %}
+        <li class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+          <div class="flex items-center gap-2 flex-wrap">
+            <code class="text-xs text-slate-500">{{ r.id }}</code>
+            <span class="font-semibold">{{ r.area }}</span>
+            <span class="ml-auto text-[10px] uppercase rounded px-2 py-0.5 shrink-0 bg-emerald-900 text-emerald-300">{{ r.status }}</span>
+          </div>
+          {% if r.summary %}
+            <p class="mt-2 text-sm text-slate-400">{{ r.summary }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+<section class="mt-10 rounded-xl border border-dashed border-slate-700 p-6 text-center">
+  <h2 class="font-semibold">Want to post a review?</h2>
+  <p class="text-sm text-slate-400 mt-1 max-w-md mx-auto">
+    Posting a review from the dashboard — an owner-auth form that appends a
+    <code>REV-NNNN</code> entry — arrives in Phase 2. For now the owner edits
+    <code>docs/owner/review-inbox.md</code> directly (via the GitHub app), or opens
+    an issue on GitHub.
+  </p>
+  <a
+    href="https://github.com/menno420/superbot/blob/main/docs/owner/review-inbox.md"
+    class="inline-block mt-3 rounded bg-sky-600 hover:bg-sky-500 px-4 py-2 text-sm font-medium"
+  >Open the review inbox</a>
+</section>
+{% endblock %}

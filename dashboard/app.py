@@ -78,6 +78,7 @@ _EMPTY: dict[str, Any] = {
     "catalogue": [],
     "ideas": [],
     "bugs": [],
+    "reviews": [],
     "updates": [],
     "env_usage": [],
     "settings": [],
@@ -204,6 +205,35 @@ def bugs(request: Request):
         request,
         "bugs.html",
         {"data": load_data(), "page": "bugs"},
+    )
+
+
+@app.get("/reviews", response_class=HTMLResponse)
+def reviews(request: Request):
+    """Owner review inbox (read-only) — open vs. resolved reviews grouped by area.
+
+    Phase 1 of the owner↔agent review channel (Q-0169): a read view over the
+    committed ``docs/owner/review-inbox.md`` ledger. ``OPEN`` reviews are the
+    actionable list (a bugs-first cousin); the rest are the resolved history. The
+    write side (post-from-the-dashboard) is Phase 2 and stays Held.
+    """
+    data = load_data()
+    items = data.get("reviews", [])
+    open_reviews = [r for r in items if (r.get("status") or "").upper() == "OPEN"]
+    resolved_reviews = [r for r in items if (r.get("status") or "").upper() != "OPEN"]
+    by_area: dict[str, list[dict]] = {}
+    for review in open_reviews:
+        by_area.setdefault(review.get("area") or "general", []).append(review)
+    return templates.TemplateResponse(
+        request,
+        "reviews.html",
+        {
+            "data": data,
+            "page": "reviews",
+            "open_by_area": sorted(by_area.items()),
+            "open_reviews": open_reviews,
+            "resolved_reviews": resolved_reviews,
+        },
     )
 
 
