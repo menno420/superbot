@@ -104,6 +104,53 @@ def test_empty_book_is_clean(mod):
     assert mod.find_rootfix_backlog("# Bug book\n\nNo entries yet.\n") == []
 
 
+# ---------------------------------------------------------------------------
+# #1144 review hardening — precise matching, scoped to the status label not the title
+# ---------------------------------------------------------------------------
+
+
+def test_title_mentioning_partially_is_not_flagged(mod):
+    # A title like "partially ignores X" with a terminal FIXED status must NOT flag —
+    # the bare word "partially" in the title is not the "PARTIALLY FIXED" status phrase.
+    text = (
+        "## BUG-0200 — counting partially ignores role hierarchy — FIXED\n\n"
+        "- **Symptom:** a thing.\n"
+        "- **Status:** FIXED — this PR.\n"
+    )
+    assert mod.find_rootfix_backlog(text) == []
+
+
+def test_immediate_with_root_cause_prose_is_still_flagged(mod):
+    # "FIXED (immediate)" whose deferral text says "root cause deferred" must still
+    # flag — keying on the "(root)" marker, not any occurrence of the word "root".
+    text = (
+        "## BUG-0201 — interim patch — FIXED (immediate)\n\n"
+        "- **Status:** FIXED (immediate) — root cause deferred, no durable fix yet.\n"
+    )
+    flagged = {item.bug_id for item in mod.find_rootfix_backlog(text)}
+    assert flagged == {"BUG-0201"}
+
+
+def test_terminal_fixed_mentioning_recommendation_is_not_flagged(mod):
+    # A closed entry whose status says "recommendation (a) implemented" must NOT flag —
+    # "recommendation" is not the deferred-root word "RECOMMENDED".
+    text = (
+        "## BUG-0202 — closed — FIXED (root)\n\n"
+        "- **Status:** FIXED (root) — recommendation (a) implemented.\n"
+    )
+    assert mod.find_rootfix_backlog(text) == []
+
+
+def test_title_with_root_word_and_partially_does_not_false_positive(mod):
+    # Belt-and-braces: a title carrying both "root" and "partially" with a plain FIXED
+    # status is terminal — the title is never scanned for status signals.
+    text = (
+        "## BUG-0203 — root partially restored after partial outage — FIXED\n\n"
+        "- **Status:** FIXED — root-caused and fixed.\n"
+    )
+    assert mod.find_rootfix_backlog(text) == []
+
+
 def test_main_advisory_exit_zero_even_with_backlog(mod, tmp_path):
     book = tmp_path / "bug-book.md"
     book.write_text(SAMPLE, encoding="utf-8")
