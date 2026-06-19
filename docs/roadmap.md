@@ -410,8 +410,10 @@ dedicated decision** for any action capability.
   migrate the `views/ai/` settings family off per-click ephemeral messages + the blanket
   raw-`discord.ui.View` yaml exemption onto the rest-of-bot in-place **HubView** pattern
   (V-02 navigation doctrine), and centralize the seven scattered subpanels. Clear
-  direction + a source-confirmed scope sketch in the idea file; wants its own planning
-  session before code.
+  direction + a source-confirmed scope sketch in the idea file. **Now an executable plan**
+  ([ai-panel-inplace-navigation-plan-2026-06-19](planning/ai-panel-inplace-navigation-plan-2026-06-19.md),
+  2–3 PRs) — also the blocker for graduating the consistency linter's `edit_in_place` rule (its 17
+  remaining findings are this family); each PR is `needs-hermes-review` + wants a live guild walk.
 
 ### 🎈 BTD6 data / tools · **S2 BTD6** — Now (THE CUTOVER IS DONE — post-cutover decode backlog)
 

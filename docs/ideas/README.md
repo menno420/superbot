@@ -515,6 +515,10 @@ Current broad captures:
   `discord.ui.View` behind a blanket `views/ai/` yaml exemption (ratchet-invisible
   debt). Migrate it to the rest-of-bot in-place HubView pattern (V-02 navigation
   doctrine); source-confirmed diagnosis + scope sketch in the file.
+  **→ PROMOTED to an executable plan (2026-06-19, Q-0172):**
+  [`planning/ai-panel-inplace-navigation-plan-2026-06-19.md`](../planning/ai-panel-inplace-navigation-plan-2026-06-19.md)
+  (2–3 PRs; also the blocker for graduating the consistency linter's `edit_in_place` rule, whose 17
+  remaining findings are exactly this family).
 - [`gap-analysis-2026-06-11.md`](./gap-analysis-2026-06-11.md) — six
   dedup-verified blind spots from the owner's "what's still missing?" probe:
   cross-server character identity (**Q-0091**, the public-era architectural
