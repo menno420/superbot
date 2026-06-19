@@ -309,6 +309,12 @@ Source code and merged PRs win over anything written here.
 
 ## Next candidates
 
+- **Website two-site split — rollout + next steps:**
+  [`operations/website-split-next-steps-2026-06-19.md`](operations/website-split-next-steps-2026-06-19.md)
+  is the live handoff: the v1 build is **code-complete + reviewed** (#1109–#1119, hardened by #1122), and
+  what remains is the owner-paced **rollout** (provision `botsite/` + the submissions DB, then domain
+  cutover), the 3 review flags (moderation race · web-CI matrix · idea→subsystem mapping), and two
+  security-review-gated slices (control-panel migration · live status aggregator).
 - **Cross-area sequencing + the plan index now live in [`docs/roadmap.md`](roadmap.md)**
   (by area, with Now / Next / Later / Someday horizons + gates — where to find which plan
   for which part of the code). The picks below are the current top of that list.
