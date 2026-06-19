@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T18:38:52Z",
+    "generated_at": "2026-06-19T21:09:59Z",
     "build": {
-      "commit": "ee9b4cc8",
-      "subject": "consistency-linter: extend rules 3+4 to the cog layer; fix BUG-0018 (stale site.json)",
-      "committed_at": "2026-06-19T18:23:39Z",
-      "branch": "claude/funny-franklin-z3cvh8"
+      "commit": "c1f6acfd",
+      "subject": "reconcile: open born-red session card for the band-#1140 Q-0107 pass",
+      "committed_at": "2026-06-19T21:02:35Z",
+      "branch": "claude/reconcile-1140-band"
     }
   },
   "counts": {
