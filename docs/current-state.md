@@ -207,6 +207,9 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1115 (2026-06-19, ideas — per-command feedback threads + idea→command mapping)** — captured two
+  workflow/product ideas (per-command feedback threads · an idea→cog-command mapping) with their idea docs
+  + README index entries (docs-only; merged to `main` just after this pass's marker — recorded on sight).
 - **#1099 · #1100 · #1102 · #1104 · #1107 · #1110 (2026-06-19, website two-site split — planning band, Q-0178/Q-0179)** —
   the public bot-site / private dev-site split planned end-to-end: the [planning brief](planning/website-two-site-split-plan-2026-06-19.md)
   (#1099), the full implementation plan + file-disjoint **ultracode decomposition** (#1100), routing the
@@ -292,10 +295,7 @@ Source code and merged PRs win over anything written here.
 - **#1046 (2026-06-18, dashboard generated-data refresh)** — `chore(dashboard): refresh generated
   data` — regenerated the committed `dashboard/data/dashboard.json` from live source (the cadence-regen
   routed to the docs-reconciliation routine in #1025).
-- **#1045 (2026-06-18, dashboard-data-refresh CI fix)** — `fix(ci): make dashboard-data-refresh
-  actually work` — corrected the dashboard-data-refresh workflow to use the PR-flow auto-merge path so
-  the generated-data refresh lands instead of stalling.
-- **Older merges (#1042 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(The fourteenth Q-0107 pass — band-#1110, 2026-06-19 — added the website two-site split planning band + serial foundation, fleet A4, workflow tooling, and #1098/#1101 (#1097–#1110), and trimmed the live ledger back to the 20 newest, moving #1042 … #1037 to the archive.)*
+- **Older merges (#1046 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(The fourteenth Q-0107 pass — band-#1110, 2026-06-19 — added the website two-site split planning band + serial foundation, fleet A4, workflow tooling, #1098/#1101 (#1097–#1110), and #1115; trimmed the live ledger to the 20 newest, moving #1045 … #1037 to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 

@@ -86,6 +86,9 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1045 (2026-06-18, dashboard-data-refresh CI fix)** — `fix(ci): make dashboard-data-refresh
+  actually work` — corrected the dashboard-data-refresh workflow to use the PR-flow auto-merge path so
+  the generated-data refresh lands instead of stalling.
 - **#1042 (2026-06-18, repo-consistency-linter PR 1 — Q-0170)** — the owner-directed "CI but for
   UX/interaction inconsistencies" tool, `scripts/check_consistency.py` (stdlib AST over `disbot/views/`,
   `check_architecture`-style `Rule` registry + an `architecture_rules/consistency_exceptions.yml`
