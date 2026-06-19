@@ -202,6 +202,36 @@ def _edits_in_place(fn: ast.AST) -> bool:
     return False
 
 
+def _inplace_helper_names(cls: ast.ClassDef) -> frozenset[str]:
+    """Names of the class's own methods whose body edits a message in place.
+
+    The codebase's house idiom re-renders a panel through a small same-class
+    helper (``self._rerender()`` -> ``self.message.edit(...)``), not a direct
+    ``interaction.response.edit_message`` in the callback.  A callback that calls
+    such a helper *does* edit in place, so collecting these lets
+    :func:`_calls_inplace_helper` clear that false-positive class.
+    """
+    return frozenset(
+        m.name
+        for m in cls.body
+        if isinstance(m, (ast.AsyncFunctionDef, ast.FunctionDef)) and _edits_in_place(m)
+    )
+
+
+def _calls_inplace_helper(fn: ast.AST, helpers: frozenset[str]) -> bool:
+    """True if *fn* calls ``self.<m>()`` where ``<m>`` is an in-place helper."""
+    for sub in ast.walk(fn):
+        if (
+            isinstance(sub, ast.Call)
+            and isinstance(sub.func, ast.Attribute)
+            and sub.func.attr in helpers
+            and isinstance(sub.func.value, ast.Name)
+            and sub.func.value.id == "self"
+        ):
+            return True
+    return False
+
+
 def _unwrap(stmt: ast.stmt) -> ast.Call | None:
     """The bare ``Call`` of an expression-statement (``await x.send(...)`` -> Call)."""
     if not isinstance(stmt, ast.Expr):
@@ -269,10 +299,13 @@ def rule_edit_in_place(files: list[Path], exceptions: dict) -> list[Finding]:
         for cls in ast.walk(tree):
             if not isinstance(cls, ast.ClassDef) or not _is_view_class(cls):
                 continue
+            helpers = _inplace_helper_names(cls)
             for fn in cls.body:
                 if not isinstance(fn, (ast.AsyncFunctionDef, ast.FunctionDef)):
                     continue
                 if not _is_ui_callback(fn) or _edits_in_place(fn):
+                    continue
+                if _calls_inplace_helper(fn, helpers):
                     continue
                 qualname = f"{cls.name}.{fn.name}"
                 if _is_allowlisted(rel, qualname, cfg):

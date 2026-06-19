@@ -93,6 +93,24 @@ class ScorePanel(discord.ui.View):
         await interaction.response.send_message("x", ephemeral=True)
 """
 
+# The codebase's house idiom: the callback re-renders the panel via a same-class
+# `self._rerender()` helper (which does `self.message.edit(...)`), then confirms
+# out-of-band. This edits in place — it must NOT be flagged.
+_RERENDER_HELPER = """\
+import discord
+
+
+class ScorePanel(discord.ui.View):
+    async def _rerender(self):
+        if self.message:
+            await self.message.edit(view=self)
+
+    @discord.ui.button(label="Reset")
+    async def reset(self, interaction, button):
+        await self._rerender()
+        await interaction.followup.send("done", ephemeral=True)
+"""
+
 
 def _findings(mod, tmp_path, monkeypatch, src, *, rel="views/score.py"):
     _write(mod, tmp_path, monkeypatch, rel, src)
@@ -109,6 +127,12 @@ def test_flags_ephemeral_only_panel_callback(mod, tmp_path, monkeypatch):
 
 def test_callback_that_edits_in_place_is_clean(mod, tmp_path, monkeypatch):
     assert _findings(mod, tmp_path, monkeypatch, _EDITS) == []
+
+
+def test_callback_using_inplace_rerender_helper_is_clean(mod, tmp_path, monkeypatch):
+    # A callback that re-renders via the house `self._rerender()` idiom edits in
+    # place even though the `.edit` lives in the helper, not the callback body.
+    assert _findings(mod, tmp_path, monkeypatch, _RERENDER_HELPER) == []
 
 
 def test_early_return_validation_toast_is_clean(mod, tmp_path, monkeypatch):

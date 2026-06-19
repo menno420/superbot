@@ -11,7 +11,61 @@
 # fixed to edit in place.
 
 edit_in_place:
-  exceptions: []
+  # Triaged 2026-06-19. The remaining (non-allowlisted) findings are the entire
+  # `views/ai/` family — the owner's documented "AI panels stack ephemerals
+  # instead of updating in place" inconsistency, tracked by
+  # `docs/ideas/ai-panel-inplace-navigation-2026-06-11.md`. Those are deliberately
+  # NOT allowlisted: they are the real bug the rule exists to catch, and the rule
+  # stays warn-only until that redesign ships. Each entry below documents a
+  # callback whose new ephemeral message is genuinely correct.
+  exceptions:
+    # --- Opens an interactive sub-flow (a fresh picker / builder / sub-panel
+    #     the operator drives next); the parent panel re-renders in place on
+    #     completion. A new ephemeral message is the correct carrier here. ---
+    - pattern: views/roles/management_panel.py::ManagementPanel.delete_btn
+      reason: "Opens the role-delete picker; the parent panel re-renders in place after the delete (PaginatedSelectView callback)."
+    - pattern: views/roles/time_roles_panel.py::TimeRolesPanel.add_btn
+      reason: "Opens the role picker -> days modal; the panel re-renders in place via _rerender on submit."
+    - pattern: views/roles/time_roles_panel.py::TimeRolesPanel.remove_btn
+      reason: "Opens the remove picker; the panel re-renders in place via _rerender after removal."
+    - pattern: views/roles/xp_roles_panel.py::XpRolesPanel.add_btn
+      reason: "Opens the role picker -> level modal; the panel re-renders in place via _rerender on submit."
+    - pattern: views/roles/xp_roles_panel.py::XpRolesPanel.remove_btn
+      reason: "Opens the remove picker; the panel re-renders in place via _rerender after removal."
+    - pattern: views/cleanup/policy_panel.py::CleanupPolicyPanelView.btn_build
+      reason: "Opens the scope-select policy builder sub-flow (the sibling btn_refresh edits the panel in place)."
+    - pattern: views/server_management/hub.py::ServerManagementHubView.help_editor_btn
+      reason: "Persistent shared hub message opens the admin-private Help editor as an ephemeral sub-flow (can't edit a shared persistent message per-user)."
+    # --- Persistent / shared-anchor views: the message is shared across users or
+    #     survives restarts, so editing it in place per-click is wrong. ---
+    - pattern: views/setup/launcher.py::SetupLauncherView
+      reason: "Persistent shared launcher message; every button opens an admin-private ephemeral sub-flow / report (start wizard, readiness scan, suggestions, preset, summary). Editing the shared launcher per-user is wrong."
+    - pattern: views/ux_lab/persistent_demo.py::UxLabPersistentDemo.ping
+      reason: "The ephemeral 'still alive' reply IS the PersistentView restart-survival demo; a new message is the exhibit's point."
+    # --- Shared multiplayer lobby / match messages: the view is posted into a
+    #     channel for many players; a per-user ephemeral confirm is correct, and
+    #     the shared embed updates via its own helper. ---
+    - pattern: views/rps/registration.py::_RpsRegistrationView.join_btn
+      reason: "Shared tournament-lobby join button; each clicker gets a private ephemeral confirm (editing the public lobby message would change it for everyone)."
+    - pattern: views/rps/pvp_play.py::_RpsPvpPlayView.pick
+      reason: "Shared PvP match message; opens each player's private move picker as an ephemeral (the public match message must not change)."
+    - pattern: views/blackjack/tournament_views.py::_TournRegistrationView.join_btn
+      reason: "Shared tournament-lobby join; per-user ephemeral confirm + the lobby embed updates via _update_tourn_embed (not this message's view)."
+    # --- In-place via a module-level helper; the ephemeral is a fallback. ---
+    - pattern: views/channels/create_panel.py::_CreateSubView.create_btn
+      reason: "Restores the parent manager panel in place via restore_parent_or_send_fresh; the ephemeral send is only the parent-message-gone fallback."
+    # --- Terminal / advisory report toasts: a one-shot action result or an
+    #     advisory report whose content does not belong on the panel. ---
+    - pattern: views/roles/diagnostics_panel.py::DiagnosticsPanel.run_btn
+      reason: "One-shot role-assignment run report; the panel lists configured thresholds, not run results, so a toast is the correct carrier."
+    - pattern: views/roles/time_roles_panel.py::TimeRolesPanel.run_btn
+      reason: "One-shot role-assignment run report; the panel lists thresholds, unchanged by a run."
+    - pattern: views/setup/final_review.py::FinalReviewView._ai_review
+      reason: "Supplementary advisory AI review ('nothing staged or applied'); the Final Review panel is itself an ephemeral follow-up over the wizard anchor."
+    - pattern: views/setup/template_picker.py::TemplateConfigView._apply
+      reason: "Terminal apply-outcome report after installing the template (the config view's job is done)."
+    - pattern: views/setup/template_picker.py::TemplateConfigView._cancel
+      reason: "Terminal 'cancelled — not installed' confirmation toast."
 
 # select_option_truncation: a `views/...py` path prefix whose front-truncating
 # slice is a *genuine* top-N display (an error message intentionally listing only
