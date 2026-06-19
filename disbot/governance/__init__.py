@@ -74,7 +74,7 @@ from governance.writes import (  # noqa: F401
     set_cleanup_policy_for_scope,
     set_subsystem_visibility,
 )
-from services.governance_exceptions import (  # noqa: F401
+from utils.governance_exceptions import (  # noqa: F401
     GovernanceError,
     UnauthorizedGovernanceWriteError,
 )

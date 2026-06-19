@@ -42,11 +42,11 @@ from governance.scopes import (
     VALID_VISIBILITY_SCOPE_TYPES,
 )
 from services.audit_events import emit_audit_action
-from services.governance_exceptions import (
+from utils import db, settings_keys
+from utils.governance_exceptions import (
     GovernanceError,
     UnauthorizedGovernanceWriteError,
 )
-from utils import db, settings_keys
 from utils.subsystem_registry import REGISTRY_VERSION, SUBSYSTEMS
 from utils.visibility_rules import get_member_visibility_tier, is_tier_sufficient
 
