@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/bold-cori-y7ben5` · **website-split: review the external research + lock the open decisions**
+  (owner-directed) — resolve **Q-0179** (control panel → bot site) + lock plan §7's 6 decisions + fold the
+  owner's external-research layout/UX guidance into the plan · `docs/owner/maintainer-question-router.md` ·
+  `docs/planning/website-two-site-split-plan-2026-06-19.md` · `docs/current-state.md` · 2026-06-19 ·
+  **auto-merge on green**
 - `claude/kind-einstein-jlywgm` · **route the website-split control-panel-placement decision**
   (continuation after the plan merged #1100) — router **Q-0179** (DISCUSS): the one owner-intent fork
   the plan §7.4 discovered that Q-0178's "still open" list omits · `docs/owner/maintainer-question-router.md`
