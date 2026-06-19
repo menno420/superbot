@@ -1,8 +1,14 @@
 # Idea — the ledger guard should distinguish *benign newest-merge lag* from real drift
 
-> **Status:** `ideas` — capture, **not** a plan, **not** approval. Source code and the
-> binding contracts win over this file. Small/safe grooming-lane candidate (a tooling
-> precision tweak for the reconciliation/`session-close` loop).
+> **Status:** `historical` — ✅ **IMPLEMENTED 2026-06-19** (Q-0015 grooming pass). Source code wins.
+> `scripts/check_current_state_ledger.py` now parses the `Last reconciliation pass:** PR #N` marker
+> (`marker_pr`), partitions `find_missing` into **drift** (`pr <= N`) and **benign lag** (`pr > N`)
+> via `classify_missing`, and `--strict` exits 1 **only on drift** — benign lag is printed
+> (informational, so the reconciliation routine still reads the band) but never fails the gate.
+> Shipped together with its sibling `ledger-window-scale-to-marker-2026-06-19` (same marker
+> mechanism: `band_window` self-sizes the window to the band). Verified against ground truth: the
+> live `--strict` run, which was red on 23 newest-merge-lag PRs, now exits 0. Tests in
+> `test_check_current_state_ledger.py`.
 
 ## The friction (observed this session, 2026-06-14)
 

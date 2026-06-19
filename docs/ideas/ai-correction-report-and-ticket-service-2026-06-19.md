@@ -34,6 +34,36 @@ When the classifier is unsure, the safe default is **owner-private, never public
 audience/redaction discipline the website split already enforces by construction (the `site.json`
 fail-closed whitelist) — the ticket router needs an equivalent, applied to *outbound* reports.
 
+## The unified feedback board + submission moderation (owner direction — 2026-06-19)
+
+**One destination, richly tagged.** Every item routes to **one board** (a web page) but carries visible
+facets — **type** (bug · idea · suggestion · comment · correction · moderation-flag) and **source/location**
+(which server · who · which front door) — so it filters cleanly by type and origin. This is the **owner
+review inbox (`/reviews`, shipped #1091) generalized** — add `type` + `location` facets to its schema and
+it *is* the unified board. **Owner board = the full firehose (all servers, filterable); the public bot-site
+shows only items explicitly promoted** (the website-split redaction model: owner sees all, public sees a
+whitelist).
+
+**Convergence worth keeping:** the provenance you want for *filtering* is the **same metadata the
+fail-closed audience guard needs to never leak a server-private item to public.** Building the filter
+builds the guard's input — the UX feature and the safety feature are one feature.
+
+**Submission moderation — a second AI gate, with the *opposite* fail-safe direction.** The website
+AI-monitors user submissions (aliases, comments, …) for foul language / pranks, but:
+
+- **This gate fails OPEN.** No foul language detected → **allow**, even if it *might* be a prank. The harm
+  to avoid is **silencing a legitimate user on suspicion** — never block a clean proposal just because it
+  *could* be a joke.
+- Contrast the report/ticket **audience guard, which fails CLOSED** (unsure who it's for → keep private).
+  **Two gates, opposite safe defaults, both correct** — they protect different harms (over-censoring users
+  vs. over-exposing data). A future session must **not** flatten them into one uniform "when unsure, block."
+- **Three-way outcome, not binary:** confident foul language → **block**; uncertain / maybe-prank →
+  **allow + soft-flag** to the board (`type: moderation-flag`) for optional human review; clean → allow
+  silently. The flag is just one more tagged item on the same board.
+- **Cost:** a free lexical pre-filter (wordlist/regex) handles the obvious slurs; the paid AI only
+  adjudicates the ambiguous remainder — the same metered pattern as the existing image moderation (Q-0082),
+  so it stays under the spend ceiling.
+
 ## Existing rails (don't rebuild these)
 
 - **Owner review inbox** — the `/reviews` board (Phase 1 shipped #1091);

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T18:19:44Z",
+    "generated_at": "2026-06-19T18:38:52Z",
     "build": {
-      "commit": "abe5e4d7",
-      "subject": "session: open born-red card — extend consistency linter to cog layer",
-      "committed_at": "2026-06-19T18:06:48Z",
+      "commit": "ee9b4cc8",
+      "subject": "consistency-linter: extend rules 3+4 to the cog layer; fix BUG-0018 (stale site.json)",
+      "committed_at": "2026-06-19T18:23:39Z",
       "branch": "claude/funny-franklin-z3cvh8"
     }
   },
