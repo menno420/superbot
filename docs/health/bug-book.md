@@ -17,7 +17,7 @@
 > Owner-reported inconsistencies he hasn't formalized yet (see current-state
 > 2026-06-10 standing invite) land here as they surface.
 
-## BUG-0016 — reconciliation-trigger workflow issue-body says "multiple-of-20" / "next ~9 PRs" (stale cadence copy) — OPEN
+## BUG-0016 — reconciliation-trigger workflow issue-body says "multiple-of-20" / "next ~9 PRs" (stale cadence copy) — FIXED
 
 - **Symptom:** the auto-opened `reconcile` trigger issue (e.g. #1095) reads *"A multiple-of-20 PR
   band was crossed"* and *"plans the next ~9 PRs"*. Both numbers are stale: the Q-0107 cadence was
@@ -32,8 +32,12 @@
   and "next ~9 PRs" → "next full band" in both spots. A dispatch routine (full write scope) can land
   it in one tiny PR. No regression guard needed (a string); optionally have
   `check_reconciliation_due.py`'s message be the single source the workflow echoes.
-- **Status:** OPEN — captured 2026-06-19 during the band-#1080 reconciliation pass (docs-only, so
-  flagged here rather than fixed).
+- **Status:** FIXED — the dispatch run (2026-06-19) updated both spots: the header comment now
+  reads "cadence raised 10 → 20 … then 20 → 30 per Q-0134 … cross a 30-PR band" and the issue
+  `--body` reads "A 30-PR band was crossed … plans the next full band (depth ≥ the cadence,
+  Q-0164)". Added a one-line note in the workflow header that `check_reconciliation_due.py`
+  (`STEP = 30`) owns the firing boundary and the copy must track it. No regression guard (a
+  string; the firing logic was already correct and is covered by the script's own tests).
 
 ## BUG-0015 — "d67 dart paragon" misread as upgrade path "0-6-7" (paragon degree ignored) — FIXED
 
