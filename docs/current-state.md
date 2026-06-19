@@ -207,6 +207,9 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1129 (2026-06-19, docs/ideas — lock owner brainstorm design + ledger reconcile)** — locked the
+  owner's approved brainstorm design into the idea docs and reconciled the ledger (added the
+  #1124/#1125/#1126 entries above). Docs-only; newest merge — recorded on sight (Q-0166).
 - **#1126 (2026-06-19, ideas — owner brainstorm capture)** — captured two owner-directed idea docs from a
   live brainstorm (the **federated Explore hub**: one world / each subsystem its own game; and the **AI
   correction-report → audience-routed ticket service**), indexed in `ideas/README` with subsystem tags.
