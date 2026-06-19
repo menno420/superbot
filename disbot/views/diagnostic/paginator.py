@@ -59,7 +59,7 @@ class _PaginatorView(BaseView):
                 return
             # Restore parent embed.  Import locally to avoid a cycle
             # (paginator is imported by hub_panel which is imported by views.diagnostic).
-            from cogs.diagnostic._helpers import build_hub_overview_embed
+            from services.diagnostic_helpers import build_hub_overview_embed
 
             await interaction.response.edit_message(
                 embed=build_hub_overview_embed(),

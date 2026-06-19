@@ -15,14 +15,15 @@ Pre-stabilization (S4.4.5 initial extraction) this view delegated to
 ``self.ctx.invoke(self.cog.<command>)`` which (a) broke under
 ``help_ctx_shim`` (no ``.invoke``) and (b) produced new messages
 instead of editing the panel.  Both issues are resolved by computing
-the embed directly via the shared helpers in ``cogs.diagnostic._helpers``.
+the embed directly via the shared helpers in ``services.diagnostic_helpers``.
 """
 
 from __future__ import annotations
 
 import discord
 
-from cogs.diagnostic._helpers import (
+from core.runtime.interaction_helpers import safe_defer, safe_edit
+from services.diagnostic_helpers import (
     build_bot_status_embed,
     build_check_database_embed,
     build_command_list_pages,
@@ -33,7 +34,6 @@ from cogs.diagnostic._helpers import (
     build_test_notification_embed,
     build_validate_json_embed,
 )
-from core.runtime.interaction_helpers import safe_defer, safe_edit
 from views.base import HubView
 from views.diagnostic.paginator import _PaginatorView
 

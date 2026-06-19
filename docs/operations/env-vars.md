@@ -21,7 +21,7 @@ only — never a value**; the values live in Railway service variables
 |---|---|---|
 | `DATABASE_URL` | utils | `disbot/utils/db/pool.py:41` |
 | `DISCORD_BOT_TOKEN_PRODUCTION` | config | `disbot/config.py:19` |
-| `YOUTUBE_API_KEY` | cogs, services | `disbot/cogs/diagnostic/_platform_embeds.py:1265`<br>`disbot/services/youtube_fetch_service.py:22` |
+| `YOUTUBE_API_KEY` | services | `disbot/services/diagnostic_embeds.py:1265`<br>`disbot/services/youtube_fetch_service.py:22` |
 
 ## Optional (a default is always supplied)
 

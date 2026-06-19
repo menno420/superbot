@@ -14,7 +14,7 @@ Selects update the panel in place via ``safe_defer`` +
 ``safe_edit``, identical to ``_DiagnosticsHubView`` and
 ``SettingsHubView`` (canonical panel pattern). All embeds are
 produced by the existing builders in
-``cogs.diagnostic._platform_embeds`` so the panel and the typed
+``services.diagnostic_embeds`` so the panel and the typed
 commands render byte-identical embeds.
 
 The four category Selects remain strictly read-only. The
@@ -32,7 +32,8 @@ from __future__ import annotations
 
 import discord
 
-from cogs.diagnostic._platform_embeds import (
+from core.runtime.interaction_helpers import safe_defer, safe_edit
+from services.diagnostic_embeds import (
     build_anchors_embed,
     build_bindings_embed,
     build_caches_embed,
@@ -59,7 +60,6 @@ from cogs.diagnostic._platform_embeds import (
     build_tasks_embed,
     build_views_embed,
 )
-from core.runtime.interaction_helpers import safe_defer, safe_edit
 from views.base import HubView
 
 _RUNTIME_OPTIONS = (
