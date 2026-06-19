@@ -50,7 +50,7 @@ _ROW_COLUMNS = (
 _DSN_ENV = "SUBMISSIONS_DB_DSN"
 
 
-class SubmissionsNotConfigured(RuntimeError):
+class SubmissionsNotConfiguredError(RuntimeError):
     """Raised by the query helpers when ``SUBMISSIONS_DB_DSN`` is unset."""
 
 
@@ -68,7 +68,7 @@ def is_configured() -> bool:
 def _require_dsn() -> str:
     target = dsn()
     if target is None:
-        raise SubmissionsNotConfigured(
+        raise SubmissionsNotConfiguredError(
             f"{_DSN_ENV} is not set — the submissions store is dormant",
         )
     return target
@@ -87,7 +87,7 @@ async def list_pending(limit: int = 200) -> list[dict[str, Any]]:
     Oldest-first so the owner works through the backlog in arrival order. Each row
     is a plain dict of :data:`_ROW_COLUMNS`; the body is returned verbatim (plain
     text) — the moderation template renders it **escaped** (plan §4.2), this layer
-    never renders. Raises :class:`SubmissionsNotConfigured` when dormant.
+    never renders. Raises :class:`SubmissionsNotConfiguredError` when dormant.
     """
     sql = (
         f"SELECT {', '.join(_ROW_COLUMNS)} FROM submissions "
@@ -113,7 +113,7 @@ async def set_status(
     makes a double-click idempotent — a second decision on an already-moderated row
     is a no-op and returns ``False``). ``status`` must be ``approved`` or
     ``rejected``; ``moderated_by`` records the owner's Discord id at decision time.
-    Raises :class:`ValueError` on a bad status, :class:`SubmissionsNotConfigured`
+    Raises :class:`ValueError` on a bad status, :class:`SubmissionsNotConfiguredError`
     when dormant.
     """
     if status not in MODERATION_STATUSES:
@@ -137,7 +137,7 @@ async def attach_issue_url(submission_id: int, issue_url: str) -> bool:
 
     Called after the GitHub mirror creates the issue (plan §2.3). Idempotent: only
     sets the URL when it is still NULL, so a retried mirror cannot overwrite a prior
-    link (the double-file guard, plan §4.2). Raises :class:`SubmissionsNotConfigured`
+    link (the double-file guard, plan §4.2). Raises :class:`SubmissionsNotConfiguredError`
     when dormant.
     """
     sql = (

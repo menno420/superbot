@@ -62,13 +62,13 @@ async def test_set_status_rejects_bad_status(sdb, monkeypatch):
 
 async def test_list_pending_raises_when_dormant(sdb, monkeypatch):
     monkeypatch.delenv("SUBMISSIONS_DB_DSN", raising=False)
-    with pytest.raises(sdb.SubmissionsNotConfigured):
+    with pytest.raises(sdb.SubmissionsNotConfiguredError):
         await sdb.list_pending()
 
 
 async def test_set_status_raises_when_dormant(sdb, monkeypatch):
     monkeypatch.delenv("SUBMISSIONS_DB_DSN", raising=False)
-    with pytest.raises(sdb.SubmissionsNotConfigured):
+    with pytest.raises(sdb.SubmissionsNotConfiguredError):
         await sdb.set_status(1, "approved")
 
 

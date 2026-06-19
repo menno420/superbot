@@ -139,7 +139,7 @@ def test_is_configured_reflects_dsn_env(sdb, monkeypatch):
 
 async def test_insert_pending_raises_when_dormant(sdb, monkeypatch):
     monkeypatch.delenv("SUBMISSIONS_DB_DSN", raising=False)
-    with pytest.raises(sdb.SubmissionsNotConfigured):
+    with pytest.raises(sdb.SubmissionsNotConfiguredError):
         await sdb.insert_pending(kind="bug", title="t", body="b")
 
 

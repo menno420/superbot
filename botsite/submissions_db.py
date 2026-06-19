@@ -13,7 +13,7 @@ this module shares **only that contract** with ``dashboard/submissions_db.py`` (
 read/moderate side) — never code (plan §2.2 / §5).
 
 **Dormant by default.** When ``SUBMISSIONS_DB_DSN`` is not set, :func:`is_configured`
-is ``False`` and :func:`insert_pending` raises :class:`SubmissionsNotConfigured`; the
+is ``False`` and :func:`insert_pending` raises :class:`SubmissionsNotConfiguredError`; the
 ``/submit`` route shows a "submissions are temporarily unavailable" state rather than
 erroring. Nothing here connects to anything until the owner sets the DSN on the
 public Railway service at rollout (plan §6).
@@ -52,7 +52,7 @@ _IP_SALT_ENV = "SUBMISSIONS_IP_SALT"
 _FALLBACK_SALT = os.urandom(16).hex()
 
 
-class SubmissionsNotConfigured(RuntimeError):
+class SubmissionsNotConfiguredError(RuntimeError):
     """Raised by :func:`insert_pending` when ``SUBMISSIONS_DB_DSN`` is unset."""
 
 
@@ -85,10 +85,10 @@ def hash_ip(raw_ip: str | None) -> str | None:
 
 
 def _clean(text: str | None, limit: int) -> str | None:
-    """Trim, drop control characters, and length-cap a free-text field.
+    r"""Trim, drop control characters, and length-cap a free-text field.
 
     Returns ``None`` for an empty/whitespace-only result so optional columns stay
-    NULL. Control characters (other than ``\\n`` / ``\\t``) are stripped so a crafted
+    NULL. Control characters (other than ``\n`` / ``\t``) are stripped so a crafted
     payload can't smuggle terminal escapes into the owner's moderation view.
     """
     if text is None:
@@ -161,12 +161,12 @@ async def insert_pending(
 
     The single write path of the public site. Validates + sanitises via
     :func:`build_insert`, then opens a short-lived asyncpg connection to the
-    submissions DSN and executes the INSERT. Raises :class:`SubmissionsNotConfigured`
+    submissions DSN and executes the INSERT. Raises :class:`SubmissionsNotConfiguredError`
     when the store is dormant and :class:`SubmissionValidationError` on bad input.
     """
     target = dsn()
     if target is None:
-        raise SubmissionsNotConfigured(
+        raise SubmissionsNotConfiguredError(
             f"{_DSN_ENV} is not set — the submissions store is dormant",
         )
     sql, params = build_insert(
