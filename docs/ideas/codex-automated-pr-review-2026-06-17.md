@@ -41,6 +41,18 @@ Codex moved past reactions and **left real inline review comments** (P1/P2 sever
   rather than relying on the open-time auto-review. Until then, weight Codex's docs/plan catches highly
   and treat its "missing implementation" comments on born-red code PRs as timing artifacts.
 
+### ✅ BUILT (2026-06-19, Q-0180) — the final-head review is now automated
+
+The "trigger on the final head" fix above is shipped: **`.github/workflows/codex-final-review.yml`**
+posts `@codex review` the instant a `claude/*` PR's **session card flips to a ready status** (the
+born-red final-commit signal, detected via `scripts/check_session_gate.py --require-ready-card`). Codex
+now reviews the **complete diff**, not the incomplete opener. Verified empirically first: on **#1097**
+Codex reviewed only the opening commit and left a P1 born-red false positive ("mark the card ready"),
+never re-reviewing the final head — confirming a plain push is not a Codex trigger. The PR usually
+auto-merges before Codex finishes, so the review lands on the **merged** PR; that is accepted — routines
+scan recently-merged PRs for Codex comments and fix the real ones first (Q-0174). UNVERIFIED per Q-0105
+— watch the first PRs; delete the workflow if it misfires. Full rationale: router **Q-0180**.
+
 ## The idea
 
 Wire **Codex (OpenAI) to automatically review pull requests** as they open/update, posting review
