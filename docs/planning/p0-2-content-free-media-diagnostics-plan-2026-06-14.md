@@ -1,6 +1,12 @@
 # P0-2 follow-up — content-free media diagnostics plan (2026-06-14)
 
-> **Status:** `plan` — implementation plan for the P0-2 media/YouTube follow-up
+> **Status:** `historical` — **▶ SHIPPED in #1044** (verified present + wired + tested 2026-06-19:
+> `get_cache_stats` in `utils/db/youtube_video_cache.py` · `MediaCacheHealth` / `cache_health` in
+> `video_reference_cache_service` · the `youtube_diagnostics` provider counters · the `!platform media`
+> → `build_media_embed` surface · tests `test_youtube_diagnostics` / `test_video_reference_cache_service`
+> / `test_youtube_video_cache_stats` / `test_media_maintenance_cog`). Provider-execution hardening (the
+> "out of scope" item) stays queued. Original plan retained below for provenance.
+> Implementation plan for the P0-2 media/YouTube follow-up
 > slice "content-free media diagnostics". Source code + merged PRs win over this
 > doc once the slice lands.
 > **Class:** correctness. **Lane:** shared-platform media (ADR-007), not AI/BTD6.

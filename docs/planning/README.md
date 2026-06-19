@@ -34,11 +34,9 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 |---|---|---|
 | [fishing-open-world-expansion](fishing-open-world-expansion-plan-2026-06-18.md) | Phase 1 (fishing v1 + gear-switching) **▶ buildable**; the unified-loadout / value-cook-sell / minigame tail is **owner-design-gated (Q-0175)** | [games](../subsystems/games.md) · `mining_exploration_brainstorm` |
 | [mining-hub-redesign](mining-hub-redesign-2026-06-15.md) | owner-picked Option A; **not yet built** (no hub-redesign commits) — ▶ startable | [games](../subsystems/games.md) · `voice-mode-planning-capture` |
-| [games-economy-faucet-sink-diagnostic](games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) | read-only economy-flow read model; gate cleared (#905/#910/#912) — **▶ turn-key** | [games](../subsystems/games.md) · `games-economy-faucet-sink-diagnostic` |
 | [myprofile-foundation](myprofile-foundation-plan-2026-06-10.md) | PR A/B shipped (#938/#940); only **PR C onboarding** remains, **owner-gated (Q-0147)** | [settings](../subsystems/settings-bindings-provisioning.md) |
 | [settings-pointer-lane-convergence](settings-pointer-lane-convergence-plan-2026-06-13.md) | P0-3; families 1+2 done, **pointer retirement gated** | [settings](../subsystems/settings-bindings-provisioning.md) |
 | [ai-panel-inplace-navigation](ai-panel-inplace-navigation-plan-2026-06-19.md) | 2–3 PRs; **`needs-hermes-review` + wants a live guild walk**; blocks graduating the consistency linter's `edit_in_place` rule | [ai](../subsystems/ai.md) · `ai-panel-inplace-navigation` |
-| [p0-2-content-free-media-diagnostics](p0-2-content-free-media-diagnostics-plan-2026-06-14.md) | one media-diagnostics gap; ▶ buildable | [media-youtube](../subsystems/media-youtube.md) · `media-quota-health-finding` |
 | [safety-community-family](safety-community-family-plan-2026-06-13.md) | lane entry doc; automod/logging/welcome **shipped** + image-mod #941 + security tiers 1+2 #929 **shipped 2026-06-18**; remainder = **NL event scheduler** (plan-first, Q-0112) | roadmap safety lane · `server-safety-and-automod`, `community-platform-features` |
 
 ### S2 — BTD6
@@ -129,7 +127,9 @@ Each carries a `historical` (or `reference`) badge and a banner pointing at its 
   [games-wager-money-safety](games-wager-money-safety-plan-2026-06-12.md) (#748) ·
   [moderation-dm-config](moderation-dm-config-plan-2026-06-17.md) (#1023) ·
   [ux-lab-interface-gallery](ux-lab-interface-gallery-plan-2026-06-12.md) (#758/#760/#762 → durable artifact `ux/pattern-library.md`) ·
-  [server-management-pr14-hub](server-management-pr14-hub-plan.md) (#584).
+  [server-management-pr14-hub](server-management-pr14-hub-plan.md) (#584) ·
+  [games-economy-faucet-sink-diagnostic](games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) (#1044) ·
+  [p0-2-content-free-media-diagnostics](p0-2-content-free-media-diagnostics-plan-2026-06-14.md) (#1044).
 - **Server-management initiative** (structurally complete through PR14; only the gated PR13 AI tail
   remains): the authoritative record is [server-management-status](server-management-status-2026-06-05.md)
   (`historical`, *referenced by `agent/index.yml`*); the
