@@ -27,6 +27,14 @@ Current broad captures:
   services. Structured into the required-output brief
   [`planning/website-two-site-split-planning-brief-2026-06-19.md`](../planning/website-two-site-split-planning-brief-2026-06-19.md)
   for the next planning session. → relates `dashboard/` · `scripts/export_dashboard_data.py`.
+- [`public-data-contract-field-snapshot-2026-06-19.md`](./public-data-contract-field-snapshot-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the website two-site-split foundation build #1109):** S1
+  guards the public `site.json` subset at the **top-level key** boundary (fail-closed whitelist); the
+  uncovered leak class is a new *field* inside an allowed family (`commands`/`catalogue`). A tiny stdlib
+  snapshot test pins the **exact leaf field set per public family** so any new field trips a conscious
+  "is this public?" review — extending redaction-by-construction from keys to leaves. Quick-win,
+  disposable (Q-0105). → relates `scripts/export_dashboard_data.py` (`build_site_subset`) ·
+  `scripts/check_dashboard_data.py` · the split plan §2.2/§4.1.
 - [`governance-files-presence-guard-2026-06-19.md`](./governance-files-presence-guard-2026-06-19.md) —
   **session idea (2026-06-19, Q-0089, from the repo governance/supply-chain baseline session):** a tiny
   stdlib `scripts/check_governance_files.py` that asserts the new root governance files (`LICENSE` ·
