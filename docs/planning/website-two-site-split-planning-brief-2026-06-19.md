@@ -4,6 +4,11 @@
 > (planning) session must produce, plus the owner-decided constraints it must honor. Owner-directed
 > 2026-06-19; decisions recorded in router **Q-0178**. Source code + merged PRs win. The next session
 > reads this, then produces the full implementation plan + the ultracode decomposition.
+>
+> **✅ DONE — the planning session ran:** the full implementation plan + file-disjoint ultracode
+> decomposition is
+> [`website-two-site-split-plan-2026-06-19.md`](website-two-site-split-plan-2026-06-19.md). **Next = an
+> ultracode build run** on that plan's §5 units (serial foundation first, then the parallel back half).
 
 ## Vision
 
