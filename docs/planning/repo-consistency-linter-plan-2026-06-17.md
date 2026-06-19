@@ -149,10 +149,21 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    place" inconsistency, tracked by [`ideas/ai-panel-inplace-navigation-2026-06-11.md`](../ideas/ai-panel-inplace-navigation-2026-06-11.md);
    the rule stays warn-only until that redesign ships (allowlisting them would mute the very bug the
    rule exists to catch). So `edit_in_place` 45 → 17, the 17 being exactly the actionable AI-nav
-   backlog. **▶ Next consistency-linter slice:** triage `back_button` (7 — mostly top-of-stack
-   hub-opener FPs to allowlist) toward 0; then graduation prep for rules 1/3/4 (flip to error + wire
-   into `code-quality.yml` once each stays clean across a couple more sessions — note rule 1 cannot
-   graduate until the AI-nav redesign clears its 17).
+   backlog.
+   **Rule 2 (`back_button`) triaged to 0 — SHIPPED (#1059, 2026-06-19):** traced each of the 7 flagged
+   `HubView`s to its construction site — **all 7 are top-of-stack ROOT panels** opened directly by a cog
+   command (no parent to return to): `AccessExplorerView`, `_ChannelManagerView` (the channels-stack root
+   its sub-panels restore *to*), `CleanupPolicyPanelView`, `AutomationPanelView` (the `!platform automation`
+   root, not a child of the platform/diagnostics hub), `_DiagnosticsHubView`, `DeathmatchPanelView`,
+   `_XpHubView`. Allowlisted all 7 with per-class reasons + a re-verify note (a future root opened *from*
+   another panel needs a back button, not an allowlist entry). No genuine missing-back bug exists now; the
+   rule still catches a future *child* sub-panel without a back affordance. `back_button` warn-only **7 → 0**.
+   **▶ Next consistency-linter slice:** three rules (`back_button`, `panel_base_class`,
+   `select_option_truncation`) are now at 0 on a clean tree — graduation prep (flip to error + wire into
+   `code-quality.yml`) once each stays clean across a couple more sessions. **Rule 1 (`edit_in_place`)
+   cannot graduate** until the AI-nav redesign clears its remaining 17 — promote
+   [`ideas/ai-panel-inplace-navigation-2026-06-11.md`](../ideas/ai-panel-inplace-navigation-2026-06-11.md)
+   to a `docs/planning/` plan (Q-0172) to unblock it.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.
