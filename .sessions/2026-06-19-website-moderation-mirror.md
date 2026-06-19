@@ -8,7 +8,7 @@ merged foundation (`dashboard/submissions_db.py`, #1109). End-to-end: code + tes
 verification, on the owner-gated dev-site side of the split. Web tier never imports
 `disbot/`.
 
-## Shipped (PR #1114)
+## Shipped (PR #1118)
 
 - **P6 — `dashboard/github_mirror.py`** (+ `tests/unit/dashboard/test_github_mirror.py`,
   12 tests): a single least-privilege, idempotent GitHub-issue-create client. Given an
@@ -125,7 +125,7 @@ honesty the plan applies to the bot site, applied to the audit doc itself.
 ## 📤 Run report
 
 - **Did:** Built website-split units P5 (dev-site submission moderation UI) + P6 (GitHub-issue mirror), end-to-end with tests + verification. · **Outcome:** shipped
-- **Shipped:** #1114 — P5 `/admin/moderation` (owner-gated approve/reject) + `moderation.html`; P6 `dashboard/github_mirror.py` (least-privilege, idempotent, mocked); 27 new tests; all checks green.
+- **Shipped:** #1118 — P5 `/admin/moderation` (owner-gated approve/reject) + `moderation.html`; P6 `dashboard/github_mirror.py` (least-privilege, idempotent, mocked); 27 new tests; all checks green.
 - **Run type:** `manual` (ultracode dispatch of P5+P6)
 - **⚑ Owner decisions needed:** none
 - **⚑ Owner manual steps:** provision the dashboard-owned Postgres + apply `botsite/migrations/001_submissions.sql`; set `SUBMISSIONS_DB_DSN` (full role, dev site); mint the repo-scoped Issues:R&W PAT as `GITHUB_ISSUE_MIRROR_TOKEN` (dev site only); confirm `BOT_OWNER_USER_ID` — then a live submit→approve→issue round-trip is the only unverified half (env names in `docs/operations/env-vars.md`).
