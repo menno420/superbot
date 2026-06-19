@@ -459,6 +459,21 @@ def test_build_site_subset_raises_if_a_disallowed_key_is_added(mod):
         mod.SITE_TOPLEVEL_KEYS = original  # type: ignore[misc]
 
 
+# Command fields derived from docs/ideas/ + the bug book — both churn far more
+# often than site.json is regenerated, so they are excluded from the *hard*
+# equality below (their structural identity is covered warn-only by
+# check_generated_artifacts_fresh.py instead — BUG-0018 root-fix, recommendation (a)).
+_VOLATILE_COMMAND_FIELDS = ("linked_ideas", "status")
+
+
+def _stable_commands(commands: list[dict]) -> list[dict]:
+    """A command list with the high-churn idea/bug-derived fields stripped."""
+    return [
+        {k: v for k, v in cmd.items() if k not in _VOLATILE_COMMAND_FIELDS}
+        for cmd in commands
+    ]
+
+
 def test_committed_site_json_matches_a_fresh_build(mod):
     # The committed botsite/data/site.json must be regenerable-identical (modulo
     # the volatile meta) to a fresh subset — the freshness guarantee S1 registers.
@@ -467,8 +482,14 @@ def test_committed_site_json_matches_a_fresh_build(mod):
     committed = json.loads(mod.SITE_OUTPUT_FILE.read_text(encoding="utf-8"))
     fresh = mod.build_site_subset(mod.build_data())
     # Compare the stable families; meta carries the volatile build SHA/timestamp.
-    for family in ("counts", "catalogue", "commands", "bot_changelog"):
+    for family in ("counts", "catalogue", "bot_changelog"):
         assert committed[family] == fresh[family], f"{family} drifted — re-export"
+    # commands: pin only the stable fields. linked_ideas/status are idea-derived
+    # (BUG-0018) — re-exporting on every idea-doc PR is the trap this avoids; the
+    # freshness umbrella covers their identity warn-only.
+    assert _stable_commands(committed["commands"]) == _stable_commands(
+        fresh["commands"]
+    ), "commands drifted (stable fields) — re-export"
 
 
 def test_cli_targets_site_writes_only_site_json(mod, tmp_path):
