@@ -18,6 +18,28 @@ public bot-site ships the marketing/bot surface, the two sites overlap — so th
 and let the public site own "here's the bot." The status donut is the first concrete beat of that
 refocus.
 
+## Owner refinements (follow-up, 2026-06-19)
+1. **Three levels — project + subsystem _now_, per-cog later.** The graphs should exist for the
+   **whole project**, **per subsystem**, and eventually **per cog**; project + subsystem is v1. **All
+   three are already derivable** — `export_dashboard_data.py` already computes per-subsystem open work
+   (`_subsystem_open_work`) and a per-command maturity `status` — so this is *one data source at three
+   roll-up levels*, not three systems.
+2. **Link the EXISTING completion marker — confirmed it exists (don't reinvent).** The repo already
+   carries an honest maturity signal: a command/subsystem is `in-progress` **iff it has a linked OPEN
+   idea or OPEN bug**, else `finished` (`export_dashboard_data.py` § "maturity badge",
+   `_OPEN_IDEA_STATUSES` + open-bug statuses). The donut **links this** — exactly the owner's "this is
+   just linking an existing feature."
+3. **…and it dodges the staleness the owner flagged.** Owner's point: *"completion markers are exactly
+   what sessions forget to update."* The win — this marker is **derived at export time** from linked
+   open ideas/bugs, so **nothing is hand-maintained** and it can't rot like a manual "% done" stamp.
+   **Design rule for this feature:** use the **derived** signals (badge counts + subsystem open-work);
+   **never** the hand-typed roadmap "Now/Next" stamps (which *do* go stale — `current-state.md` even
+   warns about its own stale stamps).
+4. **Interaction — tap/hover enlarges + animates the selected segment.** Inline-SVG donut with pure-CSS
+   `:hover` segment-grow (desktop) + a small **inlined** progressive-enhancement `<script>` for tap
+   (touch) and the enlarge animation — consistent with the no-`static/`-dir rule (JS lives inline in
+   the template, exactly like the bot site).
+
 ## Why it's a strong fit — the data already exists, and the *badge is the status field*
 The donut's segments map directly onto the **doc-badge lifecycle** the grooming discipline already
 maintains (`docs/ideas/README.md` §5): an item is badged `ideas` → re-badged `plan` when structured →
@@ -61,8 +83,8 @@ badge counts). Owner confirms (b) vs (a) vs (c).
 
 ## Open questions for the owner
 1. The completion definition above — **(a) / (b) / (c)**.
-2. **Whole-project rollup, or per-sector small-multiples?** (S1–S5 — the sector map already exists; a
-   row of small donuts per sector is richer.)
+2. ~~Whole-project vs per-sector?~~ **Resolved (owner 2026-06-19): project + per-subsystem now,
+   per-cog later** — all three roll up from the same derived source (see Owner refinements §1).
 3. **Dev-site refocus scope** — full re-theme of `dashboard/` (nav + landing → "projects"), or add the
    status section first and evolve? (Refines the website-two-site-split plan §2 / §7.4.)
 
