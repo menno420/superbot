@@ -120,6 +120,10 @@ class DiagnosticsPanel(BaseView):
         embed.add_field(name="Role Automation", value=ra_value, inline=False)
         return embed
 
+    async def _rerender(self) -> None:
+        if self.message:
+            await self.message.edit(embed=await self.build_embed(), view=self)
+
     @discord.ui.button(
         label="🔄 Refresh Members",
         style=discord.ButtonStyle.blurple,
@@ -133,6 +137,9 @@ class DiagnosticsPanel(BaseView):
         if not await safe_defer(interaction, ephemeral=True):
             return
         await interaction.guild.chunk()
+        # Re-render the panel in place so the refreshed "Members Cached" count is
+        # visible, then confirm out-of-band (the edit-in-place house pattern).
+        await self._rerender()
         await interaction.followup.send("✅ Member list refreshed.", ephemeral=True)
 
     @discord.ui.button(label="▶️ Run Assignment", style=discord.ButtonStyle.grey, row=0)

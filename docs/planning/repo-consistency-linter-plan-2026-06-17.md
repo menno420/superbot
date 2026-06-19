@@ -132,6 +132,27 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    `edit_in_place` (45) / `back_button` (7) warn-only backlogs. *Genuine* `panel_base_class` migrations
    only arise if a NEW direct subclass lands outside the exempted paths (the conformance ratchet
    catches that); the existing set is all documented exceptions, so do not force a low-value migration.
+   **Rule 1 (`edit_in_place`) triaged to the real backlog — SHIPPED (#1058, 2026-06-19):** the
+   untriaged 45 candidates were split. **Checker improvement (Q-0120):** `_edits_in_place` now also
+   treats a callback that calls a **same-class in-place helper** (`self._rerender()` →
+   `self.message.edit(...)`, the codebase's house re-render idiom) as editing in place — removing the
+   false-positive class that flagged callbacks which *do* re-render but via a helper, not a direct
+   `.edit` in the body (`_inplace_helper_names` + `_calls_inplace_helper`; cleared `time_roles.reset_btn`
+   et al.). **One real fix:** `roles/diagnostics_panel.DiagnosticsPanel.refresh_btn` chunked the member
+   cache but only toasted, leaving the panel's "Members Cached" field stale — now re-renders in place
+   via a new `_rerender` helper. **Allowlisted 26 genuinely-correct new-message callbacks** with
+   per-callback reasons (sub-flow pickers that re-render the parent on completion · shared multiplayer
+   lobby/match messages where editing the public message is wrong · the persistent `SetupLauncherView`'s
+   8 admin-private ephemeral sub-flows · terminal/advisory report toasts · in-place-via-module-helper
+   with an ephemeral fallback). **The 17 remaining `views/ai/` findings are deliberately NOT
+   allowlisted** — they are the owner's documented "AI panels stack ephemerals instead of updating in
+   place" inconsistency, tracked by [`ideas/ai-panel-inplace-navigation-2026-06-11.md`](../ideas/ai-panel-inplace-navigation-2026-06-11.md);
+   the rule stays warn-only until that redesign ships (allowlisting them would mute the very bug the
+   rule exists to catch). So `edit_in_place` 45 → 17, the 17 being exactly the actionable AI-nav
+   backlog. **▶ Next consistency-linter slice:** triage `back_button` (7 — mostly top-of-stack
+   hub-opener FPs to allowlist) toward 0; then graduation prep for rules 1/3/4 (flip to error + wire
+   into `code-quality.yml` once each stays clean across a couple more sessions — note rule 1 cannot
+   graduate until the AI-nav redesign clears its 17).
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.
