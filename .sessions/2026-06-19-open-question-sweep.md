@@ -93,14 +93,18 @@ answer back into the router (faithful preservation — the answers' durable home
 - **Discovered by hand:** Q-0121 and Q-0147 read as "open" in `current-state` prose but are both
   DECIDED in the router — current-state references them as *gate provenance*, not open items.
 
-## 💡 Session idea (Q-0089)
+## 💡 Session idea (Q-0089) — BUILT this session
 
-**`scripts/check_open_questions.py`** — a stdlib, read-only router scanner that prints every
-genuinely-open question: Q-blocks whose `Status:` is `Open`/`Awaiting`, **plus** DIRECTED blocks
-carrying a `Still open` / `Open (owner deciding …)` sub-list. Output feeds exactly this kind of
-"ask me the open questions" session and the dashboard owner-review inbox (Q-0169), so the open
-set is never reconstructed by hand again. Disposable (Q-0105). Dedup-checked `docs/ideas/` —
-closest is the owner-review-inbox plan, which this would *feed*, not duplicate.
+The idea: surface every genuinely-open question in one command — including the **sub-part** opens
+parked inside otherwise-decided blocks (the Q-0173/Q-0175 case a `Status:` grep misses). I proposed
+a new `scripts/check_open_questions.py`, but the **do-not-duplicate gate (Q-0170) redirected it**:
+`scripts/router_status.py` already digests the router (next-number + leading-marker OPEN/DECIDED).
+Its real gap was *exactly* the sub-part case — it reads each block's **leading** marker only. So
+rather than clone it, I **extended `router_status.py`** with a conservative open-sub-part detector
+(a new `PARTIAL` bucket + `--subparts`), root-fixing the gap in the existing tool instead of adding
+a second one. Verified live: it reports the now-resolved Q-0173/Q-0175 as clean and immediately
+surfaced the one remaining genuine open block (**Q-0137**, Hermes-dispatch wiring). Tests cover
+open / resolved / struck / prose-mention + a live-file invariant. Disposable (Q-0105).
 
 ## ⟲ Previous-session review (Q-0102)
 
@@ -115,20 +119,24 @@ the owner?" is answerable without a manual router crawl.
 ## 📤 Run report
 
 - **Did:** asked the router's open questions via 3 recommendation-bearing panels + new website-wave
-  questions, and recorded every answer into the router · **Outcome:** shipped
-- **Shipped:** no PR yet — router-recording change pushed to `claude/charming-hypatia-a5qhku`;
-  owner to confirm opening the session PR
+  questions, recorded every answer into the router, then built the open-sub-part detector into
+  `router_status.py` (the Q-0089 idea) · **Outcome:** shipped
+- **Shipped:** no PR yet — pushed to `claude/charming-hypatia-a5qhku`: the router/plan recordings
+  (`08ea68a`, `7e44778`, `e5c30f7`) + the `router_status.py` open-sub-part detector + tests; owner
+  to confirm opening the session PR
 - **Run type:** `manual`
 - **⚑ Owner decisions needed:** `none` — every open question + sub-part is now resolved (panel or
-  single-clean-option record). Only the owner's own explicit deferrals remain parked: Q-0175 boat
-  travel (Phase 2), Q-0177 #3 pointer README ("optional, not now"), and the *later* depth-gated
-  encounters session (owner wants it, just not in grid PR 3)
+  single-clean-option record). The tool confirms only **Q-0137** (Hermes-dispatch wiring, "PARTLY
+  DECIDED") remains genuinely open — a design conversation, not a panel question. Owner's own
+  explicit deferrals also stay parked: Q-0175 boat travel (Phase 2), Q-0177 #3 pointer README, the
+  *later* depth-gated encounters session
 - **⚑ Owner manual steps:** none
-- **⚑ Self-initiated:** none (owner-directed Q-collection; recording the answers is faithful
-  preservation, not an unprompted build)
-- **↪ Next:** build the now-unblocked lanes in their own sessions — fishing-plan update
-  (skill+rod · sell+cook economy reconnect · instant-roll v1) · BTD6 boot auto-seed · pip-tools
-  dashboard lockfile · website additive wave (cmd-ref + `/submit` + seeded changelog)
+- **⚑ Self-initiated:** `router_status.py` open-sub-part detector — the Q-0089 idea promoted to a
+  build (owner authorized open-ended "work on something of your choice"; flagged here for
+  transparency per Q-0172). Read-only/stdlib/disposable; no runtime/`disbot/` code
+- **↪ Next:** build the now-unblocked lanes in their own sessions — BTD6 boot auto-seed (contained,
+  one file) · pip-tools dashboard lockfile · website additive wave (cmd-ref + `/submit` + seeded
+  changelog) · fishing-plan update (skill+rod · sell+cook economy reconnect · instant-roll v1)
 
 ## 📊 Telemetry
 
