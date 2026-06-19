@@ -270,7 +270,9 @@ def _subsystem_tags(text: str) -> list[str] | None:
         match = _SUBSYSTEM_TAG_RE.search(line)
         if not match:
             continue
-        keys = [k.strip() for k in match.group(1).strip().lower().split(",") if k.strip()]
+        keys = [
+            k.strip() for k in match.group(1).strip().lower().split(",") if k.strip()
+        ]
         # [] when only the none/- sentinel was given ("tagged, links to nothing").
         return [k for k in keys if k not in _SUBSYSTEM_TAG_NONE]
     return None

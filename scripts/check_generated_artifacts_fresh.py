@@ -222,7 +222,8 @@ def drift_env_vars_doc() -> list[Drift]:
     mod = _load_module("env", REPO_ROOT / "scripts" / "scan_env_usage.py")
     committed_path = REPO_ROOT / "docs" / "operations" / "env-vars.md"
     committed_head = committed_path.read_text(encoding="utf-8").split(
-        mod.END_MARKER, 1
+        mod.END_MARKER,
+        1,
     )[0]
     fresh_doc = mod.render_doc(mod.scan_env_usage())
     return _set_drift(

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T15:31:30Z",
+    "generated_at": "2026-06-19T15:41:43Z",
     "build": {
-      "commit": "e83c38b",
-      "subject": "fix(botsite): strip C1 control chars in submission sanitiser",
-      "committed_at": "2026-06-19T15:21:58Z",
+      "commit": "0194ec1",
+      "subject": "docs: ultracode website-split review-and-refactor report",
+      "committed_at": "2026-06-19T15:38:16Z",
       "branch": "claude/cool-feynman-cvqrbj"
     }
   },

@@ -23,7 +23,6 @@ pytest.importorskip("httpx")  # Starlette's TestClient transport
 
 from fastapi.testclient import TestClient  # noqa: E402
 from markupsafe import escape as _md_escape  # noqa: E402  - Jinja2's autoescaper
-
 from tests.support.web_app_loader import load_web_app  # noqa: E402
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
