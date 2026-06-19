@@ -6,7 +6,7 @@ uvicorn[standard]>=0.27,<1.0
 jinja2>=3.1,<4.0
 # httpx: the Discord OAuth token/identity calls + the bot control-API client, and
 # the test suite's Starlette TestClient transport.
-httpx>=0.27,<1.0
+httpx>=0.28.1,<1.0
 # NOTE: the OAuth login session is a small stdlib HMAC-signed cookie
 # (dashboard/websession.py) and the editor forms are parsed with urllib
 # (dashboard/app.py::_form) — deliberately NO itsdangerous / python-multipart, so
