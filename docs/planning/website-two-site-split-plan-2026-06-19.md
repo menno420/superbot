@@ -107,6 +107,37 @@ not *whether a change is user-relevant* — every `.sessions/` log is dev/repo c
 
 ---
 
+## Site identity & experience — the owner's vision (2026-06-19, binding brief)
+
+> Owner-directed; this is the **binding product brief** for the bot site's pages — the fan-out (S1.1, P2,
+> P3, …) builds to it. The tone/branding *wording* is the owner's to refine; the **positioning + behaviour
+> below are the build spec.**
+
+**Positioning — all-in-one, stated boldly.** SuperBot's pitch is that it *replaces the stack*: the goal is
+that **every function any Discord bot offers is present here, and better.** The hero one-liner is the
+owner's: **"Add SuperBot and you can remove every other bot from your server."**
+
+**Feel.** Fun **but** professional. Simple, self-explanatory, **easily browsable** — a visitor finds what
+they need in seconds, never hunts. Clear explanations over cleverness.
+
+**Interactive command reference (the core UX ask).** Every command on `/commands` (and surfaced through
+`/features`) is **clickable → a detail view**, not a static table row. The detail shows:
+- what it does + **use-cases**, its **aliases**, cooldown, required **permissions**, examples;
+- **notes/comments** left on it (ours or the community's);
+- a **status badge — `finished` vs `in-progress`** — so users instantly see how mature a feature is;
+- **linked ideas/plans** for that command/cog — so "what's coming" is discoverable right where the command
+  lives.
+
+**Discoverability through the repo's own data.** Same source-of-truth principle the whole split rests on:
+the site doesn't invent a parallel catalogue — it **projects the repo's real commands ↔ aliases ↔ ideas ↔
+status, linked by cog/command**, into a safe, user-facing, *navigable* shape. An idea that matches a
+subsystem surfaces on that subsystem's commands; an open idea/bug on a command flips its status to
+`in-progress`. Users browse the bot the way we see it — minus anything dev-internal or unsafe (the
+redaction lens still applies, §4; the data-contract extension that feeds this is unit **S1.1** in §5).
+
+**Proof, honestly.** Lead with real breadth — the honest catalogue counts (N commands · M features ·
+K games), never fabricated server/user totals (§3).
+
 ## 2. Architecture  *(deliverable 2)*
 
 ### 2.1 Topology — 2 Railway services (Q-0178)
@@ -390,7 +421,12 @@ against a **test DB** (S2's schema on a throwaway/test Postgres or SQLite) and a
 exactly the `importorskip`/mock pattern the existing `dashboard/` suite uses. No unit needs the real
 Railway service, the real Postgres, or any token; the owner provisions those at **rollout** (§6).
 
-### Serial foundation (must land first, in order — everything downstream depends on it)
+> **▶ Status (2026-06-19): the serial foundation S1 + S2 + P1 is MERGED (#1109).** The remaining work is
+> the back half — now **reshaped by the Site identity & experience brief above**: a new unit **S1.1**
+> enriches the per-command data the interactive browser needs, and **P2** becomes that browser (not a
+> static table). The rest (P3–P8) is unchanged. New dependency: **S1.1 → P2**.
+
+### Serial foundation (✅ MERGED #1109) — original spec retained for reference
 
 - **S1 — the data producer, end to end (sole owner of `export_dashboard_data.py`).**
   Files: `scripts/export_dashboard_data.py` (the `site.json` subset emitter + `--targets` **+ the
@@ -422,9 +458,29 @@ Railway service, the real Postgres, or any token; the owner provisions those at 
 
 ### Parallel back half (truly file-disjoint — fan out once S1 + S2 + P1 land)
 
-- **P2 — reference-page templates.** Exclusive: `botsite/templates/commands.html`,
-  `botsite/templates/features.html`. Read-only command reference + feature showcase from `site.json`,
-  rendered by P1's already-wired routes. Templates only — no `app.py`.
+- **S1.1 — enrich the public command data (extends the merged S1 producer + whitelist; P2 depends on it).**
+  Exclusive: `scripts/export_dashboard_data.py` (the `build_site_subset` command projection),
+  `scripts/check_dashboard_data.py` (extend `check_site_subset`'s per-command whitelist — still
+  **fail-closed**), `botsite/data/site.json` (regenerate), `tests/unit/scripts/` (extend). Adds, **per
+  command, only safe/curated fields** — never fabricated, redaction lens still applies:
+  - `description` / `use_cases` / `examples` — from the help catalogue + command docstrings (already
+    scanned); emit `null`, not invented prose, where absent.
+  - `status` — **`finished` | `in-progress`**, an honest maturity signal. *Recommended derivation:* a
+    command is `in-progress` if its cog/subsystem has a **linked open idea or open bug**, else `finished`;
+    a curated override can come later. *(Source = open decision — recommend this; flag for owner.)*
+  - `linked_ideas` — ideas mapped to the command's **cog/subsystem** (the subsystem registry already maps
+    cog→subsystem), surfaced as user-facing "what's planned" teasers — **title + status only, never raw
+    internal idea text** (redaction). *(Linking method = open decision — recommend explicit subsystem tag,
+    heuristic name-match as fallback.)*
+  - `notes` — curated per-command notes (ours/community). *(Source = open decision — recommend v1 reuse the
+    help-overlay re-describe text; a dedicated community-notes source is a fast-follow, not invented.)*
+- **P2 — interactive command + feature browser (the owner-vision core; depends on S1.1).** Exclusive:
+  `botsite/templates/commands.html`, `botsite/templates/features.html`, `botsite/templates/_command_detail.html`
+  (the detail partial). Renders the **enriched** `site.json` as **clickable command cards → a detail view**
+  (use-cases · aliases · permissions · examples · **notes** · **status badge** · **linked ideas**), with
+  fast client-side search/filter so nothing takes long to find; progressive-enhancement JS inline (honor
+  the no-`static/` gotcha). `/features` groups the same data by category — the all-in-one showcase. Reads
+  `site.json`; rendered by P1's already-wired routes; **no `app.py` edit.**
 - **P3 — changelog + status templates.** Exclusive: `botsite/templates/changelog.html`,
   `botsite/templates/status.html` + the "generated vs live" freshness badges. Reads `site.json.bot_changelog`
   + `meta.build` (both produced by S1). Templates only — no `app.py`, no producer edit.
@@ -446,10 +502,11 @@ Railway service, the real Postgres, or any token; the owner provisions those at 
   the submissions DSN, optional captcha keys), `dashboard/README.md` (moderation note). *(P1 owns
   `botsite/README.md`; P8 does not touch it.)*
 
-**Dependency graph:** serial `S1 → {S2, P1}` (S2 and P1 are file-disjoint, so they run together after S1);
-then the parallel back half `{P2, P3, P4, P5, P6, P7, P8}`. Edges within it: P4 fills P1's `submit.py` stub
-and uses S2's INSERT helper (so P4 lands after P1+S2); P5 uses S2's read helper + P6 (P6 is stub-buildable
-in isolation first). No two back-half units share a file.
+**Dependency graph (updated 2026-06-19):** the foundation `S1 → {S2, P1}` is **merged (#1109)**. Remaining:
+`S1.1 → P2` (the browser needs the enriched data) runs as its own short serial pair; `{P3, P4, P6, P7, P8}`
+fan out fully in parallel alongside it; P4 fills P1's `submit.py` stub + uses S2's INSERT helper, P5 uses
+S2's read helper + P6 (P6 stub-buildable first). S1.1 is the only producer-touching unit, so it never
+collides with the template/module units. No two concurrently-running units share a file.
 
 ---
 
@@ -581,6 +638,8 @@ architecture sections deliberately left open; the build run may refine them.
 - [`dashboard-live-editor-plan.md`](dashboard-live-editor-plan.md) — owner-auth + control-API write design.
 - [`dashboard-vision-finalized-state.md`](dashboard-vision-finalized-state.md) — the four-zone north star
   this split realises (Public → bot site; Personal/Server/Owner → dev site).
+- [`web-tier-centralization-proposal-2026-06-19.md`](web-tier-centralization-proposal-2026-06-19.md) — the
+  `web-ci.yml` matrix (dashboard + botsite) + PR-machinery de-duplication (owner centralization mandate).
 - `dashboard/` (the decoupled service), `scripts/export_dashboard_data.py` (the single data producer),
   `disbot/control_api.py` (the private, owner-paced live source), `.github/ISSUE_TEMPLATE/` (the mirror
   shapes, #1064), `docs/operations/env-vars.md` (the env-name surface).
