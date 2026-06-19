@@ -69,11 +69,32 @@ SITE_TOPLEVEL_KEYS: frozenset[str] = frozenset(
     {"meta", "counts", "catalogue", "commands", "bot_changelog"},
 )
 # Per-command fields the public ``commands`` reference exposes (no per-guild value
-# ever appears — these are repo-level command metadata). ``usage`` is the one-line
-# description (the AST scanner's ``brief``); ``category`` + ``permissions`` are
-# joined from the command's subsystem catalogue entry; ``cooldown`` is reserved
-# (the AST scanner does not statically resolve runtime cooldown decorators today,
-# so it is emitted as ``null`` rather than fabricated — see :func:`build_site_subset`).
+# ever appears — these are repo-level command metadata). The interactive command
+# browser (plan unit S1.1 / P2) renders these in a clickable detail view:
+#
+# * ``usage`` — the one-line description (the AST scanner's ``brief``).
+# * ``description`` — the command's full first docstring *paragraph* (richer than the
+#   one-line ``usage``), Sphinx noise stripped; ``null`` when the command has no
+#   docstring. Never invented prose.
+# * ``use_cases`` — reserved/``null``: there is no reliable *structured* per-command
+#   use-case source in the repo today, so it is emitted as ``null`` rather than
+#   fabricated (a curated source is a fast-follow — plan S1.1).
+# * ``examples`` — real ``!command …`` invocation snippets lifted verbatim from the
+#   docstring (backtick-wrapped); ``[]`` when none. Genuinely user-safe + real.
+# * ``status`` — ``finished`` | ``in-progress`` (an honest maturity signal): the
+#   command is ``in-progress`` iff its cog/subsystem has a linked OPEN idea or OPEN
+#   bug, else ``finished`` (the recommended default — plan S1.1).
+# * ``linked_ideas`` — ideas mapped to the command's cog/subsystem, **title + status
+#   only** (redaction — never the raw internal idea text). Surfaced as user-facing
+#   "what's planned" teasers. ``[]`` when none.
+# * ``notes`` — curated per-command note. The plan's v1 candidate (the help-overlay
+#   re-describe text) is **per-guild DB data** — unavailable statically AND unsafe to
+#   surface publicly — so v1 emits ``null`` (no curated *static* source exists yet; a
+#   dedicated community-notes source is a fast-follow, never invented).
+#
+# ``category`` + ``permissions`` are joined from the command's subsystem catalogue
+# entry; ``cooldown`` is reserved (the AST scanner does not statically resolve runtime
+# cooldown decorators today, so it is emitted as ``null`` rather than fabricated).
 SITE_COMMAND_FIELDS: tuple[str, ...] = (
     "name",
     "aliases",
@@ -81,7 +102,37 @@ SITE_COMMAND_FIELDS: tuple[str, ...] = (
     "cooldown",
     "permissions",
     "usage",
+    "description",
+    "use_cases",
+    "examples",
+    "status",
+    "linked_ideas",
+    "notes",
 )
+
+# A command's maturity badge (plan S1.1). ``finished`` is the recommended default;
+# ``in-progress`` is set only when the owning subsystem has linked open work.
+COMMAND_STATUS_FINISHED = "finished"
+COMMAND_STATUS_IN_PROGRESS = "in-progress"
+
+# Idea statuses that count as "open / planned" for the in-progress signal + the
+# linked-ideas teasers. Lower-cased ``parse_ideas`` status badges: a captured idea is
+# ``ideas`` (the default); ``historical`` / ``reference`` are archived/closed and must
+# NOT mark a command in-progress or surface as a "what's planned" teaser.
+_OPEN_IDEA_STATUSES: frozenset[str] = frozenset({"ideas", "planned", "in-progress"})
+# Bug statuses (upper-cased) that count as "open" for the in-progress signal. A bug
+# that is FIXED / RESOLVED / CLOSED no longer makes its subsystem in-progress.
+_OPEN_BUG_STATUSES: frozenset[str] = frozenset(
+    {"OPEN", "PARTIALLY FIXED", "IN PROGRESS"},
+)
+
+# Docstring example extraction: a backtick-wrapped ``!command …`` invocation. The
+# bot's prefix is ``!`` (see disbot); only backtick-delimited snippets are taken so a
+# stray ``!`` in prose is never mistaken for an example.
+_DOC_EXAMPLE_RE = re.compile(r"`+\s*(![A-Za-z][\w-]*(?:[^`\n]*?))\s*`+")
+# Sphinx/Python cross-reference noise to strip from a public ``description``
+# (``:class:`X``` / ``:meth:`Y``` / ``:func:`Z```), leaving the human label.
+_SPHINX_ROLE_RE = re.compile(r":[a-z]+:`~?([^`]+)`")
 
 
 def _load_scan_env_usage() -> Callable[..., list[dict]]:
@@ -690,56 +741,274 @@ def _site_catalogue(catalogue: list[dict]) -> list[dict]:
     return out
 
 
-def _site_commands(cogs: list[dict], catalogue: list[dict]) -> list[dict]:
+def _command_description(doc: str) -> str | None:
+    """The command's full first docstring *paragraph*, or ``None`` if no docstring.
+
+    Richer than the one-line ``brief``/``usage``: collects the leading run of
+    non-blank lines (stopping at the first blank line), strips Sphinx cross-reference
+    roles (``:class:`X``` → ``X``) and markdown noise, and collapses whitespace. A
+    docstring-less command returns ``None`` (never invented prose — plan S1.1).
+    """
+    if not doc:
+        return None
+    lines = doc.splitlines()
+    index = 0
+    while index < len(lines) and not lines[index].strip():
+        index += 1
+    paragraph: list[str] = []
+    while index < len(lines) and lines[index].strip():
+        paragraph.append(lines[index].strip())
+        index += 1
+    if not paragraph:
+        return None
+    text = _SPHINX_ROLE_RE.sub(r"\1", " ".join(paragraph))
+    cleaned = _strip_md(text)
+    return cleaned or None
+
+
+def _command_examples(doc: str) -> list[str]:
+    """Real ``!command …`` invocation snippets lifted verbatim from the docstring.
+
+    Only backtick-wrapped invocations are taken (a bare ``!`` in prose is never an
+    example), de-duplicated in first-seen order, whitespace-collapsed, and length-
+    capped. ``[]`` when the docstring has none — never fabricated.
+    """
+    out: list[str] = []
+    for match in _DOC_EXAMPLE_RE.finditer(doc or ""):
+        example = " ".join(match.group(1).split())
+        if example and example not in out:
+            out.append(_truncate(example, 120))
+    return out
+
+
+def _command_docstrings(repo_root: Path) -> dict[tuple[str, str], str]:
+    """Map ``(rel_file, command_name)`` -> the command method's full docstring.
+
+    Re-parses the same files :func:`scripts.scan_commands.scan_commands` reads (the
+    cogs tree + ``bot1.py``) so S1.1 can derive the richer ``description`` /
+    ``examples`` fields **without editing the scanner** (its exclusive owner is the
+    merged S1 unit). The command *name* uses the same resolution the scanner does —
+    the decorator's ``name=`` kwarg when present, else the method name — so the join
+    in :func:`_site_commands` lines up with the scanner's ``name`` field. A file that
+    fails to parse is skipped (mirrors the scanner's tolerance).
+    """
+    cogs_dir = repo_root / "disbot" / "cogs"
+    files = sorted(cogs_dir.rglob("*.py")) if cogs_dir.is_dir() else []
+    bot1 = repo_root / "disbot" / "bot1.py"
+    if bot1.exists():
+        files.append(bot1)
+    out: dict[tuple[str, str], str] = {}
+    for path in files:
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
+            continue
+        rel = str(path.relative_to(repo_root))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+                continue
+            call = _command_decorator_call(node)
+            if call is _NOT_A_COMMAND:
+                continue
+            name = call  # the resolved command name (str)
+            doc = ast.get_docstring(node) or ""
+            # First writer wins for a duplicated (file, name) — deterministic with the
+            # sorted walk; the docstring map is best-effort enrichment either way.
+            out.setdefault((rel, name), doc)
+    return out
+
+
+# Sentinel: the function carries no command/group decorator (distinct from a command
+# whose resolved name is the falsy-but-valid method name).
+_NOT_A_COMMAND = object()
+
+
+def _command_decorator_call(node: ast.FunctionDef | ast.AsyncFunctionDef) -> object:
+    """Resolve a command method's *name* from its decorator, or ``_NOT_A_COMMAND``.
+
+    Recognises the same decorator vocabulary as the scanner (``commands.command`` /
+    ``group`` / ``hybrid_*`` / ``app_commands.*`` and ``<group>.command`` /
+    ``.group`` subcommand leaves). Returns the ``name=`` kwarg when the decorator
+    sets one, else the method name — matching ``scan_commands`` so the docstring map
+    keys join cleanly to the scanned command records.
+    """
+    command_leaves = {"command", "group", "hybrid_command", "hybrid_group"}
+    for dec in node.decorator_list:
+        target = dec.func if isinstance(dec, ast.Call) else dec
+        leaf: str | None = None
+        if isinstance(target, ast.Attribute):
+            leaf = target.attr
+        elif isinstance(target, ast.Name):
+            leaf = target.id
+        if leaf not in command_leaves:
+            continue
+        if isinstance(dec, ast.Call):
+            for kw in dec.keywords:
+                if kw.arg == "name":
+                    try:
+                        value = ast.literal_eval(kw.value)
+                    except (ValueError, TypeError, SyntaxError):
+                        value = None
+                    if isinstance(value, str):
+                        return value
+        return node.name
+    return _NOT_A_COMMAND
+
+
+def _subsystem_open_work(
+    ideas: list[dict],
+    bugs: list[dict],
+    catalogue: list[dict],
+) -> dict[str, dict]:
+    """Map each subsystem key -> its linked open ideas + whether it has open work.
+
+    The linking is the plan's **heuristic name-match fallback** (no explicit
+    subsystem tag exists on idea/bug records yet), tuned to keep false positives low:
+    a subsystem matches an idea when every token of its key (``rps_tournament`` ->
+    ``rps`` + ``tournament``) appears as a whole token in the idea's **filename
+    slug** — the curated, topical part — rather than the free-text title (which drags
+    in generic-word false matches). Bugs match on their (short, topical) title.
+    Returns, per subsystem key::
+
+        {"in_progress": bool, "ideas": [{"title", "status"}, ...]}
+
+    ``in_progress`` is True iff the subsystem has at least one OPEN idea or OPEN bug.
+    ``ideas`` carries only **open** ideas as **title + status** (redaction — never the
+    raw idea body). Subsystems with no linked open work are absent from the map (the
+    caller defaults them to ``finished`` / ``[]``).
+
+    Caveat (honest): a single-word subsystem key that is also a common slug word can
+    still cross-match an unrelated idea (e.g. ``chain`` ~ an agent "self-chaining"
+    workflow idea). It is a best-effort "what's planned" teaser, not an authoritative
+    link; the durable fix is an explicit subsystem tag on idea front-matter (a
+    fast-follow). Surfacing title+status only keeps even a stray match safe.
+    """
+
+    def _tokens(text: str) -> set[str]:
+        return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+    keys = [e.get("key") for e in catalogue if isinstance(e.get("key"), str)]
+    open_ideas = [
+        i for i in ideas if (i.get("status") or "").lower() in _OPEN_IDEA_STATUSES
+    ]
+    open_bugs = [
+        b for b in bugs if (b.get("status") or "").upper() in _OPEN_BUG_STATUSES
+    ]
+
+    result: dict[str, dict] = {}
+    for key in keys:
+        key_parts = key.split("_")
+        linked_ideas: list[dict] = []
+        for idea in open_ideas:
+            slug = _tokens(idea.get("file", ""))
+            if all(part in slug for part in key_parts):
+                linked_ideas.append(
+                    {
+                        "title": idea.get("title") or "",
+                        "status": idea.get("status") or "",
+                    },
+                )
+        has_open_bug = any(
+            all(part in _tokens(bug.get("title", "")) for part in key_parts)
+            for bug in open_bugs
+        )
+        if linked_ideas or has_open_bug:
+            result[key] = {
+                "in_progress": True,
+                "ideas": linked_ideas,
+            }
+    return result
+
+
+def _site_commands(
+    cogs: list[dict],
+    catalogue: list[dict],
+    *,
+    docstrings: dict[tuple[str, str], str] | None = None,
+    subsystem_work: dict[str, dict] | None = None,
+) -> list[dict]:
     """Build the public command reference (no per-guild value, ever).
 
-    Each command exposes exactly :data:`SITE_COMMAND_FIELDS`. ``category`` and
-    ``permissions`` are joined from the command's owning subsystem catalogue entry
-    (``category`` = the subsystem category; ``permissions`` = its declared
-    ``visibility_tier`` — the honest static "who can see this" signal, NOT a
-    per-guild grant). ``usage`` is the command's one-line description (the AST
-    scanner's ``brief``). ``cooldown`` is reserved/``None`` — runtime cooldown
-    decorators are not statically resolved by the scanner today, so it is left
-    unset rather than fabricated. Subcommands are skipped (the reference lists
-    top-level commands; a later page can expand groups).
+    Each command exposes exactly :data:`SITE_COMMAND_FIELDS` — repo-level metadata
+    only. ``category`` and ``permissions`` are joined from the command's owning
+    subsystem catalogue entry (``category`` = the subsystem category; ``permissions``
+    = its declared ``visibility_tier`` — the honest static "who can see this" signal,
+    NOT a per-guild grant). ``usage`` is the one-line ``brief``; ``description`` /
+    ``examples`` come from the command's full docstring (``docstrings`` map, keyed by
+    ``(file, name)``); ``status`` / ``linked_ideas`` come from the subsystem's open
+    work (``subsystem_work`` map). ``use_cases`` / ``notes`` / ``cooldown`` are
+    reserved ``None`` (no honest static source — never fabricated). Subcommands are
+    listed too (they are real commands; the browser can group by name).
     """
+    docstrings = docstrings or {}
+    subsystem_work = subsystem_work or {}
     sysmap = {c.get("key"): c for c in catalogue}
     out: list[dict] = []
     for cog in cogs:
         subsystem = cog.get("subsystem") or ""
         sys_entry = sysmap.get(subsystem, {})
+        cog_file = cog.get("file") or ""
+        work = subsystem_work.get(subsystem, {})
         for cmd in cog.get("commands", []):
+            name = cmd.get("name")
+            doc = docstrings.get((cog_file, name), "")
             out.append(
                 {
-                    "name": cmd.get("name"),
+                    "name": name,
                     "aliases": list(cmd.get("aliases") or []),
                     "category": sys_entry.get("category") or "other",
                     "cooldown": None,
                     "permissions": sys_entry.get("visibility_tier") or "",
                     "usage": cmd.get("brief") or "",
+                    "description": _command_description(doc),
+                    "use_cases": None,
+                    "examples": _command_examples(doc),
+                    "status": (
+                        COMMAND_STATUS_IN_PROGRESS
+                        if work.get("in_progress")
+                        else COMMAND_STATUS_FINISHED
+                    ),
+                    "linked_ideas": list(work.get("ideas") or []),
+                    "notes": None,
                 },
             )
     out.sort(key=lambda c: ((c.get("category") or ""), (c.get("name") or "")))
     return out
 
 
-def build_site_subset(data: dict) -> dict:
+def build_site_subset(data: dict, *, repo_root: Path = REPO_ROOT) -> dict:
     """Derive the public ``site.json`` subset from the full dashboard payload.
 
     Returns a dict whose top-level keys are **exactly** :data:`SITE_TOPLEVEL_KEYS`
     — redaction by construction (plan §2.2). It carries only user-safe families:
     a slim ``meta`` (build provenance only), public catalogue ``counts``
     (commands/features/games — never server/user totals), a metadata-only
-    ``catalogue``, a value-free ``commands`` reference, and the curated
-    ``bot_changelog``. Everything dev-only (``env_usage`` / ``settings`` /
-    ``access`` / ``reviews`` / ``ideas`` / raw ``bugs`` / ``cogs``) is dropped.
+    ``catalogue``, a value-free ``commands`` reference (enriched per S1.1 with
+    description/examples/status/linked-ideas for the interactive browser, all
+    repo-level metadata only), and the curated ``bot_changelog``. Everything
+    dev-only (``env_usage`` / ``settings`` / ``access`` / ``reviews`` / ``ideas`` /
+    raw ``bugs`` / ``cogs``) is dropped.
+
+    ``repo_root`` is used only to re-read command docstrings for the S1.1
+    enrichment (the scanner, S1's exclusive file, doesn't expose full docstrings);
+    it degrades gracefully (no docstrings → ``description``/``examples`` empty) so a
+    payload built elsewhere still produces a valid subset.
     """
     meta = data.get("meta", {})
     catalogue = data.get("catalogue", [])
     cogs = data.get("cogs", [])
+    ideas = data.get("ideas", [])
+    bugs = data.get("bugs", [])
 
     site_catalogue = _site_catalogue(catalogue)
-    site_commands = _site_commands(cogs, catalogue)
+    docstrings = _command_docstrings(repo_root)
+    subsystem_work = _subsystem_open_work(ideas, bugs, catalogue)
+    site_commands = _site_commands(
+        cogs,
+        catalogue,
+        docstrings=docstrings,
+        subsystem_work=subsystem_work,
+    )
     games = sum(1 for e in site_catalogue if e.get("is_game"))
 
     subset = {

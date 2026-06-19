@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T14:06:01Z",
+    "generated_at": "2026-06-19T14:27:26Z",
     "build": {
-      "commit": "72047ab4",
-      "subject": "Merge pull request #1110 from menno420/claude/website-identity-and-ops-prep",
-      "committed_at": "2026-06-19T16:02:28Z",
-      "branch": "claude/jolly-johnson-8vfdl2"
+      "commit": "03317c9",
+      "subject": "Close-out: flip session card to complete + Q-0089 idea + enders",
+      "committed_at": "2026-06-19T14:26:41Z",
+      "branch": "claude/website-command-browser"
     }
   },
   "counts": {
@@ -620,7 +620,20 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the read-only access-policy explorer."
+      "usage": "Open the read-only access-policy explorer.",
+      "description": "Open AccessExplorerView for the invoker.",
+      "use_cases": null,
+      "examples": [
+        "!settings"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "admin",
@@ -628,7 +641,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the Admin control panel (administrator only)."
+      "usage": "Open the Admin control panel (administrator only).",
+      "description": "Slash front door for the Admin hub — ephemeral, admin-only.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "adminmenu",
@@ -636,7 +655,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the interactive admin control panel."
+      "usage": "Open the interactive admin control panel.",
+      "description": "Open the interactive admin control panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "ai",
@@ -644,7 +669,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the AI Platform panel."
+      "usage": "Open the AI Platform panel.",
+      "description": "Open the AI Platform panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "aimenu",
@@ -652,7 +696,28 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the AI Platform panel (alias for ``!ai``)."
+      "usage": "Open the AI Platform panel (alias for ``!ai``).",
+      "description": "Open the AI Platform panel (alias for !ai).",
+      "use_cases": null,
+      "examples": [
+        "!ai"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "aimenu",
@@ -660,7 +725,28 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the AI Platform panel (administrator only)."
+      "usage": "Open the AI Platform panel (administrator only).",
+      "description": "Open the AI Platform panel (alias for !ai).",
+      "use_cases": null,
+      "examples": [
+        "!ai"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "check_database",
@@ -670,7 +756,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Verify that all expected PostgreSQL tables exist."
+      "usage": "Verify that all expected PostgreSQL tables exist.",
+      "description": "Verify that all expected PostgreSQL tables exist.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "cog",
@@ -678,7 +770,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Load, unload, or reload a cog by name (underscores and _cog suffix optional)."
+      "usage": "Load, unload, or reload a cog by name (underscores and _cog suffix optional).",
+      "description": "Load, unload, or reload a cog by name (underscores and _cog suffix optional).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "coglist",
@@ -690,7 +788,15 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the interactive cog manager — the panel's 📋 Cog List button."
+      "usage": "Open the interactive cog manager — the panel's 📋 Cog List button.",
+      "description": "Open the interactive cog manager — the panel's 📋 Cog List button.",
+      "use_cases": null,
+      "examples": [
+        "!cog"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "create",
@@ -698,7 +804,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Preview + create a new log channel for any registered route."
+      "usage": "Preview + create a new log channel for any registered route.",
+      "description": "Preview + create a new log channel for any registered route.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "diagnostic_bot_status",
@@ -708,7 +820,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Display bot health and performance metrics."
+      "usage": "Display bot health and performance metrics.",
+      "description": "Display bot health and performance metrics.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "diagnostics",
@@ -716,7 +834,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "diagnostics",
@@ -726,7 +863,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the interactive diagnostics hub panel."
+      "usage": "Open the interactive diagnostics hub panel.",
+      "description": "Open the interactive diagnostics hub panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "find_command",
@@ -736,7 +879,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Search for commands by keyword in their name or description."
+      "usage": "Search for commands by keyword in their name or description.",
+      "description": "Search for commands by keyword in their name or description.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "forget",
@@ -744,7 +893,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Flush the chat-memory cache for THIS channel."
+      "usage": "Flush the chat-memory cache for THIS channel.",
+      "description": "Flush the chat-memory cache for THIS channel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "latency",
@@ -754,7 +922,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Report the bot's WebSocket latency."
+      "usage": "Report the bot's WebSocket latency.",
+      "description": "Report the bot's WebSocket latency.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "lifecycle",
@@ -764,7 +938,17 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Lifecycle state (phase, pending request, recent events)."
+      "usage": "Lifecycle state (phase, pending request, recent events).",
+      "description": "Lifecycle state (phase, pending request, recent events).",
+      "use_cases": null,
+      "examples": [
+        "!platform lifecycle",
+        "!diag",
+        "!diagnostics"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "list_commands_detailed",
@@ -774,7 +958,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "List all registered commands with details, paginated by cog."
+      "usage": "List all registered commands with details, paginated by cog.",
+      "description": "List all registered commands with details, paginated by cog.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "loadall",
@@ -782,7 +972,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Load all unloaded cogs, skipping already-loaded ones."
+      "usage": "Load all unloaded cogs, skipping already-loaded ones.",
+      "description": "Load all unloaded cogs, skipping already-loaded ones.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "logging",
@@ -790,7 +986,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the logging admin panel (S7d)."
+      "usage": "Open the logging admin panel (S7d).",
+      "description": "Open the logging admin panel (S7d).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "loglevel",
@@ -798,7 +1000,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)."
+      "usage": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
+      "description": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "platform",
@@ -806,7 +1014,15 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the Platform / Diagnostics hub (administrator only)."
+      "usage": "Open the Platform / Diagnostics hub (administrator only).",
+      "description": "Slash front door for the Platform hub — ephemeral, admin-only.",
+      "use_cases": null,
+      "examples": [
+        "!platform"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "policy",
@@ -814,7 +1030,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Show the effective AI policy for a channel (dry-run resolver)."
+      "usage": "Show the effective AI policy for a channel (dry-run resolver).",
+      "description": "Show the effective AI policy for a channel (dry-run resolver).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "providers",
@@ -822,7 +1057,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "query_logs",
@@ -832,7 +1086,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Query recent logs from the logs table. !query_logs [INFO|ERROR|...] [limit]"
+      "usage": "Query recent logs from the logs table. !query_logs [INFO|ERROR|...] [limit]",
+      "description": "Query recent logs from the logs table.  !query_logs [INFO|ERROR|...] [limit]",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "readiness",
@@ -840,7 +1100,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Run the full AI readiness chain check."
+      "usage": "Run the full AI readiness chain check.",
+      "description": "Run the full AI readiness chain check.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "recent_errors",
@@ -850,7 +1129,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Retrieve the most recent ERROR-level log entries."
+      "usage": "Retrieve the most recent ERROR-level log entries.",
+      "description": "Retrieve the most recent ERROR-level log entries.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "restart",
@@ -858,7 +1143,15 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Request a graceful restart through the lifecycle service."
+      "usage": "Request a graceful restart through the lifecycle service.",
+      "description": "Request a graceful restart through the lifecycle service.",
+      "use_cases": null,
+      "examples": [
+        "!restart"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "routes",
@@ -866,7 +1159,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the Phase 9b Routes subpage directly."
+      "usage": "Open the Phase 9b Routes subpage directly.",
+      "description": "Open the Phase 9b Routes subpage directly.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "routing",
@@ -874,7 +1173,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "server-management",
@@ -882,7 +1200,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the Server Management hub (moderation, channels, roles, cleanup, setup)."
+      "usage": "Open the Server Management hub (moderation, channels, roles, cleanup, setup).",
+      "description": "Ephemeral slash front door for the Server Management hub.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "servermanagement",
@@ -893,7 +1217,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the unified Server Management hub."
+      "usage": "Open the unified Server Management hub.",
+      "description": "Open the unified Server Management hub.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "serverstats",
@@ -901,7 +1231,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Display server statistics."
+      "usage": "Display server statistics.",
+      "description": "Display server statistics.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "set",
@@ -909,7 +1245,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the channel-select view for ``mod`` or ``cleanup`` binding."
+      "usage": "Open the channel-select view for ``mod`` or ``cleanup`` binding.",
+      "description": "Open the channel-select view for mod or cleanup binding.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "settings",
@@ -917,7 +1259,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the AI Platform settings panel directly."
+      "usage": "Open the AI Platform settings panel directly.",
+      "description": "Open the AI Platform settings panel directly.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "settings",
@@ -925,7 +1286,21 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the Settings Manager hub (browse + edit/reset scalars)."
+      "usage": "Open the Settings Manager hub (browse + edit/reset scalars).",
+      "description": "Entry-point command for the Settings Manager subsystem.",
+      "use_cases": null,
+      "examples": [
+        "!settings access",
+        "!settings"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "settings",
@@ -933,7 +1308,21 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the Settings Manager hub (administrator only)."
+      "usage": "Open the Settings Manager hub (administrator only).",
+      "description": "Entry-point command for the Settings Manager subsystem.",
+      "use_cases": null,
+      "examples": [
+        "!settings access",
+        "!settings"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "slashes",
@@ -943,7 +1332,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "List currently-registered slash commands (admin only)."
+      "usage": "List currently-registered slash commands (admin only).",
+      "description": "List currently-registered slash commands (admin only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "status",
@@ -951,7 +1346,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "status",
@@ -959,7 +1373,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Show this guild's server-logging configuration + counters."
+      "usage": "Show this guild's server-logging configuration + counters.",
+      "description": "Show this guild's server-logging configuration + counters.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "support-report",
@@ -967,7 +1387,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Render a copy-pasteable support report from recent audit (PR-H)."
+      "usage": "Render a copy-pasteable support report from recent audit (PR-H).",
+      "description": "Render a copy-pasteable support report from recent audit (PR-H).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "syncslash",
@@ -977,7 +1416,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Sync the app-command tree for slash commands (owner only)."
+      "usage": "Sync the app-command tree for slash commands (owner only).",
+      "description": "Sync the app-command tree for slash commands (owner only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "system_info",
@@ -987,7 +1432,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Display system-level stats."
+      "usage": "Display system-level stats.",
+      "description": "Display system-level stats.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "test",
@@ -995,7 +1446,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Send a synthetic warn embed to the configured log channel."
+      "usage": "Send a synthetic warn embed to the configured log channel.",
+      "description": "Send a synthetic warn embed to the configured log channel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "test_notification",
@@ -1005,7 +1462,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Send a test notification via the webhook reporter."
+      "usage": "Send a test notification via the webhook reporter.",
+      "description": "Send a test notification via the webhook reporter.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "unloadall",
@@ -1013,7 +1476,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Unload all loaded cogs except this one."
+      "usage": "Unload all loaded cogs except this one.",
+      "description": "Unload all loaded cogs except this one.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "uxlab",
@@ -1023,7 +1492,18 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the UX Lab — the interface gallery + limit probe bench."
+      "usage": "Open the UX Lab — the interface gallery + limit probe bench.",
+      "description": "Open the UX Lab — the interface gallery + limit probe bench.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "UX Lab / Interface Gallery — a living Discord-UX sandbox cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "uxlab",
@@ -1031,7 +1511,18 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the UX Lab — browse interface patterns (admin)."
+      "usage": "Open the UX Lab — browse interface patterns (admin).",
+      "description": "Open the UX Lab — the interface gallery + limit probe bench.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "UX Lab / Interface Gallery — a living Discord-UX sandbox cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "validate_json_files",
@@ -1041,7 +1532,13 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Validate the structure of all JSON files in the data directory."
+      "usage": "Validate the structure of all JSON files in the data directory.",
+      "description": "Validate the structure of all JSON files in the data directory.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "why-no-response",
@@ -1049,7 +1546,26 @@
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Show the most recent denials / skips for this guild."
+      "usage": "Show the most recent denials / skips for this guild.",
+      "description": "Show the most recent denials / skips for this guild.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+          "status": "ideas"
+        },
+        {
+          "title": "AI Extra Tool Capability Ideas Backlog",
+          "status": "ideas"
+        },
+        {
+          "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "community",
@@ -1057,7 +1573,22 @@
       "category": "community",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the Community hub — XP, Roles, and community activities."
+      "usage": "Open the Community hub — XP, Roles, and community activities.",
+      "description": "Open the Community hub — XP, Roles, and community activities.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Safety & Community — one operator landing",
+          "status": "ideas"
+        },
+        {
+          "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "community",
@@ -1065,7 +1596,22 @@
       "category": "community",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the Community hub (XP, Roles, and community games)."
+      "usage": "Open the Community hub (XP, Roles, and community games).",
+      "description": "Open the Community hub — XP, Roles, and community activities.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Safety & Community — one operator landing",
+          "status": "ideas"
+        },
+        {
+          "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "counters",
@@ -1073,7 +1619,13 @@
       "category": "community",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Show the current server-counter channels for this server."
+      "usage": "Show the current server-counter channels for this server.",
+      "description": "Render the effective counter policy (admin/manage-guild only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "spotlight",
@@ -1083,7 +1635,13 @@
       "category": "community",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show the Community Spotlight — live XP, coins, games, and level-ups."
+      "usage": "Show the Community Spotlight — live XP, coins, games, and level-ups.",
+      "description": "Show the Community Spotlight — live XP, coins, games, and level-ups.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "welcome",
@@ -1091,7 +1649,13 @@
       "category": "community",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Show the current welcome (greeting) policy for this server."
+      "usage": "Show the current welcome (greeting) policy for this server.",
+      "description": "Render the effective welcome policy (admin/manage-guild only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "ascend",
@@ -1099,7 +1663,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Climb one mining band back toward the surface."
+      "usage": "Climb one mining band back toward the surface.",
+      "description": "Climb one mining band back toward the surface.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "balance",
@@ -1110,7 +1685,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show your (or another user's) current coin balance."
+      "usage": "Show your (or another user's) current coin balance.",
+      "description": "Show your (or another user's) current coin balance.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "build",
@@ -1120,7 +1701,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Build / craft an item from recipes (one shared, atomic implementation)."
+      "usage": "Build / craft an item from recipes (one shared, atomic implementation).",
+      "description": "Build / craft an item from recipes (one shared, atomic implementation).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "buildable",
@@ -1128,7 +1720,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Lists only what the user can currently build based on their inventory."
+      "usage": "Lists only what the user can currently build based on their inventory.",
+      "description": "Lists only what the user can currently build based on their inventory.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "buildlist",
@@ -1136,7 +1739,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Shows all craftable structures from recipes.json."
+      "usage": "Shows all craftable structures from recipes.json.",
+      "description": "Shows all craftable structures from recipes.json.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "buy",
@@ -1144,7 +1758,20 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Buy gear with coins (e.g. `!buy iron sword`)."
+      "usage": "Buy gear with coins (e.g. `!buy iron sword`).",
+      "description": "Buy gear with coins (e.g. !buy iron sword).",
+      "use_cases": null,
+      "examples": [
+        "!buy iron sword"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "character",
@@ -1155,7 +1782,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show your full mining character — location, gear, stats, wealth."
+      "usage": "Show your full mining character — location, gear, stats, wealth.",
+      "description": "Show your full mining character — location, gear, stats, wealth.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "chop",
@@ -1163,7 +1801,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Chop wood. If you have an 'axe', you'll collect double."
+      "usage": "Chop wood. If you have an 'axe', you'll collect double.",
+      "description": "Chop wood. If you have an 'axe', you'll collect double.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "daily",
@@ -1171,7 +1820,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Claim your daily reward. Higher streaks unlock better odds!"
+      "usage": "Claim your daily reward. Higher streaks unlock better odds!",
+      "description": "Claim your daily reward. Higher streaks unlock better odds!",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "descend",
@@ -1179,7 +1834,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Descend one mining band deeper (gated by your equipped light)."
+      "usage": "Descend one mining band deeper (gated by your equipped light).",
+      "description": "Descend one mining band deeper (gated by your equipped light).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "economy",
@@ -1187,7 +1853,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the Economy hub (daily, work, shop, balance)."
+      "usage": "Open the Economy hub (daily, work, shop, balance).",
+      "description": "Slash front door for the Economy hub — ephemeral.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "economymenu",
@@ -1195,7 +1867,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the interactive economy control panel."
+      "usage": "Open the interactive economy control panel.",
+      "description": "Open the interactive economy control panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "equip",
@@ -1203,7 +1881,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Equip a tool, light, or charm so its stats apply to your character."
+      "usage": "Equip a tool, light, or charm so its stats apply to your character.",
+      "description": "Equip a tool, light, or charm so its stats apply to your character.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "explore",
@@ -1211,7 +1900,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Discover random events or items (driven by your gear and depth)."
+      "usage": "Discover random events or items (driven by your gear and depth).",
+      "description": "Discover random events or items (driven by your gear and depth).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "fastmine",
@@ -1219,7 +1919,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "One quick mining swing — no buttons (the old !fastmine, reborn)."
+      "usage": "One quick mining swing — no buttons (the old !fastmine, reborn).",
+      "description": "One quick mining swing — no buttons (the old !fastmine, reborn).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "forge",
@@ -1227,7 +1938,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the Forge — build it to unlock higher-tier gear crafting."
+      "usage": "Open the Forge — build it to unlock higher-tier gear crafting.",
+      "description": "Open the Forge — build it to unlock higher-tier gear crafting.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "gear",
@@ -1235,7 +1957,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show your equipped gear, its condition, and the stats it grants."
+      "usage": "Show your equipped gear, its condition, and the stats it grants.",
+      "description": "Show your equipped gear, its condition, and the stats it grants.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "give",
@@ -1243,7 +1976,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Admin-only: give resources to a user."
+      "usage": "Admin-only: give resources to a user.",
+      "description": "Admin-only: give resources to a user.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "home",
@@ -1251,7 +1995,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the Home — build it to personalize your Character card."
+      "usage": "Open the Home — build it to personalize your Character card.",
+      "description": "Open the Home — build it to personalize your Character card.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "inventory",
@@ -1261,7 +2016,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show your (or another user's) unified inventory hub."
+      "usage": "Show your (or another user's) unified inventory hub.",
+      "description": "Show your (or another user's) unified inventory hub.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "joblist",
@@ -1271,7 +2032,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show all jobs, requirements, and your mastery for each."
+      "usage": "Show all jobs, requirements, and your mastery for each.",
+      "description": "Show all jobs, requirements, and your mastery for each.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "market",
@@ -1279,7 +2046,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show the mining market — sellable resources + the gear shop."
+      "usage": "Show the mining market — sellable resources + the gear shop.",
+      "description": "Show the mining market — sellable resources + the gear shop.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "mine",
@@ -1287,7 +2065,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Start mining with interactive buttons."
+      "usage": "Start mining with interactive buttons.",
+      "description": "Start mining with interactive buttons.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "mineinv",
@@ -1297,7 +2086,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show your unified inventory (compatibility alias for !inventory)."
+      "usage": "Show your unified inventory (compatibility alias for !inventory).",
+      "description": "Show your unified inventory (compatibility alias for !inventory).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "minemenu",
@@ -1305,7 +2105,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the mining hub panel."
+      "usage": "Open the mining hub panel.",
+      "description": "Open the mining hub panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "minestats",
@@ -1313,7 +2124,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Shows your total mining items and number of unique items."
+      "usage": "Shows your total mining items and number of unique items.",
+      "description": "Shows your total mining items and number of unique items.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "quickcraft",
@@ -1321,7 +2143,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Re-craft the last gear item that broke and equip it."
+      "usage": "Re-craft the last gear item that broke and equip it.",
+      "description": "Re-craft the last gear item that broke and equip it.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "repair",
@@ -1329,7 +2162,20 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Repair a worn gear item for coins (e.g. `!repair pickaxe`)."
+      "usage": "Repair a worn gear item for coins (e.g. `!repair pickaxe`).",
+      "description": "Repair a worn gear item for coins (e.g. !repair pickaxe).",
+      "use_cases": null,
+      "examples": [
+        "!repair pickaxe"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "reset_inventory",
@@ -1337,7 +2183,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Admin-only: reset a user's inventory in THIS guild (PR M3 — guild-scoped)."
+      "usage": "Admin-only: reset a user's inventory in THIS guild (PR M3 — guild-scoped).",
+      "description": "Admin-only: reset a user's inventory in THIS guild (PR M3 — guild-scoped).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "sell",
@@ -1345,7 +2202,20 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Sell raw resources for coins (e.g. `!sell diamond 5`)."
+      "usage": "Sell raw resources for coins (e.g. `!sell diamond 5`).",
+      "description": "Sell raw resources for coins (e.g. !sell diamond 5).",
+      "use_cases": null,
+      "examples": [
+        "!sell diamond 5"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "sellall",
@@ -1353,7 +2223,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Sell every raw resource in your inventory for coins."
+      "usage": "Sell every raw resource in your inventory for coins.",
+      "description": "Sell every raw resource in your inventory for coins.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "setlogchannel",
@@ -1361,7 +2242,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set the economy log channel. Usage: !setlogchannel #channel"
+      "usage": "Set the economy log channel. Usage: !setlogchannel #channel",
+      "description": "Set the economy log channel. Usage: !setlogchannel #channel",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "shop",
@@ -1369,7 +2256,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Browse and buy items from the shop."
+      "usage": "Browse and buy items from the shop.",
+      "description": "Browse and buy items from the shop.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "skill",
@@ -1377,7 +2270,20 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Spend a skill point into a branch (e.g. `!skill mining`)."
+      "usage": "Spend a skill point into a branch (e.g. `!skill mining`).",
+      "description": "Spend a skill point into a branch (e.g. !skill mining).",
+      "use_cases": null,
+      "examples": [
+        "!skill mining"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "skills",
@@ -1385,7 +2291,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open your skill tree — spend points to specialize your character."
+      "usage": "Open your skill tree — spend points to specialize your character.",
+      "description": "Open your skill tree — spend points to specialize your character.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "stash",
@@ -1393,7 +2310,20 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Deposit an item into your vault (e.g. `!stash diamond 5`)."
+      "usage": "Deposit an item into your vault (e.g. `!stash diamond 5`).",
+      "description": "Deposit an item into your vault (e.g. !stash diamond 5).",
+      "use_cases": null,
+      "examples": [
+        "!stash diamond 5"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "titles",
@@ -1401,7 +2331,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open your titles — equip an earned title on your Character card."
+      "usage": "Open your titles — equip an earned title on your Character card.",
+      "description": "Open your titles — equip an earned title on your Character card.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "unequip",
@@ -1409,7 +2350,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Clear an equipment slot (tool, light, charm, or a combat piece)."
+      "usage": "Clear an equipment slot (tool, light, charm, or a combat piece).",
+      "description": "Clear an equipment slot (tool, light, charm, or a combat piece).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "unstash",
@@ -1417,7 +2369,20 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Withdraw an item from your vault (e.g. `!unstash diamond 5`)."
+      "usage": "Withdraw an item from your vault (e.g. `!unstash diamond 5`).",
+      "description": "Withdraw an item from your vault (e.g. !unstash diamond 5).",
+      "use_cases": null,
+      "examples": [
+        "!unstash diamond 5"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "use",
@@ -1425,7 +2390,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Use a special item from your inventory (e.g., torch, dynamite)."
+      "usage": "Use a special item from your inventory (e.g., torch, dynamite).",
+      "description": "Use a special item from your inventory (e.g., torch, dynamite).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "vault",
@@ -1433,7 +2409,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open your vault — a safe stash separate from your mining pack."
+      "usage": "Open your vault — a safe stash separate from your mining pack.",
+      "description": "Open your vault — a safe stash separate from your mining pack.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "vaultupgrade",
@@ -1441,7 +2428,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Buy one vault-capacity tier with coins (e.g. more room to stash)."
+      "usage": "Buy one vault-capacity tier with coins (e.g. more room to stash).",
+      "description": "Buy one vault-capacity tier with coins (e.g. more room to stash).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "work",
@@ -1449,7 +2447,13 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the job selector and earn coins + XP (1 h cooldown)."
+      "usage": "Open the job selector and earn coins + XP (1 h cooldown).",
+      "description": "Open the job selector and earn coins + XP (1 h cooldown).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "workshop",
@@ -1457,7 +2461,18 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the workshop — repair worn gear, craft replacements."
+      "usage": "Open the workshop — repair worn gear, craft replacements.",
+      "description": "Open the workshop — repair worn gear, craft replacements.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "announcechannel",
@@ -1465,7 +2480,24 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set/clear the BTD6 new-version announcement channel (administrator)."
+      "usage": "Set/clear the BTD6 new-version announcement channel (administrator).",
+      "description": "Set/clear the BTD6 new-version announcement channel (administrator).",
+      "use_cases": null,
+      "examples": [
+        "!btd6ops announcechannel #updates"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "ask",
@@ -1473,7 +2505,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Deterministic Q&A. Module 5 adds optional AI augmentation."
+      "usage": "Deterministic Q&A. Module 5 adds optional AI augmentation.",
+      "description": "Deterministic Q&A. Module 5 adds optional AI augmentation.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "bjstart",
@@ -1481,7 +2528,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Manually start a pending Blackjack tournament early."
+      "usage": "Manually start a pending Blackjack tournament early.",
+      "description": "Manually start a pending Blackjack tournament early.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "bjstatus",
@@ -1489,7 +2542,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show the current tournament status."
+      "usage": "Show the current tournament status.",
+      "description": "Show the current tournament status.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "bjtournament",
@@ -1499,7 +2558,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Start a Blackjack tournament. !bjtournament [entry_fee] [rounds] [mins]"
+      "usage": "Start a Blackjack tournament. !bjtournament [entry_fee] [rounds] [mins]",
+      "description": "Start a Blackjack tournament.  !bjtournament [entry_fee] [rounds] [mins]",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "blackjack",
@@ -1509,7 +2574,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Play blackjack. !bj [bet] or !bj @player [bet]"
+      "usage": "Play blackjack. !bj [bet] or !bj @player [bet]",
+      "description": "Play blackjack.  !bj [bet]  or  !bj @player [bet]",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "browse",
@@ -1517,7 +2588,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Browse published BTD6 strategies (PR-F)."
+      "usage": "Browse published BTD6 strategies (PR-F).",
+      "description": "Browse published BTD6 strategies (PR-F).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "btd6",
@@ -1525,7 +2611,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the BTD6 panel."
+      "usage": "Open the BTD6 panel.",
+      "description": "Open the BTD6 panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "btd6events",
@@ -1533,7 +2634,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 live events, leaderboards, and data-source diagnostics."
+      "usage": "BTD6 live events, leaderboards, and data-source diagnostics.",
+      "description": "BTD6 live events, leaderboards, and data-source diagnostics.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "btd6menu",
@@ -1541,7 +2657,24 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the BTD6 panel (alias for ``!btd6``)."
+      "usage": "Open the BTD6 panel (alias for ``!btd6``).",
+      "description": "Open the BTD6 panel (alias for !btd6).",
+      "use_cases": null,
+      "examples": [
+        "!btd6"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "btd6menu",
@@ -1549,7 +2682,24 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the BTD6 panel."
+      "usage": "Open the BTD6 panel.",
+      "description": "Open the BTD6 panel (alias for !btd6).",
+      "use_cases": null,
+      "examples": [
+        "!btd6"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "btd6ops",
@@ -1557,7 +2707,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 ingestion operations (staff readable; toggles are admin)."
+      "usage": "BTD6 ingestion operations (staff readable; toggles are admin).",
+      "description": "BTD6 ingestion operations (staff readable; toggles are admin).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "btd6ref",
@@ -1565,7 +2730,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 reference lookups (towers / heroes / rounds / relics / CT)."
+      "usage": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
+      "description": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "btd6strat",
@@ -1573,7 +2753,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 strategy memory (browse / submit / review)."
+      "usage": "BTD6 strategy memory (browse / submit / review).",
+      "description": "BTD6 strategy memory (browse / submit / review).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "chain",
@@ -1581,7 +2776,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Manage message chains and word limits in your server."
+      "usage": "Manage message chains and word limits in your server.",
+      "description": "Manage message chains and word limits in your server.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "chainmenu",
@@ -1589,7 +2795,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the interactive chain management panel."
+      "usage": "Open the interactive chain management panel.",
+      "description": "Open the interactive chain management panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "count_info",
@@ -1599,7 +2816,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Displays the current count and configuration."
+      "usage": "Displays the current count and configuration.",
+      "description": "Displays the current count and configuration.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "count_rules",
@@ -1609,7 +2832,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Displays the counting game rules."
+      "usage": "Displays the counting game rules.",
+      "description": "Displays the counting game rules.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "countingmenu",
@@ -1619,7 +2848,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the interactive counting game management panel."
+      "usage": "Open the interactive counting game management panel.",
+      "description": "Open the interactive counting game management panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "create",
@@ -1627,7 +2862,20 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Create a chain in a specified channel or the current channel if none is provided."
+      "usage": "Create a chain in a specified channel or the current channel if none is provided.",
+      "description": "Create a chain in a specified channel or the current channel if none is provided.",
+      "use_cases": null,
+      "examples": [
+        "!chain create [channel] <word>"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "ct",
@@ -1635,7 +2883,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Browse active Contested Territory events and their relic tiles."
+      "usage": "Browse active Contested Territory events and their relic tiles.",
+      "description": "Browse active Contested Territory events and their relic tiles.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "ctteam",
@@ -1643,7 +2906,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "View or set this server's CT team (paste the bracket group id / URL)."
+      "usage": "View or set this server's CT team (paste the bracket group id / URL).",
+      "description": "View or set this server's CT team (paste the bracket group id / URL).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "delete",
@@ -1651,7 +2929,20 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Delete a chain from a specified channel or the current channel if none is provided."
+      "usage": "Delete a chain from a specified channel or the current channel if none is provided.",
+      "description": "Delete a chain from a specified channel or the current channel if none is provided.",
+      "use_cases": null,
+      "examples": [
+        "!chain delete [channel]"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "diagnostics",
@@ -1659,7 +2950,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "dm_challenge",
@@ -1671,7 +2977,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Challenge another user to a deathmatch duel."
+      "usage": "Challenge another user to a deathmatch duel.",
+      "description": "Challenge another user to a deathmatch duel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "dm_help",
@@ -1681,7 +2993,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Display help information for Deathmatch commands."
+      "usage": "Display help information for Deathmatch commands.",
+      "description": "Display help information for Deathmatch commands.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "end_match",
@@ -1691,7 +3009,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Ends the counting match in the specified channel and deletes the channel."
+      "usage": "Ends the counting match in the specified channel and deletes the channel.",
+      "description": "Ends the counting match in the specified channel and deletes the channel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "event",
@@ -1699,7 +3023,24 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show one specific BTD6 event with its tower restrictions."
+      "usage": "Show one specific BTD6 event with its tower restrictions.",
+      "description": "Show one specific BTD6 event with its tower restrictions.",
+      "use_cases": null,
+      "examples": [
+        "!btd6events live <kind>"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "fish",
@@ -1707,7 +3048,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Cast a line and catch a fish — level up to unlock bigger fish."
+      "usage": "Cast a line and catch a fish — level up to unlock bigger fish.",
+      "description": "Cast a line and catch a fish — level up to unlock bigger fish.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "fishlog",
@@ -1717,7 +3064,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show your fishing collection — every species you've caught."
+      "usage": "Show your fishing collection — every species you've caught.",
+      "description": "Show your fishing collection — every species you've caught.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "fishtop",
@@ -1727,7 +3080,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show this server's top anglers by total fish caught."
+      "usage": "Show this server's top anglers by total fish caught.",
+      "description": "Show this server's top anglers by total fish caught.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "games",
@@ -1735,7 +3094,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the Games hub — competitive games and channel activities."
+      "usage": "Open the Games hub — competitive games and channel activities.",
+      "description": "Open the Games hub — competitive games and channel activities.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "games",
@@ -1743,7 +3108,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the Games hub (competitive + activities)."
+      "usage": "Open the Games hub (competitive + activities).",
+      "description": "Open the Games hub — competitive games and channel activities.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "grounding",
@@ -1751,7 +3122,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show the grounding facts that fed an AI response (PR-D)."
+      "usage": "Show the grounding facts that fed an AI response (PR-D).",
+      "description": "Show the grounding facts that fed an AI response (PR-D).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "hero",
@@ -1759,7 +3145,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "latest-data",
@@ -1767,7 +3168,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show newest fact envelope per entity_kind (PR-D)."
+      "usage": "Show newest fact envelope per entity_kind (PR-D).",
+      "description": "Show newest fact envelope per entity_kind (PR-D).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "leaderboard",
@@ -1775,7 +3191,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Top-N race or boss leaderboard. No event_id = newest active."
+      "usage": "Top-N race or boss leaderboard. No event_id = newest active.",
+      "description": "Top-N race or boss leaderboard. No event_id = newest active.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "list",
@@ -1783,7 +3214,20 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List all active chains and word limits in the server."
+      "usage": "List all active chains and word limits in the server.",
+      "description": "List all active chains and word limits in the server.",
+      "use_cases": null,
+      "examples": [
+        "!chain list"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "live",
@@ -1791,7 +3235,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show recent live events for ``kind`` (race / boss / ct / odyssey / event)."
+      "usage": "Show recent live events for ``kind`` (race / boss / ct / odyssey / event).",
+      "description": "Show recent live events for kind (race / boss / ct / odyssey / event).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "mine",
@@ -1799,7 +3258,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List my own strategy submissions in this guild (PR-F)."
+      "usage": "List my own strategy submissions in this guild (PR-F).",
+      "description": "List my own strategy submissions in this guild (PR-F).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "pending",
@@ -1807,7 +3281,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List pending strategy submissions with review buttons."
+      "usage": "List pending strategy submissions with review buttons.",
+      "description": "List pending strategy submissions with review buttons.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "readiness",
@@ -1815,7 +3304,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "refresh-source",
@@ -1823,7 +3327,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Manually refresh one Ninja Kiwi source (staff-only)."
+      "usage": "Manually refresh one Ninja Kiwi source (staff-only).",
+      "description": "Manually refresh one Ninja Kiwi source (staff-only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "relic",
@@ -1831,7 +3350,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias)."
+      "usage": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
+      "description": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "removelimit",
@@ -1839,7 +3373,20 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Remove the word limit from a specified channel or the current channel if none is provided."
+      "usage": "Remove the word limit from a specified channel or the current channel if none is provided.",
+      "description": "Remove the word limit from a specified channel or the current channel if none is provided.",
+      "use_cases": null,
+      "examples": [
+        "!chain removelimit [channel]"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "reset_count",
@@ -1849,7 +3396,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Resets the count to the starting value."
+      "usage": "Resets the count to the starting value.",
+      "description": "Resets the count to the starting value.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "round",
@@ -1857,7 +3410,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "rps",
@@ -1865,7 +3433,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Quick RPS. !rps [bet] or !rps @player [bet]"
+      "usage": "Quick RPS. !rps [bet] or !rps @player [bet]",
+      "description": "Quick RPS.  !rps [bet]  or  !rps @player [bet]",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — refactor RPS tournament orchestration out of the cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "rpsbot",
@@ -1873,7 +3452,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Starts matches against the bot. Delegator — see _bot_matches."
+      "usage": "Starts matches against the bot. Delegator — see _bot_matches.",
+      "description": "Starts matches against the bot.  Delegator — see _bot_matches.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — refactor RPS tournament orchestration out of the cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "rpshelp",
@@ -1881,7 +3471,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Displays help information for RPS tournament commands."
+      "usage": "Displays help information for RPS tournament commands.",
+      "description": "Displays help information for RPS tournament commands.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — refactor RPS tournament orchestration out of the cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "rpsmatchup",
@@ -1889,7 +3490,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Manually creates a match between two specific members."
+      "usage": "Manually creates a match between two specific members.",
+      "description": "Manually creates a match between two specific members.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — refactor RPS tournament orchestration out of the cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "rpsregister",
@@ -1899,7 +3511,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Starts the registration period with a reaction role message. !rpsregister [@role] [entry_fee]"
+      "usage": "Starts the registration period with a reaction role message. !rpsregister [@role] [entry_fee]",
+      "description": "Starts the registration period with a reaction role message.  !rpsregister [@role] [entry_fee]",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — refactor RPS tournament orchestration out of the cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "rpssettings",
@@ -1907,7 +3530,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Updates bot settings."
+      "usage": "Updates bot settings.",
+      "description": "Updates bot settings.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — refactor RPS tournament orchestration out of the cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "rpsstart",
@@ -1917,7 +3551,18 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Starts the RPS tournament. Usage: !rps_start [mode] [best_of]"
+      "usage": "Starts the RPS tournament. Usage: !rps_start [mode] [best_of]",
+      "description": "Starts the RPS tournament. Usage: !rps_start [mode] [best_of]",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — refactor RPS tournament orchestration out of the cog",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "runs",
@@ -1925,7 +3570,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "seed-data",
@@ -1933,7 +3593,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Seed the Postgres data store from the bundled files (administrator)."
+      "usage": "Seed the Postgres data store from the bundled files (administrator).",
+      "description": "Seed the Postgres data store from the bundled files (administrator).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "set_skip_numbers",
@@ -1943,7 +3618,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set the skip step N for a 'skip' match (count climbs 1, 1+N, 1+2N, …)."
+      "usage": "Set the skip step N for a 'skip' match (count climbs 1, 1+N, 1+2N, …).",
+      "description": "Set the skip step N for a 'skip' match (count climbs 1, 1+N, 1+2N, …).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setlimit",
@@ -1951,7 +3632,20 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set a word limit in a specified channel or the current channel if none is provided."
+      "usage": "Set a word limit in a specified channel or the current channel if none is provided.",
+      "description": "Set a word limit in a specified channel or the current channel if none is provided.",
+      "use_cases": null,
+      "examples": [
+        "!chain setlimit [channel] <number>"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "source-health",
@@ -1959,7 +3653,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show source registry freshness (PR-D)."
+      "usage": "Show source registry freshness (PR-D).",
+      "description": "Show source registry freshness (PR-D).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "source_disable",
@@ -1967,7 +3676,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "source_enable",
@@ -1975,7 +3699,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "sources",
@@ -1983,7 +3722,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List BTD6 source registry rows."
+      "usage": "List BTD6 source registry rows.",
+      "description": "List BTD6 source registry rows.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "start_match",
@@ -1993,7 +3747,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Starts a new counting match with the specified mode."
+      "usage": "Starts a new counting match with the specified mode.",
+      "description": "Starts a new counting match with the specified mode.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "status",
@@ -2001,7 +3761,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "strategies",
@@ -2009,7 +3784,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List strategy memory entries available in this guild."
+      "usage": "List strategy memory entries available in this guild.",
+      "description": "List strategy memory entries available in this guild.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "strategy",
@@ -2017,7 +3807,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show one strategy in detail (PR-F)."
+      "usage": "Show one strategy in detail (PR-F).",
+      "description": "Show one strategy in detail (PR-F).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "strategy-audit",
@@ -2025,7 +3830,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show the per-strategy audit log (PR-F)."
+      "usage": "Show the per-strategy audit log (PR-F).",
+      "description": "Show the per-strategy audit log (PR-F).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "submit",
@@ -2033,7 +3853,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open a strategy submission modal (slash-only on Discord)."
+      "usage": "Open a strategy submission modal (slash-only on Discord).",
+      "description": "Open a strategy submission modal (slash-only on Discord).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "test-intent",
@@ -2041,7 +3876,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "toggle_reset_on_wrong_count",
@@ -2051,7 +3901,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Toggles the 'reset on wrong count' feature."
+      "usage": "Toggles the 'reset on wrong count' feature.",
+      "description": "Toggles the 'reset on wrong count' feature.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "toggle_turns",
@@ -2061,7 +3917,13 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Toggles the 'taking turns' mode."
+      "usage": "Toggles the 'taking turns' mode.",
+      "description": "Toggles the 'taking turns' mode.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "tower",
@@ -2069,7 +3931,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": ""
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "why-no-response",
@@ -2077,7 +3954,22 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show the most recent BTD6 denials / skips for this guild."
+      "usage": "Show the most recent BTD6 denials / skips for this guild.",
+      "description": "Show the most recent BTD6 denials / skips for this guild.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "assignroles",
@@ -2085,7 +3977,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Manually run time-based role assignment for all members."
+      "usage": "Manually run time-based role assignment for all members.",
+      "description": "Manually run time-based role assignment for all members.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "bulkcreate",
@@ -2093,7 +3991,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Create multiple channels. Usage: !bulkcreate <ch1> [ch2...] [category]"
+      "usage": "Create multiple channels. Usage: !bulkcreate <ch1> [ch2...] [category]",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "bulkdelete",
@@ -2101,7 +4005,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>"
+      "usage": "Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "channelinfo",
@@ -2109,7 +4019,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Channel details. Usage: !channelinfo <name|id>"
+      "usage": "Channel details. Usage: !channelinfo <name|id>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "channelmenu",
@@ -2117,7 +4033,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the interactive channel management panel."
+      "usage": "Open the interactive channel management panel.",
+      "description": "Open the interactive channel management panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "clone",
@@ -2125,7 +4047,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Clone a channel. Usage: !clone <name|id> <new_name>"
+      "usage": "Clone a channel. Usage: !clone <name|id> <new_name>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "create",
@@ -2133,7 +4061,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Create a channel with role access. Usage: !create <name> <@role> <True/False> [category]"
+      "usage": "Create a channel with role access. Usage: !create <name> <@role> <True/False> [category]",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "createrole",
@@ -2141,7 +4075,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Create a role (use !roles → Create instead)."
+      "usage": "Create a role (use !roles → Create instead).",
+      "description": "Create a role (use !roles → Create instead).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "debugroles",
@@ -2149,7 +4089,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Print all role names for verification."
+      "usage": "Print all role names for verification.",
+      "description": "Print all role names for verification.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "del",
@@ -2157,7 +4103,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Delete a specific channel. Usage: !del <name|id>"
+      "usage": "Delete a specific channel. Usage: !del <name|id>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "deleterole",
@@ -2165,7 +4117,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Delete a role by name or mention."
+      "usage": "Delete a role by name or mention.",
+      "description": "Delete a role by name or mention.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "evt",
@@ -2173,7 +4131,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Create or delete an event channel. Usage: !evt <name|id> <create/delete>"
+      "usage": "Create or delete an event channel. Usage: !evt <name|id> <create/delete>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "list",
@@ -2181,7 +4145,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "List all categories and channels, including uncategorized."
+      "usage": "List all categories and channels, including uncategorized.",
+      "description": "PR F: paginated to dodge Discord's 25-field and 6000-char caps.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "listreactroles",
@@ -2189,7 +4159,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "List all active reaction roles in this server."
+      "usage": "List all active reaction roles in this server.",
+      "description": "List all active reaction roles in this server.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "lock",
@@ -2197,7 +4173,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Lock a channel. Usage: !lock <name|id>"
+      "usage": "Lock a channel. Usage: !lock <name|id>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "move",
@@ -2205,7 +4187,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Move a channel to a category. Usage: !move <channel name|id> <category name|id>"
+      "usage": "Move a channel to a category. Usage: !move <channel name|id> <category name|id>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "permissions",
@@ -2213,7 +4201,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Modify channel permissions. Usage: !permissions <name|id> <@role> <allow/deny>"
+      "usage": "Modify channel permissions. Usage: !permissions <name|id> <@role> <allow/deny>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "reactroles",
@@ -2223,7 +4217,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>"
+      "usage": "Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>",
+      "description": "Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "refreshmembers",
@@ -2231,7 +4231,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Force-fetch all members from Discord."
+      "usage": "Force-fetch all members from Discord.",
+      "description": "Force-fetch all members from Discord.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "removereactrole",
@@ -2239,7 +4245,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>"
+      "usage": "Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>",
+      "description": "Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "rename",
@@ -2247,7 +4259,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Rename a channel. Usage: !rename <old name|id> <new_name>"
+      "usage": "Rename a channel. Usage: !rename <old name|id> <new_name>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "rolecreator",
@@ -2255,7 +4273,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the role hub (use !roles instead)."
+      "usage": "Open the role hub (use !roles instead).",
+      "description": "Open the role hub (use !roles instead).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "rolemenu",
@@ -2263,7 +4287,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the role hub (use !roles instead)."
+      "usage": "Open the role hub (use !roles instead).",
+      "description": "Open the role hub (use !roles instead).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "roles",
@@ -2271,7 +4301,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the role management hub."
+      "usage": "Open the role management hub.",
+      "description": "Open the role management hub.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "rolesettings",
@@ -2279,7 +4315,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the role management hub (alias for !roles)."
+      "usage": "Open the role management hub (alias for !roles).",
+      "description": "Open the role management hub (alias for !roles).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "set",
@@ -2287,7 +4329,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Set access for a channel/category. Usage: !set <name|id> <@role> <True/False>"
+      "usage": "Set access for a channel/category. Usage: !set <name|id> <@role> <True/False>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setrole",
@@ -2295,7 +4343,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Add or update a time-based role threshold."
+      "usage": "Add or update a time-based role threshold.",
+      "description": "Add or update a time-based role threshold.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "unlock",
@@ -2303,7 +4357,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Unlock a channel. Usage: !unlock <name|id>"
+      "usage": "Unlock a channel. Usage: !unlock <name|id>",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "unsetrole",
@@ -2311,7 +4371,13 @@
       "category": "management",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Remove a role from time-based assignment."
+      "usage": "Remove a role from time-based assignment.",
+      "description": "Remove a role from time-based assignment.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "+prize",
@@ -2319,7 +4385,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "staff",
-      "usage": "Grant a winner exclusive access to #proof. Usage: +prize @winner"
+      "usage": "Grant a winner exclusive access to #proof. Usage: +prize @winner",
+      "description": "Grant a winner exclusive access to #proof.  Usage: +prize @winner",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "-prize",
@@ -2327,7 +4399,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "staff",
-      "usage": "End the prize session and make #proof read-only again. Usage: -prize"
+      "usage": "End the prize session and make #proof read-only again. Usage: -prize",
+      "description": "End the prize session and make #proof read-only again.  Usage: -prize",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "add",
@@ -2335,7 +4413,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Adds a word to the prohibited words list."
+      "usage": "Adds a word to the prohibited words list.",
+      "description": "Adds a word to the prohibited words list.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "automod",
@@ -2343,7 +4427,18 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Show the current automod policy for this server."
+      "usage": "Show the current automod policy for this server.",
+      "description": "Render the effective automod policy (admin/manage-guild only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Server safety, automod, logging, and image moderation (2026-06-12)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "ban",
@@ -2351,7 +4446,22 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Ban a member from the server."
+      "usage": "Ban a member from the server.",
+      "description": "Ban a member from the server.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "cleanup",
@@ -2359,7 +4469,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the Cleanup hub panel — overview + routing to subviews."
+      "usage": "Open the Cleanup hub panel — overview + routing to subviews.",
+      "description": "Open the Cleanup hub panel — overview + routing to subviews.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "cleanuphistory",
@@ -2367,7 +4483,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Clean matching channel history by keyword, commands, or prohibited words."
+      "usage": "Clean matching channel history by keyword, commands, or prohibited words.",
+      "description": "Clean matching channel history by keyword, commands, or prohibited words.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "clearwarnings",
@@ -2375,7 +4497,22 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Clear all warnings for a member."
+      "usage": "Clear all warnings for a member.",
+      "description": "Clear all warnings for a member.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "imagemod",
@@ -2383,7 +4520,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Show the current image-moderation policy for this server."
+      "usage": "Show the current image-moderation policy for this server.",
+      "description": "Render the effective image-moderation policy (manage-guild only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "kick",
@@ -2391,7 +4534,22 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Kick a member from the server."
+      "usage": "Kick a member from the server.",
+      "description": "Kick a member from the server.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "list",
@@ -2399,7 +4557,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Shows all prohibited words."
+      "usage": "Shows all prohibited words.",
+      "description": "Shows all prohibited words.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "moderation",
@@ -2407,7 +4571,24 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Open the Moderation hub (moderator only)."
+      "usage": "Open the Moderation hub (moderator only).",
+      "description": "Slash front door for the Moderation hub — ephemeral, mod-only.",
+      "use_cases": null,
+      "examples": [
+        "!modmenu"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "modlogs",
@@ -2415,7 +4596,22 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Show moderation log history for a member."
+      "usage": "Show moderation log history for a member.",
+      "description": "Show moderation log history for a member.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "modmenu",
@@ -2423,7 +4619,22 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Show the interactive moderation action panel."
+      "usage": "Show the interactive moderation action panel.",
+      "description": "Show the interactive moderation action panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "prizemenu",
@@ -2431,7 +4642,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "staff",
-      "usage": "Open the interactive prize channel management panel."
+      "usage": "Open the interactive prize channel management panel.",
+      "description": "Open the interactive prize channel management panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "prizestatus",
@@ -2439,7 +4656,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "staff",
-      "usage": "Show current #proof channel permissions."
+      "usage": "Show current #proof channel permissions.",
+      "description": "Show current #proof channel permissions.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "remove",
@@ -2447,7 +4670,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Removes a word from the prohibited words list."
+      "usage": "Removes a word from the prohibited words list.",
+      "description": "Removes a word from the prohibited words list.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "security",
@@ -2455,7 +4684,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Show the current server-security policy (raid + account-age)."
+      "usage": "Show the current server-security policy (raid + account-age).",
+      "description": "Render the effective security policy (admin/manage-guild only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "timedprize",
@@ -2463,7 +4698,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "staff",
-      "usage": "Grant timed access to #proof; auto-unlocks after duration minutes. Usage: timedprize @winner <minutes>"
+      "usage": "Grant timed access to #proof; auto-unlocks after duration minutes. Usage: timedprize @winner <minutes>",
+      "description": "Grant timed access to #proof; auto-unlocks after duration minutes.  Usage: timedprize @winner <minutes>",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "timeout",
@@ -2471,7 +4712,22 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Timeout a member for a given number of minutes."
+      "usage": "Timeout a member for a given number of minutes.",
+      "description": "Timeout a member for a given number of minutes.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "unban",
@@ -2479,7 +4735,22 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Unban a user by their Discord user ID."
+      "usage": "Unban a user by their Discord user ID.",
+      "description": "Unban a user by their Discord user ID.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "warn",
@@ -2487,7 +4758,22 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "moderator",
-      "usage": "Warn a user. Escalates at the configured threshold (default: timeout)."
+      "usage": "Warn a user. Escalates at the configured threshold (default: timeout).",
+      "description": "Warn a user. Escalates at the configured threshold (default: timeout).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — server-owner-configurable moderation/warning DMs",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
     },
     {
       "name": "word",
@@ -2495,7 +4781,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Manage prohibited words. Subcommands: add, remove, list."
+      "usage": "Manage prohibited words. Subcommands: add, remove, list.",
+      "description": "Manage prohibited words. Subcommands: add, remove, list.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "wordmenu",
@@ -2503,7 +4795,13 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Open the interactive prohibited words management panel."
+      "usage": "Open the interactive prohibited words management panel.",
+      "description": "Open the interactive prohibited words management panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "access",
@@ -2513,7 +4811,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Explain which subsystems you can use in a channel/thread (IL-1)."
+      "usage": "Explain which subsystems you can use in a channel/thread (IL-1).",
+      "description": "Explain which subsystems you can use in a channel/thread (IL-1).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "anchors",
@@ -2521,7 +4825,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Show last restoration outcome and active anchor counts per subsystem."
+      "usage": "Show last restoration outcome and active anchor counts per subsystem.",
+      "description": "Show last restoration outcome and active anchor counts per subsystem.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "automation",
@@ -2529,7 +4839,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Open the automation management + diagnostics panel."
+      "usage": "Open the automation management + diagnostics panel.",
+      "description": "Open the automation management + diagnostics panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "backfill",
@@ -2537,7 +4853,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Dry-run (default) or `apply` the legacy-pointer → binding backfill."
+      "usage": "Dry-run (default) or `apply` the legacy-pointer → binding backfill.",
+      "description": "Dry-run (default) or apply the legacy-pointer → binding backfill.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "bindings",
@@ -2545,7 +4867,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Subsystem bindings (Phase 2b) — taxonomy + per-guild histograms."
+      "usage": "Subsystem bindings (Phase 2b) — taxonomy + per-guild histograms.",
+      "description": "Subsystem bindings (Phase 2b) — taxonomy + per-guild histograms.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "bugreport",
@@ -2553,7 +4881,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Report a bug — Hermes dispatches a Claude Code session to fix it automatically."
+      "usage": "Report a bug — Hermes dispatches a Claude Code session to fix it automatically.",
+      "description": "Submit a bug report that fires an autonomous fix session.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "caches",
@@ -2561,7 +4895,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Cache state: F-1 guild_config + governance.cache."
+      "usage": "Cache state: F-1 guild_config + governance.cache.",
+      "description": "Cache state: F-1 guild_config + governance.cache.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "cleanup-preview",
@@ -2572,7 +4912,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Dry-run preview of the cleanup policy resolved for a location (IL-2)."
+      "usage": "Dry-run preview of the cleanup policy resolved for a location (IL-2).",
+      "description": "Dry-run preview of the cleanup policy resolved for a location (IL-2).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "command-access",
@@ -2582,7 +4928,15 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Show the live command-access decision for a channel."
+      "usage": "Show the live command-access decision for a channel.",
+      "description": "Show the live command-access decision for a channel.",
+      "use_cases": null,
+      "examples": [
+        "!bj"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "consistency",
@@ -2590,7 +4944,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Unified platform readiness diagnostic — read-only (Phase 2 PR-10)."
+      "usage": "Unified platform readiness diagnostic — read-only (Phase 2 PR-10).",
+      "description": "Unified platform readiness diagnostic — read-only (Phase 2 PR-10).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "counting-health",
@@ -2600,7 +4960,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Surface counting persistence health from task_outcome_total (IL-3)."
+      "usage": "Surface counting persistence health from task_outcome_total (IL-3).",
+      "description": "Surface counting persistence health from task_outcome_total (IL-3).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "customization",
@@ -2608,7 +4974,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Customization catalogue across subsystems (S2)."
+      "usage": "Customization catalogue across subsystems (S2).",
+      "description": "Customization catalogue across subsystems (S2).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "dispatch",
@@ -2616,7 +4988,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Send a raw Hermes work order to the Claude Code Routine (owner only)."
+      "usage": "Send a raw Hermes work order to the Claude Code Routine (owner only).",
+      "description": "Fire an arbitrary work order at the Claude Code Routine.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "economy",
@@ -2626,7 +5004,15 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Faucet/sink coin-economy view (`!platform economy [days]`): minted"
+      "usage": "Faucet/sink coin-economy view (`!platform economy [days]`): minted",
+      "description": "Faucet/sink coin-economy view (!platform economy [days]): minted vs. drained, net, ratio + verdict, per reason. Window N days or omit for all-time. Read-only, content-free (counts/totals, no per-user data).",
+      "use_cases": null,
+      "examples": [
+        "!platform economy [days]"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "finding",
@@ -2634,7 +5020,15 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Transition a persistent finding: `resolve` / `ignore` / `reopen` <fingerprint>."
+      "usage": "Transition a persistent finding: `resolve` / `ignore` / `reopen` <fingerprint>.",
+      "description": "Transition a persistent finding: resolve / ignore / reopen <fingerprint>.",
+      "use_cases": null,
+      "examples": [
+        "!platform findings"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "findings",
@@ -2642,7 +5036,15 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Persistent operational-health findings (open / resolved / ignored / all)."
+      "usage": "Persistent operational-health findings (open / resolved / ignored / all).",
+      "description": "Persistent operational-health findings (open / resolved / ignored / all).",
+      "use_cases": null,
+      "examples": [
+        "!platform health"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "flag",
@@ -2650,7 +5052,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Open the editable per-guild flag manager (Phase 6.5a)."
+      "usage": "Open the editable per-guild flag manager (Phase 6.5a).",
+      "description": "Open the editable per-guild flag manager (Phase 6.5a).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "flags",
@@ -2658,7 +5066,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Feature flags: declarations + Phase 2d evaluator state per flag."
+      "usage": "Feature flags: declarations + Phase 2d evaluator state per flag.",
+      "description": "Feature flags: declarations + Phase 2d evaluator state per flag.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "force",
@@ -2666,7 +5080,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Overrides channel restrictions and runs a command (admins only)."
+      "usage": "Overrides channel restrictions and runs a command (admins only).",
+      "description": "Overrides channel restrictions and runs a command (admins only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "health",
@@ -2674,7 +5094,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Deterministic operational health snapshot (admin-gated, redacted)."
+      "usage": "Deterministic operational health snapshot (admin-gated, redacted).",
+      "description": "Deterministic operational health snapshot (admin-gated, redacted).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "identity",
@@ -2682,7 +5108,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Run the identity-contract validator and show findings."
+      "usage": "Run the identity-contract validator and show findings.",
+      "description": "Run the identity-contract validator and show findings.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "lifecycle",
@@ -2690,7 +5122,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Lifecycle state: phase, pending request, recent events."
+      "usage": "Lifecycle state: phase, pending request, recent events.",
+      "description": "Lifecycle state: phase, pending request, recent events.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "locks",
@@ -2698,7 +5136,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "scope_locks snapshot; pass a prefix to filter (e.g. `counting`)."
+      "usage": "scope_locks snapshot; pass a prefix to filter (e.g. `counting`).",
+      "description": "scope_locks snapshot; pass a prefix to filter (e.g. counting).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "media",
@@ -2706,7 +5150,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Content-free media (YouTube) diagnostics."
+      "usage": "Content-free media (YouTube) diagnostics.",
+      "description": "Content-free media (YouTube) diagnostics.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "migrations",
@@ -2714,7 +5164,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Platform migration checkpoints (Phase 2 PR-5) — status + summary."
+      "usage": "Platform migration checkpoints (Phase 2 PR-5) — status + summary.",
+      "description": "Platform migration checkpoints (Phase 2 PR-5) — status + summary.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "paragon",
@@ -2722,7 +5178,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Open the BTD6 Paragon degree calculator."
+      "usage": "Open the BTD6 Paragon degree calculator.",
+      "description": "Open the BTD6 Paragon degree calculator.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "participation-schemas",
@@ -2730,7 +5192,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Registered ParticipationSchema instances (Phase 1b)."
+      "usage": "Registered ParticipationSchema instances (Phase 1b).",
+      "description": "Registered ParticipationSchema instances (Phase 1b).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "platform",
@@ -2738,7 +5206,15 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Runtime introspection group."
+      "usage": "Runtime introspection group.",
+      "description": "Runtime introspection group.",
+      "use_cases": null,
+      "examples": [
+        "!platform <subcommand>"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "provisioning",
@@ -2746,7 +5222,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5)."
+      "usage": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5).",
+      "description": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "resource-requirements",
@@ -2754,7 +5236,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Declared ResourceRequirement entries across subsystems (Phase 1c)."
+      "usage": "Declared ResourceRequirement entries across subsystems (Phase 1c).",
+      "description": "Declared ResourceRequirement entries across subsystems (Phase 1c).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "resources",
@@ -2762,7 +5250,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Resource runtime (Phase 2a) — taxonomy + cached status histogram."
+      "usage": "Resource runtime (Phase 2a) — taxonomy + cached status histogram.",
+      "description": "Resource runtime (Phase 2a) — taxonomy + cached status histogram.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "runtime",
@@ -2770,7 +5264,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "High-level runtime snapshot: every registered diagnostic provider."
+      "usage": "High-level runtime snapshot: every registered diagnostic provider.",
+      "description": "High-level runtime snapshot: every registered diagnostic provider.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "schemas",
@@ -2778,7 +5278,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Registered SubsystemSchema instances (Phase 1a)."
+      "usage": "Registered SubsystemSchema instances (Phase 1a).",
+      "description": "Registered SubsystemSchema instances (Phase 1a).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "sessions",
@@ -2786,7 +5292,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Active session counts (DB-backed); optionally filtered by subsystem."
+      "usage": "Active session counts (DB-backed); optionally filtered by subsystem.",
+      "description": "Active session counts (DB-backed); optionally filtered by subsystem.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setting",
@@ -2794,7 +5306,15 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Explain one scalar setting for this guild."
+      "usage": "Explain one scalar setting for this guild.",
+      "description": "Explain one scalar setting for this guild.",
+      "use_cases": null,
+      "examples": [
+        "!platform flag"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "settings-registry",
@@ -2802,7 +5322,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Declared SettingSpec catalogue + this guild's current values (S1)."
+      "usage": "Declared SettingSpec catalogue + this guild's current values (S1).",
+      "description": "Declared SettingSpec catalogue + this guild's current values (S1).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup",
@@ -2810,7 +5336,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Open or resume the linear setup wizard."
+      "usage": "Open or resume the linear setup wizard.",
+      "description": "Open or resume the linear setup wizard.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup",
@@ -2818,7 +5350,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Open the setup wizard (owner, delegated admin, or admin)."
+      "usage": "Open the setup wizard (owner, delegated admin, or admin).",
+      "description": "Open or resume the linear setup wizard.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-delegate",
@@ -2826,7 +5364,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Grant a member delegated setup-admin authority (owner only)."
+      "usage": "Grant a member delegated setup-admin authority (owner only).",
+      "description": "Add member to the guild's delegated_admins set.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-depth",
@@ -2834,7 +5378,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Pick the wizard depth (owner/delegated admin only)."
+      "usage": "Pick the wizard depth (owner/delegated admin only).",
+      "description": "Set the persisted wizard depth without opening the hub.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-hub",
@@ -2842,7 +5392,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Open the legacy section-list hub (compat)."
+      "usage": "Open the legacy section-list hub (compat).",
+      "description": "Legacy section-list hub.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-readiness",
@@ -2853,7 +5409,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Per-guild setup-readiness inventory (PR H)."
+      "usage": "Per-guild setup-readiness inventory (PR H).",
+      "description": "Per-guild setup-readiness inventory (PR H).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-reset",
@@ -2861,7 +5423,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Clear all staged setup operations (owner/delegated admin only)."
+      "usage": "Clear all staged setup operations (owner/delegated admin only).",
+      "description": "Clear the per-guild setup draft without dismissing the session.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-skip",
@@ -2869,7 +5437,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Mark a setup section as skipped (owner/delegated admin only)."
+      "usage": "Mark a setup section as skipped (owner/delegated admin only).",
+      "description": "Add section to the session's skipped_sections set.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-status",
@@ -2877,7 +5451,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Quick at-a-glance setup state (read-only)."
+      "usage": "Quick at-a-glance setup state (read-only).",
+      "description": "Ephemeral read-only status view.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-undelegate",
@@ -2885,7 +5465,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Revoke delegated setup-admin authority (owner only)."
+      "usage": "Revoke delegated setup-admin authority (owner only).",
+      "description": "Drop member from the guild's delegated_admins set.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "setup-unskip",
@@ -2893,7 +5479,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Remove a section from the skipped set (owner/delegated admin only)."
+      "usage": "Remove a section from the skipped set (owner/delegated admin only).",
+      "description": "Drop section from the session's skipped_sections set.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "slow",
@@ -2901,7 +5493,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Show the most recent slow-path entries (S3.2 ring buffer)."
+      "usage": "Show the most recent slow-path entries (S3.2 ring buffer).",
+      "description": "Show the most recent slow-path entries (S3.2 ring buffer).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "startup",
@@ -2909,7 +5507,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Settled-startup health report (extension load, gateway, DB, …)."
+      "usage": "Settled-startup health report (extension load, gateway, DB, …).",
+      "description": "Settled-startup health report (extension load, gateway, DB, …).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "status",
@@ -2917,7 +5521,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "High-level platform status: uptime, cogs, governance, scheduler."
+      "usage": "High-level platform status: uptime, cogs, governance, scheduler.",
+      "description": "High-level platform status: uptime, cogs, governance, scheduler.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "tasks",
@@ -2925,7 +5535,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Managed background-task snapshot (core.runtime.tasks)."
+      "usage": "Managed background-task snapshot (core.runtime.tasks).",
+      "description": "Managed background-task snapshot (core.runtime.tasks).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "views",
@@ -2933,7 +5549,13 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Registered PersistentView classes (by subsystem)."
+      "usage": "Registered PersistentView classes (by subsystem).",
+      "description": "Registered PersistentView classes (by subsystem).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "givexp",
@@ -2941,7 +5563,13 @@
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Give XP to a user (admin only)."
+      "usage": "Give XP to a user (admin only).",
+      "description": "Give XP to a user (admin only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "leaderboard",
@@ -2959,7 +5587,18 @@
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show a leaderboard. !leaderboard [xp|coins|mining|deathmatch|rps|counting]"
+      "usage": "Show a leaderboard. !leaderboard [xp|coins|mining|deathmatch|rps|counting]",
+      "description": "Show a leaderboard.  !leaderboard [xp|coins|mining|deathmatch|rps|counting]",
+      "use_cases": null,
+      "examples": [
+        "!minelb",
+        "!dm_lb",
+        "!rpslb",
+        "!countlb"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "rank",
@@ -2967,7 +5606,19 @@
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show rank in a category."
+      "usage": "Show rank in a category.",
+      "description": "Show rank in a category.",
+      "use_cases": null,
+      "examples": [
+        "!rank",
+        "!rank xp|coins|both",
+        "!rank @user",
+        "!rank @user xp|coins",
+        "!rank <category>"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "resetxp",
@@ -2975,7 +5626,13 @@
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Reset a user's XP to zero (admin only)."
+      "usage": "Reset a user's XP to zero (admin only).",
+      "description": "Reset a user's XP to zero (admin only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "xpconfig",
@@ -2983,7 +5640,13 @@
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the XP configuration panel (admin only)."
+      "usage": "Open the XP configuration panel (admin only).",
+      "description": "Open the XP configuration panel (admin only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "xpmenu",
@@ -2991,7 +5654,13 @@
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the XP panel showing your rank and quick admin actions."
+      "usage": "Open the XP panel showing your rank and quick admin actions.",
+      "description": "Open the XP panel showing your rank and quick admin actions.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "420",
@@ -3002,7 +5671,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the 🍃 420 panel — rotating wisdom and number trivia."
+      "usage": "Open the 🍃 420 panel — rotating wisdom and number trivia.",
+      "description": "Entry-point command for the 420 subsystem panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "avatar",
@@ -3010,7 +5685,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Display a user's avatar."
+      "usage": "Display a user's avatar.",
+      "description": "Display a user's avatar.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "clear",
@@ -3020,7 +5701,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Purge messages. Max 100."
+      "usage": "Purge messages. Max 100.",
+      "description": "Purge messages. Max 100.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "eightball",
@@ -3030,7 +5717,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Ask the Magic 8-Ball a yes/no question."
+      "usage": "Ask the Magic 8-Ball a yes/no question.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "fact",
@@ -3038,7 +5731,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Sends a random interesting fact."
+      "usage": "Sends a random interesting fact.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "generalmenu",
@@ -3048,7 +5747,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the interactive General panel."
+      "usage": "Open the interactive General panel.",
+      "description": "Entry-point command for the General subsystem panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "greet",
@@ -3056,7 +5761,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Greets you with a random greeting."
+      "usage": "Greets you with a random greeting.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "help",
@@ -3066,7 +5777,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Shows available commands. Pass a category name for details."
+      "usage": "Shows available commands. Pass a category name for details.",
+      "description": "Shows available commands. Pass a category name for details.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "help",
@@ -3074,7 +5791,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show available commands (optionally narrow to one category)."
+      "usage": "Show available commands (optionally narrow to one category).",
+      "description": "Shows available commands. Pass a category name for details.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "info",
@@ -3082,7 +5805,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show server or user info. !info [server|user] [@mention]"
+      "usage": "Show server or user info. !info [server|user] [@mention]",
+      "description": "Show server or user info.  !info [server|user] [@mention]",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "invite",
@@ -3090,7 +5819,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Generate a one-use server invite."
+      "usage": "Generate a one-use server invite.",
+      "description": "Generate a one-use server invite.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "joke",
@@ -3098,7 +5833,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Sends a random joke."
+      "usage": "Sends a random joke.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "motivate",
@@ -3106,7 +5847,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Sends a motivational message."
+      "usage": "Sends a motivational message.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "myprofile",
@@ -3114,7 +5861,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "View your per-server profile card."
+      "usage": "View your per-server profile card.",
+      "description": "View your per-server profile card.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "myprofile",
@@ -3122,7 +5875,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "View your profile: participation, subscriptions, preferences, visibility."
+      "usage": "View your profile: participation, subscriptions, preferences, visibility.",
+      "description": "View your per-server profile card.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "poll",
@@ -3130,7 +5889,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Create a simple reaction poll."
+      "usage": "Create a simple reaction poll.",
+      "description": "Create a simple reaction poll.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "quote",
@@ -3138,7 +5903,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Sends a random famous quote."
+      "usage": "Sends a random famous quote.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "remind",
@@ -3146,7 +5917,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set a reminder. !remind <minutes> <message>"
+      "usage": "Set a reminder. !remind <minutes> <message>",
+      "description": "Set a reminder.  !remind <minutes> <message>",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "serverinfo",
@@ -3154,7 +5931,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Alias for !info server."
+      "usage": "Alias for !info server.",
+      "description": "Alias for !info server.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "trivia",
@@ -3162,7 +5945,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Asks a trivia question with a reveal button."
+      "usage": "Asks a trivia question with a reveal button.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "userinfo",
@@ -3170,7 +5959,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Alias for !info user [@member]."
+      "usage": "Alias for !info user [@member].",
+      "description": "Alias for !info user [@member].",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "utility",
@@ -3178,7 +5973,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the Utility hub (server info, polls, reminders)."
+      "usage": "Open the Utility hub (server info, polls, reminders).",
+      "description": "Slash front door for the Utility hub — ephemeral.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     },
     {
       "name": "utilitymenu",
@@ -3186,7 +5987,13 @@
       "category": "utility",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the interactive utility panel."
+      "usage": "Open the interactive utility panel.",
+      "description": "Open the interactive utility panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
     }
   ],
   "bot_changelog": [

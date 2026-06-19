@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Features — SuperBot{% endblock %}
+{% block description %}Every SuperBot feature in one place — games, moderation, AI tools, economy, BTD6 tools and more, grouped by category. The all-in-one showcase.{% endblock %}
+{% block content %}
+
+{#
+  Feature showcase (plan unit P2) — the SAME site.json catalogue the homepage
+  teases, here grouped by category as the all-in-one "what can it do?" showcase
+  (the merged /functions + /games surface, user-framed). Reads `groups` from
+  data_loader.features_by_category: a list of (category, [catalogue_entries])
+  tuples; each entry carries key · display_name · description · emoji · category ·
+  tags · badges · is_game.
+
+  Progressive enhancement: the same client-side search the commands page uses,
+  layered over native markup. With JS off, every feature card is simply shown.
+  No `static/` dir (the #970 gotcha) — the script is inlined below. All metadata
+  is repo-level; no per-guild value reaches this view.
+#}
+
+{% set total = (groups | map(attribute=1) | map('length') | sum) %}
+
+<section class="mb-8">
+  <h1 class="text-3xl font-bold">Features</h1>
+  <p class="mt-2 text-slate-400">
+    {{ total }} feature areas across {{ groups | length }} categories — games,
+    moderation, AI, economy and more. Search or jump to a category.
+  </p>
+</section>
+
+{# ── Search + category jump (enhanced by the inline script; degrade-safe) ────── #}
+<div class="mb-6 space-y-3">
+  <input
+    id="feat-search"
+    type="search"
+    placeholder="Search features…"
+    autocomplete="off"
+    class="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm placeholder-slate-500 focus:border-sky-500 focus:outline-none"
+  />
+  <div class="flex flex-wrap gap-2">
+    {% for category, _entries in groups %}
+      <a href="#cat-{{ category }}" class="rounded-full border border-slate-700 px-3 py-1 text-xs font-medium text-slate-300 hover:border-slate-500">{{ category }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+{# ── Feature groups (one section per category) ───────────────────────────────── #}
+<div id="feat-groups" class="space-y-10">
+  {% for category, entries in groups %}
+    <section id="cat-{{ category }}" class="feat-group scroll-mt-24">
+      <h2 class="mb-4 text-lg font-semibold capitalize">{{ category }}</h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for entry in entries %}
+          <article
+            class="feat-card rounded-xl border border-slate-800 bg-slate-900/40 p-5 transition-colors hover:border-sky-700"
+            data-search="{{ (entry.display_name ~ ' ' ~ (entry.key or '') ~ ' ' ~ (entry.description or '') ~ ' ' ~ (entry.tags | join(' '))) | lower }}"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">{{ entry.emoji or '•' }}</span>
+              <h3 class="font-semibold">{{ entry.display_name or entry.key }}</h3>
+              {% if entry.is_game %}
+                <span class="ml-auto rounded-full bg-fuchsia-900/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-fuchsia-300">game</span>
+              {% endif %}
+            </div>
+            {% if entry.description %}
+              <p class="mt-2 text-sm text-slate-400">{{ entry.description }}</p>
+            {% endif %}
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              {% for tag in (entry.tags or [])[:4] %}
+                <span class="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400">{{ tag }}</span>
+              {% endfor %}
+            </div>
+            <a href="/commands#" class="mt-3 inline-block text-xs text-sky-400 hover:text-sky-300">See commands →</a>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+</div>
+
+<p id="feat-empty" class="mt-6 hidden text-center text-sm text-slate-500">
+  No features match — try a different search.
+</p>
+
+{# ── Progressive-enhancement script (inline; no static/ dir — the #970 gotcha) ── #}
+<script>
+  (function () {
+    var search = document.getElementById("feat-search");
+    var empty = document.getElementById("feat-empty");
+    var cards = Array.prototype.slice.call(document.querySelectorAll(".feat-card"));
+    var groupSections = Array.prototype.slice.call(document.querySelectorAll(".feat-group"));
+
+    function apply() {
+      var query = (search.value || "").trim().toLowerCase();
+      var visible = 0;
+      cards.forEach(function (card) {
+        var show = !query || (card.getAttribute("data-search") || "").indexOf(query) !== -1;
+        card.style.display = show ? "" : "none";
+        if (show) visible++;
+      });
+      // Hide a category section entirely when none of its cards match.
+      groupSections.forEach(function (section) {
+        var anyVisible = section.querySelectorAll('.feat-card:not([style*="display: none"])').length > 0;
+        section.style.display = anyVisible ? "" : "none";
+      });
+      empty.style.display = visible ? "none" : "";
+    }
+
+    search.addEventListener("input", apply);
+  })();
+</script>
+{% endblock %}

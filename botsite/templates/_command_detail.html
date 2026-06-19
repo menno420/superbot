@@ -1,0 +1,95 @@
+{#
+  Command detail partial (plan unit P2) — the expanded body of one command card on
+  /commands and /features. Rendered inside a <details> in commands.html (so it is
+  clickable and expands with ZERO JavaScript — progressive enhancement; the inline
+  search/filter only layers on top).
+
+  Expects one context variable: `cmd` — a single enriched command record from
+  site.json (S1.1 shape): name · aliases · category · cooldown · permissions · usage ·
+  description · use_cases · examples · status · linked_ideas · notes. Every field is
+  rendered defensively (null / empty shapes produce a friendly omission, never an
+  error) so the partial is safe over the whole catalogue.
+
+  Everything here is repo-level metadata — no per-guild value ever reaches this view
+  (the site.json whitelist guarantees it).
+#}
+<div class="mt-3 space-y-3 text-sm">
+  {# Description (full first paragraph) — falls back to the one-line usage. #}
+  {% if cmd.description %}
+    <p class="text-slate-300">{{ cmd.description }}</p>
+  {% elif cmd.usage %}
+    <p class="text-slate-300">{{ cmd.usage }}</p>
+  {% endif %}
+
+  {# Use-cases — only rendered when a real, non-empty list is present (v1: null). #}
+  {% if cmd.use_cases %}
+    <div>
+      <div class="text-xs uppercase tracking-wide text-slate-500 mb-1">Use cases</div>
+      <ul class="list-disc list-inside text-slate-300 space-y-0.5">
+        {% for uc in cmd.use_cases %}<li>{{ uc }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {# A compact metadata grid: aliases · permissions · cooldown. #}
+  <dl class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">Aliases</dt>
+      <dd class="mt-0.5">
+        {% if cmd.aliases %}
+          <span class="flex flex-wrap gap-1">
+            {% for alias in cmd.aliases %}
+              <code class="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-sky-300">!{{ alias }}</code>
+            {% endfor %}
+          </span>
+        {% else %}
+          <span class="text-slate-500">none</span>
+        {% endif %}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">Permissions</dt>
+      <dd class="mt-0.5 text-slate-300">{{ cmd.permissions or 'anyone' }}</dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">Cooldown</dt>
+      {# cooldown is reserved/null in v1 (not statically resolvable) — say so honestly. #}
+      <dd class="mt-0.5 text-slate-300">{{ cmd.cooldown if cmd.cooldown is not none else '—' }}</dd>
+    </div>
+  </dl>
+
+  {# Examples — real `!command …` invocations lifted from the docstring. #}
+  {% if cmd.examples %}
+    <div>
+      <div class="text-xs uppercase tracking-wide text-slate-500 mb-1">Examples</div>
+      <ul class="space-y-1">
+        {% for example in cmd.examples %}
+          <li><code class="rounded bg-slate-800 px-2 py-1 text-xs text-emerald-300">{{ example }}</code></li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {# Notes — curated comment (v1: null; rendered only when a real note exists). #}
+  {% if cmd.notes %}
+    <div>
+      <div class="text-xs uppercase tracking-wide text-slate-500 mb-1">Notes</div>
+      <p class="text-slate-300">{{ cmd.notes }}</p>
+    </div>
+  {% endif %}
+
+  {# Linked ideas — user-facing "what's planned" teasers (title + status only). #}
+  {% if cmd.linked_ideas %}
+    <div>
+      <div class="text-xs uppercase tracking-wide text-slate-500 mb-1">What's planned</div>
+      <ul class="space-y-1">
+        {% for idea in cmd.linked_ideas %}
+          <li class="flex items-start gap-2">
+            <span class="shrink-0 mt-0.5 rounded bg-violet-900/60 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-violet-300">{{ idea.status }}</span>
+            <span class="text-slate-300">{{ idea.title }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</div>
