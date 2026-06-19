@@ -61,3 +61,23 @@ only — never a value**; the values live in Railway service variables
 | `SETUP_ADVISOR_OPENAI_MODEL` | config, services | `disbot/config.py:161` *(default)*<br>`disbot/services/setup_ai_advisor.py:173` *(default)* |
 | `SETUP_ADVISOR_PROVIDER` | config, core, services | `disbot/config.py:160` *(default)*<br>`disbot/core/runtime/ai/feature_flags.py:129` *(default)*<br>`disbot/services/setup_ai_advisor.py:393` *(default)* |
 | `STRICT_DISABLED` | bot1 | `disbot/bot1.py:172` *(default)* |
+
+<!-- END GENERATED — everything below is hand-maintained (web-tier env vars the disbot scanner can't see); the scanner preserves it across --write-doc. -->
+
+## Website tier (hand-maintained — not from the disbot scan)
+
+These power the **two web services** (the public bot site + the dev dashboard) of the
+website two-site split, not the bot worker, so the `disbot/` scanner above never emits
+them. They are **dormant by default** — each service is a safe no-op until its var is set
+(see [`botsite-deploy.md`](botsite-deploy.md) and the plan's §4.4 secret matrix). Names +
+purpose only — never a value.
+
+| Variable | Service(s) | Purpose / scope |
+|---|---|---|
+| `SUBMISSIONS_DB_DSN` | bot site (INSERT-only role) · dev site (full role) | The dashboard-owned submissions Postgres. The public site holds an **INSERT-only** role; the dev site holds the read/moderate role. Unset → `/submit` + moderation are dormant. |
+| `SUBMISSIONS_IP_SALT` | bot site | Salt for the stored `source_ip_hash` (abuse forensics) — never the raw IP. Falls back to a per-process random salt when unset. |
+| `GITHUB_ISSUE_MIRROR_TOKEN` | dev site only | Fine-grained PAT, repo-scoped to `menno420/superbot`, **Issues: Read & write only**. Mirrors an approved submission to one GitHub issue. **Never** on the public bot site. Unset → approve is disabled. |
+| `BOT_OWNER_USER_ID` | dev site (also read by the bot) | Gates the owner-only moderation ring (`/admin/moderation`). Blank/garbage fails closed (matches nobody). |
+| `DISCORD_OAUTH_CLIENT_ID` / `DISCORD_OAUTH_CLIENT_SECRET` / `DASHBOARD_SESSION_SECRET` | dev site (future gated manager) | Discord OAuth + signed-session secret for the per-guild control panel. Unset → the control zone is dormant. |
+| `CONTROL_API_TOKEN` | dev site · bot worker | Bearer for the bot's private control API (per-guild writes, over the private network). Never on the public bot site. |
+| `TURNSTILE_SECRET` / `HCAPTCHA_SECRET` *(optional)* | bot site | Reserved for a fast-follow `/submit` captcha (honeypot + rate-limit is the v1 default — plan §4.2 / §7 decision 6). Unset → no captcha. |

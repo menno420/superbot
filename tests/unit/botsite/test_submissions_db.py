@@ -77,6 +77,19 @@ def test_build_insert_strips_control_chars(sdb):
     assert "\x07" not in params[2]  # bell stripped
 
 
+def test_build_insert_strips_c1_control_chars(sdb):
+    # The C1 block (0x80–0x9F, e.g. NEL 0x85 / CSI 0x9B) must be stripped too — a plain
+    # ``ch >= " "`` test let these through; they can carry terminal escapes.
+    _, params = sdb.build_insert(
+        kind="bug",
+        title="t\x85i\x9btle",
+        body="b\x80o\x9fdy",
+    )
+    assert params[1] == "title"
+    assert params[2] == "body"
+    assert not any(0x80 <= ord(ch) <= 0x9F for ch in params[1] + params[2])
+
+
 def test_build_insert_optional_fields_null_when_blank(sdb):
     _, params = sdb.build_insert(
         kind="suggestion",

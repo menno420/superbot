@@ -219,6 +219,14 @@ Source code and merged PRs win over anything written here.
 - **#1109 (2026-06-19, website two-site split — serial foundation S1 + S2 + P1)** — the first build wave:
   the public-data subset (`site.json` + the redaction-whitelist guard, S1), the submissions DB (S2), and the
   first bot-site page set (P1). The serial foundation the parallel P1–P8 wave builds on.
+- **#1112 · #1113 · #1114 · #1116 · #1117 · #1118 · #1119 (2026-06-19, website two-site split — parallel
+  back-half fan-out)** — the file-disjoint back half on the #1109 foundation: S1.1+P2 interactive command
+  browser (#1112), P3 changelog/status templates (#1114, #1116), P4 public `/submit` intake (#1117), P5+P6
+  dev-site moderation UI + GitHub-issue mirror (#1118), P7+P8 redaction-audit + deploy/env docs (#1113), and
+  the `env-vars.md` freshness fix (#1119). Reviewed + refactored in the ultracode pass (this session — see
+  [`operations/website-split-review-2026-06-19.md`](operations/website-split-review-2026-06-19.md)): the
+  test-isolation `sys.modules` collision, the `_clean` C1 gap, the `chain` idea-mis-map, and the
+  `env-vars.md` web-tier marker. All newer than the #1110 reconciliation marker (recorded on sight, Q-0166).
 - **#1097 (2026-06-19, fleet A4 — diagnostic embeds → `services/`)** — the diagnostic embed builders
   relocated into the services layer (the ultracode-fleet Lane-A A4 unit; callers mapped first).
 - **#1103 · #1105 · #1106 · #1108 (2026-06-19, workflow tooling + CI hygiene)** — `scripts/router_status.py`,

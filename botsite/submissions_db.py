@@ -30,6 +30,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import os
+import unicodedata
 from typing import Any
 
 # The two intake kinds (must match the DDL CHECK + the GitHub issue-template shapes).
@@ -93,9 +94,13 @@ def _clean(text: str | None, limit: int) -> str | None:
     """
     if text is None:
         return None
-    # Keep newlines + tabs; drop other C0/C1 control chars.
+    # Keep newlines + tabs; drop every other control character — C0 *and* C1, plus
+    # DEL. unicodedata's ``Cc`` category covers the whole control range, including the
+    # C1 block (0x80–0x9F, e.g. NEL / CSI) that a plain ``ch >= " "`` test let through —
+    # so a crafted payload can't smuggle terminal escapes into the owner's moderation
+    # view or the mirrored GitHub issue.
     cleaned = "".join(
-        ch for ch in text if ch in ("\n", "\t") or (ch >= " " and ch != "\x7f")
+        ch for ch in text if ch in ("\n", "\t") or unicodedata.category(ch) != "Cc"
     ).strip()
     if not cleaned:
         return None

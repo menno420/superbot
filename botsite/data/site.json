@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T14:27:26Z",
+    "generated_at": "2026-06-19T16:18:57Z",
     "build": {
-      "commit": "03317c9",
-      "subject": "Close-out: flip session card to complete + Q-0089 idea + enders",
-      "committed_at": "2026-06-19T14:26:41Z",
-      "branch": "claude/website-command-browser"
+      "commit": "4708986",
+      "subject": "session: close-out — flip card to complete + Q-0089/Q-0102/Q-0104 enders",
+      "committed_at": "2026-06-19T15:48:48Z",
+      "branch": "claude/cool-feynman-cvqrbj"
     }
   },
   "counts": {
@@ -2780,13 +2780,8 @@
       "description": "Manage message chains and word limits in your server.",
       "use_cases": null,
       "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
-          "status": "ideas"
-        }
-      ],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
@@ -2799,13 +2794,8 @@
       "description": "Open the interactive chain management panel.",
       "use_cases": null,
       "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
-          "status": "ideas"
-        }
-      ],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
@@ -2868,13 +2858,8 @@
       "examples": [
         "!chain create [channel] <word>"
       ],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
-          "status": "ideas"
-        }
-      ],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
@@ -2935,13 +2920,8 @@
       "examples": [
         "!chain delete [channel]"
       ],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
-          "status": "ideas"
-        }
-      ],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
@@ -3220,13 +3200,8 @@
       "examples": [
         "!chain list"
       ],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
-          "status": "ideas"
-        }
-      ],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
@@ -3379,13 +3354,8 @@
       "examples": [
         "!chain removelimit [channel]"
       ],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
-          "status": "ideas"
-        }
-      ],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
@@ -3638,13 +3608,8 @@
       "examples": [
         "!chain setlimit [channel] <number>"
       ],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
-          "status": "ideas"
-        }
-      ],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
