@@ -100,13 +100,15 @@ def test_every_route_is_wired(app_module):
         assert expected in paths, f"route {expected} not wired"
 
 
-def test_submit_router_is_mounted_but_stub(app_module):
-    # The submit router is mounted (so P4 can fill it without touching app.py) but
-    # carries no routes yet → /submit is not registered as a path in this unit.
+def test_submit_router_is_mounted(app_module):
+    # app.py mounts the submit router as the single routing owner; unit P4 filled it
+    # (the GET/POST /submit form + intake) without touching app.py — the whole point
+    # of the included-router seam. (Pre-P4 this asserted the stub was empty.) The
+    # /submit behaviour itself is covered by tests/unit/botsite/test_submit.py.
     import submit
 
-    assert submit.router.routes == []
-    assert "/submit" not in _route_paths(app_module.app)
+    methods = {tuple(sorted(r.methods)) for r in submit.router.routes}
+    assert ("GET",) in methods and ("POST",) in methods
 
 
 def test_app_does_not_import_disbot(app_module):
