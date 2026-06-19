@@ -13,8 +13,6 @@ rate-limit trips, and the form renders the empty / thank-you / dormant states.
 
 from __future__ import annotations
 
-import importlib.util
-import sys
 from pathlib import Path
 
 import pytest
@@ -24,6 +22,8 @@ pytest.importorskip("httpx")  # Starlette's TestClient transport
 
 from fastapi.testclient import TestClient  # noqa: E402
 
+from tests.support.web_app_loader import load_web_app  # noqa: E402
+
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _APP = _REPO_ROOT / "botsite" / "app.py"
 
@@ -32,15 +32,10 @@ _FORM_HEADERS = {"content-type": "application/x-www-form-urlencoded"}
 
 @pytest.fixture(scope="module")
 def app_module():
-    # Loading app.py runs the sys.path shim that puts botsite/ on the path, so the
-    # sibling `submit` / `submissions_db` / `ratelimit` modules import top-level —
-    # exactly as they do at runtime and in test_app.py.
-    spec = importlib.util.spec_from_file_location("botsite_app_ut", _APP)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    # load_web_app puts botsite/ first on sys.path and isolates its bare sibling
+    # imports (`submit` / `submissions_db` / `ratelimit`) from the dashboard's
+    # same-named modules, so the load is correct regardless of test run order.
+    return load_web_app(_APP, "botsite_app_ut")
 
 
 @pytest.fixture
