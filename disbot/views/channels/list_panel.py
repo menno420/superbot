@@ -111,6 +111,10 @@ def _build_channel_list_pages(
     return pages
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# an inline paginator that rebuilds its own button row on every page turn
+# (_rebuild) and carries its own author interaction_check + on_timeout, so
+# BaseView's fixed-children invoker lock does not fit.
 class _ChannelListPaginatorView(discord.ui.View):
     """Tiny inline paginator for ``!list`` output (PR F).
 

@@ -66,6 +66,10 @@ _START_LABELS_BY_STATUS = {
 }
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# a cross-restart persistent view (timeout=None + static per-button
+# custom_id) with per-button owner/admin/apply gating rather than BaseView's
+# single invoker lock, and a status-aware label rebind on on_ready.
 class SetupLauncherView(discord.ui.View):
     """Persistent owner-gated launcher view.
 
