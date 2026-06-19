@@ -25,9 +25,13 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/kind-einstein-jlywgm` · **website two-site split — implementation plan** (owner-directed,
+  executes the #1099 brief + Q-0178) — the full plan + file-disjoint ultracode decomposition for the
+  follow-up build run; docs-only · `docs/planning/website-two-site-split-plan-2026-06-19.md` ·
+  forward-links the brief + `docs/current-state.md` ▶ Next action · 2026-06-19
 - `claude/focused-goldberg-mviel4` · **website two-site split — planning brief** (owner-directed) —
   spec for the next planning session + idea capture + router Q-0178 · `docs/planning/website-two-site-split-planning-brief-2026-06-19.md`
-  · 2026-06-19 · _(prior ultracode fleet #1080–#1097 + #1064/#1079 all merged)_
+  · 2026-06-19 · **merged #1099**
 - `claude/magical-rubin-jnpnuw` · **dashboard.json structural-drift reporter** + freshness catch-up
   (executes the #1020 💡 idea + finding) · `scripts/check_dashboard_data.py` ·
   `dashboard/data/dashboard.json` · tests · 2026-06-17 · **auto-merge on green**
