@@ -105,6 +105,37 @@ only) are layered *before* anything is stored-visibly or mirrored (plan §4.2). 
 [`dashboard-redaction-audit.md`](dashboard-redaction-audit.md) for the per-page public-read
 certification and `dashboard/README.md` § Moderation for the owner-side flow.
 
+## Environment variables (website tier)
+
+> **Authoritative reference for the web-service env vars.** These are read by the **web** services
+> (`botsite/` and `dashboard/`), **not** by `disbot/` — so the bot-source scanner that generates
+> [`env-vars.md`](env-vars.md) never lists them, and they live here instead (that doc is generated and
+> can't hold hand-maintained entries). Per-service secret-holding is the plan's §4.4 matrix; the crisp
+> rule is **the public bot site holds exactly one secret — an INSERT-only DB role on one table** — and
+> everything else lives only on the owner-gated **dev** site (`dashboard/`).
+
+**Submissions intake (`/submit` → moderation → GitHub mirror):**
+
+- **`SUBMISSIONS_DB_DSN`** — Postgres DSN for the **dashboard-owned** submissions DB (a *separate* store
+  from the bot's Postgres). **Least-privilege role differs per service:** the **public bot site** gets an
+  **INSERT-only** role (only `insert_pending`); the **dev site** gets a **full** role (SELECT+UPDATE, to
+  list/moderate). **Dormant by default** — unset means `/submit` shows "temporarily unavailable" and
+  nothing connects.
+- **`SUBMISSIONS_IP_SALT`** *(optional)* — salt for the **salted IP hash** stored for abuse forensics
+  (never the raw IP); falls back to a per-process salt when unset.
+- **`GITHUB_ISSUE_MIRROR_TOKEN`** — **dev site only; never on the public bot site, never in the repo,
+  never in `site.json`.** A **fine-grained PAT scoped to only `menno420/superbot`, single permission
+  Issues: Read & write** (no code/actions/metadata-write). The mirror runs server-side on owner approval.
+
+**Dev-site control panel + login (existing, dormant unless configured):**
+
+- **`DISCORD_OAUTH_CLIENT_ID` / `DISCORD_OAUTH_CLIENT_SECRET` / `DISCORD_OAUTH_REDIRECT_URI`** — Discord
+  OAuth for the `/admin` control panel + the owner-gated `/admin/moderation`. Dev site only.
+- **`DASHBOARD_SESSION_SECRET`** — HMAC key for the stdlib signed session cookie
+  (`dashboard/websession.py`). Dev site only.
+- **`CONTROL_API_TOKEN`** *(+ optional `CONTROL_API_URL`)* — bearer for the bot's private control API; set
+  on **both** the dev site and the bot worker. **Never on the public bot site.**
+
 ## Rollout — additive, no downtime (plan §6)
 
 The split is **additive**, which is what makes it safe. Sequence:
