@@ -69,7 +69,8 @@ Lane B can run **concurrently with Lane A**. Each is a small, low-risk, no-owner
 6. **A4/A5:** map every caller (including lazy/function-body imports) before moving code.
 7. **Orchestrator pre-flight overlap check (before dispatch — the #1133/#1128 lesson).** Before
    spawning lanes, the orchestrator MUST run `list_pull_requests` (open + recently-merged) **and**
-   grep recent merge commits for each lane's scope — not just scan `active-work.md`. The claim ledger
+   run `python3.10 scripts/check_lane_overlap.py <lane scope…>` (the mechanized recently-merged scan —
+   it caught the #1133/#1128 case in testing) for each lane's scope — not just scan `active-work.md`. The claim ledger
    is necessary but **insufficient**: it can be stale or uncommitted (a working-tree claim that never
    landed is invisible to other sessions), and a concurrent session's work may already be an open or
    just-merged PR that no ledger lists. On 2026-06-19, lane B4 (PR #1133) duplicated already-merged
