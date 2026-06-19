@@ -5,6 +5,7 @@
 > (commands explorer) · #973 (count reconcile); Phases 2 + 3b + 4 remain. **Authoritative plan +
 > handoff:** [`docs/planning/developer-dashboard-plan.md`](../planning/developer-dashboard-plan.md).
 > This file is the backlog capture; the plan governs.
+> **Subsystem:** none — the developer dashboard / control-API (infra, not a bot subsystem).
 
 ## The request
 

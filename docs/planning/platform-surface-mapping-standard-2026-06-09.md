@@ -1,6 +1,7 @@
 # Platform surface mapping standard — 2026-06-09
 
-> **Status:** `plan` — the binding mapping standard for the two parallel Codex
+> **Status:** `historical` — the binding mapping standard for the two parallel Codex
+> **Superseded 2026-06-19 (was active):** The schema for the two mapping audits; the campaign is complete (#641). Do not act on this — current map: [planning/README](README.md).
 > platform-mapping agents (Agent A: user-facing surface · Agent B: admin/platform
 > surface) and the merge/implementation session that follows them. Produced by the
 > 2026-06-09 standards-setting session (PR #641); source-verified at HEAD `7534e3e`

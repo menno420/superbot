@@ -5,6 +5,7 @@
 > *Hermes* control plane — not a fit there (footnote below) — but it **is** the right shape for the
 > **bot's** per-user AI memory. Vision anchor: **V-04** (per-user preferences); gated on the AI spend
 > ceiling (Q-0082).
+> **Subsystem:** ai — in-bot AI per-user memory.
 
 ## The idea — give SuperBot's AI real memory of individual users
 

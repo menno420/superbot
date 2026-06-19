@@ -4,7 +4,8 @@
 > **`docs/current-state.md`**. Kept for the RC-1…RC-15 audit reconciliation
 > history (the *why* behind decisions), not current state.
 
-> **Status:** `audit` — planning / verification artifact (not a binding contract, not
+> **Status:** `historical` — planning / verification artifact (not a binding contract, not
+> **Superseded 2026-06-19 (was active):** The 2026-06-05 audit-burst reconciliation; conclusions routed to current-state + the folios. Do not act on this — current map: [planning/README](README.md).
 > implementation approval). Read this before acting on any of the five
 > source audit docs — it supersedes their individual confidence claims
 > where local verification disagrees.

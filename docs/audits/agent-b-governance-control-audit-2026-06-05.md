@@ -1,6 +1,7 @@
 # Agent B governance/control audit — 2026-06-05
 
-> **Status:** `audit`
+> **Status:** `historical`
+> **Superseded 2026-06-19 (was active):** 2026-06-05 audit burst; reconciled into superbot-audit-consolidation (also historical). Do not act on this — current map: [planning/README](../planning/README.md).
 
 > **Superseded (2026-06-05):** reconciled into
 > [`../planning/superbot-audit-consolidation-2026-06-05.md`](../planning/superbot-audit-consolidation-2026-06-05.md)

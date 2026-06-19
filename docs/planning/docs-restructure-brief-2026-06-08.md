@@ -1,6 +1,7 @@
 # Docs restructure — next-session brief (2026-06-08)
 
-> **Status:** `plan` — a focused, ready-to-pick handoff for a dedicated docs-restructure
+> **Status:** `historical` — a focused, ready-to-pick handoff for a dedicated docs-restructure
+> **Superseded 2026-06-19 (was active):** Superseded by this planning/README + repo-structure-improvement-plan-2026-06-19. Do not act on this — current map: [planning/README](README.md).
 > session. Owner-approved direction: **Q-0010** (router) + this session's binding-doc
 > collision finding. **Source / merged PRs win;** this is scope, not approval to change
 > behavior. It's a **meta-task that can run in parallel** with the implementation lane

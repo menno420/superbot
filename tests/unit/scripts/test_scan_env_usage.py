@@ -29,7 +29,7 @@ def mod():
     return module
 
 
-SAMPLE = '''
+SAMPLE = """
 import os
 from os import getenv, environ
 
@@ -40,7 +40,7 @@ HOST = os.environ.get("HOST", "localhost")       # optional (default)
 DSN = os.environ["DATABASE_URL"]                 # required (subscript)
 BARE = getenv("BARE_VAR", "x")                   # optional via bare import
 BARE_REQ = environ["BARE_REQ"]                   # required via bare environ
-'''
+"""
 
 
 def test_scan_source_detects_every_access_shape(mod):
@@ -124,7 +124,9 @@ def test_records_carry_no_values_only_names_and_locations(mod, tmp_path):
     """The safety guarantee: a record exposes name + location keys, no value."""
     root = tmp_path / "disbot"
     root.mkdir()
-    (root / "x.py").write_text('import os\nv = os.getenv("SECRET_KEY", "shh")\n', "utf-8")
+    (root / "x.py").write_text(
+        'import os\nv = os.getenv("SECRET_KEY", "shh")\n', "utf-8"
+    )
     records = mod.scan_env_usage(scan_root=root, repo_root=tmp_path)
     assert records, "expected at least one record"
     record = records[0]
@@ -144,8 +146,12 @@ def test_render_doc_is_a_badged_table_without_values(mod):
             "usage_count": 1,
             "layers": ["config"],
             "usages": [
-                {"file": "disbot/config.py", "line": 9, "layer": "config",
-                 "has_default": False},
+                {
+                    "file": "disbot/config.py",
+                    "line": 9,
+                    "layer": "config",
+                    "has_default": False,
+                },
             ],
         },
         {
@@ -154,8 +160,12 @@ def test_render_doc_is_a_badged_table_without_values(mod):
             "usage_count": 1,
             "layers": ["services"],
             "usages": [
-                {"file": "disbot/services/x.py", "line": 3, "layer": "services",
-                 "has_default": True},
+                {
+                    "file": "disbot/services/x.py",
+                    "line": 3,
+                    "layer": "services",
+                    "has_default": True,
+                },
             ],
         },
     ]
@@ -170,17 +180,55 @@ def test_render_doc_is_a_badged_table_without_values(mod):
     assert "*(default)*" in doc  # the optional usage is marked
 
 
-def test_committed_env_vars_doc_is_in_sync_with_the_scanner(mod):
-    """The committed doc must match a fresh render (it is a generated artifact)."""
+def test_committed_env_vars_doc_generated_head_is_in_sync(mod):
+    """The committed doc's GENERATED head must match a fresh render.
+
+    Only the region above :data:`END_MARKER` is scanner-generated; the hand-maintained
+    web-tier tail below it is intentionally NOT a fresh-render match (it carries vars the
+    disbot scanner can't see), so the comparison is head-only — that coexistence is the
+    whole point of the marker (the #1119 footgun fix).
+    """
     doc_path = _REPO_ROOT / "docs" / "operations" / "env-vars.md"
     if not doc_path.exists():
         pytest.skip("env-vars.md not generated in this tree")
     expected = mod.render_doc(mod.scan_env_usage())
     actual = doc_path.read_text(encoding="utf-8")
-    assert actual == expected, (
-        "docs/operations/env-vars.md is stale — refresh with "
+    assert mod.END_MARKER in actual, "env-vars.md is missing the END GENERATED marker"
+    assert actual.split(mod.END_MARKER, 1)[0] == expected.split(mod.END_MARKER, 1)[0], (
+        "docs/operations/env-vars.md generated head is stale — refresh with "
         "`python3.10 scripts/scan_env_usage.py --write-doc`"
     )
+
+
+def test_compose_doc_preserves_hand_maintained_tail(mod):
+    """A regenerate keeps owner edits below the marker (the coexistence guarantee)."""
+    edited = (
+        "# Environment variables\n\n"
+        + mod.END_MARKER
+        + "\n\n## Website tier\n\nOwner-edited content survives.\n"
+    )
+    composed = mod._compose_doc(mod.scan_env_usage(), existing=edited)
+    assert "Owner-edited content survives." in composed
+    # The generated head is still scanner-canonical (the marker is present once).
+    assert composed.count(mod.END_MARKER) == 1
+    assert (
+        composed.split(mod.END_MARKER, 1)[0]
+        == mod.render_doc(
+            mod.scan_env_usage(),
+        ).split(
+            mod.END_MARKER, 1
+        )[0]
+    )
+
+
+def test_compose_doc_writes_default_website_tail_when_absent(mod):
+    """A file with no marker yet gets the version-controlled Website-tier default."""
+    composed = mod._compose_doc(
+        mod.scan_env_usage(), existing="# old\n\nno marker here\n"
+    )
+    assert "## Website tier" in composed
+    assert "`SUBMISSIONS_DB_DSN`" in composed
+    assert "`GITHUB_ISSUE_MIRROR_TOKEN`" in composed
 
 
 def test_scan_against_real_disbot_is_well_formed(mod):

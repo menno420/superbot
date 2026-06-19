@@ -1,6 +1,7 @@
 # SuperBot — Cog Hub Command-Coverage Audit
 
-> **Status:** `audit` — inventory snapshot, dated 2026-05-24.
+> **Status:** `historical` — inventory snapshot, dated 2026-05-24.
+> **Superseded 2026-06-19 (was active):** 2026-05-24 snapshot; superseded by the subsystem folios + building-roadmap/mother-hub-map. Do not act on this — current map: [planning/README](../planning/README.md).
 > Companion to `docs/audits/ui-view-adoption-audit.md` (per-view adoption)
 > and `docs/help-command-surface-map.md` (Help route structure).
 >

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Changelog — SuperBot{% endblock %}
+{% block description %}What's new in SuperBot — a curated, user-facing timeline of new features, fixes and improvements.{% endblock %}
+{% block content %}
+
+{# ── Page header ──────────────────────────────────────────────────────────────
+   The changelog is the curated, user-facing "what's new in the bot" feed
+   (plan §1 / §7.5) — it reads site.json.bot_changelog, NOT the dev-site session
+   feed. Each entry is {date, title, kind, summary}; the producer sorts newest
+   first. We group by date into a timeline (layout guidance) and re-sort
+   defensively so ordering never depends on the producer.
+   "generated" freshness badge (plan §3): this is a build-time snapshot, never a
+   live claim. ───────────────────────────────────────────────────────────────── #}
+<section class="border-b border-slate-800 pb-6 mb-8">
+  <div class="flex flex-wrap items-center gap-3">
+    <h1 class="text-3xl font-bold tracking-tight">What's new</h1>
+    <span
+      class="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-400"
+      title="Curated from the bot's changelog as of the last deploy — not a live feed."
+    >generated</span>
+  </div>
+  <p class="mt-3 text-slate-300 max-w-2xl">
+    New features, fixes and improvements you can feel — the changes that actually
+    reach your server. Hand-curated, newest first.
+  </p>
+</section>
+
+{# Kind → badge styling. An empty/unknown kind renders as a neutral "update". #}
+{% set kind_styles = {
+  'feature': ('New', 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/30'),
+  'improvement': ('Improved', 'bg-sky-500/15 text-sky-300 ring-sky-500/30'),
+  'fix': ('Fixed', 'bg-amber-500/15 text-amber-300 ring-amber-500/30')
+} %}
+
+{% if entries %}
+  {# Group consecutive entries by date into timeline buckets, preserving the
+     producer's newest-first order. We build an ordered list of (date, [entries]). #}
+  {% set ns = namespace(groups=[], last=None) %}
+  {% for entry in entries %}
+    {% if entry.date != ns.last %}
+      {% set ns.groups = ns.groups + [(entry.date, [entry])] %}
+      {% set ns.last = entry.date %}
+    {% else %}
+      {% set _ = ns.groups[-1][1].append(entry) %}
+    {% endif %}
+  {% endfor %}
+
+  <div class="space-y-10">
+    {% for date, day_entries in ns.groups %}
+      <section class="relative">
+        {# Date heading — the timeline anchor. #}
+        <div class="flex items-center gap-3 mb-4">
+          <span class="h-2.5 w-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-500/15"></span>
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-400">
+            <time datetime="{{ date }}">{{ date }}</time>
+          </h2>
+        </div>
+        {# The day's entries, indented to read as a timeline. #}
+        <div class="ml-[5px] border-l border-slate-800 pl-6 space-y-4">
+          {% for entry in day_entries %}
+            {% set label, badge = kind_styles.get(entry.kind, ('Update', 'bg-slate-700/40 text-slate-300 ring-slate-600/40')) %}
+            <article class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ badge }}">{{ label }}</span>
+                <h3 class="font-semibold text-slate-100">{{ entry.title }}</h3>
+              </div>
+              {% if entry.summary %}
+                <p class="mt-2 text-sm text-slate-300">{{ entry.summary }}</p>
+              {% endif %}
+              {# Optional outbound link to a GitHub release/PR IF (and only if) the
+                 producer ever supplies one. We surface the friendly "Details"
+                 label — never a raw internal PR number as a user-facing ID
+                 (layout guidance / brief). #}
+              {% if entry.url %}
+                <a
+                  href="{{ entry.url }}"
+                  rel="noopener"
+                  class="mt-3 inline-flex items-center gap-1 text-sm text-sky-400 hover:text-sky-300"
+                >Details →</a>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+{% else %}
+  {# Friendly empty state — no internal error text (cross-cutting guidance). #}
+  <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center">
+    <p class="text-slate-300">No changelog entries yet.</p>
+    <p class="mt-2 text-sm text-slate-500">
+      Check back soon — new features and fixes will show up here as they ship.
+    </p>
+  </div>
+{% endif %}
+
+{% endblock %}

@@ -1,6 +1,7 @@
 # Help overlay editor UI — implementation plan (audit Phase 5)
 
-> **Status:** `plan` — **EXECUTED same day: PR A = #677 · PR B = #679**
+> **Status:** `historical` — **EXECUTED same day: PR A = #677 · PR B = #679**
+> **Superseded 2026-06-19 (was active):** Executed #677 + #679 (live-verified). Do not act on this — current map: [planning/README](README.md).
 > (both live-verified on real Postgres — editor round-trip incl. the
 > hide/rename → live-Help agreement, and the Home builder's
 > stage → mandatory-preview → save → byte-identical reset). Produced by the

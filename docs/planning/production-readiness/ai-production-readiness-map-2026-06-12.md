@@ -1,6 +1,7 @@
 # AI / Setup Advisor production-readiness map — 2026-06-12
 
-> **Status:** `audit` — docs-only, source-verified production-readiness review (point-in-time).
+> **Status:** `historical` — docs-only, source-verified production-readiness review (point-in-time).
+> **Superseded 2026-06-19 (was active):** Superseded — the P1-1 offline eval matrix shipped #878/#879/#896 (34/34). Live spine: hardening-roadmap. Do not act on this — current map: [planning/README](../README.md).
 > **Authority:** source code and merged PRs win over this map. Recheck live PRs before using it as an execution queue.
 > **Scope:** AI Platform, Setup Advisor, and only the directly required settings, health/diagnostics, BTD6-grounding, and setup-behaviour seams.
 

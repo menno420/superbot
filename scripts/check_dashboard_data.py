@@ -54,6 +54,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = REPO_ROOT / "dashboard" / "data" / "dashboard.json"
+SITE_DATA_FILE = REPO_ROOT / "botsite" / "data" / "site.json"
 
 # Real (``is_cog``) cogs that legitimately have NO own SUBSYSTEMS registry entry
 # AND no parent to map to: ``HermesCog`` (ops bridge), ``SetupCog`` (the hub-less
@@ -273,15 +274,100 @@ def validate(data: dict[str, Any]) -> list[Issue]:
     return issues
 
 
-def _build_fresh() -> dict[str, Any]:
-    """Regenerate the payload from live sources (sibling import — scripts/ isn't a package)."""
+def _export_module() -> Any:
+    """Load the producer module (sibling import — scripts/ isn't a package)."""
     script = Path(__file__).resolve().parent / "export_dashboard_data.py"
     spec = importlib.util.spec_from_file_location("_export_dashboard_seam", script)
     if spec is None or spec.loader is None:  # pragma: no cover - import wiring
         raise ImportError("cannot load export_dashboard_data.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.build_data()
+    return module
+
+
+def _build_fresh() -> dict[str, Any]:
+    """Regenerate the full payload from live sources."""
+    return _export_module().build_data()
+
+
+def check_site_subset(
+    committed: dict[str, Any] | None = None,
+    *,
+    site_path: Path = SITE_DATA_FILE,
+) -> list[Issue]:
+    """Validate the public ``botsite/data/site.json`` subset (plan §5 / §2.2).
+
+    Three assertions, all **fail-closed**:
+
+    * **top-level whitelist** — the committed file's top-level keys must be a *subset*
+      of the producer's :data:`SITE_TOPLEVEL_KEYS`. A new (un-whitelisted) top-level
+      key is the leak class this guards: it would mean the producer started emitting a
+      family that was never vetted as public. This is an **error** — the redaction
+      guarantee for non-negotiable #1.
+    * **per-command field whitelist** (plan S1.1) — every ``commands[*]`` record's
+      fields must be a *subset* of the producer's :data:`SITE_COMMAND_FIELDS`. The
+      interactive browser enriched each command with description/examples/status/
+      linked-ideas; this assertion is the standing guard that a *future* enrichment
+      can't slip a per-guild value or dev-only field onto the public command surface
+      without being vetted into the whitelist first. Also an **error**.
+    * **counts** — ``counts.commands`` / ``features`` / ``games`` must equal the
+      lengths in the committed file (the count-drift class, mirrored from
+      :func:`check_count_integrity`).
+
+    Returns ``[]`` when the file is absent (it is a generated artifact; the freshness
+    reporter handles "missing"); callers that require its presence check separately.
+    """
+    issues: list[Issue] = []
+    if committed is None:
+        if not site_path.exists():
+            return issues
+        committed = json.loads(site_path.read_text(encoding="utf-8"))
+
+    export = _export_module()
+    allowed: set[str] = set(export.SITE_TOPLEVEL_KEYS)
+    extra = set(committed) - allowed
+    if extra:
+        issues.append(
+            _err(
+                "site_key_not_whitelisted",
+                f"site.json has top-level key(s) {sorted(extra)} not in the public "
+                f"whitelist {sorted(allowed)} — a non-public family must never reach "
+                f"the marketing site (plan §2.2); fix build_site_subset / the whitelist",
+            ),
+        )
+
+    # Per-command field whitelist — fail-closed on any un-whitelisted command field.
+    allowed_cmd_fields: set[str] = set(export.SITE_COMMAND_FIELDS)
+    extra_cmd_fields: set[str] = set()
+    for cmd in committed.get("commands", []):
+        if isinstance(cmd, dict):
+            extra_cmd_fields |= set(cmd) - allowed_cmd_fields
+    if extra_cmd_fields:
+        issues.append(
+            _err(
+                "site_command_field_not_whitelisted",
+                f"site.json commands carry field(s) {sorted(extra_cmd_fields)} not in "
+                f"the public per-command whitelist {sorted(allowed_cmd_fields)} — a "
+                f"command field must never leak a per-guild value or dev-only datum "
+                f"(plan S1.1); fix _site_commands / SITE_COMMAND_FIELDS",
+            ),
+        )
+
+    counts = committed.get("counts", {})
+    expected = {
+        "commands": len(committed.get("commands", [])),
+        "features": len(committed.get("catalogue", [])),
+        "games": sum(1 for e in committed.get("catalogue", []) if e.get("is_game")),
+    }
+    for key, exp in expected.items():
+        if key in counts and counts[key] != exp:
+            issues.append(
+                _err(
+                    "site_count_mismatch",
+                    f"site.json counts.{key}={counts[key]} but the data has {exp}",
+                ),
+            )
+    return issues
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -298,6 +384,11 @@ def main(argv: list[str] | None = None) -> int:
         help="report (warn-only) structural drift between the committed JSON and a fresh export",
     )
     parser.add_argument("--data", default=str(DATA_FILE), help="path to dashboard.json")
+    parser.add_argument(
+        "--site",
+        action="store_true",
+        help="also validate the public botsite/data/site.json subset (whitelist + counts)",
+    )
     args = parser.parse_args(argv)
 
     if args.fresh:
@@ -306,6 +397,8 @@ def main(argv: list[str] | None = None) -> int:
         data = json.loads(Path(args.data).read_text(encoding="utf-8"))
 
     issues = validate(data)
+    if args.site:
+        issues.extend(check_site_subset())
     if args.drift:
         # Compare the committed artifact (never the fresh one, even under --fresh)
         # against a fresh build so the report names what the *committed* file is

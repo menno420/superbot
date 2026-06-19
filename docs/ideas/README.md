@@ -18,8 +18,45 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 capture reaches its lifecycle outcome (§5) by being _implemented_, it is re-badged `historical`
 during grooming** (it stays listed here, annotated ✅) so the active backlog reflects only live ideas.
 
+**Optional `Subsystem:` tag (authoritative idea↔command link).** An idea may declare which bot
+subsystem(s) it touches with a front-matter header line — `> **Subsystem:** economy, mining` (or
+`> **Area:** …`) — using **subsystem-registry keys**. The bot-site command browser
+(`scripts/export_dashboard_data.py` → `_subsystem_open_work`) **prefers this explicit tag** over its
+filename-slug heuristic, which fixes generic-word cross-matches (e.g. an agent-workflow
+"executor-chain" idea slug matching the Word-Chain game's `chain` subsystem). Use the sentinel
+`> **Subsystem:** none` for agent-workflow / meta ideas that touch **no** bot subsystem (links to
+nothing). The tag is **optional** — un-tagged ideas keep the safe (title+status-only) heuristic — and
+only the header block is read, so a `**Subsystem:**` *example* in an idea's body is ignored. See
+[`idea-subsystem-tag-on-ideas-2026-06-19.md`](./idea-subsystem-tag-on-ideas-2026-06-19.md).
+
 Current broad captures:
 
+- [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the planning-map cleanup):** a stdlib
+  `scripts/check_plan_homing.py` asserting every non-`historical` `docs/planning/` doc is linked from a
+  **routing** doc (roadmap · a folio · current-state · the new plan index) — not merely *reachable* from
+  anywhere. Closes the gap that let the dashboard/website cluster (~8 active plans) go unrouted for ~30 PRs
+  while `check_docs --strict` stayed green. The plan-level complement to `check_sector_map.py` (folio
+  homing) + `check_plan_backlog.py` (depth). Disposable (Q-0105). → relates `scripts/check_docs.py` ·
+  `docs/planning/README.md`.
+- [`loop-health-gh-unavailable-fallback-2026-06-19.md`](./loop-health-gh-unavailable-fallback-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the band-#1110 reconciliation pass):** `check_loop_health.py`
+  (Q-0135) SKIPs on every reconciliation pass because the in-container routine has no `gh` — give it a
+  `gh`-absent fallback (read the newest `reconcile` issue's author via the GitHub REST API, the same read
+  the agent does by hand) so the control-plane ROUTINE_PAT row is verifiable *by the script*, not only by a
+  manual MCP read no checker can see. Disposable (Q-0105). → relates `scripts/check_loop_health.py` ·
+  `operations/autonomous-routines.md` § "Control-plane state".
+- [`per-command-feedback-threads-2026-06-19.md`](./per-command-feedback-threads-2026-06-19.md) —
+  **owner-directed (2026-06-19):** every command/cog on the bot site carries an optional **feedback thread**
+  (anyone posts questions/bugs/improvements), gated by an **Anthropic-API moderation pass** (clean-up +
+  foul-language block/rewrite) — "Codex for the bot's features." Goals: owner leaves inline thoughts to
+  review later · users see if an issue was already raised · honest feedback for all. Supersedes the v1
+  static `notes` field; reuses the submissions store + moderation pipeline. → relates website plan P2/§2.3/§4.
+- [`idea-to-cog-command-mapping-2026-06-19.md`](./idea-to-cog-command-mapping-2026-06-19.md) —
+  **owner-directed (2026-06-19):** map every idea (and bug) to its **cog/command** (explicit tag + a
+  validator; heuristic as interim fallback) — the truth source for the site's per-command **status**
+  (`in-progress` if any related ideas/bugs) and **linked-ideas** discoverability. "As fast as possible,
+  not rushing." → relates `export_dashboard_data.py` · the subsystem registry · website plan S1.1.
 - [`website-two-site-split-2026-06-19.md`](./website-two-site-split-2026-06-19.md) —
   **owner-directed (2026-06-19, Q-0178):** split the single dashboard into a **public bot site** (users;
   command reference, changelog, public bug/suggestion form → DB → owner-approve → mirror to GitHub) and a
@@ -27,6 +64,14 @@ Current broad captures:
   services. Structured into the required-output brief
   [`planning/website-two-site-split-planning-brief-2026-06-19.md`](../planning/website-two-site-split-planning-brief-2026-06-19.md)
   for the next planning session. → relates `dashboard/` · `scripts/export_dashboard_data.py`.
+- [`public-data-contract-field-snapshot-2026-06-19.md`](./public-data-contract-field-snapshot-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the website two-site-split foundation build #1109):** S1
+  guards the public `site.json` subset at the **top-level key** boundary (fail-closed whitelist); the
+  uncovered leak class is a new *field* inside an allowed family (`commands`/`catalogue`). A tiny stdlib
+  snapshot test pins the **exact leaf field set per public family** so any new field trips a conscious
+  "is this public?" review — extending redaction-by-construction from keys to leaves. Quick-win,
+  disposable (Q-0105). → relates `scripts/export_dashboard_data.py` (`build_site_subset`) ·
+  `scripts/check_dashboard_data.py` · the split plan §2.2/§4.1.
 - [`governance-files-presence-guard-2026-06-19.md`](./governance-files-presence-guard-2026-06-19.md) —
   **session idea (2026-06-19, Q-0089, from the repo governance/supply-chain baseline session):** a tiny
   stdlib `scripts/check_governance_files.py` that asserts the new root governance files (`LICENSE` ·
@@ -136,6 +181,16 @@ Current broad captures:
   `SUBSYSTEM = "btd6"` class attribute, or a command-surface-ledger join), deleting the override map
   and self-describing every cog including sub-cogs. → relates `scripts/scan_commands.py` ·
   `core/runtime/command_surface_ledger.py` · `utils/subsystem_registry.py`.
+- [`idea-subsystem-tag-on-ideas-2026-06-19.md`](./idea-subsystem-tag-on-ideas-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from building S1.1 of the website command browser):** the public
+  command browser links each command to its subsystem's open **ideas** ("what's planned" teasers +
+  the finished/in-progress badge), but idea files carry no subsystem field, so the producer falls back
+  to a filename-slug **heuristic** that cross-matches single common-word keys (`chain`/`channel`).
+  Add an optional **`Subsystem:` front-matter tag** on idea files (registry-validated); prefer it,
+  keep the heuristic as fallback — the "explicit tag, heuristic fallback" shape S1.1 recommended. The
+  redaction lens keeps even a stray match safe, so this is precision, not safety. Counterpart to
+  `cog-declares-its-subsystem` (cogs declare; this is *ideas* declare). → relates
+  `scripts/export_dashboard_data.py` (`_subsystem_open_work`) · `tests/unit/scripts/`.
 - [`ledger-dedup-linter-2026-06-16.md`](./ledger-dedup-linter-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the merge=union fix #1003):** #1003 made the append-only
   ledgers (`active-work.md`, `ideas/README.md`) auto-merge via git `merge=union`, whose one downside is

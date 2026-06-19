@@ -1,6 +1,7 @@
 # Idea-to-roadmap inventory — 2026-06-08
 
-> **Status:** `plan` — planning/routing draft; not implementation approval.
+> **Status:** `historical` — planning/routing draft; not implementation approval.
+> **Superseded 2026-06-19 (was active):** Superseded by ../ideas/README.md + ../roadmap.md as the live idea/plan routing. Do not act on this — current map: [planning/README](README.md).
 > **Sources consolidated:** all documents named in the 2026-06-08 idea-to-roadmap mapping request, plus relevant subsystem folios, binding decisions, and 2026-06-07/08 session journals where needed.
 > **Truth order:** source/merged PRs → binding docs → folios → current state → active plans → ideas → sessions/old plans.
 

@@ -1,6 +1,7 @@
 # SuperBot — Repo-Wide Architecture & Consistency Audit
 
-> **Status:** `audit` — snapshot (recommendations only — not implementation approval).
+> **Status:** `historical` — snapshot (recommendations only — not implementation approval).
+> **Superseded 2026-06-19 (was active):** Oldest repo audit; open items shipped / reframed-by-design / re-captured in the 06-12 readiness maps. Do not act on this — current map: [planning/README](../planning/README.md).
 > **Date:** 2026-05-29 · **Branch:** `claude/loving-knuth-AQCfs` · **Base commit:** `5609fe8` (post-#392).
 > **Method:** every source file under `disbot/` (510 files), every migration (51), every doc
 > (43), and the test tree (512 files / 6,306 tests) was read in full by a fan-out of 22

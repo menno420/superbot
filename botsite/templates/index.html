@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}SuperBot — the all-in-one Discord bot{% endblock %}
+{% block description %}Games, moderation, AI tools and more — SuperBot brings {{ data.counts.features }} feature areas and {{ data.counts.commands }} commands to your Discord server.{% endblock %}
+{% block content %}
+
+{# ── Hero ───────────────────────────────────────────────────────────────── #}
+<section class="text-center py-12 sm:py-16">
+  <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">SuperBot</h1>
+  <p class="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">
+    One Discord bot for games, moderation, AI tools and more — built by a
+    self-improving, AI-assisted development workflow.
+  </p>
+  <div class="mt-7 flex items-center justify-center gap-3">
+    <a href="/" class="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 font-semibold shadow">
+      Add to Discord
+    </a>
+    <a href="/features" class="rounded-lg border border-slate-700 hover:border-slate-500 px-6 py-2.5 font-medium">
+      Explore features
+    </a>
+  </div>
+</section>
+
+{# ── Capability band — HONEST catalogue counts only (plan layout note). Never
+   server/user totals — those need the deferred live source (plan §3). ───────── #}
+<section class="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+  {% set bands = [
+    (data.counts.commands, 'commands', '/commands'),
+    (data.counts.features, 'feature areas', '/features'),
+    (data.counts.games, 'games', '/features')
+  ] %}
+  {% for value, label, href in bands %}
+    <a href="{{ href }}" class="rounded-xl border border-slate-800 bg-slate-900/50 p-5 text-center hover:border-sky-600 transition-colors">
+      <div class="text-3xl font-bold">{{ value }}</div>
+      <div class="text-sm text-slate-400">{{ label }}</div>
+    </a>
+  {% endfor %}
+</section>
+
+{# ── Feature cards (grouped by category; deep-link to the showcase) ────────── #}
+<section class="mt-14">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-xl font-semibold">What it does</h2>
+    <a href="/features" class="text-sm text-sky-400 hover:text-sky-300">All features →</a>
+  </div>
+  {% if features %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for category, entries in features %}
+        <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">{{ category }}</div>
+          <ul class="space-y-2">
+            {% for entry in entries[:4] %}
+              <li class="flex items-start gap-2">
+                <span class="shrink-0">{{ entry.emoji or '•' }}</span>
+                <span class="text-sm text-slate-200">{{ entry.display_name or entry.key }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-sm text-slate-500">Feature catalogue coming soon.</p>
+  {% endif %}
+</section>
+
+{# ── How it works ─────────────────────────────────────────────────────────── #}
+<section class="mt-14">
+  <h2 class="text-xl font-semibold mb-4 text-center">How it works</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+    {% set steps = [('1', 'Invite', 'Add SuperBot to your server.'), ('2', 'Configure', 'Pick the features you want.'), ('3', 'Enjoy', 'Your members start playing and using it.')] %}
+    {% for num, title, body in steps %}
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5 text-center">
+        <div class="mx-auto mb-2 h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold">{{ num }}</div>
+        <div class="font-semibold">{{ title }}</div>
+        <div class="text-sm text-slate-400 mt-1">{{ body }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ── Repeat CTA ────────────────────────────────────────────────────────────── #}
+<section class="mt-14 text-center">
+  <a href="/" class="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-7 py-3 font-semibold shadow">
+    Add SuperBot to your server
+  </a>
+</section>
+{% endblock %}

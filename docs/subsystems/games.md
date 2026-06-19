@@ -1,7 +1,7 @@
 # Games subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + ADR-002 win.
-> **Last updated:** 2026-06-11.
+> **Last updated:** 2026-06-19 (plan pointers refreshed: fishing/hub/faucet-sink active; mining-structures shipped → historical).
 
 ## What & where
 
@@ -113,10 +113,10 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   (migration 070), withdraw moves them back, both legs atomic via
   `mining_workflow.vault_deposit`/`vault_withdraw`/`vault_deposit_all_resources`
   (no coins move → item-state direct-lane, no audit leg; the atomicity is the contract).
-  Surfaced via `!vault`/`!stash`/`!unstash` and a `🏦 Vault` hub panel. **v1 is a pure safe
-  store (no inventory cap yet)** — the cap that makes it a sink + Forge/Home are the next
-  slices, planned turn-key in
-  [`planning/mining-structures-skill-tree-plan-2026-06-14.md`](../planning/mining-structures-skill-tree-plan-2026-06-14.md).
+  Surfaced via `!vault`/`!stash`/`!unstash` and a `🏦 Vault` hub panel. The Vault-cap sink (v2, #897),
+  Forge (#905), and Home (#910) **all shipped** — the
+  [mining-structures-skill-tree-plan](../planning/mining-structures-skill-tree-plan-2026-06-14.md) is now
+  `historical` (every slice landed); only the owner-gated V-16 phase-2 PNG sprites remain.
 - **Skill tree — capped specialization (§7.4, Slice D, #891)** — `player_skills` (migration 071)
   + `services/skill_service.py` owns every allocation; four branches
   (mining/combat/fortune/crafting), **per-branch cap 10, soft total cap 20** (< 4×10 ⇒ you can't
@@ -149,6 +149,15 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   baseline rather than claiming a fresh live retest.
 
 ## Plans / pending approval
+
+**Active games plans** (live buildable set — full index: [`planning/README.md`](../planning/README.md)):
+- [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
+  Phase 1 (fishing v1 + gear-switching) buildable; the loadout/value/minigame tail is owner-design-gated (Q-0175).
+- [mining-hub-redesign](../planning/mining-hub-redesign-2026-06-15.md) — owner-picked Option A sub-hub split (not yet built).
+- [games-economy-faucet-sink-diagnostic-plan](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) —
+  read-only economy faucet/sink read model (turn-key).
+- *Shipped → `historical`:* [mining-structures-skill-tree-plan](../planning/mining-structures-skill-tree-plan-2026-06-14.md)
+  (every slice landed) · [games-wager-money-safety-plan](../planning/games-wager-money-safety-plan-2026-06-12.md) (#748).
 
 The deferred section of `docs/archive/games-actionability-roadmap.md` is contextual, not a
 blanket approval. It includes bounded follow-ups such as inventory architecture,

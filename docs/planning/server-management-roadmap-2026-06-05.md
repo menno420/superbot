@@ -1,6 +1,7 @@
 # Server Management Roadmap
 
-> **Status:** `plan` — source-grounded planning document; no production behavior is changed by this document.
+> **Status:** `historical` — source-grounded planning document; no production behavior is changed by this document.
+> **Superseded 2026-06-19 (was active):** Structurally complete; the authoritative shipped-record is server-management-status-2026-06-05. Do not act on this — current map: [planning/README](README.md).
 > **Audit date:** 2026-06-05
 > **Intended direction:** evolve SuperBot into a coherent, service-owned, button-first Guild OS without duplicating existing setup, governance, resource, or mutation systems.
 >

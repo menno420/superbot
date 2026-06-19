@@ -5,6 +5,7 @@
 > `docs/current-state.md`.
 
 > **Status:** `ideas` — backlog — not approved for implementation yet.
+> **Subsystem:** ai — in-bot AI tool surface.
 
 **Created:** 2026-06-06  
 **Purpose:** capture AI tool/capability ideas that are not already covered by the current bot-awareness diagnostics plan or the BTD6 complex tool-orchestration plan.  

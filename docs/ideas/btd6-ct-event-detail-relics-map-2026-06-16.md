@@ -2,6 +2,7 @@
 
 > **Status:** `ideas` — brainstorm, not approved. Promotion path: `docs/ideas/README.md`.
 > **Captured:** 2026-06-16 (BTD6 live-events follow-up; found while building #953).
+> **Subsystem:** btd6 — BTD6 Live Events / CT detail.
 
 ## The gap
 

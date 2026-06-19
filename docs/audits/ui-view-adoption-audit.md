@@ -1,6 +1,7 @@
 # SuperBot — UI / View Adoption Audit
 
-> **Status:** `living-ledger` — ⚠️ SUPERSEDED inventory snapshot, dated 2026-05-24, `main` at
+> **Status:** `historical` — ⚠️ SUPERSEDED inventory snapshot, dated 2026-05-24, `main` at
+> **Superseded 2026-06-19 (was active):** Self-declared SUPERSEDED by repo-wide-audit-2026-05-29's backlog; badge corrected from `living-ledger`. Do not act on this — current map: [planning/README](../planning/README.md).
 > `948f539` (post-PR-#289). The PR 1–7 backlog in §7 / §9.3 has all
 > shipped; **`docs/audits/repo-wide-audit-2026-05-29.md` reconciles this
 > snapshot against current code and supersedes its open backlog.** Do

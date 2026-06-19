@@ -6518,9 +6518,12 @@ Q-0105 (disposable-tooling discipline), gap-analysis §6 (toolchain-rot watch �
 4. **Topology** — **2 Railway services**: repurpose `dashboard/` as the dev site + a **new** lightweight
    public bot site. Preserve the dashboard's existing decoupling (no bot imports; reads generated JSON).
 
-**Still open (the planning session surfaces/recommends, owner decides):** domains/branding; the exact
-live-widget data source (gated on a control-API public-exposure security review); the submissions DB store
-(the bot's Postgres vs a separate one).
+**Still open → now resolved (2026-06-19, via the question panel + plan §7):** domains/branding —
+**deferred** (no domain yet; build on Railway URLs, owner sets DNS at cutover); the exact live-widget data
+source — **generated build-meta for v1**, the live dev-site aggregator deferred behind the control-API
+public-exposure security review (the public site never reads the private control API); the submissions DB
+store — **a separate, dashboard-owned Postgres** (INSERT-only role for the public site). The per-server
+control-panel placement fork is **Q-0179** (decided: → bot site). Defaults + rationale live in plan §7.
 
 **Home:** the [planning brief](../planning/website-two-site-split-planning-brief-2026-06-19.md) + this
 Q-block; idea capture [`website-two-site-split-2026-06-19.md`](../ideas/website-two-site-split-2026-06-19.md).
@@ -6530,10 +6533,11 @@ Related: the developer-dashboard initiative + Q-0155/Q-0156 (dashboard auth/live
 
 ### Q-0179 — Website split: where does the per-server control panel live? (2026-06-19)
 
-> **OPEN — DISCUSS lane, owner decides.** Surfaced by the website two-site-split *plan* (#1100, §7.4),
-> which the planning session grounded against the live dashboard. Routes a genuine owner-intent fork that
-> Q-0178's "still open" list does **not** include. Not blocking the plan, but **needed before the
-> ultracode build run wires the control panel one way.** Agent recommends; owner decides.
+> **DECIDED 2026-06-19 (owner, via the question panel): option (2) — the per-server control panel's home
+> is the BOT SITE.** The owner views per-server management as a bot-**user** feature, not a dev/engine-room
+> one: server owners manage their server from the bot site rather than the dev dashboard. Surfaced by the
+> website two-site-split *plan* (#1100, §7.4), which grounded the fork against the live dashboard; Q-0178's
+> "still open" list did not include it. Recorded into plan §1 / §2.4 / §4.4 / §7.4.
 
 **The fork.** Q-0178 (decision 3) says the dev site is "owner-gated for edits (existing Discord-OAuth
 owner auth)." But the *existing*, already-shipped, already-audited `/admin` control panel is
@@ -6549,12 +6553,25 @@ not match what is built. Two readings, materially different products:
    Cleaner audience separation (a server owner managing their server is a bot user, not a developer), but
    it is migration + re-auth work and re-opens the public-surface security review for the live editors.
 
-**Recommendation:** (1) for v1 — leave it on the dev site, build the split around it, and revisit moving
-it to the bot site as a later, separate slice once the bot site exists. **Owner: confirm (1), or pick (2).**
+*Agent recommendation had been (1) for v1; the owner picked (2).*
 
-**Still-open siblings (implementation-level, not router-gating — defaults live in plan §7):** the
-bot-changelog source (curated file vs auto-derived) and the public-form captcha (honeypot+rate-limit v1
-vs add a provider). Listed for completeness; the build run defaults them per the plan unless you say so.
+**Decision + secure realization (agent judgment on the *how*, per "approving a goal approves the path").**
+The owner picked (2). Because (2) places OAuth + a control-API-writing surface on the user-facing side, the
+build realizes it as a **gated "manage my server" surface isolated from the secret-free public marketing
+pages** (its own service/router under the bot-site domain) — so a compromise of the public marketing
+surface cannot reach `CONTROL_API_TOKEN`. The invariant *"the public marketing surface holds exactly one
+secret (the INSERT-only submissions DSN)"* is preserved by **isolation** rather than by **site**. The
+multi-user, bot-is-the-authority model is unchanged (the panel was never owner-only; the **owner-only**
+ring stays on the dev site for submission moderation + env-value mgmt + control board). **Prerequisite:**
+this is exactly the scope of the control-API public-exposure security review the owner flagged (Q-0178
+still-open #2 / plan §3, §7.2) — that review gates the panel-migration slice. The first additive build wave
+(marketing + `/submit` + moderation + GitHub mirror) proceeds with no secrets on the public surface; the
+existing dev-site panel keeps serving until its migration slice ships (no gap). *If the owner instead wants
+a single merged app, that supersedes the isolation recommendation — say so.*
+
+**Sibling implementation defaults — also decided 2026-06-19 (plan §7):** bot-changelog source = **curated
+`docs/bot-changelog.md`** (§7.5); public-form spam = **honeypot + rate-limit for v1**, captcha only if
+abuse appears (§7.6).
 
 **Home:** the [plan §7](../planning/website-two-site-split-plan-2026-06-19.md) + this Q-block. Related:
 Q-0178 (the four decided choices + its own "still open" list), Q-0155/Q-0156 (dashboard auth/live-editor).

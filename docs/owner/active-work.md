@@ -25,6 +25,17 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/website-submit-form` · **website-split unit P4** — public `/submit` bug/suggestion
+  form + intake (fills P1's `botsite/submit.py` stub) · exclusive: `botsite/submit.py` ·
+  `botsite/ratelimit.py` · `botsite/templates/submit.html` · `tests/unit/botsite/test_submit.py`
+  (+ 1 stale stub assertion updated in `tests/unit/botsite/test_app.py`) · 2026-06-19 ·
+  **PR #1117 (auto-merge on green)**
+
+- `claude/bold-cori-y7ben5` · **website-split: review the external research + lock the open decisions**
+  (owner-directed) — resolve **Q-0179** (control panel → bot site) + lock plan §7's 6 decisions + fold the
+  owner's external-research layout/UX guidance into the plan · `docs/owner/maintainer-question-router.md` ·
+  `docs/planning/website-two-site-split-plan-2026-06-19.md` · `docs/current-state.md` · 2026-06-19 ·
+  **auto-merge on green**
 - `claude/kind-einstein-jlywgm` · **`scripts/router_status.py`** (grooming-ender — executes the #1102
   Q-0089 idea) — stdlib digest of the question router: next free Q-number + the OPEN owner-decision
   queue · `scripts/router_status.py` + `tests/unit/scripts/test_router_status.py` · 2026-06-19 ·
@@ -72,8 +83,17 @@ living ledger (`docs/current-state.md`).
   `scripts/check_consistency.py` · `tests/unit/scripts/test_check_consistency.py` ·
   `docs/current-state.md` · 2026-06-18 · **auto-merge on green**
 
+- `claude/website-deploy-redaction-docs` · website two-site-split **fan-out P7 + P8** (docs only) —
+  the §4.1 redaction-audit record + the `botsite/` deploy/env docs; sole fan-out unit editing the
+  plan (mark §5 back-half shipped + §9 links) · `docs/operations/dashboard-redaction-audit.md` ·
+  `docs/operations/botsite-deploy.md` · `docs/operations/env-vars.md` · `dashboard/README.md` ·
+  `docs/planning/website-two-site-split-plan-2026-06-19.md` · 2026-06-19 · **auto-merge on green**
+
 ## Recently cleared
 
+- `claude/great-carson-4hsr7l` · **planning/audit/idea map cleanup** (docs-only) — new
+  `docs/planning/README.md` plan index + 40 stale plans/recon/readiness-maps/audits rebadged `historical`
+  + 27 idea subsystem tags + roadmap/folio/ledger de-stale · 2026-06-19 · **PR #1124 (auto-merge on green)**
 - `claude/magical-rubin-bq71go` · manifest spine **PR3** — control-API `GET /control/manifest` read +
   cross-manifest reconciliation (`dangling_panel_action`) + AST-vs-panel-registry drift guard +
   deploy-SHA badge · 2026-06-17 · **PR #1020 (auto-merge on green)**

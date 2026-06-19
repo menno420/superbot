@@ -1,7 +1,7 @@
 # Media / YouTube subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + ADR-007 win.
-> **Last updated:** 2026-06-06.
+> **Last updated:** 2026-06-19 (P0-2 retention #829 reflected; plan pointers refreshed).
 
 ## What & where
 
@@ -27,12 +27,11 @@ and rendering video references. Start in `disbot/services/youtube_context_servic
 
 - Fetch, context, cache, DB, embed, and renderer seams exist. YouTube context is
   operator/config gated. Migration `049` stores transcript/fetch status, errors,
-  and expiry — **but the cached rows currently include raw fetched payloads, not
-  the bounded metadata projection this line previously claimed** (media readiness
-  map, 2026-06-12). The bounded-projection + scheduled-purge shape is the decided
-  **Q-0099 target**, queued as hardening **P0-2** (band queue slot 9) — until that
-  lands, treat cached media rows as raw-payload retention with the privacy
-  implications the readiness map names.
+  and expiry. **Retention / data-minimization SHIPPED — hardening P0-2 (#829, Q-0099):**
+  a bounded metadata projection at the cache write + the scheduled `MediaMaintenanceCog`
+  purge + thumbnail-URL validation; content-free media diagnostics followed (#854). So
+  cached media rows are now the **bounded projection**, *not* raw-payload retention (this
+  line previously said the opposite — corrected 2026-06-19).
 - YouTube is env-gated and runs degraded in the sandbox when required keys/network
   behavior are unavailable; degraded does not mean broken, and production behavior
   has not been live-verified in this mapping session.
@@ -41,7 +40,9 @@ and rendering video references. Start in `disbot/services/youtube_context_servic
 
 ## Plans / pending approval
 
-Future YouTube/channel-summary or content-status direction must be promoted through
+- **Active (buildable):** [p0-2-content-free-media-diagnostics-plan](../planning/p0-2-content-free-media-diagnostics-plan-2026-06-14.md)
+  — the one remaining buildable media slice (content-free provider/cache diagnostics; one gap open).
+- Future YouTube/channel-summary or content-status direction must be promoted through
 an approved plan. It should reuse the shared fetch/cache/context/render seams,
 identify the public/operator surface, define provenance and freshness, and specify
 logging, privacy, moderation, test, and rollback behavior.

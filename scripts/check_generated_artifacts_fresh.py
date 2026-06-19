@@ -144,6 +144,63 @@ def drift_dashboard_json() -> list[Drift]:
     ]
 
 
+# Structural identifier sets for the public site.json subset — only identity is
+# compared (never order/volatile churn), mirroring the dashboard.json surfaces.
+_SITE_SURFACES: dict[str, Callable[[dict[str, Any]], set[Any]]] = {
+    "catalogue keys": lambda d: {e.get("key") for e in d.get("catalogue", [])},
+    "command names": lambda d: {c.get("name") for c in d.get("commands", [])},
+    "changelog dates": lambda d: {e.get("date") for e in d.get("bot_changelog", [])},
+}
+
+
+def drift_site_json() -> list[Drift]:
+    """``botsite/data/site.json`` — the public subset (plan §5 / §2.2).
+
+    Two kinds of finding (both surfaced here, so one report covers the artifact):
+
+    * **whitelist** — the committed file's top-level keys must be a subset of the
+      producer's ``SITE_TOPLEVEL_KEYS``; a stray key is the leak class (a non-public
+      family reaching the marketing site) and is reported even though this umbrella
+      is warn-only by default (``--strict`` turns it into an exit-1 cadence gate).
+    * **structural freshness** — catalogue keys / command names / changelog dates
+      present in a fresh subset but missing from the committed file (a source change
+      that shipped but was never re-exported), and vice-versa. The volatile churn
+      (build SHA, timestamps) is ignored, like the dashboard.json reporter.
+    """
+    mod = _load_module("dashboard", REPO_ROOT / "scripts" / "check_dashboard_data.py")
+    site_path = mod.SITE_DATA_FILE
+    if not site_path.exists():
+        return [
+            Drift(
+                "site.json",
+                "artifact",
+                f"{site_path.relative_to(REPO_ROOT)} does not exist — re-run "
+                f"scripts/export_dashboard_data.py",
+            ),
+        ]
+    committed = json.loads(site_path.read_text(encoding="utf-8"))
+    fresh = mod._export_module().build_site_subset(mod._build_fresh())
+
+    findings: list[Drift] = []
+    # whitelist (reuse the canonical assertion in check_dashboard_data)
+    findings.extend(
+        Drift("site.json", "whitelist", issue.message)
+        for issue in mod.check_site_subset(committed, site_path=site_path)
+    )
+    # structural freshness
+    for surface_name, surface in _SITE_SURFACES.items():
+        findings.extend(
+            _set_drift(
+                "site.json",
+                surface_name,
+                surface(committed),
+                surface(fresh),
+                "re-run scripts/export_dashboard_data.py",
+            ),
+        )
+    return findings
+
+
 _ENV_VAR_ROW = re.compile(r"^\|\s*`([A-Z][A-Z0-9_]*)`", re.MULTILINE)
 
 
@@ -153,19 +210,26 @@ def _env_names(doc_text: str) -> set[str]:
 
 
 def drift_env_vars_doc() -> list[Drift]:
-    """``docs/operations/env-vars.md`` vs a fresh ``scan_env_usage`` render.
+    """``docs/operations/env-vars.md`` generated head vs a fresh ``scan_env_usage`` render.
 
     Compares only the env-var *name* set (the same regex applied to both the fresh
     render and the committed file, so there is no extraction asymmetry); the code
     ``file:line`` locations the doc also carries are volatile and intentionally ignored.
+    Only the **generated head** (above ``END_MARKER``) is compared — the hand-maintained
+    web-tier tail below it carries vars the scanner can't see, by design, so it must not
+    register as drift (the #1119 footgun fix).
     """
     mod = _load_module("env", REPO_ROOT / "scripts" / "scan_env_usage.py")
     committed_path = REPO_ROOT / "docs" / "operations" / "env-vars.md"
+    committed_head = committed_path.read_text(encoding="utf-8").split(
+        mod.END_MARKER,
+        1,
+    )[0]
     fresh_doc = mod.render_doc(mod.scan_env_usage())
     return _set_drift(
         "env-vars.md",
         "env-var names",
-        _env_names(committed_path.read_text(encoding="utf-8")),
+        _env_names(committed_head),
         _env_names(fresh_doc),
         "re-run scripts/scan_env_usage.py --write-doc",
     )
@@ -244,6 +308,12 @@ REGISTRY: tuple[Artifact, ...] = (
         "dashboard/data/dashboard.json",
         "scripts/export_dashboard_data.py",
         drift_dashboard_json,
+    ),
+    Artifact(
+        "site.json",
+        "botsite/data/site.json",
+        "scripts/export_dashboard_data.py",
+        drift_site_json,
     ),
     Artifact(
         "env-vars.md",

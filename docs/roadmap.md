@@ -2,29 +2,21 @@
 
 > **Status:** `living-ledger` — the one cross-area "what's planned, for which sector, in
 > what order" index, now organised under the **5 planning sectors** (S1–S5, Q-0137) so each
-> sector is a self-contained dispatch queue. **Last updated:** 2026-06-14 (restructured by
-> sector — the next-session brief acting on the [sector map](repo-sector-map.md)).
+> sector is a self-contained dispatch queue. **Last updated:** 2026-06-19 (planning-map cleanup —
+> ▶ pointer de-staled to the live band + the new [plan index](planning/README.md); restructured by
+> sector 2026-06-14, [sector map](repo-sector-map.md)).
 >
-> **▶ The live queue (next full band — ~30 PRs, the 30-PR cadence Q-0134):**
-> [`planning/reconciliation-pass-2026-06-17-band1020.md`](planning/reconciliation-pass-2026-06-17-band1020.md)
-> §4 — set by the eleventh Q-0107 pass (issue #1021). **▶ Next ungated startable = moderation-DM config**
-> ([moderation-dm-config-plan](planning/moderation-dm-config-plan-2026-06-17.md), turn-key, Q-0147 —
-> per-action moderation DMs on the existing seam, off by default). The **developer-dashboard /
-> control-API** initiative is the dominant thread but its next slice (manifest-spine PR4 panel-layout
-> editor) is **owner-paced** (control-API write side); the AI deterministic-floor family is COMPLETE
-> (#1008–#1012). The band-#990 queue is fully scored in that pass §2. _Earlier note:_ The band-#900 queue is **nearly fully executed**:
-> Forge ✅#905 · P1-3 invariants ✅#917/#918 · Railway log-triage ✅#906 · mining Home/respec/titles
-> ✅#910/#912 (**mining structures lane COMPLETE**) · BUG-0009 3/4 ✅#924/#926 · welcome phase 2
-> ✅#920; security tiers 1+2 **in flight** (#929, `needs-hermes-review`). The buildable-now `ready`
-> queue has thinned — the top turn-key slices are the **games-economy faucet/sink diagnostic** (now
-> ungated, promoted to a plan this pass) and **myprofile PR A**. The remaining P1-1 (absence-guard
-> Layer B + live battery) stays creds/design-gated; BUG-0009 slice 3 is data-gated. The
-> portable-substrate-kit OSS arc stays **owner-action** (band-#900 §6 escalation). Every slot carries
-> a gate-state tag.
-> That doc owns the queue; this page stays the per-area index. (The
-> [third pass](planning/reconciliation-pass-2026-06-13-q0107.md) is now `historical`; the
-> 2026-06-13 interim [workflow reconciliation](planning/reconciliation-pass-2026-06-13-workflow.md)
-> was docs/tooling only.)
+> **▶ The live queue — read [`docs/current-state.md`](current-state.md) ▶ Next action.** That is the
+> single live "what is startable right now" pointer; this page intentionally **does not restate it**
+> (restating it inline is exactly what kept going stale — the pointer used to lag several bands behind).
+> The current 30-PR band queue is owned by the **newest** reconciliation pass —
+> [`planning/reconciliation-pass-2026-06-19-band1110.md`](planning/reconciliation-pass-2026-06-19-band1110.md)
+> §4 (fourteenth Q-0107 pass; the 30-PR cadence is Q-0134). **The full plan inventory — active plans by
+> sector + the historical/superseded set — is the new [`planning/README.md`](planning/README.md)
+> (2026-06-19).** The **developer-dashboard / control-API / website** initiative (the dominant active
+> thread) is homed there and in the
+> [website next-steps handoff](operations/website-split-next-steps-2026-06-19.md) — it was previously
+> unrouted from this roadmap.
 >
 > **What this is:** a thin router over the detailed plans. Each row is a one-line
 > description + a link to the **authoritative plan** and the area **folio** — it restates

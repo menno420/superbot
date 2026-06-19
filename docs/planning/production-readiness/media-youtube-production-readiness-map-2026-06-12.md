@@ -1,6 +1,7 @@
 # Media / YouTube production-readiness map — 2026-06-12
 
-> **Status:** `audit` — verified readiness review (point-in-time); findings are not implementation approval.
+> **Status:** `historical` — verified readiness review (point-in-time); findings are not implementation approval.
+> **Superseded 2026-06-19 (was active):** Superseded — P0-2 retention #829 + content-free diagnostics #854 shipped. Live spine: hardening-roadmap. Do not act on this — current map: [planning/README](../README.md).
 > **Mode:** docs-only mapping and production-readiness review; no fixes implemented.
 > **Verdict:** **Not production-ready.** The feature is a coherent, default-off AI
 > grounding slice with useful unit coverage, but production readiness is blocked by

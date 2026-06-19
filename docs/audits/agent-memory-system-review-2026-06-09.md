@@ -1,6 +1,7 @@
 # Agent-memory system review — 2026-06-09 (one session's honest evidence)
 
-> **Status:** `audit` — a dated assessment of the orientation/memory system
+> **Status:** `historical` — a dated assessment of the orientation/memory system
+> **Superseded 2026-06-19 (was active):** Dated orientation/memory retrospective; cited as history by current-state. Do not act on this — current map: [planning/README](../planning/README.md).
 > (CLAUDE.md → collaboration-model → current-state → journal → `.sessions/` →
 > router → plans), written by the agent that ran the 2026-06-09 multi-lane
 > session (PRs #624/#626) at the maintainer's request. Findings reflect one

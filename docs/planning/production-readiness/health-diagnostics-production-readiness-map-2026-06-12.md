@@ -1,6 +1,7 @@
 # Health / Diagnostics production-readiness map — 2026-06-12
 
-> **Status:** `audit` — source-verified production-readiness map; update after the next live verification session.
+> **Status:** `historical` — source-verified production-readiness map; update after the next live verification session.
+> **Superseded 2026-06-19 (was active):** Superseded — the P1-2 findings-lifecycle gaps closed #843. Live spine: hardening-roadmap. Do not act on this — current map: [planning/README](../README.md).
 >
 > **Mode:** docs-only source mapping and production-readiness review. No reported
 > execution-subsystem bug is reclassified as a Health / Diagnostics bug unless the

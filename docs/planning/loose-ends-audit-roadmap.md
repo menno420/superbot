@@ -1,6 +1,7 @@
 # SuperBot Loose Ends Audit Roadmap
 
-> **Status:** `plan` — doc-only planning PR
+> **Status:** `historical` — doc-only planning PR
+> **Superseded 2026-06-19 (was active):** Its L1–L6 PR sequence is superseded by building-roadmap/mother-hub-map.md. Do not act on this — current map: [planning/README](README.md).
 
 Runtime impact: none  
 Baseline inspected: `main` at Phase 9b merge (`baacf461`)  

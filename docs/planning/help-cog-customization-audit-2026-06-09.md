@@ -1,6 +1,7 @@
 # Help cog customization audit and roadmap — 2026-06-09
 
-> **Status:** `plan` — source-verified mapping and future-work recommendation; no runtime behavior is implemented here.
+> **Status:** `historical` — source-verified mapping and future-work recommendation; no runtime behavior is implemented here.
+> **Superseded 2026-06-19 (was active):** Decisions Q-0055–Q-0059 answered; the Help overlay editor shipped #677/#679. Do not act on this — current map: [planning/README](README.md).
 >
 > **Scope:** Help + hubs + navigation + governance visibility + access projection + settings/customization/setup integration.
 >
