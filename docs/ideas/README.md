@@ -38,6 +38,13 @@ Current broad captures:
   that finished fast but shallow; verification-by-proxy). The idea: a session-close **"are you sure?"
   self-audit** (+ an independent reviewer) — the system performing the probe the owner currently does. →
   relates `ground-truth-audit-protocol` · `autonomous-improvement-loop-vision` · Q-0102.
+- [`dev-site-project-status-donut-2026-06-19.md`](./dev-site-project-status-donut-2026-06-19.md) —
+  **owner-directed (2026-06-19):** a **modern multi-segment status donut** for the **dev site**
+  (build / planned / ideas / bugs at a glance), mapped onto the **doc-badge lifecycle**
+  (`ideas`→`plan`→`historical` *is* the state machine) + the bug book — live data via
+  `export_dashboard_data.py`. Paired with a **direction**: refocus the dev site on *projects*, not the
+  bot (the public site owns the bot). → refines the website-two-site-split plan.
+  [mockup](./assets/dev-site-status-donut-mockup-2026-06-19.png).
 - [`sector-scoped-lean-boot-for-cheap-models-2026-06-19.md`](./sector-scoped-lean-boot-for-cheap-models-2026-06-19.md) —
   **owner-directed (2026-06-19; B1-priority next session):** make Sonnet usable by cutting the orientation
   tax — a **sector-scoped lean boot** (declare your sector → load only its invariants + folio + active plan
