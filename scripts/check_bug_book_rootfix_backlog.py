@@ -11,9 +11,10 @@ run noticed it by hand. This guard turns that latent backlog into an explicit li
 the next empty-fire dispatch run can pick up (the same role ``check_plan_backlog``
 plays for thin plans).
 
-What it flags (the "looks done but isn't fully" class — scoped to the ``## BUG-NNNN``
-header line + the entry's ``- **Status:**`` line, never arbitrary body prose, to
-avoid false positives from words like "recommend" in a root-cause paragraph):
+What it flags (the "looks done but isn't fully" class — matched on the header's
+**status label** (the segment after the last em-dash) + the entry's ``- **Status:**``
+line, never the title or body prose, so a title containing "partially"/"root" or a
+"recommendation" mention in a paragraph can't false-positive):
 
 * ``PARTIALLY FIXED``                — a fix landed for some sub-cases, others open.
 * ``root-fix RECOMMENDED`` / ``RECOMMENDED`` — symptom fixed, durable fix deferred.
@@ -58,23 +59,45 @@ class RootFixOwed:
 
     bug_id: str
     reason: str  # which signal matched (partial / recommended / immediate-only)
-    status_text: str  # the header tail + status line, for the report
+    status_text: str  # the header status label + status line, for the report
+
+
+def _header_status_label(header_tail: str) -> str:
+    """The status label from a ``## BUG-NNNN — <title> — <STATUS>`` header.
+
+    Returns the segment after the **last** em-dash — i.e. the status label, never the
+    title. Scoping to this (rather than the whole header tail) keeps a *title* that
+    merely contains words like "partially" or "root" from being misread as a status
+    (the false-positive class flagged in #1144 review). An entry that carries no header
+    status segment (status only on the ``- **Status:**`` line) yields its last segment,
+    which is harmless: the precise phrase/paren matching below won't fire on prose.
+    """
+    parts = header_tail.split("—")
+    return parts[-1].strip() if len(parts) > 1 else ""
 
 
 def _classify(status_text: str) -> str | None:
     """Return the backlog reason for a status string, or None if it owes no root fix.
 
-    Order matters only for the message: a terminal ``FIXED (root)`` short-circuits
-    so a body that *mentions* "recommendation" can't re-flag a closed entry.
+    Matches **precise phrases / parenthesized markers**, not loose substrings, and
+    classifies the terminal ``(root)`` marker first (#1144 review hardening):
+
+    * a terminal ``FIXED (root)`` / ``(root)`` marker short-circuits — a closed-at-root
+      entry whose text still *mentions* a recommendation can't re-flag;
+    * ``PARTIALLY FIXED`` (the status phrase, not any "partially …") → partial;
+    * ``RECOMMENDED`` (the deferred-root word; "recommendation" does not match) → deferred;
+    * ``(immediate)`` present without ``(root)`` → an explicitly-interim fix. Keying on the
+      parenthesized ``(immediate)`` label (not bare "immediate") and on the ``(root)``
+      *marker* (not any "root", so "root cause deferred" prose no longer suppresses it).
     """
     upper = status_text.upper()
-    if "FIXED (ROOT)" in upper:
+    if "(ROOT)" in upper:
         return None
-    if "PARTIALLY" in upper:
+    if "PARTIALLY FIXED" in upper:
         return "partially fixed — open sub-cases remain"
     if "RECOMMENDED" in upper:
         return "root-fix RECOMMENDED but not done"
-    if "IMMEDIATE" in upper and "ROOT" not in upper:
+    if "(IMMEDIATE)" in upper:
         return "FIXED (immediate) only — no root fix"
     return None
 
@@ -91,9 +114,9 @@ def find_rootfix_backlog(text: str) -> list[RootFixOwed]:
             i += 1
             continue
         bug_id = header.group(1)
-        header_tail = header.group(2)
-        # Collect this entry's status line(s) until the next "## " header.
-        status_text = header_tail
+        # The status signal lives in the header's status label + the Status: line —
+        # never the free-text title (which would cause false positives).
+        status_text = _header_status_label(header.group(2))
         j = i + 1
         while j < n and not lines[j].startswith("## "):
             status_match = _STATUS_LINE_RE.match(lines[j])
