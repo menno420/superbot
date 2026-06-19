@@ -94,3 +94,34 @@ select_option_truncation:
       reason: "repair/craft selects are bounded by the curated gear+recipe catalog; under 25."
     - pattern: views/mining/gear_panel.py::_ItemSelect.__init__
       reason: "owned items in one slot, bounded by the curated per-slot gear catalog; under 25 (24 + unequip sentinel)."
+
+# panel_base_class: a view extending `discord.ui.View` directly outside the
+# rps/blackjack/games/ai path lanes. These entries MIRROR the arch checker's
+# already-decided ground truth — the 8-entry frozenset in
+# tests/unit/views/test_view_base_class_conformance.py (the `baseview_inheritance`
+# ratchet). They are NOT new debt to migrate: each is a documented
+# specialized-lifecycle direct subclass (ephemeral capability/pipeline-gated
+# follow-ups with no local interaction_check/on_timeout; bespoke admin checks;
+# inline paginators). The conformance test is the single ratchet that drives them
+# down "only with a concrete gain"; allowlisting here keeps the warn-only
+# consistency rule from re-flagging them (Q-0120: a verdict that fights documented
+# ground truth is the tool's false positive). When the conformance frozenset
+# shrinks, drop the matching entry here too.
+panel_base_class:
+  exceptions:
+    - pattern: views/btd6/admin_panel.py::BTD6AdminView
+      reason: "Documented arch exception (conformance frozenset): bespoke BTD6 admin checks."
+    - pattern: views/btd6/strategy_review.py::StrategyReviewView
+      reason: "Documented arch exception (conformance frozenset): bespoke BTD6 admin lifecycle."
+    - pattern: views/channels/list_panel.py::_ChannelListPaginatorView
+      reason: "Documented arch exception (conformance frozenset): ephemeral inline `!list` paginator with its own author interaction_check + on_timeout."
+    - pattern: views/settings/edit_channel.py::ChannelSettingSelectView
+      reason: "Documented arch exception (conformance frozenset): ephemeral capability/pipeline-gated edit follow-up; BaseView adds no concrete gain on an ephemeral."
+    - pattern: views/settings/edit_number_presets.py::NumericPresetsView
+      reason: "Documented arch exception (conformance frozenset): ephemeral capability/pipeline-gated edit follow-up; BaseView adds no concrete gain on an ephemeral."
+    - pattern: views/settings/edit_role.py::RoleSettingSelectView
+      reason: "Documented arch exception (conformance frozenset): ephemeral capability/pipeline-gated edit follow-up; BaseView adds no concrete gain on an ephemeral."
+    - pattern: views/setup/launcher.py::SetupLauncherView
+      reason: "Documented arch exception (conformance frozenset): setup launcher with specialized lifecycle."
+    - pattern: views/xp/rank_view.py::_RankView
+      reason: "Documented arch exception (conformance frozenset): documented direct-subclass reason in the module."
