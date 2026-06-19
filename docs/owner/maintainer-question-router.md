@@ -6494,3 +6494,34 @@ rules), Q-0114 (`do-not-automerge` carve-out), Q-0133 (born-red gate).
 **Home:** the [plan](../planning/repo-structure-improvement-plan-2026-06-19.md) + this Q-block. Related:
 Q-0151 (architecture-atlas review — no reorg; root-README posture), Q-0106 (executable-config exception),
 Q-0105 (disposable-tooling discipline), gap-analysis §6 (toolchain-rot watch — closed by Dependabot).
+
+---
+
+### Q-0178 — Website two-site split: bot site vs dev/repo site (2026-06-19)
+
+> **DECISION 2026-06-19 (owner-directed in-session, via the question panel).** After the ultracode run,
+> the owner directed splitting the single developer dashboard into **two audience-targeted sites** and
+> asked for the required planning output for the next session. The product/privacy/topology choices below
+> were made by the owner via `AskUserQuestion`; they are the binding constraints the next planning session
+> must honor. Full brief: [`docs/planning/website-two-site-split-planning-brief-2026-06-19.md`](../planning/website-two-site-split-planning-brief-2026-06-19.md).
+
+**Decisions (the four choices):**
+
+1. **Bot site** — **public + dynamic (hybrid:** regenerated content + a few live status widgets). For
+   Discord users: command reference, feature showcase, bot changelog, status, and a public submission form.
+2. **Public submissions** — **DB intake → owner approves on the dev site → approved ones mirror to GitHub
+   issues** (reuse the `.github/ISSUE_TEMPLATE/` shapes). *Not* direct-to-GitHub and *not* a raw public
+   feed — moderation gate first.
+3. **Dev site** — the current dashboard, repurposed: **all pages public read-only**, owner-gated for
+   **edits** (existing Discord-OAuth owner auth). **Hard constraint:** public read-only must never expose
+   secret **values/tokens** — names + status only (env-var names are already public; values are the line).
+4. **Topology** — **2 Railway services**: repurpose `dashboard/` as the dev site + a **new** lightweight
+   public bot site. Preserve the dashboard's existing decoupling (no bot imports; reads generated JSON).
+
+**Still open (the planning session surfaces/recommends, owner decides):** domains/branding; the exact
+live-widget data source (gated on a control-API public-exposure security review); the submissions DB store
+(the bot's Postgres vs a separate one).
+
+**Home:** the [planning brief](../planning/website-two-site-split-planning-brief-2026-06-19.md) + this
+Q-block; idea capture [`website-two-site-split-2026-06-19.md`](../ideas/website-two-site-split-2026-06-19.md).
+Related: the developer-dashboard initiative + Q-0155/Q-0156 (dashboard auth/live-editor lane).

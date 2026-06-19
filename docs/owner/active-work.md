@@ -25,10 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/focused-goldberg-mviel4` · **ultracode fleet brief** (owner-directed) — coordination doc for a
-  parallel multi-agent run: 8 architecture boundary-debt units + 8 ungated tooling/ops quick-wins, all
-  file-disjoint · `docs/planning/ultracode-fleet-plan-2026-06-19.md` · 2026-06-19
-  · _(prior #1064 governance/supply-chain baseline merged)_
+- `claude/focused-goldberg-mviel4` · **website two-site split — planning brief** (owner-directed) —
+  spec for the next planning session + idea capture + router Q-0178 · `docs/planning/website-two-site-split-planning-brief-2026-06-19.md`
+  · 2026-06-19 · _(prior ultracode fleet #1080–#1097 + #1064/#1079 all merged)_
 - `claude/magical-rubin-jnpnuw` · **dashboard.json structural-drift reporter** + freshness catch-up
   (executes the #1020 💡 idea + finding) · `scripts/check_dashboard_data.py` ·
   `dashboard/data/dashboard.json` · tests · 2026-06-17 · **auto-merge on green**
