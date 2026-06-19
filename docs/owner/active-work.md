@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/focused-goldberg-mviel4` · **repo structure: governance + supply-chain + CI baseline**
+  (owner-directed from 3 uploaded reports; LICENSE=MIT + full scope, Q-0177) — comprehensive plan +
+  LICENSE/SECURITY.md/CONTRIBUTING.md/CITATION.cff + `.github/dependabot.yml` + CodeQL + dashboard-CI
+  job + issue/PR templates + dashboard test-isolation fix · `docs/planning/` · `.github/` ·
+  `dashboard` tests · 2026-06-19
 - `claude/magical-rubin-jnpnuw` · **dashboard.json structural-drift reporter** + freshness catch-up
   (executes the #1020 💡 idea + finding) · `scripts/check_dashboard_data.py` ·
   `dashboard/data/dashboard.json` · tests · 2026-06-17 · **auto-merge on green**
