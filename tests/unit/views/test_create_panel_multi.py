@@ -36,6 +36,16 @@ def _name_select(view) -> discord.ui.Select:
     )
 
 
+def _category_select(view) -> discord.ui.Select:
+    """The windowed category single-select (placeholder distinguishes it)."""
+    return next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Select)
+        and "categor" in (c.placeholder or "").lower()
+    )
+
+
 def _lifecycle_result(steps, outcome):
     return LifecycleResult(
         mutation_id="m1",
@@ -80,7 +90,7 @@ def test_name_picker_is_multiselect_category_single():
     view = _build_view()
     assert _name_select(view).min_values == 0  # custom-only allowed
     # category stays single-select
-    assert view.cat_select.max_values == 1
+    assert _category_select(view).max_values == 1
 
 
 @pytest.mark.asyncio

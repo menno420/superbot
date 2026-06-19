@@ -103,10 +103,23 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    `core.resources.channel_service.build_select_options` gained a `limit=None` unbounded mode and
    `_build_channel_options` uses it, plus dropped `visibility_panel`'s inline `text_channels[:25]`,
    so the windowed channel panels actually reach the tail. `select_option_truncation` warn-only count
-   **15 → 7** (the remaining 7 are the **A2** per-panel embedded selects). **▶ Next = A2: migrate the
-   per-panel embedded selects** — `channels/create_panel` + `channels/move_panel` category selects,
-   `settings/subsystem_view` (×2), `setup/sections/channels`, `access/explorer`,
-   `diagnostic/automation_panel` — each a small `attach_windowed_select` swap.
+   **15 → 7** (the remaining 7 are the **A2** per-panel embedded selects).
+   **Lane A2 — the per-panel embedded selects — SHIPPED (#1056, 2026-06-19):** all 7 remaining
+   `select_option_truncation` findings migrated onto `attach_windowed_select` — `access/explorer`
+   (subsystem picker → `_attach_subsystem_select`), `channels/create_panel` + `channels/move_panel`
+   (category pickers; retired the bespoke `_CategorySelect` classes/exports), `diagnostic/automation_panel`
+   (rule picker → `_attach_rule_select`, with a new `SelectWindow.detach()` so `_rerender` swaps the
+   option list cleanly), `settings/subsystem_view` (edit + reset selects; the edit dispatcher extracted
+   to the module-level testable `dispatch_edit_setting`), and `setup/sections/channels` (binding picker
+   → `_attach_binding_select`). `select_option_truncation` warn-only **7 → 0** — the rule now runs clean
+   on the whole `views/` tree (graduation candidate after a few quiet sessions, step 3b). Each migration
+   fits the host's 5-row budget (nav only renders when a list spans >25, so the common case is a plain
+   select). Tests refactored for the new `attach_*`/`dispatch_*` API; CI mirror green (10658 passed);
+   arch 0. **▶ Next consistency-linter slice:** graduation prep for rule 4 (flip to error + wire into
+   `code-quality.yml` once it stays at 0 across a couple more sessions), **or** the `panel_base_class`
+   double-win (migrate the settings select-views onto `BaseView` — retires both a `panel_base_class`
+   finding and a `baseview_inheritance` arch-debt row, as #1048 did), **or** triage the `edit_in_place`
+   warn-only backlog.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.

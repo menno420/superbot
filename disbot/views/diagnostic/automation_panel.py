@@ -32,6 +32,7 @@ import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from views.base import HubView
+from views.paginated_select import SelectWindow, attach_windowed_select
 
 logger = logging.getLogger("bot.views.diagnostic.automation_panel")
 
@@ -233,9 +234,14 @@ async def build_automation_embed(guild: discord.Guild | None) -> discord.Embed:
 
 
 def _select_options(rules: list[dict[str, Any]]) -> list[discord.SelectOption]:
-    """Build the rule-select options, capped at Discord's 25-option limit."""
+    """Build the rule-select options.
+
+    Windowed by the caller (◀/▶ nav) rather than front-truncated, so a guild
+    with more than Discord's 25-rule cap keeps every rule selectable (the
+    #1040 class).
+    """
     options: list[discord.SelectOption] = []
-    for rule in rules[:25]:
+    for rule in rules:
         rid = rule.get("id")
         if rid is None:
             continue
@@ -329,54 +335,62 @@ async def _commit_delete(
     return True, f"Rule `#{result.rule_id}` deleted (mutation `{result.mutation_id}`)."
 
 
-class _RuleSelect(discord.ui.Select):
-    """Drop-down listing the guild's automation rules.
+def _attach_rule_select(
+    view: AutomationPanelView,
+    rules: list[dict[str, Any]],
+) -> None:
+    """(Re)attach the windowed rule picker to ``view``.
 
-    The view holds the selected rule id as ``self.view.selected_rule_id``;
-    the Enable / Disable / Delete buttons read from there.
+    Detaches any existing rule window first, so ``_rerender`` can swap in a
+    fresh option list after a mutation.  The view holds the chosen id as
+    ``view.selected_rule_id``; the Enable / Disable / Delete buttons read it.
+
+    The full rule list can exceed Discord's 25-option cap, so the options are
+    *windowed* (◀/▶ nav) rather than front-truncated (the #1040 class).
     """
+    if view.rule_window is not None:
+        view.rule_window.detach()
+        view.rule_window = None
 
-    def __init__(self, rules: list[dict[str, Any]]) -> None:
-        options = _select_options(rules) or [
-            discord.SelectOption(
-                label="(no rules in this guild)",
-                value="0",
-                description="Create one via !automation or the wizard's preset picker.",
-            ),
-        ]
-        super().__init__(
-            placeholder="Pick a rule…",
-            min_values=1,
-            max_values=1,
-            options=options,
-            row=0,
-        )
+    options = _select_options(rules) or [
+        discord.SelectOption(
+            label="(no rules in this guild)",
+            value="0",
+            description="Create one via !automation or the wizard's preset picker.",
+        ),
+    ]
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        view = self.view
-        if isinstance(view, AutomationPanelView):
-            try:
-                view.selected_rule_id = int(self.values[0])
-            except (TypeError, ValueError):
-                view.selected_rule_id = None
+    async def _on_pick(interaction: discord.Interaction, values: list[str]) -> None:
+        try:
+            view.selected_rule_id = int(values[0]) if values else None
+        except (TypeError, ValueError):
+            view.selected_rule_id = None
         if not await safe_defer(interaction):
             return
-        # No embed change on select — the button row is what acts on the
-        # current selection.  Re-edit with the same embed so Discord keeps
-        # the picked highlight.
-        if isinstance(view, AutomationPanelView):
-            await safe_edit(
-                interaction,
-                embed=view.last_embed
-                or _build_panel_embed(
-                    guild=interaction.guild,
-                    snapshot={},
-                    snapshot_error=None,
-                    rules=[],
-                    rules_error=None,
-                ),
-                view=view,
-            )
+        # No embed change on select — the button row acts on the current
+        # selection.  Re-edit with the same embed so Discord keeps the picked
+        # highlight.
+        await safe_edit(
+            interaction,
+            embed=view.last_embed
+            or _build_panel_embed(
+                guild=interaction.guild,
+                snapshot={},
+                snapshot_error=None,
+                rules=[],
+                rules_error=None,
+            ),
+            view=view,
+        )
+
+    view.rule_window = attach_windowed_select(
+        view,
+        options,
+        _on_pick,
+        placeholder="Pick a rule…",
+        select_row=0,
+        nav_row=2,
+    )
 
 
 class AutomationPanelView(HubView):
@@ -390,7 +404,8 @@ class AutomationPanelView(HubView):
         super().__init__(author)
         self.selected_rule_id: int | None = None
         self.last_embed: discord.Embed | None = None
-        self.add_item(_RuleSelect(rules or []))
+        self.rule_window: SelectWindow | None = None
+        _attach_rule_select(self, rules or [])
 
     # ------------------------------------------------------------------
     # Row 1 — actions on the selected rule
@@ -513,11 +528,8 @@ class AutomationPanelView(HubView):
             rules_error=rules_err,
         )
         self.last_embed = embed
-        # Rebuild the select so it reflects the new rule list.
-        for item in list(self.children):
-            if isinstance(item, _RuleSelect):
-                self.remove_item(item)
-        self.add_item(_RuleSelect(rules))
+        # Rebuild the windowed select so it reflects the new rule list.
+        _attach_rule_select(self, rules)
         self.selected_rule_id = None
 
         if use_followup and interaction.followup is not None:

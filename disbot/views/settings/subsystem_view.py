@@ -35,6 +35,7 @@ import discord
 from utils.subsystem_registry import SUBSYSTEMS
 from views.base import HubView
 from views.navigation import attach_back_button
+from views.paginated_select import attach_windowed_select
 
 logger = logging.getLogger("bot.views.settings.subsystem_view")
 
@@ -424,189 +425,185 @@ def _editable_specs(subsystem: str) -> list:
     return [spec for spec in schema.settings if spec.settings_key]
 
 
-class _EditSettingSelect(discord.ui.Select):
-    """Select listing every editable SettingSpec for the subsystem.
+async def dispatch_edit_setting(
+    interaction: discord.Interaction,
+    subsystem: str,
+    name: str,
+) -> None:
+    """Open the edit widget for ``subsystem.name`` keyed off the SettingSpec.
 
-    Picking a setting dispatches to the appropriate edit widget:
-    bool toggles directly; int/float/str-without-allowed_values pop
-    a modal; str-with-allowed_values shows an enum select view.
+    Dispatch by explicit ``input_hint`` first (PR #7): bool toggles directly;
+    int/float/str-without-allowed_values pop a modal; str-with-allowed_values
+    shows an enum select view.  Module-level (not a closure) so the routing is
+    unit-testable without the windowed-select machinery.
     """
+    from core.runtime.subsystem_schema import get_schema
+    from services.settings_resolution import resolve_setting
 
-    def __init__(self, subsystem: str, specs: list) -> None:
-        self.subsystem = subsystem
-        # Cap to Discord's 25-option limit; surface what we can.
-        options: list[discord.SelectOption] = []
-        for spec in specs[:25]:
-            options.append(
-                discord.SelectOption(
-                    label=spec.name[:100],
-                    value=spec.name,
-                    description=f"type={spec.value_type.__name__}"[:100],
-                ),
-            )
-        super().__init__(
-            placeholder="Edit a setting…",
-            min_values=1,
-            max_values=1,
-            options=options,
-            row=1,
+    schema = get_schema(subsystem)
+    spec = None
+    if schema is not None:
+        for s in schema.settings:
+            if s.name == name:
+                spec = s
+                break
+    if spec is None:
+        await interaction.response.send_message(
+            f"❌ Unknown setting `{subsystem}.{name}`.",
+            ephemeral=True,
         )
+        return
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        name = self.values[0]
-        from core.runtime.subsystem_schema import get_schema
-        from services.settings_resolution import resolve_setting
+    guild_id = interaction.guild_id
+    current = spec.default
+    if guild_id is not None:
+        resolution = await resolve_setting(guild_id, subsystem, name)
+        if resolution is not None:
+            current = resolution.value
 
-        schema = get_schema(self.subsystem)
-        spec = None
-        if schema is not None:
-            for s in schema.settings:
-                if s.name == name:
-                    spec = s
-                    break
-        if spec is None:
-            await interaction.response.send_message(
-                f"❌ Unknown setting `{self.subsystem}.{name}`.",
-                ephemeral=True,
-            )
-            return
+    parent_msg = interaction.message
 
-        guild_id = interaction.guild_id
-        current = spec.default
-        if guild_id is not None:
-            resolution = await resolve_setting(guild_id, self.subsystem, name)
-            if resolution is not None:
-                current = resolution.value
+    # Dispatch by explicit input_hint first (PR #7); fall through
+    # to the value_type / allowed_values rules so settings that
+    # don't opt into the new modes keep their existing widget.
+    hint = (spec.input_hint or "").strip().lower()
+    if hint == "channel":
+        from views.settings.edit_channel import ChannelSettingSelectView
 
-        parent_msg = interaction.message
+        widget = ChannelSettingSelectView(subsystem, name, parent_msg)
+        await interaction.response.send_message(
+            f"Pick a channel for `{subsystem}.{name}` (current=`{current!r}`):",
+            view=widget,
+            ephemeral=True,
+        )
+        return
+    if hint == "role":
+        from views.settings.edit_role import RoleSettingSelectView
 
-        # Dispatch by explicit input_hint first (PR #7); fall through
-        # to the value_type / allowed_values rules so settings that
-        # don't opt into the new modes keep their existing widget.
-        hint = (spec.input_hint or "").strip().lower()
-        if hint == "channel":
-            from views.settings.edit_channel import ChannelSettingSelectView
+        widget = RoleSettingSelectView(subsystem, name, parent_msg)
+        await interaction.response.send_message(
+            f"Pick a role for `{subsystem}.{name}` (current=`{current!r}`):",
+            view=widget,
+            ephemeral=True,
+        )
+        return
+    if hint == "numeric_presets" and spec.presets:
+        from views.settings.edit_number_presets import NumericPresetsView
 
-            view = ChannelSettingSelectView(self.subsystem, name, parent_msg)
-            await interaction.response.send_message(
-                f"Pick a channel for `{self.subsystem}.{name}` "
-                f"(current=`{current!r}`):",
-                view=view,
-                ephemeral=True,
-            )
-            return
-        if hint == "role":
-            from views.settings.edit_role import RoleSettingSelectView
+        widget = NumericPresetsView(
+            subsystem=subsystem,
+            setting_name=name,
+            value_type=spec.value_type,
+            current_value=current,
+            default_value=spec.default,
+            presets=spec.presets,
+            parent_message=parent_msg,
+        )
+        await interaction.response.send_message(
+            f"Pick a value for `{subsystem}.{name}` "
+            f"(current=`{current!r}`, default=`{spec.default!r}`):",
+            view=widget,
+            ephemeral=True,
+        )
+        return
 
-            view = RoleSettingSelectView(self.subsystem, name, parent_msg)
-            await interaction.response.send_message(
-                f"Pick a role for `{self.subsystem}.{name}` "
-                f"(current=`{current!r}`):",
-                view=view,
-                ephemeral=True,
-            )
-            return
-        if hint == "numeric_presets" and spec.presets:
-            from views.settings.edit_number_presets import NumericPresetsView
+    # Default routing — unchanged from S6.
+    if spec.value_type is bool:
+        from views.settings.edit_boolean import toggle_setting
 
-            view = NumericPresetsView(
-                subsystem=self.subsystem,
-                setting_name=name,
-                value_type=spec.value_type,
-                current_value=current,
-                default_value=spec.default,
-                presets=spec.presets,
-                parent_message=parent_msg,
-            )
-            await interaction.response.send_message(
-                f"Pick a value for `{self.subsystem}.{name}` "
-                f"(current=`{current!r}`, default=`{spec.default!r}`):",
-                view=view,
-                ephemeral=True,
-            )
-            return
+        await toggle_setting(interaction, subsystem, name, parent_msg)
+        return
+    if spec.value_type is str and spec.allowed_values:
+        from views.settings.edit_enum import build_enum_select_view
 
-        # Default routing — unchanged from S6.
-        if spec.value_type is bool:
-            from views.settings.edit_boolean import toggle_setting
-
-            await toggle_setting(interaction, self.subsystem, name, parent_msg)
-            return
-        if spec.value_type is str and spec.allowed_values:
-            from views.settings.edit_enum import build_enum_select_view
-
-            view = build_enum_select_view(
-                interaction.user,
-                self.subsystem,
-                name,
-                spec.allowed_values,
-                current,
-                parent_msg,
-            )
-            await interaction.response.send_message(
-                f"Pick a new value for `{self.subsystem}.{name}`:",
-                view=view,
-                ephemeral=True,
-            )
-            return
-        if spec.value_type is int or spec.value_type is float:
-            from views.settings.edit_number import NumberSettingModal
-
-            modal = NumberSettingModal(
-                self.subsystem,
-                name,
-                spec.value_type,
-                current,
-                spec.default,
-                parent_msg,
-            )
-            await interaction.response.send_modal(modal)
-            return
-        # Free-form string.
-        from views.settings.edit_text import TextSettingModal
-
-        modal = TextSettingModal(
-            self.subsystem,
+        widget = build_enum_select_view(
+            interaction.user,
+            subsystem,
             name,
+            spec.allowed_values,
+            current,
+            parent_msg,
+        )
+        await interaction.response.send_message(
+            f"Pick a new value for `{subsystem}.{name}`:",
+            view=widget,
+            ephemeral=True,
+        )
+        return
+    if spec.value_type is int or spec.value_type is float:
+        from views.settings.edit_number import NumberSettingModal
+
+        modal = NumberSettingModal(
+            subsystem,
+            name,
+            spec.value_type,
             current,
             spec.default,
             parent_msg,
         )
         await interaction.response.send_modal(modal)
+        return
+    # Free-form string.
+    from views.settings.edit_text import TextSettingModal
+
+    modal = TextSettingModal(subsystem, name, current, spec.default, parent_msg)
+    await interaction.response.send_modal(modal)
 
 
-class _ResetSettingSelect(discord.ui.Select):
-    """Select listing every resettable SettingSpec for the subsystem."""
+def _attach_edit_select(view: discord.ui.View, subsystem: str, specs: list) -> None:
+    """Attach the windowed "edit a setting" picker to ``view``.
 
-    def __init__(self, subsystem: str, specs: list) -> None:
-        self.subsystem = subsystem
-        options: list[discord.SelectOption] = []
-        for spec in specs[:25]:
-            options.append(
-                discord.SelectOption(
-                    label=f"Reset {spec.name}"[:100],
-                    value=spec.name,
-                    description=f"default={spec.default!r}"[:100],
-                ),
-            )
-        super().__init__(
-            placeholder="Reset a setting to its default…",
-            min_values=1,
-            max_values=1,
-            options=options,
-            row=2,
+    Picking a setting dispatches via :func:`dispatch_edit_setting`.  The
+    editable-spec list can exceed Discord's 25-option cap, so the options are
+    *windowed* (◀/▶ nav) rather than front-truncated (the #1040 class).
+    """
+    options = [
+        discord.SelectOption(
+            label=spec.name[:100],
+            value=spec.name,
+            description=f"type={spec.value_type.__name__}"[:100],
         )
+        for spec in specs
+    ]
 
-    async def callback(self, interaction: discord.Interaction) -> None:
+    async def _on_pick(interaction: discord.Interaction, values: list[str]) -> None:
+        await dispatch_edit_setting(interaction, subsystem, values[0] if values else "")
+
+    attach_windowed_select(
+        view,
+        options,
+        _on_pick,
+        placeholder="Edit a setting…",
+        select_row=1,
+        nav_row=3,
+    )
+
+
+def _attach_reset_select(view: discord.ui.View, subsystem: str, specs: list) -> None:
+    """Attach the windowed "reset a setting" picker to ``view`` (#1040 class)."""
+    options = [
+        discord.SelectOption(
+            label=f"Reset {spec.name}"[:100],
+            value=spec.name,
+            description=f"default={spec.default!r}"[:100],
+        )
+        for spec in specs
+    ]
+
+    async def _on_pick(interaction: discord.Interaction, values: list[str]) -> None:
         from views.settings.reset_button import reset_setting
 
-        name = self.values[0]
-        await reset_setting(
-            interaction,
-            self.subsystem,
-            name,
-            interaction.message,
-        )
+        name = values[0] if values else ""
+        await reset_setting(interaction, subsystem, name, interaction.message)
+
+    attach_windowed_select(
+        view,
+        options,
+        _on_pick,
+        placeholder="Reset a setting to its default…",
+        select_row=2,
+        nav_row=4,
+    )
 
 
 class SubsystemSettingsView(HubView):
@@ -619,8 +616,8 @@ class SubsystemSettingsView(HubView):
         self.add_item(_OpenRelatedPanelButton(subsystem))
         specs = _editable_specs(subsystem)
         if specs:
-            self.add_item(_EditSettingSelect(subsystem, specs))
-            self.add_item(_ResetSettingSelect(subsystem, specs))
+            _attach_edit_select(self, subsystem, specs)
+            _attach_reset_select(self, subsystem, specs)
 
 
 __all__ = [

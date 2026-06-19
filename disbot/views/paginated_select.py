@@ -265,6 +265,22 @@ class SelectWindow:
             self._view.add_item(next_btn)
             self._items.extend((prev_btn, next_btn))
 
+    def detach(self) -> None:
+        """Remove the window's item band from its host view.
+
+        For a host that rebuilds the option list (e.g. after a mutation): call
+        ``detach()`` on the old window, then :func:`attach_windowed_select` a
+        fresh one with the new options.  No-op if never attached.
+        """
+        if self._view is None:
+            return
+        for item in self._items:
+            try:
+                self._view.remove_item(item)
+            except ValueError:  # pragma: no cover - item already gone
+                pass
+        self._items = []
+
     async def _change_page(self, interaction: discord.Interaction, delta: int) -> None:
         self.page = self._page + delta
         self.render()

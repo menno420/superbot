@@ -4,7 +4,7 @@ The cog at ``cogs/channel_cog.py`` is a thin dispatcher; every panel
 view lives here.  Modules:
 
   main_panel        — ChannelManagerView (top-level hub)
-  create_panel      — CreateSubView, NameSelect, CategorySelect, CustomNameModal
+  create_panel      — CreateSubView, CustomNameModal (windowed name + category selects)
   delete_panel      — DeleteSubView, DeleteConfirmView
   restrict_panel    — RestrictSubView
   visibility_panel  — VisibilitySubView, SubsystemToggleView
@@ -25,7 +25,6 @@ from views.channels._helpers import (
     _ChannelSelect,
 )
 from views.channels.create_panel import (
-    _CategorySelect,
     _CreateSubView,
     _CustomNameModal,
 )
@@ -40,7 +39,6 @@ from views.channels.visibility_panel import (
 __all__ = [
     "_CATEGORY_PRESETS",
     "_NAME_PRESETS",
-    "_CategorySelect",
     "_ChannelManagerView",
     "_ChannelSelect",
     "_CreateSubView",

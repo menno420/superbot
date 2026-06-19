@@ -35,7 +35,6 @@ from views.channels import (  # noqa: F401 — backward-compat re-exports
     _CATEGORY_PRESETS,
     _NAME_PRESETS,
     _build_channel_options,
-    _CategorySelect,
     _ChannelManagerView,
     _ChannelSelect,
     _CreateSubView,

@@ -66,11 +66,14 @@ def test_subsystem_options_excludes_invisible_subsystems():
     assert values == visible_subset
 
 
-def test_subsystem_options_respects_discord_25_option_cap():
-    # Construct a fake set with > 25 names — the cap should kick in.
-    huge = set(SUBSYSTEMS) | {f"_fake_{i}" for i in range(40)}
-    options = _resolve_default_subsystem_options(huge)
-    assert len(options) <= 25
+def test_subsystem_options_are_not_front_truncated():
+    # Lane A2: the subsystem select is now windowed (◀/▶ nav), so the option
+    # builder no longer front-truncates at Discord's 25 cap — it returns one
+    # option per *real* visible subsystem (fake names aren't in the registry).
+    options = _resolve_default_subsystem_options(set(SUBSYSTEMS))
+    assert len(options) == len(SUBSYSTEMS)
+    # More than the 25 cap is fine now — windowing reaches the tail.
+    assert len(options) > 25
 
 
 def test_subsystem_options_carries_emoji_and_description():
@@ -110,20 +113,31 @@ def test_overview_embed_mentions_read_only_intent():
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_two_selects_and_two_buttons():
+def test_view_has_two_selects_and_explain_reset_buttons():
     view = AccessExplorerView(_author(), visible_subsystems=_visible_all())
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
-    buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
+    # Subsystem (windowed) select + scope select.  Windowing keeps the visible
+    # select count at one per band regardless of how many subsystems there are.
     assert len(selects) == 2
-    assert len(buttons) == 2
-
-
-def test_view_buttons_use_recognisable_custom_ids():
-    view = AccessExplorerView(_author(), visible_subsystems=_visible_all())
+    # The action buttons remain (windowed ◀/▶ nav buttons may also be present
+    # when the subsystem list spans >25, so assert by custom_id, not count).
     button_ids = {
         c.custom_id  # type: ignore[attr-defined]
         for c in view.children
         if isinstance(c, discord.ui.Button)
+    }
+    assert {"access:explain", "access:reset"} <= button_ids
+
+
+def test_view_action_buttons_use_recognisable_custom_ids():
+    view = AccessExplorerView(_author(), visible_subsystems=_visible_all())
+    # The windowed nav buttons carry an auto-generated custom_id; the action
+    # buttons use the stable ``access:*`` ids.
+    button_ids = {
+        c.custom_id  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and (c.custom_id or "").startswith("access:")
     }
     assert button_ids == {"access:explain", "access:reset"}
 
