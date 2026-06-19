@@ -421,10 +421,19 @@ against a **test DB** (S2's schema on a throwaway/test Postgres or SQLite) and a
 exactly the `importorskip`/mock pattern the existing `dashboard/` suite uses. No unit needs the real
 Railway service, the real Postgres, or any token; the owner provisions those at **rollout** (§6).
 
-> **▶ Status (2026-06-19): the serial foundation S1 + S2 + P1 is MERGED (#1109).** The remaining work is
-> the back half — now **reshaped by the Site identity & experience brief above**: a new unit **S1.1**
-> enriches the per-command data the interactive browser needs, and **P2** becomes that browser (not a
-> static table). The rest (P3–P8) is unchanged. New dependency: **S1.1 → P2**.
+> **▶ Status (2026-06-19): the serial foundation S1 + S2 + P1 is MERGED (#1109), and the back half then
+> SHIPPED in a parallel ultracode fan-out wave (2026-06-19).** All back-half units —
+> **S1.1** (enriched per-command data) · **P2** (interactive command/feature browser) · **P3**
+> (changelog + status templates) · **P4** (submission intake module) · **P5** (dev-site moderation UI)
+> · **P6** (GitHub-mirror mechanism) · **P7** (this redaction-audit record) · **P8** (deploy + env docs)
+> — were built file-disjoint as planned (no two concurrently-running units shared a file). The
+> back-half was **reshaped by the Site identity & experience brief above**: S1.1 enriches the
+> per-command data the interactive browser needs, and P2 is that browser (not a static table), on the
+> dependency **S1.1 → P2**. *The remaining product follow-ups are the deliberately-deferred slices:*
+> the per-server **control-panel migration** to the bot side (gated on the control-API
+> public-exposure security review, §4.4 / §7.4) and the **live status aggregator** (deferred behind
+> the same review, §3 / §7.2). What remains before the bot site is "the website" is the owner-paced
+> **rollout** (§6: provision the new Railway service + the submissions DB, then cut over the domain).
 
 ### Serial foundation (✅ MERGED #1109) — original spec retained for reference
 
@@ -456,9 +465,12 @@ Railway service, the real Postgres, or any token; the owner provisions those at 
   `app.include_router(submit_router)`). This single-owner `app.py` is what makes the back half disjoint —
   **no other unit edits `app.py`.** *(Honor the no-`static/` gotcha.)*
 
-### Parallel back half (truly file-disjoint — fan out once S1 + S2 + P1 land)
+### Parallel back half (✅ SHIPPED 2026-06-19 — file-disjoint fan-out wave)
 
-- **S1.1 — enrich the public command data (extends the merged S1 producer + whitelist; P2 depends on it).**
+> All eight units below shipped in the 2026-06-19 fan-out (foundation #1109 first). Their exclusive
+> file sets are retained for reference + auditability of the disjointness.
+
+- **✅ S1.1 — enrich the public command data (extends the merged S1 producer + whitelist; P2 depends on it).**
   Exclusive: `scripts/export_dashboard_data.py` (the `build_site_subset` command projection),
   `scripts/check_dashboard_data.py` (extend `check_site_subset`'s per-command whitelist — still
   **fail-closed**), `botsite/data/site.json` (regenerate), `tests/unit/scripts/` (extend). Adds, **per
@@ -474,39 +486,43 @@ Railway service, the real Postgres, or any token; the owner provisions those at 
     heuristic name-match as fallback.)*
   - `notes` — curated per-command notes (ours/community). *(Source = open decision — recommend v1 reuse the
     help-overlay re-describe text; a dedicated community-notes source is a fast-follow, not invented.)*
-- **P2 — interactive command + feature browser (the owner-vision core; depends on S1.1).** Exclusive:
+- **✅ P2 — interactive command + feature browser (the owner-vision core; depends on S1.1).** Exclusive:
   `botsite/templates/commands.html`, `botsite/templates/features.html`, `botsite/templates/_command_detail.html`
   (the detail partial). Renders the **enriched** `site.json` as **clickable command cards → a detail view**
   (use-cases · aliases · permissions · examples · **notes** · **status badge** · **linked ideas**), with
   fast client-side search/filter so nothing takes long to find; progressive-enhancement JS inline (honor
   the no-`static/` gotcha). `/features` groups the same data by category — the all-in-one showcase. Reads
   `site.json`; rendered by P1's already-wired routes; **no `app.py` edit.**
-- **P3 — changelog + status templates.** Exclusive: `botsite/templates/changelog.html`,
+- **✅ P3 — changelog + status templates.** Exclusive: `botsite/templates/changelog.html`,
   `botsite/templates/status.html` + the "generated vs live" freshness badges. Reads `site.json.bot_changelog`
   + `meta.build` (both produced by S1). Templates only — no `app.py`, no producer edit.
-- **P4 — submission intake module.** Exclusive: `botsite/submit.py` (the `/submit` `APIRouter` + honeypot +
+- **✅ P4 — submission intake module.** Exclusive: `botsite/submit.py` (the `/submit` `APIRouter` + honeypot +
   validation + INSERT via S2's `botsite/submissions_db.py` — fills in P1's stub), `botsite/ratelimit.py`
   (**copy** the proven stdlib limiter — no shared import, §2.2), `botsite/templates/submit.html`,
   `tests/unit/botsite/test_submit.py`.
-- **P5 — dev-site moderation UI.** Exclusive: `dashboard/templates/moderation.html`, the
+- **✅ P5 — dev-site moderation UI.** Exclusive: `dashboard/templates/moderation.html`, the
   `/admin/moderation` route + approve/reject handlers in `dashboard/app.py`, owner-gate helper,
   `tests/unit/dashboard/test_moderation.py`. Lists `pending`, approve/reject, CSRF-protected; uses S2's
   `dashboard/submissions_db.py` + P6's mirror.
-- **P6 — GitHub-mirror mechanism.** Exclusive: `dashboard/github_mirror.py` (least-privilege issue-create
+- **✅ P6 — GitHub-mirror mechanism.** Exclusive: `dashboard/github_mirror.py` (least-privilege issue-create
   client + template-shape mapping) + its test. Called by P5 on approve; built/tested against a stub first.
-- **P7 — redaction audit record.** Exclusive: `docs/operations/dashboard-redaction-audit.md` (the §4.1
-  matrix as a living checklist). Docs only — no `dashboard/app.py` or shared-template edits (those belong
+- **✅ P7 — redaction audit record.** Exclusive: `docs/operations/dashboard-redaction-audit.md` (the §4.1
+  matrix as a living checklist, §9). Docs only — no `dashboard/app.py` or shared-template edits (those belong
   to P5), so it can't collide.
-- **P8 — deploy + env docs.** Exclusive: `docs/operations/botsite-deploy.md` (new — the 2nd-service deploy
-  recipe + Railway setup), `docs/operations/env-vars.md` (+ the new env names: `GITHUB_ISSUE_MIRROR_TOKEN`,
-  the submissions DSN, optional captcha keys), `dashboard/README.md` (moderation note). *(P1 owns
-  `botsite/README.md`; P8 does not touch it.)*
+- **✅ P8 — deploy + env docs.** Exclusive: `docs/operations/botsite-deploy.md` (new — the 2nd-service deploy
+  recipe + Railway setup, §9), `docs/operations/env-vars.md` (+ the new env names: `GITHUB_ISSUE_MIRROR_TOKEN`,
+  `SUBMISSIONS_DB_DSN`, `SUBMISSIONS_IP_SALT`, optional captcha keys — added as a hand-maintained
+  *Website tier* section, since the generated bot-source scanner doesn't emit web-service vars),
+  `dashboard/README.md` (moderation note). *(P1 owns `botsite/README.md`; P8 does not touch it.)*
 
-**Dependency graph (updated 2026-06-19):** the foundation `S1 → {S2, P1}` is **merged (#1109)**. Remaining:
-`S1.1 → P2` (the browser needs the enriched data) runs as its own short serial pair; `{P3, P4, P6, P7, P8}`
-fan out fully in parallel alongside it; P4 fills P1's `submit.py` stub + uses S2's INSERT helper, P5 uses
-S2's read helper + P6 (P6 stub-buildable first). S1.1 is the only producer-touching unit, so it never
-collides with the template/module units. No two concurrently-running units share a file.
+**Dependency graph (executed 2026-06-19):** the foundation `S1 → {S2, P1}` **merged (#1109)**, then the
+back half **shipped in the fan-out wave**: `S1.1 → P2` (the browser needs the enriched data) ran as its
+own short serial pair; `{P3, P4, P6, P7, P8}` fanned out fully in parallel alongside it; P4 filled P1's
+`submit.py` stub + uses S2's INSERT helper, P5 uses S2's read helper + P6 (P6 stub-buildable first). S1.1
+was the only producer-touching unit, so it never collided with the template/module units. **No two
+concurrently-running units shared a file** — the disjointness held. *Deferred follow-ups (not part of the
+fan-out): the control-panel migration + the live status aggregator, both gated on the control-API
+security review; and the owner-paced rollout (§6).*
 
 ---
 
@@ -640,6 +656,14 @@ architecture sections deliberately left open; the build run may refine them.
   this split realises (Public → bot site; Personal/Server/Owner → dev site).
 - [`web-tier-centralization-proposal-2026-06-19.md`](web-tier-centralization-proposal-2026-06-19.md) — the
   `web-ci.yml` matrix (dashboard + botsite) + PR-machinery de-duplication (owner centralization mandate).
+- [`../operations/dashboard-redaction-audit.md`](../operations/dashboard-redaction-audit.md) — **P7**:
+  the §4.1 per-page redaction matrix as a living, dated audit certifying the dev site's public-read
+  posture (the by-route-auth half of non-negotiable #1; the bot-site whitelist guard is the
+  by-construction half).
+- [`../operations/botsite-deploy.md`](../operations/botsite-deploy.md) — **P8**: the 2nd-Railway-service
+  deploy recipe for `botsite/` (Root Directory = `botsite`, its own `requirements.txt` + `Procfile`, the
+  no-`static/` gotcha) + the §6 rollout/rollback sequence + the dev-site moderation note.
 - `dashboard/` (the decoupled service), `scripts/export_dashboard_data.py` (the single data producer),
   `disbot/control_api.py` (the private, owner-paced live source), `.github/ISSUE_TEMPLATE/` (the mirror
-  shapes, #1064), `docs/operations/env-vars.md` (the env-name surface).
+  shapes, #1064), [`../operations/env-vars.md`](../operations/env-vars.md) (the env-name surface, now with
+  a hand-maintained *Website tier* section — **P8**).
