@@ -660,6 +660,10 @@ architecture sections deliberately left open; the build run may refine them.
   the §4.1 per-page redaction matrix as a living, dated audit certifying the dev site's public-read
   posture (the by-route-auth half of non-negotiable #1; the bot-site whitelist guard is the
   by-construction half).
+- [`../operations/website-split-review-2026-06-19.md`](../operations/website-split-review-2026-06-19.md)
+  — the **ultracode review-and-refactor report** (2026-06-19): per-file verdicts, the four proven
+  invariants, the refactors shipped (test-isolation collision · `_clean` C1 · idea→subsystem tag ·
+  `env-vars.md` marker), and the flag-for-owner decisions.
 - [`../operations/botsite-deploy.md`](../operations/botsite-deploy.md) — **P8**: the 2nd-Railway-service
   deploy recipe for `botsite/` (Root Directory = `botsite`, its own `requirements.txt` + `Procfile`, the
   no-`static/` gotcha) + the §6 rollout/rollback sequence + the dev-site moderation note.
