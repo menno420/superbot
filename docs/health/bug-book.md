@@ -16,6 +16,12 @@
 > [`operations/production-deployment.md`](../operations/production-deployment.md)).
 > Owner-reported inconsistencies he hasn't formalized yet (see current-state
 > 2026-06-10 standing invite) land here as they surface.
+>
+> **Deferred-root-fix backlog:** when an entry lands a *symptom* fix but defers the durable
+> root fix (status `PARTIALLY FIXED` / `root-fix RECOMMENDED` / `FIXED (immediate)` without
+> `(root)`), `python3.10 scripts/check_bug_book_rootfix_backlog.py` lists those entries so a
+> later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
+> trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
 ## BUG-0018 — committed `botsite/data/site.json` drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (root)
 
