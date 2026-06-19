@@ -1,0 +1,64 @@
+name: Dashboard CI
+
+# Runs the developer-dashboard test suite + type-check. Provenance: owner-greenlit
+# in-session 2026-06-19 (Q-0177), part of the repo governance/supply-chain baseline.
+#
+# Why a separate workflow: the main `code-quality.yml` installs only the BOT's
+# requirements.txt, so the dashboard tests (`tests/unit/dashboard/`) `importorskip`
+# fastapi/httpx and silently SKIP, and dashboard code is never type-checked (CI runs
+# `mypy disbot/` only). Black/isort/ruff already cover `dashboard/` in the main job
+# (it is not in their exclude list), so this workflow adds exactly the two missing
+# pieces: real test execution + `mypy dashboard/`.
+#
+# `paths`-filtered so it only runs when dashboard code/tests change (cheap). It is NOT a
+# required merge check (making it one is an owner repo-Settings step — see the plan).
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "dashboard/**"
+      - "tests/unit/dashboard/**"
+      - ".github/workflows/dashboard-ci.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "dashboard/**"
+      - "tests/unit/dashboard/**"
+      - ".github/workflows/dashboard-ci.yml"
+
+concurrency:
+  group: dashboard-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  dashboard-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            dashboard/requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Bot reqs: tests/conftest.py imports disbot (registry validation) before any
+          # dashboard test collects. Dashboard reqs: fastapi/httpx so the tests actually
+          # run instead of importorskip-skipping. mypy/pytest pinned to match CI.
+          pip install -r requirements.txt -r dashboard/requirements.txt
+          pip install mypy==2.1.0 pytest==9.0.3 pytest-asyncio==1.4.0
+
+      - name: Type-check dashboard (mypy)
+        run: mypy dashboard/
+
+      - name: Run dashboard tests
+        run: pytest tests/unit/dashboard -v

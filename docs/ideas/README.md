@@ -20,6 +20,14 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`governance-files-presence-guard-2026-06-19.md`](./governance-files-presence-guard-2026-06-19.md) —
+  **session idea (2026-06-19, Q-0089, from the repo governance/supply-chain baseline session):** a tiny
+  stdlib `scripts/check_governance_files.py` that asserts the new root governance files (`LICENSE` ·
+  `SECURITY.md` · `CONTRIBUTING.md` · `CITATION.cff`) stay present **and** that the repo paths cited in
+  `CONTRIBUTING.md`/`SECURITY.md` still resolve — `check_docs.py` scopes `docs/**` only, so these root
+  files are unguarded. "Executable verification over prose" applied to the governance layer. Quick-win,
+  disposable (Q-0105). → relates `scripts/check_docs.py` · the P0 work in
+  [`planning/repo-structure-improvement-plan-2026-06-19.md`](../planning/repo-structure-improvement-plan-2026-06-19.md).
 - [`repo-consistency-linter-2026-06-17.md`](./repo-consistency-linter-2026-06-17.md) —
   **owner-directed (2026-06-17, Q-0170):** *"something like CI but specifically to find
   inconsistencies"* — panels missing a back button, cogs not following the arch rules, cogs sending

@@ -1,0 +1,46 @@
+# Dependabot version updates.
+#
+# Provenance: owner-greenlit in-session 2026-06-19 (Q-0177), part of the repo
+# governance/supply-chain baseline. This is the *version-update* half; the
+# *security-update + alert* half is a repo-Settings toggle the owner must enable
+# (Security → Code security → Dependabot alerts + security updates).
+#
+# Also closes the gap-analysis §6 "toolchain rot watch" concern by keeping GitHub
+# Actions versions fresh (the same class as the Python-3.13 / Node-20 deprecations
+# that bit unpinned infra). Grouped minor/patch updates keep PR noise low; tune the
+# cadence / open-PR limits here. Dependabot PRs land on `dependabot/*` branches, so
+# the `claude/*` auto-merge-enabler never auto-merges them — they wait for review.
+version: 2
+updates:
+  # Bot runtime + dev tooling (root requirements.txt + requirements-dev.txt).
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    groups:
+      python-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Developer dashboard — a separate Railway service with its own requirements.
+  - package-ecosystem: "pip"
+    directory: "/dashboard"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    groups:
+      dashboard-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions versions used by the workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]

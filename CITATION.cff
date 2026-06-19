@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use SuperBot or its agent-development workflow, please cite it as below."
+title: SuperBot
+abstract: >-
+  A Discord bot platform and the self-improving, agent-driven development
+  workflow (docs, journal, hooks, tooling, router) that builds and maintains it.
+type: software
+authors:
+  - given-names: Menno
+    family-names: van Hattum
+    alias: menno420
+repository-code: "https://github.com/menno420/superbot"
+url: "https://github.com/menno420/superbot"
+license: MIT
+keywords:
+  - discord-bot
+  - ai-agents
+  - autonomous-development
+  - claude-code

@@ -1,0 +1,57 @@
+name: 🐞 Bug report
+description: Report a reproducible problem with the bot or dashboard.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. For a **security vulnerability**, stop here and follow
+        [`SECURITY.md`](https://github.com/menno420/superbot/blob/main/SECURITY.md) instead.
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: The deployed commit SHA if known, or roughly when you saw it.
+      placeholder: "e.g. 9849111 or 2026-06-19"
+    validations:
+      required: false
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did it happen?
+      options:
+        - Discord bot (command / interaction)
+        - Developer dashboard
+        - CI / tooling
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `!command ...`
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Logs / screenshots / extra context
+      description: Redact any tokens or secrets before pasting.
+    validations:
+      required: false

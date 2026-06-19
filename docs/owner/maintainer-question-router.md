@@ -6441,3 +6441,56 @@ born-red gate, not a replacement.
 
 **Home:** this Q-block. Related: Q-0117 (Hermes review-merge gate), Q-0123/Q-0127 (auto-merge-enabler arm
 rules), Q-0114 (`do-not-automerge` carve-out), Q-0133 (born-red gate).
+
+---
+
+### Q-0177 — Repo-structure improvement: governance + supply-chain + CI baseline (2026-06-19)
+
+> **DECISION 2026-06-19 (owner-directed in-session, applied directly).** The owner uploaded three
+> external repo reviews and asked for a comprehensive plan to improve the repo structure. The agent
+> cross-checked every recommendation against live source (the reviews are *input to verify*, not
+> orders) and the owner chose, via in-session `AskUserQuestion`: **LICENSE = MIT** and scope = **plan
+> + docs + CI config**. Recorded here per CLAUDE.md Q-0106 because part of it touches **executable
+> config** (`.github/` workflows + `dependabot.yml`) — applied under the in-session exception (the
+> owner is the live reviewer). The rest is docs (free rein), batched here for provenance. Full plan +
+> verification table: [`docs/planning/repo-structure-improvement-plan-2026-06-19.md`](../planning/repo-structure-improvement-plan-2026-06-19.md).
+
+**What shipped (this session's PR):**
+
+- **Governance foundation** (root): `LICENSE` (MIT, holder "Menno van Hattum"), `SECURITY.md`,
+  `CONTRIBUTING.md`, `CITATION.cff`.
+- **Supply-chain / CI** (executable config — the Q-0106 exception): `.github/dependabot.yml` (weekly
+  pip for root + `dashboard/` + github-actions), `.github/workflows/codeql.yml` (Python SAST,
+  non-blocking), `.github/workflows/dashboard-ci.yml` (runs the previously-`importorskip`-skipped
+  `tests/unit/dashboard/` + `mypy dashboard/`), `.github/ISSUE_TEMPLATE/` + `.github/PULL_REQUEST_TEMPLATE.md`.
+- **Bug root-fixed while wiring dashboard CI:** a fresh install resolved `httpx 0.28`, which persists
+  per-request cookies into the shared `TestClient` and broke 2 dashboard tests; made the fixture
+  function-scoped (`tests/unit/dashboard/test_app.py`) → 65 pass. A live demonstration of the
+  dependency-pin gap below.
+
+**Routed for the owner (decisions, no rush):**
+
+1. **Dependency-lock strategy** — runtime deps are version *ranges*; fresh installs drift (the
+   `httpx 0.28` break is the worked example). Options: (a) `pip-tools` compiled lockfiles for bot +
+   dashboard; (b) tighten ranges to known-good ceilings; (c) keep ranges + rely on Dependabot + the
+   new dashboard CI. *Agent rec:* (a) for the dashboard first. Ships as its own 2-PR plan once chosen.
+2. **Control-API hardening depth/timing** — request signing (HMAC + timestamp), idempotency keys,
+   token rotation. Owner-paced (control-API writes are the "don't rush" zone); sequence behind the
+   dashboard live-editor write lane.
+3. **Pointer README (Q-0151b reprise)** — owner already said "optional, not built now." Offer stands;
+   a ready 5-line pointer (→ `docs/AGENT_ORIENTATION.md` + `docs/current-state.md`) can ship the moment
+   the owner wants a public landing page.
+4. **Roadmap → labeled-issue mirror?** — the reviews push GitHub Issues/Projects for planning; the
+   repo deliberately keeps planning in `docs/` + the dashboard. *Agent rec:* do NOT adopt Projects
+   wholesale; an optional lightweight roadmap→labeled-issue mirror only if public visibility is wanted.
+
+**Owner manual steps (repo Settings / off-repo — cannot be done from a PR):**
+
+- Enable **Dependabot alerts + security updates** (Settings → Code security).
+- Enable **private vulnerability reporting** (Settings → Code security) so `SECURITY.md` route 1 works.
+- Optionally add **`codeql`** + **`dashboard-ci`** to **branch protection / required checks**.
+- Confirm the **MIT copyright holder** name in `LICENSE`.
+
+**Home:** the [plan](../planning/repo-structure-improvement-plan-2026-06-19.md) + this Q-block. Related:
+Q-0151 (architecture-atlas review — no reorg; root-README posture), Q-0106 (executable-config exception),
+Q-0105 (disposable-tooling discipline), gap-analysis §6 (toolchain-rot watch — closed by Dependabot).
