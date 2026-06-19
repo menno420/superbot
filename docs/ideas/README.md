@@ -324,8 +324,9 @@ Current broad captures:
   pointer. → relates `docs/operations/autonomous-routines.md` · Q-0135.
 - [`honcho-memory-evaluation-2026-06-16.md`](./honcho-memory-evaluation-2026-06-16.md) —
   **bot / AI-lane idea (2026-06-16, owner wants to look into soon):** give SuperBot's AI **per-user
-  memory** — remember a Discord user across conversations (V-04) — via Honcho-style
-  conclusion-extraction memory (better + cheaper than dumping raw history; matters under the Q-0082
+  memory** — remember a Discord user across conversations (V-04). **Owner policy (2026-06-19): opt-in,
+  user-chosen global/per-guild scope, declared `remember this:` storage as the cheap/accurate v1;
+  Honcho-style conclusion-extraction is an optional *later* inference layer** (matters under the Q-0082
   spend ceiling). Evaluated for Hermes first and rejected there (now a footnote) — it's a **bot**
   idea, not a Hermes one. Next: promote to a `docs/planning/` plan when the AI lane has capacity.
 - [`executor-chain-trigger-via-workflow-2026-06-15.md`](./executor-chain-trigger-via-workflow-2026-06-15.md) —
