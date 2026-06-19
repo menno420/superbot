@@ -3158,7 +3158,7 @@ seam.
 **Area:** BTD6 data lane / production operations
 **Type:** Operational posture (boot-time DB write)
 **Priority:** Medium (the drift class is now *surfaced* — this decides whether it also self-heals)
-**Status:** Open
+**Status:** ✅ **ANSWERED 2026-06-19 (owner, question panel) — (b) auto-seed when the bundled files are strictly newer.** True zero-touch (merge → deploy → data current); never clobbers a deliberately-newer store (the refresh-workflow case), because that store's version is not *older* than the repo. Build beside the #676 drift warning in `btd6_cog.cog_load`; record in `docs/subsystems/btd6.md` data-lane note. *(Original question below.)*
 
 **Question:** Production serves BTD6 fixtures from the `btd6_data_blobs`
 Postgres table (`BTD6_DATA_BACKEND=postgres`), so a data PR updates the
@@ -3855,8 +3855,7 @@ the model, was the bottleneck.
 **Area:** Agent workflow / tooling / executable config (`.claude/settings.json`, `.mcp.json`)
 **Type:** Owner decision (adoption gate — plugin enablement is ask-first executable config)
 **Priority:** Low-medium (quality-of-life for agent sessions; nothing is blocked)
-**Status:** **Open** (asked 2026-06-12, prompted by the owner's own question
-"are there any good plugins for claude that would be useful for us?")
+**Status:** ✅ **RESOLVED 2026-06-19 (owner, question panel) — stay as-is, Context7 only.** Postgres-MCP and `pyright-lsp` are **declined for now** (nothing is blocked; ad-hoc `psql` + CodeGraph cover the need; conservative supply-chain posture). Re-open this Q if a concrete need appears. *(Originally asked 2026-06-12, prompted by the owner's own question "are there any good plugins for claude that would be useful for us?")*
 
 **Question:** The 2026-06 plugin-ecosystem survey
 ([`docs/ideas/claude-code-plugins-evaluation-2026-06-12.md`](../ideas/claude-code-plugins-evaluation-2026-06-12.md))
@@ -6288,6 +6287,12 @@ check the connector for a "post a full review comment every time" mode (not just
 is visible to the loop; (2) the **augment-vs-replace + who-holds-merge-authority** question still stands
 for the owner (the Q-0082 spend cap + the morning-briefing rate-limit lesson apply).
 
+> **ANSWERED 2026-06-19 (owner, question panel): augment only, NO merge authority.** Codex stays a
+> second *advisory* reviewer; routines verify its flags against source and fix the real ones first
+> (Q-0174); humans/Hermes keep merge authority. Matches the owner's "accept post-merge review" choice
+> (Q-0180) and the anti-monoculture principle (Q-0117). Sub-question (1) — the "full review comment
+> every time" mode — is subsumed by Q-0180 (auto-`@codex review` posted on the final head).
+
 **Home:** [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) ·
 this Q-block. Related: Q-0117 (Hermes review-merge gate).
 
@@ -6348,9 +6353,10 @@ literal Minecraft terrain: that would need either a reverse-engineered gen libra
 wanted) or running an actual Minecraft generator (Java server + region files — too heavy for Railway,
 rejected). Licensing stays clean — a seed is just a number; we ship no Minecraft code or assets.
 
-**Still open (owner deciding — do NOT resolve unprompted):** one shared grid vs. per-depth-level · do
-moves cost a turn / trigger encounters · how cell yields map to the existing depth bands
-(`utils/mining/world.py`, currently 1-D). These are the remaining grid-Mine design questions.
+**Still open (owner deciding — do NOT resolve unprompted):** ~~one shared grid vs. per-depth-level~~
+→ **RESOLVED 2026-06-19 (owner, question panel): ONE shared seed-deterministic grid** (same world for
+everyone, shareable — consistent with the Q-0173 intent). *Still open:* do moves cost a turn / trigger
+encounters · how cell yields map to the existing depth bands (`utils/mining/world.py`, currently 1-D).
 
 **Home:** [`planning/mining-hub-redesign-2026-06-15.md`](../planning/mining-hub-redesign-2026-06-15.md)
 § "Mine — 3D grid navigator" · this Q-block. Related: Q-0172 (fishing/open-world is the sibling Explore lane).
@@ -6412,8 +6418,13 @@ exploration); **bounded boat travel** (short timer, locked-in — can fish, not 
 till arrival); **real destinations** updating **coordinates + biome** (ties the seed-grid world Q-0173),
 each with a **specialty** + bonuses, **some** location-locked eventually.
 
-**Open (owner deciding — do NOT resolve unprompted):** the catch mechanic · leveling shape (rod-tier vs
-fishing-skill) · loadout-preset UI · fish value/use (sell/cook) · boat "stuff" while traveling.
+**Open (owner deciding — do NOT resolve unprompted):** → **RESOLVED 2026-06-19 (owner, question panel):**
+catch mechanic = **instant deterministic roll for v1** (an interactive minigame is deferred to its own
+later slice) · leveling = **both — a fishing skill (reuses `game_xp`) unlocks the size tier AND rod tier
+boosts catch quality** (gear is still never *required*, only a bonus) · fish value/use = **sell + cook**
+(a deliberate Phase-1 economy *reconnect* — it re-introduces a coin/consumable path that #1039 removed,
+so it needs its own balance plan, **not** a silent revert). *Still open:* loadout-preset UI · boat
+"stuff" while traveling.
 
 **Home:** [`planning/fishing-open-world-expansion-plan-2026-06-18.md`](../planning/fishing-open-world-expansion-plan-2026-06-18.md)
 · this Q-block. Related: Q-0172 (fishing = the canonical self-build), Q-0173 (the seed-grid world the boat
@@ -6438,6 +6449,10 @@ review-gated PR would let it merge **unreviewed**.
 auto-merge whenever the PR carries `needs-hermes-review` at arm time** (and re-check labels if the enabler
 can be re-triggered), so a reviewer-gated PR is never armed in the first place. Defense-in-depth for the
 born-red gate, not a replacement.
+
+> **DEFERRED 2026-06-19 (owner, question panel).** Not applied now — the born-red session gate stays the
+> single safeguard for the moment (it caught the #1033 case with no leak). Revisit only if the enabler
+> actually arms a `needs-hermes-review` PR that then merges unreviewed.
 
 **Home:** this Q-block. Related: Q-0117 (Hermes review-merge gate), Q-0123/Q-0127 (auto-merge-enabler arm
 rules), Q-0114 (`do-not-automerge` carve-out), Q-0133 (born-red gate).
@@ -6474,6 +6489,8 @@ rules), Q-0114 (`do-not-automerge` carve-out), Q-0133 (born-red gate).
    `httpx 0.28` break is the worked example). Options: (a) `pip-tools` compiled lockfiles for bot +
    dashboard; (b) tighten ranges to known-good ceilings; (c) keep ranges + rely on Dependabot + the
    new dashboard CI. *Agent rec:* (a) for the dashboard first. Ships as its own 2-PR plan once chosen.
+   **→ DECIDED 2026-06-19 (owner, question panel): (a) — `pip-tools` compiled lockfiles, dashboard
+   first (bot next). Ships as its own 2-PR plan.**
 2. **Control-API hardening depth/timing** — request signing (HMAC + timestamp), idempotency keys,
    token rotation. Owner-paced (control-API writes are the "don't rush" zone); sequence behind the
    dashboard live-editor write lane.
@@ -6570,8 +6587,17 @@ existing dev-site panel keeps serving until its migration slice ships (no gap). 
 a single merged app, that supersedes the isolation recommendation — say so.*
 
 **Sibling implementation defaults — also decided 2026-06-19 (plan §7):** bot-changelog source = **curated
-`docs/bot-changelog.md`** (§7.5); public-form spam = **honeypot + rate-limit for v1**, captcha only if
-abuse appears (§7.6).
+`docs/bot-changelog.md`** (§7.5; **seed it from the shipped-feature/ledger history so it launches with
+real highlights** — owner, question panel, 2026-06-19); public-form spam = **honeypot + rate-limit for
+v1**, captcha only if abuse appears (§7.6).
+
+**Additional website-wave decisions — 2026-06-19 (owner, question panel):**
+- **v1 launch-wave content (must-haves):** the **command reference** + the public **`/submit` form** +
+  the **bot changelog**. The feature showcase + live status widget are *not* v1 — they follow once the
+  core lands.
+- **Control-API public-exposure security review** (the prerequisite that gates the Q-0179 per-server
+  control-panel migration): route it through an **external / Codex security pass** plus a human
+  sign-off, after the first additive wave ships. Records into plan §3 / §7.2.
 
 **Home:** the [plan §7](../planning/website-two-site-split-plan-2026-06-19.md) + this Q-block. Related:
 Q-0178 (the four decided choices + its own "still open" list), Q-0155/Q-0156 (dashboard auth/live-editor).
