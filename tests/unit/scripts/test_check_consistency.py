@@ -574,3 +574,23 @@ def test_live_edit_in_place_rule_is_blocked_on_the_ai_nav_plan(mod):
     rule = next(r for r in mod.RULES if r.name == "edit_in_place")
     assert rule.severity == "warning"
     assert "ai-panel-inplace-navigation-plan" in rule.graduation_blocker
+
+
+def test_graduation_mode_ignores_file_filter(mod, monkeypatch, capsys):
+    """--graduation always scans the full tree, never a filtered subset (Codex P2).
+
+    Pointing ``--file`` at a single clean file must NOT make the report show a
+    false ELIGIBLE — the graduation decision is whole-tree, so ``edit_in_place``
+    must still be reported BLOCKED with its real (>0) full-tree finding count.
+    """
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["check_consistency.py", "--graduation", "--file", "disbot/views/base.py"],
+    )
+    rc = mod.main()
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "graduation tracker" in out
+    # base.py alone has no edit_in_place finding; full-tree mode must still BLOCK it.
+    assert "edit_in_place" in out and "BLOCKED" in out

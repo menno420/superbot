@@ -823,7 +823,14 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if args.files:
+    if args.graduation:
+        # Graduation is a whole-tree decision: a filtered subset (--file /
+        # positional) would report findings=0 / ELIGIBLE for a rule that is clean
+        # only in that subset while the rest of views/ still has open findings —
+        # falsely licensing a flip to error.  Always scan the full tree here,
+        # ignoring any file filter.
+        files = _all_files()
+    elif args.files:
         files = [
             (REPO_ROOT / f).resolve()
             for f in args.files
