@@ -4,11 +4,11 @@
 > skills. Each skill is a ready-to-configure prompt for the Hermes agent running on the
 > control-plane VPS. Setup context: `docs/operations/hermes-control-plane.md`.
 
-This pack contains fifteen skills covering the windows Hermes fills that Claude Code
+This pack contains sixteen skills covering the windows Hermes fills that Claude Code
 cannot: **the front-door intake router**, **pre-session orientation**, **between-session
 monitoring**, a **daily idea ritual + morning digest**, **production diagnosis from your phone**,
-the **autonomous-loop seams** (independent review + dispatch + dispatch resolution), and
-**self-extension** (Hermes authoring its own skills).
+the **autonomous-loop seams** (independent review + dispatch + dispatch resolution + a 6-hourly
+PR-flag scan), and **self-extension** (Hermes authoring its own skills).
 
 For the standing read-only operating instructions every Hermes session should start
 with, see [`hermes-operating-prompt.md`](../hermes-operating-prompt.md) — the Hermes-side
@@ -32,6 +32,7 @@ equivalent of `.claude/CLAUDE.md`.
 | [`log-triage`](./log-triage.md) | After a deploy / when the bot misbehaves | Read production logs and diagnose what's wrong (gated on a read-only log source) |
 | [`review`](./review.md) | Plan finalization / open PR | Independent (non-Claude) critique of a plan or PR diff + a maintainer summary for the approve/deny gate |
 | [`review-merge`](./review-merge.md) | Executor opened a big-step PR | The independent-reviewer **merge gate** (Q-0117): review `needs-hermes-review` PRs and merge if sound — Hermes' one sanctioned write |
+| [`pr-check`](./pr-check.md) | Every 6 hours (self-schedules) | Scan recent PRs for Codex/CI flags, apply the "real bug" bar, and **open a GitHub issue** for each real one (Q-0174) — **issue-only**, no merge or dispatch authority |
 | [`dispatch`](./dispatch.md) | Idea on your phone | Assemble a work order and fire a Claude Code Routine to build it (the autonomous-loop chaining link) |
 | [`dispatch-resolve`](./dispatch-resolve.md) | "work on sector SX" | Resolve a vague sector/lane directive into a concrete work order routed to the right executor (then delegates to `dispatch`) |
 | [`skill-author`](./skill-author.md) | A workflow you repeat / "make a skill for X" | The **meta-skill**: design a new skill and land its source in the repo via a docs-only PR (so Hermes-authored skills are version-controlled, not VPS-only) |
@@ -81,8 +82,9 @@ Some skills ship a `blueprint.schedule` in their frontmatter, so once installed 
 self-schedules them to your home channel — **no extra VPS cron needed**, and each scheduled
 run is a fresh, stateless session (it never clogs your interactive chat). Currently scheduled:
 **`morning-briefing`** (`0 6 * * *` — the daily digest), **`idea-spotlight`** (`30 6 * * *` —
-the daily idea ritual), and **`review-merge`** (`30 7 * * *` — the needs-hermes-review queue).
-Change a time in `scripts/hermes/build_skills.py` and rebuild. *(For automatically clearing the
+the daily idea ritual), **`review-merge`** (`30 7 * * *` — the needs-hermes-review queue), and
+**`pr-check`** (`0 */6 * * *` — the 6-hourly Codex/CI PR-flag scan, issue-only). Change a time in
+`scripts/hermes/build_skills.py` and rebuild. *(For automatically clearing the
 **interactive** chat session, that's a separate VPS timer — see
 [`../hermes-session-reset.md`](../hermes-session-reset.md).)*
 

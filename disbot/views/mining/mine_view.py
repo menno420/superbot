@@ -26,7 +26,7 @@ import discord
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
 from utils.mining import world
-from utils.ui_constants import MINING_COLOR
+from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("bot.views.mining.mine_view")
@@ -38,14 +38,24 @@ def _build_mine_prompt_embed() -> discord.Embed:
         title="Mining",
         description=(
             "Choose a direction to mine.\n"
-            "If you own a pickaxe, you'll get extra loot!"
+            "If you own a pickaxe, you'll get extra loot!\n\n"
+            "**⬇️ Descend / ⬆️ Ascend** move between depth bands "
+            "(deeper = richer, gated by your light).\n"
+            "**🗺️ Explore** triggers a random depth event."
         ),
         color=MINING_COLOR,
     )
 
 
 class MineView(BaseView):
-    """Mine Left / Mine Right / Mine Down buttons (30-second timeout).
+    """Mine Left/Right/Down + movement (Descend/Ascend) + Explore (30s timeout).
+
+    Option A declutter (owner-directed, 2026-06-15;
+    ``docs/planning/mining-hub-redesign-2026-06-15.md``): Descend / Ascend and
+    the old depth-tied mining random-event "explore" folded off the main hub
+    into the Mine action here, as an interim until PR3's grid Mine. (The main
+    hub's new ``🗺️ Explore`` button is the *open-world* explorer — a different
+    concept; this Explore is the mining depth-event mechanic.)
 
     Ownership/timeout/error handling come from BaseView (RS10) — another
     user's click now gets the standard ephemeral denial instead of the
@@ -61,7 +71,7 @@ class MineView(BaseView):
         self.user_id = author.id
         self.guild_id = guild_id
 
-    @discord.ui.button(label="Mine Left", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Mine Left", style=discord.ButtonStyle.primary, row=0)
     async def mine_left(
         self,
         interaction: discord.Interaction,
@@ -69,7 +79,7 @@ class MineView(BaseView):
     ) -> None:
         await self._handle_mine(interaction, "left")
 
-    @discord.ui.button(label="Mine Right", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Mine Right", style=discord.ButtonStyle.primary, row=0)
     async def mine_right(
         self,
         interaction: discord.Interaction,
@@ -77,13 +87,109 @@ class MineView(BaseView):
     ) -> None:
         await self._handle_mine(interaction, "right")
 
-    @discord.ui.button(label="Mine Down", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Mine Down", style=discord.ButtonStyle.primary, row=0)
     async def mine_down(
         self,
         interaction: discord.Interaction,
         button: discord.ui.Button,
     ) -> None:
         await self._handle_mine(interaction, "down")
+
+    @discord.ui.button(label="⬇️ Descend", style=discord.ButtonStyle.success, row=1)
+    async def descend_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction):
+            return
+        result = await mining_workflow.descend(self.user_id, self.guild_id)
+        if not result.moved:
+            description = (
+                f"{interaction.user.mention} can't descend any deeper.\n"
+                f"_{result.hint}_"
+            )
+            color = ERROR_COLOR
+        else:
+            description = (
+                f"{interaction.user.mention} descended to "
+                f"**{world.describe_position(result.depth)}**."
+            )
+            if result.xp_note:
+                description += "\n" + result.xp_note
+            color = SUCCESS_COLOR
+        await self._swap_to_results(interaction, "⛏️ Descend", description, color)
+
+    @discord.ui.button(label="⬆️ Ascend", style=discord.ButtonStyle.secondary, row=1)
+    async def ascend_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction):
+            return
+        result = await mining_workflow.ascend(self.user_id, self.guild_id)
+        if not result.moved:
+            description = f"{interaction.user.mention} is already at the **Surface**."
+            color = MINING_COLOR
+        else:
+            description = (
+                f"{interaction.user.mention} climbed up to "
+                f"**{world.describe_position(result.depth)}**."
+            )
+            color = SUCCESS_COLOR
+        await self._swap_to_results(interaction, "⛏️ Ascend", description, color)
+
+    @discord.ui.button(label="🗺️ Explore", style=discord.ButtonStyle.primary, row=1)
+    async def explore_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction):
+            return
+        result = await mining_workflow.explore(self.user_id, self.guild_id)
+        description = (
+            f"{interaction.user.mention} {result.text}\n"
+            f"_{world.describe_position(result.depth)}_"
+        )
+        if result.wear.notes:
+            description += "\n" + "\n".join(result.wear.notes)
+        if result.xp_note:
+            description += "\n" + result.xp_note
+        if result.pack_warning:
+            description += "\n" + result.pack_warning
+        color = SUCCESS_COLOR if result.amount >= 0 else ERROR_COLOR
+        await self._swap_to_results(interaction, "🗺️ Explored!", description, color)
+
+    async def _swap_to_results(
+        self,
+        interaction: discord.Interaction,
+        title: str,
+        description: str,
+        color: int,
+    ) -> None:
+        """Shared post-action swap to ``_MineResultsView`` (Mine Again / Menu / Help).
+
+        Used by Descend / Ascend / Explore so a movement action lands the user on
+        the same navigable results screen as a mine, never a dead end.
+        """
+        result_embed = discord.Embed(title=title, description=description, color=color)
+        result_embed.set_footer(
+            text=(
+                "Click ⛏️ Mine Again to keep mining, "
+                "or use the buttons below to navigate."
+            ),
+        )
+        results_view = _MineResultsView(interaction.user, self.guild_id)
+        await interaction.followup.edit_message(
+            message_id=interaction.message.id,
+            content=None,
+            embed=result_embed,
+            view=results_view,
+        )
+        results_view.message = interaction.message
+        self.stop()
 
     async def _handle_mine(
         self,

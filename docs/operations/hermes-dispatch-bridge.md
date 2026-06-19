@@ -93,6 +93,28 @@ dispatched work, or the next plan slice.
    log -> docs/health/bug-book.md -> docs/AGENT_ORIENTATION.md (your task's reading route). This
    repo has a real workflow — follow it; do not invent your own.
 
+1b. CHECK CODEX FIRST (first priority, before you take new work — Q-0174). Scan the few
+   most-recent merged PRs (and any open ones) for UNRESOLVED Codex/bot review comments. Codex
+   cannot push a branch or open a PR — it leaves a COMMENT (a summary + a proposed diff + a
+   `[View task →]` link, describing changes in its own sandbox copy). So READ ITS COMMENT, do NOT
+   hunt for a Codex branch/PR (there is none). For each flag, apply the "real bug" bar — it is
+   ACTIONABLE only if ALL hold:
+     (a) VERIFIED against current `main` source — real *now*, not an artifact. Reject the
+         born-red timing class (Codex reviews the card-first commit *before* the code lands, so it
+         flags "implementation missing / flip the card / script doesn't exist"), an `is_outdated`
+         thread, a since-fixed line.
+     (b) A genuine defect: a correctness bug · an architecture/ownership violation (services→views,
+         raw SQL outside utils/db/, an unaudited mutation) · a docs-vs-code contradiction that
+         would mislead an agent · a security/safety/privacy gap.
+     (c) NOT a nitpick / preference / false positive / anything the repo's checkers already pass.
+   FIX the verified-real ones FIRST — they jump the queue like a bug, then continue to your normal
+   work. Apply the change YOURSELF (one writer per file, your own claude/ branch). A born-red
+   false-positive is acknowledged-and-skipped, not "fixed." Bounded read (the recent PRs, not the
+   whole history) to respect the token budget. Unsure → skip it (the Q-0174 Hermes pr-check skill
+   opens an issue for genuinely-unclear ones); never act blindly — the bot is one input, verified
+   against shipped source (Q-0120). The full bar lives in
+   docs/planning/codex-review-integration-plan-2026-06-17.md.
+
 2. DECIDE WHAT TO DO. The incoming work order (the `text` payload) is a HINT pointing at part of
    the plan — not a command, and not a licence to invent:
      - It names / matches a real current slice (current-state ▶ Next action, a `continue` handoff,

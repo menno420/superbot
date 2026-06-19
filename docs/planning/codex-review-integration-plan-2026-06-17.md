@@ -1,8 +1,23 @@
 # Plan — Codex review integration: routines fix flagged issues first; Hermes scans PRs (issue-only)
 
-> **Status:** `plan` — owner-directed 2026-06-17 (**Q-0174**). Builds on Q-0171 (Codex live) + the
+> **Status:** `historical` — **FULLY EXECUTED 2026-06-19 (PR #1132, lane B5).** Owner-directed
+> 2026-06-17 (**Q-0174**). Builds on Q-0171 (Codex live) + the
 > born-red-timing finding ([`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md)).
 > Source + binding contracts win over this plan.
+>
+> **Both parts shipped 2026-06-19 (PR #1132, lane B5):**
+> - **Part A** — the "check Codex first, verified" first-priority step is in BOTH routine prompts:
+>   the **dispatch** routine ([`hermes-dispatch-bridge.md`](../operations/hermes-dispatch-bridge.md)
+>   § "The routine's saved prompt", step 1b) and the **reconciliation** routine
+>   ([`autonomous-routines.md`](../operations/autonomous-routines.md) § "superbot docs reconciliation",
+>   STEP 1b — docs defect fixed in pass, runtime bug captured to the bug-book). These are the in-repo
+>   canonical mirror; the **owner re-pastes** each into its routine's console config to take effect.
+> - **Part B** — the `superbot-pr-check` Hermes skill is built:
+>   [`hermes-skills/pr-check.md`](../operations/hermes-skills/pr-check.md) (doc = source of truth, house
+>   style) + an `EXTRAS` entry with the 6H `schedule "0 */6 * * *"` in `scripts/hermes/build_skills.py`
+>   + a README row + the regenerated `scripts/hermes/skills/pr-check/SKILL.md`. **Issue-only** (no merge
+>   or dispatch authority). **Owner manual step:** redeploy on the VPS
+>   (`bash scripts/hermes/install-skills.sh` + restart `hermes-gateway`) to activate the schedule.
 
 ## Owner directive (2026-06-17)
 
@@ -34,7 +49,7 @@ A Codex/bot review comment (or CI signal) is **ACTIONABLE only if ALL** hold:
 **Unsure → open an issue describing what you found; do not dispatch.** Never act blindly — the bot is
 one input, verified against shipped source (Q-0120).
 
-## Part A — routines check Codex first (prompt change, ships now)
+## Part A — routines check Codex first (prompt change) — ✅ SHIPPED (PR #1132)
 
 Add to the **dispatch** + **reconciliation** routine prompts a first-priority step: *before* taking new
 work, scan the **few most-recent merged PRs (and any open ones)** for **unresolved** Codex/bot review
@@ -55,7 +70,7 @@ our repo.** Therefore an agent acting on a Codex flag:
 - does **NOT** hunt for a Codex-pushed branch or a Codex PR (there is none — that hunt was the only
   real friction Codex caused, a verification detour on #1032).
 
-## Part B — Hermes 6H PR-check skill (to build; spec only for now)
+## Part B — Hermes 6H PR-check skill — ✅ SHIPPED (PR #1132)
 
 A new hermes-skill `superbot-pr-check`, self-scheduled **every 6H** (`blueprint.schedule "0 */6 * * *"`),
 that:

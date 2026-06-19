@@ -51,32 +51,47 @@ async def test_cog_check_passes_in_guild():
 
 
 def test_persistent_view_button_handlers_check_guild_id():
-    """Every MiningHubView button that touches the DB must guard
-    against ``interaction.guild_id is None`` before reading.  This
-    asserts the presence of the guard in source so a future refactor
-    can't drop it silently.
+    """Every MiningHubView button that touches the DB (or opens a sub-hub that
+    will) must guard against ``interaction.guild_id is None`` before acting.
+    This asserts the guard's presence in source so a future refactor can't drop
+    it silently. Updated for the Option A 6-button hub (declutter PR2,
+    2026-06-19): Inventory / Stats moved into the Character sub-hub.
     """
     from cogs import mining_cog
 
     src = inspect.getsource(mining_cog.MiningHubView)
-    # The five DB-touching buttons share the same pattern.
+    # The six Option A top-level buttons; all guard before acting.
     for btn in (
         "mine_btn",
         "harvest_btn",
         "explore_btn",
-        "inventory_btn",
-        "stats_btn",
+        "character_btn",
+        "gear_btn",
+        "workshop_btn",
     ):
-        # Find the function block.
         assert f"async def {btn}(" in src, f"{btn} not found in source"
-    # The guard string appears for each button.  Count must match the
-    # five DB-touching buttons.
+    # The guard string appears for each button — six on the main hub.
     guard_occurrences = src.count("interaction.guild_id is None")
-    assert guard_occurrences >= 5, (
-        f"Expected at least 5 ``interaction.guild_id is None`` guards "
-        f"in MiningHubView; found {guard_occurrences}.  Each DB-touching "
+    assert guard_occurrences >= 6, (
+        f"Expected at least 6 ``interaction.guild_id is None`` guards "
+        f"in MiningHubView; found {guard_occurrences}.  Each top-level "
         "button must guard against DM invocations."
     )
+
+
+def test_character_and_explore_subhub_handlers_check_guild_id():
+    """The Character sub-hub's DB-touching buttons guard against DMs just like
+    the main hub (the moved Inventory / Stats / Overview etc.). The Explore
+    stub doesn't read the DB, so it needs no guild guard.
+    """
+    from views.mining import character_hub
+
+    src = inspect.getsource(character_hub.MiningCharacterHubView)
+    for btn in ("overview_btn", "inventory_btn", "stats_btn", "skills_btn",
+                "vault_btn", "home_btn"):
+        assert f"async def {btn}(" in src, f"{btn} not found in source"
+    # Six DB-touching sub-hub buttons each carry the guard.
+    assert src.count("interaction.guild_id is None") >= 6
 
 
 def test_build_modal_guards_dm():

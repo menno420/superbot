@@ -131,6 +131,15 @@ EXTRAS: dict[str, SkillExtras] = {
         tags=["Meta", "SuperBot", "SelfExtension"],
         related=["superbot-prompt-builder"],
     ),
+    "pr-check": SkillExtras(
+        tags=["Review", "SuperBot", "Quality"],
+        related=["superbot-review", "superbot-review-merge"],
+        schedule=(
+            "0 */6 * * *",
+            "Scan recent PRs for Codex/CI flags, apply the 'real bug' bar, and "
+            "open a GitHub issue for each real bug (issue-only — no dispatch).",
+        ),
+    ),
 }
 
 VERSION = "1.0.0"
