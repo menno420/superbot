@@ -378,56 +378,78 @@ security-reviewed slice *after* the first additive build wave (which stays 2 ser
 
 ## 5. Decomposition into file-disjoint build units  *(deliverable 5)*
 
-Sequenced **serial foundation → parallel back half**. Each unit lists its **exclusive file set** so the
-parallel units are ultracode-able with no write conflicts. (The brief's reason for plan-first: the front
-half is serial; only after it can the back half fan out.)
+Sequenced **serial foundation → parallel back half**. Each unit lists its **exclusive file set**; the
+parallel units share **no** file, so a fleet builds them with no write conflicts. **Tightened
+2026-06-19 pre-ultracode** to make that literally true: the earlier draft let three "parallel" units edit
+`botsite/app.py` (P1/P2/P4) and two edit `export_dashboard_data.py` (S1/P3), with "decide at build / or
+fold" hedges a parallel fleet can't resolve. Those overlaps are folded into single owners below, and the
+remaining either/ors (S2's module shape, the rate-limiter, the whitelist keys) are pinned.
 
-### Serial foundation (must land first — everything downstream depends on it)
+**Build-without-live-infra (so no unit blocks on provisioning).** Every unit builds **code + tests only**,
+against a **test DB** (S2's schema on a throwaway/test Postgres or SQLite) and a **mocked GitHub** (P6) —
+exactly the `importorskip`/mock pattern the existing `dashboard/` suite uses. No unit needs the real
+Railway service, the real Postgres, or any token; the owner provisions those at **rollout** (§6).
 
-- **S1 — public data subset + freshness/whitelist guard.**
-  Files: `scripts/export_dashboard_data.py` (add the `site.json` subset emitter; add `--targets`),
-  `botsite/data/site.json` (generated, committed), `scripts/check_generated_artifacts_fresh.py` (+
-  `check_dashboard_data.py`) register `site.json` with a key-whitelist assertion, `tests/unit/scripts/…`.
-  *Why serial:* every bot-site page reads `site.json`; the whitelist is the redaction guarantee.
-- **S2 — submissions DB schema + access contract.**
-  Files: a new `dashboard_db/` (or `botsite/db.py` + `dashboard/db_submissions.py` sharing only the DDL)
-  with the `submissions` DDL/migration + a tiny stdlib-ish access layer (INSERT for the bot site, SELECT
-  /UPDATE for the dev site), tests. *Why serial:* both the intake (P3) and moderation (P5) units bind to
-  this schema. *(DB choice = §7.3; recommend a separate dashboard Postgres.)*
+### Serial foundation (must land first, in order — everything downstream depends on it)
 
-### Parallel back half (file-disjoint — ultracode-able together once S1+S2 land)
+- **S1 — the data producer, end to end (sole owner of `export_dashboard_data.py`).**
+  Files: `scripts/export_dashboard_data.py` (the `site.json` subset emitter + `--targets` **+ the
+  `bot_changelog` parse**, folded in here so no other unit touches the producer), `docs/bot-changelog.md`
+  (seed the curated source), `botsite/data/site.json` (generated + committed),
+  `scripts/check_generated_artifacts_fresh.py` (+ `check_dashboard_data.py`) registering `site.json` with
+  the **key-whitelist** assertion, `tests/unit/scripts/test_export_dashboard_data.py`.
+  **Whitelist — the exact allowed top-level `site.json` keys (the redaction guarantee, fails closed on a
+  new key):** `meta` (build sha/subject/date only), `counts` (catalogue counts only —
+  commands/features/games; **never** server/user totals), `catalogue` (subsystem + game
+  name/description/category/badges), `commands` (name/aliases/category/cooldown/permissions/usage — no
+  per-guild values), `bot_changelog`. **Omits** `env_usage`, `settings`, `access`, `reviews`, `ideas`, raw
+  `bugs`, and anything not listed.
+- **S2 — submissions store: one schema, two independent access helpers (no shared package — §2.2).**
+  Files: one committed **DDL/migration** for the `submissions` table (§2.3); `botsite/submissions_db.py`
+  (a single `insert_pending(...)`, **INSERT-only**); `dashboard/submissions_db.py`
+  (`list_pending()` / `set_status()` / `attach_issue_url()`, SELECT+UPDATE); tests for each. The two
+  helpers **share only the table contract (the DDL), not code** — that is what keeps the services
+  decoupled. *(Store = separate dashboard Postgres, §7.3.)*
+- **P1 — bot-site app + ALL routes (sole owner of `botsite/app.py`).**
+  Files: `botsite/__init__.py`, `botsite/app.py`, `botsite/Procfile`, `botsite/requirements.txt`,
+  `botsite/data_loader.py` (load/validate `site.json`), `botsite/templates/base.html`,
+  `botsite/templates/index.html`, `botsite/submit.py` (an **empty stub `APIRouter`** so the app boots —
+  P4 owns its real content), `botsite/README.md`, `tests/unit/botsite/test_app.py`. **`app.py` wires every
+  route up front** — `/`, `/commands`, `/features`, `/changelog`, `/status`, `/healthz` (each renders its
+  template *by filename*; the templates land in P2/P3) and `/submit` (via
+  `app.include_router(submit_router)`). This single-owner `app.py` is what makes the back half disjoint —
+  **no other unit edits `app.py`.** *(Honor the no-`static/` gotcha.)*
 
-- **P1 — bot-site skeleton.** Exclusive: `botsite/__init__.py`, `botsite/app.py`, `botsite/Procfile`,
-  `botsite/requirements.txt`, `botsite/templates/base.html`, `botsite/templates/index.html` (landing),
-  `botsite/README.md`, `tests/unit/botsite/`. The new service that boots, serves `/` + `/healthz`,
-  reads `site.json`. *(Honor the no-`static/` gotcha.)*
-- **P2 — bot-site reference pages.** Exclusive: `botsite/templates/commands.html`,
-  `botsite/templates/features.html`, the routes for them in `botsite/app.py` *(if P1 lands a thin app
-  shell first, P2 adds routes in a disjoint region; otherwise fold P1+P2)*. Read-only command reference +
-  feature showcase from `site.json`.
-- **P3 — bot-site changelog + status widget.** Exclusive: `botsite/templates/changelog.html`,
-  `botsite/templates/status.html`, `docs/bot-changelog.md` (the curated source), the changelog parse in
-  `export_dashboard_data.py`'s subset *(coordinate the one shared producer line with S1 — or fold the
-  changelog parse into S1)*. The "generated vs live" freshness badges.
-- **P4 — bot-site submission form (intake).** Exclusive: `botsite/templates/submit.html`, the `/submit`
-  route + intake logic in `botsite/app.py`, `botsite/ratelimit.py` (copy the proven stdlib limiter) or a
-  shared import, honeypot + validation, tests. Writes `pending` rows via S2's INSERT path.
+### Parallel back half (truly file-disjoint — fan out once S1 + S2 + P1 land)
+
+- **P2 — reference-page templates.** Exclusive: `botsite/templates/commands.html`,
+  `botsite/templates/features.html`. Read-only command reference + feature showcase from `site.json`,
+  rendered by P1's already-wired routes. Templates only — no `app.py`.
+- **P3 — changelog + status templates.** Exclusive: `botsite/templates/changelog.html`,
+  `botsite/templates/status.html` + the "generated vs live" freshness badges. Reads `site.json.bot_changelog`
+  + `meta.build` (both produced by S1). Templates only — no `app.py`, no producer edit.
+- **P4 — submission intake module.** Exclusive: `botsite/submit.py` (the `/submit` `APIRouter` + honeypot +
+  validation + INSERT via S2's `botsite/submissions_db.py` — fills in P1's stub), `botsite/ratelimit.py`
+  (**copy** the proven stdlib limiter — no shared import, §2.2), `botsite/templates/submit.html`,
+  `tests/unit/botsite/test_submit.py`.
 - **P5 — dev-site moderation UI.** Exclusive: `dashboard/templates/moderation.html`, the
   `/admin/moderation` route + approve/reject handlers in `dashboard/app.py`, owner-gate helper,
-  `tests/unit/dashboard/test_moderation.py`. Lists `pending`, approve/reject, CSRF-protected.
-- **P6 — GitHub-mirror mechanism.** Exclusive: `dashboard/github_mirror.py` (the least-privilege
-  issue-create client, template-shape mapping) + its test. Called by P5 on approve. *(Disjoint module so
-  it can be built/tested against a stub independently of P5's UI.)*
-- **P7 — dev-site public-read posture + redaction audit record.** Exclusive: a short
-  `docs/operations/dashboard-redaction-audit.md` (the §4.1 matrix as a living checklist) + any small
-  route/nav copy tweaks confirming the public-read framing + the freshness badges on the dev read pages.
-- **P8 — deploy + env docs.** Exclusive: `botsite/README.md` deploy recipe (2nd-service-style),
-  `dashboard/README.md` moderation note, `docs/operations/env-vars.md` (+ the new env names:
-  `GITHUB_ISSUE_MIRROR_TOKEN`, the submissions DSN, optional captcha keys), Railway setup notes.
+  `tests/unit/dashboard/test_moderation.py`. Lists `pending`, approve/reject, CSRF-protected; uses S2's
+  `dashboard/submissions_db.py` + P6's mirror.
+- **P6 — GitHub-mirror mechanism.** Exclusive: `dashboard/github_mirror.py` (least-privilege issue-create
+  client + template-shape mapping) + its test. Called by P5 on approve; built/tested against a stub first.
+- **P7 — redaction audit record.** Exclusive: `docs/operations/dashboard-redaction-audit.md` (the §4.1
+  matrix as a living checklist). Docs only — no `dashboard/app.py` or shared-template edits (those belong
+  to P5), so it can't collide.
+- **P8 — deploy + env docs.** Exclusive: `docs/operations/botsite-deploy.md` (new — the 2nd-service deploy
+  recipe + Railway setup), `docs/operations/env-vars.md` (+ the new env names: `GITHUB_ISSUE_MIRROR_TOKEN`,
+  the submissions DSN, optional captcha keys), `dashboard/README.md` (moderation note). *(P1 owns
+  `botsite/README.md`; P8 does not touch it.)*
 
-**Dependency graph:** `S1 → {P1, P2, P3}` · `S2 → {P4, P5}` · `P5 → P6` (P6 buildable in isolation
-against a stub first) · `{P1…P8}` otherwise parallel. The ultracode run takes S1+S2 serial, then fans
-out P1–P8 (P2/P3 sequence behind P1 only if P1 lands a shared app shell; otherwise mergeable as one).
+**Dependency graph:** serial `S1 → {S2, P1}` (S2 and P1 are file-disjoint, so they run together after S1);
+then the parallel back half `{P2, P3, P4, P5, P6, P7, P8}`. Edges within it: P4 fills P1's `submit.py` stub
+and uses S2's INSERT helper (so P4 lands after P1+S2); P5 uses S2's read helper + P6 (P6 is stub-buildable
+in isolation first). No two back-half units share a file.
 
 ---
 
