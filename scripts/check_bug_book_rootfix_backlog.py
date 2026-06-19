@@ -80,18 +80,21 @@ def _classify(status_text: str) -> str | None:
     """Return the backlog reason for a status string, or None if it owes no root fix.
 
     Matches **precise phrases / parenthesized markers**, not loose substrings, and
-    classifies the terminal ``(root)`` marker first (#1144 review hardening):
+    classifies the terminal ``FIXED (root)`` label first (#1144 / #1146 review hardening):
 
-    * a terminal ``FIXED (root)`` / ``(root)`` marker short-circuits — a closed-at-root
-      entry whose text still *mentions* a recommendation can't re-flag;
+    * the terminal ``FIXED (root)`` *label* short-circuits — a closed-at-root entry whose
+      text still *mentions* a recommendation can't re-flag. Keyed on the full ``FIXED (root)``
+      phrase, **not** any ``(root)`` occurrence, so prose like "add (root) after the durable
+      fix" in a *still-deferred* status doesn't wrongly clear it (the bug-book contract is that
+      a deferred entry *lacks* the terminal label);
     * ``PARTIALLY FIXED`` (the status phrase, not any "partially …") → partial;
     * ``RECOMMENDED`` (the deferred-root word; "recommendation" does not match) → deferred;
-    * ``(immediate)`` present without ``(root)`` → an explicitly-interim fix. Keying on the
-      parenthesized ``(immediate)`` label (not bare "immediate") and on the ``(root)``
-      *marker* (not any "root", so "root cause deferred" prose no longer suppresses it).
+    * ``(immediate)`` (the parenthesized label, not bare "immediate") → an explicitly-interim
+      fix. The terminal ``FIXED (root)`` short-circuit above already excludes a since-rooted
+      entry, so "root cause deferred" prose no longer suppresses a genuine immediate-only one.
     """
     upper = status_text.upper()
-    if "(ROOT)" in upper:
+    if "FIXED (ROOT)" in upper:
         return None
     if "PARTIALLY FIXED" in upper:
         return "partially fixed — open sub-cases remain"
