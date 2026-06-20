@@ -38,7 +38,12 @@ from utils.hub_registry import get_hub
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GENERAL_COLOR
 from views.base import HubView
-from views.navigation import attach_back_button
+from views.navigation import (
+    BackTarget,
+    attach_back_button,
+    attach_back_target,
+    chain_back,
+)
 
 logger = logging.getLogger("bot.views.community")
 
@@ -189,6 +194,8 @@ async def build_community_hub_panel(
 def attach_back_to_community_button(
     view: discord.ui.View,
     author: discord.Member | discord.User,
+    *,
+    grandparent: BackTarget | None = None,
 ) -> bool:
     """Append a "↩ Back to Community" control to a child view.
 
@@ -196,6 +203,12 @@ def attach_back_to_community_button(
     The parent-builder closure routes through
     :func:`build_community_hub_panel` so the rebuilt hub is filtered
     through governance at click time.
+
+    When ``grandparent`` is supplied (AB2 — e.g. a Back-to-Help target),
+    :func:`chain_back` wraps the builder so the rebuilt Community hub also
+    re-attaches the grandparent's back button. Without this the user lost
+    "↩ Back to Help" the moment they stepped into a Community child and back
+    (the asymmetry the Games hub already fixed).
     """
 
     async def _build_community_parent(
@@ -203,11 +216,13 @@ def attach_back_to_community_button(
     ) -> tuple[discord.Embed, discord.ui.View]:
         return await build_community_hub_panel(author, interaction=interaction)
 
+    builder = chain_back(_build_community_parent, grandparent)
+
     return attach_back_button(
         view,
         label="↩ Back to Community",
         custom_id="community:back",
-        parent_builder=_build_community_parent,
+        parent_builder=builder,
         row=4,
         style=discord.ButtonStyle.secondary,
         error_message="Could not reload the Community hub. Please try again.",
@@ -292,9 +307,28 @@ class _CommunityChildButton(discord.ui.Button):
         # successful child build. Without this, the child panel is
         # reachable but the user has no Back navigation other than
         # closing the hub entirely.
+        #
+        # AB2 back-chain (mirrors ``GamesHubView.handle_select``): when this
+        # hub was itself opened from Help, ``_attach_back_to_help_button`` set
+        # ``self._back_target``. Thread it through so (a) the rebuilt Community
+        # hub re-attaches "↩ Back to Help" and (b) the child panel gets its own
+        # direct "↩ Back to Help" too — otherwise a Help → Community → child →
+        # back round-trip silently drops back-to-Help.
         parent_view = self.view
         if isinstance(parent_view, CommunityHubView):
-            attach_back_to_community_button(sub_view, parent_view._author)
+            back_target: BackTarget | None = getattr(
+                parent_view,
+                "_back_target",
+                None,
+            )
+            attach_back_to_community_button(
+                sub_view,
+                parent_view._author,
+                grandparent=back_target,
+            )
+            if back_target is not None:
+                attach_back_target(sub_view, back_target)
+            sub_view._back_target = back_target  # type: ignore[attr-defined]
 
         await interaction.response.edit_message(embed=embed, view=sub_view)
 

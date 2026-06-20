@@ -81,6 +81,11 @@ async def test_overview_button_shows_character_embed_in_place():
             return_value=discord.Embed(title="🧍 Digger"),
         ),
         patch(
+            "views.mining.character_panel.build_character_doll",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
             "views.mining.character_hub.safe_edit", new_callable=AsyncMock,
         ) as safe_edit,
     ):

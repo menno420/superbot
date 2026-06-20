@@ -166,6 +166,56 @@ async def test_world_card_button_opens_card_and_stays_on_hub():
 
 
 @pytest.mark.asyncio
+async def test_mining_explore_button_attaches_back_to_mining():
+    """Mining hub → 🗺️ Explore opens the world hub WITH a "↩ Mining Hub" back
+    button so the player isn't stranded. The !world root open (GamesCog) omits
+    it — back is attached externally by the opener, mirroring Help/Games.
+    """
+    from views.mining.main_panel import MiningHubView
+
+    hub = MiningHubView()
+    btn = _find_button(hub, "Explore")
+    interaction = MagicMock()
+    interaction.user = _AUTHOR
+    interaction.guild_id = 99
+    with (
+        patch(
+            "views.mining.main_panel.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "views.mining.main_panel.safe_edit",
+            new_callable=AsyncMock,
+        ) as safe_edit,
+    ):
+        await btn.callback(interaction)
+    safe_edit.assert_awaited_once()
+    world_view = safe_edit.await_args.kwargs["view"]
+    back_ids = {
+        c.custom_id
+        for c in world_view.children
+        if isinstance(c, discord.ui.Button)
+    }
+    assert "explore:back_mining" in back_ids, (
+        "Explore opened from the mining hub must carry a back-to-mining button"
+    )
+
+
+def test_world_command_root_open_has_no_back_button():
+    """The !world root entry builds the hub directly (no opener attaches a back
+    button) — a root panel has no parent to return to, matching !games/!community.
+    """
+    view = ExploreWorldHubView(_AUTHOR, 99)
+    back_ids = {
+        c.custom_id
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and "back" in (c.custom_id or "")
+    }
+    assert back_ids == set()
+
+
+@pytest.mark.asyncio
 async def test_openerless_entry_shows_coming_soon():
     clear_world_entries()
     register_world_entry(

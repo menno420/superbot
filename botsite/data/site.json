@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T14:46:41Z",
+    "generated_at": "2026-06-20T17:07:58Z",
     "build": {
-      "commit": "60973903",
-      "subject": "Merge pull request #1170 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-20T16:33:11Z",
-      "branch": "claude/reconcile-1180"
+      "commit": "4405676",
+      "subject": "fix(mining,community): !character shows the paper-doll; add missing back buttons",
+      "committed_at": "2026-06-20T14:59:25Z",
+      "branch": "claude/gallant-volta-bk3qvf"
     }
   },
   "counts": {
@@ -1951,8 +1951,8 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show your full mining character — location, gear, stats, wealth.",
-      "description": "Show your full mining character — location, gear, stats, wealth.",
+      "usage": "Show your full mining character — the paper-doll, location, stats, wealth.",
+      "description": "Show your full mining character — the paper-doll, location, stats, wealth.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",

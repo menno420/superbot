@@ -300,6 +300,54 @@ async def test_button_opens_host_cog_panel_in_place():
 
 
 @pytest.mark.asyncio
+async def test_child_panel_preserves_back_to_help_chain():
+    """AB2 back-chain: when the Community hub carries a Help back-target (it
+    was opened from !help), a child panel must get BOTH Back-to-Community AND
+    Back-to-Help — mirroring the Games hub. Without this, a Help → Community →
+    child → back round-trip silently dropped Back-to-Help.
+    """
+    from views.navigation import BackTarget
+
+    parent_view = CommunityHubView(_author(id_=42))
+
+    async def _fake_help_parent(_interaction):
+        return discord.Embed(title="Help"), discord.ui.View()
+
+    parent_view._back_target = BackTarget(
+        builder=_fake_help_parent,
+        label="↩ Back to Help",
+        custom_id="help:back",
+    )
+    button = next(
+        c
+        for c in parent_view.children
+        if isinstance(c, _CommunityChildButton) and c._subsystem == "xp"  # type: ignore[attr-defined]
+    )
+    fake_cog = MagicMock()
+    fake_view = discord.ui.View()
+    fake_cog.build_help_menu_view = AsyncMock(
+        return_value=(discord.Embed(title="XP"), fake_view),
+    )
+
+    interaction = _interaction()
+    with (
+        _all_visible(),
+        patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog),
+    ):
+        await button.callback(interaction)
+
+    custom_ids = {
+        c.custom_id for c in fake_view.children if isinstance(c, discord.ui.Button)
+    }
+    assert "community:back" in custom_ids
+    assert "help:back" in custom_ids, (
+        "child opened from a Help-rooted Community hub must keep Back-to-Help"
+    )
+    # The back-chain propagates so deeper navigation can keep unwinding.
+    assert getattr(fake_view, "_back_target", None) is parent_view._back_target
+
+
+@pytest.mark.asyncio
 async def test_button_missing_cog_sends_ephemeral():
     button = _CommunityChildButton(
         subsystem="xp",

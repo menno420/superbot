@@ -1,13 +1,19 @@
 """Character overview — a read-only profile of the whole mining character.
 
-The seed of the brainstorm §7.6 "Profile & identity" card (stat-card-first, zero
-art): one embed that **aggregates, owns nothing** — position (``utils.mining.world``),
-equipped gear + its :class:`~utils.equipment.EffectiveStats` (``utils.equipment``),
-coins (the economy), and inventory net worth (``utils.mining.items``).  It reads
-from each existing owner, so it grows for free as game-XP / skills / titles land.
+The seed of the brainstorm §7.6 "Profile & identity" card. One embed that
+**aggregates, owns nothing** — position (``utils.mining.world``), equipped gear +
+its :class:`~utils.equipment.EffectiveStats` (``utils.equipment``), coins (the
+economy), and inventory net worth (``utils.mining.items``).  It reads from each
+existing owner, so it grows for free as game-XP / skills / titles land.
 
-Shared by the ``!character`` command and the hub's Character button — one builder,
-no duplicate composition.
+The character *image* is the V-16 paper-doll (``build_character_doll`` →
+``utils.character_render``) — the same figure ``!gear`` shows.  The embed keeps
+gear **high-level** (equipped item names + set status, no per-slot durability):
+the doll is the visual, and the detailed slot-by-slot condition view lives in
+``!gear``.
+
+Shared by the ``!character`` command and the hub's Character → Overview button —
+one builder, no duplicate composition.
 """
 
 from __future__ import annotations
@@ -20,6 +26,30 @@ from utils.mining import items, titles, workshop, world
 from utils.ui_constants import MINING_COLOR
 
 
+def _gear_overview(equipped: dict[str, str]) -> str:
+    """High-level equipped-gear summary for the Character card.
+
+    Item names only — no per-slot durability numbers (that detail belongs to
+    ``!gear``; the paper-doll above is the gear *visual*) — plus the set-bonus
+    status when one is active or in progress.
+    """
+    worn = [equipped[slot].title() for slot in equipment.SLOTS if equipped.get(slot)]
+    if not worn:
+        return "Nothing equipped yet — `!gear` to gear up."
+    lines = [" · ".join(worn)]
+    tier = equipment.active_set_tier(equipped)
+    if tier is not None:
+        lines.append(f"✨ **{tier.title()} set** — bonus active!")
+    else:
+        progress = equipment.set_progress(equipped)
+        if progress is not None:
+            lines.append(
+                f"🧩 {progress[0].title()} set: "
+                f"{progress[1]}/{len(equipment.SET_SLOTS)} pieces",
+            )
+    return "\n".join(lines)
+
+
 async def build_character_embed(
     user_id: int,
     guild_id: int,
@@ -30,23 +60,12 @@ async def build_character_embed(
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     equipped = await db.get_equipment(suid, guild_id)
-    wear = await db.get_gear_wear(suid, guild_id)
     depth = await db.get_depth(suid, guild_id)
     max_depth = await db.get_max_depth(suid, guild_id)
     coins = await db.get_coins(user_id, guild_id)
     level, into, needed = await game_xp_service.level_info(guild_id, user_id)
     title = await title_service.equipped_title(guild_id, user_id)
     stats = equipment.compute_stats(equipped)
-
-    def _gear_line(slot: str) -> str:
-        item = equipped.get(slot)
-        if not item:
-            return f"**{slot.title()}**: —"
-        line = f"**{slot.title()}**: {item.title()}"
-        maximum = equipment.max_durability(item)
-        if maximum is not None:
-            line += f" ({wear.get(item, maximum)}/{maximum})"
-        return line
 
     embed = discord.Embed(
         title=f"🧍 {name}'s Character" if name else "🧍 Character",
@@ -74,7 +93,7 @@ async def build_character_embed(
     )
     embed.add_field(
         name="🧰 Gear",
-        value="\n".join(_gear_line(slot) for slot in equipment.SLOTS),
+        value=_gear_overview(equipped),
         inline=True,
     )
     bonuses = equipment.describe_stats(stats)
@@ -92,54 +111,25 @@ async def build_character_embed(
         value=f"**{coins}** 🪙 coins\nInventory net worth: **{items.total_value(inventory)}**",
         inline=False,
     )
-    embed.set_footer(text="!equip <gear> to wear it · 🛒 Market to sell ore / buy gear")
+    embed.set_footer(text="!gear for slot details & condition · 🛒 Market to trade")
     return embed
 
 
-async def build_character_card(
-    user_id: int,
-    guild_id: int,
-    *,
-    name: str,
-) -> bytes | None:
-    """The §7.6 PIL stat card (zero custom art), or None without Pillow.
+async def build_character_doll(user_id: int, guild_id: int) -> bytes | None:
+    """Render the player's paper-doll PNG — the same character image ``!gear``
+    shows — or ``None`` without Pillow.
 
-    Composes from the same owners as the embed; callers always keep the
-    embed and treat the card as an additive attachment.
+    The Character card's *visual*: composes the equipped loadout
+    (``utils.character_render``) over the player's built-Home backdrop (Slice C).
+    Callers always keep the embed and treat the doll as an additive attachment.
     """
-    from utils.mining_render import build_stat_card_spec, render_stat_card
+    from utils.character_render import render_character_for
+    from utils.mining import structures
 
-    suid = str(user_id)
-    inventory = await db.get_mining_inventory(suid, guild_id)
-    equipped = await db.get_equipment(suid, guild_id)
-    wear = await db.get_gear_wear(suid, guild_id)
-    depth = await db.get_depth(suid, guild_id)
-    max_depth = await db.get_max_depth(suid, guild_id)
-    coins = await db.get_coins(user_id, guild_id)
-    level, into, needed = await game_xp_service.level_info(guild_id, user_id)
-
-    gear_lines: list[tuple[str, str]] = []
-    for slot in equipment.SLOTS:
-        item = equipped.get(slot)
-        if not item:
-            continue
-        value = item.title()
-        maximum = equipment.max_durability(item)
-        if maximum is not None:
-            value += f" ({wear.get(item, maximum)}/{maximum})"
-        gear_lines.append((slot, value))
-
-    spec = build_stat_card_spec(
-        name,
-        level=level,
-        xp_bar=workshop.durability_bar(into, needed),
-        location=world.describe_position(depth),
-        deepest=world.describe_position(max_depth),
-        gear_lines=gear_lines,
-        coins=coins,
-        net_worth=items.total_value(inventory),
-    )
-    return render_stat_card(spec)
+    equipped = await db.get_equipment(str(user_id), guild_id)
+    # Slice C: the player's built Home selects the card backdrop (0 = default).
+    built = await db.get_structures(user_id, guild_id)
+    return render_character_for(equipped, home_level=built.get(structures.HOME, 0))
 
 
-__all__ = ["build_character_embed", "build_character_card"]
+__all__ = ["build_character_embed", "build_character_doll"]
