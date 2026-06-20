@@ -1,22 +1,22 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T00:18:49Z",
+    "generated_at": "2026-06-20T03:16:00Z",
     "build": {
-      "commit": "26bf3428",
-      "subject": "session: open born-red card for federated Explore world hub (spine PR 1)",
-      "committed_at": "2026-06-20T00:11:21Z",
-      "branch": "claude/funny-franklin-bnvdxe"
+      "commit": "b9a0d2a2",
+      "subject": "docs(ideas): capture bug-book claim-gap idea + groom subsystem-tag to historical (#1159)",
+      "committed_at": "2026-06-20T01:52:25Z",
+      "branch": "claude/funny-franklin-dapcss"
     },
     "counts": {
       "functions": 36,
-      "ideas": 104,
+      "ideas": 105,
       "bugs": 18,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 37,
       "cogs": 43,
-      "commands": 307,
+      "commands": 308,
       "setting_keys": 103,
       "setting_domains": 15,
       "typed_settings": 84,
@@ -990,6 +990,14 @@
       "subsystems": null
     },
     {
+      "file": "bug-book-claimed-signal-2026-06-19.md",
+      "title": "Bug-book entries need a \"claimed / in-progress\" signal (close the claim-ledger gap)",
+      "status": "ideas",
+      "date": "2026-06-19",
+      "summary": "A scheduled dispatch run picked up **BUG-0016** (reconciliation-trigger stale cadence copy),",
+      "subsystems": null
+    },
+    {
       "file": "cog-chooser-customize-before-invite-2026-06-19.md",
       "title": "Public-site cog chooser — \"customize the bot before you invite it\"",
       "status": "ideas",
@@ -1028,10 +1036,12 @@
     {
       "file": "idea-subsystem-tag-on-ideas-2026-06-19.md",
       "title": "Explicit `subsystem:` tag on idea files (make idea↔command linking authoritative)",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-19",
       "summary": "The website command browser (plan unit S1.1, shipped this session) links each command to its",
-      "subsystems": []
+      "subsystems": [
+        "header tag is"
+      ]
     },
     {
       "file": "idea-to-cog-command-mapping-2026-06-19.md",
@@ -1977,9 +1987,33 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-20-world-registry-parity-invariant.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Explore world-registry parity invariant + folio docs",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-funny-franklin-session-enders-claim-gap.md",
+      "date": "2026-06-20",
+      "title": "Session — funny-franklin · session-ender pass (claim-gap idea + grooming)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-federated-explore-world-hub.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Federated Explore world hub (spine PR 1)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-federated-explore-world-card.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Federated Explore-hub PR 3: cross-game world card",
       "status": "in-progress",
       "run_type": "routine",
       "self_initiated": false
@@ -2233,6 +2267,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-19-funny-franklin-bug0016-recon-copy.md",
+      "date": "2026-06-19",
+      "title": "Session — funny-franklin · BUG-0016 root-cause hardening (single-source reconcile-issue body)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-fleet-b8-procedures-skills.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Fleet B8: procedures→skills batches 3–4",
@@ -2423,38 +2465,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-consistency-back-button-triage.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency-linter: triage the `back_button` backlog (rule 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-conflict-guard-unknown-race-fix.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fix the pr-conflict-guard UNKNOWN-mergeability race",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-codex-review-integration.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Codex review integration (routine fix-first + Hermes 6H pr-check skill)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-codex-final-head-review.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Codex reviews the final head, not the born-red opener",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -4959,6 +4969,19 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "worldcard",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "mystats"
+          ],
+          "brief": "Show your cross-game world card — global level + per-game standing.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         }
       ]
     },

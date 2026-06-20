@@ -158,4 +158,8 @@ living ledger (`docs/current-state.md`).
   `scripts/check_consistency.py` · `architecture_rules/consistency_exceptions.yml` ·
   `docs/current-state.md` · 2026-06-18 · **PR #1042 (auto-merge on green)**
 
+- `claude/funny-franklin-dapcss` · Federated Explore-hub PR 3 — read-only cross-game world card
+  (`game_xp_service.world_identity` + `views/explore/world_card.py` + `🪪 World Card` hub button +
+  `!worldcard`/`!mystats`) · 2026-06-20 · **PR (this session, self-merge on green)**
+
 _(move claims here with their PR # as they close, then prune older entries)_

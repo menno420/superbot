@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T00:18:49Z",
+    "generated_at": "2026-06-20T03:16:00Z",
     "build": {
-      "commit": "26bf3428",
-      "subject": "session: open born-red card for federated Explore world hub (spine PR 1)",
-      "committed_at": "2026-06-20T00:11:21Z",
-      "branch": "claude/funny-franklin-bnvdxe"
+      "commit": "b9a0d2a2",
+      "subject": "docs(ideas): capture bug-book claim-gap idea + groom subsystem-tag to historical (#1159)",
+      "committed_at": "2026-06-20T01:52:25Z",
+      "branch": "claude/funny-franklin-dapcss"
     }
   },
   "counts": {
-    "commands": 307,
+    "commands": 308,
     "features": 36,
     "games": 8
   },
@@ -4772,6 +4772,33 @@
       "use_cases": null,
       "examples": [
         "!explore",
+        "!world"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
+          "title": "Wager / money-flow map — generated trace of game coin paths",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "worldcard",
+      "aliases": [
+        "mystats"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your cross-game world card — global level + per-game standing.",
+      "description": "Show your cross-game world card — global level + per-game standing.",
+      "use_cases": null,
+      "examples": [
         "!world"
       ],
       "status": "in-progress",

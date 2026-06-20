@@ -51,14 +51,35 @@ explore hub out from under mining into a top-level world hub, and give the world
 
 ## 4. The build (3 ungated PRs, ~each a real slice)
 
-> **▶ Status (2026-06-20): PR 1 BUILT — PR #1156 (`needs-hermes-review`, awaiting review).** Shipped
+> **▶ Status (2026-06-20): PR 1 MERGED (#1156) · PR 3 BUILT (this run).** PR 1 shipped
 > `services/world_registry.py` (the seam), `views/explore/world_hub.py` (`ExploreWorldHubView` +
 > `build_world_hub_embed`, Mine→mining hub · Fish→fishing card), re-parented the mining `🗺️ Explore`
 > button (custom_id `mining:explore_hub` preserved) to forward here, retired the
 > `views/mining/explore_hub.py` stub it supersedes, and added the `!world` command. **`!explore` was
 > kept** for the hidden mining depth-event mechanic — the world hub uses `!world`. Default worlds
 > (Mine · Fish) register via `ensure_default_world_entries()`; pets/survival register their own entries
-> at setup. **Next = PR 2** (global vs per-game XP split) then **PR 3** (cross-game identity card).
+> at setup.
+>
+> **PR 3 BUILT (2026-06-20, this run) — the read-only cross-game world card.** Shipped
+> `services/game_xp_service.world_identity()` (a pure read aggregator: global level from `SUM(xp)` +
+> each game's own level from its own XP, with `GAME_LABELS`/`game_display`), `views/explore/world_card.py`
+> (`build_world_card_embed`), a `🪪 World Card` button on `ExploreWorldHubView` (in-place edit, mirrors
+> the PR-1 openers), and a `!worldcard`/`!mystats` command. Read-only, stranger-grade (an AST test pins
+> no mutation/economy import). **Built on existing data** — see the PR 2 reframe below.
+>
+> **⚠️ PR 2 reframe (verified against source, 2026-06-20):** the "global vs per-game XP" *data layer
+> already exists* — `game_xp` is **already keyed per `game`** (`db.add_game_xp(user, guild, game, …)`,
+> with `GAME_MINING`/`GAME_CRAFTING`/`GAME_FISHING` constants) and the **level is already global**
+> (derived from `db.get_total_xp` = `SUM(xp)` across games). So PR 2's *visibility* half is effectively
+> done by PR 3's read surface. PR 2's **remaining** work is only the heavier, design-laden part: a
+> **per-game *skill tree*** discriminator on `player_skills` (its PK is `(user, guild, branch)` — no
+> `game` column, so fishing can't have its own tree without a **PK migration on a live progression
+> table**) **plus** the new "per-game tree fast + global trickle" *earning model* (today game XP feeds
+> only the global pool; the two-track-per-game model the plan sketches is a progression-balance change
+> the owner-designer should weigh in on). That migration + earning-model decision is why PR 2 stays
+> **owner/runtime-verify-gated** — do it in a runtime-verified session with owner design input, not an
+> empty autonomous fire. **Next = PR 2** (per-game skill-tree discriminator + earning-model decision,
+> gated as above).
 
 ### PR 1 — the top-level Explore world hub + world registry
 
