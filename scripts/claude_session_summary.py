@@ -111,6 +111,32 @@ def main() -> int:
             f"Ledger : ⚠ {count} merged PR(s) not yet in current-state — reconcile before close",
         )
 
+    # Branch-freshness advisory (Q-0188) — printed at START so a restart on a stale branch syncs
+    # *before* opening a PR on a behind/divergent base. This is the common multi-session-per-chat
+    # case: PRs merge between restarts, leaving the branch behind, and the post-squash-merge
+    # divergence then trips a rebase. Fail-silent; the fetch is time-boxed inside the checker.
+    fresh = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPTS / "check_branch_freshness.py"),
+            "--event",
+            "sessionstart",
+        ],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        timeout=20,
+    )
+    fresh_line = fresh.stdout.strip().splitlines()[0] if fresh.stdout.strip() else ""
+    if fresh.returncode != 0 and fresh_line:
+        print()
+        print(f"⚠  STALE BRANCH — {fresh_line}")
+        print("   A new PR opened from here may start behind/conflicted.")
+        print("   If your last PR merged, sync first (clean tree only):")
+        print("     git fetch origin main && git reset --hard origin/main")
+    elif fresh_line and "n/a" not in fresh_line:
+        print(f"Fresh  : {fresh_line}")
+
     # Quick commands
     print()
     print("Quick commands:")

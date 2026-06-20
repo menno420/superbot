@@ -12,11 +12,17 @@ Provenance / reliability header (per CLAUDE.md Q-0105 adopt-with-kill-switch):
   multiple sessions** (remove the two settings.json entries + this file); it is a disposable
   convenience guard, not load-bearing.
 
-Two trigger modes (both ALWAYS exit 0 — this is a non-blocking advisory, never a gate):
-- ``--event pretooluse``: wired on Bash. Reads the hook JSON on stdin; acts only when the
-  command is a ``git push``. The "about to ship" moment.
-- ``--event stop``: wired on Stop. Ignores stdin; checks the current branch on every turn,
-  so a branch that fell behind *after* its last push gets flagged next turn (the #857 case).
+Trigger modes:
+- ``--event pretooluse`` (exit 0): wired on Bash. Reads the hook JSON on stdin; acts only when
+  the command is a ``git push``. The "about to ship" moment.
+- ``--event stop`` (exit 0): wired on Stop. Ignores stdin; checks the current branch on every
+  turn, so a branch that fell behind *after* its last push gets flagged next turn (the #857 case).
+- ``--event sessionstart`` (exit 1 when behind, else 0): called by ``claude_session_summary.py``
+  so the SessionStart banner flags a *restart on a stale branch* — common when a chat spans
+  several sessions and PRs merge between them, leaving the branch behind/divergent before any
+  turn ends or push fires (owner-directed, Q-0188, 2026-06-20). Prints a concise one-line verdict
+  to stdout; the non-zero exit is the "behind" signal the summary formats on (it is NOT wired as a
+  Claude hook, so the exit code is free to differ from the always-0 advisory modes).
 
 Robustness: every failure path swallows the error and exits 0. A PreToolUse hook runs before
 *every* Bash call, so it must never block a command or add latency to non-push calls (it
@@ -109,10 +115,45 @@ def _freshness_warning() -> str | None:
     return "\n".join(lines)
 
 
+def _sessionstart_verdict() -> tuple[str, bool]:
+    """(line, behind) for the SessionStart banner.
+
+    ``behind`` is False when on main / detached / already current. The line is a single concise
+    string; the count of commits *ahead* is included so the next session can tell a purely-behind
+    branch (safe to reset) from a divergent one (already-squash-merged old commits, or genuine
+    unpushed work — judge before resetting).
+    """
+    branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+    if not branch or branch in ("HEAD", "main"):
+        return ("on main / detached — n/a", False)
+    _git("fetch", "origin", "main", timeout=12)
+    behind = _git("rev-list", "--count", "HEAD..origin/main")
+    if not behind or behind == "0":
+        return ("up to date with origin/main ✓", False)
+    ahead = _git("rev-list", "--count", "origin/main..HEAD") or "0"
+    return (
+        f"branch '{branch}' is {behind} behind / {ahead} ahead of origin/main",
+        True,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--event", choices=("pretooluse", "stop"), default="stop")
+    parser.add_argument(
+        "--event",
+        choices=("pretooluse", "stop", "sessionstart"),
+        default="stop",
+    )
     args = parser.parse_args(argv)
+
+    if args.event == "sessionstart":
+        # Called by claude_session_summary.py — print the verdict and signal behind via exit code.
+        try:
+            line, behind = _sessionstart_verdict()
+            print(line)
+            return 1 if behind else 0
+        except Exception:
+            return 0  # never break session start
 
     try:
         if args.event == "pretooluse":

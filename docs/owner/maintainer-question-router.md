@@ -6880,3 +6880,26 @@ design+sim plan §2a.
 own runtime session once (a)/(b) are confirmed. **Home:** the design+sim plan + this Q-block.
 Related: Q-0039 (no P2W), Q-0186 (Pokétwo build sequence), Q-0182 (world model), Q-0041 (the
 parallel music legal-lane decision — same publish-safe logic).
+
+---
+
+### Q-0188 — DONE (owner-directed in-session): SessionStart branch-freshness warning (2026-06-20)
+
+> **APPLIED in-session** (the live-owner exception to the "don't self-edit executable config"
+> rule — owner directed it, owner is the live reviewer, provenance recorded here). The owner
+> *"often has to restart a session multiple times in one chat"* (long reply gaps), so PRs merge
+> between restarts and the branch silently goes **behind/divergent** — which then trips the
+> post-squash-merge rebase foot-gun (it bit this very chat three times: #1185/#1187/#1188 work).
+
+**What shipped:** `scripts/check_branch_freshness.py` gained a `--event sessionstart` mode (concise
+`N behind / M ahead of origin/main` verdict, time-boxed `git fetch`, exit 1 when behind), and
+`scripts/claude_session_summary.py` now calls it so the **SessionStart banner** prints a loud
+`⚠ STALE BRANCH` block with the safe sync command (`git fetch origin main && git reset --hard
+origin/main`, clean-tree-only) when the working branch is behind. The existing Stop / pre-push
+freshness hooks are unchanged; this adds the *restart* moment they missed.
+
+**Why a warning, not auto-sync:** auto-`reset --hard` in a hook would discard uncommitted work — the
+exact data-loss foot-gun seen earlier this chat. The banner surfaces the state + the `ahead` count
+so the agent judges (purely-behind = safe reset; diverged = check whether the local commits are
+already merged) and acts. **Q-0105 disposable:** delete the `sessionstart` branch + the summary call
+if it proves noisy. **Home:** the two scripts + this Q-block.
