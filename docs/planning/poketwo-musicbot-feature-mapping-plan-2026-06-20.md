@@ -10,6 +10,40 @@
 > (in-session answers, 2026-06-20): **plan only, build nothing yet**, and for the music half
 > **architecture-review pack only** (respect the Q-0041 voice gate). This doc is that plan.
 
+> **▶ Live demand signal (2026-06-20):** a real user in the owner's community said he still runs
+> **multiple bots** specifically *"like poketwo and music bot"* because SuperBot lacks those
+> features. The owner's directive: *"we should make sure we have a similar/better version of the
+> Pokémon system."* This **raises the priority** of the Pokétwo half (especially Lane A + the
+> catching/collection lanes below) from "nice extension" to "close a real why-I-need-another-bot
+> gap" — the goal is **feature-parity-or-better with Pokétwo's loop**, built on our own world
+> spine, not a literal Pokémon clone. (Music stays Q-0041-gated; the [arch-review
+> pack](voice-music-architecture-review-2026-06-20.md) is the path to closing that gap too.)
+
+## 0. What Pokétwo actually does (one-screen reference)
+
+So the owner-designer has the loop in front of him (he noted he's *"not sure what poketwo can
+exactly do"*). Pokétwo recreates Pokémon in chat:
+
+1. **Activity spawns** — wild Pokémon appear in a channel after ~N user messages (engagement
+   loop). Players type `catch <name>` to claim; `hint` reveals letters.
+2. **Collection** — every catch goes to a personal inventory; rich **filters/sort** (level, IV,
+   rarity, region, shiny, favourite, duplicates) manage large collections; a Pokédex tracks
+   seen/caught.
+3. **Global marketplace + trading** — list/search/buy Pokémon with in-game currency; plus direct
+   player-to-player trades.
+4. **Battling** — turn-based 3v3 using real Pokémon moves.
+5. **Shiny hunting & rarity** — tiny base shiny chance, boosted by streak "hunts" or a shop charm.
+6. **Two currencies** — earned PokéCoins + premium (buyable) shards; shop sells boosts, evolution
+   items, incense (forces spawns), etc.
+7. **Quests, events, time/weather** — daily quests, seasonal events, time/weather-gated evolutions.
+
+**Our parity map (verdicts in §2):** 1 → **Lane A Wild Encounters** (the missing engine) · 2 →
+**Lane B** (extend fishing/inventory) + a "dex" of seen vs. caught · 3 → the **economy-marketplace
+roadmap** (gated) · 4 → battles (owner-design, P2W-sensitive) · 5 → **Lane D** shiny/variant
+(cosmetic, not buyable) · 6 → **single earned currency only** (Q-0039 rejects buyable advantage —
+this is the deliberate "better, not P2W" divergence) · 7 → **Lane C** quests + (deferred)
+time/weather under the Q-0182 world model.
+
 ## 1. The core reframe — most of this already has a lane
 
 The report reads as "here are two successful bots, copy their features." The proper response in
