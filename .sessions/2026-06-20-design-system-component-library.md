@@ -55,8 +55,10 @@ explicit `.cjs` extension (`postcss.config.cjs`, `tailwind.config.cjs`). Build +
   components → port back into `botsite/` Jinja via Claude Code (Tailwind classes transfer 1:1). A future
   `botsite/`→JS migration would make this the production UI and drop the port step — separate decision,
   not assumed. Recorded in `design-system/README.md`.
-- **Held for review** (`needs-hermes-review`, auto-merge not armed): introducing a whole JS toolchain
-  into a Python repo is architecturally significant and the owner should sign off on the implementation.
+- **PR: auto-merge on green** (the normal `claude/*` flow, owner-directed). The change is additive and
+  isolated — nothing imports `design-system/`, Python CI is untouched, the new dir triggers no existing
+  workflow, and it's fully reversible — so it meets the contained/verifiable bar for the standard flow
+  rather than the hold carve-out.
 
 ## ⚑ Owner decision captured
 
@@ -91,7 +93,7 @@ session opened. Dedup-checked: the proposal mentions the matrix but not a JS/des
 
 - **Did:** diagnosed why `/design-sync` no-ops on SuperBot (no component library); at the owner's choice,
   built + verified a real React+Tailwind+Storybook component library (`design-system/`) that the skill
-  can sync. · **Outcome:** built + verified; PR held for review.
+  can sync. · **Outcome:** built + verified; PR opened, **auto-merge on green**.
 - **Run type:** `manual` (owner-directed, interactive).
 - **⚑ Self-initiated:** `none` — the build was the owner's explicit choice; scope/stack/location were my
   judgment within it. (The earlier botsite restyle attempt was reverted when the owner clarified intent.)

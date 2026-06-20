@@ -29,7 +29,7 @@ living ledger (`docs/current-state.md`).
   AskUserQuestion 2026-06-20 — "build a component library" so `/design-sync` has something to sync) ·
   new top-level `design-system/` (React 18 + Tailwind 3 + tsup build → `dist/` + Storybook 8; 6
   components mirroring `botsite/`) · `.gitignore` (+ `node_modules/`) · 2026-06-20 ·
-  **needs-hermes-review (held; significant new JS toolchain)**
+  **auto-merge on green** (additive · isolated · verified)
 
 - `claude/website-submit-form` · **website-split unit P4** — public `/submit` bug/suggestion
   form + intake (fills P1's `botsite/submit.py` stub) · exclusive: `botsite/submit.py` ·
