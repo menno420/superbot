@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T17:46:01Z",
+    "generated_at": "2026-06-20T19:55:32Z",
     "build": {
-      "commit": "654dd330",
-      "subject": "design-system: compose the rest of the site (Features / Commands / Changelog / Status) (#1178)",
-      "committed_at": "2026-06-20T17:34:35Z",
+      "commit": "5849f39d",
+      "subject": "creature game: playability simulator + v1 design + copyright answer (#1183)",
+      "committed_at": "2026-06-20T19:53:10Z",
       "branch": "main"
     },
     "counts": {
       "functions": 36,
-      "ideas": 106,
-      "bugs": 18,
+      "ideas": 107,
+      "bugs": 19,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -980,6 +980,14 @@
       "subsystems": []
     },
     {
+      "file": "wild-encounters-activity-spawning-2026-06-20.md",
+      "title": "Wild Encounters — activity-based spawning (2026-06-20)",
+      "status": "ideas",
+      "date": "2026-06-20",
+      "summary": "A new **Encounters** subsystem: non-bot messages in an opted-in channel accrue a debounced",
+      "subsystems": null
+    },
+    {
       "file": "ai-correction-report-and-ticket-service-2026-06-19.md",
       "title": "AI reports corrections → an audience-routed AI ticket service",
       "status": "ideas",
@@ -1884,6 +1892,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0019",
+      "title": "AI replies to messages aimed at *other* bots and claims \"you've just pinged me\" — OPEN (root cause identified; fix needs one owner behavior decision)",
+      "status": "unknown",
+      "summary": "a user pinged another bot — @Carl-bot (?) — in a channel, and SuperBot replied anyway: *\"Hey! You've just pinged me. What can I help you with? … feel free to ask me anything…\"*. The owner's words: *\"the AI is responding to mentions of other bots.\"* Context: the report user cited…"
+    },
+    {
       "id": "BUG-0018",
       "title": "committed botsite/data/site.json drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (root)",
       "status": "unknown",
@@ -2003,12 +2017,28 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-reconciliation-tooling-guards.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Reconciliation-tooling guards: band PR status classifier + Recently-shipped trim actuator",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-reconcile.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Docs reconciliation (sixteenth Q-0107 pass, band-#1170)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-poketwo-musicbot-feature-plan.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Pokétwo + MusicBot research report → feature mapping plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
     },
     {
       "file": "2026-06-20-panel-base-class-allowlist-parity.md",
@@ -2083,6 +2113,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-creature-game-sim.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Creature game: playability simulator + design + copyright",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-claude-md-pointer-pinning.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Pin the always-loaded instruction core against pointer rot",
@@ -2112,6 +2150,14 @@
       "title": "2026-06-20 — Extend the `baseview_inheritance` arch ratchet to the cog layer",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-ai-other-bot-mention-bug-note.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — BUG note: AI replies to other bots' mentions + Pokétwo demand signal",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2440,38 +2486,6 @@
       "title": "2026-06-19 — Fleet B1: governance-files presence + path-freshness guard",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-a8-baseview.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet A8: BaseView inheritance / justify direct discord.ui.View (7 view files)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-a7-db-wrappers.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet A7: wrap raw SQL in utils/db helpers",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-a6-governance-exceptions.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet A6: move governance exception types into utils/governance_exceptions",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-a5-deathmatch-cycle.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet A5: untangle deathmatch circular import",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": true
     }
   ],
