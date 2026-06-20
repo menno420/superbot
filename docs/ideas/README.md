@@ -86,6 +86,13 @@ Current broad captures:
   [`planning/explore-hub-federated-world-plan-2026-06-19`](../planning/explore-hub-federated-world-plan-2026-06-19.md)
   (ungated spine: top-level hub + world registry + global/per-game XP split; deferred layers routed as
   **Q-0182**). → relates `planning/{explore-hub-federated-world-plan,fishing-open-world-expansion,mining-hub-redesign,rpg-survival-difficulty-design}`.
+- [`wild-encounters-activity-spawning-2026-06-20.md`](./wild-encounters-activity-spawning-2026-06-20.md) —
+  **from the owner's Pokétwo/JMusicBot research report (2026-06-20):** activity-based **wild encounters** —
+  non-bot messages accrue a per-channel counter → the bot spawns a Claim-button encounter → first valid
+  claimer gets a reward routed through `economy`/`game_xp`/inventory. The **one Pokétwo mechanic with no
+  analog** (fishing/mining are command-only); net-new, ungated, anti-P2W, docks into the Explore world hub.
+  **SPEC'D → plan (Lane A):** [`planning/poketwo-musicbot-feature-mapping-plan-2026-06-20`](../planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md);
+  build sequence + spawn design routed as **Q-0186**. → relates `planning/{explore-hub-federated-world-plan,fishing-open-world-expansion}`.
 - [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) — **SHIPPED 2026-06-20 (PR #1174).**
   **session idea (2026-06-19, Q-0089, from the planning-map cleanup):** a stdlib
   `scripts/check_plan_homing.py` asserting every non-`historical` `docs/planning/` doc is linked from a
