@@ -127,6 +127,32 @@ def _maybe_typing(channel: object) -> AbstractAsyncContextManager[None]:
     return _NullAsyncContext()
 
 
+def _is_direct_bot_mention(
+    message: discord.Message,
+    bot_user: object | None,
+) -> bool:
+    """True only when the bot is *directly, personally* mentioned.
+
+    discord.py's :meth:`ClientUser.mentioned_in` returns ``True`` for an
+    ``@everyone``/``@here`` blast (it short-circuits on
+    ``message.mention_everyone``), so a server-wide ping would read as a
+    personal mention and flip the ``mention_only`` policy gate open
+    (BUG-0019 #2 — the "false personal ping" class). We instead test
+    membership of the bot's own id in ``message.mentions``, so only a
+    literal ``<@bot_id>`` token counts — never an ``@everyone``/``@here``
+    blast. Defensive: a missing bot id or a non-iterable ``mentions``
+    (a duck-typed test double) yields ``False`` rather than raising.
+    """
+    bot_id = getattr(bot_user, "id", None)
+    if bot_id is None:
+        return False
+    try:
+        mentioned = list(getattr(message, "mentions", None) or ())
+    except TypeError:
+        return False
+    return any(getattr(member, "id", None) == bot_id for member in mentioned)
+
+
 def _strip_bot_mention(text: str, *, bot_user_id: int | None) -> str:
     """Remove all mentions of the bot from ``text``.
 
@@ -226,7 +252,7 @@ class AINaturalLanguageStage:
             getattr(message.channel, "category_id", None) if message.channel else None
         )
         user_id = message.author.id
-        is_mention = ctx.bot.user is not None and ctx.bot.user.mentioned_in(message)
+        is_mention = _is_direct_bot_mention(message, ctx.bot.user)
         bot_user_id = getattr(getattr(ctx.bot, "user", None), "id", None)
 
         # The model sees the message with the bot mention stripped out

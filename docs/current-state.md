@@ -222,6 +222,12 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1186 (2026-06-20, BUG-0019 #2 — `@everyone`/`@here` false-personal-ping hardening)** — the AI
+  natural-language stage computed `is_mention` via `ClientUser.mentioned_in`, which short-circuits
+  `True` on `message.mention_everyone`, so a server-wide blast flipped the `mention_only` policy gate
+  open. Replaced with `natural_language_stage._is_direct_bot_mention` (bot id in `message.mentions`);
+  stays-fixed guard `test_everyone_blast_is_not_a_personal_ping`. Bug-book mechanism **#1** (the
+  `always_reply` "barge into others' conversations" design fork) stays OPEN, routed to the owner.
 - **#1156 · #1158 · #1160 (2026-06-19/20, federated Explore-hub spine + world registry)** — spine
   **PR 1** (#1156): a top-level Explore *world* hub (town-square) + the world registry, re-parenting the
   #1131 mining Explore sub-hub. **PR 3** (#1160): the cross-game world card — `game_xp_service.world_identity()`
