@@ -388,6 +388,11 @@ def rule_edit_in_place(
 # one of these in the module is a back affordance.  A button labelled/keyed
 # "back" or a back glyph counts too.
 _BACK_HELPER_PREFIXES = ("attach_back", "chain_back")
+# `transition_to(interaction, builder=...)` is the shared navigation helper
+# (views/navigation.py) a panel's Home/Back button uses to swap to a parent
+# panel — the UX-lab wings + compare/probes bench all route their Home button
+# through it, so a module that calls it is navigable, not a dead-end.
+_NAV_HELPER_NAMES = ("transition_to",)
 _BACK_TOKENS = ("back", "◀", "⬅", "🔙", "↩", "←")
 
 
@@ -419,18 +424,34 @@ def _module_has_back_affordance(tree: ast.Module) -> bool:
 
     - a call to a ``attach_back*`` / ``chain_back`` helper;
     - a ``Button``/``ui.button`` whose label or ``custom_id`` names "back" or a
-      back glyph.
+      back glyph;
+    - any call setting a ``label`` / ``custom_id`` / ``emoji`` keyword to a back
+      token — this catches a **custom back-button subclass** (e.g.
+      ``class _BackToHubButton(discord.ui.Button)`` whose ``__init__`` does
+      ``super().__init__(label="Back to Hub", custom_id="...back", emoji="↩")``
+      and is added via ``add_item``), which the ``Button(...)``/``@ui.button``
+      checks above miss because the call name is ``__init__``.
     """
     for sub in ast.walk(tree):
         if isinstance(sub, ast.Call):
             name = _call_name(sub)
-            if name.startswith(_BACK_HELPER_PREFIXES):
+            if name.startswith(_BACK_HELPER_PREFIXES) or name in _NAV_HELPER_NAMES:
                 return True
             # A constructed Button(..., custom_id="...:back", label="◀ Back").
             if name in {"Button", "button"}:
                 for text in _str_consts(sub):
                     if any(tok in text for tok in _BACK_TOKENS):
                         return True
+            # A back-token label/custom_id/emoji on any call — covers custom
+            # back-button subclasses wired through `super().__init__(...)`.
+            for kw in sub.keywords:
+                if (
+                    kw.arg in {"label", "custom_id", "emoji"}
+                    and isinstance(kw.value, ast.Constant)
+                    and isinstance(kw.value.value, str)
+                    and any(tok in kw.value.value.lower() for tok in _BACK_TOKENS)
+                ):
+                    return True
         # A @ui.button(...) decorated callback whose label/custom_id is a back.
         if isinstance(sub, (ast.AsyncFunctionDef, ast.FunctionDef)):
             for dec in sub.decorator_list:
@@ -446,6 +467,24 @@ def _is_hub_view_class(node: ast.ClassDef) -> bool:
     return any(base.rsplit(".", 1)[-1] == "HubView" for base in _class_bases(node))
 
 
+def _class_adds_items_dynamically(node: ast.ClassDef) -> bool:
+    """True if the class builds controls via ``add_item(...)`` rather than
+    decorated ``@ui.button``/``@ui.select`` callbacks.
+
+    Registry-driven hubs (the Explore world hub, the Games/Community hubs) add
+    their buttons in ``__init__`` with ``self.add_item(SomeButton(...))``. Such a
+    hub has no ``@ui.button`` callback in its class body, so without this signal
+    :func:`rule_back_button` saw it as control-less and skipped it — the exact
+    gap that let the Explore world-hub dead-end ship past this (graduated) rule.
+    """
+    return any(
+        isinstance(sub, ast.Call)
+        and isinstance(sub.func, ast.Attribute)
+        and sub.func.attr == "add_item"
+        for sub in ast.walk(node)
+    )
+
+
 def rule_back_button(
     files: list[Path],
     exceptions: dict,
@@ -453,14 +492,19 @@ def rule_back_button(
 ) -> list[Finding]:
     """Flag a ``HubView`` navigation panel with child controls but no back affordance.
 
-    A ``HubView`` subclass that declares its own ``@ui.button``/``@ui.select``
-    callbacks is a navigable panel — it should offer a way back.  We flag it when
-    **its whole module** references no back affordance (a ``attach_back*`` /
-    ``chain_back`` helper, or a back-labelled button).
+    A ``HubView`` subclass is a navigable panel — it should offer a way back.  We
+    treat it as navigable if it declares its own ``@ui.button``/``@ui.select``
+    callbacks **or** builds controls dynamically via ``add_item`` (registry-driven
+    hubs — the Explore world hub, Games/Community hubs — do the latter, and used to
+    slip through this rule entirely).  We flag such a panel when **its whole module**
+    references no back affordance — see :func:`_module_has_back_affordance` for the
+    recognized signals (``attach_back*`` / ``chain_back`` / ``transition_to``, a
+    back-labelled button, or a back-token ``label``/``custom_id``/``emoji`` on any
+    call, which covers custom back-button subclasses).
 
-    Warn-only + prone to a known false positive: a child panel whose back button
-    is attached *externally* by its parent (a different module) looks bare here —
-    allowlist those in ``consistency_exceptions.yml``.
+    Known false positive: a child panel whose back button is attached *externally*
+    by its parent (a different module) looks bare here — allowlist those in
+    ``consistency_exceptions.yml`` (and a true top-of-stack root has no parent).
     """
     cfg = exceptions.get("back_button", {})
     findings: list[Finding] = []
@@ -476,7 +520,7 @@ def rule_back_button(
                 isinstance(fn, (ast.AsyncFunctionDef, ast.FunctionDef))
                 and _is_ui_callback(fn)
                 for fn in cls.body
-            )
+            ) or _class_adds_items_dynamically(cls)
             if not has_child_control:
                 continue
             if _is_allowlisted(rel, cls.name, cfg):
