@@ -1,6 +1,6 @@
 # 2026-06-20 — Design-system docs: connector-vs-`/design-sync` correction
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Arc
 
