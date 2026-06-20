@@ -47,25 +47,51 @@ def test_healthz_ok(client):
     assert resp.json() == {"status": "ok"}
 
 
-def test_index_renders(client):
+def test_index_serves_spa_shell(client):
+    # `/` now serves the Claude-Design SPA shell (the public front-end). It is a
+    # hash-routed app: the empty <main id="app"> is filled client-side from
+    # window.SBDATA, loaded via /data.js then driven by /app.js.
     resp = client.get("/")
     assert resp.status_code == 200
     assert "SuperBot" in resp.text
-    # The marketing landing's load-bearing pieces.
-    assert "Add to Discord" in resp.text
-    assert "How it works" in resp.text
+    assert 'id="app"' in resp.text
+    assert "data.js" in resp.text and "app.js" in resp.text
 
 
-def test_add_to_discord_ctas_link_to_install_url(client, app_module):
-    # All the "Add to Discord" CTAs (nav + hero + repeat) point at the real Discord
-    # install link — wired from one source (chrome.ADD_TO_DISCORD_URL), not the "/"
-    # placeholder. Guards against a silent regression back to a dead button.
-    install = app_module.chrome.ADD_TO_DISCORD_URL
-    assert install.startswith("https://discord.com/oauth2/authorize?client_id=")
-    resp = client.get("/")
-    assert resp.status_code == 200
-    # The hero + repeat CTAs live on the landing; the nav CTA comes from base.html.
-    assert resp.text.count(install) >= 2
+def test_spa_static_assets_served(client):
+    # The verbatim design assets are served with sensible content types so the shell
+    # actually boots (no static/ dir — they live in botsite/site/).
+    js = client.get("/app.js")
+    assert js.status_code == 200 and "javascript" in js.headers["content-type"]
+    css = client.get("/app.css")
+    assert css.status_code == 200 and "css" in css.headers["content-type"]
+
+
+def test_data_js_is_generated_live_and_truthful(client, app_module):
+    # /data.js is the dynamic data seam — generated from the live site.json on each
+    # request (owner goal: "all data should dynamically load"). It must honor the SPA
+    # data contract and carry the *real* bot data, not the sample.
+    resp = client.get("/data.js")
+    assert resp.status_code == 200 and "javascript" in resp.headers["content-type"]
+    body = resp.text
+    # Contract surface the SPA reads.
+    assert "window.SBDATA = { ICONS, AREAS, COMMANDS, GAMES, CHANGELOG, STATUS" in body
+    for token in (
+        "const ICONS",
+        "const AREAS",
+        "const COMMANDS",
+        "const GAMES",
+        "const CHANGELOG",
+        "const STATUS",
+    ):
+        assert token in body, f"missing {token}"
+    # Real data: a known command name from site.json appears (not the sample bot).
+    names = {c["name"] for c in app_module.data_loader.load_site_data()["commands"]}
+    assert "blackjack" in names and "blackjack" in body
+    # Honest posture: no server/user totals leak into the public data layer.
+    lowered = body.lower()
+    for forbidden in ("servers using", "active users", "members across"):
+        assert forbidden not in lowered
 
 
 def test_submit_page_shares_chrome_with_working_install_cta(client, app_module):
@@ -78,25 +104,10 @@ def test_submit_page_shares_chrome_with_working_install_cta(client, app_module):
     assert app_module.chrome.ADD_TO_DISCORD_URL in resp.text
 
 
-def test_index_shows_honest_catalogue_counts_not_server_totals(client, app_module):
-    # The capability band renders catalogue counts (commands/features/games) — never
-    # server/user totals (plan layout note: those need the deferred live source).
-    resp = client.get("/")
-    assert resp.status_code == 200
-    counts = app_module.data_loader.load_site_data()["counts"]
-    assert str(counts["commands"]) in resp.text
-    assert "feature areas" in resp.text
-    # No server/user vocabulary leaked onto the public landing.
-    lowered = resp.text.lower()
-    for forbidden in ("servers using", "active users", "members across"):
-        assert forbidden not in lowered
-
-
-def test_footer_shows_generated_freshness_badge(client):
-    # The "generated" lineage badge (plan §3) — honest, never a live claim.
-    resp = client.get("/")
-    assert resp.status_code == 200
-    assert "generated" in resp.text
+# The Jinja fallback pages (/commands, /features, /changelog, /status) keep their
+# own honest-counts and "generated" freshness guards in test_commands_page.py /
+# test_changelog_status.py; the SPA's honest-data guard lives in
+# test_data_js_is_generated_live_and_truthful above.
 
 
 # ---------------------------------------------------------------------------
@@ -106,14 +117,25 @@ def test_footer_shows_generated_freshness_badge(client):
 
 def _route_paths(app) -> set[str]:
     """Registered route paths (some entries — e.g. an included empty router — have
-    no ``.path``, so read it defensively)."""
+    no ``.path``, so read it defensively).
+    """
     return {p for route in app.routes if (p := getattr(route, "path", None))}
 
 
 def test_every_route_is_wired(app_module):
     # P1 wires every route up front; the back-half units only fill templates/behaviour.
     paths = _route_paths(app_module.app)
-    for expected in ("/", "/commands", "/features", "/changelog", "/status", "/healthz"):
+    for expected in (
+        "/",
+        "/app.js",
+        "/app.css",
+        "/data.js",  # the SPA shell + dynamic data
+        "/commands",
+        "/features",
+        "/changelog",
+        "/status",
+        "/healthz",
+    ):
         assert expected in paths, f"route {expected} not wired"
 
 
@@ -134,7 +156,9 @@ def test_app_does_not_import_disbot(app_module):
     assert "import disbot" not in src
     assert "from disbot" not in src
     # And it must not have been pulled in transitively at import time.
-    assert not any(name == "disbot" or name.startswith("disbot.") for name in sys.modules)
+    assert not any(
+        name == "disbot" or name.startswith("disbot.") for name in sys.modules
+    )
 
 
 def test_no_static_dir(app_module):

@@ -1150,6 +1150,23 @@ def main(argv: list[str] | None = None) -> int:
         subset = build_site_subset(data)
         rel = _write_json(Path(args.site_output), subset)
         print(f"wrote {rel} — {subset['counts']}")
+        # Regenerate the SPA data layer (botsite/site/data.js) from the same subset,
+        # so the design site stays in lock-step with site.json (one pipeline). The
+        # builder lives inside botsite/ (stdlib-only, no disbot); load it by file
+        # path (the script may run with scripts/ — not the repo root — on sys.path).
+        import importlib.util
+
+        sd_path = REPO_ROOT / "botsite" / "site_data.py"
+        spec = importlib.util.spec_from_file_location("botsite_site_data", sd_path)
+        if spec is None or spec.loader is None:  # pragma: no cover - defensive
+            raise RuntimeError(f"cannot load {sd_path}")
+        site_data = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(site_data)
+
+        data_js = REPO_ROOT / "botsite" / "site" / "data.js"
+        data_js.parent.mkdir(parents=True, exist_ok=True)
+        data_js.write_text(site_data.render_from_site(subset), encoding="utf-8")
+        print(f"wrote {data_js.relative_to(REPO_ROOT)} (SPA data layer)")
     return 0
 
 
