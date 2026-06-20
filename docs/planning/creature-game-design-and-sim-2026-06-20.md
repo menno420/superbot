@@ -143,10 +143,11 @@ Crash** · Bramble **Thorn Volley** · Spark **Voltstrike** · Stone **Boulder S
 pass — the sim only needs type + power.)*
 
 **Status-move model:** each use shifts the stat **+25%**, **capped at +50%** (two uses), so a turn
-spent buffing is a real investment with diminishing returns — buff-spam can't run away. (The owner
-named one **defensive** and one **offensive** status move; v1 models both as self-buffs — `+DEF` and
-`+ATK`. *Open knob, §5:* the offensive one could instead **lower the enemy's DEF**, and the
-defensive one could **heal** — same slot, different feel; easy to swap and re-validate.)
+spent buffing is a real investment with diminishing returns — buff-spam can't run away. Both status
+moves are **self-buffs** — `+DEF` (defensive) and `+ATK` (offensive) — **decided for v1** (owner,
+2026-06-20): like Pokémon's own self-affecting status moves, and with **healing deliberately kept out
+of the universal kit** (reserved as a type-/move-specific effect for a later expansion) as the
+balance call. See §5.
 
 ### The emergent skill — why 2 damage types matter
 The signature move (power 12) out-damages Strike (power 9) **except vs a resistant target**
@@ -201,11 +202,25 @@ catalog and text-first art** (recommended). Build sequencing for the catch half 
 
 **Combat model (§2b) is owner-specified design** (6 types + Normal · teams of 6, one of each
 element · 4 moves = 2 damage [Normal + signature] + 2 status [defensive/offensive]) — built and
-**sim-validated PLAYABLE**, so it isn't an open question. The **one open knob** worth the owner's
-eye: the *exact* status-move effects. v1 models both as **self-buffs** (`+DEF` defensive, `+ATK`
-offensive); the natural alternatives are **defensive = heal** and/or **offensive = lower enemy DEF**
-(same slots, different feel). All are a one-line change + a sim re-run — say which feel you want and
-the sim confirms it stays balanced.
+**sim-validated PLAYABLE**, so it isn't an open question.
+
+**Status-move effect — DECIDED (owner, 2026-06-20):** both status moves stay **self-buffs**
+(`+DEF` defensive, `+ATK` offensive) for v1. Owner rationale: *"original Pokémon also has status
+moves that affect your own Pokémon, and healing is usually reserved for certain types/moves — so this
+is a more balanced way for now."* Keeping **healing out of the universal kit** (rather than every
+creature getting it) is the balance call; healing graduates later as a **type-/move-specific** effect,
+not a default. No code change — the sim already models self-buffs.
+
+### Future / expansion (v2+, owner direction "maybe later we can add more")
+The v1 kit is deliberately uniform (every creature has the same 4-move shape) so it's easy to balance
+and cheap to grow. Owner-noted expansion lanes, all **additive** and each re-validated through the
+sim before shipping:
+- **More creatures** — append rows to `creatures.json` (creature-as-data; the sim already validates
+  the whole roster).
+- **More moves** — extra status effects (e.g. **type-/move-specific healing**, enemy DEF/ATK debuffs,
+  speed control, status conditions) and extra attack moves; this is where moves likely become
+  **data too** (a moves catalog + per-creature movepools) rather than the uniform v1 set.
+- **Seasons/waves** — periodic creature + move drops, like real catchers add generations.
 
 → relates [feature-mapping plan](poketwo-musicbot-feature-mapping-plan-2026-06-20.md) ·
 [explore-hub spine](explore-hub-federated-world-plan-2026-06-19.md) ·
