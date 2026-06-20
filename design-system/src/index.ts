@@ -17,3 +17,37 @@ export type { FeatureCardProps, FeatureItem } from "./FeatureCard";
 
 export { CommandCard } from "./CommandCard";
 export type { CommandCardProps } from "./CommandCard";
+
+// ── Layout / chrome ─────────────────────────────────────────────────────────
+export { ButtonLink } from "./ButtonLink";
+export type { ButtonLinkProps } from "./ButtonLink";
+
+export { PageShell } from "./PageShell";
+export type { PageShellProps } from "./PageShell";
+
+export { SiteHeader } from "./SiteHeader";
+export type { SiteHeaderProps, NavItem } from "./SiteHeader";
+
+export { SiteFooter } from "./SiteFooter";
+export type { SiteFooterProps, BuildMeta } from "./SiteFooter";
+
+// ── Sections ────────────────────────────────────────────────────────────────
+export { Hero } from "./Hero";
+export type { HeroProps, HeroCta } from "./Hero";
+
+export { Section } from "./Section";
+export type { SectionProps, SectionAction } from "./Section";
+
+export { StepCard } from "./StepCard";
+export type { StepCardProps } from "./StepCard";
+
+export { CapabilityBand } from "./CapabilityBand";
+export type { CapabilityBandProps, CapabilityStat } from "./CapabilityBand";
+
+// ── Page composition (the canonical surface Claude Design edits) ─────────────
+export { LandingPage } from "./LandingPage";
+export type {
+  LandingPageProps,
+  FeatureCategory,
+  HowItWorksStep,
+} from "./LandingPage";

@@ -1,0 +1,56 @@
+name: Design System CI
+
+# Builds + type-checks the React/Tailwind design-system (the source of truth
+# /design-sync uploads to Claude Design). Sibling of botsite-ci.yml / dashboard-ci.yml
+# for the JS tier: the main code-quality.yml installs only Python tooling and never
+# touches design-system/, so without this leg a broken component or type error would
+# land silently. Provenance: 2026-06-20 (Path 1 — full landing-page composition); closes
+# the "new JS toolchain with no CI" gap flagged by the #1168 session.
+#
+# Uses the runner's preinstalled Node (ubuntu-latest ships an LTS Node), so the only
+# third-party action is the SHA-pinned actions/checkout — no unpinned setup-node. If a
+# Node-version pin is ever needed, add actions/setup-node (pinned by SHA) then.
+#
+# `paths`-filtered so it only runs when design-system code changes (cheap). It is NOT a
+# required merge check (making it one is an owner repo-Settings step).
+#
+# UNVERIFIED (Q-0105, 2026-06-20): confirm it goes green a few times before trusting it;
+# delete this workflow if it proves flaky/unreliable over multiple sessions.
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "design-system/**"
+      - ".github/workflows/design-system-ci.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "design-system/**"
+      - ".github/workflows/design-system-ci.yml"
+
+concurrency:
+  group: design-system-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  design-system:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: design-system
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Node version
+        run: node --version
+
+      - name: Install dependencies (npm ci)
+        run: npm ci
+
+      - name: Type-check (tsc --noEmit)
+        run: npm run typecheck
+
+      - name: Build (tsup + tailwind)
+        run: npm run build
