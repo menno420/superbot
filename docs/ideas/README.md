@@ -103,15 +103,17 @@ Current broad captures:
   Q-0172):** [`planning/loop-health-gh-fallback-plan-2026-06-20`](../planning/loop-health-gh-fallback-plan-2026-06-20.md).
   → relates `scripts/check_loop_health.py` · `operations/autonomous-routines.md` § "Control-plane state".
 - [`recently-shipped-auto-trim-helper-2026-06-20.md`](./recently-shipped-auto-trim-helper-2026-06-20.md) —
-  **session idea (2026-06-20, Q-0089, from the band-#1170 reconciliation pass):** a stdlib **actuator** for
+  **SHIPPED 2026-06-20** as `scripts/trim_recently_shipped.py` + `tests/unit/scripts/test_trim_recently_shipped.py`,
+  wired into the reconciliation routine's STEP 2. A stdlib **actuator** for
   the Recently-shipped trim-to-archive step — move the oldest over-ratchet bullets from `current-state.md`
   into the archive and **recompute the "Older merges (#X … #535)" floor pointer** from the actual lowest
   live PR, with a dry-run diff. The *actuator* complement to the `check_current_state_ledger.py` *detector*;
   closes the unguarded "wrong floor pointer" drift class (#763-style, Q-0120). Disposable (Q-0105). →
   relates `scripts/check_current_state_ledger.py` · `scripts/check_docs.py` · `band-pr-merge-status-helper`.
 - [`band-pr-merge-status-helper-2026-06-19.md`](./band-pr-merge-status-helper-2026-06-19.md) —
-  **session idea (2026-06-19, Q-0089, from the band-#1140 reconciliation pass):** a stdlib
-  `scripts/band_pr_status.py` (or a `--band-status` mode on `check_current_state_ledger.py`) that classifies
+  **SHIPPED 2026-06-20** as `scripts/band_pr_status.py` + `tests/unit/scripts/test_band_pr_status.py`,
+  wired into the reconciliation routine's STEP 2. A stdlib
+  `scripts/band_pr_status.py` that classifies
   every PR in a band as **merged / closed-unmerged / open** — so the reconcile ledger step doesn't hand-check
   merged-vs-superseded (this pass had to verify #1133 was closed-unmerged by `git branch --contains`). Closes
   a #763-class ground-truth gap (Q-0120/Q-0181). Disposable (Q-0105). → relates
@@ -143,8 +145,8 @@ Current broad captures:
   disposable (Q-0105). → relates `scripts/export_dashboard_data.py` (`build_site_subset`) ·
   `scripts/check_dashboard_data.py` · the split plan §2.2/§4.1.
 - [`governance-files-presence-guard-2026-06-19.md`](./governance-files-presence-guard-2026-06-19.md) —
-  **session idea (2026-06-19, Q-0089, from the repo governance/supply-chain baseline session):** a tiny
-  stdlib `scripts/check_governance_files.py` that asserts the new root governance files (`LICENSE` ·
+  **SHIPPED (PR #1120)** as `scripts/check_governance_files.py` — a tiny
+  stdlib guard that asserts the new root governance files (`LICENSE` ·
   `SECURITY.md` · `CONTRIBUTING.md` · `CITATION.cff`) stay present **and** that the repo paths cited in
   `CONTRIBUTING.md`/`SECURITY.md` still resolve — `check_docs.py` scopes `docs/**` only, so these root
   files are unguarded. "Executable verification over prose" applied to the governance layer. Quick-win,

@@ -1,8 +1,9 @@
 # Idea: contributor-doc / governance-files presence + freshness guard
 
-> **Status:** `ideas` — capture only. **Not a plan, not approval.** Source code, the binding
-> contracts, and `docs/current-state.md` win over anything here. Session idea (Q-0089, 2026-06-19,
-> from the repo governance/supply-chain baseline session).
+> **Status:** `historical` ✅ **SHIPPED (PR #1120)** as `scripts/check_governance_files.py` +
+> `tests/unit/scripts/test_check_governance_files.py` — presence + path-freshness guard for the root
+> governance files. Disposable (Q-0105). Original idea body kept below. Session idea (Q-0089,
+> 2026-06-19, from the repo governance/supply-chain baseline session).
 
 ## The idea
 

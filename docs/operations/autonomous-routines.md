@@ -139,6 +139,18 @@ STEP 1b — CHECK CODEX FIRST (first priority, before the reconcile pass — Q-0
 STEP 2 — RECONCILE (the Q-0107 pass):
   - Ledger: run `python3.10 scripts/check_current_state_ledger.py --strict`; fix all drift (add
     missing merged-PR entries; trim Recently-shipped past the ratchet into the archive).
+    - To split the band's PRs into **merged / closed-unmerged / open** deterministically (instead
+      of the per-PR hand check this step used to do — the #1133-class merged-vs-closed call,
+      Q-0120/Q-0181), run `python3.10 scripts/band_pr_status.py` and paste its table into the pass
+      record's §1. It uses git for merged-on-main + the same gh→REST fallback as
+      `check_loop_health.py` for the closed/open half (SKIP-degrades, labels its source). Both
+      disposable (Q-0105).
+    - To do the Recently-shipped trim itself, run `python3.10 scripts/trim_recently_shipped.py`
+      (dry-run diff) → review the moved bullets (the grouped band bullets are **non-monotonic** —
+      the known hazard) → `--apply`. It moves the oldest over-ratchet bullets into the archive and
+      **recomputes the "Older merges (#HIGH … #LOW)" floor pointer** from the true archive span, so
+      the prose pointer can't drift. Re-run `check_current_state_ledger.py --strict` afterward as
+      the real guard (the actuator never deletes a bullet).
   - Docs: run `python3.10 scripts/check_docs.py --strict`; fix every reachability/badge/
     staleness issue + stale links, wrong PR numbers, broken references.
   - Prune/relabel clearly stale docs; restate current priorities in current-state ▶ Next action.
