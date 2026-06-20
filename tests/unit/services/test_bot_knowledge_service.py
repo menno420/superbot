@@ -105,6 +105,15 @@ def _install_catalog(monkeypatch, entries: tuple[CommandDescription, ...]) -> No
         "foo !btd6 ask",
         "/btd6 ask",
         "can I use /btd6 ask",
+        # Introduction / overview phrasings — an intro IS a capability question,
+        # so the command catalog should reach the model (owner ask 2026-06-20).
+        "introduce yourself",
+        "can you introduce yourself",
+        "who are you",
+        "what are you",
+        "what do you do",
+        "what do you offer",
+        "tell me about yourself",
     ],
 )
 def test_looks_like_command_question_matches(text: str) -> None:

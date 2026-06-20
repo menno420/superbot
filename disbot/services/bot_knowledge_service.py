@@ -63,6 +63,10 @@ _MAX_CATALOG_ENTRIES = 40
 _MAX_CATALOG_CHARS = 4000
 
 # Substring triggers — case-insensitive contains-match against lowercased text.
+# Includes introduction / "who are you" / "what do you do" phrasings: an
+# introduction IS a capability question, so the command catalog should reach
+# the model (alongside the always-present capability overview in
+# ai_instruction_service) when a user asks the bot to introduce itself.
 _CATALOG_SUBSTRING_TRIGGERS: tuple[str, ...] = (
     "what does",
     "what is the",
@@ -73,6 +77,12 @@ _CATALOG_SUBSTRING_TRIGGERS: tuple[str, ...] = (
     "how do i",
     "how to use",
     "can you do",
+    "introduce",
+    "who are you",
+    "what are you",
+    "what do you do",
+    "what do you offer",
+    "tell me about yourself",
 )
 
 # Prefix/slash triggers — must look command-shaped, NOT inside URLs/paths/dates/fractions.
