@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T21:09:59Z",
+    "generated_at": "2026-06-20T00:18:49Z",
     "build": {
-      "commit": "c1f6acfd",
-      "subject": "reconcile: open born-red session card for the band-#1140 Q-0107 pass",
-      "committed_at": "2026-06-19T21:02:35Z",
-      "branch": "claude/reconcile-1140-band"
+      "commit": "26bf3428",
+      "subject": "session: open born-red card for federated Explore world hub (spine PR 1)",
+      "committed_at": "2026-06-20T00:11:21Z",
+      "branch": "claude/funny-franklin-bnvdxe"
     }
   },
   "counts": {
-    "commands": 306,
+    "commands": 307,
     "features": 36,
     "games": 8
   },
@@ -4756,6 +4756,32 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "world",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Explore world hub — the open-world town square (Mine · Fish).",
+      "description": "Open the Explore world hub — the open-world town square (Mine · Fish).",
+      "use_cases": null,
+      "examples": [
+        "!explore",
+        "!world"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
+          "title": "Wager / money-flow map — generated trace of game coin paths",
           "status": "ideas"
         }
       ],

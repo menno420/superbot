@@ -11,9 +11,11 @@ buttons — **⛏️ Mine · 🌲 Harvest · 🗺️ Explore · 🧍 Character �
 
 - **🧍 Character** sub-hub (``character_hub``): Overview · Inventory · Stats ·
   Skills · Vault · Home.
-- **🗺️ Explore** sub-hub (``explore_hub``): the open-world explorer (Fishing /
-  Roam / Quests), a stub for now. *Distinct* from the old depth-tied mining
-  random-event "explore", which folded into the Mine action.
+- **🗺️ Explore**: forwards to the top-level federated Explore world hub
+  (``views.explore.world_hub``), the open-world "town square" routing into each
+  game (Mine · Fish · …). Re-parented out of mining by the Explore-hub spine
+  plan (PR 1); *distinct* from the old depth-tied mining random-event
+  "explore", which folded into the Mine action.
 - **🔨 Workshop** sub-hub (``workshop_hub``): Craft · Repair · Forge · Market.
 - **Mine** (``MineView``) absorbed Descend / Ascend + the old mining-explore
   random-event as an interim until PR3's grid Mine.
@@ -228,17 +230,20 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        # Option A: this opens the open-world explorer sub-hub (stub). It is a
-        # DIFFERENT concept from the old depth-tied mining random-event explore,
-        # which folded into the Mine action. New custom_id (mining:explore_hub)
-        # so the persistent panel doesn't reuse the old mining:explore id.
-        from views.mining.explore_hub import (
-            MiningExploreHubView,
-            build_explore_hub_embed,
+        # This forwards to the top-level federated Explore world hub (the
+        # "town square"), re-parented out of mining by the Explore-hub spine
+        # plan (PR 1). It is a DIFFERENT concept from the old depth-tied mining
+        # random-event explore, which folded into the Mine action. The
+        # custom_id (mining:explore_hub) is preserved so the persistent panel
+        # button keeps working; only its destination changed. The world hub's
+        # Mine entry walks back into the mining hub.
+        from views.explore.world_hub import (
+            ExploreWorldHubView,
+            build_world_hub_embed,
         )
 
-        embed = build_explore_hub_embed()
-        view = MiningExploreHubView(interaction.user, interaction.guild_id)
+        embed = build_world_hub_embed()
+        view = ExploreWorldHubView(interaction.user, interaction.guild_id)
         await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
