@@ -147,13 +147,16 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     (a `check_docs` reachability orphan is usually one missing README link), leave the owner's.
     "Noting" a PR is not disposition — act on it. (This sweep was missing: #766 sat red + #771
     redundant for ~21h, unnoticed by sessions and two prior passes.)
-  - CONTROL-PLANE (Q-0135): run `python3.10 scripts/check_loop_health.py` (reads live GitHub via
-    `gh`) and reconcile the § Control-plane state table against its PASS/FAIL/SKIP verdicts —
-    tick/untick the verifiable rows (ROUTINE_PAT, DATABASE_PUBLIC_URL, loop-self-fired) so the
-    table can't silently drift the way it did before 2026-06-14 (it claimed the loop had never
-    self-fired when live GitHub already proved it had). If `gh` is unavailable, do the same read
-    via the GitHub MCP (`list_issues`): the *author* of the newest auto-opened trigger issue is
-    the live read of ROUTINE_PAT (a real-user login = set; `github-actions[bot]` = unset).
+  - CONTROL-PLANE (Q-0135): run `python3.10 scripts/check_loop_health.py` (reads live GitHub) and
+    reconcile the § Control-plane state table against its PASS/FAIL/SKIP verdicts — tick/untick the
+    verifiable rows (ROUTINE_PAT, DATABASE_PUBLIC_URL, loop-self-fired) so the table can't silently
+    drift the way it did before 2026-06-14 (it claimed the loop had never self-fired when live
+    GitHub already proved it had). The script tries `gh` first, then **auto-falls to a stdlib REST
+    read when `gh` is absent and `GITHUB_TOKEN` is set** (PR #1174 — so it now produces a real
+    verdict `(via REST)` in the routine container, not a blind SKIP; the output labels the source).
+    Only if neither `gh` nor a token is available does it emit an *actionable* SKIP — then do the
+    same read via the GitHub MCP (`list_issues`): the *author* of the newest auto-opened trigger
+    issue is the live read of ROUTINE_PAT (a real-user login = set; `github-actions[bot]` = unset).
   - PLAN THE NEXT *FULL BAND* + KEEP THE PLANS FED (owner directives Q-0144 + Q-0164). Review the
     executable plans (docs/planning/*, docs/roadmap.md): how much real, *buildable* work is left?
     The bar is DEPTH >= the cadence — leave enough genuine buildable work to reach the NEXT pass
@@ -172,6 +175,11 @@ STEP 2 — RECONCILE (the Q-0107 pass):
         planning session — never invent low-value filler to look busy. This is how an idea becomes a
         plan becomes reality with no extra owner planning, and how the owner learns *early* that the
         backlog needs him.
+      · After (re)planning, run `python3.10 scripts/check_plan_homing.py --strict` (PR #1174) — every
+        live `plan` doc must be linked from a ROUTING doc (roadmap / a folio / current-state / the
+        `docs/planning/README.md` plan index), not merely reachable from a sibling plan. A newly
+        promoted plan that isn't homed trips it; fix by adding its plan-index row + a roadmap/folio
+        link. (Routing complement to `check_docs` reachability; warn-only without `--strict`.)
   - IMPROVE THE SYSTEM: if you see a way to make the orientation / memory / tooling better for
     the next run (a confusing doc, a missing pointer, a guard that would have caught this drift),
     make that improvement too. This is the point of the loop.
@@ -305,7 +313,7 @@ branch" / the conflict banner remain available by hand.
 
 | # | Maintainer action | Why it matters | Source PR | Verified? |
 |---|---|---|---|---|
-| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ✅ **2026-06-14** (live-evidence verify: the scheduled executor issue #819 and the cadence reconcile issues #822/#841 were auto-opened by the workflows yet authored by **`menno420`** — the PAT owner — not `github-actions[bot]`. With `GITHUB_TOKEN` they would be bot-authored. So `ROUTINE_PAT` is set and active. **Re-confirmed every reconciliation pass since:** the cadence reconcile issues #931 (band-#990 era), #961, #1021 (band-#1020 pass, 2026-06-17), #1051 (band-#1050 pass, 2026-06-18), #1095 (band-#1080 pass, 2026-06-19), #1111 (band-#1110 pass, 2026-06-19), and **#1141 (band-#1140 pass, 2026-06-19)** were each auto-opened yet authored by `menno420`.) |
+| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ✅ **2026-06-14** (live-evidence verify: the scheduled executor issue #819 and the cadence reconcile issues #822/#841 were auto-opened by the workflows yet authored by **`menno420`** — the PAT owner — not `github-actions[bot]`. With `GITHUB_TOKEN` they would be bot-authored. So `ROUTINE_PAT` is set and active. **Re-confirmed every reconciliation pass since:** the cadence reconcile issues #931 (band-#990 era), #961, #1021 (band-#1020 pass, 2026-06-17), #1051 (band-#1050 pass, 2026-06-18), #1095 (band-#1080 pass, 2026-06-19), #1111 (band-#1110 pass, 2026-06-19), #1141 (band-#1140 pass, 2026-06-19), and **#1171 (band-#1170 pass, 2026-06-20)** were each auto-opened yet authored by `menno420`.) |
 | 2 | Add repo secret **`DATABASE_PUBLIC_URL`** (Railway Postgres public proxy URL) | the daily `backup-db.yml` `pg_dump` is inert without it (workflow fails + opens an issue) | #769 | ✅ **2026-06-14 — set + working.** After the PR #862 pg18-client + resolved-URL fix, the backup **succeeded at 17:41:49Z** (run history: `success` workflow_dispatch). The earlier daily "Postgres backup failed" issues (#823/#860/#861) predated the fix and were stale (failure-issues don't auto-close on success); **closed 2026-06-14.** The next *scheduled* run confirms the cron path end-to-end. |
 | 3 | Railway → **Deploy** the staged `CLAUDE_ROUTINE_*` env vars | `/bugreport` + `/dispatch` (HermesCog #757) may be inactive until the worker redeploys with the vars live | #765 | ⬜ (not verifiable from the repo) |
 | 4 | Confirm the **dispatch routine prompt** is the free-form version | the owner finished routine setup *before* the #761 free-form prompt was handed over — it may carry the older prompt | #761/#765 | ⬜ (not verifiable from the repo) |
@@ -334,7 +342,8 @@ branch" / the conflict banner remain available by hand.
 - [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — the `/fire` mechanism + gates.
 - [`hermes-skills/dispatch.md`](./hermes-skills/dispatch.md) · [`hermes-skills/review.md`](./hermes-skills/review.md)
 - `scripts/check_reconciliation_due.py` · `scripts/check_phase_gate.py` · `scripts/check_current_state_ledger.py`
-- `scripts/check_loop_health.py` — live-GitHub probe of the Control-plane state table (Q-0135); run it in the reconciliation pass.
+- `scripts/check_loop_health.py` — live-GitHub probe of the Control-plane state table (Q-0135; `gh` → stdlib-REST fallback, PR #1174); run it in the reconciliation pass.
+- `scripts/check_plan_homing.py` — asserts every live `plan` doc is linked from a routing doc (PR #1174); run `--strict` in the reconciliation pass after (re)planning.
 - `.github/workflows/reconciliation-trigger.yml` — opens the `reconcile` issue on the 30-PR boundary.
   *(The dispatch cadence is the console Schedule, `0 */2 * * *`, Q-0146 — `executor-nightly.yml` was removed 2026-06-15.)*
 - [`hermes-skills/review-merge.md`](./hermes-skills/review-merge.md) — Hermes' independent review + merge gate for `needs-hermes-review` PRs (Q-0117).

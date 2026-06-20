@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T14:55:58Z",
+    "generated_at": "2026-06-20T17:07:58Z",
     "build": {
-      "commit": "721c4cf",
-      "subject": "Merge pull request #1169 from menno420/claude/relaxed-thompson-qwg50v",
-      "committed_at": "2026-06-20T15:38:17Z",
+      "commit": "4405676",
+      "subject": "fix(mining,community): !character shows the paper-doll; add missing back buttons",
+      "committed_at": "2026-06-20T14:59:25Z",
       "branch": "claude/gallant-volta-bk3qvf"
     }
   },

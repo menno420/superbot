@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T12:07:50Z",
+    "generated_at": "2026-06-20T17:07:58Z",
     "build": {
-      "commit": "f88178d7",
-      "subject": "Merge pull request #1164 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-20T11:41:45Z",
-      "branch": "main"
+      "commit": "4405676",
+      "subject": "fix(mining,community): !character shows the paper-doll; add missing back buttons",
+      "committed_at": "2026-06-20T14:59:25Z",
+      "branch": "claude/gallant-volta-bk3qvf"
     },
     "counts": {
       "functions": 36,
-      "ideas": 105,
+      "ideas": 106,
       "bugs": 18,
       "reviews": 0,
       "reviews_open": 0,
@@ -971,6 +971,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "recently-shipped-auto-trim-helper-2026-06-20.md",
+      "title": "Idea — a stdlib actuator for the Recently-shipped trim-to-archive step",
+      "status": "ideas",
+      "date": "2026-06-20",
+      "summary": "Every Q-0107 reconciliation pass ends with the same **mechanical, drift-prone** chore: the",
+      "subsystems": []
+    },
     {
       "file": "ai-correction-report-and-ticket-service-2026-06-19.md",
       "title": "AI reports corrections → an audience-routed AI ticket service",
@@ -1995,6 +2003,30 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-reconcile.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Docs reconciliation (sixteenth Q-0107 pass, band-#1170)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-panel-base-class-allowlist-parity.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — cross-allowlist drift guard: `panel_base_class` yml ↔ arch conformance frozenset",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-loop-health-gh-fallback.md",
+      "date": "2026-06-20",
+      "title": "Session — `check_loop_health.py` gh-absent REST fallback + plan-homing guard",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-20-funny-franklin-session-enders-claim-gap.md",
       "date": "2026-06-20",
       "title": "Session — funny-franklin · session-ender pass (claim-gap idea + grooming)",
@@ -2019,6 +2051,30 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-design-system-landing-page.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Design-system: full landing-page composition + hybrid edit loop",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-design-system-connector-docs.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Design-system docs: connector-vs-`/design-sync` correction",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-design-system-component-library.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Design-system component library (for Claude Design `/design-sync`)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-claude-md-pointer-pinning.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Pin the always-loaded instruction core against pointer rot",
@@ -2027,11 +2083,35 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-ci-trigger-gotcha-journal.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — capture the \"pushes don't re-fire PR CI\" env gotcha (journal Quick-ref)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-character-image-and-back-buttons.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — `!character` paper-doll + back-button dead-ends",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-arch-ratchet-cog-layer.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Extend the `baseview_inheritance` arch ratchet to the cog layer",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-ai-intro-capabilities.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — AI self-introduction: advertise capabilities + available games",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2393,78 +2473,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-a3-blackjack-state.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet A3: move blackjack state/persistence into services/, break the actions↔_state cycle",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-a2-moderation-helpers.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet A2: move moderation _helpers from cogs into services/",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-a1-economy-xp-helpers.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet A1: move economy/xp _helpers from cogs into services/",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-feedback-threads-and-idea-mapping-capture.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Capture: per-command feedback threads + idea→cog/command mapping",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-dev-site-status-donut-idea.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Capture owner's dev-site project-status-donut idea (+ mockup)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-consistency-rule-graduation.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency-linter rule graduation (3 ELIGIBLE rules → error + CI)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-consistency-panel-base-class-reconcile.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency-linter: reconcile `panel_base_class` with the arch ground truth",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-consistency-linter-lane-a2.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency-linter Lane A2: window the per-panel embedded selects",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-consistency-linter-cog-scope.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency linter: extend rules 3+4 to the cog layer",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -5362,7 +5370,7 @@
             "profile",
             "char"
           ],
-          "brief": "Show your full mining character — location, gear, stats, wealth.",
+          "brief": "Show your full mining character — the paper-doll, location, stats, wealth.",
           "classification": "panel_action",
           "has_panel": false,
           "button_backed": true

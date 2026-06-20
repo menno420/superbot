@@ -86,7 +86,7 @@ Current broad captures:
   [`planning/explore-hub-federated-world-plan-2026-06-19`](../planning/explore-hub-federated-world-plan-2026-06-19.md)
   (ungated spine: top-level hub + world registry + global/per-game XP split; deferred layers routed as
   **Q-0182**). → relates `planning/{explore-hub-federated-world-plan,fishing-open-world-expansion,mining-hub-redesign,rpg-survival-difficulty-design}`.
-- [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) —
+- [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) — **SHIPPED 2026-06-20 (PR #1174).**
   **session idea (2026-06-19, Q-0089, from the planning-map cleanup):** a stdlib
   `scripts/check_plan_homing.py` asserting every non-`historical` `docs/planning/` doc is linked from a
   **routing** doc (roadmap · a folio · current-state · the new plan index) — not merely *reachable* from
@@ -99,8 +99,16 @@ Current broad captures:
   (Q-0135) SKIPs on every reconciliation pass because the in-container routine has no `gh` — give it a
   `gh`-absent fallback (read the newest `reconcile` issue's author via the GitHub REST API, the same read
   the agent does by hand) so the control-plane ROUTINE_PAT row is verifiable *by the script*, not only by a
-  manual MCP read no checker can see. Disposable (Q-0105). → relates `scripts/check_loop_health.py` ·
-  `operations/autonomous-routines.md` § "Control-plane state".
+  manual MCP read no checker can see. Disposable (Q-0105). **PROMOTED → plan (band-#1170 pass, 2026-06-20,
+  Q-0172):** [`planning/loop-health-gh-fallback-plan-2026-06-20`](../planning/loop-health-gh-fallback-plan-2026-06-20.md).
+  → relates `scripts/check_loop_health.py` · `operations/autonomous-routines.md` § "Control-plane state".
+- [`recently-shipped-auto-trim-helper-2026-06-20.md`](./recently-shipped-auto-trim-helper-2026-06-20.md) —
+  **session idea (2026-06-20, Q-0089, from the band-#1170 reconciliation pass):** a stdlib **actuator** for
+  the Recently-shipped trim-to-archive step — move the oldest over-ratchet bullets from `current-state.md`
+  into the archive and **recompute the "Older merges (#X … #535)" floor pointer** from the actual lowest
+  live PR, with a dry-run diff. The *actuator* complement to the `check_current_state_ledger.py` *detector*;
+  closes the unguarded "wrong floor pointer" drift class (#763-style, Q-0120). Disposable (Q-0105). →
+  relates `scripts/check_current_state_ledger.py` · `scripts/check_docs.py` · `band-pr-merge-status-helper`.
 - [`band-pr-merge-status-helper-2026-06-19.md`](./band-pr-merge-status-helper-2026-06-19.md) —
   **session idea (2026-06-19, Q-0089, from the band-#1140 reconciliation pass):** a stdlib
   `scripts/band_pr_status.py` (or a `--band-status` mode on `check_current_state_ledger.py`) that classifies

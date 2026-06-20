@@ -23,10 +23,17 @@ What it can verify from GitHub alone:
 What it canNOT see (stays maintainer-verified in the table): Railway env-var deploys, routine
 model/prompt config in the console. Those rows are out of scope by design.
 
-Reliability (Q-0105): **unverified — added 2026-06-14 (Q-0135).** Confirm its verdicts against
-the real GitHub state a few times before trusting it; if its heuristics misclassify over
-multiple sessions, **delete it** — it is a convenience drift-guard, not load-bearing. Degrades
-to SKIP (exit 0) wherever `gh` is unavailable or unauthenticated, so it never reddens a session.
+Fetch order: the `gh` CLI first (works in dev shells / Actions), then — when `gh` is absent (the
+routine container) — a stdlib `urllib` read of the GitHub REST API authed with `GITHUB_TOKEN`
+(the **gh-absent REST fallback**, added 2026-06-20 so the script is verifiable in the one place it
+is meant to run). Only if both are unavailable does it emit an *actionable* SKIP that names the
+manual MCP read.
+
+Reliability (Q-0105): **unverified — added 2026-06-14 (Q-0135); REST fallback added 2026-06-20.**
+Confirm its verdicts against the real GitHub state a few times before trusting it; if its
+heuristics (or the REST read — rate limits, token scope) misclassify over multiple sessions,
+**delete it** — it is a convenience drift-guard, not load-bearing. Degrades to SKIP (exit 0)
+wherever neither `gh` nor a token is available, so it never reddens a session.
 
 Usage:
     python3.10 scripts/check_loop_health.py            # advisory, human-readable
@@ -37,8 +44,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 
 REPO = "menno420/superbot"
 
@@ -151,8 +161,8 @@ def classify(issues: list[dict]) -> list[tuple[str, str, str]]:
     return verdicts
 
 
-def _gh_issues(limit: int = 40) -> list[dict] | None:
-    """Fetch recent issues via `gh`. Returns None (→ SKIP) if gh is unavailable/unauth'd."""
+def _fetch_via_gh(limit: int = 40) -> list[dict] | None:
+    """Fetch recent issues via `gh`. Returns None if gh is unavailable/unauth'd."""
     try:
         proc = subprocess.run(
             [
@@ -192,22 +202,90 @@ def _gh_issues(limit: int = 40) -> list[dict] | None:
     ]
 
 
+def _github_token() -> str | None:
+    """The token to authenticate the REST fallback, if the env supplies one."""
+    return os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or None
+
+
+def _fetch_via_rest(limit: int = 40) -> list[dict] | None:
+    """Fetch recent issues over the GitHub REST API with stdlib urllib (gh-absent fallback).
+
+    No new dependency — `urllib` + `json` are stdlib. Returns None when no token is set or the
+    request fails (→ the caller falls through to an actionable SKIP). Note: the REST issues
+    endpoint also returns pull requests; ``classify`` matches on title prefixes only, so the PR
+    rows are harmless, but we keep the same fields ``classify`` consumes.
+    """
+    token = _github_token()
+    if token is None:
+        return None
+    url = (
+        f"https://api.github.com/repos/{REPO}/issues"
+        f"?state=all&sort=created&direction=desc&per_page={limit}"
+    )
+    req = urllib.request.Request(  # noqa: S310 — fixed https GitHub API URL
+        url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "superbot-check-loop-health",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:  # noqa: S310
+            raw = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, json.JSONDecodeError, TimeoutError, OSError):
+        return None
+    if not isinstance(raw, list):
+        return None
+    return [
+        {
+            "number": i.get("number"),
+            "title": i.get("title", ""),
+            "author_login": (i.get("user") or {}).get("login", ""),
+            "state": i.get("state", ""),
+            "created_at": i.get("created_at", ""),
+        }
+        for i in raw
+    ]
+
+
+def fetch_issues(limit: int = 40) -> tuple[list[dict] | None, str]:
+    """Try `gh`, then the REST fallback. Returns (issues, source) — source ∈ {gh, REST, SKIP}."""
+    issues = _fetch_via_gh(limit)
+    if issues is not None:
+        return issues, "gh"
+    issues = _fetch_via_rest(limit)
+    if issues is not None:
+        return issues, "REST"
+    return None, "SKIP"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", action="store_true", help="machine-readable output")
     args = parser.parse_args()
 
-    issues = _gh_issues()
+    issues, source = fetch_issues()
     if issues is None:
-        msg = "check_loop_health: SKIP — `gh` unavailable or unauthenticated (control-plane not probed)."
+        reason = (
+            "neither `gh` nor a GITHUB_TOKEN is available — control-plane not probed. "
+            "Manual fallback: read the newest `reconcile` issue's author via the GitHub MCP "
+            "(a real-user login = ROUTINE_PAT set; `github-actions[bot]` = unset)."
+        )
         if args.json:
             print(
                 json.dumps(
-                    {"status": "SKIP", "reason": "gh unavailable", "verdicts": []},
+                    {
+                        "status": "SKIP",
+                        "source": "SKIP",
+                        "reason": reason,
+                        "verdicts": [],
+                    },
                 ),
             )
         else:
-            print(msg)
+            print(f"check_loop_health: SKIP — {reason}")
         return 0
 
     verdicts = classify(issues)
@@ -215,6 +293,7 @@ def main() -> int:
         print(
             json.dumps(
                 {
+                    "source": source,
                     "verdicts": [
                         {"check": c, "status": s, "detail": d} for c, s, d in verdicts
                     ],
@@ -222,7 +301,9 @@ def main() -> int:
             ),
         )
     else:
-        print("Loop-health probe (control-plane state, live from GitHub):")
+        print(
+            f"Loop-health probe (control-plane state, live from GitHub via {source}):",
+        )
         for check, status, detail in verdicts:
             print(f"  [{status:>4}] {check}: {detail}")
         print(

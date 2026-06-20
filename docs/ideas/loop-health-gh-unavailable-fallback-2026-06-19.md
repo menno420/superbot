@@ -2,6 +2,11 @@
 
 > **Status:** `ideas` — capture only. **Not a plan, not approval.** Session idea (2026-06-19, Q-0089,
 > from the band-#1110 reconciliation pass). Workflow/tooling. Quick-win, disposable (Q-0105).
+>
+> **▶ PROMOTED → plan (band-#1170 pass, 2026-06-20, Q-0172):**
+> [`planning/loop-health-gh-fallback-plan-2026-06-20.md`](../planning/loop-health-gh-fallback-plan-2026-06-20.md)
+> — ungated, one PR, `urllib` REST fallback. Reason: the SKIP recurred again on the band-#1170 pass, so this
+> is the single highest-leverage ungated improvement available to refresh the thin self-merge lane.
 
 ## The observation
 
