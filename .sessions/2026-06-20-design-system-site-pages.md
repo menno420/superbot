@@ -1,6 +1,6 @@
 # 2026-06-20 — Design-system: compose the rest of the site (Features/Commands/Changelog/Status)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Arc
 
