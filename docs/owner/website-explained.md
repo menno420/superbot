@@ -120,7 +120,9 @@ There are **two separate things**, and only one of them is automatic:
    with*. Claude Design connects to the repo via the **GitHub connector** and
    reads this library directly, so **merging component changes to the connected
    branch (main) is the "sync."** You don't upload anything; at most you hit a
-   "refresh/re-read repo" action in Claude Design.
+   "refresh/re-read repo" action in Claude Design. The connector is **read-only**
+   (owner-confirmed 2026-06-20) — it reads the repo but cannot write to it, so
+   Claude Design never opens its own PRs.
 
 2. **Getting a design onto the live site is NOT automatic.** Claude Design
    *produces* a design composed from your components; turning that into what

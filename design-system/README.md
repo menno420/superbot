@@ -141,7 +141,10 @@ Connectors). Claude Design then reads the component library **straight from the 
 - After a merge, **refresh / reopen the Claude Design project** so it re-reads the latest
   commit. If Claude Design lets you select a branch, you can preview a branch *before* it
   merges.
-- Canvas edits save back to source as commits / PRs on the repo.
+- **The connector is READ-ONLY in this project** (owner-confirmed 2026-06-20): GitHub grants
+  it read access only and exposes no write toggle. So Claude Design **cannot** commit or open
+  PRs back to the repo — canvas edits are exported manually (a handoff zip) and a **Claude Code
+  step commits them**. The read path (repo → Claude Design) is the only automatic half.
 
 ### `/design-sync` (alternative — manual upload)
 
