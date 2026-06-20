@@ -131,6 +131,8 @@ def _btd6_message(*, guild_id: int = 1, channel_id: int = 100):
     msg.author.id = 42
     msg.author.bot = False
     msg.author.roles = []
+    msg.mentions = []
+    msg.mention_everyone = False
     return msg
 
 

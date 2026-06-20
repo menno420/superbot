@@ -33,6 +33,7 @@ from core.runtime.ai.contracts import (
 from core.runtime.ai.natural_language_stage import (
     AINaturalLanguageStage,
     _invoke_gateway,
+    _is_direct_bot_mention,
 )
 from core.runtime.message_pipeline import MessagePipelineContext
 
@@ -68,6 +69,11 @@ def _make_message(*, guild_id: int = 99, channel_id: int = 1, user_id: int = 42)
     msg.author.id = user_id
     msg.author.bot = False
     msg.author.roles = []
+    # A real discord Message always exposes ``mentions`` as a list and
+    # ``mention_everyone`` as a bool. Default: nobody pinged. Tests that
+    # need a direct bot mention set these explicitly.
+    msg.mentions = []
+    msg.mention_everyone = False
     return msg
 
 
@@ -642,9 +648,11 @@ _BOT_ID = 555000000000000111
 
 
 def _make_message_with_mention(content: str, *, user_id: int = 42):
-    """Discord message whose content is exactly ``content``."""
+    """Discord message whose content is exactly ``content`` and which
+    directly, personally pings the bot (the bot's id is in ``mentions``)."""
     msg = _make_message(user_id=user_id)
     msg.content = content
+    msg.mentions = [SimpleNamespace(id=_BOT_ID)]
     return msg
 
 
@@ -1865,3 +1873,60 @@ async def test_btd6_meta_question_serves_answerability_summary(
     assert "towers (25)" in sent
     assert stub_services[-1]["decision"] == "replied"
     assert stub_services[-1]["reason_code"] is PolicyDenialReason.NONE
+
+
+# ---------------------------------------------------------------------------
+# BUG-0019 #2 — @everyone / @here must NOT read as a direct personal ping.
+#
+# discord.py's ``ClientUser.mentioned_in`` returns True on
+# ``message.mention_everyone``, so a server-wide blast used to flip the
+# ``mention_only`` policy gate open ("false personal ping" class). The fix
+# computes ``is_mention`` as membership of the bot's own id in
+# ``message.mentions`` only. These guards fail against the old behaviour.
+# ---------------------------------------------------------------------------
+
+
+def _mention_msg(*, mentions, mention_everyone=False):
+    return SimpleNamespace(mentions=list(mentions), mention_everyone=mention_everyone)
+
+
+def test_direct_bot_mention_is_a_personal_ping():
+    bot = SimpleNamespace(id=_BOT_ID)
+    msg = _mention_msg(mentions=[SimpleNamespace(id=_BOT_ID)])
+    assert _is_direct_bot_mention(msg, bot) is True
+
+
+def test_everyone_blast_is_not_a_personal_ping():
+    """The regression: @everyone/@here (mention_everyone=True, empty
+    ``mentions``) must NOT register as a direct mention even though
+    discord.py's ``mentioned_in`` would have returned True."""
+    bot = SimpleNamespace(id=_BOT_ID)
+    msg = _mention_msg(mentions=[], mention_everyone=True)
+    assert _is_direct_bot_mention(msg, bot) is False
+
+
+def test_mention_of_another_user_or_bot_is_not_a_personal_ping():
+    """A message pinging only some other user/bot does not ping us."""
+    bot = SimpleNamespace(id=_BOT_ID)
+    msg = _mention_msg(mentions=[SimpleNamespace(id=_BOT_ID + 999)])
+    assert _is_direct_bot_mention(msg, bot) is False
+
+
+def test_direct_mention_alongside_everyone_still_counts():
+    """If we are genuinely in ``mentions`` it is a real ping, regardless
+    of an accompanying @everyone."""
+    bot = SimpleNamespace(id=_BOT_ID)
+    msg = _mention_msg(
+        mentions=[SimpleNamespace(id=_BOT_ID + 1), SimpleNamespace(id=_BOT_ID)],
+        mention_everyone=True,
+    )
+    assert _is_direct_bot_mention(msg, bot) is True
+
+
+def test_missing_bot_id_or_uniterable_mentions_is_false():
+    """Defensive: no bot id, or a non-iterable ``mentions`` double, never
+    raises — it yields False."""
+    assert _is_direct_bot_mention(_mention_msg(mentions=[]), None) is False
+    assert _is_direct_bot_mention(_mention_msg(mentions=[]), SimpleNamespace()) is False
+    weird = SimpleNamespace(mentions=object(), mention_everyone=False)
+    assert _is_direct_bot_mention(weird, SimpleNamespace(id=_BOT_ID)) is False

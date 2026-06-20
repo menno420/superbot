@@ -23,7 +23,7 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
-## BUG-0019 — AI replies to messages aimed at *other* bots and claims "you've just pinged me" — OPEN (root cause identified; fix needs one owner behavior decision)
+## BUG-0019 — AI replies to messages aimed at *other* bots and claims "you've just pinged me" — PARTIALLY FIXED (mechanism #2 hardened; #1 awaits one owner behavior decision)
 
 - **Symptom (owner-reported, 2026-06-20, live in a community server):** a user pinged
   **another** bot — `@Carl-bot (?)` — in a channel, and **SuperBot replied anyway**: *"Hey!
@@ -52,10 +52,17 @@
      `mention_only` gate open. Independent of the screenshot, but the same "false personal ping"
      class.
 - **Proposed fix (needs one owner behavior decision — see flag):**
-  - **#2 is unambiguous → hardening:** compute `is_mention` as a **direct** mention only —
-    `bot_user.id in {m.id for m in message.mentions}` (exclude `mention_everyone`). A server-wide
-    `@everyone` should never read as a personal ping. Offline-unit-testable with a stub message;
-    ship a regression test that fails against `mentioned_in`'s `mention_everyone=True` path.
+  - **#2 is unambiguous → hardening — DONE (2026-06-20 dispatch run):** `is_mention` is now computed
+    by `natural_language_stage._is_direct_bot_mention(message, bot_user)` — membership of the bot's
+    own id in `message.mentions` — replacing the `ctx.bot.user.mentioned_in(message)` call (which
+    short-circuits `True` on `message.mention_everyone`). A server-wide `@everyone`/`@here` blast no
+    longer reads as a personal ping and so can no longer flip the `mention_only` policy gate open.
+    The helper is defensive (missing bot id / non-iterable `mentions` → `False`, never raises).
+    **Stays-fixed guard (same PR):** `tests/unit/runtime/ai/test_natural_language_stage.py` ::
+    `test_everyone_blast_is_not_a_personal_ping` (+ `…_direct_bot_mention_is_a_personal_ping` /
+    `…_mention_of_another_user_or_bot…` / `…_direct_mention_alongside_everyone…` /
+    `…_missing_bot_id_or_uniterable_mentions…`) — the everyone-blast case fails against the old
+    `mentioned_in` path. **Mechanism #1 is untouched** (the `always_reply` design fork below).
   - **#1 is a design fork (the owner's call):** in `always_reply` mode, should SuperBot
     **(a)** stay silent when a message mentions another user/bot and **not** SuperBot (don't barge
     into others' conversations — the most likely intended behavior), **(b)** keep answering
@@ -66,10 +73,13 @@
 - **Stays-fixed guard (to ship with the chosen fix):** a `natural_language_stage` unit test that a
   message pinging only another user/bot (and `@everyone`) does **not** set `is_mention` / does not
   trigger a reply under the chosen rule. (Live AI path → also wants a Q-0086 runtime walk.)
-- **Status:** OPEN — root cause identified 2026-06-20; **routed to the owner** for the #1 behavior
-  decision (agent recommendation: option **(a)** + the #2 hardening). Noted per the owner's
-  "make a note of this" instruction; not patched in the gated AI behavior path without his call +
-  a runtime-verified session.
+- **Status:** PARTIALLY FIXED — mechanism **#2** (the `@everyone`/`@here` false-personal-ping
+  footgun) was root-fixed + regression-guarded 2026-06-20 (dispatch run); it was offline-unit-
+  testable and unambiguous, so it shipped on its own. Mechanism **#1** (the `always_reply`
+  ambient-mode "barge into others' conversations" design fork) stays **OPEN, routed to the owner**
+  (agent recommendation: option **(a)** — stay silent when a message pings another user/bot and not
+  SuperBot) — it changes ambient semantics the owner configured intentionally and wants a
+  Q-0086 runtime-verified session, so it is not patched unilaterally.
 
 ## BUG-0018 — committed `botsite/data/site.json` drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (root)
 
