@@ -1,6 +1,7 @@
 # Plan — `check_loop_health.py` gh-absent fallback (control-plane row, script-verifiable)
 
-> **Status:** `SHIPPED` (2026-06-20, PR #1174). The `fetch_issues` provider seam + the
+> **Status:** `historical` — **SHIPPED** (2026-06-20, PR #1174); rebadged in place per the
+> `docs/planning/README.md` ship convention. The `fetch_issues` provider seam + the
 > stdlib-`urllib` REST fallback + the source label (`via gh`/`via REST`/`SKIP`) + the actionable
 > SKIP all landed on `scripts/check_loop_health.py`; tests cover the selection seam and the REST
 > `user.login` mapping (`tests/unit/scripts/test_check_loop_health.py`, 14 cases). Still disposable

@@ -1,7 +1,10 @@
 # A `check_plan_homing.py` guard — no active plan goes unrouted
 
-> **Status:** `ideas` — session idea (Q-0089), from the 2026-06-19 planning-map cleanup. **Not a plan,
-> not approval.** Source + the binding contracts win. Disposable dev tooling (Q-0105).
+> **Status:** `historical` ✅ **SHIPPED 2026-06-20 (PR #1174)** as `scripts/check_plan_homing.py`
+> + `tests/unit/scripts/test_check_plan_homing.py`, wired into the reconciliation routine's STEP 2
+> (`--strict` after replanning) and the `## See also` tooling list. First run: all 36 live `plan`
+> docs already homed (the plan-index cleanup did its job) — so the guard is now the preventive
+> regression net keeping the index honest. Disposable (Q-0105). Original idea body kept below.
 > **Subsystem:** none — agent-workflow / docs-system tooling, not a bot subsystem.
 
 ## The gap this closes
