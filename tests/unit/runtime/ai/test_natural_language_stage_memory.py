@@ -51,6 +51,10 @@ def _make_message(
     msg.author.id = user_id
     msg.author.bot = is_bot
     msg.author.roles = []
+    # A real discord Message always exposes ``mentions``/``mention_everyone``;
+    # default to "nobody pinged" so ``is_mention`` reads from real data.
+    msg.mentions = []
+    msg.mention_everyone = False
     return msg
 
 
@@ -146,6 +150,9 @@ async def test_stage_skips_empty_text(monkeypatch):
 def _make_mention_ctx(message, *, bot_id: int = 555000000000000111):
     bot = MagicMock()
     bot.user = SimpleNamespace(id=bot_id, mentioned_in=lambda _msg: True)
+    # The bot is directly, personally pinged: put its id in ``mentions`` so
+    # ``_is_direct_bot_mention`` registers a real mention.
+    message.mentions = [SimpleNamespace(id=bot_id)]
     return MessagePipelineContext(bot=bot, message=message)
 
 

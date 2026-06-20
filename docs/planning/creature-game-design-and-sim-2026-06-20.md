@@ -29,6 +29,20 @@
   posture that took down the music bots (the report's own Rythm/Hydra history). For a bot we want to
   **publicly launch** (the bot-site ambition), inheriting that risk is the wrong trade.
 
+**Why Pokétwo "can" use real names — survivorship, not permission (owner asked directly).** It has
+**no license** and is straightforwardly infringing. It survives on *enforcement economics*, not a
+right: Nintendo enforces **selectively** (suing every fan project is costly and bad PR), and
+prioritizes targets that distribute the actual games/ROMs or ripped assets, make real money off the
+IP, compete with a Nintendo product, or get big press. A niche Discord bot trafficking in *data* +
+community art has dodged all four — so far. That is not safety; it is being **too small to bother
+with**, and it can be struck at any time (AM2R, Pokémon Uranium, and the music bots all were). **The
+load-bearing principle:** what makes Pokétwo possible — staying small and unpromoted — is the
+*opposite* of what we want (a bot we **publicly launch and market** on the bot-site). **Growth /
+visibility is the enforcement trigger; "publish-safe" means a design that does not depend on staying
+invisible.** This same principle governs the parallel music-legal decision
+([voice/music decision pack](voice-music-architecture-review-2026-06-20.md) §1) — there it forbids
+YouTube-ripping; here it forbids real Pokémon names.
+
 **Decision (recommended, routed as Q-0187):** **build an original creature roster** — our own
 names, types, and (later) art. This is the proven path of Temtem / Cassette Beasts / Coromon /
 Palworld: the *loop* people love, none of the IP risk, and it's **publishable**. It also fits our
@@ -40,8 +54,10 @@ The v1 roster below is original (Cindling, Magmaul, Rippling, …).
 - **Elements (6, original):** Ember · Tide · Bramble · Spark · Stone · Gust. Symmetric type chart —
   each is **strong vs the next two**, **weak vs the previous two**, neutral vs its opposite. (`1.5×`
   / `0.67×` / `1.0×`.) Symmetric by construction so no element is inherently best.
-- **Creatures:** 12 for v1 (2 per element), spread across **rarity** (Common→Epic, bigger stat
-  budget) and **archetype** (attacker / tank / balanced / speedster). Stats: HP / ATK / DEF / SPD.
+- **Creatures (roster size — see §2a):** **12** in the sim core (2 per element) for balance
+  validation; the **v1 launch target is ~30–40** original creatures for collection depth. Each is
+  spread across **rarity** (Common→Epic, bigger stat budget) and **archetype**
+  (attacker / tank / balanced / speedster). Stats: HP / ATK / DEF / SPD.
 - **Catch:** wild encounters (Lane A) spawn a creature; catch chance = rarity base × a small
   player-level bonus. Rarer = harder. Caught creatures join your collection (reuses the
   fishing-style catch log + `game_xp`).
@@ -52,6 +68,35 @@ The v1 roster below is original (Cindling, Magmaul, Rippling, …).
   grind/whale-fest — exactly the **pay-to-win** outcome Q-0039 forbids. Normalizing to a flat level
   (competitive-Pokémon style) makes **types + team-building + ordering** decide, so PvP rewards
   *skill*, not *time spent*. (Raw levels still matter for PvE/collection prestige.)
+
+## 2a. Roster size — how many creatures (owner asked: "how many should we use?")
+
+**For scale: Pokétwo uses ~1,000+** real Pokémon (the full National Dex, currently 1,025 species)
+**plus hundreds of alternate forms** (regional / mega / Gigantamax / event) and a **shiny variant of
+every one** — a multi-hundred-hour completion grind that is itself a big part of the hook. We **can't
+and shouldn't** mirror that: every original creature is a design + balance + (eventually) art cost we
+own. Original monster-catchers ship far smaller even *with* art teams — Temtem ~160, Coromon ~120,
+Cassette Beasts ~140, Palworld ~150.
+
+**The v1 model (recommended, routed as Q-0187d) — tier the roster, make it data-driven:**
+
+| Stage | Count | Purpose |
+|---|---|---|
+| **Sim / playable core** | **12** (current) | Prove the loop + balance — done, verdict PLAYABLE |
+| **v1 launch roster** | **~30–40** (5–7 per element, spread across rarities) | Enough for a satisfying "dex" + real team variety, without art-blocking |
+| **Growth ("waves" / seasons)** | +10–20 each | Expand like real catchers add generations — keeps the collection alive |
+
+Twelve is right for *balance validation* but too thin for the *collection feel* that makes catching
+fun (a dex you fill in one sitting isn't a hook). Two choices make ~30–40 cheap **and** safe:
+
+1. **Text/emoji-first art (§5c)** — a bigger roster costs ~nothing when a creature is an emoji + name
+   + stat block; sprites come later, like the gear paper-doll did.
+2. **Creature-as-data** — the engine loads creatures from a **JSON catalog** (the `towers.json` /
+   fish-roster pattern), so *adding* a creature is a data row, not code. This is what makes
+   "ship 12 → grow to ~40 → seasons" a non-event architecturally, and it lets the **same
+   `creature_battle_sim.py`** validate the *whole* launch roster before it ships (the
+   balance-before-build gate). Building that catalog + sim-validating ~30–40 is the natural next
+   design step before any catch-engine build.
 
 ## 3. Simulator + headline findings
 
@@ -89,8 +134,10 @@ for.
 
 Routed to **Q-0187**: (a) confirm **original creatures** (recommended) vs. real Pokémon names;
 (b) confirm **PvP = level-normalized** (recommended) vs. raw-level PvP; (c) creature *art* approach
-(emoji/text v1 → original sprite pack later, like the gear paper-doll). Build sequencing for the
-catch half stays under **Q-0186** (Lane A first).
+(emoji/text v1 → original sprite pack later, like the gear paper-doll); **(d) roster size — confirm
+the tiered model (§2a): sim-core 12 → v1 launch ~30–40 → growth in waves, with a data-driven JSON
+catalog and text-first art** (recommended). Build sequencing for the catch half stays under
+**Q-0186** (Lane A first).
 
 → relates [feature-mapping plan](poketwo-musicbot-feature-mapping-plan-2026-06-20.md) ·
 [explore-hub spine](explore-hub-federated-world-plan-2026-06-19.md) ·
