@@ -91,6 +91,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/funny-franklin-bnvdxe` · federated Explore-hub spine **PR 1** — top-level world hub +
+  `services/world_registry.py` seam + `!world` + mining Explore-button re-parent (retired the
+  `views/mining/explore_hub.py` stub) · 2026-06-20 · **PR #1156 (needs-hermes-review, auto-merge disabled)**
 - `claude/great-carson-4hsr7l` · **planning/audit/idea map cleanup** (docs-only) — new
   `docs/planning/README.md` plan index + 40 stale plans/recon/readiness-maps/audits rebadged `historical`
   + 27 idea subsystem tags + roadmap/folio/ledger de-stale · 2026-06-19 · **PR #1124 (auto-merge on green)**
