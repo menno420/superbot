@@ -1,6 +1,12 @@
 # Reconciliation helper: classify a band's PRs as merged / closed-unmerged / open
 
-> **Status:** `ideas` — session idea (2026-06-19, Q-0089, from the band-#1140 reconciliation pass).
+> **Status:** `historical` ✅ **SHIPPED 2026-06-20** as `scripts/band_pr_status.py` +
+> `tests/unit/scripts/test_band_pr_status.py`, wired into the reconciliation routine's STEP 2
+> (`docs/operations/autonomous-routines.md`). Pure `classify_band()` core; git for merged-on-main +
+> the `check_loop_health.py` gh→REST fallback for the closed-unmerged/open half (degrades to a
+> labelled note, never hard-fails). Verified against live GitHub on the band-#1170 band (#1173–#1180
+> merged, #1172 open, #1171 = the reconcile *issue*). Disposable (Q-0105). Original idea body kept
+> below. Session idea (2026-06-19, Q-0089, from the band-#1140 reconciliation pass).
 > **Subsystem:** operations / tooling (the reconciliation routine). Source + binding contracts win.
 
 ## The gap this pass hit

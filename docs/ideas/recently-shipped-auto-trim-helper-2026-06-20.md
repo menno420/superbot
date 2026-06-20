@@ -1,7 +1,12 @@
 # Idea — a stdlib actuator for the Recently-shipped trim-to-archive step
 
-> **Status:** `ideas` — capture only. **Not a plan, not approval.** Session idea (2026-06-20, Q-0089,
-> from the band-#1170 reconciliation pass). Workflow/tooling. Quick-win, disposable (Q-0105).
+> **Status:** `historical` ✅ **SHIPPED 2026-06-20** as `scripts/trim_recently_shipped.py` +
+> `tests/unit/scripts/test_trim_recently_shipped.py`, wired into the reconciliation routine's STEP 2
+> (`docs/operations/autonomous-routines.md`). Pure-text `trim()` core (dry-run `--check` default /
+> `--apply`), recomputes the "Older merges (#HIGH … #LOW)" floor pointer from the true archive span,
+> never deletes a bullet. Disposable (Q-0105) — review the `--check` diff before `--apply` (the
+> non-monotonic band bullets are the known hazard). Session idea (2026-06-20, Q-0089,
+> from the band-#1170 reconciliation pass). Workflow/tooling. Original idea body kept below.
 > **Subsystem:** none
 
 ## The observation
