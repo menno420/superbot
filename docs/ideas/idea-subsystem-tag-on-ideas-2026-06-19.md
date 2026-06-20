@@ -1,7 +1,10 @@
 # Explicit `subsystem:` tag on idea files (make idea↔command linking authoritative)
 
-> **Status:** `ideas` — captured 2026-06-19 (session idea, Q-0089, from building S1.1 of the
-> website command browser). Source + merged PRs win.
+> **Status:** `historical` — ✅ **IMPLEMENTED.** The optional `> **Subsystem:**` header tag is
+> live: `scripts/export_dashboard_data.py` (`_subsystem_open_work`, see L238/L253) prefers the
+> explicit tag over the filename-slug heuristic, the `none` sentinel is honored, and the README
+> documents the convention. Captured 2026-06-19 (session idea, Q-0089, from building S1.1 of the
+> website command browser); re-badged `historical` during grooming 2026-06-19. Source + merged PRs win.
 > **Subsystem:** none — the idea-tag mechanism itself (export tooling) — header tag (the `**Subsystem:**` in the body is an example, not read).
 
 ## The gap

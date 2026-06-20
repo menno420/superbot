@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`bug-book-claimed-signal-2026-06-19.md`](./bug-book-claimed-signal-2026-06-19.md) —
+  **agent-observed (2026-06-19):** bug-book entries need a **"claimed / in-progress" signal**. Two
+  dispatch runs both picked up **BUG-0016** and one's fix was duplicated/superseded — the Q-0126 claim
+  ledger didn't catch it because **bug-book pickups are never claimed there** (the bugs-first reflex
+  skips the claim step). Fix (lightest that works): flip the entry's `Status:` to `IN PROGRESS —
+  <branch>` in the born-red first commit **+** a claim-ledger line. → extends
+  `ci-cost-and-duplicate-work-prevention`.
 - [`premature-closure-self-check-2026-06-19.md`](./premature-closure-self-check-2026-06-19.md) —
   **owner-directed (2026-06-19, brainstorm):** teach a session to smell its own **"done."** Premature
   closure — declaring "done / verified / no questions" while latent uncertainty remains — showed up three
@@ -236,7 +243,9 @@ Current broad captures:
   `SUBSYSTEM = "btd6"` class attribute, or a command-surface-ledger join), deleting the override map
   and self-describing every cog including sub-cogs. → relates `scripts/scan_commands.py` ·
   `core/runtime/command_surface_ledger.py` · `utils/subsystem_registry.py`.
-- [`idea-subsystem-tag-on-ideas-2026-06-19.md`](./idea-subsystem-tag-on-ideas-2026-06-19.md) —
+- [`idea-subsystem-tag-on-ideas-2026-06-19.md`](./idea-subsystem-tag-on-ideas-2026-06-19.md) — ✅
+  **IMPLEMENTED (re-badged `historical` 2026-06-19):** the `> **Subsystem:**` header tag is live in
+  `export_dashboard_data.py` (`_subsystem_open_work`). —
   **session idea (2026-06-19, Q-0089, from building S1.1 of the website command browser):** the public
   command browser links each command to its subsystem's open **ideas** ("what's planned" teasers +
   the finished/in-progress badge), but idea files carry no subsystem field, so the producer falls back
