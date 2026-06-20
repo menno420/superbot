@@ -30,6 +30,12 @@ living ledger (`docs/current-state.md`).
   new top-level `design-system/` (React 18 + Tailwind 3 + tsup build → `dist/` + Storybook 8; 6
   components mirroring `botsite/`) · `.gitignore` (+ `node_modules/`) · 2026-06-20 ·
   **auto-merge on green** (additive · isolated · verified) · **PR #1168**
+- `claude/magical-cori-t36l2n` · **design-system full landing-page composition + hybrid edit
+  loop** (owner-chosen Path 1, 2026-06-20 — make the *whole* page source-backed so Claude Design
+  can edit it; me as porter/reviewer) · `design-system/src/` (`PageShell`/`SiteHeader`/
+  `SiteFooter`/`Hero`/`Section`/`StepCard`/`CapabilityBand`/`ButtonLink`/`LandingPage` + stories) ·
+  `design-system/README.md` · new `.github/workflows/design-system-ci.yml` · 2026-06-20 ·
+  **auto-merge on green** (additive · isolated · verified)
 
 ## Recently cleared
 
