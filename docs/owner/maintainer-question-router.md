@@ -6806,3 +6806,37 @@ mining/fishing/blackjack · a BTD6-knowledgeable AI assistant · welcome cards).
 audience should drive the wording — agents should **not** invent the public-facing brand line.
 **Home:** this Q-block + the website-split plan's "Layout & UX guidance" section. Related: Q-0042
 (staged Someday website), Q-0178 (two-site split), Q-0179 (control-panel placement).
+
+---
+
+### Q-0186 — DISCUSS: Pokétwo-inspired features — which net-new lane to build first + spawn design (2026-06-20)
+
+> **PROPOSED — surfaced while turning the owner's Pokétwo/JMusicBot research report into a plan**
+> ([`planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md`](../planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md)).
+> The owner steered the report session to **plan only, build nothing yet**; this routes the build
+> decisions for when a future session executes. The mapping already settled the gated/rejected
+> items (marketplace = its own roadmap gate; premium currency = rejected Q-0039; music = Q-0041
+> arch-review pack).
+
+**Context:** most Pokétwo mechanics already have lanes here (catching = fishing/mining/pets;
+trading = the economy-marketplace roadmap; "one world" = the federated Explore hub). The mapping
+identified **four net-new, ungated, anti-P2W lanes**: **A) Wild Encounters** (activity-based
+spawning — the signature mechanic with *no* existing analog), **B) Collection & filtering**
+upgrade (extend fishing/inventory), **C) Quest/achievement** foundation (Q-0182-aware), **D)
+Shiny/rare-variant** layer (cosmetic prestige, rides on A/fishing).
+
+**The questions (the agent recommends, but the owner-designer decides):**
+1. **Build order** — which lane first? *Agent recommendation: **Lane A (Wild Encounters)*** — highest
+   engagement leverage, no gate, and it feeds B/C/D. Lane B is the low-risk parallel/warm-up.
+2. **Wild-encounter spawn defaults** — threshold/debounce (report's "~24 messages", config-driven,
+   off by default); **reward pool** (fishing/mining items vs. coins vs. a dedicated catalogue);
+   **claim shape** (first-click vs. "name the catch" guess folding in the hint mechanic).
+3. **Confirm the guardrails** — earned-only/no buyable power (Q-0039), per-channel opt-in +
+   rate-limit + no auto-catch (the report's own anti-spam rule), stranger-grade claims (Q-0080).
+
+**Agent note:** these gate the *build*, not the plan — the spec is written and ungated; it just
+needs the owner's sequence + spawn-design call before a runtime session executes (small focused
+PRs, runtime-verified). **Home:** the feature-mapping plan + the
+[wild-encounters idea](../ideas/wild-encounters-activity-spawning-2026-06-20.md) + this Q-block.
+Related: Q-0041 (music gate), Q-0039 (no P2W), Q-0182 (world model), Q-0040 (AI quests from
+bounded menus), Q-0080 (stranger-grade), Q-0071 (atomic workflow).

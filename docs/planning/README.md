@@ -33,6 +33,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 | Plan | Status / gate | Folio · related ideas |
 |---|---|---|
 | [fishing-open-world-expansion](fishing-open-world-expansion-plan-2026-06-18.md) | Phase 1 (fishing v1 + gear-switching) **▶ buildable**; the unified-loadout / value-cook-sell / minigame tail is **owner-design-gated (Q-0175)** | [games](../subsystems/games.md) · `mining_exploration_brainstorm` |
+| [poketwo-musicbot-feature-mapping](poketwo-musicbot-feature-mapping-plan-2026-06-20.md) | maps the owner's Pokétwo/JMusicBot research report → repo lanes; net-new lanes (Wild Encounters · collection filters · quests · shiny) spec'd, **build sequence gated on Q-0186**; marketplace/premium-currency = gated/rejected, music → arch-review pack | [games](../subsystems/games.md) · `wild-encounters-activity-spawning` |
 | [mining-hub-redesign](mining-hub-redesign-2026-06-15.md) | owner-picked Option A; **not yet built** (no hub-redesign commits) — ▶ startable | [games](../subsystems/games.md) · `voice-mode-planning-capture` |
 | [myprofile-foundation](myprofile-foundation-plan-2026-06-10.md) | PR A/B shipped (#938/#940); only **PR C onboarding** remains, **owner-gated (Q-0147)** | [settings](../subsystems/settings-bindings-provisioning.md) |
 | [settings-pointer-lane-convergence](settings-pointer-lane-convergence-plan-2026-06-13.md) | P0-3; families 1+2 done, **pointer retirement gated** | [settings](../subsystems/settings-bindings-provisioning.md) |
@@ -69,6 +70,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 |---|---|---|
 | [web-tier-centralization-proposal](web-tier-centralization-proposal-2026-06-19.md) | web-CI matrix consolidation (`dashboard-ci` + `botsite-ci` → one matrix); **owner-greenlight gated** | tracked in [website-split-next-steps §2a](../operations/website-split-next-steps-2026-06-19.md) |
 | [loop-health-gh-fallback](loop-health-gh-fallback-plan-2026-06-20.md) | 1 PR; **ungated, self-merge on green**; `urllib` REST fallback so `check_loop_health.py` verifies the ROUTINE_PAT row in-container (Q-0135) instead of SKIPping | `loop-health-gh-unavailable-fallback` |
+| [voice-music-architecture-review](voice-music-architecture-review-2026-06-20.md) | the **Q-0041-required** voice/music decision pack (legal · infra · architecture fit · permissions · cost); **no playback code** — owner makes the go/no-go + legal-lane call to lift the gate | tracked under Q-0041 · `voice-mode-planning-capture` |
 
 ### Dashboard / control-API / website — the cross-cutting initiative
 
