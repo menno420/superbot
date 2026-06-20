@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/clever-maxwell-690qrj` · **Pokétwo + MusicBot research report → feature-mapping plan**
+  (docs-only, owner-steered plan-only) · `docs/planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md`
+  + `docs/planning/voice-music-architecture-review-2026-06-20.md` + `docs/ideas/` + router Q-0186 ·
+  2026-06-20 · **auto-merge on green (docs-only)**
+
 - `claude/design-system-site-pages` · **design-system: compose the rest of the site** (owner-chosen
   meantime build 2026-06-20 — make every route editable in Claude Design) · `design-system/src/`
   (`PageHeader`/`SearchBar`/`Pill`/`FeatureShowcaseCard`/`CommandDetail`/`CommandEntry`/
