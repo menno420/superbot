@@ -51,18 +51,20 @@ The v1 roster below is original (Cindling, Magmaul, Rippling, …).
 
 ## 2. v1 ruleset (what the sim models)
 
-- **Elements (6, original):** Ember · Tide · Bramble · Spark · Stone · Gust. Symmetric type chart —
-  each is **strong vs the next two**, **weak vs the previous two**, neutral vs its opposite. (`1.5×`
-  / `0.67×` / `1.0×`.) Symmetric by construction so no element is inherently best.
-- **Creatures (roster size — see §2a):** **12** in the sim core (2 per element) for balance
-  validation; the **v1 launch target is ~30–40** original creatures for collection depth. Each is
-  spread across **rarity** (Common→Epic, bigger stat budget) and **archetype**
-  (attacker / tank / balanced / speedster). Stats: HP / ATK / DEF / SPD.
+- **Elements (6, original) + Normal:** Ember · Tide · Bramble · Spark · Stone · Gust, plus a neutral
+  **Normal** damage type. Symmetric type chart — each element is **strong vs the next two**, **weak vs
+  the previous two**, neutral vs its opposite (`1.5×` / `0.67×` / `1.0×`); **Normal is always `1.0×`**.
+  Symmetric by construction so no element is inherently best. (Full move/type/team spec in **§2b**.)
+- **Creatures (roster size — see §2a):** **36** in the data-driven launch catalog
+  (`tools/game_sim/creatures.json`, 6 per element); the sim loads them. Each is spread across
+  **rarity** (Common→Epic, bigger stat budget) and **archetype** (attacker / tank / balanced /
+  speedster). Stats: HP / ATK / DEF / SPD.
 - **Catch:** wild encounters (Lane A) spawn a creature; catch chance = rarity base × a small
   player-level bonus. Rarer = harder. Caught creatures join your collection (reuses the
   fishing-style catch log + `game_xp`).
-- **Battle (PvP, 3v3, turn-based):** lead creature fights until it faints, then the next comes in;
-  faster SPD strikes first; damage = `(ATK/DEF) × move power × type-mult × jitter`.
+- **Battle (PvP, 6v6, turn-based — §2b):** teams are **6 creatures, the standard one of each
+  element**; lead fights until it faints, then the next comes in; faster SPD acts first; each turn a
+  creature picks **one of its 4 moves**; damage = `(ATK/DEF) × move power × type-mult × jitter`.
 - **★ PvP level rule (the key design finding — see §3):** **PvP normalizes to a flat level.** Raw
   levels make a 1v1 deterministic (a +2 level gap wins ~100%), which would make ranked PvP a
   grind/whale-fest — exactly the **pay-to-win** outcome Q-0039 forbids. Normalizing to a flat level
@@ -95,8 +97,63 @@ fun (a dex you fill in one sitting isn't a hook). Two choices make ~30–40 chea
    fish-roster pattern), so *adding* a creature is a data row, not code. This is what makes
    "ship 12 → grow to ~40 → seasons" a non-event architecturally, and it lets the **same
    `creature_battle_sim.py`** validate the *whole* launch roster before it ships (the
-   balance-before-build gate). Building that catalog + sim-validating ~30–40 is the natural next
-   design step before any catch-engine build.
+   balance-before-build gate).
+
+**★ BUILT (2026-06-20):** the v1 launch catalog is real — **`tools/game_sim/creatures.json`, 36
+original creatures** (6 per element; 12 Common / 12 Uncommon / 6 Rare / 6 Epic), and the sim now
+**loads the roster from it** (stats derived: `budget = RARITY_BUDGET[rarity]` split by archetype
+weights — no stored stats to drift). Re-running the sim on the full 36 still reports **PLAYABLE (no
+flags)**, with type balance even *tighter* than the 12-roster (per-element 49.6–50.6%, **spread
+1.0pt** — the uniform Common/balanced per-element "starter" makes it apples-to-apples) and catch
+grind ~7 at L1. So **~30–40 is proven balanceable, not just asserted** (Q-0187d). *Flavor (names) is
+owner-refinable — like the gear paper-doll, the system + a working default ship; the owner swaps the
+creative skin. The catalog graduates to `disbot/data/` at the gated runtime build (Q-0186).*
+
+## 2b. Combat model — types, moves, teams (owner design, 2026-06-20; sim-validated)
+
+The owner specified the combat shape; the sim models and validates it. **All numbers here are
+tunable defaults the sim landed on — the *structure* is the design, the values are knobs.**
+
+### Damage types (6 elements + Normal)
+- The **6 elements** carry the symmetric type chart (each strong vs the next two, weak vs the
+  previous two, neutral vs its opposite: `1.5× / 0.67× / 1.0×`).
+- **Normal** is a 7th *damage* type that is **always `1.0×`** — no creature *is* Normal-type, but
+  every creature has a reliable Normal-damage move (below). It is the safe fallback when your
+  element move would be resisted.
+
+### Teams — 6 creatures, the standard "one of each element"
+Teams are **6** (the familiar "6-mon team"). The **standard/recommended composition is one creature
+of each element**, which also makes PvP type-symmetric (both sides hold all six types), so the game
+comes down to **move choice, lead order, and setup** rather than who drew the better type — a clean,
+skill-first competitive shape. (Players may skew duplicates; the sim models the standard team.)
+
+### Moves — 4 per creature (2 damage + 2 status)
+Every creature has **exactly four moves**, per the owner's spec:
+
+| # | Move (default name) | Kind | Type | Effect |
+|---|---|---|---|---|
+| 1 | **Strike** | Damage | **Normal** | reliable hit, always `1.0×`, base power **9** |
+| 2 | **signature** (per element) | Damage | the creature's **element** | type chart applies, base power **12** |
+| 3 | **Bulwark** | Status (defensive) | — | **+DEF** to self (no damage) |
+| 4 | **Onslaught** | Status (offensive) | — | **+ATK** to self (no damage) |
+
+Per-element signature names (original, no Pokémon move IP): Ember **Cinderlash** · Tide **Tidal
+Crash** · Bramble **Thorn Volley** · Spark **Voltstrike** · Stone **Boulder Smash** · Gust
+**Galeforce**. *(Names are owner-refinable flavor; per-creature unique signatures can be a later
+pass — the sim only needs type + power.)*
+
+**Status-move model:** each use shifts the stat **+25%**, **capped at +50%** (two uses), so a turn
+spent buffing is a real investment with diminishing returns — buff-spam can't run away. Both status
+moves are **self-buffs** — `+DEF` (defensive) and `+ATK` (offensive) — **decided for v1** (owner,
+2026-06-20): like Pokémon's own self-affecting status moves, and with **healing deliberately kept out
+of the universal kit** (reserved as a type-/move-specific effect for a later expansion) as the
+balance call. See §5.
+
+### The emergent skill — why 2 damage types matter
+The signature move (power 12) out-damages Strike (power 9) **except vs a resistant target**
+(`12 × 0.67 ≈ 8 < 9`). So a good player **uses the element move on neutral/weak matchups and falls
+back to Normal vs resistances** — a real per-turn decision — *plus* decides **when to spend a turn
+on setup** (Onslaught) vs pressing damage. Those are the v1 skill levers the sim measures (§3).
 
 ## 3. Simulator + headline findings
 
@@ -107,17 +164,21 @@ Run: `python3.10 tools/game_sim/creature_battle_sim.py` (guarded by
 
 | Check | Result | Read |
 |---|---|---|
-| **Type balance** — avg 1v1 win-rate per element | 40–60%, spread 20 pts | PASS — no dominant element; a roster-stat tweak could tighten the 40/60 tails. |
-| **Raw-level dominance** (informational) | +0 ≈ 49% · **+2 ≈ 100%** | The finding that **drives the level-normalization rule** — raw levels decide 1v1s. |
-| **Normalized PvP fairness** — team-A win-rate, equal levels | ~51% | PASS — engine is unbiased; once level is removed, roster/type/skill decide. |
-| **Skill impact** — type-aware ordering vs random | ~58% | PASS — counterplay is rewarded (>50%) but not absolute (<75%). |
-| **Catch grind** — encounters to a team of 3 | ~7 at L1 | PASS — a fresh player gets a starter team in one sitting, not a slog. |
+| **Type balance** — avg 1v1 win-rate per element (best-move play) | 50.0–50.6%, **spread 0.6 pts** | PASS — no dominant element; smart play (Normal vs resistances) keeps it razor-even. |
+| **Raw-level dominance** (informational) | +0 ≈ 50% · **+2 ≈ 100%** | The finding that **drives the level-normalization rule** — raw levels decide 1v1s. |
+| **Normalized PvP fairness** — team-A win-rate, equal-level standard 6v6 | ~51% | PASS — engine is unbiased; once level is removed, roster/type/skill/moves decide. |
+| **Skill impact** — setup + type-aware lead vs a beginner (element-spam) | **~71%** (seeds 42/7/123) | PASS — good play is clearly rewarded (target 52–80%), not absolute. |
+| **Status-move value** — opening +ATK setup vs damage-only | **~55%** | PASS — the non-damage moves earn their slot (>50%) without being degenerate (<72%). |
+| **Catch grind** — encounters to a 3-mon starter / full one-of-each-element team | ~7 / ~41 at L1 | PASS — starter team in one sitting; the full competitive team is a multi-session goal. |
 
-**The simulator paid for itself immediately:** the first run flagged that battles were decided by
-who strikes first (even a same-level mirror won 98%). That surfaced two fixes — a fair speed-tie
-coin-flip and longer battles (lower damage-to-HP) — and, more importantly, the **level-normalization
-design rule** above. This is exactly the "see how playable it is before building" the owner asked
-for.
+**The simulator paid for itself twice.** The *first* (pre-move) version surfaced that battles were
+decided by who strikes first and produced the **level-normalization rule**. Extending it to the
+**4-move / 6v6 model** then caught a real tuning trap: against a *random-move* opponent the skilled
+side won **93%** — too absolute — because random play wastes turns buffing at bad times. Swapping the
+baseline to a realistic **beginner** (element-spam) landed skill impact at a fun **~71%**, and the
+status-move check confirmed setup is **worth a turn (~55%) but not degenerate**. That is exactly the
+"see how playable it is *before* building" the owner asked for — now validated on the full combat
+model, not just stats.
 
 ## 4. How it docks into the bot (when greenlit — not built here)
 
@@ -138,6 +199,28 @@ Routed to **Q-0187**: (a) confirm **original creatures** (recommended) vs. real 
 the tiered model (§2a): sim-core 12 → v1 launch ~30–40 → growth in waves, with a data-driven JSON
 catalog and text-first art** (recommended). Build sequencing for the catch half stays under
 **Q-0186** (Lane A first).
+
+**Combat model (§2b) is owner-specified design** (6 types + Normal · teams of 6, one of each
+element · 4 moves = 2 damage [Normal + signature] + 2 status [defensive/offensive]) — built and
+**sim-validated PLAYABLE**, so it isn't an open question.
+
+**Status-move effect — DECIDED (owner, 2026-06-20):** both status moves stay **self-buffs**
+(`+DEF` defensive, `+ATK` offensive) for v1. Owner rationale: *"original Pokémon also has status
+moves that affect your own Pokémon, and healing is usually reserved for certain types/moves — so this
+is a more balanced way for now."* Keeping **healing out of the universal kit** (rather than every
+creature getting it) is the balance call; healing graduates later as a **type-/move-specific** effect,
+not a default. No code change — the sim already models self-buffs.
+
+### Future / expansion (v2+, owner direction "maybe later we can add more")
+The v1 kit is deliberately uniform (every creature has the same 4-move shape) so it's easy to balance
+and cheap to grow. Owner-noted expansion lanes, all **additive** and each re-validated through the
+sim before shipping:
+- **More creatures** — append rows to `creatures.json` (creature-as-data; the sim already validates
+  the whole roster).
+- **More moves** — extra status effects (e.g. **type-/move-specific healing**, enemy DEF/ATK debuffs,
+  speed control, status conditions) and extra attack moves; this is where moves likely become
+  **data too** (a moves catalog + per-creature movepools) rather than the uniform v1 set.
+- **Seasons/waves** — periodic creature + move drops, like real catchers add generations.
 
 → relates [feature-mapping plan](poketwo-musicbot-feature-mapping-plan-2026-06-20.md) ·
 [explore-hub spine](explore-hub-federated-world-plan-2026-06-19.md) ·

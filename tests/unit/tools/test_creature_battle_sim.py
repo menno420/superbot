@@ -42,8 +42,12 @@ def test_type_chart_is_symmetric(mod):
 
 
 def test_roster_well_formed(mod):
-    assert len(mod.ROSTER) == 12
+    # v1 launch roster is data-driven (creatures.json) and sized for collection depth
+    # (Q-0187d: sim-core 12 -> launch ~30-40). Assert the launch band + a clean per-element spread.
+    assert 30 <= len(mod.ROSTER) <= 40
     assert {s.element for s in mod.ROSTER} == set(mod.ELEMENTS)
+    per_element = {el: sum(s.element == el for s in mod.ROSTER) for el in mod.ELEMENTS}
+    assert len(set(per_element.values())) == 1, f"uneven per-element spread: {per_element}"
     for s in mod.ROSTER:
         # budget spread rounds, so allow ±2 of the rarity budget
         assert abs(s.budget - mod.RARITY_BUDGET[s.rarity]) <= 2
@@ -68,6 +72,46 @@ def test_catch_grind_is_a_sitting_not_a_slog(mod):
     rng = random.Random(99)
     cg = mod.sim_catch_grind(rng, 400)
     assert cg[1] <= 14  # fresh player reaches a team of 3 quickly
+
+
+def test_normal_type_is_neutral(mod):
+    """The Normal damage type ignores the type chart — always ×1.0."""
+    for el in mod.ELEMENTS:
+        assert mod.effectiveness(mod.NORMAL_TYPE, el) == mod.NEUTRAL_MULT
+
+
+def test_each_creature_has_four_moves(mod):
+    """Owner spec: 2 damage (one Normal, one element) + 2 status (def, atk)."""
+    for sp in mod.ROSTER:
+        moves = mod.moves_for(sp)
+        assert len(moves) == 4
+        damage = [m for m in moves if m.kind == "damage"]
+        buffs = [m for m in moves if m.kind == "buff"]
+        assert len(damage) == 2 and len(buffs) == 2
+        assert {m.mtype for m in damage} == {mod.NORMAL_TYPE, sp.element}
+        assert {m.stat for m in buffs} == {"atk", "def"}
+
+
+def test_buff_is_capped(mod):
+    """Status buffs cap so buff-spam can't run away."""
+    m = mod.Mon(mod.ROSTER[0], 20)
+    for _ in range(10):
+        m.apply_buff("atk")
+    assert m.atk_stage == mod.BUFF_CAP
+
+
+def test_status_moves_earn_their_slot_without_dominating(mod):
+    """Setup play beats damage-only (>50%) but is not degenerate (<~72%)."""
+    rng = random.Random(5)
+    sv = mod.sim_status_value(rng, 500)
+    assert 0.50 <= sv <= 0.72
+
+
+def test_skill_beats_a_beginner_but_not_absolutely(mod):
+    """Good play (setup + lead order) beats element-spam by a fun, bounded margin."""
+    rng = random.Random(11)
+    si = mod.sim_skill_impact(rng, 500)
+    assert 0.55 <= si <= 0.82
 
 
 def test_main_runs_and_reports(mod, capsys, monkeypatch):
