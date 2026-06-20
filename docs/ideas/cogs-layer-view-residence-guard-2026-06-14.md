@@ -13,6 +13,14 @@
 > neither flagged as direct-View debt nor required to extend `BaseView`"* — is closed: a new
 > cog-layer direct-`discord.ui.View` class now fails the ratchet.
 >
+> **▶ Update 2026-06-20 (dispatch run, PR #1166): the two copies of the direct-View allowlist are
+> now pinned together.** The same set is enumerated twice — the arch conformance frozenset (above)
+> and the warn-only consistency-linter `panel_base_class` allowlist
+> (`architecture_rules/consistency_exceptions.yml`). A new parity test
+> (`tests/unit/views/test_panel_base_class_allowlist_parity.py`) fails CI the instant they diverge,
+> so a one-sided ratchet can no longer silently desync them. The *direct-View* half is now both
+> caught (the ratchet) and drift-proofed across its two homes (the parity guard).
+>
 > **▶ What remains = the broader *residence* guard (the "no views defined in cogs at all"
 > stance) — needs an OWNER decision before it's built.** Inventory taken this run: **38**
 > view/modal classes currently live under `disbot/cogs/` (most correctly extend

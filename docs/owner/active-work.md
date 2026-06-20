@@ -94,6 +94,8 @@ living ledger (`docs/current-state.md`).
   plan (mark §5 back-half shipped + §9 links) · `docs/operations/dashboard-redaction-audit.md` ·
   `docs/operations/botsite-deploy.md` · `docs/operations/env-vars.md` · `dashboard/README.md` ·
   `docs/planning/website-two-site-split-plan-2026-06-19.md` · 2026-06-19 · **auto-merge on green**
+_(none active — pruned 2026-06-20: every prior claim was backed by a now-merged PR;
+no open `claude/*` PRs remained. This is a whiteboard — append your claim when you start.)_
 
 ## Recently cleared
 
