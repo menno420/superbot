@@ -15,10 +15,16 @@
 
 ## 1. The decisive constraint, stated first — legal
 
-The report itself documents the history: **Rythm and Hydra received cease-and-desists** after
-YouTube's enforcement; the original Rythm shut down, Hydra pivoted away from music, Rythm later
-returned **only with official licensing + premium tiers**. Any music feature here lives or dies on
-this, so it is the **first** decision, not an afterthought.
+The report itself documents the history: in **September 2021**, after YouTube enforcement,
+**Groovy and Rythm — among the largest Discord bots in existence (Rythm ~560M users / ~20M
+servers) — were shut down within weeks**, and **Hydra** survived only by pivoting away from YouTube
+music; **Rythm later returned only with official licensing + premium tiers**. The cause was a **ToS**
+breach as much as song copyright — YouTube's terms explicitly forbid separating audio from video and
+streaming it through unofficial clients, which is exactly what every YouTube-sourced music bot does
+(bypassing the ads/Premium that pay rightsholders). The decisive lesson: these bots ran *for years*
+while tolerated, and **scale + visibility — not a change in the law — is what triggered enforcement**
+(the same publish-safe principle as §1a / the creature-IP decision). Any music feature here lives or
+dies on this, so it is the **first** decision, not an afterthought.
 
 **The fork the owner must choose:**
 
@@ -36,6 +42,52 @@ this, so it is the **first** decision, not an afterthought.
 **Recommendation:** if music ships at all, **L2** for anything public-facing; **L1** only as an
 explicitly-private, owner-risk-accepted instance. Decide L1/L2/L3 **before** any infra is built —
 it changes every layer below.
+
+### 1a. The L2 compliant-source menu — *how* you stay inside the rules (owner asked directly)
+
+The core principle (shared with the creature-IP decision — **growth/visibility is the enforcement
+trigger; publish-safe = a design that does not depend on staying invisible**; see
+[creature design+sim](creature-game-design-and-sim-2026-06-20.md) §1): the thing that killed Rythm
+wasn't "music," it was **ripping audio from a source whose ToS forbids it** (YouTube). So the whole
+game is **sourcing audio from somewhere that actually permits programmatic playback.** The legal
+ways:
+
+1. **Royalty-free / Creative-Commons / public-domain catalogs** — YouTube Audio Library, Pixabay
+   Music, Free Music Archive, **Jamendo** (real API), ccMixter, Incompetech, public-domain classical.
+   Freely streamable → a 100%-safe lofi / ambient / gaming-radio bot. (Not the commercial Top-40 —
+   that's the trade.)
+2. **Remote-control the user's *own* licensed player (Spotify-Connect pattern)** — Spotify's API
+   **won't** stream full tracks, but its **Connect API** lets the bot control playback on the user's
+   own Spotify **Premium** client. Their licensed app plays; the bot is a queue / now-playing /
+   vote-skip remote. Legal because the bot never touches the audio stream — **and it needs no audio
+   path at all** (no FFmpeg, no Lavalink).
+3. **Preview clips** — Spotify / Apple Music / Deezer expose legal **30-second previews**.
+4. **User-uploaded / self-owned files (jukebox)** — members upload audio *they* hold rights to; the
+   bot just plays the file.
+5. **Podcasts / public RSS audio** — most feeds publish freely-distributable audio URLs.
+
+**Permanently off-limits (this *is* the Rythm violation):** `yt-dlp`-ripping YouTube/SoundCloud full
+tracks into voice; streaming **full commercial tracks** from any source without a streaming license.
+**The honest constraint:** there is **no legal way to offer "type any song → hear the full
+commercial track, free"** — that exact capability is *inherently* the infringing one, which is why
+every bot offering it was killed or had to license (the report's note: **Rythm only returned with
+official licensing + premium tiers**).
+
+**Cost-per-lane (ties to §2 infra):**
+
+| Legal model | What users get | Infra / cost |
+|---|---|---|
+| Royalty-free radio | Lofi/ambient/gaming, full playback | **Low** — lightweight FFmpeg over a fixed catalog; **no per-request extraction node** |
+| Spotify-Connect remote | Control their *own* Premium playback | Medium — OAuth; users need Premium; **no audio path** |
+| Preview clips | 30s samples | Low |
+| File jukebox | Whatever they upload | Low (FFmpeg play of an uploaded file) |
+
+**Sweet spot (agent recommendation, challengeable):** a **royalty-free "lofi/gaming radio"** lane,
+optionally **+ Spotify-Connect remote** for users who want their own music — both fully inside the
+rules, both **low-cost** (they dodge the Lavalink/per-request-extraction expense that, alongside
+legal risk, was the historical bot-killer), and both a clean fit for a community/gaming bot's
+identity. This narrows the §6 decision-#2 "legal lane" from an open L1/L2/L3 fork to **"pick a lane
+from the menu above."**
 
 ## 2. Infrastructure fit (the part the rest of the bot has never needed)
 
@@ -101,7 +153,9 @@ To lift the Q-0041 voice gate, the owner needs to decide, **in order**:
 
 1. **Go / no-go / later** on music at all (vs. keeping the bot's identity games/AI/community).
 2. **Legal lane** — L1 self-host (private only, risk-accepted) vs. L2 licensed/preview-only
-   (public-safe) vs. L3 defer. *Everything else depends on this.*
+   (public-safe) vs. L3 defer. *Everything else depends on this.* **§1a narrows L2 to a concrete
+   pickable menu** (royalty-free radio · Spotify-Connect remote · previews · file jukebox), with the
+   royalty-free-radio + Spotify-remote sweet spot recommended.
 3. **Infra acceptance** — willing to host/pay for an audio path (FFmpeg ± Lavalink) on Railway?
 4. **Prerequisite ordering** — Q-0041 wants the YouTube/Twitch **alert** provider contract proven
    first; build that before voice, or run voice as an independent track?

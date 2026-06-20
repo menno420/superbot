@@ -6868,6 +6868,14 @@ decide. Raw levels still matter for PvE/collection prestige. Confirm normalized 
 **(c) Art.** Emoji/text v1 → an **original sprite pack** later (same path as the gear paper-doll —
 owner drops art into `disbot/assets/`). Confirm the v1 visual bar.
 
+**(d) Roster size.** For scale, **Pokétwo uses ~1,000+** real species (full National Dex + forms +
+shinies) — we can't/shouldn't mirror that (each original creature is a design/balance/art cost). Even
+art-team originals are small (Temtem ~160, Coromon ~120). **Recommendation: tier it** — **sim-core 12
+→ v1 launch ~30–40 → growth in waves**, with a **data-driven JSON catalog** (the `towers.json` /
+fish-roster pattern) and **text/emoji-first art**, so a bigger roster is cheap *and* every creature is
+sim-validated before it ships. 12 proves balance; ~30–40 gives the collection "dex" feel. See the
+design+sim plan §2a.
+
 **Agent note:** none of this blocks the *catch* half (Lane A, Q-0186). The battle subsystem is its
 own runtime session once (a)/(b) are confirmed. **Home:** the design+sim plan + this Q-block.
 Related: Q-0039 (no P2W), Q-0186 (Pokétwo build sequence), Q-0182 (world model), Q-0041 (the
