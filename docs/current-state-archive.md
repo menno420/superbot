@@ -86,6 +86,38 @@
 
 ## Recently shipped — archived (newest first)
 
+> *(Trimmed from the live ledger by the sixteenth Q-0107 pass — band-#1170, 2026-06-20.)*
+
+- **#1099 · #1100 · #1102 · #1104 · #1107 · #1110 (2026-06-19, website two-site split — planning band, Q-0178/Q-0179)** —
+  the public bot-site / private dev-site split planned end-to-end: the planning brief (#1099), the full
+  implementation plan + file-disjoint **ultracode decomposition** (#1100), routing the control-panel-placement
+  decision Q-0179 (#1102), locking the open decisions + resolving Q-0179 (#1104), making the §5 decomposition
+  truly file-disjoint pre-ultracode (#1107), and the owner site-identity vision + fan-out enablers (#1110).
+- **#1103 · #1105 · #1106 · #1108 (2026-06-19, workflow tooling + CI hygiene)** — `scripts/router_status.py`,
+  a question-router digest reporting the next free Q + the open queue (#1103); Codex reviews the **final head**
+  (`@codex review` on the session-card flip, #1105); the `pr-conflict-guard` now polls through GitHub's
+  UNKNOWN-mergeability window (#1106); `.gitignore` ignores transient background-agent worktrees (#1108).
+- **#1098 (2026-06-19, band-#1080 Q-0107 reconciliation pass)** — the docs-only reconciliation
+  ([record](planning/reconciliation-pass-2026-06-19-band1080.md)): reconciled the ledger, planned the next band.
+- **#1097 (2026-06-19, fleet A4 — diagnostic embeds → `services/`)** — the diagnostic embed builders
+  relocated into the services layer (the ultracode-fleet Lane-A A4 unit; callers mapped first).
+- **#1094 (2026-06-19, consistency-linter graduation — 3 rules flipped to error, Q-0170)** — the
+  `back_button` / `panel_base_class` / `select_option_truncation` rules ran clean across #1056→#1062,
+  so each `Rule.severity` flipped `"warning"`→`"error"` and `python3.10 scripts/check_consistency.py
+  --mode strict` is now wired into `code-quality.yml` (deps block) + the `check_quality.py` local mirror.
+  `edit_in_place` stays warn-only (BLOCKED on the AI-nav redesign).
+- **#1081 · #1083 · #1084 · #1087 · #1092 (2026-06-19, ultracode-fleet wave A — helper extraction)** —
+  the executed half of the [ultracode-fleet plan](planning/ultracode-fleet-plan-2026-06-19.md): paired
+  helper-extraction / refactor slices — moderation helpers (#1081), governance exceptions (#1083),
+  BaseView conformance (#1084), `utils/db` wrappers (#1087), blackjack state (#1092).
+- **#1064 · #1079 (2026-06-19, repo-governance + supply-chain baseline + ultracode-fleet plan)** —
+  #1064 added the open-source governance / supply-chain baseline (CodeQL workflow, `dependabot.yml`,
+  issue/PR templates, LICENSE, SECURITY.md, CONTRIBUTING.md, CITATION.cff, dashboard-CI) + the
+  repo-structure-improvement plan; #1079 added the ultracode-fleet plan that spawned waves A/B.
+- **#1065–#1073 · #1075–#1078 (2026-06-19, dependabot dependency-bump band)** — the dependency bumps
+  the new `dependabot.yml` (#1064) immediately raised: GitHub Actions majors (cache-5, codeql-action-4,
+  github-script-9, checkout-7, setup-python-6) + pip deps (anthropic, uvicorn, httpx, fastapi, jinja2 —
+  root + dashboard `requirements`). (#1074, the python-minor-patch dev group, remained open at this pass.)
 - **#1061 (2026-06-19, dashboard generated-data refresh)** — `Merge pull request #1061 from
   menno420/bot/dashboard-refresh` — the per-source-merge `dashboard-data-refresh` workflow (Q-0167)
   regenerated the committed `dashboard/data/dashboard.json` from live source.
