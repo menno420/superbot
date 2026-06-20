@@ -156,6 +156,30 @@ button { font-family: inherit; }
 
 .empty { text-align: center; padding: 48px 0; color: var(--t-4); font-size: 14px; }
 
+/* ── home: games strip ───────────────────────────────── */
+.games { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.game { border: 1px solid var(--line); background: var(--panel-soft); border-radius: 16px; padding: 18px; display: block; transition: border-color .15s, transform .15s, box-shadow .15s; }
+.game:hover { transform: translateY(-2px); border-color: color-mix(in oklab, var(--c, var(--g)) 50%, var(--line)); box-shadow: 0 0 24px -12px color-mix(in oklab, var(--c, var(--g)) 60%, transparent); }
+.game .gico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in oklab, var(--c, var(--g)) 15%, transparent); border: 1px solid color-mix(in oklab, var(--c, var(--g)) 32%, transparent); margin-bottom: 13px; }
+.game .gico svg { width: 18px; height: 18px; stroke: var(--c, var(--g-bright)); }
+.game h4 { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin: 0 0 4px; color: var(--t-1); }
+.game p { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--t-4); }
+
+/* ── home: setup steps ───────────────────────────────── */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.step { position: relative; border: 1px solid var(--line); background: var(--panel-soft); border-radius: 18px; padding: 28px 24px; }
+.step .num { font-family: var(--font-mono); font-size: 26px; font-weight: 600; color: var(--g-bright); text-shadow: 0 0 14px rgba(74,222,128,0.4); margin-bottom: 18px; }
+.step h3 { font-size: 20px; font-weight: 700; margin-bottom: 9px; color: var(--t-1); }
+.step h3 .mono { font-family: var(--font-mono); font-size: 17px; color: var(--g-soft); }
+.step p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--t-3); }
+
+/* ── home: submit CTA band ───────────────────────────── */
+.cta-band { position: relative; overflow: hidden; text-align: center; border: 1px solid var(--line-2); border-radius: 24px; padding: 64px 28px; background: radial-gradient(ellipse 90% 140% at 50% 0%, rgba(99,102,241,0.16), transparent 60%), var(--panel); }
+.cta-band .glow { top: -120px; left: 50%; transform: translateX(-50%); width: 560px; height: 360px; background: radial-gradient(ellipse, rgba(34,197,94,0.22), transparent 70%); }
+.cta-band h2 { position: relative; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; max-width: 640px; margin: 0 auto; }
+.cta-band p { position: relative; font-size: 17px; line-height: 1.6; color: var(--t-3); margin: 18px auto 0; max-width: 520px; }
+.cta-band .cta-row { margin-top: 30px; }
+
 /* ── detail page ─────────────────────────────────────── */
 .detail-head { position: relative; overflow: hidden; border: 1px solid var(--line); background: var(--panel-soft); border-radius: 22px; padding: 36px; margin-bottom: 22px; }
 .detail-head .glow { top: -150px; right: -80px; width: 460px; height: 320px; background: radial-gradient(ellipse, color-mix(in oklab, var(--c, var(--g)) 26%, transparent), transparent 72%); filter: blur(18px); }
@@ -284,10 +308,14 @@ footer.site { border-top: 1px solid var(--line); margin-top: 48px; }
   .hero h1 { font-size: 44px; }
   .page-hero h1 { font-size: 34px; }
   .kv-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .games { grid-template-columns: repeat(2, 1fr); }
+  .cta-band h2 { font-size: 32px; }
 }
 @media (max-width: 560px) {
   .grid-3, .grid-2 { grid-template-columns: 1fr; }
   .stats { grid-template-columns: 1fr; }
+  .games { grid-template-columns: 1fr; }
   .nav .link { display: none; }
   .rel { grid-template-columns: 1fr; gap: 6px; }
   .rel-aside { position: static; text-align: left; flex-direction: row; align-items: baseline; gap: 12px; }
