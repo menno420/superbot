@@ -1,6 +1,13 @@
 # Plan — `check_loop_health.py` gh-absent fallback (control-plane row, script-verifiable)
 
-> **Status:** `plan` — executable. Promoted from
+> **Status:** `SHIPPED` (2026-06-20, PR #1174). The `fetch_issues` provider seam + the
+> stdlib-`urllib` REST fallback + the source label (`via gh`/`via REST`/`SKIP`) + the actionable
+> SKIP all landed on `scripts/check_loop_health.py`; tests cover the selection seam and the REST
+> `user.login` mapping (`tests/unit/scripts/test_check_loop_health.py`, 14 cases). Still disposable
+> (Q-0105) — confirm REST verdicts against real GitHub a few passes before trusting. Original plan
+> body kept below for provenance.
+>
+> **Status (original):** `plan` — executable. Promoted from
 > [`ideas/loop-health-gh-unavailable-fallback-2026-06-19.md`](../ideas/loop-health-gh-unavailable-fallback-2026-06-19.md)
 > by the band-#1170 reconciliation pass (2026-06-20, Q-0172 idea→plan gate). Ungated, disposable
 > tooling (Q-0105). **Not docs-only — this is a `scripts/` change for a dispatch/executor session, not
