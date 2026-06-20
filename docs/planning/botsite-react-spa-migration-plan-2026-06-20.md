@@ -87,7 +87,7 @@ A below offers the Railway-builds alternative if preferred.)
 | **A** | Who runs the React build? | (a) **CI builds + commits** the static bundle to `botsite/site/` → Railway stays Python-only; (b) Railway builds (add Node/nixpacks buildpack) | **(a)** — keeps the proven Python-only Railway service and mirrors the existing `data.js` generation pattern |
 | **B** | How does the React app get data? | (a) add a pure **`/site-data.json`** endpoint the app `fetch()`es; (b) reuse `/data.js`'s `window.SBDATA` via a TS adapter | **(a)** — cleaner contract for React; keep `/data.js` during transition for the legacy SPA |
 | **C** | Cutover style | (a) flip `/` to React, keep vanilla SPA + Jinja as fallback for one band, then remove; (b) hard cutover | **(a)** — reversible, low-risk |
-| **D** | Connector write-back | Does Claude Design's GitHub connector have **write** access (can it open its own PRs)? | Confirm in Claude Design settings — if yes, the loop needs *no* Claude Code at all (connector PR → CI → Railway); if no, Claude Code stays as the trivial "merge" step |
+| **D** | Connector write-back | Does Claude Design's GitHub connector have **write** access (can it open its own PRs)? | **RESOLVED (owner-confirmed 2026-06-20): READ-ONLY.** GitHub grants the connector read access only and exposes no write toggle, so Claude Design **cannot** open its own PRs. The loop therefore keeps a **Claude Code step**: design → manual export (handoff zip) → Claude Code commits + opens the PR → CI → Railway. (Still no *porting* once the React migration lands — the export is the built app, not a re-implementation.) |
 
 None of these blocks starting PR 1 except as noted; A/B can default to the recommendation.
 
