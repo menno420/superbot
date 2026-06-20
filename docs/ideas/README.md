@@ -109,6 +109,14 @@ Current broad captures:
   manual MCP read no checker can see. Disposable (Q-0105). **PROMOTED → plan (band-#1170 pass, 2026-06-20,
   Q-0172):** [`planning/loop-health-gh-fallback-plan-2026-06-20`](../planning/loop-health-gh-fallback-plan-2026-06-20.md).
   → relates `scripts/check_loop_health.py` · `operations/autonomous-routines.md` § "Control-plane state".
+- [`reconcile-pass-tail-trim-actuator-2026-06-20.md`](./reconcile-pass-tail-trim-actuator-2026-06-20.md) —
+  **session idea (2026-06-20, Q-0089, from the band-#1200 reconciliation pass):** the `current-state.md`
+  ▶ Next action callout grows one "Nth Q-0107 PASS DONE" sentence every pass and is now a wall of consumed
+  band-history (the standing Q-0102 finding). The Recently-shipped *list* got its trim actuator (#1181); the
+  *callout* has none. Idea: a `--callout` actuator that keeps the two newest pass segments and moves older
+  ones into their per-band pass records, leaving a one-line pointer — making the documented "aggressive prune"
+  deterministic. Disposable (Q-0105); heed BUG-0020 (ground-truth + self-test the fragile spot).
+  → relates `docs/current-state.md` · `scripts/trim_recently_shipped.py`.
 - [`recently-shipped-auto-trim-helper-2026-06-20.md`](./recently-shipped-auto-trim-helper-2026-06-20.md) —
   **SHIPPED 2026-06-20** as `scripts/trim_recently_shipped.py` + `tests/unit/scripts/test_trim_recently_shipped.py`,
   wired into the reconciliation routine's STEP 2. A stdlib **actuator** for

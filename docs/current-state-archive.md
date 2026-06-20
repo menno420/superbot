@@ -86,6 +86,40 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1129 (2026-06-19, docs/ideas — lock owner brainstorm design + ledger reconcile)** — locked the
+  owner's approved brainstorm design into the idea docs and reconciled the ledger (added the
+  #1124/#1125/#1126 entries above). Docs-only; newest merge — recorded on sight (Q-0166).
+- **#1126 (2026-06-19, ideas — owner brainstorm capture)** — captured two owner-directed idea docs from a
+  live brainstorm (the **federated Explore hub**: one world / each subsystem its own game; and the **AI
+  correction-report → audience-routed ticket service**), indexed in `ideas/README` with subsystem tags.
+  Later extended in-place with the owner's approved design (the three-track XP + hybrid-gear model; the
+  unified tagged feedback board + dual-gate submission moderation; the opt-in/declared memory policy on
+  `honcho-memory-evaluation`). Docs-only; recorded on sight.
+- **#1125 (2026-06-19, tooling — ledger-drift checker hardening)** — reworked
+  `scripts/check_current_state_ledger.py` (detection window now **scales to the reconciliation marker**;
+  sharper benign-lag-vs-drift split) + its tests, and refreshed the `ledger-guard-benign-lag` /
+  `ledger-window-scale-to-marker` idea docs (tooling + docs; recorded on sight).
+- **#1124 (2026-06-19, docs — planning/audit/idea map cleanup)** — a durable plan index, rebadged stale
+  plans/audits, idea subsystem tags, and de-staled routing pointers across `docs/planning/`,
+  `docs/subsystems/`, and `roadmap.md` (80 files, docs-only; recorded on sight).
+- **#1115 (2026-06-19, ideas — per-command feedback threads + idea→command mapping)** — captured two
+  workflow/product ideas (per-command feedback threads · an idea→cog-command mapping) with their idea docs
+  + README index entries (docs-only; merged to `main` just after this pass's marker — recorded on sight).
+- **#1109 (2026-06-19, website two-site split — serial foundation S1 + S2 + P1)** — the first build wave:
+  the public-data subset (`site.json` + the redaction-whitelist guard, S1), the submissions DB (S2), and the
+  first bot-site page set (P1). The serial foundation the parallel P1–P8 wave builds on.
+- **#1112 · #1113 · #1114 · #1116 · #1117 · #1118 · #1119 (2026-06-19, website two-site split — parallel
+  back-half fan-out)** — the file-disjoint back half on the #1109 foundation: S1.1+P2 interactive command
+  browser (#1112), P3 changelog/status templates (#1114, #1116), P4 public `/submit` intake (#1117), P5+P6
+  dev-site moderation UI + GitHub-issue mirror (#1118), P7+P8 redaction-audit + deploy/env docs (#1113), and
+  the `env-vars.md` freshness fix (#1119), capped by the **rollout + next-steps handoff** doc
+  ([`operations/website-split-next-steps-2026-06-19.md`](operations/website-split-next-steps-2026-06-19.md),
+  #1123). Reviewed + refactored in the ultracode pass (see
+  [`operations/website-split-review-2026-06-19.md`](operations/website-split-review-2026-06-19.md)): the
+  test-isolation `sys.modules` collision, the `_clean` C1 gap, the `chain` idea-mis-map, and the
+  `env-vars.md` web-tier marker. All newer than the #1110 reconciliation marker (recorded on sight, Q-0166).
+- **#1101 · #1121 (2026-06-19, dashboard generated-data refresh)** — the per-source-merge
+  `dashboard-data-refresh` workflow (Q-0167) regen of `dashboard.json` (two cadence refreshes).
 > *(Trimmed from the live ledger by the sixteenth Q-0107 pass — band-#1170, 2026-06-20.)*
 
 - **#1099 · #1100 · #1102 · #1104 · #1107 · #1110 (2026-06-19, website two-site split — planning band, Q-0178/Q-0179)** —

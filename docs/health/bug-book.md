@@ -23,6 +23,31 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0020 — `trim_recently_shipped.py` floor-pointer recompute matches stray `#N` in prose (writes a wrong "Older merges (#HIGH … #LOW)" span) — OPEN (tooling; symptom hand-corrected)
+
+- **Symptom (caught 2026-06-20, seventeenth Q-0107 reconciliation pass, first real use of the actuator):**
+  after `scripts/trim_recently_shipped.py --apply` moved the 8 oldest Recently-shipped bullets to the
+  archive, it recomputed the floor pointer as **"Older merges (#1170 … #1)"** — both ends wrong. The true
+  archive span is **#1129 … #535**.
+- **Expected:** the recomputed `(#HIGH … #LOW)` pointer should reflect the **highest/lowest archived PR
+  *bullet*** — not any `#N` token anywhere in the archive prose.
+- **Root cause:** the pointer recompute scans the *whole* archive for `#\d+` and takes min/max over **all**
+  matches, so it picks up non-bullet references: `#1170` came from a parenthetical note
+  (`*(Trimmed … band-#1170 …)*`, archive L123) and `#1` came from rank/list notation in prose
+  (`#1`, `#1,` at L883/972/973/1216). The tool's own docstring warns the floor pointer "is the fragile
+  part" — confirmed.
+- **Proposed fix (tooling — for a dispatch run, needs a test so out of this docs-only pass's scope):**
+  recompute the span from **only the leading PR id of each archived bullet** — i.e. numbers matched by the
+  bullet regex `^- \*\*#(\d+)` (the same anchor the ledger checker uses), never free-floating `#N` in prose.
+  Add a regression test in `tests/unit/scripts/` that feeds an archive whose prose contains a stray high/low
+  `#N` and asserts the computed span ignores it.
+- **Stays-fixed guard (to ship with the fix):** the `tests/unit/scripts/` case above, failing against the
+  current all-`#N`-match behavior.
+- **Status:** OPEN — caught + symptom-corrected by hand this pass (the live `current-state.md` pointer reads
+  `#1129 … #535`); the actuator script itself is unfixed. Q-0105 note: this is the actuator's *first* real
+  outing and it already mis-wrote the one value it exists to keep correct — keep an eye on it; if it proves
+  unreliable across a couple more passes, prefer reverting to the hand-trim over working around it.
+
 ## BUG-0019 — AI replies to messages aimed at *other* bots and claims "you've just pinged me" — PARTIALLY FIXED (mechanism #2 hardened; #1 awaits one owner behavior decision)
 
 - **Symptom (owner-reported, 2026-06-20, live in a community server):** a user pinged
