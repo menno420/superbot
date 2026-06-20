@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T21:39:14Z",
+    "generated_at": "2026-06-20T23:35:54Z",
     "build": {
-      "commit": "2a6708bd",
-      "subject": "Merge pull request #1189 from menno420/claude/gallant-volta-bk3qvf",
-      "committed_at": "2026-06-20T23:38:14Z",
+      "commit": "f35c784b",
+      "subject": "docs(plan): migrate the live bot-site to the React design-system app (no porting) (#1199)",
+      "committed_at": "2026-06-20T23:27:51Z",
       "branch": "main"
     },
     "counts": {
@@ -2017,6 +2017,38 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-website-spa-wire.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Wire the Claude-designed SPA into the bot site (live data)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-website-explainer-doc.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Plain-language website explainer doc (owner-requested)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-status-move-decision.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Status-move decision: self-buffs for v1 (+ expansion direction)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-sessionstart-branch-freshness-warning.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — SessionStart branch-freshness warning (stop the stale-branch foot-gun at restart)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-20-reconciliation-tooling-guards.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Reconciliation-tooling guards: band PR status classifier + Recently-shipped trim actuator",
@@ -2054,6 +2086,14 @@
       "title": "2026-06-20 — cross-allowlist drift guard: `panel_base_class` yml ↔ arch conformance frozenset",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-merge-state-helper-regression-guard.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Shared, unit-tested merge-state helper (stop the CI guard regressing a 4th time)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": true
     },
     {
@@ -2137,6 +2177,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-creature-combat-move-system.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Complete the creature plan: real moves, damage types, 6v6 teams (sim-validated)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-creature-catalog-data-driven.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Creature roster as a data-driven catalog (sim-validate ~36 at launch scale)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-20-conflict-guard-deterministic-fix.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — pr-conflict-guard: deterministic merge test (fix the \"only occasionally red\" flake)",
@@ -2174,6 +2230,14 @@
       "title": "Session — funny-franklin · BUG-0019 #2 false-personal-ping hardening",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-botsite-react-migration-plan.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Plan: make the live bot-site the React design-system app (no porting)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2422,70 +2486,6 @@
       "title": "2026-06-19 — Open-question sweep (question panel)",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-mining-hub-declutter.md",
-      "date": "2026-06-19",
-      "title": "Session — mining hub declutter (Option A PR2)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-mechanize-lane-overlap-check.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Mechanize the fleet overlap-check (`check_lane_overlap.py`)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-groom-ledger-lag-drift.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Groom: ledger guard distinguishes benign lag from real drift",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-funny-franklin-bug0016.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Dispatch: BUG-0016 + BUG-0017 (two bugs-first fixes)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-funny-franklin-bug0016-recon-copy.md",
-      "date": "2026-06-19",
-      "title": "Session — funny-franklin · BUG-0016 root-cause hardening (single-source reconcile-issue body)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-fleet-b8-procedures-skills.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet B8: procedures→skills batches 3–4",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-b7-review-inbox.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet B7: owner-review-inbox Phase 1 (/reviews)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-b6-sha-pin-actions.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet B6: SHA-pin third-party GitHub Actions",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": true
     }
   ],
