@@ -25,6 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/youthful-turing-odgvq6` · **design-system component library** (owner-chosen via
+  AskUserQuestion 2026-06-20 — "build a component library" so `/design-sync` has something to sync) ·
+  new top-level `design-system/` (React 18 + Tailwind 3 + tsup build → `dist/` + Storybook 8; 6
+  components mirroring `botsite/`) · `.gitignore` (+ `node_modules/`) · 2026-06-20 ·
+  **needs-hermes-review (held; significant new JS toolchain)**
+
 - `claude/website-submit-form` · **website-split unit P4** — public `/submit` bug/suggestion
   form + intake (fills P1's `botsite/submit.py` stub) · exclusive: `botsite/submit.py` ·
   `botsite/ratelimit.py` · `botsite/templates/submit.html` · `tests/unit/botsite/test_submit.py`
