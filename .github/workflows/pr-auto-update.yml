@@ -82,8 +82,10 @@ jobs:
               echo "::warning::#$n head fetch failed -> skip"; continue
             fi
             headSha=$(git rev-parse --verify --quiet FETCH_HEAD) || { echo "#$n rev-parse failed -> skip"; continue; }
-            if git merge-base --is-ancestor "$mainSha" "$headSha"; then
-              echo "#$n already up to date -> skip"
+            # Behind-ness from the shared, unit-tested helper (one source of truth with the conflict
+            # guard): BEHIND only when main has commits the head lacks. CURRENT/UNKNOWN => skip.
+            if [ "$(python3 scripts/git_merge_state.py behind "$mainSha" "$headSha")" != "BEHIND" ]; then
+              echo "#$n not behind main -> skip"
               continue
             fi
             # Behind (or diverged). update-branch merges main in; it succeeds only if the merge is
