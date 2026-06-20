@@ -3,8 +3,9 @@
 The architecture checker (``scripts/check_architecture.py``) emits a
 ``baseview_inheritance`` warning for every view that extends ``discord.ui.View``
 directly instead of ``BaseView`` / ``HubView`` / ``PersistentView`` (game-state
-views under ``views/rps`` and ``views/blackjack`` are exempt by config).  Those
-warnings are tracked UI-adoption debt, not errors.
+views under ``views/rps`` and ``views/blackjack`` are exempt by config).  The
+scan covers both ``views/`` and ``cogs/`` (cog-layer panels were a blind spot
+until 2026-06-20).  Those warnings are tracked UI-adoption debt, not errors.
 
 This test PINS the exact current set so the debt cannot grow silently: adding a
 new direct subclass fails here — forcing the author to either use a base view or
@@ -41,8 +42,7 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
         # concrete gain.
         # Relocated (not new debt): the `!list` paginator moved from
         # cogs/channel_cog.py to views/channels/list_panel.py in the P0-4
-        # channel-ownership convergence (cogs/ are not scanned by this ratchet,
-        # so it surfaced on the move). It is an ephemeral inline paginator with
+        # channel-ownership convergence. It is an ephemeral inline paginator with
         # its own author interaction_check + on_timeout — migrate only with a
         # concrete gain.
         ("views/channels/list_panel.py", "_ChannelListPaginatorView"),
@@ -57,6 +57,20 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
         ("views/settings/edit_role.py", "RoleSettingSelectView"),
         ("views/setup/launcher.py", "SetupLauncherView"),
         ("views/xp/rank_view.py", "_RankView"),
+        # Cog-layer direct-View classes (the ratchet was extended to scan
+        # `cogs/` too, 2026-06-20 — `views/` was the only tracked layer before,
+        # so a cog-layer `discord.ui.View` panel passed the arch checker
+        # silently). These 5 are the same set the consistency linter's rule 3
+        # (`panel_base_class`) triaged in #1128; the reasons live in
+        # `architecture_rules/consistency_exceptions.yml`. All are documented
+        # specialized-lifecycle exceptions (game-state turn views, invoker-locked
+        # ephemeral confirm/select views, a deliberately empty container) where
+        # BaseView adds no concrete gain — migrate only with one.
+        ("cogs/deathmatch_cog.py", "_DuelView"),
+        ("cogs/deathmatch_cog.py", "_ChallengeView"),
+        ("cogs/logging/provision_view.py", "LogChannelProvisionView"),
+        ("cogs/logging/select_view.py", "LogChannelSelectView"),
+        ("cogs/settings_cog.py", "_DisabledHelpHookView"),
     },
 )
 

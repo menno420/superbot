@@ -377,7 +377,9 @@ def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation
 
     for filepath in files:
         rel = str(filepath.relative_to(DISBOT_ROOT))
-        if not rel.startswith("views/") or "test" in rel.lower():
+        if not (rel.startswith("views/") or rel.startswith("cogs/")):
+            continue
+        if "test" in rel.lower():
             continue
         if any(rel.startswith(prefix) for prefix in exemption_prefixes):
             continue
