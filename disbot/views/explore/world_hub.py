@@ -198,6 +198,34 @@ class _WorldButton(discord.ui.Button):
         await opener(interaction, view)
 
 
+class _WorldCardButton(discord.ui.Button):
+    """Open the read-only cross-game world card in place (spine PR 3).
+
+    Mirrors the world openers: defer, then edit the panel to the card embed
+    keeping ``view=self`` so the world buttons stay available as navigation.
+    """
+
+    def __init__(self, *, row: int) -> None:
+        super().__init__(
+            label="🪪 World Card",
+            style=discord.ButtonStyle.secondary,
+            custom_id="explore:world_card",
+            row=row,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction):
+            return
+        view = self.view
+        if not isinstance(view, ExploreWorldHubView):
+            return
+        # Lazy import keeps the hub's import surface free of the card module.
+        from views.explore.world_card import build_world_card_embed
+
+        embed = await build_world_card_embed(interaction.user, view.guild_id)
+        await safe_edit(interaction, embed=embed, view=view, attachments=[])
+
+
 def _coming_soon_embed(entry: WorldEntry) -> discord.Embed:
     """Generic card for a registered world that has no opener yet."""
     embed = discord.Embed(
@@ -234,8 +262,11 @@ class ExploreWorldHubView(HubView):
         # Discord allows 5 rows × 5 buttons. The curated world set is small;
         # pack 5 buttons per row so it scales to a handful of worlds without
         # the windowing the dynamic selectors need.
-        for index, entry in enumerate(get_world_entries()):
+        entries = get_world_entries()
+        for index, entry in enumerate(entries):
             self.add_item(_WorldButton(entry=entry, row=index // 5))
+        # The cross-game identity card sits on the row below the worlds (PR 3).
+        self.add_item(_WorldCardButton(row=(len(entries) - 1) // 5 + 1))
 
 
 __all__ = [

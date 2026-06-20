@@ -96,7 +96,8 @@ async def test_mine_button_forwards_to_mining_hub():
             return_value=True,
         ),
         patch(
-            "views.explore.world_hub.safe_edit", new_callable=AsyncMock,
+            "views.explore.world_hub.safe_edit",
+            new_callable=AsyncMock,
         ) as safe_edit,
         patch(
             "views.mining.main_panel.build_overview_embed",
@@ -124,7 +125,8 @@ async def test_fish_button_shows_card_and_stays_on_hub():
             return_value=True,
         ),
         patch(
-            "views.explore.world_hub.safe_edit", new_callable=AsyncMock,
+            "views.explore.world_hub.safe_edit",
+            new_callable=AsyncMock,
         ) as safe_edit,
     ):
         await btn.callback(interaction)
@@ -132,6 +134,35 @@ async def test_fish_button_shows_card_and_stays_on_hub():
     kwargs = safe_edit.await_args.kwargs
     assert kwargs["view"] is view  # stays on the town square
     assert "!fish" in (kwargs["embed"].description or "")
+
+
+@pytest.mark.asyncio
+async def test_world_card_button_opens_card_and_stays_on_hub():
+    view = ExploreWorldHubView(_AUTHOR, 99)
+    btn = _find_button(view, "World Card")
+    interaction = MagicMock()
+    interaction.user = _AUTHOR
+    interaction.guild_id = 99
+    with (
+        patch(
+            "views.explore.world_hub.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "views.explore.world_hub.safe_edit",
+            new_callable=AsyncMock,
+        ) as safe_edit,
+        patch(
+            "views.explore.world_card.build_world_card_embed",
+            new_callable=AsyncMock,
+            return_value=discord.Embed(title="🪪 world card"),
+        ) as build_card,
+    ):
+        await btn.callback(interaction)
+    build_card.assert_awaited_once_with(_AUTHOR, 99)
+    safe_edit.assert_awaited_once()
+    assert safe_edit.await_args.kwargs["view"] is view  # stays on the town square
 
 
 @pytest.mark.asyncio
@@ -152,7 +183,8 @@ async def test_openerless_entry_shows_coming_soon():
             return_value=True,
         ),
         patch(
-            "views.explore.world_hub.safe_edit", new_callable=AsyncMock,
+            "views.explore.world_hub.safe_edit",
+            new_callable=AsyncMock,
         ) as safe_edit,
     ):
         await btn.callback(interaction)

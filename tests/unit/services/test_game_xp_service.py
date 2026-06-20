@@ -144,6 +144,54 @@ async def test_emit_award_events_emits_both_on_level_up():
 
 
 @pytest.mark.asyncio
+async def test_world_identity_global_level_from_summed_total():
+    # 70 mining + 40 crafting = 110 shared → level 1 (level 0 needs 100).
+    with patch.object(
+        gx.db,
+        "get_game_xp",
+        AsyncMock(return_value={"mining": 70, "crafting": 40}),
+    ):
+        identity = await gx.world_identity(99, 1)
+    assert identity.global_total == 110
+    assert identity.global_level == db.level_progress(110)[0] == 1
+    assert identity.has_progress is True
+
+
+@pytest.mark.asyncio
+async def test_world_identity_per_game_levels_and_ordering():
+    # Each game's level derives from its OWN xp; standings are highest-xp first.
+    with patch.object(
+        gx.db,
+        "get_game_xp",
+        AsyncMock(return_value={"mining": 250, "fishing": 30, "crafting": 30}),
+    ):
+        identity = await gx.world_identity(99, 1)
+    games = [s.game for s in identity.per_game]
+    assert games[0] == "mining"  # highest xp first
+    # Ties (fishing/crafting both 30) break on game key — deterministic order.
+    assert games[1:] == ["crafting", "fishing"]
+    mining = identity.per_game[0]
+    assert mining.level == db.level_progress(250)[0]
+    assert mining.label == "Mining" and mining.emoji == "⛏️"
+
+
+@pytest.mark.asyncio
+async def test_world_identity_empty_has_no_progress():
+    with patch.object(gx.db, "get_game_xp", AsyncMock(return_value={})):
+        identity = await gx.world_identity(99, 1)
+    assert identity.global_total == 0
+    assert identity.global_level == 0
+    assert identity.per_game == ()
+    assert identity.has_progress is False
+
+
+def test_game_display_falls_back_for_unknown_game():
+    assert gx.game_display("mining") == ("⛏️", "Mining")
+    emoji, label = gx.game_display("deep_sea")
+    assert emoji == "🎮" and label == "Deep Sea"
+
+
+@pytest.mark.asyncio
 async def test_emit_award_events_skips_level_up_when_not_crossed():
     award = gx.GameXpAward(
         guild_id=99,

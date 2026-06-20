@@ -68,6 +68,21 @@ GAME_MINING = "mining"
 GAME_CRAFTING = "crafting"
 GAME_FISHING = "fishing"
 
+# Display metadata for the cross-game read surfaces (the world card, leaderboards).
+# (emoji, label) per game key; an unknown key falls back to a titled key (so a new
+# game still renders honestly before it is listed here). The world card reads this.
+GAME_LABELS: dict[str, tuple[str, str]] = {
+    GAME_MINING: ("⛏️", "Mining"),
+    GAME_CRAFTING: ("🔨", "Crafting"),
+    GAME_FISHING: ("🎣", "Fishing"),
+}
+
+
+def game_display(game: str) -> tuple[str, str]:
+    """``(emoji, label)`` for a game key — falls back to a titled key."""
+    return GAME_LABELS.get(game, ("🎮", game.replace("_", " ").title()))
+
+
 # Per-game, per-UTC-day full-rate budget; beyond it, awards scale by
 # CAPPED_RATE (floor 1). One constant to retune or disable (set to 0 to
 # cap nothing... set very high to disable the cap).
@@ -196,16 +211,86 @@ async def level_info(guild_id: int, user_id: int) -> tuple[int, int, int]:
     return db.level_progress(total)
 
 
+@dataclass(frozen=True)
+class GameStanding:
+    """One game's slice of a player's cross-game identity (read-only)."""
+
+    game: str
+    level: int
+    xp: int
+
+    @property
+    def emoji(self) -> str:
+        return game_display(self.game)[0]
+
+    @property
+    def label(self) -> str:
+        return game_display(self.game)[1]
+
+
+@dataclass(frozen=True)
+class WorldIdentity:
+    """A player's federated cross-game identity (Explore-hub PR 3, read-only).
+
+    The **global** pool is the shared progression total (``SUM(xp)`` across every
+    game) and its derived level; **per-game** standings are each game's own XP run
+    through the same level curve — so one card characterizes a player across the
+    whole open world without a second progression model. Pure read aggregation
+    over the existing ``game_xp`` table — there is no new schema and no write.
+    """
+
+    global_level: int
+    global_into: int
+    global_needed: int
+    global_total: int
+    #: Per-game standings, highest-XP first (deterministic; ties break on game key).
+    per_game: tuple[GameStanding, ...]
+
+    @property
+    def has_progress(self) -> bool:
+        return self.global_total > 0
+
+
+async def world_identity(guild_id: int, user_id: int) -> WorldIdentity:
+    """The player's cross-game identity — global level + each game's standing.
+
+    Reads the per-game ``game_xp`` rows once and derives every level from the
+    one shared curve (``db.level_progress``): the global level from the summed
+    total, each game's level from its own XP. Read-only; no events, no writes.
+    """
+    totals = await db.get_game_xp(user_id, guild_id)
+    shared_total = sum(totals.values())
+    g_level, g_into, g_needed = db.level_progress(shared_total)
+    per_game = tuple(
+        GameStanding(game=game, level=db.level_progress(xp)[0], xp=xp)
+        # Highest XP first; the game key breaks ties so the order is deterministic.
+        for game, xp in sorted(totals.items(), key=lambda kv: (-kv[1], kv[0]))
+    )
+    return WorldIdentity(
+        global_level=g_level,
+        global_into=g_into,
+        global_needed=g_needed,
+        global_total=shared_total,
+        per_game=per_game,
+    )
+
+
 __all__ = [
     "EVT_GAME_XP_AWARDED",
     "EVT_GAME_LEVEL_UP",
     "GAME_MINING",
     "GAME_CRAFTING",
+    "GAME_FISHING",
+    "GAME_LABELS",
     "DAILY_SOFT_CAP",
     "CAPPED_RATE",
     "GameXpAward",
+    "GameStanding",
+    "WorldIdentity",
+    "game_display",
     "xp_for_action",
     "award",
     "emit_award_events",
     "level_info",
+    "world_identity",
 ]

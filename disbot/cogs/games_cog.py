@@ -55,6 +55,20 @@ class GamesCog(commands.Cog):
         view = ExploreWorldHubView(ctx.author, guild_id)
         await send_panel(ctx, embed=embed, view=view)
 
+    @commands.command(name="worldcard", aliases=["mystats"])
+    async def world_card(self, ctx: commands.Context) -> None:
+        """Show your cross-game world card — global level + per-game standing.
+
+        The read mirror of ``!world`` (the federated Explore spine, PR 3):
+        read-only and scoped to you. Global progression is the shared
+        ``game_xp`` pool; each game keeps its own ladder.
+        """
+        from views.explore.world_card import build_world_card_embed
+
+        guild_id = ctx.guild.id if ctx.guild is not None else None
+        embed = await build_world_card_embed(ctx.author, guild_id)
+        await ctx.send(embed=embed)
+
     async def build_help_menu_view(
         self,
         interaction: discord.Interaction,
