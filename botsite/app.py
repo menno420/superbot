@@ -39,10 +39,14 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
+# The Claude-Design SPA lives here (NOT a static/ dir — that name is gitignored, the
+# #970 deploy-crash gotcha). index.html/app.js/app.css are copied verbatim from the
+# design handoff (do-not-edit); data.js is generated from site.json.
+SITE_DIR = BASE_DIR / "site"
 
 # The app runs both as a package (`botsite.app`, local) and as a top-level module
 # (`app:app`, Railway Root Directory = botsite), and the test loads app.py by file
@@ -55,6 +59,7 @@ if str(BASE_DIR) not in sys.path:
 
 import chrome  # noqa: E402  - sibling, after the sys.path shim above
 import data_loader  # noqa: E402  - after the sys.path shim above
+import site_data  # noqa: E402  - site.json → SPA data.js generator (stdlib-only)
 from submit import router as submit_router  # noqa: E402  - after the shim
 
 app = FastAPI(title="SuperBot", docs_url=None, redoc_url=None)
@@ -95,20 +100,55 @@ def healthz() -> dict[str, str]:
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request) -> HTMLResponse:
-    """Marketing landing — hero, feature bands, capability counts, 'Add to Discord'."""
-    data = data_loader.load_site_data()
-    return _render(
-        request,
-        "index.html",
-        "home",
-        features=data_loader.features_by_category(data)[:5],
+def index() -> FileResponse:
+    """Serve the Claude-Design SPA shell (the public site front-end).
+
+    The SPA is a hash-routed single-page app: every page (Home / Features /
+    Commands / Games / Changelog / Status) renders client-side from
+    ``window.SBDATA`` (loaded from ``/data.js``). The server only needs to ship the
+    shell here; routing happens in the browser at ``/#/...``.
+    """
+    return FileResponse(SITE_DIR / "index.html", media_type="text/html")
+
+
+@app.get("/app.js")
+def spa_js() -> FileResponse:
+    """SPA router + views (verbatim design asset)."""
+    return FileResponse(SITE_DIR / "app.js", media_type="application/javascript")
+
+
+@app.get("/app.css")
+def spa_css() -> FileResponse:
+    """SPA theme (verbatim design asset)."""
+    return FileResponse(SITE_DIR / "app.css", media_type="text/css")
+
+
+@app.get("/data.js")
+def spa_data() -> Response:
+    """The SPA data layer — generated **live** from the current ``site.json``.
+
+    This is the dynamic seam (owner goal: "all data should dynamically load"): each
+    request renders ``window.SBDATA`` from the latest committed ``site.json`` via
+    ``site_data``. The committed ``botsite/site/data.js`` is the static fallback for
+    opening the prototype as a bare file; in the running service this route wins.
+    """
+    js = site_data.render_from_site(data_loader.load_site_data())
+    # No long cache: the data tracks each deploy's site.json.
+    return Response(
+        content=js,
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-cache"},
     )
 
 
+# Legacy page routes — the earlier server-rendered Jinja front-end, kept as a
+# working fallback (owner decision: the SPA is what visitors see at `/`; the Jinja
+# pages stay in repo and reachable). The SPA's own nav uses in-page hash routes
+# (#/commands, …), so normal visitors never hit these; they remain for old
+# bookmarks / no-JS fallback and render the same site.json data.
 @app.get("/commands", response_class=HTMLResponse)
 def commands(request: Request) -> HTMLResponse:
-    """Read-only command reference (search + filters). Template: P2 (commands.html)."""
+    """Read-only command reference (Jinja fallback). SPA equivalent: /#/commands."""
     data = data_loader.load_site_data()
     return _render(
         request,
@@ -120,7 +160,7 @@ def commands(request: Request) -> HTMLResponse:
 
 @app.get("/features", response_class=HTMLResponse)
 def features(request: Request) -> HTMLResponse:
-    """Feature showcase (function + game catalogue). Template: P2 (features.html)."""
+    """Feature showcase (Jinja fallback). SPA equivalent: /#/features."""
     data = data_loader.load_site_data()
     return _render(
         request,
@@ -132,7 +172,7 @@ def features(request: Request) -> HTMLResponse:
 
 @app.get("/changelog", response_class=HTMLResponse)
 def changelog(request: Request) -> HTMLResponse:
-    """User-facing bot changelog. Template: P3 (changelog.html)."""
+    """User-facing changelog (Jinja fallback). SPA equivalent: /#/changelog."""
     data = data_loader.load_site_data()
     return _render(
         request,
@@ -144,14 +184,9 @@ def changelog(request: Request) -> HTMLResponse:
 
 @app.get("/status", response_class=HTMLResponse)
 def status(request: Request) -> HTMLResponse:
-    """User trust band — online (as of last deploy) · build · counts. Template: P3."""
+    """Trust band (Jinja fallback). SPA equivalent: /#/status."""
     data = data_loader.load_site_data()
-    return _render(
-        request,
-        "status.html",
-        "status",
-        build=data_loader.build_meta(data),
-    )
+    return _render(request, "status.html", "status", build=data_loader.build_meta(data))
 
 
 # /submit — GET form + POST intake. Owned by botsite/submit.py (an empty stub here;

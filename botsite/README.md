@@ -6,25 +6,61 @@ public half of the website two-site split — full design, topology, security mo
 and the build decomposition live in
 [`docs/planning/website-two-site-split-plan-2026-06-19.md`](../docs/planning/website-two-site-split-plan-2026-06-19.md).
 
-**This directory is the serial foundation (units S1 + S2 + P1).** The app wires every
-route up front; the reference/changelog/status page templates and the `/submit`
-intake form land in the parallel back-half units (P2–P4).
+**The public front-end is now the Claude-Design SPA** (`botsite/site/`), served by
+this FastAPI app with its data layer generated live from `site.json`. The earlier
+server-rendered Jinja pages (`templates/`) remain wired as a working fallback.
+
+## The front-end — the Claude-Design SPA (what visitors see)
+
+The public front-end is the **Claude-Design single-page app** in `botsite/site/`
+(neon theme: Home / Features / Commands / Games / Changelog / Status). It is a
+vanilla-JS, no-build, hash-routed SPA whose every page renders from one global
+`window.SBDATA` object. Three of its files are **design-owned and copied verbatim**
+from the Claude-Design handoff — **do not edit them** (the design is finished;
+touching them drifts from the intended look and breaks the round-trip with Claude
+Design):
+
+- `botsite/site/index.html` — the shell (nav + an empty `<main id="app">`).
+- `botsite/site/app.js` — the hash router + view renderers.
+- `botsite/site/app.css` — the theme.
+
+The **only** data file we own is `botsite/site/data.js`, and we **generate** it
+(never hand-write it) from the canonical `site.json` — see "Data flow" below.
 
 ## What it serves
 
-| Route | What | Template / source |
+| Route | What | Source |
 |---|---|---|
-| `/` | Marketing landing — hero, feature bands, honest capability counts, "Add to Discord" | `index.html` (this unit) |
-| `/commands` | Read-only command reference (search + filters) | `commands.html` (P2) |
-| `/features` | Feature showcase (function + game catalogue, user-framed) | `features.html` (P2) |
-| `/changelog` | User-facing bot changelog | `changelog.html` (P3) ← `site.json.bot_changelog` |
-| `/status` | User trust band — online (as of last deploy) · build · counts | `status.html` (P3) |
-| `/submit` | Public bug/suggestion form → `pending` intake | `botsite/submit.py` + `submit.html` (P4) |
+| `/` | The SPA shell (the public site) | `site/index.html` |
+| `/app.js`, `/app.css` | SPA router + theme (verbatim design assets) | `site/*` |
+| `/data.js` | **The SPA data layer — generated live from `site.json` per request** | `site_data.py` |
+| `/commands` `/features` `/changelog` `/status` | **Legacy** Jinja pages — kept as a working fallback (the SPA equivalents are `/#/commands` …) | `templates/*.html` ← `site.json` |
+| `/submit` | Public bug/suggestion form → `pending` intake | `botsite/submit.py` + `submit.html` |
 | `/healthz` | Liveness probe (JSON) for Railway | app constant |
 
-The routes for the P2/P3 templates are **wired now** (in `app.py`) but reference
-template files that land in those later units — that is by design, so `app.py` stays
-the single owner of routing and the back half is file-disjoint.
+`app.py` stays the **single owner of routing**. The SPA's own nav uses in-page hash
+routes (`#/commands`, …), so visitors land on `/` and never hit the legacy path
+routes; those remain wired for old bookmarks / no-JS fallback.
+
+## Data flow — one pipeline, no drift
+
+```
+disbot/  ──(scripts/export_dashboard_data.py)──▶  botsite/data/site.json   (CI-guarded public subset)
+                                                       │
+                                       botsite/site_data.py  (build_prototype_data + render_data_js)
+                                                       ▼
+                                   window.SBDATA  ──▶  /data.js (live, per request)
+                                                  └─▶  botsite/site/data.js (committed static fallback)
+```
+
+`site_data.py` maps the `site.json` subset onto the SPA data contract
+(`ICONS` / `AREAS` / `COMMANDS` / `GAMES` / `CHANGELOG` / `STATUS` + lookup helpers).
+It is **stdlib-only and never imports `disbot`**, so it ships inside `botsite/` and
+the `/data.js` route renders it live. The committed `botsite/site/data.js` is the
+static fallback (so the prototype also works opened as a bare file); in the running
+service the dynamic route wins. Contract invariants (every `area`/`command`
+cross-reference resolves, icons/colors are valid) are guarded by
+`tests/unit/botsite/test_site_data.py` (stdlib → runs in CI).
 
 ## Decoupling (the hard rule)
 
@@ -55,18 +91,26 @@ public routes, and `botsite/submit.py` is the one write seam (INSERT-only).
 
 ```bash
 pip install -r botsite/requirements.txt
-python3.10 scripts/export_dashboard_data.py --targets site   # (re)generate site.json
-uvicorn botsite.app:app --reload                             # http://127.0.0.1:8000
+python3.10 scripts/export_dashboard_data.py --targets site   # regenerate site.json + site/data.js
+uvicorn botsite.app:app --reload                             # http://127.0.0.1:8000  (→ the SPA)
 ```
+
+Open <http://127.0.0.1:8000> for the SPA. `/data.js` is served live from the current
+`site.json`, so editing data is just: regenerate `site.json` (above) and refresh.
 
 ## Regenerate the data
 
-The committed `botsite/data/site.json` is a generated artifact (same producer as the
-dashboard). Re-run after the sources change:
+The committed `botsite/data/site.json` **and** `botsite/site/data.js` are generated
+artifacts (same producer as the dashboard). Re-run after the sources change:
 
 ```bash
-python3.10 scripts/export_dashboard_data.py                  # writes BOTH artifacts
+python3.10 scripts/export_dashboard_data.py     # writes dashboard.json + site.json + site/data.js
+python3.10 -m botsite.site_data                 # just regenerate site/data.js from site.json
 ```
+
+> The running service does **not** need `site/data.js` refreshed by hand — `/data.js`
+> renders live from `site.json`. The committed file is only the static/offline
+> fallback, kept in sync by the export above (a CI test fails if it drifts).
 
 ## Tests
 

@@ -92,6 +92,9 @@ ignore = [
 "scripts/*.py" = ["T201", "S603", "S607", "N815", "S310"]
 # Dev tooling scripts: same rationale as scripts/ — CLI output + trusted subprocess.
 "tools/**/*.py" = ["T201", "S603", "S607"]
+# botsite SPA data generator: runnable as a CLI (python3.10 -m botsite.site_data),
+# so its print() confirmation is intentional output — same rationale as scripts/.
+"botsite/site_data.py" = ["T201"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 8

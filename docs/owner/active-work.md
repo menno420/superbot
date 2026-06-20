@@ -36,6 +36,12 @@ living ledger (`docs/current-state.md`).
   `ChangelogEntry`/`StatusCard` + `FeaturesPage`/`CommandsPage`/`ChangelogPage`/`StatusPage` +
   stories) · `design-system/README.md` · 2026-06-20 · **auto-merge on green** (additive · verified)
 
+- `claude/compassionate-mccarthy-8u4xvy` · **Wire the Claude-Design SPA into the bot site + live
+  data** (owner-directed; SPA-as-front-end + dynamic data endpoint, confirmed via AskUserQuestion) ·
+  `botsite/site/` (design SPA, verbatim) + `botsite/site_data.py` (site.json→SBDATA generator) +
+  `botsite/app.py` + `scripts/export_dashboard_data.py` + `tests/unit/botsite/` · 2026-06-20 ·
+  **auto-merge on green**
+
 ## Recently cleared
 
 - `claude/design-system-connector-docs` · design-system docs — GitHub-connector workflow + new
