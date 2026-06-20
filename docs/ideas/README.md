@@ -86,7 +86,7 @@ Current broad captures:
   [`planning/explore-hub-federated-world-plan-2026-06-19`](../planning/explore-hub-federated-world-plan-2026-06-19.md)
   (ungated spine: top-level hub + world registry + global/per-game XP split; deferred layers routed as
   **Q-0182**). → relates `planning/{explore-hub-federated-world-plan,fishing-open-world-expansion,mining-hub-redesign,rpg-survival-difficulty-design}`.
-- [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) —
+- [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) — **SHIPPED 2026-06-20 (PR #1174).**
   **session idea (2026-06-19, Q-0089, from the planning-map cleanup):** a stdlib
   `scripts/check_plan_homing.py` asserting every non-`historical` `docs/planning/` doc is linked from a
   **routing** doc (roadmap · a folio · current-state · the new plan index) — not merely *reachable* from
