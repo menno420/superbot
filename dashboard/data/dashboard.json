@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T23:35:54Z",
+    "generated_at": "2026-06-20T23:51:51Z",
     "build": {
-      "commit": "f35c784b",
-      "subject": "docs(plan): migrate the live bot-site to the React design-system app (no porting) (#1199)",
-      "committed_at": "2026-06-20T23:27:51Z",
-      "branch": "main"
+      "commit": "4c616685",
+      "subject": "Merge pull request #1201 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-21T01:40:33Z",
+      "branch": "claude/jolly-johnson-czteze"
     },
     "counts": {
       "functions": 36,
-      "ideas": 107,
-      "bugs": 19,
+      "ideas": 108,
+      "bugs": 20,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -980,6 +980,14 @@
       "subsystems": []
     },
     {
+      "file": "reconcile-pass-tail-trim-actuator-2026-06-20.md",
+      "title": "Idea — a tail-trim actuator for the `current-state.md` ▶ Next action callout",
+      "status": "captured",
+      "date": "2026-06-20",
+      "summary": "Every Q-0107 reconciliation pass prepends one \"**Nth Q-0107 PASS DONE …**\" sentence to the",
+      "subsystems": []
+    },
+    {
       "file": "wild-encounters-activity-spawning-2026-06-20.md",
       "title": "Wild Encounters — activity-based spawning (2026-06-20)",
       "status": "ideas",
@@ -1891,6 +1899,12 @@
     }
   ],
   "bugs": [
+    {
+      "id": "BUG-0020",
+      "title": "trim_recently_shipped.py floor-pointer recompute matches stray #N in prose (writes a wrong \"Older merges (#HIGH … #LOW)\" span) — OPEN (tooling; symptom hand-corrected)",
+      "status": "unknown",
+      "summary": "after scripts/trim_recently_shipped.py --apply moved the 8 oldest Recently-shipped bullets to the archive, it recomputed the floor pointer as \"Older merges (#1170 … #1)\" — both ends wrong. The true archive span is #1129 … #535."
+    },
     {
       "id": "BUG-0019",
       "title": "AI replies to messages aimed at *other* bots and claims \"you've just pinged me\" — PARTIALLY FIXED (mechanism #2 hardened; #1 awaits one owner behavior decision)",

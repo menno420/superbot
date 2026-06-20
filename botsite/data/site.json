@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T17:07:58Z",
+    "generated_at": "2026-06-20T23:51:51Z",
     "build": {
-      "commit": "4405676",
-      "subject": "fix(mining,community): !character shows the paper-doll; add missing back buttons",
-      "committed_at": "2026-06-20T14:59:25Z",
-      "branch": "claude/gallant-volta-bk3qvf"
+      "commit": "4c616685",
+      "subject": "Merge pull request #1201 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-21T01:40:33Z",
+      "branch": "claude/jolly-johnson-czteze"
     }
   },
   "counts": {
