@@ -403,12 +403,12 @@ class MiningCog(commands.Cog):
         extras={"classification": "panel_action"},
     )
     async def character(self, ctx):
-        """Show your full mining character — location, gear, stats, wealth."""
+        """Show your full mining character — the paper-doll, location, stats, wealth."""
         import io
 
         # cogs→views is allowed; the builder aggregates the existing owners.
         from views.mining.character_panel import (
-            build_character_card,
+            build_character_doll,
             build_character_embed,
         )
 
@@ -417,12 +417,11 @@ class MiningCog(commands.Cog):
             ctx.guild.id,
             name=ctx.author.display_name,
         )
-        png = await build_character_card(
-            ctx.author.id,
-            ctx.guild.id,
-            name=ctx.author.display_name,
-        )
+        # The character image is the V-16 paper-doll (the same figure !gear
+        # shows), rendered into the card; gear detail stays in !gear.
+        png = await build_character_doll(ctx.author.id, ctx.guild.id)
         if png is not None:
+            embed.set_image(url="attachment://character.png")
             await ctx.send(
                 embed=embed,
                 file=discord.File(io.BytesIO(png), filename="character.png"),

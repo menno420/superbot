@@ -241,9 +241,34 @@ class MiningHubView(PersistentView):
             ExploreWorldHubView,
             build_world_hub_embed,
         )
+        from views.navigation import attach_back_button
 
         embed = build_world_hub_embed()
         view = ExploreWorldHubView(interaction.user, interaction.guild_id)
+
+        # Explore is reached here as a CHILD of the mining hub (the !world
+        # command opens the same hub as a root, which needs no back button).
+        # Attach "↩ Mining Hub" externally — mirrors how Help/Games attach a
+        # back button to the panels they open — so the player isn't stranded
+        # in the world hub with no way back to mining.
+        async def _back_to_mining(
+            inter: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            back_embed = await build_overview_embed(
+                inter.user.id,
+                inter.guild_id,  # type: ignore[arg-type]
+                name=getattr(inter.user, "display_name", None),
+            )
+            return back_embed, MiningHubView()
+
+        attach_back_button(
+            view,
+            label="↩ Mining Hub",
+            custom_id="explore:back_mining",
+            parent_builder=_back_to_mining,
+            row=4,
+            error_message="Could not reload the Mining hub. Please try again.",
+        )
         await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(

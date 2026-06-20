@@ -6,7 +6,11 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from views.mining.character_panel import build_character_embed
+from views.mining.character_panel import (
+    _gear_overview,
+    build_character_doll,
+    build_character_embed,
+)
 from views.mining.main_panel import MiningHubView
 
 
@@ -108,3 +112,61 @@ async def test_character_embed_shows_equipped_title_when_set():
         embed = await build_character_embed(123, 7, name="Digger")
 
     assert embed.description and "the Deep One" in embed.description
+
+
+def test_gear_overview_lists_names_without_durability():
+    """The Character card keeps gear high-level — equipped item names only, no
+    per-slot durability fraction (that detail lives in !gear; the paper-doll is
+    the visual)."""
+    from utils import equipment
+
+    summary = _gear_overview(
+        {equipment.TOOL: "iron pickaxe", equipment.WEAPON: "iron sword"},
+    )
+    assert "Iron Pickaxe" in summary
+    assert "Iron Sword" in summary
+    # The item-names line carries no per-slot durability fraction like (42/320)
+    # (a set-progress line further down may legitimately read "1/6 pieces").
+    names_line = summary.splitlines()[0]
+    assert "/" not in names_line
+    assert "(" not in names_line
+
+
+def test_gear_overview_empty_state_points_at_gear():
+    summary = _gear_overview({})
+    assert "gear" in summary.lower()
+
+
+def test_gear_overview_shows_active_set_bonus():
+    """When a full same-tier set is worn, the overview surfaces the set bonus
+    line (still high-level — no durability)."""
+    from utils import equipment
+
+    full_set = {slot: f"diamond {slot}" for slot in equipment.SET_SLOTS}
+    summary = _gear_overview(full_set)
+    if equipment.active_set_tier(full_set) is not None:
+        assert "set" in summary.lower()
+
+
+@pytest.mark.asyncio
+async def test_build_character_doll_renders_equipped_loadout():
+    """The character image is the V-16 paper-doll — build_character_doll feeds
+    the equipped loadout + Home backdrop into render_character_for."""
+    with patch(
+        "views.mining.character_panel.db.get_equipment",
+        new_callable=AsyncMock,
+        return_value={"weapon": "iron sword"},
+    ), patch(
+        "views.mining.character_panel.db.get_structures",
+        new_callable=AsyncMock,
+        return_value={},
+    ), patch(
+        "utils.character_render.render_character_for",
+        return_value=b"PNGDATA",
+    ) as mock_render:
+        png = await build_character_doll(123, 7)
+
+    assert png == b"PNGDATA"
+    mock_render.assert_called_once()
+    # The equipped loadout is what gets rendered (the same figure !gear shows).
+    assert mock_render.call_args.args[0] == {"weapon": "iron sword"}

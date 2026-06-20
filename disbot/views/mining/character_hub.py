@@ -136,8 +136,15 @@ class MiningCharacterHubView(HubView):
                 ephemeral=True,
             )
             return
-        # Read-only character overview, shown in place on the sub-hub.
-        from views.mining.character_panel import build_character_embed
+        # Read-only character overview, shown in place on the sub-hub — with
+        # the paper-doll image (same figure !gear shows), so the in-panel view
+        # matches the !character command.
+        import io
+
+        from views.mining.character_panel import (
+            build_character_doll,
+            build_character_embed,
+        )
 
         embed = await build_character_embed(
             interaction.user.id,
@@ -145,7 +152,12 @@ class MiningCharacterHubView(HubView):
             name=interaction.user.display_name,
         )
         embed.set_footer(text="Pick another action above to continue.")
-        await self._edit_in_place(interaction, embed=embed, view=self)
+        png = await build_character_doll(interaction.user.id, interaction.guild_id)
+        image = None
+        if png is not None:
+            embed.set_image(url="attachment://character.png")
+            image = discord.File(io.BytesIO(png), filename="character.png")
+        await self._edit_in_place(interaction, embed=embed, view=self, image=image)
 
     @discord.ui.button(label="📦 Inventory", style=discord.ButtonStyle.grey, row=0)
     async def inventory_btn(

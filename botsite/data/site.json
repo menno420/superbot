@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T03:16:00Z",
+    "generated_at": "2026-06-20T14:55:58Z",
     "build": {
-      "commit": "b9a0d2a2",
-      "subject": "docs(ideas): capture bug-book claim-gap idea + groom subsystem-tag to historical (#1159)",
-      "committed_at": "2026-06-20T01:52:25Z",
-      "branch": "claude/funny-franklin-dapcss"
+      "commit": "721c4cf",
+      "subject": "Merge pull request #1169 from menno420/claude/relaxed-thompson-qwg50v",
+      "committed_at": "2026-06-20T15:38:17Z",
+      "branch": "claude/gallant-volta-bk3qvf"
     }
   },
   "counts": {
@@ -1951,8 +1951,8 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show your full mining character — location, gear, stats, wealth.",
-      "description": "Show your full mining character — location, gear, stats, wealth.",
+      "usage": "Show your full mining character — the paper-doll, location, stats, wealth.",
+      "description": "Show your full mining character — the paper-doll, location, stats, wealth.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
