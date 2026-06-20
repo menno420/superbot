@@ -20,6 +20,17 @@ self-buffs, so no code/balance change.
   sim-revalidated.
 - **§2b** — updated the status-move paragraph from "open knob" to the decided self-buff model.
 
+## ⚠️ Process note (born-red slip — own mistake, corrected)
+
+I wrote this card as `complete` in the **first** commit instead of `in-progress`, so PR #1195's
+session gate never held — auto-merge fired on the green card-only commit **before** the actual doc
+edit (`d1909cd`) landed, and the merge **dropped the doc change** (the #843 race the born-red rule
+exists to prevent). Caught it on a post-merge `git grep` verification: the decision text was missing
+from `main`. **Re-landed** the dropped doc change via cherry-pick in a follow-up PR. **Lesson (the
+rule, restated):** the session card MUST be `in-progress` in the first commit and only flipped to
+`complete` in the *final* commit, *after* the real work is staged — writing it `complete` up front
+defeats the gate. Always `git grep`-verify a decision actually reached `main` after a docs PR merges.
+
 ## Verification
 
 - `check_docs --strict` ✓ · `check_plan_homing` ✓ (39/39) · sim still PLAYABLE (unchanged).
