@@ -23,11 +23,20 @@ name: pr-conflict-guard
 # first DIRTY PR actually shows the red `conflict-guard` status and that it clears on resolution.
 # Delete this workflow if it flaps or misreports; conflicts are also visible in the PR UI banner.
 #
-# 2026-06-19 fix: the push:main sweep queried mergeability the instant main moved and saw UNKNOWN
-# (GitHub computes it ASYNCHRONOUSLY — the query is what triggers it), so it skipped the very PR
-# that had just become DIRTY (the #1104 miss — log: "#1104 mergeability not computed yet -> skip").
-# The sweep now polls through that UNKNOWN window (resolve_state) before deciding. Still confirm on
-# the next real DIRTY PR that the red status now appears within ~30s of the conflicting merge.
+# 2026-06-19 fix (SUPERSEDED): the push:main sweep queried mergeability the instant main moved and
+# saw UNKNOWN (GitHub computes it ASYNCHRONOUSLY — the query is what triggers it), so it skipped the
+# very PR that had just become DIRTY (the #1104 miss). That fix polled `mergeStateStatus` through the
+# UNKNOWN window — but polling has no upper bound on GitHub's compute time, so when it ran long
+# (PR-open time, load) the 30s poll gave up, posted nothing, and the PR stayed green until the laggy
+# 3-hour cron. That residual race is the "only works occasionally" the owner observed.
+#
+# 2026-06-20 fix (CURRENT): stop asking GitHub's async mergeability at all — compute the merge
+# OURSELVES with `git merge-tree --write-tree <base> <head>`, which is deterministic and synchronous
+# (exit 0 = clean, exit 1 = conflict). No UNKNOWN window, no poll, no race: the status is decided the
+# moment the job runs. Validated on the runner's git 2.43.0 (conflict→rc1, clean→rc0). We pre-verify
+# both commit objects exist (`git cat-file -e`) because a *missing* object also exits 1 — without
+# that guard a bad sha would false-flag a conflict. Confirm on the next real DIRTY PR that the red
+# `conflict-guard` status appears within seconds of the conflicting merge / PR open.
 
 on:
   push:
@@ -52,6 +61,10 @@ jobs:
     if: github.repository == 'menno420/superbot'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout (full history — git merge-tree needs the merge base reachable)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Reflect merge state as the conflict-guard status
         # GITHUB_TOKEN (not ROUTINE_PAT): posting a commit status needs `statuses: write`, granted by
         # the permissions block above. ROUTINE_PAT is scoped Issues/PRs/Contents and lacks commit-
@@ -63,17 +76,16 @@ jobs:
         run: |
           set -uo pipefail
           # NON-REQUIRED visibility status: never red-flag a PR on a single hiccup (guard + exit 0).
-          # On a PR's own push, evaluate ONLY that PR — the all-PR sweep on every pull_request was
-          # needless noise that confused parallel sessions. On push:main / schedule, sweep all open
-          # PRs, because a PR can newly become DIRTY when main moves (not an event on the stale PR).
+          # On a PR's own push, evaluate ONLY that PR. On push:main / schedule, sweep all open PRs,
+          # because a PR can newly become DIRTY when main moves (not an event on the stale PR).
 
-          post() {  # $1=num  $2=mergeStateStatus  $3=headSha
+          post() {  # $1=num  $2=state(DIRTY|CLEAN|UNKNOWN)  $3=headSha
             local num="$1" state="$2" sha="$3" st desc
             [ -n "$sha" ] || return 0
             case "$state" in
-              DIRTY)      st=failure; desc="Merge conflict with main — merge main in / rebase to resolve." ;;
-              UNKNOWN|"") echo "#$num mergeability not computed yet -> skip"; return 0 ;;
-              *)          st=success; desc="No merge conflict with main." ;;
+              DIRTY)      st=failure; desc="Merge conflict with the base branch — merge it in / rebase to resolve." ;;
+              UNKNOWN|"") echo "#$num merge state UNKNOWN -> skip"; return 0 ;;
+              *)          st=success; desc="No merge conflict with the base branch." ;;
             esac
             if gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$sha" \
                  -f state="$st" -f context=conflict-guard -f description="$desc" >/dev/null 2>&1; then
@@ -83,39 +95,37 @@ jobs:
             fi
           }
 
-          # Poll through the UNKNOWN window GitHub shows right after main moves: mergeability is
-          # computed ASYNCHRONOUSLY and a query is what triggers it, so the push:main sweep (which
-          # runs seconds after a merge) would otherwise see UNKNOWN and skip the very PR that just
-          # went DIRTY — the #1104 miss. Returns a settled state, or UNKNOWN only if it never settles.
-          resolve_state() {  # $1=num -> echoes mergeStateStatus
-            local num="$1" s tries=0
-            while :; do
-              s=$(gh pr view "$num" --repo "$GITHUB_REPOSITORY" --json mergeStateStatus \
-                    --jq '.mergeStateStatus' 2>/dev/null || echo "")
-              case "$s" in
-                UNKNOWN|"") : ;;                        # not computed yet — keep polling
-                *)          printf '%s' "$s"; return 0 ;;
-              esac
-              tries=$((tries + 1))
-              if [ "$tries" -ge 10 ]; then printf '%s' "UNKNOWN"; return 0; fi
-              sleep 3
-            done
+          # DETERMINISTIC conflict test: fetch the PR head + its base branch and let git compute the
+          # merge with `git merge-tree --write-tree` (exit 0 = clean, 1 = conflict). This replaces the
+          # old async `mergeStateStatus` poll entirely — no UNKNOWN window, no race, decided the moment
+          # this job runs. A missing object also exits 1, so we pre-verify both commits exist first.
+          evaluate() {  # $1=num  $2=baseRef
+            local num="$1" base="$2" baseSha headSha rc
+            git fetch --quiet --no-tags origin "$base"             2>/dev/null || { echo "#$num: base fetch failed -> skip"; return 0; }
+            baseSha=$(git rev-parse --verify --quiet FETCH_HEAD)               || { echo "#$num: base rev-parse failed -> skip"; return 0; }
+            git fetch --quiet --no-tags origin "refs/pull/$num/head" 2>/dev/null || { echo "#$num: head fetch failed -> skip"; return 0; }
+            headSha=$(git rev-parse --verify --quiet FETCH_HEAD)              || { echo "#$num: head rev-parse failed -> skip"; return 0; }
+            if ! { git cat-file -e "$baseSha^{commit}" 2>/dev/null && git cat-file -e "$headSha^{commit}" 2>/dev/null; }; then
+              post "$num" UNKNOWN "$headSha"; return 0
+            fi
+            git merge-tree --write-tree "$baseSha" "$headSha" >/dev/null 2>&1
+            rc=$?
+            case "$rc" in
+              0) post "$num" CLEAN   "$headSha" ;;
+              1) post "$num" DIRTY   "$headSha" ;;
+              *) post "$num" UNKNOWN "$headSha" ;;   # merge-tree error (rc>1) — don't false-flag
+            esac
           }
 
           if [ "${EVENT:-}" = "pull_request" ]; then
-            sha=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-                    --json headRefOid --jq '.headRefOid' 2>/dev/null || true)
-            post "$PR_NUMBER" "$(resolve_state "$PR_NUMBER")" "$sha"
+            base=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json baseRefName --jq '.baseRefName' 2>/dev/null || echo "main")
+            evaluate "$PR_NUMBER" "${base:-main}"
           else
-            prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open \
-                    --json number,mergeStateStatus,headRefOid \
-                    --jq '.[] | "\(.number) \(.mergeStateStatus) \(.headRefOid)"' || true)
+            prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --json number,baseRefName \
+                    --jq '.[] | "\(.number) \(.baseRefName)"' || true)
             if [ -z "${prs:-}" ]; then echo "no open PRs to evaluate"; exit 0; fi
-            # Every open PR is briefly UNKNOWN right after main moves — re-resolve those by polling
-            # instead of skipping them (the bug this fixes).
-            printf '%s\n' "$prs" | while read -r num state sha; do
-              case "$state" in UNKNOWN|"") state="$(resolve_state "$num")" ;; esac
-              post "$num" "$state" "$sha"
+            printf '%s\n' "$prs" | while read -r num base; do
+              evaluate "$num" "${base:-main}"
             done
           fi
           exit 0
