@@ -1,7 +1,8 @@
 name: Design System CI
 
-# Builds + type-checks the React/Tailwind design-system (the source of truth
-# /design-sync uploads to Claude Design). Sibling of botsite-ci.yml / dashboard-ci.yml
+# Builds + type-checks the React/Tailwind design-system (the source of truth Claude
+# Design reads — via the GitHub connector, or the /design-sync upload). Sibling of
+# botsite-ci.yml / dashboard-ci.yml
 # for the JS tier: the main code-quality.yml installs only Python tooling and never
 # touches design-system/, so without this leg a broken component or type error would
 # land silently. Provenance: 2026-06-20 (Path 1 — full landing-page composition); closes

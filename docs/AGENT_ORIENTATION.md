@@ -149,6 +149,16 @@ read **`docs/helper-policy.md`** first.
 2. `docs/decisions/007-media-youtube-ownership.md` — binding shared-media ownership decision.
 3. `docs/server-logging.md` — logging/audit routing and fail-safe expectations.
 
+### Touching the public site (`botsite/`) / design-system / Claude Design
+
+1. `design-system/README.md` — **the contract for the Claude Design workflow**: the
+   React/Tailwind component library that mirrors `botsite/`, how Claude Design reads it (the
+   **GitHub connector** — primary — or `/design-sync`), the hybrid design→port→preview loop,
+   and how to preview without redeploying.
+2. `botsite/` — the live server-rendered Jinja2 + Tailwind site (what actually ships). Canvas
+   designs are ported back into these templates; production stays Jinja.
+3. `.github/workflows/design-system-ci.yml` / `botsite-ci.yml` — the JS / site CI legs.
+
 ### Touching settings / bindings / resource provisioning
 
 1. `docs/subsystems/settings-bindings-provisioning.md` — canonical area entry point.
