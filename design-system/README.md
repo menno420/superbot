@@ -42,7 +42,9 @@ not assumed here.
 | `Card` | the standard bordered surface |
 | `StatTile` | a single homepage capability-band count |
 | `FeatureCard` | the "what it does" / `/features` category cards |
-| `CommandCard` | the `/commands` reference row |
+| `CommandCard` | the `/commands` reference row (compact) |
+| `SearchBar` | the `/features` + `/commands` search input |
+| `Pill` | the category jump / filter chips (active + link/button variants) |
 
 **Layout / chrome** (mirror `base.html`)
 
@@ -51,22 +53,38 @@ not assumed here.
 | `PageShell` | `<body>` dark canvas + centered `<main>` column + header/footer slots |
 | `SiteHeader` | the sticky nav — logo · links · "as of last deploy" status dot · Add-to-Discord |
 | `SiteFooter` | the "generated / as of last deploy" freshness footer + source link |
+| `PageHeader` | a page title + subtitle (plain, or bordered with a "generated" badge) |
 
-**Sections & page** (mirror `index.html`)
+**Sections** (page building blocks)
 
 | Component | Mirrors (in `botsite/`) |
 |---|---|
-| `Hero` | the hero — wordmark · tagline · primary/secondary CTAs |
+| `Hero` | the homepage hero — wordmark · tagline · primary/secondary CTAs |
 | `CapabilityBand` | the capability band (3 × `StatTile`, honest catalogue counts) |
 | `Section` | the section-header pattern (title + "All features →", or centered) |
 | `StepCard` | the "how it works" numbered steps |
-| **`LandingPage`** | **the whole `index.html` page composed from the parts above** — the canonical surface Claude Design edits, so every region maps to source |
+| `FeatureShowcaseCard` | a single `/features` card — emoji · name · `game` badge · tags · "See commands" |
+| `CommandEntry` / `CommandDetail` | a `/commands` expandable `<details>` card and its detail body (aliases · permissions · examples · "what's planned") |
+| `ChangelogEntry` | a `/changelog` timeline entry — kind label · title · summary · "Details" |
+| `StatusCard` | the `/status` "online as of last deploy" build card |
+
+**Pages** (full per-route compositions — the surfaces Claude Design edits)
+
+| Component | Mirrors (in `botsite/`) |
+|---|---|
+| `LandingPage` | the whole `index.html` homepage |
+| `FeaturesPage` | `/features` — searchable, category-jump pills, feature grid |
+| `CommandsPage` | `/commands` — searchable, filter pills, expandable command list |
+| `ChangelogPage` | `/changelog` — date-grouped "what's new" timeline |
+| `StatusPage` | `/status` — build trust card + "what's in the box" counts |
+
+Each page is composed inside `PageShell` (with `SiteHeader` + `SiteFooter`), so **the whole site** — not just one page — is editable in Claude Design, every region mapping back to source.
 
 ## Editing the site — the hybrid loop (Claude Design ⇄ Claude Code)
 
-The whole landing page is now real components (`LandingPage` composes them), so on the
-Claude Design canvas you can select and edit **any** region — hero, nav, sections — and it
-maps to source. The error *"Can't save this edit — element isn't from project source"*
+Every page is now real components (`LandingPage`, `FeaturesPage`, `CommandsPage`,
+`ChangelogPage`, `StatusPage`), so on the Claude Design canvas you can select and edit **any**
+region of **any** page — hero, nav, cards, sections — and it maps to source. The error *"Can't save this edit — element isn't from project source"*
 appears when you edit something that *isn't* a synced component; composing pages from these
 parts is what avoids it. Roles:
 

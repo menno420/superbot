@@ -44,10 +44,46 @@ export type { StepCardProps } from "./StepCard";
 export { CapabilityBand } from "./CapabilityBand";
 export type { CapabilityBandProps, CapabilityStat } from "./CapabilityBand";
 
-// ── Page composition (the canonical surface Claude Design edits) ─────────────
+export { PageHeader } from "./PageHeader";
+export type { PageHeaderProps, PageHeaderBadge } from "./PageHeader";
+
+export { SearchBar } from "./SearchBar";
+export type { SearchBarProps } from "./SearchBar";
+
+export { Pill } from "./Pill";
+export type { PillProps } from "./Pill";
+
+export { FeatureShowcaseCard } from "./FeatureShowcaseCard";
+export type { FeatureShowcaseCardProps } from "./FeatureShowcaseCard";
+
+export { CommandDetail } from "./CommandDetail";
+export type { CommandRecord, PlannedIdea } from "./CommandDetail";
+
+export { CommandEntry } from "./CommandEntry";
+export type { CommandEntryProps } from "./CommandEntry";
+
+export { ChangelogEntry } from "./ChangelogEntry";
+export type { ChangelogEntryProps, ChangelogKind } from "./ChangelogEntry";
+
+export { StatusCard } from "./StatusCard";
+export type { StatusCardProps, StatusBuild } from "./StatusCard";
+
+// ── Page compositions (the per-route surfaces Claude Design edits) ───────────
 export { LandingPage } from "./LandingPage";
 export type {
   LandingPageProps,
   FeatureCategory,
   HowItWorksStep,
 } from "./LandingPage";
+
+export { FeaturesPage } from "./FeaturesPage";
+export type { FeaturesPageProps, FeatureCategoryGroup } from "./FeaturesPage";
+
+export { CommandsPage } from "./CommandsPage";
+export type { CommandsPageProps, CommandCategoryGroup } from "./CommandsPage";
+
+export { ChangelogPage } from "./ChangelogPage";
+export type { ChangelogPageProps, ChangelogItem } from "./ChangelogPage";
+
+export { StatusPage } from "./StatusPage";
+export type { StatusPageProps, StatusCounts } from "./StatusPage";
