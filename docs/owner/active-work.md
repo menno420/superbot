@@ -25,14 +25,16 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/design-system-connector-docs` · **design-system docs: connector-vs-`/design-sync`
-  correction** (owner-directed 2026-06-20 — owner uses the GitHub connector, not `/design-sync`) ·
-  `design-system/README.md` (connector as primary path) · `docs/AGENT_ORIENTATION.md` (new
-  website/design-system route) · `.github/workflows/design-system-ci.yml` (comment) · 2026-06-20 ·
-  **auto-merge on green** (docs-only)
+- `claude/design-system-site-pages` · **design-system: compose the rest of the site** (owner-chosen
+  meantime build 2026-06-20 — make every route editable in Claude Design) · `design-system/src/`
+  (`PageHeader`/`SearchBar`/`Pill`/`FeatureShowcaseCard`/`CommandDetail`/`CommandEntry`/
+  `ChangelogEntry`/`StatusCard` + `FeaturesPage`/`CommandsPage`/`ChangelogPage`/`StatusPage` +
+  stories) · `design-system/README.md` · 2026-06-20 · **auto-merge on green** (additive · verified)
 
 ## Recently cleared
 
+- `claude/design-system-connector-docs` · design-system docs — GitHub-connector workflow + new
+  AGENT_ORIENTATION website route · 2026-06-20 · **PR #1176 (merged)**
 - `claude/magical-cori-t36l2n` · design-system full landing-page composition + hybrid edit loop +
   JS CI leg · 2026-06-20 · **PR #1175 (merged)**
 - `claude/youthful-turing-odgvq6` · design-system component library (6 components) · 2026-06-20 ·
