@@ -25,20 +25,18 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/youthful-turing-odgvq6` · **design-system component library** (owner-chosen via
-  AskUserQuestion 2026-06-20 — "build a component library" so `/design-sync` has something to sync) ·
-  new top-level `design-system/` (React 18 + Tailwind 3 + tsup build → `dist/` + Storybook 8; 6
-  components mirroring `botsite/`) · `.gitignore` (+ `node_modules/`) · 2026-06-20 ·
-  **auto-merge on green** (additive · isolated · verified) · **PR #1168**
-- `claude/magical-cori-t36l2n` · **design-system full landing-page composition + hybrid edit
-  loop** (owner-chosen Path 1, 2026-06-20 — make the *whole* page source-backed so Claude Design
-  can edit it; me as porter/reviewer) · `design-system/src/` (`PageShell`/`SiteHeader`/
-  `SiteFooter`/`Hero`/`Section`/`StepCard`/`CapabilityBand`/`ButtonLink`/`LandingPage` + stories) ·
-  `design-system/README.md` · new `.github/workflows/design-system-ci.yml` · 2026-06-20 ·
-  **auto-merge on green** (additive · isolated · verified)
+- `claude/design-system-connector-docs` · **design-system docs: connector-vs-`/design-sync`
+  correction** (owner-directed 2026-06-20 — owner uses the GitHub connector, not `/design-sync`) ·
+  `design-system/README.md` (connector as primary path) · `docs/AGENT_ORIENTATION.md` (new
+  website/design-system route) · `.github/workflows/design-system-ci.yml` (comment) · 2026-06-20 ·
+  **auto-merge on green** (docs-only)
 
 ## Recently cleared
 
+- `claude/magical-cori-t36l2n` · design-system full landing-page composition + hybrid edit loop +
+  JS CI leg · 2026-06-20 · **PR #1175 (merged)**
+- `claude/youthful-turing-odgvq6` · design-system component library (6 components) · 2026-06-20 ·
+  **PR #1168 (merged)**
 - `claude/funny-franklin-bnvdxe` · federated Explore-hub spine **PR 1** — top-level world hub +
   `services/world_registry.py` seam + `!world` + mining Explore-button re-parent (retired the
   `views/mining/explore_hub.py` stub) · 2026-06-20 · **PR #1156 (needs-hermes-review, auto-merge disabled)**
