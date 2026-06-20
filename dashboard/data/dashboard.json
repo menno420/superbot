@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T17:07:58Z",
+    "generated_at": "2026-06-20T17:46:01Z",
     "build": {
-      "commit": "4405676",
-      "subject": "fix(mining,community): !character shows the paper-doll; add missing back buttons",
-      "committed_at": "2026-06-20T14:59:25Z",
-      "branch": "claude/gallant-volta-bk3qvf"
+      "commit": "654dd330",
+      "subject": "design-system: compose the rest of the site (Features / Commands / Changelog / Status) (#1178)",
+      "committed_at": "2026-06-20T17:34:35Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 36,
@@ -2051,6 +2051,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-design-system-site-pages.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Design-system: compose the rest of the site (Features/Commands/Changelog/Status)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-20-design-system-landing-page.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Design-system: full landing-page composition + hybrid edit loop",
@@ -2464,14 +2472,6 @@
       "title": "2026-06-19 — Fleet A5: untangle deathmatch circular import",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-a4-diagnostic-embeds.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet A4: move diagnostic embeds into services/",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": true
     }
   ],
