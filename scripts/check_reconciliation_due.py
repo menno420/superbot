@@ -45,6 +45,26 @@ _MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
 _MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|PR #|\(#)(\d+)")
 
 
+def issue_body() -> str:
+    """The canonical `reconcile`-issue body — the single source the workflow echoes.
+
+    Built from ``STEP`` so the human-readable cadence copy can never drift away from the
+    live firing cadence again. BUG-0016 was exactly that drift: the workflow carried its own
+    hardcoded body string that still said "multiple-of-20" / "next ~9 PRs" long after the
+    cadence became 30 (Q-0134) and the planning horizon became the full band (Q-0164). The
+    workflow now calls ``check_reconciliation_due.py --issue-body`` instead of holding a copy.
+    """
+    return (
+        f"A {STEP}-PR band was crossed — a docs-only reconciliation + planning pass is due "
+        f"(Q-0107, cadence {STEP} per Q-0134).\n\n"
+        "This issue triggers the **superbot docs reconciliation** routine, which reconciles "
+        "the ledger, de-stales docs, plans the next full band (depth >= the cadence, Q-0164), "
+        "adds one idea, resets the `Last reconciliation pass` marker, and closes this issue.\n\n"
+        "Auto-opened by `.github/workflows/reconciliation-trigger.yml`. You can also open a "
+        "`reconcile`-labeled issue by hand whenever you spot docs drift."
+    )
+
+
 def _latest_merged_pr() -> int | None:
     """Highest merged PR number from recent origin/main history.
 
@@ -110,7 +130,16 @@ def main(argv: list[str] | None = None) -> int:
         description="reconciliation-cadence guard (Q-0107).",
     )
     parser.add_argument("--strict", action="store_true", help="exit 1 if a pass is due")
+    parser.add_argument(
+        "--issue-body",
+        action="store_true",
+        help="print the canonical `reconcile`-issue body and exit (the workflow echoes this)",
+    )
     args = parser.parse_args(argv)
+
+    if args.issue_body:
+        print(issue_body())
+        return 0
 
     due, latest, marker = is_due()
     if marker is None:

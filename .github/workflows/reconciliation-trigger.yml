@@ -4,8 +4,9 @@ name: reconciliation-trigger
 # per Q-0134): when merged PRs cross a 30-PR band, open a `reconcile` issue that fires the
 # "superbot docs reconciliation" routine. This runs the docs/planning pass PROMPTLY (daytime
 # included) so the docs are fresh for the next dispatch run — not deferred to a nightly poll.
-# The firing boundary is owned by scripts/check_reconciliation_due.py (STEP = 30); only the
-# human-readable copy below must be kept in sync with it.
+# The firing boundary AND the issue-body copy are both owned by
+# scripts/check_reconciliation_due.py (STEP = 30, `--issue-body`): this workflow echoes the
+# checker's body rather than carrying its own string, so the copy can never drift (BUG-0016).
 #
 # Provenance + reliability (Q-0105): added 2026-06-12. UNVERIFIED — confirm over a few cycles
 # that it opens the issue only at the boundary and dedupes. Delete this workflow if it
@@ -69,7 +70,10 @@ jobs:
           fi
           gh label create reconcile --color FBCA04 \
             --description "Fires the docs-reconciliation routine (Q-0107)" --force 2>/dev/null || true
+          # Echo the body from the cadence checker so the human-readable copy can never
+          # drift from the live cadence again (BUG-0016 was exactly that drift). STEP=30
+          # lives in exactly one place: scripts/check_reconciliation_due.py.
           gh issue create \
             --title "Docs reconciliation due (Q-0107)" \
             --label reconcile \
-            --body $'A 30-PR band was crossed — a docs-only reconciliation + planning pass is due (Q-0107, cadence 30 per Q-0134).\n\nThis issue triggers the **superbot docs reconciliation** routine, which reconciles the ledger, de-stales docs, plans the next full band (depth >= the cadence, Q-0164), adds one idea, resets the `Last reconciliation pass` marker, and closes this issue.\n\nAuto-opened by `.github/workflows/reconciliation-trigger.yml`. You can also open a `reconcile`-labeled issue by hand whenever you spot docs drift.'
+            --body "$(python3.10 scripts/check_reconciliation_due.py --issue-body)"

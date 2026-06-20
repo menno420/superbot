@@ -71,6 +71,25 @@ def test_no_marker_main_exits_zero(monkeypatch) -> None:
     assert crd.main(["--strict"]) == 0
 
 
+def test_issue_body_tracks_the_live_cadence() -> None:
+    """The canonical issue body is built from STEP, so it can never drift from the
+    firing cadence (BUG-0016: the workflow's old hardcoded string said "multiple-of-20" /
+    "next ~9 PRs" long after the cadence became 30 + full-band)."""
+    body = crd.issue_body()
+    assert f"A {crd.STEP}-PR band was crossed" in body
+    assert f"cadence {crd.STEP} per Q-0134" in body
+    assert "next full band" in body
+    # The stale strings the bug was about must be gone.
+    assert "multiple-of-20" not in body
+    assert "~9 PRs" not in body
+
+
+def test_issue_body_flag_prints_body_and_exits_zero(capsys) -> None:
+    assert crd.main(["--issue-body"]) == 0
+    out = capsys.readouterr().out
+    assert out.strip() == crd.issue_body()
+
+
 def test_merge_subject_regex_covers_all_three_styles() -> None:
     """The 'PR #' alternative is load-bearing: MCP merges ("Merge PR #N: …")
     are the dominant style since 2026-06, and missing them froze the latest-PR
