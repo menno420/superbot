@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T03:16:00Z",
+    "generated_at": "2026-06-20T04:39:42Z",
     "build": {
-      "commit": "b9a0d2a2",
-      "subject": "docs(ideas): capture bug-book claim-gap idea + groom subsystem-tag to historical (#1159)",
-      "committed_at": "2026-06-20T01:52:25Z",
-      "branch": "claude/funny-franklin-dapcss"
+      "commit": "9a388d52",
+      "subject": "Merge pull request #1160 from menno420/claude/funny-franklin-dapcss",
+      "committed_at": "2026-06-20T05:27:38Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 36,
@@ -2014,7 +2014,7 @@
       "file": "2026-06-20-federated-explore-world-card.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Federated Explore-hub PR 3: cross-game world card",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
