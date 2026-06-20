@@ -15,10 +15,18 @@ name: pr-auto-update
 # token auto-merge-enabler.yml already needs). The PAT (not GITHUB_TOKEN) keeps the eventual
 # merge attributed to a real user so reconciliation-trigger.yml (on: push to main) keeps firing.
 #
-# Provenance + reliability (Q-0105): added 2026-06-16, owner-directed. UNVERIFIED — watch the
-# first few main-pushes to confirm it only updates BEHIND claude/* PRs and that a true conflict
-# is left for the conflict-guard. Delete this workflow if it misfires; updating a branch is
-# always doable by hand ("Update branch" button).
+# Provenance + reliability (Q-0105): added 2026-06-16, owner-directed. Delete this workflow if it
+# misfires; updating a branch is always doable by hand ("Update branch" button).
+#
+# 2026-06-20 fix: the original selected PRs with `mergeStateStatus == "BEHIND"`. That is GitHub's
+# ASYNC mergeability field, which is UNKNOWN for every open PR in the seconds right after a
+# push:main (the query is what triggers recomputation — the documented #1104 behavior in
+# pr-conflict-guard.yml). This job runs on push:main and queries IMMEDIATELY with no wait (observed
+# job runtime ~1s), so a PR made freshly-behind by the triggering merge was still UNKNOWN, failed
+# the `== "BEHIND"` filter, and was silently skipped — the branch then sat behind+green (the #959
+# stall this workflow exists to prevent). Now we compute "behind" DETERMINISTICALLY with git:
+# a PR is behind iff current main is NOT an ancestor of its head. No async field, no race.
+# Validated locally on git 2.43.0 (is-ancestor TRUE => up-to-date, FALSE => behind).
 
 on:
   push:
@@ -38,29 +46,48 @@ jobs:
     if: github.repository == 'menno420/superbot'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout main (full history — git ancestry test needs the graph)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Update BEHIND claude/* PRs against main
         env:
           GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
         run: |
           set -uo pipefail
-          # Open, non-draft claude/* PRs that are BEHIND main and not carved out
-          # (needs-hermes-review / do-not-automerge are left alone). A real conflict
-          # reports DIRTY (not BEHIND) and is skipped here — pr-conflict-guard flags it.
+          mainSha=$(git rev-parse HEAD)   # the just-pushed main tip
+
+          # Open, non-draft, non-carved claude/* PRs (needs-hermes-review / do-not-automerge are
+          # left alone). NOTE: we deliberately do NOT filter on mergeStateStatus — that async field
+          # is UNKNOWN right after push:main (see header), which silently skipped freshly-behind
+          # PRs. We classify behind-ness ourselves with git below.
           nums=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --base main \
-            --json number,headRefName,mergeStateStatus,isDraft,labels \
+            --json number,headRefName,isDraft,labels \
             --jq '.[]
                   | select(.headRefName | startswith("claude/"))
                   | select(.isDraft | not)
-                  | select(.mergeStateStatus == "BEHIND")
                   | select([.labels[].name]
                            | (contains(["needs-hermes-review"]) or contains(["do-not-automerge"]))
                            | not)
                   | .number')
           if [ -z "$nums" ]; then
-            echo "No behind claude/* PRs to update."
+            echo "No open claude/* PRs to consider."
             exit 0
           fi
           for n in $nums; do
+            # Deterministic behind test: behind iff current main is NOT an ancestor of the PR head
+            # (head is missing commits that are on main). If main IS an ancestor, the PR already
+            # contains main — nothing to update.
+            if ! git fetch --quiet --no-tags origin "refs/pull/$n/head" 2>/dev/null; then
+              echo "::warning::#$n head fetch failed -> skip"; continue
+            fi
+            headSha=$(git rev-parse --verify --quiet FETCH_HEAD) || { echo "#$n rev-parse failed -> skip"; continue; }
+            if git merge-base --is-ancestor "$mainSha" "$headSha"; then
+              echo "#$n already up to date -> skip"
+              continue
+            fi
+            # Behind (or diverged). update-branch merges main in; it succeeds only if the merge is
+            # clean. A real conflict fails here and is left for pr-conflict-guard.yml to flag RED.
             if gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$n/update-branch" \
                  -H "Accept: application/vnd.github+json" >/dev/null 2>&1; then
               echo "Updated #$n against main (it will re-test, then auto-merge on green)."
