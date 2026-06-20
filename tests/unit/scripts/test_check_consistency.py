@@ -259,6 +259,57 @@ class SettingsHub(HubView):
         return None
 """
 
+# A registry-driven hub: controls added dynamically via add_item (no decorated
+# @ui.button), no back affordance — the gap the Explore world hub exploited.
+_HUB_ADDS_ITEMS_NO_BACK = """\
+import discord
+
+
+class WorldHub(HubView):
+    def __init__(self, author):
+        super().__init__(author)
+        self.add_item(discord.ui.Button(label="Mine", custom_id="explore:open:mine"))
+"""
+
+# Same dynamic hub, but its module defines a custom back-button SUBCLASS wired
+# through super().__init__ (the _BackToHubButton pattern) — not a Button(...)
+# call, so the naive check misses it; the keyword-scan must catch it.
+_HUB_CUSTOM_BACK_SUBCLASS = """\
+import discord
+
+
+class _BackToHubButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label="Back to Hub", custom_id="hub.back", emoji="↩")
+
+
+class SettingsHub(HubView):
+    def __init__(self, author):
+        super().__init__(author)
+        self.add_item(_BackToHubButton())
+        self.add_item(discord.ui.Button(label="Roles"))
+"""
+
+# A dynamic hub whose Home button navigates via the shared transition_to helper.
+_HUB_TRANSITION_TO = """\
+import discord
+
+from views.navigation import transition_to
+
+
+class CompareView(HubView):
+    def __init__(self, author, home_builder):
+        super().__init__(author)
+        self._home_builder = home_builder
+        btn = discord.ui.Button(label="Home")
+
+        async def _home(interaction):
+            await transition_to(interaction, builder=self._home_builder)
+
+        btn.callback = _home
+        self.add_item(btn)
+"""
+
 
 def _back_findings(mod, tmp_path, monkeypatch, src, *, rel="views/settings_hub.py"):
     _write(mod, tmp_path, monkeypatch, rel, src)
@@ -283,6 +334,29 @@ def test_back_labelled_button_is_clean(mod, tmp_path, monkeypatch):
 
 def test_hub_without_child_controls_is_out_of_scope(mod, tmp_path, monkeypatch):
     assert _back_findings(mod, tmp_path, monkeypatch, _HUB_NO_CONTROLS) == []
+
+
+def test_back_flags_dynamic_add_item_hub_without_affordance(mod, tmp_path, monkeypatch):
+    """Registry-driven hubs build controls via add_item, not @ui.button — the
+    rule must still flag one with no back (the Explore world-hub dead-end class).
+    """
+    findings = _back_findings(mod, tmp_path, monkeypatch, _HUB_ADDS_ITEMS_NO_BACK)
+    assert len(findings) == 1
+    assert findings[0].qualname == "WorldHub"
+
+
+def test_back_custom_back_button_subclass_is_clean(mod, tmp_path, monkeypatch):
+    """A custom back-button subclass (super().__init__(label='Back...', ...))
+    added via add_item is a real back affordance and must not be flagged.
+    """
+    assert _back_findings(mod, tmp_path, monkeypatch, _HUB_CUSTOM_BACK_SUBCLASS) == []
+
+
+def test_back_transition_to_helper_is_clean(mod, tmp_path, monkeypatch):
+    """A Home/Back button navigating via the shared transition_to helper counts
+    as a nav affordance (the UX-lab compare/probes/wing pattern).
+    """
+    assert _back_findings(mod, tmp_path, monkeypatch, _HUB_TRANSITION_TO) == []
 
 
 def test_back_allowlist_suppresses_by_class(mod, tmp_path, monkeypatch):

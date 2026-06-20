@@ -67,13 +67,18 @@ edit_in_place:
     - pattern: views/setup/template_picker.py::TemplateConfigView._cancel
       reason: "Terminal 'cancelled — not installed' confirmation toast."
 
-# back_button: a HubView whose module references no back/nav affordance. Triaged
-# 2026-06-19: all current findings are top-of-stack ROOT panels — opened directly
-# by a cog command (no parent to return to), so they correctly have no back
-# button. The rule's real target is a *child* sub-panel missing a back affordance;
-# it will still catch a future one (these allowlists are scoped per root class).
-# Re-verify a root's status before allowlisting a new one: if it is opened FROM
-# another panel, it needs a back button (fix it), not an allowlist entry.
+# back_button: a HubView whose module references no back/nav affordance. The rule
+# covers BOTH decorated (@ui.button) and dynamically-added (add_item) hubs — the
+# latter since 2026-06-20, closing the gap that let the Explore world-hub dead-end
+# ship. Detection recognizes: attach_back*/chain_back, transition_to(...), a
+# back-token label/custom_id/emoji on any call (so custom back-button subclasses
+# like _BackToHubButton count), and back-labelled @ui.button callbacks. Triaged:
+# every current finding is a top-of-stack ROOT panel — opened directly by a cog
+# command (no parent), OR a child whose PARENT attaches the back externally. The
+# rule's real target is a *child* sub-panel with NO back anywhere; it still catches
+# a future one (allowlists are scoped per class). Re-verify before allowlisting a
+# new one: if it is opened FROM another panel and nothing attaches a back, it needs
+# a back button (fix it), not an allowlist entry.
 back_button:
   exceptions:
     - pattern: views/access/explorer.py::AccessExplorerView
@@ -82,12 +87,20 @@ back_button:
       reason: "Root of the channels navigation stack — its sub-panels (create/delete/visibility/move) restore back TO it; it has no parent itself."
     - pattern: views/cleanup/policy_panel.py::CleanupPolicyPanelView
       reason: "Root cleanup-policy panel opened directly by the cleanup cog command; no parent to return to."
+    - pattern: views/counting/hub_panel.py::_CountingHubView
+      reason: "Root `!countingmenu` panel; opened as a `!help`/Games-hub child the parent attaches back externally (HelpCategoryView / attach_back_to_games_button). No parent on the root open."
     - pattern: views/diagnostic/automation_panel.py::AutomationPanelView
       reason: "Root `!platform automation` panel opened via open_panel from the platform command group (not a child of the diagnostics/platform hub); no parent."
     - pattern: views/diagnostic/hub_panel.py::_DiagnosticsHubView
       reason: "Root diagnostics hub opened directly by the diagnostic cog command; top of its stack."
+    - pattern: views/explore/world_hub.py::ExploreWorldHubView
+      reason: "Root `!world` panel; opened as a Mining-hub child the opener attaches '↩ Mining Hub' externally (views/mining/main_panel.py explore_btn). No parent on the root open."
     - pattern: views/games/deathmatch_panel.py::DeathmatchPanelView
       reason: "Root deathmatch game panel opened directly by the deathmatch cog command; no parent."
+    - pattern: views/settings/hub.py::SettingsHubView
+      reason: "Root settings hub opened directly by the settings cog command; opened as a `!help` child the parent attaches back externally. Top of its own stack (its sub-panels return TO it via _BackToHubButton)."
+    - pattern: views/ux_lab/home.py::UxLabHomeView
+      reason: "Root UX-lab gallery home opened directly by the ux_lab cog command; its wings/compare/probes return here via transition_to. No parent."
     - pattern: views/xp/main_panel.py::_XpHubView
       reason: "Root XP hub opened directly by the xp cog command; top of its stack."
 
