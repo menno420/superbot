@@ -152,6 +152,12 @@
         <div class="meta">${D.commandsInArea(a.id).length} commands <span class="go">Open →</span></div>
       </a>`).join("");
     const cmdPreview = ["blackjack", "warn", "summarise", "rank"].map((n) => cmdRow(D.byCommand(n))).join("");
+    const gameStrip = D.GAMES.map((g) => `
+      <a class="game" href="#/game/${g.id}" style="--c:${g.color}">
+        <span class="gico">${icon(g.icon)}</span>
+        <h4>${esc(g.name)}</h4>
+        <p>${esc(g.tagline)}</p>
+      </a>`).join("");
     return `
       <div class="view">
         <header class="hero">
@@ -178,6 +184,29 @@
         <section class="section"><div class="wrap">
           <div class="sec-head"><div><span class="ey"><span class="dot">▸</span> Reference</span><h2>A command for everything</h2></div><a class="more" href="#/commands">Browse all →</a></div>
           <div class="cmd-panel"><div class="cmd-list">${cmdPreview}</div></div>
+        </div></section>
+        <section class="section"><div class="wrap">
+          <div class="sec-head"><div><span class="ey"><span class="dot">▸</span> Play</span><h2>Games, ready out of the box</h2></div><a class="more" href="#/games">All games →</a></div>
+          <div class="games">${gameStrip}</div>
+        </div></section>
+        <section class="section"><div class="wrap">
+          <div class="sec-head"><div><span class="ey"><span class="dot">▸</span> Setup</span><h2>Running in three steps</h2></div></div>
+          <div class="steps">
+            <div class="step"><div class="num">01</div><h3>Invite the bot</h3><p>One click adds SuperBot with sensible default permissions. No dashboard wrestling.</p></div>
+            <div class="step"><div class="num">02</div><h3>Pick your modules</h3><p>Toggle the feature areas you want — games, moderation, AI tools. Everything else stays out of the way.</p></div>
+            <div class="step"><div class="num">03</div><h3>Type <span class="mono">!help</span></h3><p>Self-documenting commands explain themselves. Your members learn it in seconds.</p></div>
+          </div>
+        </div></section>
+        <section class="section"><div class="wrap">
+          <div class="cta-band">
+            <div class="tex-dots"></div><div class="glow"></div>
+            <h2>Found a bug? Got an idea?</h2>
+            <p>This bot grows from real feedback. Open any feature, command or game and leave a suggestion — reports route through review before they go public.</p>
+            <div class="cta-row">
+              <a href="#/commands" class="btn btn-primary btn-lg">Browse &amp; suggest →</a>
+              <a href="#/" class="btn btn-ghost btn-lg">Add to Discord</a>
+            </div>
+          </div>
         </div></section>
         ${footer}
       </div>`;
