@@ -2,6 +2,28 @@
 
 > **Status:** `ideas` — session idea (Q-0089), 2026-06-14 night executor.
 > **Lane:** tooling / architecture invariant. Small/safe grooming-lane candidate.
+> **Progress:** *partially built* — direct-View half DONE (PR #1163, 2026-06-20); residence
+> half routed for an owner decision (see ▶ Update below).
+>
+> **▶ Update 2026-06-20 (dispatch run, PR #1163): the *direct-View debt* half is DONE.**
+> `check_architecture.py:check_baseview_inheritance` + its conformance ratchet
+> (`tests/unit/views/test_view_base_class_conformance.py`) now scan **`cogs/`** as well as
+> `views/`, and the 5 existing cog-layer direct-`discord.ui.View` classes are pinned in the
+> frozenset. So the idea's concrete observed gap — *"a `discord.ui.View` subclass in a cog is
+> neither flagged as direct-View debt nor required to extend `BaseView`"* — is closed: a new
+> cog-layer direct-`discord.ui.View` class now fails the ratchet.
+>
+> **▶ What remains = the broader *residence* guard (the "no views defined in cogs at all"
+> stance) — needs an OWNER decision before it's built.** Inventory taken this run: **38**
+> view/modal classes currently live under `disbot/cogs/` (most correctly extend
+> `HubView`/`PersistentView`/`BaseView`/`discord.ui.Modal` — they're a cog's own hub/panel,
+> not direct-View debt). A residence ratchet that declares all 38 "must move to `views/`" is a
+> cross-cutting architectural call (for many — a cog's own hub panel — `views/` residence is a
+> judgment call, not an obvious win), so it is **routed for owner input, not built unilaterally**
+> (act-vs-ask: architectural/cross-cutting → ask). Decision needed: *is "Discord view/modal
+> classes must be defined under `views/`, never inline in `cogs/`" a rule worth a 38-class
+> warn-then-ratchet guard?* If yes, build it warn-only first (38-entry inventory pin, same
+> pattern as the baseview ratchet) then ratchet to error as classes migrate.
 
 ## The gap
 
