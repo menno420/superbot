@@ -25,8 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-_(none active — pruned 2026-06-20: every prior claim was backed by a now-merged PR;
-no open `claude/*` PRs remained. This is a whiteboard — append your claim when you start.)_
+- `claude/youthful-turing-odgvq6` · **design-system component library** (owner-chosen via
+  AskUserQuestion 2026-06-20 — "build a component library" so `/design-sync` has something to sync) ·
+  new top-level `design-system/` (React 18 + Tailwind 3 + tsup build → `dist/` + Storybook 8; 6
+  components mirroring `botsite/`) · `.gitignore` (+ `node_modules/`) · 2026-06-20 ·
+  **auto-merge on green** (additive · isolated · verified) · **PR #1168**
 
 ## Recently cleared
 

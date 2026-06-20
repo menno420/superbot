@@ -87,6 +87,13 @@ dist/
 build/
 
 ########################################
+# NODE / JS TOOLCHAIN (design-system/)
+########################################
+node_modules/
+storybook-static/
+*.tsbuildinfo
+
+########################################
 # BTD6 cloud-data local cache (BTD6_DATA_CACHE_DIR)
 ########################################
 # Defensive: the default cache lives in a temp dir (outside the repo); this
