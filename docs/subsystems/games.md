@@ -13,6 +13,36 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
 `disbot/views/mining/`, `disbot/services/game_state_service.py`,
 `disbot/services/economy_service.py`, and `disbot/utils/db/games/`.
 
+## Federated Explore world spine (the open-world hub)
+
+The **open-world** games (mining · fishing · later pets/survival) are tied together by a
+top-level **Explore world hub** — the "town square" a player walks out into — separate from
+the competitive **Games hub** (`!games`, blackjack/RPS/deathmatch). Spine PR 1 (federated
+Explore-hub plan, merged #1156):
+
+- **`disbot/services/world_registry.py`** — the registry seam. Each world is a `WorldEntry`
+  (`key/label/emoji/description/opener/order`); `register_world_entry` is idempotent (de-dup by
+  key) and `get_world_entries` returns them sorted by `(order, label)`. **Pure**: it stores the
+  `opener` as an opaque callable and imports no view, so it never creates a `services → views`
+  edge. A new world docks in by registering an entry — no edit to the hub.
+- **`disbot/views/explore/world_hub.py`** — `ExploreWorldHubView(HubView)` +
+  `build_world_hub_embed()`, one button per registered world. Built-ins: **Mine** → the mining
+  hub, **Fish** → a fishing entry card (fishing is hub-less). An opener-less entry renders a
+  generic coming-soon card. Mirrors the registry-driven `views/games/hub.py` pattern.
+- **`!world`** (in `games_cog.py`) opens the hub directly; the mining `🗺️ Explore` button
+  (custom_id `mining:explore_hub`) forwards to it.
+- **Invariant:** `tests/unit/invariants/test_world_registry_parity.py` asserts every registered
+  world `key` resolves to a real `SUBSYSTEMS` entry (no silent dead-end buttons).
+
+**Adding a world:** register a `WorldEntry` (key = the subsystem key) at the owning cog's setup,
+with an `opener(interaction, view)` that enters that world in place. The built-in Mine/Fish
+defaults live in `world_hub.ensure_default_world_entries()` because their openers are view-layer
+code; a self-contained subsystem registers from its own module. **Next spine slices** (plan §4):
+PR 2 = make the global (`game_xp` SUM) vs per-game tree split explicit (per-game skill trees need a
+`player_skills` `game` discriminator — a schema slice, verify live first); PR 3 = a cross-game
+identity read-card. Gated open-world layers (gear auto-equip · survival overlay · biome map) wait
+on **Q-0182**.
+
 ## Rules & approved structures (binding — link, don't restate)
 
 - **ADR-002:** in-flight game state is intentionally not guaranteed restart-safe.
