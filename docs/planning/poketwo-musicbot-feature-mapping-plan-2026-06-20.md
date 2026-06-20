@@ -18,6 +18,13 @@
 > gap" — the goal is **feature-parity-or-better with Pokétwo's loop**, built on our own world
 > spine, not a literal Pokémon clone. (Music stays Q-0041-gated; the [arch-review
 > pack](voice-music-architecture-review-2026-06-20.md) is the path to closing that gap too.)
+>
+> **▶ Creature game advanced (2026-06-20):** the owner greenlit **PvP battles** and asked about
+> Pokémon-name copyright. Decision: **original creatures** (mechanics are free; the names/dex are
+> not — same publish-safe stance as the music legal lane). A v1 ruleset + a **runnable playability
+> simulator** now exist — see [`creature-game-design-and-sim-2026-06-20.md`](creature-game-design-and-sim-2026-06-20.md)
+> (`tools/game_sim/creature_battle_sim.py`, verdict **PLAYABLE**; it surfaced the key rule that
+> **PvP must be level-normalized** to stay skill-based, not pay-to-win). Decisions routed to Q-0187.
 
 ## 0. What Pokétwo actually does (one-screen reference)
 
@@ -83,7 +90,7 @@ owner decision · **HAVE** = already shipped, nothing to do.
 | **Hints / alternate names** | `utils/synonyms.py` (`find_command`), the AI's BTD6 name-resolution patterns | **EXTEND** (small) — folds into Lane A's encounter "guess the name" option if wanted. |
 | **Global marketplace + trading** (listings, search, escrow, buy/sell) | **`economy-marketplace-rewards-roadmap-2026-06-08.md`** — designed, **gated** on economy-health evidence + anti-fraud/legality review; no trading code exists today. | **GATED** — do not build until the roadmap's gates clear. Lane A/B feed the *items* it would trade. |
 | **Two currencies — PokéCoins + buyable shards** | `economy_service` is single-currency (coins); **Q-0039** rejects purchasable advantage. | **REJECTED** as "buyable premium currency." A *second earned* token (non-buyable) is a separate economy-balance decision, not this. |
-| **Battling (3v3, moves)** | `deathmatch`/`rps`/`blackjack` exist; pets plan says **no pet battles**; no creature-battle lane. | **GATED** — a creature/world battle system is its own design effort + owner sign-off (P2W risk). Not in this plan. |
+| **Battling (3v3, moves)** | `deathmatch`/`rps`/`blackjack` PvP-challenge views exist; no creature-battle lane yet. | **DESIGNED (2026-06-20, owner-directed PvP)** — owner wants creature PvP; v1 ruleset + a **playability simulator** are in [`creature-game-design-and-sim`](creature-game-design-and-sim-2026-06-20.md) (verdict: PLAYABLE). Key rule: **PvP is level-normalized** (so it's skill, not grind/P2W — Q-0039). Build is its own runtime session; design choices routed to **Q-0187**. |
 | **Shiny hunting / rarity / hunt streaks** | Loot rarity exists in mining/fishing; no "shiny variant" or streak mechanic. | **BUILD** (thin) — Lane D: a rare-variant flag riding on Lane A / fishing, anti-P2W (cosmetic prestige, not power). |
 | **Quests / achievements / events** | Only **derived titles** (mining) exist; no quest log, achievement/badge store, or timed events. Captured in vision docs, intersects the open world-model questions (**Q-0182**). | **BUILD** (foundation) — Lane C, but it touches Q-0182; spec is foundation-only. |
 | **Time & weather mechanics** | None. | **GATED/defer** — flavor layer best decided with the Q-0182 world model (biome/map fork). |
