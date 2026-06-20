@@ -181,7 +181,8 @@ select_option_truncation:
 
 # panel_base_class: a view extending `discord.ui.View` directly outside the
 # rps/blackjack/games/ai path lanes. These entries MIRROR the arch checker's
-# already-decided ground truth — the 8-entry frozenset in
+# already-decided ground truth — the frozenset (13 entries: 8 views + 5 cogs,
+# since the ratchet was extended to scan `cogs/` in #1163) in
 # tests/unit/views/test_view_base_class_conformance.py (the `baseview_inheritance`
 # ratchet). They are NOT new debt to migrate: each is a documented
 # specialized-lifecycle direct subclass (ephemeral capability/pipeline-gated
@@ -190,7 +191,9 @@ select_option_truncation:
 # down "only with a concrete gain"; allowlisting here keeps the warn-only
 # consistency rule from re-flagging them (Q-0120: a verdict that fights documented
 # ground truth is the tool's false positive). When the conformance frozenset
-# shrinks, drop the matching entry here too.
+# shrinks, drop the matching entry here too — the two lists are pinned in lockstep
+# by tests/unit/views/test_panel_base_class_allowlist_parity.py, which fails if
+# they ever diverge.
 panel_base_class:
   exceptions:
     - pattern: views/btd6/admin_panel.py::BTD6AdminView
