@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T12:07:50Z",
+    "generated_at": "2026-06-20T14:28:41Z",
     "build": {
-      "commit": "f88178d7",
-      "subject": "Merge pull request #1164 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-20T11:41:45Z",
+      "commit": "721c4cf9",
+      "subject": "Merge pull request #1169 from menno420/claude/relaxed-thompson-qwg50v",
+      "committed_at": "2026-06-20T15:38:17Z",
       "branch": "main"
     },
     "counts": {
@@ -1995,6 +1995,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-panel-base-class-allowlist-parity.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — cross-allowlist drift guard: `panel_base_class` yml ↔ arch conformance frozenset",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-20-funny-franklin-session-enders-claim-gap.md",
       "date": "2026-06-20",
       "title": "Session — funny-franklin · session-ender pass (claim-gap idea + grooming)",
@@ -2019,6 +2027,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-design-system-component-library.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Design-system component library (for Claude Design `/design-sync`)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-claude-md-pointer-pinning.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Pin the always-loaded instruction core against pointer rot",
@@ -2027,11 +2043,27 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-ci-trigger-gotcha-journal.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — capture the \"pushes don't re-fire PR CI\" env gotcha (journal Quick-ref)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-20-arch-ratchet-cog-layer.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Extend the `baseview_inheritance` arch ratchet to the cog layer",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-ai-intro-capabilities.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — AI self-introduction: advertise capabilities + available games",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2432,38 +2464,6 @@
       "title": "2026-06-19 — Capture owner's dev-site project-status-donut idea (+ mockup)",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-consistency-rule-graduation.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency-linter rule graduation (3 ELIGIBLE rules → error + CI)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-consistency-panel-base-class-reconcile.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency-linter: reconcile `panel_base_class` with the arch ground truth",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-consistency-linter-lane-a2.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency-linter Lane A2: window the per-panel embedded selects",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-consistency-linter-cog-scope.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Consistency linter: extend rules 3+4 to the cog layer",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": false
     }
   ],
