@@ -1,5 +1,10 @@
 # SuperBot — public bot site
 
+> **New here / learning the web side?** Read
+> [`docs/owner/website-explained.md`](../docs/owner/website-explained.md) first — a
+> plain-language tour of Jinja vs. the SPA, the data pipeline, and how to work with
+> Claude Design.
+
 The **public marketing + reference website** for SuperBot, deployed as its own
 Railway service (separate from both the bot and the developer dashboard). It is the
 public half of the website two-site split — full design, topology, security model,

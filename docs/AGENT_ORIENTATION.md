@@ -151,12 +151,18 @@ read **`docs/helper-policy.md`** first.
 
 ### Touching the public site (`botsite/`) / design-system / Claude Design
 
+0. `docs/owner/website-explained.md` — **plain-language orientation** (Jinja vs. SPA, the
+   `site.json` → `data.js` data pipeline, and the Claude Design loop). Read this first if the
+   web/design vocabulary is unfamiliar.
 1. `design-system/README.md` — **the contract for the Claude Design workflow**: the
    React/Tailwind component library that mirrors `botsite/`, how Claude Design reads it (the
    **GitHub connector** — primary — or `/design-sync`), the hybrid design→port→preview loop,
    and how to preview without redeploying.
-2. `botsite/` — the live server-rendered Jinja2 + Tailwind site (what actually ships). Canvas
-   designs are ported back into these templates; production stays Jinja.
+2. `botsite/` — the live public site. The front-end is now the **Claude-Design SPA**
+   (`botsite/site/`, served at `/`) whose data layer is generated from `site.json`
+   (`botsite/site_data.py` → live `/data.js` + committed fallback). The earlier server-rendered
+   Jinja2 templates (`botsite/templates/`) remain wired as a fallback. (Note: the design-system
+   README still frames the loop as "port into Jinja" — reconcile when convenient.)
 3. `.github/workflows/design-system-ci.yml` / `botsite-ci.yml` — the JS / site CI legs.
 
 ### Touching settings / bindings / resource provisioning
