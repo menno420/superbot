@@ -95,26 +95,16 @@ jobs:
             fi
           }
 
-          # DETERMINISTIC conflict test: fetch the PR head + its base branch and let git compute the
-          # merge with `git merge-tree --write-tree` (exit 0 = clean, 1 = conflict). This replaces the
-          # old async `mergeStateStatus` poll entirely — no UNKNOWN window, no race, decided the moment
-          # this job runs. A missing object also exits 1, so we pre-verify both commits exist first.
+          # DETERMINISTIC conflict test: fetch the PR head + its base branch, then ask the shared
+          # helper (scripts/git_merge_state.py) — which computes the merge with git, not GitHub's
+          # async mergeStateStatus. One source of truth, pinned by tests/unit/scripts/test_git_merge_state.py.
           evaluate() {  # $1=num  $2=baseRef
-            local num="$1" base="$2" baseSha headSha rc
+            local num="$1" base="$2" baseSha headSha
             git fetch --quiet --no-tags origin "$base"             2>/dev/null || { echo "#$num: base fetch failed -> skip"; return 0; }
             baseSha=$(git rev-parse --verify --quiet FETCH_HEAD)               || { echo "#$num: base rev-parse failed -> skip"; return 0; }
             git fetch --quiet --no-tags origin "refs/pull/$num/head" 2>/dev/null || { echo "#$num: head fetch failed -> skip"; return 0; }
             headSha=$(git rev-parse --verify --quiet FETCH_HEAD)              || { echo "#$num: head rev-parse failed -> skip"; return 0; }
-            if ! { git cat-file -e "$baseSha^{commit}" 2>/dev/null && git cat-file -e "$headSha^{commit}" 2>/dev/null; }; then
-              post "$num" UNKNOWN "$headSha"; return 0
-            fi
-            git merge-tree --write-tree "$baseSha" "$headSha" >/dev/null 2>&1
-            rc=$?
-            case "$rc" in
-              0) post "$num" CLEAN   "$headSha" ;;
-              1) post "$num" DIRTY   "$headSha" ;;
-              *) post "$num" UNKNOWN "$headSha" ;;   # merge-tree error (rc>1) — don't false-flag
-            esac
+            post "$num" "$(python3 scripts/git_merge_state.py conflict "$baseSha" "$headSha")" "$headSha"
           }
 
           if [ "${EVENT:-}" = "pull_request" ]; then
