@@ -11,8 +11,13 @@ Hard rules (CI gate — see ``--strict``):
   2. **link**   — every *relative* markdown link ``[text](path)`` inside ``docs/``
      resolves to an existing file/dir (external/anchor-only links are skipped).
   3. **pinned** — every concrete repo path referenced in backticks inside the
-     read-path docs (``AGENT_ORIENTATION`` / ``current-state`` / ``repo-navigation-map``)
-     exists, so the canonical read path never points at a moved/renamed file.
+     read-path docs (``AGENT_ORIENTATION`` / ``current-state`` / ``repo-navigation-map``),
+     **the always-loaded instruction core** (``.claude/CLAUDE.md`` +
+     ``.claude/rules/*.md``), and **the routine prompts** (the
+     ``docs/operations/*.md`` saved procedures the thin pointers target) exists, so
+     neither the canonical read path, a CLAUDE.md *thin pointer*, nor the procedure
+     a routine actually runs (the procedures→skills convention) ever points at a
+     moved/renamed file — the "stale pointer" drift class (Q-0166).
   4. **reachable** — every live doc is reachable by following links from a read-path
      root (the read-path docs + subsystem folios + every ``README.md`` + ``CLAUDE.md``).
      Orphans fail unless badged ``historical`` / ``archive``, an ADR, or allowlisted —
@@ -212,20 +217,67 @@ def check_links() -> list[tuple[Path, str, str]]:
     return violations
 
 
+def _instruction_files() -> list[Path]:
+    """The always-loaded agent instruction core — ``.claude/CLAUDE.md`` plus the
+    glob-triggered ``.claude/rules/*.md``.
+
+    These are read at the start of (or during) *every* session, and the
+    procedures→skills conversion (#1028 / #1029) deliberately turned their big
+    runbooks into **thin pointers** ("full procedure: ``docs/...``"). A pointer
+    here going stale is the "stale pointer" drift class (Q-0166), so their
+    concrete backtick repo-paths are pin-checked the same as the read-path docs.
+    Glob ``rules/*.md`` so a new rules file is auto-covered.
+    """
+    claude_dir = REPO_ROOT / ".claude"
+    files = [claude_dir / "CLAUDE.md", *sorted((claude_dir / "rules").glob("*.md"))]
+    return [f for f in files if f.exists()]
+
+
+def _routine_prompt_files() -> list[Path]:
+    """The canonical routine-prompt / saved-procedure docs the thin pointers target.
+
+    The procedures→skills convention (#1028 / #1029) moves the *HOW* out of the
+    always-loaded core and into these "fat" homes — ``autonomous-routines.md`` (the
+    reconciliation routine's saved procedure) and ``hermes-dispatch-bridge.md`` (the
+    dispatch routine's prompt). They are read in full on every routine run, so their
+    own backtick repo-paths are pin-checked too: a pointer in the *destination* going
+    stale is the same drift class a pointer in the *source* is. Scoped to these two
+    actively-maintained prompts, not all of ``docs/operations/`` (which also holds
+    dated investigation/review snapshots that may cite moved files).
+    """
+    ops = DOCS_ROOT / "operations"
+    files = [ops / "autonomous-routines.md", ops / "hermes-dispatch-bridge.md"]
+    return [f for f in files if f.exists()]
+
+
+def _pinned_refs_in(f: Path) -> list[tuple[Path, str, str]]:
+    """Flag every concrete backtick repo-path in ``f`` that doesn't resolve."""
+    rel = f.relative_to(REPO_ROOT)
+    text = f.read_text(encoding="utf-8")
+    out: list[tuple[Path, str, str]] = []
+    for ref in sorted(set(_PATH_REF_RE.findall(text))):
+        if any(ch in ref for ch in "<>*"):
+            continue  # placeholder / glob, not a concrete path
+        if not (REPO_ROOT / ref).exists():
+            out.append((rel, "pinned", f"references missing path `{ref}`"))
+    return out
+
+
 def check_pinned() -> list[tuple[Path, str, str]]:
-    """Concrete repo paths cited in the read-path docs must exist."""
+    """Concrete repo paths cited in the read-path docs, the always-loaded
+    instruction core (``.claude/CLAUDE.md`` / ``.claude/rules/*.md``), and the
+    routine prompts (``docs/operations/*`` saved procedures) must exist.
+    """
     violations: list[tuple[Path, str, str]] = []
-    for name in _READPATH_DOCS:
-        f = DOCS_ROOT / name
+    targets = (
+        [DOCS_ROOT / name for name in _READPATH_DOCS]
+        + _instruction_files()
+        + _routine_prompt_files()
+    )
+    for f in targets:
         if not f.exists():
             continue
-        rel = f.relative_to(REPO_ROOT)
-        text = f.read_text(encoding="utf-8")
-        for ref in sorted(set(_PATH_REF_RE.findall(text))):
-            if any(ch in ref for ch in "<>*"):
-                continue  # placeholder / glob, not a concrete path
-            if not (REPO_ROOT / ref).exists():
-                violations.append((rel, "pinned", f"references missing path `{ref}`"))
+        violations += _pinned_refs_in(f)
     return violations
 
 

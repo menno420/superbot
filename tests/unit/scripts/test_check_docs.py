@@ -112,6 +112,67 @@ def test_pinned_missing_path_flagged_placeholder_skipped(cd, tmp_path, monkeypat
     assert "docs/ghost.md" in viol[0][2]
 
 
+def test_pinned_covers_instruction_core(cd, tmp_path, monkeypatch):
+    """check_pinned also validates `.claude/CLAUDE.md` + `.claude/rules/*.md`."""
+    docs = tmp_path / "docs"
+    _write(docs / "real.md", "x")
+    # No read-path docs present, so any finding must come from the .claude core.
+    _write(
+        tmp_path / ".claude" / "CLAUDE.md",
+        "good: `docs/real.md` · gone: `scripts/missing.py` · "
+        "bare-name-skipped: `check_docs.py` · placeholder: `disbot/<area>.py`\n",
+    )
+    _write(
+        tmp_path / ".claude" / "rules" / "some-rule.md",
+        "rule points at: `docs/also_gone.md`\n",
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    viol = cd.check_pinned()
+    msgs = sorted(m for _, _, m in viol)
+    # The two missing concrete paths are flagged; the bare basename (no prefix/slash)
+    # and the `<area>` placeholder are not.
+    assert msgs == [
+        "references missing path `docs/also_gone.md`",
+        "references missing path `scripts/missing.py`",
+    ]
+
+
+def test_pinned_covers_routine_prompts(cd, tmp_path, monkeypatch):
+    """check_pinned also validates the routine-prompt saved procedures."""
+    docs = tmp_path / "docs"
+    _write(docs / "real.md", "x")
+    _write(
+        docs / "operations" / "autonomous-routines.md",
+        "ok: `docs/real.md` · stale: `.github/workflows/gone.yml`\n",
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    viol = cd.check_pinned()
+    assert [m for _, _, m in viol] == [
+        "references missing path `.github/workflows/gone.yml`",
+    ]
+
+
+def test_repo_instruction_core_pointers_resolve(cd):
+    """Pin the real `.claude/` core + routine prompts to zero broken pointers.
+
+    Mirrors the --strict CI gate for the files this PR added to check_pinned: the
+    always-loaded instruction core and the routine-prompt destinations.
+    """
+    guarded = {
+        ".claude/",
+        "docs/operations/autonomous-routines.md",
+        "docs/operations/hermes-dispatch-bridge.md",
+    }
+    broken = [
+        v for v in cd.check_pinned() if any(str(v[0]).startswith(p) for p in guarded)
+    ]
+    assert broken == [], "stale instruction/routine pointers: " + ", ".join(
+        f"{v[0]}: {v[2]}" for v in broken
+    )
+
+
 # ---------------------------------------------------------------------------
 # Taxonomy pin — the checker must match AGENT_ORIENTATION's badge list
 # ---------------------------------------------------------------------------
@@ -344,7 +405,9 @@ def test_inventory_count_pinned_doc_exempt(cd, tmp_path, monkeypatch):
     assert cd.inventory_count_flags() == []
 
 
-def test_print_inventory_count_report_silent_when_clean(cd, tmp_path, monkeypatch, capsys):
+def test_print_inventory_count_report_silent_when_clean(
+    cd, tmp_path, monkeypatch, capsys
+):
     docs = tmp_path / "docs"
     _write(docs / "a.md", "# A\n\n> **Status:** `binding`\n\nno counts here.\n")
     monkeypatch.setattr(cd, "DOCS_ROOT", docs)
