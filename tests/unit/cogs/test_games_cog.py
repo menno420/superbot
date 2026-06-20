@@ -105,6 +105,32 @@ async def test_build_help_menu_view_returns_embed_and_view():
     assert isinstance(view, GamesHubView)
 
 
+def test_cog_registers_world_command():
+    cog = _cog()
+    command_names = {cmd.name for cmd in cog.get_commands()}
+    assert "world" in command_names
+
+
+@pytest.mark.asyncio
+async def test_world_command_opens_explore_hub():
+    from views.explore.world_hub import ExploreWorldHubView
+
+    cog = _cog()
+    ctx = MagicMock(spec=commands.Context)
+    ctx.author = _author()
+    ctx.guild = MagicMock()
+    ctx.guild.id = 42
+    ctx.channel = MagicMock()
+    ctx.send = AsyncMock(return_value=MagicMock(spec=discord.Message))
+
+    await cog.world_menu.callback(cog, ctx)
+
+    ctx.send.assert_awaited_once()
+    _args, kwargs = ctx.send.call_args
+    assert isinstance(kwargs["view"], ExploreWorldHubView)
+    assert isinstance(kwargs["embed"], discord.Embed)
+
+
 @pytest.mark.asyncio
 async def test_games_command_sends_panel():
     cog = _cog()

@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-19T23:13:19Z",
+    "generated_at": "2026-06-20T00:18:49Z",
     "build": {
-      "commit": "a7d40295",
-      "subject": "Merge pull request #1154 from menno420/claude/botsite-submit-cta-fix",
-      "committed_at": "2026-06-20T00:38:42Z",
-      "branch": "main"
+      "commit": "26bf3428",
+      "subject": "session: open born-red card for federated Explore world hub (spine PR 1)",
+      "committed_at": "2026-06-20T00:11:21Z",
+      "branch": "claude/funny-franklin-bnvdxe"
     },
     "counts": {
       "functions": 36,
@@ -16,7 +16,7 @@
       "updates": 60,
       "env_vars": 37,
       "cogs": 43,
-      "commands": 306,
+      "commands": 307,
       "setting_keys": 103,
       "setting_domains": 15,
       "typed_settings": 84,
@@ -1977,6 +1977,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-20-federated-explore-world-hub.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Federated Explore world hub (spine PR 1)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-19-website-two-site-split-plan.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Website two-site split: the implementation plan (Q-0178)",
@@ -2446,14 +2454,6 @@
       "title": "2026-06-19 — Codex reviews the final head, not the born-red opener",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-bug-book-rootfix-backlog-guard.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Self-initiated tooling: bug-book deferred-root-fix backlog guard",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": true
     }
   ],
@@ -4945,6 +4945,17 @@
           "parent": null,
           "aliases": [],
           "brief": "Open the Games hub (competitive + activities).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "world",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Open the Explore world hub — the open-world town square (Mine · Fish).",
           "classification": "",
           "has_panel": true,
           "button_backed": true

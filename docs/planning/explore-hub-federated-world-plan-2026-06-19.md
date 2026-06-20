@@ -51,6 +51,15 @@ explore hub out from under mining into a top-level world hub, and give the world
 
 ## 4. The build (3 ungated PRs, ~each a real slice)
 
+> **▶ Status (2026-06-20): PR 1 BUILT — PR #1156 (`needs-hermes-review`, awaiting review).** Shipped
+> `services/world_registry.py` (the seam), `views/explore/world_hub.py` (`ExploreWorldHubView` +
+> `build_world_hub_embed`, Mine→mining hub · Fish→fishing card), re-parented the mining `🗺️ Explore`
+> button (custom_id `mining:explore_hub` preserved) to forward here, retired the
+> `views/mining/explore_hub.py` stub it supersedes, and added the `!world` command. **`!explore` was
+> kept** for the hidden mining depth-event mechanic — the world hub uses `!world`. Default worlds
+> (Mine · Fish) register via `ensure_default_world_entries()`; pets/survival register their own entries
+> at setup. **Next = PR 2** (global vs per-game XP split) then **PR 3** (cross-game identity card).
+
 ### PR 1 — the top-level Explore world hub + world registry
 
 - **New `views/explore/world_hub.py`** — `ExploreWorldHubView(HubView)` + `build_world_hub_embed()`,
