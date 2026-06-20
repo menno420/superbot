@@ -1,7 +1,7 @@
 # AI subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + `docs/current-state.md` win.
-> **Last updated:** 2026-06-19 (added the ai-panel-inplace-navigation plan pointer).
+> **Last updated:** 2026-06-20 (noted the self-introduction capability overview layer).
 
 ## What & where
 
@@ -52,6 +52,17 @@ scoped tools (including owner-gated diagnostics). Source:
   `docs/health/bug-book.md` (BUG-0005…0010, first Q-0086 session).
 - **Shipped:** owner-gated `diagnostics_health_snapshot` tool (#541). Setup-advisor
   integration shape: `docs/ai/ai-service-integration-map.md`.
+- **Self-introduction / capability overview (2026-06-20):** the static system layer
+  `ai_instruction_service._CAPABILITIES_OVERVIEW` (always assembled, alongside
+  `_SYSTEM_SAFETY` / `_BOT_AI_POLICY` / `_TASK_CONTRACT`) is what teaches the model to
+  introduce itself with its real feature areas — general assistant + BTD6 expertise,
+  the available **games** (Blackjack / RPS / Deathmatch / Counting / Chain / Mining /
+  Fishing), economy + progression, and server management. Introduction phrasings
+  ("introduce yourself", "who are you", "what do you do") also trip the
+  `bot_knowledge_service` command-catalog trigger so the live command list reaches the
+  model. The overview keeps BTD6 mentions general (no ungrounded entity names) so a
+  friendly intro is not floored by the faithfulness guard. This is the place to edit the
+  bot's self-description — *not* a DB instruction profile (those are guild overrides).
 - **Gate:** AI feature expansion is gated on *all* of bot-wide stability + provider/
   provenance + caching/source-health clarity + AI behavior/config correctness — see
   `docs/current-state.md` "Gates / blocked work".
