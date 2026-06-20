@@ -25,69 +25,8 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/website-submit-form` · **website-split unit P4** — public `/submit` bug/suggestion
-  form + intake (fills P1's `botsite/submit.py` stub) · exclusive: `botsite/submit.py` ·
-  `botsite/ratelimit.py` · `botsite/templates/submit.html` · `tests/unit/botsite/test_submit.py`
-  (+ 1 stale stub assertion updated in `tests/unit/botsite/test_app.py`) · 2026-06-19 ·
-  **PR #1117 (auto-merge on green)**
-
-- `claude/bold-cori-y7ben5` · **website-split: review the external research + lock the open decisions**
-  (owner-directed) — resolve **Q-0179** (control panel → bot site) + lock plan §7's 6 decisions + fold the
-  owner's external-research layout/UX guidance into the plan · `docs/owner/maintainer-question-router.md` ·
-  `docs/planning/website-two-site-split-plan-2026-06-19.md` · `docs/current-state.md` · 2026-06-19 ·
-  **auto-merge on green**
-- `claude/kind-einstein-jlywgm` · **`scripts/router_status.py`** (grooming-ender — executes the #1102
-  Q-0089 idea) — stdlib digest of the question router: next free Q-number + the OPEN owner-decision
-  queue · `scripts/router_status.py` + `tests/unit/scripts/test_router_status.py` · 2026-06-19 ·
-  **auto-merge on green**
-
-- `claude/kind-einstein-jlywgm` · **route the website-split control-panel-placement decision**
-  (continuation after the plan merged #1100) — router **Q-0179** (DISCUSS): the one owner-intent fork
-  the plan §7.4 discovered that Q-0178's "still open" list omits · `docs/owner/maintainer-question-router.md`
-  · 2026-06-19 · **auto-merge on green**
-- `claude/kind-einstein-jlywgm` · **website two-site split — implementation plan** (owner-directed,
-  executes the #1099 brief + Q-0178) — the full plan + file-disjoint ultracode decomposition for the
-  follow-up build run; docs-only · `docs/planning/website-two-site-split-plan-2026-06-19.md` ·
-  forward-links the brief + `docs/current-state.md` ▶ Next action · 2026-06-19 · **merged #1100**
-  (next = the ultracode build run on the plan's §5 units)
-- `claude/focused-goldberg-mviel4` · **website two-site split — planning brief** (owner-directed) —
-  spec for the next planning session + idea capture + router Q-0178 · `docs/planning/website-two-site-split-planning-brief-2026-06-19.md`
-  · 2026-06-19 · **merged #1099**
-- `claude/magical-rubin-jnpnuw` · **dashboard.json structural-drift reporter** + freshness catch-up
-  (executes the #1020 💡 idea + finding) · `scripts/check_dashboard_data.py` ·
-  `dashboard/data/dashboard.json` · tests · 2026-06-17 · **auto-merge on green**
-- `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
-  read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
-  repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
-  `docs/current-state.md` · 2026-06-16
-- `claude/dashboard-vision-review` · **review the finalized-state vision plan** (owner directive) +
-  session close — reviewer note (status correction + 4 refinements) on
-  `dashboard-vision-finalized-state.md`; fold the write-side PRs into the ledger; mark the control panel
-  LIVE · `docs/planning/` · `docs/current-state.md` · 2026-06-16
-- `claude/dashboard-data-integrity-guard` · `scripts/check_dashboard_data.py` — stdlib integrity
-  guard for the exported `dashboard.json` (cog→subsystem resolution · count integrity · required
-  fields) + test · `scripts/` · `tests/unit/scripts/` · 2026-06-16
-- `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
-  run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
-  misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
-- `claude/epic-noether-qgis28` · BTD6 Live Events — fix the dead event drill-down
-  (`build_event_detail_view_model` `TypeError`) + current-event-first overview redesign (show only
-  the live event + all its info; history behind 📜 Past events) · `services/btd6_view_model_service.py`
-  · `views/btd6/live_events_view.py` · `cogs/btd6/_event_helpers.py` · 2026-06-16
-
-- `claude/peaceful-tesla-vvayya` · PR mergeability keepers — auto-update behind + red-on-conflict
-  guard (Q-0154) · `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` · 2026-06-16
-
-- `claude/funny-franklin-lttzwy` · repo-consistency-linter **PR 2 + PR 3** (back-button +
-  panel base-class rules, warn-only, Q-0170) + #1042 ledger reconcile ·
-  `scripts/check_consistency.py` · `tests/unit/scripts/test_check_consistency.py` ·
-  `docs/current-state.md` · 2026-06-18 · **auto-merge on green**
-
-- `claude/website-deploy-redaction-docs` · website two-site-split **fan-out P7 + P8** (docs only) —
-  the §4.1 redaction-audit record + the `botsite/` deploy/env docs; sole fan-out unit editing the
-  plan (mark §5 back-half shipped + §9 links) · `docs/operations/dashboard-redaction-audit.md` ·
-  `docs/operations/botsite-deploy.md` · `docs/operations/env-vars.md` · `dashboard/README.md` ·
-  `docs/planning/website-two-site-split-plan-2026-06-19.md` · 2026-06-19 · **auto-merge on green**
+_(none active — pruned 2026-06-20: every prior claim was backed by a now-merged PR;
+no open `claude/*` PRs remained. This is a whiteboard — append your claim when you start.)_
 
 ## Recently cleared
 
