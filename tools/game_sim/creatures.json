@@ -1,0 +1,47 @@
+{
+  "_README": "v1 default creature roster for the catch+battle game (DESIGN ARTIFACT, not runtime). Creature = a data row (the towers.json / fish-roster pattern) so adding one is data, not code. Stats are DERIVED at load: budget = RARITY_BUDGET[rarity], split across HP/ATK/DEF/SPD by archetype weights (see creature_battle_sim.py). 36 creatures = 6 per element, validated PLAYABLE by the sim. FLAVOR (names) is owner-refinable — like the gear paper-doll, the system + a working default ship here; the owner swaps the creative skin. Graduates to disbot/data/ at the gated runtime build (Q-0186). Per-element slot 0 is the Common/balanced 'starter' (uniform across elements so the type-balance check is apples-to-apples).",
+  "elements": ["Ember", "Tide", "Bramble", "Spark", "Stone", "Gust"],
+  "creatures": [
+    {"name": "Cindling",   "element": "Ember",   "rarity": "Common",   "archetype": "balanced"},
+    {"name": "Emberpaw",   "element": "Ember",   "rarity": "Common",   "archetype": "attacker"},
+    {"name": "Ashpyre",    "element": "Ember",   "rarity": "Uncommon", "archetype": "speedster"},
+    {"name": "Cinderhorn", "element": "Ember",   "rarity": "Uncommon", "archetype": "tank"},
+    {"name": "Magmaul",    "element": "Ember",   "rarity": "Rare",     "archetype": "attacker"},
+    {"name": "Infernox",   "element": "Ember",   "rarity": "Epic",     "archetype": "tank"},
+
+    {"name": "Rippling",   "element": "Tide",    "rarity": "Common",   "archetype": "balanced"},
+    {"name": "Splashfin",  "element": "Tide",    "rarity": "Common",   "archetype": "attacker"},
+    {"name": "Brinejet",   "element": "Tide",    "rarity": "Uncommon", "archetype": "speedster"},
+    {"name": "Shellback",  "element": "Tide",    "rarity": "Uncommon", "archetype": "tank"},
+    {"name": "Coralisk",   "element": "Tide",    "rarity": "Rare",     "archetype": "tank"},
+    {"name": "Abysscale",  "element": "Tide",    "rarity": "Epic",     "archetype": "balanced"},
+
+    {"name": "Sproutle",   "element": "Bramble", "rarity": "Common",   "archetype": "balanced"},
+    {"name": "Thornkit",   "element": "Bramble", "rarity": "Common",   "archetype": "attacker"},
+    {"name": "Fernwhisk",  "element": "Bramble", "rarity": "Uncommon", "archetype": "speedster"},
+    {"name": "Barkhide",   "element": "Bramble", "rarity": "Uncommon", "archetype": "tank"},
+    {"name": "Thornmaw",   "element": "Bramble", "rarity": "Rare",     "archetype": "balanced"},
+    {"name": "Verdankor",  "element": "Bramble", "rarity": "Epic",     "archetype": "speedster"},
+
+    {"name": "Voltkit",    "element": "Spark",   "rarity": "Common",   "archetype": "balanced"},
+    {"name": "Sparkpup",   "element": "Spark",   "rarity": "Common",   "archetype": "attacker"},
+    {"name": "Glimmerfly", "element": "Spark",   "rarity": "Uncommon", "archetype": "speedster"},
+    {"name": "Voltaic",    "element": "Spark",   "rarity": "Uncommon", "archetype": "tank"},
+    {"name": "Arcwing",    "element": "Spark",   "rarity": "Rare",     "archetype": "speedster"},
+    {"name": "Stormfang",  "element": "Spark",   "rarity": "Epic",     "archetype": "attacker"},
+
+    {"name": "Pebblet",    "element": "Stone",   "rarity": "Common",   "archetype": "balanced"},
+    {"name": "Gravelpup",  "element": "Stone",   "rarity": "Common",   "archetype": "attacker"},
+    {"name": "Slatewing",  "element": "Stone",   "rarity": "Uncommon", "archetype": "speedster"},
+    {"name": "Cobbleshell", "element": "Stone",  "rarity": "Uncommon", "archetype": "tank"},
+    {"name": "Boulderon",  "element": "Stone",   "rarity": "Rare",     "archetype": "tank"},
+    {"name": "Tectonix",   "element": "Stone",   "rarity": "Epic",     "archetype": "balanced"},
+
+    {"name": "Zephyrl",    "element": "Gust",    "rarity": "Common",   "archetype": "balanced"},
+    {"name": "Gustling",   "element": "Gust",    "rarity": "Common",   "archetype": "attacker"},
+    {"name": "Breezle",    "element": "Gust",    "rarity": "Uncommon", "archetype": "speedster"},
+    {"name": "Cloudhide",  "element": "Gust",    "rarity": "Uncommon", "archetype": "tank"},
+    {"name": "Galeon",     "element": "Gust",    "rarity": "Rare",     "archetype": "balanced"},
+    {"name": "Tempestra",  "element": "Gust",    "rarity": "Epic",     "archetype": "speedster"}
+  ]
+}

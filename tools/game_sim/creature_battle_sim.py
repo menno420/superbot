@@ -34,10 +34,12 @@ dropped or once its numbers are pinned into the real subsystem.
 from __future__ import annotations
 
 import argparse
+import json
 import random
 import statistics
 from dataclasses import dataclass, field
 from itertools import product
+from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # v1 ruleset — elements, effectiveness, roster (ORIGINAL names, no Pokémon IP)
@@ -116,10 +118,15 @@ def _spread(
 
 
 def _roster() -> list[Species]:
-    """12 original creatures: 2 per element, varied rarity + archetype.
+    """Load the original creature roster from ``creatures.json`` (creature-as-data).
 
-    Archetype weights (hp, atk, df, spd): attacker .9/1.3/.7/1.1,
-    tank 1.3/.8/1.3/.6, balanced 1/1/1/1, speedster .8/1.2/.7/1.3.
+    Stats are *derived*, not stored: each creature's budget = ``RARITY_BUDGET[rarity]`` split
+    across HP/ATK/DEF/SPD by archetype weights. This is the "adding a creature is a data row, not
+    code" design (Q-0187d) — the catalog is the v1 launch roster (~36), and the same sim below
+    validates the *whole* roster's balance before any of it touches ``disbot/``.
+
+    Archetype weights (hp, atk, df, spd): attacker .9/1.3/.7/1.1, tank 1.3/.8/1.3/.6,
+    balanced 1/1/1/1, speedster .8/1.2/.7/1.3.
     """
     arche = {
         "attacker": (0.9, 1.3, 0.7, 1.1),
@@ -127,25 +134,11 @@ def _roster() -> list[Species]:
         "balanced": (1.0, 1.0, 1.0, 1.0),
         "speedster": (0.8, 1.2, 0.7, 1.3),
     }
-    # (name, element, rarity, archetype) — two per element, spread across rarity.
-    spec = [
-        ("Cindling", "Ember", "Common", "attacker"),
-        ("Magmaul", "Ember", "Rare", "tank"),
-        ("Rippling", "Tide", "Common", "balanced"),
-        ("Abysscale", "Tide", "Epic", "tank"),
-        ("Sproutle", "Bramble", "Common", "balanced"),
-        ("Thornmaw", "Bramble", "Rare", "attacker"),
-        ("Voltkit", "Spark", "Uncommon", "speedster"),
-        ("Stormfang", "Spark", "Epic", "attacker"),
-        ("Pebblet", "Stone", "Common", "tank"),
-        ("Boulderon", "Stone", "Rare", "tank"),
-        ("Zephyrl", "Gust", "Uncommon", "speedster"),
-        ("Galeon", "Gust", "Rare", "speedster"),
-    ]
+    catalog = json.loads((Path(__file__).with_name("creatures.json")).read_text())
     out: list[Species] = []
-    for name, el, rar, arch in spec:
-        hp, atk, df, spd = _spread(RARITY_BUDGET[rar], *arche[arch])
-        out.append(Species(name, el, rar, hp, atk, df, spd))
+    for c in catalog["creatures"]:
+        hp, atk, df, spd = _spread(RARITY_BUDGET[c["rarity"]], *arche[c["archetype"]])
+        out.append(Species(c["name"], c["element"], c["rarity"], hp, atk, df, spd))
     return out
 
 

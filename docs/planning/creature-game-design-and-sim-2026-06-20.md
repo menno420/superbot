@@ -95,8 +95,17 @@ fun (a dex you fill in one sitting isn't a hook). Two choices make ~30–40 chea
    fish-roster pattern), so *adding* a creature is a data row, not code. This is what makes
    "ship 12 → grow to ~40 → seasons" a non-event architecturally, and it lets the **same
    `creature_battle_sim.py`** validate the *whole* launch roster before it ships (the
-   balance-before-build gate). Building that catalog + sim-validating ~30–40 is the natural next
-   design step before any catch-engine build.
+   balance-before-build gate).
+
+**★ BUILT (2026-06-20):** the v1 launch catalog is real — **`tools/game_sim/creatures.json`, 36
+original creatures** (6 per element; 12 Common / 12 Uncommon / 6 Rare / 6 Epic), and the sim now
+**loads the roster from it** (stats derived: `budget = RARITY_BUDGET[rarity]` split by archetype
+weights — no stored stats to drift). Re-running the sim on the full 36 still reports **PLAYABLE (no
+flags)**, with type balance even *tighter* than the 12-roster (per-element 49.6–50.6%, **spread
+1.0pt** — the uniform Common/balanced per-element "starter" makes it apples-to-apples) and catch
+grind ~7 at L1. So **~30–40 is proven balanceable, not just asserted** (Q-0187d). *Flavor (names) is
+owner-refinable — like the gear paper-doll, the system + a working default ship; the owner swaps the
+creative skin. The catalog graduates to `disbot/data/` at the gated runtime build (Q-0186).*
 
 ## 3. Simulator + headline findings
 
