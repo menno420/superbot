@@ -1,6 +1,6 @@
 # 2026-06-20 — Reconciliation-tooling guards: band PR status classifier + Recently-shipped trim actuator
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Arc
 
