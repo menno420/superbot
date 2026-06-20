@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T19:55:32Z",
+    "generated_at": "2026-06-20T21:39:14Z",
     "build": {
-      "commit": "5849f39d",
-      "subject": "creature game: playability simulator + v1 design + copyright answer (#1183)",
-      "committed_at": "2026-06-20T19:53:10Z",
+      "commit": "2a6708bd",
+      "subject": "Merge pull request #1189 from menno420/claude/gallant-volta-bk3qvf",
+      "committed_at": "2026-06-20T23:38:14Z",
       "branch": "main"
     },
     "counts": {
@@ -1893,7 +1893,7 @@
   "bugs": [
     {
       "id": "BUG-0019",
-      "title": "AI replies to messages aimed at *other* bots and claims \"you've just pinged me\" — OPEN (root cause identified; fix needs one owner behavior decision)",
+      "title": "AI replies to messages aimed at *other* bots and claims \"you've just pinged me\" — PARTIALLY FIXED (mechanism #2 hardened; #1 awaits one owner behavior decision)",
       "status": "unknown",
       "summary": "a user pinged another bot — @Carl-bot (?) — in a channel, and SuperBot replied anyway: *\"Hey! You've just pinged me. What can I help you with? … feel free to ask me anything…\"*. The owner's words: *\"the AI is responding to mentions of other bots.\"* Context: the report user cited…"
     },
@@ -2033,6 +2033,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-20-pr-auto-update-deterministic-fix.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — pr-auto-update: deterministic behind-detection (same async race as the conflict guard)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-poketwo-musicbot-feature-plan.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Pokétwo + MusicBot research report → feature mapping plan",
@@ -2113,9 +2121,25 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-20-creature-roster-and-music-legal-findings.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Creature roster sizing + music-bot legal findings (documentation)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-creature-game-sim.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Creature game: playability simulator + design + copyright",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-conflict-guard-deterministic-fix.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — pr-conflict-guard: deterministic merge test (fix the \"only occasionally red\" flake)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -2143,6 +2167,22 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-bug0019-everyone-false-ping-hardening.md",
+      "date": "2026-06-20",
+      "title": "Session — funny-franklin · BUG-0019 #2 false-personal-ping hardening",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-20-back-button-linter-add-item-detection.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — back_button linter: catch dynamically-built (add_item) hubs",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-20-arch-ratchet-cog-layer.md",
@@ -2444,46 +2484,6 @@
       "file": "2026-06-19-fleet-b6-sha-pin-actions.md",
       "date": "2026-06-19",
       "title": "2026-06-19 — Fleet B6: SHA-pin third-party GitHub Actions",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-b5-autospec-fidelity.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet B5: autospec mock-fidelity AST guard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-b4-plan-backlog.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet B4: automate the PLAN-BACKLOG-THIN flag (Q-0164)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-b3-routine-permission-surface.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet B3: routine permission-surface lint",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-b2-ledger-hygiene.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet B2: ledger-hygiene duplicate-claim / idea-link linter",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-fleet-b1-governance-files-guard.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Fleet B1: governance-files presence + path-freshness guard",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
