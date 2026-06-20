@@ -114,6 +114,14 @@
   Q-0164)". Added a one-line note in the workflow header that `check_reconciliation_due.py`
   (`STEP = 30`) owns the firing boundary and the copy must track it. No regression guard (a
   string; the firing logic was already correct and is covered by the script's own tests).
+- **Root-cause hardening (follow-up dispatch run, 2026-06-19):** the first fix corrected the
+  copy but left it hardcoded in the workflow — the *drift class itself* (two places that must be
+  kept in sync) remained. Eliminated it: `check_reconciliation_due.py` now owns the canonical
+  body too (`issue_body()`, built from `STEP`, exposed via `--issue-body`), and the workflow
+  **echoes** it (`--body "$(python3.10 scripts/check_reconciliation_due.py --issue-body)"`)
+  instead of carrying a copy. The cadence numbers now live in exactly one place and can never
+  desync again. Guarded by `test_issue_body_tracks_the_live_cadence` /
+  `test_issue_body_flag_prints_body_and_exits_zero`.
 
 ## BUG-0015 — "d67 dart paragon" misread as upgrade path "0-6-7" (paragon degree ignored) — FIXED
 
