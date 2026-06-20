@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T14:28:41Z",
+    "generated_at": "2026-06-20T14:46:41Z",
     "build": {
-      "commit": "721c4cf9",
-      "subject": "Merge pull request #1169 from menno420/claude/relaxed-thompson-qwg50v",
-      "committed_at": "2026-06-20T15:38:17Z",
-      "branch": "main"
+      "commit": "60973903",
+      "subject": "Merge pull request #1170 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-20T16:33:11Z",
+      "branch": "claude/reconcile-1180"
     },
     "counts": {
       "functions": 36,
-      "ideas": 105,
+      "ideas": 106,
       "bugs": 18,
       "reviews": 0,
       "reviews_open": 0,
@@ -971,6 +971,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "recently-shipped-auto-trim-helper-2026-06-20.md",
+      "title": "Idea — a stdlib actuator for the Recently-shipped trim-to-archive step",
+      "status": "ideas",
+      "date": "2026-06-20",
+      "summary": "Every Q-0107 reconciliation pass ends with the same **mechanical, drift-prone** chore: the",
+      "subsystems": []
+    },
     {
       "file": "ai-correction-report-and-ticket-service-2026-06-19.md",
       "title": "AI reports corrections → an audience-routed AI ticket service",

@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T03:16:00Z",
+    "generated_at": "2026-06-20T14:46:41Z",
     "build": {
-      "commit": "b9a0d2a2",
-      "subject": "docs(ideas): capture bug-book claim-gap idea + groom subsystem-tag to historical (#1159)",
-      "committed_at": "2026-06-20T01:52:25Z",
-      "branch": "claude/funny-franklin-dapcss"
+      "commit": "60973903",
+      "subject": "Merge pull request #1170 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-20T16:33:11Z",
+      "branch": "claude/reconcile-1180"
     }
   },
   "counts": {

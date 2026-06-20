@@ -68,6 +68,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 | Plan | Status / gate | Related ideas |
 |---|---|---|
 | [web-tier-centralization-proposal](web-tier-centralization-proposal-2026-06-19.md) | web-CI matrix consolidation (`dashboard-ci` + `botsite-ci` → one matrix); **owner-greenlight gated** | tracked in [website-split-next-steps §2a](../operations/website-split-next-steps-2026-06-19.md) |
+| [loop-health-gh-fallback](loop-health-gh-fallback-plan-2026-06-20.md) | 1 PR; **ungated, self-merge on green**; `urllib` REST fallback so `check_loop_health.py` verifies the ROUTINE_PAT row in-container (Q-0135) instead of SKIPping | `loop-health-gh-unavailable-fallback` |
 
 ### Dashboard / control-API / website — the cross-cutting initiative
 
