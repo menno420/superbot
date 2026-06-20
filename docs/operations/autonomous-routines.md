@@ -225,7 +225,7 @@ work order, so the routine advances the next plan slice from `current-state.md` 
 API (`/fire`) trigger stays for on-demand work-order fires. This replaced the earlier plan to drive
 the cadence from **Hermes' VPS cron** / the GitHub `schedule:` cron — both proved unreliable (the
 GitHub `schedule:` trigger delivered only ~1 run/night, hours late; see the timing caveat under
-Control-plane state). The legacy `.github/workflows/executor-nightly.yml` (it opened `continue`
+Control-plane state). The legacy `executor-nightly.yml` workflow (it opened `continue`
 issues for the now-retired night-executor) was **removed 2026-06-15**. A `continue`-labelled
 issue is still a valid human-filed handoff signal a dispatch run reads on its next fire.
 
