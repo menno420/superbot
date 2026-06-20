@@ -14,6 +14,15 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 /**
+ * Shared class string for the brand button style. Used by both {@link Button}
+ * (a real `<button>`) and `ButtonLink` (an `<a>` styled as a button — which is
+ * how the live site renders its CTAs), so the look is defined in one place.
+ */
+export function buttonClasses(variant: ButtonVariant = "primary"): string {
+  return `rounded-lg px-6 py-2.5 font-semibold transition-colors ${VARIANTS[variant]}`;
+}
+
+/**
  * The primary action button used across the site — most visibly the persistent
  * "Add to Discord" call-to-action.
  */
@@ -23,9 +32,6 @@ export function Button({
   ...props
 }: ButtonProps) {
   return (
-    <button
-      className={`rounded-lg px-6 py-2.5 font-semibold transition-colors ${VARIANTS[variant]} ${className}`}
-      {...props}
-    />
+    <button className={`${buttonClasses(variant)} ${className}`} {...props} />
   );
 }

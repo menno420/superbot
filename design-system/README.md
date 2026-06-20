@@ -30,14 +30,68 @@ not assumed here.
 
 ## Components
 
+**Atoms**
+
 | Component | Mirrors (in `botsite/`) |
 |---|---|
-| `Button` | the "Add to Discord" CTA + secondary buttons |
+| `Button` / `ButtonLink` | the "Add to Discord" CTA + secondary buttons — `<button>` and the anchor-as-button the live site actually renders (shared style via `buttonClasses`) |
 | `Badge` | command status (`finished`/`in-progress`), `game`, changelog kinds |
 | `Card` | the standard bordered surface |
-| `StatTile` | the homepage capability band counts |
+| `StatTile` | a single homepage capability-band count |
 | `FeatureCard` | the "what it does" / `/features` category cards |
 | `CommandCard` | the `/commands` reference row |
+
+**Layout / chrome** (mirror `base.html`)
+
+| Component | Mirrors (in `botsite/`) |
+|---|---|
+| `PageShell` | `<body>` dark canvas + centered `<main>` column + header/footer slots |
+| `SiteHeader` | the sticky nav — logo · links · "as of last deploy" status dot · Add-to-Discord |
+| `SiteFooter` | the "generated / as of last deploy" freshness footer + source link |
+
+**Sections & page** (mirror `index.html`)
+
+| Component | Mirrors (in `botsite/`) |
+|---|---|
+| `Hero` | the hero — wordmark · tagline · primary/secondary CTAs |
+| `CapabilityBand` | the capability band (3 × `StatTile`, honest catalogue counts) |
+| `Section` | the section-header pattern (title + "All features →", or centered) |
+| `StepCard` | the "how it works" numbered steps |
+| **`LandingPage`** | **the whole `index.html` page composed from the parts above** — the canonical surface Claude Design edits, so every region maps to source |
+
+## Editing the site — the hybrid loop (Claude Design ⇄ Claude Code)
+
+The whole landing page is now real components (`LandingPage` composes them), so on the
+Claude Design canvas you can select and edit **any** region — hero, nav, sections — and it
+maps to source. The error *"Can't save this edit — element isn't from project source"*
+appears when you edit something that *isn't* a synced component; composing pages from these
+parts is what avoids it. Roles:
+
+- **Claude Design** = the visual canvas. Drive it by *prompting the agent* ("make the hero
+  two-column", "warmer palette") as much as by hand-editing — property-panel edits only
+  persist for source-backed components, which is now the whole page.
+- **Claude Code** (the porter + reviewer) = takes canvas output and ports it into the
+  `botsite/` Jinja templates (Tailwind classes transfer 1:1), keeping it correct and
+  consistent — Claude Design is weak at searching this repo and mapping a design to the
+  right files, so this step stays with Claude Code. Just say "port what I just designed."
+
+### Preview without merging / redeploying
+
+You don't have to merge to `main` (which redeploys the Railway site) to see a change — two
+local previews cover the two layers:
+
+```bash
+# 1. The design layer (these components, incl. the full-page LandingPage story):
+npm run storybook                  # http://localhost:6006 → Pages/LandingPage
+
+# 2. The real site (Jinja — exactly what ships):
+pip install -r botsite/requirements.txt
+uvicorn botsite.app:app --reload   # http://127.0.0.1:8000
+```
+
+On Claude Code on the web, ask Claude Code to run either and screenshot the result — so the
+loop is **design → port → preview → approve → merge**, with the merge (and redeploy) only at
+the end.
 
 ## Build
 
