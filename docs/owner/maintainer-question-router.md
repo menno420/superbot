@@ -6840,3 +6840,35 @@ PRs, runtime-verified). **Home:** the feature-mapping plan + the
 [wild-encounters idea](../ideas/wild-encounters-activity-spawning-2026-06-20.md) + this Q-block.
 Related: Q-0041 (music gate), Q-0039 (no P2W), Q-0182 (world model), Q-0040 (AI quests from
 bounded menus), Q-0080 (stranger-grade), Q-0071 (atomic workflow).
+
+---
+
+### Q-0187 — DECIDE: creature game — original roster vs Pokémon names · PvP level-normalization · art (2026-06-20)
+
+> **PROPOSED — the owner asked the copyright question directly** (*"how is the copyright with
+> Pokémon names — can we use them or do we need to create our own?"*) and greenlit **PvP battles**
+> (*"PvP battles with the Pokémon would be great"*). A v1 ruleset + a playability simulator are
+> built ([creature-game-design-and-sim](../planning/creature-game-design-and-sim-2026-06-20.md),
+> `tools/game_sim/creature_battle_sim.py`). These are the design calls before a build session.
+
+**(a) Creature IP — original vs Pokémon names.** **Agent answer + strong recommendation: make our
+own.** Game *mechanics* (catch/types/turn-based battle/stats) are **not** copyrightable — we can
+build the loop freely. Pokémon *names, designs, and the dex* **are** protected (Nintendo /
+TPC/Game Freak; aggressively enforced). Using them = the same "fly under the radar until a C&D
+hits" risk that killed the music bots (the report's Rythm/Hydra history) — wrong for a bot we want
+to **publicly launch**. Original creatures (Temtem/Cassette-Beasts/Coromon precedent) give the
+loop with no IP risk and fit our world (we already have original fish/ore). v1 roster is original
+(Cindling, Magmaul, …).
+
+**(b) PvP level model.** The simulator found **raw levels decide 1v1s** (a +2 gap wins ~100%) — so
+raw-level PvP is a grind/whale-fest = **pay-to-win (Q-0039 forbids)**. **Recommendation: PvP
+normalizes to a flat level** (competitive-Pokémon style) so types + team-building + ordering
+decide. Raw levels still matter for PvE/collection prestige. Confirm normalized vs raw.
+
+**(c) Art.** Emoji/text v1 → an **original sprite pack** later (same path as the gear paper-doll —
+owner drops art into `disbot/assets/`). Confirm the v1 visual bar.
+
+**Agent note:** none of this blocks the *catch* half (Lane A, Q-0186). The battle subsystem is its
+own runtime session once (a)/(b) are confirmed. **Home:** the design+sim plan + this Q-block.
+Related: Q-0039 (no P2W), Q-0186 (Pokétwo build sequence), Q-0182 (world model), Q-0041 (the
+parallel music legal-lane decision — same publish-safe logic).
