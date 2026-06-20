@@ -23,6 +23,54 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0019 — AI replies to messages aimed at *other* bots and claims "you've just pinged me" — OPEN (root cause identified; fix needs one owner behavior decision)
+
+- **Symptom (owner-reported, 2026-06-20, live in a community server):** a user pinged
+  **another** bot — `@Carl-bot (?)` — in a channel, and **SuperBot replied anyway**: *"Hey!
+  You've just pinged me. What can I help you with? … feel free to ask me anything…"*. The
+  owner's words: *"the AI is responding to mentions of other bots."* Context: the report user
+  cited this as a reason he still runs multiple bots.
+- **Expected:** SuperBot should **not** barge into a message clearly addressed to a different
+  user/bot, and should **never** claim it was "pinged" when it was not directly mentioned.
+- **Where:** `disbot/core/runtime/ai/natural_language_stage.py` (the single "should the bot
+  reply?" stage) + `disbot/services/ai_natural_language_policy.py` (the mode gate).
+- **Root cause — two independent mechanisms (the screenshot is almost certainly #1):**
+  1. **`always_reply` ambient mode answers *everything*.** A channel/category/guild AI profile
+     with `mode="always_reply"` (`ai_natural_language_policy.py:122,343`) responds to **every**
+     message regardless of who it addresses — so a message that only pings `@Carl-bot` still gets
+     a reply. The mode gate only special-cases `mention_only` (requires a mention) and `disabled`;
+     `always_reply` has **no "is this addressed to someone else?" guard**. Separately, the model
+     produced a *"you've just pinged me"* greeting for a low-content message even though SuperBot
+     was **not** in `message.mentions` — i.e. the prompt/context does not tell the model "you were
+     NOT actually mentioned; another user/bot was," so it hallucinates the ping framing. (We strip
+     *SuperBot's own* mention from the text — `_strip_bot_mention` — but leave **other** users'
+     mention tokens in, so the model still sees a `<@id>` and reads it as a ping at itself.)
+  2. **`mentioned_in` treats `@everyone`/`@here` as a direct ping (latent footgun).**
+     `natural_language_stage.py:229` — `is_mention = ctx.bot.user.mentioned_in(message)`.
+     discord.py's `mentioned_in` returns **True when `message.mention_everyone` is set**, so a
+     server-wide `@everyone`/`@here` reads as "the bot was personally pinged" and flips the
+     `mention_only` gate open. Independent of the screenshot, but the same "false personal ping"
+     class.
+- **Proposed fix (needs one owner behavior decision — see flag):**
+  - **#2 is unambiguous → hardening:** compute `is_mention` as a **direct** mention only —
+    `bot_user.id in {m.id for m in message.mentions}` (exclude `mention_everyone`). A server-wide
+    `@everyone` should never read as a personal ping. Offline-unit-testable with a stub message;
+    ship a regression test that fails against `mentioned_in`'s `mention_everyone=True` path.
+  - **#1 is a design fork (the owner's call):** in `always_reply` mode, should SuperBot
+    **(a)** stay silent when a message mentions another user/bot and **not** SuperBot (don't barge
+    into others' conversations — the most likely intended behavior), **(b)** keep answering
+    everything but **strip *all* mention tokens** before the model and pass an explicit
+    `is_mention=False` framing so it never says "you pinged me", or **(c)** leave `always_reply` as
+    a power-user opt-in and only fix the "pinged me" copy? These change ambient semantics the owner
+    configured intentionally, so they are flagged, not patched unilaterally.
+- **Stays-fixed guard (to ship with the chosen fix):** a `natural_language_stage` unit test that a
+  message pinging only another user/bot (and `@everyone`) does **not** set `is_mention` / does not
+  trigger a reply under the chosen rule. (Live AI path → also wants a Q-0086 runtime walk.)
+- **Status:** OPEN — root cause identified 2026-06-20; **routed to the owner** for the #1 behavior
+  decision (agent recommendation: option **(a)** + the #2 hardening). Noted per the owner's
+  "make a note of this" instruction; not patched in the gated AI behavior path without his call +
+  a runtime-verified session.
+
 ## BUG-0018 — committed `botsite/data/site.json` drifts red whenever idea docs change (hard equality test over a high-churn derived field) — FIXED (root)
 
 - **Symptom:** `tests/unit/scripts/test_export_dashboard_data.py::test_committed_site_json_matches_a_fresh_build`
