@@ -42,8 +42,12 @@ def test_type_chart_is_symmetric(mod):
 
 
 def test_roster_well_formed(mod):
-    assert len(mod.ROSTER) == 12
+    # v1 launch roster is data-driven (creatures.json) and sized for collection depth
+    # (Q-0187d: sim-core 12 -> launch ~30-40). Assert the launch band + a clean per-element spread.
+    assert 30 <= len(mod.ROSTER) <= 40
     assert {s.element for s in mod.ROSTER} == set(mod.ELEMENTS)
+    per_element = {el: sum(s.element == el for s in mod.ROSTER) for el in mod.ELEMENTS}
+    assert len(set(per_element.values())) == 1, f"uneven per-element spread: {per_element}"
     for s in mod.ROSTER:
         # budget spread rounds, so allow ±2 of the rarity budget
         assert abs(s.budget - mod.RARITY_BUDGET[s.rarity]) <= 2
