@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/funny-franklin-2d6daf` · **pin the `.claude/` instruction core against pointer rot**
+  (dispatch run, ungated small-guard lane) — extend `check_docs.py` `check_pinned` to validate
+  `.claude/CLAUDE.md` + `.claude/rules/*.md` backtick repo-paths · `scripts/check_docs.py` +
+  `tests/unit/scripts/test_check_docs.py` · 2026-06-20 · **auto-merge on green**
+
 - `claude/website-submit-form` · **website-split unit P4** — public `/submit` bug/suggestion
   form + intake (fills P1's `botsite/submit.py` stub) · exclusive: `botsite/submit.py` ·
   `botsite/ratelimit.py` · `botsite/templates/submit.html` · `tests/unit/botsite/test_submit.py`
