@@ -45,6 +45,7 @@ class FakeMember:
 
 class FakeGuild:
     def __init__(self, roles: list[FakeRole]) -> None:
+        self.id = 1
         self._roles = {r.id: r for r in roles}
         # Bot top-role well above the menu roles → everything is manageable.
         self.me = SimpleNamespace(

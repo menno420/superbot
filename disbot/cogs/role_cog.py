@@ -556,18 +556,17 @@ class RoleCog(commands.Cog):
         member = resources.resolve_member(guild, payload.user_id)
         if not member or member.bot:
             return
-        role_id = await reaction_role_service.get_binding(
-            payload.guild_id,
+        # The audited service owns mode enforcement (normal/unique/verify) and
+        # the per-guild reaction_roles_enabled gate; the cog only strips the
+        # reaction afterward for verify mode (so the message stays clean).
+        _outcome, strip_reaction = await reaction_role_service.handle_reaction_add(
+            guild,
+            member,
             payload.message_id,
             str(payload.emoji),
         )
-        if role_id:
-            role = resources.resolve_role(guild, role_id=role_id)
-            if role:
-                try:
-                    await member.add_roles(role, reason="Reaction role")
-                except discord.Forbidden:
-                    pass
+        if strip_reaction:
+            await self._strip_reaction(payload, member)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(
@@ -580,18 +579,29 @@ class RoleCog(commands.Cog):
         member = resources.resolve_member(guild, payload.user_id)
         if not member or member.bot:
             return
-        role_id = await reaction_role_service.get_binding(
-            payload.guild_id,
+        await reaction_role_service.handle_reaction_remove(
+            guild,
+            member,
             payload.message_id,
             str(payload.emoji),
         )
-        if role_id:
-            role = resources.resolve_role(guild, role_id=role_id)
-            if role:
-                try:
-                    await member.remove_roles(role, reason="Reaction role removed")
-                except discord.Forbidden:
-                    pass
+
+    async def _strip_reaction(
+        self,
+        payload: discord.RawReactionActionEvent,
+        member: discord.Member,
+    ) -> None:
+        """Remove a member's reaction (verify mode keeps the message clean)."""
+        channel = self.bot.get_channel(payload.channel_id)
+        if not isinstance(channel, discord.abc.Messageable):
+            return
+        try:
+            await channel.get_partial_message(payload.message_id).remove_reaction(
+                payload.emoji,
+                member,
+            )
+        except (discord.Forbidden, discord.NotFound, discord.HTTPException):
+            pass
 
     @commands.command(name="reactroles", aliases=["reaktionsrollen"])
     @commands.has_permissions(manage_roles=True)

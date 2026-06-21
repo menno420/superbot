@@ -428,7 +428,7 @@ const COMMANDS = [
   {
     "name": "assignroles",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Manually run time-based role assignment for all members.",
     "description": "Manually run time-based role assignment for all members.",
     "usage": "!assignroles",
@@ -436,7 +436,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "automation",
@@ -1379,7 +1384,7 @@ const COMMANDS = [
   {
     "name": "createrole",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Create a role (use !roles → Create instead).",
     "description": "Create a role (use !roles → Create instead).",
     "usage": "!createrole",
@@ -1387,7 +1392,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "ct",
@@ -1483,7 +1493,7 @@ const COMMANDS = [
   {
     "name": "debugroles",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Print all role names for verification.",
     "description": "Print all role names for verification.",
     "usage": "!debugroles",
@@ -1491,7 +1501,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "del",
@@ -1524,7 +1539,7 @@ const COMMANDS = [
   {
     "name": "deleterole",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Delete a role by name or mention.",
     "description": "Delete a role by name or mention.",
     "usage": "!deleterole",
@@ -1532,7 +1547,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "descend",
@@ -2540,7 +2560,7 @@ const COMMANDS = [
   {
     "name": "listreactroles",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "List all active reaction roles in this server.",
     "description": "List all active reaction roles in this server.",
     "usage": "!listreactroles",
@@ -2548,7 +2568,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "live",
@@ -3175,7 +3200,7 @@ const COMMANDS = [
   {
     "name": "reactroles",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>",
     "description": "Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>",
     "usage": "!reactroles",
@@ -3185,7 +3210,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "readiness",
@@ -3265,7 +3295,7 @@ const COMMANDS = [
   {
     "name": "refreshmembers",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Force-fetch all members from Discord.",
     "description": "Force-fetch all members from Discord.",
     "usage": "!refreshmembers",
@@ -3273,7 +3303,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "relic",
@@ -3349,7 +3384,7 @@ const COMMANDS = [
   {
     "name": "removereactrole",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>",
     "description": "Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>",
     "usage": "!removereactrole",
@@ -3357,7 +3392,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "rename",
@@ -3490,7 +3530,7 @@ const COMMANDS = [
   {
     "name": "rolecreator",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the role hub (use !roles instead).",
     "description": "Open the role hub (use !roles instead).",
     "usage": "!rolecreator",
@@ -3498,12 +3538,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "rolemenu",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the role hub (use !roles instead).",
     "description": "Open the role hub (use !roles instead).",
     "usage": "!rolemenu",
@@ -3511,12 +3556,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "roles",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the role management hub.",
     "description": "Open the role management hub.",
     "usage": "!roles",
@@ -3524,12 +3574,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "rolesettings",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the role management hub (alias for !roles).",
     "description": "Open the role management hub (alias for !roles).",
     "usage": "!rolesettings",
@@ -3537,7 +3592,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "round",
@@ -4038,7 +4098,7 @@ const COMMANDS = [
   {
     "name": "setrole",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Add or update a time-based role threshold.",
     "description": "Add or update a time-based role threshold.",
     "usage": "!setrole",
@@ -4046,7 +4106,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "setting",
@@ -4742,6 +4807,19 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "temprole",
+    "area": "other",
+    "status": "finished",
+    "summary": "Give a member a role for a limited time. Usage: !temprole @member 2h @role",
+    "description": "Give a member a role for a limited time. Usage: !temprole @member 2h @role",
+    "usage": "!temprole",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "test",
     "area": "admin",
     "status": "in-progress",
@@ -5015,7 +5093,7 @@ const COMMANDS = [
   {
     "name": "unsetrole",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Remove a role from time-based assignment.",
     "description": "Remove a role from time-based assignment.",
     "usage": "!unsetrole",
@@ -5023,7 +5101,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
   },
   {
     "name": "unstash",
@@ -5563,7 +5646,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "7acf1f74",
+    "build": "a420ffe",
     "title": "New public bot website",
     "changes": [
       {
@@ -5575,7 +5658,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "7acf1f74",
+    "build": "a420ffe",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5587,7 +5670,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "7acf1f74",
+    "build": "a420ffe",
     "title": "Command-alias suggestions",
     "changes": [
       {

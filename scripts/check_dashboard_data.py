@@ -68,6 +68,9 @@ _UNREGISTERED_COG_ALLOWLIST = frozenset(
     {
         "HermesCog",
         "ParagonCog",
+        # Temp-role expiry sweep + the !temprole grant command; backs the role
+        # product but registers no subsystem of its own (reaction-roles PR 4).
+        "RoleGrantsCog",
         "SetupCog",
     },
 )

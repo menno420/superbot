@@ -87,26 +87,30 @@ without depending on bot startup or runtime registry population.
 The 38 extensions loaded at startup come from
 `disbot/config.py:INITIAL_EXTENSIONS`. The 30 subsystems live in
 `disbot/utils/subsystem_registry.py:SUBSYSTEMS`; each has exactly one owning
-cog. The 9 loaded extensions that are **not** one-to-one subsystems are
+cog. The 10 loaded extensions that are **not** one-to-one subsystems are
 `bootstrap_access_cog` (command-admission guard), `hermes_cog` (the
 Hermes→Claude dispatch bridge — admin-only slash commands with no subsystem
 row), `media_maintenance_cog` (the YouTube cache-retention task owner — no
 commands, no subsystem row), `health_maintenance_cog` (the health-findings
-retention task owner — no commands, no subsystem row), `setup_cog` (the setup
+retention task owner — no commands, no subsystem row), `role_grants_cog` (the
+temporary-role expiry sweep loop + the `!temprole` grant command — backs the
+role product, no subsystem row), `setup_cog` (the setup
 wizard surface), and the
 five split BTD6 cogs (`btd6_reference_cog`, `btd6_events_cog`,
 `btd6_strategy_cog`, `paragon_cog`, `btd6_ops_cog`), which all surface under
-the single `btd6` subsystem. (Counts re-verified against source 2026-06-12.)
+the single `btd6` subsystem. (Counts re-verified against source 2026-06-12;
+`role_grants_cog` added 2026-06-21.)
 
-Cogs (38): `admin_cog`, `ai_cog`, `blackjack_cog`, `bootstrap_access_cog`,
+Cogs (39): `admin_cog`, `ai_cog`, `blackjack_cog`, `bootstrap_access_cog`,
 `btd6_cog`, `btd6_events_cog`, `btd6_ops_cog`, `btd6_reference_cog`,
 `btd6_strategy_cog`, `chain_cog`, `channel_cog`, `cleanup_cog`,
 `community_cog`, `community_spotlight_cog`, `counting_cog`, `deathmatch_cog`,
 `diagnostic_cog`, `economy_cog`, `four_twenty_cog`, `games_cog`,
 `general_cog`, `help_cog`, `hermes_cog`, `inventory_cog`, `leaderboard_cog`,
 `logging_cog`, `mining_cog`, `moderation_cog`, `paragon_cog`,
-`proof_channel_cog`, `role_cog`, `rps_tournament_cog`, `server_management_cog`,
-`settings_cog`, `setup_cog`, `utility_cog`, `ux_lab_cog`, `xp_cog`.
+`proof_channel_cog`, `role_cog`, `role_grants_cog`, `rps_tournament_cog`,
+`server_management_cog`, `settings_cog`, `setup_cog`, `utility_cog`,
+`ux_lab_cog`, `xp_cog`.
 
 Subsystems (30): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
 `cleanup`, `community`, `community_spotlight`, `counting`, `deathmatch`,
@@ -611,25 +615,26 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
 9. **existing_SettingSpec_declarations**: `time_roles_stack`,
-   `xp_roles_stack` (`disbot/cogs/role/schemas.py`).
+   `xp_roles_stack`, `reaction_roles_enabled` (`disbot/cogs/role/schemas.py`).
 10. **existing_settings_keys**: `SKIP_ROLES` (legacy — no longer read at
-    runtime), `TIME_ROLES_STACK`, `XP_ROLES_STACK`
+    runtime), `TIME_ROLES_STACK`, `XP_ROLES_STACK`, `REACTION_ROLES_ENABLED`
     (`disbot/utils/settings_keys/role.py`).
 11. **existing_BindingSpec_entries**: none.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=administrator`;
     capabilities `role.settings.configure`, `role.threshold.configure`,
     `role.assignment.manage`, `role.reaction.manage`.
-14. **hardcoded_or_env_only_behavior**: time-based role thresholds;
-    reaction-role channels. Per-role XP/time exemptions are stored in the
-    `role_automation_exemptions` table (migration 052), edited via the
-    Roles → Exemptions panel.
-15. **missing_customization_commands**: `!settings role thresholds set ...`,
-    reaction-role manager UI.
+14. **hardcoded_or_env_only_behavior**: time-based role thresholds. Per-role
+    XP/time exemptions are stored in the `role_automation_exemptions` table
+    (migration 052), edited via the Roles → Exemptions panel. Temporary roles
+    are granted via `!temprole` (`role_grants_cog`) and swept on expiry.
+15. **missing_customization_commands**: `!settings role thresholds set ...`.
+    (Reaction-role manager UI **shipped** — the Reaction Roles panel is now an
+    interactive add/remove/mode editor, overhaul PR 3.)
 16. **missing_settings_pages**: thresholds editor page (stacking toggles +
-    exemptions shipped).
+    exemptions + the `reaction_roles_enabled` toggle shipped).
 17. **missing_menu_buttons_selects_modals**: time/XP threshold editor
-    parity; reaction-role manager.
+    parity. (Reaction-role manager shipped — overhaul PR 3.)
 18. **setting_class_per_value**: `time_roles_stack` / `xp_roles_stack` →
     scalar bool (Settings hub toggle); per-role `exempt_xp` / `exempt_time`
     → typed `role_automation_exemptions` rows (Roles → Exemptions panel);

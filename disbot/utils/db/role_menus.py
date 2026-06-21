@@ -204,6 +204,54 @@ async def list_posted_menus() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# Pickup analytics (PR 5, plan §10) — aggregate (guild, role) counters
+# ---------------------------------------------------------------------------
+
+
+async def record_pickup(guild_id: int, role_id: int) -> None:
+    """Tally one self-assignment of ``role_id`` (UPSERT increment)."""
+    await pool.execute(
+        """INSERT INTO role_menu_pickup_stats
+               (guild_id, role_id, picked, last_picked_at)
+           VALUES ($1, $2, 1, now())
+           ON CONFLICT (guild_id, role_id) DO UPDATE
+             SET picked = role_menu_pickup_stats.picked + 1,
+                 last_picked_at = now()""",
+        (guild_id, role_id),
+    )
+
+
+async def record_removal(guild_id: int, role_id: int) -> None:
+    """Tally one self-removal of ``role_id`` (UPSERT increment)."""
+    await pool.execute(
+        """INSERT INTO role_menu_pickup_stats (guild_id, role_id, removed)
+           VALUES ($1, $2, 1)
+           ON CONFLICT (guild_id, role_id) DO UPDATE
+             SET removed = role_menu_pickup_stats.removed + 1""",
+        (guild_id, role_id),
+    )
+
+
+async def get_pickup_stats(guild_id: int) -> list[dict]:
+    """Per-role pickup/removal tallies for a guild, most-picked first."""
+    return await pool.fetchall(
+        "SELECT role_id, picked, removed, last_picked_at "
+        "FROM role_menu_pickup_stats WHERE guild_id=$1 "
+        "ORDER BY picked DESC, removed DESC",
+        (guild_id,),
+    )
+
+
+async def delete_pickup_stats_for_guild(guild_id: int) -> int:
+    """Delete every pickup-stat row for a departed guild (teardown)."""
+    rows = await pool.fetchall(
+        "DELETE FROM role_menu_pickup_stats WHERE guild_id=$1 RETURNING role_id",
+        (guild_id,),
+    )
+    return len(rows)
+
+
+# ---------------------------------------------------------------------------
 # Guild teardown
 # ---------------------------------------------------------------------------
 

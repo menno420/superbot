@@ -159,6 +159,18 @@ async def teardown(guild_id: int) -> None:
     #     role_menu_options cascade via the FK.
     await _teardown_role_menus(guild_id)
 
+    # 24. Reaction-role message modes (overhaul PR 3) — per-message
+    #     normal/unique/verify rows for the legacy emoji surface.
+    await _teardown_reaction_modes(guild_id)
+
+    # 25. Temporary role grants (overhaul PR 4) — pending temp-role rows for
+    #     the departed guild (the role itself goes with the guild).
+    await _teardown_role_grants(guild_id)
+
+    # 26. Role-pickup analytics (overhaul PR 5) — aggregate (guild, role)
+    #     pickup counters for the departed guild.
+    await _teardown_role_pickup_stats(guild_id)
+
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
 
 
@@ -662,6 +674,71 @@ async def _teardown_role_menus(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: role menu teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_reaction_modes(guild_id: int) -> None:
+    """Delete per-message reaction modes for the departed guild (overhaul PR 3).
+
+    The legacy ``reaction_roles`` bindings self-clean when the host messages are
+    deleted; their per-message mode rows have no such anchor, so they need an
+    explicit teardown step.
+    """
+    try:
+        from utils.db import delete_reaction_modes_for_guild
+
+        count = await delete_reaction_modes_for_guild(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d reaction-mode row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: reaction-mode teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_role_grants(guild_id: int) -> None:
+    """Delete every temporary role-grant row for the departed guild (PR 4)."""
+    try:
+        from utils.db.role_grants import delete_for_guild as _grants_delete
+
+        count = await _grants_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d role-grant row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: role-grant teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_role_pickup_stats(guild_id: int) -> None:
+    """Delete role-pickup analytics rows for the departed guild (PR 5)."""
+    try:
+        from utils.db.role_menus import delete_pickup_stats_for_guild
+
+        count = await delete_pickup_stats_for_guild(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d pickup-stat row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: pickup-stat teardown failed for guild=%d: %s",
             guild_id,
             exc,
         )

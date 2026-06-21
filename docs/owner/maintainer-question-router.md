@@ -6971,3 +6971,47 @@ code maturity, not licensing (mission doc §5.1).
 **Home:** [`docs/ideas/free-for-everyone-mission-2026-06-21.md`](../ideas/free-for-everyone-mission-2026-06-21.md)
 (full statement) + `docs/roadmap.md` (product-principle callout) + `docs/current-state.md` ▶ Off-limits
 (enforceable form) + this Q-block.
+
+---
+
+### Q-0191 — DONE (owner-directed in-session): owner-directed work is NEVER held for review — merge immediately (2026-06-21)
+
+> **APPLIED in-session** (the live-owner exception to the propose-first rule — the owner directed it,
+> the owner is the live reviewer, provenance recorded here). **Verbatim owner instruction:** *"anything
+> that I personally direct the agents to do should never be held for review, always merge immediately."*
+> *(Drafted in-session as Q-0189; renumbered to **Q-0191** at merge time — a concurrent owner-directed
+> session had taken Q-0189 ("open the session PR fast") and Q-0190 ("free for everyone") in parallel. The
+> reaction-roles PR #1229 commit messages / body reference the original Q-0189; this Q-0191 block is the
+> canonical record.)*
+
+**The decision.** The `needs-hermes-review` gate (Q-0117) exists for *autonomously-initiated* substantial /
+risky runtime work — the case where no human chose the task and an independent reviewer should look before it
+lands. It must **NOT** be applied to work the **owner personally directed** (a session prompt, an in-chat
+instruction, a "build PR N / continue the plan" request). Owner direction *is* the review. So:
+
+- When the owner personally directs a task, the resulting PR(s) are opened **ready, never `needs-hermes-review`
+  / never `do-not-automerge`**, and **auto-merge is armed immediately** so GitHub merges the instant **Code
+  Quality** is green. No human-merge hold, no waiting for a reviewer.
+- This **supersedes** the reflex (seen on reaction-roles PR 2, #1219 / the duplicate #1221) of stamping
+  `needs-hermes-review` on owner-directed runtime work. That gating was against the owner's wish.
+- The autonomous carve-out is unchanged: a *self-initiated* substantial/risky runtime PR (no owner work order)
+  may still choose `needs-hermes-review` (Q-0117) or `do-not-automerge` (Q-0114). The distinction is **who
+  chose the task**, not how big it is.
+
+**What "merge immediately" does and does NOT mean (the load-bearing nuance):**
+
+- **Does** mean: arm GitHub-native auto-merge at PR-open (or call `enable_pr_auto_merge` directly when the PR
+  was opened via the GitHub MCP, per Q-0127) so it lands the instant CI is green — no deferred / manual merge.
+- Does **NOT** mean bypass CI: the PR still **must be green** (Code Quality / the session-card gate). "Merge
+  immediately" = "merge the moment it's mergeable," not "merge red."
+- Does **NOT** mean deploy: **merge ≠ deploy** stays in force — the production restart / prod-checks remain the
+  maintainer's (a merge auto-deploys `main`, but the owner owns prod verification).
+- Genuinely **irreversible / external-publish** safety brakes are unchanged — those ask first regardless; this
+  directive removes the *review-gating* of owner-directed work, not the *safety* brakes.
+
+**Applied this session:** the owner directed the reaction-roles overhaul PR 3–6 → they open ready and
+auto-merge on green (NOT `needs-hermes-review`). The superseded duplicate #1221 (a second build of PR 2, already
+shipped via #1219) is closed as superseded, not merged.
+
+**Home:** this Q-block (canonical owner decision) + the `.claude/CLAUDE.md` auto-merge bullet (the binding rule,
+edited in-session under the same live-owner exception, citing Q-0191).

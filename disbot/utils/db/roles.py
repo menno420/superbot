@@ -238,3 +238,72 @@ async def get_all_reaction_roles(guild_id: int) -> list[dict]:
         "SELECT message_id, emoji, role_id FROM reaction_roles WHERE guild_id=$1",
         (guild_id,),
     )
+
+
+async def get_reaction_roles_for_message(
+    guild_id: int,
+    message_id: int,
+) -> list[dict]:
+    """Every emoji → role binding on one message (the unique-mode sibling read)."""
+    return await pool.fetchall(
+        "SELECT emoji, role_id FROM reaction_roles "
+        "WHERE guild_id=$1 AND message_id=$2",
+        (guild_id, message_id),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Per-message reaction modes (overhaul PR 3 — Carl's `rr <mode> <msg_id>`)
+# ---------------------------------------------------------------------------
+# Mode is a property of the *message*, not a single emoji binding. No row ⇒
+# 'normal', so existing reaction messages behave exactly as before.
+
+
+async def set_reaction_message_mode(
+    guild_id: int,
+    message_id: int,
+    mode: str,
+) -> None:
+    """Set (or change) a reaction-role message's mode (normal/unique/verify)."""
+    await pool.execute(
+        """INSERT INTO reaction_role_message_modes (guild_id, message_id, mode)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (guild_id, message_id) DO UPDATE SET mode=EXCLUDED.mode""",
+        (guild_id, message_id, mode),
+    )
+
+
+async def get_reaction_message_mode(guild_id: int, message_id: int) -> str:
+    """Return a message's reaction mode, defaulting to ``'normal'`` (no row)."""
+    row = await pool.fetchone(
+        "SELECT mode FROM reaction_role_message_modes "
+        "WHERE guild_id=$1 AND message_id=$2",
+        (guild_id, message_id),
+    )
+    return row["mode"] if row else "normal"
+
+
+async def clear_reaction_message_mode(guild_id: int, message_id: int) -> None:
+    """Reset a message back to the default ``'normal'`` mode (drop its row)."""
+    await pool.execute(
+        "DELETE FROM reaction_role_message_modes "
+        "WHERE guild_id=$1 AND message_id=$2",
+        (guild_id, message_id),
+    )
+
+
+async def get_reaction_message_modes(guild_id: int) -> list[dict]:
+    """All non-default message modes in a guild (the panel's mode display)."""
+    return await pool.fetchall(
+        "SELECT message_id, mode FROM reaction_role_message_modes WHERE guild_id=$1",
+        (guild_id,),
+    )
+
+
+async def delete_reaction_modes_for_guild(guild_id: int) -> int:
+    """Drop every reaction-message mode row for a departed guild (teardown)."""
+    rows = await pool.fetchall(
+        "DELETE FROM reaction_role_message_modes WHERE guild_id=$1 RETURNING message_id",
+        (guild_id,),
+    )
+    return len(rows)

@@ -6,13 +6,21 @@
 > [`docs/subsystems/server-management.md`](../subsystems/server-management.md).
 >
 > **▶ Build progress (2026-06-21):** **PR 1 MERGED (#1220)** — audited `reaction_role_service` seam +
-> `utils/db/role_menus` data layer + migration 078 + cog routing + teardown. **PR 2 IN FLIGHT
-> (#1219, `needs-hermes-review`)** — the in-Discord builder (Surface B): `RoleMenuView` (dropdown
-> default, server-side modes, restart re-attach) + the operator builder/manager with edit-in-place +
-> theme presets + template gallery; all on PR 1's seam. **Next: PR 3** (Carl-parity modes on the emoji
-> surface + interactive emoji panel + settings bridge) · **PR 4** (free temp roles — `role_grants`
-> migration **079** + expiry sweep loop) · **PR 5** (role-pickup analytics §10) · **PR 6** optional
-> (PIL banner cards §4.6d).
+> `utils/db/role_menus` data layer + migration 078 + cog routing + teardown. **PR 2 MERGED (#1219)** —
+> the in-Discord builder (Surface B): `RoleMenuView` (dropdown default, server-side modes, restart
+> re-attach) + the operator builder/manager with edit-in-place + theme presets + template gallery.
+> **PR 3 + PR 4 + PR 5 BUILT together this session** (one owner-directed PR — Q-0191 merge-immediately,
+> not `needs-hermes-review`): **PR 3** (migration **079** `reaction_role_message_modes` — Carl-parity
+> normal/unique/verify on the emoji surface + the now-interactive `ReactionRolesPanel` add/remove/mode
+> editor + the `reaction_roles_enabled` settings bridge) · **PR 4** (migration **080** `role_grants` +
+> `RoleGrantsCog` expiry-sweep loop + `!temprole` + `utils/duration`) · **PR 5** (migration **081**
+> `role_menu_pickup_stats` rollup + the Diagnostics "📊 Role Pickups" section, increments wired into the
+> central `_apply` seam so menu *and* emoji pickups both count). **Migration renumber note:** the plan
+> originally pencilled PR 4 = migration 079; PR 3 needed a per-message mode table, so the real
+> assignment is 079 (modes) / 080 (grants) / 081 (pickups) — numbers are sequential, the shapes are as
+> specified. **Remaining: PR 6** (optional, owner-paced) — PIL banner cards (§4.6d), deliberately
+> deferred to keep the core arc tight (it needs a `role_menus` card column + image-attach on
+> message-edit; greenlight it as a follow-up).
 >
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
@@ -417,12 +425,12 @@ analytics counts (§10) are aggregate and do not require per-user logging to be 
 
 | PR | Scope | Gate |
 |---|---|---|
-| **PR 1** | Foundation — audited `reaction_role_service` + migration 078 + route existing reaction-roles through the seam | **▶ ready now** (no decision pending) |
-| **PR 2** | In-Discord builder (Surface B): **dropdown-default** role menus + **edit-in-place** + **theme presets** + **message templates** | after PR 1 |
-| **PR 3** | Carl-parity modes (unique/verify/limit) + interactive emoji panel + settings bridge | after PR 2 |
-| **PR 4** | **Free temp roles** — `role_grants` table + expiry sweep loop | after PR 1 (independent of PR 2/3) |
-| **PR 5** | **Role-pickup analytics** (§10) — surfaced in Diagnostics; web dashboard later | after PR 1 |
-| **PR 6 (optional)** | **PIL banner cards** (§4.6d) — reuses `welcome_render`; degrades to embed-only | owner-paced |
+| **PR 1** | Foundation — audited `reaction_role_service` + migration 078 + route existing reaction-roles through the seam | ✅ **MERGED #1220** |
+| **PR 2** | In-Discord builder (Surface B): **dropdown-default** role menus + **edit-in-place** + **theme presets** + **message templates** | ✅ **MERGED #1219** |
+| **PR 3** | Carl-parity modes (normal/unique/verify) on the emoji surface + interactive emoji panel + `reaction_roles_enabled` settings bridge (migration 079) | ✅ **BUILT** (this session) |
+| **PR 4** | **Free temp roles** — `role_grants` table (migration 080) + `RoleGrantsCog` expiry sweep + `!temprole` | ✅ **BUILT** (this session) |
+| **PR 5** | **Role-pickup analytics** (§10) — `role_menu_pickup_stats` (migration 081) + Diagnostics section | ✅ **BUILT** (this session) |
+| **PR 6 (optional)** | **PIL banner cards** (§4.6d) — reuses `welcome_render`; degrades to embed-only | ⏸ **deferred** (owner-paced follow-up) |
 | **Surface A** | Web builder in the dashboard (mirrors PR 2–5 over the control-API) | control-API write side / security review |
 
 The core arc is PR 1–3; PR 4–6 are additive waves on the PR 1 seam. None block PR 1.

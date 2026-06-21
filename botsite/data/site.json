@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T03:21:14Z",
+    "generated_at": "2026-06-21T13:29:19Z",
     "build": {
-      "commit": "7acf1f74",
-      "subject": "session(card): creature game runtime v1 — catch + collection (born-red HOLD)",
-      "committed_at": "2026-06-21T03:08:39Z",
-      "branch": "claude/funny-franklin-uf628a"
+      "commit": "a420ffe",
+      "subject": "Merge pull request #1222 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-21T14:25:45Z",
+      "branch": "claude/confident-wright-slef29"
     }
   },
   "counts": {
-    "commands": 311,
+    "commands": 312,
     "features": 37,
     "games": 9
   },
@@ -4889,8 +4889,13 @@
       "description": "Manually run time-based role assignment for all members.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -4987,8 +4992,13 @@
       "description": "Create a role (use !roles → Create instead).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5001,8 +5011,13 @@
       "description": "Print all role names for verification.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5029,8 +5044,13 @@
       "description": "Delete a role by name or mention.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5071,8 +5091,13 @@
       "description": "List all active reaction roles in this server.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5129,8 +5154,13 @@
       "description": "Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5143,8 +5173,13 @@
       "description": "Force-fetch all members from Discord.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5157,8 +5192,13 @@
       "description": "Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5185,8 +5225,13 @@
       "description": "Open the role hub (use !roles instead).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5199,8 +5244,13 @@
       "description": "Open the role hub (use !roles instead).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5213,8 +5263,13 @@
       "description": "Open the role management hub.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5227,8 +5282,13 @@
       "description": "Open the role management hub (alias for !roles).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5255,8 +5315,13 @@
       "description": "Add or update a time-based role threshold.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -5283,8 +5348,13 @@
       "description": "Remove a role from time-based assignment.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -6503,6 +6573,20 @@
       "permissions": "",
       "usage": "Managed background-task snapshot (core.runtime.tasks).",
       "description": "Managed background-task snapshot (core.runtime.tasks).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "temprole",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Give a member a role for a limited time. Usage: !temprole @member 2h @role",
+      "description": "Give a member a role for a limited time. Usage: !temprole @member 2h @role",
       "use_cases": null,
       "examples": [],
       "status": "finished",
