@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T03:21:14Z",
+    "generated_at": "2026-06-21T05:17:18Z",
     "build": {
-      "commit": "7acf1f74",
-      "subject": "session(card): creature game runtime v1 — catch + collection (born-red HOLD)",
-      "committed_at": "2026-06-21T03:08:39Z",
-      "branch": "claude/funny-franklin-uf628a"
+      "commit": "025caed1",
+      "subject": "Merge pull request #1208 from menno420/claude/funny-franklin-uf628a",
+      "committed_at": "2026-06-21T05:36:03Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 37,
@@ -2064,7 +2064,7 @@
       "file": "2026-06-21-creature-game-catch-collection.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature game runtime v1: catch + collection (dex)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
