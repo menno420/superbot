@@ -261,6 +261,34 @@ def test_site_subset_commands_carry_no_per_guild_value(mod):
         assert cmd["cooldown"] is None
 
 
+def test_site_field_contract_covers_every_public_family(mod):
+    # The within-family redaction contract must pin a field set for every top-level
+    # public family (so no family escapes the leaf-level guard), plus the nested
+    # meta.build dict. A new family added to SITE_TOPLEVEL_KEYS without a contract
+    # entry trips this — the field guard would silently skip it otherwise.
+    paths = set(mod.SITE_FIELD_CONTRACT)
+    assert set(mod.SITE_TOPLEVEL_KEYS) <= paths
+    assert "meta.build" in paths
+
+
+def test_site_field_contract_matches_the_live_build(mod):
+    # The pinned contract must be a *superset* of what the producer actually emits —
+    # i.e. the producer never emits a field the contract hasn't vetted as public. This
+    # is the test that forces a conscious contract bump before a new field can ship.
+    subset = mod.build_site_subset(mod.build_data())
+
+    def leaves(value):
+        records = value if isinstance(value, list) else [value]
+        return {k for r in records if isinstance(r, dict) for k in r}
+
+    assert leaves(subset["meta"]) <= set(mod.SITE_META_FIELDS)
+    assert leaves(subset["meta"]["build"]) <= set(mod.SITE_META_BUILD_FIELDS)
+    assert leaves(subset["counts"]) <= set(mod.SITE_COUNTS_FIELDS)
+    assert leaves(subset["catalogue"]) <= set(mod.SITE_CATALOGUE_FIELDS)
+    assert leaves(subset["commands"]) <= set(mod.SITE_COMMAND_FIELDS)
+    assert leaves(subset["bot_changelog"]) <= set(mod.SITE_CHANGELOG_FIELDS)
+
+
 # ---------------------------------------------------------------------------
 # S1.1 — per-command enrichment (description / examples / status / linked_ideas)
 # ---------------------------------------------------------------------------
