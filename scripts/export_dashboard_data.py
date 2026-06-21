@@ -115,6 +115,53 @@ SITE_COMMAND_FIELDS: tuple[str, ...] = (
     "notes",
 )
 
+# Public field contracts for the OTHER ``site.json`` families — the *within-family*
+# leak guard (keys → leaves). :data:`SITE_TOPLEVEL_KEYS` pins which *families* may
+# appear; these pin the exact *leaf fields* each family may carry, so a producer change
+# that adds a new field to an already-allowed family (a per-guild value, an internal
+# id, a future ``owner_only_note``) fails closed in
+# :func:`check_dashboard_data.check_site_subset` instead of leaking silently. Nested
+# dicts are pinned per level (``meta`` and ``meta.build``). :data:`SITE_COMMAND_FIELDS`
+# (above) is the ``commands`` family's contract; these cover the rest.
+SITE_META_FIELDS: tuple[str, ...] = ("generated_at", "build")
+SITE_META_BUILD_FIELDS: tuple[str, ...] = (
+    "branch",
+    "commit",
+    "committed_at",
+    "subject",
+)
+SITE_COUNTS_FIELDS: tuple[str, ...] = ("commands", "features", "games")
+SITE_CHANGELOG_FIELDS: tuple[str, ...] = ("date", "kind", "summary", "title")
+# Public catalogue record contract: the entry-sourced fields the projector keeps
+# (:data:`SITE_CATALOGUE_ENTRY_FIELDS`, used by :func:`_site_catalogue` below) plus the
+# two derived output fields the projector always adds (``badges``, ``is_game``).
+SITE_CATALOGUE_ENTRY_FIELDS: tuple[str, ...] = (
+    "key",
+    "display_name",
+    "description",
+    "emoji",
+    "category",
+    "tags",
+)
+SITE_CATALOGUE_FIELDS: tuple[str, ...] = SITE_CATALOGUE_ENTRY_FIELDS + (
+    "badges",
+    "is_game",
+)
+
+# The complete public leaf-field contract: family path → allowed leaf fields. Drives
+# :func:`check_dashboard_data.check_site_subset`'s within-family whitelist (the sibling
+# of the :data:`SITE_TOPLEVEL_KEYS` family whitelist). A dotted path (``meta.build``)
+# pins a nested dict; a plain key pins either a dict family (``meta`` / ``counts``) or
+# the records of a list family (``catalogue`` / ``commands`` / ``bot_changelog``).
+SITE_FIELD_CONTRACT: dict[str, tuple[str, ...]] = {
+    "meta": SITE_META_FIELDS,
+    "meta.build": SITE_META_BUILD_FIELDS,
+    "counts": SITE_COUNTS_FIELDS,
+    "catalogue": SITE_CATALOGUE_FIELDS,
+    "commands": SITE_COMMAND_FIELDS,
+    "bot_changelog": SITE_CHANGELOG_FIELDS,
+}
+
 # A command's maturity badge (plan S1.1). ``finished`` is the recommended default;
 # ``in-progress`` is set only when the owning subsystem has linked open work.
 COMMAND_STATUS_FINISHED = "finished"
@@ -764,14 +811,9 @@ _GAME_CATEGORIES: frozenset[str] = frozenset({"games"})
 # Public catalogue fields — declared metadata only (name/description/category/
 # badges). Omits internal-only fields like ``capabilities`` and ``entry_points``
 # (operator wiring, not user marketing) and ``visibility_mode`` (an internal flag).
-_SITE_CATALOGUE_FIELDS: tuple[str, ...] = (
-    "key",
-    "display_name",
-    "description",
-    "emoji",
-    "category",
-    "tags",
-)
+# The entry-projection source is :data:`SITE_CATALOGUE_ENTRY_FIELDS` (declared up top
+# with the other public field contracts); the full output contract (these + the derived
+# ``badges`` / ``is_game``) is :data:`SITE_CATALOGUE_FIELDS`.
 
 
 def _site_catalogue(catalogue: list[dict]) -> list[dict]:
@@ -783,7 +825,7 @@ def _site_catalogue(catalogue: list[dict]) -> list[dict]:
     """
     out: list[dict] = []
     for entry in catalogue:
-        projected = {f: entry.get(f) for f in _SITE_CATALOGUE_FIELDS if f in entry}
+        projected = {f: entry.get(f) for f in SITE_CATALOGUE_ENTRY_FIELDS if f in entry}
         category = entry.get("category")
         projected["badges"] = [category] if category else []
         projected["is_game"] = category in _GAME_CATEGORIES

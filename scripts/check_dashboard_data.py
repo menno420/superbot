@@ -290,6 +290,22 @@ def _build_fresh() -> dict[str, Any]:
     return _export_module().build_data()
 
 
+def _resolve_field_path(payload: dict[str, Any], path: str) -> Any:
+    """Resolve a dotted ``SITE_FIELD_CONTRACT`` path to its value (or ``None``).
+
+    ``"meta"`` → the meta dict; ``"meta.build"`` → the nested build dict;
+    ``"catalogue"`` → the catalogue list. Returns ``None`` when any segment is absent
+    or the traversal hits a non-dict (the family/sub-key simply isn't present — the
+    field guard skips it, the same fail-soft as a missing top-level family).
+    """
+    cur: Any = payload
+    for part in path.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(part)
+    return cur
+
+
 def check_site_subset(
     committed: dict[str, Any] | None = None,
     *,
@@ -304,12 +320,16 @@ def check_site_subset(
       key is the leak class this guards: it would mean the producer started emitting a
       family that was never vetted as public. This is an **error** — the redaction
       guarantee for non-negotiable #1.
-    * **per-command field whitelist** (plan S1.1) — every ``commands[*]`` record's
-      fields must be a *subset* of the producer's :data:`SITE_COMMAND_FIELDS`. The
-      interactive browser enriched each command with description/examples/status/
-      linked-ideas; this assertion is the standing guard that a *future* enrichment
-      can't slip a per-guild value or dev-only field onto the public command surface
-      without being vetted into the whitelist first. Also an **error**.
+    * **per-family field whitelist** (plan S1.1 + field-level contract) — every public
+      family's leaf fields must be a *subset* of the producer's pinned contract for
+      that family (:data:`export.SITE_FIELD_CONTRACT`: ``meta`` / ``meta.build`` /
+      ``counts`` / ``catalogue`` / ``commands`` / ``bot_changelog``). The top-level
+      whitelist stops at the *family* boundary; this is the sibling guard *within* an
+      allowed family — a producer change that adds a new field to ``catalogue`` or
+      ``commands`` (a per-guild value, an internal id, a future ``owner_only_note``)
+      fails closed here instead of silently riding an already-allowed family onto the
+      public site. Also an **error**: keys *and* leaves both fail closed, so the
+      redaction contract is total.
     * **counts** — ``counts.commands`` / ``features`` / ``games`` must equal the
       lengths in the committed file (the count-drift class, mirrored from
       :func:`check_count_integrity`).
@@ -336,22 +356,31 @@ def check_site_subset(
             ),
         )
 
-    # Per-command field whitelist — fail-closed on any un-whitelisted command field.
-    allowed_cmd_fields: set[str] = set(export.SITE_COMMAND_FIELDS)
-    extra_cmd_fields: set[str] = set()
-    for cmd in committed.get("commands", []):
-        if isinstance(cmd, dict):
-            extra_cmd_fields |= set(cmd) - allowed_cmd_fields
-    if extra_cmd_fields:
-        issues.append(
-            _err(
-                "site_command_field_not_whitelisted",
-                f"site.json commands carry field(s) {sorted(extra_cmd_fields)} not in "
-                f"the public per-command whitelist {sorted(allowed_cmd_fields)} — a "
-                f"command field must never leak a per-guild value or dev-only datum "
-                f"(plan S1.1); fix _site_commands / SITE_COMMAND_FIELDS",
-            ),
-        )
+    # Per-family field whitelist — fail-closed on any un-whitelisted leaf field within
+    # an already-allowed family (the within-family leak class the top-level whitelist
+    # does not cover). Driven by the producer's SITE_FIELD_CONTRACT registry so keys
+    # and leaves stay one source of truth.
+    for path, fields in export.SITE_FIELD_CONTRACT.items():
+        value = _resolve_field_path(committed, path)
+        if value is None:
+            continue
+        allowed_fields = set(fields)
+        extra_fields: set[str] = set()
+        records = value if isinstance(value, list) else [value]
+        for record in records:
+            if isinstance(record, dict):
+                extra_fields |= set(record) - allowed_fields
+        if extra_fields:
+            issues.append(
+                _err(
+                    "site_field_not_whitelisted",
+                    f"site.json {path} carries field(s) {sorted(extra_fields)} not in "
+                    f"the public field contract {sorted(allowed_fields)} — a public "
+                    f"field must never leak a per-guild value or dev-only datum "
+                    f"(field-level redaction); fix build_site_subset / "
+                    f"SITE_FIELD_CONTRACT",
+                ),
+            )
 
     counts = committed.get("counts", {})
     expected = {
