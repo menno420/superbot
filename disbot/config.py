@@ -213,3 +213,9 @@ BTD6_DATA_BASE_URL = os.getenv("BTD6_DATA_BASE_URL", "")
 # Cloud backend only: local cache dir for fetched fixtures. Empty → a temp dir
 # (ephemeral; re-warmed each boot).
 BTD6_DATA_CACHE_DIR = os.getenv("BTD6_DATA_CACHE_DIR", "")
+# Postgres backend only: auto-seed the ``btd6_data_blobs`` store from the deployed
+# files on boot, so a data PR applies on deploy with no manual ``!btd6ops
+# seed-data``. Default on; set to "0"/"false"/"no" to disable (kill-switch). A
+# no-op for the file backend (reads bundled files directly) and the cloud backend
+# (seeded via its own upload script).
+BTD6_AUTO_SEED = os.getenv("BTD6_AUTO_SEED", "1")

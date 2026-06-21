@@ -727,3 +727,47 @@ def test_served_data_drift_is_silent_for_the_file_backend(monkeypatch):
     assert svc.served_data_drift() is None
     bundled = svc.bundled_game_version()
     assert bundled and bundled[0].isdigit()
+
+
+# --- boot auto-seed gating (Q-0077(b)) --------------------------------------
+
+
+def test_auto_seed_enabled_only_for_postgres(monkeypatch):
+    import config
+    from services import btd6_data_service as svc
+
+    monkeypatch.setattr(config, "BTD6_AUTO_SEED", "1", raising=False)
+    monkeypatch.setattr(config, "BTD6_DATA_BACKEND", "postgres", raising=False)
+    assert svc.auto_seed_enabled() is True
+    for backend in ("", "file", "cloud"):
+        monkeypatch.setattr(config, "BTD6_DATA_BACKEND", backend, raising=False)
+        assert svc.auto_seed_enabled() is False
+
+
+def test_auto_seed_kill_switch(monkeypatch):
+    import config
+    from services import btd6_data_service as svc
+
+    monkeypatch.setattr(config, "BTD6_DATA_BACKEND", "postgres", raising=False)
+    for off in ("0", "false", "no", "off", "OFF"):
+        monkeypatch.setattr(config, "BTD6_AUTO_SEED", off, raising=False)
+        assert svc.auto_seed_enabled() is False
+    monkeypatch.setattr(config, "BTD6_AUTO_SEED", "1", raising=False)
+    assert svc.auto_seed_enabled() is True
+
+
+def test_bundled_newer_than_served_strict_version_compare(monkeypatch):
+    from services import btd6_data_service as svc
+
+    # Bundled strictly newer → auto-seed trigger (the 2026-06-10 incident shape).
+    monkeypatch.setattr(svc, "served_data_drift", lambda: ("55.0", "55.1"))
+    assert svc.bundled_newer_than_served() is True
+    # Store strictly newer → never clobber a deliberately-newer store.
+    monkeypatch.setattr(svc, "served_data_drift", lambda: ("55.2", "55.1"))
+    assert svc.bundled_newer_than_served() is False
+    # No drift (file backend / equal / unknown) → no trigger.
+    monkeypatch.setattr(svc, "served_data_drift", lambda: None)
+    assert svc.bundled_newer_than_served() is False
+    # Numeric (not lexical) comparison: 55.10 > 55.9.
+    monkeypatch.setattr(svc, "served_data_drift", lambda: ("55.9", "55.10"))
+    assert svc.bundled_newer_than_served() is True

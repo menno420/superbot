@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T20:00:49Z",
+    "generated_at": "2026-06-21T20:40:57Z",
     "build": {
-      "commit": "a8efae4d",
-      "subject": "Reaction roles: auto-heal dead bindings on the reaction listener path (#1250)",
-      "committed_at": "2026-06-21T20:00:11Z",
-      "branch": "main"
+      "commit": "25e57944",
+      "subject": "BTD6 data auto-seed: born-red card + claim",
+      "committed_at": "2026-06-21T20:25:18Z",
+      "branch": "claude/peaceful-mayer-rgc20t"
     },
     "counts": {
       "functions": 37,
@@ -14,7 +14,7 @@
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
-      "env_vars": 37,
+      "env_vars": 38,
       "cogs": 46,
       "commands": 314,
       "setting_keys": 104,
@@ -2309,6 +2309,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-journal-workflow-lessons.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Journal: capture recurring workflow lessons from the reaction-roles chain",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-free-for-everyone-north-star.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — \"Free for everyone, forever\": codify the product North Star",
@@ -2381,6 +2389,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-btd6-data-auto-seed.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6 data: auto-seed the postgres blob store on boot",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-btd6-buff-uptime.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — BTD6 Alchemist buff-uptime calculator + game-data decode",
@@ -2392,6 +2408,14 @@
       "file": "2026-06-21-btd6-buff-uptime-verify-and-populate.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — BTD6 buff-uptime: verify binding against the real dump + populate data",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-btd6-buff-uptime-multitarget.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6 buff-uptime: rebuffBlockTime decode + multi-target uptime",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
@@ -2571,30 +2595,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-creature-game-sim.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Creature game: playability simulator + design + copyright",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-creature-combat-move-system.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Complete the creature plan: real moves, damage types, 6v6 teams (sim-validated)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-creature-catalog-data-driven.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Creature roster as a data-driven catalog (sim-validate ~36 at launch scale)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -2793,6 +2793,22 @@
         {
           "file": "disbot/config.py",
           "line": 28,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_AUTO_SEED",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 221,
           "layer": "config",
           "has_default": true
         }
