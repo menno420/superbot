@@ -7019,3 +7019,39 @@ shipped via #1219) is closed as superseded, not merged.
 
 **Home:** this Q-block (canonical owner decision) + the `.claude/CLAUDE.md` auto-merge bullet (the binding rule,
 edited in-session under the same live-owner exception, citing Q-0191).
+
+### Q-0192 — ANSWERED (owner decision in-session): Project Moon knowledge domain — full parity across all three games (2026-06-21)
+
+**Context.** A community member asked the owner to have the **Project Moon wiki** (Lobotomy Corporation /
+Library of Ruina / Limbus Company) available in the bot "in one area," the way BTD6 data is available.
+An agent did the feasibility research (verdict: achievable + good fit, but a real build — the bespoke
+`btd6_*` knowledge stack and Project Moon's fragmented, prose-heavy sources are the cost) and asked the
+owner the **scope fork** via `AskUserQuestion`: (1) lore & Q&A grounding, (2) + structured stat lookups,
+(3) full BTD6-grade parity across all games.
+
+**The decision.** The owner picked **(3) — full parity, all games.** The target is the maximal build:
+**AI Q&A grounding + browsable structured lookups + calculators** for the whole Project Moon universe,
+all three games + shared lore, exact numbers where they exist.
+
+**What this authorises (and its bounds).**
+
+- It is **owner-directed** → resulting PRs open **ready, never `needs-hermes-review`**, auto-merge on
+  green (Q-0191). It is **product intent / a north-star scope**, not a licence to one-shot a ~12k-line
+  refactor of gated runtime: the work is a **program**, sequenced into value-shipping slices.
+- The agent's **engineering call** (not the owner's to make): **generalise the BTD6 knowledge stack into
+  a domain-agnostic `KnowledgeDomain` seam** with BTD6 as instance #0 and the Project Moon games as
+  instances, rather than a parallel `projmoon_*` copy — built **proof-first** (a minimal standalone
+  Limbus domain first, then extract the seam). BTD6 behaviour must stay byte-identical / not regress its
+  groundedness guards (ADR-006).
+- **Three follow-up design questions** (authoritative source per game · lore depth/spoilers · `/pm` hub
+  vs per-game commands) are routed to the owner in the plan; they refine later phases and do **not** block
+  the first slice (sensible defaults assumed).
+
+**Applied this session:** promoted the idea → the program plan
+`docs/planning/project-moon-knowledge-domain-plan-2026-06-21.md` (owner-directed, auto-merge on green,
+docs-only). No runtime code this session — the first build slice (Limbus lore-Q&A vertical) is the next
+session's work.
+
+**Home:** this Q-block + `docs/planning/project-moon-knowledge-domain-plan-2026-06-21.md` (the program
+plan) + the idea capture `docs/ideas/project-moon-wiki-knowledge-domain-2026-06-21.md` (resolved) +
+`docs/planning/README.md` S2 index.
