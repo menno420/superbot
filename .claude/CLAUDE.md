@@ -181,7 +181,14 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   class) — so arm it yourself: call `enable_pr_auto_merge` right after creating the PR (owner
   decision Q-0127, 2026-06-16); the enabler stays the backstop for branch-pushed PRs. Carve-outs
   stay manual — a PR labelled `needs-hermes-review` (Q-0117) or
-  `do-not-automerge` (Q-0114) is never auto-armed. **Merge ≠ deploy** — production
+  `do-not-automerge` (Q-0114) is never auto-armed. **Owner-directed work is NEVER held for review —
+  always merge immediately (owner directive Q-0189, 2026-06-21).** When the owner *personally* directs a
+  task (a session prompt, an in-chat instruction, "build PR N / continue the plan"), owner direction **is**
+  the review: open the PR **ready**, do **not** label it `needs-hermes-review` / `do-not-automerge`, and arm
+  auto-merge so it lands the instant CI is green. The `needs-hermes-review` carve-out is for *self-initiated*
+  substantial/risky runtime work only — the distinction is **who chose the task**, not how big it is.
+  "Merge immediately" means *merge the moment it's mergeable* (still requires CI green), not bypass CI or
+  deploy. **Merge ≠ deploy** — production
   restart/prod-checks stay the maintainer's. *If you ever merge by hand* (a carve-out, or
   auto-merge is down): re-verify **CI green on the final head** and **never defer the merge to
   the maintainer's next message** — that deferral was the #778 root cause.
