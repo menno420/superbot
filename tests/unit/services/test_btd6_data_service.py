@@ -771,3 +771,41 @@ def test_bundled_newer_than_served_strict_version_compare(monkeypatch):
     # Numeric (not lexical) comparison: 55.10 > 55.9.
     monkeypatch.setattr(svc, "served_data_drift", lambda: ("55.9", "55.10"))
     assert svc.bundled_newer_than_served() is True
+
+
+def test_content_drift_none_for_file_backend(monkeypatch):
+    from services import btd6_data_service as svc
+    from services.btd6_data_provider import FileRawProvider
+
+    # The file backend serves the committed files directly — it cannot drift.
+    monkeypatch.setattr(svc, "_PROVIDER", FileRawProvider())
+    assert svc.content_drift() is None
+
+
+def test_content_drift_lists_same_version_changes(monkeypatch):
+    from services import btd6_data_service as svc
+
+    # Pretend a non-file (postgres-like) backend is active.
+    monkeypatch.setattr(svc, "_PROVIDER", object())
+
+    # In sync: the served store returns exactly the bundled files → no drift.
+    monkeypatch.setattr(svc, "read_blob", lambda name: svc.FileRawProvider().load(name))
+    assert svc.content_drift() is None
+
+    # One file differs at the same version (a buff/stat edit shape) → reported.
+    def served(name: str):
+        body = svc.FileRawProvider().load(name)
+        if name == "towers.json" and body is not None:
+            return {**body, "_drift_marker": True}
+        return body
+
+    monkeypatch.setattr(svc, "read_blob", served)
+    assert svc.content_drift() == ["towers.json"]
+
+    # A served blob missing entirely also counts as drift.
+    monkeypatch.setattr(
+        svc,
+        "read_blob",
+        lambda name: None if name == "towers.json" else svc.FileRawProvider().load(name),
+    )
+    assert svc.content_drift() == ["towers.json"]
