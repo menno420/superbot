@@ -1,0 +1,284 @@
+"""Tests for the PR 2 role-menu methods of services.reaction_role_service.
+
+(PR 1's emoji-binding methods are covered by ``test_reaction_role_service.py``.)
+Covers, CI-safe with no DB: server-side mode enforcement (normal / unique /
+verify / max_roles) for both the button (``toggle_role``) and dropdown
+(``apply_selection``) surfaces, and that menu *config* changes emit
+``audit.action_recorded`` while member self-assignment does not.
+"""
+
+from __future__ import annotations
+
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from services import reaction_role_service as svc
+
+# ---------------------------------------------------------------------------
+# Minimal Discord fakes (positions chosen so the bot can manage every role)
+# ---------------------------------------------------------------------------
+
+
+class FakeRole:
+    def __init__(self, rid: int, *, position: int = 1, name: str = "Role") -> None:
+        self.id = rid
+        self.position = position
+        self.name = name
+        self.managed = False
+
+    def is_default(self) -> bool:
+        return False
+
+    @property
+    def mention(self) -> str:
+        return f"<@&{self.id}>"
+
+
+class FakeMember:
+    def __init__(self, roles: list[FakeRole]) -> None:
+        self.roles = roles
+        self.add_roles = AsyncMock()
+        self.remove_roles = AsyncMock()
+
+
+class FakeGuild:
+    def __init__(self, roles: list[FakeRole]) -> None:
+        self._roles = {r.id: r for r in roles}
+        # Bot top-role well above the menu roles → everything is manageable.
+        self.me = SimpleNamespace(
+            top_role=FakeRole(99999, position=100, name="Bot"),
+            guild_permissions=SimpleNamespace(manage_roles=True),
+        )
+
+    def get_role(self, rid: int) -> FakeRole | None:
+        return self._roles.get(rid)
+
+
+def _menu(mode: str = "normal", max_roles: int = 0) -> dict:
+    return {"menu_id": 1, "mode": mode, "max_roles": max_roles, "style": "dropdown"}
+
+
+def _patch_menu(menu: dict, option_ids: list[int]):
+    opts = [{"role_id": rid} for rid in option_ids]
+    return (
+        patch.object(svc.menus_db, "get_menu", new=AsyncMock(return_value=menu)),
+        patch.object(svc.menus_db, "get_options", new=AsyncMock(return_value=opts)),
+    )
+
+
+# ---------------------------------------------------------------------------
+# toggle_role — the button surface
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_toggle_adds_role_when_absent():
+    guild = FakeGuild([FakeRole(10), FakeRole(20)])
+    member = FakeMember(roles=[])
+    p1, p2 = _patch_menu(_menu("normal"), [10, 20])
+    with p1, p2:
+        out = await svc.toggle_role(
+            menu_id=1, member=member, guild=guild, clicked_role_id=10
+        )
+    assert out.added == (10,)
+    assert out.removed == ()
+    member.add_roles.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_toggle_removes_role_when_held():
+    held = FakeRole(10)
+    guild = FakeGuild([held, FakeRole(20)])
+    member = FakeMember(roles=[held])
+    p1, p2 = _patch_menu(_menu("normal"), [10, 20])
+    with p1, p2:
+        out = await svc.toggle_role(
+            menu_id=1, member=member, guild=guild, clicked_role_id=10
+        )
+    assert out.removed == (10,)
+    assert out.added == ()
+    member.remove_roles.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_toggle_unique_clears_sibling():
+    a, b = FakeRole(10), FakeRole(20)
+    guild = FakeGuild([a, b])
+    member = FakeMember(roles=[a])  # already holds the sibling
+    p1, p2 = _patch_menu(_menu("unique"), [10, 20])
+    with p1, p2:
+        out = await svc.toggle_role(
+            menu_id=1, member=member, guild=guild, clicked_role_id=20
+        )
+    assert out.added == (20,)
+    assert out.removed == (10,)  # sibling cleared
+
+
+@pytest.mark.asyncio
+async def test_toggle_verify_never_removes():
+    held = FakeRole(10)
+    guild = FakeGuild([held])
+    member = FakeMember(roles=[held])
+    p1, p2 = _patch_menu(_menu("verify"), [10])
+    with p1, p2:
+        out = await svc.toggle_role(
+            menu_id=1, member=member, guild=guild, clicked_role_id=10
+        )
+    assert out.added == ()
+    assert out.removed == ()
+    assert "verify" in out.note.lower()
+    member.remove_roles.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_toggle_max_roles_blocks_extra_pick():
+    a, b = FakeRole(10), FakeRole(20)
+    guild = FakeGuild([a, b])
+    member = FakeMember(roles=[a])  # already at the cap of 1
+    p1, p2 = _patch_menu(_menu("normal", max_roles=1), [10, 20])
+    with p1, p2:
+        out = await svc.toggle_role(
+            menu_id=1, member=member, guild=guild, clicked_role_id=20
+        )
+    assert out.added == ()
+    assert out.blocked == (20,)
+    member.add_roles.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_toggle_unknown_role_is_rejected():
+    guild = FakeGuild([FakeRole(10)])
+    member = FakeMember(roles=[])
+    p1, p2 = _patch_menu(_menu("normal"), [10])
+    with p1, p2:
+        out = await svc.toggle_role(
+            menu_id=1, member=member, guild=guild, clicked_role_id=999
+        )
+    assert not out.changed
+    member.add_roles.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# apply_selection — the dropdown surface
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_apply_selection_reconciles_add_and_remove():
+    a, b, c = FakeRole(10), FakeRole(20), FakeRole(30)
+    guild = FakeGuild([a, b, c])
+    member = FakeMember(roles=[a])  # holds A
+    p1, p2 = _patch_menu(_menu("normal"), [10, 20, 30])
+    with p1, p2:
+        out = await svc.apply_selection(
+            menu_id=1, member=member, guild=guild, selected_ids=[20, 30]
+        )
+    assert set(out.added) == {20, 30}
+    assert out.removed == (10,)  # A deselected
+
+
+@pytest.mark.asyncio
+async def test_apply_selection_verify_only_adds():
+    a, b = FakeRole(10), FakeRole(20)
+    guild = FakeGuild([a, b])
+    member = FakeMember(roles=[a])
+    p1, p2 = _patch_menu(_menu("verify"), [10, 20])
+    with p1, p2:
+        out = await svc.apply_selection(
+            menu_id=1, member=member, guild=guild, selected_ids=[20]
+        )
+    assert out.added == (20,)
+    assert out.removed == ()  # verify never removes the held role
+
+
+@pytest.mark.asyncio
+async def test_apply_selection_unique_keeps_one():
+    a, b = FakeRole(10), FakeRole(20)
+    guild = FakeGuild([a, b])
+    member = FakeMember(roles=[])
+    p1, p2 = _patch_menu(_menu("unique"), [10, 20])
+    with p1, p2:
+        out = await svc.apply_selection(
+            menu_id=1, member=member, guild=guild, selected_ids=[10, 20]
+        )
+    # Unique caps the desired set to one role.
+    assert len(out.added) == 1
+
+
+# ---------------------------------------------------------------------------
+# Config writes are audited; member assignment is not
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_create_menu_emits_audit_and_validates():
+    with (
+        patch.object(
+            svc.menus_db, "create_menu", new=AsyncMock(return_value=7)
+        ) as create,
+        patch.object(svc.menus_db, "replace_options", new=AsyncMock()) as setopts,
+        patch(
+            "services.audit_events.emit_audit_action",
+            new=AsyncMock(return_value=True),
+        ) as audit,
+    ):
+        menu_id = await svc.create_menu(
+            guild_id=1,
+            channel_id=2,
+            title="Roles",
+            description=None,
+            style="bogus",  # invalid → coerced
+            mode="weird",  # invalid → coerced
+            max_roles=-5,  # clamped to 0
+            options=[svc.RoleOption(10), svc.RoleOption(20)],
+            actor_id=99,
+        )
+    assert menu_id == 7
+    setopts.assert_awaited_once()
+    # invalid style/mode coerced; negative limit clamped.
+    assert create.await_args.kwargs["style"] == "dropdown"
+    assert create.await_args.kwargs["mode"] == "normal"
+    assert create.await_args.kwargs["max_roles"] == 0
+    audit.assert_awaited_once()
+    kw = audit.await_args.kwargs
+    assert kw["subsystem"] == "role"
+    assert kw["mutation_type"] == "create_role_menu"
+    assert kw["target"] == "role_menu:7"
+    assert kw["guild_id"] == 1
+    assert kw["actor_id"] == 99
+
+
+@pytest.mark.asyncio
+async def test_delete_menu_emits_audit():
+    with (
+        patch.object(
+            svc.menus_db,
+            "get_menu",
+            new=AsyncMock(return_value={"menu_id": 5, "title": "Old"}),
+        ),
+        patch.object(svc.menus_db, "delete_menu", new=AsyncMock()) as delete,
+        patch(
+            "services.audit_events.emit_audit_action",
+            new=AsyncMock(return_value=True),
+        ) as audit,
+    ):
+        await svc.delete_menu(menu_id=5, guild_id=1, actor_id=99)
+    delete.assert_awaited_once_with(5)
+    kw = audit.await_args.kwargs
+    assert kw["mutation_type"] == "delete_role_menu"
+    assert kw["new_value"] is None
+
+
+@pytest.mark.asyncio
+async def test_toggle_does_not_emit_audit():
+    """Member self-assignment is high-volume + opt-in — never auto-audited (§9)."""
+    guild = FakeGuild([FakeRole(10)])
+    member = FakeMember(roles=[])
+    p1, p2 = _patch_menu(_menu("normal"), [10])
+    with p1, p2, patch("services.audit_events.emit_audit_action") as audit:
+        await svc.toggle_role(
+            menu_id=1, member=member, guild=guild, clicked_role_id=10
+        )
+    audit.assert_not_called()

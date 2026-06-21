@@ -1,0 +1,792 @@
+"""Operator-facing role-menu builder + manager (plan §4 PR 2, §4.6 a/b/c).
+
+Reached from the Reaction Roles panel. ``RoleMenuListView`` is the manager (list /
+new / edit / delete); ``RoleMenuBuilder`` is the build-or-edit panel. Discord's
+5-row / 25-option limits forbid one giant form, so the builder is a compact preview
+panel whose fields are set through modals + ephemeral sub-pickers, then **Post**
+(new) or **Save** (edit-in-place — §4.6a) commits through the audited
+:mod:`services.reaction_role_service`.
+
+Layer: a thin UI over the service — no DB writes here, no role math. Authority is
+re-checked at callback time (``manage_roles``), per ``.claude/rules/discord-views.md``.
+"""
+
+from __future__ import annotations
+
+import logging
+
+import discord
+
+from core.runtime import resources
+from core.runtime.interaction_helpers import safe_defer
+from utils import role_feasibility
+from utils import role_menu_presentation as presentation
+from views.base import BaseView
+from views.navigation import attach_back_button
+from views.paginated_select import PaginatedSelectView
+from views.roles.role_menu_view import MAX_MENU_ROLES, RoleMenuView, build_menu_embed
+from views.selectors import attach_multi_role_select
+
+logger = logging.getLogger("bot.views.role_menu_builder")
+
+_STYLE_LABEL = {"dropdown": "Dropdown", "button": "Buttons"}
+_MODE_LABEL = {
+    "normal": "Normal — pick any",
+    "unique": "Unique — one only",
+    "verify": "Verify — add-only",
+}
+
+
+def _can_manage(interaction: discord.Interaction) -> bool:
+    perms = getattr(interaction.user, "guild_permissions", None)
+    return bool(perms is not None and (perms.manage_roles or perms.administrator))
+
+
+async def _deny(interaction: discord.Interaction) -> None:
+    await interaction.response.send_message(
+        "You need the **Manage Roles** permission to do that.",
+        ephemeral=True,
+    )
+
+
+# A guild channel a menu can be posted in — all have ``.send`` / ``.mention`` /
+# ``.id`` (narrower than ``MessageableChannel``, which also covers DM/group).
+_GuildMessageable = (
+    discord.TextChannel | discord.Thread | discord.VoiceChannel | discord.StageChannel
+)
+
+
+def _as_messageable(channel: object) -> _GuildMessageable | None:
+    """Narrow an interaction/guild channel to a postable guild channel, or None."""
+    if isinstance(
+        channel,
+        (
+            discord.TextChannel,
+            discord.Thread,
+            discord.VoiceChannel,
+            discord.StageChannel,
+        ),
+    ):
+        return channel
+    return None
+
+
+def _option_dicts(options: list) -> list[dict]:  # type: ignore[type-arg]
+    """Convert service ``RoleOption`` rows → the dicts the view/embed read."""
+    return [{"role_id": o.role_id, "emoji": o.emoji, "label": o.label} for o in options]
+
+
+# ---------------------------------------------------------------------------
+# Manager — list / new / edit / delete
+# ---------------------------------------------------------------------------
+
+
+class RoleMenuListView(BaseView):
+    """Lists a guild's role menus with New / Edit / Delete entry points."""
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        guild: discord.Guild,
+        channel: discord.abc.MessageableChannel,
+        parent: BaseView | None = None,
+    ) -> None:
+        super().__init__(author, timeout=300)
+        self.guild = guild
+        self.channel = channel
+        self.parent = parent
+        if parent is not None:
+
+            async def _build_parent(
+                _interaction: discord.Interaction,
+            ) -> tuple[discord.Embed, discord.ui.View]:
+                return await parent.build_embed(), parent  # type: ignore[attr-defined]
+
+            attach_back_button(
+                self,
+                label="↩ Back",
+                custom_id="role:menus:back",
+                parent_builder=_build_parent,
+                row=1,
+            )
+
+    async def build_embed(self) -> discord.Embed:
+        from services import reaction_role_service
+
+        menus = await reaction_role_service.list_menus(self.guild.id)
+        embed = discord.Embed(
+            title="🛠️ Role Menus",
+            color=presentation.theme_color(None),
+        )
+        if menus:
+            lines = []
+            for m in menus:
+                opts = await reaction_role_service.get_menu_options(int(m["menu_id"]))
+                posted = "📌 posted" if m.get("message_id") else "📝 draft"
+                lines.append(
+                    f"**{m['title']}** — {_STYLE_LABEL.get(m['style'], m['style'])}"
+                    f" · {m['mode']} · {len(opts)} role(s) · {posted}",
+                )
+            embed.description = "\n".join(lines)
+        else:
+            embed.description = (
+                "No role menus yet.\n\n"
+                "Tap **➕ New Menu** to build a button/dropdown self-role menu — the "
+                "modern alternative to emoji reaction roles."
+            )
+        embed.set_footer(text="Members self-assign with one tap; no reactions needed.")
+        return embed
+
+    async def _rerender(self) -> None:
+        if self.message:
+            await self.message.edit(embed=await self.build_embed(), view=self)
+
+    @discord.ui.button(label="➕ New Menu", style=discord.ButtonStyle.green, row=0)
+    async def new_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        channel = _as_messageable(interaction.channel)
+        if channel is None:
+            await interaction.response.send_message(
+                "Open this in a server text channel so the menu can be posted there.",
+                ephemeral=True,
+            )
+            return
+        builder = RoleMenuBuilder(
+            interaction.user,
+            self.guild,
+            channel,
+            parent=self,
+        )
+        await interaction.response.edit_message(
+            embed=builder.build_embed(),
+            view=builder,
+        )
+        builder.message = interaction.message
+
+    @discord.ui.button(label="✏️ Edit", style=discord.ButtonStyle.blurple, row=0)
+    async def edit_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await self._pick_menu(interaction, self._open_editor, "Pick a menu to edit:")
+
+    @discord.ui.button(label="🗑️ Delete", style=discord.ButtonStyle.red, row=0)
+    async def delete_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await self._pick_menu(interaction, self._delete_menu, "Pick a menu to delete:")
+
+    async def _pick_menu(self, interaction, on_pick, prompt: str) -> None:  # type: ignore[no-untyped-def]
+        from services import reaction_role_service
+
+        menus = await reaction_role_service.list_menus(self.guild.id)
+        if not menus:
+            await interaction.response.send_message(
+                "There are no menus yet.",
+                ephemeral=True,
+            )
+            return
+        options = [
+            discord.SelectOption(
+                label=m["title"][:100],
+                value=str(m["menu_id"]),
+                description=f"{m['style']} · {m['mode']}"[:100],
+            )
+            for m in menus
+        ]
+        await interaction.response.send_message(
+            prompt,
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                on_pick,
+                placeholder="Choose a menu…",
+            ),
+            ephemeral=True,
+        )
+
+    async def _open_editor(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        from services import reaction_role_service
+
+        menu_id = int(values[0])
+        menu = await reaction_role_service.get_menu(menu_id)
+        if menu is None:
+            await interaction.response.send_message(
+                "That menu no longer exists.",
+                ephemeral=True,
+            )
+            return
+        opts = await reaction_role_service.get_menu_options(menu_id)
+        builder = RoleMenuBuilder.from_menu(
+            interaction.user,
+            self.guild,
+            menu,
+            opts,
+            parent=self,
+        )
+        await interaction.response.edit_message(content="Opening editor…", view=None)
+        if self.message:
+            await self.message.edit(embed=builder.build_embed(), view=builder)
+            builder.message = self.message
+
+    async def _delete_menu(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        from services import reaction_role_service
+
+        menu_id = int(values[0])
+        menu = await reaction_role_service.get_menu(menu_id)
+        await reaction_role_service.delete_menu(
+            menu_id=menu_id,
+            guild_id=self.guild.id,
+            actor_id=interaction.user.id,
+        )
+        # Best-effort: remove the posted menu message too.
+        if menu and menu.get("message_id") and menu.get("channel_id"):
+            channel = resources.resolve_channel(
+                self.guild,
+                channel_id=int(menu["channel_id"]),
+            )
+            if isinstance(channel, discord.abc.Messageable):
+                try:
+                    message = await channel.fetch_message(int(menu["message_id"]))
+                    await message.delete()
+                except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                    pass
+        await interaction.response.edit_message(
+            content="🗑️ Menu deleted.",
+            view=None,
+        )
+        await self._rerender()
+
+
+# ---------------------------------------------------------------------------
+# Builder — build a new menu or edit an existing one in place
+# ---------------------------------------------------------------------------
+
+
+class RoleMenuBuilder(BaseView):
+    """Compact preview panel for building / editing one role menu."""
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        guild: discord.Guild,
+        channel: _GuildMessageable | None,
+        *,
+        parent: BaseView | None = None,
+        menu_id: int | None = None,
+    ) -> None:
+        super().__init__(author, timeout=600)
+        self.guild = guild
+        self.channel = channel
+        self.parent = parent
+        self.menu_id = menu_id
+        # Draft state (dropdown default per owner decision §9 #2).
+        self.title = "Pick your roles"
+        self.description: str | None = None
+        self.style = "dropdown"
+        self.mode = "normal"
+        self.max_roles = 0
+        self.theme = presentation.DEFAULT_THEME_KEY
+        self.template: str | None = None
+        self.role_ids: list[int] = []
+
+        if parent is not None:
+
+            async def _build_parent(
+                _interaction: discord.Interaction,
+            ) -> tuple[discord.Embed, discord.ui.View]:
+                return await parent.build_embed(), parent  # type: ignore[attr-defined]
+
+            attach_back_button(
+                self,
+                label="↩ Back",
+                custom_id="role:builder:back",
+                parent_builder=_build_parent,
+                row=2,
+            )
+
+    @classmethod
+    def from_menu(
+        cls,
+        author: discord.Member | discord.User,
+        guild: discord.Guild,
+        menu: dict,
+        options: list,  # type: ignore[type-arg]
+        parent: BaseView | None = None,
+    ) -> RoleMenuBuilder:
+        """Load an existing menu's state into a fresh builder (edit-in-place)."""
+        channel = _as_messageable(
+            resources.resolve_channel(guild, channel_id=int(menu["channel_id"])),
+        )
+        builder = cls(
+            author,
+            guild,
+            channel,
+            parent=parent,
+            menu_id=int(menu["menu_id"]),
+        )
+        builder.title = menu["title"]
+        builder.description = menu.get("description")
+        builder.style = menu.get("style", "dropdown")
+        builder.mode = menu.get("mode", "normal")
+        builder.max_roles = int(menu.get("max_roles") or 0)
+        builder.theme = menu.get("theme") or presentation.DEFAULT_THEME_KEY
+        builder.template = menu.get("template")
+        builder.role_ids = [o.role_id for o in options]
+        return builder
+
+    # -- preview ------------------------------------------------------------
+
+    def build_embed(self) -> discord.Embed:
+        theme = presentation.get_theme(self.theme)
+        verb = "Editing" if self.menu_id else "Building"
+        embed = discord.Embed(
+            title=f"🛠️ {verb}: {self.title}",
+            description=self.description or "*(no description)*",
+            color=theme.color,
+        )
+        if self.role_ids:
+            names = []
+            for rid in self.role_ids:
+                role = resources.resolve_role(self.guild, role_id=rid)
+                names.append(role.mention if role else f"*(deleted {rid})*")
+            embed.add_field(name="Roles", value=", ".join(names), inline=False)
+        else:
+            embed.add_field(
+                name="Roles",
+                value="*none yet — tap 🏷️ Roles*",
+                inline=False,
+            )
+        limit = "unlimited" if not self.max_roles else str(self.max_roles)
+        embed.add_field(
+            name="Settings",
+            value=(
+                f"Style: **{_STYLE_LABEL.get(self.style, self.style)}**\n"
+                f"Mode: **{_MODE_LABEL.get(self.mode, self.mode)}**\n"
+                f"Limit: **{limit}** · Theme: **{theme.label}**"
+            ),
+            inline=False,
+        )
+        embed.set_footer(
+            text="Set the fields, then Post (new) or Save (edit). Roles required.",
+        )
+        return embed
+
+    async def _rerender(self) -> None:
+        if self.message:
+            await self.message.edit(embed=self.build_embed(), view=self)
+
+    # -- field editors ------------------------------------------------------
+
+    @discord.ui.button(label="📝 Text", style=discord.ButtonStyle.grey, row=0)
+    async def text_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(_TextModal(self))
+
+    @discord.ui.button(label="🏷️ Roles", style=discord.ButtonStyle.grey, row=0)
+    async def roles_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        manageable, _excluded = role_feasibility.manageable_roles(
+            self.guild.roles,
+            bot_member=self.guild.me,
+            actor=(
+                interaction.user
+                if isinstance(interaction.user, discord.Member)
+                else None
+            ),
+        )
+        if not manageable:
+            await interaction.response.send_message(
+                "I can't manage any of this server's roles (they're all above my "
+                "highest role). Move my role up, then try again.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            "Pick the roles this menu offers (up to 25):",
+            view=_RolePickView(self, manageable),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🧩 Template", style=discord.ButtonStyle.grey, row=0)
+    async def template_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        options = [
+            discord.SelectOption(label=t.label[:100], value=t.key)
+            for t in presentation.templates()
+        ]
+        await interaction.response.send_message(
+            "Start from a template (you can still tweak everything):",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self._apply_template,
+                placeholder="Pick a starter template…",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🎭 Theme", style=discord.ButtonStyle.grey, row=1)
+    async def theme_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        options = [
+            discord.SelectOption(
+                label=t.label,
+                value=t.key,
+                default=t.key == self.theme,
+            )
+            for t in presentation.themes()
+        ]
+        await interaction.response.send_message(
+            "Pick an embed theme:",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self._apply_theme,
+                placeholder="Theme…",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="⚙️ Mode", style=discord.ButtonStyle.grey, row=1)
+    async def mode_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        options = [
+            discord.SelectOption(label=_MODE_LABEL[m], value=m, default=m == self.mode)
+            for m in ("normal", "unique", "verify")
+        ]
+        await interaction.response.send_message(
+            "How should members pick from this menu?",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self._apply_mode,
+                placeholder="Mode…",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🎚️ Style", style=discord.ButtonStyle.grey, row=1)
+    async def style_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        self.style = "button" if self.style == "dropdown" else "dropdown"
+        if not await safe_defer(interaction):
+            return
+        await self._rerender()
+
+    @discord.ui.button(label="🔢 Limit", style=discord.ButtonStyle.grey, row=1)
+    async def limit_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(_LimitModal(self))
+
+    @discord.ui.button(label="🚀 Post", style=discord.ButtonStyle.green, row=2)
+    async def post_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        if not self.role_ids:
+            await interaction.response.send_message(
+                "Add at least one role first (🏷️ Roles).",
+                ephemeral=True,
+            )
+            return
+        await self._commit(interaction)
+
+    # -- sub-step callbacks -------------------------------------------------
+
+    async def _apply_template(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        tpl = presentation.get_template(values[0])
+        if tpl is not None:
+            self.title = tpl.title
+            self.description = tpl.description
+            self.theme = tpl.theme
+            self.style = tpl.style
+            self.template = tpl.key
+            if tpl.key == "colour_roles":
+                self.mode = "unique"
+            elif tpl.key == "verify":
+                self.mode = "verify"
+        await interaction.response.edit_message(
+            content="✓ Template applied.",
+            view=None,
+        )
+        await self._rerender()
+
+    async def _apply_theme(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        self.theme = values[0]
+        await interaction.response.edit_message(content="✓ Theme set.", view=None)
+        await self._rerender()
+
+    async def _apply_mode(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        self.mode = values[0]
+        await interaction.response.edit_message(content="✓ Mode set.", view=None)
+        await self._rerender()
+
+    # -- commit (Post new / Save edit) -------------------------------------
+
+    async def _commit(self, interaction: discord.Interaction) -> None:
+        from services import reaction_role_service
+        from services.reaction_role_service import RoleOption
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        # Snapshot the current role names as option labels so the rendered menu is
+        # self-describing without re-resolving the guild (role_thresholds precedent).
+        options = []
+        for rid in self.role_ids:
+            role = resources.resolve_role(self.guild, role_id=rid)
+            if role is None:
+                continue
+            options.append(RoleOption(role_id=rid, emoji=None, label=role.name))
+
+        if self.menu_id is None:
+            await self._post_new(interaction, reaction_role_service, options)
+        else:
+            await self._save_edit(interaction, reaction_role_service, options)
+
+    async def _post_new(self, interaction, service, options) -> None:  # type: ignore[no-untyped-def]
+        channel = self.channel
+        if channel is None:
+            await interaction.followup.send(
+                "I can't find a channel to post this menu in — re-open the builder "
+                "in a text channel.",
+                ephemeral=True,
+            )
+            return
+        menu_id = await service.create_menu(
+            guild_id=self.guild.id,
+            channel_id=channel.id,
+            title=self.title,
+            description=self.description,
+            style=self.style,
+            mode=self.mode,
+            max_roles=self.max_roles,
+            options=options,
+            theme=self.theme,
+            actor_id=interaction.user.id,
+        )
+        menu = await service.get_menu(menu_id)
+        opt_dicts = _option_dicts(await service.get_menu_options(menu_id))
+        view = RoleMenuView(menu, opt_dicts)
+        try:
+            message = await channel.send(
+                embed=build_menu_embed(menu, opt_dicts, self.guild),
+                view=view,
+            )
+        except discord.Forbidden:
+            await interaction.followup.send(
+                "I couldn't post the menu — I lack permission to send messages here.",
+                ephemeral=True,
+            )
+            return
+        await service.set_menu_message(menu_id, message.id)
+        interaction.client.add_view(view, message_id=message.id)
+        await interaction.followup.send(
+            f"🚀 Posted **{self.title}** to {channel.mention}.",
+            ephemeral=True,
+        )
+        if self.parent is not None and self.message:
+            await self.message.edit(
+                embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
+                view=self.parent,
+            )
+
+    async def _save_edit(self, interaction, service, options) -> None:  # type: ignore[no-untyped-def]
+        if self.menu_id is None:  # pragma: no cover - guarded by _commit
+            return
+        await service.update_menu(
+            menu_id=self.menu_id,
+            guild_id=self.guild.id,
+            title=self.title,
+            description=self.description,
+            style=self.style,
+            mode=self.mode,
+            max_roles=self.max_roles,
+            options=options,
+            theme=self.theme,
+            actor_id=interaction.user.id,
+        )
+        menu = await service.get_menu(self.menu_id)
+        opt_dicts = _option_dicts(await service.get_menu_options(self.menu_id))
+        view = RoleMenuView(menu, opt_dicts)
+        edited = False
+        if menu and menu.get("message_id") and menu.get("channel_id"):
+            channel = resources.resolve_channel(
+                self.guild,
+                channel_id=int(menu["channel_id"]),
+            )
+            if isinstance(channel, discord.abc.Messageable):
+                try:
+                    message = await channel.fetch_message(int(menu["message_id"]))
+                    await message.edit(
+                        embed=build_menu_embed(menu, opt_dicts, self.guild),
+                        view=view,
+                    )
+                    interaction.client.add_view(view, message_id=message.id)
+                    edited = True
+                except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                    edited = False
+        result_text = (
+            "💾 Saved — the live menu was updated."
+            if edited
+            else "💾 Saved. (The posted message couldn't be edited; re-post if needed.)"
+        )
+        await interaction.followup.send(result_text, ephemeral=True)
+        if self.parent is not None and self.message:
+            await self.message.edit(
+                embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
+                view=self.parent,
+            )
+
+
+# ---------------------------------------------------------------------------
+# Sub-views + modals
+# ---------------------------------------------------------------------------
+
+
+class _RolePickView(BaseView):
+    """Ephemeral windowed multi-role picker feeding the builder draft."""
+
+    def __init__(self, builder: RoleMenuBuilder, roles: list[discord.Role]) -> None:
+        super().__init__(builder._author, timeout=180)
+        self.builder = builder
+        attach_multi_role_select(
+            self,
+            roles,
+            self._on_pick,
+            placeholder="Select the menu's roles…",
+            max_values=min(len(roles), 25),
+        )
+
+    async def _on_pick(
+        self,
+        interaction: discord.Interaction,
+        role_ids: list[int],
+    ) -> None:
+        # The windowed multi-select already caps a page's selection; bound the
+        # stored set to a menu's hard role cap (Discord's 25 component/option max).
+        self.builder.role_ids = role_ids[:MAX_MENU_ROLES]
+        await interaction.response.edit_message(
+            content=f"✓ {len(self.builder.role_ids)} role(s) selected.",
+            view=None,
+        )
+        await self.builder._rerender()
+
+
+class _TextModal(discord.ui.Modal, title="Menu text"):  # type: ignore[call-arg]
+    title_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Title",
+        placeholder="Pick your roles",
+        max_length=100,
+    )
+    desc_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Description",
+        style=discord.TextStyle.paragraph,
+        required=False,
+        max_length=2000,
+    )
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__()
+        self.builder = builder
+        self.title_in.default = builder.title
+        self.desc_in.default = builder.description or ""
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        self.builder.title = self.title_in.value.strip() or "Pick your roles"
+        self.builder.description = self.desc_in.value.strip() or None
+        if not await safe_defer(interaction):
+            return
+        await self.builder._rerender()
+
+
+class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[call-arg]
+    limit_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Max roles a member can pick (0 = unlimited)",
+        placeholder="0",
+        max_length=2,
+        required=False,
+    )
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__()
+        self.builder = builder
+        self.limit_in.default = str(builder.max_roles)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        raw = self.limit_in.value.strip()
+        try:
+            value = max(0, int(raw)) if raw else 0
+        except ValueError:
+            await interaction.response.send_message(
+                "❌ Enter a whole number (0 for unlimited).",
+                ephemeral=True,
+            )
+            return
+        self.builder.max_roles = value
+        if not await safe_defer(interaction):
+            return
+        await self.builder._rerender()
+
+
+__all__ = ["RoleMenuBuilder", "RoleMenuListView"]

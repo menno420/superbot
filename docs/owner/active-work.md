@@ -25,24 +25,34 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/clever-maxwell-690qrj` · **Pokétwo + MusicBot research report → feature-mapping plan**
-  (docs-only, owner-steered plan-only) · `docs/planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md`
-  + `docs/planning/voice-music-architecture-review-2026-06-20.md` + `docs/ideas/` + router Q-0186 ·
-  2026-06-20 · **auto-merge on green (docs-only)**
+- `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
+  claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
+  · 2026-06-21 · **auto-merge on green** (docs-only)
 
-- `claude/design-system-site-pages` · **design-system: compose the rest of the site** (owner-chosen
-  meantime build 2026-06-20 — make every route editable in Claude Design) · `design-system/src/`
-  (`PageHeader`/`SearchBar`/`Pill`/`FeatureShowcaseCard`/`CommandDetail`/`CommandEntry`/
-  `ChangelogEntry`/`StatusCard` + `FeaturesPage`/`CommandsPage`/`ChangelogPage`/`StatusPage` +
-  stories) · `design-system/README.md` · 2026-06-20 · **auto-merge on green** (additive · verified)
-
-- `claude/compassionate-mccarthy-8u4xvy` · **Wire the Claude-Design SPA into the bot site + live
-  data** (owner-directed; SPA-as-front-end + dynamic data endpoint, confirmed via AskUserQuestion) ·
-  `botsite/site/` (design SPA, verbatim) + `botsite/site_data.py` (site.json→SBDATA generator) +
-  `botsite/app.py` + `scripts/export_dashboard_data.py` + `tests/unit/botsite/` · 2026-06-20 ·
-  **auto-merge on green**
+*(Beyond the claim above, the only open PR is **#1213** creature-PvP battle engine on
+`claude/funny-franklin-mw3hxj`, a `needs-hermes-review` foundation slice — its owning
+session holds it, no claim line needed here.)*
 
 ## Recently cleared
+
+- `claude/early-pr-mandate` · **Q-0189 — open the session PR within ~2 min of start** (owner-directed
+  in-session rule) · `.claude/CLAUDE.md` (Q-0133 bullet) + `docs/owner/maintainer-question-router.md`
+  · 2026-06-21 · **PR #1224 (merged)**
+- `claude/lane-overlap-claim-scan` · **check_lane_overlap.py — active-work.md claim-ledger scan** ·
+  `scripts/check_lane_overlap.py` + `tests/unit/scripts/test_check_lane_overlap.py` · 2026-06-21 ·
+  **PR #1223 (merged)**
+- `claude/clever-maxwell-690qrj` · **creature-game design/sim + Pokétwo/MusicBot plan** ·
+  `tools/game_sim/` + `docs/planning/` + router Q-0186 · 2026-06-20 · **#1193/#1194/#1195/#1197 (merged)**
+- `claude/design-system-site-pages` · **design-system: compose the rest of the site** ·
+  `design-system/src/` · 2026-06-20 · **PR #1178 (merged)**
+- `claude/compassionate-mccarthy-8u4xvy` · **wire the Claude-Design SPA into the bot site** ·
+  `botsite/` · 2026-06-20 · **PR #1196 (merged)**
+
+- `claude/vibrant-sagan-0rr5u7` · **reaction-roles PR 2** — in-Discord role-menu builder (Surface B):
+  `RoleMenuView` + builder/manager + theme/template presets + edit-in-place + `reattach_role_menus`,
+  on PR 1's seam (reconciled onto #1220) · 2026-06-21 · **PR #1219 (`needs-hermes-review`)**
+- `claude/reaction-roles-pr1-foundation` · reaction-roles PR 1 foundation (audited seam + menu data
+  layer + teardown) · 2026-06-21 · **PR #1220 (merged)**
 
 - `claude/design-system-connector-docs` · design-system docs — GitHub-connector workflow + new
   AGENT_ORIENTATION website route · 2026-06-20 · **PR #1176 (merged)**
