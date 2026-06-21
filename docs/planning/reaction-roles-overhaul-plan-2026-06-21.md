@@ -43,6 +43,13 @@
 > boosts**, so the gradient UI is offered only when `guild.features` advertises it
 > (`supports_role_gradients`), with a caught-400 solid-colour fallback.
 >
+> **▶ Refinement (2026-06-21, owner-directed — PR #1243):** the emoji **Add** flow no longer makes
+> the operator paste a raw Message ID. `ReactionRolesPanel` Add now opens `_AddSourceView` —
+> **📍 Most recent · 📜 Pick recent · 🆕 New message · 🔢 By ID** (Carl's setup methods) — and every
+> path lands in the existing per-emote role picker (`_BindEmotesView`). Respects Discord's
+> "modal-must-be-first-response" rule (pick-recent → select → emotes modal; new-message → one modal
+> that also captures the emotes). The old `_MoreEmotesModal` is generalised to `_EmotesModal`.
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,
