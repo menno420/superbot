@@ -6928,3 +6928,44 @@ is the *timing* half of Q-0052 (open right after first push) / Q-0103 (open read
 first commit): those said *open early*; this pins *how* early. **Home:** the Q-0133 bullet in
 `.claude/CLAUDE.md` + this Q-block. No new tooling; if a SessionStart nudge later proves useful it is a
 separate, disposable add (route it).
+
+---
+
+### Q-0190 — ANSWERED (owner-directed in-session): the product North Star is "free for everyone, forever" (2026-06-21)
+
+> **APPLIED in-session** (owner directed the new goal; owner is the live reviewer; provenance
+> recorded here). The owner set a new top-level project goal — SuperBot becomes a **completely free,
+> all-inclusive bot** — and explicitly **rejected** the freemium / "monetize only limited features"
+> model he had been considering. The single open fork (does "free" forbid even a voluntary
+> zero-benefit support link?) was put to the owner live via the question panel.
+
+**Area:** Product / monetization / distribution posture
+**Type:** Founding product principle (North Star) — a binding design filter every new plan inherits
+**Status:** Answered (owner-directed in-session, 2026-06-21) — **Routed** → mission doc + roadmap principle + current-state Off-limits
+
+**The decision:** Every SuperBot function is **free for every user, forever** — **no paywalls,
+premium tiers, freemium feature-gating, subscriptions, or pay-to-win.** "Free **and** better" is the
+competitive wedge against the incumbent bots (pairs with the V-14 feature-mining lane and the Q-0080
+public-bot goal).
+
+**The one fork — owner's live pick (question panel, 2026-06-21): "Allow voluntary support."** No
+feature-gating monetization ever, but a **voluntary, zero-benefit** donation/sponsor link to offset
+hosting + AI cost stays allowed (extends Q-0039's cosmetic-only / no-billing posture). The
+alternatives — *truly zero monetization* and *free-now-revisit-if-costs-bite* — were not chosen.
+
+**Relationship to prior decisions:** **generalizes Q-0039** (cosmetic-only donations / no bot-side
+billing / no-P2W) from the economy to the **whole product**; subsumes **Q-0108** (paid moderation
+tiers declined) as a general rule; is the product posture for **Q-0080** (public bot); shares the
+"core stays ungated" principle with **Q-0087**. **Resolves tension T-6** (public scale × ~zero
+revenue × fixed Q-0082 AI ceiling): revenue stays ~zero permanently, so the Q-0082 degradation
+grammar (AI default-off, tiny per-guild budgets, caching, visible in-world degrade) is now the
+*primary* sustainability lever, not a fallback — and the voluntary-support surface (§2 of the mission
+doc) is the only money inflow.
+
+**Open (captured, not blocking):** open-source / self-host posture (unraised — "free" = free-to-*use*
+for now); a product-wide anti-paywall-creep lint (Q-0105 disposable; needs an allowlist); the
+`/support` surface itself (allowed, not yet designed).
+
+**Home:** [`docs/ideas/free-for-everyone-mission-2026-06-21.md`](../ideas/free-for-everyone-mission-2026-06-21.md)
+(full statement) + `docs/roadmap.md` (product-principle callout) + `docs/current-state.md` ▶ Off-limits
+(enforceable form) + this Q-block.

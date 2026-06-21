@@ -413,6 +413,11 @@ in **#588**, listed under Recently shipped.)*
   `docs/planning/superbot-ideas-lab-2026-06-05.md` §6.
 - Do not restate "bot fully tested & working" as *newly* verified without an actual
   boot + live walk — cite the #535 baseline instead.
+- **No monetization that gates features** — no paywalls, premium/VIP feature tiers, freemium
+  feature-gating, subscriptions, or pay-to-win (**Q-0190 North Star: free for everyone, forever**;
+  generalizes Q-0039 no-P2W / no-billing). The *only* allowed money surface is a voluntary
+  *zero-benefit* support/sponsor link to offset hosting + AI cost. Full statement:
+  [`ideas/free-for-everyone-mission-2026-06-21.md`](ideas/free-for-everyone-mission-2026-06-21.md).
 
 ## Where to read next
 
