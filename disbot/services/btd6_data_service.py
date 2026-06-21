@@ -1005,6 +1005,49 @@ def served_data_drift() -> tuple[str, str] | None:
     return served, bundled
 
 
+def auto_seed_enabled() -> bool:
+    """True iff boot auto-seed should run: the **postgres** backend is active and
+    ``BTD6_AUTO_SEED`` isn't disabled.
+
+    The file backend reads the bundled files directly (nothing to seed); the cloud
+    backend is seeded via its own upload script. Kill-switch: set ``BTD6_AUTO_SEED``
+    to ``0``/``false``/``no``/``off``.
+    """
+    try:
+        from config import BTD6_AUTO_SEED, BTD6_DATA_BACKEND
+    except Exception:  # noqa: BLE001 — config always importable in the app
+        return False
+    if (BTD6_DATA_BACKEND or "").strip().lower() != "postgres":
+        return False
+    return (BTD6_AUTO_SEED or "").strip().lower() not in ("0", "false", "no", "off")
+
+
+def _version_tuple(version: str) -> tuple[int, ...]:
+    out: list[int] = []
+    for part in version.split("."):
+        try:
+            out.append(int(part))
+        except ValueError:
+            out.append(0)
+    return tuple(out)
+
+
+def bundled_newer_than_served() -> bool:
+    """True iff the committed files carry a **strictly newer** ``game_version``
+    than the active store serves — the Q-0077(b) auto-seed trigger.
+
+    ``False`` for the file backend, unknown versions, or an equal/newer store
+    (so a deliberately-newer store — the refresh-workflow direction — is never
+    clobbered). Same-``version`` content edits are NOT a trigger (b) — they still
+    need a manual ``!btd6ops seed-data``.
+    """
+    drift = served_data_drift()
+    if drift is None:
+        return False
+    served, bundled = drift
+    return _version_tuple(bundled) > _version_tuple(served)
+
+
 def _load_file(name: str) -> dict[str, Any]:
     raw = _PROVIDER.load(name)
     if raw is None:

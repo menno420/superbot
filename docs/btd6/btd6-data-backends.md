@@ -44,6 +44,14 @@ path).
    `postgres`. Saving redeploys the service.
 4. Run **`!btd6 status`** — it should read `Data source: postgres (<N> blobs)`.
 
+**Auto-seed on version bumps (Q-0077(b), PR #1255):** once on postgres, the bot
+re-seeds the store from the deployed files at boot **whenever they carry a
+strictly newer `game_version`** — so a game-version update is zero-touch
+(merge → deploy → current), no manual seed. It never clobbers a deliberately
+newer store, and a **same-version data edit** (a stat fix with no version bump)
+is *not* auto-applied — run `!btd6ops seed-data` once for those. Disable with
+`BTD6_AUTO_SEED=0`.
+
 ⚠️ Order matters: **seed first** (step 2), *then* flip the variable (step 3). If
 you switch to `postgres` while the table is empty, BTD6 lookups report
 "unavailable" until you seed.
