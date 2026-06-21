@@ -1,8 +1,8 @@
 # 2026-06-21 — Reaction-roles plan: owner decisions locked + analytics added
 
-> **Status:** `in-progress` — follow-up to #1215/#1216/#1217. Owner answered the four open design
-> forks (via the question panel) and accepted a new addition. Recording the decisions in the plan
-> so it's fully specified. Docs-only. Flips `complete` last (Q-0133).
+> **Status:** `complete` — follow-up to #1215/#1216/#1217. Owner answered the four open design
+> forks (via the question panel) and accepted a new addition. Recorded the decisions in the plan
+> so it's fully specified. Docs-only → self-merge on green.
 
 > **Run type:** `manual`
 
@@ -19,4 +19,22 @@ Rewrote plan §9 from "open questions" → "Decisions LOCKED (2026-06-21)" with 
 §10 (analytics: aggregate pickup counts + archive-nudge in Diagnostics, nearly free on the audited
 seam, a Carl differentiator), and reconciled the old "temp = stretch" bullet to "PR 4 decided".
 
-(Body filled at close.)
+## 📤 Run report
+
+- **Did:** locked the owner's four design decisions into the plan + added the role-pickup analytics wave · **Outcome:** shipped (plan now fully specified)
+- **Shipped:** #1218 — lock decisions + add analytics (docs-only)
+- **Run type:** `manual`
+- **⚑ Owner decisions needed:** none — all four forks resolved. Remaining is a go/hold on starting the build.
+- **⚑ Owner manual steps:** none
+- **⚑ Self-initiated:** none (the analytics addition was proposed and owner-accepted in-session)
+- **↪ Next:** build **reaction-roles PR 1** (audited `reaction_role_service` + migration 078) — fully unblocked, no pending decisions; then PR 2 (in-Discord dropdown builder + edit/themes/templates)
+
+## 📊 Telemetry
+
+| Metric | Value |
+|---|---|
+| PRs merged this session | 3 (#1215, #1216, #1217); 1 pending (#1218) |
+| CI-red rounds | 0 |
+| Repo-rule trips | 0 |
+| New ideas contributed | 1 prior (channel-deployed primitive); analytics folded into the plan |
+| Ideas groomed | 0 |
