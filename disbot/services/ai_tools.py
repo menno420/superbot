@@ -1696,6 +1696,15 @@ _BTD6_BUFF_UPTIME_SPEC = AIToolSpec(
                     "(default 1). The alch round-robins its throws across them."
                 ),
             },
+            "alch_speed": {
+                "type": "string",
+                "description": (
+                    "Optional attack-speed buff ON THE ALCHEMIST itself (e.g. "
+                    "'Monkey Boost', 'Jungle Drums', 'Overclock') — it speeds the "
+                    "brew throw, so the alch keeps more towers buffed. Use for "
+                    "'with Jungle Drums, can my alch keep N towers buffed'."
+                ),
+            },
         },
         "required": ["buff_source", "target"],
         "additionalProperties": False,
@@ -1716,7 +1725,13 @@ async def _btd6_buff_uptime(arguments: dict[str, Any]) -> dict[str, Any]:
         targets = max(1, int(raw_targets))
     except (TypeError, ValueError):
         targets = 1
-    return btd6_upgrade_detail_service.buff_uptime(buff_source, target, targets=targets)
+    alch_speed = str(arguments.get("alch_speed") or "").strip() or None
+    return btd6_upgrade_detail_service.buff_uptime(
+        buff_source,
+        target,
+        targets=targets,
+        alch_speed=alch_speed,
+    )
 
 
 # --- btd6_paragon_calculate --------------------------------------------------
