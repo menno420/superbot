@@ -35,6 +35,9 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/zen-dirac-wnhwhg` · **"free for everyone, forever" product North Star** (owner-directed
+  in-session) — router Q-0190 + mission doc + roadmap/current-state/ideas-index cross-refs · 2026-06-21
+  · **PR #1226 (auto-merge on green)**
 - `claude/early-pr-mandate` · **Q-0189 — open the session PR within ~2 min of start** (owner-directed
   in-session rule) · `.claude/CLAUDE.md` (Q-0133 bullet) + `docs/owner/maintainer-question-router.md`
   · 2026-06-21 · **PR #1224 (merged)**

@@ -31,6 +31,18 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`free-for-everyone-mission-2026-06-21.md`](./free-for-everyone-mission-2026-06-21.md) —
+  **owner-directed (2026-06-21, Q-0190) — the product North Star:** SuperBot becomes a **completely
+  free, all-inclusive bot** — no paywalls, premium tiers, or freemium feature-gating; every function
+  free for everyone, forever. Owner rationale: it isn't *fair* to paywall online functions; the strategy
+  is **consolidation** — one free bot that replaces 5+ paywalled ones ("a revolution"), so *free **and**
+  better — and all-in-one* is the wedge (pairs with the V-14 feature-mining lane + the Q-0080 public-bot
+  goal). Elevates a scatter of per-feature calls (Q-0039 cosmetic-only/no-P2W · Q-0108 paid tiers
+  declined) into one binding principle; resolves tension T-6 via the owner's live "voluntary
+  zero-benefit support allowed" pick. The doc's *principle* is decided (Q-0190); its strategy/tactics +
+  open questions (open-source posture, anti-paywall lint, the `/support` surface) stay capture-only. →
+  relates `roadmap.md` (product principle) · `current-state.md` ▶ Off-limits · router Q-0190 · Q-0039 ·
+  Q-0080 · Q-0087.
 - [`channel-deployed-component-menu-primitive-2026-06-21.md`](./channel-deployed-component-menu-primitive-2026-06-21.md) —
   **session idea (2026-06-21, Q-0089, from the Carl-bot reaction-roles overhaul plan):** a shared
   primitive for an operator-deployed, DB-persisted `PersistentView` message in a guild channel
