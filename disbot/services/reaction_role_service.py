@@ -93,6 +93,46 @@ async def list_bindings(guild_id: int) -> list[dict]:
     return await db.get_all_reaction_roles(guild_id)
 
 
+async def count_dead_bindings(guild: discord.Guild) -> int:
+    """How many emoji bindings point to a role that no longer exists (read-only)."""
+    from core.runtime import resources
+
+    return sum(
+        1
+        for r in await list_bindings(guild.id)
+        if resources.resolve_role(guild, role_id=int(r["role_id"])) is None
+    )
+
+
+async def prune_dead_bindings(
+    guild: discord.Guild,
+    *,
+    actor_id: int | None,
+) -> list[dict]:
+    """Remove every emoji binding whose role no longer exists (audited).
+
+    Reaction-role config silently rots when a bound role is deleted — the binding
+    lingers as ``emoji → (deleted role N)`` and can never assign anything. This
+    clears those dead rows through the audited :func:`unbind_emoji` seam and
+    returns the removed rows (for an operator-facing summary). Live bindings are
+    untouched. The creation-side fix lives in the Add flow (#1234); this is the
+    cleanup for rows already left behind.
+    """
+    from core.runtime import resources
+
+    removed: list[dict] = []
+    for r in await list_bindings(guild.id):
+        if resources.resolve_role(guild, role_id=int(r["role_id"])) is None:
+            await unbind_emoji(
+                guild.id,
+                int(r["message_id"]),
+                r["emoji"],
+                actor_id=actor_id,
+            )
+            removed.append(r)
+    return removed
+
+
 # ===========================================================================
 # Emoji-surface modes (PR 3) — Carl's `rr <mode> <msg_id>`, per message
 # ===========================================================================
@@ -811,6 +851,7 @@ __all__ = [
     "apply_selection",
     "bind_emoji",
     "clear_message_mode",
+    "count_dead_bindings",
     "create_menu",
     "delete_menu",
     "ensure_color_role",
@@ -824,6 +865,7 @@ __all__ = [
     "list_menus",
     "list_message_modes",
     "list_posted_menus",
+    "prune_dead_bindings",
     "reaction_roles_enabled",
     "set_menu_location",
     "set_menu_message",
