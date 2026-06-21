@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — verify binding + populate data** (follow-up to
+  #1235; owner pointed at the public dump) — cloned BTD Mod Helper dump, corrected `_buff_window` to
+  the verified `Add…ToProjectileModel` shape, overlaid buff fields onto committed `alchemist.json` ·
+  `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service`
+  · 2026-06-21 · **PR (this session, auto-merge on green)**
 - `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
   claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
   · 2026-06-21 · **auto-merge on green** (docs-only)
