@@ -1012,6 +1012,37 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "cbattletop",
+    "area": "other",
+    "status": "finished",
+    "summary": "Show this server's top creature-PvP trainers by wins.",
+    "description": "Show this server's top creature-PvP trainers by wins.",
+    "usage": "!cbattletop",
+    "aliases": [
+      "pvptop",
+      "battletop"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "cbrecord",
+    "area": "other",
+    "status": "finished",
+    "summary": "Show your (or another trainer's) creature PvP win/loss record.",
+    "description": "Show your (or another trainer's) creature PvP win/loss record.",
+    "usage": "!cbrecord",
+    "aliases": [
+      "battlerecord"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "chain",
     "area": "games",
     "status": "finished",
@@ -5689,7 +5720,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "25e57944",
+    "build": "ec8a8d68",
     "title": "New public bot website",
     "changes": [
       {
@@ -5701,7 +5732,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "25e57944",
+    "build": "ec8a8d68",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5713,7 +5744,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "25e57944",
+    "build": "ec8a8d68",
     "title": "Command-alias suggestions",
     "changes": [
       {
