@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/reaction-roles-self-heal` · **reaction-roles listener self-heal** (owner-accepted
+  continuation) — auto-remove a dead-role binding when reacted on (`_self_heal_dead_binding` +
+  `actor_type` thread) · `disbot/services/reaction_role_service.py` · 2026-06-21 ·
+  **PR (this session, merge on green)**
+
 - `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
   claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
   · 2026-06-21 · **auto-merge on green** (docs-only)
