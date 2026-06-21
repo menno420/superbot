@@ -202,10 +202,22 @@ Remaining docking work:
 
 - **Collection** = the `!dex` command above (a "dex" of caught vs not-yet-caught, grouped by element).
   A richer Explore-hub Lane-B filter view is a later slice.
-- **Battle (NEXT — `needs-hermes-review`)** = a new `cogs/creature_battle/` +
-  `services/creature_battle_engine.py` (pure, the sim's math graduates here) + `views/creature_battle/`
-  panels; PvP challenges mirror the existing `rps`/`deathmatch` PvP-challenge view pattern.
-  **Level-normalized** (the §3 finding). Runtime-verified session, not autonomous self-merge.
+- **Battle — ENGINE SHIPPED (2026-06-21, PR #1213, `needs-hermes-review`); cog/views NEXT.** The
+  pure combat math graduated into **`disbot/utils/creatures/battle.py`** (a noted deviation from
+  this section's earlier `services/creature_battle_engine.py` wording — it's pure math with no
+  DB/audit/IO, so it lives beside `creature.py`/`encounters.py` in `utils/creatures/`, not the
+  `services/` audited-write layer; the `services/` seam enters only when a battle *persists / awards
+  xp / emits audit*). It carries the rarity/archetype stat derivation, the 4-move kit, the symmetric
+  6-element type chart (pinned to `ELEMENT_CYCLE`, **not** catalog order), level scaling + capped
+  buffs, the move-selection policies, level-normalized team construction, and `resolve_battle()`
+  returning a structured turn-by-turn log + winner. `tests/unit/utils/test_creature_battle.py`
+  **re-validates the sim's fairness gates inside the bot** (chart symmetry, ~50% equal-stat type
+  balance, ~50% normalized PvP, skill rewarded-not-absolute, status-move value, raw-level dominance).
+  **NEXT (runtime-verified `needs-hermes-review`, builds on the engine):** the user-facing flow —
+  `cogs/creature_battle/` + `views/creature_battle/` panels, PvP challenges mirroring the existing
+  `rps`/`deathmatch` PvP-challenge view pattern, a thin `services/` boundary to read each player's
+  team from the collection and (later) record results, and the **level-normalized** matchup (the §3
+  finding). Not an autonomous self-merge.
 - **World** = registers a `WorldEntry` in the Explore hub (a later slice; the catch cog is hub-less).
 - **World** = registers a `WorldEntry` in the Explore hub; creature standings on the world card.
 - **Anti-P2W** = the normalization rule + Q-0039 (no buyable power); shinies are cosmetic (Lane D).
