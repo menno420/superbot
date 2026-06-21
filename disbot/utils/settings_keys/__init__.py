@@ -110,7 +110,12 @@ from utils.settings_keys.moderation import (
     WARN_THRESHOLD,
     WARN_TIMEOUT_MINS,
 )
-from utils.settings_keys.role import SKIP_ROLES, TIME_ROLES_STACK, XP_ROLES_STACK
+from utils.settings_keys.role import (
+    REACTION_ROLES_ENABLED,
+    SKIP_ROLES,
+    TIME_ROLES_STACK,
+    XP_ROLES_STACK,
+)
 from utils.settings_keys.security import (
     SECURITY_AGE_ACTION,
     SECURITY_AGE_ENABLED,
@@ -227,6 +232,7 @@ __all__ = [
     "SECURITY_RAID_SLOWMODE_CHANNEL",
     "SECURITY_RAID_SLOWMODE_SECONDS",
     "SECURITY_RAID_WINDOW_SECONDS",
+    "REACTION_ROLES_ENABLED",
     "SKIP_ROLES",
     "TIME_ROLES_STACK",
     "XP_ROLES_STACK",

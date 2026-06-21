@@ -17,7 +17,11 @@ from core.runtime.subsystem_schema import (
     SettingSpec,
     SubsystemSchema,
 )
-from utils.settings_keys import TIME_ROLES_STACK, XP_ROLES_STACK
+from utils.settings_keys import (
+    REACTION_ROLES_ENABLED,
+    TIME_ROLES_STACK,
+    XP_ROLES_STACK,
+)
 
 _CAPABILITY = "role.settings.configure"
 
@@ -51,6 +55,20 @@ ROLE_SETTINGS: tuple[SettingSpec, ...] = (
             "When ON (default), members keep every XP/level role they earn — "
             "the roles stack. When OFF, reaching a higher level role removes "
             "the lower level roles, so a member holds a single level role."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="reaction_roles_enabled",
+        value_type=bool,
+        default=True,
+        settings_key=REACTION_ROLES_ENABLED,
+        capability_required=_CAPABILITY,
+        hint=(
+            "When ON (default), reacting on a tracked message self-assigns the "
+            "bound role (the emoji reaction-role surface). Turn OFF to disable "
+            "all emoji reaction roles for this server — the modern button / "
+            "dropdown role menus are unaffected."
         ),
         validator=_validate_bool,
     ),

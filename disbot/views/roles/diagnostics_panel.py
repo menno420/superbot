@@ -7,6 +7,7 @@ from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
 from services import role_automation
 from utils import db
+from utils.db import role_menus
 from utils.ui_constants import WARNING_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
@@ -118,6 +119,29 @@ class DiagnosticsPanel(BaseView):
         else:
             ra_value = "*(no time-based roles configured)*"
         embed.add_field(name="Role Automation", value=ra_value, inline=False)
+
+        # Self-role pickup analytics (PR 5, plan §10) — are these self-roles
+        # actually used? Aggregate counts only (no per-member history).
+        stats = await role_menus.get_pickup_stats(guild.id)
+        if stats:
+            lines = []
+            for s in stats[:5]:
+                role = resources.resolve_role(guild, role_id=int(s["role_id"]))
+                rname = role.name if role else f"id:{s['role_id']}"
+                lines.append(
+                    f"**{rname}** — {s['picked']} picked · {s['removed']} removed",
+                )
+            value = "\n".join(lines)
+            barely = sum(1 for s in stats if int(s["picked"]) <= 1)
+            if barely:
+                value += f"\n💤 {barely} self-role(s) barely used — consider archiving."
+            embed.add_field(name="📊 Role Pickups", value=value[:1024], inline=False)
+        else:
+            embed.add_field(
+                name="📊 Role Pickups",
+                value="*(no self-role pickups recorded yet)*",
+                inline=False,
+            )
         return embed
 
     async def _rerender(self) -> None:

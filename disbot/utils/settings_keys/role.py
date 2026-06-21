@@ -13,3 +13,9 @@ TIME_ROLES_STACK = "time_roles_stack"
 # When TRUE (default), XP/level roles STACK — every earned level role is
 # kept. When FALSE, earning a higher level role removes the lower ones.
 XP_ROLES_STACK = "xp_roles_stack"
+
+# When TRUE (default), the emoji reaction-role surface is active: reacting on a
+# tracked message self-assigns the bound role. When FALSE, an operator has
+# turned the whole emoji surface off for the guild (the interactive role menus
+# are unaffected). Default TRUE preserves every existing binding's behaviour.
+REACTION_ROLES_ENABLED = "reaction_roles_enabled"

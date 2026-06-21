@@ -26,6 +26,7 @@ imports are function-local; top-level imports are limited to stdlib + ``utils``.
 
 from __future__ import annotations
 
+import logging
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -34,6 +35,8 @@ import discord
 
 from utils import db, role_feasibility
 from utils.db import role_menus as menus_db
+
+logger = logging.getLogger("bot.services.reaction_role")
 
 
 async def bind_emoji(
@@ -88,6 +91,161 @@ async def get_binding(guild_id: int, message_id: int, emoji: str) -> int | None:
 async def list_bindings(guild_id: int) -> list[dict]:
     """All emoji reaction-role bindings configured in a guild."""
     return await db.get_all_reaction_roles(guild_id)
+
+
+# ===========================================================================
+# Emoji-surface modes (PR 3) — Carl's `rr <mode> <msg_id>`, per message
+# ===========================================================================
+# A mode is a property of a reaction-role *message*: 'normal' (react adds /
+# un-react removes), 'unique' (one role per message — reacting swaps the
+# member's previous pick), or 'verify' (react only ever ADDS; the bot removes
+# the reaction afterward and un-reacting never strips the role). Config writes
+# are audited; the member self-assign path is not (high-volume, plan §9).
+
+
+async def reaction_roles_enabled(guild_id: int) -> bool:
+    """Whether the emoji reaction-role surface is active for a guild.
+
+    Defaults to ``True`` so every existing binding keeps working after the
+    overhaul (the PR-1 zero-behaviour-change guarantee) — an operator can turn
+    the whole emoji surface off per guild via the Role settings
+    (``reaction_roles_enabled``). Consumed by the ``role_cog`` reaction
+    listeners; this is the settings-bridge read (plan §4 PR 3).
+    """
+    from services.settings_resolution import resolve_value
+
+    return bool(await resolve_value(guild_id, "role", "reaction_roles_enabled", True))
+
+
+async def set_message_mode(
+    *,
+    guild_id: int,
+    message_id: int,
+    mode: str,
+    actor_id: int | None,
+) -> str:
+    """Set a reaction-role message's mode (audited). Returns the stored mode."""
+    mode = _validate_mode(mode)
+    await db.set_reaction_message_mode(guild_id, message_id, mode)
+    await _emit_mode(
+        guild_id,
+        message_id=message_id,
+        prev_value=None,
+        new_value=mode,
+        actor_id=actor_id,
+    )
+    return mode
+
+
+async def get_message_mode(guild_id: int, message_id: int) -> str:
+    """Resolve a message's reaction mode (``'normal'`` when unset)."""
+    return await db.get_reaction_message_mode(guild_id, message_id)
+
+
+async def clear_message_mode(
+    *,
+    guild_id: int,
+    message_id: int,
+    actor_id: int | None,
+) -> None:
+    """Reset a message back to the default ``'normal'`` mode (audited)."""
+    await db.clear_reaction_message_mode(guild_id, message_id)
+    await _emit_mode(
+        guild_id,
+        message_id=message_id,
+        prev_value=None,
+        new_value="normal",
+        actor_id=actor_id,
+    )
+
+
+async def list_message_modes(guild_id: int) -> dict[int, str]:
+    """Map of ``message_id → mode`` for every message with a non-default mode."""
+    rows = await db.get_reaction_message_modes(guild_id)
+    return {int(r["message_id"]): r["mode"] for r in rows}
+
+
+async def handle_reaction_add(
+    guild: discord.Guild,
+    member: discord.Member,
+    message_id: int,
+    emoji: str,
+) -> tuple[RoleMenuOutcome | None, bool]:
+    """Apply a reaction-add for the emoji surface, honoring the message's mode.
+
+    Returns ``(outcome, remove_reaction)`` — ``outcome`` is ``None`` when the
+    emoji isn't bound to a role; ``remove_reaction`` is ``True`` for ``verify``
+    mode so the caller strips the member's reaction (the message stays clean).
+    """
+    role_id = await db.get_reaction_role(guild.id, message_id, emoji)
+    if role_id is None:
+        return None, False
+    if not await reaction_roles_enabled(guild.id):
+        return None, False
+    mode = await db.get_reaction_message_mode(guild.id, message_id)
+    if mode == "unique":
+        siblings = await _held_sibling_reaction_roles(
+            guild,
+            member,
+            message_id,
+            keep=role_id,
+        )
+        return (
+            await _apply(
+                member,
+                to_add=(role_id,),
+                to_remove=siblings,
+                guild=guild,
+            ),
+            False,
+        )
+    if mode == "verify":
+        return (
+            await _apply(
+                member,
+                to_add=(role_id,),
+                to_remove=(),
+                guild=guild,
+            ),
+            True,
+        )
+    return await _apply(member, to_add=(role_id,), to_remove=(), guild=guild), False
+
+
+async def handle_reaction_remove(
+    guild: discord.Guild,
+    member: discord.Member,
+    message_id: int,
+    emoji: str,
+) -> RoleMenuOutcome | None:
+    """Apply a reaction-remove for the emoji surface, honoring the message's mode.
+
+    ``normal`` / ``unique`` strip the role on un-react; ``verify`` never does
+    (it is add-only), so this is a no-op there.
+    """
+    role_id = await db.get_reaction_role(guild.id, message_id, emoji)
+    if role_id is None:
+        return None
+    if not await reaction_roles_enabled(guild.id):
+        return None
+    mode = await db.get_reaction_message_mode(guild.id, message_id)
+    if mode == "verify":
+        return None
+    return await _apply(member, to_add=(), to_remove=(role_id,), guild=guild)
+
+
+async def _held_sibling_reaction_roles(
+    guild: discord.Guild,
+    member: discord.Member,
+    message_id: int,
+    *,
+    keep: int,
+) -> tuple[int, ...]:
+    """The other roles on this message the member holds (unique-mode swap set)."""
+    rows = await db.get_reaction_roles_for_message(guild.id, message_id)
+    sibling_ids = {int(r["role_id"]) for r in rows}
+    held = {r.id for r in member.roles}
+    return tuple((sibling_ids & held) - {keep})
 
 
 # ===========================================================================
@@ -391,10 +549,35 @@ async def _apply(
         except discord.Forbidden:
             blocked += tuple(r.id for r in remove_roles)
 
+    if added or removed:
+        await _record_pickups(guild.id, added, removed)
+
     note = ""
     if blocked and not (added or removed):
         note = "I can't manage that role (it's above my highest role)."
     return RoleMenuOutcome(added=added, removed=removed, blocked=blocked, note=note)
+
+
+async def _record_pickups(
+    guild_id: int,
+    added: tuple[int, ...],
+    removed: tuple[int, ...],
+) -> None:
+    """Tally pickup analytics (PR 5, plan §10) — best-effort, aggregate only.
+
+    Counted for every self-assignment (menu *and* emoji surfaces both funnel
+    through :func:`_apply`). A stats-write blip must never block the actual role
+    mutation, so failures are swallowed at debug level.
+    """
+    try:
+        for role_id in added:
+            await menus_db.record_pickup(guild_id, role_id)
+        for role_id in removed:
+            await menus_db.record_removal(guild_id, role_id)
+    except (
+        Exception
+    ):  # noqa: BLE001 — analytics is non-critical; never block assignment
+        logger.debug("reaction_role_service: pickup-stat write failed", exc_info=True)
 
 
 def _resolve_manageable(
@@ -469,6 +652,32 @@ async def _emit_menu_audit(
     )
 
 
+async def _emit_mode(
+    guild_id: int,
+    *,
+    message_id: int,
+    prev_value: str | None,
+    new_value: str | None,
+    actor_id: int | None,
+) -> None:
+    """Emit ``audit.action_recorded`` for a per-message reaction-mode change."""
+    from services.audit_events import emit_audit_action
+
+    await emit_audit_action(
+        mutation_id=str(uuid.uuid4()),
+        subsystem="role",
+        mutation_type="set_reaction_mode",
+        target=f"reaction_message:{message_id}",
+        scope="guild",
+        guild_id=guild_id,
+        prev_value=prev_value,
+        new_value=new_value,
+        actor_id=actor_id,
+        actor_type="admin",
+        occurred_at=datetime.now(tz=timezone.utc),
+    )
+
+
 async def _emit(
     guild_id: int,
     *,
@@ -503,15 +712,22 @@ __all__ = [
     "RoleOption",
     "apply_selection",
     "bind_emoji",
+    "clear_message_mode",
     "create_menu",
     "delete_menu",
     "get_binding",
     "get_menu",
     "get_menu_options",
+    "get_message_mode",
+    "handle_reaction_add",
+    "handle_reaction_remove",
     "list_bindings",
     "list_menus",
+    "list_message_modes",
     "list_posted_menus",
+    "reaction_roles_enabled",
     "set_menu_message",
+    "set_message_mode",
     "toggle_role",
     "unbind_emoji",
     "update_menu",

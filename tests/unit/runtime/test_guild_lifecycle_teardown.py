@@ -513,3 +513,105 @@ async def test_teardown_role_menu_failure_is_isolated(_teardown_patches):
     ):
         # No exception escapes — the lifecycle swallows + logs.
         await guild_lifecycle.teardown(99)
+
+
+# ---------------------------------------------------------------------------
+# Step 24 — per-message reaction modes deleted (reaction-roles overhaul PR 3)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_deletes_reaction_modes(_teardown_patches):
+    """Step 24 awaits ``delete_reaction_modes_for_guild`` so per-message
+    reaction-mode rows never accumulate for a departed guild (INV-I).
+    """
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.delete_reaction_modes_for_guild",
+        new_callable=AsyncMock,
+        return_value=3,
+    ) as mock_delete:
+        await guild_lifecycle.teardown(99)
+        mock_delete.assert_awaited_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_reaction_modes_failure_is_isolated(_teardown_patches):
+    """A failure in the reaction-mode teardown step must not abort the sequence."""
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.delete_reaction_modes_for_guild",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("DB blip"),
+    ):
+        await guild_lifecycle.teardown(99)
+
+
+# ---------------------------------------------------------------------------
+# Step 25 — temporary role grants deleted (reaction-roles overhaul PR 4)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_deletes_role_grants(_teardown_patches):
+    """Step 25 awaits ``utils.db.role_grants.delete_for_guild`` so pending temp
+    grants never accumulate for a departed guild (INV-I).
+    """
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.role_grants.delete_for_guild",
+        new_callable=AsyncMock,
+        return_value=4,
+    ) as mock_delete:
+        await guild_lifecycle.teardown(99)
+        mock_delete.assert_awaited_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_role_grants_failure_is_isolated(_teardown_patches):
+    """A failure in the role-grant teardown step must not abort the sequence."""
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.role_grants.delete_for_guild",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("DB blip"),
+    ):
+        await guild_lifecycle.teardown(99)
+
+
+# ---------------------------------------------------------------------------
+# Step 26 — role-pickup analytics deleted (reaction-roles overhaul PR 5)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_deletes_role_pickup_stats(_teardown_patches):
+    """Step 26 awaits ``role_menus.delete_pickup_stats_for_guild`` so analytics
+    rows never accumulate for a departed guild (INV-I).
+    """
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.role_menus.delete_pickup_stats_for_guild",
+        new_callable=AsyncMock,
+        return_value=2,
+    ) as mock_delete:
+        await guild_lifecycle.teardown(99)
+        mock_delete.assert_awaited_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_pickup_stats_failure_is_isolated(_teardown_patches):
+    """A failure in the pickup-stats teardown step must not abort the sequence."""
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.role_menus.delete_pickup_stats_for_guild",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("DB blip"),
+    ):
+        await guild_lifecycle.teardown(99)
