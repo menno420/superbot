@@ -7055,3 +7055,29 @@ session's work.
 **Home:** this Q-block + `docs/planning/project-moon-knowledge-domain-plan-2026-06-21.md` (the program
 plan) + the idea capture `docs/ideas/project-moon-wiki-knowledge-domain-2026-06-21.md` (resolved) +
 `docs/planning/README.md` S2 index.
+
+### Q-0193 — ANSWERED (owner directive in-session): "Merge = deploy" — kill the "restart is yours" misinformation (2026-06-21)
+
+**Context.** Closing the role-presets session (#1245), an agent told the owner "the production restart is
+still yours." The owner corrected it: **Railway auto-deploys `main` on every merge**, so a merged change is
+live on its own — there is no manual restart to perform. He added the meta-point: *the fact that an agent
+parroted "restart is your job" means the deploy reality is buried and the docs are too crowded.*
+
+**The decision / correction.** **Merging IS deploying.** A merge to `main` triggers an immediate Railway
+auto-redeploy of `worker` (the deploy *is* the container restart); the change is live within minutes with
+no manual step. Agents must **never** tell the maintainer to "restart" or "deploy" a merge to apply it.
+What genuinely stays the maintainer's is **live verification, rollback, and eval walks**, plus any per-PR
+*data* step a change explicitly names (e.g. `!btd6ops seed-data`, or an operator button to clear stale
+rows) — **not** the deploy/restart. (This sharpens, not contradicts, the Q-0084 "merge ≠ deploy"
+autonomy grant: that grant meant *verification/rollback* stay the owner's, never that a separate manual
+deploy is required. The misleading "Merge ≠ deploy — restart stays yours" shorthand was the bug.)
+
+**Applied this session (docs-only):** the canonical `docs/operations/production-deployment.md` § *How code
+reaches production* gained an unmissable "Merge = deploy" lead and dropped the "restarts … stay the
+maintainer's" phrasing; the `.claude/CLAUDE.md` auto-merge bullet's "**Merge ≠ deploy** — production
+restart/prod-checks stay the maintainer's" was rewritten to "**Merging IS deploying** … never tell the
+maintainer to restart/deploy a merge" (edited in-session under the Q-0106 live-owner exception, citing this
+Q); `.session-journal.md` got a one-line prevention note next to the auto-deploy fact.
+
+**Home:** this Q-block (canonical) + `docs/operations/production-deployment.md` (the operational truth) +
+the `.claude/CLAUDE.md` auto-merge bullet (the binding rule).

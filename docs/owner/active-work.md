@@ -44,6 +44,9 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/ecstatic-babbage-8bf0g6` · **"Merge = deploy" clarity** (owner directive Q-0193, in-chat) —
+  killed the "restart is yours" misinformation at the roots (`production-deployment.md` lead +
+  `.claude/CLAUDE.md` binding line + router Q-0193 + journal) · 2026-06-21 · **PR #1247 (auto-merge on green)**
 - `claude/reaction-roles-gradient-presets` · **reaction-roles gradient presets** (⚑ self-initiated,
   Q-0172) — curated `GradientPreset` catalogue + one-tap presets in the Colours flow (perk-gated) ·
   `disbot/utils/role_menu_presentation.py` + `disbot/views/roles/role_menu_builder.py` · 2026-06-21 ·
