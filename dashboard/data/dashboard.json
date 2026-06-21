@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T15:38:23Z",
+    "generated_at": "2026-06-21T16:09:08Z",
     "build": {
-      "commit": "f25356b9",
-      "subject": "feat(creatures): user-facing PvP battle flow + extension-integrity guard",
-      "committed_at": "2026-06-21T15:38:10Z",
-      "branch": "HEAD"
+      "commit": "49416b9f",
+      "subject": "Reaction roles: multiple emotes per message (each its own role) + reuse (repost/duplicate) a configured menu (#1234)",
+      "committed_at": "2026-06-21T16:03:18Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 37,
@@ -2173,6 +2173,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-reaction-roles-multi-role-and-menu-reuse.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction roles: multi-emote bindings + menu reuse",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-reaction-roles-decisions-locked.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Reaction-roles plan: owner decisions locked + analytics added",
@@ -2578,14 +2586,6 @@
       "title": "2026-06-19 — Website two-site split: planning brief",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-split-next-steps-handoff.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website split: rollout + next-steps handoff doc",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
