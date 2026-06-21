@@ -77,10 +77,13 @@ class ReactionRolesPanel(BaseView):
         menus = await reaction_role_service.list_menus(self.ctx.guild.id)
 
         embed = discord.Embed(title="💬 Reaction Roles", color=ROLE_COLOR)
+        dead = 0
         if rows:
             lines = []
             for r in rows:
                 role = resources.resolve_role(self.ctx.guild, role_id=r["role_id"])
+                if role is None:
+                    dead += 1
                 role_str = role.mention if role else f"*(deleted role {r['role_id']})*"
                 lines.append(f"`{r['message_id']}` · {r['emoji']} → {role_str}")
             embed.description = "\n".join(lines)[:4096]
@@ -108,6 +111,15 @@ class ReactionRolesPanel(BaseView):
             ),
             inline=False,
         )
+        if dead:
+            embed.add_field(
+                name="⚠️ Needs cleanup",
+                value=(
+                    f"{dead} binding(s) point to a **deleted role** — tap "
+                    "**🧹 Clean up** to remove them."
+                ),
+                inline=False,
+            )
         embed.set_footer(text="One tap to self-assign; modes mirror Carl-bot.")
         return embed
 
@@ -305,6 +317,32 @@ class ReactionRolesPanel(BaseView):
             embed=await self.build_embed(),
             view=self,
         )
+
+    @discord.ui.button(label="🧹 Clean up", style=discord.ButtonStyle.grey, row=1)
+    async def cleanup_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        from services import reaction_role_service
+
+        removed = await reaction_role_service.prune_dead_bindings(
+            self.ctx.guild,
+            actor_id=interaction.user.id,
+        )
+        if removed:
+            lines = "\n".join(
+                f"{r['emoji']} (deleted role) on message `{r['message_id']}`"
+                for r in removed
+            )
+            content = f"🧹 Removed {len(removed)} dead binding(s):\n{lines}"[:1900]
+        else:
+            content = "✅ No dead bindings — every binding points to a live role."
+        await interaction.response.send_message(content, ephemeral=True)
+        await self._rerender()
 
 
 # ---------------------------------------------------------------------------

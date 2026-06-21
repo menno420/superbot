@@ -44,6 +44,10 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/reaction-roles-cleanup` · **reaction-roles dead-binding cleanup** (owner-directed,
+  screenshots) — 🧹 Clean up button + `prune_dead_bindings` (+ panel hint) to remove bindings whose
+  role was deleted · `disbot/services/reaction_role_service.py` + `disbot/views/roles/reaction_panel.py`
+  · 2026-06-21 · **PR #1248 (merge on green)**
 - `claude/ecstatic-babbage-8bf0g6` · **"Merge = deploy" clarity** (owner directive Q-0193, in-chat) —
   killed the "restart is yours" misinformation at the roots (`production-deployment.md` lead +
   `.claude/CLAUDE.md` binding line + router Q-0193 + journal) · 2026-06-21 · **PR #1247 (auto-merge on green)**

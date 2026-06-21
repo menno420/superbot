@@ -57,6 +57,14 @@
 > Each pick auto-creates a gradient role via the shipped `ensure_color_role` seam; reuses
 > `_commit_colour_roles`, so the solid-colour fallback still applies. Pure data + one conditional select.
 >
+> **▶ Refinement (2026-06-21, owner-directed — PR #1248):** **dead-binding cleanup.** Reaction-role
+> config silently rots when a bound role is deleted (binding lingers as `emoji → (deleted role N)`).
+> `reaction_role_service.prune_dead_bindings` removes every binding whose role no longer resolves
+> (audited via `unbind_emoji`); a **🧹 Clean up** button on `ReactionRolesPanel` runs it + reports, and
+> `build_embed` shows a "⚠️ N binding(s) point to a deleted role — tap 🧹 Clean up" hint. The
+> creation-side cause was fixed in #1234; this clears rows already left behind. (The Add-modal
+> `💀 ❤️ 😘` placeholder is an intended multi-emote preview and stays.)
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,

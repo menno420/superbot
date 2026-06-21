@@ -335,3 +335,63 @@ async def test_record_pickups_swallows_errors():
         new=AsyncMock(side_effect=RuntimeError("db down")),
     ):
         await rrs._record_pickups(1, (10,), ())  # must not raise
+
+
+# ---------------------------------------------------------------------------
+# Dead-binding cleanup (owner-directed, 2026-06-21) — remove bindings whose role
+# was deleted; live bindings untouched.
+# ---------------------------------------------------------------------------
+
+
+def _resolve_only(*live_ids: int):
+    def _fake(_guild, *, role_id):
+        return object() if role_id in live_ids else None
+
+    return _fake
+
+
+@pytest.mark.asyncio
+async def test_prune_dead_bindings_removes_only_deleted_role_bindings():
+    rows = [
+        {"message_id": 1, "emoji": "💀", "role_id": 10},  # live
+        {"message_id": 1, "emoji": "❤️", "role_id": 20},  # dead
+        {"message_id": 2, "emoji": "🔥", "role_id": 30},  # dead
+    ]
+    with (
+        patch.object(rrs, "list_bindings", new=AsyncMock(return_value=rows)),
+        patch("core.runtime.resources.resolve_role", side_effect=_resolve_only(10)),
+        patch.object(rrs, "unbind_emoji", new=AsyncMock()) as unbind,
+    ):
+        removed = await rrs.prune_dead_bindings(_Guild(1), actor_id=99)
+
+    assert [r["emoji"] for r in removed] == ["❤️", "🔥"]
+    assert unbind.await_count == 2
+    unbind.assert_any_await(1, 1, "❤️", actor_id=99)
+    unbind.assert_any_await(1, 2, "🔥", actor_id=99)
+
+
+@pytest.mark.asyncio
+async def test_prune_dead_bindings_noop_when_all_live():
+    rows = [{"message_id": 1, "emoji": "💀", "role_id": 10}]
+    with (
+        patch.object(rrs, "list_bindings", new=AsyncMock(return_value=rows)),
+        patch("core.runtime.resources.resolve_role", side_effect=_resolve_only(10)),
+        patch.object(rrs, "unbind_emoji", new=AsyncMock()) as unbind,
+    ):
+        removed = await rrs.prune_dead_bindings(_Guild(1), actor_id=99)
+
+    assert removed == []
+    unbind.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_count_dead_bindings():
+    rows = [
+        {"message_id": 1, "emoji": "💀", "role_id": 10},
+        {"message_id": 1, "emoji": "❤️", "role_id": 20},
+    ]
+    with (
+        patch.object(rrs, "list_bindings", new=AsyncMock(return_value=rows)),
+        patch("core.runtime.resources.resolve_role", side_effect=_resolve_only(10)),
+    ):
+        assert await rrs.count_dead_bindings(_Guild(1)) == 1
