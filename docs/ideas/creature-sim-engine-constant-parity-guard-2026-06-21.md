@@ -1,6 +1,7 @@
 # Idea — a parity guard tying the creature sim to the runtime battle engine
 
-> **Status:** `idea` · captured 2026-06-21 (creature PvP battle-engine session, PR #1213).
+> **Status:** `ideas` · captured 2026-06-21 (creature PvP battle-engine session, PR #1213).
+> Not a plan, not approval. Source + binding contracts win.
 > **Lane:** decided/small — a stdlib parity test, no owner decision needed.
 > **Subsystem:** games (creatures) · tooling.
 
