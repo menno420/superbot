@@ -4850,6 +4850,19 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "temproles",
+    "area": "other",
+    "status": "finished",
+    "summary": "List active temporary roles. Usage: !temproles (yours) or !temproles @member (staff).",
+    "description": "List active temporary roles. Usage: !temproles (yours) or !temproles @member (staff).",
+    "usage": "!temproles",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "test",
     "area": "admin",
     "status": "in-progress",
@@ -5676,7 +5689,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "f25356b9",
+    "build": "2e5955c0",
     "title": "New public bot website",
     "changes": [
       {
@@ -5688,7 +5701,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "f25356b9",
+    "build": "2e5955c0",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5700,7 +5713,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "f25356b9",
+    "build": "2e5955c0",
     "title": "Command-alias suggestions",
     "changes": [
       {

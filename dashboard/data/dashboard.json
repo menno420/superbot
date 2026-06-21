@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T17:51:15Z",
+    "generated_at": "2026-06-21T18:11:06Z",
     "build": {
-      "commit": "61fb3144",
-      "subject": "Merge pull request #1235 from menno420/claude/peaceful-mayer-rgc20t",
-      "committed_at": "2026-06-21T19:07:45Z",
-      "branch": "main"
+      "commit": "2e5955c0",
+      "subject": "session: open temproles member-view PR (born-red card)",
+      "committed_at": "2026-06-21T18:07:30Z",
+      "branch": "claude/funny-franklin-8ha49t"
     },
     "counts": {
       "functions": 37,
@@ -16,7 +16,7 @@
       "updates": 60,
       "env_vars": 37,
       "cogs": 46,
-      "commands": 313,
+      "commands": 314,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -2125,6 +2125,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-temproles-member-view.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — `!temproles` member-facing temp-role listing",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-site-field-level-redaction-contract.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — site.json field-level redaction contract",
@@ -2586,14 +2594,6 @@
       "title": "2026-06-20 — Extend the `baseview_inheritance` arch ratchet to the cog layer",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-ai-other-bot-mention-bug-note.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — BUG note: AI replies to other bots' mentions + Pokétwo demand signal",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
@@ -6784,6 +6784,17 @@
           "parent": null,
           "aliases": [],
           "brief": "Give a member a role for a limited time. Usage: !temprole @member 2h @role",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "temproles",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "List active temporary roles. Usage: !temproles (yours) or !temproles @member (staff).",
           "classification": "",
           "has_panel": false,
           "button_backed": false

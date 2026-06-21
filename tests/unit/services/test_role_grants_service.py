@@ -118,3 +118,40 @@ async def test_sweep_cleans_up_when_member_gone():
     assert resolved == 1
     del_mock.assert_awaited_once_with(7)
     audit_mock.assert_not_awaited()  # no role mutation happened
+
+
+@pytest.mark.asyncio
+async def test_list_active_grants_filters_lapsed_and_vanished_roles():
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime(2026, 6, 21, 12, 0, tzinfo=timezone.utc)
+    role_live = SimpleNamespace(id=42, name="VIP")
+    # role 99 is still active by expiry but has vanished from the guild;
+    # role 7 has already lapsed (sweep has not run yet) — both must be dropped.
+    rows = [
+        {"role_id": 7, "expires_at": now - timedelta(minutes=1)},
+        {"role_id": 42, "expires_at": now + timedelta(hours=2)},
+        {"role_id": 99, "expires_at": now + timedelta(hours=5)},
+    ]
+
+    def _get_role(rid: int):
+        return role_live if rid == 42 else None
+
+    guild = SimpleNamespace(id=1, get_role=MagicMock(side_effect=_get_role))
+    with (
+        patch.object(svc.grants_db, "list_for_member", new=AsyncMock(return_value=rows)),
+        patch.object(svc, "_utcnow", return_value=now),
+    ):
+        active = await svc.list_active_grants(guild, member_id=5)
+
+    assert active == [(role_live, now + timedelta(hours=2))]
+
+
+@pytest.mark.asyncio
+async def test_list_active_grants_empty_when_no_rows():
+    guild = SimpleNamespace(id=1, get_role=MagicMock(return_value=None))
+    with patch.object(
+        svc.grants_db, "list_for_member", new=AsyncMock(return_value=[])
+    ):
+        active = await svc.list_active_grants(guild, member_id=5)
+    assert active == []
