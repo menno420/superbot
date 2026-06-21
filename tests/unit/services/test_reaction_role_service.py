@@ -115,8 +115,16 @@ class _Member:
 
 
 class _Guild:
-    def __init__(self, gid: int = 1) -> None:
+    def __init__(self, gid: int = 1, *, live_roles: set[int] | None = None) -> None:
         self.id = gid
+        # ``None`` → every role resolves (the default for the assignment tests, so
+        # the dead-binding self-heal never fires); a set → only those ids resolve.
+        self._live_roles = live_roles
+
+    def get_role(self, rid: int) -> _Role | None:
+        if self._live_roles is None or rid in self._live_roles:
+            return _Role(rid)
+        return None
 
 
 def _enabled(value: bool = True) -> AsyncMock:
@@ -395,3 +403,57 @@ async def test_count_dead_bindings():
         patch("core.runtime.resources.resolve_role", side_effect=_resolve_only(10)),
     ):
         assert await rrs.count_dead_bindings(_Guild(1)) == 1
+
+
+# ---------------------------------------------------------------------------
+# Listener self-heal — a reaction on a binding whose role was deleted drops it
+# automatically (owner idea, 2026-06-21).
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_self_heal_removes_binding_when_role_deleted():
+    guild = _Guild(1, live_roles=set())  # role 42 no longer exists
+    with patch.object(rrs, "unbind_emoji", new=AsyncMock()) as unbind:
+        healed = await rrs._self_heal_dead_binding(guild, 555, "💀", 42)
+    assert healed is True
+    unbind.assert_awaited_once_with(1, 555, "💀", actor_id=None, actor_type="system")
+
+
+@pytest.mark.asyncio
+async def test_self_heal_keeps_binding_when_role_live():
+    guild = _Guild(1, live_roles={42})
+    with patch.object(rrs, "unbind_emoji", new=AsyncMock()) as unbind:
+        healed = await rrs._self_heal_dead_binding(guild, 555, "💀", 42)
+    assert healed is False
+    unbind.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_handle_reaction_add_self_heals_dead_binding():
+    guild = _Guild(1, live_roles=set())  # the bound role 42 was deleted
+    with (
+        patch.object(rrs.db, "get_reaction_role", new=AsyncMock(return_value=42)),
+        patch.object(rrs, "reaction_roles_enabled", new=_enabled(True)),
+        patch.object(rrs, "unbind_emoji", new=AsyncMock()) as unbind,
+        patch.object(rrs, "_apply", new=AsyncMock()) as apply_mock,
+    ):
+        outcome, strip = await rrs.handle_reaction_add(guild, _Member([]), 555, "💀")
+    assert (outcome, strip) == (None, False)
+    apply_mock.assert_not_awaited()  # dead binding → no assignment attempted
+    unbind.assert_awaited_once_with(1, 555, "💀", actor_id=None, actor_type="system")
+
+
+@pytest.mark.asyncio
+async def test_handle_reaction_remove_self_heals_dead_binding():
+    guild = _Guild(1, live_roles=set())
+    with (
+        patch.object(rrs.db, "get_reaction_role", new=AsyncMock(return_value=42)),
+        patch.object(rrs, "reaction_roles_enabled", new=_enabled(True)),
+        patch.object(rrs, "unbind_emoji", new=AsyncMock()) as unbind,
+        patch.object(rrs, "_apply", new=AsyncMock()) as apply_mock,
+    ):
+        outcome = await rrs.handle_reaction_remove(guild, _Member([42]), 555, "💀")
+    assert outcome is None
+    apply_mock.assert_not_awaited()
+    unbind.assert_awaited_once_with(1, 555, "💀", actor_id=None, actor_type="system")
