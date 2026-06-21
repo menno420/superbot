@@ -94,7 +94,9 @@ row), `media_maintenance_cog` (the YouTube cache-retention task owner — no
 commands, no subsystem row), `health_maintenance_cog` (the health-findings
 retention task owner — no commands, no subsystem row), `role_grants_cog` (the
 temporary-role expiry sweep loop + the `!temprole` grant command — backs the
-role product, no subsystem row), `setup_cog` (the setup
+role product, no subsystem row), `creature_battle_cog` (the creature PvP
+`!cbattle` command — part of the Creatures subsystem, surfaced via
+`creature_cog`'s hook, no subsystem row), `setup_cog` (the setup
 wizard surface), and the
 five split BTD6 cogs (`btd6_reference_cog`, `btd6_events_cog`,
 `btd6_strategy_cog`, `paragon_cog`, `btd6_ops_cog`), which all surface under
