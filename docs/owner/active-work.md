@@ -28,25 +28,16 @@ living ledger (`docs/current-state.md`).
 - `claude/modest-gates-0ble76` · **repo-state review cleanup** (owner-directed) — prune merged claims
   here · trim `current-state.md` stale header banners → single live ▶ pointer · build the callout
   line-budget guard · `docs/owner/active-work.md` / `docs/current-state.md` / `scripts/check_docs.py`
-- `claude/peaceful-mayer-rgc20t` · **BTD6 data auto-seed on boot** (owner: "isn't seed automated?") — auto-seed the postgres `btd6_data_blobs` store from the deployed files in `cog_load` so data PRs apply on deploy (no manual `!btd6ops seed-data`) · `btd6_data_service` / `btd6_cog` / `config` · 2026-06-21 · **PR (this session, auto-merge on green)**
+  · 2026-06-21 · **PR #1256 (auto-merge on green)**
 
-- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — rebuffBlockTime + multi-target** (owner: improvements welcome) — decode `rebuffBlockTime`, add `targets=N` round-robin uptime · `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service` / `ai_tools` · 2026-06-21 · **PR (this session, auto-merge on green)**
-
-- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — verify binding + populate data** (follow-up to
-  #1235; owner pointed at the public dump) — cloned BTD Mod Helper dump, corrected `_buff_window` to
-  the verified `Add…ToProjectileModel` shape, overlaid buff fields onto committed `alchemist.json` ·
-  `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service`
-  · 2026-06-21 · **PR (this session, auto-merge on green)**
-- `claude/peaceful-mayer-rgc20t` · **BTD6 auto-seed blob store on boot** (owner question — "shouldn't
-  seed-data be automated by now?") — seed postgres from deployed files in `BTD6Cog.cog_load`, killing
-  the manual `!btd6ops seed-data` step · `btd6_data_service` / `cogs/btd6` · 2026-06-21 ·
-  **PR #1255 (auto-merge on green)**
-
-*(All prior Active claims' PRs have merged — pruned 2026-06-21 per Q-0166; see Recently cleared.
-The lone other open PR was #1213 creature-PvP engine, since merged.)*
+*(All other Active claims' PRs have merged — re-pruned 2026-06-21 per Q-0166 after a merge with main
+re-introduced them; see Recently cleared. #1256 is the only PR in flight.)*
 
 ## Recently cleared
 
+- `claude/peaceful-mayer-rgc20t` · **BTD6 data auto-seed on boot** (owner: "isn't seed automated?") —
+  auto-seed the postgres blob store from deployed files in `cog_load`, killing the manual
+  `!btd6ops seed-data` step · 2026-06-21 · **PR #1255 (merged)**
 - `claude/peaceful-mayer-rgc20t` · **BTD6 Alchemist buff-uptime** (tool + parser decode + multi-target +
   verified-binding/data fixes) · 2026-06-21 · **PR #1235 / #1249 / #1251 (merged)**
 - `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (feasibility → full-parity program plan
