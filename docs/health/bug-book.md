@@ -23,7 +23,59 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
-## BUG-0020 — `trim_recently_shipped.py` floor-pointer recompute matches stray `#N` in prose (writes a wrong "Older merges (#HIGH … #LOW)" span) — OPEN (tooling; symptom hand-corrected)
+## BUG-0022 — full test suite rewrites the tracked `botsite/site/data.js` (live-HEAD build sha) → `git add -A` reddens botsite-tests — FIXED
+
+- **Symptom (found 2026-06-21, dispatch run):** an unrelated PR (a tooling/docs fix) reddened **both**
+  `botsite-tests` and `code-quality` on `test_committed_data_js_is_in_sync_with_site_json` — the
+  committed `botsite/site/data.js` was "stale" vs `site.json`. The data.js in the commit carried the
+  session's own HEAD short-sha in its CHANGELOG `build` field while `site.json` still carried the older
+  committed sha, so the two disagreed.
+- **Expected:** running the test suite (or `check_quality.py --full`) never modifies a tracked repo
+  file; a broad `git add -A` cannot accidentally capture a regenerated artifact.
+- **Root cause:** `scripts/export_dashboard_data.py main()` wrote the SPA data layer to a **hardcoded**
+  `REPO_ROOT/botsite/site/data.js`, ignoring its output args. The CLI tests
+  (`test_cli_targets_both_writes_both`, `test_cli_targets_site_writes_only_site_json`) drive `main()`
+  with `tmp_path` outputs for dashboard.json + site.json — but data.js was still written to the **real**
+  tracked path, stamped with `git rev-parse --short HEAD` (the live session commit, line ~618). So every
+  full-suite run silently rewrote the working-tree data.js; the next `git add -A` swept it into the
+  commit, desynced from the committed site.json → red botsite-tests.
+- **Fix (root):** `main()` now takes a `--data-js-output` arg (default `DATA_JS_OUTPUT_FILE` = the real
+  path, so the reconciliation routine's `python3.10 scripts/export_dashboard_data.py` is unchanged), and
+  the two CLI tests redirect it to `tmp_path`. The suite can no longer touch the tracked file.
+- **Stays-fixed guard:** `tests/unit/scripts/test_export_dashboard_data.py::test_cli_does_not_clobber_tracked_data_js_when_redirected`
+  snapshots the real `DATA_JS_OUTPUT_FILE`, runs `main()` with all outputs redirected, and asserts the
+  tracked file is byte-identical afterward (fails against the pre-fix hardcoded-path behavior).
+- **Status:** FIXED 2026-06-21 (dispatch run, PR #1206). Note for future sessions: this is *why* a stray
+  `M botsite/site/data.js` could appear after running tests — that recurrence is now closed at the root.
+
+## BUG-0021 — `test_acquire_lock_or_exit_exits_zero_after_wait_timeout` is flaky under `pytest -n auto` (real-clock dependent) — FIXED
+
+- **Symptom (observed 2026-06-21, dispatch run, during a `check_quality.py --full` mirror):**
+  `tests/unit/services/test_runtime.py::test_acquire_lock_or_exit_exits_zero_after_wait_timeout`
+  failed once in a parallel (`-n auto`) run, then **passed in isolation** on re-run. A classic
+  real-wall-clock flake, not a logic bug — and not caused by the change under test (a docs/tooling PR).
+- **Expected:** the test is deterministic regardless of host load / parallel scheduling.
+- **Root cause:** the test drives `runtime.acquire_lock_or_exit(boot_wait_seconds=0.05,
+  boot_poll_seconds=0.01)` against the **real** `time.monotonic` clock (deliberately un-mocked — the
+  inline comment says "Use a tiny budget so the test finishes quickly without mocking time.monotonic"),
+  while `asyncio.sleep` is mocked to return instantly. The loop therefore spins doing `try_acquire`
+  calls until 0.05 s of real wall-clock elapses, and asserts `try_acquire.await_count >= 2`. Under
+  CPU starvation (many parallel xdist workers) the process can be scheduled out so that the 0.05 s
+  budget elapses after only **one** attempt → the `>= 2` assertion fails.
+- **Proposed fix (test-only — needs no runtime change):** patch `services.runtime.time.monotonic` with
+  a controlled fake that returns a deterministic increasing sequence (e.g. `0.0, 0.0, 0.06`), so the
+  deadline crosses *after* exactly the intended number of attempts independent of host timing. Mirrors
+  the already-mocked `asyncio.sleep` so the whole loop is clock-controlled.
+- **Stays-fixed guard:** the same test, made deterministic, run under `-n auto` — it can no longer
+  depend on real elapsed time.
+- **Status:** FIXED 2026-06-21 (dispatch run, PR #1206) — the test now patches
+  `services.runtime.time.monotonic` with a fake clock that only advances when the (already-mocked)
+  `asyncio.sleep` runs; one sleep jumps it past the 0.05 s budget, so the loop gives up on exactly the
+  second attempt (`assert try_acquire.await_count == 2`, tightened from the timing-dependent `>= 2`).
+  No runtime code changed — the production `time.monotonic` path is unaltered. Verified deterministic
+  (5× + full file green).
+
+## BUG-0020 — `trim_recently_shipped.py` floor-pointer recompute matches stray `#N` in prose (writes a wrong "Older merges (#HIGH … #LOW)" span) — FIXED
 
 - **Symptom (caught 2026-06-20, seventeenth Q-0107 reconciliation pass, first real use of the actuator):**
   after `scripts/trim_recently_shipped.py --apply` moved the 8 oldest Recently-shipped bullets to the
@@ -43,10 +95,15 @@
   `#N` and asserts the computed span ignores it.
 - **Stays-fixed guard (to ship with the fix):** the `tests/unit/scripts/` case above, failing against the
   current all-`#N`-match behavior.
-- **Status:** OPEN — caught + symptom-corrected by hand this pass (the live `current-state.md` pointer reads
-  `#1129 … #535`); the actuator script itself is unfixed. Q-0105 note: this is the actuator's *first* real
-  outing and it already mis-wrote the one value it exists to keep correct — keep an eye on it; if it proves
-  unreliable across a couple more passes, prefer reverting to the hand-trim over working around it.
+- **Status:** FIXED 2026-06-21 (dispatch run, PR #1206) — root fix: `_rewrite_floor` now derives the span
+  from a new `_archive_span_numbers(archive_text)` helper that reads **only archived bullet headers**
+  (`^- \*\*#…`), taking each bullet's leading `#A · #B …` cluster (the run before the first ` (` date paren
+  or `**` bold close). Grouped non-monotonic bands (`#690 · #721`) still contribute their newest member;
+  free-floating `#N` in prose (a `band-#1170` note, a `#1` rank token) no longer widens the span.
+  Stays-fixed guard: `tests/unit/scripts/test_trim_recently_shipped.py::test_floor_pointer_ignores_stray_pr_refs_in_prose`
+  feeds an archive whose prose carries a stray high (`band-#9999`) + low (`#1`) `#N` and asserts the
+  recomputed span ignores both. The Q-0105 "keep an eye on it" note stands for the *rest* of the actuator,
+  but its one mis-writing failure mode is now closed at the root with a regression test.
 
 ## BUG-0019 — AI replies to messages aimed at *other* bots and claims "you've just pinged me" — PARTIALLY FIXED (mechanism #2 hardened; #1 awaits one owner behavior decision)
 

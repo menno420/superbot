@@ -128,7 +128,13 @@ async def test_acquire_lock_or_exit_polls_until_peer_releases():
 @pytest.mark.asyncio
 async def test_acquire_lock_or_exit_exits_zero_after_wait_timeout():
     """LP-4: a peer that never releases causes the loop to give up
-    after ``boot_wait_seconds`` and exit with code 0 (idle, not crash)."""
+    after ``boot_wait_seconds`` and exit with code 0 (idle, not crash).
+
+    The clock is faked (not real ``time.monotonic``) so the deadline crosses
+    deterministically after exactly two attempts, independent of host load /
+    parallel-xdist scheduling — see bug-book BUG-0021. The fake only advances
+    when the (mocked) sleep runs, and one sleep jumps it well past the budget.
+    """
     fake_result = rl_db.AcquireResult(
         acquired=False,
         holder_boot_id=uuid.uuid4(),
@@ -136,23 +142,29 @@ async def test_acquire_lock_or_exit_exits_zero_after_wait_timeout():
         reason="row_fresh",
     )
     try_acquire = AsyncMock(return_value=fake_result)
-    sleep_mock = AsyncMock()
+
+    clock = {"now": 0.0}
+
+    def fake_monotonic() -> float:
+        return clock["now"]
+
+    async def fake_sleep(_seconds: float) -> None:
+        clock["now"] += 1.0  # one poll interval jumps past the 0.05s budget
 
     with (
         patch.object(rl_db, "try_acquire", try_acquire),
-        patch("services.runtime.asyncio.sleep", sleep_mock),
+        patch.object(runtime.time, "monotonic", fake_monotonic),
+        patch("services.runtime.asyncio.sleep", fake_sleep),
     ):
         with pytest.raises(SystemExit) as exc_info:
-            # Use a tiny budget so the test finishes quickly without
-            # mocking ``time.monotonic``.
             await runtime.acquire_lock_or_exit(
                 boot_wait_seconds=0.05,
                 boot_poll_seconds=0.01,
             )
         assert exc_info.value.code == 0
-    # At least two attempts: one immediate + one after a sleep before
-    # the deadline elapses.
-    assert try_acquire.await_count >= 2
+    # Exactly two attempts: one immediate + one after the single sleep that
+    # crosses the deadline (deterministic — no dependency on real elapsed time).
+    assert try_acquire.await_count == 2
 
 
 @pytest.mark.asyncio

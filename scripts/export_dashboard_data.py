@@ -55,6 +55,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_FILE = REPO_ROOT / "dashboard" / "data" / "dashboard.json"
 SITE_OUTPUT_FILE = REPO_ROOT / "botsite" / "data" / "site.json"
+# The SPA data layer regenerated alongside site.json. Exposed as a CLI arg
+# (``--data-js-output``) so a test driving ``main()`` with tmp paths cannot clobber
+# the tracked repo file (BUG-0022): the live-HEAD build sha would desync it from the
+# committed site.json and redden botsite-tests for an unrelated `git add -A`.
+DATA_JS_OUTPUT_FILE = REPO_ROOT / "botsite" / "site" / "data.js"
 
 # The ONLY top-level keys the public ``site.json`` subset is allowed to carry
 # (plan §5 / §2.2). This is the redaction guarantee for the marketing bot site:
@@ -1132,6 +1137,12 @@ def main(argv: list[str] | None = None) -> int:
         help="site.json (public subset) output path",
     )
     parser.add_argument(
+        "--data-js-output",
+        default=str(DATA_JS_OUTPUT_FILE),
+        help="botsite/site/data.js (SPA data layer) output path; redirect in tests "
+        "so they never clobber the tracked repo file",
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
         help="print the meta summary without writing any file",
@@ -1163,10 +1174,10 @@ def main(argv: list[str] | None = None) -> int:
         site_data = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(site_data)
 
-        data_js = REPO_ROOT / "botsite" / "site" / "data.js"
+        data_js = Path(args.data_js_output)
         data_js.parent.mkdir(parents=True, exist_ok=True)
         data_js.write_text(site_data.render_from_site(subset), encoding="utf-8")
-        print(f"wrote {data_js.relative_to(REPO_ROOT)} (SPA data layer)")
+        print(f"wrote {data_js} (SPA data layer)")
     return 0
 
 

@@ -148,6 +148,27 @@ def test_non_monotonic_band_bullet_floor_uses_max_number(tr):
     assert "(#721 … #535)" in new_cs
 
 
+def test_floor_pointer_ignores_stray_pr_refs_in_prose(tr):
+    # BUG-0020: the recompute must read only the *bullet headers'* leading PR cluster, never a
+    # free-floating "#N" in prose — a high "band-#9999" parenthetical note or a low "#1" rank
+    # token in a continuation line must NOT widen the span beyond the real bullets (#700 … #535).
+    cs = _cs(
+        "- **#702 (a)** d",
+        "- **#701 (b)** d",
+        "- **#700 (c)** d",
+        floor="(#600 … #535)",
+    )
+    arch = _archive(
+        "- **#599 (z)** d",
+        "  trimmed from band-#9999 — a stray high ref in a note, ranked #1 overall",
+        "- **#535 (y)** oldest",
+    )
+    new_cs, _, _ = tr.trim(cs, arch, budget=2)
+    # The moved #700 makes the true archive span #700 … #535; the prose #9999 / #1 are ignored.
+    assert "(#700 … #535)" in new_cs
+    assert "#9999" not in new_cs and "(#9999" not in new_cs
+
+
 # --- idempotence --------------------------------------------------------------------------
 
 
