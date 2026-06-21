@@ -106,3 +106,14 @@ nothing consequential left only in chat.
 | Repo-rule trips | 0 |
 | New ideas contributed | 1 (anti-paywall-creep lint, Q-0089) |
 | Ideas groomed | 1 (owner vision → decided North Star + mission doc + roadmap horizon — top-of-lifecycle routing, Q-0015) |
+
+## Follow-up (2026-06-21) — open-source posture answered
+
+The owner answered the open-source / self-host open question (Q-0190 §5.1) later in the same session:
+**eventually reusable, not yet** — *"there's still a lot of moving around to do before this code is
+actually solid."* Grounded it: the repo is **already public + MIT-licensed** (`LICENSE`), so it is
+*legally* reusable **now**; the "not yet" is a **code-maturity recommendation, not a licensing gate**.
+The real path to recommend-able reuse is the existing repo-organization lanes (architecture atlas /
+consistency linter / repo-structure plan). Recorded in the mission doc §5.1 + router Q-0190's Open
+line; shipped as a small follow-up PR (no new session card — non-adopting docs change). No new owner
+decision pending.
