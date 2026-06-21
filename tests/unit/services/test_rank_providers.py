@@ -47,6 +47,7 @@ def test_registry_exposes_canonical_categories():
         "xp",
         "coins",
         "mining",
+        "creatures",
         "gamexp",
         "crafting",
         "deathmatch",
@@ -196,6 +197,75 @@ async def test_mining_top_caps_at_ten_entries():
     ):
         entries = await provider.top(_guild())
     assert len(entries) == 10
+
+
+@pytest.mark.asyncio
+async def test_creatures_top_renders_caught_and_species():
+    provider = get_provider("creatures")
+    # top_collectors → [(user_id, total_caught, unique_species)]
+    rows = [(1, 12, 8), (42, 5, 4)]
+    with patch(
+        "services.rank_providers.db.top_collectors",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ), patch(
+        "services.rank_providers.creature_names",
+        return_value=["a", "b"],
+    ), patch(
+        "services.rank_providers.resources.member_display",
+        side_effect=lambda g, uid: f"U{uid}",
+    ):
+        entries = await provider.top(_guild())
+    assert len(entries) == 2
+    assert isinstance(entries[0], RankEntry)
+    assert "U1" in entries[0].label
+    assert "12 caught" in entries[0].label
+    assert "8 species" in entries[0].label
+
+
+@pytest.mark.asyncio
+async def test_creatures_top_caps_at_ten():
+    provider = get_provider("creatures")
+    rows = [(uid, uid * 2, uid) for uid in range(1, 20)]
+    with patch(
+        "services.rank_providers.db.top_collectors",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ), patch(
+        "services.rank_providers.creature_names",
+        return_value=["a"],
+    ), patch(
+        "services.rank_providers.resources.member_display",
+        side_effect=lambda g, uid: f"U{uid}",
+    ):
+        entries = await provider.top(_guild())
+    assert len(entries) == 10
+
+
+@pytest.mark.asyncio
+async def test_creatures_member_rank_on_and_off_board():
+    provider = get_provider("creatures")
+    rows = [(1, 12, 8), (42, 5, 4)]
+    with patch(
+        "services.rank_providers.db.top_collectors",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ), patch(
+        "services.rank_providers.creature_names",
+        return_value=["a"],
+    ):
+        rank_pos, value = await provider.member_rank(_guild(), 42)
+        assert rank_pos == 2
+        assert value == "5 caught (4 species)"
+
+        missing_pos, missing_value = await provider.member_rank(_guild(), 999)
+        assert missing_pos is None and missing_value is None
+
+
+@pytest.mark.asyncio
+async def test_creatures_alias_resolves():
+    assert (get_provider("creaturelb") or MagicMock()).name == "creatures"
+    assert (get_provider("creature") or MagicMock()).name == "creatures"
 
 
 @pytest.mark.asyncio

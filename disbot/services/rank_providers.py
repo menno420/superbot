@@ -31,6 +31,7 @@ import discord
 
 from core.runtime import resources
 from utils import db
+from utils.creatures import creature_names
 
 
 @dataclass(frozen=True)
@@ -190,6 +191,49 @@ class MiningProvider(RankProvider):
         for i, (uid, total) in enumerate(rows):
             if uid == user_id:
                 return i + 1, f"{total} items"
+        return None, None
+
+
+class CreaturesProvider(RankProvider):
+    """The creature-catch game — ranked by total creatures caught.
+
+    Mirrors the standalone ``!dextop`` command but as a registered category so
+    the creature game appears in the unified ``!leaderboard`` hub alongside every
+    other game. Reads the catalog-scoped ``top_collectors`` (only current-roster
+    creatures count, so a superseded roster never inflates totals).
+    """
+
+    name = "creatures"
+    display_title = "🐾 Creature Collector Leaderboard"
+    select_label = "Creatures"
+    select_emoji = "🐾"
+    empty_hint = "No creatures caught yet. Use `!catch` to start your collection."
+
+    @staticmethod
+    def _render(caught: int, species: int) -> str:
+        return f"{caught} caught ({species} species)"
+
+    async def top(self, guild: discord.Guild) -> list[RankEntry]:
+        rows = await db.top_collectors(guild.id, creature_names())
+        return [
+            RankEntry(
+                label=(
+                    f"**{resources.member_display(guild, user_id)}** "
+                    f"— {self._render(caught, species)}"
+                ),
+            )
+            for user_id, caught, species in rows[:10]
+        ]
+
+    async def member_rank(
+        self,
+        guild: discord.Guild,
+        user_id: int,
+    ) -> tuple[int | None, str | None]:
+        rows = await db.top_collectors(guild.id, creature_names(), limit=500)
+        for i, (uid, caught, species) in enumerate(rows):
+            if uid == user_id:
+                return i + 1, self._render(caught, species)
         return None, None
 
 
@@ -397,6 +441,7 @@ _PROVIDERS: dict[str, RankProvider] = {
         XpProvider(),
         CoinsProvider(),
         MiningProvider(),
+        CreaturesProvider(),
         GameXpProvider(),
         CraftingProvider(),
         DeathmatchProvider(),
@@ -412,6 +457,8 @@ ALIASES: dict[str, str] = {
     "rankings": "xp",
     "minelb": "mining",
     "miningleaderboard": "mining",
+    "creature": "creatures",
+    "creaturelb": "creatures",
     "gxp": "gamexp",
     "gamelevel": "gamexp",
     "game_xp": "gamexp",
@@ -446,6 +493,7 @@ __all__ = [
     "ALIASES",
     "CoinsProvider",
     "CountingProvider",
+    "CreaturesProvider",
     "DeathmatchProvider",
     "MiningProvider",
     "RankEntry",
