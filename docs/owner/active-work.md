@@ -25,32 +25,26 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — rebuffBlockTime + multi-target** (owner: improvements welcome) — decode `rebuffBlockTime`, add `targets=N` round-robin uptime · `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service` / `ai_tools` · 2026-06-21 · **PR (this session, auto-merge on green)**
-
-- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — verify binding + populate data** (follow-up to
-  #1235; owner pointed at the public dump) — cloned BTD Mod Helper dump, corrected `_buff_window` to
-  the verified `Add…ToProjectileModel` shape, overlaid buff fields onto committed `alchemist.json` ·
-  `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service`
+- `claude/modest-gates-0ble76` · **repo-state review cleanup** (owner-directed) — prune merged claims
+  here · trim `current-state.md` stale header banners → single live ▶ pointer · build the callout
+  line-budget guard · `docs/owner/active-work.md` / `docs/current-state.md` / `scripts/check_docs.py`
   · 2026-06-21 · **PR (this session, auto-merge on green)**
-- `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
-  claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
-  · 2026-06-21 · **auto-merge on green** (docs-only)
-- `claude/dreamy-cerf-voar4q` · **Project Moon wiki feasibility finding** (owner-dropped) — capture
-  research as a routed idea doc; no runtime code · `docs/ideas/project-moon-wiki-knowledge-domain-2026-06-21.md`
-  + ideas index · 2026-06-21 · **auto-merge on green** (docs-only)
-- `claude/peaceful-mayer-rgc20t` · **BTD6 Alchemist buff-uptime** (owner live-test) — `btd6_buff_uptime`
-  tool + `buff_uptime()` compute + parser buff-window decode (game-data path) · `parse_gamedata.py` /
-  `btd6_upgrade_detail_service` / `ai_tools` / `ai_tool_catalogue` · 2026-06-21 · **PR #1235 (auto-merge on green)**
-- `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (owner-directed Q-0192: full parity) —
-  feasibility **#1238** + program plan **#1239** merged; now pre-build recon (data sources + seam contract)
-  · `docs/planning/project-moon-prebuild-recon-2026-06-21.md` · 2026-06-21 · **auto-merge on green** (docs-only)
+- `claude/peaceful-mayer-rgc20t` · **BTD6 auto-seed blob store on boot** (owner question — "shouldn't
+  seed-data be automated by now?") — seed postgres from deployed files in `BTD6Cog.cog_load`, killing
+  the manual `!btd6ops seed-data` step · `btd6_data_service` / `cogs/btd6` · 2026-06-21 ·
+  **PR #1255 (auto-merge on green)**
 
-*(Beyond the claim above, the only open PR is **#1213** creature-PvP battle engine on
-`claude/funny-franklin-mw3hxj`, a `needs-hermes-review` foundation slice — its owning
-session holds it, no claim line needed here.)*
+*(All prior Active claims' PRs have merged — pruned 2026-06-21 per Q-0166; see Recently cleared.
+The lone other open PR was #1213 creature-PvP engine, since merged.)*
 
 ## Recently cleared
 
+- `claude/peaceful-mayer-rgc20t` · **BTD6 Alchemist buff-uptime** (tool + parser decode + multi-target +
+  verified-binding/data fixes) · 2026-06-21 · **PR #1235 / #1249 / #1251 (merged)**
+- `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (feasibility → full-parity program plan
+  → pre-build recon, Q-0192) · 2026-06-21 · **PR #1238 / #1239 / #1240 (merged)**
+- `claude/dispatch-next` · **prune stale Active claims (Q-0166)** — superseded by the 2026-06-21
+  `modest-gates` repo-state cleanup prune (no separate PR landed) · 2026-06-21 · **superseded**
 - `claude/reaction-roles-self-heal` · **reaction-roles listener self-heal** (owner-accepted
   continuation) — auto-remove a dead-role binding when reacted on (`_self_heal_dead_binding` +
   `actor_type` thread, audited as `system`) · `disbot/services/reaction_role_service.py` · 2026-06-21 ·
