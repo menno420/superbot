@@ -45,3 +45,17 @@ def test_get_template_lookup():
     verify = presentation.get_template("verify")
     assert verify is not None
     assert verify.style == "button"
+
+
+def test_gradient_presets_are_non_empty_unique_and_valid_colours():
+    presets = presentation.gradient_presets()
+    assert presets
+    keys = [p.key for p in presets]
+    assert len(keys) == len(set(keys))  # no duplicate keys
+    for preset in presets:
+        assert preset.label and preset.name
+        # primary/secondary must convert to a discord.Color (valid 0xRRGGBB int).
+        assert isinstance(discord.Color(preset.primary), discord.Color)
+        assert isinstance(discord.Color(preset.secondary), discord.Color)
+        assert 0 <= preset.primary <= 0xFFFFFF
+        assert 0 <= preset.secondary <= 0xFFFFFF

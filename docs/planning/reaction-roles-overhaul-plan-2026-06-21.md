@@ -50,6 +50,13 @@
 > "modal-must-be-first-response" rule (pick-recent → select → emotes modal; new-message → one modal
 > that also captures the emotes). The old `_MoreEmotesModal` is generalised to `_EmotesModal`.
 >
+> **▶ Refinement (2026-06-21, ⚑ self-initiated — PR #1246):** a **gradient presets gallery** finishes
+> the colour/gradient thread — `role_menu_presentation.gradient_presets()` (a curated `GradientPreset`
+> catalogue: Sunset/Ocean/Berry/Forest/Fire/Candy) surfaced as a one-tap select in the builder's
+> 🎨 Colours flow, **only when the guild has the Enhanced-Role-Styles perk** (`supports_role_gradients`).
+> Each pick auto-creates a gradient role via the shipped `ensure_color_role` seam; reuses
+> `_commit_colour_roles`, so the solid-colour fallback still applies. Pure data + one conditional select.
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,

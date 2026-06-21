@@ -44,6 +44,10 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/reaction-roles-gradient-presets` · **reaction-roles gradient presets** (⚑ self-initiated,
+  Q-0172) — curated `GradientPreset` catalogue + one-tap presets in the Colours flow (perk-gated) ·
+  `disbot/utils/role_menu_presentation.py` + `disbot/views/roles/role_menu_builder.py` · 2026-06-21 ·
+  **PR #1246 (merge on green)**
 - `claude/reaction-roles-message-picker` · **reaction-roles follow-up** (owner-directed) — emoji-add
   message picker (most-recent / pick-recent / new-message / by-id) replacing the raw message-ID step ·
   `disbot/views/roles/reaction_panel.py` · 2026-06-21 · **PR #1243 (merge on green)**
