@@ -25,6 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/peaceful-mayer-rgc20t` · **BTD6 same-version data-drift reminder** (completes #1255) — sha-based `content_drift()` surfaced at boot + `!btd6 status` so a same-version data edit reminds the operator to `seed-data` (warn-only, honors strict Q-0077(b)) · `btd6_data_service` / `btd6_cog` / `cogs/btd6/_embeds` · 2026-06-21 · **PR #1258 (auto-merge on green)**
+
+- `claude/peaceful-mayer-rgc20t` · **BTD6 data auto-seed on boot** (owner: "isn't seed automated?") — auto-seed the postgres `btd6_data_blobs` store from the deployed files in `cog_load` so data PRs apply on deploy (no manual `!btd6ops seed-data`) · `btd6_data_service` / `btd6_cog` / `config` · 2026-06-21 · **PR (this session, auto-merge on green)**
 - `claude/modest-gates-0ble76` · **repo-state review cleanup** (owner-directed) — prune merged claims
   here · trim `current-state.md` stale header banners → single live ▶ pointer · build the callout
   line-budget guard · `docs/owner/active-work.md` / `docs/current-state.md` / `scripts/check_docs.py`
