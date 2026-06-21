@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T16:09:08Z",
+    "generated_at": "2026-06-21T17:51:15Z",
     "build": {
-      "commit": "49416b9f",
-      "subject": "Reaction roles: multiple emotes per message (each its own role) + reuse (repost/duplicate) a configured menu (#1234)",
-      "committed_at": "2026-06-21T16:03:18Z",
+      "commit": "61fb3144",
+      "subject": "Merge pull request #1235 from menno420/claude/peaceful-mayer-rgc20t",
+      "committed_at": "2026-06-21T19:07:45Z",
       "branch": "main"
     },
     "counts": {
       "functions": 37,
-      "ideas": 113,
+      "ideas": 114,
       "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
@@ -1029,6 +1029,14 @@
       "status": "historical",
       "date": "2026-06-21",
       "summary": "A small stdlib config-lint, `scripts/check_permission_overlap.py`, that flags any",
+      "subsystems": null
+    },
+    {
+      "file": "project-moon-wiki-knowledge-domain-2026-06-21.md",
+      "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "The owner relayed a request from a community member: have the **\"Project Moon wiki\" available in the",
       "subsystems": null
     },
     {
@@ -2189,12 +2197,44 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-reaction-roles-channel-and-color-roles.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction roles: channel picker + auto-created colour/gradient roles",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-prune-stale-claims.md",
       "date": "2026-06-21",
       "title": "Session — prune stale active-work.md claims (drift-on-sight)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-project-moon-wiki-feasibility.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Project Moon wiki feasibility (can we serve it like BTD6 data?)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-project-moon-prebuild-recon.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Project Moon: pre-build reconnaissance (data sources + seam contract)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-project-moon-plan-promotion.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Project Moon knowledge domain: idea → program plan (owner picked full parity)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-21-permission-overlap-guard.md",
@@ -2274,6 +2314,14 @@
       "title": "2026-06-21 — CI-reliability batch: BUG-0020 + BUG-0021 + BUG-0022",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-btd6-buff-uptime.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6 Alchemist buff-uptime calculator + game-data decode",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2544,46 +2592,6 @@
       "file": "2026-06-20-ai-other-bot-mention-bug-note.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — BUG note: AI replies to other bots' mentions + Pokétwo demand signal",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-ai-intro-capabilities.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — AI self-introduction: advertise capabilities + available games",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-two-site-split-plan.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website two-site split: the implementation plan (Q-0178)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-submit-form.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website two-site split, unit P4 (public `/submit` intake)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-split-review-refactor.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website two-site split: ultracode review-and-refactor pass",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-split-planning-brief.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website two-site split: planning brief",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
