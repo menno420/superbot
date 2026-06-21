@@ -16,6 +16,7 @@ import discord
 
 from services import creature_battle_service
 from views.base import BaseView
+from views.creature_battle.rematch import CreatureRematchView
 from views.creature_battle.render import build_result_embed
 
 logger = logging.getLogger("bot.creature_battle.challenge")
@@ -73,7 +74,13 @@ class CreatureBattleChallengeView(BaseView):
             records=records,
             xp_note=recorded.xp_note,
         )
-        await interaction.followup.send(embed=embed)
+        # Attach a rematch button so either fighter can re-challenge in one tap.
+        rematch = CreatureRematchView(self.challenger, self.opponent, self.guild_id)
+        rematch.message = await interaction.followup.send(
+            embed=embed,
+            view=rematch,
+            wait=True,
+        )
         self.stop()
 
     @discord.ui.button(label="Decline", style=discord.ButtonStyle.red, emoji="❌")

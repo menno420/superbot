@@ -419,6 +419,11 @@ Current broad captures:
   asserts they agree) keeps the sim's "PLAYABLE" verdict honest about the bot players actually play.
   Self-merge lane; disposable once the sim is retired. → relates `tests/unit/tools/` ·
   `tests/unit/views/test_panel_base_class_allowlist_parity.py` (the same parity-guard shape).
+- [`creature-pvp-rematch-button-2026-06-21.md`](./creature-pvp-rematch-button-2026-06-21.md) —
+  **⚑ self-initiated (2026-06-21, Q-0172, built #1262):** a 🔄 Rematch button on the creature-PvP
+  outcome embed, clickable by either fighter, re-issuing a fresh `!cbattle` challenge — continuous
+  laddering with no new battle logic (reuses the challenge flow + the #1257 audited result-recording).
+  Mirrors the rps `🔁 Play again` affordance. → relates `disbot/views/creature_battle/`.
 - [`reference-integrity-invariants-2026-06-16.md`](./reference-integrity-invariants-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the BUG-0014 `!coglist`-loop fix PR #949):** BUG-0014 was a
   dangling reference (a synonym → a command that didn't exist) that failed *silently*. Extract the

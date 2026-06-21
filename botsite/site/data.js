@@ -992,6 +992,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Creature PvP — rematch button on the outcome embed"
+      },
+      {
+        "status": "idea",
         "title": "Idea — a parity guard tying the creature sim to the runtime battle…"
       }
     ]
@@ -1644,6 +1648,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Creature PvP — rematch button on the outcome embed"
+      },
+      {
+        "status": "idea",
         "title": "Idea — a parity guard tying the creature sim to the runtime battle…"
       }
     ]
@@ -1662,6 +1670,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Creature PvP — rematch button on the outcome embed"
+      },
       {
         "status": "idea",
         "title": "Idea — a parity guard tying the creature sim to the runtime battle…"
@@ -5720,7 +5732,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "43d1fa74",
+    "build": "1a26f5ae",
     "title": "New public bot website",
     "changes": [
       {
@@ -5732,7 +5744,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "43d1fa74",
+    "build": "1a26f5ae",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5744,7 +5756,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "43d1fa74",
+    "build": "1a26f5ae",
     "title": "Command-alias suggestions",
     "changes": [
       {

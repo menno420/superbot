@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:56:30Z",
+    "generated_at": "2026-06-21T22:03:06Z",
     "build": {
-      "commit": "43d1fa74",
-      "subject": "Merge pull request #1263 from menno420/claude/peaceful-mayer-rgc20t",
-      "committed_at": "2026-06-21T23:50:11Z",
+      "commit": "1a26f5ae",
+      "subject": "docs: nineteenth Q-0107 reconciliation pass (band-#1260, issue #1264)",
+      "committed_at": "2026-06-21T22:00:18Z",
       "branch": "claude/reconcile-1260"
     }
   },
@@ -3245,6 +3245,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Creature PvP — rematch button on the outcome embed",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
           "status": "ideas"
         }
@@ -3445,6 +3449,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Creature PvP — rematch button on the outcome embed",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
           "status": "ideas"
         }
@@ -3465,6 +3473,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Creature PvP — rematch button on the outcome embed",
+          "status": "ideas"
+        },
         {
           "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
           "status": "ideas"

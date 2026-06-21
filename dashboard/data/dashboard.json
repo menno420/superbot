@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:56:30Z",
+    "generated_at": "2026-06-21T22:03:06Z",
     "build": {
-      "commit": "43d1fa74",
-      "subject": "Merge pull request #1263 from menno420/claude/peaceful-mayer-rgc20t",
-      "committed_at": "2026-06-21T23:50:11Z",
+      "commit": "1a26f5ae",
+      "subject": "docs: nineteenth Q-0107 reconciliation pass (band-#1260, issue #1264)",
+      "committed_at": "2026-06-21T22:00:18Z",
       "branch": "claude/reconcile-1260"
     },
     "counts": {
       "functions": 37,
-      "ideas": 114,
+      "ideas": 116,
       "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
@@ -998,6 +998,14 @@
   ],
   "ideas": [
     {
+      "file": "band-pr-status-author-classifier-2026-06-21.md",
+      "title": "Idea — `band_pr_status --themes`: draft grouped-entry skeleton from touched paths",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "Every reconciliation pass hand-themes the band's merged PRs into grouped Recently-shipped entries.",
+      "subsystems": null
+    },
+    {
       "file": "channel-deployed-component-menu-primitive-2026-06-21.md",
       "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
       "status": "ideas",
@@ -1006,6 +1014,14 @@
       "subsystems": [
         "role"
       ]
+    },
+    {
+      "file": "creature-pvp-rematch-button-2026-06-21.md",
+      "title": "Creature PvP — rematch button on the outcome embed",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "The creature PvP flow (`!cbattle`, shipped #1230 + #1257) ends with a static outcome embed; to play",
+      "subsystems": null
     },
     {
       "file": "creature-sim-engine-constant-parity-guard-2026-06-21.md",
@@ -2165,6 +2181,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-reconcile-band1260.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Nineteenth Q-0107 reconciliation pass (band-#1260, issue #1264)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-reconcile-band1230.md",
       "date": "2026-06-21",
       "title": "Session — 2026-06-21 · docs reconciliation (band-#1230, Q-0107 pass #18)",
@@ -2301,6 +2325,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-pr-mergeable-trust-the-git-check.md",
+      "date": "2026-06-21",
+      "title": "Session — PR mergeability: trust the git check, not GitHub's `mergeable_state` (2026-06-21)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-permission-overlap-guard.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Permission-overlap guard + force-push `ask` residual fix",
@@ -2363,6 +2395,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-creature-pvp-rematch-button.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature PvP: rematch button (⚑ self-initiated)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-creature-pvp-battle-flow.md",
@@ -2571,30 +2611,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-funny-franklin-session-enders-claim-gap.md",
-      "date": "2026-06-20",
-      "title": "Session — funny-franklin · session-ender pass (claim-gap idea + grooming)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-federated-explore-world-hub.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Federated Explore world hub (spine PR 1)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-federated-explore-world-card.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Federated Explore-hub PR 3: cross-game world card",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
