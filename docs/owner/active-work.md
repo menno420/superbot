@@ -25,6 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/vibrant-sagan-0rr5u7` · **reaction-roles PR 2** — in-Discord role-menu builder (Surface B):
+  `views/roles/role_menu_view.py` (RoleMenuView) + `views/roles/role_menu_builder.py` +
+  `utils/role_menu_presentation.py` + re-attach in `bot1` · **depends on PR 1 (parallel)**; carries a
+  to-spec copy of migration 078 / `utils/db/role_menus.py` / `reaction_role_service.py` for self-contained
+  CI — reconcile onto PR 1 before green · 2026-06-21 · **HOLD until PR 1 merges**
+
 - `claude/clever-maxwell-690qrj` · **Pokétwo + MusicBot research report → feature-mapping plan**
   (docs-only, owner-steered plan-only) · `docs/planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md`
   + `docs/planning/voice-music-architecture-review-2026-06-20.md` + `docs/ideas/` + router Q-0186 ·
