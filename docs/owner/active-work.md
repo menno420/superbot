@@ -31,6 +31,9 @@ living ledger (`docs/current-state.md`).
 - `claude/dreamy-cerf-voar4q` · **Project Moon wiki feasibility finding** (owner-dropped) — capture
   research as a routed idea doc; no runtime code · `docs/ideas/project-moon-wiki-knowledge-domain-2026-06-21.md`
   + ideas index · 2026-06-21 · **auto-merge on green** (docs-only)
+- `claude/peaceful-mayer-rgc20t` · **BTD6 Alchemist buff-uptime** (owner live-test) — `btd6_buff_uptime`
+  tool + `buff_uptime()` compute + parser buff-window decode (game-data path) · `parse_gamedata.py` /
+  `btd6_upgrade_detail_service` / `ai_tools` / `ai_tool_catalogue` · 2026-06-21 · **PR #1235 (auto-merge on green)**
 
 *(Beyond the claim above, the only open PR is **#1213** creature-PvP battle engine on
 `claude/funny-franklin-mw3hxj`, a `needs-hermes-review` foundation slice — its owning
@@ -139,10 +142,5 @@ session holds it, no claim line needed here.)*
 - `claude/funny-franklin-dapcss` · Federated Explore-hub PR 3 — read-only cross-game world card
   (`game_xp_service.world_identity` + `views/explore/world_card.py` + `🪪 World Card` hub button +
   `!worldcard`/`!mystats`) · 2026-06-20 · **PR (this session, self-merge on green)**
-
-- `claude/peaceful-mayer-rgc20t` · BTD6 Alchemist buff-uptime calculator (owner live-test) —
-  `btd6_buff_uptime` tool + `buff_uptime()` compute + parser decode of buff duration/attack-cap
-  (game-data-only path) · `parse_gamedata.py` / `btd6_upgrade_detail_service` / `ai_tools` /
-  `ai_tool_catalogue` · 2026-06-21 · **PR #1235 (auto-merge on green)**
 
 _(move claims here with their PR # as they close, then prune older entries)_
