@@ -135,3 +135,4 @@ session holds it, no claim line needed here.)*
   `!worldcard`/`!mystats`) · 2026-06-20 · **PR (this session, self-merge on green)**
 
 _(move claims here with their PR # as they close, then prune older entries)_
+claude/funny-franklin-rq2sza · creature PvP battle flow (cog+views+service) · disbot/cogs/creature_battle_cog.py, disbot/views/creature_battle/, disbot/services/creature_battle_service.py · 2026-06-21
