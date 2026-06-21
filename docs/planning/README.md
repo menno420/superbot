@@ -40,6 +40,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 | [settings-pointer-lane-convergence](settings-pointer-lane-convergence-plan-2026-06-13.md) | P0-3; families 1+2 done, **pointer retirement gated** | [settings](../subsystems/settings-bindings-provisioning.md) |
 | [ai-panel-inplace-navigation](ai-panel-inplace-navigation-plan-2026-06-19.md) | 2–3 PRs; **`needs-hermes-review` + wants a live guild walk**; blocks graduating the consistency linter's `edit_in_place` rule | [ai](../subsystems/ai.md) · `ai-panel-inplace-navigation` |
 | [safety-community-family](safety-community-family-plan-2026-06-13.md) | lane entry doc; automod/logging/welcome **shipped** + image-mod #941 + security tiers 1+2 #929 **shipped 2026-06-18**; remainder = **NL event scheduler** (plan-first, Q-0112) | roadmap safety lane · `server-safety-and-automod`, `community-platform-features` |
+| [reaction-roles-overhaul](reaction-roles-overhaul-plan-2026-06-21.md) | **▶ buildable** — Carl-bot parity + modern button/dropdown role menus + audited mutation seam; PR 1 (audited seam + schema) is pure debt-paydown, PRs 2–3 = role menus + modes; 3 open design Qs for the owner | [server-management](../subsystems/server-management.md) · `fun-and-ease-brainstorm` §B1, `community-platform-features` §4 |
 
 ### S2 — BTD6
 

@@ -169,6 +169,13 @@ Hub) was built 2026-06-08** (registered first-class as the `server_management` s
 owner decision Q-0016; key snake_cased per Q-0026). The only remaining item is the gated PR13 AI generation layer. Link to
 the tracker for exact order and dependencies rather than copying them here.
 
+**Reaction-role overhaul (2026-06-21, `plan`):** the role hub's reaction-role surface is the
+clearest piece of documented debt (direct DB writes / no audit / read-only panel — see the
+audits below) and "self-role menu" is on the command-expansion backlog. The buildable plan to
+reach **Carl-bot parity-plus** — audited mutation seam (PR 1), native button/dropdown role menus
+(PR 2), Carl-style modes + interactive panel (PR 3) — is
+[`planning/reaction-roles-overhaul-plan-2026-06-21.md`](../planning/reaction-roles-overhaul-plan-2026-06-21.md).
+
 ## Ideas (not approved)
 
 Arbitrary channel before/after positioning, revert-safe-changes UX, first-class

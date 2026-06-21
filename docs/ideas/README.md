@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`channel-deployed-component-menu-primitive-2026-06-21.md`](./channel-deployed-component-menu-primitive-2026-06-21.md) —
+  **session idea (2026-06-21, Q-0089, from the Carl-bot reaction-roles overhaul plan):** a shared
+  primitive for an operator-deployed, DB-persisted `PersistentView` message in a guild channel
+  (post → store `message_id` → re-attach on boot → guild-teardown). Three captured features share the
+  shape — role menus (the overhaul plan PR 2), starboard (`fun-and-ease` §B1), polls/suggestions
+  (`superbot-vision` AG-15) — so extract it at consumer #1 (role menus) and starboard reuses it free.
+  → relates `core/runtime/persistent_views.py` · `core/runtime/message_anchor_manager.py` ·
+  `planning/reaction-roles-overhaul-plan-2026-06-21.md`.
 - [`permission-overlap-guard-2026-06-21.md`](./permission-overlap-guard-2026-06-21.md) —
   **agent-observed, SHIPPED (2026-06-21, self-initiated Q-0172):** a stdlib config-lint
   (`scripts/check_permission_overlap.py`) that flags an `allow` rule shadowed by a broader
