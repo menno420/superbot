@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T10:04:21Z",
+    "generated_at": "2026-06-21T12:20:57Z",
     "build": {
-      "commit": "9a6113ad",
-      "subject": "feat(tooling): permission-overlap guard + fix force-push ask residual (#1212)",
-      "committed_at": "2026-06-21T08:00:16Z",
+      "commit": "590d31e9",
+      "subject": "Merge pull request #1220 from menno420/claude/reaction-roles-pr1-foundation",
+      "committed_at": "2026-06-21T13:28:32Z",
       "branch": "main"
     },
     "counts": {
       "functions": 37,
-      "ideas": 109,
+      "ideas": 110,
       "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
@@ -997,6 +997,16 @@
     }
   ],
   "ideas": [
+    {
+      "file": "channel-deployed-component-menu-primitive-2026-06-21.md",
+      "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "The reaction-roles overhaul plan ([`planning/reaction-roles-overhaul-plan-2026-06-21.md`](../planning/reaction-roles-overhaul-plan-2026-06-21.md))",
+      "subsystems": [
+        "role"
+      ]
+    },
     {
       "file": "permission-overlap-guard-2026-06-21.md",
       "title": "Permission-overlap guard for `.claude/settings.json`",
@@ -2091,6 +2101,38 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-reaction-roles-ui-direction.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction-roles plan: UI-direction refinement (web vs in-Discord)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-reaction-roles-presentation-editing.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction-roles plan: presentation & editing requirements",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-reaction-roles-pr1-foundation.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction-roles overhaul PR 1: audited seam + menu data layer",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-reaction-roles-decisions-locked.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction-roles plan: owner decisions locked + analytics added",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-permission-overlap-guard.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Permission-overlap guard + force-push `ask` residual fix",
@@ -2105,6 +2147,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-carl-bot-reaction-roles-research-plan.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Carl-bot reaction-roles research + overhaul plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-bug0020-trim-floor-pointer-prose.md",
@@ -2512,46 +2562,6 @@
       "title": "2026-06-19 — Ultracode fleet orchestration (mining hub + codex-review; the B4 collision)",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-ultracode-fleet-brief.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Ultracode fleet brief",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-site-json-drift-rootfix.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — BUG-0018 root-fix: stop `site.json` hard-equality test reddening on idea-doc churn",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-router-status-tool.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — router_status.py: a question-router digest tool",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-repo-governance-supply-chain-baseline.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Repo structure: governance + supply-chain + CI baseline",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-reconcile-band1140.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Docs reconciliation: the band-#1140 Q-0107 cadence pass",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": true
     }
   ],
