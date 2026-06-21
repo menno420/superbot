@@ -283,3 +283,15 @@ async def test_toggle_does_not_emit_audit():
             menu_id=1, member=member, guild=guild, clicked_role_id=10
         )
     audit.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_set_menu_location_passes_through_without_audit():
+    """Repost records the new channel + message; config is unchanged → no audit."""
+    with (
+        patch.object(svc.menus_db, "set_menu_location", new=AsyncMock()) as loc,
+        patch("services.audit_events.emit_audit_action") as audit,
+    ):
+        await svc.set_menu_location(7, 222, 333)
+    loc.assert_awaited_once_with(7, 222, 333)
+    audit.assert_not_called()
