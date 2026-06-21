@@ -51,6 +51,10 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/reaction-roles-self-heal` · **reaction-roles listener self-heal** (owner-accepted
+  continuation) — auto-remove a dead-role binding when reacted on (`_self_heal_dead_binding` +
+  `actor_type` thread, audited as `system`) · `disbot/services/reaction_role_service.py` · 2026-06-21 ·
+  **PR #1250 (merge on green)**
 - `claude/reaction-roles-cleanup` · **reaction-roles dead-binding cleanup** (owner-directed,
   screenshots) — 🧹 Clean up button + `prune_dead_bindings` (+ panel hint) to remove bindings whose
   role was deleted · `disbot/services/reaction_role_service.py` + `disbot/views/roles/reaction_panel.py`

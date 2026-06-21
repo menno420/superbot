@@ -65,6 +65,13 @@
 > creation-side cause was fixed in #1234; this clears rows already left behind. (The Add-modal
 > `💀 ❤️ 😘` placeholder is an intended multi-emote preview and stays.)
 >
+> **▶ Refinement (2026-06-21 — PR #1250):** **listener self-heal** makes #1248's cleanup automatic —
+> `reaction_role_service._self_heal_dead_binding` drops a binding whose role was deleted the moment a
+> member reacts (or un-reacts) on it, audited as a **`system`** action (an `actor_type` param was
+> threaded through `unbind_emoji`/`_emit`). Called early in `handle_reaction_add`/`handle_reaction_remove`;
+> safe because discord.py fully caches roles (a `None` resolve = genuinely deleted). The manual 🧹 button
+> still covers bindings on messages that never get reacted on.
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,
