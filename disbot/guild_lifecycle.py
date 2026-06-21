@@ -64,6 +64,12 @@ async def teardown(guild_id: int) -> None:
       22. Command-access policy — drop both the cached snapshot and the
                                    ``guild_command_access_policy`` row
                                    (CASCADE sweeps the channel allowlist).
+      23. Role menus            — delete every ``role_menus`` row for the
+                                   guild (reaction-roles overhaul);
+                                   ``role_menu_options`` rows cascade via FK.
+                                   The legacy ``reaction_roles`` table is
+                                   message-keyed and self-cleans when the
+                                   messages go, so it needs no teardown step.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -148,6 +154,10 @@ async def teardown(guild_id: int) -> None:
     #     ``core.runtime.command_access.forget_guild`` so the cache
     #     and the DB never diverge across a re-invite.
     await _teardown_command_access(guild_id)
+
+    # 23. Role menus (reaction-roles overhaul) — delete role_menus rows;
+    #     role_menu_options cascade via the FK.
+    await _teardown_role_menus(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
 
@@ -627,6 +637,31 @@ async def _teardown_ai_platform(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: AI Platform teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_role_menus(guild_id: int) -> None:
+    """Delete every role_menus row for the departed guild (reaction-roles overhaul).
+
+    ``role_menu_options`` rows cascade away via the FK. The legacy
+    ``reaction_roles`` table is keyed by ``message_id`` and self-cleans when the
+    host messages are deleted, so it has no teardown step of its own.
+    """
+    try:
+        from utils.db.role_menus import delete_for_guild as _role_menus_delete
+
+        count = await _role_menus_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d role menu(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: role menu teardown failed for guild=%d: %s",
             guild_id,
             exc,
         )
