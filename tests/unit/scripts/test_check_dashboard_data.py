@@ -260,13 +260,77 @@ def test_site_subset_fails_closed_on_unwhitelisted_command_field(mod):
     }
     issues = mod.check_site_subset(forged)
     assert any(
-        i.code == "site_command_field_not_whitelisted" and i.severity == "error"
+        i.code == "site_field_not_whitelisted" and i.severity == "error"
         for i in issues
     )
-    field_issue = next(
-        i for i in issues if i.code == "site_command_field_not_whitelisted"
-    )
+    field_issue = next(i for i in issues if i.code == "site_field_not_whitelisted")
     assert "guild_override_value" in field_issue.message
+    assert "commands" in field_issue.message
+
+
+def test_site_subset_fails_closed_on_unwhitelisted_catalogue_field(mod):
+    # The within-family leak class beyond commands: a NEW field on an already-allowed
+    # family (catalogue) must fail closed, not ride the family whitelist silently.
+    forged = {
+        "meta": {},
+        "counts": {"commands": 0, "features": 1, "games": 0},
+        "catalogue": [
+            {"key": "fishing", "display_name": "Fishing", "internal_owner_id": 42},
+        ],
+        "commands": [],
+        "bot_changelog": [],
+    }
+    issues = mod.check_site_subset(forged)
+    field_issue = next(
+        (
+            i
+            for i in issues
+            if i.code == "site_field_not_whitelisted" and "catalogue" in i.message
+        ),
+        None,
+    )
+    assert field_issue is not None and field_issue.severity == "error"
+    assert "internal_owner_id" in field_issue.message
+
+
+def test_site_subset_fails_closed_on_unwhitelisted_nested_meta_build_field(mod):
+    # Nested dicts are pinned per level: a stray field inside meta.build (build
+    # provenance) must also fail closed.
+    forged = {
+        "meta": {"generated_at": "", "build": {"commit": "abc", "secret_token": "x"}},
+        "counts": {},
+        "catalogue": [],
+        "commands": [],
+        "bot_changelog": [],
+    }
+    issues = mod.check_site_subset(forged)
+    field_issue = next(
+        (
+            i
+            for i in issues
+            if i.code == "site_field_not_whitelisted" and "meta.build" in i.message
+        ),
+        None,
+    )
+    assert field_issue is not None and field_issue.severity == "error"
+    assert "secret_token" in field_issue.message
+
+
+def test_site_subset_fails_closed_on_unwhitelisted_changelog_field(mod):
+    forged = {
+        "meta": {},
+        "counts": {},
+        "catalogue": [],
+        "commands": [],
+        "bot_changelog": [{"date": "2026-06-21", "title": "x", "raw_session_id": "z"}],
+    }
+    issues = mod.check_site_subset(forged)
+    assert any(
+        i.code == "site_field_not_whitelisted"
+        and "bot_changelog" in i.message
+        and "raw_session_id" in i.message
+        for i in issues
+    )
 
 
 def test_site_subset_enriched_command_fields_pass(mod):
