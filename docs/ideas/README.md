@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`permission-overlap-guard-2026-06-21.md`](./permission-overlap-guard-2026-06-21.md) —
+  **agent-observed, SHIPPED (2026-06-21, self-initiated Q-0172):** a stdlib config-lint
+  (`scripts/check_permission_overlap.py`) that flags an `allow` rule shadowed by a broader
+  `ask`/`deny` in `.claude/settings.json` — the class behind the maintainer's recurring
+  *verify + force-push* confirmation prompt (`git push --force*` ask shadowed
+  `git push --force-with-lease*` allow). Catches it at config-edit time, one source of
+  truth over the per-incident patch.
 - [`bug-book-claimed-signal-2026-06-19.md`](./bug-book-claimed-signal-2026-06-19.md) —
   **agent-observed (2026-06-19):** bug-book entries need a **"claimed / in-progress" signal**. Two
   dispatch runs both picked up **BUG-0016** and one's fix was duplicated/superseded — the Q-0126 claim
