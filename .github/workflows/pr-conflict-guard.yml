@@ -43,8 +43,13 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened]
+  # Backstop sweep. `push:main` catches "main moved" instantly; `pull_request` catches a PR's own
+  # pushes — but in this remote-exec env a push to an existing PR branch intermittently fails to
+  # fire `pull_request` (the push-gotcha, journal #1166/#1256), so a conflict introduced by a PR
+  # push can go unflagged until a sweep. Tightened 3h -> 30min (2026-06-21) so that gap is minutes,
+  # not hours. The job is ~7s and non-required, so the extra runs are negligible.
   schedule:
-    - cron: "23 */3 * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 permissions:
