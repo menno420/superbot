@@ -25,12 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/vibrant-sagan-0rr5u7` · **reaction-roles PR 2** — in-Discord role-menu builder (Surface B):
-  `views/roles/role_menu_view.py` (RoleMenuView) + `views/roles/role_menu_builder.py` +
-  `utils/role_menu_presentation.py` + re-attach in `bot1` · **depends on PR 1 (parallel)**; carries a
-  to-spec copy of migration 078 / `utils/db/role_menus.py` / `reaction_role_service.py` for self-contained
-  CI — reconcile onto PR 1 before green · 2026-06-21 · **HOLD until PR 1 merges**
-
 - `claude/clever-maxwell-690qrj` · **Pokétwo + MusicBot research report → feature-mapping plan**
   (docs-only, owner-steered plan-only) · `docs/planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md`
   + `docs/planning/voice-music-architecture-review-2026-06-20.md` + `docs/ideas/` + router Q-0186 ·
@@ -52,10 +46,15 @@ living ledger (`docs/current-state.md`).
   data layer** (owner-directed; foundation for the parallel PR 2–5 session — see
   `docs/planning/reaction-roles-overhaul-plan-2026-06-21.md`) · `services/reaction_role_service.py`
   + `utils/db/role_menus.py` + migration `078_reaction_role_menus.sql` + `cogs/role_cog.py` (route
-  writes through the seam) + `guild_lifecycle.py` (teardown step 23) · 2026-06-21 · **auto-merge on
-  green** (additive · behaviour-preserving). **Parallel session owns PR 2–5; do not recreate these.**
+  writes through the seam) + `guild_lifecycle.py` (teardown step 23) · 2026-06-21 · **PR #1220 (merged)**.
 
 ## Recently cleared
+
+- `claude/vibrant-sagan-0rr5u7` · **reaction-roles PR 2** — in-Discord role-menu builder (Surface B):
+  `RoleMenuView` + builder/manager + theme/template presets + edit-in-place + `reattach_role_menus`,
+  on PR 1's seam (reconciled onto #1220) · 2026-06-21 · **PR #1219 (`needs-hermes-review`)**
+- `claude/reaction-roles-pr1-foundation` · reaction-roles PR 1 foundation (audited seam + menu data
+  layer + teardown) · 2026-06-21 · **PR #1220 (merged)**
 
 - `claude/design-system-connector-docs` · design-system docs — GitHub-connector workflow + new
   AGENT_ORIENTATION website route · 2026-06-20 · **PR #1176 (merged)**

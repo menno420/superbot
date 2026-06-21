@@ -34,7 +34,10 @@ class ReactionRolesPanel(BaseView):
             )
 
     async def build_embed(self) -> discord.Embed:
+        from services import reaction_role_service
+
         rows = await db.get_all_reaction_roles(self.ctx.guild.id)
+        menus = await reaction_role_service.list_menus(self.ctx.guild.id)
         embed = discord.Embed(title="💬 Reaction Roles", color=ROLE_COLOR)
         if rows:
             lines = []
@@ -45,12 +48,42 @@ class ReactionRolesPanel(BaseView):
             embed.description = "\n".join(lines)
         else:
             embed.description = (
-                "No reaction roles configured.\n\n"
-                "Use `!reactroles <message_id> <emoji> <@role>` to add one.\n"
-                "Use `!removereactrole <message_id> <emoji>` to remove one."
+                "No emoji reaction roles configured.\n\n"
+                "Use `!reactroles <message_id> <emoji> <@role>` to add one — or tap "
+                "**🛠️ Role Menus** for the modern button/dropdown surface (no reactions "
+                "needed)."
             )
-        embed.set_footer(text="Members react to earn their role automatically.")
+        embed.add_field(
+            name="🛠️ Role menus",
+            value=(
+                f"{len(menus)} button/dropdown menu(s) configured."
+                if menus
+                else "None yet — tap **🛠️ Role Menus** to build one."
+            ),
+            inline=False,
+        )
+        embed.set_footer(text="Members self-assign with one tap; no reactions needed.")
         return embed
+
+    @discord.ui.button(label="🛠️ Role Menus", style=discord.ButtonStyle.green, row=0)
+    async def menus_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        from views.roles.role_menu_builder import RoleMenuListView
+
+        view = RoleMenuListView(
+            interaction.user,
+            interaction.guild,
+            interaction.channel,
+            parent=self,
+        )
+        await interaction.response.edit_message(
+            embed=await view.build_embed(),
+            view=view,
+        )
+        view.message = interaction.message
 
     @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.grey, row=0)
     async def refresh_btn(

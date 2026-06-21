@@ -1,0 +1,141 @@
+"""Tests for views.roles.role_menu_view — the member-facing persistent menu."""
+
+from __future__ import annotations
+
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import discord
+import pytest
+
+from utils import role_menu_presentation as presentation
+from views.roles import role_menu_view as rmv
+
+
+class FakeRole:
+    def __init__(self, rid: int, name: str = "Role") -> None:
+        self.id = rid
+        self.name = name
+
+    @property
+    def mention(self) -> str:
+        return f"<@&{self.id}>"
+
+
+class FakeGuild:
+    def __init__(self, roles: list[FakeRole]) -> None:
+        self._roles = {r.id: r for r in roles}
+
+    def get_role(self, rid: int) -> FakeRole | None:
+        return self._roles.get(rid)
+
+
+def _menu(style: str = "dropdown", mode: str = "normal", max_roles: int = 0) -> dict:
+    return {
+        "menu_id": 1,
+        "title": "Pick your roles",
+        "description": "desc",
+        "style": style,
+        "mode": mode,
+        "max_roles": max_roles,
+        "theme": "neon",
+        "channel_id": 9,
+        "message_id": 555,
+    }
+
+
+def _opts() -> list[dict]:
+    return [
+        {"role_id": 10, "label": "Gamer", "emoji": None},
+        {"role_id": 20, "label": "Artist", "emoji": None},
+    ]
+
+
+def test_no_arg_construction_is_empty_and_safe():
+    """The registry / manifest may instantiate the class with no args."""
+    view = rmv.RoleMenuView()
+    assert len(view.children) == 0
+
+
+def test_dropdown_menu_builds_single_select_with_scoped_custom_id():
+    view = rmv.RoleMenuView(_menu("dropdown"), _opts())
+    selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
+    assert len(selects) == 1
+    assert selects[0].custom_id == "role_menu:1:select"
+    assert selects[0].max_values == 2  # both roles selectable
+
+
+def test_button_menu_builds_one_button_per_role():
+    view = rmv.RoleMenuView(_menu("button"), _opts())
+    buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
+    assert {b.custom_id for b in buttons} == {
+        "role_menu:1:role:10",
+        "role_menu:1:role:20",
+    }
+
+
+def test_select_bounds_honour_mode():
+    assert rmv._select_bounds("unique", 0, 5) == (0, 1)
+    assert rmv._select_bounds("normal", 3, 10) == (0, 3)
+    assert rmv._select_bounds("normal", 0, 40) == (0, rmv.MAX_MENU_ROLES)
+
+
+def test_build_menu_embed_uses_theme_colour():
+    guild = FakeGuild([FakeRole(10, "Gamer"), FakeRole(20, "Artist")])
+    embed = rmv.build_menu_embed(_menu(), _opts(), guild)
+    assert embed.title == "Pick your roles"
+    assert embed.color == presentation.theme_color("neon")
+    # Roles field lists the live mentions.
+    roles_field = next(f for f in embed.fields if f.name == "Roles")
+    assert "<@&10>" in roles_field.value
+
+
+def test_view_is_persistent_but_not_in_anchor_registry():
+    """A role menu is a public data-driven message re-bound by reattach_role_menus,
+    not a per-user anchor panel — so it is intentionally NOT register()'d (which
+    would collide with RoleHubPanelView's SUBSYSTEM='role' and trip the
+    identity-contract SUBSYSTEMS parity check)."""
+    from core.runtime import persistent_views
+
+    assert issubclass(rmv.RoleMenuView, persistent_views.PersistentView)
+    # Not registered, and must not have hijacked the 'role' hub's registry slot.
+    assert persistent_views.get_view_class("role_menu") is None
+    assert persistent_views.get_view_class("role") is not rmv.RoleMenuView
+
+
+@pytest.mark.asyncio
+async def test_reattach_binds_each_posted_menu():
+    rmv.reset_reattach_state()
+    bot = MagicMock()
+    menus = [_menu()]
+    options = [
+        __import__(
+            "services.reaction_role_service", fromlist=["RoleOption"],
+        ).RoleOption(10),
+    ]
+    with (
+        patch(
+            "services.reaction_role_service.list_posted_menus",
+            new=AsyncMock(return_value=menus),
+        ),
+        patch(
+            "services.reaction_role_service.get_menu_options",
+            new=AsyncMock(return_value=options),
+        ),
+    ):
+        count = await rmv.reattach_role_menus(bot)
+    assert count == 1
+    bot.add_view.assert_called_once()
+    assert bot.add_view.call_args.kwargs["message_id"] == 555
+
+
+@pytest.mark.asyncio
+async def test_reattach_is_idempotent():
+    rmv.reset_reattach_state()
+    bot = MagicMock()
+    with patch(
+        "services.reaction_role_service.list_posted_menus",
+        new=AsyncMock(return_value=[]),
+    ):
+        await rmv.reattach_role_menus(bot)
+        second = await rmv.reattach_role_menus(bot)  # guarded no-op
+    assert second == 0

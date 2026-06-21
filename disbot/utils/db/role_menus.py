@@ -13,6 +13,8 @@ is self-contained and its consumer is the new ``views/roles`` menu surface.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from utils.db import pool
 
 # ---------------------------------------------------------------------------
@@ -147,6 +149,57 @@ async def get_options(menu_id: int) -> list[dict]:
         "SELECT role_id, emoji, label, position FROM role_menu_options "
         "WHERE menu_id=$1 ORDER BY position, role_id",
         (menu_id,),
+    )
+
+
+async def replace_options(
+    menu_id: int,
+    options: Sequence[tuple[int, str | None, str | None]],
+) -> None:
+    """Replace a menu's full option list in one transaction (PR 2 builder).
+
+    ``options`` is an ordered sequence of ``(role_id, emoji, label)`` — the index
+    becomes the stored ``position``, so the caller controls display order by
+    ordering the sequence. The builder always re-sends the whole list on
+    create/edit, so a transactional delete + bulk-insert is simpler and safer
+    than diffing against :func:`add_option` / :func:`remove_option` (and a
+    concurrent reader never sees a half-applied list). Mirrors
+    ``command_access.set_channels``.
+    """
+    deduped: list[tuple[int, str | None, str | None]] = []
+    seen: set[int] = set()
+    for role_id, emoji, label in options:
+        rid = int(role_id)
+        if rid in seen:
+            continue
+        seen.add(rid)
+        deduped.append((rid, emoji, label))
+
+    async with pool.get().acquire() as conn, conn.transaction():
+        await conn.execute(
+            "DELETE FROM role_menu_options WHERE menu_id=$1",
+            menu_id,
+        )
+        if deduped:
+            await conn.executemany(
+                """INSERT INTO role_menu_options
+                       (menu_id, role_id, emoji, label, position)
+                   VALUES ($1, $2, $3, $4, $5)""",
+                [
+                    (menu_id, rid, emoji, label, pos)
+                    for pos, (rid, emoji, label) in enumerate(deduped)
+                ],
+            )
+
+
+async def list_posted_menus() -> list[dict]:
+    """Every menu that has been posted (``message_id`` set), across all guilds.
+
+    Used by the boot re-attach loop to re-bind a persistent view to each live
+    menu message (PR 2).
+    """
+    return await pool.fetchall(
+        "SELECT * FROM role_menus WHERE message_id IS NOT NULL",
     )
 
 
