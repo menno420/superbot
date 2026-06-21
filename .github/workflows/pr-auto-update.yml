@@ -1,11 +1,21 @@
 name: pr-auto-update
 
-# Keep open claude/* PRs up to date with main so a BEHIND branch doesn't sit silently
-# green-but-unmergeable. This repo requires branches to be up to date before merging, and
-# GitHub native auto-merge does NOT auto-update a behind branch (no merge queue) — it just
-# waits. So when main moves, this brings the behind PRs forward; they re-test against current
-# main and auto-merge fires. A branch that CANNOT be cleanly updated (a real merge conflict)
-# fails update-branch and is left DIRTY for `pr-conflict-guard.yml` to flag RED.
+# Keep open claude/* PRs current with main by merging main into behind branches.
+#
+# CORRECTION (2026-06-21, owner-confirmed via the branch-protection screenshot): the `main` rule has
+# "Require branches to be up to date before merging" **OFF**. So — contrary to this header's original
+# claim — a behind-but-clean PR is NOT blocked from merging; native auto-merge fires on a green
+# `code-quality` regardless of how far behind the branch is. This workflow is therefore NOT required
+# for behind PRs to merge. Its real, still-useful value now is: (1) re-testing each PR against current
+# main so a *semantic* conflict (textually-clean but breaks together) surfaces before merge, and
+# (2) the update-branch push forces GitHub to recompute mergeability, which clears a STUCK false-`dirty`
+# (GitHub's async mergeability can wrongly report `dirty` for a branch git merges cleanly — see
+# `.session-journal.md`). A branch that CANNOT be cleanly updated (a real conflict) fails update-branch
+# and is left for `pr-conflict-guard.yml` to flag RED.
+#
+# Scope note: only `claude/*` PRs. `bot/*` (e.g. dashboard-refresh) is excluded — its own workflow
+# rebuilds its branch on current main, which is the correct merge strategy for a generated file
+# (a 3-way merge of two regenerations just conflicts).
 #
 # This is the "behind = handled silently; conflict = loud red" half of the owner's intent
 # (Q-0154, 2026-06-16): a behind/conflicted PR must never rot unnoticed (the #959 stall that

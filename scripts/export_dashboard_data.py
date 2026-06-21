@@ -125,7 +125,6 @@ SITE_COMMAND_FIELDS: tuple[str, ...] = (
 # (above) is the ``commands`` family's contract; these cover the rest.
 SITE_META_FIELDS: tuple[str, ...] = ("generated_at", "build")
 SITE_META_BUILD_FIELDS: tuple[str, ...] = (
-    "branch",
     "commit",
     "committed_at",
     "subject",
@@ -665,6 +664,11 @@ def _git_meta(repo_root: Path) -> dict[str, str]:
             check=True,
         ).stdout.strip()
 
+    # NOTE: the working `branch` is deliberately NOT recorded. It is transient, generator-host
+    # junk (a checkout records "claude/<x>" or detached "HEAD"), carries no value in a deployed
+    # snapshot, and — like the old wall-clock generated_at — is a needless drift/conflict source
+    # whenever two branches regenerate the file. The /status template already guards on its absence
+    # (`{% if build.branch %}`). Removed 2026-06-21 (the #1261 conflict root cause).
     try:
         return {
             "commit": _git("rev-parse", "--short", "HEAD"),
@@ -675,7 +679,6 @@ def _git_meta(repo_root: Path) -> dict[str, str]:
                 "--format=%cd",
                 "--date=format:%Y-%m-%dT%H:%M:%SZ",
             ),
-            "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
         }
     except (OSError, subprocess.SubprocessError):
         return {}
@@ -761,12 +764,24 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         else []
     )
 
+    # `generated_at` is DETERMINISTIC: the latest commit's time, NOT wall-clock. The committed
+    # dashboard.json is a pure function of committed source — so two regenerations at the same
+    # commit are byte-identical. A wall-clock timestamp here (the pre-2026-06-21 behavior) changed
+    # on every run, which (a) made the refresh workflow churn a PR every cadence even with no real
+    # change and (b) GUARANTEED a merge conflict whenever two branches both regenerated the file
+    # (each wrote a different second into the same line) — the #1261 root cause. Commit time is the
+    # honest "data as of" signal for a committed snapshot and never conflicts at the same commit.
+    # Falls back to wall-clock only if git is unavailable (no commit context to anchor to).
+    build = _git_meta(repo_root)
+    generated_at = build.get("committed_at") or dt.datetime.now(
+        dt.timezone.utc,
+    ).strftime(
+        "%Y-%m-%dT%H:%M:%SZ",
+    )
     return {
         "meta": {
-            "generated_at": dt.datetime.now(dt.timezone.utc).strftime(
-                "%Y-%m-%dT%H:%M:%SZ",
-            ),
-            "build": _git_meta(repo_root),
+            "generated_at": generated_at,
+            "build": build,
             "counts": {
                 "functions": len(catalogue),
                 "ideas": len(ideas),
