@@ -37,6 +37,10 @@ living ledger (`docs/current-state.md`).
 - `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (owner-directed Q-0192: full parity) —
   feasibility **#1238** + program plan **#1239** merged; now pre-build recon (data sources + seam contract)
   · `docs/planning/project-moon-prebuild-recon-2026-06-21.md` · 2026-06-21 · **auto-merge on green** (docs-only)
+- `claude/ecstatic-babbage-8bf0g6` · **role presets + role-management UX** (owner-directed screenshots) —
+  remove hardcoded German tier names (`_DEFAULT_THRESHOLDS`/`_ensure_defaults`) + 🧹 Clear-missing purge;
+  Create-role preset names + colour presets (creation menu only); Edit by role-select; Delete multi-select +
+  confirm · `disbot/views/roles/*` + `cogs/role_cog.py` + `_helpers` · 2026-06-21 · **auto-merge on green**
 
 *(Beyond the claim above, the only open PR is **#1213** creature-PvP battle engine on
 `claude/funny-franklin-mw3hxj`, a `needs-hermes-review` foundation slice — its owning
