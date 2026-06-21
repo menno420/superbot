@@ -25,6 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/lane-overlap-claim-scan` · **check_lane_overlap.py — add the active-work.md claim-ledger
+  scan** (closes the gap that let a duplicate reaction-roles PR 2 get built: the tool only scanned
+  recently-MERGED commits, not the earliest "owns PR 2–5" claim signal) · `scripts/check_lane_overlap.py`
+  + `tests/unit/scripts/test_check_lane_overlap.py` · 2026-06-21 · **auto-merge on green** (stdlib
+  dev-tooling · additive)
+
 - `claude/clever-maxwell-690qrj` · **Pokétwo + MusicBot research report → feature-mapping plan**
   (docs-only, owner-steered plan-only) · `docs/planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md`
   + `docs/planning/voice-music-architecture-review-2026-06-20.md` + `docs/ideas/` + router Q-0186 ·
