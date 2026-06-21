@@ -116,6 +116,46 @@ Reaction / Diagnostics panels.
 
 ---
 
+## 3.5 UI direction — the owner's Carl reference is a **web dashboard** (2026-06-21)
+
+The owner shared a screen recording of "the menu we need." **Important clarification it
+settles:** that menu is **Carl-bot's web dashboard** (`carl.gg/dashboard`) opened in a phone
+**browser** — *not* the Discord app. Everything in it is **HTML web-form UI**: a native
+`Message type` `<select>` (the modes `normal / unique / verify / drop / reversed / limit /
+binding / temp`, each with a live description), radio-button mode list, a numeric `limit` field,
+two "Select option" role **multi-selects** (allow-list + blacklist), a `Show embed builder`
+toggle, an `Add emoji` button, a yellow **"Get Premium"** upsell for `temp`, and Cancel/Create.
+
+**This answers the "is this even possible in discord.py?" question — and the answer has two
+halves:**
+
+- **The *exact* screen is not a Discord UI at all**, so no Discord library (discord.py or
+  otherwise) can render it. It's a **website** talking to the bot over an API. The bot's
+  language is a red herring — Carl's backend is Python too; the recording is its *web frontend*
+  (JS/HTML/CSS). discord.py can only render **Discord's own components** (buttons, string/role
+  selects, modals — incl. label-wrapped selects) **inside Discord**, not an arbitrary scrolling
+  web form with radio lists + multiple dropdowns on one page.
+- **We are unusually well-placed to build this — and make it nicer.** SuperBot already ships a
+  website + dashboard and a **Claude-Design React/Tailwind design system** (`design-system/`,
+  `botsite/`, the dashboard control-API lanes). Carl's form looks **dated**; ours can be a clean,
+  modern, mobile-smooth page on infrastructure we already own. That is the owner's
+  "make it look nicer and work smoother" — realized on our design system, not by copying Carl's form.
+
+**So the feature targets two complementary surfaces** (same audited service + data model
+underneath — §4 PR 1 serves both):
+
+| Surface | What it is | Status |
+|---|---|---|
+| **A — Web builder** (the video) | a reaction-role/menu builder **page in our own dashboard** (React/Tailwind), writing through the control-API → bot. The "nicer, smoother" target. | **gated on the control-API write side** (owner-paced + security review — already a tracked lane in `current-state.md`). Not the first buildable slice. |
+| **B — In-Discord builder** (§4 PR 2) | a modern in-Discord builder using **buttons + select menus + modals** — laid out as a short multi-step flow (Discord's 5-row/25-option limits forbid one giant form), strictly nicer than Carl's emoji-reaction core. | **buildable now** — no web/control-API dependency. |
+
+**Sequencing implication:** build B first (it's unblocked and delivers the feature in-Discord),
+and add A as the polished web surface when the control-API write side opens. Both sit on the same
+PR 1 foundation, so neither is wasted. The owner's "nicer/smoother" bar applies to **both** — B
+uses our component design vocabulary (`docs/ux/pattern-library.md`), A uses the design system.
+
+---
+
 ## 4. The plan — three PRs (foundation → headline → parity)
 
 Per repo rule, a plan spans 2–3 PRs: **PR 1 fixes root causes/foundation; PR 2–3 build on top.**
@@ -171,10 +211,11 @@ model to support menus/modes — with **zero behaviour change** for existing emo
 
 **Risk:** low. Internal refactor + additive schema; existing reaction-roles behave identically.
 
-### PR 2 — Interactive role menus (the headline improvement)
+### PR 2 — Interactive role menus (the headline improvement = **Surface B**, §3.5)
 
 **Goal:** the modern, native surface Carl lacks at its core — a button/dropdown role menu an
-operator builds in-panel and deploys to a channel, re-attached on restart.
+operator builds in-panel and deploys to a channel, re-attached on restart. This is the
+**buildable-now in-Discord builder** (the web builder, Surface A, rides the control-API later).
 
 - **`disbot/views/roles/role_menu_view.py`** — a `RoleMenuView(PersistentView)` that renders
   either buttons (one per role, ≤25) or a `discord.ui.Select` (multi-select up to `max_roles`).
@@ -299,6 +340,10 @@ python3.10 scripts/check_docs.py --strict           # this plan must stay linked
 2. **Audit member assignments?** Config changes: yes. Per-click member toggles could be high
    volume — recommend **off by default**, behind a flag.
 3. **Free temp roles** (§4 PR 3 stretch) — worth the extra table + sweep loop, or defer?
+4. **Surface priority (§3.5):** the owner's reference is the **web builder (Surface A)** but it's
+   control-API-gated. Confirm: ship the **in-Discord builder (Surface B) first** (recommended —
+   unblocked, delivers the feature now), then the web builder when the control-API write side
+   opens? Or hold the whole feature for the web surface?
 
 These are visualize-and-decide calls for the maintainer; none block PR 1 (the foundation), which
 is pure debt-paydown and safe to build immediately.
