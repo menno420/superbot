@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:31:25Z",
+    "generated_at": "2026-06-21T21:43:51Z",
     "build": {
-      "commit": "0d8a352",
-      "subject": "session(card): Starboard PR 1 — foundation + v1 (born-red HOLD)",
-      "committed_at": "2026-06-21T21:16:08Z",
+      "commit": "96ce32e",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/starboard-v1",
+      "committed_at": "2026-06-21T21:43:34Z",
       "branch": "claude/starboard-v1"
     }
   },

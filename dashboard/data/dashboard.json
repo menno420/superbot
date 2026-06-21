@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:31:25Z",
+    "generated_at": "2026-06-21T21:43:51Z",
     "build": {
-      "commit": "0d8a352",
-      "subject": "session(card): Starboard PR 1 — foundation + v1 (born-red HOLD)",
-      "committed_at": "2026-06-21T21:16:08Z",
+      "commit": "96ce32e",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/starboard-v1",
+      "committed_at": "2026-06-21T21:43:34Z",
       "branch": "claude/starboard-v1"
     },
     "counts": {
@@ -2165,6 +2165,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-repo-state-review-cleanup.md",
+      "date": "2026-06-21",
+      "title": "Session — repo-state review cleanup (2026-06-21)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-reconcile-band1230.md",
       "date": "2026-06-21",
       "title": "Session — 2026-06-21 · docs reconciliation (band-#1230, Q-0107 pass #18)",
@@ -2413,6 +2421,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-btd6-content-drift-surface.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6: surface same-version data drift (sha-based seed reminder)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-btd6-buff-uptime.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — BTD6 Alchemist buff-uptime calculator + game-data decode",
@@ -2576,22 +2592,6 @@
       "file": "2026-06-20-design-system-site-pages.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Design-system: compose the rest of the site (Features/Commands/Changelog/Status)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-landing-page.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system: full landing-page composition + hybrid edit loop",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-connector-docs.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system docs: connector-vs-`/design-sync` correction",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
