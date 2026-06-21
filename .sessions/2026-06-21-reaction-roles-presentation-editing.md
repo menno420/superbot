@@ -1,8 +1,8 @@
 # 2026-06-21 — Reaction-roles plan: presentation & editing requirements
 
-> **Status:** `in-progress` — follow-up to #1215/#1216. Owner added four requirements: edit an
+> **Status:** `complete` — follow-up to #1215/#1216. Owner added four requirements: edit an
 > existing reaction-role message; embed theme presets; pre-customized starter-message templates;
-> optional PIL image cards. Folding them into the plan. Docs-only. Flips `complete` last (Q-0133).
+> optional PIL image cards. Folded into the plan. Docs-only → self-merge on green.
 
 > **Run type:** `manual`
 
@@ -21,4 +21,22 @@ All four fit existing infra, so they're cheap enhancements on the PR 2 builder, 
 
 Added plan §4.6 + two rows to the §5 "improve on Carl" table (editing, presentation).
 
-(Body filled at close.)
+## 📤 Run report
+
+- **Did:** folded the owner's four presentation/editing requirements into the plan (§4.6) · **Outcome:** shipped (plan refinement)
+- **Shipped:** #1217 — reaction-roles plan §4.6 presentation & editing (docs-only)
+- **Run type:** `manual`
+- **⚑ Owner decisions needed:** none new (the §9 design Qs still stand — surface priority + the 3 prior)
+- **⚑ Owner manual steps:** none
+- **⚑ Self-initiated:** none (direct owner request)
+- **↪ Next:** owner answers the §9 design Qs / picks surface; then build reaction-roles PR 1 (audited seam, unblocked) → PR 2 (in-Discord builder incl. edit + themes + templates)
+
+## 📊 Telemetry
+
+| Metric | Value |
+|---|---|
+| PRs merged this session | 2 (#1215, #1216); 1 pending (#1217) |
+| CI-red rounds | 0 |
+| Repo-rule trips | 0 |
+| New ideas contributed | 0 (plan refinement) |
+| Ideas groomed | 0 |
