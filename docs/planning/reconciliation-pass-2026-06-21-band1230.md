@@ -104,8 +104,15 @@ product, the queue tracks the autonomous backlog.
   per-band records for history. This is the build the band-#1200 pass's Q-0089 idea
   ([`reconcile-pass-tail-trim-actuator`](../ideas/reconcile-pass-tail-trim-actuator-2026-06-20.md)) called for,
   done by hand this pass; the *actuator* to make it deterministic stays a buildable slice.
-- Re-homed the band-#1170 + band-#1200 pass records (the prune had been their only inbound link; this record's
-  Status header now chains to band-#1200 → band-#1170, restoring reachability).
+- **Re-badged the three consumed pass records band-#1140 / #1170 / #1200 `plan` → `historical`** — the
+  callout prune + the Recently-shipped trim (which moved the #1142 bullet's band-#1140 link to the archive)
+  removed their last routing-doc links, so `test_check_plan_homing.py::test_live_repo_plans_are_all_homed`
+  (a *stricter* gate than `check_docs` reachability — it requires a link from a **routing doc**, not just
+  transitive reachability) failed CI on the first push. These passes are consumed, so `historical` is both
+  correct and the homing check's intended exemption. **Lesson (Q-0104):** the pre-push sweep must run
+  `check_plan_homing.py --strict` **after all doc edits**, not only `check_docs --strict` — and each pass
+  should re-badge its predecessor `historical` (the header prose already said "now `historical`"; the badge
+  now matches).
 - Regenerated `dashboard/data/dashboard.json` (cadence freshness).
 - **Runtime bugs noticed this pass:** none new (docs-only pass; BUG-0019 #1 stays the open owner-design fork,
   BUG-0011 stays the open Hermes-infra item — both pre-existing).
