@@ -377,6 +377,17 @@ async def set_menu_message(menu_id: int, message_id: int) -> None:
     await menus_db.set_menu_message(menu_id, message_id)
 
 
+async def set_menu_location(menu_id: int, channel_id: int, message_id: int) -> None:
+    """Record a reposted menu's new channel + message (post-flow, not audited).
+
+    Used by the manager's **Repost** action, which re-sends a saved menu (e.g.
+    after its message was deleted, or to relocate it). The menu's config is
+    unchanged, so this mirrors :func:`set_menu_message` rather than the audited
+    ``update_menu`` seam.
+    """
+    await menus_db.set_menu_location(menu_id, channel_id, message_id)
+
+
 async def delete_menu(
     *,
     menu_id: int,
@@ -726,6 +737,7 @@ __all__ = [
     "list_message_modes",
     "list_posted_menus",
     "reaction_roles_enabled",
+    "set_menu_location",
     "set_menu_message",
     "set_message_mode",
     "toggle_role",
