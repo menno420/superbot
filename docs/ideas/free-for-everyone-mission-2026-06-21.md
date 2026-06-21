@@ -87,10 +87,14 @@ the *primary* sustainability lever, not a fallback:
 
 ## 5. Open questions (captured, not blockers)
 
-1. **Open-source / self-host?** "Free for everyone" here means **free to *use*** (the hosted
-   SuperBot). Whether the *source* is open / self-hostable is a **separate, unraised** question — and
-   arguably in tension with "make other bots go out of business" (giving away the source arms
-   competitors). Out of scope until the owner raises it → route to the router if it comes up.
+1. **Open-source / self-host? — ANSWERED (owner, 2026-06-21).** The repo is **already public and
+   MIT-licensed** (`LICENSE`, © Menno van Hattum), so the source is *legally* reusable by anyone
+   **right now** — and that is the "free for everyone" ethos taken to its conclusion, not a threat to
+   it. The owner's position: reuse should **eventually be easy, but is not recommended yet** —
+   *"there's still a lot of moving around to do before this code is actually solid."* So the gate is
+   **code maturity, not licensing**: the road to recommend-able reuse is the ongoing repo-organization
+   work (architecture atlas · consistency linter · the repo-structure-improvement plan) maturing — not
+   a license or policy change. No "self-host / quickstart" docs until the structure settles.
 2. **Enforcement tooling.** Should a disposable lint (**Q-0105**) flag any new
    "premium/paywall/paid-tier-gate" language creeping into docs or code? The Q-0039 CI invariant
    already guards the *economy* (no supporter predicate in odds/reward/cooldown/fee paths); a
