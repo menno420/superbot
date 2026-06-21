@@ -1,11 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T22:08:34Z",
+    "generated_at": "2026-06-21T22:36:08Z",
     "build": {
-      "commit": "d2af0a08",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/reconcile-1260",
-      "committed_at": "2026-06-21T22:03:07Z",
-      "branch": "claude/reconcile-1260"
+      "commit": "0b918dd",
+      "subject": "session(born-red): dashboard auto-PR conflict root cause — card + claim",
+      "committed_at": "2026-06-21T22:36:08Z"
     }
   },
   "counts": {
