@@ -100,6 +100,15 @@ RARITY_BUDGET: dict[str, int] = {
     "Rare": 260,
     "Epic": 300,
 }
+# Archetype stat weights (hp, atk, df, spd) — the budget is split in these
+# proportions. Module-level (not a local in ``_roster``) so the runtime engine's
+# parity guard can compare it (``tests/unit/tools/test_creature_sim_engine_parity.py``).
+ARCHETYPE_WEIGHTS: dict[str, tuple[float, float, float, float]] = {
+    "attacker": (0.9, 1.3, 0.7, 1.1),
+    "tank": (1.3, 0.8, 1.3, 0.6),
+    "balanced": (1.0, 1.0, 1.0, 1.0),
+    "speedster": (0.8, 1.2, 0.7, 1.3),
+}
 # Base catch chance per rarity at player level 1 (before level/curve bonuses).
 RARITY_CATCH_BASE: dict[str, float] = {
     "Common": 0.55,
@@ -152,12 +161,7 @@ def _roster() -> list[Species]:
     Archetype weights (hp, atk, df, spd): attacker .9/1.3/.7/1.1, tank 1.3/.8/1.3/.6,
     balanced 1/1/1/1, speedster .8/1.2/.7/1.3.
     """
-    arche = {
-        "attacker": (0.9, 1.3, 0.7, 1.1),
-        "tank": (1.3, 0.8, 1.3, 0.6),
-        "balanced": (1.0, 1.0, 1.0, 1.0),
-        "speedster": (0.8, 1.2, 0.7, 1.3),
-    }
+    arche = ARCHETYPE_WEIGHTS
     catalog = json.loads((Path(__file__).with_name("creatures.json")).read_text())
     out: list[Species] = []
     for c in catalog["creatures"]:
