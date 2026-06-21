@@ -126,7 +126,11 @@ class ReactionRolesPanel(BaseView):
         if not _can_manage(interaction):
             await _deny(interaction)
             return
-        await interaction.response.send_modal(_AddBindingModal(self))
+        await interaction.response.send_message(
+            "Which message should these reaction roles go on?",
+            view=_AddSourceView(self),
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="🗑️ Remove", style=discord.ButtonStyle.red, row=0)
     async def remove_btn(
@@ -304,12 +308,243 @@ class ReactionRolesPanel(BaseView):
 
 
 # ---------------------------------------------------------------------------
-# Sub-flow: add bindings (message-id + emoji modal → per-emote role pickers)
+# Sub-flow: add bindings (pick the message → emote(s) → per-emote role pickers)
 # ---------------------------------------------------------------------------
 # One message can carry many emotes, each mapped to its OWN role (owner
-# direction, 2026-06-21). The operator types one or more emotes; the flow then
-# walks each emote in turn, picking its role, so 💀→A, ❤️→B, 😘→C bind in a
-# single pass instead of one tediously-repeated single-emote add.
+# direction, 2026-06-21). The operator first chooses WHICH message via
+# `_AddSourceView` — most-recent / pick-recent / new-message / by-id, mirroring
+# Carl's setup methods so nobody has to copy-paste a raw id — then types one or
+# more emotes, and the flow walks each emote picking its role (💀→A, ❤️→B, 😘→C).
+
+
+def _message_label(message: object) -> str:
+    """A one-line picker label for a message: ``author: preview``."""
+    author = getattr(getattr(message, "author", None), "display_name", "") or "unknown"
+    content = " ".join((getattr(message, "content", "") or "").split())
+    if not content:
+        if getattr(message, "embeds", None):
+            content = "[embed]"
+        elif getattr(message, "attachments", None):
+            content = "[attachment]"
+        else:
+            content = "[no text]"
+    return f"{author}: {content}"
+
+
+def _message_desc(message: object) -> str:
+    """The select-option description for a recent message (its id)."""
+    return f"id {getattr(message, 'id', '?')}"
+
+
+def _panel_message_id(panel: ReactionRolesPanel) -> int | None:
+    """The panel's own message id, so the picker never offers it as a target."""
+    return getattr(getattr(panel, "message", None), "id", None)
+
+
+async def _recent_messages(
+    channel: discord.abc.Messageable,
+    *,
+    exclude_id: int | None,
+    limit: int = 20,
+) -> list[discord.Message]:
+    """Recent messages in a channel (newest first), minus the panel's own.
+
+    Degrades to an empty list when history can't be read (missing permission),
+    so the caller can route the operator to By-ID / New-message instead.
+    """
+    out: list[discord.Message] = []
+    try:
+        async for message in channel.history(limit=limit):
+            if exclude_id is not None and message.id == exclude_id:
+                continue
+            out.append(message)
+    except (discord.Forbidden, discord.HTTPException):
+        return []
+    return out
+
+
+class _AddSourceView(BaseView):
+    """Choose how to identify the message to bind reaction roles to.
+
+    Replaces the bare "type a Message ID" step with Carl-style setup methods;
+    every path lands in the same per-emote role picker (:class:`_BindEmotesView`).
+    """
+
+    def __init__(self, panel: ReactionRolesPanel) -> None:
+        super().__init__(panel.ctx.author, timeout=180)
+        self.panel = panel
+
+    @discord.ui.button(label="📍 Most recent", style=discord.ButtonStyle.grey, row=0)
+    async def recent_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        channel = interaction.channel
+        if not isinstance(channel, discord.abc.Messageable):
+            await interaction.response.send_message(
+                "Open this in a server text channel.",
+                ephemeral=True,
+            )
+            return
+        messages = await _recent_messages(
+            channel,
+            exclude_id=_panel_message_id(self.panel),
+            limit=5,
+        )
+        if not messages:
+            await interaction.response.send_message(
+                "I couldn't find a recent message here — try **🔢 By ID** or "
+                "**🆕 New message**.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_modal(_EmotesModal(self.panel, messages[0].id))
+
+    @discord.ui.button(label="📜 Pick recent", style=discord.ButtonStyle.grey, row=0)
+    async def pick_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        channel = interaction.channel
+        if not isinstance(channel, discord.abc.Messageable):
+            await interaction.response.send_message(
+                "Open this in a server text channel.",
+                ephemeral=True,
+            )
+            return
+        messages = await _recent_messages(
+            channel,
+            exclude_id=_panel_message_id(self.panel),
+            limit=20,
+        )
+        if not messages:
+            await interaction.response.send_message(
+                "No recent messages here — try **🔢 By ID** or **🆕 New message**.",
+                ephemeral=True,
+            )
+            return
+        options = [
+            discord.SelectOption(
+                label=_message_label(m)[:100],
+                value=str(m.id),
+                description=_message_desc(m)[:100],
+            )
+            for m in messages
+        ]
+        panel = self.panel
+
+        async def _on_pick(pick: discord.Interaction, values: list[str]) -> None:
+            await pick.response.send_modal(_EmotesModal(panel, int(values[0])))
+
+        await interaction.response.edit_message(
+            content="Pick the message to add reaction roles to:",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                _on_pick,
+                placeholder="Recent messages…",
+            ),
+        )
+
+    @discord.ui.button(label="🆕 New message", style=discord.ButtonStyle.green, row=0)
+    async def new_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await interaction.response.send_modal(_NewMessageModal(self.panel))
+
+    @discord.ui.button(label="🔢 By ID", style=discord.ButtonStyle.grey, row=0)
+    async def id_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await interaction.response.send_modal(_AddBindingModal(self.panel))
+
+
+class _NewMessageModal(discord.ui.Modal, title="Post a reaction-role message"):  # type: ignore[call-arg]
+    """Post a fresh message/embed, then bind reaction roles to it."""
+
+    title_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Embed title (optional)",
+        placeholder="e.g. Pick your roles",
+        required=False,
+        max_length=100,
+    )
+    text_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Message text",
+        style=discord.TextStyle.paragraph,
+        placeholder="React below to pick up a role!",
+        max_length=2000,
+    )
+    emoji_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Emoji(s)",
+        placeholder="💀 ❤️ 😘  — one or more (each gets its own role)",
+        max_length=200,
+    )
+
+    def __init__(self, panel: ReactionRolesPanel) -> None:
+        super().__init__()
+        self.panel = panel
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        emotes = parse_emotes(self.emoji_in.value)
+        if not emotes:
+            await interaction.response.send_message(
+                "❌ Enter at least one emoji.",
+                ephemeral=True,
+            )
+            return
+        channel = interaction.channel
+        if not isinstance(channel, discord.abc.Messageable):
+            await interaction.response.send_message(
+                "I can't post a message in this channel.",
+                ephemeral=True,
+            )
+            return
+        title = self.title_in.value.strip()
+        text = self.text_in.value.strip()
+        try:
+            if title:
+                message = await channel.send(
+                    embed=discord.Embed(
+                        title=title,
+                        description=text or None,
+                        color=ROLE_COLOR,
+                    ),
+                )
+            else:
+                message = await channel.send(
+                    content=text or "React below to pick up a role:",
+                )
+        except (discord.Forbidden, discord.HTTPException):
+            await interaction.response.send_message(
+                "I couldn't post a message here — I'm missing permission to send "
+                "messages in this channel.",
+                ephemeral=True,
+            )
+            return
+        view = _BindEmotesView(self.panel, message.id, emotes)
+        await interaction.response.send_message(
+            content=view.prompt(),
+            view=view,
+            ephemeral=True,
+        )
 
 
 class _AddBindingModal(discord.ui.Modal, title="Add reaction role"):  # type: ignore[call-arg]
@@ -353,8 +588,13 @@ class _AddBindingModal(discord.ui.Modal, title="Add reaction role"):  # type: ig
         )
 
 
-class _MoreEmotesModal(discord.ui.Modal, title="Add more emotes"):  # type: ignore[call-arg]
-    """Bind further emotes to the SAME message without re-typing its ID."""
+class _EmotesModal(discord.ui.Modal, title="Add reaction emotes"):  # type: ignore[call-arg]
+    """Collect emote(s) for an already-chosen message → per-emote role pickers.
+
+    Used once the message is known (the picker / most-recent paths), and by the
+    "add more emotes" toast on an existing binding — so the operator never re-types
+    the message id.
+    """
 
     emoji_in = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Emoji(s)",
@@ -504,5 +744,5 @@ class _AfterBindView(BaseView):
             await _deny(interaction)
             return
         await interaction.response.send_modal(
-            _MoreEmotesModal(self.panel, self.message_id),
+            _EmotesModal(self.panel, self.message_id),
         )
