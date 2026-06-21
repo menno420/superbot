@@ -388,6 +388,93 @@ async def set_menu_location(menu_id: int, channel_id: int, message_id: int) -> N
     await menus_db.set_menu_location(menu_id, channel_id, message_id)
 
 
+# ===========================================================================
+# Colour-role auto-create — pick a colour, get a role (audited via lifecycle)
+# ===========================================================================
+# The builder lets an operator pick colours that don't exist as roles yet and
+# have the bot create them in one step (owner direction, 2026-06-21). Creation
+# goes through the audited ``RoleLifecycleService`` (the only sanctioned
+# ``create_role`` caller), never raw ``guild.create_role`` from the view.
+
+
+def supports_role_gradients(guild: discord.Guild) -> bool:
+    """Whether the guild can use Enhanced Role Styles (gradient / holographic).
+
+    Discord unlocks the perk at **3 applied server boosts** (independent of boost
+    *level*) and advertises it as a guild feature. Matched defensively — the exact
+    flag string shifted during rollout — so the builder offers gradient options
+    only when the server can actually use them. The create path also degrades on a
+    rejected gradient, so a stale ``True`` here is never fatal.
+    """
+    feats = {str(f).upper() for f in (getattr(guild, "features", None) or [])}
+    if {"ENHANCED_ROLE_COLORS", "ENHANCED_ROLE_COLOURS"} & feats:
+        return True
+    return any("ROLE" in f and ("COLOR" in f or "COLOUR" in f) for f in feats)
+
+
+async def ensure_color_role(
+    guild: discord.Guild,
+    *,
+    name: str,
+    color: discord.Color,
+    secondary: discord.Color | None = None,
+    tertiary: discord.Color | None = None,
+    actor: object | None,
+) -> tuple[int | None, bool, str]:
+    """Reuse a same-named role, or create a colour role via the audited seam.
+
+    Returns ``(role_id, created, note)``. A gradient/holographic style is applied
+    only when the guild supports Enhanced Role Styles; a gradient create Discord
+    rejects anyway falls back to a solid colour so the operator still gets a role.
+    """
+    from core.runtime import resources
+    from services.role_lifecycle_service import (
+        RoleLifecycleRequest,
+        RoleLifecycleService,
+    )
+
+    name = (name or "").strip()[:100] or "colour"
+    existing = resources.resolve_role(guild, name=name)
+    if existing is not None:
+        return existing.id, False, ""
+
+    svc = RoleLifecycleService()
+
+    async def _create(
+        sec: discord.Color | None,
+        ter: discord.Color | None,
+    ) -> tuple[int | None, str]:
+        result = await svc.apply(
+            guild,
+            RoleLifecycleRequest(
+                operation="create",
+                name=name,
+                color=color,
+                secondary_color=sec,
+                tertiary_color=ter,
+                reason="Colour role (reaction-role menu)",
+            ),
+            actor,
+            actor_type="admin",
+        )
+        applied = result.applied
+        if applied and applied[0].target_id:
+            return int(applied[0].target_id), ""
+        return None, result.first_error
+
+    want_gradient = secondary is not None and supports_role_gradients(guild)
+    role_id, note = await _create(
+        secondary if want_gradient else None,
+        tertiary if want_gradient else None,
+    )
+    if role_id is None and want_gradient:
+        # The perk may be unavailable after all — retry as a plain solid colour.
+        role_id, note = await _create(None, None)
+        if role_id is not None:
+            note = "Gradient unavailable here — created a solid colour role."
+    return role_id, role_id is not None, note
+
+
 async def delete_menu(
     *,
     menu_id: int,
@@ -726,6 +813,7 @@ __all__ = [
     "clear_message_mode",
     "create_menu",
     "delete_menu",
+    "ensure_color_role",
     "get_binding",
     "get_menu",
     "get_menu_options",
@@ -740,6 +828,7 @@ __all__ = [
     "set_menu_location",
     "set_menu_message",
     "set_message_mode",
+    "supports_role_gradients",
     "toggle_role",
     "unbind_emoji",
     "update_menu",

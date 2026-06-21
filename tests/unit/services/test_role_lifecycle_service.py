@@ -92,6 +92,38 @@ async def test_create_calls_create_role_and_succeeds(svc):
 
 
 @pytest.mark.asyncio
+async def test_create_passes_gradient_colours_when_set(svc):
+    guild = _guild(created=_role(999, "Sunset"))
+    await svc.apply(
+        guild,
+        RoleLifecycleRequest(
+            operation="create",
+            name="Sunset",
+            color=discord.Color(0x1),
+            secondary_color=discord.Color(0x2),
+            tertiary_color=discord.Color(0x3),
+        ),
+        _actor(),
+    )
+    kwargs = guild.create_role.await_args.kwargs
+    assert kwargs["secondary_color"] == discord.Color(0x2)
+    assert kwargs["tertiary_color"] == discord.Color(0x3)
+
+
+@pytest.mark.asyncio
+async def test_create_omits_gradient_colours_when_absent(svc):
+    guild = _guild(created=_role(999, "Plain"))
+    await svc.apply(
+        guild,
+        RoleLifecycleRequest(operation="create", name="Plain", color=discord.Color(0x1)),
+        _actor(),
+    )
+    kwargs = guild.create_role.await_args.kwargs
+    assert "secondary_color" not in kwargs
+    assert "tertiary_color" not in kwargs
+
+
+@pytest.mark.asyncio
 async def test_edit_calls_role_edit_with_changed_fields(svc):
     role = _role(10, "Old")
     guild = _guild([role])

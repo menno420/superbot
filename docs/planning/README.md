@@ -48,6 +48,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 |---|---|---|
 | [ai-btd6-answerability-roadmap](ai-btd6-answerability-roadmap-2026-06-09.md) | Phases 1–3 shipped; Phases 4/5 (settings UI · dashboard) **gated** on per-exposure asks | [btd6](../subsystems/btd6.md) |
 | [ai-roadmap](ai-roadmap-2026-06-07.md) | the **AI-area authority** (Phase 0–11, planning-only); orchestration foundation shipped, §7 workflow families next | [ai](../subsystems/ai.md) · [btd6](../subsystems/btd6.md) · *referenced by `agent/index.yml`* |
+| [project-moon-knowledge-domain](project-moon-knowledge-domain-plan-2026-06-21.md) | **owner-directed (Q-0192): full parity, all 3 Project Moon games** as a generalised `KnowledgeDomain` seam (BTD6 = instance #0). Program, not a 2–3-PR plan; **first slice = a proof-first minimal Limbus lore-Q&A vertical** ▶ buildable; 3 follow-up design Qs routed | [btd6](../subsystems/btd6.md) · [ai](../subsystems/ai.md) · `project-moon-wiki-knowledge-domain` |
 
 ### S3 — AI-Memory system (the mechanism)
 

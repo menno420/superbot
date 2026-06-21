@@ -34,6 +34,9 @@ living ledger (`docs/current-state.md`).
 - `claude/peaceful-mayer-rgc20t` · **BTD6 Alchemist buff-uptime** (owner live-test) — `btd6_buff_uptime`
   tool + `buff_uptime()` compute + parser buff-window decode (game-data path) · `parse_gamedata.py` /
   `btd6_upgrade_detail_service` / `ai_tools` / `ai_tool_catalogue` · 2026-06-21 · **PR #1235 (auto-merge on green)**
+- `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (owner-directed Q-0192: full parity) —
+  feasibility **#1238** + program plan **#1239** merged; now pre-build recon (data sources + seam contract)
+  · `docs/planning/project-moon-prebuild-recon-2026-06-21.md` · 2026-06-21 · **auto-merge on green** (docs-only)
 
 *(Beyond the claim above, the only open PR is **#1213** creature-PvP battle engine on
 `claude/funny-franklin-mw3hxj`, a `needs-hermes-review` foundation slice — its owning
@@ -41,6 +44,9 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/reaction-roles-channel-and-colors` · **reaction-roles follow-up** (owner-directed) — menu
+  post-channel picker + auto-created colour roles + gradient/holographic (audited
+  `RoleLifecycleService` seam, gated on Enhanced-Role-Styles) · 2026-06-21 · **PR #1237 (merge on green)**
 - `claude/lucid-carson-qsn1gc` · **reaction-roles refinement** (owner-directed) — multiple emotes
   per message each with its own role (`utils/emoji_tokens` + Add-flow rewrite, no schema change) +
   role-menu **Repost/Duplicate** reuse (`set_menu_location`) · 2026-06-21 · **PR #1234 (merge on green)**
