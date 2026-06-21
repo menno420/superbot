@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T05:17:18Z",
+    "generated_at": "2026-06-21T10:04:21Z",
     "build": {
-      "commit": "025caed1",
-      "subject": "Merge pull request #1208 from menno420/claude/funny-franklin-uf628a",
-      "committed_at": "2026-06-21T05:36:03Z",
+      "commit": "9a6113ad",
+      "subject": "feat(tooling): permission-overlap guard + fix force-push ask residual (#1212)",
+      "committed_at": "2026-06-21T08:00:16Z",
       "branch": "main"
     },
     "counts": {
       "functions": 37,
-      "ideas": 108,
-      "bugs": 22,
+      "ideas": 109,
+      "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -998,6 +998,14 @@
   ],
   "ideas": [
     {
+      "file": "permission-overlap-guard-2026-06-21.md",
+      "title": "Permission-overlap guard for `.claude/settings.json`",
+      "status": "historical",
+      "date": "2026-06-21",
+      "summary": "A small stdlib config-lint, `scripts/check_permission_overlap.py`, that flags any",
+      "subsystems": null
+    },
+    {
       "file": "recently-shipped-auto-trim-helper-2026-06-20.md",
       "title": "Idea — a stdlib actuator for the Recently-shipped trim-to-archive step",
       "status": "ideas",
@@ -1144,7 +1152,7 @@
     {
       "file": "public-data-contract-field-snapshot-2026-06-19.md",
       "title": "Public-data-contract field-level snapshot test",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-19",
       "summary": "The foundation build (S1) guards the public `botsite/data/site.json` subset at the",
       "subsystems": []
@@ -1926,6 +1934,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0023",
+      "title": "public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = INVESTIGATE",
+      "status": "unknown",
+      "summary": "the bot's Bot Online embed shows Commands 354 (283 prefix · 71 slash), the public website shows ~280, and site.json says 308 — \"completely different numbers,\" with \"a lot of / commands that are mostly duplicates of the prefix ones.\""
+    },
+    {
       "id": "BUG-0022",
       "title": "full test suite rewrites the tracked botsite/site/data.js (live-HEAD build sha) → git add -A reddens botsite-tests",
       "status": "FIXED",
@@ -2061,6 +2075,30 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-21-website-count-and-pin-fixes.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Website count reconciliation + pin-drift guard (rebuilt after parallel-work collision)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-site-field-level-redaction-contract.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — site.json field-level redaction contract",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-permission-overlap-guard.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Permission-overlap guard + force-push `ask` residual fix",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-creature-game-catch-collection.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature game runtime v1: catch + collection (dex)",
@@ -2074,6 +2112,14 @@
       "title": "2026-06-21 — CI-reliability batch: BUG-0020 + BUG-0021 + BUG-0022",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-allow-force-with-lease.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Allow `git push --force-with-lease` + `cd` in permission allowlist",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2507,38 +2553,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-reconcile-band1110.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Docs reconciliation (band-#1110, fourteenth Q-0107 pass)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-reconcile-band1080.md",
-      "date": "2026-06-19",
-      "title": "Session — 2026-06-19 · band-#1080 Q-0107 docs reconciliation pass",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-recon-trigger-and-voice-pack.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Trigger + guide the #1140 recon pass; build the voice-brainstorm pack",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-rebadge-a3a4-session-close-wiring.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Rebadge A3/A4 `historical` + wire drift check into /session-close",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
