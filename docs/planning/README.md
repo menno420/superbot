@@ -42,6 +42,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 | [safety-community-family](safety-community-family-plan-2026-06-13.md) | lane entry doc; automod/logging/welcome **shipped** + image-mod #941 + security tiers 1+2 #929 **shipped 2026-06-18**; remainder = **NL event scheduler** (plan-first, Q-0112) | roadmap safety lane · `server-safety-and-automod`, `community-platform-features` |
 | [reaction-roles-overhaul](reaction-roles-overhaul-plan-2026-06-21.md) | **▶ buildable** — Carl-bot parity + modern button/dropdown role menus + audited mutation seam; PR 1 (audited seam + schema) is pure debt-paydown, PRs 2–3 = role menus + modes; 3 open design Qs for the owner | [server-management](../subsystems/server-management.md) · `fun-and-ease-brainstorm` §B1, `community-platform-features` §4 |
 | [starboard](starboard-plan-2026-06-21.md) | **▶ buildable** (⚑ self-initiated, Q-0172; not yet owner-reviewed) — Hall-of-Fame: N ⭐-reactions → immortalize a message with a live-updating embed; reuses the hardened raw-reaction seam (reaction-roles #1234–#1250). 2 PRs; 1 open Q (fixed ⭐ vs configurable emoji) | `fun-and-ease-brainstorm` §B1 · reaction-roles-overhaul §6 |
+| [explore-hub-federated-world](explore-hub-federated-world-plan-2026-06-19.md) | **partially shipped** — top-level Explore *world* hub + world registry (PR 1 #1156) + cross-game world card (PR 3 #1160) shipped; **PR 2** (global/per-game XP split — `player_skills` PK migration + earning-model call) is **owner/runtime-gated** | [games](../subsystems/games.md) |
 
 ### S2 — BTD6
 

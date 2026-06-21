@@ -172,6 +172,12 @@ Current broad captures:
   live PR, with a dry-run diff. The *actuator* complement to the `check_current_state_ledger.py` *detector*;
   closes the unguarded "wrong floor pointer" drift class (#763-style, Q-0120). Disposable (Q-0105). →
   relates `scripts/check_current_state_ledger.py` · `scripts/check_docs.py` · `band-pr-merge-status-helper`.
+- [`band-pr-status-author-classifier-2026-06-21.md`](./band-pr-status-author-classifier-2026-06-21.md) —
+  a `band_pr_status --themes` mode that reads each band PR's touched paths and emits a **draft
+  grouped-entry skeleton** for the Recently-shipped ledger, so the pass edits rather than reverse-engineers
+  the opaque merge-commit PRs (this pass hand-`git show --stat`'d 11 of them). The next mechanisation of the
+  reconciliation routine after the trim actuator + callout prune. Stdlib, disposable (Q-0105). → relates
+  `scripts/band_pr_status.py` · the reconciliation routine STEP 2.
 - [`band-pr-merge-status-helper-2026-06-19.md`](./band-pr-merge-status-helper-2026-06-19.md) —
   **SHIPPED 2026-06-20** as `scripts/band_pr_status.py` + `tests/unit/scripts/test_band_pr_status.py`,
   wired into the reconciliation routine's STEP 2. A stdlib

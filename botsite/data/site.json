@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:58:42Z",
+    "generated_at": "2026-06-21T22:08:34Z",
     "build": {
-      "commit": "edf3f1c",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/starboard-v1",
-      "committed_at": "2026-06-21T21:54:09Z",
-      "branch": "claude/starboard-v1"
+      "commit": "d2af0a08",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/reconcile-1260",
+      "committed_at": "2026-06-21T22:03:07Z",
+      "branch": "claude/reconcile-1260"
     }
   },
   "counts": {
