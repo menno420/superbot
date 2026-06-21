@@ -1043,6 +1043,8 @@ class _ColourRolesView(BaseView):
     """Pick preset colours (auto-created as roles) or open the custom/gradient modal."""
 
     def __init__(self, builder: RoleMenuBuilder) -> None:
+        from services.reaction_role_service import supports_role_gradients
+
         super().__init__(builder._author, timeout=180)
         self.builder = builder
         options = [
@@ -1057,6 +1059,22 @@ class _ColourRolesView(BaseView):
             max_values=len(options),
             select_row=0,
         )
+        # Gradient presets only render on Enhanced-Role-Styles guilds (3 boosts);
+        # offered solely when the perk is present so we never show a styled option
+        # that would silently fall back to solid.
+        if supports_role_gradients(builder.guild):
+            gradient_options = [
+                discord.SelectOption(label=p.label, value=p.key, description=p.name)
+                for p in presentation.gradient_presets()
+            ]
+            attach_multi_select(
+                self,
+                gradient_options,
+                self._on_gradient_presets,
+                placeholder="✨ Gradient colours (Enhanced Role Styles)…",
+                max_values=len(gradient_options),
+                select_row=2,
+            )
 
     @discord.ui.button(
         label="✏️ Custom / gradient…",
@@ -1082,6 +1100,29 @@ class _ColourRolesView(BaseView):
             (by_hex.get(hex_value, hex_value), _parse_color(hex_value), None, None)
             for hex_value in values
         ]
+        await _commit_colour_roles(interaction, self.builder, specs)
+
+    async def _on_gradient_presets(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        by_key = {p.key: p for p in presentation.gradient_presets()}
+        specs: list[
+            tuple[str, discord.Color, discord.Color | None, discord.Color | None]
+        ] = []
+        for key in values:
+            preset = by_key.get(key)
+            if preset is None:
+                continue
+            specs.append(
+                (
+                    preset.name,
+                    discord.Color(preset.primary),
+                    discord.Color(preset.secondary),
+                    None,
+                ),
+            )
         await _commit_colour_roles(interaction, self.builder, specs)
 
 
