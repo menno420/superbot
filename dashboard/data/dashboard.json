@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T12:20:57Z",
+    "generated_at": "2026-06-21T13:29:19Z",
     "build": {
-      "commit": "590d31e9",
-      "subject": "Merge pull request #1220 from menno420/claude/reaction-roles-pr1-foundation",
-      "committed_at": "2026-06-21T13:28:32Z",
-      "branch": "main"
+      "commit": "a420ffe",
+      "subject": "Merge pull request #1222 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-21T14:25:45Z",
+      "branch": "claude/confident-wright-slef29"
     },
     "counts": {
       "functions": 37,
@@ -15,11 +15,11 @@
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 37,
-      "cogs": 44,
-      "commands": 311,
-      "setting_keys": 103,
+      "cogs": 45,
+      "commands": 312,
+      "setting_keys": 104,
       "setting_domains": 15,
-      "typed_settings": 84,
+      "typed_settings": 85,
       "visible_subsystems": 37,
       "synonyms": 87,
       "bot_changelog": 3
@@ -2117,6 +2117,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-reaction-roles-pr3-5.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction-roles overhaul PR 3 + 4 + 5 (modes · temp roles · analytics)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-reaction-roles-pr2-menu-builder.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction-roles PR 2: in-Discord role-menu builder",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-reaction-roles-pr1-foundation.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Reaction-roles overhaul PR 1: audited seam + menu data layer",
@@ -2547,22 +2563,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-changelog-status.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Bot-site changelog + status pages (P3)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-ultracode-fleet-orchestration.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Ultracode fleet orchestration (mining hub + codex-review; the B4 collision)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -2651,7 +2651,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 181,
+          "line": 182,
           "layer": "config",
           "has_default": true
         },
@@ -2673,7 +2673,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 180,
+          "line": 181,
           "layer": "config",
           "has_default": true
         }
@@ -2706,7 +2706,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 164,
+          "line": 165,
           "layer": "config",
           "has_default": true
         },
@@ -2808,7 +2808,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 207,
+          "line": 208,
           "layer": "config",
           "has_default": true
         }
@@ -2824,7 +2824,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 210,
+          "line": 211,
           "layer": "config",
           "has_default": true
         }
@@ -2840,7 +2840,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 213,
+          "line": 214,
           "layer": "config",
           "has_default": true
         }
@@ -3000,7 +3000,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 106,
+          "line": 107,
           "layer": "config",
           "has_default": true
         }
@@ -3080,7 +3080,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 107,
+          "line": 108,
           "layer": "config",
           "has_default": true
         }
@@ -3098,7 +3098,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 163,
+          "line": 164,
           "layer": "config",
           "has_default": true
         },
@@ -3139,7 +3139,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 190,
+          "line": 191,
           "layer": "config",
           "has_default": true
         },
@@ -3162,7 +3162,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 194,
+          "line": 195,
           "layer": "config",
           "has_default": true
         },
@@ -3201,7 +3201,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 162,
+          "line": 163,
           "layer": "config",
           "has_default": true
         },
@@ -3225,7 +3225,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 161,
+          "line": 162,
           "layer": "config",
           "has_default": true
         },
@@ -6719,6 +6719,25 @@
       ]
     },
     {
+      "cog": "RoleGrantsCog",
+      "file": "disbot/cogs/role_grants_cog.py",
+      "subsystem": "role_grants",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "temprole",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Give a member a role for a limited time. Usage: !temprole @member 2h @role",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "SecurityCog",
       "file": "disbot/cogs/security_cog.py",
       "subsystem": "security",
@@ -7800,6 +7819,14 @@
           "key": "xp_roles_stack",
           "type": "bool",
           "hint": "When ON (default), members keep every XP/level role they earn — the roles stack. When OFF, reaching a higher level role removes the lower level roles, so a member holds a single level role.",
+          "allowed_values": [],
+          "default": true
+        },
+        {
+          "constant": "REACTION_ROLES_ENABLED",
+          "key": "reaction_roles_enabled",
+          "type": "bool",
+          "hint": "When ON (default), reacting on a tracked message self-assigns the bound role (the emoji reaction-role surface). Turn OFF to disable all emoji reaction roles for this server — the modern button / dropdown role menus are unaffected.",
           "allowed_values": [],
           "default": true
         }
