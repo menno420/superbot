@@ -38,6 +38,9 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/reaction-roles-channel-and-colors` · **reaction-roles follow-up** (owner-directed) — menu
+  post-channel picker + auto-created colour roles + gradient/holographic (audited
+  `RoleLifecycleService` seam, gated on Enhanced-Role-Styles) · 2026-06-21 · **PR #1237 (merge on green)**
 - `claude/lucid-carson-qsn1gc` · **reaction-roles refinement** (owner-directed) — multiple emotes
   per message each with its own role (`utils/emoji_tokens` + Add-flow rewrite, no schema change) +
   role-menu **Repost/Duplicate** reuse (`set_menu_location`) · 2026-06-21 · **PR #1234 (merge on green)**

@@ -32,6 +32,17 @@
 > menu into a new one). NB this is *one role per emote* (an emote→multiple-roles reading was corrected
 > by the owner mid-session).
 >
+> **▶ Refinement (2026-06-21, owner-directed — PR #1237):** three more builder enhancements.
+> **(1) Post-channel picker** — a 📍 Channel control on `RoleMenuBuilder` so a menu can target a
+> dedicated reaction-roles channel, not just the panel's channel. **(2) Auto-created colour roles** —
+> a 🎨 Colours flow picks preset/custom colours that don't exist as roles yet and the bot creates
+> them in one step (reuse-if-same-name), via `reaction_role_service.ensure_color_role` →
+> the audited `RoleLifecycleService` (the only sanctioned `create_role` caller). **(3) Gradient /
+> holographic roles** — discord.py 2.7.1 supports `secondary_colour`/`tertiary_colour` on
+> `create_role`/`Role.edit`; Discord gates the *Enhanced Role Styles* perk on **3 applied server
+> boosts**, so the gradient UI is offered only when `guild.features` advertises it
+> (`supports_role_gradients`), with a caught-400 solid-colour fallback.
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,

@@ -295,3 +295,142 @@ async def test_set_menu_location_passes_through_without_audit():
         await svc.set_menu_location(7, 222, 333)
     loc.assert_awaited_once_with(7, 222, 333)
     audit.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Colour-role auto-create (owner direction, 2026-06-21)
+# ---------------------------------------------------------------------------
+
+# Opaque colour sentinels — RoleLifecycleService.apply is mocked, so colours just
+# pass through and are compared by identity.
+_PRIMARY = object()
+_SECONDARY = object()
+_TERTIARY = object()
+
+
+def test_supports_role_gradients_matches_feature_variants():
+    assert svc.supports_role_gradients(SimpleNamespace(features=["ENHANCED_ROLE_COLORS"]))
+    # Defensive substring match survives a rollout rename.
+    assert svc.supports_role_gradients(SimpleNamespace(features=["GUILD_ROLE_COLOURS_X"]))
+    assert not svc.supports_role_gradients(SimpleNamespace(features=["COMMUNITY"]))
+    assert not svc.supports_role_gradients(SimpleNamespace(features=[]))
+
+
+def _applied(target_id: int) -> SimpleNamespace:
+    return SimpleNamespace(
+        applied=[SimpleNamespace(target_id=target_id)],
+        first_error="",
+    )
+
+
+def _failed(reason: str = "400") -> SimpleNamespace:
+    return SimpleNamespace(applied=[], first_error=reason)
+
+
+@pytest.mark.asyncio
+async def test_ensure_color_role_reuses_existing_same_name_role():
+    guild = SimpleNamespace(id=1, features=[])
+    with patch(
+        "core.runtime.resources.resolve_role",
+        return_value=SimpleNamespace(id=555),
+    ):
+        role_id, created, note = await svc.ensure_color_role(
+            guild,
+            name="Red",
+            color=_PRIMARY,
+            actor=SimpleNamespace(id=9),
+        )
+    assert (role_id, created, note) == (555, False, "")
+
+
+@pytest.mark.asyncio
+async def test_ensure_color_role_creates_solid_when_no_gradient():
+    guild = SimpleNamespace(id=1, features=[])
+    apply_mock = AsyncMock(return_value=_applied(777))
+    with (
+        patch("core.runtime.resources.resolve_role", return_value=None),
+        patch(
+            "services.role_lifecycle_service.RoleLifecycleService.apply",
+            new=apply_mock,
+        ),
+    ):
+        role_id, created, _ = await svc.ensure_color_role(
+            guild,
+            name="Sunset",
+            color=_PRIMARY,
+            actor=SimpleNamespace(id=9),
+        )
+    assert (role_id, created) == (777, True)
+    req = apply_mock.await_args.args[1]  # (guild, request, actor) — mock is unbound
+    assert req.secondary_color is None
+    assert req.tertiary_color is None
+
+
+@pytest.mark.asyncio
+async def test_ensure_color_role_drops_gradient_without_perk():
+    guild = SimpleNamespace(id=1, features=[])  # no Enhanced Role Styles
+    apply_mock = AsyncMock(return_value=_applied(777))
+    with (
+        patch("core.runtime.resources.resolve_role", return_value=None),
+        patch(
+            "services.role_lifecycle_service.RoleLifecycleService.apply",
+            new=apply_mock,
+        ),
+    ):
+        await svc.ensure_color_role(
+            guild,
+            name="Grad",
+            color=_PRIMARY,
+            secondary=_SECONDARY,
+            tertiary=_TERTIARY,
+            actor=SimpleNamespace(id=9),
+        )
+    req = apply_mock.await_args.args[1]
+    assert req.secondary_color is None  # guild lacks the perk → solid only
+
+
+@pytest.mark.asyncio
+async def test_ensure_color_role_applies_gradient_with_perk():
+    guild = SimpleNamespace(id=1, features=["ENHANCED_ROLE_COLORS"])
+    apply_mock = AsyncMock(return_value=_applied(777))
+    with (
+        patch("core.runtime.resources.resolve_role", return_value=None),
+        patch(
+            "services.role_lifecycle_service.RoleLifecycleService.apply",
+            new=apply_mock,
+        ),
+    ):
+        await svc.ensure_color_role(
+            guild,
+            name="Grad",
+            color=_PRIMARY,
+            secondary=_SECONDARY,
+            actor=SimpleNamespace(id=9),
+        )
+    req = apply_mock.await_args.args[1]
+    assert req.secondary_color is _SECONDARY
+
+
+@pytest.mark.asyncio
+async def test_ensure_color_role_falls_back_to_solid_on_gradient_failure():
+    guild = SimpleNamespace(id=1, features=["ENHANCED_ROLE_COLORS"])
+    # First (gradient) create fails; the solid retry succeeds.
+    apply_mock = AsyncMock(side_effect=[_failed("400"), _applied(888)])
+    with (
+        patch("core.runtime.resources.resolve_role", return_value=None),
+        patch(
+            "services.role_lifecycle_service.RoleLifecycleService.apply",
+            new=apply_mock,
+        ),
+    ):
+        role_id, created, note = await svc.ensure_color_role(
+            guild,
+            name="Grad",
+            color=_PRIMARY,
+            secondary=_SECONDARY,
+            actor=SimpleNamespace(id=9),
+        )
+    assert (role_id, created) == (888, True)
+    assert "solid" in note.lower()
+    assert apply_mock.await_count == 2
+    assert apply_mock.await_args_list[1].args[1].secondary_color is None
