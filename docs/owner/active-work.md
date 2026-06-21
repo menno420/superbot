@@ -25,15 +25,18 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/modest-gates-0ble76` · **repo-state review cleanup** (owner-directed) — prune merged claims
-  here · trim `current-state.md` stale header banners → single live ▶ pointer · build the callout
-  line-budget guard · `docs/owner/active-work.md` / `docs/current-state.md` / `scripts/check_docs.py`
-  · 2026-06-21 · **PR #1256 (auto-merge on green)**
+- `claude/modest-gates-0ble76` · **PR-mergeability: trust the git check, not GitHub `mergeable_state`**
+  (owner-directed — why did the dirty-guard miss #1256) — `scripts/check_pr_mergeable.py` (git-based,
+  reuses `git_merge_state.py`) + journal note + tighten `pr-conflict-guard` schedule backstop ·
+  `scripts/check_pr_mergeable.py` / `.session-journal.md` / `.github/workflows/pr-conflict-guard.yml`
+  · 2026-06-21 · **PR (this session, auto-merge on green)**
 
-*(All other Active claims' PRs have merged — re-pruned 2026-06-21 per Q-0166 after a merge with main
-re-introduced them; see Recently cleared. #1256 is the only PR in flight.)*
+*(All other Active claims' PRs have merged — pruned per Q-0166; see Recently cleared.)*
 
 ## Recently cleared
+
+- `claude/modest-gates-0ble76` · **repo-state review cleanup** (owner-directed) — active-work prune +
+  current-state header trim + callout line-budget guard · 2026-06-21 · **PR #1256 (merged)**
 
 - `claude/peaceful-mayer-rgc20t` · **BTD6 data auto-seed on boot** (owner: "isn't seed automated?") —
   auto-seed the postgres blob store from deployed files in `cog_load`, killing the manual
