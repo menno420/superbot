@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/zen-dirac-wnhwhg` · **Codify "free for everyone, forever" as the product North Star** (owner-directed
+  in-session new goal — completely free / no feature-gating monetization) · router Q-0190 +
+  `docs/ideas/free-for-everyone-mission-2026-06-21.md` + `docs/roadmap.md` + `docs/current-state.md` +
+  `docs/ideas/README.md` · 2026-06-21 · **auto-merge on green** (docs-only · owner is live reviewer)
+
 - `claude/early-pr-mandate` · **Q-0189 — open the session PR within ~2 min of start** (owner-directed
   in-session rule) · `.claude/CLAUDE.md` (Q-0133 bullet) + `docs/owner/maintainer-question-router.md`
   · 2026-06-21 · **auto-merge on green** (docs-only · owner is live reviewer)
