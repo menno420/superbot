@@ -102,6 +102,41 @@ class RoleGrantsCog(commands.Cog):
             f"— expires <t:{int(expires.timestamp())}:R>.",
         )
 
+    @commands.command(name="temproles")
+    @commands.guild_only()
+    async def temproles(
+        self,
+        ctx: commands.Context,
+        member: discord.Member | None = None,
+    ) -> None:
+        """List active temporary roles. Usage: !temproles (yours) or !temproles @member (staff)."""
+        author = ctx.author
+        target = member or author
+        is_self = target.id == author.id
+        author_is_staff = (
+            isinstance(author, discord.Member) and author.guild_permissions.manage_roles
+        )
+        if not is_self and not author_is_staff:
+            await ctx.send(
+                "❌ You can only view your own temp roles — viewing another "
+                "member's needs Manage Roles.",
+                delete_after=10,
+            )
+            return
+
+        grants = await role_grants_service.list_active_grants(ctx.guild, target.id)
+        whose = "You have" if is_self else f"**{target.display_name}** has"
+        if not grants:
+            await ctx.send(f"📭 {whose} no active temp roles.")
+            return
+
+        lines = [
+            f"• {role.mention} — expires <t:{int(expires.timestamp())}:R>"
+            for role, expires in grants
+        ]
+        header = f"⏳ {whose} {len(grants)} active temp role(s):"
+        await ctx.send(header + "\n" + "\n".join(lines))
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(RoleGrantsCog(bot))
