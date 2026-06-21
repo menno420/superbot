@@ -12,7 +12,8 @@ reusing the raw-reaction seam hardened across the reaction-roles arc (#1234–#1
 ⭐-reactions on a message → it's posted to a hall-of-fame channel with a jump link + a live-updating
 star count; the embed is edited as the count changes and removed if it drops below threshold.
 
-- **migration `082_starboard.sql`** — `starboard_settings` (guild_id PK, channel/threshold/emoji/
+- **migration `083_starboard.sql`** (renumbered from 082: main's #1257 took 082 for creature-battle
+  records — merge collision resolved) — `starboard_settings` (guild_id PK, channel/threshold/emoji/
   enabled) + `starboard_entries` (PK guild+source_message, starboard_message_id, star_count).
 - **`utils/db/starboard.py`** — typed CRUD (`pool.*` only here).
 - **`services/starboard_service.py`** — audited `configure`/`disable`; `handle_star_change` makes the

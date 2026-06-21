@@ -5,7 +5,7 @@
 > **⚑ Self-initiated** (Q-0172): promoted from idea B1 after the reaction-roles arc hardened the
 > raw-reaction seam this reuses. Not yet owner-reviewed — greenlight or redirect before/at build.
 >
-> **▶ Build progress (2026-06-21):** **PR 1 in flight (#1259)** — migration 082 (`starboard_settings`
+> **▶ Build progress (2026-06-21):** **PR 1 in flight (#1259)** — migration 083 (`starboard_settings`
 > + `starboard_entries`) + `utils/db/starboard` + audited `services.starboard_service`
 > (`configure`/`disable` + `handle_star_change`) + `cogs/starboard_cog` (raw-reaction listener +
 > `!starboard` config group) + `bot1` registration + `guild_lifecycle` teardown. v1 keeps it lean;

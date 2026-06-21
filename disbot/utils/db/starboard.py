@@ -1,4 +1,4 @@
-"""Starboard / Hall-of-Fame CRUD (idea B1; migration 082).
+"""Starboard / Hall-of-Fame CRUD (idea B1; migration 083).
 
 Per-guild config (``starboard_settings``) + the source→starboard message mapping
 (``starboard_entries``) that makes edit-in-place recounts + dedupe possible. The
