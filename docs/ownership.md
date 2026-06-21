@@ -405,8 +405,9 @@ per-surface map in
 **Known drift to normalize before automation:**
 
 - ✅ **Role-threshold writes — NORMALIZED (P0C, 2026-06-08).** All six time/XP
-  threshold write sites (the role panels' Seed-Defaults, time/XP modals, the
-  created-role XP companion, the `_ensure_defaults` boot seed, and the `!setrole`
+  threshold write sites (the role panels' Seed-Defaults *(removed 2026-06-21 —
+  see below)*, time/XP modals, the created-role XP companion, the
+  `_ensure_defaults` boot seed *(removed 2026-06-21)*, and the `!setrole`
   command) now route through the audited
   `services.role_automation.set_time_threshold` / `set_xp_threshold` seam (DB write
   **plus** `audit.action_recorded`, and the XP path also invalidates the XP-threshold
@@ -419,6 +420,14 @@ per-surface map in
   `role_automation.clear_{time,xp}_threshold` methods (old-value read → clear →
   XP-cache invalidate → audit emit), and the invariant now fences **every** threshold
   mutation primitive — setters, clears, and the full-row `remove_role_threshold`.
+  **Hardcoded tier names removed 2026-06-21 (owner directive):** the
+  `_DEFAULT_THRESHOLDS` German/Minecraft tier names (`Neu/Normal/Iron/Gold/Diamand/
+  Netherite/Beacon`) + the `_ensure_defaults` seed routine were deleted — role
+  automation now loads only roles that exist on the server, and the Time panel's
+  "Seed Defaults" button was replaced by a **🧹 Clear Missing** purge (which clears
+  stale rows through the same audited `clear_time_threshold` seam). Curated *names*
+  survive as `ROLE_PRESETS`, but exclusively as a convenience in the role creation
+  menu (`RoleCreatePanel`) — never in automation/diagnostics.
 - ✅ **Channel create/edit lifecycle — converged (P0-4, Q-0100).** Every operator
   channel mutation now routes through one canonical audited writer: change ops
   (rename/move/delete/reorder), `set_overwrite`, and `clone` (P0-4 PR 1), plus **ad-hoc

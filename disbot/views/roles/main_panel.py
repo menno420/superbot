@@ -5,7 +5,6 @@ from discord.ext import commands
 
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
-from views.roles._helpers import _ensure_defaults
 
 
 class RoleHubView(BaseView):
@@ -44,9 +43,14 @@ class RoleHubView(BaseView):
                 ephemeral=True,
             )
             return
-        from views.roles.creation_panel import RoleCreateModal
+        from views.roles.creation_panel import RoleCreatePanel
 
-        await interaction.response.send_modal(RoleCreateModal(self.ctx))
+        panel = RoleCreatePanel(self.ctx)
+        await interaction.response.send_message(
+            embed=panel.build_embed(),
+            view=panel,
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="🗂️ Manage", style=discord.ButtonStyle.blurple, row=0)
     async def manage_btn(
@@ -83,7 +87,6 @@ class RoleHubView(BaseView):
             return
         from views.roles.time_roles_panel import TimeRolesPanel
 
-        await _ensure_defaults(interaction.guild)
         panel = TimeRolesPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(

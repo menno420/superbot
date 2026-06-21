@@ -15,7 +15,7 @@ from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.helpers import normalize_name
 from utils.ui_constants import ROLE_COLOR
-from views.roles._helpers import _ensure_defaults, _find_role_normalized, _parse_color
+from views.roles._helpers import _find_role_normalized, _parse_color
 
 logger = logging.getLogger("bot")
 
@@ -95,9 +95,14 @@ class RoleHubPanelView(PersistentView):
                 ephemeral=True,
             )
             return
-        from views.roles.creation_panel import RoleCreateModal
+        from views.roles.creation_panel import RoleCreatePanel
 
-        await interaction.response.send_modal(RoleCreateModal(_CtxAdapter(interaction)))
+        panel = RoleCreatePanel(_CtxAdapter(interaction))
+        await interaction.response.send_message(
+            embed=panel.build_embed(),
+            view=panel,
+            ephemeral=True,
+        )
 
     @discord.ui.button(
         label="🗂️ Manage",
@@ -145,7 +150,6 @@ class RoleHubPanelView(PersistentView):
             return
         from views.roles.time_roles_panel import TimeRolesPanel
 
-        await _ensure_defaults(interaction.guild)
         self.message = interaction.message
         panel = TimeRolesPanel(_CtxAdapter(interaction), parent=self)
         panel.message = interaction.message
@@ -297,7 +301,6 @@ class RoleCog(commands.Cog):
         the guild-wide batch shares logic with
         :meth:`on_member_join`.
         """
-        await _ensure_defaults(guild)
         thresholds = await db.get_role_thresholds(guild.id)
         if not thresholds:
             if ctx:
@@ -687,7 +690,6 @@ class RoleCog(commands.Cog):
     async def on_member_join(self, member: discord.Member) -> None:
         if member.bot:
             return
-        await _ensure_defaults(member.guild)
         thresholds = await db.get_role_thresholds(member.guild.id)
         if not thresholds:
             return
