@@ -372,6 +372,15 @@ Current broad captures:
   actions) pairing distinct action-buttons with command front doors would surface the rest; a lighter
   automatable slice is mining "command not found" misses for high-frequency expected names (BUG-0014
   was one). → relates `cogs/admin_cog.py` · `core/runtime/command_surface_ledger.py`.
+- [`creature-sim-engine-constant-parity-guard-2026-06-21.md`](./creature-sim-engine-constant-parity-guard-2026-06-21.md) —
+  **session idea (2026-06-21, Q-0089, from the creature PvP battle-engine PR #1213):** the combat
+  design constants (rarity budgets, archetype weights, type-chart multipliers, move powers, buff
+  step/cap, level-scaling rates) now live in **both** `tools/game_sim/creature_battle_sim.py` (the
+  balance simulator) and `disbot/utils/creatures/battle.py` (the runtime engine that graduated the
+  math) — a two-sources-of-truth drift class. A small stdlib parity test (`importlib`-loads both,
+  asserts they agree) keeps the sim's "PLAYABLE" verdict honest about the bot players actually play.
+  Self-merge lane; disposable once the sim is retired. → relates `tests/unit/tools/` ·
+  `tests/unit/views/test_panel_base_class_allowlist_parity.py` (the same parity-guard shape).
 - [`reference-integrity-invariants-2026-06-16.md`](./reference-integrity-invariants-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the BUG-0014 `!coglist`-loop fix PR #949):** BUG-0014 was a
   dangling reference (a synonym → a command that didn't exist) that failed *silently*. Extract the
