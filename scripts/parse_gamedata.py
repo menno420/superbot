@@ -466,16 +466,21 @@ def _deep_find_number(node: Any, key: str) -> float | None:
     return None
 
 
-def _buff_window(attack: dict) -> tuple[float | None, int | None, bool]:
-    """``(buff_duration_seconds, buff_attack_cap, permanent)`` off a buff attack.
+def _buff_window(
+    attack: dict,
+) -> tuple[float | None, int | None, bool, float | None]:
+    """``(buff_duration_seconds, buff_attack_cap, permanent, rebuff_block_seconds)``.
 
     Permanent Brew (lifespan ``-1`` / maxCount ``9999999``) → ``permanent=True``
     with no numeric duration/cap. The Acidic Mixture Dip lead buff has no
-    ``lifespan`` → cap-only. ``(None, None, False)`` when no applier is present.
+    ``lifespan`` → cap-only (and no ``rebuffBlockTime``). ``rebuff_block`` is the
+    per-target re-buff cooldown (the floor on how soon a tower can be re-buffed);
+    ``None`` when absent or the ``-1`` permanent sentinel. ``(None, None, False,
+    None)`` when no applier is present.
     """
     applier = _buff_applier(attack)
     if applier is None:
-        return None, None, False
+        return None, None, False, None
     permanent = False
     duration: float | None = None
     lifespan = applier.get("lifespan")
@@ -493,7 +498,11 @@ def _buff_window(attack: dict) -> tuple[float | None, int | None, bool]:
             permanent = permanent or duration is None
         elif max_count > 0:
             cap = int(max_count)
-    return duration, cap, permanent
+    rebuff_block: float | None = None
+    rebuff = applier.get("rebuffBlockTime")
+    if isinstance(rebuff, (int, float)) and not isinstance(rebuff, bool) and rebuff > 0:
+        rebuff_block = _num(rebuff)
+    return duration, cap, permanent, rebuff_block
 
 
 def _clean_attack(attack: dict, index: int) -> dict:
@@ -548,13 +557,15 @@ def _clean_attack(attack: dict, index: int) -> dict:
     # Buff-throwing attacks: decode the dual-limit window (time + attack cap) the
     # buff applies to its target, so btd6_buff_uptime can ground an uptime.
     if out["name"] in _BUFF_WINDOW_ATTACK_NAMES:
-        duration, cap, permanent = _buff_window(attack)
+        duration, cap, permanent, rebuff_block = _buff_window(attack)
         if permanent:
             out["buff_permanent"] = True
         if duration is not None:
             out["buff_duration"] = duration
         if cap is not None:
             out["buff_attack_cap"] = cap
+        if rebuff_block is not None:
+            out["buff_rebuff_block"] = rebuff_block
     return out
 
 

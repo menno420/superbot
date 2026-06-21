@@ -5955,7 +5955,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 5,
-          "buff_attack_cap": 25
+          "buff_attack_cap": 25,
+          "buff_rebuff_block": 5
         }
       ],
       "targetTypeFirst": true,
@@ -6083,7 +6084,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 5,
-          "buff_attack_cap": 25
+          "buff_attack_cap": 25,
+          "buff_rebuff_block": 5
         }
       ],
       "targetTypeFirst": true,
@@ -6211,7 +6213,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 5,
-          "buff_attack_cap": 25
+          "buff_attack_cap": 25,
+          "buff_rebuff_block": 5
         }
       ],
       "targetTypeFirst": true,
@@ -6339,7 +6342,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 5,
-          "buff_attack_cap": 25
+          "buff_attack_cap": 25,
+          "buff_rebuff_block": 5
         }
       ],
       "targetTypeFirst": true,
@@ -6468,7 +6472,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 6,
-          "buff_attack_cap": 40
+          "buff_attack_cap": 40,
+          "buff_rebuff_block": 4
         }
       ],
       "targetTypeFirst": true,
@@ -6596,7 +6601,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 12,
-          "buff_attack_cap": 40
+          "buff_attack_cap": 40,
+          "buff_rebuff_block": 5
         }
       ],
       "targetTypeFirst": true,
@@ -6724,7 +6730,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 12,
-          "buff_attack_cap": 40
+          "buff_attack_cap": 40,
+          "buff_rebuff_block": 5
         }
       ],
       "targetTypeFirst": true,
@@ -6852,7 +6859,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 12,
-          "buff_attack_cap": 40
+          "buff_attack_cap": 40,
+          "buff_rebuff_block": 5
         }
       ],
       "targetTypeFirst": true,
@@ -6980,7 +6988,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 12,
-          "buff_attack_cap": 40
+          "buff_attack_cap": 40,
+          "buff_rebuff_block": 5
         }
       ],
       "targetTypeFirst": true,
@@ -7109,7 +7118,8 @@
           "sharedGridRange": 0,
           "filterInvisible": false,
           "buff_duration": 13,
-          "buff_attack_cap": 55
+          "buff_attack_cap": 55,
+          "buff_rebuff_block": 4
         }
       ],
       "targetTypeFirst": true,

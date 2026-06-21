@@ -538,7 +538,7 @@ def _alch_buff_attack(tower_id: str, code: str) -> dict[str, Any] | None:
     return brew or acidic
 
 
-def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
+def buff_uptime(buff_source: str, target: str, targets: int = 1) -> dict[str, Any]:
     """Compute an Alchemist buff's uptime on a target tower — the grounded
     compute behind the ``btd6_buff_uptime`` tool.
 
@@ -546,11 +546,17 @@ def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
     data) with the target's attack speed to report **which limiter binds** (time
     vs attacks) and the resulting uptime. e.g. a 4-0-0 (Stronger Stimulant: 12s
     or 40 attacks, thrown every 8s) on a 5-0-0 Ninja (0.217s) burns the 40-attack
-    cap in ~8.7s, so it is attack-cap-limited. Returns ``found=False`` with an
-    honest note when the buff isn't an Alchemist buff, the buff's
-    duration/attack-cap isn't decoded into the data yet, or the target has no
+    cap in ~8.7s, so it is attack-cap-limited.
+
+    ``targets`` is how many towers in range the one Alchemist is buffing: it
+    round-robins its throws, so a given tower is re-buffed every
+    ``max(targets × throw_cadence, rebuff_block)`` seconds (``rebuff_block`` =
+    the dump's per-target ``rebuffBlockTime`` floor). ``targets=1`` is the
+    single-tower case. Returns ``found=False`` with an honest note when the buff
+    isn't an Alchemist buff, the window isn't decoded, or the target has no
     attack stat — never a fabricated number.
     """
+    targets = max(1, int(targets))
     src = _resolve_stat_target(buff_source)
     if src is None:
         return {
@@ -594,6 +600,7 @@ def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
     duration = attack.get("buff_duration")
     cap = attack.get("buff_attack_cap")
     permanent = bool(attack.get("buff_permanent"))
+    rebuff_block = attack.get("buff_rebuff_block")
 
     tgt = _resolve_stat_target(target)
     if tgt is None:
@@ -626,9 +633,12 @@ def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
         "target_tier_code": tgt_code,
         "target_cooldown_seconds": round(tgt_cd, 4),
         "target_attacks_per_second": round(1.0 / tgt_cd, 3),
+        "targets": targets,
     }
     if isinstance(cadence, (int, float)) and cadence > 0:
         out["throw_cadence_seconds"] = float(cadence)
+    if isinstance(rebuff_block, (int, float)) and rebuff_block > 0:
+        out["rebuff_block_seconds"] = float(rebuff_block)
 
     # Permanent Brew (5-0-0): the buff never expires once applied.
     if permanent:
@@ -680,8 +690,14 @@ def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
     out["effective_window_seconds"] = round(window, 3)
     out["attacks_under_buff"] = int(min(filter(None, [cap, window / tgt_cd])))
 
+    # Re-buff interval for one of the `targets` towers: the alch round-robins its
+    # throws, so each tower's turn comes every `targets × throw_cadence` — but no
+    # faster than the per-target `rebuff_block` floor.
     if isinstance(cadence, (int, float)) and cadence > 0:
-        uptime = min(1.0, window / float(cadence))
+        floor = float(rebuff_block) if isinstance(rebuff_block, (int, float)) else 0.0
+        rebuff_interval = max(float(cadence) * targets, floor)
+        out["rebuff_interval_seconds"] = round(rebuff_interval, 3)
+        uptime = min(1.0, window / rebuff_interval)
         out["uptime"] = round(uptime, 3)
         out["uptime_percent"] = round(uptime * 100.0, 1)
 
@@ -691,13 +707,21 @@ def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
         if limiter == "attacks"
         else f"the {float(duration)}s time limit"
     )
-    uptime_txt = (
-        f" Re-thrown every {float(cadence)}s → {out['uptime_percent']}% uptime"
-        f"{' (continuous)' if out.get('uptime', 0) >= 1.0 else ''}"
-        f" on {tgt_display}."
-        if "uptime_percent" in out
-        else ""
-    )
+    if "uptime_percent" in out:
+        if targets > 1:
+            uptime_txt = (
+                f" Buffing {targets} towers, each gets re-thrown every "
+                f"~{out['rebuff_interval_seconds']}s → {out['uptime_percent']}% "
+                f"uptime per tower."
+            )
+        else:
+            uptime_txt = (
+                f" Re-thrown every {float(cadence)}s → {out['uptime_percent']}% "
+                f"uptime{' (continuous)' if out.get('uptime', 0) >= 1.0 else ''} "
+                f"on {tgt_display}."
+            )
+    else:
+        uptime_txt = ""
     out["note"] = (
         f"{source_label} on {tgt_display}: limited by {limiter_txt}, "
         f"so it lasts ~{round(window, 2)}s per throw and buffs "

@@ -44,11 +44,19 @@ works** (the traps we hit), and what is still un-decoded.
 > applier is **`Add{BerserkerBrew,AcidicMixture}ToProjectileModel`** on the projectile:
 > `lifespan` (**seconds** — `lifespanFrames` is 0/unused; `-1` = Permanent-Brew sentinel; ABSENT on the
 > lead buff = attack-cap-only), nested **`…CheckModel.maxCount`** (cap; `9999999` = permanent sentinel),
-> and `rebuffBlockTime` (per-target re-buff cooldown, 5s @ 4-0-0 — decoded-available, not yet a calc
-> input). The committed `stats/alchemist.json` is **populated** (surgical buff-field overlay, no value
-> churn / no version bump; idempotent — the next `--all` reproduces it), so `btd6_buff_uptime` answers
-> live. The dump is **public + clonable** (`git clone --depth 1 https://github.com/Btd6ModHelper/btd6-game-data`)
-> — there is no "no dump in-repo" excuse; clone it to re-verify.
+> and `rebuffBlockTime` (per-target re-buff cooldown, 5s @ 4-0-0 / 4s @ x-2-x → committed as
+> `buff_rebuff_block`; PR #1251). The committed `stats/alchemist.json` is **populated** (surgical
+> buff-field overlay, no value churn / no version bump; idempotent — the next `--all` reproduces it),
+> so `btd6_buff_uptime` answers live. The dump is **public + clonable**
+> (`git clone --depth 1 https://github.com/Btd6ModHelper/btd6-game-data`) — there is no "no dump
+> in-repo" excuse; clone it to re-verify.
+>
+> **Multi-target (PR #1251):** `btd6_buff_uptime(..., targets=N)` models one alch buffing N towers —
+> it round-robins throws, so a given tower is re-buffed every `max(N × throw_cadence, rebuff_block)`
+> (the `rebuffBlockTime` floor) and per-tower uptime falls ~1/N (4-0-0 on a 5-0-0 Ninja: 100% on one,
+> ~54% split across two). `rebuffBlockTime` rarely binds for a *standalone* alch (cadence 8s/6.4s >
+> block 5s/4s) — it matters under alch attack-speed buffs (Jungle Drums, Overclock) that speed
+> throwing below the floor.
 >
 > **Verified windows (game-data == Bloons-wiki cross-check):** Acidic Mixture Dip 2-0-0
 > = **10 shots** (12 @ 2-2-0); Berserker Brew 3-0-0 = **5s / 25 attacks**, 3-2-0 = 6s/40; Stronger

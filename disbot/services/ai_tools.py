@@ -1666,8 +1666,10 @@ _BTD6_BUFF_UPTIME_SPEC = AIToolSpec(
         "'alchemist 4-0-0', 'Berserker Brew') and target (e.g. 'Grandmaster "
         "Ninja', 'ninja 5-0-0'). Returns which limiter binds (time vs attacks), "
         "the effective window, attacks buffed, and uptime% — the grounded answer; "
-        "do NOT estimate it yourself. Returns found=false with an honest note if "
-        "the buff's duration/cap isn't decoded into the data yet."
+        "do NOT estimate it yourself. Pass targets=N when the one Alchemist is "
+        "buffing N towers in range (it round-robins, so per-tower uptime drops) — "
+        "for 'can one alch keep N towers buffed'. Returns found=false with an "
+        "honest note if the buff's duration/cap isn't decoded into the data yet."
     ),
     parameters={
         "type": "object",
@@ -1686,6 +1688,14 @@ _BTD6_BUFF_UPTIME_SPEC = AIToolSpec(
                     "(e.g. 'Grandmaster Ninja', 'ninja 5-0-0')."
                 ),
             },
+            "targets": {
+                "type": "integer",
+                "minimum": 1,
+                "description": (
+                    "How many towers in range the one Alchemist is buffing "
+                    "(default 1). The alch round-robins its throws across them."
+                ),
+            },
         },
         "required": ["buff_source", "target"],
         "additionalProperties": False,
@@ -1701,7 +1711,12 @@ async def _btd6_buff_uptime(arguments: dict[str, Any]) -> dict[str, Any]:
     target = str(arguments.get("target") or "").strip()
     if not buff_source or not target:
         return {"found": False, "note": "both buff_source and target are required"}
-    return btd6_upgrade_detail_service.buff_uptime(buff_source, target)
+    raw_targets = arguments.get("targets", 1)
+    try:
+        targets = max(1, int(raw_targets))
+    except (TypeError, ValueError):
+        targets = 1
+    return btd6_upgrade_detail_service.buff_uptime(buff_source, target, targets=targets)
 
 
 # --- btd6_paragon_calculate --------------------------------------------------

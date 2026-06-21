@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T18:11:06Z",
+    "generated_at": "2026-06-21T20:00:49Z",
     "build": {
-      "commit": "2e5955c0",
-      "subject": "session: open temproles member-view PR (born-red card)",
-      "committed_at": "2026-06-21T18:07:30Z",
-      "branch": "claude/funny-franklin-8ha49t"
+      "commit": "a8efae4d",
+      "subject": "Reaction roles: auto-heal dead bindings on the reaction listener path (#1250)",
+      "committed_at": "2026-06-21T20:00:11Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 37,
@@ -2128,9 +2128,9 @@
       "file": "2026-06-21-temproles-member-view.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — `!temproles` member-facing temp-role listing",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-site-field-level-redaction-contract.md",
@@ -2138,6 +2138,14 @@
       "title": "2026-06-21 — site.json field-level redaction contract",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-role-presets-and-management-ux.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Role presets + role-management UX overhaul",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2155,6 +2163,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-reaction-roles-self-heal.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction roles: listener self-heal for dead bindings",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-reaction-roles-presentation-editing.md",
@@ -2197,9 +2213,33 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-reaction-roles-message-picker.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction roles: message picker (no more copy-paste message ID)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-reaction-roles-gradient-presets.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction roles: gradient presets gallery",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-reaction-roles-decisions-locked.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Reaction-roles plan: owner decisions locked + analytics added",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-reaction-roles-cleanup-dead-bindings.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction roles: clean up dead bindings",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -2253,6 +2293,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-merge-equals-deploy-clarity.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — \"Merge = deploy\" clarity (kill the \"restart is yours\" misinformation)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-lane-overlap-claim-scan.md",
       "date": "2026-06-21",
       "title": "Session — check_lane_overlap.py gains an active-work.md claim-ledger scan",
@@ -2288,6 +2336,14 @@
       "file": "2026-06-21-creature-pvp-battle-flow.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-creature-leaderboard-provider.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature collector leaderboard provider (central hub integration)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -2331,6 +2387,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-btd6-buff-uptime-verify-and-populate.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6 buff-uptime: verify binding against the real dump + populate data",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-allow-force-with-lease.md",
@@ -2531,70 +2595,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-conflict-guard-deterministic-fix.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — pr-conflict-guard: deterministic merge test (fix the \"only occasionally red\" flake)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-claude-md-pointer-pinning.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Pin the always-loaded instruction core against pointer rot",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-ci-trigger-gotcha-journal.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — capture the \"pushes don't re-fire PR CI\" env gotcha (journal Quick-ref)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-character-image-and-back-buttons.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — `!character` paper-doll + back-button dead-ends",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-bug0019-everyone-false-ping-hardening.md",
-      "date": "2026-06-20",
-      "title": "Session — funny-franklin · BUG-0019 #2 false-personal-ping hardening",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-botsite-react-migration-plan.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Plan: make the live bot-site the React design-system app (no porting)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-back-button-linter-add-item-detection.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — back_button linter: catch dynamically-built (add_item) hubs",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-arch-ratchet-cog-layer.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Extend the `baseview_inheritance` arch ratchet to the cog layer",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
