@@ -95,6 +95,17 @@ the *primary* sustainability lever, not a fallback:
    **code maturity, not licensing**: the road to recommend-able reuse is the ongoing repo-organization
    work (architecture atlas · consistency linter · the repo-structure-improvement plan) maturing — not
    a license or policy change. No "self-host / quickstart" docs until the structure settles.
+
+   **License posture revisited (owner, 2026-06-21, later same session) — STAY MIT FOR NOW.** The owner
+   weighed adding a *"reuse only if the derivative stays 100% free to use"* restriction — a
+   mission-protective **"keep-it-free"** rule so nobody can paywall a fork. After reviewing the
+   trade-off (it moves SuperBot **off MIT and off formal open-source** into source-available/
+   free-use-only; it can't be appended to MIT, whose grant is "without restriction"; it would need a
+   coherent standard like **PolyForm Noncommercial** or a custom clause), he chose to **stay MIT for
+   now** — keeping open-source status + maximum reusability, and accepting that a derivative *could* in
+   theory be paid. **Revisit trigger:** reconsider a free-use-only license only if a paid derivative
+   actually appears. (Copies already taken under MIT stay MIT; any relicense binds only future
+   versions.)
 2. **Enforcement tooling.** Should a disposable lint (**Q-0105**) flag any new
    "premium/paywall/paid-tier-gate" language creeping into docs or code? The Q-0039 CI invariant
    already guards the *economy* (no supporter predicate in odds/reward/cooldown/fee paths); a
