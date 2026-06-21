@@ -42,6 +42,7 @@ _EXPECTED_BTD6_GROUNDING = {
     "btd6_bloon_filter",
     "btd6_cumulative_cost",
     "btd6_power_effect",
+    "btd6_buff_uptime",
     "btd6_paragon_calculate",
     "btd6_paragon_requirements",
     "btd6_paragon_stats_at_degree",

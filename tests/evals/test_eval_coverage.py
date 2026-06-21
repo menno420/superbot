@@ -83,8 +83,9 @@ _ACK_UNCOVERED_TASKS = frozenset(
 # 20 → 27: the 5 server-introspection tools + get_ai_policy_explanation +
 # diagnostics_health_snapshot — the whole non-BTD6 uncovered surface, 2026-06-15.
 # 27 → 34: the final 7 specialized BTD6 lookups — FULL tool-surface coverage,
-# 2026-06-15. The floor now equals the catalogue size: every tool stays covered.)
-_TOOL_COVERAGE_FLOOR = 34
+# 2026-06-15. The floor now equals the catalogue size: every tool stays covered.
+# 34 → 35: btd6_buff_uptime (Alchemist buff-uptime calculator), 2026-06-21.)
+_TOOL_COVERAGE_FLOOR = 35
 _TASK_COVERAGE_FLOOR = 2
 
 

@@ -1651,6 +1651,59 @@ async def _btd6_power_effect(arguments: dict[str, Any]) -> dict[str, Any]:
     return btd6_upgrade_detail_service.power_effect(power, tower)
 
 
+# --- btd6_buff_uptime --------------------------------------------------------
+
+_BTD6_BUFF_UPTIME_SPEC = AIToolSpec(
+    name="btd6_buff_uptime",
+    description=(
+        "Compute an Alchemist buff's UPTIME on a specific tower. Use for 'what's "
+        "the uptime of a <alch tier> buff on <tower>', 'can a <alch> keep <tower> "
+        "buffed', 'does <tower> attack fast enough to drain the brew'. The buff "
+        "(Berserker Brew / Stronger Stimulant, or the Acidic Mixture Dip lead "
+        "buff) is dual-limited — it ends at the earlier of a time window OR a "
+        "number of the buffed tower's attacks — so a fast tower can hit the "
+        "attack cap before the timer. Pass buff_source (e.g. 'Stronger Stimulant', "
+        "'alchemist 4-0-0', 'Berserker Brew') and target (e.g. 'Grandmaster "
+        "Ninja', 'ninja 5-0-0'). Returns which limiter binds (time vs attacks), "
+        "the effective window, attacks buffed, and uptime% — the grounded answer; "
+        "do NOT estimate it yourself. Returns found=false with an honest note if "
+        "the buff's duration/cap isn't decoded into the data yet."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "buff_source": {
+                "type": "string",
+                "description": (
+                    "Alchemist upgrade/tier applying the buff "
+                    "(e.g. 'Stronger Stimulant', 'alchemist 4-0-0')."
+                ),
+            },
+            "target": {
+                "type": "string",
+                "description": (
+                    "Tower/upgrade receiving the buff "
+                    "(e.g. 'Grandmaster Ninja', 'ninja 5-0-0')."
+                ),
+            },
+        },
+        "required": ["buff_source", "target"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_buff_uptime(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_upgrade_detail_service
+
+    buff_source = str(arguments.get("buff_source") or "").strip()
+    target = str(arguments.get("target") or "").strip()
+    if not buff_source or not target:
+        return {"found": False, "note": "both buff_source and target are required"}
+    return btd6_upgrade_detail_service.buff_uptime(buff_source, target)
+
+
 # --- btd6_paragon_calculate --------------------------------------------------
 
 _PARAGON_CALCULATE_SPEC = AIToolSpec(
@@ -2355,6 +2408,7 @@ _ALL_TOOL_SPECS: tuple[AIToolSpec, ...] = (
     _BTD6_BLOON_FILTER_SPEC,
     _BTD6_CUMULATIVE_COST_SPEC,
     _BTD6_POWER_EFFECT_SPEC,
+    _BTD6_BUFF_UPTIME_SPEC,
     _PARAGON_CALCULATE_SPEC,
     _PARAGON_REQUIREMENTS_SPEC,
     _BTD6_PARAGON_STATS_AT_DEGREE_SPEC,
@@ -2455,6 +2509,7 @@ def build_registry(
         (_BTD6_BLOON_FILTER_SPEC, _btd6_bloon_filter),
         (_BTD6_CUMULATIVE_COST_SPEC, _btd6_cumulative_cost),
         (_BTD6_POWER_EFFECT_SPEC, _btd6_power_effect),
+        (_BTD6_BUFF_UPTIME_SPEC, _btd6_buff_uptime),
         (_PARAGON_CALCULATE_SPEC, _paragon_calculate),
         (_PARAGON_REQUIREMENTS_SPEC, _paragon_requirements),
         (_BTD6_PARAGON_STATS_AT_DEGREE_SPEC, _btd6_paragon_stats_at_degree),

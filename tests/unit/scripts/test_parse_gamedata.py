@@ -2855,3 +2855,62 @@ def test_farm_income_extraction(mod, tmp_path):
     assert tier["bananaSalvageValue"] == 0.5
     assert tier["bananaBonusMultiplier"] == 0.25
     assert tier["bankCapacity"] == 7000 and tier["bankInterest"] == 0.15
+
+
+# --- buff window (Alchemist-style dual limit: time OR attack cap) ------------
+
+
+def _buff_projectile(*, frames=None, seconds=None, cap=None) -> dict:
+    """A buff-applying projectile: a Travel model (flight-time ``lifespan`` that
+    must be IGNORED) + a buff behavior carrying the window fields the decoder reads."""
+    buff: dict = {"$type": _t("AddBehaviorToTowerModel"), "name": "BuffModel_"}
+    if frames is not None:
+        buff["lifespanFrames"] = frames
+    if seconds is not None:
+        buff["buffTime"] = seconds
+    if cap is not None:
+        buff["attackCap"] = cap
+    return {
+        "$type": _t("ProjectileModel"),
+        "id": "Projectile",
+        "name": "ProjectileModel_Projectile",
+        "pierce": 1.0,
+        "behaviors": [
+            {"$type": _t("TravelStraitModel"), "speed": 300.0, "lifespan": 0.6},
+            buff,
+        ],
+    }
+
+
+def test_buff_window_decodes_frames_and_attack_cap(mod):
+    # Stronger Stimulant shape: 720 frames (=12 s) OR 40 attacks. The projectile's
+    # travel lifespan (0.6 s flight time) must NOT be mistaken for the buff window.
+    attack = _attack(_buff_projectile(frames=720, cap=40), name="BeserkerBrewAttack")
+    out = mod._clean_attack(attack, 0)
+    assert out["name"] == "BeserkerBrewAttack"
+    assert out["buff_duration"] == 12.0
+    assert out["buff_attack_cap"] == 40
+
+
+def test_buff_window_accepts_seconds_fields(mod):
+    attack = _attack(_buff_projectile(seconds=5.0, cap=25), name="AcidicMixture")
+    out = mod._clean_attack(attack, 0)
+    assert out["buff_duration"] == 5.0
+    assert out["buff_attack_cap"] == 25
+
+
+def test_buff_window_negative_duration_is_permanent(mod):
+    # Permanent Brew sentinel: a negative lifespan means "never expires".
+    attack = _attack(_buff_projectile(frames=-1), name="BeserkerBrewAttack")
+    out = mod._clean_attack(attack, 0)
+    assert out.get("buff_permanent") is True
+    assert "buff_duration" not in out
+
+
+def test_buff_window_only_decoded_for_buff_attacks(mod):
+    # An ordinary attack with the same fields present must NOT gain buff_* keys —
+    # the decode is scoped to the named buff-throwing attacks.
+    attack = _attack(_buff_projectile(frames=720, cap=40), name="Attack")
+    out = mod._clean_attack(attack, 0)
+    assert "buff_duration" not in out
+    assert "buff_attack_cap" not in out

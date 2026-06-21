@@ -395,6 +395,107 @@ def _eject(weapon: dict) -> str | None:
     return ", ".join(str(_num(p if p is not None else 0)) for p in parts)
 
 
+# --- Alchemist-style buff window (dual limit: time OR attack count) ----------
+# A buff-throwing attack (Berserker Brew / Stronger Stimulant, Acidic Mixture
+# Dip) applies a buff that ends at the earlier of a time window OR a number of
+# the buffed tower's attacks. The weapon ``rate`` (re-buff cadence) is already
+# emitted; this decodes the *window* (``buff_duration`` seconds + ``buff_attack_cap``)
+# off the buff-applying projectile so ``btd6_buff_uptime`` can ground an uptime.
+#
+# UNVERIFIED — Q-0105 reliability note (2026-06-21): the exact buff-applying
+# model class + field names are not confirmable without a live dump in-repo, so
+# the field names below are a documented *candidate set* spanning the dump's known
+# conventions (frame counts ÷60 → seconds, like ``_BUFF_FRAME_FIELDS``). The
+# decode LOGIC is fixture-tested; the live BINDING is confirmed on the next
+# ``--all`` run via ``--audit`` against the verified wiki windows (Berserker Brew
+# 3-0-0 = 5 s / 25 attacks, Stronger Stimulant 4-0-0 = 12 s / 40, Acidic Mixture
+# Dip 2-0-0 = 10 shots). If a name here never matches a real dump, delete it.
+_BUFF_WINDOW_ATTACK_NAMES: frozenset[str] = frozenset(
+    {"BeserkerBrewAttack", "AcidicMixture"},
+)
+_BUFF_DURATION_FRAME_FIELDS: tuple[str, ...] = (
+    "lifespanFrames",
+    "buffTimeFrames",
+    "durationFrames",
+)
+_BUFF_DURATION_SECOND_FIELDS: tuple[str, ...] = ("buffTime", "buffLifespan", "duration")
+_BUFF_ATTACK_CAP_FIELDS: tuple[str, ...] = (
+    "attackCap",
+    "attacksToExpire",
+    "numberOfAttacks",
+    "attackLimit",
+    "numUses",
+    "maxUses",
+    "usesToExpire",
+)
+
+
+def _iter_buff_behaviors(attack: dict):
+    """Yield raw behavior dicts from a buff-throwing attack's projectile tree.
+
+    Excludes ``Travel*Model`` behaviors — their ``lifespan`` is the projectile's
+    flight time (~0.6 s), NOT the buff window, and would be a false positive.
+    """
+    stack: list[dict] = []
+    for w in attack.get("weapons", []) or []:
+        if isinstance(w, dict) and isinstance(w.get("projectile"), dict):
+            stack.append(w["projectile"])
+    seen = 0
+    while stack and seen < 200:
+        node = stack.pop()
+        seen += 1
+        if not isinstance(node, dict):
+            continue
+        for b in node.get("behaviors", []) or []:
+            if not isinstance(b, dict):
+                continue
+            if _short_type(b).startswith("Travel"):
+                continue
+            yield b
+            for child in _spawned_projectiles(b):
+                if isinstance(child, dict):
+                    stack.append(child)
+
+
+def _buff_window(attack: dict) -> tuple[float | None, int | None, bool]:
+    """``(buff_duration_seconds, buff_attack_cap, permanent)`` off a buff attack.
+
+    A negative duration is the dump's "never expires" sentinel (Permanent Brew) →
+    ``permanent=True`` with no numeric duration. Returns ``(None, None, False)``
+    when no candidate field matches (so the window simply stays undecoded — never
+    a fabricated number).
+    """
+    duration: float | None = None
+    cap: int | None = None
+    permanent = False
+    for b in _iter_buff_behaviors(attack):
+        if duration is None and not permanent:
+            for f in _BUFF_DURATION_FRAME_FIELDS:
+                v = b.get(f)
+                if isinstance(v, (int, float)) and not isinstance(v, bool):
+                    if v < 0:
+                        permanent = True
+                    else:
+                        duration = _num(v / 60.0)
+                    break
+        if duration is None and not permanent:
+            for f in _BUFF_DURATION_SECOND_FIELDS:
+                v = b.get(f)
+                if isinstance(v, (int, float)) and not isinstance(v, bool):
+                    if v < 0:
+                        permanent = True
+                    else:
+                        duration = _num(v)
+                    break
+        if cap is None:
+            for f in _BUFF_ATTACK_CAP_FIELDS:
+                v = b.get(f)
+                if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0:
+                    cap = int(v)
+                    break
+    return duration, cap, permanent
+
+
 def _clean_attack(attack: dict, index: int) -> dict:
     """A raw ``AttackModel`` → cleaned attack node (one entry per weapon's projectile)."""
     out: dict = {"name": _clean_name(attack.get("name"), f"Attack {index + 1}")}
@@ -444,6 +545,16 @@ def _clean_attack(attack: dict, index: int) -> dict:
     out["sharedGridRange"] = _num(attack.get("sharedGridRange", 0))
     # The wiki surfaces an attack-level camo flag = any projectile can see camo.
     out["filterInvisible"] = any(p.get("filterInvisible") for p in out["projectiles"])
+    # Buff-throwing attacks: decode the dual-limit window (time + attack cap) the
+    # buff applies to its target, so btd6_buff_uptime can ground an uptime.
+    if out["name"] in _BUFF_WINDOW_ATTACK_NAMES:
+        duration, cap, permanent = _buff_window(attack)
+        if permanent:
+            out["buff_permanent"] = True
+        if duration is not None:
+            out["buff_duration"] = duration
+        if cap is not None:
+            out["buff_attack_cap"] = cap
     return out
 
 
