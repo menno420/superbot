@@ -2899,6 +2899,7 @@ def test_buff_window_decodes_seconds_and_nested_cap(mod):
     assert out["name"] == "BeserkerBrewAttack"
     assert out["buff_duration"] == 12.0
     assert out["buff_attack_cap"] == 40
+    assert out["buff_rebuff_block"] == 5.0  # rebuffBlockTime (per-target floor)
 
 
 def test_buff_window_lead_buff_is_cap_only(mod):

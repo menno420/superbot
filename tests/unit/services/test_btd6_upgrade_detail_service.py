@@ -710,3 +710,30 @@ def test_buff_uptime_real_data_lead_buff_is_cap_limited():
     assert res["buff_attack_cap"] == 10
     assert res["limiter"] == "attacks"
     assert "buff_duration_seconds" not in res  # lead buff has no time window
+
+
+def test_buff_uptime_real_data_surfaces_rebuff_block():
+    # rebuffBlockTime is decoded from the dump (5s @ 4-0-0).
+    res = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0")
+    assert res["rebuff_block_seconds"] == 5.0
+    assert res["targets"] == 1
+
+
+def test_buff_uptime_multi_target_drops_per_tower_uptime():
+    # One alch buffing N towers round-robins its throws, so per-tower uptime falls
+    # ~1/N: 4-0-0 on a 5-0-0 Ninja is 100% on one tower but ~54% split across two.
+    one = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", targets=1)
+    two = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", targets=2)
+    assert one["uptime_percent"] == 100.0
+    assert two["targets"] == 2
+    assert two["rebuff_interval_seconds"] == 16.0  # max(2 × 8s, 5s floor)
+    assert 50.0 <= two["uptime_percent"] <= 60.0
+    assert two["uptime_percent"] < one["uptime_percent"]
+    assert "2 towers" in two["note"]
+
+
+def test_buff_uptime_targets_floor_is_at_least_one():
+    # A nonsensical targets=0 is clamped to 1 (no divide-by-zero, no 0-target math).
+    res = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", targets=0)
+    assert res["targets"] == 1
+    assert res["uptime_percent"] == 100.0
