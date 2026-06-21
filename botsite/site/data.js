@@ -997,6 +997,21 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "cbattle",
+    "area": "other",
+    "status": "finished",
+    "summary": "Challenge another member to a level-normalized creature PvP battle.",
+    "description": "Challenge another member to a level-normalized creature PvP battle.",
+    "usage": "!cbattle",
+    "aliases": [
+      "creaturebattle"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "chain",
     "area": "games",
     "status": "finished",
@@ -5661,7 +5676,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "36f51595",
+    "build": "f25356b9",
     "title": "New public bot website",
     "changes": [
       {
@@ -5673,7 +5688,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "36f51595",
+    "build": "f25356b9",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5685,7 +5700,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "36f51595",
+    "build": "f25356b9",
     "title": "Command-alias suggestions",
     "changes": [
       {

@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T15:19:50Z",
+    "generated_at": "2026-06-21T15:38:23Z",
     "build": {
-      "commit": "36f51595",
-      "subject": "Merge pull request #1231 from menno420/claude/zen-dirac-wnhwhg",
-      "committed_at": "2026-06-21T17:09:35Z",
-      "branch": "claude/reconcile-1232"
+      "commit": "f25356b9",
+      "subject": "feat(creatures): user-facing PvP battle flow + extension-integrity guard",
+      "committed_at": "2026-06-21T15:38:10Z",
+      "branch": "HEAD"
     }
   },
   "counts": {
-    "commands": 312,
+    "commands": 313,
     "features": 37,
     "games": 9
   },
@@ -5948,6 +5948,22 @@
       "permissions": "",
       "usage": "Cache state: F-1 guild_config + governance.cache.",
       "description": "Cache state: F-1 guild_config + governance.cache.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "cbattle",
+      "aliases": [
+        "creaturebattle"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Challenge another member to a level-normalized creature PvP battle.",
+      "description": "Challenge another member to a level-normalized creature PvP battle.",
       "use_cases": null,
       "examples": [],
       "status": "finished",
