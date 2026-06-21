@@ -70,13 +70,26 @@ jobs:
           set -uo pipefail
           # export_dashboard_data.py is stdlib-only by design — no pip install needed.
           python3.10 scripts/export_dashboard_data.py
+          BRANCH=bot/dashboard-refresh
           if git diff --quiet -- dashboard/data/dashboard.json; then
-            echo "dashboard.json already fresh — nothing to do."
+            echo "dashboard.json already fresh — nothing to refresh."
+            # SELF-HEAL: if a refresh PR is still open here, it is STALE/redundant — main already has
+            # the fresh data, so the open PR can only be an older regeneration that may now conflict
+            # with main (the #1261 class: a stranded, conflicting bot PR that nothing ever closes,
+            # because the old logic just `exit 0`'d here). Close it + delete the branch so it cannot
+            # rot red. A future real drift reopens a clean one. (generated_at is now deterministic,
+            # so "no diff" reliably means "truly fresh", not "only the wall-clock changed".)
+            stale="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' || true)"
+            if [ -n "$stale" ]; then
+              gh pr close "$stale" --repo "$GITHUB_REPOSITORY" --delete-branch \
+                --comment "Auto-closed: main already has the fresh dashboard data, so this refresh PR is redundant (and a stale base risks a false conflict). A new PR opens automatically on the next real drift." \
+                && echo "Closed stale refresh PR #$stale (main already fresh)." \
+                || echo "::warning::Could not close stale refresh PR #$stale."
+            fi
             exit 0
           fi
           echo "dashboard.json drifted — landing a refresh via an auto-merging PR."
 
-          BRANCH=bot/dashboard-refresh
           git config user.name "superbot-dashboard-bot"
           git config user.email "noreply@github.com"
           # Build the branch as current main + ONLY the regenerated JSON.

@@ -25,11 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/modest-gates-0ble76` · **PR-mergeability: trust the git check, not GitHub `mergeable_state`**
-  (owner-directed — the #1256 false-dirty finding) — `scripts/check_pr_mergeable.py` (git-based, reuses
-  `git_merge_state.py`) + journal note + tighten `pr-conflict-guard` schedule backstop ·
-  `scripts/check_pr_mergeable.py` / `.session-journal.md` / `.github/workflows/pr-conflict-guard.yml`
-  · 2026-06-21 · **PR #1260 (reopened to land — auto-merge on green)**
+- `claude/modest-gates-0ble76` · **dashboard auto-PR conflict root cause** (owner-directed autonomous) —
+  fix the volatile-metadata anti-pattern behind #1261's real conflict: deterministic `generated_at` +
+  refresh-workflow self-heal + pr-auto-update header fix + findings doc · `scripts/export_dashboard_data.py`
+  / `.github/workflows/dashboard-data-refresh.yml` / `.github/workflows/pr-auto-update.yml` / `docs/audits/`
+  · 2026-06-21 · **PR (this session, auto-merge on green)**
 
 - `claude/peaceful-mayer-rgc20t` · **BTD6 same-version data-drift reminder** (completes #1255) — sha-based `content_drift()` surfaced at boot + `!btd6 status` so a same-version data edit reminds the operator to `seed-data` (warn-only, honors strict Q-0077(b)) · `btd6_data_service` / `btd6_cog` / `cogs/btd6/_embeds` · 2026-06-21 · **PR #1258 (auto-merge on green)**
 - `claude/peaceful-mayer-rgc20t` · **BTD6 seed-data changed-file report** (completes #1258) — `!btd6ops seed-data` receipt names the files the seed applied (reuses `content_drift()`) · `disbot/cogs/btd6_ops_cog.py` · 2026-06-21 · **PR #1263 (auto-merge on green)**

@@ -27,7 +27,7 @@ def mod():
     return module
 
 
-SAMPLE_REGISTRY = '''
+SAMPLE_REGISTRY = """
 from utils.ui_constants import ADMIN_COLOR
 
 SUBSYSTEMS: dict[str, dict] = {
@@ -43,7 +43,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "capabilities": ["admin.cog.load"],
     },
 }
-'''
+"""
 
 SAMPLE_BUGS = """# Bug book
 
@@ -118,10 +118,26 @@ def test_build_data_includes_build_meta(mod):
     build = data["meta"]["build"]
     assert isinstance(build, dict)
     if build:  # present when run inside the git checkout (always, in CI)
-        assert set(build) == {"commit", "subject", "committed_at", "branch"}
+        # `branch` is deliberately excluded — transient generator-host junk + a conflict source
+        # (the #1261 root cause). See _git_meta.
+        assert set(build) == {"commit", "subject", "committed_at"}
         assert all(isinstance(v, str) and v for v in build.values())
     # A path with no git history must not crash the export.
     assert mod._git_meta(mod.Path("/nonexistent-not-a-repo")) == {}
+
+
+def test_generated_at_is_deterministic_not_wall_clock(mod):
+    # `generated_at` must be the latest-commit time, NOT wall-clock — so two regenerations at the
+    # same commit are byte-identical. A wall-clock value churned a refresh PR every run and
+    # guaranteed a merge conflict whenever two branches regenerated the file (#1261 root cause).
+    a = mod.build_data()["meta"]["generated_at"]
+    b = mod.build_data()["meta"]["generated_at"]
+    assert (
+        a == b
+    ), "generated_at changed between runs at the same commit (not deterministic)"
+    build = mod.build_data()["meta"]["build"]
+    if build:  # in the git checkout, generated_at anchors to the commit's committed_at
+        assert a == build["committed_at"]
 
 
 def test_build_data_includes_env_usage_section(mod):
@@ -301,7 +317,10 @@ def test_command_description_first_paragraph_and_sphinx_strip(mod):
         "PR E1 — implementation note that must NOT appear in the first paragraph.\n"
     )
     desc = mod._command_description(doc)
-    assert desc == "Open the access explorer for the invoker. It is read-only and ephemeral."
+    assert (
+        desc
+        == "Open the access explorer for the invoker. It is read-only and ephemeral."
+    )
     # Sphinx cross-reference roles are reduced to their human label.
     assert mod._command_description("Open :class:`AccessExplorerView` now.") == (
         "Open AccessExplorerView now."
@@ -326,7 +345,11 @@ def test_command_examples_only_backticked_bang_invocations(mod):
 def test_subsystem_open_work_links_ideas_title_and_status_only(mod):
     catalogue = [{"key": "mining"}, {"key": "welcome"}, {"key": "admin"}]
     ideas = [
-        {"file": "mining-roadmap-2026-06-16.md", "title": "Mining roadmap", "status": "ideas"},
+        {
+            "file": "mining-roadmap-2026-06-16.md",
+            "title": "Mining roadmap",
+            "status": "ideas",
+        },
         # historical/closed ideas must NOT count as open work.
         {"file": "old-mining-thing.md", "title": "Old mining", "status": "historical"},
         {"file": "welcome-feeds.md", "title": "Welcome feeds", "status": "planned"},
@@ -437,7 +460,9 @@ def test_site_subset_command_enrichment_shapes_are_honest(mod):
             assert set(idea) == {"title", "status"}
     # The real repo has at least some enrichment (proves the wiring is live, not inert).
     assert any(c["examples"] for c in cmds), "expected some commands to expose examples"
-    assert any(c["description"] for c in cmds), "expected some commands to have a description"
+    assert any(
+        c["description"] for c in cmds
+    ), "expected some commands to have a description"
     assert any(
         c["status"] == mod.COMMAND_STATUS_IN_PROGRESS for c in cmds
     ), "expected some commands flagged in-progress by linked open work"
@@ -516,7 +541,7 @@ def test_committed_site_json_matches_a_fresh_build(mod):
     # (BUG-0018) — re-exporting on every idea-doc PR is the trap this avoids; the
     # freshness umbrella covers their identity warn-only.
     assert _stable_commands(committed["commands"]) == _stable_commands(
-        fresh["commands"]
+        fresh["commands"],
     ), "commands drifted (stable fields) — re-export"
 
 
@@ -538,7 +563,9 @@ def test_cli_targets_site_writes_only_site_json(mod, tmp_path):
     )
     assert rc == 0
     assert site.exists()
-    assert data_js.exists()  # the SPA layer is written alongside, to the redirected path
+    assert (
+        data_js.exists()
+    )  # the SPA layer is written alongside, to the redirected path
     assert not dash.exists()  # --targets site must not write the dashboard payload
 
 
@@ -547,7 +574,14 @@ def test_cli_targets_both_writes_both(mod, tmp_path):
     site = tmp_path / "site.json"
     data_js = tmp_path / "data.js"
     rc = mod.main(
-        ["--output", str(dash), "--site-output", str(site), "--data-js-output", str(data_js)],
+        [
+            "--output",
+            str(dash),
+            "--site-output",
+            str(site),
+            "--data-js-output",
+            str(data_js),
+        ],
     )
     assert rc == 0
     assert dash.exists() and site.exists()
@@ -560,7 +594,8 @@ def test_cli_targets_both_writes_both(mod, tmp_path):
 def test_cli_does_not_clobber_tracked_data_js_when_redirected(mod, tmp_path):
     """BUG-0022 guard: driving ``main()`` with redirected outputs must NOT touch the
     real tracked ``botsite/site/data.js`` — the live-HEAD build sha would desync it
-    from the committed site.json and redden botsite-tests for an unrelated commit."""
+    from the committed site.json and redden botsite-tests for an unrelated commit.
+    """
     tracked = mod.DATA_JS_OUTPUT_FILE
     before = tracked.read_text(encoding="utf-8") if tracked.exists() else None
     rc = mod.main(
@@ -577,4 +612,6 @@ def test_cli_does_not_clobber_tracked_data_js_when_redirected(mod, tmp_path):
     )
     assert rc == 0
     after = tracked.read_text(encoding="utf-8") if tracked.exists() else None
-    assert after == before, "main() with redirected outputs must not rewrite the tracked data.js"
+    assert (
+        after == before
+    ), "main() with redirected outputs must not rewrite the tracked data.js"
