@@ -153,7 +153,8 @@ class CreatureCog(commands.Cog):
                 "**`!dex`** — your collection\n"
                 "**`!dextop`** — the server leaderboard\n"
                 "**`!cbattle @member`** — challenge a trainer to a "
-                "level-normalized PvP battle"
+                "level-normalized PvP battle\n"
+                "**`!cbattletop`** — the PvP win ladder"
             ),
             color=INFO_COLOR,
         )

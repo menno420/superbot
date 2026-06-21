@@ -180,3 +180,24 @@ async def test_seed_embed_reports_count(monkeypatch) -> None:
     embed = await btd6_ops_cog._seed_embed()
     assert "42" in (embed.description or "")
     assert "BTD6_DATA_BACKEND" in (embed.description or "")
+
+
+async def test_seed_embed_reports_changed_files(monkeypatch) -> None:
+    # When the store drifted (postgres), the receipt names what the seed applied —
+    # so the operator confirms e.g. a buff fix landed, not just a bare count.
+    from cogs import btd6_ops_cog
+    from services import btd6_data_service
+
+    async def _seed(root=None) -> int:
+        return 64
+
+    monkeypatch.setattr(btd6_data_service, "seed_postgres_from_files", _seed)
+    monkeypatch.setattr(
+        btd6_data_service,
+        "content_drift",
+        lambda: ["stats/alchemist.json", "towers.json"],
+    )
+    embed = await btd6_ops_cog._seed_embed()
+    desc = embed.description or ""
+    assert "2 changed file(s)" in desc
+    assert "alchemist.json" in desc
