@@ -1,7 +1,15 @@
 # Idea — a parity guard tying the creature sim to the runtime battle engine
 
-> **Status:** `ideas` · captured 2026-06-21 (creature PvP battle-engine session, PR #1213).
+> **Status:** `ideas` · captured 2026-06-21 (creature PvP battle-engine session, PR #1213) ·
+> **BUILT 2026-06-21 (PR #1227)** — same dispatch run, after #1213 merged.
 > Not a plan, not approval. Source + binding contracts win.
+
+> **▶ SHIPPED (PR #1227):** `tests/unit/tools/test_creature_sim_engine_parity.py` loads both modules
+> and asserts they agree on every shared design constant (type chart · element cycle · rarity
+> budgets · archetype weights · move powers · buff step/cap · signature move names · level-scaling
+> rates · team size) **plus** a behavioral end-to-end check (the engine derives the same stat line
+> the sim does for the whole catalog). The sim's archetype-weights dict was lifted from a local in
+> `_roster()` to a module constant `ARCHETYPE_WEIGHTS` so it's comparable. This idea is now closed.
 > **Lane:** decided/small — a stdlib parity test, no owner decision needed.
 > **Subsystem:** games (creatures) · tooling.
 
