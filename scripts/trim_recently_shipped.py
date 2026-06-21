@@ -17,7 +17,9 @@ This is the **actuator** complement to that **detector**: given the two files, i
    **oldest (bottom) N** bullets *verbatim* from ``current-state.md`` into the archive's
    ``## Recently shipped — archived`` section (prepended — they are newest in the archive now);
 2. recomputes the **"Older merges (#HIGH … #LOW)"** floor pointer from the **actual** PR-number
-   span of the whole archive after the move, so the pointer can't drift from reality;
+   span of the archive's **bullet headers** after the move, so the pointer can't drift from
+   reality (BUG-0020: it reads only each bullet's leading ``#A · #B …`` cluster, never a stray
+   ``#N`` in prose);
 3. runs **idempotently** and prints a unified-diff dry-run first (``--check``), so a pass previews
    the move before committing it (``--apply``).
 
@@ -119,9 +121,36 @@ def live_entry_count(cs_text: str) -> int:
     )
 
 
+def _archive_span_numbers(archive_text: str) -> set[int]:
+    """PR numbers from archived **bullet headers only** — never free-floating ``#N`` in prose.
+
+    The floor pointer ``(#HIGH … #LOW)`` must reflect the highest/lowest archived *PR bullet*,
+    not a stray reference elsewhere in the archive prose (BUG-0020): the original recompute
+    scanned the whole archive and so picked up a ``band-#1170`` parenthetical note and ``#1``
+    rank notation, writing a wrong span.
+
+    For each bullet header line (``- **#…``) we read only its **leading PR-reference cluster**
+    — the ``#A · #B …`` run before the first ``" ("`` (the date/context paren) or ``"**"`` (the
+    bold close). A grouped non-monotonic band bullet (``#690 · #721``) still contributes its
+    newest member; a ``#1`` rank token or a ``band-#1170`` note in prose does not.
+    """
+    nums: set[int] = set()
+    for ln in archive_text.splitlines():
+        if not _PR_BULLET_RE.match(ln):
+            continue
+        cluster = ln[len("- **") :]  # strip the bullet prefix; now starts at "#…"
+        cut = len(cluster)
+        for marker in (" (", "**"):
+            idx = cluster.find(marker)
+            if idx != -1:
+                cut = min(cut, idx)
+        nums.update(_pr_numbers(cluster[:cut]))
+    return nums
+
+
 def _rewrite_floor(lines: list[str], archive_text: str) -> None:
     """Rewrite the floor pointer's ``(#HIGH … #LOW)`` from the archive's true PR span (in place)."""
-    nums = _pr_numbers(archive_text)
+    nums = _archive_span_numbers(archive_text)
     if not nums:
         return
     span = f"(#{max(nums)} … #{min(nums)})"

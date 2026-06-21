@@ -23,7 +23,30 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
-## BUG-0020 — `trim_recently_shipped.py` floor-pointer recompute matches stray `#N` in prose (writes a wrong "Older merges (#HIGH … #LOW)" span) — OPEN (tooling; symptom hand-corrected)
+## BUG-0021 — `test_acquire_lock_or_exit_exits_zero_after_wait_timeout` is flaky under `pytest -n auto` (real-clock dependent) — OPEN
+
+- **Symptom (observed 2026-06-21, dispatch run, during a `check_quality.py --full` mirror):**
+  `tests/unit/services/test_runtime.py::test_acquire_lock_or_exit_exits_zero_after_wait_timeout`
+  failed once in a parallel (`-n auto`) run, then **passed in isolation** on re-run. A classic
+  real-wall-clock flake, not a logic bug — and not caused by the change under test (a docs/tooling PR).
+- **Expected:** the test is deterministic regardless of host load / parallel scheduling.
+- **Root cause:** the test drives `runtime.acquire_lock_or_exit(boot_wait_seconds=0.05,
+  boot_poll_seconds=0.01)` against the **real** `time.monotonic` clock (deliberately un-mocked — the
+  inline comment says "Use a tiny budget so the test finishes quickly without mocking time.monotonic"),
+  while `asyncio.sleep` is mocked to return instantly. The loop therefore spins doing `try_acquire`
+  calls until 0.05 s of real wall-clock elapses, and asserts `try_acquire.await_count >= 2`. Under
+  CPU starvation (many parallel xdist workers) the process can be scheduled out so that the 0.05 s
+  budget elapses after only **one** attempt → the `>= 2` assertion fails.
+- **Proposed fix (test-only — needs no runtime change):** patch `services.runtime.time.monotonic` with
+  a controlled fake that returns a deterministic increasing sequence (e.g. `0.0, 0.0, 0.06`), so the
+  deadline crosses *after* exactly the intended number of attempts independent of host timing. Mirrors
+  the already-mocked `asyncio.sleep` so the whole loop is clock-controlled.
+- **Stays-fixed guard:** the same test, made deterministic, run under `-n auto` — it can no longer
+  depend on real elapsed time.
+- **Status:** OPEN — captured 2026-06-21; the flake is intermittent and pre-existing, so it does not
+  block unrelated PRs. A good small bugs-first slice for a follow-up dispatch run.
+
+## BUG-0020 — `trim_recently_shipped.py` floor-pointer recompute matches stray `#N` in prose (writes a wrong "Older merges (#HIGH … #LOW)" span) — FIXED
 
 - **Symptom (caught 2026-06-20, seventeenth Q-0107 reconciliation pass, first real use of the actuator):**
   after `scripts/trim_recently_shipped.py --apply` moved the 8 oldest Recently-shipped bullets to the
@@ -43,10 +66,15 @@
   `#N` and asserts the computed span ignores it.
 - **Stays-fixed guard (to ship with the fix):** the `tests/unit/scripts/` case above, failing against the
   current all-`#N`-match behavior.
-- **Status:** OPEN — caught + symptom-corrected by hand this pass (the live `current-state.md` pointer reads
-  `#1129 … #535`); the actuator script itself is unfixed. Q-0105 note: this is the actuator's *first* real
-  outing and it already mis-wrote the one value it exists to keep correct — keep an eye on it; if it proves
-  unreliable across a couple more passes, prefer reverting to the hand-trim over working around it.
+- **Status:** FIXED 2026-06-21 (dispatch run, PR #1206) — root fix: `_rewrite_floor` now derives the span
+  from a new `_archive_span_numbers(archive_text)` helper that reads **only archived bullet headers**
+  (`^- \*\*#…`), taking each bullet's leading `#A · #B …` cluster (the run before the first ` (` date paren
+  or `**` bold close). Grouped non-monotonic bands (`#690 · #721`) still contribute their newest member;
+  free-floating `#N` in prose (a `band-#1170` note, a `#1` rank token) no longer widens the span.
+  Stays-fixed guard: `tests/unit/scripts/test_trim_recently_shipped.py::test_floor_pointer_ignores_stray_pr_refs_in_prose`
+  feeds an archive whose prose carries a stray high (`band-#9999`) + low (`#1`) `#N` and asserts the
+  recomputed span ignores both. The Q-0105 "keep an eye on it" note stands for the *rest* of the actuator,
+  but its one mis-writing failure mode is now closed at the root with a regression test.
 
 ## BUG-0019 — AI replies to messages aimed at *other* bots and claims "you've just pinged me" — PARTIALLY FIXED (mechanism #2 hardened; #1 awaits one owner behavior decision)
 
