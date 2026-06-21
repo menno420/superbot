@@ -25,6 +25,8 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — attack-speed buffs on the alch** (owner-chosen) — `buff_uptime(alch_speed=…)` resolves Jungle Drums/Monkey Boost/Overclock → cooldown multiplier (grounded; no decode needed) → rebuffBlockTime binds · `btd6_upgrade_detail_service` / `ai_tools` · 2026-06-21 · **PR (this session, auto-merge on green)**
+
 - `claude/modest-gates-0ble76` · **PR-mergeability: trust the git check, not GitHub `mergeable_state`**
   (owner-directed — the #1256 false-dirty finding) — `scripts/check_pr_mergeable.py` (git-based, reuses
   `git_merge_state.py`) + journal note + tighten `pr-conflict-guard` schedule backstop ·
