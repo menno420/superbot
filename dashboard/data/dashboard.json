@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T22:36:08Z",
+    "generated_at": "2026-06-22T01:30:23Z",
     "build": {
-      "commit": "0b918dd",
-      "subject": "session(born-red): dashboard auto-PR conflict root cause — card + claim",
-      "committed_at": "2026-06-21T22:36:08Z"
+      "commit": "968d1f19",
+      "subject": "Merge pull request #1268 from menno420/claude/peaceful-mayer-rgc20t",
+      "committed_at": "2026-06-22T01:30:23Z"
     },
     "counts": {
       "functions": 37,
@@ -2391,7 +2391,7 @@
       "file": "2026-06-21-dashboard-autopr-conflict-rootcause.md",
       "date": "2026-06-21",
       "title": "Session — dashboard auto-PR conflict root cause (2026-06-21, autonomous)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
@@ -2524,6 +2524,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-btd6-buff-uptime-alch-speed.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6 buff-uptime: model attack-speed buffs on the Alchemist",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-allow-force-with-lease.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Allow `git push --force-with-lease` + `cd` in permission allowlist",
@@ -2599,14 +2607,6 @@
       "file": "2026-06-20-pr-auto-update-deterministic-fix.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — pr-auto-update: deterministic behind-detection (same async race as the conflict guard)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-poketwo-musicbot-feature-plan.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Pokétwo + MusicBot research report → feature mapping plan",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
