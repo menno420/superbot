@@ -22,14 +22,21 @@
 
 ## How code reaches production
 
+> **Merge = deploy.** Merging a PR to `main` triggers an **immediate Railway auto-deploy** of
+> `worker` — the change is **live within minutes, on its own, with no manual deploy or restart**.
+> The deploy *is* the restart (a fresh container). **Never tell the maintainer to "restart" or
+> "deploy" a merged change to make it take effect** — that just happened automatically. What
+> genuinely stays the maintainer's is **live verification, rollback, and eval walks**, plus any
+> per-PR *data* step a change explicitly names (e.g. `!btd6ops seed-data`, or clicking an
+> operator button to clear stale rows).
+
 - The Railway GitHub integration **auto-builds and deploys `worker` on every push to
   `main`** — each merge commit shows up as a deployment ("Merge pull request #NNN …
   via GitHub" in the dashboard).
-- **Consequence for Q-0084 merge autonomy:** an agent merging a green session PR
-  *is* triggering a production deploy — that has always been true for the
-  maintainer's merges too. "Merge ≠ deploy" in the grant means **restarts, prod
-  verification, rollbacks, and live eval walks stay the maintainer's**, not that
-  merges don't reach prod.
+- **Consequence for merge autonomy (Q-0084):** an agent merging a green session PR
+  *is* shipping to production — true for the maintainer's merges too. It does **not**
+  mean a separate manual deploy/restart is needed; it means **prod verification,
+  rollback, and live eval walks** (not the deploy) stay the maintainer's.
 - **Builder:** [railpack](https://railpack.com) (v0.27.x at write time). It detects
   Python + pip, creates `/app/.venv`, runs `pip install -r requirements.txt`, and
   starts the `worker` command from the **`Procfile`**: `python disbot/bot1.py`.

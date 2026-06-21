@@ -187,11 +187,15 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   the review: open the PR **ready**, do **not** label it `needs-hermes-review` / `do-not-automerge`, and arm
   auto-merge so it lands the instant CI is green. The `needs-hermes-review` carve-out is for *self-initiated*
   substantial/risky runtime work only — the distinction is **who chose the task**, not how big it is.
-  "Merge immediately" means *merge the moment it's mergeable* (still requires CI green), not bypass CI or
-  deploy. **Merge ≠ deploy** — production
-  restart/prod-checks stay the maintainer's. *If you ever merge by hand* (a carve-out, or
-  auto-merge is down): re-verify **CI green on the final head** and **never defer the merge to
-  the maintainer's next message** — that deferral was the #778 root cause.
+  "Merge immediately" means *merge the moment it's mergeable* (still requires CI green), not bypass CI.
+  **Merging IS deploying (owner directive Q-0193, 2026-06-21):** Railway auto-redeploys `worker` on every
+  merge to `main`, so a merged change is **live on its own within minutes** — you neither perform nor wait
+  for a manual deploy, and the deploy *is* the restart. **Never tell the maintainer to "restart" or "deploy"
+  a merge to apply it** (the misinformation this Q corrects). What stays his is **live verification /
+  rollback** + any per-PR *data* step a change names (e.g. `!btd6ops seed-data`, or an operator button to
+  clear stale rows) — not the deploy. Canonical: `docs/operations/production-deployment.md`. *If you ever
+  merge by hand* (a carve-out, or auto-merge is down): re-verify **CI green on the final head** and **never
+  defer the merge to the maintainer's next message** — that deferral was the #778 root cause.
 - **Open your session card born-red as the FIRST commit; flip it green as the LAST (owner
   directive Q-0133, 2026-06-14).** Auto-merge fires the instant **Code Quality** is green, so a
   session that pushes code first and its close-out docs (ledger entry, `.sessions/` log) second
