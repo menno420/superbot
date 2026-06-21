@@ -624,14 +624,27 @@ def test_buff_uptime_permanent_brew_is_full_uptime(monkeypatch):
     assert res["uptime"] == 1.0
 
 
-def test_buff_uptime_honest_when_window_not_decoded():
-    # The live data has no buff window yet: don't fabricate one. Say what IS
-    # known (throw cadence + target attack speed) and name the fix.
+def test_buff_uptime_honest_when_window_not_decoded(monkeypatch):
+    # Defensive: if a buff attack ever lacks a decoded window (cadence known, but
+    # no duration/cap/permanent), don't fabricate — say what IS known (throw
+    # cadence + target attack speed) and never emit an uptime.
+    real = det._alch_buff_attack
+
+    def windowless(tower_id, code):
+        node = real(tower_id, code)
+        if node is None:
+            return None
+        node = dict(node)
+        for k in ("buff_duration", "buff_attack_cap", "buff_permanent"):
+            node.pop(k, None)
+        return node
+
+    monkeypatch.setattr(det, "_alch_buff_attack", windowless)
     res = det.buff_uptime("Stronger Stimulant", "Grandmaster Ninja")
     assert res["found"] is False
     assert res["buff"] == "Berserker Brew"
-    assert "8.0s" in res["note"]  # throw cadence is in the data
-    assert "0.217" in res["note"]  # target attack speed is in the data
+    assert "8.0s" in res["note"]  # throw cadence still surfaced
+    assert "0.217" in res["note"]  # target attack speed still surfaced
     assert "uptime" not in res
 
 
@@ -653,3 +666,47 @@ def test_buff_uptime_tier_without_a_buff_throw_is_honest():
     res = det.buff_uptime("Alchemist", "Dart Monkey")
     assert res["found"] is False
     assert "no buff throw" in res["note"]
+
+
+# --- buff_uptime on the REAL committed data (no injection) -------------------
+# The buff window (duration + attack cap) is now decoded into stats/alchemist.json
+# from the game-data dump, so these resolve end to end without monkeypatching.
+
+
+def test_buff_uptime_real_data_stronger_stimulant_on_ninja():
+    # The owner's live-test question, fully grounded: 4-0-0 = 12s / 40 attacks; a
+    # 5-0-0 Ninja (0.217s) burns the cap in ~8.7s → attack-cap-limited, 100%.
+    res = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0")
+    assert res["found"] is True
+    assert res["buff"] == "Berserker Brew"
+    assert res["buff_duration_seconds"] == 12.0
+    assert res["buff_attack_cap"] == 40
+    assert res["limiter"] == "attacks"
+    assert res["uptime_percent"] == 100.0
+
+
+def test_buff_uptime_real_data_base_brew_is_time_limited_on_ninja():
+    # Base Berserker Brew (3-0-0) = 5s / 25: a Ninja makes only ~23 attacks in 5s,
+    # so TIME binds (not the cap), and thrown every 8s it is NOT continuous.
+    res = det.buff_uptime("alchemist 3-0-0", "ninja 5-0-0")
+    assert res["found"] is True
+    assert res["buff_duration_seconds"] == 5.0
+    assert res["limiter"] == "time"
+    assert res["uptime_percent"] < 100.0
+
+
+def test_buff_uptime_real_data_permanent_brew():
+    res = det.buff_uptime("Permanent Brew", "ninja 5-0-0")
+    assert res["found"] is True
+    assert res["limiter"] == "permanent"
+    assert res["uptime"] == 1.0
+
+
+def test_buff_uptime_real_data_lead_buff_is_cap_limited():
+    # Acidic Mixture Dip = 10 shots, no time limit → cap-limited on any tower.
+    res = det.buff_uptime("Acidic Mixture Dip", "ninja 5-0-0")
+    assert res["found"] is True
+    assert res["buff"] == "Acidic Mixture Dip"
+    assert res["buff_attack_cap"] == 10
+    assert res["limiter"] == "attacks"
+    assert "buff_duration_seconds" not in res  # lead buff has no time window

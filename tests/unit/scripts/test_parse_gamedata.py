@@ -2860,16 +2860,24 @@ def test_farm_income_extraction(mod, tmp_path):
 # --- buff window (Alchemist-style dual limit: time OR attack cap) ------------
 
 
-def _buff_projectile(*, frames=None, seconds=None, cap=None) -> dict:
-    """A buff-applying projectile: a Travel model (flight-time ``lifespan`` that
-    must be IGNORED) + a buff behavior carrying the window fields the decoder reads."""
-    buff: dict = {"$type": _t("AddBehaviorToTowerModel"), "name": "BuffModel_"}
-    if frames is not None:
-        buff["lifespanFrames"] = frames
-    if seconds is not None:
-        buff["buffTime"] = seconds
+def _buff_projectile(*, lifespan=None, cap=None) -> dict:
+    """A buff-applying projectile mirroring the real dump shape: a Travel model
+    (flight-time ``lifespan`` that must be IGNORED) + an ``Add…ToProjectileModel``
+    whose ``lifespan`` is the buff window (seconds) and whose **nested**
+    ``…CheckModel.maxCount`` is the attack cap (verified against Alchemist-400)."""
+    applier: dict = {
+        "$type": _t("AddBerserkerBrewToProjectileModel"),
+        "name": "AddBerserkerBrewToProjectileModel_",
+    }
+    if lifespan is not None:
+        applier["lifespan"] = lifespan
+        applier["lifespanFrames"] = 0  # real dump: frames unused, seconds authoritative
+        applier["rebuffBlockTime"] = 5.0
     if cap is not None:
-        buff["attackCap"] = cap
+        applier["checkModel"] = {
+            "$type": _t("BerserkerBrewCheckModel"),
+            "maxCount": cap,  # nested, NOT on the applier directly
+        }
     return {
         "$type": _t("ProjectileModel"),
         "id": "Projectile",
@@ -2877,40 +2885,43 @@ def _buff_projectile(*, frames=None, seconds=None, cap=None) -> dict:
         "pierce": 1.0,
         "behaviors": [
             {"$type": _t("TravelStraitModel"), "speed": 300.0, "lifespan": 0.6},
-            buff,
+            applier,
         ],
     }
 
 
-def test_buff_window_decodes_frames_and_attack_cap(mod):
-    # Stronger Stimulant shape: 720 frames (=12 s) OR 40 attacks. The projectile's
-    # travel lifespan (0.6 s flight time) must NOT be mistaken for the buff window.
-    attack = _attack(_buff_projectile(frames=720, cap=40), name="BeserkerBrewAttack")
+def test_buff_window_decodes_seconds_and_nested_cap(mod):
+    # Stronger Stimulant shape: lifespan 12 s (seconds, not frames) OR 40 attacks
+    # (nested in a CheckModel). The projectile's travel lifespan (0.6 s flight
+    # time) must NOT be mistaken for the buff window.
+    attack = _attack(_buff_projectile(lifespan=12.0, cap=40), name="BeserkerBrewAttack")
     out = mod._clean_attack(attack, 0)
     assert out["name"] == "BeserkerBrewAttack"
     assert out["buff_duration"] == 12.0
     assert out["buff_attack_cap"] == 40
 
 
-def test_buff_window_accepts_seconds_fields(mod):
-    attack = _attack(_buff_projectile(seconds=5.0, cap=25), name="AcidicMixture")
+def test_buff_window_lead_buff_is_cap_only(mod):
+    # Acidic Mixture Dip: no lifespan (attack-cap-only), cap 10.
+    attack = _attack(_buff_projectile(cap=10), name="AcidicMixture")
     out = mod._clean_attack(attack, 0)
-    assert out["buff_duration"] == 5.0
-    assert out["buff_attack_cap"] == 25
+    assert out["buff_attack_cap"] == 10
+    assert "buff_duration" not in out
 
 
-def test_buff_window_negative_duration_is_permanent(mod):
-    # Permanent Brew sentinel: a negative lifespan means "never expires".
-    attack = _attack(_buff_projectile(frames=-1), name="BeserkerBrewAttack")
+def test_buff_window_permanent_sentinels(mod):
+    # Permanent Brew: lifespan -1 + maxCount 9999999 → permanent, no numbers.
+    attack = _attack(_buff_projectile(lifespan=-1.0, cap=9999999), name="BeserkerBrewAttack")
     out = mod._clean_attack(attack, 0)
     assert out.get("buff_permanent") is True
     assert "buff_duration" not in out
+    assert "buff_attack_cap" not in out
 
 
 def test_buff_window_only_decoded_for_buff_attacks(mod):
     # An ordinary attack with the same fields present must NOT gain buff_* keys —
     # the decode is scoped to the named buff-throwing attacks.
-    attack = _attack(_buff_projectile(frames=720, cap=40), name="Attack")
+    attack = _attack(_buff_projectile(lifespan=12.0, cap=40), name="Attack")
     out = mod._clean_attack(attack, 0)
     assert "buff_duration" not in out
     assert "buff_attack_cap" not in out

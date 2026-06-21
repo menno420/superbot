@@ -585,6 +585,11 @@ def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
         str(attack.get("name") or ""),
         "Alchemist buff",
     )
+    # The buff's own name + the upgrade it comes from, deduped — "Berserker Brew
+    # (Stronger Stimulant)", but just "Berserker Brew" when the upgrade IS the buff.
+    source_label = (
+        buff_label if src_display == buff_label else f"{buff_label} ({src_display})"
+    )
     cadence = attack.get("rate")
     duration = attack.get("buff_duration")
     cap = attack.get("buff_attack_cap")
@@ -631,7 +636,7 @@ def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
         out["uptime"] = 1.0
         out["uptime_percent"] = 100.0
         out["note"] = (
-            f"{buff_label} from {src_display} is permanent — 100% uptime on "
+            f"{source_label} is permanent — 100% uptime on "
             f"{tgt_display} once buffed (it never expires)."
         )
         return out
@@ -694,7 +699,7 @@ def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
         else ""
     )
     out["note"] = (
-        f"{buff_label} ({src_display}) on {tgt_display}: limited by {limiter_txt}, "
+        f"{source_label} on {tgt_display}: limited by {limiter_txt}, "
         f"so it lasts ~{round(window, 2)}s per throw and buffs "
         f"{out['attacks_under_buff']} attacks.{uptime_txt}"
     )
