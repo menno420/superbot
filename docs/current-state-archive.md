@@ -86,6 +86,36 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1169 (2026-06-19, AI self-introduction advertises real capabilities)** — a new always-assembled
+  `_CAPABILITIES_OVERVIEW` system layer so the bot's self-intro names its **games / economy / progression**, not
+  just BTD6 (with prompt discipline keeping BTD6 general so the faithfulness guard doesn't floor it) + intro-phrasing
+  catalog triggers + pinning tests + an AI-folio note.
+- **#1145 · #1155 · #1161 · #1164 · #1165 · #1170 (2026-06-19/20, dashboard generated-data refresh band)** — the
+  per-source-merge `dashboard-data-refresh` workflow's cadence regen of `dashboard/data/dashboard.json` (Q-0167).
+- **#1142 (2026-06-19, band-#1140 Q-0107 reconciliation pass)** — the previous docs-only, planning-weighted
+  reconciliation ([record](planning/reconciliation-pass-2026-06-19-band1140.md)): reconciled the ledger to #1140,
+  routed four design questions (Q-0182 federated-world model · Q-0183 AI-ticket audience routing · Q-0184 memory
+  scope · Q-0185 bot-site pitch), and promoted the Explore-hub + feedback-board plans (Q-0172).
+- **#1135 · #1136 · #1137 · #1138 · #1139 · #1140 · #1134 (2026-06-19, ultracode-fleet close-out + Q-0181 ground-truth tooling)** —
+  the fleet's close-out band + the ground-truth-audit work: `scripts/check_plan_code_drift.py` +
+  the [ground-truth-audit protocol](operations/ground-truth-audit-protocol.md) (#1135, Q-0181), rebadging
+  A3/A4 `historical` + wiring the drift check into `/session-close` (#1136), the fleet pre-flight
+  overlap-check rule + `scripts/check_lane_overlap.py` (#1137/#1139), the premature-closure self-check idea
+  (#1138), the Codex-safety-fix + sector-boot idea captures (#1134), and the recon-trigger docs + the
+  [voice-brainstorm pack](operations/voice-brainstorm-pack.md) (#1140). Docs/tooling; newer than the #1110
+  marker — recorded on sight (Q-0166).
+- **#1131 (2026-06-19, mining hub declutter — Option A PR2: Character + Explore sub-hubs)** — split the
+  16-button mining hub into the Option A information architecture (mining-hub-redesign): a top-level
+  `🧍 Character` sub-hub and a `🗺️ Explore` sub-hub (`views/mining/explore_hub.py`,
+  `MiningExploreHubView`). The Explore sub-hub is the seam the [federated Explore-hub plan](planning/explore-hub-federated-world-plan-2026-06-19.md)
+  re-parents into a top-level world hub. Newer than the marker — recorded on sight.
+- **#1132 (2026-06-19, B5 — Codex-review integration: routine fix-first + Hermes 6H pr-check skill)** —
+  the Codex-review consumer wiring (Q-0174/Q-0180): routines fix flagged-real issues first; a Hermes
+  6-hour PR-check skill. Recorded on sight.
+- **#1130 (2026-06-19, open-question sweep + router-status detector + dashboard lockfile)** — recorded a
+  batch of owner decisions, added a router-status next-free-Q detector, and a dashboard dependency
+  lockfile. **#1127** — `chore(dashboard): refresh generated data` (per-source-merge cadence regen,
+  Q-0167). Both recorded on sight.
 - **#1129 (2026-06-19, docs/ideas — lock owner brainstorm design + ledger reconcile)** — locked the
   owner's approved brainstorm design into the idea docs and reconciled the ledger (added the
   #1124/#1125/#1126 entries above). Docs-only; newest merge — recorded on sight (Q-0166).

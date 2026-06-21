@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T13:29:19Z",
+    "generated_at": "2026-06-21T15:19:50Z",
     "build": {
-      "commit": "a420ffe",
-      "subject": "Merge pull request #1222 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-21T14:25:45Z",
-      "branch": "claude/confident-wright-slef29"
+      "commit": "36f51595",
+      "subject": "Merge pull request #1231 from menno420/claude/zen-dirac-wnhwhg",
+      "committed_at": "2026-06-21T17:09:35Z",
+      "branch": "claude/reconcile-1232"
     },
     "counts": {
       "functions": 37,
-      "ideas": 110,
+      "ideas": 113,
       "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
@@ -1008,12 +1008,36 @@
       ]
     },
     {
+      "file": "creature-sim-engine-constant-parity-guard-2026-06-21.md",
+      "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "The creature game now has the **same combat-design constants in two places**:",
+      "subsystems": null
+    },
+    {
+      "file": "free-for-everyone-mission-2026-06-21.md",
+      "title": "SuperBot's product North Star — free for everyone, forever",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "The owner had been considering a limited/freemium model (\"monetize it somehow, but only for",
+      "subsystems": null
+    },
+    {
       "file": "permission-overlap-guard-2026-06-21.md",
       "title": "Permission-overlap guard for `.claude/settings.json`",
       "status": "historical",
       "date": "2026-06-21",
       "summary": "A small stdlib config-lint, `scripts/check_permission_overlap.py`, that flags any",
       "subsystems": null
+    },
+    {
+      "file": "reconcile-callout-line-budget-guard-2026-06-21.md",
+      "title": "Idea — a line-budget guard for the `current-state.md` ▶ Next action callout",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "The `current-state.md` ▶ Next action callout grew to a **40.5 KB single-paragraph wall** before the",
+      "subsystems": []
     },
     {
       "file": "recently-shipped-auto-trim-helper-2026-06-20.md",
@@ -2149,6 +2173,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-prune-stale-claims.md",
+      "date": "2026-06-21",
+      "title": "Session — prune stale active-work.md claims (drift-on-sight)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-permission-overlap-guard.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Permission-overlap guard + force-push `ask` residual fix",
@@ -2157,9 +2189,49 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-lane-overlap-claim-scan.md",
+      "date": "2026-06-21",
+      "title": "Session — check_lane_overlap.py gains an active-work.md claim-ledger scan",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-free-for-everyone-north-star.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — \"Free for everyone, forever\": codify the product North Star",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-early-pr-mandate.md",
+      "date": "2026-06-21",
+      "title": "Session — open the session PR FAST (Q-0189, owner-directed in-session)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-creature-sim-engine-parity-guard.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature sim↔engine constant parity guard (PR 2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-creature-game-catch-collection.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature game runtime v1: catch + collection (dex)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-creature-battle-engine.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature game PvP: the pure battle engine (foundation slice)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -2515,54 +2587,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-website-plan-disjoint-tighten.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Pre-ultracode: make the website-plan §5 decomposition truly file-disjoint",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-website-moderation-mirror.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website two-site split: P5 moderation UI + P6 GitHub-issue mirror",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-identity-and-fanout-enablers.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website split: owner identity vision + fan-out enablers",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-19-website-foundation-s1s2p1.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website two-site split: serial foundation (S1 + S2 + P1)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-deploy-redaction-docs.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website two-site split: P7 + P8 (redaction audit + deploy/env docs)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-command-browser.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website: interactive command browser (S1.1 + P2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [

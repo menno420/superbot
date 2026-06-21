@@ -979,7 +979,7 @@ const COMMANDS = [
   {
     "name": "catch",
     "area": "games",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Head into the wild to find and catch a creature.",
     "description": "Head into the wild to find and catch a creature.",
     "usage": "!catch",
@@ -989,7 +989,12 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — a parity guard tying the creature sim to the runtime battle…"
+      }
+    ]
   },
   {
     "name": "chain",
@@ -1579,7 +1584,7 @@ const COMMANDS = [
   {
     "name": "dex",
     "area": "games",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Show your creature collection — every creature you've caught.",
     "description": "Show your creature collection — every creature you've caught.",
     "usage": "!dex",
@@ -1590,12 +1595,17 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — a parity guard tying the creature sim to the runtime battle…"
+      }
+    ]
   },
   {
     "name": "dextop",
     "area": "games",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Show this server's top collectors by total creatures caught.",
     "description": "Show this server's top collectors by total creatures caught.",
     "usage": "!dextop",
@@ -1605,7 +1615,12 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — a parity guard tying the creature sim to the runtime battle…"
+      }
+    ]
   },
   {
     "name": "diagnostic_bot_status",
@@ -5646,7 +5661,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "a420ffe",
+    "build": "36f51595",
     "title": "New public bot website",
     "changes": [
       {
@@ -5658,7 +5673,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "a420ffe",
+    "build": "36f51595",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5670,7 +5685,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "a420ffe",
+    "build": "36f51595",
     "title": "Command-alias suggestions",
     "changes": [
       {
