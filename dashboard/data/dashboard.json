@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T20:40:57Z",
+    "generated_at": "2026-06-21T21:41:13Z",
     "build": {
-      "commit": "25e57944",
-      "subject": "BTD6 data auto-seed: born-red card + claim",
-      "committed_at": "2026-06-21T20:25:18Z",
-      "branch": "claude/peaceful-mayer-rgc20t"
+      "commit": "afcf2e68",
+      "subject": "Merge pull request #1258 from menno420/claude/peaceful-mayer-rgc20t",
+      "committed_at": "2026-06-21T23:32:15Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 37,
@@ -2133,6 +2133,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-starboard-plan.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Starboard / Hall-of-Fame: buildable plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-site-field-level-redaction-contract.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — site.json field-level redaction contract",
@@ -2146,6 +2154,14 @@
       "title": "2026-06-21 — Role presets + role-management UX overhaul",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-repo-state-review-cleanup.md",
+      "date": "2026-06-21",
+      "title": "Session — repo-state review cleanup (2026-06-21)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2392,9 +2408,17 @@
       "file": "2026-06-21-btd6-data-auto-seed.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — BTD6 data: auto-seed the postgres blob store on boot",
-      "status": "in-progress",
-      "run_type": "",
-      "self_initiated": false
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-btd6-content-drift-surface.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6: surface same-version data drift (sha-based seed reminder)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-btd6-buff-uptime.md",
@@ -2571,30 +2595,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-connector-docs.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system docs: connector-vs-`/design-sync` correction",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-component-library.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system component library (for Claude Design `/design-sync`)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-creature-roster-and-music-legal-findings.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Creature roster sizing + music-bot legal findings (documentation)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
