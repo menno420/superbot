@@ -86,6 +86,38 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1186 (2026-06-20, BUG-0019 #2 — `@everyone`/`@here` false-personal-ping hardening)** — the AI
+  natural-language stage computed `is_mention` via `ClientUser.mentioned_in`, which short-circuits
+  `True` on `message.mention_everyone`, so a server-wide blast flipped the `mention_only` policy gate
+  open. Replaced with `natural_language_stage._is_direct_bot_mention` (bot id in `message.mentions`);
+  stays-fixed guard `test_everyone_blast_is_not_a_personal_ping`. Bug-book mechanism **#1** (the
+  `always_reply` "barge into others' conversations" design fork) stays OPEN, routed to the owner.
+- **#1156 · #1158 · #1160 (2026-06-19/20, federated Explore-hub spine + world registry)** — spine
+  **PR 1** (#1156): a top-level Explore *world* hub (town-square) + the world registry, re-parenting the
+  #1131 mining Explore sub-hub. **PR 3** (#1160): the cross-game world card — `game_xp_service.world_identity()`
+  (global level + per-game standings, read-only), `views/explore/world_card.py`, a `🪪 World Card` hub button +
+  `!worldcard`/`!mystats`. **#1158**: the world-registry parity invariant + games-folio spine docs. Spine **PR 2**
+  (global/per-game XP split) is reframed **owner/runtime-gated** (a `player_skills` PK migration + an earning-model
+  design call) — not an empty-fire lane. [plan](planning/explore-hub-federated-world-plan-2026-06-19.md).
+- **#1147 · #1151 · #1152 · #1154 · #1168 (2026-06-19, public bot-site dark launch + botsite polish)** — stood
+  the public bot site up **dark on Railway** (#1147), repointed the URL → `superbot-app.up.railway.app` (#1151),
+  wired the "Add to Discord" install buttons to the real install link (#1152) + fixed the dead `/submit` button a
+  Codex review caught (#1154), and added the Claude Design React+Tailwind component library (`/design-sync`, #1168).
+  The website v1 is code-complete; the remaining work is the owner-paced rollout (see Next candidates).
+- **#1143 · #1144 · #1146 · #1148 · #1157 (2026-06-19, bug-book guards + BUG-0016/0018 root-fixes)** — the
+  deferred-root-fix backlog guard (#1144, self-initiated Q-0172) + two hardenings from review (scope the root-fix
+  guard to the status label / short-circuit on terminal `FIXED`, #1146/#1148); **BUG-0018** root-fix (#1143 — the
+  `site.json` hard-equality test no longer reddens on idea-doc churn); **BUG-0016** (#1157 — single-source the
+  reconcile-issue body to kill the drift class).
+- **#1162 · #1163 · #1166 (2026-06-19, instruction-core + arch/consistency guards)** — pinned the always-loaded
+  `.claude/` instruction core against pointer rot (#1162); extended the `baseview_inheritance` arch ratchet to the
+  **cog layer** (#1163, closing the direct-View blind spot the consistency linter already covered); pinned the
+  `panel_base_class` consistency allowlist to the `baseview_inheritance` conformance frozenset with a parity test
+  (#1166, retiring the two-sources-of-truth drift).
+- **#1149 · #1150 · #1153 · #1159 · #1167 (2026-06-19, ideas + journal captures)** — dev-site project-status donut
+  + dev-site-refocus direction (#1149), donut refinements (#1150), the public-site "customize before you invite" cog
+  chooser (#1153), the bug-book claim-gap idea + subsystem-tag grooming (#1159), and the "git push doesn't re-fire
+  PR CI" env gotcha journal entry (#1167). Docs-only.
 - **#1169 (2026-06-19, AI self-introduction advertises real capabilities)** — a new always-assembled
   `_CAPABILITIES_OVERVIEW` system layer so the bot's self-intro names its **games / economy / progression**, not
   just BTD6 (with prompt discipline keeping BTD6 general so the faithfulness guard doesn't floor it) + intro-phrasing

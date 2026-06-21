@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:34:20Z",
+    "generated_at": "2026-06-21T21:56:30Z",
     "build": {
-      "commit": "ec8a8d68",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/funny-franklin-m1xdmf",
-      "committed_at": "2026-06-21T21:34:16Z",
-      "branch": "claude/funny-franklin-m1xdmf"
+      "commit": "43d1fa74",
+      "subject": "Merge pull request #1263 from menno420/claude/peaceful-mayer-rgc20t",
+      "committed_at": "2026-06-21T23:50:11Z",
+      "branch": "claude/reconcile-1260"
     }
   },
   "counts": {
