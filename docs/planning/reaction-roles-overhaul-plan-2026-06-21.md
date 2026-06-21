@@ -253,10 +253,10 @@ operator builds in-panel and deploys to a channel, re-attached on restart. This 
   role-menu-channel keys already anticipated in
   [`operator-settings-presets.md`](../setup-platform/operator-settings-presets.md) so the feature
   is toggleable per guild and presettable.
-- **Stretch (beats Carl's paywall): free temporary roles.** Carl gates `temp` behind Patreon. We
-  can offer it free by reusing the managed-task / scheduled-maintenance machinery — but it needs
-  a `role_grants(guild_id, member_id, role_id, expires_at)` persistence table + a sweep loop.
-  **Mark as a follow-up**, not in the parity core, to keep PR 3 bounded.
+- **Free temporary roles → its own wave (PR 4, owner-decided 2026-06-21 §9).** Carl gates `temp`
+  behind Patreon; we offer it free by reusing the managed-task / scheduled-maintenance machinery +
+  a `role_grants(guild_id, member_id, role_id, expires_at)` table + a sweep loop. Split out of PR 3
+  to keep it bounded; independent of PR 2/3 (rides the PR 1 seam).
 
 **Risk:** low-medium; mostly UI + small service additions on the PR 1/2 seam.
 
@@ -385,17 +385,54 @@ python3.10 scripts/check_quality.py --full          # black/isort/ruff + mypy + 
 python3.10 scripts/check_docs.py --strict           # this plan must stay linked
 ```
 
-## 9. Open questions for the owner (design calls, not blockers)
+## 9. Decisions — LOCKED by the owner (2026-06-21)
 
-1. **Default surface:** lead operators toward **dropdown** (compact, one message, multi-select) or
-   **buttons** (one tap, more visible)? Recommend dropdown as the default, buttons as a toggle.
-2. **Audit member assignments?** Config changes: yes. Per-click member toggles could be high
-   volume — recommend **off by default**, behind a flag.
-3. **Free temp roles** (§4 PR 3 stretch) — worth the extra table + sweep loop, or defer?
-4. **Surface priority (§3.5):** the owner's reference is the **web builder (Surface A)** but it's
-   control-API-gated. Confirm: ship the **in-Discord builder (Surface B) first** (recommended —
-   unblocked, delivers the feature now), then the web builder when the control-API write side
-   opens? Or hold the whole feature for the web surface?
+All four design forks are decided; the plan is fully specified and PR 1 is ready to build.
 
-These are visualize-and-decide calls for the maintainer; none block PR 1 (the foundation), which
-is pure debt-paydown and safe to build immediately.
+1. **Surface priority → in-Discord builder (Surface B) FIRST**, then the web builder (Surface A)
+   when the control-API write side opens (§3.5). The feature is not held for the web surface.
+2. **Default menu style → dropdown** (one compact select; operator can switch a menu to buttons).
+   Both styles are supported; dropdown is the default for a new menu.
+3. **Free temp roles → BUILD IT** (a clear win over Carl's Patreon gate). Promoted from "stretch"
+   to a planned wave (PR 4 below): a `role_grants(guild_id, member_id, role_id, expires_at)` table
+   + a sweep loop on the managed-task machinery.
+4. **Role-pickup analytics → YES, add it** (new — §10). Nearly free given the audited seam; a
+   differentiator Carl has no equivalent for. Planned as PR 5 below.
+
+**Carried default (not separately asked):** per-member assignment logging is a **toggle, off by
+default** (config changes are always audited; high-volume per-click toggles are opt-in) — the
+analytics counts (§10) are aggregate and do not require per-user logging to be on.
+
+### Updated PR map (core arc + enhancement waves)
+
+| PR | Scope | Gate |
+|---|---|---|
+| **PR 1** | Foundation — audited `reaction_role_service` + migration 078 + route existing reaction-roles through the seam | **▶ ready now** (no decision pending) |
+| **PR 2** | In-Discord builder (Surface B): **dropdown-default** role menus + **edit-in-place** + **theme presets** + **message templates** | after PR 1 |
+| **PR 3** | Carl-parity modes (unique/verify/limit) + interactive emoji panel + settings bridge | after PR 2 |
+| **PR 4** | **Free temp roles** — `role_grants` table + expiry sweep loop | after PR 1 (independent of PR 2/3) |
+| **PR 5** | **Role-pickup analytics** (§10) — surfaced in Diagnostics; web dashboard later | after PR 1 |
+| **PR 6 (optional)** | **PIL banner cards** (§4.6d) — reuses `welcome_render`; degrades to embed-only | owner-paced |
+| **Surface A** | Web builder in the dashboard (mirrors PR 2–5 over the control-API) | control-API write side / security review |
+
+The core arc is PR 1–3; PR 4–6 are additive waves on the PR 1 seam. None block PR 1.
+
+---
+
+## 10. Role-pickup analytics (added by owner decision, 2026-06-21)
+
+Because PR 1 routes every assignment through the audited seam, **counting role pickups is nearly
+free** — no new tracking subsystem, just a small aggregate counter and a read model.
+
+- **What it shows:** per-role and per-menu **pickup counts** (and removals), "most popular" vs.
+  **"barely-used — archive?"** nudges, and a simple trend (pickups over the last N days). Answers
+  the real admin question *"are these self-roles actually being used?"*.
+- **Privacy:** **aggregate counts only** — not per-user history. (Per-user is a separate opt-in that
+  rides the §9 assignment-logging toggle; analytics does not require it.)
+- **Data:** a tiny `role_menu_pickup_stats(guild_id, role_id, picked, removed, last_picked_at)`
+  rollup updated by the service on assign/unassign — or derived on read from the audit log if we
+  keep config-change events. Prefer the rollup (cheap reads, no audit-log scan).
+- **Surface:** a section in the role **Diagnostics** panel now (counts + the archive nudge); a stats
+  widget on the web dashboard later (Surface A). Carl has **no** per-assignment analytics — this is
+  a clean differentiator that falls out of the architecture we're already building.
+- **Scope:** PR 5 (after PR 1). Small — one rollup table + service increments + a Diagnostics view.
