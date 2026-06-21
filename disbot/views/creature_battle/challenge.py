@@ -53,16 +53,26 @@ class CreatureBattleChallengeView(BaseView):
             content="⚔️ Challenge accepted — resolving the battle…",
             view=self,
         )
-        result = await creature_battle_service.resolve_pvp(
+        recorded = await creature_battle_service.resolve_and_record_pvp(
             self.challenger.id,
             self.opponent.id,
             self.guild_id,
         )
-        if result is None:
+        if recorded is None:
             await interaction.followup.send(_NO_TEAM_MSG)
             self.stop()
             return
-        embed = build_result_embed(self.challenger, self.opponent, result)
+        records = {
+            recorded.winner_id: recorded.winner_record,
+            recorded.loser_id: recorded.loser_record,
+        }
+        embed = build_result_embed(
+            self.challenger,
+            self.opponent,
+            recorded.result,
+            records=records,
+            xp_note=recorded.xp_note,
+        )
         await interaction.followup.send(embed=embed)
         self.stop()
 

@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T20:40:57Z",
+    "generated_at": "2026-06-21T21:18:36Z",
     "build": {
-      "commit": "25e57944",
-      "subject": "BTD6 data auto-seed: born-red card + claim",
-      "committed_at": "2026-06-21T20:25:18Z",
-      "branch": "claude/peaceful-mayer-rgc20t"
+      "commit": "bbcb2d31",
+      "subject": "creature PvP: born-red session card + claim (result-recording slice)",
+      "committed_at": "2026-06-21T21:07:26Z",
+      "branch": "claude/funny-franklin-m1xdmf"
     },
     "counts": {
       "functions": 37,
@@ -16,7 +16,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 46,
-      "commands": 314,
+      "commands": 316,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -2133,6 +2133,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-starboard-plan.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Starboard / Hall-of-Fame: buildable plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-site-field-level-redaction-contract.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — site.json field-level redaction contract",
@@ -2341,6 +2349,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-creature-pvp-result-recording.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature PvP: result recording + win/loss records + battle leaderboard",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-creature-pvp-battle-flow.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
@@ -2392,9 +2408,9 @@
       "file": "2026-06-21-btd6-data-auto-seed.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — BTD6 data: auto-seed the postgres blob store on boot",
-      "status": "in-progress",
-      "run_type": "",
-      "self_initiated": false
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-btd6-buff-uptime.md",
@@ -2579,22 +2595,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-component-library.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system component library (for Claude Design `/design-sync`)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-creature-roster-and-music-legal-findings.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Creature roster sizing + music-bot legal findings (documentation)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4716,6 +4716,33 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "cbattletop",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "pvptop",
+            "battletop"
+          ],
+          "brief": "Show this server's top creature-PvP trainers by wins.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "cbrecord",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "battlerecord"
+          ],
+          "brief": "Show your (or another trainer's) creature PvP win/loss record.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         }
       ]
     },

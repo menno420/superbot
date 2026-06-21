@@ -213,11 +213,19 @@ Remaining docking work:
   returning a structured turn-by-turn log + winner. `tests/unit/utils/test_creature_battle.py`
   **re-validates the sim's fairness gates inside the bot** (chart symmetry, ~50% equal-stat type
   balance, ~50% normalized PvP, skill rewarded-not-absolute, status-move value, raw-level dominance).
-  **NEXT (runtime-verified `needs-hermes-review`, builds on the engine):** the user-facing flow —
-  `cogs/creature_battle/` + `views/creature_battle/` panels, PvP challenges mirroring the existing
-  `rps`/`deathmatch` PvP-challenge view pattern, a thin `services/` boundary to read each player's
-  team from the collection and (later) record results, and the **level-normalized** matchup (the §3
-  finding). Not an autonomous self-merge.
+  **★ USER-FACING FLOW SHIPPED (2026-06-21, PR #1230):** `cogs/creature_battle_cog.py` (`!cbattle`),
+  `views/creature_battle/` (Accept/Decline challenge view + outcome renderer), and the thin read-only
+  `services/creature_battle_service.py` boundary (load each team from the collection, build a
+  **level-normalized** team, resolve via the engine).
+  **★ RESULT-RECORDING + LEADERBOARD SHIPPED (2026-06-21, this PR — the audited-write half):** a battle
+  now **persists** — migration `082_creature_battle_record` (per-(user, guild) W/L tally),
+  `utils/db/games/creature_battles.py` CRUD, and `creature_battle_service.resolve_and_record_pvp`
+  recording both fighters' records + awarding the winner's `GAME_CREATURE` `battle_win` xp (6 XP) in
+  ONE transaction (events post-commit, mirroring `creature_workflow`; like catch/fishing it is **not**
+  audit-emitted — game progression isn't the moderation/governance audit seam). The outcome embed shows
+  the updated records; `!cbattletop`/`!pvptop` (win ladder) + `!cbrecord` (personal W/L) added. The win
+  xp is prestige-only (PvP stays level-normalized → never P2W). **NEXT (later slices):** an Explore-hub
+  Lane-B battle panel; balance/art (Q-0187).
 - **World** = registers a `WorldEntry` in the Explore hub (a later slice; the catch cog is hub-less).
 - **World** = registers a `WorldEntry` in the Explore hub; creature standings on the world card.
 - **Anti-P2W** = the normalization rule + Q-0039 (no buyable power); shinies are cosmetic (Lane D).
