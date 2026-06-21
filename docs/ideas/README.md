@@ -144,6 +144,13 @@ Current broad captures:
   ones into their per-band pass records, leaving a one-line pointer — making the documented "aggressive prune"
   deterministic. Disposable (Q-0105); heed BUG-0020 (ground-truth + self-test the fragile spot).
   → relates `docs/current-state.md` · `scripts/trim_recently_shipped.py`.
+- [`reconcile-callout-line-budget-guard-2026-06-21.md`](./reconcile-callout-line-budget-guard-2026-06-21.md) —
+  **session idea (2026-06-21, Q-0089, from the band-#1230 reconciliation pass):** the ▶ Next action callout
+  reached a **40.5 KB wall** before a pass finally pruned it — because the bloat was *prose*, not a measured
+  number a checker could flag. Idea: a warn-only sub-check that measures the live callout's length and warns
+  when it crosses a budget (≥ 6 KB), the way `check_docs` ratchets Recently-shipped at 20. The **gauge** that
+  pairs with the trim **actuator** above (number trips → `--callout` run resolves it). Disposable (Q-0105).
+  → relates `docs/current-state.md` · `scripts/check_docs.py`.
 - [`recently-shipped-auto-trim-helper-2026-06-20.md`](./recently-shipped-auto-trim-helper-2026-06-20.md) —
   **SHIPPED 2026-06-20** as `scripts/trim_recently_shipped.py` + `tests/unit/scripts/test_trim_recently_shipped.py`,
   wired into the reconciliation routine's STEP 2. A stdlib **actuator** for
