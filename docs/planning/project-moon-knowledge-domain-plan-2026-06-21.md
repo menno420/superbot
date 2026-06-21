@@ -63,10 +63,17 @@ Do **not** open with the BTD6 refactor. Build a **minimal standalone Limbus doma
 proof, then extract the shared seam once two concrete examples (BTD6 + Limbus) exist — the rule-of-three
 argument: generalising from a single example tends to produce the wrong abstraction.
 
+> **▶ Ingestion approach corrected by the pre-build recon** (2026-06-21,
+> [`project-moon-prebuild-recon-2026-06-21.md`](project-moon-prebuild-recon-2026-06-21.md)): the Limbus
+> wiki **has no Cargo** (verified), so the source for *exact numbers* is the game's **StaticData dump**
+> (the true BTD6-dump analogue), not a wiki scrape. The wiki (standard no-Cargo API) is for *prose/lore*.
+
 **Slice A (next session, 2–3 PRs):**
-1. **Ingestion:** a `scripts/fetch_pm_limbus.py` modelled on `fetch_bloonswiki.py` (MediaWiki API /
-   Cargo / `action=raw`) pulling a bounded first cut from `limbuscompany.wiki.gg` (Identities + Sinners
-   + E.G.O index), writing committed JSON under `disbot/data/projmoon/limbus/` with provenance.
+1. **Ingestion:** a `scripts/fetch_pm_limbus.py` that parses the **StaticData identity JSON** (clean,
+   bounded — Identities + Sinners + E.G.O index) into committed JSON under
+   `disbot/data/projmoon/limbus/` with provenance, **plus** a thin lore pull from `limbuscompany.wiki.gg`
+   via the standard MediaWiki API (`action=raw`/`parse` — *not* Cargo). See the recon doc §1 for the
+   per-data-type source matrix.
 2. **Grounding path:** a thin `projmoon_context_service` + `AITask.PROJMOON_ANSWER` + a
    `has_projmoon_context` detector wired into `core/runtime/ai/natural_language_stage.py`, reusing the
    tag/cap/provenance render and the answer-validation guard.
@@ -78,10 +85,10 @@ argument: generalising from a single example tends to produce the wrong abstract
 
 ## 6. Dependencies & risks (honest)
 
-- **Source selection per game** — Project Moon data is fragmented across `*.wiki.gg` (Limbus / LoR
-  migrated off Fandom), `projectmoon.fandom.com` (lore), `projectmoon.miraheze.org` (Cogitopedia), and
-  community datamines (`limbus-datamines`, `retcons.github.io`). *Which sources are authoritative* is an
-  open owner/design question (§7).
+- **Source selection per game** — **Limbus is now resolved** by the pre-build recon (StaticData dump for
+  numbers + wiki.gg no-Cargo API for prose; see the recon doc §1). LoR / LobCorp source choice across
+  `*.wiki.gg`, `projectmoon.fandom.com` (lore), `projectmoon.miraheze.org` (Cogitopedia), and community
+  datamines stays an open owner/design question (§7) for their phases.
 - **Licensing** — wiki content is CC-BY-SA (Fandom) / varies (wiki.gg). Store **summarised / structured
   facts with provenance + attribution**, not verbatim dumps (the BTD6 CSV README already sets this norm).
 - **Prose-grounding quality** — lore/story is narrative, not numbers; grounding it without hallucination
@@ -114,7 +121,8 @@ These refine later phases; Slice A proceeds on the defaults above.
 
 ## Related
 
-[idea capture](../ideas/project-moon-wiki-knowledge-domain-2026-06-21.md) · router **Q-0192** ·
-[btd6 folio](../subsystems/btd6.md) · [ai folio](../subsystems/ai.md) ·
+[**pre-build recon**](project-moon-prebuild-recon-2026-06-21.md) (data sources + seam contract +
+Limbus domain model) · [idea capture](../ideas/project-moon-wiki-knowledge-domain-2026-06-21.md) ·
+router **Q-0192** · [btd6 folio](../subsystems/btd6.md) · [ai folio](../subsystems/ai.md) ·
 [ai-btd6-answerability-roadmap](ai-btd6-answerability-roadmap-2026-06-09.md) · ADR-006
 (`../decisions/006-btd6-data-provenance-ownership.md`).
