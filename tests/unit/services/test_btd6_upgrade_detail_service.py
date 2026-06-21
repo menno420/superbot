@@ -560,3 +560,96 @@ def test_power_effect_reports_no_attack_stat_for_economy_towers():
 def test_power_effect_handles_unknown_power_and_unknown_tower():
     assert det.power_effect("Bogus", "Dart Monkey")["found"] is False
     assert det.power_effect("Monkey Boost", "not a tower")["found"] is False
+
+
+# --- buff_uptime -------------------------------------------------------------
+# Until parse_gamedata decodes the buff window onto the live data, these inject
+# the decoded fields (buff_duration / buff_attack_cap) the same way the parser
+# will — so the math + limiter logic is pinned independent of the data refresh.
+
+
+def _inject_buff_window(monkeypatch, *, duration=None, cap=None, permanent=False):
+    """Patch the buff-attack lookup so the Alchemist tier reports a decoded
+    window (mirrors what parse_gamedata._buff_window will attach)."""
+    real = det._alch_buff_attack
+
+    def fake(tower_id, code):
+        node = real(tower_id, code)
+        if node is None:
+            return None
+        node = dict(node)
+        if duration is not None:
+            node["buff_duration"] = duration
+        if cap is not None:
+            node["buff_attack_cap"] = cap
+        if permanent:
+            node["buff_permanent"] = True
+        return node
+
+    monkeypatch.setattr(det, "_alch_buff_attack", fake)
+
+
+def test_buff_uptime_attack_capped_on_a_fast_tower(monkeypatch):
+    # Stronger Stimulant = 12s OR 40 attacks. A 5-0-0 Ninja (0.217s) burns 40
+    # attacks in ~8.7s — BEFORE the 12s timer — so it is attack-cap-limited, and
+    # since the alch re-throws every 8s the buff is continuous (100% uptime). This
+    # is the owner's live-test question.
+    _inject_buff_window(monkeypatch, duration=12.0, cap=40)
+    res = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0")
+    assert res["found"] is True
+    assert res["buff"] == "Berserker Brew"
+    assert res["limiter"] == "attacks"
+    assert res["attacks_under_buff"] == 40
+    assert res["effective_window_seconds"] == pytest.approx(8.68, abs=0.05)
+    assert res["throw_cadence_seconds"] == 8.0
+    assert res["uptime_percent"] == 100.0
+
+
+def test_buff_uptime_time_limited_on_a_slow_tower(monkeypatch):
+    # A slow tower can't reach the 40-attack cap within 12s, so the TIME limit
+    # binds instead — the dual-limit logic must pick the other limiter.
+    _inject_buff_window(monkeypatch, duration=12.0, cap=40)
+    res = det.buff_uptime("Stronger Stimulant", "Dart Monkey")
+    assert res["found"] is True
+    assert res["limiter"] == "time"
+    assert res["effective_window_seconds"] == 12.0
+    assert res["attacks_under_buff"] < 40
+
+
+def test_buff_uptime_permanent_brew_is_full_uptime(monkeypatch):
+    _inject_buff_window(monkeypatch, permanent=True)
+    res = det.buff_uptime("Permanent Brew", "ninja 5-0-0")
+    assert res["found"] is True
+    assert res["limiter"] == "permanent"
+    assert res["uptime"] == 1.0
+
+
+def test_buff_uptime_honest_when_window_not_decoded():
+    # The live data has no buff window yet: don't fabricate one. Say what IS
+    # known (throw cadence + target attack speed) and name the fix.
+    res = det.buff_uptime("Stronger Stimulant", "Grandmaster Ninja")
+    assert res["found"] is False
+    assert res["buff"] == "Berserker Brew"
+    assert "8.0s" in res["note"]  # throw cadence is in the data
+    assert "0.217" in res["note"]  # target attack speed is in the data
+    assert "uptime" not in res
+
+
+def test_buff_uptime_rejects_non_alchemist_source():
+    res = det.buff_uptime("Crossbow Master", "Dart Monkey")
+    assert res["found"] is False
+    assert "Alchemist" in res["note"]
+
+
+def test_buff_uptime_reports_no_attack_stat_for_economy_target(monkeypatch):
+    _inject_buff_window(monkeypatch, duration=12.0, cap=40)
+    res = det.buff_uptime("alchemist 4-0-0", "Banana Farm")
+    assert res["found"] is False
+    assert "no attack-speed stat" in res["note"]
+
+
+def test_buff_uptime_tier_without_a_buff_throw_is_honest():
+    # Base Alchemist (0-0-0) has neither Berserker Brew nor Acidic Mixture Dip.
+    res = det.buff_uptime("Alchemist", "Dart Monkey")
+    assert res["found"] is False
+    assert "no buff throw" in res["note"]

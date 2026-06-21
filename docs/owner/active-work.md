@@ -28,6 +28,12 @@ living ledger (`docs/current-state.md`).
 - `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
   claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
   · 2026-06-21 · **auto-merge on green** (docs-only)
+- `claude/dreamy-cerf-voar4q` · **Project Moon wiki feasibility finding** (owner-dropped) — capture
+  research as a routed idea doc; no runtime code · `docs/ideas/project-moon-wiki-knowledge-domain-2026-06-21.md`
+  + ideas index · 2026-06-21 · **auto-merge on green** (docs-only)
+- `claude/peaceful-mayer-rgc20t` · **BTD6 Alchemist buff-uptime** (owner live-test) — `btd6_buff_uptime`
+  tool + `buff_uptime()` compute + parser buff-window decode (game-data path) · `parse_gamedata.py` /
+  `btd6_upgrade_detail_service` / `ai_tools` / `ai_tool_catalogue` · 2026-06-21 · **PR #1235 (auto-merge on green)**
 - `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (owner-directed Q-0192: full parity) —
   feasibility **#1238** + program plan **#1239** merged; now pre-build recon (data sources + seam contract)
   · `docs/planning/project-moon-prebuild-recon-2026-06-21.md` · 2026-06-21 · **auto-merge on green** (docs-only)

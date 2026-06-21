@@ -1256,6 +1256,34 @@ CASES: list[EvalCase] = [
         grader=tool_called("btd6_power_effect"),
     ),
     EvalCase(
+        # A buff-uptime question ("can the alch keep the buff up / does the tower
+        # drain it") must use the buff-uptime calculator, not a static lookup —
+        # the buff is dual-limited (time OR attacks) so the target's attack speed
+        # decides which limiter binds. This is the owner's live-test question.
+        id="tool.btd6_buff_uptime",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In Bloons TD 6, what's the buff uptime of a 4-0-0 Alchemist on a "
+            "5-0-0 Ninja?"
+        ),
+        tools=(_tool("btd6_buff_uptime"),),
+        tool_results={
+            "btd6_buff_uptime": {
+                "found": True,
+                "buff": "Berserker Brew",
+                "buff_source": "Stronger Stimulant",
+                "target": "Grandmaster Ninja",
+                "limiter": "attacks",
+                "effective_window_seconds": 8.68,
+                "attacks_under_buff": 40,
+                "throw_cadence_seconds": 8.0,
+                "uptime_percent": 100.0,
+            },
+        },
+        grader=tool_called("btd6_buff_uptime"),
+    ),
+    EvalCase(
         # A consumable-Power info question (effect + Monkey Money cost) must use the
         # power-lookup catalogue tool.
         id="tool.btd6_power_lookup",

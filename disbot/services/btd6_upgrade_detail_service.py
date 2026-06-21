@@ -504,6 +504,203 @@ def power_effect(power: str, tower: str) -> dict[str, Any]:
     return out
 
 
+# --- Alchemist buff uptime ---------------------------------------------------
+# An Alchemist buff (Berserker Brew / Stronger Stimulant, and the Acidic Mixture
+# Dip lead-buff) is *dual-limited*: it ends at the earlier of a time window OR a
+# number of the buffed tower's attacks. The throw cadence (re-buff interval) and
+# the target's attack speed are committed game data; the time-duration +
+# attack-cap are decoded onto the buff-applying attack node by parse_gamedata
+# (``buff_duration`` / ``buff_attack_cap``). This compute joins them so the bot
+# answers "what's the buff uptime on <tower>" instead of punting on the duration.
+_BUFF_ATTACK_LABELS: dict[str, str] = {
+    "BeserkerBrewAttack": "Berserker Brew",
+    "AcidicMixture": "Acidic Mixture Dip",
+}
+
+
+def _alch_buff_attack(tower_id: str, code: str) -> dict[str, Any] | None:
+    """The buff-applying attack node on an Alchemist tier, or ``None``.
+
+    Prefers Berserker Brew (the headline damage/speed/range buff, 3-0-0+) over
+    the Acidic Mixture Dip lead-buff (2-0-0+) when a tier carries both. Reads the
+    same ``attacks`` list every other stat surface uses.
+    """
+    stats = btd6_stats_service.get_tower_stats(tower_id)
+    tier = stats.tier(code) if stats is not None else None
+    attacks = (tier or {}).get("attacks") or []
+    brew = acidic = None
+    for attack in attacks:
+        name = str(attack.get("name") or "")
+        if name == "BeserkerBrewAttack":
+            brew = attack
+        elif name == "AcidicMixture":
+            acidic = attack
+    return brew or acidic
+
+
+def buff_uptime(buff_source: str, target: str) -> dict[str, Any]:
+    """Compute an Alchemist buff's uptime on a target tower — the grounded
+    compute behind the ``btd6_buff_uptime`` tool.
+
+    Joins the buff's throw cadence + time-duration + attack-count cap (all game
+    data) with the target's attack speed to report **which limiter binds** (time
+    vs attacks) and the resulting uptime. e.g. a 4-0-0 (Stronger Stimulant: 12s
+    or 40 attacks, thrown every 8s) on a 5-0-0 Ninja (0.217s) burns the 40-attack
+    cap in ~8.7s, so it is attack-cap-limited. Returns ``found=False`` with an
+    honest note when the buff isn't an Alchemist buff, the buff's
+    duration/attack-cap isn't decoded into the data yet, or the target has no
+    attack stat — never a fabricated number.
+    """
+    src = _resolve_stat_target(buff_source)
+    if src is None:
+        return {
+            "found": False,
+            "note": f"could not resolve buff source: {buff_source!r}",
+        }
+    src_id, src_code, src_display = src
+    if src_code == "ambiguous":
+        return {
+            "found": False,
+            "note": f"ambiguous Alchemist tier: {buff_source!r} — name one upgrade.",
+        }
+    if src_id != "alchemist":
+        return {
+            "found": False,
+            "note": (
+                f"buff-uptime currently covers the Alchemist (Berserker Brew / "
+                f"Acidic Mixture Dip); {src_display} isn't an Alchemist buff."
+            ),
+        }
+
+    attack = _alch_buff_attack(src_id, src_code)
+    if attack is None:
+        return {
+            "found": False,
+            "note": (
+                f"{src_display} has no buff throw — Acidic Mixture Dip starts at "
+                "2-0-0, Berserker Brew at 3-0-0."
+            ),
+        }
+    buff_label = _BUFF_ATTACK_LABELS.get(
+        str(attack.get("name") or ""),
+        "Alchemist buff",
+    )
+    cadence = attack.get("rate")
+    duration = attack.get("buff_duration")
+    cap = attack.get("buff_attack_cap")
+    permanent = bool(attack.get("buff_permanent"))
+
+    tgt = _resolve_stat_target(target)
+    if tgt is None:
+        return {
+            "found": False,
+            "note": f"could not resolve target tower/upgrade: {target!r}",
+        }
+    tgt_id, tgt_code, tgt_display = tgt
+    if tgt_code == "ambiguous":
+        return {
+            "found": False,
+            "note": f"ambiguous target tower/upgrade: {target!r} — name one upgrade.",
+        }
+    tgt_cd = _tier_attack_cooldown(tgt_id, tgt_code)
+    if tgt_cd is None:
+        return {
+            "found": False,
+            "note": (
+                f"no attack-speed stat for {tgt_display} — it has no committed "
+                "attack (economy/support tower or un-statted tier)."
+            ),
+        }
+
+    out: dict[str, Any] = {
+        "found": True,
+        "buff": buff_label,
+        "buff_source": src_display,
+        "buff_tier_code": src_code,
+        "target": tgt_display,
+        "target_tier_code": tgt_code,
+        "target_cooldown_seconds": round(tgt_cd, 4),
+        "target_attacks_per_second": round(1.0 / tgt_cd, 3),
+    }
+    if isinstance(cadence, (int, float)) and cadence > 0:
+        out["throw_cadence_seconds"] = float(cadence)
+
+    # Permanent Brew (5-0-0): the buff never expires once applied.
+    if permanent:
+        out["limiter"] = "permanent"
+        out["uptime"] = 1.0
+        out["uptime_percent"] = 100.0
+        out["note"] = (
+            f"{buff_label} from {src_display} is permanent — 100% uptime on "
+            f"{tgt_display} once buffed (it never expires)."
+        )
+        return out
+
+    has_time = isinstance(duration, (int, float)) and duration > 0
+    has_cap = isinstance(cap, (int, float)) and cap > 0
+    if not has_time and not has_cap:
+        # The cadence + target speed ARE known; only the buff window is missing.
+        # Say so honestly (better than the old "I don't have it" punt) and name
+        # the one step that fills it.
+        cadence_txt = (
+            f" It is thrown every {float(cadence)}s"
+            if isinstance(cadence, (int, float)) and cadence > 0
+            else ""
+        )
+        return {
+            "found": False,
+            "buff": buff_label,
+            "buff_source": src_display,
+            "target": tgt_display,
+            "note": (
+                f"{buff_label}'s duration/attack-cap isn't decoded into the data "
+                f"yet, so I can't ground the uptime.{cadence_txt} and {tgt_display} "
+                f"attacks every {round(tgt_cd, 4)}s — re-run the game-data parse to "
+                "populate the buff window."
+            ),
+        }
+
+    # Window the buff actually lasts on THIS target = the earlier limiter.
+    cap_time = cap * tgt_cd if has_cap else None
+    candidates: list[tuple[str, float]] = []
+    if has_time:
+        candidates.append(("time", float(duration)))
+        out["buff_duration_seconds"] = float(duration)
+    if has_cap:
+        candidates.append(("attacks", float(cap_time)))
+        out["buff_attack_cap"] = int(cap)
+        out["attack_cap_window_seconds"] = round(float(cap_time), 3)
+    limiter, window = min(candidates, key=lambda c: c[1])
+    out["limiter"] = limiter
+    out["effective_window_seconds"] = round(window, 3)
+    out["attacks_under_buff"] = int(min(filter(None, [cap, window / tgt_cd])))
+
+    if isinstance(cadence, (int, float)) and cadence > 0:
+        uptime = min(1.0, window / float(cadence))
+        out["uptime"] = round(uptime, 3)
+        out["uptime_percent"] = round(uptime * 100.0, 1)
+
+    limiter_txt = (
+        f"the {int(cap)}-attack cap (hit in {round(float(cap_time), 2)}s at "
+        f"{round(1.0 / tgt_cd, 2)} attacks/sec)"
+        if limiter == "attacks"
+        else f"the {float(duration)}s time limit"
+    )
+    uptime_txt = (
+        f" Re-thrown every {float(cadence)}s → {out['uptime_percent']}% uptime"
+        f"{' (continuous)' if out.get('uptime', 0) >= 1.0 else ''}"
+        f" on {tgt_display}."
+        if "uptime_percent" in out
+        else ""
+    )
+    out["note"] = (
+        f"{buff_label} ({src_display}) on {tgt_display}: limited by {limiter_txt}, "
+        f"so it lasts ~{round(window, 2)}s per throw and buffs "
+        f"{out['attacks_under_buff']} attacks.{uptime_txt}"
+    )
+    return out
+
+
 def grounding_for_query(query: str) -> list[str]:
     """Resolve ``query`` to an upgrade and render its grounding (the wiring seam).
 

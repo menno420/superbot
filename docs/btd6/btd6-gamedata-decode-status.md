@@ -24,6 +24,36 @@ works** (the traps we hit), and what is still un-decoded.
 
 ## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED (#655) · carry-forwards DECODED (#653+#655) · Ask parity + dark renders (#658) · items 6a–c + the Navarch routing fix (#662) · item 7 slice 1 + zero-fact sweep (#668; probe tool #666); next = item 3 (demand-driven) + item 4 (maintainer spot-check)**)
 
+> **2026-06-21 (PR #1235 — Alchemist buff-uptime + buff-WINDOW decode · ONE OPEN BINDING STEP):**
+> owner live-test ("uptime of a 4-0-0 Alch on a 5-0-0 Ninja") — the bot had the brew **throw
+> cadence** (`BeserkerBrewAttack.rate` = 8s) but not the buff **window**, so it punted. Shipped the
+> calculator (`btd6_buff_uptime` tool → `btd6_upgrade_detail_service.buff_uptime()`): it joins
+> cadence + the target's `attacks[0].rate` + the buff window to report which limiter binds and the
+> uptime%. The buff is **dual-limited** (time OR attacks, whichever first) — a 5-0-0 Ninja (0.217s)
+> burns 40 attacks in ~8.7s, so it's **attack-cap-limited**.
+>
+> **The decode gap this exposed:** the Berserker Brew / Acidic Mixture Dip buff is **projectile-applied**
+> (it lives inside the `BeserkerBrewAttack` / `AcidicMixture` weapon's projectile), so the top-level
+> `_buffs()` support-model walker **never saw it** — the Alchemist has *zero* committed buffs. Added
+> `parse_gamedata._buff_window()`: for those named buff-throwing attacks it reads the buff
+> **duration** (frame fields ÷60, like `_BUFF_FRAME_FIELDS`) + **attack-cap** off the projectile's
+> behaviors (excluding the `Travel*Model` flight-time `lifespan`, the 0.6s false-positive) → emits
+> `buff_duration` / `buff_attack_cap` / `buff_permanent` on the attack node.
+>
+> **⚠️ OPEN — one binding step (Q-0105, no live dump in-repo to verify against):** the exact
+> dump field names for the projectile buff window are a **candidate set** (`_BUFF_DURATION_*` /
+> `_BUFF_ATTACK_CAP_FIELDS` in `parse_gamedata.py`). The decode *logic* is fixture-tested; the live
+> *binding* is unconfirmed. **Next dump run:** `--dump <clone> --tower alchemist --dry-run` and
+> confirm `buff_duration`/`buff_attack_cap` appear; `--audit` them against the verified wiki windows
+> below. If a candidate name never matches, read the real field off the dry-run and add it (then
+> delete the dead candidates). Until then `btd6_buff_uptime` honestly returns `found=false` with the
+> cadence + target speed it *does* know.
+>
+> **Verified windows (Bloons-wiki cross-check — the `--audit` target):** Acidic Mixture Dip 2-0-0
+> = **10 shots** (12 @ 2-2-0); Berserker Brew 3-0-0 = **5s / 25 attacks**, 3-2-0 = 6s/40; Stronger
+> Stimulant 4-0-0 = **12s / 40 attacks**, 4-2-0 = 13s/55; Permanent Brew 5-0-0 = permanent. Throw
+> cadence (already committed): `BeserkerBrewAttack.rate` 8s (6.4s with Faster Throwing x-0-1/2).
+
 > **2026-06-10 (PR #662 — the Navarch live miss + items 6a–c):** the first
 > *demand-driven* item-3-style question arrived via screenshot ("does the
 > navarch of seas paragon make coins" → bot said NO) — and the diagnosis is

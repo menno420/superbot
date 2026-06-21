@@ -105,6 +105,7 @@ CATALOGUE: dict[str, AIToolMetadata] = {
     "btd6_relic_lookup": _btd6(TOOLSET_BTD6_REFERENCE),
     "btd6_power_lookup": _btd6(TOOLSET_BTD6_REFERENCE),
     "btd6_power_effect": _btd6(TOOLSET_BTD6_REFERENCE),
+    "btd6_buff_uptime": _btd6(TOOLSET_BTD6_REFERENCE),
     "btd6_monkey_knowledge_lookup": _btd6(TOOLSET_BTD6_REFERENCE),
     "btd6_geraldo_lookup": _btd6(TOOLSET_BTD6_REFERENCE),
     "btd6_boss_lookup": _btd6(TOOLSET_BTD6_REFERENCE),
