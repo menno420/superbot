@@ -58,6 +58,13 @@ works** (the traps we hit), and what is still un-decoded.
 > block 5s/4s) — it matters under alch attack-speed buffs (Jungle Drums, Overclock) that speed
 > throwing below the floor.
 >
+> **Attack-speed buffs on the alch (PR #1268):** `btd6_buff_uptime(..., alch_speed=…)` speeds the
+> brew throw — resolved **grounded** to a cooldown multiplier (a Power's `rate_scale`, e.g. Monkey
+> Boost ×0.5; else an upgrade's `rateMultiplier`, e.g. Jungle Drums = Village 2-0-0 ×0.85, Overclock
+> ×0.25 — all already in committed data, no decode needed). `effective_cadence = cadence × mult`;
+> below `rebuff_block` the floor binds (the case it exists for). Example: a 4-0-0 under Monkey Boost
+> holds **2** Ninjas at 100% (vs ~54% unboosted). Unknown/non-speed source → honest `found=false`.
+>
 > **Verified windows (game-data == Bloons-wiki cross-check):** Acidic Mixture Dip 2-0-0
 > = **10 shots** (12 @ 2-2-0); Berserker Brew 3-0-0 = **5s / 25 attacks**, 3-2-0 = 6s/40; Stronger
 > Stimulant 4-0-0 = **12s / 40 attacks**, 4-2-0 = 13s/55; Permanent Brew 5-0-0 = permanent. Throw

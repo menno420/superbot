@@ -538,7 +538,60 @@ def _alch_buff_attack(tower_id: str, code: str) -> dict[str, Any] | None:
     return brew or acidic
 
 
-def buff_uptime(buff_source: str, target: str, targets: int = 1) -> dict[str, Any]:
+def _tier_rate_buff_multiplier(tower_id: str, code: str) -> float | None:
+    """The attack-speed (cooldown) multiplier of a tier's rate buff, or ``None``.
+
+    Reads the committed ``buffs[].rateMultiplier`` — a value ``< 1`` means a
+    *speed-up* (lower cooldown). Used to ground an Alchemist-speed source like
+    Jungle Drums (Village 2-0-0, ×0.85) or Overclock (Engineer, ×0.25).
+    """
+    stats = btd6_stats_service.get_tower_stats(tower_id)
+    tier = stats.tier(code) if stats is not None else None
+    for buff in (tier or {}).get("buffs", []) or []:
+        if isinstance(buff, dict):
+            mult = buff.get("rateMultiplier")
+            if (
+                isinstance(mult, (int, float))
+                and not isinstance(mult, bool)
+                and 0 < mult < 1
+            ):
+                return float(mult)
+    return None
+
+
+def _alch_speed_multiplier(name: str) -> tuple[float, str] | None:
+    """Resolve an attack-speed source on the Alchemist → ``(cooldown_multiplier,
+    display)`` where ``multiplier < 1`` = faster throwing, or ``None``.
+
+    Grounded, two paths: a **Power**'s ``rate_scale`` (Monkey Boost → 0.5), else
+    an **upgrade**'s attack-speed ``rateMultiplier`` (Jungle Drums → 0.85,
+    Overclock → 0.25). ``None`` when it resolves to nothing or to something with
+    no attack-speed buff — never a fabricated number.
+    """
+    from services import btd6_data_service
+
+    query = name.strip()
+    if not query:
+        return None
+    power = btd6_data_service.find_power(query)
+    if power is not None:
+        rate_scale = (power.effect or {}).get("rate_scale")
+        if isinstance(rate_scale, (int, float)) and 0 < rate_scale < 1:
+            return float(rate_scale), power.canonical
+    res = btd6_upgrade_service.resolve_upgrade(query)
+    if res.upgrade is not None:
+        mult = _tier_rate_buff_multiplier(res.upgrade.tower_id, res.upgrade.code)
+        if mult is not None:
+            return mult, res.upgrade.canonical
+    return None
+
+
+def buff_uptime(
+    buff_source: str,
+    target: str,
+    targets: int = 1,
+    alch_speed: str | None = None,
+) -> dict[str, Any]:
     """Compute an Alchemist buff's uptime on a target tower — the grounded
     compute behind the ``btd6_buff_uptime`` tool.
 
@@ -552,9 +605,15 @@ def buff_uptime(buff_source: str, target: str, targets: int = 1) -> dict[str, An
     round-robins its throws, so a given tower is re-buffed every
     ``max(targets × throw_cadence, rebuff_block)`` seconds (``rebuff_block`` =
     the dump's per-target ``rebuffBlockTime`` floor). ``targets=1`` is the
-    single-tower case. Returns ``found=False`` with an honest note when the buff
-    isn't an Alchemist buff, the window isn't decoded, or the target has no
-    attack stat — never a fabricated number.
+    single-tower case.
+
+    ``alch_speed`` is an attack-speed buff *on the Alchemist itself* (e.g.
+    "Monkey Boost", "Jungle Drums", "Overclock"): it speeds the brew throw
+    (``effective_cadence = throw_cadence × multiplier``), which lets the alch keep
+    more towers buffed — until the fixed ``rebuff_block`` floor binds. Returns
+    ``found=False`` with an honest note when the buff isn't an Alchemist buff, the
+    window isn't decoded, the target has no attack stat, or ``alch_speed`` doesn't
+    resolve to a known attack-speed source — never a fabricated number.
     """
     targets = max(1, int(targets))
     src = _resolve_stat_target(buff_source)
@@ -624,6 +683,22 @@ def buff_uptime(buff_source: str, target: str, targets: int = 1) -> dict[str, An
             ),
         }
 
+    # Optional attack-speed buff ON THE ALCHEMIST (speeds the brew throw).
+    speed_mult: float | None = None
+    speed_label: str | None = None
+    if alch_speed and alch_speed.strip():
+        resolved = _alch_speed_multiplier(alch_speed)
+        if resolved is None:
+            return {
+                "found": False,
+                "note": (
+                    f"couldn't resolve an Alchemist attack-speed source from "
+                    f"{alch_speed!r} — pass a Power (e.g. 'Monkey Boost') or an "
+                    "attack-speed buff (e.g. 'Jungle Drums', 'Overclock')."
+                ),
+            }
+        speed_mult, speed_label = resolved
+
     out: dict[str, Any] = {
         "found": True,
         "buff": buff_label,
@@ -637,6 +712,13 @@ def buff_uptime(buff_source: str, target: str, targets: int = 1) -> dict[str, An
     }
     if isinstance(cadence, (int, float)) and cadence > 0:
         out["throw_cadence_seconds"] = float(cadence)
+        if speed_mult is not None:
+            out["alch_speed_source"] = speed_label
+            out["alch_speed_multiplier"] = speed_mult
+            out["effective_throw_cadence_seconds"] = round(
+                float(cadence) * speed_mult,
+                3,
+            )
     if isinstance(rebuff_block, (int, float)) and rebuff_block > 0:
         out["rebuff_block_seconds"] = float(rebuff_block)
 
@@ -691,12 +773,20 @@ def buff_uptime(buff_source: str, target: str, targets: int = 1) -> dict[str, An
     out["attacks_under_buff"] = int(min(filter(None, [cap, window / tgt_cd])))
 
     # Re-buff interval for one of the `targets` towers: the alch round-robins its
-    # throws, so each tower's turn comes every `targets × throw_cadence` — but no
-    # faster than the per-target `rebuff_block` floor.
+    # throws, so each tower's turn comes every `targets × effective_cadence` — but
+    # no faster than the per-target `rebuff_block` floor. An attack-speed buff on
+    # the alch lowers `effective_cadence`, so it can serve more towers until that
+    # fixed floor binds.
     if isinstance(cadence, (int, float)) and cadence > 0:
+        effective_cadence = float(cadence) * (
+            speed_mult if speed_mult is not None else 1.0
+        )
         floor = float(rebuff_block) if isinstance(rebuff_block, (int, float)) else 0.0
-        rebuff_interval = max(float(cadence) * targets, floor)
+        rebuff_interval = max(effective_cadence * targets, floor)
         out["rebuff_interval_seconds"] = round(rebuff_interval, 3)
+        out["rebuff_floor_binds"] = bool(
+            floor > 0 and effective_cadence * targets < floor,
+        )
         uptime = min(1.0, window / rebuff_interval)
         out["uptime"] = round(uptime, 3)
         out["uptime_percent"] = round(uptime * 100.0, 1)
@@ -707,18 +797,29 @@ def buff_uptime(buff_source: str, target: str, targets: int = 1) -> dict[str, An
         if limiter == "attacks"
         else f"the {float(duration)}s time limit"
     )
+    speed_txt = (
+        f" (sped up by {speed_label} → {out['effective_throw_cadence_seconds']}s throw)"
+        if speed_mult is not None
+        else ""
+    )
+    floor_txt = (
+        f" The {rebuff_block}s re-buff floor binds."
+        if out.get("rebuff_floor_binds")
+        else ""
+    )
     if "uptime_percent" in out:
         if targets > 1:
             uptime_txt = (
-                f" Buffing {targets} towers, each gets re-thrown every "
+                f" Buffing {targets} towers{speed_txt}, each re-thrown every "
                 f"~{out['rebuff_interval_seconds']}s → {out['uptime_percent']}% "
-                f"uptime per tower."
+                f"uptime per tower.{floor_txt}"
             )
         else:
             uptime_txt = (
-                f" Re-thrown every {float(cadence)}s → {out['uptime_percent']}% "
+                f" Re-thrown every {out['rebuff_interval_seconds']}s{speed_txt} → "
+                f"{out['uptime_percent']}% "
                 f"uptime{' (continuous)' if out.get('uptime', 0) >= 1.0 else ''} "
-                f"on {tgt_display}."
+                f"on {tgt_display}.{floor_txt}"
             )
     else:
         uptime_txt = ""

@@ -416,7 +416,9 @@ def test_buff_start_of_round_trigger_renders_each_round_not_seconds():
             "duration_rounds": 3,
         },
     )
-    assert text == "Start-of-round buff: x0.25 attack cooldown at the start of each round"
+    assert (
+        text == "Start-of-round buff: x0.25 attack cooldown at the start of each round"
+    )
     assert "3s" not in text and "3 round" not in text
 
 
@@ -525,7 +527,8 @@ def test_power_effect_grounds_monkey_boost_on_a_real_upgrade():
     assert res["rate_scale"] == 0.5
     assert res["duration_seconds"] == 15
     assert res["boosted_cooldown_seconds"] == round(
-        res["base_cooldown_seconds"] * 0.5, 4
+        res["base_cooldown_seconds"] * 0.5,
+        4,
     )
     # Independent rounding of base vs boosted leaves a sub-0.01 gap.
     gap = abs(res["boosted_attacks_per_second"] - 2 * res["base_attacks_per_second"])
@@ -570,7 +573,8 @@ def test_power_effect_handles_unknown_power_and_unknown_tower():
 
 def _inject_buff_window(monkeypatch, *, duration=None, cap=None, permanent=False):
     """Patch the buff-attack lookup so the Alchemist tier reports a decoded
-    window (mirrors what parse_gamedata._buff_window will attach)."""
+    window (mirrors what parse_gamedata._buff_window will attach).
+    """
     real = det._alch_buff_attack
 
     def fake(tower_id, code):
@@ -737,3 +741,63 @@ def test_buff_uptime_targets_floor_is_at_least_one():
     res = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", targets=0)
     assert res["targets"] == 1
     assert res["uptime_percent"] == 100.0
+
+
+# --- alch_speed (attack-speed buffs ON the Alchemist) -----------------------
+
+
+def test_buff_uptime_monkey_boost_resolves_via_power():
+    # Monkey Boost (a Power, rate_scale 0.5) speeds the brew throw 8s → 4s.
+    res = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", alch_speed="Monkey Boost")
+    assert res["found"] is True
+    assert res["alch_speed_source"] == "Monkey Boost"
+    assert res["alch_speed_multiplier"] == 0.5
+    assert res["effective_throw_cadence_seconds"] == 4.0
+
+
+def test_buff_uptime_speed_buff_lets_alch_hold_more_towers():
+    # Unboosted, a 4-0-0 alch holds ~1 Ninja at 100% but only ~54% on two.
+    # Monkey Boost (×0.5 throw) lets it hold BOTH at 100%.
+    plain = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", targets=2)
+    boosted = det.buff_uptime(
+        "alchemist 4-0-0",
+        "ninja 5-0-0",
+        targets=2,
+        alch_speed="Monkey Boost",
+    )
+    assert plain["uptime_percent"] < 100.0
+    assert boosted["uptime_percent"] == 100.0
+    assert boosted["uptime_percent"] > plain["uptime_percent"]
+
+
+def test_buff_uptime_rebuff_floor_binds_under_fast_throwing():
+    # Monkey Boost makes the throw 4s, below the 5s rebuff_block floor → the
+    # floor binds (a tower can't be re-buffed faster than 5s, however fast the
+    # alch throws). This is the case rebuffBlockTime exists for.
+    res = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", alch_speed="Monkey Boost")
+    assert res["effective_throw_cadence_seconds"] == 4.0
+    assert res["rebuff_interval_seconds"] == 5.0  # floored at rebuff_block, not 4s
+    assert res["rebuff_floor_binds"] is True
+
+
+def test_buff_uptime_jungle_drums_resolves_via_upgrade_rate_buff():
+    # Jungle Drums (Monkey Village 2-0-0, RateSupport ×0.85) resolves through the
+    # upgrade → tier rate-buff path and improves multi-target uptime.
+    plain = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", targets=2)
+    jd = det.buff_uptime(
+        "alchemist 4-0-0",
+        "ninja 5-0-0",
+        targets=2,
+        alch_speed="Jungle Drums",
+    )
+    assert jd["found"] is True
+    assert jd["alch_speed_source"] == "Jungle Drums"
+    assert jd["alch_speed_multiplier"] == 0.85
+    assert jd["uptime_percent"] > plain["uptime_percent"]
+
+
+def test_buff_uptime_unknown_alch_speed_is_honest():
+    res = det.buff_uptime("alchemist 4-0-0", "ninja 5-0-0", alch_speed="Banana")
+    assert res["found"] is False
+    assert "couldn't resolve" in res["note"]
+    assert "Monkey Boost" in res["note"]  # names the supported kinds
