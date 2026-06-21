@@ -63,6 +63,33 @@ async def grant_temp_role(
     return expires_at
 
 
+async def list_active_grants(
+    guild: discord.Guild,
+    member_id: int,
+) -> list[tuple[discord.Role, datetime]]:
+    """A member's still-active temp grants as ``(role, expires_at)``, soonest first.
+
+    Reads through :func:`utils.db.role_grants.list_for_member` (which returns every
+    grant row for the member, oldest expiry first) and drops two kinds the caller
+    should never be shown: a grant whose role has vanished from the guild, and an
+    already-lapsed grant the periodic sweep has not yet collected — so the listing
+    only ever names a role the member still effectively holds. Pure read: no
+    mutation, no audit.
+    """
+    now = _utcnow()
+    rows = await grants_db.list_for_member(guild.id, member_id)
+    active: list[tuple[discord.Role, datetime]] = []
+    for row in rows:
+        expires_at = row["expires_at"]
+        if expires_at <= now:
+            continue
+        role = resources.resolve_role(guild, role_id=int(row["role_id"]))
+        if role is None:
+            continue
+        active.append((role, expires_at))
+    return active
+
+
 async def sweep_expired(guild: discord.Guild) -> int:
     """Remove every lapsed temp role in ``guild`` and drop its row.
 
@@ -142,4 +169,4 @@ async def _emit(
     )
 
 
-__all__ = ["grant_temp_role", "sweep_expired"]
+__all__ = ["grant_temp_role", "list_active_grants", "sweep_expired"]
