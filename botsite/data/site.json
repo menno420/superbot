@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T15:38:10Z",
+    "generated_at": "2026-06-21T15:38:23Z",
     "build": {
-      "commit": "916ff706",
-      "subject": "session(creature-pvp): born-red card + claim — user-facing creature PvP battle flow",
-      "committed_at": "2026-06-21T15:36:42Z",
+      "commit": "f25356b9",
+      "subject": "feat(creatures): user-facing PvP battle flow + extension-integrity guard",
+      "committed_at": "2026-06-21T15:38:10Z",
       "branch": "HEAD"
     }
   },
