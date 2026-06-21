@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:18:36Z",
+    "generated_at": "2026-06-21T21:34:20Z",
     "build": {
-      "commit": "bbcb2d31",
-      "subject": "creature PvP: born-red session card + claim (result-recording slice)",
-      "committed_at": "2026-06-21T21:07:26Z",
+      "commit": "ec8a8d68",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/funny-franklin-m1xdmf",
+      "committed_at": "2026-06-21T21:34:16Z",
       "branch": "claude/funny-franklin-m1xdmf"
     }
   },

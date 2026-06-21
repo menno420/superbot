@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:18:36Z",
+    "generated_at": "2026-06-21T21:34:20Z",
     "build": {
-      "commit": "bbcb2d31",
-      "subject": "creature PvP: born-red session card + claim (result-recording slice)",
-      "committed_at": "2026-06-21T21:07:26Z",
+      "commit": "ec8a8d68",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/funny-franklin-m1xdmf",
+      "committed_at": "2026-06-21T21:34:16Z",
       "branch": "claude/funny-franklin-m1xdmf"
     },
     "counts": {
@@ -2157,6 +2157,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-repo-state-review-cleanup.md",
+      "date": "2026-06-21",
+      "title": "Session — repo-state review cleanup (2026-06-21)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-reconcile-band1230.md",
       "date": "2026-06-21",
       "title": "Session — 2026-06-21 · docs reconciliation (band-#1230, Q-0107 pass #18)",
@@ -2352,7 +2360,7 @@
       "file": "2026-06-21-creature-pvp-result-recording.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature PvP: result recording + win/loss records + battle leaderboard",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
@@ -2408,6 +2416,14 @@
       "file": "2026-06-21-btd6-data-auto-seed.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — BTD6 data: auto-seed the postgres blob store on boot",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-btd6-content-drift-surface.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6: surface same-version data drift (sha-based seed reminder)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
@@ -2576,22 +2592,6 @@
       "file": "2026-06-20-design-system-site-pages.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Design-system: compose the rest of the site (Features/Commands/Changelog/Status)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-landing-page.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system: full landing-page composition + hybrid edit loop",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-connector-docs.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system docs: connector-vs-`/design-sync` correction",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
