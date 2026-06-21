@@ -180,14 +180,33 @@ status-move check confirmed setup is **worth a turn (~55%) but not degenerate**.
 "see how playable it is *before* building" the owner asked for — now validated on the full combat
 model, not just stats.
 
-## 4. How it docks into the bot (when greenlit — not built here)
+## 4. How it docks into the bot
 
-- **Catch** = Lane A Wild Encounters (the activity-spawn engine) drops creatures instead of / in
-  addition to items; reuses `economy_service` / `game_xp` / a fishing-style catch log.
-- **Collection** = Lane B filters over the creature log; a "dex" of seen vs. caught.
-- **Battle** = a new `cogs/creature_battle/` + `services/creature_battle_engine.py` (pure, the sim's
-  math graduates here) + `views/creature_battle/` panels; PvP challenges mirror the existing
-  `rps`/`deathmatch` PvP-challenge view pattern. Level-normalized.
+**★ CATCH + COLLECTION SHIPPED (2026-06-21, runtime v1 slice 1).** The catch half is built
+(mirroring the fishing subsystem: pure domain → audited workflow → CRUD → hub-less cog):
+
+- `disbot/data/creatures/creatures.json` — the 36-creature catalog graduated from the sim (Q-0186).
+- `disbot/utils/creatures/` — pure domain: catalog + rarity-weighted wild encounter + catch roll.
+- `disbot/services/creature_workflow.py` — the audited write boundary (collection-log write + the
+  `GAME_CREATURE` xp award in ONE `db.transaction()`, EventBus emit after commit; a fled creature
+  writes nothing). A failed catch awards no xp; there is **no level gate** (rarer = harder to catch,
+  not locked) — raw level only nudges catch odds, capped.
+- `disbot/utils/db/games/creatures.py` + migration `077_creature_collection_log.sql` — the dex CRUD.
+- `disbot/cogs/creature_cog.py` — `!catch`/`!hunt`, `!dex`/`!collection`/`!creatures`,
+  `!dextop`/`!topcatchers`, + the Help hook (hub-less v1, exactly like fishing).
+- `services/game_xp_service` — new `GAME_CREATURE` track (label 🐾 Creatures) + the `catch` award (4
+  xp); leveling reuses the shared `game_xp` curve. The world card surfaces creature standings
+  automatically (it reads `game_xp` rows).
+
+Remaining docking work:
+
+- **Collection** = the `!dex` command above (a "dex" of caught vs not-yet-caught, grouped by element).
+  A richer Explore-hub Lane-B filter view is a later slice.
+- **Battle (NEXT — `needs-hermes-review`)** = a new `cogs/creature_battle/` +
+  `services/creature_battle_engine.py` (pure, the sim's math graduates here) + `views/creature_battle/`
+  panels; PvP challenges mirror the existing `rps`/`deathmatch` PvP-challenge view pattern.
+  **Level-normalized** (the §3 finding). Runtime-verified session, not autonomous self-merge.
+- **World** = registers a `WorldEntry` in the Explore hub (a later slice; the catch cog is hub-less).
 - **World** = registers a `WorldEntry` in the Explore hub; creature standings on the world card.
 - **Anti-P2W** = the normalization rule + Q-0039 (no buyable power); shinies are cosmetic (Lane D).
 

@@ -221,6 +221,7 @@ def test_advanced_top_level_set_today():
         "channel",
         "community",
         "counters",
+        "creature",
         "diagnostic",
         "economy",
         "fishing",

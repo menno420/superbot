@@ -23,6 +23,8 @@ depth_record    25 (one-time per band)  ``GAME_MINING``
 craft           8                       ``GAME_CRAFTING``
 quick_craft     8                       ``GAME_CRAFTING``
 repair          3                       ``GAME_CRAFTING``
+fish            5                       ``GAME_FISHING``
+catch           4                       ``GAME_CREATURE``
 sell / buy      0                       (money moves never award XP)
 ==============  ======================  =====================================
 
@@ -67,6 +69,7 @@ EVT_GAME_LEVEL_UP = "game_xp.level_up"
 GAME_MINING = "mining"
 GAME_CRAFTING = "crafting"
 GAME_FISHING = "fishing"
+GAME_CREATURE = "creature"
 
 # Display metadata for the cross-game read surfaces (the world card, leaderboards).
 # (emoji, label) per game key; an unknown key falls back to a titled key (so a new
@@ -75,6 +78,7 @@ GAME_LABELS: dict[str, tuple[str, str]] = {
     GAME_MINING: ("⛏️", "Mining"),
     GAME_CRAFTING: ("🔨", "Crafting"),
     GAME_FISHING: ("🎣", "Fishing"),
+    GAME_CREATURE: ("🐾", "Creatures"),
 }
 
 
@@ -96,6 +100,7 @@ _AWARDS: dict[str, int] = {
     "harvest": 2,
     "explore": 4,
     "fish": 5,
+    "catch": 4,
     "depth_record": 25,
     "craft": 8,
     "quick_craft": 8,
@@ -281,6 +286,7 @@ __all__ = [
     "GAME_MINING",
     "GAME_CRAFTING",
     "GAME_FISHING",
+    "GAME_CREATURE",
     "GAME_LABELS",
     "DAILY_SOFT_CAP",
     "CAPPED_RATE",

@@ -114,6 +114,9 @@ extensions:
   fishing:
     role: product_subsystem
     note: Fishing minigame (ecosystem #2 — the second character-platform activity).
+  creature:
+    role: product_subsystem
+    note: Creature catch/collection game v1 (catch slice; level-normalized PvP later).
   diagnostic:
     role: shared_platform
     note: "`!platform` diagnostics; broad cross-subsystem read-model surface."

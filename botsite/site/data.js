@@ -40,8 +40,8 @@ const AREAS = [
       "BTD6 Assistant",
       "Blackjack",
       "Counting",
-      "Deathmatch",
-      "Fishing"
+      "Creatures",
+      "Deathmatch"
     ]
   },
   {
@@ -972,6 +972,21 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "catch",
+    "area": "games",
+    "status": "finished",
+    "summary": "Head into the wild to find and catch a creature.",
+    "description": "Head into the wild to find and catch a creature.",
+    "usage": "!catch",
+    "aliases": [
+      "hunt"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "chain",
     "area": "games",
     "status": "finished",
@@ -1540,6 +1555,37 @@ const COMMANDS = [
         "title": "Mining & Exploration — Brainstorm & Roadmap"
       }
     ]
+  },
+  {
+    "name": "dex",
+    "area": "games",
+    "status": "finished",
+    "summary": "Show your creature collection — every creature you've caught.",
+    "description": "Show your creature collection — every creature you've caught.",
+    "usage": "!dex",
+    "aliases": [
+      "collection",
+      "creatures"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "dextop",
+    "area": "games",
+    "status": "finished",
+    "summary": "Show this server's top collectors by total creatures caught.",
+    "description": "Show this server's top collectors by total creatures caught.",
+    "usage": "!dextop",
+    "aliases": [
+      "topcatchers"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
   },
   {
     "name": "diagnostic_bot_status",
@@ -5424,10 +5470,25 @@ const GAMES = [
     ]
   },
   {
+    "id": "creature",
+    "name": "Creatures",
+    "icon": "gamepad",
+    "color": "var(--pink)",
+    "command": "games",
+    "tagline": "Catch original creatures and build your collection dex",
+    "description": "Catch original creatures and build your collection dex",
+    "howTo": [
+      "Run !games to get started.",
+      "Follow the prompts and buttons in the channel.",
+      "Wins and progress feed into XP and the leaderboards."
+    ],
+    "beta": true
+  },
+  {
     "id": "deathmatch",
     "name": "Deathmatch",
     "icon": "gamepad",
-    "color": "var(--pink)",
+    "color": "var(--amber)",
     "command": "dm_challenge",
     "tagline": "1v1 duel battles",
     "description": "1v1 duel battles",
@@ -5441,7 +5502,7 @@ const GAMES = [
     "id": "fishing",
     "name": "Fishing",
     "icon": "gamepad",
-    "color": "var(--amber)",
+    "color": "var(--indigo)",
     "command": "fish",
     "tagline": "Fishing minigame — cast a line, build your collection",
     "description": "Fishing minigame — cast a line, build your collection",
@@ -5456,7 +5517,7 @@ const GAMES = [
     "id": "games",
     "name": "Games",
     "icon": "gamepad",
-    "color": "var(--indigo)",
+    "color": "var(--g)",
     "command": "games",
     "tagline": "Competitive games and channel activities",
     "description": "Competitive games and channel activities",
@@ -5471,7 +5532,7 @@ const GAMES = [
     "id": "rps_tournament",
     "name": "Rock Paper Scissors",
     "icon": "gamepad",
-    "color": "var(--g)",
+    "color": "var(--sky)",
     "command": "rps",
     "tagline": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
     "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
@@ -5486,7 +5547,7 @@ const GAMES = [
     "id": "chain",
     "name": "Word Chain",
     "icon": "gamepad",
-    "color": "var(--sky)",
+    "color": "var(--g-bright)",
     "command": "chain",
     "tagline": "Word-chaining game",
     "description": "Word-chaining game",
@@ -5502,7 +5563,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "4c616685",
+    "build": "7acf1f74",
     "title": "New public bot website",
     "changes": [
       {
@@ -5514,7 +5575,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "4c616685",
+    "build": "7acf1f74",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5526,7 +5587,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "4c616685",
+    "build": "7acf1f74",
     "title": "Command-alias suggestions",
     "changes": [
       {

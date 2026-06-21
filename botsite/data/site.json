@@ -1,17 +1,17 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T23:51:51Z",
+    "generated_at": "2026-06-21T03:21:14Z",
     "build": {
-      "commit": "4c616685",
-      "subject": "Merge pull request #1201 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-21T01:40:33Z",
-      "branch": "claude/jolly-johnson-czteze"
+      "commit": "7acf1f74",
+      "subject": "session(card): creature game runtime v1 — catch + collection (born-red HOLD)",
+      "committed_at": "2026-06-21T03:08:39Z",
+      "branch": "claude/funny-franklin-uf628a"
     }
   },
   "counts": {
-    "commands": 308,
-    "features": 36,
-    "games": 8
+    "commands": 311,
+    "features": 37,
+    "games": 9
   },
   "catalogue": [
     {
@@ -292,6 +292,22 @@
         "games",
         "counting",
         "community"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "creature",
+      "display_name": "Creatures",
+      "description": "Catch original creatures and build your collection dex",
+      "emoji": "🐾",
+      "category": "games",
+      "tags": [
+        "creatures",
+        "minigame",
+        "activities"
       ],
       "badges": [
         "games"
@@ -3215,6 +3231,22 @@
       "notes": null
     },
     {
+      "name": "catch",
+      "aliases": [
+        "hunt"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Head into the wild to find and catch a creature.",
+      "description": "Head into the wild to find and catch a creature.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "chain",
       "aliases": [],
       "category": "games",
@@ -3388,6 +3420,39 @@
       "examples": [
         "!chain delete [channel]"
       ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "dex",
+      "aliases": [
+        "collection",
+        "creatures"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your creature collection — every creature you've caught.",
+      "description": "Show your creature collection — every creature you've caught.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "dextop",
+      "aliases": [
+        "topcatchers"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show this server's top collectors by total creatures caught.",
+      "description": "Show this server's top collectors by total creatures caught.",
+      "use_cases": null,
+      "examples": [],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
