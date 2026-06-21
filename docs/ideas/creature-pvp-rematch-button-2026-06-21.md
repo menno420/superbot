@@ -1,6 +1,6 @@
 # Creature PvP — rematch button on the outcome embed
 
-> **Status:** `in-progress` — ⚑ self-initiated (Q-0172). Captured + built 2026-06-21.
+> **Status:** `ideas` — ⚑ self-initiated (Q-0172). Captured + built (#1262) 2026-06-21.
 
 ## Idea
 
