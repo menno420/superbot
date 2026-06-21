@@ -2963,6 +2963,19 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "off",
+    "area": "other",
+    "status": "finished",
+    "summary": "Disable the starboard (config is preserved).",
+    "description": "Disable the starboard (config is preserved).",
+    "usage": "!off",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "paragon",
     "area": "other",
     "status": "finished",
@@ -4562,6 +4575,23 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "starboard",
+    "area": "other",
+    "status": "finished",
+    "summary": "Show or set the hall-of-fame channel + star threshold.",
+    "description": "Show or set the hall-of-fame channel + star threshold.",
+    "usage": "!starboard",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!starboard",
+      "!starboard #channel [n]",
+      "!starboard off"
+    ],
+    "planned": []
+  },
+  {
     "name": "start_match",
     "area": "games",
     "status": "finished",
@@ -5689,7 +5719,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "25e57944",
+    "build": "0d8a352",
     "title": "New public bot website",
     "changes": [
       {
@@ -5701,7 +5731,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "25e57944",
+    "build": "0d8a352",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5713,7 +5743,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "25e57944",
+    "build": "0d8a352",
     "title": "Command-alias suggestions",
     "changes": [
       {

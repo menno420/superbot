@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T20:40:57Z",
+    "generated_at": "2026-06-21T21:31:25Z",
     "build": {
-      "commit": "25e57944",
-      "subject": "BTD6 data auto-seed: born-red card + claim",
-      "committed_at": "2026-06-21T20:25:18Z",
-      "branch": "claude/peaceful-mayer-rgc20t"
+      "commit": "0d8a352",
+      "subject": "session(card): Starboard PR 1 — foundation + v1 (born-red HOLD)",
+      "committed_at": "2026-06-21T21:16:08Z",
+      "branch": "claude/starboard-v1"
     }
   },
   "counts": {
-    "commands": 314,
+    "commands": 316,
     "features": 37,
     "games": 9
   },
@@ -6240,6 +6240,20 @@
       "notes": null
     },
     {
+      "name": "off",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Disable the starboard (config is preserved).",
+      "description": "Disable the starboard (config is preserved).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "paragon",
       "aliases": [],
       "category": "other",
@@ -6564,6 +6578,24 @@
       "description": "Show the most recent slow-path entries (S3.2 ring buffer).",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "starboard",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show or set the hall-of-fame channel + star threshold.",
+      "description": "Show or set the hall-of-fame channel + star threshold.",
+      "use_cases": null,
+      "examples": [
+        "!starboard",
+        "!starboard #channel [n]",
+        "!starboard off"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
