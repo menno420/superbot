@@ -149,4 +149,9 @@ session holds it, no claim line needed here.)*
   (`game_xp_service.world_identity` + `views/explore/world_card.py` + `🪪 World Card` hub button +
   `!worldcard`/`!mystats`) · 2026-06-20 · **PR (this session, self-merge on green)**
 
+- `claude/funny-franklin-8ha49t` · **`!temproles` member-facing temp-role listing** (loose-end
+  from reaction-roles PR 3–5) — read seam `role_grants_service.list_active_grants` + `!temproles`
+  command on `RoleGrantsCog` · `disbot/services/role_grants_service.py` / `disbot/cogs/role_grants_cog.py`
+  + tests · 2026-06-21 · **routine dispatch, self-merge on green**
+
 _(move claims here with their PR # as they close, then prune older entries)_
