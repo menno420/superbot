@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/reaction-roles-gradient-presets` · **reaction-roles gradient presets** (⚑ self-initiated,
+  Q-0172) — curated gradient catalogue + one-tap presets in the Colours flow (perk-gated) ·
+  `disbot/utils/role_menu_presentation.py` + `disbot/views/roles/role_menu_builder.py` · 2026-06-21 ·
+  **PR (this session, merge on green)**
+
 - `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
   claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
   · 2026-06-21 · **auto-merge on green** (docs-only)
