@@ -47,15 +47,35 @@ def _highlights(result: PvpResult) -> str:
     return "\n".join(shown)
 
 
+def _records_line(
+    challenger: discord.abc.User,
+    opponent: discord.abc.User,
+    records: dict[int, tuple[int, int]],
+) -> str:
+    """One ``name — W–L`` line per fighter from their updated tally."""
+    lines = []
+    for member in (challenger, opponent):
+        wins, losses = records.get(member.id, (0, 0))
+        lines.append(f"{member.display_name} — **{wins}**W · **{losses}**L")
+    return "\n".join(lines)
+
+
 def build_result_embed(
     challenger: discord.abc.User,
     opponent: discord.abc.User,
     result: PvpResult,
+    *,
+    records: dict[int, tuple[int, int]] | None = None,
+    xp_note: str | None = None,
 ) -> discord.Embed:
     """Render the resolved PvP battle for the channel.
 
     ``challenger`` is team A, ``opponent`` is team B (the order
     :func:`services.creature_battle_service.resolve_pvp` was called with).
+
+    When *records* is given (``{user_id: (wins, losses)}`` from a recorded battle),
+    a *Records* field shows each fighter's updated standing; *xp_note* adds the
+    winner's level-up notice when the win crossed a shared game level.
     """
     winner = challenger if result.a_won else opponent
     embed = discord.Embed(
@@ -77,9 +97,14 @@ def build_result_embed(
         inline=True,
     )
     embed.add_field(name="Highlights", value=_highlights(result), inline=False)
-    embed.add_field(
-        name="Winner",
-        value=f"🏆 {winner.mention}",
-        inline=False,
-    )
+    winner_value = f"🏆 {winner.mention}"
+    if xp_note:
+        winner_value += f"\n{xp_note}"
+    embed.add_field(name="Winner", value=winner_value, inline=False)
+    if records is not None:
+        embed.add_field(
+            name="Records",
+            value=_records_line(challenger, opponent, records),
+            inline=False,
+        )
     return embed

@@ -25,6 +25,7 @@ quick_craft     8                       ``GAME_CRAFTING``
 repair          3                       ``GAME_CRAFTING``
 fish            5                       ``GAME_FISHING``
 catch           4                       ``GAME_CREATURE``
+battle_win      6                       ``GAME_CREATURE`` (PvP is normalized)
 sell / buy      0                       (money moves never award XP)
 ==============  ======================  =====================================
 
@@ -101,6 +102,7 @@ _AWARDS: dict[str, int] = {
     "explore": 4,
     "fish": 5,
     "catch": 4,
+    "battle_win": 6,
     "depth_record": 25,
     "craft": 8,
     "quick_craft": 8,
