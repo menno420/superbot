@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T15:19:50Z",
+    "generated_at": "2026-06-21T15:38:10Z",
     "build": {
-      "commit": "36f51595",
-      "subject": "Merge pull request #1231 from menno420/claude/zen-dirac-wnhwhg",
-      "committed_at": "2026-06-21T17:09:35Z",
-      "branch": "claude/reconcile-1232"
+      "commit": "916ff706",
+      "subject": "session(creature-pvp): born-red card + claim — user-facing creature PvP battle flow",
+      "committed_at": "2026-06-21T15:36:42Z",
+      "branch": "HEAD"
     },
     "counts": {
       "functions": 37,
@@ -15,8 +15,8 @@
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 37,
-      "cogs": 45,
-      "commands": 312,
+      "cogs": 46,
+      "commands": 313,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -2125,6 +2125,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-reconcile-band1230.md",
+      "date": "2026-06-21",
+      "title": "Session — 2026-06-21 · docs reconciliation (band-#1230, Q-0107 pass #18)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-reaction-roles-ui-direction.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Reaction-roles plan: UI-direction refinement (web vs in-Discord)",
@@ -2216,6 +2224,14 @@
       "file": "2026-06-21-creature-sim-engine-parity-guard.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature sim↔engine constant parity guard (PR 2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-creature-pvp-battle-flow.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -2571,22 +2587,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-split-decisions-locked.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website split: review the external research + lock the open decisions",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-website-split-decision-routing.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Website split: route the control-panel-placement decision (Q-0179)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -2675,7 +2675,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 182,
+          "line": 183,
           "layer": "config",
           "has_default": true
         },
@@ -2697,7 +2697,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 181,
+          "line": 182,
           "layer": "config",
           "has_default": true
         }
@@ -2730,7 +2730,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 165,
+          "line": 166,
           "layer": "config",
           "has_default": true
         },
@@ -2832,7 +2832,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 208,
+          "line": 209,
           "layer": "config",
           "has_default": true
         }
@@ -2848,7 +2848,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 211,
+          "line": 212,
           "layer": "config",
           "has_default": true
         }
@@ -2864,7 +2864,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 214,
+          "line": 215,
           "layer": "config",
           "has_default": true
         }
@@ -3024,7 +3024,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 107,
+          "line": 108,
           "layer": "config",
           "has_default": true
         }
@@ -3104,7 +3104,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 108,
+          "line": 109,
           "layer": "config",
           "has_default": true
         }
@@ -3122,7 +3122,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 164,
+          "line": 165,
           "layer": "config",
           "has_default": true
         },
@@ -3163,7 +3163,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 191,
+          "line": 192,
           "layer": "config",
           "has_default": true
         },
@@ -3186,7 +3186,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 195,
+          "line": 196,
           "layer": "config",
           "has_default": true
         },
@@ -3225,7 +3225,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 163,
+          "line": 164,
           "layer": "config",
           "has_default": true
         },
@@ -3249,7 +3249,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 162,
+          "line": 163,
           "layer": "config",
           "has_default": true
         },
@@ -4671,6 +4671,27 @@
           "classification": "",
           "has_panel": false,
           "button_backed": false
+        }
+      ]
+    },
+    {
+      "cog": "CreatureBattleCog",
+      "file": "disbot/cogs/creature_battle_cog.py",
+      "subsystem": "creature_battle",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "cbattle",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "creaturebattle"
+          ],
+          "brief": "Challenge another member to a level-normalized creature PvP battle.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
         }
       ]
     },

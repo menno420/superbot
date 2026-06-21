@@ -66,6 +66,9 @@ SITE_DATA_FILE = REPO_ROOT / "botsite" / "data" / "site.json"
 # point of the guard is that a *new* unresolved cog must be triaged, not silent.
 _UNREGISTERED_COG_ALLOWLIST = frozenset(
     {
+        # Creature PvP (!cbattle); part of the Creatures subsystem, surfaced via
+        # creature_cog's hook — registers no subsystem of its own.
+        "CreatureBattleCog",
         "HermesCog",
         "ParagonCog",
         # Temp-role expiry sweep + the !temprole grant command; backs the role

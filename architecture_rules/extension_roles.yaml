@@ -117,6 +117,11 @@ extensions:
   creature:
     role: product_subsystem
     note: Creature catch/collection game v1 (catch slice; level-normalized PvP later).
+  creature_battle:
+    role: product_subsystem
+    note: >-
+      Creature PvP battle cog (!cbattle) — part of the Creatures subsystem (not a
+      separate registered subsystem; surfaced via creature_cog's Help hook).
   diagnostic:
     role: shared_platform
     note: "`!platform` diagnostics; broad cross-subsystem read-model surface."

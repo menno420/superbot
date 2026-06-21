@@ -148,10 +148,12 @@ class CreatureCog(commands.Cog):
             description=(
                 f"Catch from **{len(CREATURES)}** original creatures across "
                 "six elements. Rarer creatures show up less often and are harder "
-                "to catch — fill out your dex and climb the leaderboard.\n\n"
+                "to catch — fill out your dex and battle other trainers.\n\n"
                 "**`!catch`** — head into the wild\n"
                 "**`!dex`** — your collection\n"
-                "**`!dextop`** — the server leaderboard"
+                "**`!dextop`** — the server leaderboard\n"
+                "**`!cbattle @member`** — challenge a trainer to a "
+                "level-normalized PvP battle"
             ),
             color=INFO_COLOR,
         )
