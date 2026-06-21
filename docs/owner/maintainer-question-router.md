@@ -3158,7 +3158,7 @@ seam.
 **Area:** BTD6 data lane / production operations
 **Type:** Operational posture (boot-time DB write)
 **Priority:** Medium (the drift class is now *surfaced* — this decides whether it also self-heals)
-**Status:** ✅ **ANSWERED 2026-06-19 (owner, question panel) — (b) auto-seed when the bundled files are strictly newer.** True zero-touch (merge → deploy → data current); never clobbers a deliberately-newer store (the refresh-workflow case), because that store's version is not *older* than the repo. Build beside the #676 drift warning in `btd6_cog.cog_load`; record in `docs/subsystems/btd6.md` data-lane note. *(Original question below.)*
+**Status:** ✅ **IMPLEMENTED 2026-06-21 (PR #1255)** — built per the 2026-06-19 decision **(b)**. Owner **re-confirmed (b) over a content-aware variant** in-session (2026-06-21) when asked: strict version-newer only, accepting that **same-version data edits (e.g. the #1249/#1251 buff windows) still need a manual `!btd6ops seed-data`** — they do NOT auto-apply. `btd6_data_service.auto_seed_enabled()` (postgres + `BTD6_AUTO_SEED` kill-switch) + `bundled_newer_than_served()` (strict version compare) gate a `seed_postgres_from_files()` call in `btd6_cog.cog_load`, beside the #676 drift warning. *(Prior: ✅ ANSWERED 2026-06-19 (owner, question panel) — (b) auto-seed when the bundled files are strictly newer; never clobbers a deliberately-newer store. Original question below.)*
 
 **Question:** Production serves BTD6 fixtures from the `btd6_data_blobs`
 Postgres table (`BTD6_DATA_BACKEND=postgres`), so a data PR updates the

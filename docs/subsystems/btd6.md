@@ -48,12 +48,19 @@ files, `disbot/services/btd6_*`, `disbot/views/btd6/`, `disbot/utils/db/btd6_*`,
 - **Production data lane (learned live 2026-06-10):** prod runs
   `BTD6_DATA_BACKEND=postgres` — fixtures are served from the `btd6_data_blobs`
   table (warmed once at boot), **not** the repo files, so a merged data PR does
-  NOT change what prod serves until `!btd6ops seed-data` runs. Since PR #676
+  NOT change what prod serves until the store is re-seeded. Since PR #676
   seed-data **applies immediately** (re-warms + drops the dataset cache; no
   restart), and version drift between bundled files and the store is surfaced
-  in the boot log + a `!btd6 status` ⚠️ field. Auto-seed-on-boot is **Q-0077
-  (open)**. Code deploys themselves are Railway auto-deploy-on-merge;
-  `!restart` exits nonzero since PR #675 so the platform relaunches it.
+  in the boot log + a `!btd6 status` ⚠️ field.
+- **Auto-seed-on-boot (Q-0077(b), PR #1255):** `cog_load` re-seeds the postgres
+  store from the deployed files **when they carry a strictly newer `game_version`**
+  (`auto_seed_enabled()` + `bundled_newer_than_served()` → `seed_postgres_from_files()`;
+  defensive, kill-switch `BTD6_AUTO_SEED=0`). So a **version bump** is zero-touch
+  (merge → deploy → current). **A same-`version` data edit (e.g. a buff-stat fix
+  with no version bump) is NOT auto-applied** — by the owner's strict-(b) choice
+  (2026-06-21) it still needs a one-time `!btd6ops seed-data`. Code deploys
+  themselves are Railway auto-deploy-on-merge; `!restart` exits nonzero since
+  PR #675 so the platform relaunches it.
 
 ## Plans / pending approval
 

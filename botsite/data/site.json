@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T18:11:06Z",
+    "generated_at": "2026-06-21T20:40:57Z",
     "build": {
-      "commit": "2e5955c0",
-      "subject": "session: open temproles member-view PR (born-red card)",
-      "committed_at": "2026-06-21T18:07:30Z",
-      "branch": "claude/funny-franklin-8ha49t"
+      "commit": "25e57944",
+      "subject": "BTD6 data auto-seed: born-red card + claim",
+      "committed_at": "2026-06-21T20:25:18Z",
+      "branch": "claude/peaceful-mayer-rgc20t"
     }
   },
   "counts": {

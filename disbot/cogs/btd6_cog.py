@@ -106,6 +106,30 @@ class BTD6Cog(commands.Cog):
             )
             return
 
+        # Auto-seed (Q-0077(b), 2026-06-19 owner decision): when the deployed
+        # files carry a strictly NEWER game version than the postgres store
+        # serves, re-seed the store from them so a version bump goes live on
+        # deploy with no manual `!btd6ops seed-data`. Never fires for the file
+        # backend, an equal/newer store (never clobbers a deliberately-newer
+        # one), or a same-version data edit (those still need manual seed-data).
+        # Defensive: a failure logs and serves the existing store.
+        if btd6_data_service.auto_seed_enabled() and (
+            btd6_data_service.bundled_newer_than_served()
+        ):
+            try:
+                count = await btd6_data_service.seed_postgres_from_files()
+                logger.info(
+                    "BTD6 auto-seed: deployed files are a newer game version than "
+                    "the store — synced %d blobs (no manual seed-data needed).",
+                    count,
+                )
+            except Exception:
+                logger.warning(
+                    "BTD6 auto-seed failed; serving the existing store. Run "
+                    "`!btd6ops seed-data` to update.",
+                    exc_info=True,
+                )
+
         # Data PRs update the bundled files only — a postgres/cloud store
         # keeps serving its old copy until re-seeded, invisibly (live,
         # 2026-06-10: code auto-deployed at 55.1 while the blob store served

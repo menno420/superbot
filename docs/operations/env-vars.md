@@ -13,7 +13,7 @@ it reads it, and whether it is **required** (read without a default anywhere) or
 only — never a value**; the values live in Railway service variables
 (see [`production-deployment.md`](production-deployment.md)).
 
-**37 variables** — 3 required · 34 optional.
+**38 variables** — 3 required · 35 optional.
 
 ## Required (read without a default — the deploy must set these)
 
@@ -34,6 +34,7 @@ only — never a value**; the values live in Railway service variables
 | `AUTOMATION_SCHEDULER_ENABLED` | services | `disbot/services/automation_scheduler.py:397` *(default)* |
 | `BOT_OWNER_USER_ID` | config | `disbot/config.py:40` *(default)* |
 | `BOT_PREFIX` | config | `disbot/config.py:28` *(default)* |
+| `BTD6_AUTO_SEED` | config | `disbot/config.py:221` *(default)* |
 | `BTD6_CONFIDENCE_THRESHOLD` | cogs | `disbot/cogs/btd6/stage.py:94` *(default)* |
 | `BTD6_COOLDOWN_SECONDS` | cogs | `disbot/cogs/btd6/stage.py:102` *(default)* |
 | `BTD6_DATA_BACKEND` | config | `disbot/config.py:209` *(default)* |
