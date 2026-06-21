@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/starboard-v1` · **Starboard PR 1** (⚑ self-initiated, executes the #1254 plan) — Hall-of-Fame
+  v1: migration 082 + `utils/db/starboard` + audited `starboard_service` + `starboard_cog` raw-reaction
+  listener + `!starboard` config + teardown · `disbot/{migrations,utils/db,services,cogs}/starboard*` ·
+  2026-06-21 · **PR (this session, merge on green)**
+
 - `claude/peaceful-mayer-rgc20t` · **BTD6 data auto-seed on boot** (owner: "isn't seed automated?") — auto-seed the postgres `btd6_data_blobs` store from the deployed files in `cog_load` so data PRs apply on deploy (no manual `!btd6ops seed-data`) · `btd6_data_service` / `btd6_cog` / `config` · 2026-06-21 · **PR (this session, auto-merge on green)**
 
 - `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — rebuffBlockTime + multi-target** (owner: improvements welcome) — decode `rebuffBlockTime`, add `targets=N` round-robin uptime · `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service` / `ai_tools` · 2026-06-21 · **PR (this session, auto-merge on green)**
