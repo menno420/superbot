@@ -1048,6 +1048,44 @@ def bundled_newer_than_served() -> bool:
     return _version_tuple(bundled) > _version_tuple(served)
 
 
+def content_drift() -> list[str] | None:
+    """Committed data files whose CONTENT differs from what the active store
+    serves — the **same-version** drift ``served_data_drift`` (version-only)
+    misses (e.g. a stat fix with no ``game_version`` bump).
+
+    ``None`` for the file backend (it serves the committed files, so it cannot
+    drift) or when nothing differs. Compares a sha over the canonical JSON — the
+    same digest :func:`seed_postgres_from_files` writes — so it is exact, not a
+    heuristic. Sync + cheap: ``read_blob`` reads the warmed in-memory store, no DB
+    round-trip. Surfaced (not auto-applied) per the Q-0077(b) strict choice.
+    """
+    if isinstance(_PROVIDER, FileRawProvider):
+        return None
+    import hashlib
+    import json as _json
+
+    def _sha(body: dict[str, Any]) -> str:
+        return hashlib.sha256(
+            _json.dumps(body, sort_keys=True, ensure_ascii=False).encode("utf-8"),
+        ).hexdigest()
+
+    src = FileRawProvider()
+    changed: list[str] = []
+    for name in src.list_names():
+        if name == "manifest.json":  # bucket artifact, not a fixture (as in seed)
+            continue
+        bundled = src.load(name)
+        if bundled is None:
+            continue
+        try:
+            served = read_blob(name)
+        except Exception:  # noqa: BLE001 — an unreadable served blob = treat as drifted
+            served = None
+        if served is None or _sha(served) != _sha(bundled):
+            changed.append(name)
+    return sorted(changed) or None
+
+
 def _load_file(name: str) -> dict[str, Any]:
     raw = _PROVIDER.load(name)
     if raw is None:

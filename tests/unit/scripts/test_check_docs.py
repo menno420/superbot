@@ -63,7 +63,7 @@ def test_badge_invalid_token_flagged(cd, tmp_path, monkeypatch):
 def test_adr_is_exempt_from_badge(cd, tmp_path, monkeypatch):
     docs = tmp_path / "docs"
     _write(
-        docs / "decisions" / "001-no-redis.md", "# ADR-001\n\n**Status:** Accepted\n"
+        docs / "decisions" / "001-no-redis.md", "# ADR-001\n\n**Status:** Accepted\n",
     )
     monkeypatch.setattr(cd, "DOCS_ROOT", docs)
     monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
@@ -406,7 +406,7 @@ def test_inventory_count_pinned_doc_exempt(cd, tmp_path, monkeypatch):
 
 
 def test_print_inventory_count_report_silent_when_clean(
-    cd, tmp_path, monkeypatch, capsys
+    cd, tmp_path, monkeypatch, capsys,
 ):
     docs = tmp_path / "docs"
     _write(docs / "a.md", "# A\n\n> **Status:** `binding`\n\nno counts here.\n")
@@ -414,3 +414,62 @@ def test_print_inventory_count_report_silent_when_clean(
     monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
     cd.print_inventory_count_report()
     assert capsys.readouterr().out == ""
+
+
+# ---------------------------------------------------------------------------
+# ▶ Next action callout line-budget guard (Q-0089)
+# ---------------------------------------------------------------------------
+
+
+def _callout_doc(callout_body: str) -> str:
+    return (
+        "# SuperBot — Current State\n\n"
+        "> **Status:** `living-ledger`\n"
+        ">\n"
+        f"> **▶ Next action — one live queue:** {callout_body}\n"
+        ">\n"
+        "> - **Consolidated batches:** historical tail that must NOT be counted.\n"
+    )
+
+
+def test_callout_chars_measures_only_the_live_paragraph(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(docs / "current-state.md", _callout_doc("short live queue."))
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    # Counts the callout body ("**▶ Next action ...short live queue.") but stops at the
+    # bare `>` separator — the historical "Consolidated batches" tail is excluded.
+    n = cd._next_action_callout_chars()
+    assert 0 < n < 80
+    assert "Consolidated" not in str(n)  # sanity: tail not folded in
+
+
+def test_callout_absent_marker_is_zero(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(docs / "current-state.md", "# State\n\n> **Status:** `living-ledger`\n")
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    assert cd._next_action_callout_chars() == 0
+
+
+def test_callout_over_budget_warns_but_does_not_fail(cd, tmp_path, monkeypatch, capsys):
+    docs = tmp_path / "docs"
+    _write(
+        docs / "current-state.md",
+        _callout_doc("x" * (cd._NEXT_ACTION_CALLOUT_BUDGET + 50)),
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    cd.print_census()  # warn-only — must never raise / change exit code
+    out = capsys.readouterr().out
+    assert "▶ Next action callout" in out
+    assert "over the budget" in out
+
+
+def test_callout_under_budget_no_warning(cd, tmp_path, monkeypatch, capsys):
+    docs = tmp_path / "docs"
+    _write(docs / "current-state.md", _callout_doc("a lean live queue."))
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    cd.print_census()
+    out = capsys.readouterr().out
+    assert "▶ Next action callout" in out
+    assert "over the budget" not in out
