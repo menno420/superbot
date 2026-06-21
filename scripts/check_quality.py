@@ -154,6 +154,19 @@ def run_check_consistency() -> int:
     )
 
 
+def run_check_tool_pins() -> int:
+    """Verify the lint/format/type tool versions match between CI and the dev install.
+
+    A drift here means this script is no longer a true CI mirror (a newer local ruff
+    flags rules the pinned CI ruff doesn't, and vice versa — BUG-0022). Cheap, so it
+    runs on every invocation, not just --full.
+    """
+    return _run(
+        "check_tool_pins",
+        [_PY, str(REPO_ROOT / "scripts" / "check_tool_pins.py")],
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="SuperBot quality checker")
     parser.add_argument(
@@ -185,6 +198,8 @@ def main() -> int:
             failed.append(name)
 
     if not args.fix_only:
+        if run_check_tool_pins() != 0:
+            failed.append("check_tool_pins")
         if run_check_docs() != 0:
             failed.append("check_docs")
         if run_check_consistency() != 0:

@@ -202,3 +202,30 @@ These are load-bearing and a reviewer should check them on every PR:
 **Definition of done:** a Claude Design edit to a `design-system/` page, once merged, appears on the
 live Railway site **without any hand-written port** — the only human step is review/merge (or none,
 if the connector writes its own PR).
+
+---
+
+## 9. Command-count reconciliation (owner-reported, fold into PR 1) — BUG-0023
+
+The bot's status embed shows **354 (283 prefix · 71 slash)**; the website shows **~280**;
+`site.json` says **308**. These are three *different metrics*, not a data error (full analysis:
+[`bug-book.md` BUG-0023](../health/bug-book.md)):
+
+- **Bot** = live registry, per surface, **incl. subcommands**, a dual command counted on both
+  surfaces (`webhook_reporter._command_counts`).
+- **Website** = **unique command names** (the SPA dedupes 308 → 280 because each command has one
+  `#/command/<name>` page).
+- Source scan = **283 prefix + 25 slash = 308**; the prefix figure matches the bot **exactly**.
+
+Two deliverables for this migration:
+
+1. **Display parity (PR 1).** The React app should show the **same `prefix · slash` breakdown the
+   bot reports**, sourced from the data — not a bare deduped length that matches nothing the owner
+   sees elsewhere. Add the counts to the public data (`site_data` / `/site-data.json`) and render
+   them on the landing capability band + `/status`. This is the part that actually resolves the
+   owner's confusion, and it needs the React pages (can't edit the handoff `app.js`).
+2. **Slash under-coverage (scoped INVESTIGATE, not in this plan's happy path).** The static scan
+   finds 25 slash vs 71 live — the website under-documents slash commands. Root cause is almost
+   certainly **dynamically-registered app commands / context menus** the AST can't see, so the fix is
+   runtime-aware counting (or a documented approximation), **not** a one-line `scan_commands.py` tweak.
+   Track via BUG-0023; give it a focused session, never an unattended wide-blast data regen.

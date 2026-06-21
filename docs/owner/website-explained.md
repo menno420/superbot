@@ -102,6 +102,24 @@ bot, re-run the export, and the data flows through automatically.
 
 ---
 
+## Why the bot and the website show different command counts
+
+This trips people up: the bot's status embed says e.g. **354 (283 prefix · 71 slash)** while the
+website shows **~280**. **Not a bug — they count different things:**
+
+- **The bot** counts its *live registry*, split by how you invoke a command (prefix `!cmd` vs slash
+  `/cmd`), **including every group subcommand**. A command offered on *both* surfaces is counted
+  twice — that's why there are "lots of `/` commands that are mostly duplicates."
+- **The website** counts **unique command names** (each command gets one reference page, so it can't
+  list the same name twice). It's built from a source snapshot (`site.json`), which finds the same
+  283 prefix commands the bot has, then dedupes shared/sub-names down to ~280.
+
+So the bot's number is an *operational* count; the website's is a *catalogue* count. They're both
+right. The plan to make them line up on the site (show the same `prefix · slash` breakdown) is in the
+[React-migration plan §9](../planning/botsite-react-spa-migration-plan-2026-06-20.md); the one real
+gap (the site under-lists *slash* commands) is tracked as `BUG-0023` in the
+[bug book](../health/bug-book.md).
+
 ## The three web things in the repo (easy to confuse)
 
 | Folder | What it is | Who sees it | Tech |
