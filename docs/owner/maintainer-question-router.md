@@ -6962,9 +6962,11 @@ grammar (AI default-off, tiny per-guild budgets, caching, visible in-world degra
 *primary* sustainability lever, not a fallback — and the voluntary-support surface (§2 of the mission
 doc) is the only money inflow.
 
-**Open (captured, not blocking):** open-source / self-host posture (unraised — "free" = free-to-*use*
-for now); a product-wide anti-paywall-creep lint (Q-0105 disposable; needs an allowlist); the
-`/support` surface itself (allowed, not yet designed).
+**Open (captured, not blocking):** a product-wide anti-paywall-creep lint (Q-0105 disposable; needs an
+allowlist); the `/support` surface itself (allowed, not yet designed). **The open-source / self-host
+question is now ANSWERED (owner, 2026-06-21):** the repo is already public + MIT-licensed (legally
+reusable *now*), but reuse is **not recommended** until the code is reorganized/solid — the gate is
+code maturity, not licensing (mission doc §5.1).
 
 **Home:** [`docs/ideas/free-for-everyone-mission-2026-06-21.md`](../ideas/free-for-everyone-mission-2026-06-21.md)
 (full statement) + `docs/roadmap.md` (product-principle callout) + `docs/current-state.md` ▶ Off-limits
