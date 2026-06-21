@@ -28,9 +28,9 @@ living ledger (`docs/current-state.md`).
 - `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
   claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
   · 2026-06-21 · **auto-merge on green** (docs-only)
-- `claude/dreamy-cerf-voar4q` · **Project Moon wiki feasibility finding** (owner-dropped) — capture
-  research as a routed idea doc; no runtime code · `docs/ideas/project-moon-wiki-knowledge-domain-2026-06-21.md`
-  + ideas index · 2026-06-21 · **auto-merge on green** (docs-only)
+- `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (owner-directed Q-0192: full parity) —
+  feasibility finding **merged (#1238)**; now promoting idea → program plan · `docs/planning/`,
+  `docs/ideas/`, router Q-0192 · 2026-06-21 · **auto-merge on green** (docs-only)
 
 *(Beyond the claim above, the only open PR is **#1213** creature-PvP battle engine on
 `claude/funny-franklin-mw3hxj`, a `needs-hermes-review` foundation slice — its owning

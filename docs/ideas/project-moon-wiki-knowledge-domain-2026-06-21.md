@@ -1,8 +1,10 @@
 # Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)
 
 > **Status:** `ideas` — owner-dropped product request (2026-06-21), captured as a **feasibility
-> finding**. Not a plan, not approval. The scope fork is routed to the owner-designer in-session
-> (§ "Open question — owner's call"). Source code + the binding contracts win over anything here.
+> finding**. **PROMOTED to a plan (Q-0192, 2026-06-21):** the owner picked **full parity, all games** →
+> [`planning/project-moon-knowledge-domain-plan-2026-06-21.md`](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)
+> is now the authoritative spec; this doc remains the feasibility/landscape reference. Source code + the
+> binding contracts win over anything here.
 > **Subsystem:** ai, btd6 *(proposes a second knowledge/grounding domain modeled on the BTD6 stack
 > and consumed by the AI grounding path; it would eventually earn its own subsystem key).*
 
@@ -104,17 +106,16 @@ audit → open a reviewable PR. Copyable pattern for a frequently-updated game l
 - **Cross-cutting:** do Phase 1 *as* the first instance of a generalized knowledge-domain seam extracted
   from BTD6, so the second domain reduces (not duplicates) the bespoke surface.
 
-## Open question — owner's call (routed in-session 2026-06-21)
+## Scope decision — RESOLVED (owner, Q-0192, 2026-06-21)
 
-The feasibility is settled (yes); the **scope is the owner-designer's decision** and sizes the build.
-Asked in-session via the three options:
-
-1. **Lore & wiki Q&A grounding** *(recommended)* — broadest coverage, lightest; start Limbus, expand.
-2. **+ Structured stat lookups** — also browsable `/pm …` commands from datamines, Limbus first.
-3. **Full BTD6-grade parity** across all three games (exact numbers + calculators) — largest build.
-
-Until answered, this stays a capture; the answer promotes it to a `docs/planning/` plan for the chosen
-scope.
+The feasibility was settled (yes); scope was the owner-designer's call. Asked in-session via three
+options — (1) lore & Q&A grounding, (2) + structured stat lookups, (3) full BTD6-grade parity across all
+games — the owner picked **(3) full parity, all games.** The build is therefore the maximal one,
+sequenced as a program in
+[`planning/project-moon-knowledge-domain-plan-2026-06-21.md`](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)
+(generalised `KnowledgeDomain` seam, proof-first via a minimal Limbus vertical, then per-game expansion).
+Three follow-up design questions (authoritative source per game · lore depth · `/pm` hub vs per-game)
+are routed to the owner in that plan and refine later phases without blocking the first slice.
 
 ## Related
 
