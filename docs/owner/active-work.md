@@ -143,6 +143,6 @@ session holds it, no claim line needed here.)*
 - `claude/peaceful-mayer-rgc20t` · BTD6 Alchemist buff-uptime calculator (owner live-test) —
   `btd6_buff_uptime` tool + `buff_uptime()` compute + parser decode of buff duration/attack-cap
   (game-data-only path) · `parse_gamedata.py` / `btd6_upgrade_detail_service` / `ai_tools` /
-  `ai_tool_catalogue` · 2026-06-21 · **PR (this session, self-merge on green)**
+  `ai_tool_catalogue` · 2026-06-21 · **PR #1235 (auto-merge on green)**
 
 _(move claims here with their PR # as they close, then prune older entries)_
