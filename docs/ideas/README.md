@@ -31,6 +31,17 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`project-moon-wiki-knowledge-domain-2026-06-21.md`](./project-moon-wiki-knowledge-domain-2026-06-21.md) —
+  **owner-dropped feasibility finding (2026-06-21):** bring the **Project Moon wiki** (Lobotomy Corp /
+  Library of Ruina / Limbus Company) into the bot "in one area," the way BTD6 data is available today.
+  Verdict: **achievable and a good fit, but a real build** — the reusable half (wiki ingestion via the
+  existing `fetch_bloonswiki` MediaWiki/Cargo path + the generic fact store + AI grounding) transfers;
+  the hard part is that the knowledge stack is bespoke `btd6_*` and Project Moon's data is more
+  fragmented (wiki.gg + Fandom + Miraheze + datamines) and more prose-heavy. Recommend generalizing the
+  BTD6 knowledge seam into a domain-agnostic *knowledge domain* with Project Moon as its first second
+  instance; phase from Limbus lore Q&A → structured lookups → parity. **Scope fork routed to the owner
+  in-session.** → relates `subsystems/btd6.md` · `subsystems/ai.md` · `scripts/fetch_bloonswiki.py` ·
+  `.github/workflows/btd6-data-refresh.yml`.
 - [`free-for-everyone-mission-2026-06-21.md`](./free-for-everyone-mission-2026-06-21.md) —
   **owner-directed (2026-06-21, Q-0190) — the product North Star:** SuperBot becomes a **completely
   free, all-inclusive bot** — no paywalls, premium tiers, or freemium feature-gating; every function
