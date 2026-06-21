@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T20:40:57Z",
+    "generated_at": "2026-06-21T21:34:20Z",
     "build": {
-      "commit": "25e57944",
-      "subject": "BTD6 data auto-seed: born-red card + claim",
-      "committed_at": "2026-06-21T20:25:18Z",
-      "branch": "claude/peaceful-mayer-rgc20t"
+      "commit": "ec8a8d68",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/funny-franklin-m1xdmf",
+      "committed_at": "2026-06-21T21:34:16Z",
+      "branch": "claude/funny-franklin-m1xdmf"
     },
     "counts": {
       "functions": 37,
@@ -16,7 +16,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 46,
-      "commands": 314,
+      "commands": 316,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -2133,6 +2133,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-starboard-plan.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Starboard / Hall-of-Fame: buildable plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-site-field-level-redaction-contract.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — site.json field-level redaction contract",
@@ -2146,6 +2154,14 @@
       "title": "2026-06-21 — Role presets + role-management UX overhaul",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-repo-state-review-cleanup.md",
+      "date": "2026-06-21",
+      "title": "Session — repo-state review cleanup (2026-06-21)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2341,6 +2357,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-creature-pvp-result-recording.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature PvP: result recording + win/loss records + battle leaderboard",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-creature-pvp-battle-flow.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
@@ -2392,9 +2416,17 @@
       "file": "2026-06-21-btd6-data-auto-seed.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — BTD6 data: auto-seed the postgres blob store on boot",
-      "status": "in-progress",
-      "run_type": "",
-      "self_initiated": false
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-21-btd6-content-drift-surface.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6: surface same-version data drift (sha-based seed reminder)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-btd6-buff-uptime.md",
@@ -2563,38 +2595,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-landing-page.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system: full landing-page composition + hybrid edit loop",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-connector-docs.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system docs: connector-vs-`/design-sync` correction",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-design-system-component-library.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system component library (for Claude Design `/design-sync`)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-creature-roster-and-music-legal-findings.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Creature roster sizing + music-bot legal findings (documentation)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4716,6 +4716,33 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "cbattletop",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "pvptop",
+            "battletop"
+          ],
+          "brief": "Show this server's top creature-PvP trainers by wins.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "cbrecord",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "battlerecord"
+          ],
+          "brief": "Show your (or another trainer's) creature PvP win/loss record.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         }
       ]
     },

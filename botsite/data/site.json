@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T20:40:57Z",
+    "generated_at": "2026-06-21T21:34:20Z",
     "build": {
-      "commit": "25e57944",
-      "subject": "BTD6 data auto-seed: born-red card + claim",
-      "committed_at": "2026-06-21T20:25:18Z",
-      "branch": "claude/peaceful-mayer-rgc20t"
+      "commit": "ec8a8d68",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/funny-franklin-m1xdmf",
+      "committed_at": "2026-06-21T21:34:16Z",
+      "branch": "claude/funny-franklin-m1xdmf"
     }
   },
   "counts": {
-    "commands": 314,
+    "commands": 316,
     "features": 37,
     "games": 9
   },
@@ -5964,6 +5964,39 @@
       "permissions": "",
       "usage": "Challenge another member to a level-normalized creature PvP battle.",
       "description": "Challenge another member to a level-normalized creature PvP battle.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "cbattletop",
+      "aliases": [
+        "pvptop",
+        "battletop"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show this server's top creature-PvP trainers by wins.",
+      "description": "Show this server's top creature-PvP trainers by wins.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "cbrecord",
+      "aliases": [
+        "battlerecord"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show your (or another trainer's) creature PvP win/loss record.",
+      "description": "Show your (or another trainer's) creature PvP win/loss record.",
       "use_cases": null,
       "examples": [],
       "status": "finished",

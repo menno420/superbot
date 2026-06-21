@@ -145,6 +145,19 @@ class BTD6Cog(commands.Cog):
                 bundled,
                 served,
             )
+        else:
+            # Same-version drift (no game_version bump): strict-(b) auto-seed
+            # won't fire and the version-based check above can't see it, so a
+            # buff/stat edit would stay stale silently. Surface it (warn only).
+            changed = btd6_data_service.content_drift()
+            if changed:
+                logger.warning(
+                    "BTD6 data drift: %d committed data file(s) differ from the "
+                    "served store at the same version — run `!btd6ops seed-data` "
+                    "to apply (e.g. %s).",
+                    len(changed),
+                    ", ".join(changed[:3]) + ("…" if len(changed) > 3 else ""),
+                )
 
         await btd6_ingestion_supervisor.start_supervisor()
 

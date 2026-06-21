@@ -26,9 +26,21 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime import guild_resources as resources
+from utils import db
 from views.creature_battle import CreatureBattleChallengeView
 
 logger = logging.getLogger("bot.cogs.creature_battle")
+
+_BATTLE_COLOR = discord.Color.red()
+
+
+def _winrate(wins: int, losses: int) -> str:
+    """A ``NN%`` win-rate string from a W/L tally (``—`` with no battles)."""
+    total = wins + losses
+    if total == 0:
+        return "—"
+    return f"{round(100 * wins / total)}%"
 
 
 class CreatureBattleCog(commands.Cog):
@@ -56,6 +68,46 @@ class CreatureBattleCog(commands.Cog):
             "type matchups decide it.",
             view=view,
         )
+
+    @commands.command(name="cbrecord", aliases=["battlerecord"])
+    async def cbrecord(self, ctx, member: discord.Member | None = None):
+        """Show your (or another trainer's) creature PvP win/loss record."""
+        target = member or ctx.author
+        wins, losses = await db.get_battle_record(target.id, ctx.guild.id)
+        embed = discord.Embed(
+            title=f"⚔️ {target.display_name}'s Battle Record",
+            description=(
+                f"**{wins}** wins · **{losses}** losses · "
+                f"win rate **{_winrate(wins, losses)}**"
+            ),
+            color=_BATTLE_COLOR,
+        )
+        embed.set_footer(text="!cbattle @member to fight · !cbattletop for the ladder")
+        await ctx.send(embed=embed)
+
+    @commands.command(name="cbattletop", aliases=["pvptop", "battletop"])
+    async def cbattletop(self, ctx):
+        """Show this server's top creature-PvP trainers by wins."""
+        rows = await db.top_battlers(ctx.guild.id)
+        embed = discord.Embed(title="⚔️ Top Trainers", color=_BATTLE_COLOR)
+        if not rows:
+            embed.description = (
+                "No battles won yet — challenge someone with `!cbattle @member`!"
+            )
+            await ctx.send(embed=embed)
+            return
+        medals = ["🥇", "🥈", "🥉"]
+        lines = []
+        for rank, (user_id, wins, losses) in enumerate(rows):
+            prefix = medals[rank] if rank < len(medals) else f"**{rank + 1}.**"
+            member = resources.resolve_member(ctx.guild, user_id)
+            name = member.display_name if member else f"User {user_id}"
+            lines.append(
+                f"{prefix} {name} — **{wins}**W · {losses}L "
+                f"({_winrate(wins, losses)})",
+            )
+        embed.description = "\n".join(lines)
+        await ctx.send(embed=embed)
 
 
 async def setup(bot):

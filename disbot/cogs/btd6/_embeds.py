@@ -165,6 +165,21 @@ async def build_status_embed() -> discord.Embed:
             ),
             inline=False,
         )
+    else:
+        # Same-version content drift (no game_version bump) — strict-(b)
+        # auto-seed won't fire, so remind the operator to seed manually.
+        changed = btd6_data_service.content_drift()
+        if changed:
+            embed.add_field(
+                name="⚠️ Data drift (same version)",
+                value=(
+                    f"**{len(changed)}** committed data file(s) differ from this "
+                    "store at the same version (e.g. "
+                    f"`{'`, `'.join(changed[:3])}`). Run `!btd6ops seed-data` to "
+                    "apply (applies immediately, no restart)."
+                ),
+                inline=False,
+            )
     from utils.btd6.context_footer import append_context_footer
 
     return append_context_footer(embed, "btd6_status:global")

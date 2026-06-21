@@ -6,16 +6,23 @@ The runtime side of the [creature-game plan](docs/planning/creature-game-design-
 **level-normalized** 6-mon team (one of each element at :data:`NORMALIZED_LEVEL`), and
 resolve the match through the pure engine (:mod:`utils.creatures.battle`).
 
-This is the thin ``services/`` seam the plan called for. **v1 is read-only** — a PvP
-battle reads collections and computes a winner; it does **not** persist a result or
-award xp yet (the audited-write half is a later slice), so there is no
-``db.transaction()`` / ``emit_audit_action`` here. The moment a battle records a
-result, this is where that transaction will live (the math stays in
-:mod:`utils.creatures.battle`).
+This is the thin ``services/`` seam the plan called for. Two entry points:
+
+- :func:`resolve_pvp` — the pure **read** path: read collections, compute a winner.
+  No writes; used where a result should not be persisted (and by the engine tests).
+- :func:`resolve_and_record_pvp` — the **audited-write** half (the plan's deferred
+  result-recording slice): resolve, then in ONE :func:`db.transaction` record both
+  fighters' win/loss tally and award the winner's :data:`GAME_CREATURE` xp; the
+  game-xp events emit **after** commit. Mirrors :mod:`services.creature_workflow`
+  (the Q-0071 transaction contract). Like catch/fishing, a routine game-progression
+  write is **not** ``emit_audit_action``-audited — audit is the moderation / settings
+  / governance seam, not per-battle XP; the battle math stays pure in
+  :mod:`utils.creatures.battle`.
 
 The anti-P2W rule (Q-0039 / plan §3): PvP normalizes every creature to a flat level,
 so **collection breadth, type matchups, and the engine's move policies** decide the
-outcome — not who has ground more levels.
+outcome — not who has ground more levels. The win xp here is **prestige only** (it
+feeds the shared game-level / leaderboards), never PvP power.
 """
 
 from __future__ import annotations
@@ -23,6 +30,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 
+from services import game_xp_service
 from utils import db
 from utils.creatures import (
     NORMALIZED_LEVEL,
@@ -51,6 +59,25 @@ class PvpResult:
     @property
     def a_won(self) -> bool:
         return self.outcome.a_won
+
+
+@dataclass(frozen=True)
+class RecordedPvp:
+    """A resolved-and-recorded PvP battle: the result plus the persisted tallies.
+
+    ``winner_id`` / ``loser_id`` are the Discord user ids (not the team labels);
+    ``winner_record`` / ``loser_record`` are each side's ``(wins, losses)`` **after**
+    this battle was recorded, so the renderer can show the updated standing.
+    ``xp_note`` is the winner's inline level-up notice, set only when the win
+    crossed a shared game level.
+    """
+
+    result: PvpResult
+    winner_id: int
+    loser_id: int
+    winner_record: tuple[int, int]
+    loser_record: tuple[int, int]
+    xp_note: str | None = None
 
 
 async def load_pool(user_id: int, guild_id: int) -> list[Creature]:
@@ -109,3 +136,58 @@ async def resolve_pvp(
     roster_b = tuple(team_b)
     outcome = resolve_battle(team_a, team_b, rng=rng)
     return PvpResult(outcome=outcome, team_a=roster_a, team_b=roster_b)
+
+
+async def resolve_and_record_pvp(
+    challenger_id: int,
+    opponent_id: int,
+    guild_id: int,
+    *,
+    rng: random.Random | None = None,
+) -> RecordedPvp | None:
+    """Resolve a PvP battle **and persist the outcome** (the audited-write half).
+
+    Returns ``None`` when either player has no usable team (the caller surfaces a
+    "go !catch some first" nudge — nothing is written). Otherwise:
+
+    1. resolve via :func:`resolve_pvp` (level-normalized, anti-P2W),
+    2. in ONE :func:`db.transaction`: record both fighters' win/loss tally and
+       award the winner's :data:`GAME_CREATURE` battle-win xp,
+    3. read each side's updated record (same conn),
+    4. emit the game-xp events **after** commit.
+
+    The win xp is prestige only (PvP is level-normalized), so recording a result
+    can never make a player's PvP teams stronger.
+    """
+    result = await resolve_pvp(challenger_id, opponent_id, guild_id, rng=rng)
+    if result is None:
+        return None
+
+    if result.a_won:
+        winner_id, loser_id = challenger_id, opponent_id
+    else:
+        winner_id, loser_id = opponent_id, challenger_id
+
+    async with db.transaction() as conn:
+        await db.record_battle_outcome(winner_id, loser_id, guild_id, conn=conn)
+        award = await game_xp_service.award(
+            guild_id,
+            winner_id,
+            game=game_xp_service.GAME_CREATURE,
+            action="battle_win",
+            conn=conn,
+        )
+        winner_record = await db.get_battle_record(winner_id, guild_id, conn=conn)
+        loser_record = await db.get_battle_record(loser_id, guild_id, conn=conn)
+
+    if award is not None:
+        await game_xp_service.emit_award_events(award)
+
+    return RecordedPvp(
+        result=result,
+        winner_id=winner_id,
+        loser_id=loser_id,
+        winner_record=winner_record,
+        loser_record=loser_record,
+        xp_note=award.note if award is not None and award.leveled_up else None,
+    )
