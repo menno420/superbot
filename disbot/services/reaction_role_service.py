@@ -24,6 +24,7 @@ import uuid
 from datetime import datetime, timezone
 
 from utils import db
+from utils.db import role_menus as menu_db
 
 
 async def bind_emoji(
@@ -80,6 +81,161 @@ async def list_bindings(guild_id: int) -> list[dict]:
     return await db.get_all_reaction_roles(guild_id)
 
 
+# ---------------------------------------------------------------------------
+# Role menus (PR 2) — the modern button/dropdown surface, audited at the
+# *config* level (create / edit / delete). Member self-assignment is a Discord
+# mutation handled in the view; per-assignment audit is an opt-in toggle (plan
+# §9) and is not emitted here.
+# ---------------------------------------------------------------------------
+
+
+async def create_menu(
+    guild_id: int,
+    channel_id: int,
+    *,
+    title: str,
+    description: str | None,
+    style: str,
+    mode: str,
+    max_roles: int,
+    theme: str,
+    role_options: list[dict],
+    actor_id: int | None,
+) -> int:
+    """Create a role menu + its options (audited); return the new ``menu_id``.
+
+    ``role_options`` is a list of ``{"role_id", "emoji"?, "label"?, "position"?}``
+    dicts. The caller posts the menu message afterward and records its id via
+    :func:`set_menu_message`.
+    """
+    menu_id = await menu_db.create_menu(
+        guild_id,
+        channel_id,
+        title=title,
+        description=description,
+        style=style,
+        mode=mode,
+        max_roles=max_roles,
+        theme=theme,
+    )
+    await _replace_options(menu_id, role_options)
+    await _emit(
+        guild_id,
+        mutation_type="create_role_menu",
+        role_id=None,
+        prev_value=None,
+        new_value=_menu_summary(menu_id, title, style, mode, role_options),
+        actor_id=actor_id,
+    )
+    return menu_id
+
+
+async def update_menu(
+    menu_id: int,
+    guild_id: int,
+    *,
+    title: str,
+    description: str | None,
+    style: str,
+    mode: str,
+    max_roles: int,
+    theme: str,
+    role_options: list[dict],
+    actor_id: int | None,
+) -> None:
+    """Edit a menu's fields + options in place (audited; plan §4.6a).
+
+    The caller re-renders and edits the live message afterward so the posted
+    menu and the row stay in step without a repost.
+    """
+    await menu_db.update_menu(
+        menu_id,
+        title=title,
+        description=description,
+        style=style,
+        mode=mode,
+        max_roles=max_roles,
+        theme=theme,
+    )
+    await _replace_options(menu_id, role_options)
+    await _emit(
+        guild_id,
+        mutation_type="update_role_menu",
+        role_id=None,
+        prev_value=f"menu={menu_id}",
+        new_value=_menu_summary(menu_id, title, style, mode, role_options),
+        actor_id=actor_id,
+    )
+
+
+async def delete_menu(menu_id: int, guild_id: int, *, actor_id: int | None) -> None:
+    """Delete a menu (and, by cascade, its options) — audited."""
+    await menu_db.delete_menu(menu_id)
+    await _emit(
+        guild_id,
+        mutation_type="delete_role_menu",
+        role_id=None,
+        prev_value=f"menu={menu_id}",
+        new_value=None,
+        actor_id=actor_id,
+    )
+
+
+async def set_menu_message(menu_id: int, message_id: int) -> None:
+    """Record the posted message id for a menu (build → post → store)."""
+    await menu_db.set_menu_message(menu_id, message_id)
+
+
+async def get_menu(menu_id: int) -> dict | None:
+    """Read a single menu row (the view/builder load path)."""
+    return await menu_db.get_menu(menu_id)
+
+
+async def get_menu_by_message(guild_id: int, message_id: int) -> dict | None:
+    """Resolve the menu bound to a posted message."""
+    return await menu_db.get_menu_by_message(guild_id, message_id)
+
+
+async def get_menu_options(menu_id: int) -> list[dict]:
+    """All role options for a menu, in display order."""
+    return await menu_db.get_options(menu_id)
+
+
+async def list_menus(guild_id: int) -> list[dict]:
+    """All role menus configured in a guild (newest first)."""
+    return await menu_db.list_menus(guild_id)
+
+
+async def _replace_options(menu_id: int, role_options: list[dict]) -> None:
+    """Set a menu's options to exactly ``role_options`` (add/update + prune)."""
+    desired = {int(o["role_id"]): o for o in role_options}
+    existing = {int(o["role_id"]) for o in await menu_db.get_options(menu_id)}
+    for role_id in existing - desired.keys():
+        await menu_db.remove_option(menu_id, role_id)
+    for position, (role_id, opt) in enumerate(desired.items()):
+        await menu_db.add_option(
+            menu_id,
+            role_id,
+            emoji=opt.get("emoji"),
+            label=opt.get("label"),
+            position=int(opt.get("position", position)),
+        )
+
+
+def _menu_summary(
+    menu_id: int,
+    title: str,
+    style: str,
+    mode: str,
+    role_options: list[dict],
+) -> str:
+    """Compact, log-safe description of a menu mutation for the audit row."""
+    return (
+        f"menu={menu_id},title={title!r},style={style},"
+        f"mode={mode},roles={len(role_options)}"
+    )
+
+
 async def _emit(
     guild_id: int,
     *,
@@ -109,7 +265,15 @@ async def _emit(
 
 __all__ = [
     "bind_emoji",
+    "create_menu",
+    "delete_menu",
     "get_binding",
+    "get_menu",
+    "get_menu_by_message",
+    "get_menu_options",
     "list_bindings",
+    "list_menus",
+    "set_menu_message",
     "unbind_emoji",
+    "update_menu",
 ]

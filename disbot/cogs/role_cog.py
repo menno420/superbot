@@ -730,4 +730,9 @@ class RoleCog(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(RoleCog(bot))
+    # Register the role-menu dynamic items so members can use posted menus across
+    # restarts (custom_id-routed; no per-message re-registration needed).
+    from views.roles.role_menu_view import register_dynamic_items
+
+    register_dynamic_items(bot)
     logger.info("RoleCog loaded.")

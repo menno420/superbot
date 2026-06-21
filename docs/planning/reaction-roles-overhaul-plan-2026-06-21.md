@@ -238,6 +238,25 @@ operator builds in-panel and deploys to a channel, re-attached on restart. This 
 
 **Risk:** medium (new persistent view + runtime wiring) — scoped to the new tables, additive.
 
+**▶ BUILT (PR #1221, `needs-hermes-review`).** Landed as designed, with a notable
+implementation choice for restart durability: the public menu is **not** an
+anchor-owned `PersistentView` (that recovery is single-owner). Instead each
+component is a discord.py **`DynamicItem`** whose `custom_id` encodes the
+`menu_id` (`rmenu:sel:{menu_id}`) and, for buttons, the `role_id`
+(`rmenu:btn:{menu_id}:{role_id}`); the item *classes* are registered once at
+startup (`role_menu_view.register_dynamic_items`, called from `role_cog.setup`),
+so discord.py reconstructs the handler from the `custom_id` on every interaction —
+multi-user, no per-message registration, no boot-time DB scan, unlimited menus.
+Files: `views/roles/role_menu_view.py` (public menu + DynamicItems + `render_role_menu`),
+`views/roles/role_menu_builder.py` (operator builder, edit-in-place), audited menu
+CRUD in `services/reaction_role_service.py`, pure mode logic in
+`utils/role_menu_logic.py`, presets in `utils/role_menu_presets.py` +
+`disbot/data/role_menu_templates.json`, wired into `views/roles/reaction_panel.py`.
+**PR 3 builds on this**: bring the same `unique`/`verify` modes to the *emoji*
+reaction path (`role_cog` listeners) and convert the emoji-binding side of
+`ReactionRolesPanel` to interactive add/remove (the menu side is already
+interactive here).
+
 ### PR 3 — Carl-parity modes + interactive emoji-panel + settings bridge
 
 **Goal:** finish parity and close the read-only-panel finding.
@@ -407,8 +426,8 @@ analytics counts (§10) are aggregate and do not require per-user logging to be 
 
 | PR | Scope | Gate |
 |---|---|---|
-| **PR 1** | Foundation — audited `reaction_role_service` + migration 078 + route existing reaction-roles through the seam | **▶ ready now** (no decision pending) |
-| **PR 2** | In-Discord builder (Surface B): **dropdown-default** role menus + **edit-in-place** + **theme presets** + **message templates** | after PR 1 |
+| **PR 1** | Foundation — audited `reaction_role_service` + migration 078 + route existing reaction-roles through the seam | ✅ **SHIPPED #1220** |
+| **PR 2** | In-Discord builder (Surface B): **dropdown-default** role menus + **edit-in-place** + **theme presets** + **message templates** | 🔄 **BUILT — PR #1221 (`needs-hermes-review`)** |
 | **PR 3** | Carl-parity modes (unique/verify/limit) + interactive emoji panel + settings bridge | after PR 2 |
 | **PR 4** | **Free temp roles** — `role_grants` table + expiry sweep loop | after PR 1 (independent of PR 2/3) |
 | **PR 5** | **Role-pickup analytics** (§10) — surfaced in Diagnostics; web dashboard later | after PR 1 |

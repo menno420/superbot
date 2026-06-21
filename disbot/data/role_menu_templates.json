@@ -1,0 +1,47 @@
+{
+  "_comment": "Starter messages for the role-menu builder (reaction-roles overhaul PR 2, plan §4.6c). Loaded by utils/role_menu_presets.py; a missing/garbled file falls back to the in-code defaults. 'theme' keys into utils/role_menu_presets._THEMES.",
+  "templates": [
+    {
+      "key": "blank",
+      "name": "Blank",
+      "title": "Pick your roles",
+      "description": "Select the roles you'd like below.",
+      "theme": "default"
+    },
+    {
+      "key": "game",
+      "name": "🎮 Game roles",
+      "title": "🎮 Game Roles",
+      "description": "Pick the games you play to get pinged for squads and find teammates.",
+      "theme": "game"
+    },
+    {
+      "key": "notify",
+      "name": "🔔 Notification roles",
+      "title": "🔔 Notifications",
+      "description": "Choose which announcements you want to be pinged for.",
+      "theme": "announcement"
+    },
+    {
+      "key": "colour",
+      "name": "🎨 Colour roles",
+      "title": "🎨 Colour Roles",
+      "description": "Give yourself a splash of colour — pick a name colour below.",
+      "theme": "pastel"
+    },
+    {
+      "key": "pronoun",
+      "name": "🗣️ Pronoun roles",
+      "title": "🗣️ Pronouns",
+      "description": "Let others know how to refer to you.",
+      "theme": "info"
+    },
+    {
+      "key": "verify",
+      "name": "✅ Verify to enter",
+      "title": "✅ Verify",
+      "description": "Click below to verify and unlock the rest of the server.",
+      "theme": "info"
+    }
+  ]
+}
