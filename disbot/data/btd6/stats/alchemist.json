@@ -4437,7 +4437,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         }
       ],
       "targetTypeFirst": true,
@@ -4535,7 +4536,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         }
       ],
       "targetTypeFirst": true,
@@ -4633,7 +4635,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         }
       ],
       "targetTypeFirst": true,
@@ -4735,7 +4738,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         }
       ],
       "targetTypeFirst": true,
@@ -4837,7 +4841,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "RubberToGoldAttack",
@@ -4977,7 +4982,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "RubberToGoldAttack",
@@ -5151,7 +5157,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         }
       ],
       "targetTypeFirst": true,
@@ -5250,7 +5257,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 12
         }
       ],
       "targetTypeFirst": true,
@@ -5349,7 +5357,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 12
         },
         {
           "name": "Unstable Concoction",
@@ -5500,7 +5509,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 12
         },
         {
           "name": "Unstable Concoction",
@@ -5680,7 +5690,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 12
         },
         {
           "name": "Unstable Concoction",
@@ -5914,7 +5925,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "BeserkerBrewAttack",
@@ -5941,7 +5953,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 5,
+          "buff_attack_cap": 25
         }
       ],
       "targetTypeFirst": true,
@@ -6039,7 +6053,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "BeserkerBrewAttack",
@@ -6066,7 +6081,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 5,
+          "buff_attack_cap": 25
         }
       ],
       "targetTypeFirst": true,
@@ -6164,7 +6181,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "BeserkerBrewAttack",
@@ -6191,7 +6209,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 5,
+          "buff_attack_cap": 25
         }
       ],
       "targetTypeFirst": true,
@@ -6289,7 +6309,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "BeserkerBrewAttack",
@@ -6316,7 +6337,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 5,
+          "buff_attack_cap": 25
         }
       ],
       "targetTypeFirst": true,
@@ -6415,7 +6438,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 12
         },
         {
           "name": "BeserkerBrewAttack",
@@ -6442,7 +6466,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 6,
+          "buff_attack_cap": 40
         }
       ],
       "targetTypeFirst": true,
@@ -6540,7 +6566,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "BeserkerBrewAttack",
@@ -6567,7 +6594,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 12,
+          "buff_attack_cap": 40
         }
       ],
       "targetTypeFirst": true,
@@ -6665,7 +6694,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "BeserkerBrewAttack",
@@ -6692,7 +6722,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 12,
+          "buff_attack_cap": 40
         }
       ],
       "targetTypeFirst": true,
@@ -6790,7 +6822,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "BeserkerBrewAttack",
@@ -6817,7 +6850,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 12,
+          "buff_attack_cap": 40
         }
       ],
       "targetTypeFirst": true,
@@ -6915,7 +6950,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 10
         },
         {
           "name": "BeserkerBrewAttack",
@@ -6942,7 +6978,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 12,
+          "buff_attack_cap": 40
         }
       ],
       "targetTypeFirst": true,
@@ -7041,7 +7079,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_attack_cap": 12
         },
         {
           "name": "BeserkerBrewAttack",
@@ -7068,7 +7107,9 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_duration": 13,
+          "buff_attack_cap": 55
         }
       ],
       "targetTypeFirst": true,
@@ -7166,7 +7207,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         },
         {
           "name": "BeserkerBrewAttack",
@@ -7193,7 +7235,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         }
       ],
       "targetTypeFirst": true,
@@ -7291,7 +7334,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         },
         {
           "name": "BeserkerBrewAttack",
@@ -7318,7 +7362,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         }
       ],
       "targetTypeFirst": true,
@@ -7416,7 +7461,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         },
         {
           "name": "BeserkerBrewAttack",
@@ -7443,7 +7489,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         }
       ],
       "targetTypeFirst": true,
@@ -7541,7 +7588,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         },
         {
           "name": "BeserkerBrewAttack",
@@ -7568,7 +7616,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         }
       ],
       "targetTypeFirst": true,
@@ -7667,7 +7716,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         },
         {
           "name": "BeserkerBrewAttack",
@@ -7694,7 +7744,8 @@
           "attackThroughWalls": true,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": false
+          "filterInvisible": false,
+          "buff_permanent": true
         }
       ],
       "targetTypeFirst": true,

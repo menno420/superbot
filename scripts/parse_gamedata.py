@@ -402,97 +402,97 @@ def _eject(weapon: dict) -> str | None:
 # emitted; this decodes the *window* (``buff_duration`` seconds + ``buff_attack_cap``)
 # off the buff-applying projectile so ``btd6_buff_uptime`` can ground an uptime.
 #
-# UNVERIFIED — Q-0105 reliability note (2026-06-21): the exact buff-applying
-# model class + field names are not confirmable without a live dump in-repo, so
-# the field names below are a documented *candidate set* spanning the dump's known
-# conventions (frame counts ÷60 → seconds, like ``_BUFF_FRAME_FIELDS``). The
-# decode LOGIC is fixture-tested; the live BINDING is confirmed on the next
-# ``--all`` run via ``--audit`` against the verified wiki windows (Berserker Brew
-# 3-0-0 = 5 s / 25 attacks, Stronger Stimulant 4-0-0 = 12 s / 40, Acidic Mixture
-# Dip 2-0-0 = 10 shots). If a name here never matches a real dump, delete it.
+# VERIFIED against the live dump (2026-06-21, Alchemist-{200,300,320,400,420,500}):
+# the buff applier is ``Add{BerserkerBrew,AcidicMixture}ToProjectileModel`` on the
+# thrown projectile —
+#   * ``lifespan`` — the time window in SECONDS (``lifespanFrames`` is 0, unused);
+#     ``-1`` is the Permanent-Brew "never expires" sentinel; ABSENT on the Acidic
+#     Mixture Dip lead buff (it is attack-cap-only, no time limit).
+#   * nested ``…CheckModel.maxCount`` — the attack-count cap; ``9999999`` is the
+#     permanent / no-limit sentinel.
+#   * ``rebuffBlockTime`` (seconds) — the per-target re-buff cooldown (5 s @
+#     4-0-0); left undecoded for now (a future ``btd6_buff_uptime`` input).
+# Decoded values match the wiki cross-check exactly: Berserker Brew 300 = 5 s/25,
+# 320 = 6 s/40, Stronger Stimulant 400 = 12 s/40, 420 = 13 s/55, Permanent Brew
+# 500 = permanent; Acidic Mixture Dip cap 10 (12 @ x-2-x).
 _BUFF_WINDOW_ATTACK_NAMES: frozenset[str] = frozenset(
     {"BeserkerBrewAttack", "AcidicMixture"},
 )
-_BUFF_DURATION_FRAME_FIELDS: tuple[str, ...] = (
-    "lifespanFrames",
-    "buffTimeFrames",
-    "durationFrames",
-)
-_BUFF_DURATION_SECOND_FIELDS: tuple[str, ...] = ("buffTime", "buffLifespan", "duration")
-_BUFF_ATTACK_CAP_FIELDS: tuple[str, ...] = (
-    "attackCap",
-    "attacksToExpire",
-    "numberOfAttacks",
-    "attackLimit",
-    "numUses",
-    "maxUses",
-    "usesToExpire",
-)
+# A lifespan/maxCount at or above this is the dump's "permanent / no limit"
+# sentinel (Permanent Brew emits lifespan -1 + maxCount 9999999).
+_BUFF_NO_LIMIT_SENTINEL = 1_000_000
 
 
-def _iter_buff_behaviors(attack: dict):
-    """Yield raw behavior dicts from a buff-throwing attack's projectile tree.
+def _buff_applier(attack: dict) -> dict | None:
+    """The ``Add…ToProjectileModel`` that applies the buff, off a buff-throwing
+    attack's weapon projectile, or ``None``.
 
-    Excludes ``Travel*Model`` behaviors — their ``lifespan`` is the projectile's
-    flight time (~0.6 s), NOT the buff window, and would be a false positive.
+    This is the verified carrier of the buff's ``lifespan`` + nested ``maxCount``
+    — NOT the projectile's ``Travel*Model`` (whose ``lifespan`` is flight time).
     """
-    stack: list[dict] = []
     for w in attack.get("weapons", []) or []:
-        if isinstance(w, dict) and isinstance(w.get("projectile"), dict):
-            stack.append(w["projectile"])
-    seen = 0
-    while stack and seen < 200:
-        node = stack.pop()
-        seen += 1
-        if not isinstance(node, dict):
+        if not isinstance(w, dict):
             continue
-        for b in node.get("behaviors", []) or []:
-            if not isinstance(b, dict):
-                continue
-            if _short_type(b).startswith("Travel"):
-                continue
-            yield b
-            for child in _spawned_projectiles(b):
-                if isinstance(child, dict):
-                    stack.append(child)
+        proj = w.get("projectile")
+        if not isinstance(proj, dict):
+            continue
+        for b in proj.get("behaviors", []) or []:
+            if isinstance(b, dict):
+                short = _short_type(b)
+                if short.startswith("Add") and short.endswith("ToProjectileModel"):
+                    return b
+    return None
+
+
+def _deep_find_number(node: Any, key: str) -> float | None:
+    """First numeric ``key`` anywhere in ``node``'s subtree.
+
+    The attack cap (``maxCount``) lives in a nested ``…CheckModel``, not directly
+    on the applier, so a flat read misses it.
+    """
+    if isinstance(node, dict):
+        value = node.get(key)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return float(value)
+        for child in node.values():
+            found = _deep_find_number(child, key)
+            if found is not None:
+                return found
+    elif isinstance(node, list):
+        for child in node:
+            found = _deep_find_number(child, key)
+            if found is not None:
+                return found
+    return None
 
 
 def _buff_window(attack: dict) -> tuple[float | None, int | None, bool]:
     """``(buff_duration_seconds, buff_attack_cap, permanent)`` off a buff attack.
 
-    A negative duration is the dump's "never expires" sentinel (Permanent Brew) →
-    ``permanent=True`` with no numeric duration. Returns ``(None, None, False)``
-    when no candidate field matches (so the window simply stays undecoded — never
-    a fabricated number).
+    Permanent Brew (lifespan ``-1`` / maxCount ``9999999``) → ``permanent=True``
+    with no numeric duration/cap. The Acidic Mixture Dip lead buff has no
+    ``lifespan`` → cap-only. ``(None, None, False)`` when no applier is present.
     """
-    duration: float | None = None
-    cap: int | None = None
+    applier = _buff_applier(attack)
+    if applier is None:
+        return None, None, False
     permanent = False
-    for b in _iter_buff_behaviors(attack):
-        if duration is None and not permanent:
-            for f in _BUFF_DURATION_FRAME_FIELDS:
-                v = b.get(f)
-                if isinstance(v, (int, float)) and not isinstance(v, bool):
-                    if v < 0:
-                        permanent = True
-                    else:
-                        duration = _num(v / 60.0)
-                    break
-        if duration is None and not permanent:
-            for f in _BUFF_DURATION_SECOND_FIELDS:
-                v = b.get(f)
-                if isinstance(v, (int, float)) and not isinstance(v, bool):
-                    if v < 0:
-                        permanent = True
-                    else:
-                        duration = _num(v)
-                    break
-        if cap is None:
-            for f in _BUFF_ATTACK_CAP_FIELDS:
-                v = b.get(f)
-                if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0:
-                    cap = int(v)
-                    break
+    duration: float | None = None
+    lifespan = applier.get("lifespan")
+    if isinstance(lifespan, (int, float)) and not isinstance(lifespan, bool):
+        if lifespan < 0:
+            permanent = True
+        elif lifespan > 0:
+            duration = _num(lifespan)
+    cap: int | None = None
+    max_count = _deep_find_number(applier, "maxCount")
+    if max_count is not None:
+        if max_count >= _BUFF_NO_LIMIT_SENTINEL:
+            # No cap (permanent) — and if there is also no time window, the buff
+            # itself is permanent.
+            permanent = permanent or duration is None
+        elif max_count > 0:
+            cap = int(max_count)
     return duration, cap, permanent
 
 
