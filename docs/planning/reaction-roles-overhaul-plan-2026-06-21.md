@@ -1,8 +1,18 @@
 # Reaction Roles — Carl-bot parity + modern role-menu overhaul
 
-> **Status:** `plan` — buildable spec (2026-06-21). Cross-check source before implementing;
+> **Status:** `plan` — buildable spec (2026-06-21), PR 1 merged + PR 2 in flight (see Build progress).
+> Cross-check source before implementing;
 > `docs/current-state.md` owns what is live. **Sector:** S1 — Bot product. **Folio:**
 > [`docs/subsystems/server-management.md`](../subsystems/server-management.md).
+>
+> **▶ Build progress (2026-06-21):** **PR 1 MERGED (#1220)** — audited `reaction_role_service` seam +
+> `utils/db/role_menus` data layer + migration 078 + cog routing + teardown. **PR 2 IN FLIGHT
+> (#1219, `needs-hermes-review`)** — the in-Discord builder (Surface B): `RoleMenuView` (dropdown
+> default, server-side modes, restart re-attach) + the operator builder/manager with edit-in-place +
+> theme presets + template gallery; all on PR 1's seam. **Next: PR 3** (Carl-parity modes on the emoji
+> surface + interactive emoji panel + settings bridge) · **PR 4** (free temp roles — `role_grants`
+> migration **079** + expiry sweep loop) · **PR 5** (role-pickup analytics §10) · **PR 6** optional
+> (PIL banner cards §4.6d).
 >
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium

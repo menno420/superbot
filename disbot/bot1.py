@@ -287,6 +287,12 @@ async def on_ready() -> None:
     from core.runtime import live_update_scheduler, message_anchor_manager
 
     await message_anchor_manager.restore_anchors(bot)
+    # Re-bind a persistent view to every posted role menu (data-driven, keyed on
+    # the role_menus rows rather than per-user anchors) so self-role clicks
+    # survive a restart. Idempotent — guarded against on_ready re-fires.
+    from views.roles.role_menu_view import reattach_role_menus
+
+    await reattach_role_menus(bot)
     live_update_scheduler.setup(bot)
     if reporter:
         await reporter.on_startup(bot)
