@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:53:58Z",
+    "generated_at": "2026-06-21T21:58:42Z",
     "build": {
-      "commit": "5032e77",
-      "subject": "Renumber starboard migration 082 -> 083 (main #1257 took 082 for creature-battle records)",
-      "committed_at": "2026-06-21T21:52:33Z",
+      "commit": "edf3f1c",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/starboard-v1",
+      "committed_at": "2026-06-21T21:54:09Z",
       "branch": "claude/starboard-v1"
     },
     "counts": {
       "functions": 37,
-      "ideas": 114,
+      "ideas": 115,
       "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
@@ -1006,6 +1006,14 @@
       "subsystems": [
         "role"
       ]
+    },
+    {
+      "file": "creature-pvp-rematch-button-2026-06-21.md",
+      "title": "Creature PvP — rematch button on the outcome embed",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "The creature PvP flow (`!cbattle`, shipped #1230 + #1257) ends with a static outcome embed; to play",
+      "subsystems": null
     },
     {
       "file": "creature-sim-engine-constant-parity-guard-2026-06-21.md",
@@ -2373,6 +2381,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-creature-pvp-rematch-button.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature PvP: rematch button (⚑ self-initiated)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-creature-pvp-battle-flow.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
@@ -2584,14 +2600,6 @@
       "file": "2026-06-20-funny-franklin-session-enders-claim-gap.md",
       "date": "2026-06-20",
       "title": "Session — funny-franklin · session-ender pass (claim-gap idea + grooming)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-federated-explore-world-hub.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Federated Explore world hub (spine PR 1)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false

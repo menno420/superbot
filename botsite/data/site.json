@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:53:58Z",
+    "generated_at": "2026-06-21T21:58:42Z",
     "build": {
-      "commit": "5032e77",
-      "subject": "Renumber starboard migration 082 -> 083 (main #1257 took 082 for creature-battle records)",
-      "committed_at": "2026-06-21T21:52:33Z",
+      "commit": "edf3f1c",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/starboard-v1",
+      "committed_at": "2026-06-21T21:54:09Z",
       "branch": "claude/starboard-v1"
     }
   },
@@ -3245,6 +3245,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Creature PvP — rematch button on the outcome embed",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
           "status": "ideas"
         }
@@ -3445,6 +3449,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Creature PvP — rematch button on the outcome embed",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
           "status": "ideas"
         }
@@ -3465,6 +3473,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Creature PvP — rematch button on the outcome embed",
+          "status": "ideas"
+        },
         {
           "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
           "status": "ideas"
