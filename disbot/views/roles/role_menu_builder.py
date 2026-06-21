@@ -191,6 +191,36 @@ class RoleMenuListView(BaseView):
             return
         await self._pick_menu(interaction, self._delete_menu, "Pick a menu to delete:")
 
+    @discord.ui.button(label="📤 Repost", style=discord.ButtonStyle.grey, row=1)
+    async def repost_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await self._pick_menu(
+            interaction,
+            self._repost_menu,
+            "Pick a menu to repost (re-sends it; recovers a deleted message):",
+        )
+
+    @discord.ui.button(label="📋 Duplicate", style=discord.ButtonStyle.grey, row=1)
+    async def duplicate_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await self._pick_menu(
+            interaction,
+            self._duplicate_menu,
+            "Pick a menu to duplicate into a new one:",
+        )
+
     async def _pick_menu(self, interaction, on_pick, prompt: str) -> None:  # type: ignore[no-untyped-def]
         from services import reaction_role_service
 
@@ -280,6 +310,114 @@ class RoleMenuListView(BaseView):
         )
         await self._rerender()
 
+    async def _repost_menu(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        """Re-send a saved menu, binding a fresh persistent view to the new message.
+
+        Reuses the stored config as-is — recovers a menu whose message was
+        deleted, or relocates it. Posts to the menu's own channel when it still
+        exists, otherwise to the channel this manager is open in; the old message
+        (if any) is best-effort removed so it doesn't linger as a dead duplicate.
+        """
+        from services import reaction_role_service
+
+        menu_id = int(values[0])
+        menu = await reaction_role_service.get_menu(menu_id)
+        if menu is None:
+            await interaction.response.edit_message(
+                content="That menu no longer exists.",
+                view=None,
+            )
+            return
+        target = _as_messageable(
+            resources.resolve_channel(self.guild, channel_id=int(menu["channel_id"])),
+        ) or _as_messageable(self.channel)
+        if target is None:
+            await interaction.response.edit_message(
+                content="I can't find a channel to repost this menu in.",
+                view=None,
+            )
+            return
+
+        await interaction.response.edit_message(content="📤 Reposting…", view=None)
+        opt_dicts = _option_dicts(await reaction_role_service.get_menu_options(menu_id))
+        view = RoleMenuView(menu, opt_dicts)
+
+        await self._delete_old_message(menu)
+        try:
+            message = await target.send(
+                embed=build_menu_embed(menu, opt_dicts, self.guild),
+                view=view,
+            )
+        except discord.Forbidden:
+            await interaction.followup.send(
+                "I couldn't repost the menu — I lack permission to send messages "
+                f"in {target.mention}.",
+                ephemeral=True,
+            )
+            return
+        await reaction_role_service.set_menu_location(menu_id, target.id, message.id)
+        interaction.client.add_view(view, message_id=message.id)
+        await interaction.followup.send(
+            f"🚀 Reposted **{menu['title']}** to {target.mention}.",
+            ephemeral=True,
+        )
+        await self._rerender()
+
+    async def _duplicate_menu(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        """Open the builder pre-filled with a copy of an existing menu.
+
+        The copy carries no ``menu_id``, so the builder's **Post** creates a new,
+        independent menu (targeting the channel this manager is open in) — the
+        original is untouched.
+        """
+        from services import reaction_role_service
+
+        menu_id = int(values[0])
+        menu = await reaction_role_service.get_menu(menu_id)
+        if menu is None:
+            await interaction.response.edit_message(
+                content="That menu no longer exists.",
+                view=None,
+            )
+            return
+        opts = await reaction_role_service.get_menu_options(menu_id)
+        builder = RoleMenuBuilder.from_menu(
+            interaction.user,
+            self.guild,
+            menu,
+            opts,
+            parent=self,
+            as_copy=True,
+            channel=_as_messageable(self.channel),
+        )
+        await interaction.response.edit_message(content="Opening a copy…", view=None)
+        if self.message:
+            await self.message.edit(embed=builder.build_embed(), view=builder)
+            builder.message = self.message
+
+    async def _delete_old_message(self, menu: dict) -> None:
+        """Best-effort: remove a menu's previous posted message before a repost."""
+        if not (menu.get("message_id") and menu.get("channel_id")):
+            return
+        channel = resources.resolve_channel(
+            self.guild,
+            channel_id=int(menu["channel_id"]),
+        )
+        if isinstance(channel, discord.abc.Messageable):
+            try:
+                message = await channel.fetch_message(int(menu["message_id"]))
+                await message.delete()
+            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                pass
+
 
 # ---------------------------------------------------------------------------
 # Builder — build a new menu or edit an existing one in place
@@ -336,19 +474,28 @@ class RoleMenuBuilder(BaseView):
         menu: dict,
         options: list,  # type: ignore[type-arg]
         parent: BaseView | None = None,
+        *,
+        as_copy: bool = False,
+        channel: _GuildMessageable | None = None,
     ) -> RoleMenuBuilder:
-        """Load an existing menu's state into a fresh builder (edit-in-place)."""
-        channel = _as_messageable(
+        """Load an existing menu's state into a fresh builder.
+
+        ``as_copy=False`` (default) loads the menu for **edit-in-place** — the
+        builder keeps the menu's id so Save updates it. ``as_copy=True`` loads it
+        as a **duplicate**: the id is dropped so the builder's Post creates a new
+        menu, and (unless ``channel`` is given) it targets the menu's own channel.
+        """
+        target = channel or _as_messageable(
             resources.resolve_channel(guild, channel_id=int(menu["channel_id"])),
         )
         builder = cls(
             author,
             guild,
-            channel,
+            target,
             parent=parent,
-            menu_id=int(menu["menu_id"]),
+            menu_id=(None if as_copy else int(menu["menu_id"])),
         )
-        builder.title = menu["title"]
+        builder.title = (f"{menu['title']} (copy)"[:100]) if as_copy else menu["title"]
         builder.description = menu.get("description")
         builder.style = menu.get("style", "dropdown")
         builder.mode = menu.get("mode", "normal")

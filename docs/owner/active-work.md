@@ -25,10 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/lucid-carson-qsn1gc` · **reaction-roles refinement** (owner-directed) — multi-role-per-emoji
-  bindings (migration 082 PK widen) + role-menu **Repost/Duplicate** reuse · `disbot/{migrations,utils/db,
-  services,views/roles,cogs}` reaction-role files · 2026-06-21 · **PR (this session, merge on green)**
-
 - `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
   claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
   · 2026-06-21 · **auto-merge on green** (docs-only)
@@ -39,6 +35,9 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/lucid-carson-qsn1gc` · **reaction-roles refinement** (owner-directed) — multiple emotes
+  per message each with its own role (`utils/emoji_tokens` + Add-flow rewrite, no schema change) +
+  role-menu **Repost/Duplicate** reuse (`set_menu_location`) · 2026-06-21 · **PR #1234 (merge on green)**
 - `claude/zen-dirac-wnhwhg` · **"free for everyone, forever" product North Star** (owner-directed
   in-session) — router Q-0190 + mission doc + roadmap/current-state/ideas-index cross-refs · 2026-06-21
   · **PR #1226 (auto-merge on green)**

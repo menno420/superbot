@@ -22,6 +22,16 @@
 > deferred to keep the core arc tight (it needs a `role_menus` card column + image-attach on
 > message-edit; greenlight it as a follow-up).
 >
+> **▶ Refinement (2026-06-21, owner-directed — PR #1234):** two gaps the owner hit in use, neither
+> covered by PR 1–5. **(1) Multiple emotes per message, each its own role** — the emoji *data model*
+> already allowed it (PK is per-emoji), but the Add panel only bound one emote at a time and mangled
+> multi-emote input (typing "💀❤️😘" stored one dead binding). The Add flow now parses one-or-more
+> emotes (`utils/emoji_tokens.parse_emotes`) and walks each, picking its own role; no schema change.
+> **(2) Reuse a configured menu** — the manager gained **📤 Repost** (re-send a saved menu, recovering
+> a deleted message / relocating it; new `set_menu_location` seam) and **📋 Duplicate** (clone a saved
+> menu into a new one). NB this is *one role per emote* (an emote→multiple-roles reading was corrected
+> by the owner mid-session).
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,

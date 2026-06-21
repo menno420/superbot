@@ -58,6 +58,19 @@ async def set_menu_message(menu_id: int, message_id: int) -> None:
     )
 
 
+async def set_menu_location(menu_id: int, channel_id: int, message_id: int) -> None:
+    """Record a menu's posted channel + message together (the repost/move flow).
+
+    Reposting a saved menu sends a fresh message — possibly in a different
+    channel — so both columns move in step (``set_menu_message`` only updates the
+    message id, which would leave ``channel_id`` pointing at the old location).
+    """
+    await pool.execute(
+        "UPDATE role_menus SET channel_id=$2, message_id=$3 WHERE menu_id=$1",
+        (menu_id, channel_id, message_id),
+    )
+
+
 async def update_menu(
     menu_id: int,
     *,
