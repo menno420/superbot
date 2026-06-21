@@ -65,7 +65,14 @@ class RoleLifecycleRequest:
     operation: str  # "create" | "edit" | "delete"
     role_id: int | None = None  # edit / delete target
     name: str | None = None  # create (required) / edit (rename)
-    color: discord.Color | None = None  # create / edit
+    color: discord.Color | None = None  # create / edit (primary colour)
+    # Enhanced Role Styles (discord.py 2.6+): a second colour makes a gradient,
+    # a third makes a holographic style. Discord gates the feature on the guild
+    # holding the "Enhanced Role Styles" perk (3 applied boosts); callers should
+    # only set these when the guild supports it, and the API rejects them with a
+    # 400 otherwise (surfaced as a failed step, not a raise).
+    secondary_color: discord.Color | None = None  # create / edit (gradient)
+    tertiary_color: discord.Color | None = None  # create / edit (holographic)
     hoist: bool | None = None  # create / edit
     mentionable: bool | None = None  # create / edit
     reason: str | None = None
@@ -284,17 +291,25 @@ class RoleLifecycleService:
     ) -> discord.Role:
         reason = request.reason
         if operation == "create":
-            return await guild.create_role(
-                name=request.name or "new-role",
-                color=(
+            create_kwargs: dict[str, Any] = {
+                "name": request.name or "new-role",
+                "color": (
                     request.color
                     if request.color is not None
                     else discord.Color.default()
                 ),
-                hoist=bool(request.hoist),
-                mentionable=bool(request.mentionable),
-                reason=reason,
-            )
+                "hoist": bool(request.hoist),
+                "mentionable": bool(request.mentionable),
+                "reason": reason,
+            }
+            # Only pass gradient colours when set — omitting them keeps a plain
+            # solid role and avoids the Enhanced-Role-Styles 400 on guilds without
+            # the perk (callers gate on it; this is the seam-level guard).
+            if request.secondary_color is not None:
+                create_kwargs["secondary_color"] = request.secondary_color
+            if request.tertiary_color is not None:
+                create_kwargs["tertiary_color"] = request.tertiary_color
+            return await guild.create_role(**create_kwargs)
         if role is None:  # apply() resolves edit/delete targets before dispatch
             raise ValueError(f"{operation} requires a resolved role")
         if operation == "edit":
@@ -309,6 +324,10 @@ class RoleLifecycleService:
             kwargs["name"] = request.name
         if request.color is not None:
             kwargs["color"] = request.color
+        if request.secondary_color is not None:
+            kwargs["secondary_color"] = request.secondary_color
+        if request.tertiary_color is not None:
+            kwargs["tertiary_color"] = request.tertiary_color
         if request.hoist is not None:
             kwargs["hoist"] = request.hoist
         if request.mentionable is not None:

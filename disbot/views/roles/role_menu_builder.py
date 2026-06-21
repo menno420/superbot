@@ -24,8 +24,13 @@ from utils import role_menu_presentation as presentation
 from views.base import BaseView
 from views.navigation import attach_back_button
 from views.paginated_select import PaginatedSelectView
+from views.roles._helpers import _COLOR_OPTIONS, _parse_color
 from views.roles.role_menu_view import MAX_MENU_ROLES, RoleMenuView, build_menu_embed
-from views.selectors import attach_multi_role_select
+from views.selectors import (
+    attach_channel_select,
+    attach_multi_role_select,
+    attach_multi_select,
+)
 
 logger = logging.getLogger("bot.views.role_menu_builder")
 
@@ -527,13 +532,24 @@ class RoleMenuBuilder(BaseView):
                 value="*none yet — tap 🏷️ Roles*",
                 inline=False,
             )
+        from services.reaction_role_service import supports_role_gradients
+
         limit = "unlimited" if not self.max_roles else str(self.max_roles)
+        channel_str = (
+            self.channel.mention if self.channel is not None else "*(current channel)*"
+        )
+        gradient_note = (
+            "\n✨ Enhanced role styles available — gradient/holographic colour roles."
+            if supports_role_gradients(self.guild)
+            else ""
+        )
         embed.add_field(
             name="Settings",
             value=(
                 f"Style: **{_STYLE_LABEL.get(self.style, self.style)}**\n"
                 f"Mode: **{_MODE_LABEL.get(self.mode, self.mode)}**\n"
-                f"Limit: **{limit}** · Theme: **{theme.label}**"
+                f"Limit: **{limit}** · Theme: **{theme.label}**\n"
+                f"Channel: {channel_str}{gradient_note}"
             ),
             inline=False,
         )
@@ -581,6 +597,22 @@ class RoleMenuBuilder(BaseView):
         await interaction.response.send_message(
             "Pick the roles this menu offers (up to 25):",
             view=_RolePickView(self, manageable),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🎨 Colours", style=discord.ButtonStyle.grey, row=0)
+    async def colours_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await interaction.response.send_message(
+            "Pick preset colours to auto-create as roles, or **✏️ Custom** for a "
+            "custom colour or gradient — each becomes a role added to this menu:",
+            view=_ColourRolesView(self),
             ephemeral=True,
         )
 
@@ -669,6 +701,27 @@ class RoleMenuBuilder(BaseView):
         _: discord.ui.Button,
     ) -> None:
         await interaction.response.send_modal(_LimitModal(self))
+
+    @discord.ui.button(label="📍 Channel", style=discord.ButtonStyle.grey, row=1)
+    async def channel_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        if not list(self.guild.text_channels):
+            await interaction.response.send_message(
+                "This server has no text channels to post in.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            "Pick the channel to post this menu in:",
+            view=_ChannelPickView(self),
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="🚀 Post", style=discord.ButtonStyle.green, row=2)
     async def post_btn(
@@ -934,6 +987,205 @@ class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[c
         if not await safe_defer(interaction):
             return
         await self.builder._rerender()
+
+
+# ---------------------------------------------------------------------------
+# Sub-flows: post-channel picker + colour-role auto-create
+# ---------------------------------------------------------------------------
+
+
+class _ChannelPickView(BaseView):
+    """Ephemeral picker that sets the builder's post-target channel."""
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__(builder._author, timeout=180)
+        self.builder = builder
+        attach_channel_select(
+            self,
+            list(builder.guild.text_channels),
+            self._on_pick,
+            placeholder="Channel to post the menu in…",
+        )
+
+    async def _on_pick(
+        self,
+        interaction: discord.Interaction,
+        channel_id: int,
+    ) -> None:
+        target = _as_messageable(
+            resources.resolve_channel(self.builder.guild, channel_id=channel_id),
+        )
+        if target is None:
+            await interaction.response.edit_message(
+                content="That channel can't be posted to — pick a text channel.",
+                view=None,
+            )
+            return
+        self.builder.channel = target
+        await interaction.response.edit_message(
+            content=f"✓ This menu will post to {target.mention}.",
+            view=None,
+        )
+        await self.builder._rerender()
+
+
+def _safe_parse_color(value: str | None) -> discord.Color | None:
+    """Parse an optional hex colour; return ``None`` when blank or invalid."""
+    if not value or not value.strip():
+        return None
+    try:
+        return _parse_color(value)
+    except (ValueError, TypeError):
+        return None
+
+
+class _ColourRolesView(BaseView):
+    """Pick preset colours (auto-created as roles) or open the custom/gradient modal."""
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__(builder._author, timeout=180)
+        self.builder = builder
+        options = [
+            discord.SelectOption(label=name, value=hex_value)
+            for name, hex_value in _COLOR_OPTIONS
+        ]
+        attach_multi_select(
+            self,
+            options,
+            self._on_presets,
+            placeholder="Preset colours to create as roles…",
+            max_values=len(options),
+            select_row=0,
+        )
+
+    @discord.ui.button(
+        label="✏️ Custom / gradient…",
+        style=discord.ButtonStyle.blurple,
+        row=1,
+    )
+    async def custom_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(_CustomColourModal(self.builder))
+
+    async def _on_presets(
+        self,
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        by_hex = {hex_value: name for name, hex_value in _COLOR_OPTIONS}
+        specs: list[
+            tuple[str, discord.Color, discord.Color | None, discord.Color | None]
+        ] = [
+            (by_hex.get(hex_value, hex_value), _parse_color(hex_value), None, None)
+            for hex_value in values
+        ]
+        await _commit_colour_roles(interaction, self.builder, specs)
+
+
+class _CustomColourModal(discord.ui.Modal, title="Custom colour role"):  # type: ignore[call-arg]
+    name_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Role name",
+        placeholder="e.g. Sunset",
+        max_length=100,
+    )
+    primary_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Colour (hex)",
+        placeholder="#e67e22",
+        max_length=7,
+    )
+    secondary_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Gradient 2nd colour (hex, optional)",
+        placeholder="#f1c40f — needs Enhanced Role Styles",
+        required=False,
+        max_length=7,
+    )
+    tertiary_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Holographic 3rd colour (hex, optional)",
+        required=False,
+        max_length=7,
+    )
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__()
+        self.builder = builder
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        primary = _safe_parse_color(self.primary_in.value)
+        if primary is None:
+            await interaction.response.send_message(
+                "❌ The colour must be a hex value like `#e67e22`.",
+                ephemeral=True,
+            )
+            return
+        name = self.name_in.value.strip() or "Colour"
+        await _commit_colour_roles(
+            interaction,
+            self.builder,
+            [
+                (
+                    name,
+                    primary,
+                    _safe_parse_color(self.secondary_in.value),
+                    _safe_parse_color(self.tertiary_in.value),
+                ),
+            ],
+        )
+
+
+async def _commit_colour_roles(
+    interaction: discord.Interaction,
+    builder: RoleMenuBuilder,
+    specs: list[tuple[str, discord.Color, discord.Color | None, discord.Color | None]],
+) -> None:
+    """Create/reuse a colour role per spec and add it to the builder's draft."""
+    from services import reaction_role_service
+
+    if not specs:
+        await interaction.response.send_message(
+            "Pick at least one colour.",
+            ephemeral=True,
+        )
+        return
+    # Creating several roles is multiple API calls — defer first, report after.
+    if not await safe_defer(interaction, ephemeral=True, thinking=True):
+        return
+
+    created: list[str] = []
+    reused: list[str] = []
+    notes: list[str] = []
+    for name, primary, secondary, tertiary in specs:
+        role_id, was_created, note = await reaction_role_service.ensure_color_role(
+            builder.guild,
+            name=name,
+            color=primary,
+            secondary=secondary,
+            tertiary=tertiary,
+            actor=interaction.user,
+        )
+        if role_id is None:
+            notes.append(f"{name}: {note or 'could not be created'}")
+            continue
+        if role_id not in builder.role_ids and len(builder.role_ids) < MAX_MENU_ROLES:
+            builder.role_ids.append(role_id)
+        (created if was_created else reused).append(name)
+        if note:
+            notes.append(f"{name}: {note}")
+
+    parts: list[str] = []
+    if created:
+        parts.append(f"🎨 Created {', '.join(created)}")
+    if reused:
+        parts.append(f"♻️ Reused existing {', '.join(reused)}")
+    if notes:
+        parts.append("\n".join(notes))
+    await interaction.followup.send(
+        "\n".join(parts) or "No colour roles were added.",
+        ephemeral=True,
+    )
+    await builder._rerender()
 
 
 __all__ = ["RoleMenuBuilder", "RoleMenuListView"]
