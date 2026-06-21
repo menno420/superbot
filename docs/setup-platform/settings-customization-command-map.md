@@ -510,6 +510,45 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: S10.
 
+### creature
+
+1. **cog_module**: `disbot/cogs/creature_cog.py`.
+2. **subsystem**: `creature`
+3. **current_commands**: `!catch`/`!hunt`, `!dex`/`!collection`/`!creatures`,
+   `!dextop`/`!topcatchers`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `none` (hub-less; the open-world Explore
+   panel that folds in `🐾 Creatures` is a later plan slice).
+6. **help_menu_discoverable**: Yes (static overview via `build_help_menu_view`).
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (static embed).
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `creature.catch.creature`, `creature.collection.view`.
+14. **hardcoded_or_env_only_behavior**: the 36-creature dataset
+    (`data/creatures/creatures.json`) + the rarity encounter/catch weights are
+    committed data/code (owner design Q-0186/Q-0187, no Pokémon IP). v1 has **no
+    coins** — the reward is progression (`game_xp`) + the collection dex. The
+    level-normalized PvP battle is a later `needs-hermes-review` slice.
+15. **missing_customization_commands**: `!creature level award set ...` (xp pace),
+    catch-rate setters (future, only if balance is ever made configurable).
+16. **missing_settings_pages**: Settings Manager creature page (future).
+17. **missing_menu_buttons_selects_modals**: xp-pace scalar editor,
+    optional `creature_channel` BindingSelectView (future).
+18. **setting_class_per_value**: xp pace → scalar; optional creature_channel → binding.
+19. **target_Settings_Manager_page**: `!settings subsystem creature` (future).
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars + list) if
+    catch/encounter weights are ever made configurable.
+21. **target_help_or_menu_route**: Help direct-nav (static); Settings tab (future).
+22. **provisionable_resources**:
+    `(creature_channel, CHANNEL, OPTIONAL, creature-panel, Games, public-text)`
+    (proposed for a later slice — not declared yet).
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: S10.
+
 ### xp
 
 1. **cog_module**: `disbot/cogs/xp_cog.py` (+ `disbot/cogs/xp/` package with

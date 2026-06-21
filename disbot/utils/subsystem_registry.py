@@ -246,6 +246,36 @@ SUBSYSTEMS: dict[str, dict] = {
             "fishing.collection.view",
         ],
     },
+    # Creature catch/collection game v1 (Q-0186/Q-0187,
+    # docs/planning/creature-game-design-and-sim-2026-06-20.md). hub-less for the
+    # catch slice — surfaced via its Help hook + the typed `!catch`/`!dex`/`!dextop`
+    # commands, exactly like `fishing`. Folding 🐾 Creatures into an actionable
+    # Games / Explore-hub panel (and the level-normalized PvP battle) are later
+    # plan slices, at which point it gains parent_hub + an actionable panel.
+    "creature": {
+        "display_name": "Creatures",
+        "description": "Catch original creatures and build your collection dex",
+        "emoji": "🐾",
+        "color": GAME_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "games",
+        "tags": ["creatures", "minigame", "activities"],
+        "entry_points": ["catch", "dex"],
+        "default_channels": ["games", "bot-commands"],
+        "related_subsystems": ["fishing", "mining"],
+        # No hard dependency: catching writes only the collection log + game_xp
+        # (no coins), so it must not be locked out when the economy is disabled.
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 22,
+        "capabilities": [
+            "creature.catch.creature",
+            "creature.collection.view",
+        ],
+    },
     "xp": {
         "display_name": "XP & Levels",
         "description": "Experience points, levels, and leaderboards",

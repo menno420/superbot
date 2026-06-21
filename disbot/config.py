@@ -71,6 +71,7 @@ INITIAL_EXTENSIONS = [
     "cogs.proof_channel_cog",
     "cogs.mining_cog",
     "cogs.fishing_cog",
+    "cogs.creature_cog",
     "cogs.diagnostic_cog",
     "cogs.health_maintenance_cog",
     "cogs.ai_cog",

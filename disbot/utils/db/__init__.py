@@ -77,6 +77,11 @@ from utils.db.games.chain import (
     set_chain_limit,
 )
 from utils.db.games.counting import get_counting_state, set_counting_state
+from utils.db.games.creatures import (
+    get_creature_collection,
+    record_creature_catch,
+    top_collectors,
+)
 from utils.db.games.deathmatch import (
     get_deathmatch_leaderboard,
     get_deathmatch_stats,
@@ -341,6 +346,9 @@ __all__ = [
     "get_fishing_log",
     "record_catch",
     "top_fishers",
+    "get_creature_collection",
+    "record_creature_catch",
+    "top_collectors",
     "apply_inventory_deltas",
     "get_gear_wear",
     "set_gear_wear",

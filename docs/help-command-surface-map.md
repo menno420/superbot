@@ -23,8 +23,8 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 35 of the 46 loaded extensions (`config.INITIAL_EXTENSIONS`) define
-  `build_help_menu_view` — equivalently, 35 of the 36 subsystem-owning
+- 36 of the 47 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+  `build_help_menu_view` — equivalently, 36 of the 37 subsystem-owning
   cogs expose it. The 11 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
@@ -74,8 +74,8 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 2. Subsystem inventory
 
-36 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 46 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+37 registered subsystems in `utils/subsystem_registry.py` (one row
+each below); 47 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 11 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
@@ -109,6 +109,7 @@ falls back to the command-list embed when the hook is missing or raises.
 | `logging` | `logging_cog.py:88` | `logging` | — | `LoggingPanelView` | `!help logging` → opens Logging panel (shared resolver) | reached via Moderation / Admin; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
 | `mining` | `mining_cog.py:65` | `mineinv`/`mineinventory`, `minestats` | mining game flow commands (start/dig/etc.) | `MiningHubView` | `!help mining` → opens Mining panel (shared resolver) | reached via Games (primary, `parent_hub="games"`); Economy hub declares Mining as a `cross_link_children` since PR #3 | hub child (Games); Economy cross-link |
 | `fishing` | `fishing_cog.py` | `fish`, `fishlog`/`fishdex`, `fishtop`/`topfishers` | — | `FishingCog` | `!help fishing` → static fishing overview (Help hook; no persistent panel yet) | hub-less; surfaced via the typed `!fish`/`!fishlog`/`!fishtop` commands (user tier) | hub-less for PR 1 (like `welcome`/`counters`); an actionable Games/Explore-hub panel is a later plan slice |
+| `creature` | `creature_cog.py` | `catch`/`hunt`, `dex`/`collection`/`creatures`, `dextop`/`topcatchers` | — | `CreatureCog` | `!help creature` → static creature overview (Help hook; no persistent panel yet) | hub-less; surfaced via the typed `!catch`/`!dex`/`!dextop` commands (user tier) | catch+collection v1 (like `fishing`); the level-normalized PvP battle + an Explore-hub panel are later plan slices |
 | `moderation` | `moderation_cog.py` | `modmenu`, `warn`, `timeout`, `kick`, `ban`, `unban`, `clearwarnings`, `modlogs` | — | `ModPanelView` | `!help moderation` → opens Moderation panel (shared resolver) | dropdown Moderation → panel | hub top-level |
 | `proof_channel` | `proof_channel_cog.py:113` | `prizestatus`, `prizemenu`, `timedprize` | — | `_PrizeManagerView` | `!help proof` → opens Proof Channel panel (shared resolver) | reached via Moderation; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
 | `role` | `role_cog.py:334` | `roles`, `rolesettings`, `rolemenu` (legacy alias) | 8+ legacy commands: `rolecreator`, `createrole`, `deleterole`, `setrole`, `unsetrole`, `assignroles`, `debugroles`, `refreshmembers`, plus react-role family | `RoleHubPanelView` | `!help roles` → opens Role panel (shared resolver) | reached via Community; `parent_hub="community"` since PR #3 | hub child (Community) — declared; legacy commands remain as hidden compatibility |

@@ -1,26 +1,26 @@
 {
   "meta": {
-    "generated_at": "2026-06-20T23:51:51Z",
+    "generated_at": "2026-06-21T03:21:14Z",
     "build": {
-      "commit": "4c616685",
-      "subject": "Merge pull request #1201 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-21T01:40:33Z",
-      "branch": "claude/jolly-johnson-czteze"
+      "commit": "7acf1f74",
+      "subject": "session(card): creature game runtime v1 — catch + collection (born-red HOLD)",
+      "committed_at": "2026-06-21T03:08:39Z",
+      "branch": "claude/funny-franklin-uf628a"
     },
     "counts": {
-      "functions": 36,
+      "functions": 37,
       "ideas": 108,
-      "bugs": 20,
+      "bugs": 22,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 37,
-      "cogs": 43,
-      "commands": 308,
+      "cogs": 44,
+      "commands": 311,
       "setting_keys": 103,
       "setting_domains": 15,
       "typed_settings": 84,
-      "visible_subsystems": 36,
+      "visible_subsystems": 37,
       "synonyms": 87,
       "bot_changelog": 3
     }
@@ -468,6 +468,32 @@
       "capabilities": [
         "counting.game.play",
         "counting.game.configure"
+      ]
+    },
+    {
+      "key": "creature",
+      "display_name": "Creatures",
+      "description": "Catch original creatures and build your collection dex",
+      "emoji": "🐾",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "games",
+      "tags": [
+        "creatures",
+        "minigame",
+        "activities"
+      ],
+      "entry_points": [
+        "catch",
+        "dex"
+      ],
+      "related_subsystems": [
+        "fishing",
+        "mining"
+      ],
+      "capabilities": [
+        "creature.catch.creature",
+        "creature.collection.view"
       ]
     },
     {
@@ -982,7 +1008,7 @@
     {
       "file": "reconcile-pass-tail-trim-actuator-2026-06-20.md",
       "title": "Idea — a tail-trim actuator for the `current-state.md` ▶ Next action callout",
-      "status": "captured",
+      "status": "ideas",
       "date": "2026-06-20",
       "summary": "Every Q-0107 reconciliation pass prepends one \"**Nth Q-0107 PASS DONE …**\" sentence to the",
       "subsystems": []
@@ -1900,9 +1926,21 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0022",
+      "title": "full test suite rewrites the tracked botsite/site/data.js (live-HEAD build sha) → git add -A reddens botsite-tests",
+      "status": "FIXED",
+      "summary": "an unrelated PR (a tooling/docs fix) reddened both botsite-tests and code-quality on test_committed_data_js_is_in_sync_with_site_json — the committed botsite/site/data.js was \"stale\" vs site.json. The data.js in the commit carried the session's own HEAD short-sha in its CHANGELO…"
+    },
+    {
+      "id": "BUG-0021",
+      "title": "test_acquire_lock_or_exit_exits_zero_after_wait_timeout is flaky under pytest -n auto (real-clock dependent)",
+      "status": "FIXED",
+      "summary": "tests/unit/services/test_runtime.py::test_acquire_lock_or_exit_exits_zero_after_wait_timeout failed once in a parallel (-n auto) run, then passed in isolation on re-run. A classic real-wall-clock flake, not a logic bug — and not caused by the change under test (a docs/tooling PR…"
+    },
+    {
       "id": "BUG-0020",
-      "title": "trim_recently_shipped.py floor-pointer recompute matches stray #N in prose (writes a wrong \"Older merges (#HIGH … #LOW)\" span) — OPEN (tooling; symptom hand-corrected)",
-      "status": "unknown",
+      "title": "trim_recently_shipped.py floor-pointer recompute matches stray #N in prose (writes a wrong \"Older merges (#HIGH … #LOW)\" span)",
+      "status": "FIXED",
       "summary": "after scripts/trim_recently_shipped.py --apply moved the 8 oldest Recently-shipped bullets to the archive, it recomputed the floor pointer as \"Older merges (#1170 … #1)\" — both ends wrong. The true archive span is #1129 … #535."
     },
     {
@@ -2023,6 +2061,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-21-creature-game-catch-collection.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature game runtime v1: catch + collection (dex)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-bug0020-trim-floor-pointer-prose.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — CI-reliability batch: BUG-0020 + BUG-0021 + BUG-0022",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-20-world-registry-parity-invariant.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Explore world-registry parity invariant + folio docs",
@@ -2074,6 +2128,14 @@
       "file": "2026-06-20-reconcile.md",
       "date": "2026-06-20",
       "title": "2026-06-20 — Docs reconciliation (sixteenth Q-0107 pass, band-#1170)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-20-reconcile-band1200.md",
+      "date": "2026-06-20",
+      "title": "2026-06-20 — Docs reconciliation (seventeenth Q-0107 pass, band-#1200)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -2477,30 +2539,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-planning-map-cleanup.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Planning/audit/idea map cleanup — a durable plan index + de-stale the route",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-plan-code-drift-check.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Ground-truth audit protocol + plan-code-drift check",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-19-open-question-sweep.md",
-      "date": "2026-06-19",
-      "title": "2026-06-19 — Open-question sweep (question panel)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -2589,7 +2627,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 180,
+          "line": 181,
           "layer": "config",
           "has_default": true
         },
@@ -2611,7 +2649,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 179,
+          "line": 180,
           "layer": "config",
           "has_default": true
         }
@@ -2644,7 +2682,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 163,
+          "line": 164,
           "layer": "config",
           "has_default": true
         },
@@ -2746,7 +2784,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 206,
+          "line": 207,
           "layer": "config",
           "has_default": true
         }
@@ -2762,7 +2800,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 209,
+          "line": 210,
           "layer": "config",
           "has_default": true
         }
@@ -2778,7 +2816,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 212,
+          "line": 213,
           "layer": "config",
           "has_default": true
         }
@@ -2938,7 +2976,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 105,
+          "line": 106,
           "layer": "config",
           "has_default": true
         }
@@ -3018,7 +3056,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 106,
+          "line": 107,
           "layer": "config",
           "has_default": true
         }
@@ -3036,7 +3074,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 162,
+          "line": 163,
           "layer": "config",
           "has_default": true
         },
@@ -3077,7 +3115,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 189,
+          "line": 190,
           "layer": "config",
           "has_default": true
         },
@@ -3100,7 +3138,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 193,
+          "line": 194,
           "layer": "config",
           "has_default": true
         },
@@ -3139,7 +3177,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 161,
+          "line": 162,
           "layer": "config",
           "has_default": true
         },
@@ -3163,7 +3201,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 160,
+          "line": 161,
           "layer": "config",
           "has_default": true
         },
@@ -4582,6 +4620,54 @@
             "tt"
           ],
           "brief": "Toggles the 'taking turns' mode.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
+      "cog": "CreatureCog",
+      "file": "disbot/cogs/creature_cog.py",
+      "subsystem": "creature",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "catch",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "hunt"
+          ],
+          "brief": "Head into the wild to find and catch a creature.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "dex",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "collection",
+            "creatures"
+          ],
+          "brief": "Show your creature collection — every creature you've caught.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "dextop",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "topcatchers"
+          ],
+          "brief": "Show this server's top collectors by total creatures caught.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -7948,6 +8034,12 @@
             "emoji": "🔢"
           },
           {
+            "key": "creature",
+            "display_name": "Creatures",
+            "category": "games",
+            "emoji": "🐾"
+          },
+          {
             "key": "deathmatch",
             "display_name": "Deathmatch",
             "category": "games",
@@ -8146,7 +8238,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 36,
+    "total_visible": 37,
     "internal_count": 0
   },
   "synonyms": [
