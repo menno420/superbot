@@ -41,6 +41,9 @@ class CreatureBattleChallengeView(BaseView):
         self.challenger = challenger
         self.opponent = opponent
         self.guild_id = guild_id
+        # Set once accept/decline answers the challenge so a late on_timeout (the
+        # BUG-0013 race) can't overwrite a resolved challenge with the expiry copy.
+        self._resolved = False
 
     @discord.ui.button(label="Accept", style=discord.ButtonStyle.green, emoji="⚔️")
     async def accept(
@@ -48,6 +51,7 @@ class CreatureBattleChallengeView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
+        self._resolved = True
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(
@@ -89,6 +93,7 @@ class CreatureBattleChallengeView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
+        self._resolved = True
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(
@@ -96,3 +101,30 @@ class CreatureBattleChallengeView(BaseView):
             view=self,
         )
         self.stop()
+
+    async def on_timeout(self) -> None:
+        """Close an unanswered challenge with an explicit expiry notice.
+
+        accept/decline call ``self.stop()`` (which cancels the timeout), so this
+        fires only when the challenge was never answered — the silent-timeout gap
+        the deathmatch BUG-0013 fix closed for its own challenge view. The
+        ``_resolved`` guard covers the rare race where a click lands as the timeout
+        is already firing (don't overwrite a resolved challenge).
+        """
+        for item in self.children:
+            item.disabled = True  # type: ignore[attr-defined]
+        if self._resolved or self.message is None:
+            return
+        try:
+            await self.message.edit(
+                content=(
+                    f"⌛ {self.opponent.display_name} didn't respond — the creature "
+                    f"challenge from {self.challenger.display_name} expired."
+                ),
+                view=self,
+            )
+        except Exception as exc:
+            logger.debug(
+                "CreatureBattleChallengeView.on_timeout: message.edit failed: %s",
+                exc,
+            )
