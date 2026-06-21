@@ -69,8 +69,14 @@ async def unbind_emoji(
     emoji: str,
     *,
     actor_id: int | None,
+    actor_type: str = "admin",
 ) -> None:
-    """Remove an emoji → role binding from a message (audited)."""
+    """Remove an emoji → role binding from a message (audited).
+
+    ``actor_type`` defaults to ``"admin"`` (an operator removal); the listener
+    self-heal passes ``"system"`` so an automatic dead-binding cleanup is
+    distinguishable in the audit stream.
+    """
     prev_role = await db.get_reaction_role(guild_id, message_id, emoji)
     await db.remove_reaction_role(guild_id, message_id, emoji)
     await _emit(
@@ -80,6 +86,7 @@ async def unbind_emoji(
         prev_value=f"message={message_id},emoji={emoji}",
         new_value=None,
         actor_id=actor_id,
+        actor_type=actor_type,
     )
 
 
@@ -222,6 +229,8 @@ async def handle_reaction_add(
         return None, False
     if not await reaction_roles_enabled(guild.id):
         return None, False
+    if await _self_heal_dead_binding(guild, message_id, emoji, role_id):
+        return None, False
     mode = await db.get_reaction_message_mode(guild.id, message_id)
     if mode == "unique":
         siblings = await _held_sibling_reaction_roles(
@@ -268,10 +277,35 @@ async def handle_reaction_remove(
         return None
     if not await reaction_roles_enabled(guild.id):
         return None
+    if await _self_heal_dead_binding(guild, message_id, emoji, role_id):
+        return None
     mode = await db.get_reaction_message_mode(guild.id, message_id)
     if mode == "verify":
         return None
     return await _apply(member, to_add=(), to_remove=(role_id,), guild=guild)
+
+
+async def _self_heal_dead_binding(
+    guild: discord.Guild,
+    message_id: int,
+    emoji: str,
+    role_id: int,
+) -> bool:
+    """Drop a binding whose role was deleted, the moment a member reacts on it.
+
+    A binding to a deleted role can never assign anything, so the first reaction
+    that hits it is a definitive signal it is dead — remove it (audited as a
+    ``system`` action) so dead config self-heals without an operator opening the
+    panel (the manual 🧹 Clean up button covers the rest). Roles are fully cached
+    in discord.py, so ``resolve_role`` returning ``None`` means genuinely deleted,
+    not a transient cache miss.
+    """
+    from core.runtime import resources
+
+    if resources.resolve_role(guild, role_id=role_id) is not None:
+        return False
+    await unbind_emoji(guild.id, message_id, emoji, actor_id=None, actor_type="system")
+    return True
 
 
 async def _held_sibling_reaction_roles(
@@ -824,6 +858,7 @@ async def _emit(
     prev_value: str | None,
     new_value: str | None,
     actor_id: int | None,
+    actor_type: str = "admin",
 ) -> None:
     """Emit ``audit.action_recorded`` for a reaction-role config mutation."""
     from services.audit_events import emit_audit_action
@@ -838,7 +873,7 @@ async def _emit(
         prev_value=prev_value,
         new_value=new_value,
         actor_id=actor_id,
-        actor_type="admin",
+        actor_type=actor_type,
         occurred_at=datetime.now(tz=timezone.utc),
     )
 
