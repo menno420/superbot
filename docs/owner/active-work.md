@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/early-pr-mandate` · **Q-0189 — open the session PR within ~2 min of start** (owner-directed
+  in-session rule) · `.claude/CLAUDE.md` (Q-0133 bullet) + `docs/owner/maintainer-question-router.md`
+  · 2026-06-21 · **auto-merge on green** (docs-only · owner is live reviewer)
+
 - `claude/lane-overlap-claim-scan` · **check_lane_overlap.py — add the active-work.md claim-ledger
   scan** (closes the gap that let a duplicate reaction-roles PR 2 get built: the tool only scanned
   recently-MERGED commits, not the earliest "owns PR 2–5" claim signal) · `scripts/check_lane_overlap.py`
