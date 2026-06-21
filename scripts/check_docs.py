@@ -157,6 +157,18 @@ _TOP_LEVEL_DOCS_BUDGET = 20
 # Headroom over the ~15 target so a busy week doesn't nag immediately. Warn-only.
 _RECENTLY_SHIPPED_BUDGET = 20
 
+# Soft cap (chars) on the live `▶ Next action` callout in current-state.md — the most-read
+# pointer in the repo. It bloated to a ~40 KB single-paragraph wall before the band-#1230 pass
+# pruned it by hand, because the bloat was prose (a standing Q-0102 finding) not a number a
+# checker could name. This is the *gauge* (idea: reconcile-callout-line-budget-guard, Q-0089):
+# the same warn-only role the Recently-shipped ratchet plays, but for the callout's length — it
+# names the regression the moment the line crosses the budget. Warn-only (Q-0105 disposable dev
+# tooling) — never changes the exit code. 6 KB ≈ a generously-sized live queue + next-startables
+# + gated list; consumed band-history belongs in the per-band planning/reconciliation-pass-* records.
+# unverified: confirm a few times that this tracks the real callout before trusting it; delete
+# this sub-check if it proves noisy/unreliable across sessions.
+_NEXT_ACTION_CALLOUT_BUDGET = 6000
+
 
 def _docs_files() -> list[Path]:
     return sorted(DOCS_ROOT.rglob("*.md"))
@@ -484,7 +496,49 @@ def print_census() -> None:
             "ratchet — move the oldest entries into docs/current-state-archive.md to keep "
             "the living ledger lean. (soft — not a CI failure)",
         )
+    callout = _next_action_callout_chars()
+    print(
+        f"  current-state ▶ Next action callout: {callout} chars "
+        f"(budget {_NEXT_ACTION_CALLOUT_BUDGET})",
+    )
+    if callout > _NEXT_ACTION_CALLOUT_BUDGET:
+        print(
+            f"  ⚠ ▶ Next action callout is {callout - _NEXT_ACTION_CALLOUT_BUDGET} chars over "
+            "the budget — prune consumed band-history into the per-band "
+            "planning/reconciliation-pass-* records (Q-0102). (soft — not a CI failure)",
+        )
     print()
+
+
+def _next_action_callout_chars() -> int:
+    """Measure the live ``▶ Next action`` callout paragraph in ``current-state.md``.
+
+    The callout is the contiguous run of non-empty blockquote (``>``) lines that begins
+    with the ``▶ Next action`` marker, stopping at the first blockquote separator (a bare
+    ``>``) or the end of the leading blockquote. Returns its character length (the ``> ``
+    prefixes stripped). 0 if the marker is absent.
+    """
+    f = DOCS_ROOT / "current-state.md"
+    if not f.exists():
+        return 0
+    lines = f.read_text(encoding="utf-8").splitlines()
+    try:
+        start = next(
+            i
+            for i, ln in enumerate(lines)
+            if ln.lstrip("> ").startswith("**▶ Next action")
+        )
+    except StopIteration:
+        return 0
+    chars = 0
+    for ln in lines[start:]:
+        if not ln.startswith(">"):
+            break
+        body = ln[1:].strip()
+        if not body:  # bare ``>`` separator ends the callout paragraph
+            break
+        chars += len(body)
+    return chars
 
 
 def _recently_shipped_count() -> int:

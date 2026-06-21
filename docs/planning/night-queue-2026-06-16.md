@@ -1,6 +1,9 @@
 # Night work queue — 2026-06-16 (for the scheduled dispatch routine)
 
-> **Status:** `plan` — a grounded, ordered queue of **bot-section (`disbot/` runtime)**
+> **Status:** `historical` — **FULLY CONSUMED** (every ready slot + the slot-4 reframe + both
+> buffer slices shipped; the proven BTD6 deterministic-floor lane is exhausted). Kept as the record
+> of the night-queue run; superseded by the live `▶ Next action` queue in `docs/current-state.md`.
+> Was a grounded, ordered queue of **bot-section (`disbot/` runtime)**
 > slices for the autonomous **dispatch routine** to advance on its scheduled fires
 > (`0 */2 * * *` UTC → 00:00 / 02:00 / 04:00 / 06:00 — "the ~4 that run overnight,
 > including 12am"). Owner directive, in-session 2026-06-16.
