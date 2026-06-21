@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T22:03:06Z",
+    "generated_at": "2026-06-21T22:08:34Z",
     "build": {
-      "commit": "1a26f5ae",
-      "subject": "docs: nineteenth Q-0107 reconciliation pass (band-#1260, issue #1264)",
-      "committed_at": "2026-06-21T22:00:18Z",
+      "commit": "d2af0a08",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/reconcile-1260",
+      "committed_at": "2026-06-21T22:03:07Z",
       "branch": "claude/reconcile-1260"
     }
   },
   "counts": {
-    "commands": 316,
+    "commands": 318,
     "features": 37,
     "games": 9
   },
@@ -6285,6 +6285,20 @@
       "notes": null
     },
     {
+      "name": "off",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Disable the starboard (config is preserved).",
+      "description": "Disable the starboard (config is preserved).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "paragon",
       "aliases": [],
       "category": "other",
@@ -6609,6 +6623,24 @@
       "description": "Show the most recent slow-path entries (S3.2 ring buffer).",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "starboard",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show or set the hall-of-fame channel + star threshold.",
+      "description": "Show or set the hall-of-fame channel + star threshold.",
+      "use_cases": null,
+      "examples": [
+        "!starboard",
+        "!starboard #channel [n]",
+        "!starboard off"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null

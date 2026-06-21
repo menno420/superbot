@@ -171,6 +171,10 @@ async def teardown(guild_id: int) -> None:
     #     pickup counters for the departed guild.
     await _teardown_role_pickup_stats(guild_id)
 
+    # 27. Starboard / Hall-of-Fame (idea B1) — settings + entries for the
+    #     departed guild.
+    await _teardown_starboard(guild_id)
+
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
 
 
@@ -674,6 +678,26 @@ async def _teardown_role_menus(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: role menu teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_starboard(guild_id: int) -> None:
+    """Delete starboard settings + entries for the departed guild (idea B1)."""
+    try:
+        from utils.db.starboard import delete_for_guild as _starboard_delete
+
+        count = await _starboard_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d starboard entr(ies) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: starboard teardown failed for guild=%d: %s",
             guild_id,
             exc,
         )

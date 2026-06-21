@@ -171,6 +171,10 @@ extensions:
   four_twenty:
     role: product_subsystem
     note: Novelty / community feature.
+  starboard:
+    role: product_subsystem
+    note: Starboard / Hall-of-Fame (idea B1) — N ⭐-reactions immortalize a message
+      in a configured channel; reuses the raw-reaction seam.
   leaderboard:
     role: product_subsystem
     note: Cross-subsystem leaderboards (reads XP/games).

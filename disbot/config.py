@@ -56,6 +56,7 @@ INITIAL_EXTENSIONS = [
     "cogs.help_cog",
     "cogs.role_cog",
     "cogs.role_grants_cog",
+    "cogs.starboard_cog",
     "cogs.moderation_cog",
     "cogs.automod_cog",
     "cogs.image_moderation_cog",
