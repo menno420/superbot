@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:51:39Z",
+    "generated_at": "2026-06-21T21:58:42Z",
     "build": {
-      "commit": "decbda35",
-      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-m1xdmf' into claude/funny-franklin-m1xdmf",
-      "committed_at": "2026-06-21T21:51:28Z",
-      "branch": "claude/funny-franklin-m1xdmf"
+      "commit": "edf3f1c",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/starboard-v1",
+      "committed_at": "2026-06-21T21:54:09Z",
+      "branch": "claude/starboard-v1"
     }
   },
   "counts": {
-    "commands": 316,
+    "commands": 318,
     "features": 37,
     "games": 9
   },
@@ -6285,6 +6285,20 @@
       "notes": null
     },
     {
+      "name": "off",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Disable the starboard (config is preserved).",
+      "description": "Disable the starboard (config is preserved).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "paragon",
       "aliases": [],
       "category": "other",
@@ -6609,6 +6623,24 @@
       "description": "Show the most recent slow-path entries (S3.2 ring buffer).",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "starboard",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show or set the hall-of-fame channel + star threshold.",
+      "description": "Show or set the hall-of-fame channel + star threshold.",
+      "use_cases": null,
+      "examples": [
+        "!starboard",
+        "!starboard #channel [n]",
+        "!starboard off"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
