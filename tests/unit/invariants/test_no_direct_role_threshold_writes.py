@@ -15,7 +15,11 @@ see ``docs/ownership.md`` § "Direct vs. draft mutation lanes" and
 ``RoleAutomationModal``, ``_helpers._ensure_defaults``, ``xp_roles_panel``
 ``XpLevelModal``, and ``role_cog.setrole``) were converted, so
 ``_ALLOWED_DIRECT_THRESHOLD_FILES`` is now **empty** and this invariant is the
-absolute rule: *no direct threshold writes anywhere in the role surface*. It
+absolute rule: *no direct threshold writes anywhere in the role surface*.
+(*2026-06-21:* the ``Seed-Defaults`` button + ``_helpers._ensure_defaults`` were
+later **removed** — roles load dynamically now — and the Time panel's new
+``Clear Missing`` purge routes through the audited
+``role_automation.clear_time_threshold`` seam, so the fence still holds.) It
 began as a *shrinking ratchet* — the allowlist pinned the known-remaining sites
 and forbade new drift; emptying it is how P0C records "done". A **new** direct
 write in any scanned file now fails immediately.

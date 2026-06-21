@@ -7,11 +7,12 @@ from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
 from services.lifecycle import SUCCESS
 from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleService
+from utils.role_feasibility import manageable_roles
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
-from views.paginated_select import PaginatedSelectView
-from views.roles._helpers import _find_role_normalized, _parse_color
+from views.roles._helpers import _parse_color
+from views.selectors import attach_multi_role_select, attach_role_select
 
 
 class ManagementPanel(BaseView):
@@ -56,15 +57,39 @@ class ManagementPanel(BaseView):
         embed.set_footer(text="Create · Edit · Delete roles using the buttons below.")
         return embed
 
+    async def _rerender(self) -> None:
+        if self.message:
+            await self.message.edit(embed=await self.build_embed(), view=self)
+
+    def _editable_roles(self, interaction: discord.Interaction) -> list[discord.Role]:
+        """Roles the bot AND the acting member can manage (edit/delete targets).
+
+        Filters out @everyone, integration-managed roles, and anything at/above
+        the bot's or the actor's top role — the same partition the lifecycle
+        service enforces, so the picker only offers roles the action can succeed
+        on.
+        """
+        manageable, _excluded = manageable_roles(
+            interaction.guild.roles,
+            bot_member=interaction.guild.me,
+            actor=interaction.user,
+        )
+        return manageable
+
     @discord.ui.button(label="📝 Create", style=discord.ButtonStyle.green, row=0)
     async def create_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from views.roles.creation_panel import RoleCreateModal
+        from views.roles.creation_panel import RoleCreatePanel
 
-        await interaction.response.send_modal(RoleCreateModal(self.ctx))
+        panel = RoleCreatePanel(self.ctx)
+        await interaction.response.send_message(
+            embed=panel.build_embed(),
+            view=panel,
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="✏️ Edit Role", style=discord.ButtonStyle.blurple, row=0)
     async def edit_btn(
@@ -72,7 +97,18 @@ class ManagementPanel(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.send_modal(EditRoleModal(self))
+        roles = self._editable_roles(interaction)
+        if not roles:
+            await interaction.response.send_message(
+                "No roles you can edit (all are above me/you, managed, or @everyone).",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            "Pick a role to edit:",
+            view=_EditRolePickView(self, roles),
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="🗑️ Delete Role", style=discord.ButtonStyle.red, row=0)
     async def delete_btn(
@@ -80,29 +116,44 @@ class ManagementPanel(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        guild = interaction.guild
-        roles = [
-            r for r in guild.roles if r != guild.default_role and r < guild.me.top_role
-        ]
+        roles = self._editable_roles(interaction)
         if not roles:
             await interaction.response.send_message(
                 "No deletable roles available.",
                 ephemeral=True,
             )
             return
-        view = _build_delete_role_view(self, roles)
         await interaction.response.send_message(
-            "Select a role to delete:",
-            view=view,
+            "Select one or more roles to delete, then press **🗑️ Delete Selected**:",
+            view=_DeleteRolesView(self, roles),
             ephemeral=True,
         )
 
 
+class _EditRolePickView(BaseView):
+    """Ephemeral picker: choose the role to edit, then open the edit modal."""
+
+    def __init__(self, parent: ManagementPanel, roles: list[discord.Role]) -> None:
+        super().__init__(parent._author, timeout=120)
+        self.parent = parent
+        attach_role_select(self, roles, self._on_select)
+
+    async def _on_select(
+        self,
+        interaction: discord.Interaction,
+        role_id: int,
+    ) -> None:
+        role = resources.resolve_role(interaction.guild, role_id=role_id)
+        if role is None:
+            await interaction.response.send_message(
+                "That role no longer exists.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_modal(EditRoleModal(self.parent, role))
+
+
 class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-arg]
-    role_name = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="Current role name (to find it)",
-        max_length=100,
-    )
     new_name = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="New name (blank = keep)",
         max_length=100,
@@ -114,15 +165,20 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
         required=False,
     )
 
-    def __init__(self, parent: ManagementPanel) -> None:
+    def __init__(self, parent: ManagementPanel, role: discord.Role) -> None:
         super().__init__()
         self.parent = parent
+        self.role = role
+        # The role is already chosen (no "find by name" field): show which one
+        # in the modal title so the operator has confirmation.
+        self.title = f"Edit Role: {role.name}"[:45]
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        role = _find_role_normalized(interaction.guild, self.role_name.value.strip())
-        if not role:
+        # Resolve id-first so a rename between picking and submitting is caught.
+        role = resources.resolve_role(interaction.guild, role_id=self.role.id)
+        if role is None:
             await interaction.response.send_message(
-                f"❌ Role **{self.role_name.value}** not found.",
+                f"❌ Role **{self.role.name}** no longer exists.",
                 ephemeral=True,
             )
             return
@@ -166,64 +222,131 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
             return
         if not await safe_defer(interaction):
             return
-        if self.parent.message:
-            await self.parent.message.edit(
-                embed=await self.parent.build_embed(),
-                view=self.parent,
-            )
+        await self.parent._rerender()
 
 
-def _build_delete_role_view(
-    panel: ManagementPanel,
-    roles: list[discord.Role],
-) -> PaginatedSelectView:
-    """Role-delete picker — windows the deletable roles so a guild with more
-    than 25 of them stays fully selectable (previously ``[:25]`` silently
-    dropped every role past the 25th — the #1040 class).
+class _DeleteRolesView(BaseView):
+    """Ephemeral multi-select of deletable roles → a confirmation step.
+
+    Replaces the old single-select-deletes-immediately flow: an operator picks
+    one or more roles, then presses **Delete Selected** to reach an explicit
+    confirmation before anything is removed.
     """
-    options = [discord.SelectOption(label=r.name[:100], value=str(r.id)) for r in roles]
 
-    async def _on_role_picked(
-        interaction: discord.Interaction,
-        values: list[str],
-    ) -> None:
-        if not values:
-            return
-        role = resources.resolve_role(interaction.guild, role_id=values[0])
-        if not role:
-            await interaction.response.send_message(
-                "❌ Role no longer exists.",
-                ephemeral=True,
-            )
-            return
-        name = role.name
-        result = await RoleLifecycleService().apply(
-            interaction.guild,
-            RoleLifecycleRequest(operation="delete", role_id=role.id),
-            interaction.user,
-            confirmed=True,
-            actor_type="admin",
+    def __init__(self, parent: ManagementPanel, roles: list[discord.Role]) -> None:
+        super().__init__(parent._author, timeout=120)
+        self.parent = parent
+        self._roles_by_id = {r.id: r for r in roles}
+        self.selected_ids: list[int] = []
+        attach_multi_role_select(
+            self,
+            roles,
+            self._on_pick,
+            placeholder="Select roles to delete…",
+            min_values=0,
+            select_row=0,
+            nav_row=1,
         )
-        if result.outcome == SUCCESS:
-            await interaction.response.send_message(
-                f"🗑️ Deleted role **{name}**.",
-                ephemeral=True,
-            )
-            if panel.message:
-                await panel.message.edit(
-                    embed=await panel.build_embed(),
-                    view=panel,
-                )
-        else:
-            await interaction.response.send_message(
-                f"❌ Could not delete **{name}**: {result.first_error}",
-                ephemeral=True,
-            )
 
-    return PaginatedSelectView(
-        panel._author,
-        options,
-        _on_role_picked,
-        placeholder="Choose a role to delete…",
-        timeout=60,
+    async def _on_pick(
+        self,
+        interaction: discord.Interaction,
+        role_ids: list[int],
+    ) -> None:
+        self.selected_ids = role_ids
+        # Just record the selection; the Delete-Selected button drives the
+        # confirmation. Ack without changing the message.
+        await safe_defer(interaction)
+
+    @discord.ui.button(
+        label="🗑️ Delete Selected",
+        style=discord.ButtonStyle.red,
+        row=2,
     )
+    async def confirm_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        names = [
+            self._roles_by_id[i].name
+            for i in self.selected_ids
+            if i in self._roles_by_id
+        ]
+        if not names:
+            await interaction.response.send_message(
+                "Pick at least one role first.",
+                ephemeral=True,
+            )
+            return
+        listing = "\n".join(f"• {n}" for n in names)
+        await interaction.response.edit_message(
+            content=(
+                f"⚠️ Delete these **{len(names)}** role(s)? This cannot be undone.\n"
+                f"{listing}"
+            ),
+            view=_ConfirmDeleteView(self.parent, list(self.selected_ids)),
+        )
+
+
+class _ConfirmDeleteView(BaseView):
+    """Final confirm/cancel for a batched role delete."""
+
+    def __init__(self, parent: ManagementPanel, role_ids: list[int]) -> None:
+        super().__init__(parent._author, timeout=60)
+        self.parent = parent
+        self.role_ids = role_ids
+
+    @discord.ui.button(
+        label="✅ Confirm delete",
+        style=discord.ButtonStyle.red,
+        row=0,
+    )
+    async def confirm(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        deleted: list[str] = []
+        failed: list[str] = []
+        for rid in self.role_ids:
+            role = resources.resolve_role(interaction.guild, role_id=rid)
+            if role is None:
+                continue
+            name = role.name
+            result = await RoleLifecycleService().apply(
+                interaction.guild,
+                RoleLifecycleRequest(operation="delete", role_id=role.id),
+                interaction.user,
+                confirmed=True,
+                actor_type="admin",
+            )
+            if result.outcome == SUCCESS:
+                deleted.append(name)
+            else:
+                failed.append(f"{name} ({result.first_error})")
+        parts: list[str] = []
+        if deleted:
+            parts.append(f"🗑️ Deleted {len(deleted)}: {', '.join(deleted)}.")
+        if failed:
+            parts.append(f"❌ Failed {len(failed)}: {'; '.join(failed)}.")
+        await interaction.followup.send(
+            " ".join(parts) or "Nothing deleted.",
+            ephemeral=True,
+        )
+        await self.parent._rerender()
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, row=0)
+    async def cancel(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.edit_message(
+            content="Cancelled — no roles deleted.",
+            view=None,
+        )
+        self.stop()

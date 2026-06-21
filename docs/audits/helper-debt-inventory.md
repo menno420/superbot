@@ -185,7 +185,7 @@ The real setup ↔ diagnostic edge is documented in § 7 as
 
 | View helper file | Symbols | Intra-subsystem leak | **Cross-subsystem leak** |
 |---|---|---|---|
-| `views/roles/_helpers.py` | 5 (`_DEFAULT_THRESHOLDS`, `_COLOR_OPTIONS`, `_ensure_defaults`, `_parse_color`, `_find_role_normalized`) | `_ensure_defaults` → `cogs/role_cog.py` (intra-subsystem) | — |
+| `views/roles/_helpers.py` | 4 (`_COLOR_OPTIONS`, `ROLE_PRESETS`/`RolePreset`, `_parse_color`, `_find_role_normalized`) — *`_DEFAULT_THRESHOLDS` + `_ensure_defaults` removed 2026-06-21 (owner directive); roles load dynamically + presets are creation-menu only* | — | — |
 | `views/channels/_helpers.py` | 4 (`_NAME_PRESETS`, `_CATEGORY_PRESETS`, `_ChannelSelect`, `_build_channel_options`) | `_build_channel_options` → `cogs/channel_cog.py` (intra-subsystem) | — |
 | `views/rps/_helpers.py` | 7 (`_RPS_WINS`, `_RPS_EMOJI`, `_FREE_WIN`, `_rps_pvp_pending`, `RPS_PVP_PENDING_SUBSYSTEM`, `RPS_PVP_PENDING_VERSION`, `rps_pvp_canonical_user_id`) | — | **`_FREE_WIN` → `views/games/rps_panel.py:63` + `cogs/rps_tournament/_quickplay.py:19`**; **`_rps_pvp_pending`, `RPS_PVP_PENDING_SUBSYSTEM`, `RPS_PVP_PENDING_VERSION` → `cogs/rps_tournament/_persistence.py:166,223`**. RPS view helpers imported by games view + rps_tournament cog. |
 

@@ -65,10 +65,6 @@ async def test_assign_roles_delegates_to_role_automation():
 
     with (
         patch(
-            "cogs.role_cog._ensure_defaults",
-            new_callable=AsyncMock,
-        ),
-        patch(
             "cogs.role_cog.db.get_role_thresholds",
             new_callable=AsyncMock,
             return_value=[
@@ -117,7 +113,6 @@ async def test_assign_roles_excludes_xp_auto_assign_roles():
     guild.members = []
 
     with (
-        patch("cogs.role_cog._ensure_defaults", new_callable=AsyncMock),
         patch(
             "cogs.role_cog.db.get_role_thresholds",
             new_callable=AsyncMock,
@@ -169,10 +164,6 @@ async def test_assign_roles_returns_zero_when_no_thresholds():
 
     with (
         patch(
-            "cogs.role_cog._ensure_defaults",
-            new_callable=AsyncMock,
-        ),
-        patch(
             "cogs.role_cog.db.get_role_thresholds",
             new_callable=AsyncMock,
             return_value=[],
@@ -215,10 +206,6 @@ async def test_on_member_join_delegates_to_role_automation():
 
     with (
         patch(
-            "cogs.role_cog._ensure_defaults",
-            new_callable=AsyncMock,
-        ),
-        patch(
             "cogs.role_cog.db.get_role_thresholds",
             new_callable=AsyncMock,
             return_value=[
@@ -255,10 +242,6 @@ async def test_on_member_join_skips_when_no_plan():
 
     with (
         patch(
-            "cogs.role_cog._ensure_defaults",
-            new_callable=AsyncMock,
-        ),
-        patch(
             "cogs.role_cog.db.get_role_thresholds",
             new_callable=AsyncMock,
             return_value=[{"role_name": "Newbie", "days_required": 0}],
@@ -292,7 +275,6 @@ async def test_on_member_join_excludes_xp_auto_assign_roles():
     member.guild = MagicMock(id=1)
 
     with (
-        patch("cogs.role_cog._ensure_defaults", new_callable=AsyncMock),
         patch(
             "cogs.role_cog.db.get_role_thresholds",
             new_callable=AsyncMock,

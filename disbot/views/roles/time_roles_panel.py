@@ -12,7 +12,6 @@ from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
 from views.paginated_select import PaginatedSelectView
-from views.roles._helpers import _DEFAULT_THRESHOLDS
 from views.selectors import attach_role_select
 
 
@@ -156,42 +155,40 @@ class TimeRolesPanel(BaseView):
         )
         await self._rerender()
 
-    @discord.ui.button(label="🔄 Seed Defaults", style=discord.ButtonStyle.grey, row=0)
-    async def reset_btn(
+    @discord.ui.button(label="🧹 Clear Missing", style=discord.ButtonStyle.grey, row=0)
+    async def clear_missing_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # Defaults are suggestions, not phantom rows: seed only the default tiers
-        # whose role actually exists in this guild (capturing its id), and report
-        # which suggestions were skipped because no matching role exists.
-        seeded: list[str] = []
-        skipped: list[str] = []
-        for name, days in _DEFAULT_THRESHOLDS:
-            role = resources.resolve_role(interaction.guild, name=name)
-            if role is None:
-                skipped.append(name)
-                continue
-            await role_automation.set_time_threshold(
+        # Roles are loaded dynamically from the server now (no hardcoded
+        # defaults).  A threshold whose role no longer resolves is a phantom row
+        # — it can never assign anything and shows as "missing" in diagnostics.
+        # Bulk-clear them through the audited seam so the operator does not have
+        # to remove each one by hand.
+        thresholds = await db.get_role_thresholds(self.ctx.guild.id)
+        stale = [r for r in thresholds if _row_is_stale(self.ctx.guild, r)]
+        if not stale:
+            await interaction.response.send_message(
+                "No missing-role thresholds to clear.",
+                ephemeral=True,
+            )
+            return
+        cleared: list[str] = []
+        for r in stale:
+            await role_automation.clear_time_threshold(
                 guild_id=interaction.guild.id,
-                role_id=role.id,
-                role_name=role.name,
-                days=days,
+                role_name=r["role_name"],
                 actor_id=interaction.user.id,
             )
-            seeded.append(role.name)
+            cleared.append(r["role_name"])
+        invalidate_xp_threshold_roles(interaction.guild.id)
         if not await safe_defer(interaction, ephemeral=True):
             return
         await self._rerender()
-        parts = []
-        if seeded:
-            parts.append(f"Seeded {len(seeded)}: {', '.join(seeded)}.")
-        if skipped:
-            parts.append(
-                f"Skipped {len(skipped)} (no matching role): {', '.join(skipped)}.",
-            )
         await interaction.followup.send(
-            " ".join(parts) or "No default roles matched this server.",
+            f"🧹 Cleared {len(cleared)} missing-role threshold(s): "
+            f"{', '.join(cleared)}.",
             ephemeral=True,
         )
 
