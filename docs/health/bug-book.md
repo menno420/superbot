@@ -23,7 +23,32 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
-## BUG-0021 — `test_acquire_lock_or_exit_exits_zero_after_wait_timeout` is flaky under `pytest -n auto` (real-clock dependent) — OPEN
+## BUG-0022 — full test suite rewrites the tracked `botsite/site/data.js` (live-HEAD build sha) → `git add -A` reddens botsite-tests — FIXED
+
+- **Symptom (found 2026-06-21, dispatch run):** an unrelated PR (a tooling/docs fix) reddened **both**
+  `botsite-tests` and `code-quality` on `test_committed_data_js_is_in_sync_with_site_json` — the
+  committed `botsite/site/data.js` was "stale" vs `site.json`. The data.js in the commit carried the
+  session's own HEAD short-sha in its CHANGELOG `build` field while `site.json` still carried the older
+  committed sha, so the two disagreed.
+- **Expected:** running the test suite (or `check_quality.py --full`) never modifies a tracked repo
+  file; a broad `git add -A` cannot accidentally capture a regenerated artifact.
+- **Root cause:** `scripts/export_dashboard_data.py main()` wrote the SPA data layer to a **hardcoded**
+  `REPO_ROOT/botsite/site/data.js`, ignoring its output args. The CLI tests
+  (`test_cli_targets_both_writes_both`, `test_cli_targets_site_writes_only_site_json`) drive `main()`
+  with `tmp_path` outputs for dashboard.json + site.json — but data.js was still written to the **real**
+  tracked path, stamped with `git rev-parse --short HEAD` (the live session commit, line ~618). So every
+  full-suite run silently rewrote the working-tree data.js; the next `git add -A` swept it into the
+  commit, desynced from the committed site.json → red botsite-tests.
+- **Fix (root):** `main()` now takes a `--data-js-output` arg (default `DATA_JS_OUTPUT_FILE` = the real
+  path, so the reconciliation routine's `python3.10 scripts/export_dashboard_data.py` is unchanged), and
+  the two CLI tests redirect it to `tmp_path`. The suite can no longer touch the tracked file.
+- **Stays-fixed guard:** `tests/unit/scripts/test_export_dashboard_data.py::test_cli_does_not_clobber_tracked_data_js_when_redirected`
+  snapshots the real `DATA_JS_OUTPUT_FILE`, runs `main()` with all outputs redirected, and asserts the
+  tracked file is byte-identical afterward (fails against the pre-fix hardcoded-path behavior).
+- **Status:** FIXED 2026-06-21 (dispatch run, PR #1206). Note for future sessions: this is *why* a stray
+  `M botsite/site/data.js` could appear after running tests — that recurrence is now closed at the root.
+
+## BUG-0021 — `test_acquire_lock_or_exit_exits_zero_after_wait_timeout` is flaky under `pytest -n auto` (real-clock dependent) — FIXED
 
 - **Symptom (observed 2026-06-21, dispatch run, during a `check_quality.py --full` mirror):**
   `tests/unit/services/test_runtime.py::test_acquire_lock_or_exit_exits_zero_after_wait_timeout`
@@ -43,8 +68,12 @@
   the already-mocked `asyncio.sleep` so the whole loop is clock-controlled.
 - **Stays-fixed guard:** the same test, made deterministic, run under `-n auto` — it can no longer
   depend on real elapsed time.
-- **Status:** OPEN — captured 2026-06-21; the flake is intermittent and pre-existing, so it does not
-  block unrelated PRs. A good small bugs-first slice for a follow-up dispatch run.
+- **Status:** FIXED 2026-06-21 (dispatch run, PR #1206) — the test now patches
+  `services.runtime.time.monotonic` with a fake clock that only advances when the (already-mocked)
+  `asyncio.sleep` runs; one sleep jumps it past the 0.05 s budget, so the loop gives up on exactly the
+  second attempt (`assert try_acquire.await_count == 2`, tightened from the timing-dependent `>= 2`).
+  No runtime code changed — the production `time.monotonic` path is unaltered. Verified deterministic
+  (5× + full file green).
 
 ## BUG-0020 — `trim_recently_shipped.py` floor-pointer recompute matches stray `#N` in prose (writes a wrong "Older merges (#HIGH … #LOW)" span) — FIXED
 

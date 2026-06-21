@@ -495,6 +495,7 @@ def test_committed_site_json_matches_a_fresh_build(mod):
 def test_cli_targets_site_writes_only_site_json(mod, tmp_path):
     dash = tmp_path / "dashboard.json"
     site = tmp_path / "site.json"
+    data_js = tmp_path / "data.js"
     rc = mod.main(
         [
             "--targets",
@@ -503,20 +504,49 @@ def test_cli_targets_site_writes_only_site_json(mod, tmp_path):
             str(dash),
             "--site-output",
             str(site),
+            "--data-js-output",
+            str(data_js),
         ],
     )
     assert rc == 0
     assert site.exists()
+    assert data_js.exists()  # the SPA layer is written alongside, to the redirected path
     assert not dash.exists()  # --targets site must not write the dashboard payload
 
 
 def test_cli_targets_both_writes_both(mod, tmp_path):
     dash = tmp_path / "dashboard.json"
     site = tmp_path / "site.json"
-    rc = mod.main(["--output", str(dash), "--site-output", str(site)])
+    data_js = tmp_path / "data.js"
+    rc = mod.main(
+        ["--output", str(dash), "--site-output", str(site), "--data-js-output", str(data_js)],
+    )
     assert rc == 0
     assert dash.exists() and site.exists()
     import json
 
     site_data = json.loads(site.read_text(encoding="utf-8"))
     assert set(site_data) == set(mod.SITE_TOPLEVEL_KEYS)
+
+
+def test_cli_does_not_clobber_tracked_data_js_when_redirected(mod, tmp_path):
+    """BUG-0022 guard: driving ``main()`` with redirected outputs must NOT touch the
+    real tracked ``botsite/site/data.js`` — the live-HEAD build sha would desync it
+    from the committed site.json and redden botsite-tests for an unrelated commit."""
+    tracked = mod.DATA_JS_OUTPUT_FILE
+    before = tracked.read_text(encoding="utf-8") if tracked.exists() else None
+    rc = mod.main(
+        [
+            "--targets",
+            "site",
+            "--output",
+            str(tmp_path / "dashboard.json"),
+            "--site-output",
+            str(tmp_path / "site.json"),
+            "--data-js-output",
+            str(tmp_path / "data.js"),
+        ],
+    )
+    assert rc == 0
+    after = tracked.read_text(encoding="utf-8") if tracked.exists() else None
+    assert after == before, "main() with redirected outputs must not rewrite the tracked data.js"

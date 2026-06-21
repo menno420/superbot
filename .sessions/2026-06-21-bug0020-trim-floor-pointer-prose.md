@@ -1,88 +1,102 @@
-# 2026-06-21 — BUG-0020: trim_recently_shipped floor-pointer prose contamination (+ ruff-pin drift)
+# 2026-06-21 — CI-reliability batch: BUG-0020 + BUG-0021 + BUG-0022
 
-> **Status:** `complete` — tooling/docs only (no `disbot/` runtime) → self-merge on green (Q-0113).
+> **Status:** `complete` — tooling/test/docs only (no `disbot/` runtime changed) → self-merge on
+> green (Q-0113).
 
 > **Run type:** routine · dispatch
 
 ## What I did
 
-Scheduled dispatch, no work order → advanced the next plan slice. Picked **bugs-first**: closed the
-one OPEN tooling bug (BUG-0020) at the root with a regression test, and fixed a drift bug I spotted
-along the way (the ruff pin).
+Scheduled dispatch, no work order → advanced the plan **bugs-first**. Started on the one OPEN
+tooling bug (BUG-0020); shipping it surfaced two more CI-reliability bugs (a flaky test, then a
+test that clobbers a tracked file), each root-caused and fixed with a stays-fixed guard in the
+same PR. All three are test/tooling hygiene — no runtime code touched.
 
-### Slice 1 — BUG-0020 (root fix + guard)
+### Slice 1 — BUG-0020: trim floor-pointer prose contamination (root)
 `scripts/trim_recently_shipped.py`'s floor-pointer recompute scanned the **whole** archive for `#N`
-and took min/max over all matches, so it picked up stray prose references (a `band-#1170`
-parenthetical note, `#1` rank notation) and wrote a wrong `Older merges (#HIGH … #LOW)` span — caught
-on the actuator's first real use (seventeenth Q-0107 pass wrote `#1170 … #1` for a true span of
-`#1129 … #535`).
-- **Fix:** new `_archive_span_numbers(archive_text)` reads **only archived bullet headers**
-  (`^- \*\*#…`), taking each bullet's leading `#A · #B …` cluster (the run before the first ` (` date
-  paren or `**` bold close). Grouped non-monotonic bands (`#690 · #721`) still contribute their newest
-  member; free-floating `#N` in prose no longer counts. `_rewrite_floor` calls it instead of the
-  whole-archive `_pr_numbers`. Module docstring de-staled ("whole archive" → "bullet headers").
-- **Guard:** `tests/unit/scripts/test_trim_recently_shipped.py::test_floor_pointer_ignores_stray_pr_refs_in_prose`
-  feeds an archive whose prose carries a stray high (`band-#9999`) + low (`#1`) `#N` and asserts the
-  span ignores both. The existing non-monotonic-band test still passes (proves the cluster path keeps
-  grouped members).
-- Bug-book BUG-0020 → **FIXED**.
+and took min/max over all matches, picking up stray prose refs (a `band-#1170` note, `#1` rank
+notation) → wrong `Older merges (#HIGH … #LOW)` span (it wrote `#1170 … #1` for a true `#1129 …
+#535` on its first real use).
+- **Fix:** new `_archive_span_numbers()` reads **only archived bullet headers**, taking each
+  bullet's leading `#A · #B …` cluster (before the first ` (` or `**`). Grouped non-monotonic bands
+  (`#690 · #721`) still contribute their newest member; prose `#N` no longer counts.
+- **Guard:** `test_floor_pointer_ignores_stray_pr_refs_in_prose`.
 
-### Slice 1b — ruff-pin drift (spotted while running the CI mirror; Q-0166 fix-on-sight)
-Running `check_quality.py` locally raised a false ERA001 in `botsite/app.py` (a file I didn't touch).
-Root cause: Dependabot's `chore(deps-dev)` bump (#2b035a3d) raised **only** `requirements-dev.txt`
-to `ruff==0.15.18`, leaving `code-quality.yml` + `.pre-commit-config.yaml` at `0.15.14` — the exact
-"bump all three places together" drift CLAUDE.md warns about. 0.15.18 flags an ERA001 false positive
-on a genuine prose comment that 0.15.14 (CI's actual version) does not. Realigned the dev pin back to
-`0.15.14` (the value CI + pre-commit enforce) with an inline note. Adopting 0.15.18 would be a separate
-deliberate three-place bump + suppressing that ERA001 FP — not done here.
+### Slice 1b — ruff-pin drift (Q-0166 fix-on-sight)
+Dependabot's `chore(deps-dev)` bump raised **only** `requirements-dev.txt` to `ruff==0.15.18`, leaving
+`code-quality.yml` + `.pre-commit-config.yaml` at `0.15.14` — the "bump all three together" drift
+CLAUDE.md warns about. 0.15.18 raised a false ERA001 on a genuine prose comment in `botsite/app.py`
+that CI's actual 0.15.14 does not. Realigned the dev pin to `0.15.14`.
+
+### Slice 2 — BUG-0021: flaky `acquire_lock_or_exit` wait-timeout test (root)
+`test_acquire_lock_or_exit_exits_zero_after_wait_timeout` drove the lock loop against the **real**
+`time.monotonic` with a 0.05 s budget (sleep mocked instant) and asserted `await_count >= 2`. Under
+parallel-xdist CPU starvation the budget could elapse after one attempt → intermittent red.
+- **Fix:** fake the clock — it only advances when the mocked `asyncio.sleep` runs; one sleep jumps
+  past the budget, so the loop gives up on exactly attempt 2 (`await_count == 2`). No runtime code
+  changed. Verified 5× + full file green.
+
+### Slice 3 — BUG-0022: full suite clobbers tracked `botsite/site/data.js` (root)
+Diagnosing why CI reddened on `data.js` stale-vs-`site.json`: `scripts/export_dashboard_data.py
+main()` wrote the SPA data layer to a **hardcoded** real path, ignoring its output args, stamped with
+the live `git rev-parse --short HEAD`. The CLI tests drive `main()` with `tmp_path` for
+dashboard/site.json but data.js still hit the **tracked** repo file → every full-suite run rewrote it
+with the session sha → `git add -A` swept it into the commit, desynced from the committed site.json →
+red botsite-tests. This is what corrupted my own first push (`data.js` build = my born-red sha).
+- **Fix (root):** `main()` takes `--data-js-output` (default = real path, so the reconciliation
+  routine's regen is unchanged); the two CLI tests redirect it to tmp.
+- **Guard:** `test_cli_does_not_clobber_tracked_data_js_when_redirected` snapshots the real
+  `DATA_JS_OUTPUT_FILE`, runs `main()` redirected, asserts the tracked file is byte-identical after.
+- Restored the accidentally-committed `botsite/site/data.js` to `origin/main`'s version.
 
 ## What shipped
-- `scripts/trim_recently_shipped.py` — `_archive_span_numbers` helper + `_rewrite_floor` rewire + docstring.
-- `tests/unit/scripts/test_trim_recently_shipped.py` — new prose-contamination regression test.
+- `scripts/trim_recently_shipped.py` + `tests/unit/scripts/test_trim_recently_shipped.py` (BUG-0020).
 - `requirements-dev.txt` — ruff `0.15.18` → `0.15.14` (drift realign).
-- `docs/health/bug-book.md` — BUG-0020 FIXED.
+- `tests/unit/services/test_runtime.py` — deterministic clock fake (BUG-0021).
+- `scripts/export_dashboard_data.py` + `tests/unit/scripts/test_export_dashboard_data.py` (BUG-0022).
+- `botsite/site/data.js` — restored to main (revert accidental inclusion).
+- `docs/health/bug-book.md` — BUG-0020/0021/0022 all FIXED.
 
 ## Verification
-- `python3.10 -m pytest tests/unit/scripts/test_trim_recently_shipped.py` → 10 passed.
-- `python3.10 scripts/check_quality.py --full` → lint + mypy clean, 11036 passed (after pinning ruff
-  to CI's 0.15.14). One pre-existing **flaky** failure under `-n auto` —
-  `test_runtime.py::test_acquire_lock_or_exit_exits_zero_after_wait_timeout` — passes in isolation
-  (real-`time.monotonic` 0.05s budget, CPU-starvation flake). Captured as **BUG-0021** (OPEN) for a
-  deterministic fix; not caused by this change.
-- No `disbot/` runtime touched → arch check trivially unaffected.
+- BUG-0020: `pytest test_trim_recently_shipped.py` → 10 passed (incl. new guard).
+- BUG-0021: target test 5× green + full `test_runtime.py` (21) green.
+- BUG-0022: `pytest test_export_dashboard_data.py` → 31 passed; real `data.js` md5 unchanged before/after.
+- `check_quality.py --check-only` green (ruff 0.15.14); `check_docs.py --strict`,
+  `check_current_state_ledger.py --strict` green.
 
 ## Handoff
-BUG-0020 is closed at the root. Next: **BUG-0021** (flaky `acquire_lock_or_exit` wait-timeout test) is
-captured OPEN with a proposed deterministic fix (mock `time.monotonic`); a good small next slice. The
-substantial ungated lanes in current-state ▶ Next action still stand: creature-game v1 runtime cog,
-botsite React-SPA migration, the `public-data-contract-field-snapshot` guard.
+Three CI-reliability bugs closed at the root. The substantial ungated lanes in current-state ▶ Next
+action still stand for the next dispatch: **creature-game v1 runtime cog**, **botsite React-SPA
+migration**, the `public-data-contract-field-snapshot` guard, or a `needs-hermes-review` lane
+(consistency-linter AI-nav PR 1 · procedures→skills Batch 2).
 
 ## ⚑ Self-initiated
-None — BUG-0020 was the OPEN bug-book queue (bugs-first), and the ruff-pin realign is fix-on-sight
-drift (Q-0166). No invented feature.
+None — all three were bugs-first (BUG-0020 from the OPEN queue; BUG-0021/BUG-0022 root-caused while
+shipping it). The ruff realign is fix-on-sight drift (Q-0166). No invented feature.
 
 ## 💡 Session idea
-**Dependabot dev-dep bumps that touch a tool pinned in 3 places should fail a CI guard unless all
-three move together.** This run's ruff drift (`requirements-dev.txt` bumped alone) is the second
-"pinned-in-three-places drifted" incident; a tiny `scripts/check_tool_pin_parity.py` (stdlib: parse
-the black/isort/ruff/mypy versions from `code-quality.yml`, `requirements-dev.txt`,
-`.pre-commit-config.yaml` and assert equality) wired into `code-quality.yml` would turn the prose rule
-into an enforced one and red-flag an incomplete Dependabot bump at PR time. Worth having — captured for
-grooming.
+**A `scripts/check_tool_pin_parity.py` (stdlib) wired into `code-quality.yml`** that parses the
+black/isort/ruff/mypy versions from `code-quality.yml`, `requirements-dev.txt`, and
+`.pre-commit-config.yaml` and fails unless all three agree. This run's ruff drift is the second
+"pinned-in-three-places drifted" incident; the rule is currently prose-only. Such a guard would
+red-flag an incomplete Dependabot bump at PR time instead of leaking a false-positive lint into a
+dispatch session. Captured for grooming.
 
 ## ⟲ Previous-session review
-The previous session (world-registry parity invariant, #1156 follow-up) was a clean, well-scoped
-self-merge slice and correctly declined the heavier gated lanes (PR 2 migration, CLAUDE.md edits) with
-explicit reasons — good judgment. One thing it could have done: while it was the *first* session after
-the seventeenth reconciliation pass that surfaced BUG-0020, it left that OPEN tooling bug for a later
-run; a bugs-first sweep of the freshly-written bug-book at session start would have caught a
-same-shape, same-day fixable item. System improvement it surfaces: the **tool-pin parity guard** above
-— had it existed, the ruff drift this run chased would never have reached a dispatch session.
+The previous session (world-registry parity invariant, #1156 follow-up) was clean and correctly
+declined the gated heavy lanes — good judgment. What it (and several prior sessions) missed is
+systemic, not local: **BUG-0022 means any session that ran `check_quality.py --full` and then
+`git add -A` could silently ship a corrupted `data.js`** — a latent trap that had been live since the
+botsite data layer landed. None of the recent botsite-touching sessions caught it because the
+symptom only appears when the regenerated file is *committed*. System improvement it surfaces (now
+acted on): tests must never write tracked files — the `--data-js-output` redirect is the fix, and the
+broader lesson is the **tool-pin parity guard** idea above plus a possible "no test writes a tracked
+path" sweep as a future check.
 
 ## 📤 Run report
 - **Run type:** routine · dispatch
-- **What shipped:** BUG-0020 floor-pointer prose-contamination root fix + regression guard; ruff dev-pin
-  drift realign (0.15.18 → 0.15.14); BUG-0021 captured.
+- **What shipped:** BUG-0020 (trim floor-pointer prose) + BUG-0021 (flaky lock-wait test) + BUG-0022
+  (suite clobbers tracked data.js) — all root fixes with stays-fixed guards; ruff dev-pin drift realign.
 - **⚑ Owner-decisions:** none
 - **⚑ Owner-manual-steps:** none
 - **⚑ Self-initiated:** none
