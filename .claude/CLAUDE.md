@@ -202,6 +202,15 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   supersedes the "open the PR ready" phrasing above for `claude/*` sessions: **open it born-red,
   flip it ready last.** (`scripts/check_session_gate.py`; ready tokens:
   `complete/done/ready/final/merged/shipped`.)
+  **Open it FAST — target the first ~2 minutes of the session, before the build work (owner
+  directive Q-0189, 2026-06-21).** The born-red card → first push → PR open is your **first
+  action** once you've oriented enough to name your scope and claimed the lane
+  (`active-work.md`) — *not* something deferred until after the bulk of the work is written.
+  The entire value of the early open is the **in-flight signal**: a visible PR (plus the claim
+  line) is how parallel sessions see your lane and avoid duplicating it (the #1221 duplicate-PR
+  lesson — a PR that opens late, after substantial work, is invisible during exactly the window
+  when a collision is most likely). So: orient → decide scope → claim → **open the born-red PR
+  immediately** → then build. Don't let the open slip behind the work.
 - **End every session with a backlog-grooming pass — the standing secondary task (owner
   decision Q-0015).** Once the main task + PR are done and capacity remains, you are *not*
   finished: browse `docs/ideas/` (plus any ideas the maintainer dropped this session) and

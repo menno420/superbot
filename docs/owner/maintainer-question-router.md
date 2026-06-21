@@ -6903,3 +6903,28 @@ exact data-loss foot-gun seen earlier this chat. The banner surfaces the state +
 so the agent judges (purely-behind = safe reset; diverged = check whether the local commits are
 already merged) and acts. **Q-0105 disposable:** delete the `sessionstart` branch + the summary call
 if it proves noisy. **Home:** the two scripts + this Q-block.
+
+---
+
+### Q-0189 — DONE (owner-directed in-session): open the session PR FAST — within ~2 min of start (2026-06-21)
+
+> **APPLIED in-session** (the live-owner exception to the "don't self-edit `.claude/CLAUDE.md`"
+> rule — owner directed it, owner is the live reviewer, provenance recorded here). Trigger: this
+> chat duplicated reaction-roles **PR 2** (rebuilt as #1221) because the in-flight signal of the
+> parallel session's lane wasn't seen early — and the owner observed that session PRs *"sometimes
+> take a while to open,"* when *"ideally that should happen within the first 2 minutes of a session
+> start."*
+
+**The rule (added to the Q-0133 born-red bullet in `.claude/CLAUDE.md` § Session & plan workflow):**
+the born-red session card → first push → PR open is the session's **first action** once scope is
+known and the lane is claimed (`active-work.md`) — **target the first ~2 minutes**, *before* the
+build work, not deferred until after the bulk is written. Sequence: **orient → decide scope → claim →
+open the born-red PR immediately → then build.**
+
+**Why:** the early open's entire value is the **in-flight signal**. A visible PR (+ the claim line) is
+how parallel sessions see your lane and avoid duplicating it; a PR that opens late — after substantial
+work — is invisible during exactly the window when a collision is most likely (the #1221 lesson). This
+is the *timing* half of Q-0052 (open right after first push) / Q-0103 (open ready) / Q-0133 (born-red
+first commit): those said *open early*; this pins *how* early. **Home:** the Q-0133 bullet in
+`.claude/CLAUDE.md` + this Q-block. No new tooling; if a SessionStart nudge later proves useful it is a
+separate, disposable add (route it).
