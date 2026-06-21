@@ -134,4 +134,9 @@ session holds it, no claim line needed here.)*
   (`game_xp_service.world_identity` + `views/explore/world_card.py` + `🪪 World Card` hub button +
   `!worldcard`/`!mystats`) · 2026-06-20 · **PR (this session, self-merge on green)**
 
+- `claude/peaceful-mayer-rgc20t` · BTD6 Alchemist buff-uptime calculator (owner live-test) —
+  `btd6_buff_uptime` tool + `buff_uptime()` compute + parser decode of buff duration/attack-cap
+  (game-data-only path) · `parse_gamedata.py` / `btd6_upgrade_detail_service` / `ai_tools` /
+  `ai_tool_catalogue` · 2026-06-21 · **PR (this session, self-merge on green)**
+
 _(move claims here with their PR # as they close, then prune older entries)_
