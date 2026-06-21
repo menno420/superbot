@@ -18,6 +18,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
+from utils.emoji_tokens import parse_emotes
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
@@ -86,9 +87,9 @@ class ReactionRolesPanel(BaseView):
         else:
             embed.description = (
                 "No emoji reaction roles yet.\n\n"
-                "Tap **➕ Add** to bind an emoji on a message to a role — or "
-                "**🛠️ Role Menus** for the modern button/dropdown surface (no "
-                "reactions needed)."
+                "Tap **➕ Add** to bind one or more emojis on a message — each to "
+                "its own role — or **🛠️ Role Menus** for the modern "
+                "button/dropdown surface (no reactions needed)."
             )
         if modes:
             embed.add_field(
@@ -303,8 +304,12 @@ class ReactionRolesPanel(BaseView):
 
 
 # ---------------------------------------------------------------------------
-# Sub-flow: add a binding (message-id + emoji modal → role picker)
+# Sub-flow: add bindings (message-id + emoji modal → per-emote role pickers)
 # ---------------------------------------------------------------------------
+# One message can carry many emotes, each mapped to its OWN role (owner
+# direction, 2026-06-21). The operator types one or more emotes; the flow then
+# walks each emote in turn, picking its role, so 💀→A, ❤️→B, 😘→C bind in a
+# single pass instead of one tediously-repeated single-emote add.
 
 
 class _AddBindingModal(discord.ui.Modal, title="Add reaction role"):  # type: ignore[call-arg]
@@ -314,9 +319,9 @@ class _AddBindingModal(discord.ui.Modal, title="Add reaction role"):  # type: ig
         max_length=25,
     )
     emoji_in = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="Emoji",
-        placeholder="🎮 (or a custom emoji)",
-        max_length=64,
+        label="Emoji(s)",
+        placeholder="🎮  or  💀 ❤️ 😘  — one or more (each gets its own role)",
+        max_length=200,
     )
 
     def __init__(self, panel: ReactionRolesPanel) -> None:
@@ -333,28 +338,86 @@ class _AddBindingModal(discord.ui.Modal, title="Add reaction role"):  # type: ig
                 ephemeral=True,
             )
             return
-        emoji = self.emoji_in.value.strip()
+        emotes = parse_emotes(self.emoji_in.value)
+        if not emotes:
+            await interaction.response.send_message(
+                "❌ Enter at least one emoji.",
+                ephemeral=True,
+            )
+            return
+        view = _BindEmotesView(self.panel, message_id, emotes)
         await interaction.response.send_message(
-            f"Pick the role to assign for {emoji} on message `{message_id}`:",
-            view=_BindRolePickView(self.panel, message_id, emoji),
+            content=view.prompt(),
+            view=view,
             ephemeral=True,
         )
 
 
-class _BindRolePickView(BaseView):
-    """Ephemeral single-role picker that commits a new emoji binding."""
+class _MoreEmotesModal(discord.ui.Modal, title="Add more emotes"):  # type: ignore[call-arg]
+    """Bind further emotes to the SAME message without re-typing its ID."""
+
+    emoji_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Emoji(s)",
+        placeholder="💀 ❤️ 😘  — one or more (each gets its own role)",
+        max_length=200,
+    )
+
+    def __init__(self, panel: ReactionRolesPanel, message_id: int) -> None:
+        super().__init__()
+        self.panel = panel
+        self.message_id = message_id
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        emotes = parse_emotes(self.emoji_in.value)
+        if not emotes:
+            await interaction.response.send_message(
+                "❌ Enter at least one emoji.",
+                ephemeral=True,
+            )
+            return
+        view = _BindEmotesView(self.panel, self.message_id, emotes)
+        await interaction.response.send_message(
+            content=view.prompt(),
+            view=view,
+            ephemeral=True,
+        )
+
+
+class _BindEmotesView(BaseView):
+    """Walks each typed emote, picking and committing its own role binding."""
 
     def __init__(
         self,
         panel: ReactionRolesPanel,
         message_id: int,
-        emoji: str,
+        emotes: list[str],
     ) -> None:
-        super().__init__(panel.ctx.author, timeout=180)
+        super().__init__(panel.ctx.author, timeout=300)
         self.panel = panel
         self.message_id = message_id
-        self.emoji = emoji
-        attach_role_select(self, panel.ctx.guild.roles, self._on_pick)
+        self.emotes = emotes
+        self.index = 0
+        self.bound: list[tuple[str, str]] = []
+        self._attach_picker()
+
+    @property
+    def _current(self) -> str:
+        return self.emotes[self.index]
+
+    def prompt(self) -> str:
+        return (
+            f"Pick the role for {self._current} "
+            f"({self.index + 1}/{len(self.emotes)}) on message `{self.message_id}`:"
+        )
+
+    def _attach_picker(self) -> None:
+        self.clear_items()
+        attach_role_select(
+            self,
+            self.panel.ctx.guild.roles,
+            self._on_pick,
+            placeholder=f"Role for {self._current}…",
+        )
 
     async def _on_pick(
         self,
@@ -363,31 +426,83 @@ class _BindRolePickView(BaseView):
     ) -> None:
         from services import reaction_role_service
 
+        emote = self._current
         await reaction_role_service.bind_emoji(
             self.panel.ctx.guild.id,
             self.message_id,
-            self.emoji,
+            emote,
             role_id,
             actor_id=interaction.user.id,
         )
-        # Best-effort: add the emoji to the target message so members have
-        # something to click. The message is usually in the current channel; if
-        # it isn't reachable, the binding still stands.
-        note = ""
-        channel = interaction.channel
-        if isinstance(channel, discord.abc.Messageable):
-            try:
-                message = await channel.fetch_message(self.message_id)
-                await message.add_reaction(self.emoji)
-            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
-                note = (
-                    "\n*(I couldn't add the reaction automatically — add "
-                    f"{self.emoji} to the message, or members can react themselves.)*"
-                )
         role = resources.resolve_role(self.panel.ctx.guild, role_id=role_id)
-        rname = role.name if role else f"role {role_id}"
+        self.bound.append((emote, role.name if role else f"role {role_id}"))
+        self.index += 1
+        if self.index < len(self.emotes):
+            self._attach_picker()
+            await interaction.response.edit_message(content=self.prompt(), view=self)
+            return
+        await self._finish(interaction)
+
+    async def _finish(self, interaction: discord.Interaction) -> None:
+        pairs = ", ".join(f"{e} → **{r}**" for e, r in self.bound)
+        # Respond fast (the reaction adds below are HTTP calls), then revise the
+        # message only if some reaction couldn't be added.
         await interaction.response.edit_message(
-            content=f"✅ Bound {self.emoji} → **{rname}**.{note}",
-            view=None,
+            content=f"✅ Bound {pairs}.",
+            view=_AfterBindView(self.panel, self.message_id),
         )
+        note = await self._add_reactions(interaction)
+        if note:
+            await interaction.edit_original_response(
+                content=f"✅ Bound {pairs}.{note}",
+                view=_AfterBindView(self.panel, self.message_id),
+            )
         await self.panel._rerender()
+
+    async def _add_reactions(self, interaction: discord.Interaction) -> str:
+        """Best-effort: seed each bound emote on the target message."""
+        channel = interaction.channel
+        if not isinstance(channel, discord.abc.Messageable):
+            return ""
+        try:
+            message = await channel.fetch_message(self.message_id)
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+            return (
+                "\n*(I couldn't reach that message to add the reactions — add them "
+                "yourself, or members can react.)*"
+            )
+        failed: list[str] = []
+        for emote, _ in self.bound:
+            try:
+                await message.add_reaction(emote)
+            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                failed.append(emote)
+        if failed:
+            return (
+                "\n*(I couldn't add "
+                + " ".join(failed)
+                + " automatically — add them to the message, or members can react.)*"
+            )
+        return ""
+
+
+class _AfterBindView(BaseView):
+    """Post-bind toast offering a one-tap path to bind more emotes here."""
+
+    def __init__(self, panel: ReactionRolesPanel, message_id: int) -> None:
+        super().__init__(panel.ctx.author, timeout=300)
+        self.panel = panel
+        self.message_id = message_id
+
+    @discord.ui.button(label="➕ Add more emotes", style=discord.ButtonStyle.green)
+    async def more_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await interaction.response.send_modal(
+            _MoreEmotesModal(self.panel, self.message_id),
+        )
