@@ -169,12 +169,52 @@ def get_template(key: str | None) -> MenuTemplate | None:
     return _TEMPLATE_BY_KEY.get(key)
 
 
+# ---------------------------------------------------------------------------
+# Gradient presets (Enhanced Role Styles) — one-tap styled colour roles
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class GradientPreset:
+    """A ready-made two-colour gradient an operator applies as a styled role.
+
+    ``primary`` / ``secondary`` are ``0xRRGGBB`` ints (→ :class:`discord.Color`).
+    Only renders on guilds with the Enhanced Role Styles perk (3 applied boosts);
+    the builder gates on it and falls back to the primary solid colour otherwise.
+    """
+
+    key: str
+    label: str  # gallery text, e.g. "🌅 Sunset"
+    name: str  # the created role's name, e.g. "Sunset"
+    primary: int
+    secondary: int
+
+
+# Ordered for the builder gallery. Colours chosen to read well as Discord role
+# names (decent contrast against both light and dark themes).
+_GRADIENT_PRESETS: tuple[GradientPreset, ...] = (
+    GradientPreset("sunset", "🌅 Sunset", "Sunset", 0xFF7E5F, 0xFEB47B),
+    GradientPreset("ocean", "🌊 Ocean", "Ocean", 0x2193B0, 0x6DD5ED),
+    GradientPreset("berry", "🍇 Berry", "Berry", 0x8E2DE2, 0x4A00E0),
+    GradientPreset("forest", "🌲 Forest", "Forest", 0x11998E, 0x38EF7D),
+    GradientPreset("fire", "🔥 Fire", "Fire", 0xF12711, 0xF5AF19),
+    GradientPreset("candy", "🍬 Candy", "Candy", 0xFF6FD8, 0x3813C2),
+)
+
+
+def gradient_presets() -> tuple[GradientPreset, ...]:
+    """Every gradient preset, in gallery order."""
+    return _GRADIENT_PRESETS
+
+
 __all__ = [
     "DEFAULT_THEME_KEY",
+    "GradientPreset",
     "MenuTemplate",
     "MenuTheme",
     "get_template",
     "get_theme",
+    "gradient_presets",
     "templates",
     "theme_color",
     "themes",
