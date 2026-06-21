@@ -25,6 +25,8 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — rebuffBlockTime + multi-target** (owner: improvements welcome) — decode `rebuffBlockTime`, add `targets=N` round-robin uptime · `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service` / `ai_tools` · 2026-06-21 · **PR (this session, auto-merge on green)**
+
 - `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — verify binding + populate data** (follow-up to
   #1235; owner pointed at the public dump) — cloned BTD Mod Helper dump, corrected `_buff_window` to
   the verified `Add…ToProjectileModel` shape, overlaid buff fields onto committed `alchemist.json` ·
