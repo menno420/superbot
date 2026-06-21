@@ -477,3 +477,39 @@ async def test_teardown_command_access_failure_is_isolated(_teardown_patches):
     ):
         # No exception escapes — the lifecycle swallows + logs.
         await guild_lifecycle.teardown(99)
+
+
+# ---------------------------------------------------------------------------
+# Step 23 — role menus deleted (reaction-roles overhaul)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_deletes_role_menus(_teardown_patches):
+    """Step 23 awaits ``utils.db.role_menus.delete_for_guild`` so the new
+    ``role_menus`` table (and its cascading options) never accumulates rows
+    for a departed guild (architecture INV-I).
+    """
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.role_menus.delete_for_guild",
+        new_callable=AsyncMock,
+        return_value=2,
+    ) as mock_delete:
+        await guild_lifecycle.teardown(99)
+        mock_delete.assert_awaited_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_role_menu_failure_is_isolated(_teardown_patches):
+    """A failure in the role-menu teardown step must not abort the sequence."""
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.role_menus.delete_for_guild",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("DB blip"),
+    ):
+        # No exception escapes — the lifecycle swallows + logs.
+        await guild_lifecycle.teardown(99)

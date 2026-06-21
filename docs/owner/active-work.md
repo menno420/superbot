@@ -42,6 +42,13 @@ living ledger (`docs/current-state.md`).
   `botsite/app.py` + `scripts/export_dashboard_data.py` + `tests/unit/botsite/` · 2026-06-20 ·
   **auto-merge on green**
 
+- `claude/reaction-roles-pr1-foundation` · **Reaction-roles overhaul PR 1 — audited seam + menu
+  data layer** (owner-directed; foundation for the parallel PR 2–5 session — see
+  `docs/planning/reaction-roles-overhaul-plan-2026-06-21.md`) · `services/reaction_role_service.py`
+  + `utils/db/role_menus.py` + migration `078_reaction_role_menus.sql` + `cogs/role_cog.py` (route
+  writes through the seam) + `guild_lifecycle.py` (teardown step 23) · 2026-06-21 · **auto-merge on
+  green** (additive · behaviour-preserving). **Parallel session owns PR 2–5; do not recreate these.**
+
 ## Recently cleared
 
 - `claude/design-system-connector-docs` · design-system docs — GitHub-connector workflow + new

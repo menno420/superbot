@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 from core.runtime import panel_manager, resources
 from core.runtime.component_registry import stats_block
 from core.runtime.persistent_views import PersistentView, register
-from services import role_automation
+from services import reaction_role_service, role_automation
 from services.lifecycle import SUCCESS
 from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleService
 from utils import db
@@ -556,7 +556,7 @@ class RoleCog(commands.Cog):
         member = resources.resolve_member(guild, payload.user_id)
         if not member or member.bot:
             return
-        role_id = await db.get_reaction_role(
+        role_id = await reaction_role_service.get_binding(
             payload.guild_id,
             payload.message_id,
             str(payload.emoji),
@@ -580,7 +580,7 @@ class RoleCog(commands.Cog):
         member = resources.resolve_member(guild, payload.user_id)
         if not member or member.bot:
             return
-        role_id = await db.get_reaction_role(
+        role_id = await reaction_role_service.get_binding(
             payload.guild_id,
             payload.message_id,
             str(payload.emoji),
@@ -612,7 +612,13 @@ class RoleCog(commands.Cog):
             await ctx.send("❌ I can't read that message.", delete_after=8)
             return
 
-        await db.add_reaction_role(ctx.guild.id, message_id, emoji, role.id)
+        await reaction_role_service.bind_emoji(
+            ctx.guild.id,
+            message_id,
+            emoji,
+            role.id,
+            actor_id=ctx.author.id,
+        )
         try:
             await message.add_reaction(emoji)
         except discord.HTTPException:
@@ -634,7 +640,12 @@ class RoleCog(commands.Cog):
         emoji: str,
     ) -> None:
         """Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>"""
-        await db.remove_reaction_role(ctx.guild.id, message_id, emoji)
+        await reaction_role_service.unbind_emoji(
+            ctx.guild.id,
+            message_id,
+            emoji,
+            actor_id=ctx.author.id,
+        )
         await ctx.send(
             f"✅ Reaction role for {emoji} on that message removed.",
             delete_after=10,
@@ -644,7 +655,7 @@ class RoleCog(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     async def list_reaction_roles(self, ctx: commands.Context) -> None:
         """List all active reaction roles in this server."""
-        rows = await db.get_all_reaction_roles(ctx.guild.id)
+        rows = await reaction_role_service.list_bindings(ctx.guild.id)
         if not rows:
             await ctx.send("No reaction roles configured.", delete_after=8)
             return
