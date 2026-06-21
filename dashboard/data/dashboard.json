@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:34:20Z",
+    "generated_at": "2026-06-21T21:51:39Z",
     "build": {
-      "commit": "ec8a8d68",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/funny-franklin-m1xdmf",
-      "committed_at": "2026-06-21T21:34:16Z",
+      "commit": "decbda35",
+      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-m1xdmf' into claude/funny-franklin-m1xdmf",
+      "committed_at": "2026-06-21T21:51:28Z",
       "branch": "claude/funny-franklin-m1xdmf"
     },
     "counts": {
       "functions": 37,
-      "ideas": 114,
+      "ideas": 115,
       "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
@@ -1006,6 +1006,14 @@
       "subsystems": [
         "role"
       ]
+    },
+    {
+      "file": "creature-pvp-rematch-button-2026-06-21.md",
+      "title": "Creature PvP — rematch button on the outcome embed",
+      "status": "ideas",
+      "date": "2026-06-21",
+      "summary": "The creature PvP flow (`!cbattle`, shipped #1230 + #1257) ends with a static outcome embed; to play",
+      "subsystems": null
     },
     {
       "file": "creature-sim-engine-constant-parity-guard-2026-06-21.md",
@@ -2365,6 +2373,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-21-creature-pvp-rematch-button.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Creature PvP: rematch button (⚑ self-initiated)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-creature-pvp-battle-flow.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
@@ -2411,6 +2427,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-btd6-seed-data-changed-report.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — BTD6: seed-data reports which files it changed",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-21-btd6-data-auto-seed.md",
@@ -2579,22 +2603,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-federated-explore-world-card.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Federated Explore-hub PR 3: cross-game world card",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-design-system-site-pages.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Design-system: compose the rest of the site (Features/Commands/Changelog/Status)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
