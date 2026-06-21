@@ -37,9 +37,6 @@ living ledger (`docs/current-state.md`).
 - `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (owner-directed Q-0192: full parity) —
   feasibility **#1238** + program plan **#1239** merged; now pre-build recon (data sources + seam contract)
   · `docs/planning/project-moon-prebuild-recon-2026-06-21.md` · 2026-06-21 · **auto-merge on green** (docs-only)
-- `claude/ecstatic-babbage-8bf0g6` · **"Merge = deploy" clarity** (owner directive Q-0193, in-chat) — kill
-  the "restart is yours" misinformation: `production-deployment.md` + `.claude/CLAUDE.md` + router Q-0193 +
-  journal · 2026-06-21 · **auto-merge on green** (docs-only)
 
 *(Beyond the claim above, the only open PR is **#1213** creature-PvP battle engine on
 `claude/funny-franklin-mw3hxj`, a `needs-hermes-review` foundation slice — its owning
@@ -47,6 +44,9 @@ session holds it, no claim line needed here.)*
 
 ## Recently cleared
 
+- `claude/ecstatic-babbage-8bf0g6` · **"Merge = deploy" clarity** (owner directive Q-0193, in-chat) —
+  killed the "restart is yours" misinformation at the roots (`production-deployment.md` lead +
+  `.claude/CLAUDE.md` binding line + router Q-0193 + journal) · 2026-06-21 · **PR #1247 (auto-merge on green)**
 - `claude/reaction-roles-gradient-presets` · **reaction-roles gradient presets** (⚑ self-initiated,
   Q-0172) — curated `GradientPreset` catalogue + one-tap presets in the Colours flow (perk-gated) ·
   `disbot/utils/role_menu_presentation.py` + `disbot/views/roles/role_menu_builder.py` · 2026-06-21 ·
