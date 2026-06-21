@@ -262,6 +262,56 @@ operator builds in-panel and deploys to a channel, re-attached on restart. This 
 
 ---
 
+## 4.6 Presentation & editing (owner direction, 2026-06-21)
+
+The owner added four requirements for how a menu *looks and is maintained*. All four fit existing
+infrastructure, so they are cheap enhancements layered on the PR 2 builder — not a new subsystem.
+
+### a) Edit an existing menu/message (first-class, not just create)
+
+A deployed menu must be **editable in place**, not only created. Our model makes this clean: a
+menu's title / description / theme / options / mode / limit all live in the `role_menus` +
+`role_menu_options` rows and we store its `message_id`, so **edit = update the row → re-render →
+`message.edit(...)`** (no repost, link/anchor preserved). The builder (PR 2) and the interactive
+panel (PR 3) both get an **Edit** entry that loads an existing menu back into the builder. For
+legacy emoji bindings on an arbitrary message, "edit" = add/remove bindings (+ edit the message
+body only when the bot authored it — Carl's `rr edit <msg_id> <title|description>` equivalent).
+→ **folds into PR 2.**
+
+### b) Embed theme presets
+
+A small **named theme catalogue** (accent colour + author/footer/styling) — e.g. `Minimal`,
+`Announcement`, `Neon`, `Pastel`, `Game` — surfaced as a one-tap **theme picker** in the builder.
+Pure data built on `utils/ui_constants.py` + the embed archetypes in `docs/ux/pattern-library.md`;
+the chosen key is stored in `role_menus.theme` (no migration beyond that column). → **folds into PR 2.**
+
+### c) Pre-customized message templates (the blank-page killer)
+
+A few **ready-made starter messages** an operator picks then tweaks — embed *or* plain text,
+decorated with emotes / light text-art — e.g. `🎮 Game roles`, `🔔 Notification roles`,
+`🎨 Colour roles`, `✅ Verify to enter`. A data catalogue (JSON in `disbot/data/`, the
+`general_content.json` precedent), shown as a template gallery in the builder so a good-looking
+menu is two taps away. → **folds into PR 2.**
+
+### d) PIL image cards (the owner's "maybe" — cheaper than it sounds)
+
+Optionally render a **banner/header image** to attach to the menu message: a few **preset card
+templates** + optional custom overlay text. **This reuses shipped infrastructure** —
+`utils/welcome_render.py::render_welcome_card()` already renders PIL cards with a **lazy import +
+`bytes | None` graceful fallback** (returns `None` → embed-only when Pillow is absent), and the
+UX-lab gallery exercises the same pattern. So a `render_role_menu_card(theme, title, …)` sibling is
+a small, on-brand addition, not new ground. Store the chosen card template + overlay text on the
+menu row; render at post/edit time; **degrade to embed-only** when Pillow is unavailable (never a
+hard dependency). → **optional PR 4 (owner-paced)** — kept separate so the core feature never
+blocks on image rendering.
+
+**PR-map update:** the core arc stays PR 1–3; **(a) edit + (b) themes + (c) templates fold into
+PR 2** (cheap data + builder UI, and they make the headline feature feel polished from day one);
+**(d) PIL cards are an optional PR 4.** Themes/templates/cards apply to **both** surfaces (the
+in-Discord builder *and*, later, the web builder — §3.5).
+
+---
+
 ## 5. How we improve **on** Carl-bot (the "and improve on it" half)
 
 | Dimension | Carl-bot | SuperBot (this plan) |
@@ -273,6 +323,8 @@ operator builds in-panel and deploys to a channel, re-attached on restart. This 
 | Restart durability | Message-bound | **PersistentView** re-attach on boot |
 | Timed roles | **Patreon-only** | **Free** (stretch, reuses tasks machinery) |
 | Integration | Standalone | Unified role hub with time/XP roles + **exemptions**; capability-gated |
+| Editing | `rr edit` (title/desc text only) | **Edit any field in place** — re-render from the row, message link preserved (§4.6a) |
+| Presentation | Embed builder | Embed builder **+ theme presets + starter-message templates + optional PIL banner cards** (§4.6 b/c/d) |
 | Architecture | n/a | One audited service seam; layer-clean; CI-enforced invariants |
 
 The headline: **Carl is constrained by its emoji-reaction legacy; we start from Discord's modern
