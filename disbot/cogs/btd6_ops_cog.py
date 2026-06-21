@@ -80,6 +80,9 @@ async def _seed_embed() -> discord.Embed:
     """Seed the Postgres data store from the bundled files; report the result."""
     from services import btd6_data_service
 
+    # Capture what's about to change BEFORE seeding, so the receipt confirms which
+    # files the seed applied (postgres only; None for the file backend / in sync).
+    changed = btd6_data_service.content_drift()
     count = await btd6_data_service.seed_postgres_from_files()
     if count == 0:
         return discord.Embed(
@@ -96,12 +99,17 @@ async def _seed_embed() -> discord.Embed:
     except Exception:  # noqa: BLE001 — version is decoration on the receipt
         pass
     serving_line = f"\n**Now serving:** game version `{served}`." if served else ""
+    changed_line = ""
+    if changed:
+        shown = ", ".join(f"`{name}`" for name in changed[:8])
+        more = f" +{len(changed) - 8} more" if len(changed) > 8 else ""
+        changed_line = f"\n**Applied {len(changed)} changed file(s):** {shown}{more}."
     return discord.Embed(
         title="🌱 BTD6 data seeded",
         description=(
             f"Upserted **{count}** blobs into the `btd6_data_blobs` table and "
             f"**reloaded the live dataset** — the new data is being served "
-            f"now; no restart needed.{serving_line}\n\n"
+            f"now; no restart needed.{serving_line}{changed_line}\n\n"
             "First-time setup only: set `BTD6_DATA_BACKEND` = `postgres` in "
             "Railway → Variables, then confirm `!btd6 status` reads "
             "`Data source: postgres (…)`.\n\n"
