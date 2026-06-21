@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T13:29:19Z",
+    "generated_at": "2026-06-21T15:19:50Z",
     "build": {
-      "commit": "a420ffe",
-      "subject": "Merge pull request #1222 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-21T14:25:45Z",
-      "branch": "claude/confident-wright-slef29"
+      "commit": "36f51595",
+      "subject": "Merge pull request #1231 from menno420/claude/zen-dirac-wnhwhg",
+      "committed_at": "2026-06-21T17:09:35Z",
+      "branch": "claude/reconcile-1232"
     }
   },
   "counts": {
@@ -3242,8 +3242,13 @@
       "description": "Head into the wild to find and catch a creature.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -3437,8 +3442,13 @@
       "description": "Show your creature collection — every creature you've caught.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -3453,8 +3463,13 @@
       "description": "Show this server's top collectors by total creatures caught.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
