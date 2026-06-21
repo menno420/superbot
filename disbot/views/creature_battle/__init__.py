@@ -10,9 +10,11 @@ player's team lives in :mod:`services.creature_battle_service`.
 from __future__ import annotations
 
 from views.creature_battle.challenge import CreatureBattleChallengeView
+from views.creature_battle.rematch import CreatureRematchView
 from views.creature_battle.render import build_result_embed
 
 __all__ = [
     "CreatureBattleChallengeView",
+    "CreatureRematchView",
     "build_result_embed",
 ]
