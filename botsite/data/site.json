@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T15:38:23Z",
+    "generated_at": "2026-06-21T18:11:06Z",
     "build": {
-      "commit": "f25356b9",
-      "subject": "feat(creatures): user-facing PvP battle flow + extension-integrity guard",
-      "committed_at": "2026-06-21T15:38:10Z",
-      "branch": "HEAD"
+      "commit": "2e5955c0",
+      "subject": "session: open temproles member-view PR (born-red card)",
+      "committed_at": "2026-06-21T18:07:30Z",
+      "branch": "claude/funny-franklin-8ha49t"
     }
   },
   "counts": {
-    "commands": 313,
+    "commands": 314,
     "features": 37,
     "games": 9
   },
@@ -6618,6 +6618,20 @@
       "permissions": "",
       "usage": "Give a member a role for a limited time. Usage: !temprole @member 2h @role",
       "description": "Give a member a role for a limited time. Usage: !temprole @member 2h @role",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "temproles",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "List active temporary roles. Usage: !temproles (yours) or !temproles @member (staff).",
+      "description": "List active temporary roles. Usage: !temproles (yours) or !temproles @member (staff).",
       "use_cases": null,
       "examples": [],
       "status": "finished",
