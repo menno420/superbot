@@ -45,6 +45,14 @@
 > tier** (P1-1 eval-smoke matrix → P1-2 health-findings lifecycle → P1-3 invariants) — see the
 > [band-#840 decade queue](planning/reconciliation-pass-2026-06-14-band840.md) §4.
 
+> **▶ Product North Star (Q-0190, 2026-06-21):** SuperBot is **free for everyone, forever** — every
+> function available to all users, with **no paywalls, premium tiers, or freemium feature-gating**. The
+> strategy is **consolidation**: one free, all-inclusive bot that replaces 5+ paywalled bots, so *free
+> **and** better — and all-in-one* is the competitive wedge (pairs with the V-14 feature-mining lane +
+> the Q-0080 public-bot goal). The only allowed money surface is a voluntary *zero-benefit* support link
+> to offset hosting + AI cost (extends Q-0039 cosmetic-only / no-P2W). Every new plan inherits this as a
+> design filter. Full statement: [`ideas/free-for-everyone-mission-2026-06-21.md`](ideas/free-for-everyone-mission-2026-06-21.md).
+
 ## How to read
 
 - **Now** = active lane / owed verification · **Next** = queued and ready (no blocking
@@ -652,7 +660,7 @@ sector" (Q-0137); under-planned before — populated here.*
 > the *Later/Someday* horizon, not active dispatch targets. They feed S1/S2's *Later* once a gate clears.
 
 - **Later** — [social/community/progression](planning/social-community-progression-roadmap-2026-06-08.md): guilds, achievements, profiles, leaderboards, and notifications; gate: privacy/new-owner decision (Q-0038 answered 2026-06-09: server-scoped clans).
-- **Later** — [economy/marketplace/rewards](planning/economy-marketplace-rewards-roadmap-2026-06-08.md): trade, rewards, sinks, onboarding, and crafting; gate: economy-health review + chance-reward review (Q-0039 answered 2026-06-09: donation = cosmetic-only, no bot-side billing).
+- **Later** — [economy/marketplace/rewards](planning/economy-marketplace-rewards-roadmap-2026-06-08.md): trade, rewards, sinks, onboarding, and crafting; gate: economy-health review + chance-reward review (Q-0039 answered 2026-06-09: donation = cosmetic-only, no bot-side billing) — the fairness boundary now sits under the **Q-0190 "free for everyone" North Star**.
 - **Later** — [games/mining/idle growth](planning/games-mining-idle-roadmap-2026-06-08.md): poker, blackjack follow-ups, mining depth/co-op/idle; gate: ADR-002 + balance/ownership review.
 - **Later (needs source verification)** — **mining UX polish** (from [voice-mode capture](ideas/voice-mode-planning-capture-2026-06-11.md) §4): crafting category filters + craft-and-equip shortcut + inventory/gear display consistency. Identified as the strongest near-term candidates from the 2026-06-11 brainstorm; gate: source verification of existing crafting/equipment flow ownership before planning.
 - **Later (fully gated)** — [AI product-extension routing](ai/ai-product-extension-routing-2026-06-08.md): DM/events/NL/tool ideas routed under the authoritative AI roadmap; gate: all AI readiness/orchestration/action decisions (Q-0040 answered 2026-06-09: bounded-menu DM posture; building still needs its plan + per-exposure lift).

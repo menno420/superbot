@@ -2,7 +2,7 @@
 
 > **Status:** `complete` — the back half of the reaction-roles overhaul
 > ([plan](../docs/planning/reaction-roles-overhaul-plan-2026-06-21.md)), built as **one
-> owner-directed PR** (Q-0189 — owner-directed work merges immediately, NOT
+> owner-directed PR** (Q-0191 — owner-directed work merges immediately, NOT
 > `needs-hermes-review`). Runtime code, but additive + behaviour-preserving (existing
 > reaction roles work identically; the `reaction_roles_enabled` toggle defaults ON; new
 > tables are empty no-ops) → auto-merges on green.
@@ -16,7 +16,10 @@ surface + convert the read-only emoji panel to interactive + `reaction_roles_ena
 bridge) · **PR 4** (free temp roles) · **PR 5** (role-pickup analytics) · **PR 6** optional (PIL
 cards). Mid-session the owner issued a standing directive — *"anything that I personally direct
 the agents to do should never be held for review, always merge immediately"* — recorded as
-**Q-0189** and applied to this session.
+**Q-0191** and applied to this session. *(Drafted in-session as Q-0189; renumbered to Q-0191
+when merging `origin/main`, which had concurrently taken Q-0189 ("open PR fast") + Q-0190
+("free for everyone"). The commits/PR body reference the original Q-0189; the router Q-0191
+block is canonical.)*
 
 Built PR 3 + 4 + 5 as **one PR on one branch**: they share the migration sequence (079/080/081)
 and the `reaction_role_service` / `role_menus` files, so one branch avoids self-conflicts and the
@@ -54,7 +57,7 @@ is real surface; deferring kept the core arc tight.
   - Diagnostics panel "📊 Role Pickups" section (top-5 + a "barely-used — archive?" nudge).
 - **Guild teardown** steps 24 (modes) / 25 (grants) / 26 (pickup stats) — INV-I for every new
   guild-keyed table, each failure-isolated.
-- **Workflow:** recorded **Q-0189** (router + the `.claude/CLAUDE.md` auto-merge bullet) and
+- **Workflow:** recorded **Q-0191** (router + the `.claude/CLAUDE.md` auto-merge bullet) and
   **closed the superseded duplicate PR #1221** (a second build of PR 2; #1219 already shipped it).
 
 ## Verification
@@ -92,7 +95,7 @@ views. Cheap, stdlib-only; dedup-check first against any existing "all cogs load
 **Reviewed: the PR 2 session (#1219).** *Did well:* a clean dropdown-default builder with
 server-side mode enforcement, edit-in-place, themes, and templates — and an honest reconciliation
 onto PR 1's real API after the parallel merge. *What it missed:* it shipped as `needs-hermes-review`
-on **owner-directed** work, which is exactly what the owner pushed back on this session (Q-0189) —
+on **owner-directed** work, which is exactly what the owner pushed back on this session (Q-0191) —
 and it didn't notice the *parallel duplicate* #1221 building the same feature, which then sat open
 and conflicted. **System improvement:** the duplicate is the recurring parallel-build waste — the
 claim ledger (`active-work.md`) + the "check open PRs before starting" rule exist for it, but a
@@ -104,10 +107,10 @@ API churn. Worth a line in `ai-project-workflow.md` §9.
 ## 📤 Run report
 
 - **Did:** built reaction-roles PR 3+4+5 (modes + interactive emoji panel + settings bridge · free
-  temp roles · pickup analytics); recorded Q-0189; closed superseded #1221 · **Outcome:** shipped
+  temp roles · pickup analytics); recorded Q-0191; closed superseded #1221 · **Outcome:** shipped
   (owner-directed, auto-merge on green)
 - **Run type:** `manual`
-- **⚑ Owner decisions recorded:** **Q-0189** — owner-directed work is never held for review; merge
+- **⚑ Owner decisions recorded:** **Q-0191** — owner-directed work is never held for review; merge
   immediately (router + CLAUDE.md auto-merge bullet)
 - **⚑ Owner manual steps:** none — merge auto-deploys; migrations 079/080/081 run idempotently on
   boot. Prod restart/verify stays the maintainer's (merge ≠ deploy).

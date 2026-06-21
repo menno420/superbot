@@ -6904,11 +6904,85 @@ so the agent judges (purely-behind = safe reset; diverged = check whether the lo
 already merged) and acts. **Q-0105 disposable:** delete the `sessionstart` branch + the summary call
 if it proves noisy. **Home:** the two scripts + this Q-block.
 
-### Q-0189 — DONE (owner-directed in-session): owner-directed work is NEVER held for review — merge immediately (2026-06-21)
+---
+
+### Q-0189 — DONE (owner-directed in-session): open the session PR FAST — within ~2 min of start (2026-06-21)
+
+> **APPLIED in-session** (the live-owner exception to the "don't self-edit `.claude/CLAUDE.md`"
+> rule — owner directed it, owner is the live reviewer, provenance recorded here). Trigger: this
+> chat duplicated reaction-roles **PR 2** (rebuilt as #1221) because the in-flight signal of the
+> parallel session's lane wasn't seen early — and the owner observed that session PRs *"sometimes
+> take a while to open,"* when *"ideally that should happen within the first 2 minutes of a session
+> start."*
+
+**The rule (added to the Q-0133 born-red bullet in `.claude/CLAUDE.md` § Session & plan workflow):**
+the born-red session card → first push → PR open is the session's **first action** once scope is
+known and the lane is claimed (`active-work.md`) — **target the first ~2 minutes**, *before* the
+build work, not deferred until after the bulk is written. Sequence: **orient → decide scope → claim →
+open the born-red PR immediately → then build.**
+
+**Why:** the early open's entire value is the **in-flight signal**. A visible PR (+ the claim line) is
+how parallel sessions see your lane and avoid duplicating it; a PR that opens late — after substantial
+work — is invisible during exactly the window when a collision is most likely (the #1221 lesson). This
+is the *timing* half of Q-0052 (open right after first push) / Q-0103 (open ready) / Q-0133 (born-red
+first commit): those said *open early*; this pins *how* early. **Home:** the Q-0133 bullet in
+`.claude/CLAUDE.md` + this Q-block. No new tooling; if a SessionStart nudge later proves useful it is a
+separate, disposable add (route it).
+
+---
+
+### Q-0190 — ANSWERED (owner-directed in-session): the product North Star is "free for everyone, forever" (2026-06-21)
+
+> **APPLIED in-session** (owner directed the new goal; owner is the live reviewer; provenance
+> recorded here). The owner set a new top-level project goal — SuperBot becomes a **completely free,
+> all-inclusive bot** — and explicitly **rejected** the freemium / "monetize only limited features"
+> model he had been considering. The single open fork (does "free" forbid even a voluntary
+> zero-benefit support link?) was put to the owner live via the question panel.
+
+**Area:** Product / monetization / distribution posture
+**Type:** Founding product principle (North Star) — a binding design filter every new plan inherits
+**Status:** Answered (owner-directed in-session, 2026-06-21) — **Routed** → mission doc + roadmap principle + current-state Off-limits
+
+**The decision:** Every SuperBot function is **free for every user, forever** — **no paywalls,
+premium tiers, freemium feature-gating, subscriptions, or pay-to-win.** "Free **and** better" is the
+competitive wedge against the incumbent bots (pairs with the V-14 feature-mining lane and the Q-0080
+public-bot goal).
+
+**The one fork — owner's live pick (question panel, 2026-06-21): "Allow voluntary support."** No
+feature-gating monetization ever, but a **voluntary, zero-benefit** donation/sponsor link to offset
+hosting + AI cost stays allowed (extends Q-0039's cosmetic-only / no-billing posture). The
+alternatives — *truly zero monetization* and *free-now-revisit-if-costs-bite* — were not chosen.
+
+**Relationship to prior decisions:** **generalizes Q-0039** (cosmetic-only donations / no bot-side
+billing / no-P2W) from the economy to the **whole product**; subsumes **Q-0108** (paid moderation
+tiers declined) as a general rule; is the product posture for **Q-0080** (public bot); shares the
+"core stays ungated" principle with **Q-0087**. **Resolves tension T-6** (public scale × ~zero
+revenue × fixed Q-0082 AI ceiling): revenue stays ~zero permanently, so the Q-0082 degradation
+grammar (AI default-off, tiny per-guild budgets, caching, visible in-world degrade) is now the
+*primary* sustainability lever, not a fallback — and the voluntary-support surface (§2 of the mission
+doc) is the only money inflow.
+
+**Open (captured, not blocking):** a product-wide anti-paywall-creep lint (Q-0105 disposable; needs an
+allowlist); the `/support` surface itself (allowed, not yet designed). **The open-source / self-host
+question is now ANSWERED (owner, 2026-06-21):** the repo is already public + MIT-licensed (legally
+reusable *now*), but reuse is **not recommended** until the code is reorganized/solid — the gate is
+code maturity, not licensing (mission doc §5.1).
+
+**Home:** [`docs/ideas/free-for-everyone-mission-2026-06-21.md`](../ideas/free-for-everyone-mission-2026-06-21.md)
+(full statement) + `docs/roadmap.md` (product-principle callout) + `docs/current-state.md` ▶ Off-limits
+(enforceable form) + this Q-block.
+
+---
+
+### Q-0191 — DONE (owner-directed in-session): owner-directed work is NEVER held for review — merge immediately (2026-06-21)
 
 > **APPLIED in-session** (the live-owner exception to the propose-first rule — the owner directed it,
 > the owner is the live reviewer, provenance recorded here). **Verbatim owner instruction:** *"anything
 > that I personally direct the agents to do should never be held for review, always merge immediately."*
+> *(Drafted in-session as Q-0189; renumbered to **Q-0191** at merge time — a concurrent owner-directed
+> session had taken Q-0189 ("open the session PR fast") and Q-0190 ("free for everyone") in parallel. The
+> reaction-roles PR #1229 commit messages / body reference the original Q-0189; this Q-0191 block is the
+> canonical record.)*
 
 **The decision.** The `needs-hermes-review` gate (Q-0117) exists for *autonomously-initiated* substantial /
 risky runtime work — the case where no human chose the task and an independent reviewer should look before it
@@ -6937,8 +7011,7 @@ instruction, a "build PR N / continue the plan" request). Owner direction *is* t
 
 **Applied this session:** the owner directed the reaction-roles overhaul PR 3–6 → they open ready and
 auto-merge on green (NOT `needs-hermes-review`). The superseded duplicate #1221 (a second build of PR 2, already
-shipped via #1219, `mergeable_state: dirty`) is dispositioned separately — it cannot be merged (conflicted +
-redundant), so it is closed as superseded, not merged.
+shipped via #1219) is closed as superseded, not merged.
 
 **Home:** this Q-block (canonical owner decision) + the `.claude/CLAUDE.md` auto-merge bullet (the binding rule,
-edited in-session under the same live-owner exception, citing Q-0189).
+edited in-session under the same live-owner exception, citing Q-0191).

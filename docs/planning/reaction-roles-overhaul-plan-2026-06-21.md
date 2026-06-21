@@ -9,7 +9,7 @@
 > `utils/db/role_menus` data layer + migration 078 + cog routing + teardown. **PR 2 MERGED (#1219)** —
 > the in-Discord builder (Surface B): `RoleMenuView` (dropdown default, server-side modes, restart
 > re-attach) + the operator builder/manager with edit-in-place + theme presets + template gallery.
-> **PR 3 + PR 4 + PR 5 BUILT together this session** (one owner-directed PR — Q-0189 merge-immediately,
+> **PR 3 + PR 4 + PR 5 BUILT together this session** (one owner-directed PR — Q-0191 merge-immediately,
 > not `needs-hermes-review`): **PR 3** (migration **079** `reaction_role_message_modes` — Carl-parity
 > normal/unique/verify on the emoji surface + the now-interactive `ReactionRolesPanel` add/remove/mode
 > editor + the `reaction_roles_enabled` settings bridge) · **PR 4** (migration **080** `role_grants` +

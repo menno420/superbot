@@ -182,7 +182,7 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   decision Q-0127, 2026-06-16); the enabler stays the backstop for branch-pushed PRs. Carve-outs
   stay manual — a PR labelled `needs-hermes-review` (Q-0117) or
   `do-not-automerge` (Q-0114) is never auto-armed. **Owner-directed work is NEVER held for review —
-  always merge immediately (owner directive Q-0189, 2026-06-21).** When the owner *personally* directs a
+  always merge immediately (owner directive Q-0191, 2026-06-21).** When the owner *personally* directs a
   task (a session prompt, an in-chat instruction, "build PR N / continue the plan"), owner direction **is**
   the review: open the PR **ready**, do **not** label it `needs-hermes-review` / `do-not-automerge`, and arm
   auto-merge so it lands the instant CI is green. The `needs-hermes-review` carve-out is for *self-initiated*
@@ -209,6 +209,15 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   supersedes the "open the PR ready" phrasing above for `claude/*` sessions: **open it born-red,
   flip it ready last.** (`scripts/check_session_gate.py`; ready tokens:
   `complete/done/ready/final/merged/shipped`.)
+  **Open it FAST — target the first ~2 minutes of the session, before the build work (owner
+  directive Q-0189, 2026-06-21).** The born-red card → first push → PR open is your **first
+  action** once you've oriented enough to name your scope and claimed the lane
+  (`active-work.md`) — *not* something deferred until after the bulk of the work is written.
+  The entire value of the early open is the **in-flight signal**: a visible PR (plus the claim
+  line) is how parallel sessions see your lane and avoid duplicating it (the #1221 duplicate-PR
+  lesson — a PR that opens late, after substantial work, is invisible during exactly the window
+  when a collision is most likely). So: orient → decide scope → claim → **open the born-red PR
+  immediately** → then build. Don't let the open slip behind the work.
 - **End every session with a backlog-grooming pass — the standing secondary task (owner
   decision Q-0015).** Once the main task + PR are done and capacity remains, you are *not*
   finished: browse `docs/ideas/` (plus any ideas the maintainer dropped this session) and
