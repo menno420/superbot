@@ -39,8 +39,10 @@ Current broad captures:
   the hard part is that the knowledge stack is bespoke `btd6_*` and Project Moon's data is more
   fragmented (wiki.gg + Fandom + Miraheze + datamines) and more prose-heavy. Recommend generalizing the
   BTD6 knowledge seam into a domain-agnostic *knowledge domain* with Project Moon as its first second
-  instance; phase from Limbus lore Q&A → structured lookups → parity. **Scope fork routed to the owner
-  in-session.** → relates `subsystems/btd6.md` · `subsystems/ai.md` · `scripts/fetch_bloonswiki.py` ·
+  instance; phase from Limbus lore Q&A → structured lookups → parity. **PROMOTED to a plan — owner
+  picked _full parity, all games_ (Q-0192):**
+  [`planning/project-moon-knowledge-domain-plan-2026-06-21.md`](../planning/project-moon-knowledge-domain-plan-2026-06-21.md).
+  → relates `subsystems/btd6.md` · `subsystems/ai.md` · `scripts/fetch_bloonswiki.py` ·
   `.github/workflows/btd6-data-refresh.yml`.
 - [`free-for-everyone-mission-2026-06-21.md`](./free-for-everyone-mission-2026-06-21.md) —
   **owner-directed (2026-06-21, Q-0190) — the product North Star:** SuperBot becomes a **completely
