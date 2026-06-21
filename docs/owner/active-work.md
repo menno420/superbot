@@ -26,12 +26,11 @@ living ledger (`docs/current-state.md`).
 ## Active claims
 
 - `claude/modest-gates-0ble76` · **PR-mergeability: trust the git check, not GitHub `mergeable_state`**
-  (owner-directed — why did the dirty-guard miss #1256) — `scripts/check_pr_mergeable.py` (git-based,
-  reuses `git_merge_state.py`) + journal note + tighten `pr-conflict-guard` schedule backstop ·
+  (owner-directed — the #1256 false-dirty finding) — `scripts/check_pr_mergeable.py` (git-based, reuses
+  `git_merge_state.py`) + journal note + tighten `pr-conflict-guard` schedule backstop ·
   `scripts/check_pr_mergeable.py` / `.session-journal.md` / `.github/workflows/pr-conflict-guard.yml`
-  · 2026-06-21 · **PR (this session, auto-merge on green)**
+  · 2026-06-21 · **PR #1260 (reopened to land — auto-merge on green)**
 
-*(All other Active claims' PRs have merged — pruned per Q-0166; see Recently cleared.)*
 - `claude/peaceful-mayer-rgc20t` · **BTD6 same-version data-drift reminder** (completes #1255) — sha-based `content_drift()` surfaced at boot + `!btd6 status` so a same-version data edit reminds the operator to `seed-data` (warn-only, honors strict Q-0077(b)) · `btd6_data_service` / `btd6_cog` / `cogs/btd6/_embeds` · 2026-06-21 · **PR #1258 (auto-merge on green)**
 
 - `claude/peaceful-mayer-rgc20t` · **BTD6 data auto-seed on boot** (owner: "isn't seed automated?") — auto-seed the postgres `btd6_data_blobs` store from the deployed files in `cog_load` so data PRs apply on deploy (no manual `!btd6ops seed-data`) · `btd6_data_service` / `btd6_cog` / `config` · 2026-06-21 · **PR (this session, auto-merge on green)**
@@ -72,9 +71,6 @@ session holds it, no claim line needed here.)*
 re-introduced them; see Recently cleared. #1256 is the only PR in flight.)*
 
 ## Recently cleared
-
-- `claude/modest-gates-0ble76` · **repo-state review cleanup** (owner-directed) — active-work prune +
-  current-state header trim + callout line-budget guard · 2026-06-21 · **PR #1256 (merged)**
 
 - `claude/peaceful-mayer-rgc20t` · **BTD6 data auto-seed on boot** (owner: "isn't seed automated?") —
   auto-seed the postgres blob store from deployed files in `cog_load`, killing the manual
