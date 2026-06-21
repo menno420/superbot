@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/reaction-roles-message-picker` · **reaction-roles follow-up** (owner-directed) — emoji-add
+  message picker (most-recent / pick-recent / new-message / by-id) replacing the raw message-ID step ·
+  `disbot/views/roles/reaction_panel.py` · 2026-06-21 · **PR (this session, merge on green)**
+
 - `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
   claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
   · 2026-06-21 · **auto-merge on green** (docs-only)
