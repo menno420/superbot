@@ -73,6 +73,9 @@ re-introduced them; see Recently cleared. #1256 is the only PR in flight.)*
 
 ## Recently cleared
 
+- `claude/starboard-v1` · **Starboard PR 1** (⚑ self-initiated, executes the #1254 plan) — Hall-of-Fame
+  v1: migration 082 + `utils/db/starboard` + audited `starboard_service` + `starboard_cog` raw-reaction
+  listener + `!starboard` config + teardown · 2026-06-21 · **PR #1259 (merge on green)**
 - `claude/peaceful-mayer-rgc20t` · **BTD6 data auto-seed on boot** (owner: "isn't seed automated?") —
   auto-seed the postgres blob store from deployed files in `cog_load`, killing the manual
   `!btd6ops seed-data` step · 2026-06-21 · **PR #1255 (merged)**

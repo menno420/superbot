@@ -84,10 +84,10 @@ without depending on bot startup or runtime registry population.
 
 ## Loaded cogs and registered subsystems
 
-The 38 extensions loaded at startup come from
-`disbot/config.py:INITIAL_EXTENSIONS`. The 30 subsystems live in
+The 50 extensions loaded at startup come from
+`disbot/config.py:INITIAL_EXTENSIONS`. The 37 subsystems live in
 `disbot/utils/subsystem_registry.py:SUBSYSTEMS`; each has exactly one owning
-cog. The 10 loaded extensions that are **not** one-to-one subsystems are
+cog. The 13 loaded extensions that are **not** one-to-one subsystems are
 `bootstrap_access_cog` (command-admission guard), `hermes_cog` (the
 Hermes→Claude dispatch bridge — admin-only slash commands with no subsystem
 row), `media_maintenance_cog` (the YouTube cache-retention task owner — no
@@ -96,30 +96,35 @@ retention task owner — no commands, no subsystem row), `role_grants_cog` (the
 temporary-role expiry sweep loop + the `!temprole` grant command — backs the
 role product, no subsystem row), `creature_battle_cog` (the creature PvP
 `!cbattle` command — part of the Creatures subsystem, surfaced via
-`creature_cog`'s hook, no subsystem row), `setup_cog` (the setup
-wizard surface), and the
+`creature_cog`'s hook, no subsystem row), `starboard_cog` (the Starboard /
+Hall-of-Fame raw-reaction listener + the `!starboard` config command — no
+subsystem row), `setup_cog` (the setup wizard surface), and the
 five split BTD6 cogs (`btd6_reference_cog`, `btd6_events_cog`,
 `btd6_strategy_cog`, `paragon_cog`, `btd6_ops_cog`), which all surface under
-the single `btd6` subsystem. (Counts re-verified against source 2026-06-12;
-`role_grants_cog` added 2026-06-21.)
+the single `btd6` subsystem. (Counts re-verified against source 2026-06-21;
+`starboard_cog` added 2026-06-21.)
 
-Cogs (39): `admin_cog`, `ai_cog`, `blackjack_cog`, `bootstrap_access_cog`,
-`btd6_cog`, `btd6_events_cog`, `btd6_ops_cog`, `btd6_reference_cog`,
-`btd6_strategy_cog`, `chain_cog`, `channel_cog`, `cleanup_cog`,
-`community_cog`, `community_spotlight_cog`, `counting_cog`, `deathmatch_cog`,
-`diagnostic_cog`, `economy_cog`, `four_twenty_cog`, `games_cog`,
-`general_cog`, `help_cog`, `hermes_cog`, `inventory_cog`, `leaderboard_cog`,
-`logging_cog`, `mining_cog`, `moderation_cog`, `paragon_cog`,
-`proof_channel_cog`, `role_cog`, `role_grants_cog`, `rps_tournament_cog`,
-`server_management_cog`, `settings_cog`, `setup_cog`, `utility_cog`,
-`ux_lab_cog`, `xp_cog`.
+Cogs (50): `admin_cog`, `ai_cog`, `automod_cog`, `blackjack_cog`,
+`bootstrap_access_cog`, `btd6_cog`, `btd6_events_cog`, `btd6_ops_cog`,
+`btd6_reference_cog`, `btd6_strategy_cog`, `chain_cog`, `channel_cog`,
+`cleanup_cog`, `community_cog`, `community_spotlight_cog`, `counters_cog`,
+`counting_cog`, `creature_battle_cog`, `creature_cog`, `deathmatch_cog`,
+`diagnostic_cog`, `economy_cog`, `fishing_cog`, `four_twenty_cog`,
+`games_cog`, `general_cog`, `health_maintenance_cog`, `help_cog`,
+`hermes_cog`, `image_moderation_cog`, `inventory_cog`, `leaderboard_cog`,
+`logging_cog`, `media_maintenance_cog`, `mining_cog`, `moderation_cog`,
+`paragon_cog`, `proof_channel_cog`, `role_cog`, `role_grants_cog`,
+`rps_tournament_cog`, `security_cog`, `server_management_cog`, `settings_cog`,
+`setup_cog`, `starboard_cog`, `utility_cog`, `ux_lab_cog`, `welcome_cog`,
+`xp_cog`.
 
-Subsystems (30): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
-`cleanup`, `community`, `community_spotlight`, `counting`, `deathmatch`,
-`diagnostic`, `economy`, `four_twenty`, `games`, `general`, `help`,
-`inventory`, `leaderboard`, `logging`, `mining`, `moderation`,
-`proof_channel`, `role`, `rps_tournament`, `server_management`, `settings`,
-`utility`, `ux_lab`, `xp`.
+Subsystems (37): `admin`, `ai`, `automod`, `blackjack`, `btd6`, `chain`,
+`channel`, `cleanup`, `community`, `community_spotlight`, `counters`,
+`counting`, `creature`, `deathmatch`, `diagnostic`, `economy`, `fishing`,
+`four_twenty`, `games`, `general`, `help`, `image_moderation`, `inventory`,
+`leaderboard`, `logging`, `mining`, `moderation`, `proof_channel`, `role`,
+`rps_tournament`, `security`, `server_management`, `settings`, `utility`,
+`ux_lab`, `welcome`, `xp`.
 
 ## Per-cog inventory
 

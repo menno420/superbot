@@ -4,6 +4,13 @@
 > `docs/current-state.md` owns what is live. **Sector:** S1 — Bot product.
 > **⚑ Self-initiated** (Q-0172): promoted from idea B1 after the reaction-roles arc hardened the
 > raw-reaction seam this reuses. Not yet owner-reviewed — greenlight or redirect before/at build.
+>
+> **▶ Build progress (2026-06-21):** **PR 1 in flight (#1259)** — migration 083 (`starboard_settings`
+> + `starboard_entries`) + `utils/db/starboard` + audited `services.starboard_service`
+> (`configure`/`disable` + `handle_star_change`) + `cogs/starboard_cog` (raw-reaction listener +
+> `!starboard` config group) + `bot1` registration + `guild_lifecycle` teardown. v1 keeps it lean;
+> self-star/ignore-channels/XP/panel deferred to **PR 2** (§6). Emoji defaults to ⭐ (configurable
+> column present; the §8 fixed-vs-configurable Q resolved as "configurable column, ⭐ default, UI in PR 2").
 
 ## 1. Why
 

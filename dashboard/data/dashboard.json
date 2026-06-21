@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T21:51:39Z",
+    "generated_at": "2026-06-21T21:58:42Z",
     "build": {
-      "commit": "decbda35",
-      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-m1xdmf' into claude/funny-franklin-m1xdmf",
-      "committed_at": "2026-06-21T21:51:28Z",
-      "branch": "claude/funny-franklin-m1xdmf"
+      "commit": "edf3f1c",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/starboard-v1",
+      "committed_at": "2026-06-21T21:54:09Z",
+      "branch": "claude/starboard-v1"
     },
     "counts": {
       "functions": 37,
@@ -15,8 +15,8 @@
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
-      "cogs": 46,
-      "commands": 316,
+      "cogs": 47,
+      "commands": 318,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -2141,6 +2141,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-21-starboard-v1.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Starboard PR 1 (foundation + working v1)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-21-starboard-plan.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Starboard / Hall-of-Fame: buildable plan",
@@ -2595,14 +2603,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-federated-explore-world-hub.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Federated Explore world hub (spine PR 1)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -2691,7 +2691,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 183,
+          "line": 184,
           "layer": "config",
           "has_default": true
         },
@@ -2713,7 +2713,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 182,
+          "line": 183,
           "layer": "config",
           "has_default": true
         }
@@ -2746,7 +2746,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 166,
+          "line": 167,
           "layer": "config",
           "has_default": true
         },
@@ -2816,7 +2816,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 221,
+          "line": 222,
           "layer": "config",
           "has_default": true
         }
@@ -2864,7 +2864,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 209,
+          "line": 210,
           "layer": "config",
           "has_default": true
         }
@@ -2880,7 +2880,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 212,
+          "line": 213,
           "layer": "config",
           "has_default": true
         }
@@ -2896,7 +2896,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 215,
+          "line": 216,
           "layer": "config",
           "has_default": true
         }
@@ -3056,7 +3056,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 108,
+          "line": 109,
           "layer": "config",
           "has_default": true
         }
@@ -3136,7 +3136,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 109,
+          "line": 110,
           "layer": "config",
           "has_default": true
         }
@@ -3154,7 +3154,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 165,
+          "line": 166,
           "layer": "config",
           "has_default": true
         },
@@ -3195,7 +3195,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 192,
+          "line": 193,
           "layer": "config",
           "has_default": true
         },
@@ -3218,7 +3218,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 196,
+          "line": 197,
           "layer": "config",
           "has_default": true
         },
@@ -3257,7 +3257,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 164,
+          "line": 165,
           "layer": "config",
           "has_default": true
         },
@@ -3281,7 +3281,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 163,
+          "line": 164,
           "layer": "config",
           "has_default": true
         },
@@ -7057,6 +7057,36 @@
           "parent": null,
           "aliases": [],
           "brief": "Remove a section from the skipped set (owner/delegated admin only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
+      "cog": "StarboardCog",
+      "file": "disbot/cogs/starboard_cog.py",
+      "subsystem": "starboard",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "starboard",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show or set the hall-of-fame channel + star threshold.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "off",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "starboard",
+          "aliases": [],
+          "brief": "Disable the starboard (config is preserved).",
           "classification": "",
           "has_panel": false,
           "button_backed": false

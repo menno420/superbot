@@ -75,6 +75,9 @@ _UNREGISTERED_COG_ALLOWLIST = frozenset(
         # product but registers no subsystem of its own (reaction-roles PR 4).
         "RoleGrantsCog",
         "SetupCog",
+        # Starboard / Hall-of-Fame raw-reaction listener + the !starboard config
+        # command (idea B1); registers no subsystem of its own.
+        "StarboardCog",
     },
 )
 
