@@ -67,17 +67,17 @@ jobs:
           set -uo pipefail
           mainSha=$(git rev-parse HEAD)   # the just-pushed main tip
 
-          # Open, non-draft, non-carved claude/* PRs (needs-hermes-review / do-not-automerge are
-          # left alone). NOTE: we deliberately do NOT filter on mergeStateStatus — that async field
-          # is UNKNOWN right after push:main (see header), which silently skipped freshly-behind
-          # PRs. We classify behind-ness ourselves with git below.
+          # Open, non-draft, non-carved claude/* PRs (do-not-automerge is left alone). NOTE: we
+          # deliberately do NOT filter on mergeStateStatus — that async field is UNKNOWN right
+          # after push:main (see header), which silently skipped freshly-behind PRs. We classify
+          # behind-ness ourselves with git below.
           nums=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --base main \
             --json number,headRefName,isDraft,labels \
             --jq '.[]
                   | select(.headRefName | startswith("claude/"))
                   | select(.isDraft | not)
                   | select([.labels[].name]
-                           | (contains(["needs-hermes-review"]) or contains(["do-not-automerge"]))
+                           | contains(["do-not-automerge"])
                            | not)
                   | .number')
           if [ -z "$nums" ]; then

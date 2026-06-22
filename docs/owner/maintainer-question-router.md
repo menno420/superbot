@@ -7184,3 +7184,29 @@ it before fish become a meaningful coin faucet. PR #1289.
 
 **Home:** this Q-block (canonical) + `docs/subsystems/games.md` (fishing plan pointer) +
 `docs/planning/mining-economy-balance-2026-06-22.md` (Applied section).
+
+### Q-0197 — ANSWERED (owner directive in-session): retire the `needs-hermes-review` label + its merge gate completely (2026-06-22)
+
+**Context.** While merging all open PRs, #1279 sat `needs-hermes-review` / "NOT self-merged" and had to
+be hand-merged around its own carve-out. The owner directed, in-session: *"remove the label and the rule
+for that completely, it's not being used at all and just gets in the way of clean merges."* This retires
+the Q-0117 independent-reviewer merge gate (the Hermes `review-merge` skill) and the executor convention
+of labelling substantial self-initiated steps for review.
+
+**The decision.** The `needs-hermes-review` label and its no-self-merge rule are **retired**. No PR is
+ever labelled with it again; every PR auto-merges on green CI (Q-0123). The separate **`do-not-automerge`**
+generic hold (Q-0114) is **kept** — it is still the way to gate a specific PR by hand. Hermes keeps its
+read-only review skills (`review`, `pr-check`) but no longer has a merge action; its remaining sanctioned
+write is authoring docs-only skill PRs (Q-0140).
+
+**Applied this session (owner-directed → applied directly per the CLAUDE.md in-session exception).**
+Removed the `needs-hermes-review` carve-out from `auto-merge-enabler.yml`, `pr-auto-update.yml`,
+`codex-final-review.yml`, and `scripts/check_ci_coverage.py` (`CARVE_OUT_LABELS`); deleted the Hermes
+`review-merge` skill (doc + generated `SKILL.md` + `build_skills.py` EXTRAS) and regenerated the skill
+set; updated `.claude/CLAUDE.md`, the hermes-skills docs, and `scripts/dispatch_menu.py`. Immutable
+history (`.sessions/`, reconciliation passes, idea files) is left as written. **Note for the owner:** the
+GitHub *label* itself still exists in repo Settings → Labels — delete it there to finish the cleanup (it
+is now unreferenced and harmless). PR for this change: branch `claude/jolly-sagan-dzxeni`.
+
+**Home:** this Q-block (canonical) + `.claude/CLAUDE.md` § Session & plan workflow +
+`docs/operations/hermes-skills/README.md`.

@@ -8,7 +8,7 @@ platforms: [linux, macos]
 metadata:
   hermes:
     tags: [Review, SuperBot, Quality]
-    related_skills: [superbot-review, superbot-review-merge]
+    related_skills: [superbot-review]
     blueprint:
       schedule: "0 */6 * * *"
       deliver: origin

@@ -272,7 +272,7 @@ def build_unattended_summary(text: str) -> list[str]:
         out.append("🟢 auto: none — no offline-verifiable + self-mergeable lane.")
 
     if by_fit["review"]:
-        out.append("🟡 build PR for review (needs-hermes-review, no self-merge):")
+        out.append("🟡 build PR (auto-merges on green; worth a second look):")
         out.extend(f"   {_fmt(r)}" for r in by_fit["review"])
     if by_fit["live"]:
         out.append("🔵 weak fit (needs a live guild walk / runtime creds to verify):")

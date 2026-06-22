@@ -85,7 +85,8 @@
 > ([`repo-sector-map.md`](repo-sector-map.md) § "dispatch targets"); a `Now` that is entirely ⛔/👤 is
 > **not** autonomously dispatchable (fall through to the first ▶). Each sector's **Dispatch** line says
 > what *plan* vs *execute·continue* mean for it, **plus an orthogonal unattended-fit tag** — 🟢 `auto`
-> (offline-verifiable + self-mergeable) · 🟡 `review` (build offline but ships `needs-hermes-review`) · 🔵
+> (offline-verifiable + self-mergeable) · 🟡 `review` (substantial/risky runtime — still auto-merges on
+> green, just worth a careful build + second look) · 🔵
 > `live` (needs a live guild walk / creds to verify) · 🟠 `ext-data` (commits external data, owner-confirm
 > first) — so a *scheduled empty-fire* run can tell whether a `▶` lane is one it can actually **complete
 > and merge** unattended, not just begin (the dimension `python3.10 scripts/dispatch_menu.py --unattended`
@@ -118,7 +119,7 @@
 - **Dispatch:** `S1` (executor **Claude-in-repo**, unattended-fit **🟡 review**) · *plan* = pick a
   verified slice from a folio / production-readiness map and write or refine its plan · *execute·continue*
   = advance the next **▶ startable** Now item (currently Layer B or games P0-1). *(Both are groundedness-/
-  money-safety runtime → buildable offline but ship `needs-hermes-review`, not self-merge.)* **Live queue →** the eight S1 areas in the
+  money-safety runtime → build carefully; they self-merge on green like any PR.)* **Live queue →** the eight S1 areas in the
   drill-down below; folios: [`subsystems/`](subsystems/README.md).
 
 ### S2 — BTD6  ·  *the Bloons TD 6 vertical — runtime + offline data, one standing sector*
@@ -426,7 +427,7 @@ dedicated decision** for any action capability.
   direction + a source-confirmed scope sketch in the idea file. **Now an executable plan**
   ([ai-panel-inplace-navigation-plan-2026-06-19](planning/ai-panel-inplace-navigation-plan-2026-06-19.md),
   2–3 PRs) — also the blocker for graduating the consistency linter's `edit_in_place` rule (its 17
-  remaining findings are this family); each PR is `needs-hermes-review` + wants a live guild walk.
+  remaining findings are this family); each PR is substantial runtime + wants a live guild walk.
 
 ### 🎈 BTD6 data / tools · **S2 BTD6** — Now (THE CUTOVER IS DONE — post-cutover decode backlog)
 

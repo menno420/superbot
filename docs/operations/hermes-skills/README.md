@@ -31,7 +31,6 @@ equivalent of `.claude/CLAUDE.md`.
 | [`btd6-status`](./btd6-status.md) | After live testing | BTD6 data pipeline coverage and open items |
 | [`log-triage`](./log-triage.md) | After a deploy / when the bot misbehaves | Read production logs and diagnose what's wrong (gated on a read-only log source) |
 | [`review`](./review.md) | Plan finalization / open PR | Independent (non-Claude) critique of a plan or PR diff + a maintainer summary for the approve/deny gate |
-| [`review-merge`](./review-merge.md) | Executor opened a big-step PR | The independent-reviewer **merge gate** (Q-0117): review `needs-hermes-review` PRs and merge if sound — Hermes' one sanctioned write |
 | [`pr-check`](./pr-check.md) | Every 6 hours (self-schedules) | Scan recent PRs for Codex/CI flags, apply the "real bug" bar, and **open a GitHub issue** for each real one (Q-0174) — **issue-only**, no merge or dispatch authority |
 | [`dispatch`](./dispatch.md) | Idea on your phone | Assemble a work order and fire a Claude Code Routine to build it (the autonomous-loop chaining link) |
 | [`dispatch-resolve`](./dispatch-resolve.md) | "work on sector SX" | Resolve a vague sector/lane directive into a concrete work order routed to the right executor (then delegates to `dispatch`) |
@@ -39,9 +38,9 @@ equivalent of `.claude/CLAUDE.md`.
 
 The last two are the **autonomous-improvement-loop seams** — see
 [`hermes-dispatch-bridge.md`](../hermes-dispatch-bridge.md) for how they fit together with the
-phase gate (`scripts/check_phase_gate.py`, advisory-only since Q-0172) and the owner's merge gates
-(Q-0113 self-merge / Q-0117 hermes-review; the Q-0114 approve/deny gate is retired by Q-0172 —
-self-initiated work ships flagged ⚑ Self-initiated for review).
+phase gate (`scripts/check_phase_gate.py`, advisory-only since Q-0172) and the owner's merge gate
+(Q-0113 self-merge; the Q-0117 hermes-review gate is retired by Q-0197, and the Q-0114 approve/deny
+gate by Q-0172 — work ships on green CI, self-initiated work flagged ⚑ Self-initiated for review).
 
 ---
 
@@ -82,8 +81,8 @@ Some skills ship a `blueprint.schedule` in their frontmatter, so once installed 
 self-schedules them to your home channel — **no extra VPS cron needed**, and each scheduled
 run is a fresh, stateless session (it never clogs your interactive chat). Currently scheduled:
 **`morning-briefing`** (`0 6 * * *` — the daily digest), **`idea-spotlight`** (`30 6 * * *` —
-the daily idea ritual), **`review-merge`** (`30 7 * * *` — the needs-hermes-review queue), and
-**`pr-check`** (`0 */6 * * *` — the 6-hourly Codex/CI PR-flag scan, issue-only). Change a time in
+the daily idea ritual), and **`pr-check`** (`0 */6 * * *` — the 6-hourly Codex/CI PR-flag scan,
+issue-only). Change a time in
 `scripts/hermes/build_skills.py` and rebuild. *(For automatically clearing the
 **interactive** chat session, that's a separate VPS timer — see
 [`../hermes-session-reset.md`](../hermes-session-reset.md).)*
@@ -98,7 +97,8 @@ Most skills are **read-only**. Hermes contributes through **PRs (CI-gated)** and
 1. **Prefer dispatch for big/risky code** — Claude Code is the primary builder and runs the
    full CI mirror; write code directly only when it's small, self-contained, and verifiable
    (e.g. your own dispatch tooling like `routine_fire.py`).
-2. **The `review-merge` gate** (Q-0117) is Hermes' merge action — once calibrated.
+2. **No merge gate** — every PR auto-merges on green CI (Q-0123); the Q-0117 hermes-review
+   merge gate is retired (Q-0197, 2026-06-22). Hermes contributes via docs/code PRs, not merges.
 
 Hermes never pushes straight to `main` and never mutates production config (Railway/Neon)
 outside the gates unless the owner directs it. Reading Railway env vars / logs for

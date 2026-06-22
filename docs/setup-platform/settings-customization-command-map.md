@@ -543,7 +543,7 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
     (`data/creatures/creatures.json`) + the rarity encounter/catch weights are
     committed data/code (owner design Q-0186/Q-0187, no Pokémon IP). v1 has **no
     coins** — the reward is progression (`game_xp`) + the collection dex. The
-    level-normalized PvP battle is a later `needs-hermes-review` slice.
+    level-normalized PvP battle is a later substantial-runtime slice.
 15. **missing_customization_commands**: `!creature level award set ...` (xp pace),
     catch-rate setters (future, only if balance is ever made configurable).
 16. **missing_settings_pages**: Settings Manager creature page (future).
