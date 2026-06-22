@@ -550,6 +550,21 @@ Current broad captures:
   present-but-broken = FAIL. Surfaced because the owner's Railway access sat **silently inert** (a
   var-name mismatch + a Cloudflare UA block) until a routine happened to probe it by hand — this
   would have flagged both on the first session after provisioning. Small; one script + a hook line.
+- [`pil-card-render-contract-guard-2026-06-22.md`](./pil-card-render-contract-guard-2026-06-22.md) —
+  **test tooling (2026-06-22, reaction-roles PR 6 session):** one cross-cutting invariant that pins the
+  whole `utils/*_render.py` card family to its shared contract — lazy PIL import, `bytes | None` return
+  (`None` when Pillow is absent), no network. Each renderer has its own per-module no-PIL test, but
+  nothing catches a *new* renderer that forgets the guard and lets `ImportError` propagate (a crash on a
+  Pillow-less boot path — the sandbox runs degraded, exactly where it bites). Small; an explicit
+  `(callable, sample_kwargs)` registry + the existing `__import__`-fail monkeypatch.
+- [`migration-number-collision-guard-2026-06-22.md`](./migration-number-collision-guard-2026-06-22.md) —
+  **dev tooling / CI (2026-06-22, reaction-roles PR 6 saga):** kill the migration-number **renumber
+  treadmill** — a held PR's migration was renumbered 4× in one afternoon (085→086→088→089) as the fleet
+  kept appending the next integer to `main`. A `scripts/check_migration_collision.py` (fetch main, diff
+  the branch's new numbers, print the next-free + the `git mv`) wired into the Stop/`pre-pr` hook catches
+  it **before** the 4-min CI round-trip; a merge-aware local CI mirror closes the local-green/CI-red gap
+  (CI tests `refs/pull/N/merge`, the branch-only local run can't see the dup). Durable cure: assign the
+  number at merge time.
 - [`external-cron-trigger-for-routines-2026-06-14.md`](./external-cron-trigger-for-routines-2026-06-14.md) —
   **workflow / ops (2026-06-14, workflow-health review):** drive the overnight cadence from an
   external scheduler hitting `workflow_dispatch` (a VPS cron, a Worker) instead of GitHub's

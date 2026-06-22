@@ -366,6 +366,8 @@ async def create_menu(
     max_roles: int,
     options: list[RoleOption],
     theme: str = "default",
+    card_template: str | None = None,
+    card_text: str | None = None,
     actor_id: int | None,
 ) -> int:
     """Create a role menu (+ its options) and return ``menu_id`` (audited)."""
@@ -382,6 +384,8 @@ async def create_menu(
         mode=mode,
         max_roles=max_roles,
         theme=theme or "default",
+        card_template=card_template or None,
+        card_text=card_text or None,
     )
     await menus_db.replace_options(menu_id, _options_to_rows(options))
     await _emit_menu_audit(
@@ -406,6 +410,8 @@ async def update_menu(
     max_roles: int,
     options: list[RoleOption],
     theme: str = "default",
+    card_template: str | None = None,
+    card_text: str | None = None,
     actor_id: int | None,
 ) -> None:
     """Overwrite a menu's fields + options in place (edit-in-place, audited)."""
@@ -424,6 +430,8 @@ async def update_menu(
         mode=mode,
         max_roles=max_roles,
         theme=theme or "default",
+        card_template=card_template or None,
+        card_text=card_text or None,
     )
     await menus_db.replace_options(menu_id, _options_to_rows(options))
     await _emit_menu_audit(

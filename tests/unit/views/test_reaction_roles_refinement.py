@@ -122,3 +122,30 @@ def test_from_menu_edit_keeps_id() -> None:
     )
     assert builder.menu_id == 5
     assert builder.title == "Game Roles"
+
+
+def test_builder_keeps_every_action_row_within_discords_five_button_cap() -> None:
+    """No builder row may exceed Discord's 5-components-per-row limit.
+
+    Regression guard: the builder's button rows are edited by many parallel
+    sessions (Roles/Colours/Packs/Template/Card/Theme/Mode/…), and a 6th button
+    landing on one row makes ``discord.ui.View`` raise at construction. Pin every
+    row ≤ 5 (with a parent, so the ↩ Back button is included on its row too).
+    """
+    import discord
+
+    guild = SimpleNamespace(id=1)
+    parent = SimpleNamespace(build_embed=AsyncMock())
+    builder = RoleMenuBuilder(
+        SimpleNamespace(id=42),
+        guild,
+        SimpleNamespace(id=9),
+        parent=parent,
+    )
+    per_row: dict[int | None, int] = {}
+    for child in builder.children:
+        if isinstance(child, discord.ui.Button):
+            per_row[child.row] = per_row.get(child.row, 0) + 1
+    assert per_row, "builder has no buttons?"
+    assert all(n <= 5 for n in per_row.values()), f"row over Discord's cap: {per_row}"
+

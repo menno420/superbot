@@ -6,6 +6,7 @@ import discord
 
 from services.reaction_role_service import VALID_STYLES
 from utils import role_menu_presentation as presentation
+from utils import role_menu_render
 
 
 def test_themes_are_non_empty_and_unique():
@@ -37,6 +38,28 @@ def test_templates_reference_valid_themes_and_styles():
         assert tpl.theme in theme_keys, f"{tpl.key} → unknown theme {tpl.theme!r}"
         assert tpl.style in VALID_STYLES, f"{tpl.key} → bad style {tpl.style!r}"
         assert tpl.title and tpl.description
+
+
+def test_card_templates_are_non_empty_unique_and_renderable():
+    cards = presentation.card_templates()
+    assert cards
+    keys = [c.key for c in cards]
+    assert len(keys) == len(set(keys))  # no duplicate keys
+    for card in cards:
+        assert card.label
+        # Every catalogue entry must map to a style the renderer can draw — a
+        # mismatch would silently render nothing in production.
+        assert (
+            card.style in role_menu_render.KNOWN_STYLES
+        ), f"{card.key} → unknown render style {card.style!r}"
+
+
+def test_get_card_template_none_and_unknown_return_none():
+    assert presentation.get_card_template(None) is None
+    assert presentation.get_card_template("") is None
+    assert presentation.get_card_template("bogus") is None
+    first = presentation.card_templates()[0]
+    assert presentation.get_card_template(first.key) is first
 
 
 def test_get_template_lookup():
