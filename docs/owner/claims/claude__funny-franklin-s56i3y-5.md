@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-s56i3y-5` · scope: `scripts/check_migration_collision.py` — pre-push guard for duplicate migration numbers vs origin/main (the #1279 four-renumber treadmill; grooming-executes idea `migration-number-collision-guard-2026-06-22`) + GC 2 stale claims · area: `scripts/`, `tests/unit/scripts/`, `docs/ideas/` · 2026-06-22
