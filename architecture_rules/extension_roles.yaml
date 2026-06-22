@@ -81,6 +81,9 @@ extensions:
     note: Image moderation — OpenAI omni-moderation filter (Q-0108).
   xp:
     role: product_subsystem
+  karma:
+    role: product_subsystem
+    note: Peer reputation (thanks/upvote); audited karma_service seam + leaderboard.
   blackjack:
     role: product_subsystem
     note: Game.

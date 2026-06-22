@@ -214,7 +214,7 @@ it fails if a folio on disk is missing here (orphan), listed but absent (phantom
 
 <!-- BEGIN sector-folio-map (machine-readable — do not reformat; check_sector_map.py parses S<n>: lines) -->
 ```
-S1: ai, games, health-diagnostics, media-youtube, server-management, settings-bindings-provisioning
+S1: ai, games, health-diagnostics, karma, media-youtube, server-management, settings-bindings-provisioning
 S2: btd6
 ```
 <!-- END sector-folio-map -->

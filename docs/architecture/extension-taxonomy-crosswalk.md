@@ -5,7 +5,7 @@
 > `architecture_rules/extension_roles.yaml`. Sources: `disbot/config.py` (`INITIAL_EXTENSIONS`),
 > `disbot/utils/subsystem_registry.py` (`SUBSYSTEMS`), and that overlay. `--check` guards staleness.
 
-_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **52** extensions  ·  **39** registered subsystems  ·  **13** non-1:1 extensions.
+_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **53** extensions  ·  **40** registered subsystems  ·  **13** non-1:1 extensions.
 
 Every loaded extension classified by **role** (editorial — in `architecture_rules/extension_roles.yaml`) and joined to the registry. A ✓ in *Registered* means the extension is a 1:1 subsystem identity; the non-1:1 rows are surfaces/maintenance/adapters that **back** a subsystem or the platform.
 
@@ -18,7 +18,7 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | `lab` | 1 | A development / UX laboratory surface; not a production product surface. |
 | `maintenance` | 3 | A background-loop cog (scheduled work) with no subsystem identity; runtime/ops, not a product surface. |
 | `operational_adapter` | 1 | A bridge to a control plane or external operation (not an in-guild product feature). |
-| `product_subsystem` | 31 | A feature vertical with its own owner, views, and tests. |
+| `product_subsystem` | 32 | A feature vertical with its own owner, views, and tests. |
 | `shared_platform` | 6 | A broad cross-cutting capability with high blast radius (admin, settings, AI, diagnostics, help, utility). |
 | `specialized_surface` | 5 | One of several surfaces within a single domain vertical (e.g. the BTD6 sub-cogs) — backs a registered subsystem rather than being its own. |
 
@@ -36,48 +36,49 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | 8 | `automod` | `product_subsystem` | ✓ |  | Automod rules engine (Q-0108). |
 | 9 | `image_moderation` | `product_subsystem` | ✓ |  | Image moderation — OpenAI omni-moderation filter (Q-0108). |
 | 10 | `xp` | `product_subsystem` | ✓ |  |  |
-| 11 | `blackjack` | `product_subsystem` | ✓ |  | Game. |
-| 12 | `rps_tournament` | `product_subsystem` | ✓ |  | Game (tournament orchestration). |
-| 13 | `utility` | `shared_platform` | ✓ |  | General utility commands. |
-| 14 | `cleanup` | `product_subsystem` | ✓ |  | Message-cleanup policy. |
-| 15 | `channel` | `product_subsystem` | ✓ |  | Channel management (server-management area). |
-| 16 | `inventory` | `product_subsystem` | ✓ |  |  |
-| 17 | `economy` | `product_subsystem` | ✓ |  |  |
-| 18 | `treasury` | `product_subsystem` | ✓ |  | Server-owned coin pool — the economy↔governance seam (contribute / manager-disburse). |
-| 19 | `counting` | `product_subsystem` | ✓ |  | Counting game. |
-| 20 | `deathmatch` | `product_subsystem` | ✓ |  | Game (1v1 duels). |
-| 21 | `proof_channel` | `product_subsystem` | ✓ |  |  |
-| 22 | `mining` | `product_subsystem` | ✓ |  | Mining character platform (large vertical). |
-| 23 | `fishing` | `product_subsystem` | ✓ |  | Fishing minigame (ecosystem |
-| 24 | `creature` | `product_subsystem` | ✓ |  | Creature catch/collection game v1 (catch slice; level-normalized PvP later). |
-| 25 | `creature_battle` | `product_subsystem` | — |  | Creature PvP battle cog (!cbattle) — part of the Creatures subsystem (not a separate registered subsystem; surfaced via creature_cog's Help hook). |
-| 26 | `farm` | `product_subsystem` | ✓ |  | Idle egg/chicken farm — the bot's first idle (accrue-over-time) game. |
-| 27 | `diagnostic` | `shared_platform` | ✓ |  | `!platform` diagnostics; broad cross-subsystem read-model surface. |
-| 28 | `health_maintenance` | `maintenance` | — | `diagnostic` | Scheduled health-findings retention loop; no subsystem identity. |
-| 29 | `ai` | `shared_platform` | ✓ |  | AI orchestration / answerability; cross-cutting. |
-| 30 | `media_maintenance` | `maintenance` | — |  | Scheduled media/YouTube cache purge loop; no subsystem identity. |
-| 31 | `btd6` | `product_subsystem` | ✓ |  | BTD6 core data / answerability vertical. |
-| 32 | `btd6_reference` | `specialized_surface` | — | `btd6` | BTD6 reference lookups. |
-| 33 | `btd6_events` | `specialized_surface` | — | `btd6` | BTD6 live-events surface. |
-| 34 | `btd6_strategy` | `specialized_surface` | — | `btd6` |  |
-| 35 | `paragon` | `specialized_surface` | — | `btd6` | BTD6 paragon grounding surface. |
-| 36 | `btd6_ops` | `specialized_surface` | — | `btd6` | BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical. |
-| 37 | `chain` | `product_subsystem` | ✓ |  | Command-chain subsystem. |
-| 38 | `general` | `product_subsystem` | ✓ |  | General-content commands. |
-| 39 | `four_twenty` | `product_subsystem` | ✓ |  | Novelty / community feature. |
-| 40 | `leaderboard` | `product_subsystem` | ✓ |  | Cross-subsystem leaderboards (reads XP/games). |
-| 41 | `settings` | `shared_platform` | ✓ |  | Settings hub; cross-cutting config surface. |
-| 42 | `logging` | `product_subsystem` | ✓ |  | Server-logging subsystem. |
-| 43 | `games` | `hub` | ✓ |  | Games hub (routes blackjack/deathmatch/counting/rps). |
-| 44 | `community` | `hub` | ✓ |  | Community hub. |
-| 45 | `community_spotlight` | `product_subsystem` | ✓ |  | Community Spotlight (community-hub child; registered subsystem). |
-| 46 | `welcome` | `product_subsystem` | ✓ |  | Welcome service (join embeds + optional PIL cards). |
-| 47 | `counters` | `product_subsystem` | ✓ |  | Dynamic server counters. |
-| 48 | `security` | `product_subsystem` | ✓ |  | Security tiers 1+2 — raid detection + account-age filter (Q-0111). |
-| 49 | `setup` | `bootstrap` | — | `server_management` | Guided setup wizard; lifecycle-critical, load-order sensitive. |
-| 50 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
-| 51 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
-| 52 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
+| 11 | `karma` | `product_subsystem` | ✓ |  | Peer reputation (thanks/upvote); audited karma_service seam + leaderboard. |
+| 12 | `blackjack` | `product_subsystem` | ✓ |  | Game. |
+| 13 | `rps_tournament` | `product_subsystem` | ✓ |  | Game (tournament orchestration). |
+| 14 | `utility` | `shared_platform` | ✓ |  | General utility commands. |
+| 15 | `cleanup` | `product_subsystem` | ✓ |  | Message-cleanup policy. |
+| 16 | `channel` | `product_subsystem` | ✓ |  | Channel management (server-management area). |
+| 17 | `inventory` | `product_subsystem` | ✓ |  |  |
+| 18 | `economy` | `product_subsystem` | ✓ |  |  |
+| 19 | `treasury` | `product_subsystem` | ✓ |  | Server-owned coin pool — the economy↔governance seam (contribute / manager-disburse). |
+| 20 | `counting` | `product_subsystem` | ✓ |  | Counting game. |
+| 21 | `deathmatch` | `product_subsystem` | ✓ |  | Game (1v1 duels). |
+| 22 | `proof_channel` | `product_subsystem` | ✓ |  |  |
+| 23 | `mining` | `product_subsystem` | ✓ |  | Mining character platform (large vertical). |
+| 24 | `fishing` | `product_subsystem` | ✓ |  | Fishing minigame (ecosystem |
+| 25 | `creature` | `product_subsystem` | ✓ |  | Creature catch/collection game v1 (catch slice; level-normalized PvP later). |
+| 26 | `creature_battle` | `product_subsystem` | — |  | Creature PvP battle cog (!cbattle) — part of the Creatures subsystem (not a separate registered subsystem; surfaced via creature_cog's Help hook). |
+| 27 | `farm` | `product_subsystem` | ✓ |  | Idle egg/chicken farm — the bot's first idle (accrue-over-time) game. |
+| 28 | `diagnostic` | `shared_platform` | ✓ |  | `!platform` diagnostics; broad cross-subsystem read-model surface. |
+| 29 | `health_maintenance` | `maintenance` | — | `diagnostic` | Scheduled health-findings retention loop; no subsystem identity. |
+| 30 | `ai` | `shared_platform` | ✓ |  | AI orchestration / answerability; cross-cutting. |
+| 31 | `media_maintenance` | `maintenance` | — |  | Scheduled media/YouTube cache purge loop; no subsystem identity. |
+| 32 | `btd6` | `product_subsystem` | ✓ |  | BTD6 core data / answerability vertical. |
+| 33 | `btd6_reference` | `specialized_surface` | — | `btd6` | BTD6 reference lookups. |
+| 34 | `btd6_events` | `specialized_surface` | — | `btd6` | BTD6 live-events surface. |
+| 35 | `btd6_strategy` | `specialized_surface` | — | `btd6` |  |
+| 36 | `paragon` | `specialized_surface` | — | `btd6` | BTD6 paragon grounding surface. |
+| 37 | `btd6_ops` | `specialized_surface` | — | `btd6` | BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical. |
+| 38 | `chain` | `product_subsystem` | ✓ |  | Command-chain subsystem. |
+| 39 | `general` | `product_subsystem` | ✓ |  | General-content commands. |
+| 40 | `four_twenty` | `product_subsystem` | ✓ |  | Novelty / community feature. |
+| 41 | `leaderboard` | `product_subsystem` | ✓ |  | Cross-subsystem leaderboards (reads XP/games). |
+| 42 | `settings` | `shared_platform` | ✓ |  | Settings hub; cross-cutting config surface. |
+| 43 | `logging` | `product_subsystem` | ✓ |  | Server-logging subsystem. |
+| 44 | `games` | `hub` | ✓ |  | Games hub (routes blackjack/deathmatch/counting/rps). |
+| 45 | `community` | `hub` | ✓ |  | Community hub. |
+| 46 | `community_spotlight` | `product_subsystem` | ✓ |  | Community Spotlight (community-hub child; registered subsystem). |
+| 47 | `welcome` | `product_subsystem` | ✓ |  | Welcome service (join embeds + optional PIL cards). |
+| 48 | `counters` | `product_subsystem` | ✓ |  | Dynamic server counters. |
+| 49 | `security` | `product_subsystem` | ✓ |  | Security tiers 1+2 — raid detection + account-age filter (Q-0111). |
+| 50 | `setup` | `bootstrap` | — | `server_management` | Guided setup wizard; lifecycle-critical, load-order sensitive. |
+| 51 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
+| 52 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
+| 53 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
 
 ## Non-1:1 extensions (no registry identity)
 

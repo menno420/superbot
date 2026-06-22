@@ -53,6 +53,7 @@ def test_registry_exposes_canonical_categories():
         "deathmatch",
         "rps",
         "counting",
+        "karma",
     }
 
 

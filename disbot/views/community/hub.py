@@ -17,10 +17,10 @@ so the source of truth is the registry, not a hardcoded view-local
 tuple. PR #4 migrated the view here from the previous ``_HUB_CHILDREN``
 literal.
 
-Five children fit comfortably under the hub-ui-standard button
-threshold (≤8 buttons preferred over a dropdown). Layout: primary
-children on row 0 with primary style, cross-links on row 1 with
-secondary style. Back-nav is attached by ``HelpCategoryView`` when
+Layout: primary children fill rows from 0 (5 per row — Discord's row
+cap) with primary style; cross-links continue on the next free row with
+secondary style (so the grid wraps gracefully as the hub grows past five
+primaries). Back-nav is attached by ``HelpCategoryView`` when
 the hub is surfaced from ``!help``; the direct ``!community`` entry
 shows the hub without a back button, matching the ``!games`` pattern.
 """
@@ -46,6 +46,9 @@ from views.navigation import (
 )
 
 logger = logging.getLogger("bot.views.community")
+
+# Discord allows at most 5 buttons per action row.
+_BUTTONS_PER_ROW = 5
 
 
 def discover_community_children() -> (
@@ -362,22 +365,27 @@ class CommunityHubView(HubView):
         # correctly even on the unfiltered path.
         if primary is None or cross_link is None:
             primary, cross_link = discover_community_children()
-        for subsystem, meta in primary:
+        # Discord caps a button row at 5. Primary children fill rows from 0
+        # (primary style); cross-links continue on the next free row after the
+        # last primary row (secondary style). This wraps gracefully as the hub
+        # grows past 5 primaries instead of overflowing a single row.
+        for idx, (subsystem, meta) in enumerate(primary):
             self.add_item(
                 _CommunityChildButton(
                     subsystem=subsystem,
                     label=_format_child_label(subsystem, meta),
                     style=discord.ButtonStyle.primary,
-                    row=0,
+                    row=idx // _BUTTONS_PER_ROW,
                 ),
             )
-        for subsystem, meta in cross_link:
+        primary_rows = -(-len(primary) // _BUTTONS_PER_ROW)  # ceil division
+        for idx, (subsystem, meta) in enumerate(cross_link):
             self.add_item(
                 _CommunityChildButton(
                     subsystem=subsystem,
                     label=_format_child_label(subsystem, meta),
                     style=discord.ButtonStyle.secondary,
-                    row=1,
+                    row=primary_rows + idx // _BUTTONS_PER_ROW,
                 ),
             )
 

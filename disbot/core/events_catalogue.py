@@ -60,6 +60,12 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # progression track, separate from chat XP by design) ─────────────
         "game_xp.awarded",
         "game_xp.level_up",
+        # ── Karma (services/karma_service.py) ────────────────────────────
+        # Emitted after a peer karma grant commits + audits. Payload:
+        # guild_id, from_user, to_user, delta, new_total, source. Subscribers
+        # (panel refresh, future analytics) react without touching the DB;
+        # subscriber failure is logged + swallowed — the grant is authoritative.
+        "karma.granted",
         # ── Moderation (services/moderation_service.py) ──────────────────
         "moderation.action_taken",
         # ── Automod (cogs/automod/listener.py, Q-0108) ───────────────────

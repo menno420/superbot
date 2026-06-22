@@ -92,6 +92,7 @@ def test_community_hub_uses_new_cog():
     # both are administrator-tier so they stay operator-only in the user view.
     assert community.primary_children == (
         "xp",
+        "karma",
         "community_spotlight",
         "role",
         "welcome",

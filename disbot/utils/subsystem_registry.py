@@ -371,6 +371,34 @@ SUBSYSTEMS: dict[str, dict] = {
             "xp.settings.configure",
         ],
     },
+    # Karma (thanks/upvote reputation): members grant each other peer
+    # reputation; per-user totals + a leaderboard category, on an audited
+    # mutation seam (services/karma_service.py).  Config is editable through
+    # the !settings widget via the SubsystemSchema in cogs/karma/schemas.py.
+    "karma": {
+        "display_name": "Karma",
+        "description": "Peer reputation — thank helpful members with !thanks",
+        "emoji": "✨",
+        "color": ROLE_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "progression",
+        "tags": ["karma", "reputation", "thanks", "progression", "leaderboard"],
+        "entry_points": ["thanks", "karma"],
+        "default_channels": ["bot-commands", "general"],
+        "related_subsystems": ["xp", "leaderboard"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 26,
+        "parent_hub": "community",
+        "capabilities": [
+            "karma.card.view",
+            "karma.grant.give",
+            "karma.settings.configure",
+        ],
+    },
     "role": {
         "display_name": "Roles",
         "description": "Time-based and XP-based automatic role assignment",
