@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T10:27:23Z",
+    "generated_at": "2026-06-22T14:18:00Z",
     "build": {
-      "commit": "0f51c31",
-      "subject": "chore(mining): open grid-Mine session (hub-redesign PR 3, born-red)",
-      "committed_at": "2026-06-22T10:27:23Z"
+      "commit": "70e3c472",
+      "subject": "Merge pull request #1284 from menno420/claude/sweet-sagan-jeyjsy",
+      "committed_at": "2026-06-22T14:18:00Z"
     },
     "counts": {
       "functions": 37,
-      "ideas": 116,
+      "ideas": 117,
       "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
@@ -996,6 +996,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "mining-grid-encounters-2026-06-22.md",
+      "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "Layer **sparse, depth-gated random encounters** onto the shipped grid-Mine navigator",
+      "subsystems": null
+    },
     {
       "file": "band-pr-status-author-classifier-2026-06-21.md",
       "title": "Idea — `band_pr_status --themes`: draft grouped-entry skeleton from touched paths",
@@ -2159,8 +2167,24 @@
       "file": "2026-06-22-mining-grid-mine.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Mining grid Mine (hub-redesign PR 3)",
-      "status": "in-progress",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-mining-economy-sim.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Mining economy / balance simulation",
+      "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-mining-dig-moves.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Mining grid: dig-moves-you (unified mine+move)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2594,22 +2618,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-btd6-buff-uptime-alch-speed.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — BTD6 buff-uptime: model attack-speed buffs on the Alchemist",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-allow-force-with-lease.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Allow `git push --force-with-lease` + `cd` in permission allowlist",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
