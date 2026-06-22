@@ -86,6 +86,33 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1180 · #1182 (2026-06-20, Pokétwo + MusicBot research → feature-mapping plan + BUG-0019)** — a
+  research report → a feature-mapping plan ([plan](planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md),
+  #1180), plus **BUG-0019** capture (the AI replied to *other bots'* mentions) + the Pokétwo demand signal
+  (#1182). Docs-only. (BUG-0019 #2 — the `@everyone`/`@here` false-ping leg — is the #1186 entry below.)
+- **#1187 · #1188 · #1191 (2026-06-20, CI PR-guard determinism)** — the pr-conflict-guard now uses a
+  deterministic `git merge-tree` (kills the "only occasionally red" flake, #1187); pr-auto-update gets the
+  same deterministic behind-detection fix for the identical async race (#1188); both were then extracted
+  onto **one shared, unit-tested git merge-state helper** (#1191).
+- **#1175 · #1176 · #1178 · #1196 · #1198 · #1199 (2026-06-20, Claude-Design bot-site)** — the full
+  landing-page composition (#1175), the GitHub-connector design workflow docs (#1176), composing the rest of
+  the site (Features / Commands / Changelog / Status, #1178), serving the Claude-Design SPA with a **live
+  generated data layer** (#1196), a plain-language website explainer + the Claude Design loop (#1198), and the
+  plan to migrate the live bot-site onto the React design-system app
+  ([plan](planning/botsite-react-spa-migration-plan-2026-06-20.md), #1199).
+- **#1177 · #1189 (2026-06-20, mining/community fix + consistency-linter)** — `!character` now shows the
+  paper-doll + missing back buttons added (#1177); the consistency-linter `back_button` rule now also catches
+  dynamically-built (`add_item`) hubs (#1189).
+- **#1174 · #1181 · #1192 · #1195 (2026-06-20, workflow tooling)** — `check_loop_health.py` gained the
+  `gh`-absent stdlib-REST fallback so the control-plane ROUTINE_PAT row is **script-verifiable in-container**
+  (#1174, [plan](planning/loop-health-gh-fallback-plan-2026-06-20.md)); the **band PR-status classifier +
+  Recently-shipped trim actuator** shipped (#1181, building the band-#1170 pass's Q-0089 idea —
+  `scripts/band_pr_status.py` + `scripts/trim_recently_shipped.py`, both wired into this routine); a
+  SessionStart branch-freshness warning (#1192, Q-0188); re-landed a dropped status-move decision (#1195,
+  born-red slip).
+- **#1172 · #1179 · #1184 · #1190 · #1201 (2026-06-20, dependabot + dashboard generated-data refresh band)** —
+  the dependabot design-system npm bump (#1172) and the per-source-merge `dashboard-data-refresh` cadence regen
+  of `dashboard/data/dashboard.json` (#1179 · #1184 · #1190 · #1201, Q-0167).
 - **#1186 (2026-06-20, BUG-0019 #2 — `@everyone`/`@here` false-personal-ping hardening)** — the AI
   natural-language stage computed `is_mention` via `ClientUser.mentioned_in`, which short-circuits
   `True` on `message.mention_everyone`, so a server-wide blast flipped the `mention_only` policy gate
