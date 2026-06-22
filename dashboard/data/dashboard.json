@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T17:29:55Z",
+    "generated_at": "2026-06-22T18:21:56Z",
     "build": {
-      "commit": "91a3b375",
-      "subject": "Fishing menu: real buttons (Cast · Rod · Fishdex panel) (#1303)",
-      "committed_at": "2026-06-22T17:29:55Z"
+      "commit": "6bd8c97",
+      "subject": "Tune fishing energy to the owner's pictured model (60-unit bar, 2 per cast)",
+      "committed_at": "2026-06-22T18:21:56Z"
     },
     "counts": {
       "functions": 37,
@@ -2330,6 +2330,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-fishing-energy-pacing.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing PR4: separate energy bar (pacing) + generous sell rebalance",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-ci-strand-cancel-in-progress.md",
       "date": "2026-06-22",
       "title": "Session — CI strand root cause: code-quality cancel-in-progress (2026-06-22)",
@@ -2640,14 +2648,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-free-for-everyone-north-star.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — \"Free for everyone, forever\": codify the product North Star",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
