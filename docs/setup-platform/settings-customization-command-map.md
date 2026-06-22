@@ -560,6 +560,43 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: S10.
 
+### farm
+
+1. **cog_module**: `disbot/cogs/farm_cog.py`.
+2. **subsystem**: `farm`
+3. **current_commands**: `!farm`/`!chickenfarm`/`!coop`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `FarmMenuView` (Collect · Shop · Refresh) +
+   `FarmShopView` (Buy hen · Upgrade coop · Back) — `disbot/views/farm/`.
+6. **help_menu_discoverable**: Yes (actionable panel via `build_help_menu_view`).
+7. **dedicated_panel_command**: `!farm`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (live `FarmMenuView`).
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `farm.egg.collect`, `farm.coop.manage`.
+14. **hardcoded_or_env_only_behavior**: the idle-farm tunables — lay interval, egg
+    value, capacity ladder, hen/coop price curves — are committed code
+    (`utils/farm/farm.py`). The bot's first **idle** game: eggs accrue over time
+    via pure `settle()` (a stored value + a timestamp, no ticker — ADR-001/002),
+    are collected for coins (modest faucet) + `game_xp`, and coins buy hens
+    (faster lay rate) / coop upgrades (bigger egg cap) through the audited
+    `services/farm_workflow.py` seam (one txn per op).
+15. **missing_customization_commands**: per-guild faucet-rate setters (future, only
+    if egg value / lay rate is ever made configurable).
+16. **missing_settings_pages**: Settings Manager farm page (future).
+17. **missing_menu_buttons_selects_modals**: faucet-rate scalar editor (future).
+18. **setting_class_per_value**: egg value / lay rate → scalar (future).
+19. **target_Settings_Manager_page**: `!settings subsystem farm` (future).
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars) if tunables are
+    ever made configurable.
+21. **target_help_or_menu_route**: Help direct-nav (live panel); Settings tab (future).
+22. **provisionable_resources**: none (no channel binding; the farm is per-player).
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: S10.
+
 ### xp
 
 1. **cog_module**: `disbot/cogs/xp_cog.py` (+ `disbot/cogs/xp/` package with

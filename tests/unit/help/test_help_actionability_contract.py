@@ -292,6 +292,21 @@ def _panel_construction_patches(subsystem: str):
                 new=AsyncMock(return_value=[]),
             )
         )
+    if subsystem == "farm":
+        from utils.farm import FarmState
+
+        patches.append(
+            patch(
+                "views.farm.menu.farm_workflow.get_state",
+                new=AsyncMock(return_value=FarmState(1, 0, 0, 0)),
+            )
+        )
+        patches.append(
+            patch(
+                "views.farm.menu.db.get_coins",
+                new=AsyncMock(return_value=0),
+            )
+        )
     with contextlib.ExitStack() as stack:
         for p in patches:
             stack.enter_context(p)
@@ -356,6 +371,10 @@ async def _build_panel_for(
         from cogs.creature_cog import CreatureCog
 
         cog = CreatureCog(MagicMock())
+    elif subsystem == "farm":
+        from cogs.farm_cog import FarmCog
+
+        cog = FarmCog(MagicMock())
     else:
         raise NotImplementedError(
             f"No cog mapping for actionability target {subsystem!r}. "
@@ -382,6 +401,10 @@ async def _build_panel_for(
         pytest.param("mining"),
         pytest.param("counting"),
         pytest.param("chain"),
+        # The idle chicken farm ships with an actionable panel from day one
+        # (FarmMenuView: Collect · Buy hen · Upgrade coop · Refresh), so it is a
+        # real target, not an instruction-only xfail like fishing/creature below.
+        pytest.param("farm"),
         # Homed under the Games hub by the help-menu regrouping (PR #1290).
         # Both still return an instruction-only overview (empty View) — an
         # actionable in-panel surface is a later game slice — so they are
@@ -595,6 +618,8 @@ def test_actionability_targets_match_registry_games_children() -> None:
         "mining",
         "counting",
         "chain",
+        # Idle chicken farm — actionable from day one (FarmMenuView).
+        "farm",
         # Homed under Games by the help-menu regrouping (PR #1290); carried as
         # xfail targets above until their panels become actionable.
         "fishing",

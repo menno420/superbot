@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T21:39:59Z",
+    "generated_at": "2026-06-22T20:45:33Z",
     "build": {
-      "commit": "cfd93bf5",
-      "subject": "Merge pull request #1320 from menno420/claude/funny-franklin-s56i3y-4",
-      "committed_at": "2026-06-22T21:39:59Z"
+      "commit": "7c7bf2e",
+      "subject": "chore(farm): born-red session card + claim for idle chicken farm",
+      "committed_at": "2026-06-22T20:45:33Z"
     }
   },
   "counts": {
-    "commands": 372,
-    "features": 37,
-    "games": 9
+    "commands": 373,
+    "features": 38,
+    "games": 10
   },
   "catalogue": [
     {
@@ -275,6 +275,24 @@
         "games",
         "blackjack",
         "cards"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "farm",
+      "display_name": "Chicken Farm",
+      "description": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
+      "emoji": "🐔",
+      "category": "games",
+      "tags": [
+        "farm",
+        "idle",
+        "chickens",
+        "eggs",
+        "activities"
       ],
       "badges": [
         "games"
@@ -4542,6 +4560,23 @@
           "status": "ideas"
         }
       ],
+      "notes": null
+    },
+    {
+      "name": "farm",
+      "aliases": [
+        "chickenfarm",
+        "coop"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open your idle chicken farm — collect eggs, grow your flock and coop.",
+      "description": "Open your idle chicken farm — collect eggs, grow your flock and coop.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {

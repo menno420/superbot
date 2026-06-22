@@ -113,6 +113,7 @@ HUBS: tuple[HubEntry, ...] = (
             "chain",
             "fishing",
             "creature",
+            "farm",
         ),
         minimum_tier="user",
     ),

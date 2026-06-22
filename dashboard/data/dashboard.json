@@ -1,25 +1,25 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T21:39:59Z",
+    "generated_at": "2026-06-22T20:45:33Z",
     "build": {
-      "commit": "cfd93bf5",
-      "subject": "Merge pull request #1320 from menno420/claude/funny-franklin-s56i3y-4",
-      "committed_at": "2026-06-22T21:39:59Z"
+      "commit": "7c7bf2e",
+      "subject": "chore(farm): born-red session card + claim for idle chicken farm",
+      "committed_at": "2026-06-22T20:45:33Z"
     },
     "counts": {
-      "functions": 37,
+      "functions": 38,
       "ideas": 123,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
-      "cogs": 47,
-      "commands": 372,
+      "cogs": 48,
+      "commands": 373,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
-      "visible_subsystems": 37,
+      "visible_subsystems": 38,
       "synonyms": 87,
       "bot_changelog": 3
     }
@@ -445,6 +445,34 @@
       "capabilities": [
         "blackjack.game.play",
         "blackjack.tournament.manage"
+      ]
+    },
+    {
+      "key": "farm",
+      "display_name": "Chicken Farm",
+      "description": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
+      "emoji": "🐔",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "games",
+      "tags": [
+        "farm",
+        "idle",
+        "chickens",
+        "eggs",
+        "activities"
+      ],
+      "entry_points": [
+        "farm"
+      ],
+      "related_subsystems": [
+        "economy",
+        "mining",
+        "fishing"
+      ],
+      "capabilities": [
+        "farm.egg.collect",
+        "farm.coop.manage"
       ]
     },
     {
@@ -2234,9 +2262,25 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-route-mining-encounters.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — route the mining-grid-encounters design to the owner (Q-0198)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-22-role-list-colours-and-per-role-bulk-colour.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Role list colours + per-role bulk colour",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-retire-needs-hermes-review.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Merge all open PRs + retire the `needs-hermes-review` label/rule",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2256,6 +2300,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-reconcile-band1320.md",
+      "date": "2026-06-22",
+      "title": "Session — 2026-06-22 · twenty-first Q-0107 reconciliation pass (band-#1320)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
     },
     {
       "file": "2026-06-22-reconcile-band1290.md",
@@ -2322,12 +2374,28 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-migration-collision-guard.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — migration-number collision guard (kill the renumber treadmill)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-22-ledger-and-ci-hygiene.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — ledger drift fix + design-system CI-coverage gap (post-botsite hygiene)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-idle-chicken-farm.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — NEW idle egg/chicken farm game",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-22-help-remove-advanced.md",
@@ -2455,6 +2523,22 @@
       "title": "2026-06-22 — BUG-0024: make the dashboard `generated_at` determinism test hermetic",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-btd6-round-xp-surfaces.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Surface BTD6 round XP (NL reply + round-embed Economy field)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-btd6-round-xp-data.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — BTD6 XP-per-round data (validated formula → round_xp.json)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2616,62 +2700,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-message-picker.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction roles: message picker (no more copy-paste message ID)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-gradient-presets.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction roles: gradient presets gallery",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-reaction-roles-decisions-locked.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction-roles plan: owner decisions locked + analytics added",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-cleanup-dead-bindings.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction roles: clean up dead bindings",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-channel-and-color-roles.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction roles: channel picker + auto-created colour/gradient roles",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-prune-stale-claims.md",
-      "date": "2026-06-21",
-      "title": "Session — prune stale active-work.md claims (drift-on-sight)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-project-moon-wiki-feasibility.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Project Moon wiki feasibility (can we serve it like BTD6 data?)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -2760,7 +2788,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 184,
+          "line": 185,
           "layer": "config",
           "has_default": true
         },
@@ -2782,7 +2810,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 183,
+          "line": 184,
           "layer": "config",
           "has_default": true
         }
@@ -2815,7 +2843,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 167,
+          "line": 168,
           "layer": "config",
           "has_default": true
         },
@@ -2885,7 +2913,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 222,
+          "line": 223,
           "layer": "config",
           "has_default": true
         }
@@ -2933,7 +2961,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 210,
+          "line": 211,
           "layer": "config",
           "has_default": true
         }
@@ -2949,7 +2977,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 213,
+          "line": 214,
           "layer": "config",
           "has_default": true
         }
@@ -2965,7 +2993,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 216,
+          "line": 217,
           "layer": "config",
           "has_default": true
         }
@@ -3125,7 +3153,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 109,
+          "line": 110,
           "layer": "config",
           "has_default": true
         }
@@ -3205,7 +3233,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 110,
+          "line": 111,
           "layer": "config",
           "has_default": true
         }
@@ -3223,7 +3251,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 166,
+          "line": 167,
           "layer": "config",
           "has_default": true
         },
@@ -3264,7 +3292,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 193,
+          "line": 194,
           "layer": "config",
           "has_default": true
         },
@@ -3287,7 +3315,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 197,
+          "line": 198,
           "layer": "config",
           "has_default": true
         },
@@ -3326,7 +3354,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 165,
+          "line": 166,
           "layer": "config",
           "has_default": true
         },
@@ -3350,7 +3378,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 164,
+          "line": 165,
           "layer": "config",
           "has_default": true
         },
@@ -5683,6 +5711,28 @@
           "parent": null,
           "aliases": [],
           "brief": "Open the job selector and earn coins + XP (1 h cooldown).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        }
+      ]
+    },
+    {
+      "cog": "FarmCog",
+      "file": "disbot/cogs/farm_cog.py",
+      "subsystem": "farm",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "farm",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "chickenfarm",
+            "coop"
+          ],
+          "brief": "Open your idle chicken farm — collect eggs, grow your flock and coop.",
           "classification": "",
           "has_panel": true,
           "button_backed": true
@@ -8892,6 +8942,12 @@
             "emoji": "🃏"
           },
           {
+            "key": "farm",
+            "display_name": "Chicken Farm",
+            "category": "games",
+            "emoji": "🐔"
+          },
+          {
             "key": "counting",
             "display_name": "Counting",
             "category": "games",
@@ -9102,7 +9158,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 37,
+    "total_visible": 38,
     "internal_count": 0
   },
   "synonyms": [
