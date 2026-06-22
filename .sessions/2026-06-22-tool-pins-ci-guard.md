@@ -1,7 +1,8 @@
 # 2026-06-22 — make `check_tool_pins` a CI guard (close the #1315 drift class at the root)
 
-> **Status:** `in-progress` — born-red card (Q-0133). Flips to `complete` as the final step.
+> **Status:** `complete` — born-red card (Q-0133) flipped green as the final step.
 > Routine · dispatch ("Continue from where you left off"; promotes PR #1317's logged idea).
+> PR #1320 → auto-merges on green (Q-0123).
 
 ## Arc
 
@@ -66,3 +67,13 @@ This PR:
    workflow + a checker extension that's behavior-neutral today + tests — fully reversible → self-merged
    on green. Owner follow-ups flagged: (a) mark `tool-pins` a *required* check to actually block merges;
    (b) the Dependabot-`ignore`-the-trio policy option (deferred as a policy call, not applied unilaterally).
+
+## 📤 Run report
+
+- **Did:** CI-enforced the tool-pin guard — a new `tool-pins.yml` workflow runs `check_tool_pins` on any pin-file change (closing the local-only hole that let #1315 reach `main`), extended the checker to genuinely validate all THREE pin sources (it only checked 2), and added its first unit test. · **Outcome:** shipped
+- **Shipped:** #1320 — `.github/workflows/tool-pins.yml` + `scripts/check_tool_pins.py` (now reads `.pre-commit-config.yaml`, injectable `sources`) + `tests/unit/scripts/test_check_tool_pins.py` (8 cases).
+- **Run type:** `routine · dispatch`
+- **⚑ Owner decisions needed:** `none`
+- **⚑ Owner manual steps:** (optional, not blocking) mark **`tool-pins`** a *required* check in repo Settings so a pin desync actually BLOCKS auto-merge (today it only shows red); optionally add a Dependabot `ignore` rule for black/isort/ruff/mypy so the desyncing PR is never created.
+- **⚑ Self-initiated:** **yes** — promotes PR #1317's logged idea (CI-enforce the guard) to a build on an empty "continue" fire with gated product lanes; additive CI + behavior-neutral checker extension + tests → self-merged on green.
+- **↪ Next:** product lanes remain the priority once attended/un-gated — botsite React-SPA migration **PR 2** (the live `/` cutover; needs a **manual browser click-through**, best attended) is the top S1 item, its data side now de-risked by #1305/#1308/#1317. Other lanes: Project Moon runtime PR 1 (ingestion — network + IP/licensing-sensitive → weigh ask-first). Tooling backlog from this turn's ideas: collapse the three-places pin to one by having `code-quality.yml` install from `requirements-dev.txt` (a focused/attended slice on the critical workflow).

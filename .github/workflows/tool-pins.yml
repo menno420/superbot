@@ -1,0 +1,56 @@
+name: Tool-pin guard
+
+# Fails when the formatter/linter pins drift across the three places that MUST agree —
+# `.github/workflows/code-quality.yml`, `requirements-dev.txt`, and `.pre-commit-config.yaml`
+# (CLAUDE.md "Match CI exactly" rule #3). `scripts/check_tool_pins.py` is the same check the
+# local `check_quality.py` runs, but that one is LOCAL-ONLY — so a Dependabot bump of a tool in
+# `requirements-dev.txt` alone (it doesn't track the workflow/pre-commit pins) silently desynced
+# the trio and reached `main` (#1315 → fixed in #1317). This workflow closes that hole: such a
+# PR now fails here instead of merging green.
+#
+# Stdlib-only check (no pip install needed). SHA-pinned checkout + setup-python, matching
+# botsite-ci.yml / dashboard-ci.yml. `paths`-filtered to the pin sources so it only runs when one
+# of them changes (cheap). It is NOT yet a required merge check — making it one (so the desync
+# actually BLOCKS auto-merge, not just shows red) is a one-line owner repo-Settings step, the same
+# posture as botsite-ci.yml / design-system-ci.yml.
+#
+# UNVERIFIED (Q-0105, 2026-06-22): confirm it goes green a few times before trusting it; delete
+# this workflow if it proves flaky/unreliable over multiple sessions (the check itself is the
+# load-bearing part and already runs locally — this only adds the CI trigger).
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "requirements-dev.txt"
+      - ".pre-commit-config.yaml"
+      - ".github/workflows/code-quality.yml"
+      - "scripts/check_tool_pins.py"
+      - ".github/workflows/tool-pins.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "requirements-dev.txt"
+      - ".pre-commit-config.yaml"
+      - ".github/workflows/code-quality.yml"
+      - "scripts/check_tool_pins.py"
+      - ".github/workflows/tool-pins.yml"
+
+concurrency:
+  group: tool-pins-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  tool-pins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.10"
+
+      - name: Check tool pins are aligned across the three places
+        run: python scripts/check_tool_pins.py
