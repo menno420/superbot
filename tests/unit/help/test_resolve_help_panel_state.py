@@ -2,7 +2,7 @@
 
 S3: the helper now returns a :class:`HelpCategoryView` — the new
 mother-hub category index — instead of the legacy paginated
-:class:`HelpPanelView`. Callers (``admin_cog.help_btn``,
+:class:`HelpCategoryView`. Callers (``admin_cog.help_btn``,
 ``grid_mine_view.MineGridView.help_btn``) edit the message with the
 returned ``(embed, view)`` pair; they don't care which class the
 view is, only that it represents the top of Help.

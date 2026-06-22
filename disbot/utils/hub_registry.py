@@ -28,12 +28,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# Sentinel hub key for the permanent tier-grouped subsystem browser.
-# Selecting this category in the Help dropdown opens the paginated
-# all-commands view (the pre-S3 Help layout, now demoted to a
-# secondary navigation path).
-ALL_COMMANDS_KEY = "all_commands"
-
 
 @dataclass(frozen=True)
 class HubEntry:
@@ -89,13 +83,12 @@ class HubEntry:
 # Canonical hub list (S3 v1 — existing-hub-only rollout)
 # ---------------------------------------------------------------------------
 #
-# Only hubs whose panels exist today appear here. Economy, Moderation/
-# Safety, Community, and Utility hubs are added by S7–S10 PRs once their
-# panels land. Until then, their child subsystems remain reachable via
-# the All Commands / Advanced fallback.
+# Every visible mother hub appears here, each with a real panel. After the
+# help-menu regrouping (PR #1290) every subsystem is homed under one of these
+# hubs, and the redundant "All Commands / Advanced" fallback was removed
+# (PR #1294) — the hubs are the only category surface.
 #
-# Order in this tuple drives display order in Help. The All Commands
-# fallback always sorts last (Help appends it after the iteration).
+# Order in this tuple drives display order in Help.
 
 HUBS: tuple[HubEntry, ...] = (
     HubEntry(
@@ -290,7 +283,6 @@ def hubs_for_tier(member_tier: str) -> list[HubEntry]:
 
 
 __all__ = [
-    "ALL_COMMANDS_KEY",
     "HUBS",
     "HubEntry",
     "get_hub",

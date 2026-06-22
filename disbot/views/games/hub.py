@@ -23,9 +23,10 @@ only. ``!help`` is the way back to the help menu in that flow,
 mirroring ``!countingmenu`` / ``!minemenu`` / ``!adminmenu``
 conventions.
 
-When the hub is surfaced via ``!help`` → "Games", :func:`HelpPanelView`
-appends the "↩ Back to Help" button itself — so this view never adds
-that button, avoiding duplicates.
+When the hub is surfaced via ``!help`` → "Games", the Help layer
+(:func:`cogs.help_cog._attach_back_to_help_button`) appends the
+"↩ Back to Help" button itself — so this view never adds that button,
+avoiding duplicates.
 """
 
 from __future__ import annotations
