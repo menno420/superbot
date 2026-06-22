@@ -305,6 +305,48 @@ through `moderation_service` (no parallel audit path).
 21. **target_help_or_menu_route**: Help direct-nav (policy summary), Settings
     → Automod group.
 
+### karma
+
+Karma (thanks/upvote reputation, 2026-06-22) — members grant each other peer
+reputation; per-user totals + a leaderboard category on an audited mutation seam
+(`services/karma_service.py`), modelled on economy/XP.
+
+1. **cog_module**: `disbot/cogs/karma_cog.py` (+ `disbot/cogs/karma/` subpackage
+   with `schemas.py`).
+2. **subsystem**: `karma` (homed under the Community hub).
+3. **current_commands**: `!thanks @user [reason]` (aliases `!rep`/`!thank`),
+   `!karma [member]` (group; `!karma give @user`), `/karma [member]`.
+4. **current_command_groups**: `!karma` (with the `give` subcommand).
+5. **current_command_panel_or_menu**: the karma card embed (via the Community hub
+   button / `build_help_menu_view`).
+6. **help_menu_discoverable**: Yes — `SUBSYSTEMS["karma"]` + `build_help_menu_view`.
+7. **dedicated_panel_command**: `none` (card-style embed, no interactive hub yet).
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (the viewer's card).
+9. **existing_SettingSpec_declarations**: `enabled`, `cooldown_seconds`,
+   `daily_cap` (`disbot/cogs/karma/schemas.py`). Defaults + bounds are the single
+   source of truth in `disbot/services/karma_config.py`.
+10. **existing_settings_keys**: `KARMA_ENABLED`, `KARMA_COOLDOWN`,
+    `KARMA_DAILY_CAP` (`disbot/utils/settings_keys/karma.py`). Stored as scalar
+    guild settings — schema-declared, with the two karma tables in migration 092.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; grant/card are
+    user-tier; config edits gated on `karma.settings.configure`.
+14. **hardcoded_or_env_only_behavior**: none — cooldown, daily cap, and the master
+    switch are all operator config (with code-level defaults).
+15. **current_resource_dependencies**: none (no channels/roles required).
+16. **target_settings_fields**: the master switch + cooldown + daily cap.
+17. **target_bindings**: none in v1 (an optional announcement channel is a
+    deferred PR-3 follow-up).
+18. **target_access_controls**: user-tier grants (anti-abuse enforced in the
+    service); administrator floor for config.
+19. **acceptance_or_validation_rules**: cooldown/cap bounded by the `MIN_*`/`MAX_*`
+    constants in `karma_config`; grants are positive-only, no self/bot, and rate-
+    limited by the per-(giver→receiver) cooldown + per-giver daily cap.
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars). Grants route
+    through `karma_service.give` (audited, INV-K), never a settings mutation.
+21. **target_help_or_menu_route**: Community hub button, Settings → Karma group.
+
 ### image_moderation
 
 image moderation v1 (owner decision Q-0108) — the automated **image**-filter

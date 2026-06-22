@@ -67,6 +67,25 @@ class KarmaCog(commands.Cog):
 
         register_schemas()
 
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu / Community-hub navigation hook — the viewer's karma card."""
+        from views.base import HubView
+
+        if interaction.guild is None:
+            return (
+                discord.Embed(description="Karma is only available in a server."),
+                discord.ui.View(),
+            )
+        record = await karma_service.get_record(
+            interaction.guild.id,
+            interaction.user.id,
+        )
+        embed = _karma_card(interaction.guild, interaction.user, record)
+        return embed, HubView(interaction.user)
+
     # ------------------------------------------------------------------ grant
 
     async def _do_thanks(

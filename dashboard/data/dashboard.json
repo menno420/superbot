@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T21:53:51Z",
+    "generated_at": "2026-06-22T22:22:02Z",
     "build": {
-      "commit": "5873795",
-      "subject": "Karma build: claim lane + born-red session card",
-      "committed_at": "2026-06-22T21:53:51Z"
+      "commit": "b9b1e05",
+      "subject": "Implement Karma (thanks/upvote reputation) subsystem",
+      "committed_at": "2026-06-22T22:22:02Z"
     },
     "counts": {
       "functions": 39,
@@ -1088,7 +1088,7 @@
     {
       "file": "idle-game-offline-summary-2026-06-22.md",
       "title": "Idea — \"while you were away\" offline-progress summary for idle games",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-22",
       "summary": "The chicken farm (shipped this session) is the bot's first **idle** game: progress",
       "subsystems": null
@@ -2579,6 +2579,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-farm-freshstart-and-idle-summary.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — farm fresh-start faucet fix + \"while you were away\" idle summary",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-ci-strand-cancel-in-progress.md",
       "date": "2026-06-22",
       "title": "Session — CI strand root cause: code-quality cancel-in-progress (2026-06-22)",
@@ -2753,14 +2761,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-self-heal.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction roles: listener self-heal for dead bindings",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [

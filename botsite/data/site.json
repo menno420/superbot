@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T21:53:51Z",
+    "generated_at": "2026-06-22T22:22:02Z",
     "build": {
-      "commit": "5873795",
-      "subject": "Karma build: claim lane + born-red session card",
-      "committed_at": "2026-06-22T21:53:51Z"
+      "commit": "b9b1e05",
+      "subject": "Implement Karma (thanks/upvote reputation) subsystem",
+      "committed_at": "2026-06-22T22:22:02Z"
     }
   },
   "counts": {
