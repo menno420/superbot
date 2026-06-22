@@ -38,6 +38,19 @@ def test_get_pack_resolves_and_handles_unknown():
     assert role_packs.get_pack(None) is None
 
 
-@pytest.mark.parametrize("key", ["gaming", "staff", "pronouns"])
+@pytest.mark.parametrize("key", ["essentials", "gaming", "staff", "pronouns"])
 def test_expected_core_packs_present(key: str):
     assert role_packs.get_pack(key) is not None
+
+
+def test_role_presets_are_derived_from_the_essentials_pack():
+    """The single-create dropdown (`ROLE_PRESETS`) and the multi-select Essentials
+    pack share one data source, so they never drift apart.
+    """
+    from views.roles._helpers import ROLE_PRESETS
+
+    essentials = role_packs.get_pack("essentials")
+    assert essentials is not None
+    assert [p.name for p in ROLE_PRESETS] == [r.name for r in essentials.roles]
+    # Enlarged well past the original six-name starter set.
+    assert len(ROLE_PRESETS) >= 10

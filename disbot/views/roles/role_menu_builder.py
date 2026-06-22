@@ -633,8 +633,8 @@ class RoleMenuBuilder(BaseView):
             on_created=self._add_pack_roles,
         )
         await interaction.response.send_message(
-            "Bulk-create roles from a pack and add them to this menu — pick a "
-            "category, then the roles:",
+            "Bulk-create roles and add them to this menu — pick a category and "
+            "multiselect its roles, or **✏️ Custom (bulk)** to type your own:",
             view=view,
             ephemeral=True,
         )

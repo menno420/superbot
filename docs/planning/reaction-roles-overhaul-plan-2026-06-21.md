@@ -76,6 +76,16 @@
 > and a **📦 Packs** button beside 🎨 Colours in `RoleMenuBuilder` (bulk-create + add to the menu draft).
 > Pure data + UI on the existing audited `RoleLifecycleService` create path; no schema change.
 >
+> **▶ Refinement (2026-06-22, owner follow-up — PR #1302):** **bulk-create enhancements** (built on
+> #1300's `RolePackView` + `ensure_role` — the most-efficient option, no new subsystem). (1) The
+> standard presets were **enlarged and made multi-select** by promoting them to the **⭐ Essentials**
+> pack in `utils/role_packs.py`; `_helpers.ROLE_PRESETS` is now *derived* from that pack (one data
+> source — the single-create dropdown and the multi-select pack never drift). (2) **✏️ Custom (bulk)**
+> on `RolePackView` — type many names (one per line / comma-separated, deduped + capped) → bulk-create.
+> (3) An **optional preset colour select** (`_COLOR_OPTIONS` enlarged 8 → 20) applied to the whole
+> custom batch, or "create with no colour". Both bulk paths share one `_create_roles` tail and the
+> `on_created` hook, so they work on both surfaces (creation panel + menu builder).
+>
 > **▶ Refinement (2026-06-21 — PR #1250):** **listener self-heal** makes #1248's cleanup automatic —
 > `reaction_role_service._self_heal_dead_binding` drops a binding whose role was deleted the moment a
 > member reacts (or un-reacts) on it, audited as a **`system`** action (an `actor_type` param was

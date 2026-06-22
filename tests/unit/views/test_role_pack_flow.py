@@ -106,3 +106,60 @@ async def test_commit_with_no_names_is_a_noop() -> None:
         await _role_pack_flow._commit_pack_roles(interaction, view, [])
     ensure.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# Custom bulk creation
+# ---------------------------------------------------------------------------
+
+
+def test_parse_role_names_splits_dedups_and_caps() -> None:
+    raw = "Artist\nWriter, Gamer\n artist \n\nWriter"
+    # newlines + commas split; case-insensitive dedup; first-seen order kept.
+    assert _role_pack_flow._parse_role_names(raw) == ["Artist", "Writer", "Gamer"]
+    # batch cap drops extras.
+    many = ",".join(f"R{i}" for i in range(40))
+    assert len(_role_pack_flow._parse_role_names(many, limit=25)) == 25
+    assert _role_pack_flow._parse_role_names("   \n , ") == []
+
+
+@pytest.mark.asyncio
+async def test_custom_bulk_commit_applies_colour_and_runs_hook() -> None:
+    import discord
+
+    on_created = AsyncMock()
+    flow = _view(on_created=on_created)
+    bulk = _role_pack_flow._BulkColourView(flow, ["Artist", "Writer"])
+    interaction = _interaction()
+
+    ids = iter([201, 202])
+    ensure = AsyncMock(side_effect=lambda *a, **k: (next(ids), True, ""))
+    with patch("services.reaction_role_service.ensure_role", new=ensure):
+        await _role_pack_flow._commit_custom_roles(
+            interaction,
+            bulk,
+            discord.Color(0x3498DB),
+        )
+
+    assert ensure.await_count == 2
+    names = [c.kwargs["name"] for c in ensure.await_args_list]
+    assert names == ["Artist", "Writer"]
+    # The chosen preset colour is applied to every role in the batch.
+    assert all(
+        c.kwargs["color"] == discord.Color(0x3498DB) for c in ensure.await_args_list
+    )
+    on_created.assert_awaited_once()
+    assert on_created.await_args.args[1] == [201, 202]
+
+
+@pytest.mark.asyncio
+async def test_custom_bulk_commit_no_colour_uses_default() -> None:
+    import discord
+
+    flow = _view()
+    bulk = _role_pack_flow._BulkColourView(flow, ["Artist"])
+    interaction = _interaction()
+    ensure = AsyncMock(return_value=(301, True, ""))
+    with patch("services.reaction_role_service.ensure_role", new=ensure):
+        await _role_pack_flow._commit_custom_roles(interaction, bulk, None)
+    assert ensure.await_args.kwargs["color"] == discord.Color.default()
