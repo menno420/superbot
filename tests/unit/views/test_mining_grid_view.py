@@ -79,11 +79,13 @@ async def test_build_grid_embed_shows_position_depth_seed_and_map():
         get_position=AsyncMock(return_value=(0, 0)),
         get_world_seed=AsyncMock(return_value=4242),
         get_discovered_window=AsyncMock(return_value=set()),
+        get_energy=AsyncMock(return_value=(60, 0)),
     ):
         embed = await build_grid_embed(1, 2)
     field_names = [f.name for f in embed.fields]
     assert any("Depth" in n for n in field_names)
     assert any("Position" in n for n in field_names)
+    assert any("Energy" in n for n in field_names)
     seed_field = next(f for f in embed.fields if "seed" in f.name.lower())
     assert "4242" in seed_field.value
     map_field = next(f for f in embed.fields if "Map" in f.name)

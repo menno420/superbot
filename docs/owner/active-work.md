@@ -41,6 +41,11 @@ and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work l
 
 ## Recently cleared
 
+- `claude/mining-energy-rebalance` · **mining rebalance + energy system** (owner-directed, in-chat —
+  "apply them … no cooldown but … energy … refilled by … boosters") — applied the sim-pinned magnitude
+  rebalance + a mining energy mechanic (migration 086, `utils/mining/energy.py`, dig spend, grid bar) +
+  buyable ration/energy-drink refill · 2026-06-22 · **PR #1286 (auto-merge on green)** · *fish-cooking
+  refill = next PR*
 - `claude/sweet-sagan-jeyjsy` · **mining economy/balance simulation** (owner-directed, in-chat —
   "run a simulation to find a balanced way to configure the mining game") — stdlib Monte-Carlo design
   sim quantifying the live faucet (7–55× a `!daily`/hr) + a 144-config sweep for a balanced config ·

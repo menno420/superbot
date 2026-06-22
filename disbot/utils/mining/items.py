@@ -86,6 +86,24 @@ _CATALOG: dict[str, ItemDef] = {
         value=20,
         tags=frozenset({"luck"}),
     ),
+    # Food / boosters — eaten via mining_workflow.use_item to refill mining
+    # energy (utils/mining/energy.py RESTORE_VALUES). Buyable from the market
+    # (a coin sink that lets active players keep digging past the passive regen);
+    # cooked fish joins this group in a follow-up PR.
+    "ration": ItemDef(
+        "ration",
+        ItemKind.CONSUMABLE,
+        tier=1,
+        value=8,
+        tags=frozenset({"food"}),
+    ),
+    "energy drink": ItemDef(
+        "energy drink",
+        ItemKind.CONSUMABLE,
+        tier=2,
+        value=15,
+        tags=frozenset({"booster"}),
+    ),
     # Combat gear (deathmatch) — equippable tools-of-war; never sellable (TOOL,
     # not RESOURCE).  Values are for inventory net-worth display, not a sale
     # price.  Starters first; the six 5-tier set families are appended below.

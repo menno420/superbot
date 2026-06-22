@@ -45,6 +45,9 @@ _FORBIDDEN_ANY_RECEIVER = {
     "set_position",
     "set_world_seed",
     "mark_discovered",
+    # energy fuel (2026-06-22) — dig spend / food restore written only through
+    # services/mining_workflow (one transaction per op).
+    "set_energy",
 }
 
 # Names that collide with other subsystems (``setup_session.set_depth`` is the

@@ -85,19 +85,23 @@ class CellFeature(Enum):
 
 
 # Selection weights for a cell's feature (most cells are unremarkable).
+# Rebalanced 2026-06-22 (60/20/15/5 → 70/10/18/2) so a "lucky strike" fires on
+# ~12% of cells, not 25% — rewards stay special, not constant. Sim-pinned:
+# docs/planning/mining-economy-balance-2026-06-22.md.
 _FEATURE_WEIGHTS: tuple[tuple[CellFeature, float], ...] = (
-    (CellFeature.NORMAL, 60.0),
-    (CellFeature.RICH, 20.0),
-    (CellFeature.BARREN, 15.0),
-    (CellFeature.TREASURE, 5.0),
+    (CellFeature.NORMAL, 70.0),
+    (CellFeature.RICH, 10.0),
+    (CellFeature.BARREN, 18.0),
+    (CellFeature.TREASURE, 2.0),
 )
 
-# Yield multiplier each feature applies to a mined amount.
+# Yield multiplier each feature applies to a mined amount. Treasure trimmed
+# ×3 → ×2 in the same 2026-06-22 rebalance (cap the lucky-strike spike).
 _RICHNESS: dict[CellFeature, float] = {
     CellFeature.NORMAL: 1.0,
     CellFeature.RICH: 2.0,
     CellFeature.BARREN: 0.5,
-    CellFeature.TREASURE: 3.0,
+    CellFeature.TREASURE: 2.0,
 }
 
 # Flavour for a lucky strike (rich / treasure cells), formatted with the ore.
