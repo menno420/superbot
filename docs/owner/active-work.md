@@ -25,22 +25,16 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/modest-gates-0ble76` · **CI strand root cause — code-quality `cancel-in-progress`**
-  (owner-directed) — set `cancel-in-progress: false` (it was dropping the head-commit run under the
-  born-red event burst; confirmed via codex-vs-code-quality asymmetry) + update audit doc + pytest
-  analysis · `.github/workflows/code-quality.yml` / `docs/audits/` · 2026-06-22 ·
-  **PR (this session, auto-merge on green)**
+- `claude/modest-albattani-mixsvt` · **repo navigation cleanup** (owner-directed) — prune stale
+  Active claims + reconcile conflicting/contradictory instructions across the orientation docs
+  (CLAUDE.md / rules / collaboration-model / journal / owner docs) + clear resolved merge/CI
+  scaffolding · `docs/owner/active-work.md` / `.session-journal.md` / `docs/*` (docs-only, no
+  `disbot/`) · 2026-06-22 · **PR (this session, auto-merge on green)**
 
-- `claude/funny-franklin-mjvqrx` · **BUG-0023 slash under-coverage root fix** (dispatch routine,
-  empty-fire, bugs-first) — teach `scan_commands.py` to detect attribute-assigned `app_commands.Group`
-  groups so their 40 subcommands + 6 groups are scanned (closes the static-25-vs-live-71 gap at the
-  root) + regen dashboard/site data + mark the bug FIXED · `scripts/scan_commands.py` /
-  `tests/unit/scripts/test_scan_commands.py` / regenerated data artifacts / `docs/health/bug-book.md`
-  · 2026-06-22 · **PR (this session, self-merge on green)**
-
-*(2026-06-22 prune, Q-0166: the prior Starboard-PR-2 claim was stale — its PR #1270 merged and
-`list_pull_requests` (state=open) returned empty — so it was pruned; merged work is in
-`current-state.md` + Recently cleared below.)*
+*(2026-06-22 prune, Q-0166 drift-on-sight: both prior Active claims were merged work —
+`claude/modest-gates-0ble76` (CI-strand fix, PR #1267) and `claude/funny-franklin-mjvqrx`
+(BUG-0023, PR #1272) both merged to `main`; pruned here. The earlier Starboard-PR-2 claim
+(#1270) was pruned the same way. Merged work lives in `current-state.md` + Recently cleared below.)*
 
 ## Recently cleared
 
