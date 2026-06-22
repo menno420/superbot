@@ -1,6 +1,6 @@
 # 2026-06-22 — State-file restructure: per-claim active-work + per-sector current-state
 
-> **Status:** `in-progress` — owner-directed. Two evidence-backed restructures of the
+> **Status:** `complete` — owner-directed. Two evidence-backed restructures of the
 > coordination files: (1) convert `active-work.md` (the parallel-session claim ledger) from one
 > shared append-list into **one file per claim** under `docs/owner/claims/`, killing the merge
 > conflicts a git simulation measured at ~98%; (2) split `current-state.md`'s mixed all-sector

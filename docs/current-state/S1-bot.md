@@ -27,5 +27,7 @@
 **In flight (don't duplicate):** Starboard PR 2 (#1270) config polish.
 
 **Owner-paced / gated:** reaction-roles PR 6 + web builder · creature PvP balance + art (Q-0187) ·
-website rollout · feedback-board PR 1 (owner auth) · AI-ticket build (Q-0183) · Explore-hub PR 2 +
-gated layers (Q-0182) · dashboard writes / control-API (security review).
+website rollout ·
+[feedback-board PR 1](../planning/feedback-board-generalization-plan-2026-06-19.md) (owner auth) ·
+AI-ticket build (Q-0183) · Explore-hub PR 2 + gated layers (Q-0182) · dashboard writes / control-API
+(security review).
