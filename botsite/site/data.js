@@ -509,6 +509,31 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "bait",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Load fishing bait — a consumable that pulls catches toward bigger fish.",
+    "description": "Load fishing bait — a consumable that pulls catches toward bigger fish.",
+    "usage": "!bait",
+    "aliases": [
+      "baitshop",
+      "buybait"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)"
+      },
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "balance",
     "area": "economy",
     "status": "in-progress",
@@ -2109,6 +2134,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -2127,6 +2156,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2149,6 +2182,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -2167,6 +2204,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -3840,6 +3881,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -6085,7 +6130,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "7c7bf2e",
+    "build": "ac1a1c7d",
     "title": "New public bot website",
     "changes": [
       {
@@ -6097,7 +6142,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "7c7bf2e",
+    "build": "ac1a1c7d",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6109,7 +6154,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "7c7bf2e",
+    "build": "ac1a1c7d",
     "title": "Command-alias suggestions",
     "changes": [
       {

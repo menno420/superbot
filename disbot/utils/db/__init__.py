@@ -101,6 +101,11 @@ from utils.db.games.fishing import (
     record_catch,
     top_fishers,
 )
+from utils.db.games.fishing_bait import (
+    clear_active_bait,
+    get_active_bait,
+    set_active_bait,
+)
 from utils.db.games.fishing_energy import (
     get_fishing_energy,
     set_fishing_energy,
@@ -393,6 +398,9 @@ __all__ = [
     "set_fishing_energy",
     "get_chicken_farm",
     "set_chicken_farm",
+    "get_active_bait",
+    "set_active_bait",
+    "clear_active_bait",
     "get_creature_collection",
     "record_creature_catch",
     "top_collectors",

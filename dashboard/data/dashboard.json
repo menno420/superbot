@@ -1,21 +1,21 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T20:45:33Z",
+    "generated_at": "2026-06-22T23:26:34Z",
     "build": {
-      "commit": "7c7bf2e",
-      "subject": "chore(farm): born-red session card + claim for idle chicken farm",
-      "committed_at": "2026-06-22T20:45:33Z"
+      "commit": "ac1a1c7d",
+      "subject": "Merge branch 'main' into claude/funny-franklin-blbz7w",
+      "committed_at": "2026-06-22T23:26:34Z"
     },
     "counts": {
       "functions": 38,
-      "ideas": 123,
+      "ideas": 127,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
       "cogs": 48,
-      "commands": 373,
+      "commands": 374,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -1025,6 +1025,14 @@
   ],
   "ideas": [
     {
+      "file": "audited-score-subsystem-scaffold-2026-06-22.md",
+      "title": "Idea — \"audited per-user score\" subsystem scaffold + parity guard",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "Every per-user *score* subsystem in this repo is built from the identical six pieces:",
+      "subsystems": null
+    },
+    {
       "file": "band-queue-hit-rate-metric-2026-06-22.md",
       "title": "Idea — measure whether the planned next-band queue actually predicts the band",
       "status": "ideas",
@@ -1039,6 +1047,30 @@
       "date": "2026-06-22",
       "summary": "On a `claude/*` PR branch, `code-quality.yml` runs **only** via `pull_request: synchronize` — its",
       "subsystems": []
+    },
+    {
+      "file": "fishing-bait-crafting-2026-06-22.md",
+      "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "Let the existing cook/campfire loop (#1289) also turn **small / common caught",
+      "subsystems": null
+    },
+    {
+      "file": "idle-game-offline-summary-2026-06-22.md",
+      "title": "Idea — \"while you were away\" offline-progress summary for idle games",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "The chicken farm (shipped this session) is the bot's first **idle** game: progress",
+      "subsystems": null
+    },
+    {
+      "file": "karma-reputation-system-2026-06-22.md",
+      "title": "Idea — Karma (thanks/upvote reputation) system",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "A peer **reputation** system: members grant each other *karma* for being helpful — the classic",
+      "subsystems": null
     },
     {
       "file": "migration-number-collision-guard-2026-06-22.md",
@@ -2270,6 +2302,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-round-economy-reply.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Unified round economy NL reply (RBE + cash + XP)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-role-list-colours-and-per-role-bulk-colour.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Role list colours + per-role bulk colour",
@@ -2390,10 +2430,26 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-karma-reputation-plan.md",
+      "date": "2026-06-22",
+      "title": "Session — 2026-06-22 · Karma (thanks/upvote reputation) — plan-first",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-idle-chicken-farm.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — NEW idle egg/chicken farm game",
-      "status": "in-progress",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-hermes-redeploy.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Hermes one-command + auto redeploy (no more Terminus)",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
@@ -2476,6 +2532,14 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-fishing-bait-layer.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing Bait economy layer",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-22-ci-strand-cancel-in-progress.md",
@@ -2665,38 +2729,6 @@
       "file": "2026-06-21-reaction-roles-presentation-editing.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Reaction-roles plan: presentation & editing requirements",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-pr3-5.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction-roles overhaul PR 3 + 4 + 5 (modes · temp roles · analytics)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-pr2-menu-builder.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction-roles PR 2: in-Discord role-menu builder",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-pr1-foundation.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction-roles overhaul PR 1: audited seam + menu data layer",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-multi-role-and-menu-reuse.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction roles: multi-emote bindings + menu reuse",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -5745,6 +5777,20 @@
       "subsystem": "fishing",
       "is_cog": true,
       "commands": [
+        {
+          "name": "bait",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "baitshop",
+            "buybait"
+          ],
+          "brief": "Load fishing bait — a consumable that pulls catches toward bigger fish.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
         {
           "name": "fish",
           "type": "prefix",

@@ -208,8 +208,12 @@ The owner answered the design-feel questions — these are now **decided** and b
    today's deliberately-cheap unpaced rate (#1289). Ties into the existing energy/cook loop — design
    the cooldown so cooking-for-energy and fishing pace each other rather than two separate meters.
    *(Re-tune the #1289 fish sell values upward once the cooldown lands — flag for the build PR.)*
-4. **Bait → LATER LAYER.** Ship the core cast/reel/boat loop first; add bait as a follow-up economy
-   knob once the base feels good. (Keeps v1 scope tight.)
+4. **Bait → LATER LAYER. ✅ SHIPPED 2026-06-22 (PR #1329).** Shipped the bait layer as the named
+   second economy knob: a coin-bought consumable (`utils/fishing/bait.py` catalog · migration 090
+   `fishing_bait` · `fishing_workflow.buy_bait`) that loads N charges and, while held, spends one per
+   cast and multiplies the rod's `rarity_pull` to bias the catch toward bigger fish — a 🪱 Bait shop
+   panel + `!bait` command + a menu button. Bait affects **rarity only** for now; the "speed" half
+   (faster bites) is a clean future knob on the same seam.
 5. **Phase order → shore minigame first** (Phase 1), boat/deepwater second (consistent with the
    expansion plan's phase split; confirm at build time).
 

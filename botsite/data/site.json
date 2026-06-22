@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T20:45:33Z",
+    "generated_at": "2026-06-22T23:26:34Z",
     "build": {
-      "commit": "7c7bf2e",
-      "subject": "chore(farm): born-red session card + claim for idle chicken farm",
-      "committed_at": "2026-06-22T20:45:33Z"
+      "commit": "ac1a1c7d",
+      "subject": "Merge branch 'main' into claude/funny-franklin-blbz7w",
+      "committed_at": "2026-06-22T23:26:34Z"
     }
   },
   "counts": {
-    "commands": 373,
+    "commands": 374,
     "features": 38,
     "games": 10
   },
@@ -3526,6 +3526,32 @@
       "notes": null
     },
     {
+      "name": "bait",
+      "aliases": [
+        "baitshop",
+        "buybait"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Load fishing bait — a consumable that pulls catches toward bigger fish.",
+      "description": "Load fishing bait — a consumable that pulls catches toward bigger fish.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
+          "status": "ideas"
+        },
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "bjstart",
       "aliases": [],
       "category": "games",
@@ -4592,6 +4618,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
+          "status": "ideas"
+        },
+        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -4612,6 +4642,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
+          "status": "ideas"
+        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -4634,6 +4668,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
+          "status": "ideas"
+        },
+        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -4654,6 +4692,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
+          "status": "ideas"
+        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -5470,6 +5512,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
+          "status": "ideas"
+        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"

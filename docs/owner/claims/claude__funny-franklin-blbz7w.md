@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-blbz7w` · scope: fishing **Bait** economy layer (second pre-cast coin sink/knob) · area: `disbot/{utils,services,views,cogs}/fishing*`, `utils/db/games/fishing_bait.py`, migration 090, `disbot/data/fishing/bait.json` · 2026-06-22
