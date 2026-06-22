@@ -86,6 +86,15 @@
 > custom batch, or "create with no colour". Both bulk paths share one `_create_roles` tail and the
 > `on_created` hook, so they work on both surfaces (creation panel + menu builder).
 >
+> **▶ Refinement (2026-06-22, owner-relayed — PR #1306):** two UX asks from screenshots. **(1) The
+> 🗂️ Role Management list now shows each role in its own colour** — `ManagementPanel.build_embed`
+> renders roles as **mentions** (`role.mention`, which Discord auto-colours and never pings in an
+> embed) instead of plain bold `role.name`, matching the reaction-role panel. **(2) Optional per-role
+> colour for bulk custom roles** — a **🎨 Per-role colours** path on `_BulkColourView` opens
+> `_PerRoleColourView`, which walks each typed name with its own colour preset picker (the exact
+> emote→role walk method from `_BindEmotesView`), then bulk-creates via the shared `_create_roles`.
+> Sits alongside the existing "one colour for all" / "create with no colour". Pure UI; no schema change.
+>
 > **▶ Refinement (2026-06-21 — PR #1250):** **listener self-heal** makes #1248's cleanup automatic —
 > `reaction_role_service._self_heal_dead_binding` drops a binding whose role was deleted the moment a
 > member reacts (or un-reacts) on it, audited as a **`system`** action (an `actor_type` param was
