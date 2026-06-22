@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`sim-assumption-telemetry-loop-2026-06-22.md`](./sim-assumption-telemetry-loop-2026-06-22.md) —
+  **captured by the fishing-minigame design session (2026-06-22, PR #1296):** when a feature is designed
+  off a Monte-Carlo sim (e.g. `tools/sim/fishing_minigame_sim.py`, whose recommendation rests entirely on
+  assumed Discord latency constants), ship a one-line telemetry counter logging the *exact* quantity the
+  sim assumed (the bite→click round trip), so a later session can replay live data through the sim and
+  validate/correct its load-bearing constants. Makes a design sim **self-verifying** — the ground-truth
+  path the Q-0105 "unverified" header asks for. Agent-workflow / meta. Disposable (Q-0105).
 - [`reconcile-open-pr-staleness-classifier-2026-06-22.md`](./reconcile-open-pr-staleness-classifier-2026-06-22.md) —
   **captured by the band-#1290 reconciliation pass (2026-06-22):** the Q-0125 open-PR disposition step is the
   one part of the recon pass with **no tooling assist** (manual `list_pull_requests` + eyeball each PR's
