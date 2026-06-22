@@ -34,6 +34,7 @@ block in ``base.html``.
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -137,6 +138,42 @@ def spa_data() -> Response:
     return Response(
         content=js,
         media_type="application/javascript",
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+@app.get("/site-data.json")
+def site_data_json() -> Response:
+    """The React-SPA data layer — the same public data as ``/data.js``, as pure JSON.
+
+    The migrated React site (``design-system/src/app``) ``fetch()``es this instead of
+    parsing the legacy ``window.SBDATA`` script. It returns the
+    :func:`site_data.build_prototype_data` shape (``areas`` / ``commands`` / ``games``
+    / ``changelog`` / ``status``) plus the ``build`` provenance, public ``counts``, and
+    the real ``addUrl`` install link — so the React app needs no second data path and
+    its "Add to Discord" CTA resolves. Same public subset, same redaction posture as
+    ``/data.js``; ``botsite`` never imports ``disbot``.
+    """
+    site = data_loader.load_site_data()
+    proto = site_data.build_prototype_data(site)
+    meta = (site.get("meta") or {}).get("build") or {}
+    payload = {
+        "addUrl": chrome.ADD_TO_DISCORD_URL,
+        "build": {
+            "commit": meta.get("commit") or "",
+            "committedAt": meta.get("committed_at") or "",
+            "subject": meta.get("subject") or "",
+        },
+        "counts": site.get("counts") or {},
+        "areas": proto["areas"],
+        "commands": proto["commands"],
+        "games": proto["games"],
+        "changelog": proto["changelog"],
+        "status": proto["status"],
+    }
+    return Response(
+        content=json.dumps(payload, ensure_ascii=False),
+        media_type="application/json",
         headers={"Cache-Control": "no-cache"},
     )
 
