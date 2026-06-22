@@ -193,7 +193,10 @@ on **Q-0182**.
   (`utils/fishing/rods.py`; bronze→diamond, coins, audited `fishing_workflow.buy_rod`); each tier
   turns the 4 knobs — `window_bonus` (reaction window), `bite_speed` (faster bite), `rarity_pull`
   (bigger catches within-band), `escape_resist` (fewer fight escapes). Level = *what* you catch;
-  rod = *how well*. **Deferred to next PRs:** energy pacing + sell-value rebalance, boat/deepwater.
+  rod = *how well*. **Interactive menu shipped:** `!fishing` (and the Help-hub fishing panel) is a
+  real `FishingMenuView` (🎣 Cast launches the minigame in place · 🎒 Rod opens the shop · 📖 Fishdex)
+  — `build_help_menu_view` returns it instead of the old static empty view. **Deferred to next PRs:**
+  energy pacing + sell-value rebalance, boat/deepwater.
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
   Phase 1 (fishing v1 + gear-switching) buildable; the loadout/minigame tail is owner-design-gated (Q-0175).
   **Fish *use* is now decided + shipped (#1289, owner 2026-06-22):** a caught fish enters the mining

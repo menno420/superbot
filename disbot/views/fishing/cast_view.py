@@ -69,6 +69,34 @@ def _tension_bar(done: int, total: int) -> str:
     return "▰" * done + "▱" * (total - done)
 
 
+async def prepare_cast(
+    user_id: int,
+    guild_id: int,
+) -> tuple[discord.Embed, FishingCastView] | str:
+    """Set up a cast: active-guard → equipped rod → roll → the view + opening embed.
+
+    The single source of truth shared by the ``!fish`` command and the fishing
+    menu's Cast button. Returns ``(embed, view)`` ready to send (the caller sets
+    ``view.message`` then calls ``view.start()``), or a player-facing string when
+    a cast can't begin (already casting / catalog unavailable).
+    """
+    if (user_id, guild_id) in active_casts:
+        return "🎣 You've already got a line in the water — reel that one in first!"
+    rod = await fishing_workflow.get_rod(user_id, guild_id)
+    cast = await fishing_workflow.roll_cast(user_id, guild_id, rod)
+    if cast.catch is None:
+        return "🎣 The fishing spot is unavailable right now — try later."
+    view = FishingCastView(user_id, guild_id, cast, rod=rod)
+    embed = discord.Embed(
+        description=(
+            "You cast a line… 🎣\n"
+            "*Watch the water — hit **Reel** the moment it bites, but not before!*"
+        ),
+        color=GAME_COLOR,
+    )
+    return embed, view
+
+
 class FishingCastView(discord.ui.View):
     def __init__(
         self,
