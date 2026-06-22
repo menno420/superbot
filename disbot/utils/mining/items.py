@@ -216,14 +216,15 @@ _CATALOG.update(
 
 # Caught fish (2026-06-22, owner decision) — every fishing species is a sellable
 # RESOURCE in the shared inventory, so the existing !sell / market path values
-# them with no special-casing.  Value scales modestly with size_rank and is kept
-# deliberately LOW: fishing is currently unpaced (no energy/cooldown), so fish
-# are a minor coin trickle, not a primary faucet (the rebalance the energy system
-# fixed for mining must not be re-opened via fishing).  Cooking turns a raw fish
-# into "cooked fish" (energy) — see services/mining_workflow.cook.
+# them with no special-casing.  Fishing is now PACED by its own energy bar
+# (utils/fishing/energy.py, owner decision 2026-06-22), so fish can be a real
+# faucet: value ≈ size_rank (1…21), making a trophy a satisfying sell.  The pacing
+# — not a low price — is what keeps the faucet in check, so don't re-flatten this
+# without removing the energy gate.  Cooking turns a raw fish into "cooked fish"
+# (energy) — see services/mining_workflow.cook.
 def _fish_value(size_rank: int) -> int:
-    """Modest, size-scaled sell value for a raw fish (1…7 across size ranks 1…21)."""
-    return max(1, round(size_rank / 3))
+    """Size-scaled sell value for a raw fish (1…21 across size ranks 1…21)."""
+    return max(1, size_rank)
 
 
 _CATALOG.update(
