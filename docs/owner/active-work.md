@@ -25,11 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/modest-albattani-mixsvt` · **repo navigation cleanup** (owner-directed) — prune stale
-  Active claims + reconcile conflicting/contradictory instructions across the orientation docs
-  (CLAUDE.md / rules / collaboration-model / journal / owner docs) + clear resolved merge/CI
-  scaffolding · `docs/owner/active-work.md` / `.session-journal.md` / `docs/*` (docs-only, no
-  `disbot/`) · 2026-06-22 · **PR (this session, auto-merge on green)**
+- `claude/fix-ci-synchronize-journal-claim` · **remove the disproven "synchronize doesn't re-fire
+  CI" claim** (owner-directed) — empirically verified a born-red PR DOES re-fire Code Quality on a
+  second push (PR #1277 runs 3092/3093), then deleted the false gotcha + its strand workaround from
+  the journal Quick reference + `.sessions/` logs (the real root cause — `cancel-in-progress` — was
+  fixed in #1267/#1275) · `.session-journal.md` / `.sessions/*` (docs-only, no `disbot/`) ·
+  2026-06-22 · **PR (this session, auto-merge on green)**
 
 *(2026-06-22 prune, Q-0166 drift-on-sight: both prior Active claims were merged work —
 `claude/modest-gates-0ble76` (CI-strand fix, PR #1267) and `claude/funny-franklin-mjvqrx`
