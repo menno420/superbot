@@ -89,13 +89,73 @@ def test_reply_count_matches_the_grouping():
 
 
 def test_single_mk_lookup_without_a_tab_defers():
-    # No tab keyword → an effect lookup, not a roster → defer to the model.
+    # No tab keyword + a bare which/what → an effect lookup, not a roster →
+    # defer to the model. (A strong all/every/list cue is what promotes a no-tab
+    # ask to the whole-catalog roster — see test_reply_lists_all_tabs_*.)
     assert (
         btd6_context_service.deterministic_mk_category_roster_reply(
             "what does more cash monkey knowledge do?",
         )
         is None
     )
+
+
+# --- the whole-catalog roster ("list all monkey knowledge", no tab) ------------
+# Regression: "list all monkey knowledge" had no builder, fell through to the
+# model, and its 70+ item list tripped the faithfulness guard into the
+# version-stamped no-data refusal — while "list all *primary* monkey knowledge"
+# (a named tab) worked. The no-tab + strong-enumeration shape now lists every tab.
+
+
+def test_reply_lists_all_tabs_when_no_tab_named():
+    reply = btd6_context_service.deterministic_mk_category_roster_reply(
+        "list all monkey knowledge",
+    )
+    assert reply is not None
+    grouped = btd6_data_service.monkey_knowledge_by_category()
+    total = sum(len(rows) for rows in grouped.values())
+    assert f"All Monkey Knowledge ({total})" in reply
+    # Every non-empty tab is present as a section header.
+    for category, rows in grouped.items():
+        if rows:
+            assert category in reply
+    # A point from a non-Primary tab is included (proves it is not just one tab).
+    assert "Bank Deposits" in reply
+
+
+def test_all_tabs_reply_covers_every_point():
+    reply = btd6_context_service.deterministic_mk_category_roster_reply(
+        "list all monkey knowledge",
+    )
+    assert reply is not None
+    for mk in btd6_data_service.get_dataset().monkey_knowledge:
+        assert mk.canonical in reply
+
+
+def test_how_many_monkey_knowledge_lists_all_tabs():
+    reply = btd6_context_service.deterministic_mk_category_roster_reply(
+        "how many monkey knowledge are there?",
+    )
+    assert reply is not None
+    assert "All Monkey Knowledge" in reply
+
+
+def test_dispatcher_routes_whole_catalog_roster():
+    reply = btd6_context_service.deterministic_btd6_list_reply(
+        "list all monkey knowledge",
+    )
+    assert reply is not None
+    assert "All Monkey Knowledge" in reply
+
+
+def test_whole_catalog_question_only_one_builder_fires():
+    phrase = "list all monkey knowledge"
+    firing = [
+        builder.__name__
+        for builder in btd6_context_service._BTD6_LIST_BUILDERS
+        if builder(phrase) is not None
+    ]
+    assert firing == ["deterministic_mk_category_roster_reply"]
 
 
 def test_no_mk_cue_defers():
