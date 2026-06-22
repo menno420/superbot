@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T17:12:44Z",
+    "generated_at": "2026-06-22T17:24:16Z",
     "build": {
-      "commit": "f818fe1",
-      "subject": "Fishing menu buttons: born-red card + lane claim",
-      "committed_at": "2026-06-22T17:12:44Z"
+      "commit": "76f3e7d",
+      "subject": "Fishing menu: real interactive panel (Cast · Rod · Fishdex)",
+      "committed_at": "2026-06-22T17:24:16Z"
     },
     "counts": {
       "functions": 37,
@@ -2325,7 +2325,7 @@
       "file": "2026-06-22-fishing-menu-buttons.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Fishing menu: real buttons (the interactable panel)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
@@ -2349,6 +2349,14 @@
       "file": "2026-06-22-bulk-role-creation-packs.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Bulk role creation via preset packs",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-bulk-role-creation-enhancements.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Bulk role creation enhancements",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2640,14 +2648,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-early-pr-mandate.md",
-      "date": "2026-06-21",
-      "title": "Session — open the session PR FAST (Q-0189, owner-directed in-session)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
