@@ -59,7 +59,7 @@ _MOVE_PHRASE: dict[str, str] = {
     SOUTH: "south",
     EAST: "east",
     WEST: "west",
-    UP: "up toward the surface",
+    UP: "upward",
     DOWN: "deeper",
 }
 

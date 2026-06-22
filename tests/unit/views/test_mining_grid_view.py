@@ -1,11 +1,12 @@
-"""Grid Mine navigator view (hub-redesign PR 3).
+"""Grid Mine navigator view (hub-redesign PR 3) — dig-moves-you model.
 
-Replaces the old MineView descent/navigation tests (the linear Descend/Ascend view
-was removed).  Pins:
+Owner model (post-#1281): every dig is locomotion — a directional dig moves you into
+the adjacent cell and mines it.  Pins:
 
-- the navigator's button surface (six movement buttons + Mine here + nav);
+- the navigator's button surface (six directional dig buttons + nav, no Mine-here);
 - ``build_grid_embed`` renders position / depth / seed / map;
-- movement and Mine here route through ``mining_workflow`` and re-render in place;
+- a dig routes through ``mining_workflow.dig`` and re-renders in place with the loot;
+- a blocked dig surfaces the hint;
 - Mining Menu returns to the hub; Help dispatches (with a fallback).
 """
 
@@ -38,11 +39,13 @@ def _find_button(view: discord.ui.View, label_substr: str) -> discord.ui.Button:
 # ---------------------------------------------------------------------------
 
 
-def test_view_carries_six_movement_buttons_plus_mine_here_and_nav():
+def test_view_carries_six_directional_dig_buttons_plus_nav():
     view = MineGridView(MagicMock(id=1), guild_id=2)
     labels = " | ".join(b.label or "" for b in _buttons(view))
-    for token in ("North", "South", "East", "West", "Up", "Down", "Mine here"):
-        assert token in labels, f"missing {token!r} button"
+    for token in ("North", "South", "East", "West", "Deeper", "Up"):
+        assert token in labels, f"missing {token!r} dig button"
+    # The separate "Mine here" button is gone — digging IS moving now.
+    assert "Mine here" not in labels
     assert "Mining Menu" in labels
     assert "Help" in labels
 
@@ -56,9 +59,11 @@ def test_view_locks_to_invoking_user():
 def test_dpad_layout_rows():
     view = MineGridView(MagicMock(id=1), guild_id=2)
     assert _find_button(view, "North").row == 0
-    assert _find_button(view, "Mine here").row == 1
+    assert _find_button(view, "West").row == 1
+    assert _find_button(view, "East").row == 1
     assert _find_button(view, "South").row == 2
-    assert _find_button(view, "Down").row == 3
+    assert _find_button(view, "Deeper").row == 3
+    assert _find_button(view, "Up").row == 3
 
 
 # ---------------------------------------------------------------------------
@@ -86,22 +91,24 @@ async def test_build_grid_embed_shows_position_depth_seed_and_map():
 
 
 # ---------------------------------------------------------------------------
-# Movement routing
+# Dig routing
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_north_button_routes_through_workflow_and_rerenders():
+async def test_north_dig_routes_through_workflow_and_rerenders():
     view = MineGridView(MagicMock(id=1), guild_id=2)
     btn = _find_button(view, "North")
     interaction = MagicMock()
 
-    move_result = mining_workflow.MoveResult(
+    dig_result = mining_workflow.DigResult(
         moved=True,
         x=0,
         y=1,
         depth=0,
-        note="You head north.",
+        found="stone",
+        amount=2,
+        wear=WearReport(),
     )
     with (
         patch(
@@ -110,15 +117,15 @@ async def test_north_button_routes_through_workflow_and_rerenders():
             return_value=True,
         ),
         patch(
-            "views.mining.grid_mine_view.mining_workflow.move",
+            "views.mining.grid_mine_view.mining_workflow.dig",
             new_callable=AsyncMock,
-            return_value=move_result,
-        ) as move,
+            return_value=dig_result,
+        ) as dig,
         patch(
             "views.mining.grid_mine_view.build_grid_embed",
             new_callable=AsyncMock,
             return_value=discord.Embed(title="map"),
-        ),
+        ) as build,
         patch(
             "views.mining.grid_mine_view.safe_edit",
             new_callable=AsyncMock,
@@ -127,24 +134,29 @@ async def test_north_button_routes_through_workflow_and_rerenders():
     ):
         await btn.callback(interaction)
 
-    move.assert_awaited_once_with(1, 2, grid.NORTH)
+    dig.assert_awaited_once_with(1, 2, grid.NORTH)
+    note = build.await_args.kwargs["note"]
+    assert "2× stone" in note
+    assert "north" in note
     edit.assert_awaited_once()
     assert edit.await_args.kwargs["view"] is view  # re-renders in place
 
 
 @pytest.mark.asyncio
-async def test_blocked_move_surfaces_hint_in_the_note():
+async def test_deeper_dig_routes_down_and_shows_cell_note():
     view = MineGridView(MagicMock(id=1), guild_id=2)
-    btn = _find_button(view, "Down")
+    btn = _find_button(view, "Deeper")
     interaction = MagicMock()
 
-    blocked = mining_workflow.MoveResult(
-        moved=False,
+    dig_result = mining_workflow.DigResult(
+        moved=True,
         x=0,
         y=0,
-        depth=0,
-        note="You can't dig any deeper here.",
-        hint="Equip a brighter light.",
+        depth=1,
+        found="gold",
+        amount=4,
+        wear=WearReport(),
+        cell_note="💎 You struck a rich gold vein!",
     )
     with (
         patch(
@@ -153,7 +165,54 @@ async def test_blocked_move_surfaces_hint_in_the_note():
             return_value=True,
         ),
         patch(
-            "views.mining.grid_mine_view.mining_workflow.move",
+            "views.mining.grid_mine_view.mining_workflow.dig",
+            new_callable=AsyncMock,
+            return_value=dig_result,
+        ) as dig,
+        patch(
+            "views.mining.grid_mine_view.build_grid_embed",
+            new_callable=AsyncMock,
+            return_value=discord.Embed(title="map"),
+        ) as build,
+        patch(
+            "views.mining.grid_mine_view.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        await btn.callback(interaction)
+
+    dig.assert_awaited_once_with(1, 2, grid.DOWN)
+    note = build.await_args.kwargs["note"]
+    assert "deeper" in note
+    assert "4× gold" in note
+    assert "rich gold vein" in note
+
+
+@pytest.mark.asyncio
+async def test_blocked_dig_surfaces_the_hint():
+    view = MineGridView(MagicMock(id=1), guild_id=2)
+    btn = _find_button(view, "Deeper")
+    interaction = MagicMock()
+
+    blocked = mining_workflow.DigResult(
+        moved=False,
+        x=0,
+        y=0,
+        depth=0,
+        found=None,
+        amount=0,
+        wear=WearReport(),
+        hint="Equip a brighter light to descend.",
+    )
+    with (
+        patch(
+            "views.mining.grid_mine_view.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "views.mining.grid_mine_view.mining_workflow.dig",
             new_callable=AsyncMock,
             return_value=blocked,
         ),
@@ -172,54 +231,6 @@ async def test_blocked_move_surfaces_hint_in_the_note():
 
     note = build.await_args.kwargs["note"]
     assert "brighter light" in note
-
-
-# ---------------------------------------------------------------------------
-# Mine here routing
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_mine_here_button_grants_loot_and_shows_cell_note():
-    view = MineGridView(MagicMock(id=1), guild_id=2)
-    btn = _find_button(view, "Mine here")
-    interaction = MagicMock()
-
-    result = mining_workflow.MineResult(
-        found="gold",
-        amount=4,
-        depth=0,
-        wear=WearReport(),
-        cell_note="💎 You struck a rich gold vein!",
-    )
-    with (
-        patch(
-            "views.mining.grid_mine_view.safe_defer",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "views.mining.grid_mine_view.mining_workflow.mine_here",
-            new_callable=AsyncMock,
-            return_value=result,
-        ) as mine_here,
-        patch(
-            "views.mining.grid_mine_view.build_grid_embed",
-            new_callable=AsyncMock,
-            return_value=discord.Embed(title="map"),
-        ) as build,
-        patch(
-            "views.mining.grid_mine_view.safe_edit",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-    ):
-        await btn.callback(interaction)
-
-    mine_here.assert_awaited_once_with(1, 2)
-    note = build.await_args.kwargs["note"]
-    assert "gold" in note
-    assert "rich gold vein" in note
 
 
 # ---------------------------------------------------------------------------
