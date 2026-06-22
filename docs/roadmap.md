@@ -126,10 +126,13 @@
   **⛔ demand-driven**) · **item 4** (the maintainer's live spot-check — **👤 maintainer**, owed). Triage
   tool: `scripts/btd6_probe.py "<exact user text>"`. *Both Now items are blocked, so a "dispatch S2
   execute" falls through to the startable item in Next.*
-- **Next:** the **▶ P1-1 BTD6 eval cases** (the #704 finding — the capability message must match the
-  actual grounding-refusal behaviour, and asserted numbers (Despo price, Elite Lych HP) must be
-  grounded). *The in-bot AI eval **harness** is S1; the BTD6 **data/grounding** correctness it checks
-  is S2.*
+- **Next:** the **▶ P1-1 BTD6 eval cases** — the #704 finding's **offline half SHIPPED** (the
+  grounding-anchor guard `tests/evals/test_btd6_grounding_anchors.py`: every number the golden set
+  asserts — Despo price, Elite Lych HP, ABR/round cash — is now pinned to a deterministic
+  `btd6_data_service` re-derivation *and* the case rubric, so data-drift or prose-drift fails CI;
+  plus a capability/answerability-consistency guard). **What remains is the live `llm_judge` battery**
+  (the model actually using the facts — creds-gated, the S1 harness × these BTD6 facts). *The in-bot
+  AI eval **harness** is S1; the BTD6 **data/grounding** correctness it checks is S2.*
 - **Later:** BTD6 product-extension routing (rules/trivia · challenges · runs · leaderboards) — gated
   on ADR-006 provenance / source-health.
 - **Dispatch:** `S2` (executor **Claude-in-repo**, unattended-fit **🟢 auto**) · *plan* = structure a

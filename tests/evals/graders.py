@@ -113,6 +113,7 @@ def all_of(*graders: Grader) -> Grader:
             parts.append(("✓ " if result.passed else "✗ ") + result.detail)
         return GradeResult(passed, " | ".join(parts))
 
+    grade.subgraders = graders  # type: ignore[attr-defined]
     return grade
 
 
@@ -126,6 +127,7 @@ def any_of(*graders: Grader) -> Grader:
             parts.append(result.detail)
         return GradeResult(False, " | ".join(parts))
 
+    grade.subgraders = graders  # type: ignore[attr-defined]
     return grade
 
 
@@ -183,4 +185,5 @@ def llm_judge(rubric: str, *, judge_provider: Provider | None = None) -> Grader:
             str(resp.data.get("reason", ""))[:120],
         )
 
+    grade.rubric = rubric  # type: ignore[attr-defined]
     return grade
