@@ -10,5 +10,5 @@ Importing this package triggers the ``@register`` decorator on
 ``on_ready`` runs ``restore_anchors``.
 """
 
+from views.mining.grid_mine_view import MineGridView  # noqa: F401 — re-exported
 from views.mining.main_panel import MiningHubView  # noqa: F401 — re-exported
-from views.mining.mine_view import MineView  # noqa: F401 — re-exported

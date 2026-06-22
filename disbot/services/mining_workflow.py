@@ -38,6 +38,7 @@ from utils import db, equipment
 from utils.mining import (
     capacity,
     character,
+    grid,
     market,
     rewards,
     structures,
@@ -64,6 +65,9 @@ class MineResult:
     xp_note: str | None = None
     #: Gentle "pack full — stash at the vault" nudge (Slice A; never blocks).
     pack_warning: str | None = None
+    #: Grid-cell flavour ("struck a rich vein", "barren rock") — set only by
+    #: ``mine_here`` (PR 3); ``mine``/``!fastmine`` leave it None (byte-identical).
+    cell_note: str | None = None
 
 
 @dataclass(frozen=True)
@@ -96,6 +100,24 @@ class DescentResult:
 
     moved: bool
     depth: int
+    hint: str | None = None
+    xp_note: str | None = None
+
+
+@dataclass(frozen=True)
+class MoveResult:
+    """One grid-Mine movement (PR 3): lateral N/S/E/W or vertical Up/Down.
+
+    Lateral moves always succeed; a vertical move can be blocked (no brighter
+    light to descend, already at the Surface to ascend) — ``moved`` is False and
+    ``hint`` explains why.  ``x``/``y`` are the lateral position; ``depth`` is z.
+    """
+
+    moved: bool
+    x: int
+    y: int
+    depth: int
+    note: str
     hint: str | None = None
     xp_note: str | None = None
 
@@ -804,6 +826,59 @@ async def mine(user_id: int, guild_id: int) -> MineResult:
     )
 
 
+async def mine_here(user_id: int, guild_id: int) -> MineResult:
+    """Mine the player's current grid cell (PR 3) — cell-aware loot + wear, atomic.
+
+    Like :func:`mine`, but the seed-deterministic cell at the player's
+    ``(pos_x, pos_y, depth)`` modulates the roll: its richness scales the amount
+    and a rich/treasure cell yields its featured ore (``utils.mining.grid``).
+    Marks the cell discovered (fog of war) in the same transaction as the loot
+    grant + wear, so a swing and what it revealed commit together.
+    """
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    equipped = await db.get_equipment(suid, guild_id)
+    depth = await db.get_depth(suid, guild_id)
+    x, y = await db.get_position(suid, guild_id)
+    seed = await db.get_world_seed(guild_id)
+    cell = grid.cell_at(seed, x, y, depth)
+    found, amount = rewards.roll_mine_loot(
+        has_pickaxe=inventory.get("pickaxe", 0) > 0,
+        depth=depth,
+        multiplier=rewards.mine_multiplier(equipped, inventory),
+    )
+    found, amount, cell_note = grid.apply_cell_to_loot(cell, found, amount)
+    candidates = _wear_candidates(workshop.ACTION_MINE, depth, equipped)
+    wear = await db.get_gear_wear(suid, guild_id) if candidates else {}
+    async with db.transaction() as conn:
+        await db.update_mining_item(suid, guild_id, found, amount, conn=conn)
+        await db.mark_discovered(suid, guild_id, depth, x, y, conn=conn)
+        report = (
+            await _apply_wear_writes(conn, suid, guild_id, candidates, wear)
+            if candidates
+            else WearReport()
+        )
+        xp = await game_xp_service.award(
+            guild_id,
+            user_id,
+            game=game_xp_service.GAME_MINING,
+            action="mine",
+            depth=depth,
+            conn=conn,
+        )
+    if xp is not None:
+        await game_xp_service.emit_award_events(xp)
+    return MineResult(
+        found=found,
+        amount=amount,
+        depth=depth,
+        wear=report,
+        xp_note=xp.note if xp is not None and xp.leveled_up else None,
+        pack_warning=_pack_warning_after(inventory, found),
+        cell_note=cell_note,
+    )
+
+
 async def harvest(user_id: int, guild_id: int) -> HarvestResult:
     """Chop wood (doubled with an axe in the inventory) and grant it."""
     suid = str(user_id)
@@ -969,6 +1044,118 @@ async def ascend(user_id: int, guild_id: int) -> DescentResult:
 
 
 # ---------------------------------------------------------------------------
+# Grid — roam the (x, y, z) world (PR 3); writes mark fog-of-war discovery
+# ---------------------------------------------------------------------------
+
+
+async def move(user_id: int, guild_id: int, direction: str) -> MoveResult:
+    """Move one cell in the grid (PR 3) — lateral N/S/E/W or vertical Up/Down.
+
+    Lateral moves change ``(pos_x, pos_y)`` within the current depth band and
+    always succeed.  ``Down`` descends one band (gated by the equipped light — the
+    :func:`descend` rule) and ``Up`` ascends one.  Every successful move marks the
+    cells it touches discovered (fog of war) in one transaction; a depth move that
+    sets a new record also awards the depth-record XP (the :func:`descend`
+    precedent).
+    """
+    suid = str(user_id)
+    direction = direction.strip().lower()
+    x, y = await db.get_position(suid, guild_id)
+    depth = await db.get_depth(suid, guild_id)
+
+    if direction in grid.LATERAL:
+        nx, ny = grid.step(x, y, direction)
+        async with db.transaction() as conn:
+            await db.set_position(suid, guild_id, nx, ny, conn=conn)
+            await db.mark_discovered(suid, guild_id, depth, x, y, conn=conn)
+            await db.mark_discovered(suid, guild_id, depth, nx, ny, conn=conn)
+        return MoveResult(
+            moved=True,
+            x=nx,
+            y=ny,
+            depth=depth,
+            note=f"You head {grid.move_phrase(direction)}.",
+        )
+
+    if direction == grid.DOWN:
+        equipped = await db.get_equipment(suid, guild_id)
+        alloc = await db.get_skills(user_id, guild_id)
+        stats = character.character_stats(equipped, alloc)
+        new_depth = world.descend(depth, stats)
+        if new_depth == depth:
+            return MoveResult(
+                moved=False,
+                x=x,
+                y=y,
+                depth=depth,
+                note="You can't dig any deeper here.",
+                hint=world.descend_hint(stats),
+            )
+        xp = None
+        async with db.transaction() as conn:
+            await db.set_depth(suid, guild_id, new_depth, conn=conn)
+            await db.mark_discovered(suid, guild_id, new_depth, x, y, conn=conn)
+            if await db.record_depth(suid, guild_id, new_depth, conn=conn):
+                xp = await game_xp_service.award(
+                    guild_id,
+                    user_id,
+                    game=game_xp_service.GAME_MINING,
+                    action="depth_record",
+                    conn=conn,
+                )
+        if xp is not None:
+            await game_xp_service.emit_award_events(xp)
+        return MoveResult(
+            moved=True,
+            x=x,
+            y=y,
+            depth=new_depth,
+            note=f"You climb down to {world.describe_position(new_depth)}.",
+            xp_note=xp.note if xp is not None and xp.leveled_up else None,
+        )
+
+    if direction == grid.UP:
+        new_depth = world.ascend(depth)
+        if new_depth == depth:
+            return MoveResult(
+                moved=False,
+                x=x,
+                y=y,
+                depth=depth,
+                note="You're already at the Surface.",
+            )
+        async with db.transaction() as conn:
+            await db.set_depth(suid, guild_id, new_depth, conn=conn)
+            await db.mark_discovered(suid, guild_id, new_depth, x, y, conn=conn)
+        return MoveResult(
+            moved=True,
+            x=x,
+            y=y,
+            depth=new_depth,
+            note=f"You climb up to {world.describe_position(new_depth)}.",
+        )
+
+    return MoveResult(
+        moved=False,
+        x=x,
+        y=y,
+        depth=depth,
+        note=f"Unknown direction: {direction}.",
+    )
+
+
+async def reseed_world(guild_id: int, seed: int) -> int:
+    """Set the guild's shared world *seed* (PR 3) — the owner re-seed.
+
+    Returns the seed stored.  Re-seeding changes the procedural world everyone in
+    the guild roams (Q-0173: one shared, shareable grid per seed); player
+    positions and fog-of-war are coordinates, so they are unaffected.
+    """
+    await db.set_world_seed(guild_id, seed)
+    return seed
+
+
+# ---------------------------------------------------------------------------
 # Admin
 # ---------------------------------------------------------------------------
 
@@ -1009,6 +1196,7 @@ __all__ = [
     "HarvestResult",
     "ExploreActionResult",
     "DescentResult",
+    "MoveResult",
     "wear_tick",
     "repair",
     "craft",
@@ -1022,6 +1210,7 @@ __all__ = [
     "vault_upgrade",
     "build_structure",
     "mine",
+    "mine_here",
     "harvest",
     "explore",
     "use_item",
@@ -1029,6 +1218,8 @@ __all__ = [
     "unequip",
     "descend",
     "ascend",
+    "move",
+    "reseed_world",
     "admin_grant",
     "admin_reset",
 ]

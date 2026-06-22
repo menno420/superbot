@@ -3,10 +3,10 @@
 Domain logic, UI components, and modals have moved to their own
 modules per ``docs/architecture.md`` §"Subsystem decomposition":
 
-    utils/mining/                — pure domain (items, rewards, world, recipes…)
-    services/mining_workflow.py — the audited write boundary (RS02)
-    views/mining/mine_view.py   — !mine ephemeral 3-button view
-    views/mining/main_panel.py  — MiningHubView (PersistentView) + _BuildModal
+    utils/mining/                  — pure domain (items, rewards, world, grid…)
+    services/mining_workflow.py    — the audited write boundary (RS02)
+    views/mining/grid_mine_view.py — !mine grid navigator (roam x/y/z + Mine here)
+    views/mining/main_panel.py     — MiningHubView (PersistentView) + _BuildModal
 
 This file hosts only commands, the cog lifecycle, and the
 help-menu hook.  ``MiningHubView`` is imported below so the
@@ -32,7 +32,8 @@ from utils.ui_constants import MINING_COLOR, SUCCESS_COLOR
 
 # Pattern B re-export: importing this triggers @register on MiningHubView
 # so message_anchor_manager.restore_anchors() finds the class at on_ready.
-from views.mining import MineView, MiningHubView  # noqa: F401 — re-exported
+from views.mining import MineGridView, MiningHubView  # noqa: F401 — re-exported
+from views.mining.grid_mine_view import build_grid_embed
 from views.mining.main_panel import build_overview_embed
 
 logger = logging.getLogger("bot.cogs.mining")
@@ -87,16 +88,9 @@ class MiningCog(commands.Cog):
 
     @commands.command()
     async def mine(self, ctx):
-        """Start mining with interactive buttons."""
-        view = MineView(ctx.author, ctx.guild.id)
-        embed = discord.Embed(
-            title="Mining",
-            description=(
-                "Choose a direction to mine.\n"
-                "If you own a pickaxe, you'll get extra loot!"
-            ),
-            color=MINING_COLOR,
-        )
+        """Open the grid Mine navigator — roam the world and dig."""
+        view = MineGridView(ctx.author, ctx.guild.id)
+        embed = await build_grid_embed(ctx.author.id, ctx.guild.id)
         view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(
@@ -458,6 +452,35 @@ class MiningCog(commands.Cog):
         await ctx.send(
             f"{ctx.author.mention} climbed up to "
             f"{world.describe_position(result.depth)}.",
+        )
+
+    @commands.command(
+        name="mineworld",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def mineworld(self, ctx, seed: int | None = None):
+        """Show this server's mining world seed; admins reseed (`!mineworld 12345`).
+
+        One shared, seed-deterministic world per server (Q-0173): everyone roams
+        the same grid, so the seed is shareable — set two servers to the same
+        number to share a world.
+        """
+        if seed is None:
+            current = await db.get_world_seed(ctx.guild.id)
+            await ctx.send(
+                f"🌐 This server's mining world seed is **{current}**. "
+                "Everyone here roams the same world — share the seed to compare "
+                "maps. Server managers can reseed with `!mineworld <number>`.",
+            )
+            return
+        if not ctx.author.guild_permissions.manage_guild:
+            await ctx.send("Only server managers can reseed the mining world.")
+            return
+        await mining_workflow.reseed_world(ctx.guild.id, seed)
+        await ctx.send(
+            f"🌐 Reseeded this server's mining world to **{seed}**. The whole grid "
+            "regenerated; your position and explored map carry over.",
         )
 
     # ---------------------------------------------------------- market

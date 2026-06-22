@@ -81,9 +81,22 @@ this **replaces** the old linear Descend/Ascend.
    sub-hub (it personalizes the Character card; the plan list predated #910); (b) the main hub's
    new 🗺️ Explore (open-world stub, `custom_id mining:explore_hub`) is a *different concept*
    from the depth-event explore that folded into Mine — routing documented in PR #1131.
-3. **PR 3 — grid Mine** (new mechanic): the (x,y,z) world model + 6-direction movement +
-   discovery. Needs the v1 sign-off above first.
-4. **Later — open-world Explore**: fishing / quests / roam — own design pass.
+3. **PR 3 — grid Mine** ✅ **SHIPPED (2026-06-22)**: the (x,y,z) world model + 6-direction
+   movement + fog-of-war discovery, built exactly to the Q-0173 sign-off. Pure
+   `utils/mining/grid.py` (seed-deterministic `cell_at` + lateral movement + map render);
+   migration 085 (`pos_x`/`pos_y` on `mining_player_state` [z = the existing `depth`] +
+   `mining_world` per-guild seed + `mining_discovered` fog of war);
+   `utils/db/games/mining_grid.py` on the RS02 boundary ratchet; `mining_workflow.move` /
+   `mine_here` / `reseed_world` (one transaction each); `views/mining/grid_mine_view.py`
+   (`MineGridView`) replacing the interim linear `MineView`; `!mine` opens it + `!mineworld`
+   shows/reseeds the shared seed. **v1 is encounter-free** (owner: encounters are a separate
+   later session — captured below).
+4. **Later — encounters** (owner-wanted, own session): depth-gated, *sparse* random encounters
+   on top of the grid (the owner's shape — "after a certain depth you can get random
+   encounters, but not too many"). Captured in
+   [`../ideas/mining-grid-encounters-2026-06-22.md`](../ideas/mining-grid-encounters-2026-06-22.md).
+5. **Later — open-world Explore**: fishing / quests / roam — own design pass (the main-hub
+   🗺️ Explore now forwards to the federated world hub).
 
 ## Source anchors
 

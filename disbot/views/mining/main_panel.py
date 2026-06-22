@@ -17,11 +17,12 @@ buttons — **⛏️ Mine · 🌲 Harvest · 🗺️ Explore · 🧍 Character �
   plan (PR 1); *distinct* from the old depth-tied mining random-event
   "explore", which folded into the Mine action.
 - **🔨 Workshop** sub-hub (``workshop_hub``): Craft · Repair · Forge · Market.
-- **Mine** (``MineView``) absorbed Descend / Ascend + the old mining-explore
-  random-event as an interim until PR3's grid Mine.
+- **⛏️ Mine** (``MineGridView``) is the grid navigator (PR 3): roam the (x, y, z)
+  seed-deterministic world with six movement buttons + Mine here. It replaced the
+  interim linear Descend/Ascend ``MineView``.
 
-The Mine button opens a fresh ephemeral ``MineView`` from
-``views.mining.mine_view``.
+The Mine button opens a fresh ephemeral ``MineGridView`` from
+``views.mining.grid_mine_view``.
 
 Navigation rule (PR #1 menu-lifecycle fix): the hub does not ship a
 root-level "↩ Overview" button. Action buttons themselves are the
@@ -38,7 +39,7 @@ from services import mining_workflow
 from utils import db, equipment
 from utils.mining import capacity, items, workshop, world
 from utils.ui_constants import MINING_COLOR, SUCCESS_COLOR
-from views.mining.mine_view import MineView, _build_mine_prompt_embed
+from views.mining.grid_mine_view import MineGridView, build_grid_embed
 
 # The hub's routing guide — shared by the stateless fallback embed and the
 # per-player live overview so the action list has one home. Six top-level
@@ -163,6 +164,8 @@ class MiningHubView(PersistentView):
         row=0,
     )
     async def mine_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
         if interaction.guild_id is None:
             await safe_followup(
                 interaction,
@@ -170,12 +173,11 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        view = MineView(interaction.user, interaction.guild_id)
-        await interaction.response.edit_message(
-            embed=_build_mine_prompt_embed(),
-            view=view,
-            attachments=[],  # clear a prior inventory/gear card so it doesn't linger
-        )
+        # PR 3: the Mine button opens the grid navigator (roam x/y/z + Mine here),
+        # rendered in place on the hub message (clears a prior gear/inventory card).
+        view = MineGridView(interaction.user, interaction.guild_id)
+        embed = await build_grid_embed(interaction.user.id, interaction.guild_id)
+        await _edit_in_place(interaction, embed=embed, view=view)
         view.message = interaction.message
 
     @discord.ui.button(

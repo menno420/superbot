@@ -41,6 +41,11 @@ and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work l
 
 ## Recently cleared
 
+- `claude/upbeat-clarke-73fm43` · **mining grid Mine (hub-redesign PR 3)** (owner-directed —
+  "continue the mining plan") — (x,y,z) seed-deterministic grid + 6-direction movement + fog-of-war,
+  replacing the interim linear `MineView` (Q-0173) · `utils/mining/grid.py` + migration 085 +
+  `mining_grid.py` + `mining_workflow.move/mine_here/reseed_world` + `grid_mine_view.py` +
+  `!mineworld` · 2026-06-22 · **PR #1281 (auto-merge on green)**
 - `claude/starboard-v1` · **Starboard PR 1** (⚑ self-initiated, executes the #1254 plan) — Hall-of-Fame
   v1: migration 082 + `utils/db/starboard` + audited `starboard_service` + `starboard_cog` raw-reaction
   listener + `!starboard` config + teardown · 2026-06-21 · **PR #1259 (merge on green)**
