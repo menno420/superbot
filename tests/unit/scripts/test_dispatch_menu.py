@@ -172,7 +172,7 @@ def test_unattended_summary_ranks_auto_before_review():
     assert "SELF-MERGEABLE now" in joined
     auto_idx = next(i for i, ln in enumerate(lines) if "SELF-MERGEABLE" in ln)
     review_idx = next(
-        (i for i, ln in enumerate(lines) if "needs-hermes-review" in ln), len(lines)
+        (i for i, ln in enumerate(lines) if "🟡 build PR" in ln), len(lines)
     )
     assert auto_idx < review_idx  # auto lanes are listed first
 

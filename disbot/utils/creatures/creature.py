@@ -11,7 +11,7 @@ graduated here (the balance-before-build gate).
 most common spawn and the easiest to catch; Epic is the rarest and the hardest.
 Battle stats are deliberately NOT modelled here: catch + collection is the v1
 runtime slice, and the PvP engine (where stats derive) is a later
-``needs-hermes-review`` slice. A creature here carries only name / element /
+substantial-runtime slice. A creature here carries only name / element /
 rarity / archetype / emoji.
 
 Pure + stdlib-only (no Discord, no DB); :mod:`utils.creatures.encounters` does the

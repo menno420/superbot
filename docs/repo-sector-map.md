@@ -129,7 +129,7 @@ sector*, but naming it is what makes a dispatch unambiguous — three runners:
 - **Claude-in-repo** — a Claude Code session/routine that edits the repo and opens a PR. The default
   for **S1–S4** (subsystem code · BTD6 data/answerability · mechanism · docs).
 - **Hermes-on-VPS** — the always-on VPS agent: read-only ops, log-triage, dispatch. It edits *nothing*
-  in the repo by default (its sanctioned writes are Q-0117 review-merge + Q-0140 docs-only PRs).
+  in the repo by default (its sanctioned write is Q-0140 docs-only PRs; the Q-0117 review-merge gate is retired, Q-0197).
 - **maintainer** — the human: deploy, secrets, the Railway token, live prod spot-checks.
 
 **S5 is the executor outlier.** Most of S5 is *not* Claude-in-repo — it runs on the **Hermes VPS** or
@@ -156,16 +156,17 @@ grounding-eval cases in `Next`. Q-0143.)*
 `▶ startable` answers *"may a Claude session **begin** this?"* — it does **not** answer *"can a
 **scheduled, unattended** dispatch run **complete and merge** it with no human in the loop?"* Those are
 orthogonal: a lane can be `▶` (begin freely) yet still need a live guild walk to verify, be a
-`needs-hermes-review` runtime change, or commit externally-sourced data. Two consecutive empty-fire
+substantial/risky runtime change, or commit externally-sourced data. Two consecutive empty-fire
 dispatch runs (#1274, #1285) stalled because they only discovered this *mid-run, by hand*. So each
 sector's **Dispatch** line carries one **unattended-fit** tag — the dimension `dispatch_menu.py
 --unattended` resolves for an empty-fire run:
 
 - **🟢 auto** — offline-verifiable **and** self-mergeable. An unattended run can complete it and let it
   auto-merge on green. *The ideal empty-fire pick.*
-- **🟡 review** — buildable offline but it ships `needs-hermes-review` (substantial/risky runtime, or a
-  Q-0106-sensitive config edit). An unattended run can build it and open the PR, but **must not**
-  self-merge.
+- **🟡 review** — buildable offline but substantial/risky runtime (or a Q-0106-sensitive config edit).
+  An unattended run can build it, open the PR, and let it auto-merge on green like any other — it just
+  warrants a careful build and a second look (the `needs-hermes-review` no-self-merge gate is retired,
+  Q-0197).
 - **🔵 live** — needs a live guild walk or runtime creds to *verify*. An unattended run can write code
   but can't confirm it works → weak fit; prefer a 🟢/🟡 lane or route to the live cadence.
 - **🟠 ext-data** — commits externally-sourced data (brushes the external-data safety brake). **Owner

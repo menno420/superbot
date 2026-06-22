@@ -11,7 +11,7 @@
 Hermes was useful but "didn't feel like part of the system" — its output was "hard to read, filled
 with stuff that is unnecessary or hard to understand," and the **message format** was the biggest
 problem (owner, 2026-06-17). Root cause: **no shared house style** — each skill defined its own output
-shape inline, so every report read differently and internal jargon (`needs-hermes-review`,
+shape inline, so every report read differently and internal jargon (`do-not-automerge`,
 `dead-unresolved`, `▶ startable`) leaked straight into owner-facing messages. This doc is the shared
 style so every report reads the same way and speaks plainly.
 
@@ -22,8 +22,8 @@ style so every report reads the same way and speaks plainly.
 2. **Fixed section order, same in every report.** `Bottom line → State → What got done → Waiting on a
    human → Needs YOU → (optional) Details`. Same shape every day = no re-learning.
 3. **Plain words, jargon translated on use.** Keep the few tokens the owner knows (PR #numbers,
-   ✅/⚠️/❌). Translate the rest: not "needs-hermes-review carve-out" but "parked for a human to
-   review and merge"; not "CI red on check_session_gate" but "the automatic checks failed / are still
+   ✅/⚠️/❌). Translate the rest: not "do-not-automerge carve-out" but "held back on purpose, not
+   merging yet"; not "CI red on check_session_gate" but "the automatic checks failed / are still
    running."
 4. **Group, don't list.** Related items under one labelled heading, not a flat bullet stream. Numbers
    and PRs collapse ("5 changes merged, all passed their checks") with the few that need attention
