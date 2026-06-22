@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T13:57:59Z",
+    "generated_at": "2026-06-22T15:56:26Z",
     "build": {
-      "commit": "a960401b",
-      "subject": "BUG-0024: make the dashboard generated_at determinism test hermetic (kill the -n auto flake) (#1291)",
-      "committed_at": "2026-06-22T13:57:59Z"
+      "commit": "4a36b7d",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/fishing-minigame-pr1",
+      "committed_at": "2026-06-22T15:56:26Z"
     },
     "counts": {
       "functions": 37,
-      "ideas": 119,
+      "ideas": 120,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1018,6 +1018,14 @@
       "status": "ideas",
       "date": "2026-06-22",
       "summary": "The reconciliation routine's **open-PR disposition step (Q-0125)** is the one part of the pass with **no",
+      "subsystems": null
+    },
+    {
+      "file": "sim-assumption-telemetry-loop-2026-06-22.md",
+      "title": "Idea — close the loop: instrument shipped features with the metric their design-sim assumed",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "When we use a Monte-Carlo simulation to design a feature (e.g.",
       "subsystems": null
     },
     {
@@ -2202,6 +2210,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-reconcile-band1290.md",
+      "date": "2026-06-22",
+      "title": "Session — 2026-06-22 · band-#1290 Q-0107 docs reconciliation",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-mining-grid-mine.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Mining grid Mine (hub-redesign PR 3)",
@@ -2242,12 +2258,52 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-help-remove-advanced.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Remove the redundant \"All Commands / Advanced\" help surface",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-help-reachability-guard.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Help reachability guard (orphan check)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-help-menu-regrouping.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Help-menu regrouping (simulation + implementation)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-friction-to-guard-reflex.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Wrong-branch guard hook + the \"friction → guard\" self-prevention reflex",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-fishing-minigame-sim.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing minigame: design simulation + analysis",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-fishing-minigame-pr1.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing minigame PR1: the interactive cast → wait → BITE → reel loop",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-22-ci-strand-cancel-in-progress.md",
@@ -2279,6 +2335,14 @@
       "title": "2026-06-22 — BUG-0024: make the dashboard `generated_at` determinism test hermetic",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-btd6-grounding-anchors.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — P1-1 BTD6 grounding-anchor eval guard (the #704 finding)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -2584,62 +2648,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-pvp-battle-flow.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-leaderboard-provider.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature collector leaderboard provider (central hub integration)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-game-catch-collection.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature game runtime v1: catch + collection (dex)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-creature-challenge-expiry.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP: challenge-expiry on timeout (⚑ self-initiated)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-battle-engine.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature game PvP: the pure battle engine (foundation slice)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-carl-bot-reaction-roles-research-plan.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Carl-bot reaction-roles research + overhaul plan",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-bug0020-trim-floor-pointer-prose.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — CI-reliability batch: BUG-0020 + BUG-0021 + BUG-0022",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -5669,10 +5677,10 @@
           "is_group": false,
           "parent": null,
           "aliases": [],
-          "brief": "Cast a line and catch a fish — level up to unlock bigger fish.",
+          "brief": "Cast a line — wait for the bite, then reel it in before it gets away.",
           "classification": "",
-          "has_panel": false,
-          "button_backed": false
+          "has_panel": true,
+          "button_backed": true
         },
         {
           "name": "fishlog",

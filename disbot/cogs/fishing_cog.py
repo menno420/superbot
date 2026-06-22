@@ -30,7 +30,8 @@ from core.runtime import guild_resources as resources
 from services import fishing_workflow, game_xp_service
 from utils import db
 from utils.fishing.fish import MAX_LEVEL, SPECIES, max_size_rank_for_level
-from utils.ui_constants import INFO_COLOR
+from utils.ui_constants import GAME_COLOR, INFO_COLOR
+from views.fishing import FishingCastView, active_casts
 
 logger = logging.getLogger("bot.cogs.fishing")
 
@@ -50,26 +51,32 @@ class FishingCog(commands.Cog):
 
     @commands.command()
     async def fish(self, ctx):
-        """Cast a line and catch a fish — level up to unlock bigger fish."""
-        result = await fishing_workflow.fish(ctx.author.id, ctx.guild.id)
-        if result.catch is None:
+        """Cast a line — wait for the bite, then reel it in before it gets away."""
+        key = (ctx.author.id, ctx.guild.id)
+        if key in active_casts:
+            await ctx.send(
+                "🎣 You've already got a line in the water — reel that one in first!",
+            )
+            return
+
+        # Roll the catch now (read-only) so the minigame knows what's biting;
+        # the write happens only if the player reels it in (commit_catch).
+        cast = await fishing_workflow.roll_cast(ctx.author.id, ctx.guild.id)
+        if cast.catch is None:
             await ctx.send("🎣 The fishing spot is unavailable right now — try later.")
             return
-        species = result.catch.species
-        message = (
-            f"{ctx.author.mention} 🎣 cast a line and caught "
-            f"{species.emoji} a **{species.name.title()}**! "
-            f"(size #{species.size_rank} of {len(SPECIES)})"
+
+        view = FishingCastView(ctx.author.id, ctx.guild.id, cast)
+        embed = discord.Embed(
+            description=(
+                f"{ctx.author.mention} casts a line… 🎣\n"
+                "*Watch the water — hit **Reel** the moment it bites, "
+                "but not before!*"
+            ),
+            color=GAME_COLOR,
         )
-        if result.unlocked_bigger:
-            cap = max_size_rank_for_level(result.fishing_level)
-            message += (
-                f"\n🌟 **Fishing level {result.fishing_level}!** "
-                f"You can now catch fish up to size #{cap}."
-            )
-        if result.xp_note:
-            message += "\n" + result.xp_note
-        await ctx.send(message)
+        view.message = await ctx.send(embed=embed, view=view)
+        view.start()
 
     @commands.command(
         name="fishlog",

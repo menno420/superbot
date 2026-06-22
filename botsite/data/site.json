@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T13:57:59Z",
+    "generated_at": "2026-06-22T15:56:26Z",
     "build": {
-      "commit": "a960401b",
-      "subject": "BUG-0024: make the dashboard generated_at determinism test hermetic (kill the -n auto flake) (#1291)",
-      "committed_at": "2026-06-22T13:57:59Z"
+      "commit": "4a36b7d",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/fishing-minigame-pr1",
+      "committed_at": "2026-06-22T15:56:26Z"
     }
   },
   "counts": {
@@ -4550,8 +4550,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Cast a line and catch a fish — level up to unlock bigger fish.",
-      "description": "Cast a line and catch a fish — level up to unlock bigger fish.",
+      "usage": "Cast a line — wait for the bite, then reel it in before it gets away.",
+      "description": "Cast a line — wait for the bite, then reel it in before it gets away.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",

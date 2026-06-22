@@ -181,6 +181,13 @@ on **Q-0182**.
 ## Plans / pending approval
 
 **Active games plans** (live buildable set — full index: [`planning/README.md`](../planning/README.md)):
+- [fishing-minigame-design](../planning/fishing-minigame-design-2026-06-22.md) — sim-backed
+  (`tools/sim/fishing_minigame_sim.py`) interactive catch loop. **PR1 building/shipped:** `!fish` now
+  launches an interactive `cast → wait → BITE → reel` view (`views/fishing/cast_view.py`); the catch is
+  rolled at cast (`fishing_workflow.roll_cast`) and committed only on a successful reel
+  (`commit_catch`) — a missed/early reel = the fish gets away (owner decision). Tuning is pure +
+  testable (`utils/fishing/minigame.py`: ~2.5 s window, 3–6 s bite + fake-out). **Deferred to next
+  PRs:** trophy reel-fight, rod ladder, energy pacing + sell-value rebalance, boat/deepwater.
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
   Phase 1 (fishing v1 + gear-switching) buildable; the loadout/minigame tail is owner-design-gated (Q-0175).
   **Fish *use* is now decided + shipped (#1289, owner 2026-06-22):** a caught fish enters the mining
