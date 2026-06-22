@@ -25,6 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/funny-franklin-n6dceb` · **reaction-roles PR 6 — PIL banner cards** (⚑ self-initiated,
+  Q-0172; promotes the deferred §4.6d slice) — migration 085 `role_menus.card_template`/`card_text` +
+  `utils/role_menu_render.py` + `CardTemplate` catalogue + db/service/view/builder threading + tests ·
+  `disbot/utils/role_menu_render.py` · `disbot/views/roles/role_menu_*.py` ·
+  `disbot/services/reaction_role_service.py` · 2026-06-22 · **routine dispatch, `needs-hermes-review`**
 - `claude/fix-ci-synchronize-journal-claim` · **remove the disproven "synchronize doesn't re-fire
   CI" claim** (owner-directed) — empirically verified a born-red PR DOES re-fire Code Quality on a
   second push (PR #1277 runs 3092/3093), then deleted the false gotcha + its strand workaround from
