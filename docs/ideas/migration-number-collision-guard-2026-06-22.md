@@ -1,8 +1,9 @@
 # Idea: pre-merge migration-number collision guard (kill the renumber treadmill)
 
-> **Status:** `ideas` — capture only, **not** a plan and **not** approval for
-> implementation. Source code and the binding contracts win over this file.
-> **Subsystem:** none (cross-cutting dev tooling / CI).
+> **Status:** `ideas` — **Option 1 SHIPPED** 2026-06-22 (`scripts/check_migration_collision.py`,
+> dispatch grooming run); Options 2 (merge-aware local mirror) + 3 (assign-number-at-merge) remain.
+> Source code and the binding contracts win over this file. **Subsystem:** none (cross-cutting dev
+> tooling / CI).
 
 **Captured:** 2026-06-22 · **Source:** reaction-roles PR 6 (#1279) — a held
 `needs-hermes-review` PR whose migration was renumbered **four times** (085→086→088→089)

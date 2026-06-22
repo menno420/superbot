@@ -49,9 +49,9 @@ STEP 1b — IF I GAVE NO SPECIFIC TASK ("dispatch a continuation worker" / "pick
 STEP 2 — CLASSIFY (this decides the merge gate the routine will use):
   - BUG FIX / UX / DOCS / CORRECTNESS  -> the routine builds, tests, and SELF-MERGES on green CI.
   - AGENT-ORIGINATED FEATURE           -> the routine builds and SHIPS it (idea->plan->ship is
-                                          open, Q-0172 — no approve/deny gate); small/contained
-                                          self-merges on green, a SUBSTANTIAL step is labeled
-                                          needs-hermes-review (Q-0117). It flags the work on the
+                                          open, Q-0172 — no approve/deny gate); it self-merges on
+                                          green CI like any other PR (the hermes-review merge gate
+                                          is retired, Q-0197). It flags the work on the
                                           run-report ⚑ Self-initiated line for owner review.
   The phase gate is now ADVISORY (Q-0172) — optional, a PRIORITY readout, never a block:
     python3 /home/hermes/repos/superbot/scripts/check_phase_gate.py --phase

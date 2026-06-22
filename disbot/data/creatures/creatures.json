@@ -1,5 +1,5 @@
 {
-  "_README": "v1 runtime creature catalog (graduated from tools/game_sim/creatures.json at the gated runtime build, Q-0186). 36 ORIGINAL creatures (no Pokemon IP — Q-0187), 6 per element, validated PLAYABLE by tools/game_sim/creature_battle_sim.py. Creature = a data row (the towers.json / fish-roster pattern): adding one is data, not code. Each creature's display emoji is its element's emoji; rarity drives encounter frequency + catch difficulty (Common easiest/most common ... Epic hardest/rarest). Stats/battle are NOT here — they derive in the PvP engine (a later needs-hermes-review slice). Names are owner-refinable flavor.",
+  "_README": "v1 runtime creature catalog (graduated from tools/game_sim/creatures.json at the gated runtime build, Q-0186). 36 ORIGINAL creatures (no Pokemon IP — Q-0187), 6 per element, validated PLAYABLE by tools/game_sim/creature_battle_sim.py. Creature = a data row (the towers.json / fish-roster pattern): adding one is data, not code. Each creature's display emoji is its element's emoji; rarity drives encounter frequency + catch difficulty (Common easiest/most common ... Epic hardest/rarest). Stats/battle are NOT here — they derive in the PvP engine (a later substantial-runtime slice). Names are owner-refinable flavor.",
   "element_emoji": {
     "Ember": "🔥",
     "Tide": "🌊",
