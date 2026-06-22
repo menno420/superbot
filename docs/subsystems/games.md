@@ -182,7 +182,13 @@ on **Q-0182**.
 
 **Active games plans** (live buildable set — full index: [`planning/README.md`](../planning/README.md)):
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
-  Phase 1 (fishing v1 + gear-switching) buildable; the loadout/value/minigame tail is owner-design-gated (Q-0175).
+  Phase 1 (fishing v1 + gear-switching) buildable; the loadout/minigame tail is owner-design-gated (Q-0175).
+  **Fish *use* is now decided + shipped (#1289, owner 2026-06-22):** a caught fish enters the mining
+  inventory (`fishing_workflow.fish` grants it; the catch-log stays the dex), is **sellable** for coins
+  (modest, size-scaled `RESOURCE` value in `utils/mining/items.py`), and is **cookable** into a
+  `cooked fish` food (+30 energy) at a built **Campfire** structure (`!cook`,
+  `mining_workflow.cook`; campfire in `utils/mining/structures.py`). Balance caveat: fishing is currently
+  unpaced, so fish sell value is kept low on purpose (don't re-open the mining-faucet fix via fishing).
 - [mining-hub-redesign](../planning/mining-hub-redesign-2026-06-15.md) — owner-picked Option A sub-hub split.
   **PR2 (hub declutter) shipped:** the main hub is now six buttons (⛏️ Mine · 🌲 Harvest · 🗺️ Explore ·
   🧍 Character · 🧰 Gear · 🔨 Workshop); a **Character** sub-hub (`views/mining/character_hub.py`)

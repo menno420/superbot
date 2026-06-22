@@ -20,8 +20,10 @@ over a per-dig cooldown. Shipped:
   digging is blocked with a "rest or eat" hint (`mining_workflow.dig`).
 - **Refill via boosters** — `ration` (+25) and `energy drink` (+50) are buyable
   consumables (a coin sink) eaten via `!use` (`mining_workflow.use_item`).
-  **Cooking/eating fish is a follow-up PR** (the fishing↔mining bridge —
-  caught fish currently live in a collection log, not the inventory).
+- **Refill via cooking fish** (shipped in #1289, owner-chosen): caught fish are
+  now sellable inventory items; `!cook <fish>` at a built **Campfire** structure
+  turns one into a `cooked fish` (+30 energy when eaten). Resolves the fish-use
+  half of Q-0175 (fish are both an energy source and sellable for coins).
 
 The sim's `CURRENT` config now mirrors this applied state (with the energy
 throttle modeled as its equivalent ~10s interval) and verdicts **BALANCED**; the

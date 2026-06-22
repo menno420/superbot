@@ -25,11 +25,13 @@ MAX_ENERGY = 60  # a full bar ≈ a 60-dig burst before you regen-throttle
 DIG_COST = 1  # energy spent per dig
 REGEN_SECONDS = 10  # +1 energy every 10s → 360/hour (the chosen throttle)
 
-# Energy restored by eating/consuming a food or booster item. Fish cooking adds
-# to this table in a follow-up PR; the booster entries are the generic refill.
+# Energy restored by eating/consuming a food or booster item. Boosters (ration /
+# energy drink) are the buyable refill; "cooked fish" is the cooked-at-a-campfire
+# food (services/mining_workflow.cook) — the owner's "refill by eating fish".
 RESTORE_VALUES: dict[str, int] = {
     "ration": 25,
     "energy drink": 50,
+    "cooked fish": 30,
 }
 
 

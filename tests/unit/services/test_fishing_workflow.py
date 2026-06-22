@@ -84,17 +84,23 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
         assert game == game_xp_service.GAME_FISHING
         return _award(game_total=10)
 
+    async def _grant(user_id, guild_id, item, qty, *, conn=None):
+        events.append("grant")
+        assert conn is sentinel_conn
+        assert item == "trout" and qty == 1  # the caught fish enters the inventory
+
     with (
         patch.object(wf, "roll_catch", lambda level, rng=None: _CATCH),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 5})),
         patch.object(wf.db, "transaction", _txn(sentinel_conn, events)),
         patch.object(wf.db, "record_catch", AsyncMock(side_effect=_record)),
+        patch.object(wf.db, "update_mining_item", AsyncMock(side_effect=_grant)),
         patch.object(wf.game_xp_service, "award", AsyncMock(side_effect=_award_fn)),
         patch.object(wf.game_xp_service, "emit_award_events", AsyncMock()) as emit_xp,
     ):
         result = await wf.fish(99, 1)
 
-    for leg in ("record", "award"):
+    for leg in ("record", "grant", "award"):
         assert events.index(leg) < events.index("txn_exit")
     # XP events emit only after the transaction commits.
     emit_xp.assert_awaited_once()
@@ -117,6 +123,7 @@ async def test_crossing_a_fishing_level_flags_unlocked_bigger():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 50})),
         patch.object(wf.db, "transaction", _ctx),
         patch.object(wf.db, "record_catch", AsyncMock()),
+        patch.object(wf.db, "update_mining_item", AsyncMock()),
         patch.object(
             wf.game_xp_service,
             "award",
@@ -149,6 +156,7 @@ async def test_roll_is_gated_by_the_players_current_fishing_level():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "transaction", _ctx),
         patch.object(wf.db, "record_catch", AsyncMock()),
+        patch.object(wf.db, "update_mining_item", AsyncMock()),
         patch.object(
             wf.game_xp_service,
             "award",

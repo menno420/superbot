@@ -32,6 +32,7 @@ from utils import equipment
 #: one is its registry entry below plus (for Home) a render hook.
 FORGE = "forge"
 HOME = "home"
+CAMPFIRE = "campfire"
 
 #: Gear at or below this tier index needs **no** forge (bronze=1, iron=2,
 #: silver=3 are free; gold=4 → forge 1; diamond=5 → forge 2).  ``forge_level =
@@ -45,6 +46,11 @@ _FORGE_LEVEL_NAMES = ("(not built)", "Forge I", "Forge II")
 #: backdrop (the colour palette lives in ``utils.character_render``).  No gameplay
 #: gate — Home is a coin/material *sink* with a visible reward, never a wall.
 _HOME_LEVEL_NAMES = ("(not built)", "Cozy Cabin", "Stone Keep", "Grand Hall")
+
+#: Campfire (2026-06-22, owner-chosen): a cheap single-level structure that gates
+#: **cooking fish into food** (energy refill, see ``services/mining_workflow.cook``).
+#: A small coin + material sink, buildable early — a progression beat, not a wall.
+_CAMPFIRE_LEVEL_NAMES = ("(not built)", "Campfire")
 
 
 @dataclass(frozen=True)
@@ -76,6 +82,13 @@ _HOME_BUILD_LADDER: tuple[BuildCost, ...] = (
     BuildCost(coins=12_000, materials={"gold": 15, "diamond": 3}),
 )
 
+#: Campfire build ladder — one cheap level that unlocks cooking. A modest early
+#: coin + wood/stone sink (tunable; pinned by test_mining_structures.py).
+_CAMPFIRE_BUILD_LADDER: tuple[BuildCost, ...] = (
+    # → Campfire (unlocks !cook)
+    BuildCost(coins=500, materials={"wood": 20, "stone": 10}),
+)
+
 
 @dataclass(frozen=True)
 class StructureDef:
@@ -93,6 +106,12 @@ class StructureDef:
 _DEFS: dict[str, StructureDef] = {
     FORGE: StructureDef(FORGE, "Forge", _FORGE_BUILD_LADDER, _FORGE_LEVEL_NAMES),
     HOME: StructureDef(HOME, "Home", _HOME_BUILD_LADDER, _HOME_LEVEL_NAMES),
+    CAMPFIRE: StructureDef(
+        CAMPFIRE,
+        "Campfire",
+        _CAMPFIRE_BUILD_LADDER,
+        _CAMPFIRE_LEVEL_NAMES,
+    ),
 }
 
 STRUCTURES: tuple[str, ...] = tuple(_DEFS)
@@ -103,6 +122,14 @@ MAX_FORGE_LEVEL = len(_FORGE_BUILD_LADDER)
 
 #: Highest Home level (the top cosmetic backdrop).
 MAX_HOME_LEVEL = len(_HOME_BUILD_LADDER)
+
+#: Highest Campfire level (a single buildable level).
+MAX_CAMPFIRE_LEVEL = len(_CAMPFIRE_BUILD_LADDER)
+
+
+def cooking_unlocked(campfire_level: int) -> bool:
+    """True if a campfire at *campfire_level* unlocks cooking (level ≥ 1)."""
+    return campfire_level >= 1
 
 
 def is_structure(name: str) -> bool:
@@ -191,11 +218,15 @@ def tiers_unlocked_at(forge_level: int) -> tuple[str, ...]:
 
 __all__ = [
     "FORGE",
+    "HOME",
+    "CAMPFIRE",
     "STRUCTURES",
     "MAX_FORGE_LEVEL",
+    "MAX_CAMPFIRE_LEVEL",
     "FREE_TIER_CEILING",
     "BuildCost",
     "is_structure",
+    "cooking_unlocked",
     "forge_level_name",
     "forge_build_cost",
     "forge_level_required",

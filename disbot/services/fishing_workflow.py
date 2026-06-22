@@ -66,6 +66,18 @@ async def fish(user_id: int, guild_id: int) -> FishResult:
 
     async with db.transaction() as conn:
         await db.record_catch(user_id, guild_id, catch.species.name, conn=conn)
+        # The caught fish is now a tangible inventory item (owner decision
+        # 2026-06-22): sellable for coins via the market, and cookable into food
+        # at a campfire (mining_workflow.cook). The catch-log row above stays the
+        # dex/leaderboard record; this grant makes the fish usable — same atomic
+        # catch transaction, conn-composed (RS02).
+        await db.update_mining_item(
+            str(user_id),
+            guild_id,
+            catch.species.name,
+            1,
+            conn=conn,
+        )
         award = await game_xp_service.award(
             guild_id,
             user_id,
