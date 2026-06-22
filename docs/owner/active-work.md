@@ -194,4 +194,10 @@ and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work l
   command on `RoleGrantsCog` · `disbot/services/role_grants_service.py` / `disbot/cogs/role_grants_cog.py`
   + tests · 2026-06-21 · **routine dispatch, self-merge on green**
 
+- `claude/funny-franklin-95fczv` · **unattended-fit dispatch dimension** (S3 mechanism) — add an
+  orthogonal unattended-fit tag (🟢 auto / 🟡 review / 🔵 live / 🟠 ext-data) to each sector's Dispatch
+  line + `dispatch_menu.py --unattended` resolver + `check_sector_map.py` enforcement · `scripts/dispatch_menu.py`
+  / `scripts/check_sector_map.py` / `docs/roadmap.md` / `docs/repo-sector-map.md` + tests · 2026-06-22 ·
+  **routine dispatch, self-merge on green (Q-0172 self-initiated)**
+
 _(move claims here with their PR # as they close, then prune older entries)_

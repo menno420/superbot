@@ -135,3 +135,58 @@ def test_build_records_covers_live_roadmap_sectors():
             "maintainer_or_hermes",
             "starving",
         }
+
+
+# --- unattended-fit dimension (#1285) -------------------------------------------------
+
+
+def test_unattended_fit_parses_keyword_from_dispatch_line():
+    block = (
+        "### S1 — Bot · exec\n"
+        "- **Dispatch:** `S1` (executor **Claude-in-repo**, unattended-fit **🟡 review**) · plan\n"
+        "- **Now:** **▶ go** (foo)\n"
+    )
+    assert dm.unattended_fit(block) == "review"
+
+
+def test_unattended_fit_none_when_tag_absent():
+    block = (
+        "### S2 — BTD6 · exec\n"
+        "- **Dispatch:** executor **Claude-in-repo**\n"
+        "- **Now:** **▶ go** (foo)\n"
+    )
+    assert dm.unattended_fit(block) is None
+
+
+def test_unattended_fit_on_every_live_sector():
+    text = (_REPO / "docs" / "roadmap.md").read_text(encoding="utf-8")
+    for rec in dm.build_records(text):
+        assert rec["unattended_fit"] in dm._FIT_KEYWORDS, rec["sector"]
+
+
+def test_unattended_summary_ranks_auto_before_review():
+    text = (_REPO / "docs" / "roadmap.md").read_text(encoding="utf-8")
+    lines = dm.build_unattended_summary(text)
+    joined = "\n".join(lines)
+    # The live roadmap currently resolves at least one 🟢 auto lane (S2/S3/S4).
+    assert "SELF-MERGEABLE now" in joined
+    auto_idx = next(i for i, ln in enumerate(lines) if "SELF-MERGEABLE" in ln)
+    review_idx = next(
+        (i for i, ln in enumerate(lines) if "needs-hermes-review" in ln), len(lines)
+    )
+    assert auto_idx < review_idx  # auto lanes are listed first
+
+
+def test_unattended_summary_falls_back_when_no_auto_lane():
+    # A roadmap where every buildable sector is 🟡 review → the nudge points at review/promote.
+    text = (
+        "## By sector\n"
+        "### S1 — Bot · x\n"
+        "- **Dispatch:** (executor **Claude-in-repo**, unattended-fit **🟡 review**) · y\n"
+        "- **Now:** **▶ runtime thing** (foo)\n"
+        "## End\n"
+    )
+    lines = dm.build_unattended_summary(text)
+    joined = "\n".join(lines)
+    assert "🟢 auto: none" in joined
+    assert "promote an idea" in joined
