@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/upbeat-clarke-73fm43` · **mining grid: dig-moves-you** (owner design correction, in-chat) —
+  unify movement + Mine-here into one directional `dig(direction)` so every dig moves you one cell and
+  mines it (the owner's actual grid intent) · `services/mining_workflow.py` + `utils/mining/grid.py` +
+  `views/mining/grid_mine_view.py` + tests · 2026-06-22 · **PR (this session, auto-merge on green)**
 - `claude/friction-to-guard-reflex` · **wrong-branch guard hook + friction→guard reflex**
   (owner-directed, Q-0194) — extend `check_branch_freshness.py` PreToolUse to warn on
   commit/merge/rebase from a wrong/stale branch + institutionalize the "any friction → ship a
