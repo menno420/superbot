@@ -66,6 +66,12 @@ cross-game character — the V-13 paper-doll that "later holds the fishing rod."
 
 ## Open design questions (for the planner / owner — do NOT decide unprompted)
 
+> **Update 2026-06-22:** the **catch-mechanic** question below is now explored with data in
+> **`docs/planning/fishing-minigame-design-2026-06-22.md`** — a simulation
+> (`tools/sim/fishing_minigame_sim.py`) of the `cast → wait → BITE → reel` loop, the fair reaction
+> window, bite timing, the rod-upgrade ladder, and the shore-vs-deepwater split. It recommends a
+> direction and routes the remaining feel/scope calls back to the owner.
+
 - **Catch mechanic:** a deterministic roll (like `explore`)? a minigame? what picks *which* fish within
   your unlocked size-band, and what determines success?
 - **Leveling:** a dedicated fishing rod-tier ladder, a fishing skill in the skill tree, or both?
