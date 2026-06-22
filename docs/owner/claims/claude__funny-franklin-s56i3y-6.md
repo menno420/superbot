@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-s56i3y-6` · scope: route the mining-grid-encounters design (Q-0173 follow-up) to the owner — new router DISCUSS Q-0198 with 4 decisions + recommended defaults; mark the idea routed. Docs-only. · area: `docs/owner/maintainer-question-router.md`, `docs/ideas/mining-grid-encounters-2026-06-22.md` · 2026-06-22
