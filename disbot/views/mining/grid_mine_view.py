@@ -68,17 +68,19 @@ async def build_grid_embed(
         inline=False,
     )
     embed.set_footer(
-        text="Move with the arrows · ⛏️ Mine here digs your cell · only you can use this.",
+        text="Each ⛏️ dig moves you one cell and mines it · only you can use this.",
     )
     return embed
 
 
 class MineGridView(BaseView):
-    """The grid Mine navigator (PR 3): roam (x, y, z) + Mine here, in place.
+    """The grid Mine navigator (PR 3): dig the (x, y, z) world, in place.
 
-    Ownership / timeout / error handling come from BaseView.  Each button routes
-    to ``mining_workflow`` (the RS02 write seam) and re-renders this same view on
-    the anchor message.
+    Owner model (post-#1281): every dig is locomotion — a directional dig moves you
+    into the adjacent cell and mines it (N/S/E/W tunnel laterally, Deeper descends a
+    band, Up ascends).  Ownership / timeout / error handling come from BaseView; each
+    button routes to ``mining_workflow.dig`` (the RS02 write seam) and re-renders this
+    same view on the anchor message.
     """
 
     def __init__(
@@ -105,93 +107,87 @@ class MineGridView(BaseView):
         )
         await safe_edit(interaction, embed=embed, view=self)
 
-    async def _do_move(
+    async def _dig(
         self,
         interaction: discord.Interaction,
         direction: str,
     ) -> None:
+        """Dig in *direction* — move into the adjacent cell and mine it, in place."""
         if not await safe_defer(interaction):
             return
-        result = await mining_workflow.move(self.user_id, self.guild_id, direction)
-        note = result.note
-        if not result.moved and result.hint:
-            note = f"{result.note} _{result.hint}_"
-        if result.xp_note:
-            note += "\n" + result.xp_note
-        color = MINING_COLOR if result.moved else ERROR_COLOR
+        result = await mining_workflow.dig(self.user_id, self.guild_id, direction)
+        if not result.moved:
+            note = result.hint or "You can't dig that way."
+            color = ERROR_COLOR
+        else:
+            parts = [
+                f"You dig **{grid.move_phrase(direction)}** and mine "
+                f"**{result.amount}× {result.found}**!",
+            ]
+            if result.cell_note:
+                parts.append(result.cell_note)
+            if result.wear.notes:
+                parts.extend(result.wear.notes)
+            if result.xp_note:
+                parts.append(result.xp_note)
+            if result.pack_warning:
+                parts.append(result.pack_warning)
+            note = "\n".join(parts)
+            color = SUCCESS_COLOR
         await self._rerender(interaction, note=note, color=color)
 
-    # --- lateral movement (D-pad: N top, W / Mine / E middle, S bottom) -----
+    # --- directional digging (D-pad: N top, W / E middle, S bottom) ---------
+    # Every dig moves you one cell in that direction AND mines it (owner model).
 
-    @discord.ui.button(label="⬆️ North", style=discord.ButtonStyle.secondary, row=0)
+    @discord.ui.button(label="⛏️ North", style=discord.ButtonStyle.primary, row=0)
     async def north_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await self._do_move(interaction, grid.NORTH)
+        await self._dig(interaction, grid.NORTH)
 
-    @discord.ui.button(label="⬅️ West", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="⛏️ West", style=discord.ButtonStyle.primary, row=1)
     async def west_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await self._do_move(interaction, grid.WEST)
+        await self._dig(interaction, grid.WEST)
 
-    @discord.ui.button(label="⛏️ Mine here", style=discord.ButtonStyle.primary, row=1)
-    async def mine_here_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        if not await safe_defer(interaction):
-            return
-        result = await mining_workflow.mine_here(self.user_id, self.guild_id)
-        parts = [f"You mined **{result.amount}× {result.found}**!"]
-        if result.cell_note:
-            parts.append(result.cell_note)
-        if result.wear.notes:
-            parts.extend(result.wear.notes)
-        if result.xp_note:
-            parts.append(result.xp_note)
-        if result.pack_warning:
-            parts.append(result.pack_warning)
-        await self._rerender(interaction, note="\n".join(parts), color=SUCCESS_COLOR)
-
-    @discord.ui.button(label="➡️ East", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="⛏️ East", style=discord.ButtonStyle.primary, row=1)
     async def east_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await self._do_move(interaction, grid.EAST)
+        await self._dig(interaction, grid.EAST)
 
-    @discord.ui.button(label="⬇️ South", style=discord.ButtonStyle.secondary, row=2)
+    @discord.ui.button(label="⛏️ South", style=discord.ButtonStyle.primary, row=2)
     async def south_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await self._do_move(interaction, grid.SOUTH)
+        await self._dig(interaction, grid.SOUTH)
 
-    # --- vertical movement (depth band = z) ---------------------------------
+    # --- vertical digging (depth band = z; Deeper is light-gated) ------------
 
-    @discord.ui.button(label="🔽 Down", style=discord.ButtonStyle.success, row=3)
+    @discord.ui.button(label="⛏️ Deeper", style=discord.ButtonStyle.success, row=3)
     async def down_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await self._do_move(interaction, grid.DOWN)
+        await self._dig(interaction, grid.DOWN)
 
-    @discord.ui.button(label="🔼 Up", style=discord.ButtonStyle.success, row=3)
+    @discord.ui.button(label="⛏️ Up", style=discord.ButtonStyle.success, row=3)
     async def up_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await self._do_move(interaction, grid.UP)
+        await self._dig(interaction, grid.UP)
 
     # --- navigation ---------------------------------------------------------
 

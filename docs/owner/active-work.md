@@ -41,6 +41,10 @@ and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work l
 
 ## Recently cleared
 
+- `claude/upbeat-clarke-73fm43` · **mining grid: dig-moves-you** (owner design correction, in-chat) —
+  unified movement + Mine-here into one directional `dig(direction)` (each dig moves you one cell and
+  mines it) · `mining_workflow.dig` + `grid_mine_view` six dig buttons · 2026-06-22 ·
+  **PR #1282 (auto-merge on green)**
 - `claude/upbeat-clarke-73fm43` · **mining grid Mine (hub-redesign PR 3)** (owner-directed —
   "continue the mining plan") — (x,y,z) seed-deterministic grid + 6-direction movement + fog-of-war,
   replacing the interim linear `MineView` (Q-0173) · `utils/mining/grid.py` + migration 085 +
