@@ -24,6 +24,7 @@ from services.btd6_data_service import (
     get_mode,
     get_round,
     get_tower,
+    round_base_xp,
 )
 from services.btd6_source_registry import FreshnessBucket, bucket_freshness
 
@@ -45,6 +46,14 @@ class RoundFact:
     summary: str
     danger: str
     common_threats: tuple[str, ...]
+    # Per-round economy stats (None when the data is unavailable). rbe / cash /
+    # cumulative_cash come straight off RoundEntry; base_xp is the bloonswiki-
+    # sourced round XP (see round_xp.json). Surfaced as the round embed's
+    # "Economy" field.
+    rbe: int | None = None
+    cash: float | None = None
+    cumulative_cash: float | None = None
+    base_xp: int | None = None
 
 
 def tower_fact(tower_id: str) -> TowerFact | None:
@@ -79,6 +88,10 @@ def round_fact(round_number: int) -> RoundFact | None:
         summary=entry.summary,
         danger=entry.danger,
         common_threats=entry.common_threats,
+        rbe=entry.rbe,
+        cash=entry.cash,
+        cumulative_cash=entry.cumulative_cash,
+        base_xp=round_base_xp(entry.round_number),
     )
 
 

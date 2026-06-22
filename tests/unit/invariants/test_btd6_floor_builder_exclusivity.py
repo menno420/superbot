@@ -108,6 +108,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "which boss has the most health at tier 5",
         "deterministic_boss_hp_comparison_reply",
     ),
+    (
+        "how much xp does round 63 give",
+        "deterministic_round_xp_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.
@@ -123,6 +127,8 @@ _SHOULD_DEFER: tuple[str, ...] = (
     "which tower is best at popping lead",
     "what is a moab",
     "is the lead bloon immune to sharp",
+    # XP to *unlock an upgrade* names no round → the round-XP floor must defer.
+    "how much xp to unlock the 2-0-4 super monkey",
 )
 
 

@@ -246,6 +246,21 @@ def for_mode(mode: ModeEntry) -> BTD6Response:
 
 
 def for_round(fact: RoundFact) -> BTD6Response:
+    economy_bits: list[str] = []
+    if fact.rbe is not None:
+        economy_bits.append(f"RBE **{fact.rbe:,}**")
+    if fact.cash is not None:
+        cumulative = (
+            f" (cumulative **${fact.cumulative_cash:,.0f}**)"
+            if fact.cumulative_cash is not None
+            else ""
+        )
+        economy_bits.append(f"Cash **${fact.cash:,.0f}**{cumulative}")
+    if fact.base_xp is not None:
+        economy_bits.append(f"XP **{fact.base_xp:,}**")
+    fields: tuple[tuple[str, str], ...] = (
+        (("Economy", " · ".join(economy_bits)),) if economy_bits else ()
+    )
     return BTD6Response(
         title=f"Round {fact.round_number} — danger: {fact.danger}",
         short_answer=fact.summary,
@@ -253,6 +268,7 @@ def for_round(fact: RoundFact) -> BTD6Response:
             "Threats this round: "
             + (", ".join(fact.common_threats) if fact.common_threats else "—")
         ),
+        fields=fields,
         version_sensitivity=(
             "Round composition is stable but can shift slightly during major patches."
         ),

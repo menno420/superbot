@@ -3875,6 +3875,86 @@ def deterministic_boss_hp_comparison_reply(message_text: str) -> str | None:
     return "\n".join(lines)
 
 
+# --- "XP for round N" deterministic reply -------------------------------------
+# Per-round XP is a fixed function of round number (round_xp.json, the
+# bloonswiki-sourced formula). The model can't restate the table verbatim, so a
+# "how much XP does round 63 give" answer either trips the faithfulness guard or
+# is silently wrong — the deterministic layer OWNS it. Sibling of the round-cash
+# workflow (which owns cash); this owns XP.
+_ROUND_XP_CUE_RE = re.compile(r"\b(?:xp|experience)\b", re.I)
+# A round reference: "round 63" / "round63" / "r63" (1-3 digits).
+_ROUND_XP_NUMBER_RE = re.compile(r"\bround\s*(\d{1,3})\b|\br(\d{1,3})\b", re.I)
+# Map-difficulty cue (the axis the XP multiplier scales on — distinct from the
+# Easy/Medium/Hard game difficulty).
+_ROUND_XP_DIFFICULTY_RE = re.compile(
+    r"\b(beginner|intermediate|advanced|expert)\b",
+    re.I,
+)
+_ROUND_XP_FREEPLAY_RE = re.compile(r"\bfree\s*play\b", re.I)
+
+
+def _fmt_xp(value: float) -> str:
+    return f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}"
+
+
+def deterministic_round_xp_reply(message_text: str) -> str | None:
+    """A code-built "XP for round N" answer, or ``None``.
+
+    Fires on an XP cue ("xp" / "experience") + a resolvable round number, served
+    as a pre-emptive floor. Honours an optional map difficulty
+    (Beginner/Intermediate/Advanced/Expert) and a ``freeplay`` cue. Defers
+    (``None``) without an XP cue, without a round number, or for a round outside
+    the table — those reach the model. XP is identical for the default and ABR
+    round sets, so there is no roundset branch. The per-tower split and Monkey-
+    Knowledge bonuses are gameplay-dependent and are noted, not computed.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _ROUND_XP_CUE_RE.search(low):
+        return None
+    number_match = _ROUND_XP_NUMBER_RE.search(low)
+    if number_match is None:
+        return None
+    round_number = int(number_match.group(1) or number_match.group(2))
+
+    from services import btd6_data_service
+
+    base = btd6_data_service.round_base_xp(round_number)
+    if base is None:
+        return None
+    difficulty_match = _ROUND_XP_DIFFICULTY_RE.search(low)
+    difficulty = difficulty_match.group(1).lower() if difficulty_match else "beginner"
+    freeplay = bool(_ROUND_XP_FREEPLAY_RE.search(low))
+    earned = btd6_data_service.round_xp_earned(
+        round_number,
+        difficulty=difficulty,
+        freeplay=freeplay,
+    )
+    if earned is None:
+        return None
+
+    if difficulty == "beginner" and not freeplay:
+        return (
+            f"**Round {round_number}** awards **{_fmt_xp(earned)} XP** (base — "
+            "Beginner difficulty, before freeplay and Monkey Knowledge). Map "
+            "difficulty scales it: ×1.1 Intermediate · ×1.2 Advanced · ×1.3 "
+            "Expert. This is the round's total tower XP, split among your towers "
+            "by share of cash invested."
+        )
+    qualifiers = []
+    if difficulty != "beginner":
+        qualifiers.append(f"on **{difficulty.title()}**")
+    if freeplay:
+        qualifiers.append("in **freeplay**")
+    qualifier = " ".join(qualifiers)
+    return (
+        f"**Round {round_number}** {qualifier} awards **{_fmt_xp(earned)} XP** "
+        f"(base **{base:,}** XP before Monkey Knowledge)."
+    )
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -3885,6 +3965,7 @@ def deterministic_boss_hp_comparison_reply(message_text: str) -> str | None:
 # *live* tuple — a builder added here is automatically held to the one-fires
 # contract, no test edit needed. Append a new list family here.
 _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
+    deterministic_round_xp_reply,
     deterministic_mk_reference_reply,
     deterministic_mk_category_roster_reply,
     deterministic_geraldo_per_level_reply,
