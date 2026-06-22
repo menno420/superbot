@@ -25,14 +25,14 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/funny-franklin-h6cjlg` · **allow read-only network probes (curl)** (dispatch routine,
-  owner-directed in-session) — move `curl` `ask`→`allow` in `.claude/settings.json` + the `timeout`
-  wrapper; prune the stale BUG-0023 claim · `.claude/settings.json` / `docs/owner/active-work.md` ·
-  2026-06-22 · **PR (this session, owner-directed self-merge on green)**
+- `claude/friction-to-guard-reflex` · **wrong-branch guard hook + friction→guard reflex**
+  (owner-directed, Q-0194) — extend `check_branch_freshness.py` PreToolUse to warn on
+  commit/merge/rebase from a wrong/stale branch + institutionalize the "any friction → ship a
+  guard" session-ender · `scripts/check_branch_freshness.py` + tests / `.sessions/README.md` /
+  `.session-journal.md` / router · 2026-06-22 · **PR (this session, auto-merge on green)**
 
-*(2026-06-22 prune, Q-0166: the BUG-0023 slash-under-coverage claim on `claude/funny-franklin-mjvqrx`
-was stale — its PR #1272 merged (in `git log`, bug-book marked FIXED) and `list_pull_requests`
-(state=open) returned empty — so it was pruned; merged work is in `current-state.md` + the bug-book.)*
+*(2026-06-22 prune, Q-0166 drift-on-sight: the `claude/funny-franklin-h6cjlg` curl-allow claim
+(PR #1274) merged to `main` — pruned here; merged work is in `current-state.md`.)*
 
 *(2026-06-22 prune, Q-0166 drift-on-sight: the merge from `main` carried in several already-merged
 claims — `claude/fix-ci-synchronize-journal-claim` (PR #1278), `claude/modest-gates-0ble76` (PR #1267)

@@ -7081,3 +7081,45 @@ Q); `.session-journal.md` got a one-line prevention note next to the auto-deploy
 
 **Home:** this Q-block (canonical) + `docs/operations/production-deployment.md` (the operational truth) +
 the `.claude/CLAUDE.md` auto-merge bullet (the binding rule).
+
+---
+
+### Q-0194 — ANSWERED (owner directive in-session): make agents self-generate workflow guards; wrong-branch hook (2026-06-22)
+
+**Context.** A session hit a wrong-branch slip: a piped `git checkout` (`… 2>&1 | tail -2 || fallback`)
+masked the checkout's failure behind `tail`'s exit code, so a `git merge origin/main` ran on an
+already-merged branch (caught + reset, nothing pushed). The owner first asked whether a sync-to-main
+rule existed (it does — the orient / SessionStart freshness guard), then asked to turn the prevention
+into a hook — and made the **meta-point**: *catching these inconsistencies should not depend on the
+owner. The repo is built so agents think for themselves; anytime a session hits something that
+interrupts the workflow, it should itself produce a way to prevent it for the next session. Most of
+this already works (the session enders / reflection interview), but cases like this still slip by.*
+
+**The decision / directive.**
+1. **Build the wrong-branch guard (recommended advisory option).** Extend
+   `scripts/check_branch_freshness.py` (the existing Q-0138/Q-0188 PreToolUse(Bash)+Stop+SessionStart
+   hook) so PreToolUse also fires on `git commit`/`merge`/`rebase` with a **network-free** branch guard
+   (detached-HEAD / on-`main` / behind-`origin/main`) — advisory, never blocking, same Q-0105
+   kill-switch. `git push` keeps the authoritative network freshness check. (Built in-session under the
+   Q-0106 live-owner exception for executable config; no `.claude/settings.json` change needed — the
+   existing `Bash` matcher already routes to the script.)
+2. **Standing reflex — "friction → guard" (the systemic half).** Any time something interrupts a
+   session's workflow, the session must convert it into the **cheapest *enforcing* prevention** before
+   ending — **checker/CI/test → hook → journal Rule**, in that order ("enforce, don't exhort", Q-0132) —
+   not merely note it. Ownership split: docs/journal/test/checker guards are **free to ship now**; a
+   hook / `.claude/settings.json` / binding-`CLAUDE.md` rule is **owner-gated** (build if owner-directed
+   in-session, else propose a router DISCUSS Q).
+
+**Applied this session (in-session authority + free-to-edit):** extended `check_branch_freshness.py`
++ tests (Q-0106 exception; the hook provenance header carries this Q); added reflection-interview
+**question 7 (friction → guard)** to `.sessions/README.md`; added END-protocol **step 4b** + two
+**Cross-agent & git workflow** Rules (sync-fresh-before-PR-work; never mask a command's `$?` behind a
+pipe / confirm `git branch --show-current` after a checkout) to `.session-journal.md`.
+
+**▶ DISCUSS (owner, optional):** elevate the friction→guard reflex from the journal/README into the
+`.claude/CLAUDE.md` Working agreement as a one-line binding principle. Left as a proposal because
+CLAUDE.md content is propose-first (Q-0035) and the reflex is already operative via the session enders;
+the owner can promote it if he wants it binding rather than guidebook-level.
+
+**Home:** this Q-block (canonical) + `scripts/check_branch_freshness.py` header (the hook) +
+`.sessions/README.md` Q7 + `.session-journal.md` END step 4b & Rules (the operative reflex).
