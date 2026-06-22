@@ -25,6 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/upbeat-clarke-73fm43` · **mining grid Mine (hub-redesign PR 3)** (owner-directed —
+  "continue the mining plan") — the (x,y,z) seed-deterministic procedural grid + 6-direction
+  movement + fog-of-war discovery, replacing the interim linear descend/ascend `MineView`
+  (Q-0173 design) · `utils/mining/grid.py` + migration 085 + `utils/db/games/mining_grid.py` +
+  `services/mining_workflow.py` + `views/mining/grid_mine_view.py` + `cogs/mining_cog.py` +
+  tests · 2026-06-22 · **PR (this session, auto-merge on green)**
 - `claude/friction-to-guard-reflex` · **wrong-branch guard hook + friction→guard reflex**
   (owner-directed, Q-0194) — extend `check_branch_freshness.py` PreToolUse to warn on
   commit/merge/rebase from a wrong/stale branch + institutionalize the "any friction → ship a
