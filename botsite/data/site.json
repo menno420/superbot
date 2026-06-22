@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T18:03:40Z",
+    "generated_at": "2026-06-22T18:21:56Z",
     "build": {
-      "commit": "b12b698",
-      "subject": "Fishing PR4: born-red card + lane claim",
-      "committed_at": "2026-06-22T18:03:40Z"
+      "commit": "6bd8c97",
+      "subject": "Tune fishing energy to the owner's pictured model (60-unit bar, 2 per cast)",
+      "committed_at": "2026-06-22T18:21:56Z"
     }
   },
   "counts": {
