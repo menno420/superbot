@@ -434,3 +434,71 @@ async def test_ensure_color_role_falls_back_to_solid_on_gradient_failure():
     assert "solid" in note.lower()
     assert apply_mock.await_count == 2
     assert apply_mock.await_args_list[1].args[1].secondary_color is None
+
+
+# ---------------------------------------------------------------------------
+# ensure_role — the general reuse-or-create seam (bulk role packs)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_ensure_role_reuses_existing_same_name_role():
+    guild = SimpleNamespace(id=1, features=[])
+    with patch(
+        "core.runtime.resources.resolve_role",
+        return_value=SimpleNamespace(id=321),
+    ):
+        role_id, created, note = await svc.ensure_role(
+            guild,
+            name="Moderator",
+            color=_PRIMARY,
+            hoist=True,
+            actor=SimpleNamespace(id=9),
+        )
+    assert (role_id, created, note) == (321, False, "")
+
+
+@pytest.mark.asyncio
+async def test_ensure_role_creates_with_hoist_and_no_gradient():
+    guild = SimpleNamespace(id=1, features=[])
+    apply_mock = AsyncMock(return_value=_applied(654))
+    with (
+        patch("core.runtime.resources.resolve_role", return_value=None),
+        patch(
+            "services.role_lifecycle_service.RoleLifecycleService.apply",
+            new=apply_mock,
+        ),
+    ):
+        role_id, created, _ = await svc.ensure_role(
+            guild,
+            name="Valorant",
+            color=_PRIMARY,
+            hoist=True,
+            actor=SimpleNamespace(id=9),
+        )
+    assert (role_id, created) == (654, True)
+    req = apply_mock.await_args.args[1]
+    assert req.operation == "create"
+    assert req.name == "Valorant"
+    assert req.hoist is True
+    assert req.secondary_color is None
+
+
+@pytest.mark.asyncio
+async def test_ensure_role_blank_name_falls_back():
+    guild = SimpleNamespace(id=1, features=[])
+    apply_mock = AsyncMock(return_value=_applied(1))
+    with (
+        patch("core.runtime.resources.resolve_role", return_value=None),
+        patch(
+            "services.role_lifecycle_service.RoleLifecycleService.apply",
+            new=apply_mock,
+        ),
+    ):
+        await svc.ensure_role(
+            guild,
+            name="   ",
+            color=_PRIMARY,
+            actor=SimpleNamespace(id=9),
+        )
+    assert apply_mock.await_args.args[1].name == "role"

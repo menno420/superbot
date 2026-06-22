@@ -616,6 +616,40 @@ class RoleMenuBuilder(BaseView):
             ephemeral=True,
         )
 
+    @discord.ui.button(label="📦 Packs", style=discord.ButtonStyle.grey, row=0)
+    async def packs_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        from views.roles._role_pack_flow import RolePackView
+
+        view = RolePackView(
+            interaction.user,
+            self.guild,
+            on_created=self._add_pack_roles,
+        )
+        await interaction.response.send_message(
+            "Bulk-create roles from a pack and add them to this menu — pick a "
+            "category, then the roles:",
+            view=view,
+            ephemeral=True,
+        )
+
+    async def _add_pack_roles(
+        self,
+        interaction: discord.Interaction,
+        role_ids: list[int],
+    ) -> None:
+        """on_created hook: fold the newly created pack roles into the draft."""
+        for role_id in role_ids:
+            if role_id not in self.role_ids and len(self.role_ids) < MAX_MENU_ROLES:
+                self.role_ids.append(role_id)
+        await self._rerender()
+
     @discord.ui.button(label="🧩 Template", style=discord.ButtonStyle.grey, row=0)
     async def template_btn(
         self,
