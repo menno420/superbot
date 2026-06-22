@@ -15,8 +15,8 @@ name: codex-final-review
 # accepted (owner chose "accept post-merge review"): routines scan recently-merged PRs for Codex
 # comments and fix the real ones first (Q-0174).
 #
-# Carve-outs mirror auto-merge-enabler (never fire on labelled PRs). Idempotent: posts at most
-# once per PR (a hidden marker guards re-posting on a later synchronize).
+# Carve-out mirrors auto-merge-enabler (never fires on a `do-not-automerge` PR). Idempotent:
+# posts at most once per PR (a hidden marker guards re-posting on a later synchronize).
 #
 # Provenance + reliability (Q-0105): added 2026-06-19. UNVERIFIED — watch the first few PRs to
 # confirm it fires exactly once, on the final head, and that Codex re-reviews the complete diff.
@@ -40,7 +40,6 @@ jobs:
       github.repository == 'menno420/superbot' &&
       github.event.pull_request.draft == false &&
       startsWith(github.head_ref, 'claude/') &&
-      !contains(github.event.pull_request.labels.*.name, 'needs-hermes-review') &&
       !contains(github.event.pull_request.labels.*.name, 'do-not-automerge')
     runs-on: ubuntu-latest
     steps:

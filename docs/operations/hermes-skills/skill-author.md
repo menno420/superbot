@@ -16,9 +16,8 @@ or to build a **composite** that chains existing atoms (e.g. an overseer `tick` 
 health → decide → dispatch). The closing of the "Hermes writes its own skills, but they never make
 it back into the repo" gap.
 
-**The write it depends on (Q-0140):** authoring a skill is a **docs-only** change, which is one of
-Hermes' two sanctioned writes (the other is the `review-merge` gate). Hermes still never edits code,
-pushes runtime changes, or touches production.
+**The write it depends on (Q-0140):** authoring a skill is a **docs-only** change — Hermes'
+sanctioned write. Hermes still never edits code, pushes runtime changes, or touches production.
 
 ---
 
@@ -44,7 +43,7 @@ STEP 2 — DESIGN. Decide:
     ("run the health check; if X dispatch a fix; else propose a continuation"), and REFERENCE
     the atoms rather than re-implementing them. Do not duplicate another skill's body.
   - Bake in the standing rules so the skill is safe on its own:
-      * read-only by default; the only writes are docs-only PRs and the review-merge gate;
+      * read-only by default; the only write is the docs-only PR;
       * anything touching code is DISPATCHED to Claude Code, never edited here;
       * verify, don't assume (railway_vars.py / check_* / gh) — say what you verified;
       * never print secrets; reference env vars by name only;
