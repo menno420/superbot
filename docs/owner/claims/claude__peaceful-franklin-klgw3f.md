@@ -1,0 +1,1 @@
+- `claude/peaceful-franklin-klgw3f` · **plan-only**: design a Karma (thanks/upvote reputation) subsystem · docs-only — `docs/ideas/karma-*`, `docs/planning/karma-*`, `docs/roadmap.md`, `docs/planning/README.md` (no `disbot/` code) · 2026-06-22
