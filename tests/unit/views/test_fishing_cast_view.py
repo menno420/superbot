@@ -16,6 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from services import fishing_workflow
+from utils.fishing import rods
 from utils.fishing.fish import Catch, FishSpecies
 from views.fishing import active_casts
 from views.fishing.cast_view import _PHASE_FIGHT, FishingCastView
@@ -342,12 +343,12 @@ async def test_prepare_cast_blocks_a_second_concurrent_cast():
 async def test_prepare_cast_returns_an_embed_and_view_on_success():
     from views.fishing.cast_view import prepare_cast
 
-    with (
-        patch("views.fishing.cast_view.fishing_workflow.get_rod", AsyncMock()),
-        patch(
-            "views.fishing.cast_view.fishing_workflow.roll_cast",
-            AsyncMock(return_value=_ORDINARY),
-        ),
+    start = fishing_workflow.CastStart(
+        ok=True, cast=_ORDINARY, rod=rods.STARTER, energy_current=9
+    )
+    with patch(
+        "views.fishing.cast_view.fishing_workflow.begin_cast",
+        AsyncMock(return_value=start),
     ):
         result = await prepare_cast(1, 99)
 
@@ -360,14 +361,11 @@ async def test_prepare_cast_returns_an_embed_and_view_on_success():
 async def test_prepare_cast_reports_an_empty_catalog():
     from views.fishing.cast_view import prepare_cast
 
-    empty = fishing_workflow.Cast(catch=None, level_before=1)
-    with (
-        patch("views.fishing.cast_view.fishing_workflow.get_rod", AsyncMock()),
-        patch(
-            "views.fishing.cast_view.fishing_workflow.roll_cast",
-            AsyncMock(return_value=empty),
-        ),
+    start = fishing_workflow.CastStart(ok=False, message="🎣 unavailable")
+    with patch(
+        "views.fishing.cast_view.fishing_workflow.begin_cast",
+        AsyncMock(return_value=start),
     ):
         result = await prepare_cast(1, 99)
 
-    assert isinstance(result, str)  # honest "unavailable" message
+    assert isinstance(result, str)  # honest failure message

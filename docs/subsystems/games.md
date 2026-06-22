@@ -195,8 +195,11 @@ on **Q-0182**.
   (bigger catches within-band), `escape_resist` (fewer fight escapes). Level = *what* you catch;
   rod = *how well*. **Interactive menu shipped:** `!fishing` (and the Help-hub fishing panel) is a
   real `FishingMenuView` (🎣 Cast launches the minigame in place · 🎒 Rod opens the shop · 📖 Fishdex)
-  — `build_help_menu_view` returns it instead of the old static empty view. **Deferred to next PRs:**
-  energy pacing + sell-value rebalance, boat/deepwater.
+  — `build_help_menu_view` returns it instead of the old static empty view. **Energy pacing shipped:**
+  fishing has its own ⚡ energy bar (`utils/fishing/energy.py`, `fishing_energy` table, separate from
+  mining per owner decision) — each cast spends 1, regens ~1/30s; `fishing_workflow.begin_cast` gates
+  it. Now that casting is finite, fish **sell for ≈ `size_rank` (1–21 coins)**, up from the old 1–7
+  (`utils/mining/items.py` `_fish_value`). **Deferred to next PR:** boat/deepwater venue.
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
   Phase 1 (fishing v1 + gear-switching) buildable; the loadout/minigame tail is owner-design-gated (Q-0175).
   **Fish *use* is now decided + shipped (#1289, owner 2026-06-22):** a caught fish enters the mining

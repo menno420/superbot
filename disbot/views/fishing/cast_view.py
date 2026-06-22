@@ -42,7 +42,7 @@ import discord
 from core.runtime import tasks
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import fishing_workflow
-from utils.fishing import minigame
+from utils.fishing import energy, minigame
 from utils.fishing import rods as rods_mod
 from utils.fishing.fish import SPECIES, max_size_rank_for_level
 from utils.ui_constants import ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
@@ -78,15 +78,14 @@ async def prepare_cast(
     The single source of truth shared by the ``!fish`` command and the fishing
     menu's Cast button. Returns ``(embed, view)`` ready to send (the caller sets
     ``view.message`` then calls ``view.start()``), or a player-facing string when
-    a cast can't begin (already casting / catalog unavailable).
+    a cast can't begin (already casting / out of energy / catalog unavailable).
     """
     if (user_id, guild_id) in active_casts:
         return "🎣 You've already got a line in the water — reel that one in first!"
-    rod = await fishing_workflow.get_rod(user_id, guild_id)
-    cast = await fishing_workflow.roll_cast(user_id, guild_id, rod)
-    if cast.catch is None:
-        return "🎣 The fishing spot is unavailable right now — try later."
-    view = FishingCastView(user_id, guild_id, cast, rod=rod)
+    start = await fishing_workflow.begin_cast(user_id, guild_id)
+    if not start.ok or start.cast is None:
+        return start.message or "🎣 You can't cast right now — try later."
+    view = FishingCastView(user_id, guild_id, start.cast, rod=start.rod)
     embed = discord.Embed(
         description=(
             "You cast a line… 🎣\n"
@@ -94,6 +93,7 @@ async def prepare_cast(
         ),
         color=GAME_COLOR,
     )
+    embed.set_footer(text=energy.bar(start.energy_current))
     return embed, view
 
 
