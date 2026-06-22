@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T22:36:52Z",
+    "generated_at": "2026-06-22T22:40:17Z",
     "build": {
-      "commit": "3a751c8",
-      "subject": "Karma: lint fixes (drop unused import, group-subcommand type-ignore, black)",
-      "committed_at": "2026-06-22T22:36:52Z"
+      "commit": "fb983bd",
+      "subject": "Karma: session-card close-out notes (status still held)",
+      "committed_at": "2026-06-22T22:40:17Z"
     }
   },
   "counts": {

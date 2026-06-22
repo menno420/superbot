@@ -1,4 +1,4 @@
--- Migration 092: Karma (thanks/upvote reputation).
+-- Migration 093: Karma (thanks/upvote reputation).
 --
 -- Members grant each other peer reputation through services.karma_service.
 -- Two tables, mirroring the economy pattern (economy + economy_audit_log,

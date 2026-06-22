@@ -11,7 +11,7 @@ signal distinct from XP (activity) and coins (economy) — it measures how much 
 community values you. The architecture mirrors economy/XP 1:1 (audited service seam
 → EventBus emit → cog → leaderboard provider).
 
-- **DB:** `disbot/utils/db/karma.py` + migration `disbot/migrations/092_karma.sql`
+- **DB:** `disbot/utils/db/karma.py` + migration `disbot/migrations/093_karma.sql`
   (two tables: `karma` running totals · `karma_audit_log` append-only history).
 - **Service (the only write seam):** `disbot/services/karma_service.py` —
   `give(...)` / `get_record(...)`. INV-K (`tests/unit/invariants/test_inv_k_karma_service.py`)
