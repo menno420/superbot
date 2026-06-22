@@ -1,25 +1,25 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T22:22:42Z",
+    "generated_at": "2026-06-22T22:40:17Z",
     "build": {
-      "commit": "6109030",
-      "subject": "docs(session): flip treasury session card to complete (PR #1334)",
-      "committed_at": "2026-06-22T22:22:42Z"
+      "commit": "fb983bd",
+      "subject": "Karma: session-card close-out notes (status still held)",
+      "committed_at": "2026-06-22T22:40:17Z"
     },
     "counts": {
-      "functions": 39,
+      "functions": 40,
       "ideas": 128,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
-      "cogs": 49,
-      "commands": 377,
-      "setting_keys": 104,
-      "setting_domains": 15,
-      "typed_settings": 85,
-      "visible_subsystems": 39,
+      "cogs": 50,
+      "commands": 381,
+      "setting_keys": 107,
+      "setting_domains": 16,
+      "typed_settings": 88,
+      "visible_subsystems": 40,
       "synonyms": 87,
       "bot_changelog": 3
     }
@@ -895,6 +895,35 @@
       ],
       "capabilities": [
         "security.settings.configure"
+      ]
+    },
+    {
+      "key": "karma",
+      "display_name": "Karma",
+      "description": "Peer reputation — thank helpful members with !thanks",
+      "emoji": "✨",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "progression",
+      "tags": [
+        "karma",
+        "reputation",
+        "thanks",
+        "progression",
+        "leaderboard"
+      ],
+      "entry_points": [
+        "thanks",
+        "karma"
+      ],
+      "related_subsystems": [
+        "xp",
+        "leaderboard"
+      ],
+      "capabilities": [
+        "karma.card.view",
+        "karma.grant.give",
+        "karma.settings.configure"
       ]
     },
     {
@@ -2483,6 +2512,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-karma-build.md",
+      "date": "2026-06-22",
+      "title": "Session — 2026-06-22 · Karma (thanks/upvote reputation) — build",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-idle-chicken-farm.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — NEW idle egg/chicken farm game",
@@ -2761,14 +2798,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-ui-direction.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction-roles plan: UI-direction refinement (web vs in-Discord)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -2857,7 +2886,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 186,
+          "line": 187,
           "layer": "config",
           "has_default": true
         },
@@ -2879,7 +2908,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 185,
+          "line": 186,
           "layer": "config",
           "has_default": true
         }
@@ -2912,7 +2941,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 169,
+          "line": 170,
           "layer": "config",
           "has_default": true
         },
@@ -2982,7 +3011,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 224,
+          "line": 225,
           "layer": "config",
           "has_default": true
         }
@@ -3030,7 +3059,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 212,
+          "line": 213,
           "layer": "config",
           "has_default": true
         }
@@ -3046,7 +3075,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 215,
+          "line": 216,
           "layer": "config",
           "has_default": true
         }
@@ -3062,7 +3091,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 218,
+          "line": 219,
           "layer": "config",
           "has_default": true
         }
@@ -3222,7 +3251,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 111,
+          "line": 112,
           "layer": "config",
           "has_default": true
         }
@@ -3302,7 +3331,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 112,
+          "line": 113,
           "layer": "config",
           "has_default": true
         }
@@ -3320,7 +3349,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 168,
+          "line": 169,
           "layer": "config",
           "has_default": true
         },
@@ -3361,7 +3390,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 195,
+          "line": 196,
           "layer": "config",
           "has_default": true
         },
@@ -3384,7 +3413,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 199,
+          "line": 200,
           "layer": "config",
           "has_default": true
         },
@@ -3423,7 +3452,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 167,
+          "line": 168,
           "layer": "config",
           "has_default": true
         },
@@ -3447,7 +3476,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 166,
+          "line": 167,
           "layer": "config",
           "has_default": true
         },
@@ -6173,6 +6202,63 @@
       ]
     },
     {
+      "cog": "KarmaCog",
+      "file": "disbot/cogs/karma_cog.py",
+      "subsystem": "karma",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "karma",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show a member's karma standing: ``!karma [@user]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "karma",
+          "type": "slash",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show your karma (peer reputation) — or another member's.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "thanks",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "rep",
+            "thank"
+          ],
+          "brief": "Give a karma point to a helpful member: ``!thanks @user [reason]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "give",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "karma",
+          "aliases": [
+            "add"
+          ],
+          "brief": "Give a karma point: ``!karma give @user [reason]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "LeaderboardCog",
       "file": "disbot/cogs/leaderboard_cog.py",
       "subsystem": "leaderboard",
@@ -8625,6 +8711,36 @@
       ]
     },
     {
+      "domain": "karma",
+      "purpose": "Settings keys owned by the Karma subsystem (cogs.karma_cog).",
+      "keys": [
+        {
+          "constant": "KARMA_ENABLED",
+          "key": "karma_enabled",
+          "type": "bool",
+          "hint": "Master switch for karma. When off, the !thanks / !karma give commands politely decline. On by default.",
+          "allowed_values": [],
+          "default": true
+        },
+        {
+          "constant": "KARMA_COOLDOWN",
+          "key": "karma_cooldown",
+          "type": "int",
+          "hint": "How long a member must wait before thanking the same recipient again (seconds). The main anti-farm guard. 0 disables the cooldown.",
+          "allowed_values": [],
+          "default": 3600
+        },
+        {
+          "constant": "KARMA_DAILY_CAP",
+          "key": "karma_daily_cap",
+          "type": "int",
+          "hint": "Maximum karma grants one member can give per rolling 24 hours.",
+          "allowed_values": [],
+          "default": 10
+        }
+      ]
+    },
+    {
       "domain": "logging",
       "purpose": "Settings keys owned by the server-logging service (services.server_logging).",
       "keys": [
@@ -9129,6 +9245,12 @@
             "emoji": "🔗"
           },
           {
+            "key": "karma",
+            "display_name": "Karma",
+            "category": "progression",
+            "emoji": "✨"
+          },
+          {
             "key": "leaderboard",
             "display_name": "Leaderboard",
             "category": "progression",
@@ -9297,7 +9419,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 39,
+    "total_visible": 40,
     "internal_count": 0
   },
   "synonyms": [

@@ -155,12 +155,14 @@ def test_embed_section_headings_present():
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_eight_child_buttons():
-    # welcome + counters homed under Community by the help-menu regrouping
-    # (PR #1290): 5 primary + 3 cross-link = 8 children when unfiltered.
+def test_view_has_nine_child_buttons():
+    # 6 primary (xp, karma, community_spotlight, welcome, counters, role) +
+    # 3 cross-link (counting, chain, leaderboard) = 9 children when unfiltered.
+    # Karma (parent_hub="community") was added 2026-06-22; the view wraps
+    # primaries past the 5-per-row Discord cap onto a second row.
     view = CommunityHubView(_author())
     buttons = [c for c in view.children if isinstance(c, _CommunityChildButton)]
-    assert len(buttons) == 8
+    assert len(buttons) == 9
 
 
 def test_buttons_cover_each_target_subsystem():
@@ -172,6 +174,7 @@ def test_buttons_cover_each_target_subsystem():
     }
     assert subsystems == {
         "xp",
+        "karma",
         "community_spotlight",
         "role",
         "welcome",
@@ -187,6 +190,7 @@ def test_button_custom_ids_are_stable_and_namespaced():
     ids = {c.custom_id for c in view.children if isinstance(c, _CommunityChildButton)}
     assert ids == {
         "community:open:xp",
+        "community:open:karma",
         "community:open:community_spotlight",
         "community:open:role",
         "community:open:welcome",
@@ -197,45 +201,48 @@ def test_button_custom_ids_are_stable_and_namespaced():
     }
 
 
-def test_buttons_split_across_two_rows():
-    """Primary children (parent_hub="community") on row 0; cross-links
-    (Counting/Chain/Leaderboard, declared in hub_registry.cross_link_children)
-    on row 1. welcome + counters were homed here by the help-menu regrouping
-    (PR #1290), filling row 0 to its 5-button Discord limit.
+def test_primaries_wrap_then_cross_links_follow():
+    """Primary children (parent_hub="community") fill rows from 0 at 5/row
+    (Discord's cap); cross-links (Counting/Chain/Leaderboard, declared in
+    hub_registry.cross_link_children) follow on the next free row. With 6
+    primaries (xp, karma, community_spotlight, welcome, counters, role) that
+    is row 0 (5) + row 1 (1), then cross-links on row 2.
     """
     view = CommunityHubView(_author())
-    row0 = {
-        btn._subsystem  # type: ignore[attr-defined]
-        for btn in view.children
-        if isinstance(btn, _CommunityChildButton) and btn.row == 0
-    }
-    row1 = {
-        btn._subsystem  # type: ignore[attr-defined]
-        for btn in view.children
-        if isinstance(btn, _CommunityChildButton) and btn.row == 1
-    }
-    assert row0 == {"xp", "community_spotlight", "role", "welcome", "counters"}
-    assert row1 == {"counting", "chain", "leaderboard"}
+
+    def _row(n: int) -> set[str]:
+        return {
+            btn._subsystem  # type: ignore[attr-defined]
+            for btn in view.children
+            if isinstance(btn, _CommunityChildButton) and btn.row == n
+        }
+
+    assert _row(0) == {"xp", "karma", "community_spotlight", "welcome", "counters"}
+    assert _row(1) == {"role"}
+    assert _row(2) == {"counting", "chain", "leaderboard"}
+    # No row exceeds Discord's 5-button cap.
+    for n in range(5):
+        assert len(_row(n)) <= 5
 
 
-def test_row_0_uses_primary_style_row_1_uses_secondary():
-    """Layout convention: primaries are visually highlighted (primary
-    style); cross-links recede (secondary style).
+def test_primaries_use_primary_style_cross_links_use_secondary():
+    """Layout convention: primary children are visually highlighted (primary
+    style); cross-links recede (secondary style) — regardless of which row
+    they wrap onto.
     """
+    primary, cross_link = discover_community_children()
+    primary_names = {name for name, _ in primary}
+    cross_names = {name for name, _ in cross_link}
+
     view = CommunityHubView(_author())
     for btn in view.children:
         if not isinstance(btn, _CommunityChildButton):
             continue
-        if btn.row == 0:
-            assert btn.style is discord.ButtonStyle.primary, (
-                f"row-0 button {btn._subsystem!r} has non-primary style "  # type: ignore[attr-defined]
-                f"{btn.style!r}"
-            )
-        elif btn.row == 1:
-            assert btn.style is discord.ButtonStyle.secondary, (
-                f"row-1 button {btn._subsystem!r} has non-secondary style "  # type: ignore[attr-defined]
-                f"{btn.style!r}"
-            )
+        sub = btn._subsystem  # type: ignore[attr-defined]
+        if sub in primary_names:
+            assert btn.style is discord.ButtonStyle.primary, sub
+        elif sub in cross_names:
+            assert btn.style is discord.ButtonStyle.secondary, sub
 
 
 def test_button_labels_come_from_registry_metadata():
@@ -438,10 +445,11 @@ def test_view_falls_back_to_unfiltered_when_lists_omitted():
         for c in view.children
         if isinstance(c, _CommunityChildButton)
     }
-    # All eight children rendered when nothing is filtered (welcome + counters
-    # homed under Community by the help-menu regrouping, PR #1290).
+    # All nine children rendered when nothing is filtered (karma added under
+    # Community 2026-06-22; welcome + counters homed here by PR #1290).
     assert buttons == {
         "xp",
+        "karma",
         "community_spotlight",
         "role",
         "welcome",

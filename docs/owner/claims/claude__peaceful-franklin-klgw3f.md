@@ -1,0 +1,1 @@
+- `claude/peaceful-franklin-klgw3f` · **build**: implement the Karma (thanks/upvote reputation) subsystem per the approved plan · `disbot/` (db/service/cog/leaderboard/settings) + migration + tests + docs · 2026-06-22

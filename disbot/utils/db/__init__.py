@@ -176,6 +176,16 @@ from utils.db.governance import (
     write_governance_audit,
 )
 from utils.db.inventory import add_item, get_inventory, has_item, try_grant_unique_item
+from utils.db.karma import (
+    credit_karma,
+    get_karma,
+    grants_given_since,
+    increment_given,
+    insert_karma_audit,
+    karma_rank,
+    recent_grant_count,
+    top_karma,
+)
 from utils.db.moderation import (
     add_prohibited_word,
     add_warning,
@@ -316,6 +326,15 @@ __all__ = [
     "get_inventory",
     "has_item",
     "try_grant_unique_item",
+    # karma
+    "credit_karma",
+    "get_karma",
+    "grants_given_since",
+    "increment_given",
+    "insert_karma_audit",
+    "karma_rank",
+    "recent_grant_count",
+    "top_karma",
     # governance
     "get_all_cleanup_for_guild",
     "get_all_visibility_for_guild",

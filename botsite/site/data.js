@@ -115,9 +115,9 @@ const AREAS = [
     "tagline": "Turn activity into status with XP and ranks.",
     "description": "Members earn XP for taking part, climb the ranks, and compete on server leaderboards.",
     "points": [
+      "Karma",
       "Leaderboard",
-      "XP & Levels",
-      "More commands grouped under this area"
+      "XP & Levels"
     ]
   },
   {
@@ -2692,6 +2692,26 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": []
+  },
+  {
+    "name": "karma",
+    "area": "progression",
+    "status": "in-progress",
+    "summary": "Show a member's karma standing: ``!karma [@user]``.",
+    "description": "Show a member's karma standing: !karma [@user].",
+    "usage": "!karma",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!karma [@user]"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Karma (thanks/upvote reputation) system"
+      }
+    ]
   },
   {
     "name": "kick",
@@ -5345,6 +5365,29 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "thanks",
+    "area": "progression",
+    "status": "in-progress",
+    "summary": "Give a karma point to a helpful member: ``!thanks @user [reason]``.",
+    "description": "Give a karma point to a helpful member: !thanks @user [reason].",
+    "usage": "!thanks",
+    "aliases": [
+      "rep",
+      "thank"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!thanks @user [reason]"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Karma (thanks/upvote reputation) system"
+      }
+    ]
+  },
+  {
     "name": "timedprize",
     "area": "moderation",
     "status": "finished",
@@ -6179,7 +6222,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "6109030",
+    "build": "fb983bd",
     "title": "New public bot website",
     "changes": [
       {
@@ -6191,7 +6234,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "6109030",
+    "build": "fb983bd",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6203,7 +6246,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "6109030",
+    "build": "fb983bd",
     "title": "Command-alias suggestions",
     "changes": [
       {

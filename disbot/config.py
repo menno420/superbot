@@ -61,6 +61,7 @@ INITIAL_EXTENSIONS = [
     "cogs.automod_cog",
     "cogs.image_moderation_cog",
     "cogs.xp_cog",
+    "cogs.karma_cog",
     "cogs.blackjack_cog",
     "cogs.rps_tournament_cog",
     "cogs.utility_cog",

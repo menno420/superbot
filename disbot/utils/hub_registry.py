@@ -185,6 +185,7 @@ HUBS: tuple[HubEntry, ...] = (
         # user-tier Community view (no clutter for normal members).
         primary_children=(
             "xp",
+            "karma",
             "community_spotlight",
             "role",
             "welcome",

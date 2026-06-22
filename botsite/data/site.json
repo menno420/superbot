@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T22:22:42Z",
+    "generated_at": "2026-06-22T22:40:17Z",
     "build": {
-      "commit": "6109030",
-      "subject": "docs(session): flip treasury session card to complete (PR #1334)",
-      "committed_at": "2026-06-22T22:22:42Z"
+      "commit": "fb983bd",
+      "subject": "Karma: session-card close-out notes (status still held)",
+      "committed_at": "2026-06-22T22:40:17Z"
     }
   },
   "counts": {
-    "commands": 377,
-    "features": 39,
+    "commands": 381,
+    "features": 40,
     "games": 10
   },
   "catalogue": [
@@ -562,6 +562,24 @@
       ],
       "badges": [
         "moderation"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "karma",
+      "display_name": "Karma",
+      "description": "Peer reputation — thank helpful members with !thanks",
+      "emoji": "✨",
+      "category": "progression",
+      "tags": [
+        "karma",
+        "reputation",
+        "thanks",
+        "progression",
+        "leaderboard"
+      ],
+      "badges": [
+        "progression"
       ],
       "is_game": false
     },
@@ -8885,6 +8903,29 @@
       "notes": null
     },
     {
+      "name": "give",
+      "aliases": [
+        "add"
+      ],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Give a karma point: ``!karma give @user [reason]``.",
+      "description": "Give a karma point: !karma give @user [reason].",
+      "use_cases": null,
+      "examples": [
+        "!karma give @user [reason]"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — Karma (thanks/upvote reputation) system",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "givexp",
       "aliases": [],
       "category": "progression",
@@ -8896,6 +8937,48 @@
       "examples": [],
       "status": "finished",
       "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "karma",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show a member's karma standing: ``!karma [@user]``.",
+      "description": "Show a member's karma standing: !karma [@user].",
+      "use_cases": null,
+      "examples": [
+        "!karma [@user]"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — Karma (thanks/upvote reputation) system",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "karma",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show your karma (peer reputation) — or another member's.",
+      "description": "Show a member's karma standing: !karma [@user].",
+      "use_cases": null,
+      "examples": [
+        "!karma [@user]"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — Karma (thanks/upvote reputation) system",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -8959,6 +9042,30 @@
       "examples": [],
       "status": "finished",
       "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "thanks",
+      "aliases": [
+        "rep",
+        "thank"
+      ],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Give a karma point to a helpful member: ``!thanks @user [reason]``.",
+      "description": "Give a karma point to a helpful member: !thanks @user [reason].",
+      "use_cases": null,
+      "examples": [
+        "!thanks @user [reason]"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — Karma (thanks/upvote reputation) system",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
