@@ -39,9 +39,9 @@ const AREAS = [
     "points": [
       "BTD6 Assistant",
       "Blackjack",
+      "Chicken Farm",
       "Counting",
-      "Creatures",
-      "Deathmatch"
+      "Creatures"
     ]
   },
   {
@@ -2003,6 +2003,22 @@ const COMMANDS = [
     "description": "Sends a random interesting fact.",
     "usage": "!fact",
     "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "farm",
+    "area": "games",
+    "status": "finished",
+    "summary": "Open your idle chicken farm — collect eggs, grow your flock and coop.",
+    "description": "Open your idle chicken farm — collect eggs, grow your flock and coop.",
+    "usage": "!farm",
+    "aliases": [
+      "chickenfarm",
+      "coop"
+    ],
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
@@ -5948,10 +5964,24 @@ const GAMES = [
     ]
   },
   {
+    "id": "farm",
+    "name": "Chicken Farm",
+    "icon": "gamepad",
+    "color": "var(--g-bright)",
+    "command": "farm",
+    "tagline": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
+    "description": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
+    "howTo": [
+      "Run !farm to get started.",
+      "Follow the prompts and buttons in the channel.",
+      "Wins and progress feed into XP and the leaderboards."
+    ]
+  },
+  {
     "id": "counting",
     "name": "Counting",
     "icon": "gamepad",
-    "color": "var(--g-bright)",
+    "color": "var(--pink)",
     "command": "count_info",
     "tagline": "Collaborative counting game",
     "description": "Collaborative counting game",
@@ -5965,7 +5995,7 @@ const GAMES = [
     "id": "creature",
     "name": "Creatures",
     "icon": "gamepad",
-    "color": "var(--pink)",
+    "color": "var(--amber)",
     "command": "games",
     "tagline": "Catch original creatures and build your collection dex",
     "description": "Catch original creatures and build your collection dex",
@@ -5980,7 +6010,7 @@ const GAMES = [
     "id": "deathmatch",
     "name": "Deathmatch",
     "icon": "gamepad",
-    "color": "var(--amber)",
+    "color": "var(--indigo)",
     "command": "dm_challenge",
     "tagline": "1v1 duel battles",
     "description": "1v1 duel battles",
@@ -5994,7 +6024,7 @@ const GAMES = [
     "id": "fishing",
     "name": "Fishing",
     "icon": "gamepad",
-    "color": "var(--indigo)",
+    "color": "var(--g)",
     "command": "fish",
     "tagline": "Fishing minigame — cast a line, build your collection",
     "description": "Fishing minigame — cast a line, build your collection",
@@ -6009,7 +6039,7 @@ const GAMES = [
     "id": "games",
     "name": "Games",
     "icon": "gamepad",
-    "color": "var(--g)",
+    "color": "var(--sky)",
     "command": "games",
     "tagline": "Competitive games and channel activities",
     "description": "Competitive games and channel activities",
@@ -6024,7 +6054,7 @@ const GAMES = [
     "id": "rps_tournament",
     "name": "Rock Paper Scissors",
     "icon": "gamepad",
-    "color": "var(--sky)",
+    "color": "var(--g-bright)",
     "command": "rps",
     "tagline": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
     "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
@@ -6039,7 +6069,7 @@ const GAMES = [
     "id": "chain",
     "name": "Word Chain",
     "icon": "gamepad",
-    "color": "var(--g-bright)",
+    "color": "var(--pink)",
     "command": "chain",
     "tagline": "Word-chaining game",
     "description": "Word-chaining game",
@@ -6055,7 +6085,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "cfd93bf5",
+    "build": "7c7bf2e",
     "title": "New public bot website",
     "changes": [
       {
@@ -6067,7 +6097,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "cfd93bf5",
+    "build": "7c7bf2e",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6079,7 +6109,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "cfd93bf5",
+    "build": "7c7bf2e",
     "title": "Command-alias suggestions",
     "changes": [
       {

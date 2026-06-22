@@ -357,16 +357,39 @@ class GamesHubView(HubView):
         if children is None:
             children = discover_game_children()
         self._game_children = children
-        for subsystem, meta in self._game_children:
-            row, style = _row_style_for(meta)
+        # Lay the buttons out group-by-group in ``_GROUP_ORDER`` (competitive
+        # above activities above any unknown group), packing ≤ 5 per row (the
+        # Discord row cap) and starting each group on a fresh row. This wraps a
+        # group that outgrows one row onto the next instead of overflowing — the
+        # competitive group stays on row 0, activities flow from row 1 down.
+        ordered = sorted(
+            self._game_children,
+            key=lambda item: _GROUP_ORDER.get(item[1].get("hub_group") or "", 99),
+        )
+        row_cursor = 0
+        col = 0
+        prev_group: str | None = None
+        for subsystem, meta in ordered:
+            group = meta.get("hub_group") or ""
+            _, style = _row_style_for(meta)
+            if prev_group is None:
+                prev_group = group
+            elif group != prev_group:
+                row_cursor += 1
+                col = 0
+                prev_group = group
+            elif col == 5:
+                row_cursor += 1
+                col = 0
             self.add_item(
                 _GameHubButton(
                     subsystem=subsystem,
                     label=_format_child_label(subsystem, meta),
                     style=style,
-                    row=row,
+                    row=row_cursor,
                 ),
             )
+            col += 1
 
     async def handle_select(
         self,

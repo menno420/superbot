@@ -43,6 +43,34 @@ PR 2 = make the global (`game_xp` SUM) vs per-game tree split explicit (per-game
 identity read-card. Gated open-world layers (gear auto-equip · survival overlay · biome map) wait
 on **Q-0182**.
 
+## Idle games (accrue-over-time)
+
+The **chicken farm** (`farm` subsystem, `disbot/cogs/farm_cog.py`) is the bot's first
+**idle** game — progress accrues while the player is away. Hens lay eggs over time;
+the player collects them for coins + game XP and spends coins on more hens (faster
+lay rate) and a bigger coop (larger egg cap). It is a Games-hub child (`activities`)
+also reachable via `!farm` and the Explore world hub.
+
+- **Idle accrual reuses the `settle()` pattern** (a stored value + a timestamp,
+  computed from elapsed time in pure code), exactly like `utils/fishing/energy.py` /
+  `utils/mining/energy.py` — **no background ticker, no Redis** (ADR-001/002). The
+  effective egg count at any instant is `utils/farm/settle()` over the stored
+  `(eggs, eggs_updated_at)` on the `chicken_farm` row (migration 090). Because all
+  state lives in that one row, the farm is incidentally fully restart-safe.
+- **Layering mirrors fishing:** pure domain `utils/farm/` (accrual, capacity,
+  pricing) · audited write boundary `services/farm_workflow.py` (RS02/Q-0071: one
+  txn per op, coin legs via `economy_service.*_in_txn`, events after commit) · CRUD
+  `utils/db/games/farm.py` · views `views/farm/` (`FarmMenuView` + `FarmShopView`).
+- **Faucet discipline:** the egg-collect faucet is deliberately modest (one free
+  starter hen banks ~40 coins over ~100 min idle) — the owner's standing
+  "rewards too large & too frequent" caution. Buying hens scales the faucet but
+  each costs more coins (the sink), so the loop stays self-balancing. Tunables are
+  pure constants in `utils/farm/farm.py`.
+- **Adding another idle game:** follow this layering, register a `GAME_*` constant in
+  `game_xp_service`, add the `SUBSYSTEMS` entry under the Games hub, and reuse
+  `settle()` (extract the shared core into `utils/` only on the rule of three — a
+  *third* settle-based system).
+
 ## Rules & approved structures (binding — link, don't restate)
 
 - **ADR-002:** in-flight game state is intentionally not guaranteed restart-safe.

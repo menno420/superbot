@@ -284,6 +284,37 @@ SUBSYSTEMS: dict[str, dict] = {
             "creature.collection.view",
         ],
     },
+    # Idle egg/chicken farm (owner-directed task "Idle egg/chicken farm") — the
+    # bot's first IDLE (accrue-over-time) game. Hens lay eggs over time (pure
+    # `settle()` accrual, no ticker — ADR-001/002), collected for coins + game_xp;
+    # coins buy more hens / a bigger coop. Homed under the Games hub (a child, like
+    # mining/fishing/creature) and reachable via the Help hook, `!farm`, and the
+    # Explore world hub. Soft-depends on economy (collect pays coins) but declares
+    # no HARD dependency so it isn't locked out when the economy is disabled.
+    "farm": {
+        "display_name": "Chicken Farm",
+        "description": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
+        "emoji": "🐔",
+        "color": GAME_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "games",
+        "tags": ["farm", "idle", "chickens", "eggs", "activities"],
+        "entry_points": ["farm"],
+        "default_channels": ["games", "bot-commands"],
+        "related_subsystems": ["economy", "mining", "fishing"],
+        "dependencies": [],
+        "soft_dependencies": ["economy"],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 23,
+        "parent_hub": "games",
+        "hub_group": "activities",
+        "capabilities": [
+            "farm.egg.collect",
+            "farm.coop.manage",
+        ],
+    },
     "xp": {
         "display_name": "XP & Levels",
         "description": "Experience points, levels, and leaderboards",

@@ -243,7 +243,10 @@ def test_activities_buttons_on_row_1_with_success_style():
             continue
         meta = SUBSYSTEMS[btn._subsystem]  # type: ignore[attr-defined]
         if meta.get("hub_group") == "activities":
-            assert btn.row == 1, (
+            # Activities start on row 1 and wrap downward once a row fills (the
+            # Discord 5-per-row cap), so the contract is row >= 1, never row 0
+            # (which is reserved for the competitive group).
+            assert btn.row >= 1, (
                 f"activities button {btn._subsystem!r} on row {btn.row}"  # type: ignore[attr-defined]
             )
             assert btn.style is discord.ButtonStyle.success

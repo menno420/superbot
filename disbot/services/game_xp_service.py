@@ -24,6 +24,7 @@ craft           8                       ``GAME_CRAFTING``
 quick_craft     8                       ``GAME_CRAFTING``
 repair          3                       ``GAME_CRAFTING``
 fish            5                       ``GAME_FISHING``
+collect_eggs    3                       ``GAME_FARM``
 catch           4                       ``GAME_CREATURE``
 battle_win      6                       ``GAME_CREATURE`` (PvP is normalized)
 sell / buy      0                       (money moves never award XP)
@@ -71,6 +72,7 @@ GAME_MINING = "mining"
 GAME_CRAFTING = "crafting"
 GAME_FISHING = "fishing"
 GAME_CREATURE = "creature"
+GAME_FARM = "farm"
 
 # Display metadata for the cross-game read surfaces (the world card, leaderboards).
 # (emoji, label) per game key; an unknown key falls back to a titled key (so a new
@@ -80,6 +82,7 @@ GAME_LABELS: dict[str, tuple[str, str]] = {
     GAME_CRAFTING: ("🔨", "Crafting"),
     GAME_FISHING: ("🎣", "Fishing"),
     GAME_CREATURE: ("🐾", "Creatures"),
+    GAME_FARM: ("🐔", "Farm"),
 }
 
 
@@ -101,6 +104,7 @@ _AWARDS: dict[str, int] = {
     "harvest": 2,
     "explore": 4,
     "fish": 5,
+    "collect_eggs": 3,
     "catch": 4,
     "battle_win": 6,
     "depth_record": 25,
@@ -289,6 +293,7 @@ __all__ = [
     "GAME_CRAFTING",
     "GAME_FISHING",
     "GAME_CREATURE",
+    "GAME_FARM",
     "GAME_LABELS",
     "DAILY_SOFT_CAP",
     "CAPPED_RATE",
