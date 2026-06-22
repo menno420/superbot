@@ -175,6 +175,45 @@ def get_template(key: str | None) -> MenuTemplate | None:
 
 
 @dataclass(frozen=True)
+class CardTemplate:
+    """A preset banner-card style for a role menu (plan §4.6d).
+
+    ``style`` selects the renderer's background treatment
+    (:data:`utils.role_menu_render.KNOWN_STYLES`); the chosen ``key`` is stored in
+    ``role_menus.card_template`` and re-rendered at post/edit/restart. ``None`` (no
+    card) is the default — a menu only gets a banner when an operator picks one.
+    """
+
+    key: str
+    label: str  # gallery button text, e.g. "🎀 Banner"
+    style: str  # the renderer style key
+
+
+# Ordered for the builder's card-style picker. Every ``style`` here must be a
+# member of ``role_menu_render.KNOWN_STYLES`` (pinned by a test).
+_CARD_TEMPLATES: tuple[CardTemplate, ...] = (
+    CardTemplate("banner", "🎀 Banner", "banner"),
+    CardTemplate("gradient", "🌈 Gradient", "gradient"),
+    CardTemplate("minimal", "▫️ Minimal", "minimal"),
+    CardTemplate("spotlight", "🔦 Spotlight", "spotlight"),
+)
+
+_CARD_TEMPLATE_BY_KEY: dict[str, CardTemplate] = {t.key: t for t in _CARD_TEMPLATES}
+
+
+def card_templates() -> tuple[CardTemplate, ...]:
+    """Every banner-card preset, in picker order."""
+    return _CARD_TEMPLATES
+
+
+def get_card_template(key: str | None) -> CardTemplate | None:
+    """Return the card template for ``key``, or ``None`` (no card / unknown)."""
+    if not key:
+        return None
+    return _CARD_TEMPLATE_BY_KEY.get(key)
+
+
+@dataclass(frozen=True)
 class GradientPreset:
     """A ready-made two-colour gradient an operator applies as a styled role.
 

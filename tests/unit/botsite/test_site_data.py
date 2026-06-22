@@ -55,6 +55,66 @@ def proto(mod, site):
     return mod.build_prototype_data(site)
 
 
+# --- /site-data.json contract guard (the React-SPA seam) -------------------
+# These run in the main code-quality CI (stdlib-only), unlike the FastAPI-gated
+# test_app.py — so producer-side drift in the React data seam fails loudly here.
+
+_ADD_URL = "https://discord.com/oauth2/authorize?client_id=1403818430758654132"
+
+
+@pytest.fixture(scope="module")
+def payload(mod, site):
+    return mod.build_site_data_payload(site, _ADD_URL)
+
+
+def test_site_data_payload_conforms_to_contract(mod, payload):
+    # The real payload (built from the committed site.json) satisfies the canonical
+    # contract — the same file the React adapter's vitest test checks against.
+    problems = mod.validate_site_data_payload(payload)
+    assert problems == [], f"contract violations: {problems}"
+
+
+def test_site_data_payload_carries_real_data_and_install_url(payload):
+    assert payload["addUrl"] == _ADD_URL
+    assert "discord.com/oauth2/authorize" in payload["addUrl"]
+    names = {c["name"] for c in payload["commands"]}
+    assert "blackjack" in names
+    # Honest posture: only catalogue counts, never server/user totals.
+    assert set(payload["counts"]) <= {"commands", "features", "games"}
+
+
+def test_validator_flags_a_missing_top_level_key(mod, payload):
+    broken = {k: v for k, v in payload.items() if k != "areas"}
+    problems = mod.validate_site_data_payload(broken)
+    assert any("missing top-level key" in p and "areas" in p for p in problems)
+
+
+def test_validator_flags_an_unexpected_top_level_key(mod, payload):
+    broken = {**payload, "secretTotals": 9001}
+    problems = mod.validate_site_data_payload(broken)
+    assert any("unexpected top-level key" in p and "secretTotals" in p for p in problems)
+
+
+def test_validator_flags_a_missing_entry_subkey(mod, payload):
+    broken = {**payload, "commands": [{"area": "games"}]}  # no "name"
+    problems = mod.validate_site_data_payload(broken)
+    assert any("commands[0] missing key" in p and "name" in p for p in problems)
+
+
+def test_contract_file_is_the_single_source_loaded_by_the_validator(mod):
+    contract = mod.load_site_data_contract()
+    assert set(contract["top_level"]) == {
+        "addUrl",
+        "build",
+        "counts",
+        "areas",
+        "commands",
+        "games",
+        "changelog",
+        "status",
+    }
+
+
 # --- shape ----------------------------------------------------------------
 
 
