@@ -37,6 +37,11 @@ GEAR_SHOP: dict[str, int] = {
     "lantern": 40,
     "iron pickaxe": 60,
     "lucky charm": 80,
+    # Food / boosters — refill mining energy (utils/mining/energy.py). A coin
+    # sink that lets an active player dig past the passive regen rate; priced
+    # well above their flavour value so they stay a convenience, not arbitrage.
+    "ration": 20,
+    "energy drink": 40,
     # Deeper ladders (2026-06-10) — priced well above material sell value so
     # crafting stays the cheaper path and selling-then-buying never profits.
     "gold pickaxe": 140,

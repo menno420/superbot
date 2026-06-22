@@ -103,14 +103,14 @@ def test_rich_cell_yields_its_featured_ore_and_scales_amount():
     assert note and "rich" in note.lower()
 
 
-def test_treasure_cell_triples_and_features_its_ore():
+def test_treasure_cell_doubles_and_features_its_ore():
     found, amount, note = grid.apply_cell_to_loot(
         _cell(CellFeature.TREASURE, "diamond"),
         "stone",
         2,
     )
     assert found == "diamond"
-    assert amount == 6  # 2 × 3.0
+    assert amount == 4  # 2 × 2.0 (treasure richness trimmed ×3 → ×2, 2026-06-22)
     assert note is not None
 
 
