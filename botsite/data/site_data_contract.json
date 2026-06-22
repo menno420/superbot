@@ -1,0 +1,19 @@
+{
+  "_comment": "Canonical contract for the botsite `/site-data.json` payload — the single source of truth the Python producer (botsite/site_data.build_site_data_payload + validate_site_data_payload) and the React consumer (design-system/src/app/data.ts, checked by data.test.ts) both validate against. A producer that renames/drops a key, or a consumer that reads a key not promised here, fails CI at the seam (the React-SPA migration plan §6 design<->data drift risk). Keys list the GUARANTEED fields; entries may carry additional optional fields the consumer treats as optional.",
+  "top_level": [
+    "addUrl",
+    "build",
+    "counts",
+    "areas",
+    "commands",
+    "games",
+    "changelog",
+    "status"
+  ],
+  "build": ["commit", "committedAt", "subject"],
+  "counts": ["commands", "features", "games"],
+  "area": ["id", "name"],
+  "command": ["name", "area"],
+  "game": ["id", "name"],
+  "changelog": ["date", "title"]
+}

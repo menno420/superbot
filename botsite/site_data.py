@@ -509,6 +509,104 @@ def render_from_site(site: dict[str, Any]) -> str:
     return render_data_js(build_prototype_data(site))
 
 
+# ---------------------------------------------------------------------------
+# The React-SPA JSON payload (`/site-data.json`) — the data the migrated React
+# site fetches instead of parsing the legacy ``window.SBDATA`` script. Assembly
+# lives here (stdlib, no FastAPI) so the route is a thin wrapper and the
+# contract is unit-testable in the main CI. The canonical key contract is the
+# committed ``data/site_data_contract.json`` — the single source of truth the
+# Python producer (this module) and the React consumer
+# (``design-system/src/app/data.ts``, checked by ``data.test.ts``) both validate
+# against, so neither side can drift silently (migration plan §6).
+# ---------------------------------------------------------------------------
+SITE_DATA_CONTRACT_FILE = BASE_DIR / "data" / "site_data_contract.json"
+
+# Per-entry contract key → the payload list it constrains.
+_ENTRY_TO_FIELD = {
+    "area": "areas",
+    "command": "commands",
+    "game": "games",
+    "changelog": "changelog",
+}
+
+
+def load_site_data_contract() -> dict[str, list[str]]:
+    """Load the canonical ``/site-data.json`` key contract (committed JSON)."""
+    raw = json.loads(SITE_DATA_CONTRACT_FILE.read_text(encoding="utf-8"))
+    return {k: v for k, v in raw.items() if not k.startswith("_")}
+
+
+def build_site_data_payload(site: dict[str, Any], add_url: str) -> dict[str, Any]:
+    """Assemble the full ``/site-data.json`` payload from ``site.json`` + the install URL.
+
+    Pure (no I/O beyond the caller-supplied dict): the
+    :func:`build_prototype_data` shape (``areas`` / ``commands`` / ``games`` /
+    ``changelog`` / ``status``) plus the ``build`` provenance, public ``counts``,
+    and the real ``addUrl`` the React pages thread onto every "Add to Discord" CTA.
+    The shape is pinned by :func:`validate_site_data_payload` against the contract.
+    """
+    proto = build_prototype_data(site)
+    meta = (site.get("meta") or {}).get("build") or {}
+    return {
+        "addUrl": add_url,
+        "build": {
+            "commit": meta.get("commit") or "",
+            "committedAt": meta.get("committed_at") or "",
+            "subject": meta.get("subject") or "",
+        },
+        "counts": site.get("counts") or {},
+        "areas": proto["areas"],
+        "commands": proto["commands"],
+        "games": proto["games"],
+        "changelog": proto["changelog"],
+        "status": proto["status"],
+    }
+
+
+def validate_site_data_payload(
+    payload: dict[str, Any],
+    contract: dict[str, list[str]] | None = None,
+) -> list[str]:
+    """Check a payload against the contract; return a list of violations (empty = ok).
+
+    Pins (a) the exact top-level key set — no missing, no extra — and (b) the
+    required sub-keys on ``build`` and on every entry of each list family. Optional
+    fields the consumer treats as optional are intentionally *not* pinned, so the
+    contract stays a floor, not a freeze.
+    """
+    contract = contract or load_site_data_contract()
+    problems: list[str] = []
+
+    expected_top = set(contract.get("top_level", []))
+    actual_top = set(payload)
+    for missing in sorted(expected_top - actual_top):
+        problems.append(f"missing top-level key: {missing!r}")
+    for extra in sorted(actual_top - expected_top):
+        problems.append(f"unexpected top-level key: {extra!r}")
+
+    # build (a dict) — required sub-keys.
+    build = payload.get("build")
+    if isinstance(build, dict):
+        for key in contract.get("build", []):
+            if key not in build:
+                problems.append(f"build missing key: {key!r}")
+
+    # list families — required sub-keys on every entry.
+    for entry_name, field in _ENTRY_TO_FIELD.items():
+        required = contract.get(entry_name, [])
+        entries = payload.get(field)
+        if not isinstance(entries, list):
+            continue
+        for i, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                problems.append(f"{field}[{i}] is not an object")
+                continue
+            for key in required:
+                if key not in entry:
+                    problems.append(f"{field}[{i}] missing key: {key!r}")
+    return problems
+
+
 def regenerate(site_json: Path = SITE_JSON, out: Path = DATA_JS) -> Path:
     """Read ``site.json``, write the committed ``data.js`` fallback. Returns ``out``."""
     site = json.loads(site_json.read_text(encoding="utf-8"))
