@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-s56i3y-4` · scope: make `check_tool_pins` a CI guard (#1315 drift class) — new `tool-pins.yml` workflow + extend the checker to genuinely validate all THREE pin sources (was 2) + first unit test · area: `.github/workflows/tool-pins.yml`, `scripts/check_tool_pins.py`, `tests/unit/scripts/test_check_tool_pins.py` · 2026-06-22
