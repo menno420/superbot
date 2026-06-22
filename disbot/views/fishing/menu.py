@@ -25,6 +25,7 @@ from utils.fishing import rods as rods_mod
 from utils.fishing.fish import MAX_LEVEL, SPECIES, max_size_rank_for_level
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
+from views.fishing.bait_shop import BaitShopView, build_bait_embed
 from views.fishing.cast_view import prepare_cast
 from views.fishing.rod_shop import RodShopView, build_rod_embed
 
@@ -44,6 +45,7 @@ def build_menu_embed(energy_current: int | None = None) -> discord.Embed:
             "up and buy better rods.\n\n"
             "**🎣 Cast** — wait → bite → reel\n"
             "**🎒 Rod** — view & upgrade your rod\n"
+            "**🪱 Bait** — load a lure for rarer catches\n"
             "**📖 Fishdex** — your collection"
         ),
         color=GAME_COLOR,
@@ -151,6 +153,23 @@ class FishingMenuView(HubView):
         balance = await db.get_coins(self._author.id, self.guild_id)
         embed = build_rod_embed(current, nxt, balance)
         shop = RodShopView(self._author, self.guild_id, at_max=nxt is None)
+        await interaction.response.edit_message(embed=embed, view=shop)
+        shop.message = interaction.message
+        self.stop()
+
+    @discord.ui.button(label="Bait", emoji="🪱", style=discord.ButtonStyle.secondary)
+    async def bait_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        active, charges = await fishing_workflow.get_active_bait(
+            self._author.id,
+            self.guild_id,
+        )
+        balance = await db.get_coins(self._author.id, self.guild_id)
+        embed = build_bait_embed(active, charges, balance)
+        shop = BaitShopView(self._author, self.guild_id)
         await interaction.response.edit_message(embed=embed, view=shop)
         shop.message = interaction.message
         self.stop()

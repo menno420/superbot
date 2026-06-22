@@ -93,7 +93,13 @@ async def prepare_cast(
         ),
         color=GAME_COLOR,
     )
-    embed.set_footer(text=energy.bar(start.energy_current))
+    footer = energy.bar(start.energy_current)
+    if start.bait_used is not None:
+        footer += (
+            f" · {start.bait_used.emoji} {start.bait_used.name} "
+            f"({start.bait_charges_left} left)"
+        )
+    embed.set_footer(text=footer)
     return embed, view
 
 

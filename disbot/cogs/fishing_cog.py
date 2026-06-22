@@ -32,8 +32,10 @@ from utils import db
 from utils.fishing import rods as rods_mod
 from utils.fishing.fish import SPECIES
 from views.fishing import (
+    BaitShopView,
     FishingMenuView,
     RodShopView,
+    build_bait_embed,
     build_fishlog_embed,
     build_menu_embed,
     build_rod_embed,
@@ -123,6 +125,18 @@ class FishingCog(commands.Cog):
         balance = await db.get_coins(ctx.author.id, ctx.guild.id)
         embed = build_rod_embed(current, nxt, balance)
         view = RodShopView(ctx.author, ctx.guild.id, at_max=nxt is None)
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="bait", aliases=["baitshop", "buybait"])
+    async def bait(self, ctx):
+        """Load fishing bait — a consumable that pulls catches toward bigger fish."""
+        active, charges = await fishing_workflow.get_active_bait(
+            ctx.author.id,
+            ctx.guild.id,
+        )
+        balance = await db.get_coins(ctx.author.id, ctx.guild.id)
+        embed = build_bait_embed(active, charges, balance)
+        view = BaitShopView(ctx.author, ctx.guild.id)
         view.message = await ctx.send(embed=embed, view=view)
 
     # ------------------------------------------------------------------ help hook

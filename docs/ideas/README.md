@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`fishing-bait-crafting-2026-06-22.md`](./fishing-bait-crafting-2026-06-22.md) —
+  **captured by the fishing-bait dispatch run (2026-06-22, PR #1329):** close the fishing economy loop by
+  letting the cook/campfire loop (#1289) also craft small caught fish into bait, so catch → craft → bait →
+  bigger-catch feeds itself instead of bait being a pure coin sink. Reuses the shipped bait seam + the
+  inventory grant. Games (fishing) product depth.
 - [`sim-assumption-telemetry-loop-2026-06-22.md`](./sim-assumption-telemetry-loop-2026-06-22.md) —
   **captured by the fishing-minigame design session (2026-06-22, PR #1296):** when a feature is designed
   off a Monte-Carlo sim (e.g. `tools/sim/fishing_minigame_sim.py`, whose recommendation rests entirely on
