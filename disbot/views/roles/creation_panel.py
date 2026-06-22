@@ -87,7 +87,9 @@ class RoleCreatePanel(BaseView):
             title="📝 Create a Role",
             description=(
                 "Pick a **name** and a **colour** below, then press **✅ Create** — "
-                "or press **✏️ Custom…** to type your own.\n\n"
+                "or press **✏️ Custom…** to type your own.\n"
+                "Need several at once? **📦 Role Packs** bulk-creates a whole "
+                "category (gaming, staff, pronouns, …) in one step.\n\n"
                 f"**Name:** {self.pending_name or '*(none yet)*'}\n"
                 f"**Colour:** {self.pending_color_label}\n"
                 f"**Shown separately:** {'yes' if self.pending_hoist else 'no'}"
@@ -137,6 +139,34 @@ class RoleCreatePanel(BaseView):
         _: discord.ui.Button,
     ) -> None:
         await interaction.response.send_modal(RoleCreateModal(self.ctx))
+
+    @discord.ui.button(
+        label="📦 Role Packs",
+        style=discord.ButtonStyle.secondary,
+        row=3,
+    )
+    async def packs_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
+            await interaction.response.send_message(
+                "❌ You need **Manage Roles** permission.",
+                ephemeral=True,
+            )
+            return
+        from views.roles._role_pack_flow import RolePackView
+
+        view = RolePackView(interaction.user, interaction.guild)
+        await interaction.response.send_message(
+            content=(
+                "📦 **Bulk-create roles from a pack.** Pick a category, then the "
+                "roles to create — existing same-named roles are reused:"
+            ),
+            view=view,
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="✅ Create", style=discord.ButtonStyle.green, row=2)
     async def create_btn(

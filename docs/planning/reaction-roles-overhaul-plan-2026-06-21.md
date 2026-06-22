@@ -65,6 +65,17 @@
 > creation-side cause was fixed in #1234; this clears rows already left behind. (The Add-modal
 > `💀 ❤️ 😘` placeholder is an intended multi-emote preview and stays.)
 >
+> **▶ Refinement (2026-06-22, owner-relayed user request — PR #1300):** **bulk role creation via
+> preset packs.** Modelled on the 🎨 Colours auto-create flow: pick a **category** (gaming / staff /
+> pronouns / notifications / region / interests / platforms), then a **multiselect of predefined
+> roles**, and the bot bulk-creates them in one step (reuse a same-named role, else create through the
+> audited seam). New pure-data catalogue `utils/role_packs.py` (`RolePack`/`PackRole`); the colour
+> auto-create core generalised to `reaction_role_service.ensure_role` (`ensure_color_role` now delegates,
+> no behaviour change); shared flow `views/roles/_role_pack_flow.RolePackView` surfaced on **two**
+> surfaces — a **📦 Role Packs** button on the standalone `RoleCreatePanel` (bulk-create into the server)
+> and a **📦 Packs** button beside 🎨 Colours in `RoleMenuBuilder` (bulk-create + add to the menu draft).
+> Pure data + UI on the existing audited `RoleLifecycleService` create path; no schema change.
+>
 > **▶ Refinement (2026-06-21 — PR #1250):** **listener self-heal** makes #1248's cleanup automatic —
 > `reaction_role_service._self_heal_dead_binding` drops a binding whose role was deleted the moment a
 > member reacts (or un-reacts) on it, audited as a **`system`** action (an `actor_type` param was
