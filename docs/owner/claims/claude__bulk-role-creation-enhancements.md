@@ -1,0 +1,1 @@
+- `claude/bulk-role-creation-enhancements` · bulk-create enhancements: enlarge standard presets + make them multi-select (⭐ Essentials pack), bulk custom-role creation, optional colour preset select · `disbot/utils/role_packs.py`, `disbot/views/roles/_helpers.py`, `disbot/views/roles/_role_pack_flow.py` · 2026-06-22
