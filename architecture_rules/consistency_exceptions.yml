@@ -101,6 +101,8 @@ back_button:
       reason: "Root deathmatch game panel opened directly by the deathmatch cog command; no parent."
     - pattern: views/settings/hub.py::SettingsHubView
       reason: "Root settings hub opened directly by the settings cog command; opened as a `!help` child the parent attaches back externally. Top of its own stack (its sub-panels return TO it via _BackToHubButton)."
+    - pattern: views/treasury/menu.py::TreasuryView
+      reason: "Root `!treasury` panel; opened as a `!help`/Economy-hub child the parent attaches back externally (HelpCategoryView). No parent on the root open; its Contribute action is a modal that takes over rather than nesting a sub-panel."
     - pattern: views/ux_lab/home.py::UxLabHomeView
       reason: "Root UX-lab gallery home opened directly by the ux_lab cog command; its wings/compare/probes return here via transition_to. No parent."
     - pattern: views/xp/main_panel.py::_XpHubView

@@ -1,25 +1,25 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T21:56:45Z",
+    "generated_at": "2026-06-22T22:22:42Z",
     "build": {
-      "commit": "fd3d575f",
-      "subject": "fix(farm): fresh coop no longer starts full + \"while you were away\" idle summary (#1331)",
-      "committed_at": "2026-06-22T21:56:45Z"
+      "commit": "6109030",
+      "subject": "docs(session): flip treasury session card to complete (PR #1334)",
+      "committed_at": "2026-06-22T22:22:42Z"
     },
     "counts": {
-      "functions": 38,
-      "ideas": 127,
+      "functions": 39,
+      "ideas": 128,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
-      "cogs": 48,
-      "commands": 374,
+      "cogs": 49,
+      "commands": 377,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
-      "visible_subsystems": 38,
+      "visible_subsystems": 39,
       "synonyms": 87,
       "bot_changelog": 3
     }
@@ -391,6 +391,33 @@
       "capabilities": [
         "mining.resource.mine",
         "mining.resource.view"
+      ]
+    },
+    {
+      "key": "treasury",
+      "display_name": "Treasury",
+      "description": "Server-owned coin pool — contribute coins; managers disburse",
+      "emoji": "🏛️",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "economy",
+      "tags": [
+        "treasury",
+        "economy",
+        "coins",
+        "governance"
+      ],
+      "entry_points": [
+        "treasury"
+      ],
+      "related_subsystems": [
+        "economy",
+        "inventory"
+      ],
+      "capabilities": [
+        "treasury.pool.view",
+        "treasury.pool.contribute",
+        "treasury.pool.disburse"
       ]
     },
     {
@@ -1024,6 +1051,16 @@
     }
   ],
   "ideas": [
+    {
+      "file": "ai-self-curated-memory-notebook-2026-06-22.md",
+      "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "Give the bot's in-product AI a **narrow, audited, write-back seam**: a dedicated table it may",
+      "subsystems": [
+        "ai"
+      ]
+    },
     {
       "file": "audited-score-subsystem-scaffold-2026-06-22.md",
       "title": "Idea — \"audited per-user score\" subsystem scaffold + parity guard",
@@ -2294,6 +2331,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-server-treasury.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Server treasury (collective coin pool)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-route-mining-encounters.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — route the mining-grid-encounters design to the owner (Q-0198)",
@@ -2724,14 +2769,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-self-heal.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction roles: listener self-heal for dead bindings",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -2820,7 +2857,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 185,
+          "line": 186,
           "layer": "config",
           "has_default": true
         },
@@ -2842,7 +2879,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 184,
+          "line": 185,
           "layer": "config",
           "has_default": true
         }
@@ -2875,7 +2912,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 168,
+          "line": 169,
           "layer": "config",
           "has_default": true
         },
@@ -2945,7 +2982,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 223,
+          "line": 224,
           "layer": "config",
           "has_default": true
         }
@@ -2993,7 +3030,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 211,
+          "line": 212,
           "layer": "config",
           "has_default": true
         }
@@ -3009,7 +3046,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 214,
+          "line": 215,
           "layer": "config",
           "has_default": true
         }
@@ -3025,7 +3062,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 217,
+          "line": 218,
           "layer": "config",
           "has_default": true
         }
@@ -3185,7 +3222,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 110,
+          "line": 111,
           "layer": "config",
           "has_default": true
         }
@@ -3265,7 +3302,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 111,
+          "line": 112,
           "layer": "config",
           "has_default": true
         }
@@ -3283,7 +3320,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 167,
+          "line": 168,
           "layer": "config",
           "has_default": true
         },
@@ -3324,7 +3361,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 194,
+          "line": 195,
           "layer": "config",
           "has_default": true
         },
@@ -3347,7 +3384,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 198,
+          "line": 199,
           "layer": "config",
           "has_default": true
         },
@@ -3386,7 +3423,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 166,
+          "line": 167,
           "layer": "config",
           "has_default": true
         },
@@ -3410,7 +3447,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 165,
+          "line": 166,
           "layer": "config",
           "has_default": true
         },
@@ -7858,6 +7895,56 @@
       ]
     },
     {
+      "cog": "TreasuryCog",
+      "file": "disbot/cogs/treasury_cog.py",
+      "subsystem": "treasury",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "treasury",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [
+            "bank",
+            "pool"
+          ],
+          "brief": "Open the server treasury — view the pool and contribute coins.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "contribute",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "treasury",
+          "aliases": [
+            "donate",
+            "deposit"
+          ],
+          "brief": "Donate *amount* of your own coins into the server treasury.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "grant",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "treasury",
+          "aliases": [
+            "disburse",
+            "payout"
+          ],
+          "brief": "Disburse *amount* from the treasury to *member* (managers only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "UtilityCog",
       "file": "disbot/cogs/utility_cog.py",
       "subsystem": "utility",
@@ -8976,6 +9063,12 @@
             "emoji": "⛏️"
           },
           {
+            "key": "treasury",
+            "display_name": "Treasury",
+            "category": "economy",
+            "emoji": "🏛️"
+          },
+          {
             "key": "btd6",
             "display_name": "BTD6 Assistant",
             "category": "games",
@@ -9204,7 +9297,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 38,
+    "total_visible": 39,
     "internal_count": 0
   },
   "synonyms": [

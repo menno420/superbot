@@ -142,6 +142,7 @@ HUBS: tuple[HubEntry, ...] = (
         primary_children=(
             "inventory",
             "leaderboard",
+            "treasury",
         ),
         cross_link_children=("mining",),
         minimum_tier="user",

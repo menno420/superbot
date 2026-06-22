@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`ai-self-curated-memory-notebook-2026-06-22.md`](./ai-self-curated-memory-notebook-2026-06-22.md) —
+  **owner-dropped (2026-06-22), alongside the treasury build:** give the bot's in-product AI a narrow,
+  audited write-back seam — a staging table it appends small *non-personal* notes to (user corrections,
+  facts worth remembering) via three triggers (AI-judged value · correction · daily cron), reviewed by a
+  human before any promotion into the system instruction / a cached layer / a **deterministic answer preset**
+  (vetted exact response, preloaded, zero API call). Privacy (no PII, ever) is the gating constraint; phase
+  the **preset layer first** (smallest, no privacy surface). The in-product mirror of the agent network's
+  two-part curated memory (`collaboration-model.md`). AI lane.
 - [`fishing-bait-crafting-2026-06-22.md`](./fishing-bait-crafting-2026-06-22.md) —
   **captured by the fishing-bait dispatch run (2026-06-22, PR #1329):** close the fishing economy loop by
   letting the cook/campfire loop (#1289) also craft small caught fish into bait, so catch → craft → bait →

@@ -100,6 +100,9 @@ extensions:
     role: product_subsystem
   economy:
     role: product_subsystem
+  treasury:
+    role: product_subsystem
+    note: Server-owned coin pool — the economy↔governance seam (contribute / manager-disburse).
   counting:
     role: product_subsystem
     note: Counting game.

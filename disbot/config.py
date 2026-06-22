@@ -68,6 +68,7 @@ INITIAL_EXTENSIONS = [
     "cogs.channel_cog",
     "cogs.inventory_cog",
     "cogs.economy_cog",
+    "cogs.treasury_cog",
     "cogs.counting_cog",
     "cogs.deathmatch_cog",
     "cogs.proof_channel_cog",
