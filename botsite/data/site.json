@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T23:44:37Z",
+    "generated_at": "2026-06-22T22:22:42Z",
     "build": {
-      "commit": "55655ca",
-      "subject": "Merge pull request #1329 from menno420/claude/funny-franklin-blbz7w",
-      "committed_at": "2026-06-22T23:44:37Z"
+      "commit": "6109030",
+      "subject": "docs(session): flip treasury session card to complete (PR #1334)",
+      "committed_at": "2026-06-22T22:22:42Z"
     }
   },
   "counts": {

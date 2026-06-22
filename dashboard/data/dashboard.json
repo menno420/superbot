@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T23:44:37Z",
+    "generated_at": "2026-06-22T22:22:42Z",
     "build": {
-      "commit": "55655ca",
-      "subject": "Merge pull request #1329 from menno420/claude/funny-franklin-blbz7w",
-      "committed_at": "2026-06-22T23:44:37Z"
+      "commit": "6109030",
+      "subject": "docs(session): flip treasury session card to complete (PR #1334)",
+      "committed_at": "2026-06-22T22:22:42Z"
     },
     "counts": {
       "functions": 39,
@@ -1096,7 +1096,7 @@
     {
       "file": "idle-game-offline-summary-2026-06-22.md",
       "title": "Idea — \"while you were away\" offline-progress summary for idle games",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-22",
       "summary": "The chicken farm (shipped this session) is the bot's first **idle** game: progress",
       "subsystems": null
@@ -2331,6 +2331,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-server-treasury.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Server treasury (collective coin pool)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-route-mining-encounters.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — route the mining-grid-encounters design to the owner (Q-0198)",
@@ -2579,6 +2587,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-farm-freshstart-and-idle-summary.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — farm fresh-start faucet fix + \"while you were away\" idle summary",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-ci-strand-cancel-in-progress.md",
       "date": "2026-06-22",
       "title": "Session — CI strand root cause: code-quality cancel-in-progress (2026-06-22)",
@@ -2750,22 +2766,6 @@
       "file": "2026-06-21-reaction-roles-ui-direction.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Reaction-roles plan: UI-direction refinement (web vs in-Discord)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reaction-roles-self-heal.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction roles: listener self-heal for dead bindings",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-reaction-roles-presentation-editing.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Reaction-roles plan: presentation & editing requirements",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
