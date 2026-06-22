@@ -186,8 +186,11 @@ on **Q-0182**.
   launches an interactive `cast → wait → BITE → reel` view (`views/fishing/cast_view.py`); the catch is
   rolled at cast (`fishing_workflow.roll_cast`) and committed only on a successful reel
   (`commit_catch`) — a missed/early reel = the fish gets away (owner decision). Tuning is pure +
-  testable (`utils/fishing/minigame.py`: ~2.5 s window, 3–6 s bite + fake-out). **Deferred to next
-  PRs:** trophy reel-fight, rod ladder, energy pacing + sell-value rebalance, boat/deepwater.
+  testable (`utils/fishing/minigame.py`: ~2.5 s window, 3–6 s bite + fake-out). **PR2 (the hybrid)
+  shipped/building:** hooking a **trophy** (top third of the unlocked band) starts a short
+  **reel-fight** — 2–4 more timed taps (scale with size), each able to snap free; land them all to
+  commit. **Deferred to next PRs:** rod ladder (turns the already-present `escape_resist` knob),
+  energy pacing + sell-value rebalance, boat/deepwater.
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
   Phase 1 (fishing v1 + gear-switching) buildable; the loadout/minigame tail is owner-design-gated (Q-0175).
   **Fish *use* is now decided + shipped (#1289, owner 2026-06-22):** a caught fish enters the mining
