@@ -17,7 +17,7 @@ PR — Karma is a net-new isolated subsystem (nothing else imports it), so the r
 single PR avoids inter-PR merge coordination while the owner is offline. **PR 3 (reaction-grant +
 karma-roles) is deferred** per the recommended defaults.
 
-Files: migration `092_karma.sql` (karma + karma_audit_log) · `utils/db/karma.py` (+ `__init__`
+Files: migration `093_karma.sql` (karma + karma_audit_log) · `utils/db/karma.py` (+ `__init__`
 re-export) · `services/karma_service.py` + `services/karma_config.py` · `core/events_catalogue.py`
 (`karma.granted`) · `utils/settings_keys/karma.py` (+ re-export) · `cogs/karma/schemas.py` +
 `cogs/karma_cog.py` · `KarmaProvider` in `rank_providers.py` · `config.py` extension · subsystem
@@ -26,7 +26,7 @@ registry entry · INV-K invariant test + service tests · `docs/ownership.md` ro
 ## What changed
 
 Implemented the Karma subsystem end-to-end (plan PR 1 + PR 2 in one PR; PR 3 deferred):
-- **DB:** migration `092_karma.sql` (`karma` + append-only `karma_audit_log`) ·
+- **DB:** migration `093_karma.sql` (`karma` + append-only `karma_audit_log`) ·
   `utils/db/karma.py` (credit/get/top/rank + the two anti-abuse reads + audit insert) ·
   re-exported from `utils/db/__init__.py`.
 - **Service:** `services/karma_service.py` (`give` — positive-only, no-self, cooldown,
