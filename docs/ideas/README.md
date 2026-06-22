@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`ci-dropped-synchronize-auto-retrigger-2026-06-22.md`](./ci-dropped-synchronize-auto-retrigger-2026-06-22.md) —
+  **owner-endorsed (2026-06-22, surfaced diagnosing PR #1283's stuck Code Quality):** GitHub sometimes
+  **drops the `pull_request: synchronize` event**, so a PR head gets no `code-quality` run and
+  auto-merge stalls silently (no run = no failure webhook). A scheduled watcher re-kicks the check
+  (empty commit / re-request) when a `claude/*` head has no run after N min — automating the manual
+  empty-commit remedy. The *last* strand of "CI didn't run on my latest commit" (cancellation =
+  fixed #1275; dropped delivery = this). Sector S5/S3. → relates `.github/workflows/code-quality.yml` ·
+  `scripts/check_loop_health.py` · #1275.
 - [`project-moon-wiki-knowledge-domain-2026-06-21.md`](./project-moon-wiki-knowledge-domain-2026-06-21.md) —
   **owner-dropped feasibility finding (2026-06-21):** bring the **Project Moon wiki** (Lobotomy Corp /
   Library of Ruina / Limbus Company) into the bot "in one area," the way BTD6 data is available today.
