@@ -369,3 +369,71 @@ async def test_get_rod_resolves_the_owned_tier():
     with patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=2)):
         rod = await wf.get_rod(99, 1)
     assert rod is rods.rod_for_tier(2)
+
+
+# ---------------------------------------------------------------------------
+# begin_cast — the energy-gated cast start (separate fishing energy bar)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_spends_energy_and_rolls_when_charged():
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert start.ok is True
+    assert start.cast.catch is _CATCH
+    assert start.energy_current == 8  # 10 settled − CAST_COST (2)
+    set_energy.assert_awaited_once()  # the spend was persisted
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_blocks_and_never_spends_when_out_of_energy():
+    # 0 energy, just updated → nothing regened yet
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(0, 1000))),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
+        patch.object(wf.db, "get_rod_tier", AsyncMock()) as rod,
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert start.ok is False
+    assert "energy" in (start.message or "").lower()
+    set_energy.assert_not_awaited()  # no spend
+    rod.assert_not_awaited()  # bailed before even rolling
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_does_not_charge_on_an_empty_catalog():
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
+        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: None),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert start.ok is False
+    set_energy.assert_not_awaited()  # broken catalog → the player isn't charged
+
+
+@pytest.mark.asyncio
+async def test_get_energy_returns_the_settled_value():
+    # 5 stored at epoch, now = 3 regen intervals later → 5 + 3 = 8
+    now_intervals = 3 * wf.fish_energy.REGEN_SECONDS
+    with (
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(5, 0))),
+        patch.object(wf.time, "time", lambda: now_intervals),
+    ):
+        cur = await wf.get_energy(99, 1)
+    assert cur == 8
