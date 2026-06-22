@@ -29,8 +29,7 @@ idea / nightly diagnosis
 
 | Gate | Decision | Enforced by |
 |---|---|---|
-| **Merge** (Q-0113) | Routines **self-merge on green CI**, same as interactive sessions (extends Q-0084 to unattended runs). | The saved routine prompt + CI being required-green. |
-| **Independent review** (Q-0117) | A **substantial executor step** does NOT self-merge — it opens a `needs-hermes-review` PR; **Hermes** (a different model) reviews and merges it if sound. Small fixes/docs still self-merge. | `superbot-review-merge` skill + the `needs-hermes-review` label; the executor's STEP 5. |
+| **Merge** (Q-0113) | **Every** PR self-merges on green CI, same as interactive sessions (extends Q-0084 to unattended runs). The Q-0117 independent-review merge gate is **retired** (Q-0197, 2026-06-22) — there is no `needs-hermes-review` label or no-self-merge step. | The saved routine prompt + CI being required-green; native auto-merge (Q-0123). |
 | **Human approve/deny** (Q-0114) | Applies to **agent-originated features only**. Bug/UX/docs/correctness work flows freely. | `superbot-dispatch` `CLASS:` label + the saved prompt's "features open-only" branch. |
 | **Phase** (Q-0114 mechanism) | A feature may only be *originated* in **invent-phase** (zero OPEN bugs, zero `Not Done` rows). | `scripts/check_phase_gate.py --require-invent`, run by the routine before any feature work. |
 
@@ -137,7 +136,7 @@ dispatched work, or the next plan slice.
      - feature you INVENTED yourself (NOT dispatched) -> **build it — idea->plan->ship is open
        (Q-0172), no approval needed.** First capture/route the idea into docs/ideas/ + a
        docs/planning/ plan (that keeps it reviewable), then build on a claude/ branch and ship like
-       any other work (step 7: small/contained self-merges on green; SUBSTANTIAL -> needs-hermes-review).
+       any other work (step 7: every PR self-merges on green CI — the needs-hermes-review gate is retired, Q-0197).
        The ONE requirement: flag it on the run-report **⚑ Self-initiated** line so the owner can
        review/revert. `check_phase_gate.py` is now ADVISORY — read it for PRIORITY (when bugs / Not-Done
        rows exist, correctness comes first), NOT permission; it no longer blocks. (Irreversible /
@@ -173,9 +172,9 @@ dispatched work, or the next plan slice.
    merges newer than the `Last reconciliation pass: #N` marker); drift older than the marker = fix now.
 
 7. SHIP + REPEAT (aim for 2-3 slices, not one). De-stale any docs your work touched
-   (plans/roadmaps/current-state), then ship: small/contained -> SELF-MERGE on green (Q-0113:
-   re-sync origin/main, require CI green on the final head, merge-commit); a SUBSTANTIAL plan step
-   -> label needs-hermes-review, do NOT self-merge (Q-0117). Then KEEP GOING: next PR, its born-red
+   (plans/roadmaps/current-state), then ship: every PR SELF-MERGES on green (Q-0113/Q-0123: re-sync
+   origin/main, require CI green on the final head, native auto-merge). The Q-0117 needs-hermes-review
+   gate is retired (Q-0197). Then KEEP GOING: next PR, its born-red
    mock PR, execute. Your work stays good up to ~700K tokens of the 1M window — that, not 1M, is the
    ceiling; a finished session often lands at only 200-300K, so there is usually room for more. Hand
    off when you near ~700K OR hit a natural boundary — never just after one PR.

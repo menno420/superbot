@@ -183,14 +183,15 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   land). **If you open the PR via the GitHub MCP (`create_pull_request`), the enabler workflow
   does NOT fire** — an app/integration token doesn't trigger workflows (the #778 recursion-guard
   class) — so arm it yourself: call `enable_pr_auto_merge` right after creating the PR (owner
-  decision Q-0127, 2026-06-16); the enabler stays the backstop for branch-pushed PRs. Carve-outs
-  stay manual — a PR labelled `needs-hermes-review` (Q-0117) or
-  `do-not-automerge` (Q-0114) is never auto-armed. **Owner-directed work is NEVER held for review —
-  always merge immediately (owner directive Q-0191, 2026-06-21).** When the owner *personally* directs a
-  task (a session prompt, an in-chat instruction, "build PR N / continue the plan"), owner direction **is**
-  the review: open the PR **ready**, do **not** label it `needs-hermes-review` / `do-not-automerge`, and arm
-  auto-merge so it lands the instant CI is green. The `needs-hermes-review` carve-out is for *self-initiated*
-  substantial/risky runtime work only — the distinction is **who chose the task**, not how big it is.
+  decision Q-0127, 2026-06-16); the enabler stays the backstop for branch-pushed PRs. The one
+  remaining carve-out stays manual — a PR labelled `do-not-automerge` (Q-0114) is never auto-armed.
+  **The `needs-hermes-review` carve-out (and its Hermes review-merge gate) is RETIRED (owner directive
+  Q-0197, 2026-06-22):** the label was unused and only got in the way of clean merges, so it no longer
+  exists — never apply it; every PR auto-merges on green CI. **Owner-directed work is NEVER held for
+  review — always merge immediately (owner directive Q-0191, 2026-06-21).** When the owner *personally*
+  directs a task (a session prompt, an in-chat instruction, "build PR N / continue the plan"), owner
+  direction **is** the review: open the PR **ready**, do **not** label it `do-not-automerge`, and arm
+  auto-merge so it lands the instant CI is green.
   "Merge immediately" means *merge the moment it's mergeable* (still requires CI green), not bypass CI.
   **Merging IS deploying (owner directive Q-0193, 2026-06-21):** Railway auto-redeploys `worker` on every
   merge to `main`, so a merged change is **live on its own within minutes** — you neither perform nor wait

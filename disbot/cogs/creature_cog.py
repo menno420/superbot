@@ -4,7 +4,7 @@ The runtime side of ``docs/planning/creature-game-design-and-sim-2026-06-20.md``
 (Q-0186/Q-0187): catch **original** creatures (no Pokémon IP) and fill out a
 collection "dex". Wild encounters are rarity-weighted (Common common, Epic rare);
 rarer creatures are harder to catch. Leveling reuses the shared ``game_xp`` track.
-The level-normalized **PvP battle** is a later ``needs-hermes-review`` slice.
+The level-normalized **PvP battle** is a later substantial-runtime slice.
 
 Domain logic, the audited write boundary, and the data live in their own modules:
 

@@ -39,8 +39,8 @@ D) DECISIONS WAITING ON THE OWNER (one grep — do not scan further):
 
 COMPOSE in the HOUSE STYLE (docs/operations/hermes-skills/_house-style.md — 5 rules: bottom-line
 first · fixed section order · plain words, translate jargon · group don't list · short, one screen).
-Translate internal jargon for the owner: "needs-hermes-review" -> "parked for a human to review and
-merge"; a red check -> "the automatic checks failed / are still running"; a "claude/* PR" -> just the
+Translate internal jargon for the owner: "do-not-automerge" -> "held back on purpose, not merging
+yet"; a red check -> "the automatic checks failed / are still running"; a "claude/* PR" -> just the
 change + its #number. Collapse the numbers ("5 changes merged, all passed their checks") and call out
 only the few that need attention.
 
