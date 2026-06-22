@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T16:43:22Z",
+    "generated_at": "2026-06-22T16:55:58Z",
     "build": {
-      "commit": "0da66ab",
-      "subject": "Fishing minigame PR3: born-red card + lane claim",
-      "committed_at": "2026-06-22T16:43:22Z"
+      "commit": "4fd9b5f",
+      "subject": "Fishing rod ladder: domain + persistence + audited purchase + knob wiring + UI",
+      "committed_at": "2026-06-22T16:55:58Z"
     },
     "counts": {
       "functions": 37,
@@ -2301,7 +2301,7 @@
       "file": "2026-06-22-fishing-minigame-pr3.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Fishing minigame PR3: the rod ladder (the orthogonal progression axis)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
@@ -2335,6 +2335,14 @@
       "title": "2026-06-22 — CI dropped-`synchronize` auto-re-trigger watchdog",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-bulk-role-creation-packs.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Bulk role creation via preset packs",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2640,14 +2648,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-creature-sim-engine-parity-guard.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature sim↔engine constant parity guard (PR 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [

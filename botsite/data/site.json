@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T16:43:22Z",
+    "generated_at": "2026-06-22T16:55:58Z",
     "build": {
-      "commit": "0da66ab",
-      "subject": "Fishing minigame PR3: born-red card + lane claim",
-      "committed_at": "2026-06-22T16:43:22Z"
+      "commit": "4fd9b5f",
+      "subject": "Fishing rod ladder: domain + persistence + audited purchase + knob wiring + UI",
+      "committed_at": "2026-06-22T16:55:58Z"
     }
   },
   "counts": {
