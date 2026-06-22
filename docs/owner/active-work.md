@@ -25,17 +25,19 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/fix-ci-synchronize-journal-claim` · **remove the disproven "synchronize doesn't re-fire
-  CI" claim** (owner-directed) — empirically verified a born-red PR DOES re-fire Code Quality on a
-  second push (PR #1277 runs 3092/3093), then deleted the false gotcha + its strand workaround from
-  the journal Quick reference + `.sessions/` logs (the real root cause — `cancel-in-progress` — was
-  fixed in #1267/#1275) · `.session-journal.md` / `.sessions/*` (docs-only, no `disbot/`) ·
-  2026-06-22 · **PR (this session, auto-merge on green)**
+- `claude/funny-franklin-h6cjlg` · **allow read-only network probes (curl)** (dispatch routine,
+  owner-directed in-session) — move `curl` `ask`→`allow` in `.claude/settings.json` + the `timeout`
+  wrapper; prune the stale BUG-0023 claim · `.claude/settings.json` / `docs/owner/active-work.md` ·
+  2026-06-22 · **PR (this session, owner-directed self-merge on green)**
 
-*(2026-06-22 prune, Q-0166 drift-on-sight: both prior Active claims were merged work —
-`claude/modest-gates-0ble76` (CI-strand fix, PR #1267) and `claude/funny-franklin-mjvqrx`
-(BUG-0023, PR #1272) both merged to `main`; pruned here. The earlier Starboard-PR-2 claim
-(#1270) was pruned the same way. Merged work lives in `current-state.md` + Recently cleared below.)*
+*(2026-06-22 prune, Q-0166: the BUG-0023 slash-under-coverage claim on `claude/funny-franklin-mjvqrx`
+was stale — its PR #1272 merged (in `git log`, bug-book marked FIXED) and `list_pull_requests`
+(state=open) returned empty — so it was pruned; merged work is in `current-state.md` + the bug-book.)*
+
+*(2026-06-22 prune, Q-0166 drift-on-sight: the merge from `main` carried in several already-merged
+claims — `claude/fix-ci-synchronize-journal-claim` (PR #1278), `claude/modest-gates-0ble76` (PR #1267)
+and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work lives in
+`current-state.md` + Recently cleared below.)*
 
 ## Recently cleared
 
