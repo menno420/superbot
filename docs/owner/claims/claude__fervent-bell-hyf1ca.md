@@ -1,1 +1,0 @@
-- claude/fervent-bell-hyf1ca · add BTD6 XP-per-round data (validated formula → round_xp.json) · scripts/parse_gamedata.py + disbot/data/btd6/round_xp.json + disbot/services/btd6_data_service.py + tests · 2026-06-22

@@ -146,6 +146,18 @@ class RoundEntry:
 
 
 @dataclass(frozen=True)
+class RoundXpEntry:
+    # Base XP a round awards, before difficulty / freeplay / Monkey-Knowledge
+    # modifiers. BTD6 awards a FIXED amount per round number (independent of
+    # bloons popped); the game data dump stores no XP, so this is the
+    # bloonswiki-sourced piecewise formula, validated against that wiki's own
+    # "Base XP" round-table column. See ``round_xp.json:xp_source`` and
+    # tests/unit/services/test_btd6_round_xp.py.
+    round_number: int
+    base_xp: int
+
+
+@dataclass(frozen=True)
 class BloonEntry:
     id: str
     canonical: str
@@ -315,6 +327,13 @@ class BTD6DataSet:
     monkey_knowledge: tuple[MonkeyKnowledgeEntry, ...] = ()
     geraldo_items: tuple[GeraldoItemEntry, ...] = ()
     bosses: tuple[BossEntry, ...] = ()
+    # Base XP per round (round_xp.json) + the global XP modifiers. Round XP is a
+    # fixed function of round number (same for default and ABR), so it is its own
+    # table rather than a per-RoundEntry field. Empty when the optional fixture
+    # is absent.
+    round_xp: tuple[RoundXpEntry, ...] = ()
+    xp_difficulty_multipliers: dict[str, float] = field(default_factory=dict)
+    xp_freeplay_multipliers: dict[str, float] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -616,6 +635,16 @@ def _parse_round(raw: dict[str, Any]) -> RoundEntry:
     )
 
 
+def _parse_round_xp(raw: dict[str, Any]) -> RoundXpEntry:
+    round_number = int(raw["round"])
+    xp_raw = raw.get("xp")
+    if not isinstance(xp_raw, (int, float)) or xp_raw < 0:
+        raise BTD6DataValidationError(
+            f"round_xp {round_number!r}: xp must be a number >= 0, got {xp_raw!r}",
+        )
+    return RoundXpEntry(round_number=round_number, base_xp=int(xp_raw))
+
+
 def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
     _require_keys(raw, _REQUIRED_BLOON_FIELDS, where=f"bloon {raw.get('id')!r}")
     category = str(raw["category"])
@@ -808,6 +837,7 @@ _OPTIONAL_FIXTURES = (
     "geraldo_items.json",
     "bosses.json",
     "abr_rounds.json",
+    "round_xp.json",
 )
 
 
@@ -1133,6 +1163,9 @@ def _load_dataset() -> BTD6DataSet:
     # same row shape as rounds.json, kept in its own file/field so the
     # wiki-sourced standard set and its pins stay untouched.
     abr_rounds_raw = _load_file_optional("abr_rounds.json")
+    # round_xp.json is the base XP per round (bloonswiki-sourced formula; the
+    # game dump has no XP field). Optional like the other sidecars.
+    round_xp_raw = _load_file_optional("round_xp.json")
 
     towers = tuple(_parse_tower(t) for t in towers_raw.get("towers", []))
     heroes = tuple(_parse_hero(h) for h in heroes_raw.get("heroes", []))
@@ -1142,6 +1175,11 @@ def _load_dataset() -> BTD6DataSet:
     abr_rounds = (
         tuple(_parse_round(r) for r in abr_rounds_raw.get("rounds", []))
         if abr_rounds_raw is not None
+        else ()
+    )
+    round_xp = (
+        tuple(_parse_round_xp(r) for r in round_xp_raw.get("rounds", []))
+        if round_xp_raw is not None
         else ()
     )
     bloons = (
@@ -1186,6 +1224,7 @@ def _load_dataset() -> BTD6DataSet:
     _check_unique([m.canonical for m in modes], where="modes.canonical")
     _check_unique([r.round_number for r in rounds], where="rounds.round")
     _check_unique([r.round_number for r in abr_rounds], where="abr_rounds.round")
+    _check_unique([r.round_number for r in round_xp], where="round_xp.round")
     _check_unique([b.id for b in bloons], where="bloons.id")
     _check_unique([b.canonical for b in bloons], where="bloons.canonical")
     _check_unique([r.id for r in ct_relics], where="ct_relics.id")
@@ -1277,6 +1316,19 @@ def _load_dataset() -> BTD6DataSet:
         sources["ct_relics"] = str(ct_relics_raw["source"])
     if abr_rounds_raw is not None:
         sources["abr_rounds"] = str(abr_rounds_raw["source"])
+    if round_xp_raw is not None:
+        sources["round_xp"] = str(round_xp_raw["source"])
+
+    xp_difficulty_multipliers = (
+        {str(k): float(v) for k, v in round_xp_raw["difficulty_multipliers"].items()}
+        if round_xp_raw is not None
+        else {}
+    )
+    xp_freeplay_multipliers = (
+        {str(k): float(v) for k, v in round_xp_raw["freeplay_multipliers"].items()}
+        if round_xp_raw is not None
+        else {}
+    )
 
     return BTD6DataSet(
         data_version=str(towers_raw["data_version"]),
@@ -1294,6 +1346,9 @@ def _load_dataset() -> BTD6DataSet:
         monkey_knowledge=monkey_knowledge,
         geraldo_items=geraldo_items,
         bosses=bosses,
+        round_xp=round_xp,
+        xp_difficulty_multipliers=xp_difficulty_multipliers,
+        xp_freeplay_multipliers=xp_freeplay_multipliers,
     )
 
 
@@ -1703,6 +1758,46 @@ def get_round(round_number: int, roundset: str = "default") -> RoundEntry | None
         if entry.round_number == round_number:
             return entry
     return None
+
+
+def round_base_xp(round_number: int) -> int | None:
+    """Base XP a round awards (Beginner difficulty, non-freeplay, pre-Monkey
+    Knowledge), or ``None`` if the optional ``round_xp.json`` fixture is absent or
+    the round is out of range.
+
+    Round XP is a fixed function of round number — identical for the default and
+    Alternate (ABR) round sets — so there is no ``roundset`` parameter. Apply
+    :func:`round_xp_earned` for difficulty / freeplay scaling.
+    """
+    for entry in get_dataset().round_xp:
+        if entry.round_number == round_number:
+            return entry.base_xp
+    return None
+
+
+def round_xp_earned(
+    round_number: int,
+    *,
+    difficulty: str = "beginner",
+    freeplay: bool = False,
+) -> float | None:
+    """The XP a round awards after the map-difficulty and freeplay multipliers.
+
+    ``difficulty`` is one of ``beginner`` / ``intermediate`` / ``advanced`` /
+    ``expert`` (unknown values fall back to the ×1.0 base). ``freeplay`` applies
+    the post-completion reduction (×0.30 through round 100, ×0.10 on 101+). Does
+    **not** model the per-tower split or Monkey-Knowledge bonuses, which are
+    gameplay-dependent. Returns ``None`` when round XP data is unavailable.
+    """
+    base = round_base_xp(round_number)
+    if base is None:
+        return None
+    dataset = get_dataset()
+    multiplier = dataset.xp_difficulty_multipliers.get(difficulty.strip().lower(), 1.0)
+    if freeplay:
+        key = "through_round_100" if round_number <= 100 else "round_101_plus"
+        multiplier *= dataset.xp_freeplay_multipliers.get(key, 1.0)
+    return round(base * multiplier, 2)
 
 
 def get_bloon(bloon_id: str) -> BloonEntry | None:
