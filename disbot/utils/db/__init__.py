@@ -132,12 +132,14 @@ from utils.db.games.mining_grid import (
 )
 from utils.db.games.mining_player_state import (
     get_depth,
+    get_energy,
     get_equipped_title,
     get_last_broken,
     get_max_depth,
     get_vault_level,
     record_depth,
     set_depth,
+    set_energy,
     set_equipped_title,
     set_last_broken,
     set_vault_level,
@@ -356,6 +358,8 @@ __all__ = [
     "unequip_slot",
     "get_depth",
     "set_depth",
+    "get_energy",
+    "set_energy",
     "get_last_broken",
     "set_last_broken",
     "get_vault_level",

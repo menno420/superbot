@@ -5,6 +5,28 @@
 > Sibling of [`gear-set-numbers-2026-06-11.md`](gear-set-numbers-2026-06-11.md)
 > (the "simulation-sane numbers" discipline) and the creature-game sim record.
 
+## Applied (2026-06-22, PR #1286)
+
+The owner approved the recommendation and chose the **energy** frequency brake
+over a per-dig cooldown. Shipped:
+
+- **Magnitude rebalance** (live constants): base roll `1-3 → 1-2`
+  (`rewards.BASE_ROLL_MAX`), tool curve `×1/2/3/4/5 → ×1/1.13/1.25/1.38/1.5`
+  (`rewards.mine_multiplier`, `1 + power*0.0625`), cell features
+  `60/20/15/5 → 70/10/18/2` and treasure richness `×3 → ×2` (`grid.py`).
+- **Energy system** (`utils/mining/energy.py`, migration 086): each dig spends 1
+  energy; energy regenerates **+1 / 10s = 360/active-hour** (the chosen throttle,
+  *no per-dig wait*); a full bar (60) is a burst, then you regen. Out of energy →
+  digging is blocked with a "rest or eat" hint (`mining_workflow.dig`).
+- **Refill via boosters** — `ration` (+25) and `energy drink` (+50) are buyable
+  consumables (a coin sink) eaten via `!use` (`mining_workflow.use_item`).
+  **Cooking/eating fish is a follow-up PR** (the fishing↔mining bridge —
+  caught fish currently live in a collection log, not the inventory).
+
+The sim's `CURRENT` config now mirrors this applied state (with the energy
+throttle modeled as its equivalent ~10s interval) and verdicts **BALANCED**; the
+`PRE_REBALANCE` config preserves the diagnosed "before" (the table below).
+
 ## Why this exists
 
 The mining grid's first real grid-`Mine` is live (#1281/#1282). The owner's read:

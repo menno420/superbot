@@ -95,3 +95,49 @@ def test_recently_cleared_entries_are_not_claims():
 
 def test_parse_claims_handles_missing_section():
     assert clo.parse_claims("# Doc\n\nno claims section here\n") == []
+
+
+# --- per-claim file layout (Q-0195) ---------------------------------------
+
+_CLAIM_FILE = """- `claude/relaxed-euler-w4lrkh` · **state-file restructure** (owner-directed) —
+  per-claim active-work · `scripts/check_lane_overlap.py` `docs/current-state/` · 2026-06-22 · PR
+"""
+
+
+def test_parse_claim_file_reads_a_single_bullet_without_a_header():
+    claims = clo.parse_claim_file(_CLAIM_FILE)
+    assert len(claims) == 1
+    assert claims[0]["branch"] == "claude/relaxed-euler-w4lrkh"
+    assert "state-file restructure" in claims[0]["summary"]
+    assert "scripts/check_lane_overlap.py" in claims[0]["paths"]
+    assert "docs/current-state/" in claims[0]["paths"]
+
+
+def test_parse_claim_file_ignores_heading_and_prose_lines():
+    text = "# heading\n\nsome prose\n\n" + _CLAIM_FILE
+    assert len(clo.parse_claim_file(text)) == 1
+
+
+def test_parse_claim_file_empty_is_no_claims():
+    assert clo.parse_claim_file("# README\n\nno bullets here\n") == []
+
+
+def test_load_claims_reads_directory_and_skips_readme(tmp_path, monkeypatch):
+    claims_dir = tmp_path / "claims"
+    claims_dir.mkdir()
+    (claims_dir / "README.md").write_text("- `claude/not-a-claim` · README example\n")
+    (claims_dir / "claude__a.md").write_text(
+        "- `claude/a` · **lane A** · `scripts/a.py` · 2026-06-22 · PR\n",
+    )
+    (claims_dir / "claude__b.md").write_text(
+        "- `claude/b` · **lane B** · `disbot/services/b.py` · 2026-06-22 · PR\n",
+    )
+    monkeypatch.setattr(clo, "_CLAIMS_DIR", claims_dir)
+    claims = clo._load_claims()
+    branches = {c["branch"] for c in claims}
+    assert branches == {"claude/a", "claude/b"}  # README excluded
+
+
+def test_load_claims_missing_directory_is_empty(tmp_path, monkeypatch):
+    monkeypatch.setattr(clo, "_CLAIMS_DIR", tmp_path / "nope")
+    assert clo._load_claims() == []

@@ -30,6 +30,7 @@ extraction changed transaction boundaries, never copy.
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
 
 from core.events import bus
@@ -38,6 +39,7 @@ from utils import db, equipment
 from utils.mining import (
     capacity,
     character,
+    energy,
     grid,
     market,
     rewards,
@@ -900,12 +902,44 @@ async def explore(user_id: int, guild_id: int) -> ExploreActionResult:
 
 
 async def use_item(user_id: int, guild_id: int, item: str) -> TradeResult:
-    """Consume one *item* from the inventory (flavor only, for now)."""
+    """Consume one *item* from the inventory.
+
+    Food / boosters (``ration``, ``energy drink`` — :data:`energy.RESTORE_VALUES`)
+    restore mining energy: the item consume and the energy raise commit in ONE
+    transaction (Q-0071) so a mid-op failure can't eat the item without the
+    refill.  Other consumables stay flavour-only.
+    """
     item = item.strip().lower()
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     if inventory.get(item, 0) < 1:
         return TradeResult(False, f"You don't have **{item}** to use.")
+
+    restore = energy.restore_value(item)
+    if restore is not None:
+        now = int(time.time())
+        e_state = energy.EnergyState(*await db.get_energy(suid, guild_id))
+        if energy.settle(e_state, now).current >= energy.MAX_ENERGY:
+            return TradeResult(
+                False,
+                "Your energy is already full — save it for later.",
+            )
+        restored = energy.restore(e_state, now, restore)
+        async with db.transaction() as conn:
+            await db.update_mining_item(suid, guild_id, item, -1, conn=conn)
+            await db.set_energy(
+                suid,
+                guild_id,
+                restored.current,
+                restored.updated_at,
+                conn=conn,
+            )
+        return TradeResult(
+            True,
+            f"You consume **{item}** and recover energy "
+            f"({energy.bar(restored.current)}).",
+        )
+
     if item == "torch":
         message = "You light a torch and peer into the darkness..."
     elif item == "dynamite":
@@ -1071,6 +1105,29 @@ async def dig(user_id: int, guild_id: int, direction: str) -> DigResult:
     direction = direction.strip().lower()
     x, y = await db.get_position(suid, guild_id)
     depth = await db.get_depth(suid, guild_id)
+
+    # Energy is the frequency brake (owner's choice over a cooldown, 2026-06-22):
+    # no energy → can't dig (no move, no loot, no energy spent) until it refills
+    # over time or you eat a ration / energy drink.
+    now = int(time.time())
+    e_state = energy.EnergyState(*await db.get_energy(suid, guild_id))
+    if not energy.can_dig(e_state, now):
+        wait = energy.seconds_until(e_state, now, energy.DIG_COST)
+        return DigResult(
+            moved=False,
+            x=x,
+            y=y,
+            depth=depth,
+            found=None,
+            amount=0,
+            wear=WearReport(),
+            hint=(
+                "⚡ You're out of energy — rest a moment "
+                f"(~{wait}s until your next dig) or eat a **ration** / "
+                "**energy drink** (`!use ration`)."
+            ),
+        )
+
     equipped = await db.get_equipment(suid, guild_id)
     # Gear + allocated skill points gate Down (byte-identical to gear-only when
     # nothing is allocated — the additive safety property, as in descend()).
@@ -1096,7 +1153,9 @@ async def dig(user_id: int, guild_id: int, direction: str) -> DigResult:
 
     awards: list[game_xp_service.GameXpAward] = []
     descended = direction == grid.DOWN
+    spent = energy.spend(e_state, now)
     async with db.transaction() as conn:
+        await db.set_energy(suid, guild_id, spent.current, spent.updated_at, conn=conn)
         if direction in grid.LATERAL:
             await db.set_position(suid, guild_id, nx, ny, conn=conn)
         else:
