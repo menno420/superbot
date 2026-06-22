@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-s56i3y` · scope: botsite React-SPA migration **PR 1** (foundation) · area: `design-system/src/app/`, `design-system/{index.html,vite.config.ts,package.json}`, `botsite/app.py` (+ `/site-data.json` route), `.github/workflows/design-system-ci.yml` · 2026-06-22
