@@ -7123,3 +7123,39 @@ the owner can promote it if he wants it binding rather than guidebook-level.
 
 **Home:** this Q-block (canonical) + `scripts/check_branch_freshness.py` header (the hook) +
 `.sessions/README.md` Q7 + `.session-journal.md` END step 4b & Rules (the operative reflex).
+
+### Q-0195 — ANSWERED (owner directive in-session): split the coordination files — per-claim active-work + per-sector current-state (2026-06-22)
+
+**Context.** The owner proposed splitting `current-state.md` per-sector to reduce merge conflicts and
+make "what's the current state / next work" easier to find, then asked whether I could *simulate* the
+options rather than assert. Two findings: (1) `current-state.md` is **not** the conflict hotspot —
+`active-work.md` is (it had ~6× the edit churn); (2) a real-`git merge` simulation
+(`tools/sim/claim_layout_sim.py`), replaying concurrent sessions distributed by the **actual** sector
+weights (S1 ~55%), measured the single-shared-file claim ledger at a **~98% conflict rate**, a
+**per-sector** split at **35–66%** (and *worse* with concurrency, because work clusters in S1), and a
+**one-file-per-claim** layout at **0%** (structurally — disjoint file sets cannot conflict), *provided
+there is no shared hand-edited index*.
+
+**The decision / directive (owner: "implement both").**
+1. **`active-work.md` → one file per claim** under `docs/owner/claims/` (the conflict fix). A session
+   creates `docs/owner/claims/<branch>.md` at start and **deletes it** at close; discovery is `ls` /
+   `check_lane_overlap.py` (which now reads the directory). **No shared index** — that is the rule that
+   preserves the 0%. The old `active-work.md` becomes a pointer to `claims/README.md`.
+2. **`current-state.md` → per-sector live-state** files (`docs/current-state/S1..S5.md`) behind the
+   existing hub (the discoverability goal — a *different* goal from conflicts). `current-state.md` stays
+   the canonical hub (keeps `## Recently shipped` + the ledger marker, so the ledger checker is
+   unaffected) and points to each sector file.
+3. **GC failsafe (owner: "make it the reconciliation job, so the repo doesn't fill with thousands of
+   files").** Primary keep-small mechanism = per-session self-delete; the docs-reconciliation pass
+   (Q-0107) GC-sweeps orphans via `scripts/check_stale_claims.py --prune`. We do **not** re-merge claim
+   files back into one file (that re-imports the 98% conflict surface).
+
+**Applied this session (owner-directed in-session → Q-0106 live-owner exception for the CLAUDE.md claim
+convention).** New `docs/owner/claims/` (README + per-claim files); `active-work.md` → pointer;
+`check_lane_overlap.py` reads the directory (+ tests); `check_stale_claims.py` + tests; reconciliation
+routine GC step; per-sector `current-state/` files + hub pointer; CLAUDE.md Q-0126/Q-0189 references
+updated; `tools/sim/claim_layout_sim.py` kept as the evidence artifact (PR #1283).
+
+**Home:** this Q-block (canonical) + `docs/owner/claims/README.md` (the convention) +
+`scripts/check_lane_overlap.py` / `scripts/check_stale_claims.py` headers +
+`docs/operations/autonomous-routines.md` (the GC step) + `.claude/CLAUDE.md` § Session & plan workflow.

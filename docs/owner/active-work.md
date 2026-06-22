@@ -1,24 +1,23 @@
-# Active work — parallel-agent claim ledger
+# Active work — moved to one-file-per-claim
 
-> **Status:** `living-ledger` — append-only coordination file. Not a roadmap, not a tracker
-> of merged work (that's `docs/current-state.md`). Source + merged PRs win. Owner decision
-> Q-0126 (2026-06-14).
+> **Status:** `reference` — this single shared ledger was retired on 2026-06-22 (owner decision
+> **Q-0195**). Live claims now live as **one file per claim** under
+> [`docs/owner/claims/`](claims/README.md).
 
-## What this is
+## Why it moved
 
-A lightweight **claim ledger** so parallel agent sessions don't duplicate each other's work.
-The maintainer runs several Claude Code sessions at once; two of them picking up the same task
-is pure waste. This file makes "what is someone already on?" answerable **before** a PR exists.
+The single shared `## Active claims` / `## Recently cleared` lists made every session **append to
+the same line**, which a real-`git merge` simulation (`tools/sim/claim_layout_sim.py`) measured at a
+**~98% merge-conflict rate** under concurrent sessions. Splitting by *sector* only halved it (and
+worsened with concurrency). **One file per claim is structurally conflict-free** — the simulation
+confirmed **0% conflicts at every concurrency level** — because two sessions never touch the same
+file.
 
-## How to use it (per CLAUDE.md § Session & plan workflow)
+## Where claims live now
 
-1. **Before starting**, scan **this file's Active claims** *and* the open / recently-closed PRs
-   (`list_pull_requests`). If your task is already claimed or in flight, coordinate or pick
-   something else — don't duplicate it.
-2. **Append one claim line** under **Active claims** in the format:
-   `` `branch` · scope · expected files/area · date · (optional) agent ``
-3. **At session close**, remove your line (or move it to **Recently cleared** with the PR #).
-   A claim is a soft signal, not a lock — stale lines are fine to prune when you see them.
+- **Read the convention + how-to:** [`docs/owner/claims/README.md`](claims/README.md)
+- **List current claims:** `ls docs/owner/claims/`
+- **Scan a scope for overlap:** `python3.10 scripts/check_lane_overlap.py <scope> ...`
 
 Keep it short. This is a whiteboard, not an audit trail — the durable record is the PR + the
 living ledger (`docs/current-state.md`).
@@ -205,3 +204,7 @@ and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work l
   + tests · 2026-06-21 · **routine dispatch, self-merge on green**
 
 _(move claims here with their PR # as they close, then prune older entries)_
+The mechanics are unchanged (Q-0126: claim before you start; a claim is a soft signal, not a lock) —
+only the storage changed from one shared file to one file per claim. The durable record of *merged*
+work remains `docs/current-state.md`; there is no "recently cleared" list to maintain (delete your
+own claim file at close).

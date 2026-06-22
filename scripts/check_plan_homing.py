@@ -84,6 +84,12 @@ def routing_docs() -> list[Path]:
         path = DOCS_DIR / name
         if path.exists():
             docs.append(path)
+    # The per-sector live-state files (Q-0195) are part of the current-state routing
+    # surface — a session dispatched to a sector reads its file — so a plan linked from
+    # one is genuinely homed.
+    current_state_dir = DOCS_DIR / "current-state"
+    if current_state_dir.is_dir():
+        docs.extend(sorted(current_state_dir.glob("*.md")))
     if _PLAN_INDEX.exists():
         docs.append(_PLAN_INDEX)
     if SUBSYSTEMS_DIR.is_dir():

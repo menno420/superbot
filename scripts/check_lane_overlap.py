@@ -37,10 +37,14 @@ from typing import cast
 _RS = "\x1e"  # record separator between commits
 _US = "\x1f"  # unit separator between hash and subject
 
-# The claim ledger (Q-0126) — the *earliest* duplicate-work signal: a claim line
+# The claim ledger (Q-0126) — the *earliest* duplicate-work signal: a claim
 # exists before any PR or commit does, so it catches overlap the merged-commit
 # scan structurally cannot (the #1221 duplicate-reaction-roles-PR2 lesson).
-_ACTIVE_WORK = Path(__file__).resolve().parents[1] / "docs" / "owner" / "active-work.md"
+# Q-0195 (2026-06-22): claims are now **one file per claim** under
+# ``docs/owner/claims/`` (the single shared file produced a ~98% merge-conflict
+# rate — `tools/sim/claim_layout_sim.py`). Each file holds one claim bullet in the
+# same backtick-token format, so the same parser reads it.
+_CLAIMS_DIR = Path(__file__).resolve().parents[1] / "docs" / "owner" / "claims"
 
 # A backtick token is a *path* (not a branch/component name) when it contains a
 # "/" or ends in a source extension — and is not a branch ref.
@@ -77,7 +81,7 @@ def _matches(path: str, scope: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Claim-ledger scan (active-work.md)
+# Claim-ledger scan (docs/owner/claims/, Q-0195)
 # ---------------------------------------------------------------------------
 
 
@@ -105,10 +109,40 @@ def _paths_overlap(a: str, b: str) -> bool:
     return a == b or a.startswith(b + "/") or b.startswith(a + "/")
 
 
+def _build_claim(entry_lines: list[str]) -> dict[str, object]:
+    """Build one ``{branch, summary, paths}`` entry from a claim bullet's lines."""
+    entry_text = " ".join(s.strip() for s in entry_lines).strip()
+    tokens = _BACKTICK.findall(entry_text)
+    branch = next((t for t in tokens if t.startswith(_BRANCH_PREFIXES)), "?")
+    paths = [t for t in tokens if _is_path_token(t)]
+    # The human-readable scope is the bold **...** title, when present.
+    m = re.search(r"\*\*(.+?)\*\*", entry_text)
+    summary = m.group(1) if m else entry_text[:80]
+    return {"branch": branch, "summary": summary, "paths": paths}
+
+
+def _bullets_to_claims(block: list[str]) -> list[dict[str, object]]:
+    """Group ``- `` bullets (with continuation lines) into claim entries."""
+    claims: list[dict[str, object]] = []
+    current: list[str] = []
+    for ln in block:
+        if ln.lstrip().startswith("- "):  # new claim entry
+            if current:
+                claims.append(_build_claim(current))
+            current = [ln]
+        elif current:  # continuation line of the current claim
+            current.append(ln)
+    if current:
+        claims.append(_build_claim(current))
+    return claims
+
+
 def parse_claims(text: str) -> list[dict[str, object]]:
     """Parse the ``## Active claims`` block into ``{branch, summary, paths}`` entries.
 
     Pure (text in, structured out) so it is unit-testable without the real file.
+    Retained for the legacy single-file layout / tests; the live source is now a
+    directory of per-claim files (see :func:`parse_claim_file`).
     """
     lines = text.splitlines()
     try:
@@ -122,30 +156,16 @@ def parse_claims(text: str) -> list[dict[str, object]]:
         if ln.startswith("## "):  # next section ends the block
             break
         block.append(ln)
+    return _bullets_to_claims(block)
 
-    claims: list[dict[str, object]] = []
-    current: list[str] = []
 
-    def _flush() -> None:
-        if not current:
-            return
-        entry_text = " ".join(s.strip() for s in current).strip()
-        tokens = _BACKTICK.findall(entry_text)
-        branch = next((t for t in tokens if t.startswith(_BRANCH_PREFIXES)), "?")
-        paths = [t for t in tokens if _is_path_token(t)]
-        # The human-readable scope is the bold **...** title, when present.
-        m = re.search(r"\*\*(.+?)\*\*", entry_text)
-        summary = m.group(1) if m else entry_text[:80]
-        claims.append({"branch": branch, "summary": summary, "paths": paths})
+def parse_claim_file(text: str) -> list[dict[str, object]]:
+    """Parse one per-claim file (Q-0195) — its top-level ``- `` bullets, no header.
 
-    for ln in block:
-        if ln.lstrip().startswith("- "):  # new claim entry
-            _flush()
-            current = [ln]
-        elif current:  # continuation line of the current claim
-            current.append(ln)
-    _flush()
-    return claims
+    A claim file holds a single claim bullet, but tolerate more than one. Heading
+    lines and prose are ignored; only ``- `` bullets become claims.
+    """
+    return _bullets_to_claims(text.splitlines())
 
 
 def scan_claims(
@@ -167,10 +187,23 @@ def scan_claims(
 
 
 def _load_claims() -> list[dict[str, object]]:
-    try:
-        return parse_claims(_ACTIVE_WORK.read_text(encoding="utf-8"))
-    except OSError:
+    """Load every live claim from the per-claim directory (Q-0195).
+
+    One file per claim under ``docs/owner/claims/`` (``README.md`` excluded). The
+    directory layout is what keeps concurrent sessions conflict-free; never collapse
+    it back into one shared file (see the module + README provenance notes).
+    """
+    if not _CLAIMS_DIR.is_dir():
         return []
+    claims: list[dict[str, object]] = []
+    for path in sorted(_CLAIMS_DIR.glob("*.md")):
+        if path.name.lower() == "readme.md":
+            continue
+        try:
+            claims.extend(parse_claim_file(path.read_text(encoding="utf-8")))
+        except OSError:
+            continue
+    return claims
 
 
 def scan(scopes: list[str], limit: int) -> dict[str, list[tuple[str, str, list[str]]]]:
@@ -189,7 +222,7 @@ def scan(scopes: list[str], limit: int) -> dict[str, list[tuple[str, str, list[s
 
 
 _FOOTER = (
-    "\n  NOTE: this covers the recently-MERGED commits (local git) + the active-work.md "
+    "\n  NOTE: this covers the recently-MERGED commits (local git) + the docs/owner/claims/ "
     "claim ledger. The OPEN-PR half (a concurrent unmerged PR with no claim line) still "
     "needs GitHub — ALSO run `list_pull_requests`."
 )
@@ -221,14 +254,14 @@ def main() -> int:
     if not hits and not claim_hits:
         print(
             f"check_lane_overlap: no recently-merged commit (last {args.limit}) and no "
-            f"active-work.md claim touch {', '.join(args.scopes)} ✓" + _FOOTER,
+            f"docs/owner/claims/ claim touch {', '.join(args.scopes)} ✓" + _FOOTER,
         )
         return 0
 
     if claim_hits:
         print(
             "check_lane_overlap: ⚠ CLAIMED — this scope is claimed by a parallel session "
-            "in active-work.md. Coordinate or pick another lane before building:\n",
+            "in docs/owner/claims/. Coordinate or pick another lane before building:\n",
         )
         for scope, claims in claim_hits.items():
             print(f"  scope `{scope}`:")

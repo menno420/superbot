@@ -170,8 +170,19 @@ _RECENTLY_SHIPPED_BUDGET = 20
 _NEXT_ACTION_CALLOUT_BUDGET = 6000
 
 
+# Per-claim files (Q-0195) are transient coordination state — one file per active
+# session, created at start and deleted at close (the same lifecycle as `.sessions/`
+# logs, which also live outside the docs census). They are not docs, so they carry no
+# Status badge and need no reachability link; only their README.md is a real doc.
+_CLAIMS_DIR = DOCS_ROOT / "owner" / "claims"
+
+
+def _is_transient_claim(path: Path) -> bool:
+    return path.parent == _CLAIMS_DIR and path.name.lower() != "readme.md"
+
+
 def _docs_files() -> list[Path]:
-    return sorted(DOCS_ROOT.rglob("*.md"))
+    return sorted(f for f in DOCS_ROOT.rglob("*.md") if not _is_transient_claim(f))
 
 
 def _is_adr(path: Path) -> bool:

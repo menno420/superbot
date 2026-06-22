@@ -23,6 +23,20 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0024 — `test_generated_at_is_deterministic_not_wall_clock` flaky under `pytest -n auto` (real-clock dependent) — OPEN
+
+- **Symptom (observed 2026-06-22, in a full `check_quality.py --full` run during the Q-0195
+  state-file-restructure session):** `tests/unit/scripts/test_export_dashboard_data.py::
+  test_generated_at_is_deterministic_not_wall_clock` fails intermittently in the parallel
+  (`-n auto`) suite, but **passes 3/3 in isolation** on both the working tree and clean
+  `origin/main`. Unrelated to the session's docs/script changes (no mechanism connects them).
+- **Likely root (unconfirmed):** the same class as the FIXED **BUG-0021** — a real-clock-dependent
+  assertion that races under xdist worker scheduling. The export's `generated_at` determinism is
+  asserted against a value that can straddle a wall-clock tick when workers are loaded.
+- **Stays-fixed guard (to ship with the fix):** make the determinism assertion clock-injected (freeze
+  / inject the timestamp source) like BUG-0021's fix, so it cannot depend on real-clock timing under
+  `-n auto`. Left OPEN — out of scope for the restructure session; a good empty-fire dispatch pick.
+
 ## BUG-0023 — public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = FIXED (root)
 
 - **Symptom (owner-reported, 2026-06-20, live):** the bot's `Bot Online` embed shows **`Commands

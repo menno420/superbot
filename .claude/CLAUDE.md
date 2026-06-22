@@ -141,13 +141,17 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
 <!-- SESSION_WORKFLOW_START -->
 ## Session & plan workflow
 
-- **Claim work before starting; batch pushes after (owner decision Q-0126, 2026-06-14).**
-  *Before* starting, scan `docs/owner/active-work.md` **and** open / recently-closed PRs
-  (`list_pull_requests`) for overlap — if your task is already claimed or in flight,
-  coordinate or pick something else instead of duplicating it (the parallel-agent waste this
-  prevents). Then **append a one-line claim** to `docs/owner/active-work.md` (`branch · scope ·
-  expected files/area · date`) and remove/archive it at session close. The claim ledger is the
-  *early* duplicate-work signal — it makes intent visible **before** a PR exists, so it does
+- **Claim work before starting; batch pushes after (owner decision Q-0126, 2026-06-14; claim
+  storage is one-file-per-claim per Q-0195, 2026-06-22).**
+  *Before* starting, scan `docs/owner/claims/` (`ls`, or `python3.10 scripts/check_lane_overlap.py
+  <scope>`) **and** open / recently-closed PRs (`list_pull_requests`) for overlap — if your task is
+  already claimed or in flight, coordinate or pick something else instead of duplicating it (the
+  parallel-agent waste this prevents). Then **create one claim file** `docs/owner/claims/<branch>.md`
+  (one bullet: `branch · scope · expected files/area · date`) and **delete it** at session close.
+  *One file per claim, not one shared list* — a real-`git merge` simulation
+  (`tools/sim/claim_layout_sim.py`) measured the old shared-append ledger at a ~98% conflict rate
+  vs 0% per-file; see `docs/owner/claims/README.md`. The claim is the *early* duplicate-work signal
+  — it makes intent visible **before** a PR exists, so it does
   **not** change the "open the real PR right after your first push" rule below. After the PR is
   open, **don't re-push on every commit** — batch your work and push when it's meaningfully
   complete and ready for the Code Quality check. `code-quality.yml` is the repo's dominant
@@ -216,7 +220,7 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   **Open it FAST — target the first ~2 minutes of the session, before the build work (owner
   directive Q-0189, 2026-06-21).** The born-red card → first push → PR open is your **first
   action** once you've oriented enough to name your scope and claimed the lane
-  (`active-work.md`) — *not* something deferred until after the bulk of the work is written.
+  (`docs/owner/claims/<branch>.md`) — *not* something deferred until after the bulk of the work is written.
   The entire value of the early open is the **in-flight signal**: a visible PR (plus the claim
   line) is how parallel sessions see your lane and avoid duplicating it (the #1221 duplicate-PR
   lesson — a PR that opens late, after substantial work, is invisible during exactly the window
