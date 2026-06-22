@@ -7210,3 +7210,49 @@ is now unreferenced and harmless). PR for this change: branch `claude/jolly-saga
 
 **Home:** this Q-block (canonical) + `.claude/CLAUDE.md` § Session & plan workflow +
 `docs/operations/hermes-skills/README.md`.
+
+### Q-0198 — DISCUSS: mining-grid encounters — depth threshold, content, determinism, resolution UI (2026-06-22)
+
+> **PROPOSED — surfaced by a dispatch grooming pass** (product lanes were gated, so instead of a 7th
+> infra guard this routes the *one owner-named* grid follow-up toward buildability). Origin **Q-0173**:
+> the owner shipped the grid Mine (`views/mining/grid_mine_view.py`, hub-redesign PR 3) *encounter-free
+> by explicit decision* — *"v1 = free movement, NO encounters … encounters ARE wanted, as a separate
+> later session."* The [idea](../ideas/mining-grid-encounters-2026-06-22.md) itself says **"route to a
+> router Q before building, don't decide unprompted"** — so this poses the decisions, with defaults,
+> rather than building. Q-0172 "build freely" yields here to the owner's explicit design reservation.
+
+**Context:** layer **sparse, depth-gated random encounters** onto the shipped grid navigator — a
+low-probability event on a `move` / `Mine here` action once deep enough, resolved through the audited
+`mining_workflow` seam (RS02/Q-0071), never a direct view write, and **never mandatory-feeling**
+(Q-0087). The grid already persists a seed-deterministic `(seed, x, y, z)` world, so encounters can be
+deterministic + shareable for free. **Distinct from Q-0186 / the [wild-encounters
+idea](../ideas/wild-encounters-activity-spawning-2026-06-20.md):** that one is *chat-activity-triggered*
+channel spawns; this is *exploration-triggered* while roaming the grid. They could share **one pure
+`encounter` resolution engine** with two triggers — worth building the engine once if both land.
+
+**The questions (the agent recommends; the owner-designer decides):**
+1. **Depth threshold + per-action chance + cooldown** (the "not too many" tuning). *Recommendation:*
+   no encounters above depth **z ≥ 10** (surface bands stay calm for casual play); **~8 %** per qualifying
+   `move`/`mine` action; a **per-player cooldown of ~5 actions** so roaming isn't interrupt-spam. All
+   config-driven constants (sim-tunable like the economy constants), off-by-default-safe.
+2. **Encounter content — flavour/loot vs. light combat.** *Recommendation:* **start loot/flavour-only**
+   for v1 (a small table: ore vein / hazard that costs energy / abandoned cache of coins), routed through
+   `economy_service` / `update_mining_item` / `game_xp_service` exactly like `mine_here`. **If combat is
+   wanted, reuse the creature/deathmatch engine** — never a third bespoke combat model (the idea's
+   anti-pattern). Combat can be a fast-follow once the loot loop proves out.
+3. **Determinism — fully seed-deterministic per cell vs. a live roll.** *Recommendation:* **a live roll
+   gated by depth/cooldown**, *not* per-cell-deterministic — two players' runs should differ and a cell
+   shouldn't farm the same encounter on every revisit (the grid's *terrain* stays deterministic; the
+   *events* are live). Keeps it an event, not a map feature.
+4. **Resolution UI — extra buttons on the navigator vs. a swapped sub-view.** *Recommendation:* **extra
+   buttons on the existing navigator embed** (Fight/Flee/Loot as the content dictates) — stays in the
+   one grid surface, no view juggling; matches the calm, in-place UX the grid already uses.
+
+**Agent note:** these gate the *build*, not a plan — the shape is small + additive (the same discipline
+grid v1 followed) and ungated apart from this design call; once answered, a runtime session builds it in
+small PRs (pure `utils/mining/encounter.py` table + an audited `mining_workflow` op + navigator buttons),
+runtime-verified. **Home:** this Q-block (canonical) + the
+[mining-grid-encounters idea](../ideas/mining-grid-encounters-2026-06-22.md) +
+[`planning/mining-hub-redesign-2026-06-15.md`](../planning/mining-hub-redesign-2026-06-15.md) (PR 3's
+"Later — encounters"). Related: **Q-0173** (grid design), **Q-0186** (wild-encounters spawn design —
+shared engine), Q-0087 (never mandatory), Q-0071 (atomic workflow).

@@ -41,7 +41,11 @@ one is **exploration-triggered** while actively roaming the mine grid (depth-gat
 could **share one encounter-resolution engine** (a pure `utils/.../encounter.py` table + an audited
 workflow op) with two different *triggers* — worth designing the engine once if both are built.
 
-## Open design questions (route to a router Q before building, don't decide unprompted)
+## Open design questions — ROUTED to the owner as router **Q-0198** (DISCUSS, 2026-06-22)
+
+The four decisions below are now posed to the owner with recommended defaults in
+[`docs/owner/maintainer-question-router.md` § Q-0198](../owner/maintainer-question-router.md) — once
+he answers, a runtime session builds it (small PRs, runtime-verified). Do **not** build ahead of that.
 
 1. **Depth threshold + per-action chance + cooldown** (config-driven; the "not too many" tuning).
 2. **Encounter content** — pure flavour/loot events vs. light combat (and if combat, which engine).
