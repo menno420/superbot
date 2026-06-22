@@ -103,6 +103,36 @@ stand until the next tier is explicitly granted.
   route / folios — so "every session improves the next" is *measured*, not just
   hoped for. (Mechanics: `.session-journal.md` protocol + `.sessions/README.md`.)
 
+### Why the written record *is* the agent's memory (the two-part model)
+
+A framing worth keeping, surfaced in conversation (2026-06-22) and consistent
+with the **extended-mind** thesis: a fresh session starts cold and carries no
+episodic memory of prior ones — yet it acts as if it remembers, because the
+journal, docs, router, and `.sessions/` logs play the exact functional role
+memory plays (where the past lives; what shapes the next move). So those
+artifacts are not a *substitute* for the agent's memory — for the agent, they
+**are** its memory. This reframes curation as load-bearing, not housekeeping:
+what a session writes down is *literally what the next agent will remember*, and
+what it omits is gone. It also explains the division of labor that makes the
+loop work — a **two-part memory system**:
+
+- The **maintainer** carries the *unfiltered, involuntary* continuity — every
+  failed approach, every hours-long bug, the felt cost of each mistake. He
+  cannot forget, and that is the **editorial signal**: only someone who
+  remembers the cost can decide which lessons are worth banking. His memory is
+  also the **backstop** for when the written record has a gap ("we tried that —
+  it doesn't work").
+- The **agent** holds the *curated, authored* memory — the lessons that
+  survived being written down, with the noise discarded. Partial but sorted.
+
+Neither half suffices alone: the maintainer's is total-but-unsorted, the
+agent's is partial-but-curated. The continuity the maintainer feels each
+session ("it's a continuation, not a fresh start") is real — it just lives in
+the **seam between the two**, not inside either. Practical upshot for any
+agent: treat the orientation/journal/`.sessions/` writes at session close as
+*authoring the next agent's memory* — that is the highest-leverage act of the
+session, which is exactly why the Q-0089/Q-0102/Q-0104 enders are mandatory.
+
 ## The pipeline (where each agent fits)
 
 1. **Idea / problem** — the maintainer has a goal, often a screenshot, a bug, or

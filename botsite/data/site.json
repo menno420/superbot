@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T23:26:34Z",
+    "generated_at": "2026-06-22T23:44:37Z",
     "build": {
-      "commit": "ac1a1c7d",
-      "subject": "Merge branch 'main' into claude/funny-franklin-blbz7w",
-      "committed_at": "2026-06-22T23:26:34Z"
+      "commit": "55655ca",
+      "subject": "Merge pull request #1329 from menno420/claude/funny-franklin-blbz7w",
+      "committed_at": "2026-06-22T23:44:37Z"
     }
   },
   "counts": {
-    "commands": 374,
-    "features": 38,
+    "commands": 377,
+    "features": 39,
     "games": 10
   },
   "catalogue": [
@@ -242,6 +242,23 @@
         "mining",
         "resources",
         "minigame"
+      ],
+      "badges": [
+        "economy"
+      ],
+      "is_game": false
+    },
+    {
+      "key": "treasury",
+      "display_name": "Treasury",
+      "description": "Server-owned coin pool — contribute coins; managers disburse",
+      "emoji": "🏛️",
+      "category": "economy",
+      "tags": [
+        "treasury",
+        "economy",
+        "coins",
+        "governance"
       ],
       "badges": [
         "economy"
@@ -709,6 +726,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -743,6 +764,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -781,6 +806,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -817,6 +846,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -938,6 +971,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -972,6 +1009,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -1040,6 +1081,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -1074,6 +1119,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -1225,6 +1274,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -1259,6 +1312,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -1295,6 +1352,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -1329,6 +1390,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -1381,6 +1446,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -1415,6 +1484,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -1502,6 +1575,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -1536,6 +1613,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -1636,6 +1717,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -1670,6 +1755,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -1766,6 +1855,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -1800,6 +1893,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -1855,6 +1952,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
+        {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
         },
@@ -1889,6 +1990,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -2061,6 +2166,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
+          "status": "ideas"
+        },
         {
           "title": "AI reports corrections → an audience-routed AI ticket service",
           "status": "ideas"
@@ -2403,6 +2512,23 @@
       "notes": null
     },
     {
+      "name": "contribute",
+      "aliases": [
+        "donate",
+        "deposit"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Donate *amount* of your own coins into the server treasury.",
+      "description": "Donate *amount* of your own coins into the server treasury.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "cook",
       "aliases": [],
       "category": "economy",
@@ -2677,6 +2803,23 @@
           "status": "ideas"
         }
       ],
+      "notes": null
+    },
+    {
+      "name": "grant",
+      "aliases": [
+        "disburse",
+        "payout"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Disburse *amount* from the treasury to *member* (managers only).",
+      "description": "Disburse *amount* from the treasury to *member* (managers only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
@@ -3196,6 +3339,23 @@
           "status": "ideas"
         }
       ],
+      "notes": null
+    },
+    {
+      "name": "treasury",
+      "aliases": [
+        "bank",
+        "pool"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the server treasury — view the pool and contribute coins.",
+      "description": "Open the server treasury — view the pool and contribute coins.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {

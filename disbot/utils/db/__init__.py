@@ -231,6 +231,11 @@ from utils.db.sessions import (
     touch_session,
 )
 from utils.db.settings import get_setting, set_setting
+from utils.db.treasury import (
+    credit_treasury,
+    get_treasury,
+    try_debit_treasury,
+)
 from utils.db.xp import (
     add_xp,
     delete_xp,
@@ -302,6 +307,10 @@ __all__ = [
     "set_daily_claim",
     "set_last_worked",
     "try_debit_coins",
+    # treasury (guild-owned coin pool)
+    "credit_treasury",
+    "get_treasury",
+    "try_debit_treasury",
     # inventory
     "add_item",
     "get_inventory",
