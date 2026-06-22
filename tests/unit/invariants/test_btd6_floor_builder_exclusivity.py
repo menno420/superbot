@@ -112,6 +112,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "how much xp does round 63 give",
         "deterministic_round_xp_reply",
     ),
+    (
+        "what's the economy of round 95",
+        "deterministic_round_economy_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.

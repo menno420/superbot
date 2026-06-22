@@ -3955,6 +3955,69 @@ def deterministic_round_xp_reply(message_text: str) -> str | None:
     )
 
 
+# --- "Economy of round N" deterministic reply ---------------------------------
+# The consolidated round-economy answer: RBE + cash (+ cumulative) + XP in one
+# grounded reply, matching the round embed's Economy field. Round economy is
+# otherwise spread across three paths (cash → ai_round_cash_workflow, XP →
+# deterministic_round_xp_reply, RBE → none), so "what's the economy of round 95"
+# had no single answer. Registered BEFORE the XP builder so a multi-stat /
+# economy question gets the consolidated answer while a pure "how much xp" (no
+# economy cue) still routes to the narrower XP reply.
+_ROUND_ECONOMY_CUE_RE = re.compile(
+    r"\b(?:economy|economic|overview|summary|breakdown|stats?|rewards?|rbe)\b",
+    re.I,
+)
+
+
+def deterministic_round_economy_reply(message_text: str) -> str | None:
+    """A code-built "economy of round N" answer (RBE + cash + XP), or ``None``.
+
+    Fires on a round number + an economy cue (economy / overview / summary /
+    stats / rewards / rbe / breakdown), served as a pre-emptive floor. Supports
+    ABR via the standard cue (cash/RBE differ between sets; XP does not). Defers
+    (``None``) without an economy cue, without a round number, or for a round not
+    in the set — those reach the narrower builders or the model.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _ROUND_ECONOMY_CUE_RE.search(low):
+        return None
+    number_match = _ROUND_XP_NUMBER_RE.search(low)
+    if number_match is None:
+        return None
+    round_number = int(number_match.group(1) or number_match.group(2))
+
+    from services import btd6_data_service
+
+    roundset = "alternate" if _ABR_CUE_RE.search(low) else "default"
+    entry = btd6_data_service.get_round(round_number, roundset)
+    if entry is None:
+        return None
+    base_xp = btd6_data_service.round_base_xp(round_number)
+
+    set_label = "ABR" if roundset == "alternate" else "default rounds"
+    lines = [f"**Round {round_number} — RBE, cash & XP** ({set_label})"]
+    if entry.rbe is not None:
+        lines.append(f"• **RBE** {entry.rbe:,}")
+    if entry.cash is not None:
+        cumulative = (
+            f" (cumulative ${entry.cumulative_cash:,.0f})"
+            if entry.cumulative_cash is not None
+            else ""
+        )
+        lines.append(f"• **Cash** ${entry.cash:,.0f}{cumulative}")
+    if base_xp is not None:
+        lines.append(
+            f"• **XP** {base_xp:,} (Beginner base, before freeplay/Monkey Knowledge)",
+        )
+    # Nothing groundable beyond the header → defer rather than send an empty card.
+    if len(lines) == 1:
+        return None
+    return "\n".join(lines)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -3965,6 +4028,7 @@ def deterministic_round_xp_reply(message_text: str) -> str | None:
 # *live* tuple — a builder added here is automatically held to the one-fires
 # contract, no test edit needed. Append a new list family here.
 _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
+    deterministic_round_economy_reply,
     deterministic_round_xp_reply,
     deterministic_mk_reference_reply,
     deterministic_mk_category_roster_reply,
