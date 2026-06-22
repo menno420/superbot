@@ -1,9 +1,9 @@
 # 2026-06-22 — Server treasury (collective coin pool)
 
-> **Status:** `in-progress` — born-red card (Q-0133); flips to `complete` as the final step.
+> **Status:** `complete` — born-red card (Q-0133) flipped green as the final step.
 > Owner-directed (the maintainer picked "treasury" from two offered words and said "build some
 > things… do what you want") → built end-to-end (Q-0191 merge-immediately).
-> PR: this session (`claude/bold-pasteur-qy5cwd`) → auto-merges on green CI (Q-0123).
+> PR #1334 → auto-merge armed; merges on green CI (Q-0123/Q-0127).
 
 ## Context (how this session arose)
 
