@@ -1,1 +1,0 @@
-- claude/fervent-bell-hyf1ca · fix "list all monkey knowledge" regression (whole-catalog MK roster) · disbot/services/btd6_context_service.py + tests · 2026-06-22
