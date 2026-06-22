@@ -6,15 +6,21 @@ on:
   pull_request:
     branches: [ "main" ]
 
-# Cancel superseded in-flight runs on the same ref. Agents iterate by pushing several
-# times to a PR branch; only the newest commit needs checking, so older runs for the
-# same PR are wasted minutes — and this workflow is the repo's dominant CI cost (~940
-# runs / 2,396 min this month vs. 52 for the next workflow). `main` is exempt: every
-# commit that lands is verified to completion. Provenance Q-0126 (2026-06-14); revert
-# this block if it ever cancels a run that should have finished.
+# Concurrency: do NOT cancel in-progress runs.
+#
+# History: `cancel-in-progress: true` (non-main refs) was added 2026-06-20 (#1195, Q-0126) to save
+# minutes — agents push several times to a PR branch and only the newest commit "needs" checking.
+# But it caused the recurring "CI didn't run on my latest commit" strand: under the born-red flow's
+# rapid event burst (open → push → push within ~2 min), GitHub's cancellation RACES and drops the
+# run for the *head* commit, leaving the PR with no passing required check (auto-merge then stalls).
+# Smoking gun (2026-06-22): on the SAME `pull_request: synchronize` event/commit, `codex-final-review`
+# (`cancel-in-progress: false`) ran while `code-quality` (`cancel-in-progress: true`) did NOT — the
+# only difference was this flag. And the cost rationale is moot: this is a PUBLIC repo with UNLIMITED
+# Actions minutes, so cancelling to save minutes buys nothing and costs reliability.
+# => `false`: every commit reliably gets its run. Redundant older-commit runs are harmless (free).
 concurrency:
   group: code-quality-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: false
 
 jobs:
   code-quality:            # <- clear job name
