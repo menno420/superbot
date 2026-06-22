@@ -52,16 +52,49 @@ class FishResult:
     xp_note: str | None = None
 
 
-async def fish(user_id: int, guild_id: int) -> FishResult:
-    """One cast: roll a catch from the unlocked band, log it + award xp atomically."""
+@dataclass(frozen=True)
+class Cast:
+    """A cast in progress — the fish on the line, *before* it is committed.
+
+    The minigame (``views/fishing``) rolls the catch at cast time so it knows
+    what is biting, then commits it only if the player successfully reels in
+    (owner decision 2026-06-22: a missed reel = the fish gets away, no write).
+    The instant ``fish()`` below rolls + commits in one go for the legacy path.
+    """
+
+    catch: Catch | None
+    #: The player's fishing level at cast time (gates the roll + the catch math).
+    level_before: int
+
+
+async def roll_cast(user_id: int, guild_id: int) -> Cast:
+    """Read the player's level and roll a catch **without writing anything**.
+
+    The read-only half of a cast: the minigame calls this when the line goes
+    out, holds the rolled :class:`Cast`, and only calls :func:`commit_catch`
+    once the reel succeeds. Returns ``Cast(catch=None, …)`` if the catalog
+    failed to load (no species) — the caller surfaces an honest empty result.
+    """
     xp_map = await db.get_game_xp(user_id, guild_id)
     fishing_xp_before = xp_map.get(game_xp_service.GAME_FISHING, 0)
     level_before = fishing_level_from_xp(fishing_xp_before)
-
     catch = roll_catch(level_before)
     if catch is None:
-        # Catalog failed to load — never write, surface an honest empty result.
         logger.error("fishing: no catchable species (catalog empty?)")
+    return Cast(catch=catch, level_before=level_before)
+
+
+async def commit_catch(user_id: int, guild_id: int, cast: Cast) -> FishResult:
+    """Commit a successfully-reeled cast: log it + grant the item + award xp.
+
+    The audited write boundary (RS02 / Q-0071): the catch-log write, the
+    inventory grant, and the xp award all run on ONE workflow-owned
+    ``db.transaction()`` connection; the xp event emits only after commit. A
+    ``cast`` with no ``catch`` (empty catalog) writes nothing.
+    """
+    catch = cast.catch
+    level_before = cast.level_before
+    if catch is None:
         return FishResult(catch=None, fishing_level=level_before)
 
     async with db.transaction() as conn:
@@ -87,12 +120,23 @@ async def fish(user_id: int, guild_id: int) -> FishResult:
         )
     if award is not None:
         await game_xp_service.emit_award_events(award)
-
-    fishing_xp_after = award.game_total if award is not None else fishing_xp_before
-    level_after = fishing_level_from_xp(fishing_xp_after)
+        level_after = fishing_level_from_xp(award.game_total)
+    else:
+        level_after = level_before
     return FishResult(
         catch=catch,
         fishing_level=level_after,
         unlocked_bigger=level_after > level_before,
         xp_note=award.note if award is not None and award.leveled_up else None,
     )
+
+
+async def fish(user_id: int, guild_id: int) -> FishResult:
+    """One instant cast: roll a catch from the unlocked band + commit it.
+
+    The legacy / non-interactive path (kept for the shared-game seam and tests).
+    The interactive minigame instead calls :func:`roll_cast` then
+    :func:`commit_catch` so the write happens only on a successful reel.
+    """
+    cast = await roll_cast(user_id, guild_id)
+    return await commit_catch(user_id, guild_id, cast)

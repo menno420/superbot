@@ -180,3 +180,67 @@ async def test_empty_catalog_writes_nothing():
 
     assert result.catch is None
     record.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# roll_cast / commit_catch — the minigame split (roll at cast, write on reel)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_roll_cast_reads_the_level_and_rolls_without_writing():
+    """The read-only half: a cast rolls a catch but touches no write seam."""
+    with (
+        patch.object(wf, "roll_catch", lambda level, rng=None: _CATCH),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "record_catch", AsyncMock()) as record,
+        patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
+        patch.object(wf.game_xp_service, "award", AsyncMock()) as award,
+    ):
+        cast = await wf.roll_cast(99, 1)
+
+    assert cast.catch is _CATCH
+    assert cast.level_before == 1  # 0 xp → level 1
+    record.assert_not_awaited()  # nothing is written until the reel succeeds
+    grant.assert_not_awaited()
+    award.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_writes_the_held_cast():
+    """The write half: committing a rolled cast runs the audited transaction."""
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    cast = wf.Cast(catch=_CATCH, level_before=1)
+    with (
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "record_catch", AsyncMock()) as record,
+        patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
+        patch.object(
+            wf.game_xp_service,
+            "award",
+            AsyncMock(return_value=_award(game_total=10)),
+        ),
+        patch.object(wf.game_xp_service, "emit_award_events", AsyncMock()) as emit,
+    ):
+        result = await wf.commit_catch(99, 1, cast)
+
+    record.assert_awaited_once()
+    grant.assert_awaited_once()
+    emit.assert_awaited_once()
+    assert result.catch is _CATCH
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_on_empty_cast_writes_nothing():
+    cast = wf.Cast(catch=None, level_before=2)
+    with patch.object(wf.db, "record_catch", AsyncMock()) as record:
+        result = await wf.commit_catch(99, 1, cast)
+
+    assert result.catch is None
+    assert result.fishing_level == 2
+    record.assert_not_awaited()

@@ -2083,8 +2083,8 @@ const COMMANDS = [
     "name": "fish",
     "area": "games",
     "status": "in-progress",
-    "summary": "Cast a line and catch a fish — level up to unlock bigger fish.",
-    "description": "Cast a line and catch a fish — level up to unlock bigger fish.",
+    "summary": "Cast a line — wait for the bite, then reel it in before it gets away.",
+    "description": "Cast a line — wait for the bite, then reel it in before it gets away.",
     "usage": "!fish",
     "aliases": [],
     "permissions": "anyone",
@@ -6014,7 +6014,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "a960401b",
+    "build": "52cf193",
     "title": "New public bot website",
     "changes": [
       {
@@ -6026,7 +6026,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "a960401b",
+    "build": "52cf193",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6038,7 +6038,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "a960401b",
+    "build": "52cf193",
     "title": "Command-alias suggestions",
     "changes": [
       {
