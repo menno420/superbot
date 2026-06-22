@@ -77,6 +77,6 @@ def test_bar_renders_proportionally():
     assert mid.count("▰") == 5 and mid.count("▱") == 5
 
 
-def test_restore_values_match_known_boosters():
-    """The booster table mirrors the items added to the catalog/market."""
-    assert set(energy.RESTORE_VALUES) == {"ration", "energy drink"}
+def test_restore_values_match_known_food():
+    """The food/booster table mirrors the items added to the catalog/market."""
+    assert set(energy.RESTORE_VALUES) == {"ration", "energy drink", "cooked fish"}

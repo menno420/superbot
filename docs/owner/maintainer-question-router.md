@@ -7159,3 +7159,28 @@ updated; `tools/sim/claim_layout_sim.py` kept as the evidence artifact (PR #1283
 **Home:** this Q-block (canonical) + `docs/owner/claims/README.md` (the convention) +
 `scripts/check_lane_overlap.py` / `scripts/check_stale_claims.py` headers +
 `docs/operations/autonomous-routines.md` (the GC step) + `.claude/CLAUDE.md` § Session & plan workflow.
+
+### Q-0196 — ANSWERED (owner decision, AskUserQuestion): what are caught fish *for*? cook-at-campfire + sellable (2026-06-22)
+
+**Context.** Applying the mining energy rebalance (Q-0195-era, #1284/#1286), the owner asked that energy
+also be refillable by "cooking/eating fish or consuming boosters". Fish *use/value* was an explicitly
+**open** owner question (Q-0175 — fishing v1 deliberately paid nothing and kept caught fish in a
+collection log, not the inventory). Two forks were put to the owner.
+
+**The decision.**
+1. **Cooking is gated on a built Campfire structure** (not eat-raw, not free) — a small early coin +
+   material sink (`!build campfire`) before fish→energy unlocks. A progression beat, not a wall.
+2. **Fish are BOTH an energy source AND sellable for coins** — a caught fish enters the mining
+   inventory (sellable via the normal market, modest size-scaled value) and can be `!cook`ed into a
+   `cooked fish` food (+30 energy). This resolves the *fish-value* half of Q-0175 (the leveling-ladder /
+   minigame tail of Q-0175 stays open).
+
+**Applied this session (owner-directed → merge-immediately, Q-0191).** `fishing_workflow.fish` grants
+the caught species to the inventory; fish added to `utils/mining/items.py` as sellable `RESOURCE`s;
+`campfire` added to `utils/mining/structures.py`; `mining_workflow.cook` + `!cook`; `cooked fish` in
+`energy.RESTORE_VALUES`. **Balance caveat (flagged):** fishing is currently unpaced (no energy/cooldown),
+so fish sell value is kept deliberately low — a future fishing-pacing pass is the right place to revisit
+it before fish become a meaningful coin faucet. PR #1289.
+
+**Home:** this Q-block (canonical) + `docs/subsystems/games.md` (fishing plan pointer) +
+`docs/planning/mining-economy-balance-2026-06-22.md` (Applied section).

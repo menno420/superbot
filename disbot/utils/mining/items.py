@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from utils.equipment import TIER_ORDER
+from utils.fishing.fish import SPECIES as _FISH_SPECIES
 
 
 class ItemKind(Enum):
@@ -88,8 +89,7 @@ _CATALOG: dict[str, ItemDef] = {
     ),
     # Food / boosters — eaten via mining_workflow.use_item to refill mining
     # energy (utils/mining/energy.py RESTORE_VALUES). Buyable from the market
-    # (a coin sink that lets active players keep digging past the passive regen);
-    # cooked fish joins this group in a follow-up PR.
+    # (a coin sink that lets active players keep digging past the passive regen).
     "ration": ItemDef(
         "ration",
         ItemKind.CONSUMABLE,
@@ -103,6 +103,16 @@ _CATALOG: dict[str, ItemDef] = {
         tier=2,
         value=15,
         tags=frozenset({"booster"}),
+    ),
+    # Cooked fish (2026-06-22) — the product of cooking a caught fish at a built
+    # campfire (mining_workflow.cook); eaten to refill energy. A CONSUMABLE, so
+    # it is not sellable (you sell the raw fish; you cook it for a meal instead).
+    "cooked fish": ItemDef(
+        "cooked fish",
+        ItemKind.CONSUMABLE,
+        tier=1,
+        value=5,
+        tags=frozenset({"food"}),
     ),
     # Combat gear (deathmatch) — equippable tools-of-war; never sellable (TOOL,
     # not RESOURCE).  Values are for inventory net-worth display, not a sale
@@ -203,6 +213,32 @@ _CATALOG.update(
     },
 )
 
+
+# Caught fish (2026-06-22, owner decision) — every fishing species is a sellable
+# RESOURCE in the shared inventory, so the existing !sell / market path values
+# them with no special-casing.  Value scales modestly with size_rank and is kept
+# deliberately LOW: fishing is currently unpaced (no energy/cooldown), so fish
+# are a minor coin trickle, not a primary faucet (the rebalance the energy system
+# fixed for mining must not be re-opened via fishing).  Cooking turns a raw fish
+# into "cooked fish" (energy) — see services/mining_workflow.cook.
+def _fish_value(size_rank: int) -> int:
+    """Modest, size-scaled sell value for a raw fish (1…7 across size ranks 1…21)."""
+    return max(1, round(size_rank / 3))
+
+
+_CATALOG.update(
+    {
+        s.name: ItemDef(
+            s.name,
+            ItemKind.RESOURCE,
+            tier=1,
+            value=_fish_value(s.size_rank),
+            tags=frozenset({"fish"}),
+        )
+        for s in _FISH_SPECIES
+    },
+)
+
 # Tool upgrade ladder — the spine of a future crafting progression.  Each
 # entry maps a tool family to its ordered tiers (lowest → highest).
 TOOL_LADDERS: dict[str, tuple[str, ...]] = {
@@ -242,6 +278,12 @@ def is_tool(name: str) -> bool:
 
 def is_consumable(name: str) -> bool:
     return classify(name) is ItemKind.CONSUMABLE
+
+
+def is_fish(name: str) -> bool:
+    """True if *name* is a caught fish species (tagged ``fish``)."""
+    item = _CATALOG.get(name.lower())
+    return item is not None and "fish" in item.tags
 
 
 def tool_tier(name: str) -> int:

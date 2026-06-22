@@ -41,6 +41,7 @@ from utils.mining import (
     character,
     energy,
     grid,
+    items,
     market,
     rewards,
     structures,
@@ -676,6 +677,7 @@ async def vault_upgrade(user_id: int, guild_id: int) -> TradeResult:
 _STRUCTURE_BUILD_REASON = {
     structures.FORGE: market.FORGE_BUILD_REASON,
     structures.HOME: market.HOME_BUILD_REASON,
+    structures.CAMPFIRE: market.CAMPFIRE_BUILD_REASON,
 }
 
 
@@ -948,6 +950,54 @@ async def use_item(user_id: int, guild_id: int, item: str) -> TradeResult:
         message = f"You used **{item}**, but nothing special happened."
     await db.update_mining_item(suid, guild_id, item, -1)
     return TradeResult(True, message)
+
+
+#: The food produced by cooking a fish (eaten via use_item for energy).
+COOKED_FISH = "cooked fish"
+
+
+async def cook(user_id: int, guild_id: int, fish: str, qty: int = 1) -> TradeResult:
+    """Cook *qty* caught *fish* into ``cooked fish`` food at a built campfire.
+
+    Owner decision (2026-06-22): cooking is gated on a built **Campfire**
+    structure.  Consumes the raw fish and grants the same number of generic
+    ``cooked fish`` (eaten via :func:`use_item` to refill mining energy) in ONE
+    transaction (Q-0071).  Raw fish are sold for coins through the normal market
+    instead; cooking trades a fish for a meal.
+    """
+    fish = fish.strip().lower()
+    suid = str(user_id)
+    qty = max(1, qty)
+
+    built = await db.get_structures(user_id, guild_id)
+    if not structures.cooking_unlocked(built.get(structures.CAMPFIRE, 0)):
+        return TradeResult(
+            False,
+            "You need a 🔥 **Campfire** to cook — build one with `!build campfire`.",
+        )
+    if not items.is_fish(fish):
+        return TradeResult(
+            False,
+            f"**{fish}** isn't a fish you can cook — catch fish with `!fish`.",
+        )
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    have = inventory.get(fish, 0)
+    if have < qty:
+        return TradeResult(
+            False,
+            f"You only have **{have}× {fish}** to cook (wanted {qty}).",
+        )
+
+    async with db.transaction() as conn:
+        await db.update_mining_item(suid, guild_id, fish, -qty, conn=conn)
+        await db.update_mining_item(suid, guild_id, COOKED_FISH, qty, conn=conn)
+
+    gain = energy.RESTORE_VALUES.get(COOKED_FISH, 0)
+    return TradeResult(
+        True,
+        f"🔥 You cook **{qty}× {fish}** into **{qty}× cooked fish** "
+        f"(+{gain} ⚡ each when eaten — `!use cooked fish`).",
+    )
 
 
 async def equip(user_id: int, guild_id: int, item: str) -> TradeResult:
