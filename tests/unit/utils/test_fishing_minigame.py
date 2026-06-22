@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import random
 
+import pytest
+
 from utils.fishing import minigame
 from utils.fishing.fish import FishSpecies
 
@@ -67,3 +69,44 @@ def test_trophy_scales_with_progression():
     fish = FishSpecies("whopper", 3, "🐠")
     assert minigame.is_trophy(fish, fishing_level=1) is True
     assert minigame.is_trophy(fish, fishing_level=7) is False
+
+
+# ---------------------------------------------------------------------------
+# Reel-fight (trophy) helpers
+# ---------------------------------------------------------------------------
+
+
+def test_reel_fight_taps_scale_with_fish_size_within_bounds():
+    smallest = FishSpecies("a", 1, "🐟")
+    biggest = FishSpecies("z", 21, "🦑")
+    assert minigame.reel_fight_taps(smallest) == minigame.FIGHT_MIN_TAPS
+    assert minigame.reel_fight_taps(biggest) == minigame.FIGHT_MAX_TAPS
+    # monotonic non-decreasing across the catalog, always inside the bounds
+    taps = [minigame.reel_fight_taps(FishSpecies("x", r, "🐟")) for r in range(1, 22)]
+    assert taps == sorted(taps)
+    assert all(minigame.FIGHT_MIN_TAPS <= t <= minigame.FIGHT_MAX_TAPS for t in taps)
+
+
+def test_fight_escape_chance_is_small_and_grows_with_size():
+    small = minigame.fight_escape_chance(FishSpecies("a", 1, "🐟"))
+    big = minigame.fight_escape_chance(FishSpecies("z", 21, "🦑"))
+    assert 0.0 < small < big
+    # even the biggest fish stays a *small* per-tap chance — trophies mostly land.
+    assert big < 0.20
+
+
+def test_escape_resist_buys_down_the_escape_chance():
+    fish = FishSpecies("z", 21, "🦑")
+    base = minigame.fight_escape_chance(fish, escape_resist=0.0)
+    halved = minigame.fight_escape_chance(fish, escape_resist=0.5)
+    assert halved == pytest.approx(base * 0.5)
+    # full resist (a future top-tier rod) removes the snap-free risk entirely.
+    assert minigame.fight_escape_chance(fish, escape_resist=1.0) == 0.0
+
+
+def test_roll_escape_matches_its_probability():
+    fish = FishSpecies("z", 21, "🦑")
+    rng = random.Random(3)
+    hits = sum(minigame.roll_escape(fish, rng=rng) for _ in range(20000))
+    expected = minigame.fight_escape_chance(fish)
+    assert abs(hits / 20000 - expected) < 0.02
