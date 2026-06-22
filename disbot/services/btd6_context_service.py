@@ -1988,6 +1988,16 @@ _MK_ROSTER_LIST_RE = re.compile(
     r"\b(?:which|what|list|name|all|every|how\s+many|are\s+there)\b",
     re.I,
 )
+# A STRONG whole-catalog cue for the no-tab case ("list all monkey knowledge",
+# "how many monkey knowledge are there"). Deliberately a *subset* of
+# _MK_ROSTER_LIST_RE that excludes a bare "which"/"what": those weak cues fire on
+# a single-MK effect lookup ("what does More Cash do"), which must still defer to
+# the model. With no tab named, only an explicit all/every/list/how-many ask is a
+# whole-catalog roster.
+_MK_ALL_ROSTER_RE = re.compile(
+    r"\b(?:all|every|complete|full|entire|list|name|how\s+many|are\s+there)\b",
+    re.I,
+)
 
 
 def _match_mk_category(text_lower: str) -> str | None:
@@ -1998,15 +2008,43 @@ def _match_mk_category(text_lower: str) -> str | None:
     return None
 
 
+def _all_mk_roster_reply(
+    grouped: dict[str, tuple[Any, ...]],
+) -> str:
+    """The whole-catalog Monkey-Knowledge roster, grouped by in-game tab.
+
+    Serves "list all monkey knowledge" (no tab named) — the all-tabs sibling of
+    the per-tab :func:`deterministic_mk_category_roster_reply` body. Empty tabs
+    are skipped; the natural-language stage chunks the result for Discord, so no
+    length cap is applied here.
+    """
+    total = sum(len(rows) for rows in grouped.values())
+    lines = [f"**All Monkey Knowledge ({total}) by tab:**"]
+    for category, rows in grouped.items():
+        if not rows:
+            continue
+        label = _MK_CATEGORY_LABELS.get(category, category)
+        names = ", ".join(f"**{mk.canonical}**" for mk in rows)
+        lines.append(f"__{label}__ ({len(rows)}): {names}")
+    return "\n".join(lines)
+
+
 def deterministic_mk_category_roster_reply(message_text: str) -> str | None:
     """A code-built "Monkey Knowledge in the <tab>" roster, or ``None``.
 
     The §7.6 Monkey-Knowledge member of the BUG-0009 roster floor (sibling of the
-    relic / capability rosters). Fires on an MK cue + a named tab
-    (Primary/Military/Magic/Support/Heroes/Powers) + an enumeration cue, listing
-    that tab's points so the model can never mis-bucket the grouping. Defers
-    (``None``) for single-MK lookups (no list cue), strategy/opinion questions,
-    anything without a recognised tab, and — crucially — anything naming a
+    relic / capability rosters). Fires on an MK cue + an enumeration cue in two
+    shapes:
+
+    * a named tab (Primary/Military/Magic/Support/Heroes/Powers) → that tab's
+      points, so the model can never mis-bucket the grouping; or
+    * **no tab + a strong all/every/list cue** ("list all monkey knowledge") →
+      the *whole catalog* grouped by tab. This branch restores the regression
+      where the un-scoped ask refused with the version-stamped no-data message
+      while "list all *primary* monkey knowledge" worked.
+
+    Defers (``None``) for single-MK lookups (no list cue, or a bare which/what
+    with no tab), strategy/opinion questions, and — crucially — anything naming a
     *tower* (that is :func:`deterministic_mk_reference_reply`'s "MK related to
     <tower>" job, which runs first in the dispatcher), so the two MK builders
     never both fire.
@@ -2022,10 +2060,6 @@ def deterministic_mk_category_roster_reply(message_text: str) -> str | None:
     if any(word in low for word in _ROSTER_STRATEGY_WORDS):
         return None
 
-    category = _match_mk_category(low)
-    if category is None:
-        return None
-
     from services import btd6_data_service
 
     # A named tower means the tower-relation builder owns this — defer to it.
@@ -2034,6 +2068,23 @@ def deterministic_mk_category_roster_reply(message_text: str) -> str | None:
         return None
 
     grouped = btd6_data_service.monkey_knowledge_by_category()
+
+    category = _match_mk_category(low)
+    if category is None:
+        # No tab named: only the *whole-catalog* roster ("list all monkey
+        # knowledge") is ours. It needs a STRONG enumeration cue
+        # (all/every/list/how-many) — a bare which/what is a single-MK effect
+        # lookup ("what does More Cash do") that still defers to the model. This
+        # restores the regression where the all-tabs ask refused with the
+        # version-stamped no-data message instead of listing (live miss,
+        # 2026-06-22): the per-tab "list all primary monkey knowledge" worked
+        # but the un-scoped "list all monkey knowledge" had no builder, fell
+        # through to the model, and its 70+ item list tripped the faithfulness
+        # guard into the refusal.
+        if not _MK_ALL_ROSTER_RE.search(low):
+            return None
+        return _all_mk_roster_reply(grouped)
+
     rows = grouped.get(category, ())
     label = _MK_CATEGORY_LABELS.get(category, category)
     if not rows:
