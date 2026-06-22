@@ -191,3 +191,82 @@ def test_render_table_escapes_pipes_and_shapes_markdown(bs):
     assert "| PR | status | title |" in out
     assert "| #1176 | closed-unmerged | a \\| b |" in out
     assert "| #1175 | merged | ok |" in out
+
+
+# --- theming (--themes) core --------------------------------------------------------------
+
+
+def test_dominant_area_prefers_most_specific_code_area(bs):
+    files = [
+        "disbot/services/btd6_data_service.py",
+        "disbot/services/ai_tools.py",
+        "tests/unit/services/test_btd6.py",  # noise — de-weighted
+        "dashboard/data/dashboard.json",  # noise — de-weighted
+    ]
+    assert bs.dominant_area(files) == "disbot/services"
+
+
+def test_dominant_area_ignores_session_cards_and_generated(bs):
+    # A PR whose only signal file is a cog, plus the usual session/test/artifact noise.
+    files = [
+        ".sessions/2026-06-22-x.md",
+        "tests/unit/cogs/test_x.py",
+        "botsite/site/data.js",
+        "disbot/cogs/starboard_cog.py",
+    ]
+    assert bs.dominant_area(files) == "disbot/cogs"
+
+
+def test_dominant_area_falls_back_to_noise_when_only_noise(bs):
+    # An auto-refresh PR touches only the generated artifact → still bucketed there.
+    assert bs.dominant_area(["dashboard/data/dashboard.json"]) == "dashboard"
+
+
+def test_dominant_area_ties_break_by_specificity_order(bs):
+    # One services file, one docs file → the more specific (code) area wins.
+    files = ["disbot/services/x.py", "docs/planning/y.md"]
+    assert bs.dominant_area(files) == "disbot/services"
+
+
+def test_dominant_area_empty(bs):
+    assert bs.dominant_area([]) == "(no files)"
+
+
+def test_group_by_theme_buckets_and_sorts_newest_first(bs):
+    pr_files = {
+        1242: ["disbot/cogs/role_grants_cog.py"],
+        1235: ["disbot/services/ai_tools.py"],
+        1258: ["disbot/cogs/btd6_ops_cog.py"],
+    }
+    groups = bs.group_by_theme(pr_files)
+    assert groups["disbot/cogs"] == [1258, 1242]  # newest-first within an area
+    assert groups["disbot/services"] == [1235]
+
+
+def test_render_theme_skeleton_lists_areas_and_prs(bs):
+    pr_files = {
+        1258: ["disbot/cogs/btd6_ops_cog.py", "tests/unit/cogs/test_x.py"],
+        1235: ["disbot/services/ai_tools.py"],
+    }
+    groups = bs.group_by_theme(pr_files)
+    out = bs.render_theme_skeleton(groups, pr_files)
+    # Code areas come before docs (specificity order); PRs + a clean file sample shown.
+    assert "**disbot/cogs** (#1258)" in out
+    assert "**disbot/services** (#1235)" in out
+    assert "disbot/cogs/btd6_ops_cog.py" in out
+    assert (
+        "tests/unit/cogs/test_x.py" not in out
+    )  # session/test noise stays out of the sample
+
+
+def test_render_theme_skeleton_empty(bs):
+    assert "no merged PRs" in bs.render_theme_skeleton({}, {})
+
+
+def test_pr_changed_files_returns_empty_on_git_error(bs, monkeypatch):
+    class _Fail:
+        returncode = 1
+        stdout = ""
+
+    monkeypatch.setattr(bs.subprocess, "run", lambda *a, **k: _Fail())
+    assert bs.pr_changed_files("deadbeef") == []
