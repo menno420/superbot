@@ -13,7 +13,7 @@ shipped `welcome_render` PIL pattern (lazy import + `bytes | None` graceful fall
 so it degrades cleanly to embed-only and never becomes a hard dependency.
 
 Shipped:
-- **Migration 086** — `role_menus.card_template` + `card_text` (both nullable; NULL = no card, so an
+- **Migration 088** — `role_menus.card_template` + `card_text` (both nullable; NULL = no card, so an
   existing menu renders byte-identically — purely additive).
 - **`utils/role_menu_render.py`** (new) — `render_role_menu_card(...)`, the `welcome_render` sibling,
   with four preset background styles (banner / gradient / minimal / spotlight) tinted by the menu's
