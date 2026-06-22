@@ -148,7 +148,9 @@ def test_home_user_tier_sees_exactly_the_user_hubs_today():
 def test_home_admin_tier_sees_every_registered_hub():
     visible = {h.key for h in hubs_for_tier("administrator")}
     assert visible == {h.key for h in HUBS}
-    assert len(visible) == 10  # the reconciled hub count (surface map §1)
+    # Help-menu regrouping (PR #1290): 7 top-level sections (Settings,
+    # Diagnostics/Platform, Server Management consolidated under Server & Admin).
+    assert len(visible) == 7
 
 
 def test_home_hub_rows_carry_purpose_and_entry_command():
@@ -213,27 +215,20 @@ async def test_advanced_paginates_top_level_list_at_page_size():
 def test_advanced_top_level_set_today():
     """Characterization: the current top-level (non-child) subsystem set —
     the Advanced browser's source list. Re-parenting a subsystem must
-    consciously update this pin (post-#626: spotlight is a community child)."""
+    consciously update this pin. The help-menu regrouping (PR #1290) homed the
+    eight former orphans (fishing/creature/welcome/counters/security/channel/
+    ai/ux_lab) and nested settings/diagnostic/server_management under Server &
+    Admin, so the top-level set is now just the 7 hub hosts plus the Help
+    surface itself."""
     assert sorted(_TOP_LEVEL) == [
         "admin",
-        "ai",
         "btd6",
-        "channel",
         "community",
-        "counters",
-        "creature",
-        "diagnostic",
         "economy",
-        "fishing",
         "games",
         "help",
         "moderation",
-        "security",
-        "server_management",
-        "settings",
         "utility",
-        "ux_lab",
-        "welcome",
     ]
 
 
@@ -262,7 +257,9 @@ def test_route_subsystem_alias_overrides_beat_hub_match():
 def test_route_hub_aliases_and_forms():
     bot = _bot()
     assert resolve_route("mod", bot=bot).target == "moderation"
-    assert resolve_route("platform", bot=bot).target == "diagnostic"
+    # Help-menu regrouping (PR #1290): "platform" now opens the consolidated
+    # Server & Admin hub (where the Platform view lives).
+    assert resolve_route("platform", bot=bot).target == "admin"
     # Hub key, display name, and entry command all resolve to the hub.
     for form in ("moderation", "Moderation & Safety", "modmenu"):
         route = resolve_route(form, bot=bot)
@@ -271,10 +268,12 @@ def test_route_hub_aliases_and_forms():
 
 def test_route_hub_name_shadows_same_named_subsystem():
     """Characterization of the priority quirk: keys that are both a hub and
-    a subsystem (`games`, `settings`, …) resolve to the HUB. The subsystem
-    row is reached through the hub panel, never by its bare name."""
+    a subsystem (`games`, `economy`, …) resolve to the HUB. The subsystem
+    row is reached through the hub panel, never by its bare name. (After the
+    help-menu regrouping, PR #1290, `settings` is no longer a hub — it resolves
+    to the subsystem; see the subsystem-route tests.)"""
     bot = _bot()
-    for name in ("games", "settings", "economy"):
+    for name in ("games", "economy", "admin"):
         assert resolve_route(name, bot=bot).kind == "hub", name
 
 
@@ -380,24 +379,24 @@ async def test_subsystem_hook_failure_falls_back_to_command_list():
     assert "`!xpmenu`" in " ".join(f.name for f in embed.fields)
 
 
-async def test_hub_route_uses_panel_builder_override_table():
-    """The `diagnostic` hub routes through `build_platform_help_menu_view`
-    (Platform Hub), NOT the generic hook (Diagnostics Hub)."""
-    assert HUB_PANEL_BUILDERS == {"diagnostic": "build_platform_help_menu_view"}
+async def test_hub_route_uses_generic_builder_when_no_override():
+    """Help-menu regrouping (PR #1290): the panel-builder override table is now
+    empty (Diagnostics/Platform stopped being a top-level hub), so every hub
+    route uses the generic ``build_help_menu_view`` hook."""
+    assert HUB_PANEL_BUILDERS == {}
 
     cog = _StubCog(
-        [_command("platform")],
-        hook=_panel_pair("WRONG: DIAGNOSTICS"),
-        platform_hook=_panel_pair("PLATFORM HUB"),
+        [_command("adminmenu")],
+        hook=_panel_pair("SERVER & ADMIN HUB"),
     )
-    bot = _bot(cogs={"DiagnosticCog": cog})
+    bot = _bot(cogs={"AdminCog": cog})
 
     embed, _view = await open_route(
-        HelpRoute(key="platform", kind="hub", target="diagnostic"),
+        HelpRoute(key="admin", kind="hub", target="admin"),
         _opener(bot),
         projection=_projection(_ALL_VISIBLE, "administrator"),
     )
-    assert embed.title == "PLATFORM HUB"
+    assert embed.title == "SERVER & ADMIN HUB"
 
 
 async def test_hub_hook_failure_renders_not_found():

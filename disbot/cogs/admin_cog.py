@@ -438,14 +438,16 @@ class _AdminPanelView(HubView):
     def build_embed(self) -> discord.Embed:
         loaded_count = len(self.cog.bot.extensions)
         embed = discord.Embed(
-            title="🛠️ Admin Control Panel",
+            title="⚙️ Server & Admin",
             description=(
                 f"Loaded cogs: **{loaded_count}**\n\n"
                 "**Tools**\n"
                 "📊 Server Stats · 📋 Cog List · 🔄 Reload All · 📝 Log Level\n\n"
-                "**Navigate**\n"
-                "🛠 Settings · 🛰 Platform · 🩺 Diagnostics · 📝 Logging · "
-                "🧹 Cleanup · 📚 Help"
+                "**Configure & Operate**\n"
+                "🛠 Settings · 🧭 Server Management · 📐 Channels · 🤖 AI\n\n"
+                "**Platform & Diagnostics**\n"
+                "🛰 Platform · 🩺 Diagnostics · 🧪 UX Lab · 📝 Logging · 🧹 Cleanup\n\n"
+                "📚 Help"
             ),
             color=ADMIN_COLOR,
         )
@@ -528,8 +530,9 @@ class _AdminPanelView(HubView):
         await interaction.response.send_modal(_LogLevelModal(self))
 
     # ------------------------------------------------------------------
-    # Row 1 — navigation to subsystem hubs (no logic duplicated; each
-    # button delegates to the existing cog's panel/hook).
+    # Row 1 — Configure & Operate: the Server & Admin hub's primary children
+    # (help-menu regrouping, PR #1290). No logic duplicated; each button
+    # delegates to the child cog's build_help_menu_view hook.
     # ------------------------------------------------------------------
 
     @discord.ui.button(label="🛠 Settings", style=discord.ButtonStyle.blurple, row=1)
@@ -540,7 +543,39 @@ class _AdminPanelView(HubView):
     ):
         await self._open_via_help_hook(interaction, cog_name="SettingsCog")
 
-    @discord.ui.button(label="🛰 Platform", style=discord.ButtonStyle.blurple, row=1)
+    @discord.ui.button(
+        label="🧭 Server Management",
+        style=discord.ButtonStyle.blurple,
+        row=1,
+    )
+    async def server_management_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        await self._open_via_help_hook(interaction, cog_name="ServerManagementCog")
+
+    @discord.ui.button(label="📐 Channels", style=discord.ButtonStyle.blurple, row=1)
+    async def channels_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        await self._open_via_help_hook(interaction, cog_name="ChannelCog")
+
+    @discord.ui.button(label="🤖 AI", style=discord.ButtonStyle.blurple, row=1)
+    async def ai_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        await self._open_via_help_hook(interaction, cog_name="AICog")
+
+    # ------------------------------------------------------------------
+    # Row 2 — Platform & Diagnostics + the moderation-side shortcuts.
+    # ------------------------------------------------------------------
+
+    @discord.ui.button(label="🛰 Platform", style=discord.ButtonStyle.blurple, row=2)
     async def platform_btn(
         self,
         interaction: discord.Interaction,
@@ -558,7 +593,7 @@ class _AdminPanelView(HubView):
             view=sub_view,
         )
 
-    @discord.ui.button(label="🩺 Diagnostics", style=discord.ButtonStyle.blurple, row=1)
+    @discord.ui.button(label="🩺 Diagnostics", style=discord.ButtonStyle.blurple, row=2)
     async def diagnostics_btn(
         self,
         interaction: discord.Interaction,
@@ -566,17 +601,21 @@ class _AdminPanelView(HubView):
     ):
         await self._open_via_help_hook(interaction, cog_name="DiagnosticCog")
 
-    @discord.ui.button(label="📝 Logging", style=discord.ButtonStyle.blurple, row=1)
+    @discord.ui.button(label="🧪 UX Lab", style=discord.ButtonStyle.blurple, row=2)
+    async def uxlab_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        await self._open_via_help_hook(interaction, cog_name="UX Lab")
+
+    @discord.ui.button(label="📝 Logging", style=discord.ButtonStyle.blurple, row=2)
     async def logging_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ):
         await self._open_via_help_hook(interaction, cog_name="LoggingCog")
-
-    # ------------------------------------------------------------------
-    # Row 2 — cleanup + help shortcuts
-    # ------------------------------------------------------------------
 
     @discord.ui.button(label="🧹 Cleanup", style=discord.ButtonStyle.blurple, row=2)
     async def cleanup_btn(
@@ -586,7 +625,11 @@ class _AdminPanelView(HubView):
     ):
         await self._open_via_help_hook(interaction, cog_name="Cleanup")
 
-    @discord.ui.button(label="📚 Help", style=discord.ButtonStyle.blurple, row=2)
+    # ------------------------------------------------------------------
+    # Row 3 — help shortcut
+    # ------------------------------------------------------------------
+
+    @discord.ui.button(label="📚 Help", style=discord.ButtonStyle.blurple, row=3)
     async def help_btn(
         self,
         interaction: discord.Interaction,

@@ -85,53 +85,47 @@ async def test_help_games_opens_games_hub_panel(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_help_platform_opens_platform_hub_via_dedicated_builder(monkeypatch):
-    """``!help platform`` must call ``build_platform_help_menu_view`` —
-    the Platform hub's dedicated builder — not the generic hook.
+async def test_help_platform_opens_server_admin_hub(monkeypatch):
+    """Help-menu regrouping (PR #1290): ``!help platform`` now opens the
+    consolidated Server & Admin hub (``admin``) via its generic
+    ``build_help_menu_view`` — the Platform view lives inside that section.
     """
     opener = _opener()
     route = help_cog._resolve_route("platform", bot=opener.client)
     assert route.kind == "hub"
-    assert route.target == "diagnostic"
+    assert route.target == "admin"
 
     fake_view = discord.ui.View()
-    fake_embed = discord.Embed(title="Platform hub")
+    fake_embed = discord.Embed(title="Server & Admin")
     fake_cog = MagicMock()
-    fake_cog.build_platform_help_menu_view = AsyncMock(
-        return_value=(fake_embed, fake_view),
-    )
-    fake_cog.build_help_menu_view = AsyncMock(
-        return_value=(discord.Embed(title="WRONG"), discord.ui.View()),
-    )
+    fake_cog.build_help_menu_view = AsyncMock(return_value=(fake_embed, fake_view))
 
     monkeypatch.setattr(help_cog, "_cog_for_subsystem", lambda _bot, _key: fake_cog)
     embed, view = await help_cog._open_route(
         route,
         opener,
-        projection=_projection({"diagnostic"}, "administrator"),
+        projection=_projection({"admin"}, "administrator"),
     )
-    fake_cog.build_platform_help_menu_view.assert_awaited_once()
-    fake_cog.build_help_menu_view.assert_not_called()
-    assert embed.title == "Platform hub"
+    fake_cog.build_help_menu_view.assert_awaited_once()
+    assert embed.title == "Server & Admin"
     assert view is fake_view
 
 
 @pytest.mark.asyncio
-async def test_help_diagnostic_singular_opens_platform_hub(monkeypatch):
-    """The singular hub key ``diagnostic`` is the Platform / Diagnostics
-    hub. ``!help diagnostic`` routes the same as ``!help platform``.
+async def test_help_diagnostic_singular_opens_diagnostics_panel(monkeypatch):
+    """Help-menu regrouping (PR #1290): Diagnostics is now an ``admin`` child,
+    so the singular ``diagnostic`` resolves to the Diagnostics subsystem panel
+    via the generic ``build_help_menu_view`` hook (same as the plural alias).
     """
     opener = _opener()
     route = help_cog._resolve_route("diagnostic", bot=opener.client)
-    assert route.kind == "hub"
+    assert route.kind == "subsystem"
     assert route.target == "diagnostic"
 
     fake_view = discord.ui.View()
-    fake_embed = discord.Embed(title="Platform hub")
+    fake_embed = discord.Embed(title="Diagnostics Hub")
     fake_cog = MagicMock()
-    fake_cog.build_platform_help_menu_view = AsyncMock(
-        return_value=(fake_embed, fake_view),
-    )
+    fake_cog.build_help_menu_view = AsyncMock(return_value=(fake_embed, fake_view))
 
     monkeypatch.setattr(help_cog, "_cog_for_subsystem", lambda _bot, _key: fake_cog)
     embed, view = await help_cog._open_route(
@@ -139,8 +133,8 @@ async def test_help_diagnostic_singular_opens_platform_hub(monkeypatch):
         opener,
         projection=_projection({"diagnostic"}, "administrator"),
     )
-    fake_cog.build_platform_help_menu_view.assert_awaited_once()
-    assert embed.title == "Platform hub"
+    fake_cog.build_help_menu_view.assert_awaited_once()
+    assert embed.title == "Diagnostics Hub"
 
 
 @pytest.mark.asyncio

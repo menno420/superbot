@@ -62,8 +62,15 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 1. Mother hubs
 
-10 hubs in `disbot/utils/hub_registry.py`. Every hub key matches a
-`SUBSYSTEMS` key so Help can resolve a hub entry to its host cog.
+7 hubs in `disbot/utils/hub_registry.py`. Every hub key matches a
+`SUBSYSTEMS` key so Help can resolve a hub entry to its host cog. The
+help-menu regrouping (PR #1290) consolidated the four former child-less
+admin hubs (Admin, Settings, Diagnostics/Platform, Server Management) into
+one **Server & Admin** (`admin`) section — `settings` / `diagnostic` /
+`server_management` are now `admin` children (reached from the Server &
+Admin panel), not top-level hubs — so the admin-side index dropped 10 → 7.
+The eight former orphan subsystems were homed at the same time (see § 2),
+so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 
 | key | display | entry | host cog | panel | min tier |
 | --- | --- | --- | --- | --- | --- |
@@ -73,10 +80,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 | `moderation` | 🛡️ Moderation & Safety | `!modmenu` | `moderation_cog` | `ModPanelView` | moderator |
 | `community` | 🌱 Community | `!community` | `community_cog` | `CommunityHubView` | user |
 | `utility` | 🧰 Utility | `!utilitymenu` | `utility_cog` | `UtilityPanelView` | user |
-| `admin` | ⚙️ Admin / Operations | `!adminmenu` | `admin_cog` | `_AdminPanelView` | administrator |
-| `settings` | 🔧 Settings / Configuration | `!settings` | `settings_cog` | `SettingsHubView` | administrator |
-| `diagnostic` | 🩺 Platform / Diagnostics | `!platform` | `diagnostic_cog` | `_PlatformHubView` | administrator |
-| `server_management` | 🧭 Server Management | `!servermanagement` | `server_management_cog` | `ServerManagementHubView` (`views/server_management/hub.py`) | administrator |
+| `admin` | ⚙️ Server & Admin | `!adminmenu` | `admin_cog` | `_AdminPanelView` (children: settings · diagnostic · server_management · channel · ai · ux_lab) | administrator |
 
 ## 2. Subsystem inventory
 

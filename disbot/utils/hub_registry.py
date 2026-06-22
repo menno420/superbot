@@ -51,8 +51,16 @@ class HubEntry:
             doctrine forbids panel-only hubs.
         slash_command: future ``/`` command, ``None`` until S11.
         primary_children: subsystem keys whose ``parent_hub`` equals
-            ``key``. Empty for hubs that don't use child discovery
-            (Admin, Settings, Platform).
+            ``key``. Two implicit contracts bite when you edit this:
+            (1) **bidirectional roster rule** — every key here MUST set
+            ``parent_hub=<key>`` in ``SUBSYSTEMS`` and vice versa, or
+            ``services/help_catalogue.py`` reports ``roster_drift`` and
+            ``test_every_hub_primary_children_match_parent_hub_filter``
+            fails; (2) for the ``games`` hub specifically, adding a child
+            subjects it to the **actionability contract**
+            (``tests/unit/help/test_help_actionability_contract.py``) —
+            its Help panel must expose a real action button (or be carried
+            as an ``xfail`` target until it does).
         cross_link_children: subsystem keys cross-listed via UI
             buttons (no metadata change). Empty for the v1 hubs.
         minimum_tier: lowest governance tier that may see this hub.
@@ -100,6 +108,9 @@ HUBS: tuple[HubEntry, ...] = (
         # Games' primary_children; subsystem_registry drops btd6's
         # parent_hub="games" / hub_group="activities" in the same PR.
         # No Games cross-link by accepted decision.
+        # fishing + creature homed here by the help-menu regrouping (PR #1290)
+        # so the two newest minigames live in the Games section instead of only
+        # the Advanced browser.
         primary_children=(
             "blackjack",
             "deathmatch",
@@ -107,6 +118,8 @@ HUBS: tuple[HubEntry, ...] = (
             "mining",
             "counting",
             "chain",
+            "fishing",
+            "creature",
         ),
         minimum_tier="user",
     ),
@@ -148,12 +161,15 @@ HUBS: tuple[HubEntry, ...] = (
         # PR #3 promotes Cleanup, Logging, and Proof Channel to
         # parent_hub of "moderation" so they hide from the Help Home
         # top-level overview and surface under this hub instead.
+        # security homed here by the help-menu regrouping (PR #1290) — the
+        # automated join-screening layer belongs in the Safety section.
         primary_children=(
             "automod",
             "image_moderation",
             "cleanup",
             "logging",
             "proof_channel",
+            "security",
         ),
         cross_link_children=(),
         minimum_tier="moderator",
@@ -169,10 +185,15 @@ HUBS: tuple[HubEntry, ...] = (
         # scaffold lane). Counting, Chain (whose primary is Games) and
         # Leaderboard (whose primary is Economy) appear as cross-links —
         # CommunityHubView discovers both groups from registry (PR #4).
+        # welcome + counters homed here by the help-menu regrouping (PR #1290);
+        # both are administrator-tier so they stay operator-only in the
+        # user-tier Community view (no clutter for normal members).
         primary_children=(
             "xp",
             "community_spotlight",
             "role",
+            "welcome",
+            "counters",
         ),
         cross_link_children=(
             "counting",
@@ -195,39 +216,28 @@ HUBS: tuple[HubEntry, ...] = (
         cross_link_children=(),
         minimum_tier="user",
     ),
+    # Server & Admin — the consolidated operator section (help-menu regrouping,
+    # PR #1290). The four child-less admin hubs that used to crowd the Help index
+    # (Admin, Settings, Diagnostics/Platform, Server Management) plus Channels,
+    # AI Platform, and UX Lab are now ONE section: each is a primary child
+    # (parent_hub="admin") reached from the Admin panel, so the admin-side index
+    # drops from ~10 sections to a few clear ones. Their typed commands
+    # (!settings, !platform, !servermanagement, !channelmenu, !ai, !uxlab) are
+    # unchanged — only the Help section grouping changed.
     HubEntry(
         key="admin",
-        display_name="Admin / Operations",
+        display_name="Server & Admin",
         emoji="⚙️",
-        purpose="Cog management, role/channel admin, runtime ops.",
+        purpose="Settings, diagnostics, server management, channels, AI, and ops.",
         entry_command="!adminmenu",
-        minimum_tier="administrator",
-    ),
-    HubEntry(
-        key="settings",
-        display_name="Settings / Configuration",
-        emoji="🔧",
-        purpose="Configure all subsystems via mutation pipelines.",
-        entry_command="!settings",
-        minimum_tier="administrator",
-    ),
-    HubEntry(
-        key="diagnostic",
-        display_name="Platform / Diagnostics",
-        emoji="🩺",
-        purpose="Platform identity, feature flags, runtime health.",
-        entry_command="!platform",
-        minimum_tier="administrator",
-    ),
-    HubEntry(
-        # key is the snake_case subsystem key (Q-0026), matching
-        # SUBSYSTEMS["server_management"]; entry_command keeps the
-        # ``!servermanagement`` command name.
-        key="server_management",
-        display_name="Server Management",
-        emoji="🧭",
-        purpose="Moderation, channels, roles, cleanup, and setup in one place.",
-        entry_command="!servermanagement",
+        primary_children=(
+            "ux_lab",
+            "channel",
+            "server_management",
+            "ai",
+            "settings",
+            "diagnostic",
+        ),
         minimum_tier="administrator",
     ),
 )

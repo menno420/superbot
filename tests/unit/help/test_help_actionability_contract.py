@@ -27,13 +27,14 @@ Classification categories (one per terminal button):
 * ``unknown``          — could not classify under the current stub
 
 Strict targets: ``blackjack``, ``rps_tournament`` (display "Rock
-Paper Scissors"), ``deathmatch``, ``mining``, ``counting``, ``chain``.
+Paper Scissors"), ``deathmatch``, ``mining``, ``counting``, ``chain`` —
+plus ``fishing`` and ``creature``, homed under the Games hub by the
+help-menu regrouping (PR #1290).
 
-xfail markers identify the known regressions PRs 4–6 will fix:
+xfail markers identify panels that are not yet actionable:
 
-* ``rps_tournament`` → PR 4 (``RPSPanelView`` becomes actionable)
-* ``blackjack``      → PR 5 (``BlackjackPanelView`` becomes actionable)
-* ``deathmatch``     → PR 6 (``DeathmatchPanelView`` replaces empty View)
+* ``fishing`` / ``creature`` → instruction-only overview today; an
+  actionable in-panel surface (a Fish/Catch button) is a later game slice.
 
 The strict=True xfails turn into hard failures (xpass) once the
 underlying panels become actionable, prompting the implementer to
@@ -193,9 +194,7 @@ def _embed_is_instruction_only(embed: discord.Embed | None) -> bool:
     return True
 
 
-async def _classify_button(
-    button: discord.ui.Button, panel: discord.ui.View
-) -> str:
+async def _classify_button(button: discord.ui.Button, panel: discord.ui.View) -> str:
     """Classify a single button by running its callback against a stub
     interaction and inspecting the recorded calls.
     """
@@ -258,9 +257,7 @@ def _punchlist(
     view: discord.ui.View,
     cls: dict[str, str],
 ) -> str:
-    button_count = sum(
-        1 for c in view.children if isinstance(c, discord.ui.Button)
-    )
+    button_count = sum(1 for c in view.children if isinstance(c, discord.ui.Button))
     return (
         f"Subsystem {subsystem!r} panel is not actionable.\n"
         f"  view type:       {type(view).__name__}\n"
@@ -351,6 +348,14 @@ async def _build_panel_for(
         from cogs.chain_cog import ChainCog
 
         cog = ChainCog(MagicMock())
+    elif subsystem == "fishing":
+        from cogs.fishing_cog import FishingCog
+
+        cog = FishingCog(MagicMock())
+    elif subsystem == "creature":
+        from cogs.creature_cog import CreatureCog
+
+        cog = CreatureCog(MagicMock())
     else:
         raise NotImplementedError(
             f"No cog mapping for actionability target {subsystem!r}. "
@@ -377,13 +382,31 @@ async def _build_panel_for(
         pytest.param("mining"),
         pytest.param("counting"),
         pytest.param("chain"),
+        # Homed under the Games hub by the help-menu regrouping (PR #1290).
+        # Both still return an instruction-only overview (empty View) — an
+        # actionable in-panel surface is a later game slice — so they are
+        # expected-fail here. When their panels gain a Fish/Catch action the
+        # strict marker flips to xpass and prompts removal (same mechanism the
+        # PR 4-6 game panels used).
+        pytest.param(
+            "fishing",
+            marks=pytest.mark.xfail(
+                strict=True,
+                reason="fishing panel is instruction-only; actionable slice pending",
+            ),
+        ),
+        pytest.param(
+            "creature",
+            marks=pytest.mark.xfail(
+                strict=True,
+                reason="creature panel is instruction-only; actionable slice pending",
+            ),
+        ),
     ],
 )
 async def test_games_subsystem_panel_is_actionable(subsystem: str) -> None:
     embed, view = await _build_panel_for(subsystem)
-    button_count = sum(
-        1 for c in view.children if isinstance(c, discord.ui.Button)
-    )
+    button_count = sum(1 for c in view.children if isinstance(c, discord.ui.Button))
     assert button_count > 0, (
         f"Subsystem {subsystem!r} returned a panel with zero Button "
         f"children — Help → Games → {subsystem} cannot reach any "
@@ -451,9 +474,7 @@ async def test_rps_panel_quick_play_spawns_new_view() -> None:
     """
     from views.games import rps_panel
 
-    panel = rps_panel.RPSPanelView(
-        SimpleNamespace(id=111, display_name="tester")
-    )
+    panel = rps_panel.RPSPanelView(SimpleNamespace(id=111, display_name="tester"))
     btn = next(
         c
         for c in panel.children
@@ -474,9 +495,7 @@ async def test_rps_panel_challenge_button_opens_new_view() -> None:
     """
     from views.games import rps_panel
 
-    panel = rps_panel.RPSPanelView(
-        SimpleNamespace(id=111, display_name="tester")
-    )
+    panel = rps_panel.RPSPanelView(SimpleNamespace(id=111, display_name="tester"))
     btn = next(
         c
         for c in panel.children
@@ -576,6 +595,10 @@ def test_actionability_targets_match_registry_games_children() -> None:
         "mining",
         "counting",
         "chain",
+        # Homed under Games by the help-menu regrouping (PR #1290); carried as
+        # xfail targets above until their panels become actionable.
+        "fishing",
+        "creature",
     }
     new_in_registry = registry_games - expected
     removed_from_registry = expected - registry_games

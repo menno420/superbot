@@ -59,12 +59,14 @@ def test_advanced_aliases_resolve_to_advanced(name):
         ("community", "community"),
         ("utility", "utility"),
         ("admin", "admin"),
-        ("settings", "settings"),
-        ("platform", "diagnostic"),
-        ("diagnostic", "diagnostic"),
+        # Help-menu regrouping (PR #1290): "platform" now opens the
+        # consolidated Server & Admin hub (where the Platform view lives);
+        # "settings" / "diagnostic" are admin children, not hubs (see the
+        # subsystem-route tests below).
+        ("platform", "admin"),
         # Case-insensitive
         ("Games", "games"),
-        ("PLATFORM", "diagnostic"),
+        ("PLATFORM", "admin"),
         # Entry-command match (without leading !)
         ("adminmenu", "admin"),
         ("modmenu", "moderation"),
@@ -83,12 +85,16 @@ def test_hub_aliases_resolve_to_hub(name, expected_hub):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("name", ["diagnostics", "diag", "Diagnostics", "DIAG"])
+@pytest.mark.parametrize(
+    "name",
+    ["diagnostics", "diag", "Diagnostics", "DIAG", "diagnostic", "DIAGNOSTIC"],
+)
 def test_diagnostics_aliases_resolve_to_diagnostic_subsystem(name):
-    """The subsystem alias overrides run before the hub match so plural
-    "diagnostics" and short "diag" stay on the Diagnostics Hub via the
-    generic ``build_help_menu_view`` hook (the singular "diagnostic" and
-    "platform" continue to open the Platform Hub).
+    """After the help-menu regrouping (PR #1290) Diagnostics is an ``admin``
+    child, not a top-level hub, so every diagnostics name — plural, short, and
+    the singular ``diagnostic`` — resolves to the Diagnostics subsystem panel
+    (its ``build_help_menu_view`` hook). ``platform`` instead opens the parent
+    Server & Admin hub, where the Platform view lives.
     """
     route = help_cog._resolve_route(name, bot=_bot())
     assert route.kind == "subsystem"
@@ -116,6 +122,12 @@ def test_diagnostics_aliases_resolve_to_diagnostic_subsystem(name):
         "deathmatch",
         "counting",
         "chain",
+        # Nested under Server & Admin by the help-menu regrouping (PR #1290) —
+        # now subsystem routes rather than top-level hubs.
+        "settings",
+        "server_management",
+        "ai",
+        "ux_lab",
     ],
 )
 def test_subsystem_keys_resolve_to_subsystem(name):

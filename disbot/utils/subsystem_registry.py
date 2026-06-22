@@ -109,6 +109,11 @@ SUBSYSTEMS: dict[str, dict] = {
         # The hub posts a navigation panel but owns no message-cleanup policy.
         "has_cleanup_rules": False,
         "ui_priority": 88,
+        # Nested under the Server & Admin hub by the help-menu regrouping
+        # (PR #1290): it is no longer a top-level Help section but remains a
+        # full routing hub reachable as a child of Admin (and via
+        # !servermanagement).
+        "parent_hub": "admin",
         # Routing-only hub: it composes other subsystems' panels and holds no
         # capability of its own (authority is the administrator floor on the
         # command + the view's interaction_check).
@@ -241,17 +246,18 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 21,
+        "parent_hub": "games",
+        "hub_group": "activities",
         "capabilities": [
             "fishing.catch.fish",
             "fishing.collection.view",
         ],
     },
     # Creature catch/collection game v1 (Q-0186/Q-0187,
-    # docs/planning/creature-game-design-and-sim-2026-06-20.md). hub-less for the
-    # catch slice — surfaced via its Help hook + the typed `!catch`/`!dex`/`!dextop`
-    # commands, exactly like `fishing`. Folding 🐾 Creatures into an actionable
-    # Games / Explore-hub panel (and the level-normalized PvP battle) are later
-    # plan slices, at which point it gains parent_hub + an actionable panel.
+    # docs/planning/creature-game-design-and-sim-2026-06-20.md). Homed under the
+    # Games hub by the help-menu regrouping (PR #1290) so it is reachable in the
+    # Games section rather than only the Advanced browser; an actionable in-panel
+    # surface (beyond the Help hook + typed `!catch`/`!dex`) is a later slice.
     "creature": {
         "display_name": "Creatures",
         "description": "Catch original creatures and build your collection dex",
@@ -271,6 +277,8 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 22,
+        "parent_hub": "games",
+        "hub_group": "activities",
         "capabilities": [
             "creature.catch.creature",
             "creature.collection.view",
@@ -342,6 +350,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": True,
         "ui_priority": 75,
+        "parent_hub": "admin",
         "capabilities": [
             "channel.create.text",
             "channel.create.voice",
@@ -504,10 +513,10 @@ SUBSYSTEMS: dict[str, dict] = {
         ],
     },
     # welcome v1 (owner decision Q-0110): the member-greeting layer of the
-    # safety/community platform. Admin-configured (visibility_tier), but
-    # deliberately hub-less — surfaced via its Help hook + `!settings` →
-    # Welcome + the `!welcome` summary (like `ai`/`channel`/`ux_lab`), so it
-    # does not clutter the user-tier Community hub with operator config.
+    # safety/community platform. Admin-configured (visibility_tier). Homed under
+    # the Community hub by the help-menu regrouping (PR #1290); its
+    # administrator visibility_tier keeps it hidden from the user-tier Community
+    # view and surfaced only to operators, so users still see no operator config.
     "welcome": {
         "display_name": "Welcome",
         "description": "Member greetings, farewells, and an optional entry role",
@@ -525,15 +534,16 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 31,
+        "parent_hub": "community",
         "capabilities": [
             "welcome.settings.configure",
         ],
     },
     # server counters v1 (owner decision Q-0110): live stat channels (the
-    # statdock pattern). Admin-configured, deliberately hub-less for the same
-    # reason as welcome — surfaced via its Help hook + `!settings` → Counters +
-    # the `!counters` summary. Renamed channels are driven by a slow periodic
-    # loop (Discord rename rate limit), never per join.
+    # statdock pattern). Admin-configured. Homed under the Community hub by the
+    # help-menu regrouping (PR #1290); its administrator visibility_tier keeps
+    # it operator-only in the Community view. Renamed channels are driven by a
+    # slow periodic loop (Discord rename rate limit), never per join.
     "counters": {
         "display_name": "Server Counters",
         "description": "Live member-count channels (total · humans · bots)",
@@ -551,16 +561,18 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 32,
+        "parent_hub": "community",
         "capabilities": [
             "counters.settings.configure",
         ],
     },
     # security tiers 1+2 (owner decision Q-0111): the automated join-screening
     # layer (raid detection + account-age filter) beneath manual moderation.
-    # Admin-configured, deliberately hub-less for the same reason as
-    # welcome/counters — surfaced via its Help hook + `!settings` → Security +
-    # the `!security` summary. Actions route through moderation_service; the two
-    # DECLINED tiers (alt-detection / VPN blocking) are deliberately absent.
+    # Admin-configured. Homed under the Moderation & Safety hub by the help-menu
+    # regrouping (PR #1290) — its natural section; its administrator
+    # visibility_tier keeps it operator-only. Actions route through
+    # moderation_service; the two DECLINED tiers (alt-detection / VPN blocking)
+    # are deliberately absent.
     "security": {
         "display_name": "Server Security",
         "description": "Raid detection + account-age screening on member join",
@@ -578,6 +590,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 33,
+        "parent_hub": "moderation",
         "capabilities": [
             "security.settings.configure",
         ],
@@ -891,6 +904,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": True,
         "ui_priority": 95,
+        "parent_hub": "admin",
         "capabilities": [
             "diagnostic.health.view",
             "diagnostic.latency.check",
@@ -913,6 +927,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 20,
+        "parent_hub": "admin",
         # Zero-write workbench: the lab mutates nothing (CI-fenced by
         # tests/unit/invariants/test_ux_lab_zero_write.py), so it holds no
         # capability of its own — authority is the administrator floor on
@@ -941,6 +956,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 88,
+        "parent_hub": "admin",
         "capabilities": [
             "ai.platform.view",
             "ai.diagnostics.view",
@@ -974,6 +990,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 92,
+        "parent_hub": "admin",
         "capabilities": [
             "settings.manager.view",
         ],

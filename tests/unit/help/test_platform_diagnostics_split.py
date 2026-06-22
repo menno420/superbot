@@ -1,14 +1,17 @@
 """Regression canary for the Platform/Diagnostics hook split.
 
-Pins all four invariants in one file so any future change that tries
-to collapse the two hooks back into one trips a single, named test:
+The DiagnosticCog keeps BOTH hooks so both surfaces survive the help-menu
+regrouping (PR #1290), which made Diagnostics an ``admin`` child rather than a
+top-level hub:
 
 1. ``DiagnosticCog.build_help_menu_view(opener)`` returns
-   ``_DiagnosticsHubView``.
+   ``_DiagnosticsHubView`` (reached via ``!help diagnostic[s]`` and the
+   Server & Admin panel's Diagnostics button).
 2. ``DiagnosticCog.build_platform_help_menu_view(opener)`` returns
-   ``_PlatformHubView``.
-3. Help route ``platform`` opens ``_PlatformHubView``.
-4. Help route ``diagnostics`` opens ``_DiagnosticsHubView``.
+   ``_PlatformHubView`` (reached via the Server & Admin panel's Platform
+   button).
+3. Help route ``platform`` resolves to the consolidated ``admin`` hub.
+4. Help route ``diagnostics`` opens the Diagnostics subsystem panel.
 """
 
 from __future__ import annotations
@@ -66,17 +69,18 @@ async def test_build_platform_help_menu_view_returns_platform_hub():
     assert isinstance(view, _PlatformHubView)
 
 
-def test_help_routes_platform_to_diagnostic_hub_key():
-    """Invariant #3 (resolver half): the ``platform`` alias must
-    resolve to the ``diagnostic`` hub key. ``_open_route`` then uses
-    the ``_HUB_PANEL_BUILDERS`` override to call the platform builder.
+def test_help_routes_platform_to_server_admin_hub():
+    """Invariant #3 (resolver half): after the help-menu regrouping (PR #1290)
+    the ``platform`` alias resolves to the consolidated ``admin`` hub, where the
+    Platform view lives (reached via the Server & Admin panel's Platform
+    button). The Platform builder itself still exists on the cog (invariant #2),
+    so the surface is intact — it is just no longer its own top-level hub.
     """
     route = help_cog._resolve_route("platform", bot=MagicMock())
     assert route.kind == "hub"
-    assert route.target == "diagnostic"
-    # Override table must point at the Platform builder, not the
-    # generic ``build_help_menu_view`` hook.
-    assert help_cog._HUB_PANEL_BUILDERS["diagnostic"] == "build_platform_help_menu_view"
+    assert route.target == "admin"
+    # The legacy override is gone: Diagnostics/Platform is no longer a hub.
+    assert "diagnostic" not in help_cog._HUB_PANEL_BUILDERS
 
 
 def test_help_routes_diagnostics_to_diagnostic_subsystem():
