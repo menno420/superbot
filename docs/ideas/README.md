@@ -45,6 +45,13 @@ Current broad captures:
   *genuinely stale*, so the reconciler only decides on the stale bucket — the one the routine warns is
   easiest to miss (#766 sat red 21h). Sibling of the band-status classifier (#1181) + trim actuator (#1206).
   Sector S3/S4. Disposable (Q-0105).
+- [`band-queue-hit-rate-metric-2026-06-22.md`](./band-queue-hit-rate-metric-2026-06-22.md) —
+  **captured by the band-#1320 reconciliation pass (2026-06-22):** every pass plans a ~30-slice next band, and
+  almost every subsequent pass records "the buffer became the band" in prose only — no number. Extend
+  `band_pr_status.py` with a `--queue-hit-rate` mode (planned slices shipped ÷ planned, + count of unplanned
+  PRs) and track that one line per pass, so the owner gets **data-driven evidence** of whether deep
+  forward-planning predicts reality or should go lighter/reactive. Sibling of `--themes` (#1271) + the trim
+  actuator (#1206). Sector S3/S4. Disposable (Q-0105).
 - [`ci-dropped-synchronize-auto-retrigger-2026-06-22.md`](./ci-dropped-synchronize-auto-retrigger-2026-06-22.md) —
   **owner-endorsed (2026-06-22, surfaced diagnosing PR #1283's stuck Code Quality):** GitHub sometimes
   **drops the `pull_request: synchronize` event**, so a PR head gets no `code-quality` run and
