@@ -1,7 +1,6 @@
 # 2026-06-21 — Journal: capture recurring workflow lessons from the reaction-roles chain
 
-> **Status:** `complete` — docs-only (journal, free-rein). Pushed all-at-once before opening the PR
-> (journal gotcha line 62: a synchronize push may not re-fire CI). Q-0191 → merge on green.
+> **Status:** `complete` — docs-only (journal, free-rein). Q-0191 → merge on green.
 
 > **Run type:** `manual`
 

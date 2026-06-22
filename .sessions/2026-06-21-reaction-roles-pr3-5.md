@@ -72,9 +72,6 @@ is real surface; deferring kept the core arc tight.
 
 ## Context delta
 
-- **Needed but not pointed to:** the env gotcha that a push to an *existing* PR branch doesn't
-  re-fire Code Quality (so born-red→flip can strand) — handled by pushing the complete card before
-  opening the PR. Already a journal Quick-reference row; reconfirmed live.
 - **Decision made alone:** package PR 3–5 as **one** PR (migration-sequence + shared-file
   coordination) rather than 3–4 separate PRs; defer PR 6. Recorded in the plan's Build-progress.
 - **Loose end (deliberate):** `role_grants.list_for_member` exists but no UI consumes it yet — a
