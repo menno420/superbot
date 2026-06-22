@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`reconcile-open-pr-staleness-classifier-2026-06-22.md`](./reconcile-open-pr-staleness-classifier-2026-06-22.md) —
+  **captured by the band-#1290 reconciliation pass (2026-06-22):** the Q-0125 open-PR disposition step is the
+  one part of the recon pass with **no tooling assist** (manual `list_pull_requests` + eyeball each PR's
+  age/label/CI). A small stdlib classifier would bucket open PRs into *active in-flight* / *parked carve-out* /
+  *genuinely stale*, so the reconciler only decides on the stale bucket — the one the routine warns is
+  easiest to miss (#766 sat red 21h). Sibling of the band-status classifier (#1181) + trim actuator (#1206).
+  Sector S3/S4. Disposable (Q-0105).
 - [`ci-dropped-synchronize-auto-retrigger-2026-06-22.md`](./ci-dropped-synchronize-auto-retrigger-2026-06-22.md) —
   **owner-endorsed (2026-06-22, surfaced diagnosing PR #1283's stuck Code Quality):** GitHub sometimes
   **drops the `pull_request: synchronize` event**, so a PR head gets no `code-quality` run and

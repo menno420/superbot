@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T13:04:22Z",
+    "generated_at": "2026-06-22T13:57:59Z",
     "build": {
-      "commit": "6042185",
-      "subject": "chore(mining): open fish-cooking session (born-red)",
-      "committed_at": "2026-06-22T13:04:22Z"
+      "commit": "a960401b",
+      "subject": "BUG-0024: make the dashboard generated_at determinism test hermetic (kill the -n auto flake) (#1291)",
+      "committed_at": "2026-06-22T13:57:59Z"
     }
   },
   "counts": {
