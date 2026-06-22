@@ -559,6 +559,7 @@ def rule_back_button(
 _BASE_CLASS_ALLOWED_PATHS = (
     "views/rps/",
     "views/blackjack/",
+    "views/casino/",
     "views/fishing/",
     "views/games/",
     "views/ai/",

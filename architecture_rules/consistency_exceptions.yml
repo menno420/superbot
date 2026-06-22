@@ -87,6 +87,8 @@ back_button:
       reason: "Root of the channels navigation stack — its sub-panels (create/delete/visibility/move) restore back TO it; it has no parent itself."
     - pattern: views/cleanup/policy_panel.py::CleanupPolicyPanelView
       reason: "Root cleanup-policy panel opened directly by the cleanup cog command; no parent to return to."
+    - pattern: views/casino/hub.py::CasinoHubView
+      reason: "Root `!casino` panel; opened as a `!help`/Games-hub child the parent attaches back externally (attach_back_to_games_button). No parent on the root open."
     - pattern: views/counting/hub_panel.py::_CountingHubView
       reason: "Root `!countingmenu` panel; opened as a `!help`/Games-hub child the parent attaches back externally (HelpCategoryView / attach_back_to_games_button). No parent on the root open."
     - pattern: views/diagnostic/automation_panel.py::AutomationPanelView

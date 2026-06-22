@@ -43,6 +43,41 @@ PR 2 = make the global (`game_xp` SUM) vs per-game tree split explicit (per-game
 identity read-card. Gated open-world layers (gear auto-equip · survival overlay · biome map) wait
 on **Q-0182**.
 
+## Casino — group card games (multiplayer, per-player ephemeral)
+
+The **Casino** (`casino` subsystem, `disbot/cogs/casino_cog.py`) is a Games-hub
+child for **group** card games where every seated player gets their **own
+auto-updating ephemeral message**, so a whole table plays at once. v1 ships
+**multiplayer Texas Hold'em poker**; roulette and other games dock into the same
+hub. Reached via `Games → 🎰 Casino` and `!casino` / `!poker`.
+
+- **The marquee mechanic** is the per-player ephemeral broadcast
+  (`disbot/views/casino/poker_table.py`): a Discord ephemeral message can only be
+  edited via the interaction token that created it, so the table keeps each
+  seat's `discord.InteractionMessage` handle (captured at **Join**) and, on every
+  state change, re-renders + edits **every** seat's private panel plus the public
+  spectator board. A per-turn idle clock (90 s) auto-checks/folds an AFK seat. The
+  generic "shared table + per-player ephemeral broadcaster" can be lifted out of
+  `poker_table.py` into a reusable `views/casino/table.py` on the rule of three.
+- **Layering mirrors the other games:** pure reusable card model `utils/cards/`
+  (`Card`/`Deck` with *rankable* ordered ranks — blackjack's helpers stay
+  blackjack-specific) · pure poker domain `utils/poker/` (`evaluate.py` best-5-of-7
+  hand scoring + `engine.py` the Hold'em state machine: blinds, betting, all-ins,
+  **side pots**, showdown) — both Discord-free and fully unit-tested · the view
+  layer is a thin renderer. `services → views` is never crossed (no service —
+  see money note).
+- **Money (v1 scope):** **table play-chips** only (start 1000, blinds 5/10) — chips
+  never leave the table, so no economy seam is involved and it sits trivially
+  inside the free-for-everyone / no-pay-to-win mission (Q-0190). **Real-coin
+  buy-in/cash-out is a deliberate follow-up** needing N-party escrow through
+  `game_wager_workflow` (the money-safety seam), plus game-XP on table finish.
+- **ADR-002:** in-flight table state is in-memory and **not restart-safe** by
+  design, exactly like blackjack/RPS.
+- **Design + research record:** [`../planning/casino-poker-design-2026-06-22.md`](../planning/casino-poker-design-2026-06-22.md)
+  (the `tools/sim/casino_games_sim.py` scorecard that picked Hold'em + the engine's
+  Monte-Carlo chip-conservation/odds validation). **Follow-ups:** real-coin
+  buy-in · roulette · multiplayer blackjack table · custom raise-amount modal.
+
 ## Idle games (accrue-over-time)
 
 The **chicken farm** (`farm` subsystem, `disbot/cogs/farm_cog.py`) is the bot's first

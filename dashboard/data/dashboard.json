@@ -1,25 +1,25 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T22:40:17Z",
+    "generated_at": "2026-06-23T00:51:14Z",
     "build": {
-      "commit": "fb983bd",
-      "subject": "Karma: session-card close-out notes (status still held)",
-      "committed_at": "2026-06-22T22:40:17Z"
+      "commit": "a4f3aac",
+      "subject": "Merge branch 'main' into claude/great-goldberg-extjsi",
+      "committed_at": "2026-06-23T00:51:14Z"
     },
     "counts": {
-      "functions": 40,
+      "functions": 41,
       "ideas": 128,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
-      "cogs": 50,
-      "commands": 381,
+      "cogs": 51,
+      "commands": 383,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
-      "visible_subsystems": 40,
+      "visible_subsystems": 41,
       "synonyms": 87,
       "bot_changelog": 3
     }
@@ -472,6 +472,33 @@
       "capabilities": [
         "blackjack.game.play",
         "blackjack.tournament.manage"
+      ]
+    },
+    {
+      "key": "casino",
+      "display_name": "Casino",
+      "description": "Group card games like multiplayer poker",
+      "emoji": "🎰",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "games",
+      "tags": [
+        "games",
+        "casino",
+        "poker",
+        "cards",
+        "multiplayer"
+      ],
+      "entry_points": [
+        "casino",
+        "poker",
+        "holdem"
+      ],
+      "related_subsystems": [
+        "blackjack"
+      ],
+      "capabilities": [
+        "casino.game.play"
       ]
     },
     {
@@ -2515,7 +2542,7 @@
       "file": "2026-06-22-karma-build.md",
       "date": "2026-06-22",
       "title": "Session — 2026-06-22 · Karma (thanks/upvote reputation) — build",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
@@ -2645,6 +2672,14 @@
       "title": "2026-06-22 — CI dropped-`synchronize` auto-re-trigger watchdog",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-casino-card-table.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Casino subsystem: multiplayer card-game table framework + Texas Hold'em poker",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2790,14 +2825,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-reconcile-band1230.md",
-      "date": "2026-06-21",
-      "title": "Session — 2026-06-21 · docs reconciliation (band-#1230, Q-0107 pass #18)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -2886,7 +2913,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 187,
+          "line": 188,
           "layer": "config",
           "has_default": true
         },
@@ -2908,7 +2935,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 186,
+          "line": 187,
           "layer": "config",
           "has_default": true
         }
@@ -2941,7 +2968,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 170,
+          "line": 171,
           "layer": "config",
           "has_default": true
         },
@@ -3011,7 +3038,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 225,
+          "line": 226,
           "layer": "config",
           "has_default": true
         }
@@ -3059,7 +3086,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 213,
+          "line": 214,
           "layer": "config",
           "has_default": true
         }
@@ -3075,7 +3102,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 216,
+          "line": 217,
           "layer": "config",
           "has_default": true
         }
@@ -3091,7 +3118,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 219,
+          "line": 220,
           "layer": "config",
           "has_default": true
         }
@@ -3251,7 +3278,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 112,
+          "line": 113,
           "layer": "config",
           "has_default": true
         }
@@ -3331,7 +3358,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 113,
+          "line": 114,
           "layer": "config",
           "has_default": true
         }
@@ -3349,7 +3376,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 169,
+          "line": 170,
           "layer": "config",
           "has_default": true
         },
@@ -3390,7 +3417,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 196,
+          "line": 197,
           "layer": "config",
           "has_default": true
         },
@@ -3413,7 +3440,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 200,
+          "line": 201,
           "layer": "config",
           "has_default": true
         },
@@ -3452,7 +3479,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 168,
+          "line": 169,
           "layer": "config",
           "has_default": true
         },
@@ -3476,7 +3503,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 167,
+          "line": 168,
           "layer": "config",
           "has_default": true
         },
@@ -4866,6 +4893,38 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        }
+      ]
+    },
+    {
+      "cog": "CasinoCog",
+      "file": "disbot/cogs/casino_cog.py",
+      "subsystem": "casino",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "casino",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Open the Casino hub — group card games like poker.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "poker",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "holdem"
+          ],
+          "brief": "Open a multiplayer Texas Hold'em table in this channel.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         }
       ]
     },
@@ -9197,6 +9256,12 @@
             "emoji": "🃏"
           },
           {
+            "key": "casino",
+            "display_name": "Casino",
+            "category": "games",
+            "emoji": "🎰"
+          },
+          {
             "key": "farm",
             "display_name": "Chicken Farm",
             "category": "games",
@@ -9419,7 +9484,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 40,
+    "total_visible": 41,
     "internal_count": 0
   },
   "synonyms": [

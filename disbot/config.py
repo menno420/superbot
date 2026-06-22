@@ -63,6 +63,7 @@ INITIAL_EXTENSIONS = [
     "cogs.xp_cog",
     "cogs.karma_cog",
     "cogs.blackjack_cog",
+    "cogs.casino_cog",
     "cogs.rps_tournament_cog",
     "cogs.utility_cog",
     "cogs.cleanup_cog",

@@ -31,6 +31,11 @@ base_view:
       reason: RPS game views require tight gameplay lifecycle coupling
     - pattern: views/blackjack/
       reason: Blackjack views require specialized timeout and state cleanup
+    - pattern: views/casino/
+      reason: >
+        Casino table views (multiplayer poker) own a per-player ephemeral
+        broadcast + per-turn idle clock lifecycle — the same game-state
+        lifecycle ownership as blackjack/rps, beyond BaseView.
     - pattern: views/fishing/
       reason: >
         Fishing minigame views drive a timed cast/bite/reel lifecycle (a managed
