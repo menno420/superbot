@@ -124,8 +124,10 @@ def test_hub_hides_when_host_subsystem_is_governance_hidden():
 
 
 def test_hub_tier_floor_still_applies():
+    # Help-menu regrouping (PR #1290): "settings" is no longer a hub — "admin"
+    # (Server & Admin) is the administrator-tier hub a normal user can't see.
     projection = HelpProjection.from_visibility(_vis(_ALL, "user"))
-    decision = projection.hub_decision("settings")
+    decision = projection.hub_decision("admin")
     assert decision is not None
     assert decision.state is HelpEntryState.GOVERNANCE_HIDDEN
     assert decision.reason_code == "tier_floor"

@@ -1,14 +1,19 @@
-"""Unit tests for the admin menu integration buttons (PR 2).
+"""Unit tests for the Server & Admin menu integration buttons.
 
-The admin menu (``!adminmenu`` / ``_AdminPanelView``) gains six
+The admin menu (``!adminmenu`` / ``_AdminPanelView``) is the consolidated
+Server & Admin section (help-menu regrouping, PR #1290). It carries nine
 navigation buttons that route into existing cog hubs / panels:
 
-- 🛠 Settings    → SettingsCog.build_help_menu_view
-- 🛰 Platform    → views.diagnostic._PlatformHubView (PR 1)
-- 🩺 Diagnostics → DiagnosticCog.build_help_menu_view
-- 📝 Logging     → build_logging_status_embed (in-place)
-- 🧹 Cleanup     → Cleanup.build_help_menu_view
-- 📚 Help        → cogs.help_cog.HelpPanelView
+- 🛠 Settings          → SettingsCog.build_help_menu_view
+- 🧭 Server Management → ServerManagementCog.build_help_menu_view
+- 📐 Channels          → ChannelCog.build_help_menu_view
+- 🤖 AI                → AICog.build_help_menu_view
+- 🛰 Platform          → views.diagnostic._PlatformHubView
+- 🩺 Diagnostics       → DiagnosticCog.build_help_menu_view
+- 🧪 UX Lab            → UxLabCog.build_help_menu_view
+- 📝 Logging           → LoggingCog.build_help_menu_view
+- 🧹 Cleanup           → Cleanup.build_help_menu_view
+- 📚 Help              → cogs.help_cog.HelpCategoryView
 
 These tests cover the view shape and the dispatch wiring.  The
 ``build_help_menu_view`` hooks are mocked so we exercise the admin
@@ -56,10 +61,12 @@ def _find_button(view: discord.ui.View, label_substr: str) -> discord.ui.Button:
 # ---------------------------------------------------------------------------
 
 
-def test_admin_view_has_eleven_components_across_four_rows():
+def test_admin_view_has_fifteen_components_across_four_rows():
     view = _admin_view()
-    # 4 existing tool buttons + 6 navigation buttons + 1 overview = 11.
-    assert len(view.children) == 11
+    # Help-menu regrouping (PR #1290): Server & Admin is the consolidated
+    # operator section. 4 tool buttons (row 0) + 9 navigation buttons
+    # (rows 1-2) + Help + Overview (row 3) = 15.
+    assert len(view.children) == 15
     rows = sorted({c.row for c in view.children})
     assert rows == [0, 1, 2, 3]
 
@@ -75,23 +82,26 @@ def test_admin_view_row_zero_contains_four_existing_tool_buttons():
     assert any("Log Level" in (lbl or "") for lbl in labels)
 
 
-def test_admin_view_navigation_buttons_cover_all_six_destinations():
+def test_admin_view_navigation_buttons_cover_all_nine_destinations():
     view = _admin_view()
     nav_labels = [
         c.label
         for c in view.children
         if c.row in (1, 2) and isinstance(c, discord.ui.Button)
     ]
-    assert len(nav_labels) == 6
-    # Order-independent — verify each destination is reachable from
-    # the panel.
+    assert len(nav_labels) == 9
+    # Order-independent — verify each destination is reachable from the
+    # consolidated Server & Admin panel (help-menu regrouping, PR #1290).
     joined = " | ".join(lbl or "" for lbl in nav_labels)
     assert "Settings" in joined
+    assert "Server Management" in joined
+    assert "Channels" in joined
+    assert "AI" in joined
     assert "Platform" in joined
     assert "Diagnostics" in joined
+    assert "UX Lab" in joined
     assert "Logging" in joined
     assert "Cleanup" in joined
-    assert "Help" in joined
 
 
 def test_admin_view_overview_is_last_row():
@@ -105,12 +115,13 @@ def test_admin_view_overview_is_last_row():
     assert overview.style == discord.ButtonStyle.secondary
 
 
-def test_admin_overview_description_mentions_both_tools_and_navigation():
+def test_admin_overview_description_groups_tools_and_navigation():
     view = _admin_view()
     embed = view.build_embed()
     description = embed.description or ""
     assert "Tools" in description
-    assert "Navigate" in description
+    assert "Configure & Operate" in description
+    assert "Platform & Diagnostics" in description
 
 
 # ---------------------------------------------------------------------------
@@ -133,15 +144,18 @@ async def test_logging_button_routes_through_logging_cog_hook():
     fake_cog.build_help_menu_view = AsyncMock(return_value=(fake_embed, fake_view))
     interaction.client.get_cog.return_value = fake_cog
 
-    with patch(
-        "cogs.admin_cog.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.admin_cog.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.admin_cog.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.admin_cog.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
     interaction.client.get_cog.assert_called_with("LoggingCog")
     fake_cog.build_help_menu_view.assert_awaited_once_with(interaction)
@@ -184,15 +198,18 @@ async def test_platform_button_opens_platform_hub_view():
     btn = _find_button(view, "Platform")
     interaction = MagicMock()
     interaction.user = view._author
-    with patch(
-        "cogs.admin_cog.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.admin_cog.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.admin_cog.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.admin_cog.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
     # _PlatformHubView is the swap target — verify by class name to
     # avoid coupling to the import path.
@@ -213,11 +230,14 @@ async def test_platform_button_attaches_back_to_admin_button():
         captured["view"] = kwargs["view"]
         return True
 
-    with patch(
-        "cogs.admin_cog.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch("cogs.admin_cog.safe_edit", new=_capture_edit):
+    with (
+        patch(
+            "cogs.admin_cog.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch("cogs.admin_cog.safe_edit", new=_capture_edit),
+    ):
         await btn.callback(interaction)
     sub_view = captured["view"]
     back_btns = [
@@ -245,15 +265,18 @@ async def test_open_via_help_hook_invokes_target_cog_hook():
     fake_cog.build_help_menu_view = AsyncMock(return_value=(fake_embed, fake_view))
     interaction.client.get_cog.return_value = fake_cog
 
-    with patch(
-        "cogs.admin_cog.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.admin_cog.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.admin_cog.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.admin_cog.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await view._open_via_help_hook(interaction, cog_name="SettingsCog")
     interaction.client.get_cog.assert_called_with("SettingsCog")
     fake_cog.build_help_menu_view.assert_awaited_once_with(interaction)
@@ -274,15 +297,18 @@ async def test_open_via_help_hook_handles_missing_cog():
     interaction = MagicMock()
     interaction.user = view._author
     interaction.client.get_cog.return_value = None
-    with patch(
-        "cogs.admin_cog.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.admin_cog.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.admin_cog.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.admin_cog.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await view._open_via_help_hook(interaction, cog_name="GhostCog")
     edit.assert_awaited_once()
     embed = edit.await_args.kwargs["embed"]
@@ -299,15 +325,18 @@ async def test_open_via_help_hook_handles_hook_exception():
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(side_effect=RuntimeError("boom"))
     interaction.client.get_cog.return_value = fake_cog
-    with patch(
-        "cogs.admin_cog.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.admin_cog.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.admin_cog.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.admin_cog.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await view._open_via_help_hook(interaction, cog_name="SettingsCog")
     embed = edit.await_args.kwargs["embed"]
     assert "SettingsCog unavailable" in (embed.title or "")
@@ -335,28 +364,35 @@ async def test_help_button_opens_help_category_view():
     fake_view = discord.ui.View()
     fake_embed = discord.Embed(title="Help")
 
-    with patch(
-        "cogs.admin_cog.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "services.governance_service.resolve_visibility",
-        new_callable=AsyncMock,
-        return_value=vis_result,
-    ), patch(
-        "services.governance_service.GovernanceContext.from_interaction",
-        return_value=MagicMock(),
-    ), patch(
-        "cogs.help_cog.HelpCategoryView",
-        return_value=fake_view,
-    ) as view_cls, patch(
-        "cogs.help_cog.build_categories_overview_embed",
-        return_value=fake_embed,
-    ), patch(
-        "cogs.admin_cog.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.admin_cog.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "services.governance_service.resolve_visibility",
+            new_callable=AsyncMock,
+            return_value=vis_result,
+        ),
+        patch(
+            "services.governance_service.GovernanceContext.from_interaction",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "cogs.help_cog.HelpCategoryView",
+            return_value=fake_view,
+        ) as view_cls,
+        patch(
+            "cogs.help_cog.build_categories_overview_embed",
+            return_value=fake_embed,
+        ),
+        patch(
+            "cogs.admin_cog.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
     # HLP-2: the view receives the audience projection built from the
     # governance result, not a bare tier string.
@@ -373,22 +409,27 @@ async def test_help_button_falls_back_to_orange_embed_on_governance_failure():
     btn = _find_button(view, "Help")
     interaction = MagicMock()
     interaction.user = view._author
-    with patch(
-        "cogs.admin_cog.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "services.governance_service.resolve_visibility",
-        new_callable=AsyncMock,
-        side_effect=RuntimeError("gov down"),
-    ), patch(
-        "services.governance_service.GovernanceContext.from_interaction",
-        return_value=MagicMock(),
-    ), patch(
-        "cogs.admin_cog.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.admin_cog.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "services.governance_service.resolve_visibility",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("gov down"),
+        ),
+        patch(
+            "services.governance_service.GovernanceContext.from_interaction",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "cogs.admin_cog.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
     embed = edit.await_args.kwargs["embed"]
     assert "Help unavailable" in (embed.title or "")
@@ -436,25 +477,31 @@ async def test_build_logging_status_embed_with_disabled_logging():
     guild.id = 1234
     from services.server_logging_config import EventLoggingPolicy
 
-    with patch(
-        "services.server_logging.is_enabled",
-        new_callable=AsyncMock,
-        return_value=False,
-    ), patch(
-        "services.server_logging.auto_create_enabled",
-        new_callable=AsyncMock,
-        return_value=False,
-    ), patch(
-        "services.server_logging.resolve_log_channel",
-        new_callable=AsyncMock,
-        return_value=None,
-    ), patch(
-        "services.server_logging_config.load_policy",
-        new_callable=AsyncMock,
-        return_value=EventLoggingPolicy(),
-    ), patch(
-        "services.server_logging.counters_snapshot",
-        return_value={"counters": {"sent": 0, "failed": 0}},
+    with (
+        patch(
+            "services.server_logging.is_enabled",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
+        patch(
+            "services.server_logging.auto_create_enabled",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "services.server_logging_config.load_policy",
+            new_callable=AsyncMock,
+            return_value=EventLoggingPolicy(),
+        ),
+        patch(
+            "services.server_logging.counters_snapshot",
+            return_value={"counters": {"sent": 0, "failed": 0}},
+        ),
     ):
         embed = await build_logging_status_embed(guild)
     field_names = [f.name for f in embed.fields]

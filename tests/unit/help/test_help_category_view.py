@@ -60,18 +60,19 @@ def test_categories_embed_lists_each_visible_hub_with_purpose_and_entry_cmd():
     field_names = [f.name for f in embed.fields]
     field_values = [f.value for f in embed.fields]
 
-    # The four S3-v1 hubs must each appear as a top-level field.
+    # Top-level sections after the help-menu regrouping (PR #1290): Games and
+    # the consolidated Server & Admin section must each appear as a field.
+    # Settings / Platform / Server Management are now children of Server &
+    # Admin, not top-level fields.
     assert any("Games" in n for n in field_names)
-    assert any("Admin" in n for n in field_names)
-    assert any("Settings" in n for n in field_names)
-    assert any("Platform" in n for n in field_names)
+    assert any("Server & Admin" in n for n in field_names)
+    assert not any("Settings / Configuration" in n for n in field_names)
+    assert not any("Platform / Diagnostics" in n for n in field_names)
 
     # Each field value contains the typed entry command.
     joined = "\n".join(field_values)
     assert "!games" in joined
     assert "!adminmenu" in joined
-    assert "!settings" in joined
-    assert "!platform" in joined
 
 
 def test_categories_embed_always_includes_all_commands_fallback():
@@ -120,9 +121,9 @@ def test_view_has_one_select_with_visible_hubs_plus_all_commands():
     select = _select(view)
     values = {opt.value for opt in select.options}
     # Committed hubs visible to administrator + ALL_COMMANDS sentinel.
-    # Economy joined in S7, Moderation in S8, Community in S9, Utility
-    # in S10. M1 of the BTD6-top-level + AI-central-policy initiative
-    # added BTD6 Assistant as its own top-level hub.
+    # Help-menu regrouping (PR #1290): Settings, Diagnostics/Platform, and
+    # Server Management are now children of the consolidated Server & Admin
+    # (``admin``) section, so the admin-side index is 7 hubs, not 10.
     assert values == {
         "games",
         "btd6",
@@ -131,9 +132,6 @@ def test_view_has_one_select_with_visible_hubs_plus_all_commands():
         "community",
         "utility",
         "admin",
-        "settings",
-        "diagnostic",
-        "server_management",
         ALL_COMMANDS_KEY,
     }
 
@@ -169,9 +167,9 @@ def test_view_has_no_individual_hub_child_options():
         "counting",
         "chain",
     ):
-        assert hub_child not in values, (
-            f"hub child {hub_child!r} leaked into HelpCategoryView top-level"
-        )
+        assert (
+            hub_child not in values
+        ), f"hub child {hub_child!r} leaked into HelpCategoryView top-level"
 
 
 def test_view_default_member_tier_is_user_when_unspecified():

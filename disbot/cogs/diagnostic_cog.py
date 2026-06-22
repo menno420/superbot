@@ -79,12 +79,12 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
         button callback, so no ctx-shim is required.  This matches the
         canonical pattern used by every other subsystem hub.
 
-        This hook stays pointed at the Diagnostics Hub so Admin →
-        Diagnostics and ``!help diagnostics`` / ``!help diag`` continue
-        to open the diagnostics surface. The Help "Platform /
-        Diagnostics" entry uses :meth:`build_platform_help_menu_view`
-        instead — see the ``_HUB_PANEL_BUILDERS`` override in
-        ``help_cog``.
+        This hook stays pointed at the Diagnostics Hub so the Server &
+        Admin panel's Diagnostics button and ``!help diagnostic[s]`` /
+        ``!help diag`` open the diagnostics surface. The Platform view is
+        a sibling hook, :meth:`build_platform_help_menu_view`, reached via
+        the Server & Admin panel's Platform button (help-menu regrouping,
+        PR #1290 — Diagnostics/Platform is no longer a top-level hub).
         """
         view = _DiagnosticsHubView(interaction.user)
         return view.build_embed(), view
@@ -95,11 +95,10 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Help-menu direct-navigation hook for the Platform hub.
 
-        Routed to by Help's ``_HUB_PANEL_BUILDERS`` override for the
-        ``diagnostic`` hub key (display name "Platform / Diagnostics").
-        ``DiagnosticCog`` owns both surfaces; this sibling hook keeps
-        :meth:`build_help_menu_view` free for the Diagnostics callers
-        that already depend on it.
+        Reached via the Server & Admin panel's Platform button (and the
+        ``!platform`` slash/group command). ``DiagnosticCog`` owns both
+        surfaces; this sibling hook keeps :meth:`build_help_menu_view`
+        free for the Diagnostics callers that already depend on it.
 
         Reads only ``interaction.user`` — the ``HelpOpener`` adapter is
         a safe drop-in here.
