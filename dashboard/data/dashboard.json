@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T03:11:21Z",
+    "generated_at": "2026-06-22T05:25:56Z",
     "build": {
-      "commit": "9b9df82d",
-      "subject": "BUG-0023 slash-scan coverage: born-red session card + lane claim",
-      "committed_at": "2026-06-22T03:11:21Z"
+      "commit": "b6ebf90b",
+      "subject": "Merge pull request #1272 from menno420/claude/funny-franklin-mjvqrx",
+      "committed_at": "2026-06-22T05:25:56Z"
     },
     "counts": {
       "functions": 37,
@@ -1992,7 +1992,7 @@
   "bugs": [
     {
       "id": "BUG-0023",
-      "title": "public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = INVESTIGATE",
+      "title": "public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = FIXED (root)",
       "status": "unknown",
       "summary": "the bot's Bot Online embed shows Commands 354 (283 prefix · 71 slash), the public website shows ~280, and site.json says 308 — \"completely different numbers,\" with \"a lot of / commands that are mostly duplicates of the prefix ones.\""
     },
@@ -2143,9 +2143,9 @@
       "file": "2026-06-22-bug0023-slash-scan-coverage.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — BUG-0023 root fix: scanner discovers `app_commands.Group` attribute slash commands",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-06-22-band-pr-themes-classifier.md",
