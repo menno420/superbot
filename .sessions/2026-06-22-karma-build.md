@@ -1,6 +1,6 @@
 # Session — 2026-06-22 · Karma (thanks/upvote reputation) — build
 
-> **Status:** `in-progress` — born-red HOLD card; flip to `complete` as the final step.
+> **Status:** `complete` — Karma subsystem shipped; full CI-mirror suite green on the rebased head.
 
 **Run type:** owner-directed. **Branch:** `claude/peaceful-franklin-klgw3f`.
 **Trigger:** the owner explicitly authorized building the Karma plan ("you can execute this plan",
