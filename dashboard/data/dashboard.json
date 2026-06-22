@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T15:39:13Z",
+    "generated_at": "2026-06-22T15:56:26Z",
     "build": {
-      "commit": "52cf193",
-      "subject": "Fishing minigame PR1: born-red card + lane claim",
-      "committed_at": "2026-06-22T15:39:13Z"
+      "commit": "4a36b7d",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/fishing-minigame-pr1",
+      "committed_at": "2026-06-22T15:56:26Z"
     },
     "counts": {
       "functions": 37,
@@ -2266,6 +2266,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-help-reachability-guard.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Help reachability guard (orphan check)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-help-menu-regrouping.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Help-menu regrouping (simulation + implementation)",
@@ -2293,7 +2301,7 @@
       "file": "2026-06-22-fishing-minigame-pr1.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Fishing minigame PR1: the interactive cast → wait → BITE → reel loop",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
@@ -2637,14 +2645,6 @@
       "file": "2026-06-21-creature-pvp-rematch-button.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature PvP: rematch button (⚑ self-initiated)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-pvp-battle-flow.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true

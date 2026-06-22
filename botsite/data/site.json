@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T15:39:13Z",
+    "generated_at": "2026-06-22T15:56:26Z",
     "build": {
-      "commit": "52cf193",
-      "subject": "Fishing minigame PR1: born-red card + lane claim",
-      "committed_at": "2026-06-22T15:39:13Z"
+      "commit": "4a36b7d",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/fishing-minigame-pr1",
+      "committed_at": "2026-06-22T15:56:26Z"
     }
   },
   "counts": {
