@@ -37,6 +37,13 @@ Usage:
     python3.10 scripts/band_pr_status.py            # band since the marker, human table
     python3.10 scripts/band_pr_status.py --since 1170
     python3.10 scripts/band_pr_status.py --json
+    python3.10 scripts/band_pr_status.py --themes    # draft grouped-entry skeleton
+
+``--themes`` (the band-#1260 Q-0089 idea) buckets the band's *merged* PRs by the top-level area their
+files touch (read from each merge's first-parent diff) and emits a draft grouped-entry skeleton — turning
+the most-manual half of a pass (reverse-engineering what each opaque ``Merge pull request #N from
+…claude/funny-franklin-…`` PR actually did) into a one-command starting point the pass edits. Git-only,
+so it works in the routine container with no ``gh``/token.
 """
 
 from __future__ import annotations
@@ -49,6 +56,7 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+from collections import Counter
 from pathlib import Path
 
 REPO = "menno420/superbot"
@@ -99,6 +107,173 @@ def git_merged_pr_map(limit: int = 240) -> dict[int, str]:
             pr = int(match.group(1))
             mapping.setdefault(pr, subject.strip())
     return mapping
+
+
+# ---------------------------------------------------------------------------
+# Theming (--themes): bucket merged PRs by the area their files touch
+# ---------------------------------------------------------------------------
+
+# Top-level path → area label, **most specific first** (first match wins per file).
+# This is the bucketing the reconciliation pass does by eye when it reads a
+# merge's file fan-out; the order makes `disbot/services/` beat `disbot/`.
+AREA_PREFIXES: list[tuple[str, str]] = [
+    ("disbot/migrations/", "disbot/migrations"),
+    ("disbot/cogs/", "disbot/cogs"),
+    ("disbot/services/", "disbot/services"),
+    ("disbot/views/", "disbot/views"),
+    ("disbot/utils/", "disbot/utils"),
+    ("disbot/core/", "disbot/core"),
+    ("disbot/", "disbot (other)"),
+    ("docs/planning/", "docs/planning"),
+    ("docs/ideas/", "docs/ideas"),
+    ("docs/owner/", "docs/owner"),
+    ("docs/operations/", "docs/operations"),
+    ("docs/health/", "docs/health"),
+    ("docs/", "docs (other)"),
+    ("scripts/", "scripts"),
+    ("dashboard/", "dashboard"),
+    ("botsite/", "botsite"),
+    (".github/", ".github"),
+    (".claude/", ".claude"),
+    (".sessions/", ".sessions"),
+    ("tests/", "tests"),
+]
+
+# Generated artifacts + session cards accompany almost every PR and never describe
+# its theme — de-weighted so they only decide the area if a PR touched nothing else.
+_NOISE_PREFIXES = ("tests/", ".sessions/")
+_NOISE_FILES = frozenset(
+    {
+        "dashboard/data/dashboard.json",
+        "botsite/data/site.json",
+        "botsite/site/data.js",
+        "docs/owner/active-work.md",
+    },
+)
+_AREA_ORDER = {label: i for i, (_, label) in enumerate(AREA_PREFIXES)}
+
+
+def _area_of_path(path: str) -> str:
+    """The area label for one file path (first matching AREA_PREFIXES entry)."""
+    for prefix, label in AREA_PREFIXES:
+        if path.startswith(prefix):
+            return label
+    return "other"
+
+
+def dominant_area(files: list[str]) -> str:
+    """The dominant **signal** area among a PR's touched files.
+
+    Test files, session cards, and generated artifacts are de-weighted: they ride
+    along on nearly every PR and don't describe its theme, so they only decide the
+    area when a PR touched *nothing else*. Ties break by ``AREA_PREFIXES`` order
+    (most specific wins), so a PR that is half ``disbot/services`` and half
+    ``docs/planning`` themes as the code area, not the docs.
+    """
+    if not files:
+        return "(no files)"
+    signal = [
+        f for f in files if not f.startswith(_NOISE_PREFIXES) and f not in _NOISE_FILES
+    ]
+    counts = Counter(_area_of_path(f) for f in (signal or files))
+    best = max(counts.values())
+    candidates = [area for area, c in counts.items() if c == best]
+    return min(candidates, key=lambda a: _AREA_ORDER.get(a, len(AREA_PREFIXES)))
+
+
+def group_by_theme(pr_files: dict[int, list[str]]) -> dict[str, list[int]]:
+    """Map each area label to its band PRs (newest-first within an area)."""
+    groups: dict[str, list[int]] = {}
+    for pr, files in pr_files.items():
+        groups.setdefault(dominant_area(files), []).append(pr)
+    for prs in groups.values():
+        prs.sort(reverse=True)
+    return groups
+
+
+def render_theme_skeleton(
+    groups: dict[str, list[int]],
+    pr_files: dict[int, list[str]],
+) -> str:
+    """A draft grouped-entry skeleton the pass edits (not the final prose).
+
+    One bullet per area (ordered by ``AREA_PREFIXES`` specificity), naming the
+    band PRs in that area and a sample of the touched paths, so the pass starts
+    from "what each opaque merge-commit PR did" instead of reconstructing it cold.
+    """
+    if not groups:
+        return "_(no merged PRs in this band)_"
+    ordered = sorted(
+        groups.items(),
+        key=lambda kv: _AREA_ORDER.get(kv[0], len(AREA_PREFIXES)),
+    )
+    lines = [
+        "> Draft skeleton — edit into Recently-shipped prose; not the final entry.",
+        "",
+    ]
+    for area, prs in ordered:
+        refs = " · ".join(f"#{n}" for n in prs)
+        all_files = [f for n in prs for f in pr_files.get(n, [])]
+        # Prefer the signal files (skip session cards / tests / generated artifacts);
+        # fall back to all files when a PR touched only noise (e.g. an auto-refresh PR).
+        sample: list[str] = []
+        for f in all_files:
+            if (
+                f not in sample
+                and not f.startswith(_NOISE_PREFIXES)
+                and f not in _NOISE_FILES
+            ):
+                sample.append(f)
+        if not sample:
+            for f in all_files:
+                if f not in sample:
+                    sample.append(f)
+        shown = ", ".join(sample[:4]) or "(no files)"
+        more = f" (+{len(sample) - 4} more)" if len(sample) > 4 else ""
+        lines.append(f"- **{area}** ({refs}) — _theme?_ · touched: {shown}{more}")
+    return "\n".join(lines)
+
+
+def git_merged_pr_shas(limit: int = 240) -> dict[int, str]:
+    """``{pr_number: commit_sha}`` for recent merges on origin/main (newest wins)."""
+    try:
+        result = subprocess.run(
+            ["git", "log", "origin/main", "--pretty=format:%H%x09%s", "-n", str(limit)],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+    except OSError:
+        return {}
+    if result.returncode != 0:
+        return {}
+    mapping: dict[int, str] = {}
+    for line in result.stdout.splitlines():
+        sha, _, subject = line.partition("\t")
+        match = _MERGE_SUBJECT_RE.search(subject)
+        if match:
+            mapping.setdefault(int(match.group(1)), sha.strip())
+    return mapping
+
+
+def pr_changed_files(sha: str) -> list[str]:
+    """Files a commit changed via its first parent (``<sha>^..<sha>``).
+
+    First-parent works for both a merge commit (the branch's net diff) and a
+    squash commit (that commit's own diff). A root/parentless commit → ``[]``.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", f"{sha}^..{sha}"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+    except OSError:
+        return []
+    if result.returncode != 0:
+        return []
+    return [ln.strip() for ln in result.stdout.splitlines() if ln.strip()]
 
 
 def classify_band(
@@ -241,6 +416,50 @@ def _render_table(rows: list[tuple[int, str, str]]) -> str:
     return "\n".join(lines)
 
 
+def _run_themes(marker: int, *, limit: int, as_json: bool) -> int:
+    """The ``--themes`` path: bucket the band's merged PRs by touched area.
+
+    Git is the only source needed here (merge SHAs + per-PR file lists), so this
+    works in the routine container with no ``gh``/token, unlike the status path's
+    closed-vs-open split.
+    """
+    shas = git_merged_pr_shas(limit=max(limit, 240))
+    band = {n: sha for n, sha in shas.items() if n > marker}
+    pr_files = {n: pr_changed_files(sha) for n, sha in band.items()}
+    groups = group_by_theme(pr_files)
+
+    if as_json:
+        print(
+            json.dumps(
+                {
+                    "marker": marker,
+                    "groups": {
+                        area: prs
+                        for area, prs in sorted(
+                            groups.items(),
+                            key=lambda kv: _AREA_ORDER.get(kv[0], len(AREA_PREFIXES)),
+                        )
+                    },
+                    "pr_files": {
+                        str(n): files for n, files in sorted(pr_files.items())
+                    },
+                },
+            ),
+        )
+        return 0
+
+    print(
+        f"Band themes — {len(band)} merged PR(s) newer than marker #{marker}, "
+        f"bucketed by touched area:\n",
+    )
+    print(render_theme_skeleton(groups, pr_files))
+    print(
+        "\n(Advisory — exit 0; a starting skeleton to edit into Recently-shipped "
+        "prose, not the final entry.)",
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="band PR merge-status classifier.")
     parser.add_argument(
@@ -250,6 +469,11 @@ def main(argv: list[str] | None = None) -> int:
         help="lower-bound PR number (default: the current-state.md reconciliation marker)",
     )
     parser.add_argument("--json", action="store_true", help="machine-readable output")
+    parser.add_argument(
+        "--themes",
+        action="store_true",
+        help="draft a grouped-entry skeleton (merged PRs bucketed by touched area)",
+    )
     parser.add_argument(
         "--limit",
         type=int,
@@ -269,6 +493,9 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(f"band_pr_status: {msg}")
         return 0
+
+    if args.themes:
+        return _run_themes(marker, limit=args.limit, as_json=args.json)
 
     merged_on_main = git_merged_pr_map(limit=max(args.limit, 240))
     prs, source = fetch_prs(args.limit)
