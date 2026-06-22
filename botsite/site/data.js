@@ -2813,8 +2813,8 @@ const COMMANDS = [
     "name": "mine",
     "area": "economy",
     "status": "in-progress",
-    "summary": "Start mining with interactive buttons.",
-    "description": "Start mining with interactive buttons.",
+    "summary": "Open the grid Mine navigator — roam the world and dig.",
+    "description": "Open the grid Mine navigator — roam the world and dig.",
     "usage": "!mine",
     "aliases": [],
     "permissions": "anyone",
@@ -2888,6 +2888,30 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      },
+      {
+        "status": "idea",
+        "title": "Mining & Exploration — Brainstorm & Roadmap"
+      }
+    ]
+  },
+  {
+    "name": "mineworld",
+    "area": "economy",
+    "status": "in-progress",
+    "summary": "Show this server's mining world seed; admins reseed (`!mineworld 12345`).",
+    "description": "Show this server's mining world seed; admins reseed (!mineworld 12345).",
+    "usage": "!mineworld",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!mineworld 12345"
+    ],
     "planned": [
       {
         "status": "idea",
@@ -5816,7 +5840,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "9b9df82d",
+    "build": "0f51c31",
     "title": "New public bot website",
     "changes": [
       {
@@ -5828,7 +5852,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "9b9df82d",
+    "build": "0f51c31",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5840,7 +5864,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "9b9df82d",
+    "build": "0f51c31",
     "title": "Command-alias suggestions",
     "changes": [
       {

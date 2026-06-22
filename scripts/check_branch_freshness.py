@@ -11,10 +11,17 @@ Provenance / reliability header (per CLAUDE.md Q-0105 adopt-with-kill-switch):
   sessions before fully trusting it. **Delete this hook if it proves noisy/unreliable over
   multiple sessions** (remove the two settings.json entries + this file); it is a disposable
   convenience guard, not load-bearing.
+- Extended: 2026-06-22 (owner-directed in-session, Q-0194). The PreToolUse trigger now also
+  fires on ``git commit``/``merge``/``rebase`` with a **network-free** branch guard
+  (detached-HEAD / on-main / behind-origin-main), so a *wrong-branch* state is loud at the
+  dangerous moment — the slip that landed a ``git merge origin/main`` on an already-merged
+  branch when a piped ``git checkout``'s failure was masked. Same kill-switch as above.
 
 Trigger modes:
-- ``--event pretooluse`` (exit 0): wired on Bash. Reads the hook JSON on stdin; acts only when
-  the command is a ``git push``. The "about to ship" moment.
+- ``--event pretooluse`` (exit 0): wired on Bash. Reads the hook JSON on stdin. On ``git push``
+  it runs the authoritative network freshness check (the "about to ship" moment); on
+  ``git commit``/``merge``/``rebase`` it runs the cheap, network-free ``_branch_guard_line``
+  (wrong-branch / unsynced slip); any other command is a no-op (zero overhead).
 - ``--event stop`` (exit 0): wired on Stop. Ignores stdin; checks the current branch on every
   turn, so a branch that fell behind *after* its last push gets flagged next turn (the #857 case).
 - ``--event sessionstart`` (exit 1 when behind, else 0): called by ``claude_session_summary.py``
@@ -62,20 +69,79 @@ def _git(*args: str, timeout: int = 15) -> str:
         return ""
 
 
-def _is_git_push(stdin_text: str) -> bool:
-    """True if the PreToolUse payload is a ``git push`` Bash command."""
+# State-changing git ops the PreToolUse hook reacts to. ``push`` is the authoritative
+# "about to ship" moment (worth a network fetch); commit/merge/rebase get a cheap,
+# network-free branch guard (the wrong-branch / spent-branch slip).
+_STATE_CHANGING_OPS = ("commit", "merge", "rebase")
+
+
+def _state_changing_git_op(stdin_text: str) -> str | None:
+    """Return the state-changing git subcommand in a PreToolUse Bash payload, else None.
+
+    ``push`` wins over the others — a ``… && git push`` chain is the ship moment even when it
+    also commits — so it is checked across *all* segments first; otherwise the first
+    commit/merge/rebase segment is returned. Matches chained commands (``a && git merge``).
+    """
     try:
         payload = json.loads(stdin_text)
     except (ValueError, TypeError):
-        return False
+        return None
     if payload.get("tool_name") != "Bash":
-        return False
+        return None
     command = str(payload.get("tool_input", {}).get("command", ""))
-    # Match `git push` even when chained (`a && git push ...`) or flagged.
-    return any(
-        seg.strip().startswith("git push")
-        for seg in command.replace("&&", ";").replace("|", ";").split(";")
-    )
+    segs = [
+        seg.strip()
+        for seg in command.replace("&&", ";")
+        .replace("||", ";")
+        .replace("|", ";")
+        .split(";")
+    ]
+    if any(seg.startswith("git push") for seg in segs):
+        return "push"
+    for seg in segs:
+        for op in _STATE_CHANGING_OPS:
+            if seg.startswith(f"git {op}"):
+                return op
+    return None
+
+
+def _is_git_push(stdin_text: str) -> bool:
+    """True if the PreToolUse payload is (or chains) a ``git push`` Bash command."""
+    return _state_changing_git_op(stdin_text) == "push"
+
+
+def _branch_guard_line() -> str | None:
+    """Network-free guard surfaced before a ``git commit``/``merge``/``rebase``.
+
+    Catches the *wrong-branch* / *unsynced* slip — where a silently-failed
+    ``git checkout``/``switch`` leaves you on a spent or stale branch and the next
+    state-changing op lands on it (the 2026-06-22 incident: a ``git merge origin/main`` ran on
+    an already-merged branch because a piped checkout's failure was masked). Local refs only —
+    no fetch, so it never adds latency to the frequent commit path; ``git push`` keeps the
+    authoritative network freshness check.
+    """
+    branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+    if not branch:
+        return None
+    if branch == "HEAD":
+        return (
+            "⚠️  state-changing git op in DETACHED HEAD — you are not on a branch (a prior "
+            "checkout/switch may have silently failed). Check out your intended branch and "
+            "confirm `git branch --show-current` before committing/merging."
+        )
+    if branch == "main":
+        return (
+            "⚠️  you are on `main` — branch first "
+            "(`git checkout -b <slug> origin/main`) before committing PR work."
+        )
+    behind = _git("rev-list", "--count", "HEAD..origin/main")  # local ref, no fetch
+    if behind and behind != "0":
+        return (
+            f"⎇  on '{branch}' — {behind} behind origin/main (local view). If this is not the "
+            "branch you meant to be on, or it is already merged, sync before PR work: "
+            "`git fetch origin main && git checkout -b <slug> origin/main`."
+        )
+    return None
 
 
 def _freshness_warning() -> str | None:
@@ -157,10 +223,17 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.event == "pretooluse":
-            # Only the "about to push" case warrants the network round-trip.
             stdin_text = sys.stdin.read() if not sys.stdin.isatty() else ""
-            if not _is_git_push(stdin_text):
+            op = _state_changing_git_op(stdin_text)
+            if op is None:
+                return 0  # not a state-changing git op → zero overhead
+            if op != "push":
+                # commit/merge/rebase → cheap, network-free wrong-branch guard.
+                line = _branch_guard_line()
+                if line:
+                    print(line, file=sys.stderr)
                 return 0
+            # op == "push" → fall through to the authoritative network freshness check.
         warning = _freshness_warning()
         if warning:
             # stderr so it surfaces in the transcript without being parsed as tool output.

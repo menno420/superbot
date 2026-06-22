@@ -7,9 +7,9 @@ state. This violated the architecture rule that root panels must not
 show no-op Overview controls.
 
 This test pins the post-PR-#1 contract: the root MiningHubView has
-no button with ``custom_id="mining:overview"``. Mining child / result
-screens (e.g. ``_MineResultsView`` in ``views.mining.mine_view``) may
-still expose their own "↩ Mining Menu" return path — those are
+no button with ``custom_id="mining:overview"``. Mining child screens
+(e.g. ``MineGridView`` in ``views.mining.grid_mine_view``) may still
+expose their own "↩ Mining Menu" return path — those are
 parent-navigation buttons, not no-op self-refreshes.
 """
 

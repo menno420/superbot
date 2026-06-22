@@ -188,10 +188,26 @@ on **Q-0182**.
   🧍 Character · 🧰 Gear · 🔨 Workshop); a **Character** sub-hub (`views/mining/character_hub.py`)
   groups Overview/Inventory/Stats/Skills/Vault/Home and an **Explore** stub sub-hub
   (`views/mining/explore_hub.py`) previews the open-world explorer (Fishing/Roam/Quests — early).
-  Descend/Ascend + the depth-event explore folded into the Mine action (`MineView`). **PR3 (grid Mine)
-  is owner-sign-off-gated, not built.**
+  **PR3 (grid Mine) shipped (2026-06-22, #1281):** the Mine action is now a (x, y, z) grid navigator
+  (`views/mining/grid_mine_view.py` `MineGridView`) over a **seed-deterministic procedural world**
+  (pure `utils/mining/grid.py`; z = the existing depth band, so `utils/mining/world.py` balance carries
+  over), with **per-guild shareable seed** + **fog-of-war discovery** (migration 085: `pos_x`/`pos_y` +
+  `mining_world` + `mining_discovered`; `utils/db/games/mining_grid.py` on the RS02 seam). `!mine` opens
+  it; `!mineworld` shows/reseeds the shared seed. It **replaced** the interim linear `MineView`. v1 is
+  **encounter-free** (owner Q-0173: encounters are a deferred later session →
+  [`../ideas/mining-grid-encounters-2026-06-22.md`](../ideas/mining-grid-encounters-2026-06-22.md)).
+  **Dig IS movement (owner correction, 2026-06-22):** the navigator is **six directional dig buttons**
+  — each dig moves you into the adjacent cell **and** mines it (`mining_workflow.dig(direction)`, one
+  transaction: move + loot + fog-mark + wear + the down-dig depth-record bonus); no separate move /
+  "Mine here".
 - [games-economy-faucet-sink-diagnostic-plan](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) —
   read-only economy faucet/sink read model (turn-key).
+- [mining-economy-balance-2026-06-22](../planning/mining-economy-balance-2026-06-22.md) — **sim-pinned
+  rebalance numbers** for the live grid-Mine faucet (owner: "rewards too large & too frequent"). The
+  simulator (`tools/game_sim/mining_economy_sim.py`) quantifies the live faucet at ~7–55× a `!daily`/hr
+  and recommends a config (frequency brake + smaller base roll + flatter tool curve + 12% bonanza) that
+  lands every player at ~1–3 dailies/active-hr. Design record — owner approves + picks the frequency
+  mechanic (energy vs cooldown) before any runtime edit.
 - *Shipped → `historical`:* [mining-structures-skill-tree-plan](../planning/mining-structures-skill-tree-plan-2026-06-14.md)
   (every slice landed) · [games-wager-money-safety-plan](../planning/games-wager-money-safety-plan-2026-06-12.md) (#748).
 

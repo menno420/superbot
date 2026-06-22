@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T03:11:21Z",
+    "generated_at": "2026-06-22T10:27:23Z",
     "build": {
-      "commit": "9b9df82d",
-      "subject": "BUG-0023 slash-scan coverage: born-red session card + lane claim",
-      "committed_at": "2026-06-22T03:11:21Z"
+      "commit": "0f51c31",
+      "subject": "chore(mining): open grid-Mine session (hub-redesign PR 3, born-red)",
+      "committed_at": "2026-06-22T10:27:23Z"
     }
   },
   "counts": {
-    "commands": 368,
+    "commands": 369,
     "features": 37,
     "games": 9
   },
@@ -2663,8 +2663,8 @@
       "category": "economy",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Start mining with interactive buttons.",
-      "description": "Start mining with interactive buttons.",
+      "usage": "Open the grid Mine navigator — roam the world and dig.",
+      "description": "Open the grid Mine navigator — roam the world and dig.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -2738,6 +2738,31 @@
       "description": "Shows your total mining items and number of unique items.",
       "use_cases": null,
       "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        },
+        {
+          "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "mineworld",
+      "aliases": [],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show this server's mining world seed; admins reseed (`!mineworld 12345`).",
+      "description": "Show this server's mining world seed; admins reseed (!mineworld 12345).",
+      "use_cases": null,
+      "examples": [
+        "!mineworld 12345"
+      ],
       "status": "in-progress",
       "linked_ideas": [
         {

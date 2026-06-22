@@ -40,6 +40,18 @@ anchor, so any two concurrently-open PRs collided there (it bit #529→#530 and
      → the log's **Flagged for maintainer** / known-limits line.
   6. **What one docs/tooling change would have most helped this session?**
      → execute it in the grooming pass if small, else file it under `docs/ideas/`.
+  7. **What interrupted your workflow — and did you ship a guard so the next session can't
+     hit it?** A footgun, a silently-failed command, a stale/wrong-state trap, a manual
+     fixup you had to repeat, anything that cost recovery time. **The reflex: don't just note
+     it — convert it into the cheapest *durable, enforcing* prevention,** and do it *this*
+     session (that's the "enforce, don't exhort" rule — a prose reminder is the weakest
+     option). Prefer, in order: **a checker / CI guard / test** that fails on the bad state →
+     **a hook** (`scripts/*` + `.claude/settings.json`) → **a journal Rule** as the last
+     resort. Route by ownership: a docs/journal/test/checker guard is **free to ship now**; a
+     **hook / `.claude/settings.json` / binding-`CLAUDE.md` rule** is **owner-gated** — build
+     it if the owner directed it in-session (Q-0106), else propose it as a router DISCUSS Q.
+     → the log's **`🛠 Friction → guard`** line (name the friction + the guard you shipped or
+     proposed; `none` only if the run genuinely hit no friction — never invent one).
   Answer honestly and specifically — a near-miss is more valuable written down than a
   success story. A periodic REVIEW (`.session-journal.md`) mines these deltas and
   promotes recurring gaps into the orientation route / folios. Keep it to what you'd

@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`ci-dropped-synchronize-auto-retrigger-2026-06-22.md`](./ci-dropped-synchronize-auto-retrigger-2026-06-22.md) —
+  **owner-endorsed (2026-06-22, surfaced diagnosing PR #1283's stuck Code Quality):** GitHub sometimes
+  **drops the `pull_request: synchronize` event**, so a PR head gets no `code-quality` run and
+  auto-merge stalls silently (no run = no failure webhook). A scheduled watcher re-kicks the check
+  (empty commit / re-request) when a `claude/*` head has no run after N min — automating the manual
+  empty-commit remedy. The *last* strand of "CI didn't run on my latest commit" (cancellation =
+  fixed #1275; dropped delivery = this). Sector S5/S3. → relates `.github/workflows/code-quality.yml` ·
+  `scripts/check_loop_health.py` · #1275.
 - [`project-moon-wiki-knowledge-domain-2026-06-21.md`](./project-moon-wiki-knowledge-domain-2026-06-21.md) —
   **owner-dropped feasibility finding (2026-06-21):** bring the **Project Moon wiki** (Lobotomy Corp /
   Library of Ruina / Limbus Company) into the bot "in one area," the way BTD6 data is available today.
@@ -131,6 +139,12 @@ Current broad captures:
   non-bot messages accrue a per-channel counter → the bot spawns a Claim-button encounter → first valid
   claimer gets a reward routed through `economy`/`game_xp`/inventory. The **one Pokétwo mechanic with no
   analog** (fishing/mining are command-only); net-new, ungated, anti-P2W, docks into the Explore world hub.
+- [`mining-grid-encounters-2026-06-22.md`](./mining-grid-encounters-2026-06-22.md) —
+  **owner-named follow-up to the grid Mine (Q-0173):** the grid Mine (hub-redesign PR 3) shipped
+  encounter-free by decision; this captures the deferred **depth-gated, sparse** random encounters while
+  roaming the grid ("after a certain depth … but not too many"), routed through `mining_workflow` (RS02).
+  Distinct from wild-encounters (exploration-triggered vs. chat-activity-triggered) but could share one
+  resolution engine. → relates `planning/mining-hub-redesign-2026-06-15` · Q-0173 · Q-0087.
   **SPEC'D → plan (Lane A):** [`planning/poketwo-musicbot-feature-mapping-plan-2026-06-20`](../planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md);
   build sequence + spawn design routed as **Q-0186**. → relates `planning/{explore-hub-federated-world-plan,fishing-open-world-expansion}`.
 - [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) — **SHIPPED 2026-06-20 (PR #1174).**

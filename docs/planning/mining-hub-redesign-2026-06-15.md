@@ -42,6 +42,10 @@ The Mine action gains **6 movement buttons** so the player roams and discovers a
 this **replaces** the old linear Descend/Ascend.
 
 - Movement: `⬆️ North` · `⬇️ South` · `⬅️ West` · `➡️ East` · `🔼 Up` · `🔽 Down` + `⛏️ Mine here`.
+  **Refined post-build (owner, in-chat 2026-06-22): mining IS movement** — there is no separate
+  move vs. Mine-here; each *directional dig* moves you one cell into it and mines it (dig down →
+  descend a cell, dig north → tunnel north). The six buttons are directional digs; "Mine here" is
+  dropped. Shipped that way in the PR-3 follow-up below.
 - **Proposed v1 (awaiting owner confirm):** a finite grid per depth level — N/S/E/W roam the
   current level (each cell rolls its own resource odds + occasional event/treasure, revealed on
   visit = light fog-of-war); Up/Down change depth (old `0–3` becomes the z-axis, still gated by
@@ -81,9 +85,23 @@ this **replaces** the old linear Descend/Ascend.
    sub-hub (it personalizes the Character card; the plan list predated #910); (b) the main hub's
    new 🗺️ Explore (open-world stub, `custom_id mining:explore_hub`) is a *different concept*
    from the depth-event explore that folded into Mine — routing documented in PR #1131.
-3. **PR 3 — grid Mine** (new mechanic): the (x,y,z) world model + 6-direction movement +
-   discovery. Needs the v1 sign-off above first.
-4. **Later — open-world Explore**: fishing / quests / roam — own design pass.
+3. **PR 3 — grid Mine** ✅ **SHIPPED (#1281, 2026-06-22)**: the (x,y,z) seed-deterministic world +
+   fog-of-war discovery. Pure `utils/mining/grid.py` (`cell_at` + map render); migration 085
+   (`pos_x`/`pos_y` on `mining_player_state` [z = the existing `depth`] + `mining_world` per-guild
+   seed + `mining_discovered` fog of war); `utils/db/games/mining_grid.py` on the RS02 boundary
+   ratchet; `views/mining/grid_mine_view.py` (`MineGridView`) replacing the interim linear
+   `MineView`; `!mine` opens it + `!mineworld` shows/reseeds the shared seed. **v1 is
+   encounter-free** (owner: encounters are a separate later session — captured below).
+   - **PR 3 follow-up — dig IS movement** ✅ **SHIPPED (2026-06-22, owner correction)**: replaced the
+     separate move + `Mine here` with one `mining_workflow.dig(direction)` — each directional dig moves
+     you into the adjacent cell **and** mines it (the navigator is six directional dig buttons, no
+     Mine-here). Atomic move + loot + fog-mark + wear + the down-dig depth-record bonus.
+4. **Later — encounters** (owner-wanted, own session): depth-gated, *sparse* random encounters
+   on top of the grid (the owner's shape — "after a certain depth you can get random
+   encounters, but not too many"). Captured in
+   [`../ideas/mining-grid-encounters-2026-06-22.md`](../ideas/mining-grid-encounters-2026-06-22.md).
+5. **Later — open-world Explore**: fishing / quests / roam — own design pass (the main-hub
+   🗺️ Explore now forwards to the federated world hub).
 
 ## Source anchors
 

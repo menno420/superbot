@@ -122,6 +122,14 @@ from utils.db.games.mining_gear_wear import (
     get_gear_wear,
     set_gear_wear,
 )
+from utils.db.games.mining_grid import (
+    get_discovered_window,
+    get_position,
+    get_world_seed,
+    mark_discovered,
+    set_position,
+    set_world_seed,
+)
 from utils.db.games.mining_player_state import (
     get_depth,
     get_equipped_title,
@@ -373,4 +381,11 @@ __all__ = [
     "get_gear_wear",
     "set_gear_wear",
     "clear_gear_wear",
+    # mining grid (lateral position · per-guild seed · fog of war)
+    "get_position",
+    "set_position",
+    "get_world_seed",
+    "set_world_seed",
+    "mark_discovered",
+    "get_discovered_window",
 ]

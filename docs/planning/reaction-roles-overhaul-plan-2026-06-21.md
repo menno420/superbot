@@ -19,7 +19,7 @@
 > originally pencilled PR 4 = migration 079; PR 3 needed a per-message mode table, so the real
 > assignment is 079 (modes) / 080 (grants) / 081 (pickups) — numbers are sequential, the shapes are as
 > specified. **PR 6 BUILT (2026-06-22, ⚑ self-initiated — `needs-hermes-review`, auto-merge OFF):**
-> optional PIL banner cards (§4.6d). Migration **085** (`role_menus.card_template` + `card_text`, both
+> optional PIL banner cards (§4.6d). Migration **086** (`role_menus.card_template` + `card_text`, both
 > nullable → existing menus byte-identical), `utils/role_menu_render.render_role_menu_card` (the
 > `welcome_render` sibling: lazy PIL, `bytes | None` graceful fallback, no network), a `CardTemplate`
 > preset catalogue (banner/gradient/minimal/spotlight) in `role_menu_presentation`, db+service

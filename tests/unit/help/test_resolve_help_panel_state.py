@@ -3,7 +3,7 @@
 S3: the helper now returns a :class:`HelpCategoryView` — the new
 mother-hub category index — instead of the legacy paginated
 :class:`HelpPanelView`. Callers (``admin_cog.help_btn``,
-``mine_view._MineResultsView.help_btn``) edit the message with the
+``grid_mine_view.MineGridView.help_btn``) edit the message with the
 returned ``(embed, view)`` pair; they don't care which class the
 view is, only that it represents the top of Help.
 
@@ -124,7 +124,7 @@ async def test_admin_tier_yields_category_view_with_admin_options():
 @pytest.mark.asyncio
 async def test_governance_exception_propagates_to_caller():
     """The helper does NOT swallow governance failures. Each caller
-    (admin_cog, mine_view) wraps the call in its own try/except to
+    (admin_cog, grid_mine_view) wraps the call in its own try/except to
     render a contextual orange embed."""
     interaction = _interaction()
     with patch(

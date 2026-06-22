@@ -1,21 +1,21 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T05:25:56Z",
+    "generated_at": "2026-06-22T14:18:00Z",
     "build": {
-      "commit": "b6ebf90b",
-      "subject": "Merge pull request #1272 from menno420/claude/funny-franklin-mjvqrx",
-      "committed_at": "2026-06-22T05:25:56Z"
+      "commit": "70e3c472",
+      "subject": "Merge pull request #1284 from menno420/claude/sweet-sagan-jeyjsy",
+      "committed_at": "2026-06-22T14:18:00Z"
     },
     "counts": {
       "functions": 37,
-      "ideas": 116,
+      "ideas": 117,
       "bugs": 23,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
       "cogs": 47,
-      "commands": 368,
+      "commands": 369,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -996,6 +996,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "mining-grid-encounters-2026-06-22.md",
+      "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "Layer **sparse, depth-gated random encounters** onto the shipped grid-Mine navigator",
+      "subsystems": null
+    },
     {
       "file": "band-pr-status-author-classifier-2026-06-21.md",
       "title": "Idea — `band_pr_status --themes`: draft grouped-entry skeleton from touched paths",
@@ -2140,6 +2148,62 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-repo-navigation-cleanup.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Repo navigation cleanup: stale claims + conflicting instructions",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-remove-false-ci-synchronize-claim.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Remove the disproven \"synchronize doesn't re-fire CI\" claim",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-mining-grid-mine.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Mining grid Mine (hub-redesign PR 3)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-mining-economy-sim.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Mining economy / balance simulation",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-mining-dig-moves.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Mining grid: dig-moves-you (unified mine+move)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-friction-to-guard-reflex.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Wrong-branch guard hook + the \"friction → guard\" self-prevention reflex",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-ci-strand-cancel-in-progress.md",
+      "date": "2026-06-22",
+      "title": "Session — CI strand root cause: code-quality cancel-in-progress (2026-06-22)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-bug0023-slash-scan-coverage.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — BUG-0023 root fix: scanner discovers `app_commands.Group` attribute slash commands",
@@ -2154,6 +2218,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-allowlist-curl-network-probe.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Allow read-only network probes (curl) + claim-ledger drift prune",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
     },
     {
       "file": "2026-06-21-website-count-and-pin-fixes.md",
@@ -2546,70 +2618,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-btd6-buff-uptime-alch-speed.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — BTD6 buff-uptime: model attack-speed buffs on the Alchemist",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-allow-force-with-lease.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Allow `git push --force-with-lease` + `cd` in permission allowlist",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-world-registry-parity-invariant.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Explore world-registry parity invariant + folio docs",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-website-spa-wire.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Wire the Claude-designed SPA into the bot site (live data)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-website-explainer-doc.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Plain-language website explainer doc (owner-requested)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-20-status-move-decision.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Status-move decision: self-buffs for v1 (+ expansion direction)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-sessionstart-branch-freshness-warning.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — SessionStart branch-freshness warning (stop the stale-branch foot-gun at restart)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-reconciliation-tooling-guards.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — Reconciliation-tooling guards: band PR status classifier + Recently-shipped trim actuator",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -6246,7 +6254,7 @@
           "is_group": false,
           "parent": null,
           "aliases": [],
-          "brief": "Start mining with interactive buttons.",
+          "brief": "Open the grid Mine navigator — roam the world and dig.",
           "classification": "",
           "has_panel": true,
           "button_backed": true
@@ -6282,6 +6290,17 @@
           "parent": null,
           "aliases": [],
           "brief": "Shows your total mining items and number of unique items.",
+          "classification": "panel_action",
+          "has_panel": false,
+          "button_backed": true
+        },
+        {
+          "name": "mineworld",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show this server's mining world seed; admins reseed (`!mineworld 12345`).",
           "classification": "panel_action",
           "has_panel": false,
           "button_backed": true
