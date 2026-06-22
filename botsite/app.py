@@ -155,22 +155,7 @@ def site_data_json() -> Response:
     ``/data.js``; ``botsite`` never imports ``disbot``.
     """
     site = data_loader.load_site_data()
-    proto = site_data.build_prototype_data(site)
-    meta = (site.get("meta") or {}).get("build") or {}
-    payload = {
-        "addUrl": chrome.ADD_TO_DISCORD_URL,
-        "build": {
-            "commit": meta.get("commit") or "",
-            "committedAt": meta.get("committed_at") or "",
-            "subject": meta.get("subject") or "",
-        },
-        "counts": site.get("counts") or {},
-        "areas": proto["areas"],
-        "commands": proto["commands"],
-        "games": proto["games"],
-        "changelog": proto["changelog"],
-        "status": proto["status"],
-    }
+    payload = site_data.build_site_data_payload(site, chrome.ADD_TO_DISCORD_URL)
     return Response(
         content=json.dumps(payload, ensure_ascii=False),
         media_type="application/json",

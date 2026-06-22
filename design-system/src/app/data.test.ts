@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import { describe, it, expect } from "vitest";
 
 import {
@@ -94,6 +97,46 @@ describe("data adapter — sample → valid page props", () => {
     const p = toStatusProps(data);
     expect(p.build?.subject).toBe("sample");
     expect(p.counts?.games).toBe(9);
+  });
+});
+
+// The top-level keys the adapter (data.ts) actually reads off the payload. If you
+// teach the adapter to read a new top-level key, add it here AND to the contract —
+// the test below fails otherwise, which is the point (the design↔data seam guard).
+const ADAPTER_CONSUMED_TOP_LEVEL = [
+  "addUrl",
+  "build",
+  "counts",
+  "areas",
+  "commands",
+  "games",
+  "changelog",
+] as const;
+
+describe("design↔data contract (shared with the Python producer)", () => {
+  // The ONE source of truth — the same file botsite/site_data.validate_site_data_payload
+  // checks the producer against. Read across packages on purpose: the contract spans
+  // the botsite (producer) ↔ design-system (consumer) seam.
+  const contractUrl = new URL(
+    "../../../botsite/data/site_data_contract.json",
+    import.meta.url,
+  );
+  const contract = JSON.parse(
+    readFileSync(fileURLToPath(contractUrl), "utf-8"),
+  ) as { top_level: string[] };
+
+  it("the adapter never reads a top-level key the contract doesn't promise", () => {
+    for (const key of ADAPTER_CONSUMED_TOP_LEVEL) {
+      expect(contract.top_level).toContain(key);
+    }
+  });
+
+  it("the bundled sample satisfies the contract's top-level keys", () => {
+    // The offline fallback must itself be contract-valid (it stands in for the real
+    // payload), so a contract change that the sample misses is caught here too.
+    for (const key of ADAPTER_CONSUMED_TOP_LEVEL) {
+      expect(SAMPLE_SITE_DATA).toHaveProperty(key);
+    }
   });
 });
 

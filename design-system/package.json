@@ -38,6 +38,7 @@
   "devDependencies": {
     "@storybook/react": "^10.4.6",
     "@storybook/react-vite": "^10.4.6",
+    "@types/node": "^22.20.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.0.2",
