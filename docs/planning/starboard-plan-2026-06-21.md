@@ -5,12 +5,18 @@
 > **⚑ Self-initiated** (Q-0172): promoted from idea B1 after the reaction-roles arc hardened the
 > raw-reaction seam this reuses. Not yet owner-reviewed — greenlight or redirect before/at build.
 >
-> **▶ Build progress (2026-06-21):** **PR 1 in flight (#1259)** — migration 083 (`starboard_settings`
+> **▶ Build progress:** **PR 1 MERGED (#1259, 2026-06-21)** — migration 083 (`starboard_settings`
 > + `starboard_entries`) + `utils/db/starboard` + audited `services.starboard_service`
 > (`configure`/`disable` + `handle_star_change`) + `cogs/starboard_cog` (raw-reaction listener +
-> `!starboard` config group) + `bot1` registration + `guild_lifecycle` teardown. v1 keeps it lean;
-> self-star/ignore-channels/XP/panel deferred to **PR 2** (§6). Emoji defaults to ⭐ (configurable
-> column present; the §8 fixed-vs-configurable Q resolved as "configurable column, ⭐ default, UI in PR 2").
+> `!starboard` config group) + `bot1` registration + `guild_lifecycle` teardown.
+> **PR 2 shipped (2026-06-22, dispatch routine) — the config/correctness/UX subset of §6:**
+> migration 084 (`self_star` column + `starboard_ignore_channels` table); **self-star exclusion** (the
+> author's own ⭐ is discounted unless opted in — `handle_star_change(author_starred=…)` policy in the
+> service, the reactor-membership fact in the cog); **ignore-channels** (per-guild list, listener gate +
+> audited add/remove + `!starboard ignore/unignore`); a **`BaseView` config panel**
+> (`views/starboard/config_panel.py`, opened by `!starboard panel` — channel/threshold/self-star/ignore
+> all editable). **The optional XP bonus is deferred** (it couples the starboard to the economy and
+> invites star-farming → wants owner input). Emoji stays ⭐-default with a configurable column (§8).
 
 ## 1. Why
 
@@ -99,8 +105,11 @@ teardown in `guild_lifecycle.py` (INV-I), mirroring `_teardown_role_menus`.
 - **PR 1 — foundation + working v1:** migration + `utils/db/starboard.py` + `starboard_service` +
   `starboard_cog` (listener + minimal `!starboard` config) + wiring + teardown + tests. Ships a
   working starboard.
-- **PR 2 (optional) — polish:** a `BaseView` config panel in the admin hub, optional small XP bonus to
-  the author (reuse `game_xp`/award seam), per-guild custom emoji UI, "ignore channels" list.
+- **PR 2 — polish (SHIPPED 2026-06-22, dispatch):** `self_star` exclusion + ignore-channels list + a
+  `BaseView` config panel (`!starboard panel`). **Deferred follow-up (PR 3, owner-gated):** the optional
+  XP bonus to the starred author — it couples the starboard to the game economy and invites star-farming,
+  so the reward economics want an owner decision before it ships (per-guild custom-emoji *UI* can ride the
+  same follow-up; the emoji *column* already exists).
 
 ## 7. Verification (before each PR)
 

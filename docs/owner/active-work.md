@@ -25,58 +25,16 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — attack-speed buffs on the alch** (owner-chosen) — `buff_uptime(alch_speed=…)` resolves Jungle Drums/Monkey Boost/Overclock → cooldown multiplier (grounded; no decode needed) → rebuffBlockTime binds · `btd6_upgrade_detail_service` / `ai_tools` · 2026-06-21 · **PR (this session, auto-merge on green)**
+- `claude/funny-franklin-m4ocsx` · **Starboard PR 2 — config panel + polish** (dispatch routine,
+  band-#1260 queue B1; builds on the freshly-merged #1259) — `self_star` exclusion (correctness) +
+  ignore-channels list (feature) + a `BaseView` admin-hub config panel (UX); the optional XP bonus is
+  deferred (economy/star-farming risk → wants owner input) · `disbot/migrations/084_*` /
+  `utils/db/starboard.py` / `services/starboard_service.py` / `cogs/starboard_cog.py` /
+  `disbot/views/…` · 2026-06-22 · **PR (this session, auto-merge on green)**
 
-- `claude/modest-gates-0ble76` · **PR-mergeability: trust the git check, not GitHub `mergeable_state`**
-  (owner-directed — the #1256 false-dirty finding) — `scripts/check_pr_mergeable.py` (git-based, reuses
-  `git_merge_state.py`) + journal note + tighten `pr-conflict-guard` schedule backstop ·
-  `scripts/check_pr_mergeable.py` / `.session-journal.md` / `.github/workflows/pr-conflict-guard.yml`
-  · 2026-06-21 · **PR #1260 (reopened to land — auto-merge on green)**
-- `claude/modest-gates-0ble76` · **dashboard auto-PR conflict root cause** (owner-directed autonomous) —
-  fix the volatile-metadata anti-pattern behind #1261's real conflict: deterministic `generated_at` +
-  refresh-workflow self-heal + pr-auto-update header fix + findings doc · `scripts/export_dashboard_data.py`
-  / `.github/workflows/dashboard-data-refresh.yml` / `.github/workflows/pr-auto-update.yml` / `docs/audits/`
-  · 2026-06-21 · **PR (this session, auto-merge on green)**
-
-- `claude/peaceful-mayer-rgc20t` · **BTD6 same-version data-drift reminder** (completes #1255) — sha-based `content_drift()` surfaced at boot + `!btd6 status` so a same-version data edit reminds the operator to `seed-data` (warn-only, honors strict Q-0077(b)) · `btd6_data_service` / `btd6_cog` / `cogs/btd6/_embeds` · 2026-06-21 · **PR #1258 (auto-merge on green)**
-- `claude/peaceful-mayer-rgc20t` · **BTD6 seed-data changed-file report** (completes #1258) — `!btd6ops seed-data` receipt names the files the seed applied (reuses `content_drift()`) · `disbot/cogs/btd6_ops_cog.py` · 2026-06-21 · **PR #1263 (auto-merge on green)**
-
-
-- `claude/modest-gates-0ble76` · **repo-state review cleanup** (owner-directed) — prune merged claims
-  here · trim `current-state.md` stale header banners → single live ▶ pointer · build the callout
-  line-budget guard · `docs/owner/active-work.md` / `docs/current-state.md` / `scripts/check_docs.py`
-  · 2026-06-21 · **PR #1256 (auto-merge on green)**
-
-- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — rebuffBlockTime + multi-target** (owner: improvements welcome) — decode `rebuffBlockTime`, add `targets=N` round-robin uptime · `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service` / `ai_tools` · 2026-06-21 · **PR (this session, auto-merge on green)**
-
-- `claude/peaceful-mayer-rgc20t` · **BTD6 buff-uptime — verify binding + populate data** (follow-up to
-  #1235; owner pointed at the public dump) — cloned BTD Mod Helper dump, corrected `_buff_window` to
-  the verified `Add…ToProjectileModel` shape, overlaid buff fields onto committed `alchemist.json` ·
-  `scripts/parse_gamedata.py` / `disbot/data/btd6/stats/alchemist.json` / `btd6_upgrade_detail_service`
-  · 2026-06-21 · **PR (this session, auto-merge on green)**
-- `claude/dispatch-next` · **prune stale Active claims (drift-on-sight, Q-0166)** — every prior
-  claim had merged, polluting `check_lane_overlap.py` with false positives · `docs/owner/active-work.md`
-  · 2026-06-21 · **auto-merge on green** (docs-only)
-- `claude/dreamy-cerf-voar4q` · **Project Moon wiki feasibility finding** (owner-dropped) — capture
-  research as a routed idea doc; no runtime code · `docs/ideas/project-moon-wiki-knowledge-domain-2026-06-21.md`
-  + ideas index · 2026-06-21 · **auto-merge on green** (docs-only)
-- `claude/peaceful-mayer-rgc20t` · **BTD6 Alchemist buff-uptime** (owner live-test) — `btd6_buff_uptime`
-  tool + `buff_uptime()` compute + parser buff-window decode (game-data path) · `parse_gamedata.py` /
-  `btd6_upgrade_detail_service` / `ai_tools` / `ai_tool_catalogue` · 2026-06-21 · **PR #1235 (auto-merge on green)**
-- `claude/dreamy-cerf-voar4q` · **Project Moon knowledge domain** (owner-directed Q-0192: full parity) —
-  feasibility **#1238** + program plan **#1239** merged; now pre-build recon (data sources + seam contract)
-  · `docs/planning/project-moon-prebuild-recon-2026-06-21.md` · 2026-06-21 · **auto-merge on green** (docs-only)
-- `claude/funny-franklin-m1xdmf` · **Creature PvP result-recording + win/loss records + battle
-  leaderboard** (next slice after #1230, plan §4 audited-write half) — persist battle outcomes, award
-  win XP (`GAME_CREATURE`), `!cbattletop` · `services/creature_battle_service` ·
-  `utils/db/games/creature_battles` · migration 082 · `creature_battle_cog` · `game_xp_service` ·
-  2026-06-21 · **`needs-hermes-review`** (runtime, substantial plan step)
-
-*(Beyond the claim above, the only open PR is **#1213** creature-PvP battle engine on
-`claude/funny-franklin-mw3hxj`, a `needs-hermes-review` foundation slice — its owning
-session holds it, no claim line needed here.)*
-*(All other Active claims' PRs have merged — re-pruned 2026-06-21 per Q-0166 after a merge with main
-re-introduced them; see Recently cleared. #1256 is the only PR in flight.)*
+*(2026-06-22 prune, Q-0166: every prior Active claim's PR had merged — `list_pull_requests` (state=open)
+returned empty — so the whole block was stale and polluting `check_lane_overlap.py`. Pruned to the one
+live claim above; the merged work is recorded in `current-state.md` + Recently cleared below.)*
 
 ## Recently cleared
 

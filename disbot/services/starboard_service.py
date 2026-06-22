@@ -52,14 +52,21 @@ async def configure(
     emoji: str = "⭐",
     actor_id: int | None,
 ) -> int:
-    """Set the hall-of-fame channel + threshold (audited). Returns the threshold."""
+    """Set the hall-of-fame channel + threshold (audited). Returns the threshold.
+
+    Preserves the existing ``self_star`` policy — re-pointing the channel or
+    changing the threshold must not silently reset the self-star toggle.
+    """
     threshold = max(1, int(threshold))
+    existing = await db.get_settings(guild_id)
+    self_star = bool(existing["self_star"]) if existing else False
     await db.set_settings(
         guild_id,
         channel_id,
         threshold=threshold,
         emoji=emoji or "⭐",
         enabled=True,
+        self_star=self_star,
     )
     await _emit(
         guild_id,
@@ -77,6 +84,59 @@ async def disable(*, guild_id: int, actor_id: int | None) -> None:
         guild_id,
         mutation_type="disable_starboard",
         new_value="disabled",
+        actor_id=actor_id,
+    )
+
+
+async def set_self_star(
+    *,
+    guild_id: int,
+    self_star: bool,
+    actor_id: int | None,
+) -> None:
+    """Toggle whether the author's own ⭐ counts toward the threshold (audited)."""
+    await db.set_self_star(guild_id, self_star)
+    await _emit(
+        guild_id,
+        mutation_type="set_starboard_self_star",
+        new_value=f"self_star={self_star}",
+        actor_id=actor_id,
+    )
+
+
+async def list_ignore_channels(guild_id: int) -> set[int]:
+    """Channels whose messages never enter the board (the cog/panel read)."""
+    return await db.list_ignore_channels(guild_id)
+
+
+async def add_ignore_channel(
+    *,
+    guild_id: int,
+    channel_id: int,
+    actor_id: int | None,
+) -> None:
+    """Add a channel to the ignore list (audited)."""
+    await db.add_ignore_channel(guild_id, channel_id)
+    await _emit(
+        guild_id,
+        mutation_type="add_starboard_ignore_channel",
+        new_value=f"channel={channel_id}",
+        actor_id=actor_id,
+    )
+
+
+async def remove_ignore_channel(
+    *,
+    guild_id: int,
+    channel_id: int,
+    actor_id: int | None,
+) -> None:
+    """Remove a channel from the ignore list (audited)."""
+    await db.remove_ignore_channel(guild_id, channel_id)
+    await _emit(
+        guild_id,
+        mutation_type="remove_starboard_ignore_channel",
+        new_value=f"channel={channel_id}",
         actor_id=actor_id,
     )
 
@@ -109,6 +169,7 @@ async def handle_star_change(
     source_channel_id: int,
     source_message_id: int,
     star_count: int,
+    author_starred: bool = False,
 ) -> StarboardOutcome:
     """Decide post/edit/delete for a star count change; update the DB count.
 
@@ -117,6 +178,12 @@ async def handle_star_change(
     passes the *live* star count (recounted from the message) and performs the
     Discord I/O the returned outcome describes; on a POST it then calls
     :func:`record_post` with the new message id.
+
+    ``author_starred`` is the raw fact (did the message author ⭐ their own
+    message?) supplied by the cog; the *policy* (whether that star counts) lives
+    here — when ``self_star`` is off it is subtracted before the threshold test,
+    so a post can't board itself. Messages in an ignore-listed channel never
+    enter the board.
     """
     settings = await db.get_settings(guild_id)
     if settings is None or not settings["enabled"]:
@@ -125,6 +192,13 @@ async def handle_star_change(
     # Never starboard the starboard channel itself.
     if source_channel_id == channel_id:
         return StarboardOutcome(NONE, channel_id, None, star_count)
+    # Channels on the ignore list never enter the board.
+    if source_channel_id in await db.list_ignore_channels(guild_id):
+        return StarboardOutcome(NONE, channel_id, None, star_count)
+
+    # Self-star policy: drop the author's own ⭐ from the count unless opted in.
+    if author_starred and not settings["self_star"]:
+        star_count = max(0, star_count - 1)
 
     threshold = int(settings["threshold"])
     entry = await db.get_entry(guild_id, source_message_id)
@@ -210,10 +284,14 @@ __all__ = [
     "NONE",
     "POST",
     "StarboardOutcome",
+    "add_ignore_channel",
     "configure",
     "disable",
     "get_settings",
     "handle_star_change",
+    "list_ignore_channels",
     "record_post",
+    "remove_ignore_channel",
+    "set_self_star",
     "trigger_emoji",
 ]
