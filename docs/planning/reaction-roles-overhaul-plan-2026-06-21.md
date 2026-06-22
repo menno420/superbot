@@ -18,15 +18,9 @@
 > central `_apply` seam so menu *and* emoji pickups both count). **Migration renumber note:** the plan
 > originally pencilled PR 4 = migration 079; PR 3 needed a per-message mode table, so the real
 > assignment is 079 (modes) / 080 (grants) / 081 (pickups) — numbers are sequential, the shapes are as
-> specified. **PR 6 BUILT (2026-06-22, ⚑ self-initiated — `needs-hermes-review`, auto-merge OFF):**
-> optional PIL banner cards (§4.6d). Migration **089** (`role_menus.card_template` + `card_text`, both
-> nullable → existing menus byte-identical), `utils/role_menu_render.render_role_menu_card` (the
-> `welcome_render` sibling: lazy PIL, `bytes | None` graceful fallback, no network), a `CardTemplate`
-> preset catalogue (banner/gradient/minimal/spotlight) in `role_menu_presentation`, db+service
-> threading, a `build_menu_message()` composer (embed + optional attached card) consumed by
-> post/edit/repost, and a 🖼️ Card picker + overlay-text modal on the builder. Degrades to embed-only
-> when Pillow is absent. Held for owner review (the plan's "owner-paced · greenlight as a follow-up"
-> intent); live guild verification of the image-attach is the remaining manual step.
+> specified. **Remaining: PR 6** (optional, owner-paced) — PIL banner cards (§4.6d), deliberately
+> deferred to keep the core arc tight (it needs a `role_menus` card column + image-attach on
+> message-edit; greenlight it as a follow-up).
 >
 > **▶ Refinement (2026-06-21, owner-directed — PR #1234):** two gaps the owner hit in use, neither
 > covered by PR 1–5. **(1) Multiple emotes per message, each its own role** — the emoji *data model*
@@ -516,7 +510,7 @@ analytics counts (§10) are aggregate and do not require per-user logging to be 
 | **PR 3** | Carl-parity modes (normal/unique/verify) on the emoji surface + interactive emoji panel + `reaction_roles_enabled` settings bridge (migration 079) | ✅ **BUILT** (this session) |
 | **PR 4** | **Free temp roles** — `role_grants` table (migration 080) + `RoleGrantsCog` expiry sweep + `!temprole` | ✅ **BUILT** (this session) |
 | **PR 5** | **Role-pickup analytics** (§10) — `role_menu_pickup_stats` (migration 081) + Diagnostics section | ✅ **BUILT** (this session) |
-| **PR 6 (optional)** | **PIL banner cards** (§4.6d) — reuses `welcome_render`; degrades to embed-only | ✅ **BUILT** 2026-06-22 (#1279, ⚑ self-initiated, `needs-hermes-review`) |
+| **PR 6 (optional)** | **PIL banner cards** (§4.6d) — reuses `welcome_render`; degrades to embed-only | ⏸ **deferred** (owner-paced follow-up) |
 | **Surface A** | Web builder in the dashboard (mirrors PR 2–5 over the control-API) | control-API write side / security review |
 
 The core arc is PR 1–3; PR 4–6 are additive waves on the PR 1 seam. None block PR 1.
