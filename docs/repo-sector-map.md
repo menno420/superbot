@@ -152,6 +152,32 @@ A sector whose `Now` is entirely `⛔`/`👤` is **not autonomously dispatchable
 `⛔` demand-driven, item 4 `👤` maintainer-only — so a "dispatch S2 execute" falls to the `▶` BTD6
 grounding-eval cases in `Next`. Q-0143.)*
 
+### Can an *unattended* run finish it — the unattended-fit tag
+`▶ startable` answers *"may a Claude session **begin** this?"* — it does **not** answer *"can a
+**scheduled, unattended** dispatch run **complete and merge** it with no human in the loop?"* Those are
+orthogonal: a lane can be `▶` (begin freely) yet still need a live guild walk to verify, be a
+`needs-hermes-review` runtime change, or commit externally-sourced data. Two consecutive empty-fire
+dispatch runs (#1274, #1285) stalled because they only discovered this *mid-run, by hand*. So each
+sector's **Dispatch** line carries one **unattended-fit** tag — the dimension `dispatch_menu.py
+--unattended` resolves for an empty-fire run:
+
+- **🟢 auto** — offline-verifiable **and** self-mergeable. An unattended run can complete it and let it
+  auto-merge on green. *The ideal empty-fire pick.*
+- **🟡 review** — buildable offline but it ships `needs-hermes-review` (substantial/risky runtime, or a
+  Q-0106-sensitive config edit). An unattended run can build it and open the PR, but **must not**
+  self-merge.
+- **🔵 live** — needs a live guild walk or runtime creds to *verify*. An unattended run can write code
+  but can't confirm it works → weak fit; prefer a 🟢/🟡 lane or route to the live cadence.
+- **🟠 ext-data** — commits externally-sourced data (brushes the external-data safety brake). **Owner
+  confirm** the source/licensing approach before an unattended run commits it.
+
+It tags the **currently-resolved startable lane** for the sector (the first `▶` in `Now`, else in
+`Next`). `check_sector_map.py` requires the tag on every sector's `Dispatch` line, so it can't silently
+drift. *The non-obvious payoff: the per-sector first-`▶` lanes (S2 eval cases · S3 substrate-kit · S4 nav
+layers) are 🟢 `auto`, while the **headline** lanes the empty-fire runs anchored on were all 🔵/🟠 — the
+tag stops a run from missing the auto-buildable per-sector work. Provenance: #1285 (Q-0172, promoting
+#1274's surfaced fix).*
+
 **What this map does *not* do:** it does not wire Hermes. Turning a phone message into a `/fire`
 dispatch — and moving the night executor off GitHub cron onto the always-on Hermes VPS — is **Q-0137
 Thread 1** (owner-undecided). The actions above map onto the existing routine fleet documented in

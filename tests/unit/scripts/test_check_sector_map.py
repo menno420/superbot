@@ -64,10 +64,15 @@ def test_check_folio_homing_clean(monkeypatch):
     assert csm.check_folio_homing(_MAP.format(body="S1: ai\nS2: btd6")) == []
 
 
-def _roadmap(executor_s1: str = "(executor **Claude-in-repo**)") -> str:
+_FIT = ", unattended-fit **🟢 auto**"
+
+
+def _roadmap(
+    executor_s1: str = "(executor **Claude-in-repo**" + _FIT + ")",
+) -> str:
     blocks = []
     for sid in ("S1", "S2", "S3", "S4", "S5"):
-        ex = executor_s1 if sid == "S1" else "(executor **Claude-in-repo**)"
+        ex = executor_s1 if sid == "S1" else "(executor **Claude-in-repo**" + _FIT + ")"
         blocks.append(
             f"### {sid} — Name · *x*\n"
             f"- **Now:** **▶** do a thing\n"
@@ -89,6 +94,13 @@ def test_roadmap_convention_flags_untagged_now():
     road = _roadmap().replace("- **Now:** **▶** do a thing", "- **Now:** plain text", 1)
     errors = csm.check_roadmap_convention(road)
     assert any("startability tag" in e for e in errors)
+
+
+def test_roadmap_convention_flags_missing_unattended_fit():
+    # An executor but no unattended-fit tag on the Dispatch line (#1285).
+    road = _roadmap(executor_s1="(executor **Claude-in-repo**)")
+    errors = csm.check_roadmap_convention(road)
+    assert any("S1" in e and "unattended-fit" in e for e in errors)
 
 
 def test_sector_presence_flags_missing_sector():
