@@ -13,7 +13,7 @@ shipped `welcome_render` PIL pattern (lazy import + `bytes | None` graceful fall
 so it degrades cleanly to embed-only and never becomes a hard dependency.
 
 Shipped:
-- **Migration 088** — `role_menus.card_template` + `card_text` (both nullable; NULL = no card, so an
+- **Migration 089** — `role_menus.card_template` + `card_text` (both nullable; NULL = no card, so an
   existing menu renders byte-identically — purely additive).
 - **`utils/role_menu_render.py`** (new) — `render_role_menu_card(...)`, the `welcome_render` sibling,
   with four preset background styles (banner / gradient / minimal / spotlight) tinted by the menu's
@@ -67,7 +67,7 @@ Reviewed `.sessions/2026-06-21-reaction-roles-pr3-5.md` (PRs 3–5, the same arc
 three migrations (079/080/081) as one owner-directed PR with the migration-renumber note recorded in
 the plan — that discipline is what let me confidently pick the next free migration number. **Live
 proof of why that matters:** this PR's migration was renumbered **twice** during review — claimed
-**085**, bumped to **086** when `085_mining_grid.sql` merged, then to **088** when `086_mining_energy`
+**085**, bumped to **086** when `085_mining_grid.sql` merged, then to **089** when `086_mining_energy`
 + `087_fishing_rod` merged too (two separate `conflict-guard` fires while the held PR sat for review).
 Migration numbers are a shared append point under a very active routine fleet — re-check the highest on
 `origin/main` at *every* merge, not just at branch time. A bigger system lesson: a long-held

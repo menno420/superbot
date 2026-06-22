@@ -39,7 +39,7 @@ async def create_menu(
 
     ``message_id`` is left NULL until the menu message is posted — the caller
     sends the message, then calls :func:`set_menu_message`. ``card_template`` /
-    ``card_text`` (migration 088) are NULL unless the menu carries a banner card.
+    ``card_text`` (migration 089) are NULL unless the menu carries a banner card.
     """
     row = await pool.fetchone(
         """INSERT INTO role_menus
