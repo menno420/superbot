@@ -24,6 +24,7 @@ from core.events import bus
 from services import economy_service, game_xp_service
 from utils import db
 from utils.fishing import MAX_LEVEL, Catch
+from utils.fishing import bait as bait_mod
 from utils.fishing import energy as fish_energy
 from utils.fishing import rods as rods_mod
 from utils.fishing import roll_catch
@@ -32,6 +33,8 @@ logger = logging.getLogger("bot.fishing_workflow")
 
 #: Audit/event reason tag for a rod purchase (mirrors mining's "<game>:<action>").
 ROD_PURCHASE_REASON = "fishing:rod_purchase"
+#: Audit/event reason tag for a bait purchase (the second fishing coin sink).
+BAIT_PURCHASE_REASON = "fishing:bait_purchase"
 
 
 def fishing_level_from_xp(fishing_xp: int) -> int:
@@ -79,6 +82,8 @@ async def roll_cast(
     user_id: int,
     guild_id: int,
     rod: rods_mod.Rod | None = None,
+    *,
+    rarity_pull: float | None = None,
 ) -> Cast:
     """Read the player's level and roll a catch **without writing anything**.
 
@@ -89,13 +94,16 @@ async def roll_cast(
 
     *rod* (defaulting to the starter) applies its ``rarity_pull`` knob: a better
     rod biases the catch toward the big end of the *same* unlocked band — never a
-    new band (that stays the fishing-level axis).
+    new band (that stays the fishing-level axis). *rarity_pull*, when given,
+    overrides the rod's own pull — ``begin_cast`` passes ``rod.rarity_pull``
+    multiplied by any loaded bait so the two how-well knobs compound.
     """
     rod = rod or rods_mod.STARTER
+    pull = rod.rarity_pull if rarity_pull is None else rarity_pull
     xp_map = await db.get_game_xp(user_id, guild_id)
     fishing_xp_before = xp_map.get(game_xp_service.GAME_FISHING, 0)
     level_before = fishing_level_from_xp(fishing_xp_before)
-    catch = roll_catch(level_before, rarity_pull=rod.rarity_pull)
+    catch = roll_catch(level_before, rarity_pull=pull)
     if catch is None:
         logger.error("fishing: no catchable species (catalog empty?)")
     return Cast(catch=catch, level_before=level_before)
@@ -174,6 +182,11 @@ class CastStart:
     rod: rods_mod.Rod = rods_mod.STARTER
     #: Energy remaining after the (successful) cast — for the ⚡ gauge.
     energy_current: int = 0
+    #: The bait consumed by this cast (``None`` = fished bait-less), for the
+    #: 🪱 cast-panel note. Its ``rarity_pull`` was already applied to the roll.
+    bait_used: bait_mod.Bait | None = None
+    #: Bait charges remaining after this cast spent one (0 = pack just ran out).
+    bait_charges_left: int = 0
 
 
 def _fmt_wait(seconds: int) -> str:
@@ -188,6 +201,22 @@ async def get_energy(user_id: int, guild_id: int) -> int:
     now = int(time.time())
     cur, ts = await db.get_fishing_energy(user_id, guild_id)
     return fish_energy.settle(fish_energy.EnergyState(cur, ts), now).current
+
+
+async def get_active_bait(
+    user_id: int,
+    guild_id: int,
+) -> tuple[bait_mod.Bait | None, int]:
+    """The player's loaded ``(bait, charges)`` (``(None, 0)`` when none/unknown).
+
+    Resolves the stored bait key to a :class:`~utils.fishing.bait.Bait`; a stale
+    key (catalog entry removed) or non-positive charges both read as no bait.
+    """
+    key, charges = await db.get_active_bait(user_id, guild_id)
+    bait = bait_mod.bait_by_key(key)
+    if bait is None or charges <= 0:
+        return None, 0
+    return bait, charges
 
 
 async def begin_cast(user_id: int, guild_id: int) -> CastStart:
@@ -214,7 +243,11 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         )
 
     rod = rods_mod.rod_for_tier(await db.get_rod_tier(user_id, guild_id))
-    cast = await roll_cast(user_id, guild_id, rod)
+    bait, bait_charges = await get_active_bait(user_id, guild_id)
+    # Bait's rarity_pull compounds on the rod's (both ≥ 1); a loaded lure pulls
+    # the catch toward the big end of the SAME unlocked band, never a new band.
+    effective_pull = rod.rarity_pull * (bait.rarity_pull if bait else 1.0)
+    cast = await roll_cast(user_id, guild_id, rod, rarity_pull=effective_pull)
     if cast.catch is None:
         return CastStart(
             ok=False,
@@ -224,7 +257,26 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
 
     spent = fish_energy.spend(state, now)
     await db.set_fishing_energy(user_id, guild_id, spent.current, spent.updated_at)
-    return CastStart(ok=True, cast=cast, rod=rod, energy_current=spent.current)
+
+    # Consume one bait charge — only now that the cast is actually happening (the
+    # same "charge per attempt" rule as energy; a missed reel still spends it).
+    charges_left = 0
+    if bait is not None:
+        charges_left = bait_charges - 1
+        if charges_left <= 0:
+            await db.clear_active_bait(user_id, guild_id)
+            charges_left = 0
+        else:
+            await db.set_active_bait(user_id, guild_id, bait.key, charges_left)
+
+    return CastStart(
+        ok=True,
+        cast=cast,
+        rod=rod,
+        energy_current=spent.current,
+        bait_used=bait,
+        bait_charges_left=charges_left,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -298,4 +350,86 @@ async def buy_rod(user_id: int, guild_id: int) -> RodPurchaseResult:
         f"You upgraded to the **{nxt.name}** {nxt.emoji} for **{nxt.price}** 🪙! "
         f"Balance: **{new_balance}** 🪙.",
         nxt.tier,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Bait shelf — the consumable second coin sink / how-well knob (Q-0175 §4)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class BaitPurchaseResult:
+    """The outcome of a ``buy_bait`` attempt — a flag + a player-facing message."""
+
+    success: bool
+    message: str
+    #: The bait loaded after the attempt (``None`` on failure / when unchanged).
+    bait: bait_mod.Bait | None = None
+    #: Charges loaded after the attempt.
+    charges: int = 0
+
+
+async def buy_bait(
+    user_id: int,
+    guild_id: int,
+    bait_key: str,
+) -> BaitPurchaseResult:
+    """Buy one pack of *bait_key* — an audited coin sink, like :func:`buy_rod`.
+
+    A player loads at most one bait at a time: buying the **same** bait again
+    stacks its charges; buying a **different** bait replaces the loadout (the
+    message says so). The coin debit + the load run in ONE transaction (the debit
+    audits itself); the balance event emits after commit. Insufficient funds rolls
+    everything back and loads nothing.
+    """
+    bait = bait_mod.bait_by_key(bait_key)
+    if bait is None:
+        return BaitPurchaseResult(False, "That bait doesn't exist on the shelf.")
+
+    cur_key, cur_charges = await db.get_active_bait(user_id, guild_id)
+    stacking = cur_key == bait.key and cur_charges > 0
+    new_charges = (cur_charges if stacking else 0) + bait.charges
+
+    try:
+        async with db.transaction() as conn:
+            new_balance = await economy_service.debit_in_txn(
+                conn,
+                guild_id,
+                user_id,
+                bait.price,
+                reason=BAIT_PURCHASE_REASON,
+                actor_id=user_id,
+            )
+            await db.set_active_bait(
+                user_id,
+                guild_id,
+                bait.key,
+                new_charges,
+                conn=conn,
+            )
+    except economy_service.InsufficientFundsError:
+        balance = await db.get_coins(user_id, guild_id)
+        return BaitPurchaseResult(
+            False,
+            f"A pack of **{bait.name}** {bait.emoji} costs **{bait.price}** 🪙 — "
+            f"you only have **{balance}** 🪙.",
+        )
+
+    await bus.emit(
+        economy_service.EVT_BALANCE_CHANGED,
+        guild_id=guild_id,
+        user_id=user_id,
+        delta=-bait.price,
+        new_balance=new_balance,
+        reason=BAIT_PURCHASE_REASON,
+    )
+    verb = "Topped up" if stacking else "Loaded"
+    return BaitPurchaseResult(
+        True,
+        f"{verb} **{bait.name}** {bait.emoji} (×{bait.rarity_pull:g} rarity) — "
+        f"**{new_charges}** casts ready for **{bait.price}** 🪙. "
+        f"Balance: **{new_balance}** 🪙.",
+        bait=bait,
+        charges=new_charges,
     )

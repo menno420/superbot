@@ -383,6 +383,7 @@ async def test_begin_cast_spends_energy_and_rolls_when_charged():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
     ):
@@ -418,6 +419,7 @@ async def test_begin_cast_does_not_charge_on_an_empty_catalog():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: None),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
     ):
