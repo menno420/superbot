@@ -12,6 +12,9 @@
 > workflow guards are Claude's).*
 
 **Recently shipped (this sector):**
+- **CI dropped-`synchronize` watchdog** (PR #1288) — `ci-rerun-watchdog.yml` + `check_ci_coverage.py`
+  re-kick `code-quality` when a `claude/*` PR head has no run (the silent-stall fix; complements the
+  #1275 cancellation fix). [idea](../ideas/ci-dropped-synchronize-auto-retrigger-2026-06-22.md).
 - **Q-0193 merge = deploy clarity** (#1247) — Railway auto-redeploys `worker` on every merge to
   `main`; never tell the owner to "restart/deploy" a merge. Canonical:
   [production-deployment](../operations/production-deployment.md).
