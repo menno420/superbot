@@ -1,0 +1,1 @@
+- `claude/role-list-colours-and-per-role-bulk-colour` · (1) Role Management list shows role colours via mentions; (2) optional per-role colour walk for bulk custom roles (mirrors emote→role walk) · `disbot/views/roles/management_panel.py`, `disbot/views/roles/_role_pack_flow.py` · 2026-06-22
