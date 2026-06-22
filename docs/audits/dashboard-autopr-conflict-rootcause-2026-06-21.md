@@ -100,31 +100,51 @@ The owner explicitly asked to record what was considered and why it was/wasn't t
   (feeds/counts/catalogue), ignoring `meta`. Left as a judgement call — the current cadence is bounded
   and harmless post-fix.
 
-## 6. The wider mystery (carried forward, NOT resolved here)
+## 6. The "CI didn't run on my latest commit" strand — RESOLVED (2026-06-22)
 
-Distinct from #1261. Two intermittent, **load-independent** GitHub behaviors observed across the day:
+> Update: the carried-forward mystery is **solved**. Earlier in this doc it was listed as two
+> unconfirmed hypotheses (event-delivery flakiness / app-token anti-recursion). Both are **wrong**;
+> the real cause is a recent concurrency change. Keeping the wrong guesses struck through is
+> deliberate — it's the record of how the diagnosis converged.
 
-- **A push that creates no CI run at all** (e.g. `cacc633`, `10e85e4` on PR #1260). Event-delivery
-  miss — the run is never *created* (not cancelled).
-- **False `dirty`** — GitHub's async mergeability reports conflict where `git merge-tree` says clean;
-  a fresh push forces recompute and clears it.
+**Root cause: `code-quality.yml` had `concurrency: cancel-in-progress: true` (PR refs), added
+2026-06-20 (#1195, Q-0126, to save minutes).** Under the born-red flow's **rapid event burst** (open →
+push → push within ~2 min), GitHub's run cancellation **races and drops the run for the *head*
+commit**, leaving the PR with no completed required check → auto-merge stalls.
 
-Owner evidence rules out load/parallelism: 4 parallel sessions can be fine while 1 session sometimes
-gets no CI. Leading hypotheses (unconfirmed): (a) genuine GitHub event-delivery flakiness; (b) the
-`GITHUB_TOKEN`/app-integration anti-recursion rule (events from those identities don't trigger
-workflows) — though the runs that *did* fire showed `actor: menno420` (a real user → should always
-trigger), which leans toward (a).
+**Smoking-gun evidence (PR #1274, 2026-06-22):** on the **same** `pull_request: synchronize`
+event/commit (`64e4f86`), `codex-final-review` (`cancel-in-progress: false`) **ran**, while
+`code-quality` (`cancel-in-progress: true`) **did not**. Same trigger, same commit — the *only*
+difference was the flag. And it fits the owner's two key observations exactly:
+- *"It used to work; fix-pushes always re-ran CI"* → before #1195 (June 20), code-quality had **no**
+  cancellation, so every push got its own run. The strand is **as old as the cancel flag**, not older.
+- *"Could it be too many checks?"* → yes: the growing check-suite + the born-red open-then-push pattern
+  are what create the **rapid event burst** that triggers the cancellation race.
 
-**Forensics plan — capture these the next time a push doesn't fire CI:**
-1. **Settings → Webhooks → Recent Deliveries** — was a `push`/`pull_request` event even emitted?
-   (none → GitHub/integration didn't send it; present but no run → Actions dropped it.)
-2. The **commit's author/committer** on the GitHub commit page — real user vs bot/app identity.
-3. Was a run **created-then-cancelled** (concurrency) vs **never created**?
-4. **githubstatus.com** at that timestamp.
+**Hypotheses this disproves:**
+- ~~`synchronize` is inherently flaky~~ — the event fired; `codex-final-review` used the *same* one.
+- ~~merge-ref unavailable (dirty PR)~~ — #1274 was `blocked`, not `dirty`.
+- ~~app-token anti-recursion~~ — irrelevant; both workflows share the same token + event.
 
-Mitigation regardless of which it is: the merge queue (above) owns run-triggering, and
-`scripts/check_pr_mergeable.py` (shipped in #1260) gives the git truth so agents stop trusting
-GitHub's signal.
+**Fix (shipped):** `code-quality.yml` → `cancel-in-progress: false` (matching `codex-final-review`).
+The minute-saving rationale is **moot** — this is a public repo with **unlimited** Actions minutes —
+so cancelling buys nothing and costs reliability. Redundant older-commit runs are harmless (free).
+
+**Still complementary:** the **merge queue** (above) remains the durable cross-cutting fix (it also
+addresses the separate false-`dirty` aggregation under a heavy check-suite), and
+`scripts/check_pr_mergeable.py` (#1260) gives git-truth mergeability so agents never trust GitHub's
+async signal.
+
+### pytest "why 4 minutes / only run new tests?" (owner question, 2026-06-22)
+- It is **already parallelized** — CI runs `pytest tests/ -n auto` (pytest-xdist across the runner's
+  cores); ~11.5k tests in ~4 min on a 2-core runner is normal, not pathological.
+- **"Only run new/changed tests" is unsafe as a merge gate** — the *point* of the suite is catching
+  **regressions** (a change breaking *existing* tests). Running only new tests would let regressions
+  merge. Impact-based selection (`pytest-testmon`/coverage) is the safer cousin but is risky as a sole
+  gate (stale dep-maps miss things) — fine only as an *advisory* fast lane, never the gate.
+- The legitimate lever is the **slow-test long tail** (profiled with `--durations`): a handful of
+  tests that spin up real subprocess git repos dominate (e.g. the merge-state / export-data temp-repo
+  suites). Optimizing/marking those is the real speedup; cores and "skip regressions" are not.
 
 ## 7. Appendix — evidence
 

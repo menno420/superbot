@@ -25,6 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/modest-gates-0ble76` · **CI strand root cause — code-quality `cancel-in-progress`**
+  (owner-directed) — set `cancel-in-progress: false` (it was dropping the head-commit run under the
+  born-red event burst; confirmed via codex-vs-code-quality asymmetry) + update audit doc + pytest
+  analysis · `.github/workflows/code-quality.yml` / `docs/audits/` · 2026-06-22 ·
+  **PR (this session, auto-merge on green)**
+
 - `claude/funny-franklin-mjvqrx` · **BUG-0023 slash under-coverage root fix** (dispatch routine,
   empty-fire, bugs-first) — teach `scan_commands.py` to detect attribute-assigned `app_commands.Group`
   groups so their 40 subcommands + 6 groups are scanned (closes the static-25-vs-live-71 gap at the

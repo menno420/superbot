@@ -130,14 +130,16 @@ def test_generated_at_is_deterministic_not_wall_clock(mod):
     # `generated_at` must be the latest-commit time, NOT wall-clock — so two regenerations at the
     # same commit are byte-identical. A wall-clock value churned a refresh PR every run and
     # guaranteed a merge conflict whenever two branches regenerated the file (#1261 root cause).
-    a = mod.build_data()["meta"]["generated_at"]
-    b = mod.build_data()["meta"]["generated_at"]
+    # Two builds is the minimum needed to prove determinism; reuse the 2nd for the build check
+    # rather than a 3rd call (build_data() does a whole-repo scan — keep this test to 2, not 3).
+    first = mod.build_data()["meta"]
+    second = mod.build_data()["meta"]
     assert (
-        a == b
+        first["generated_at"] == second["generated_at"]
     ), "generated_at changed between runs at the same commit (not deterministic)"
-    build = mod.build_data()["meta"]["build"]
+    build = second["build"]
     if build:  # in the git checkout, generated_at anchors to the commit's committed_at
-        assert a == build["committed_at"]
+        assert first["generated_at"] == build["committed_at"]
 
 
 def test_build_data_includes_env_usage_section(mod):
