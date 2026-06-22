@@ -178,10 +178,9 @@ Current broad captures:
   claimer gets a reward routed through `economy`/`game_xp`/inventory. The **one Pokétwo mechanic with no
   analog** (fishing/mining are command-only); net-new, ungated, anti-P2W, docks into the Explore world hub.
 - [`idle-game-offline-summary-2026-06-22.md`](./idle-game-offline-summary-2026-06-22.md) —
-  **captured alongside the new idle chicken farm (2026-06-22):** a shared `utils/idle_summary.py`
-  that narrates the "while you were away, +N eggs" return-moment when an idle panel opens — the
-  cheap polish that makes idle games feel idle. Reuses the existing `settle()` deltas; a clean
-  rule-of-three extraction candidate (farm + the two energy bars). Small single-PR slice.
+  **BUILT 2026-06-22 (PR #1331):** `utils/idle_summary.py` narrates the "🌙 while you were away,
+  +N eggs" return-moment on the farm panel. Kept for provenance; the live remainder is reusing
+  the helper from a *second* idle system (the rule-of-three `settle/spend` extraction).
 - [`mining-grid-encounters-2026-06-22.md`](./mining-grid-encounters-2026-06-22.md) —
   **owner-named follow-up to the grid Mine (Q-0173):** the grid Mine (hub-redesign PR 3) shipped
   encounter-free by decision; this captures the deferred **depth-gated, sparse** random encounters while

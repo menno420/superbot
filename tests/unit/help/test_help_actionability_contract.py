@@ -293,12 +293,20 @@ def _panel_construction_patches(subsystem: str):
             )
         )
     if subsystem == "farm":
+        from services.farm_workflow import FarmStatus
         from utils.farm import FarmState
 
         patches.append(
             patch(
-                "views.farm.menu.farm_workflow.get_state",
-                new=AsyncMock(return_value=FarmState(1, 0, 0, 0)),
+                "views.farm.menu.farm_workflow.get_status",
+                new=AsyncMock(
+                    return_value=FarmStatus(
+                        state=FarmState(1, 0, 0, 0),
+                        eggs_gained=0,
+                        elapsed_seconds=0,
+                        at_capacity=False,
+                    ),
+                ),
             )
         )
         patches.append(

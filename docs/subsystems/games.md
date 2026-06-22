@@ -66,10 +66,21 @@ also reachable via `!farm` and the Explore world hub.
   "rewards too large & too frequent" caution. Buying hens scales the faucet but
   each costs more coins (the sink), so the loop stays self-balancing. Tunables are
   pure constants in `utils/farm/farm.py`.
+- **Return-moment summary (`utils/idle_summary.py`, PR #1331):** a pure, game-agnostic
+  helper (`format_duration` + `summarize_idle_gain`) renders the "🌙 While you were away
+  (2h 14m) you gained N eggs" blurb on the farm panel from the settle delta
+  (`farm_workflow.get_status` reports `eggs_gained`/`elapsed_seconds`/`at_capacity`). A
+  second idle system reuses it as-is — the rule-of-three start the shared-`settle()`
+  extraction will follow.
+- **Fresh-start contract (PR #1331):** `chicken_farm.eggs_updated_at` defaults to epoch 0,
+  and settling from 1970 would instantly fill a new coop (a free full collect). The
+  workflow's `_stored_state` normalizes a zero timestamp to *now* so idle accrual starts
+  from first contact (an empty coop) — pinned by `tests/unit/services/test_farm_workflow.py`.
+  Any new idle system on the `(value, timestamp)` pattern must apply the same normalization.
 - **Adding another idle game:** follow this layering, register a `GAME_*` constant in
   `game_xp_service`, add the `SUBSYSTEMS` entry under the Games hub, and reuse
-  `settle()` (extract the shared core into `utils/` only on the rule of three — a
-  *third* settle-based system).
+  `settle()` + `idle_summary` (extract the shared `settle/spend` core into `utils/` only on
+  the rule of three — a *third* settle-based system).
 
 ## Rules & approved structures (binding — link, don't restate)
 
