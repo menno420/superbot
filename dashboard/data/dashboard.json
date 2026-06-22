@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T00:51:14Z",
+    "generated_at": "2026-06-22T23:03:59Z",
     "build": {
-      "commit": "a4f3aac",
-      "subject": "Merge branch 'main' into claude/great-goldberg-extjsi",
-      "committed_at": "2026-06-23T00:51:14Z"
+      "commit": "b4fd137e",
+      "subject": "Casino subsystem — multiplayer card-game table framework + Texas Hold'em poker (#1333)",
+      "committed_at": "2026-06-22T23:03:59Z"
     },
     "counts": {
       "functions": 41,
