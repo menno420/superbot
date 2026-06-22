@@ -1,0 +1,15 @@
+# Hermes auto-redeploy — oneshot: sync merged main and redeploy IF it changed.
+#
+# User-level unit (install under ~/.config/systemd/user/ as the `hermes` user), mirroring
+# hermes-session-reset.* — see docs/operations/hermes-redeploy.md for the one-time install.
+# `--if-changed` makes it a cheap no-op when the mirror is already at origin/main, so the timer
+# can poll often without churn. The gateway restart inside redeploy.sh is detached (systemd-run),
+# so this stays a clean oneshot.
+[Unit]
+Description=Redeploy Hermes from merged main (sync SOUL + skills, restart gateway if changed)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/repos/superbot/scripts/hermes/redeploy.sh --if-changed
