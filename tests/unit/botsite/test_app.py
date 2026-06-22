@@ -94,6 +94,27 @@ def test_data_js_is_generated_live_and_truthful(client, app_module):
         assert forbidden not in lowered
 
 
+def test_site_data_json_is_truthful_for_the_react_app(client, app_module):
+    # /site-data.json is the React-SPA data seam — the same public data as /data.js,
+    # as pure JSON. It must carry the real bot data + the install URL the React pages
+    # thread onto every "Add to Discord" CTA, with no server/user totals.
+    resp = client.get("/site-data.json")
+    assert resp.status_code == 200
+    assert "application/json" in resp.headers["content-type"]
+    payload = resp.json()
+    # The shape the React data adapter consumes.
+    for key in ("addUrl", "build", "counts", "areas", "commands", "games", "changelog"):
+        assert key in payload, f"missing {key}"
+    # The real install link (not a dead #/) — the BUG the migration fixes.
+    assert payload["addUrl"] == app_module.chrome.ADD_TO_DISCORD_URL
+    assert "discord.com/oauth2/authorize" in payload["addUrl"]
+    # Real data: a known command name from site.json appears.
+    names = {c["name"] for c in payload["commands"]}
+    assert "blackjack" in names
+    # Honest posture: only catalogue counts, never server/user totals.
+    assert set(payload["counts"]) <= {"commands", "features", "games"}
+
+
 def test_submit_page_shares_chrome_with_working_install_cta(client, app_module):
     # /submit is rendered by submit.py's SEPARATE Jinja env; it must share
     # chrome.site_context so base.html's nav "Add to Discord" button isn't a dead
@@ -130,6 +151,7 @@ def test_every_route_is_wired(app_module):
         "/app.js",
         "/app.css",
         "/data.js",  # the SPA shell + dynamic data
+        "/site-data.json",  # the React-SPA JSON data seam
         "/commands",
         "/features",
         "/changelog",

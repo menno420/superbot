@@ -21,10 +21,11 @@
 **▶ Next startable (one of):**
 - **Project Moon runtime PR 1** — the `KnowledgeDomain` seam + first ingest
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
-- **botsite React-SPA migration**
-  ([plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)).
+- **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
+  (PR 1 foundation shipped; [plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)).
 
-**In flight (don't duplicate):** Starboard PR 2 (#1270) config polish.
+**In flight (don't duplicate):** Starboard PR 2 (#1270) config polish · botsite React-SPA
+migration **PR 1** (#1305 — runnable data-fed React app + `/site-data.json`; foundation).
 
 **Owner-paced / gated:** reaction-roles PR 6 + web builder · creature PvP balance + art (Q-0187) ·
 website rollout ·

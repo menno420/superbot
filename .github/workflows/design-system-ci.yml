@@ -53,5 +53,11 @@ jobs:
       - name: Type-check (tsc --noEmit)
         run: npm run typecheck
 
+      - name: Test (vitest — data adapter)
+        run: npm test
+
       - name: Build (tsup + tailwind)
         run: npm run build
+
+      - name: Build SPA app (vite build:app)
+        run: npm run build:app
