@@ -20,6 +20,7 @@ import discord
 
 from services import fishing_workflow, game_xp_service
 from utils import db
+from utils.fishing import energy as fish_energy
 from utils.fishing import rods as rods_mod
 from utils.fishing.fish import MAX_LEVEL, SPECIES, max_size_rank_for_level
 from utils.ui_constants import GAME_COLOR
@@ -30,9 +31,12 @@ from views.fishing.rod_shop import RodShopView, build_rod_embed
 _FISHING_COLOR = discord.Color.blue()
 
 
-def build_menu_embed() -> discord.Embed:
-    """The fishing-menu landing embed — what the panel shows before you act."""
-    return discord.Embed(
+def build_menu_embed(energy_current: int | None = None) -> discord.Embed:
+    """The fishing-menu landing embed — what the panel shows before you act.
+
+    Pass *energy_current* (settled) to show the ⚡ cast-energy gauge.
+    """
+    embed = discord.Embed(
         title="🎣 Fishing",
         description=(
             f"Cast a line to catch from **{len(SPECIES)}** size-ranked fish. "
@@ -44,6 +48,13 @@ def build_menu_embed() -> discord.Embed:
         ),
         color=GAME_COLOR,
     )
+    if energy_current is not None:
+        embed.add_field(
+            name="Energy",
+            value=fish_energy.bar(energy_current),
+            inline=False,
+        )
+    return embed
 
 
 def build_fishlog_embed(

@@ -17,12 +17,14 @@ post-commit events.
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
 
 from core.events import bus
 from services import economy_service, game_xp_service
 from utils import db
 from utils.fishing import MAX_LEVEL, Catch
+from utils.fishing import energy as fish_energy
 from utils.fishing import rods as rods_mod
 from utils.fishing import roll_catch
 
@@ -150,11 +152,79 @@ async def fish(user_id: int, guild_id: int) -> FishResult:
     """One instant cast: roll a catch from the unlocked band + commit it.
 
     The legacy / non-interactive path (kept for the shared-game seam and tests).
-    The interactive minigame instead calls :func:`roll_cast` then
+    The interactive minigame instead calls :func:`begin_cast` then
     :func:`commit_catch` so the write happens only on a successful reel.
     """
     cast = await roll_cast(user_id, guild_id)
     return await commit_catch(user_id, guild_id, cast)
+
+
+# ---------------------------------------------------------------------------
+# Energy pacing — a separate fishing-energy bar that throttles casting (Q-0175)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CastStart:
+    """The outcome of trying to begin a cast — energy gated, then rolled."""
+
+    ok: bool
+    message: str | None = None  # player-facing reason when ``ok`` is False
+    cast: Cast | None = None
+    rod: rods_mod.Rod = rods_mod.STARTER
+    #: Energy remaining after the (successful) cast — for the ⚡ gauge.
+    energy_current: int = 0
+
+
+def _fmt_wait(seconds: int) -> str:
+    """Human "ready in" — ``45s`` / ``2m 05s``."""
+    if seconds < 60:
+        return f"{seconds}s"
+    return f"{seconds // 60}m {seconds % 60:02d}s"
+
+
+async def get_energy(user_id: int, guild_id: int) -> int:
+    """The player's *settled* current fishing energy (for the ⚡ gauge / menu)."""
+    now = int(time.time())
+    cur, ts = await db.get_fishing_energy(user_id, guild_id)
+    return fish_energy.settle(fish_energy.EnergyState(cur, ts), now).current
+
+
+async def begin_cast(user_id: int, guild_id: int) -> CastStart:
+    """Energy-gate a cast: settle → (out of energy?) → spend → roll.
+
+    Spends one fishing energy per *attempt* (the pacing brake — a missed reel
+    still costs, exactly like a dig). Energy is direct game state (no audit, like
+    mining energy). Energy is only spent once a catch is actually rolled, so a
+    catalog-load failure never charges the player.
+    """
+    now = int(time.time())
+    cur, ts = await db.get_fishing_energy(user_id, guild_id)
+    state = fish_energy.EnergyState(cur, ts)
+    settled = fish_energy.settle(state, now)
+    if settled.current < fish_energy.CAST_COST:
+        wait = fish_energy.seconds_until(state, now, fish_energy.CAST_COST)
+        return CastStart(
+            ok=False,
+            message=(
+                "🎣 You're out of energy — let the line rest. "
+                f"Ready to cast again in **{_fmt_wait(wait)}**."
+            ),
+            energy_current=settled.current,
+        )
+
+    rod = rods_mod.rod_for_tier(await db.get_rod_tier(user_id, guild_id))
+    cast = await roll_cast(user_id, guild_id, rod)
+    if cast.catch is None:
+        return CastStart(
+            ok=False,
+            message="🎣 The fishing spot is unavailable right now — try later.",
+            energy_current=settled.current,
+        )
+
+    spent = fish_energy.spend(state, now)
+    await db.set_fishing_energy(user_id, guild_id, spent.current, spent.updated_at)
+    return CastStart(ok=True, cast=cast, rod=rod, energy_current=spent.current)
 
 
 # ---------------------------------------------------------------------------

@@ -70,8 +70,9 @@ class FishingCog(commands.Cog):
     @commands.command(name="fishing", aliases=["fishmenu"])
     async def fishing(self, ctx):
         """Open the interactive fishing menu — cast, upgrade your rod, browse the dex."""
+        energy = await fishing_workflow.get_energy(ctx.author.id, ctx.guild.id)
         view = FishingMenuView(ctx.author, ctx.guild.id)
-        view.message = await ctx.send(embed=build_menu_embed(), view=view)
+        view.message = await ctx.send(embed=build_menu_embed(energy), view=view)
 
     @commands.command(
         name="fishlog",
@@ -135,7 +136,11 @@ class FishingCog(commands.Cog):
         Returns the live :class:`FishingMenuView` (🎣 Cast · 🎒 Rod · 📖 Fishdex)
         so the menu is actionable in place, not a static overview.
         """
-        return build_menu_embed(), FishingMenuView(
+        energy = await fishing_workflow.get_energy(
+            interaction.user.id,
+            interaction.guild.id,
+        )
+        return build_menu_embed(energy), FishingMenuView(
             interaction.user,
             interaction.guild.id,
         )

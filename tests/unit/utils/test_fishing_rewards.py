@@ -86,3 +86,14 @@ def test_rarity_pull_below_one_is_clamped_to_neutral():
 
     # 0.5 clamps to 1.0 → same distribution as neutral (same seed → same draws).
     assert avg_size(0.5) == avg_size(1.0)
+
+
+def test_fish_items_sell_for_their_size_rank():
+    """Paced fishing → generous sell value ≈ size_rank (the PR4 rebalance)."""
+    from utils.fishing.fish import SPECIES
+    from utils.mining.items import lookup
+
+    for s in SPECIES:
+        item = lookup(s.name)
+        assert item is not None
+        assert item.value == s.size_rank  # 1…21, up from the old 1…7
