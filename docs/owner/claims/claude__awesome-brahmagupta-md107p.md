@@ -1,0 +1,1 @@
+- `claude/awesome-brahmagupta-md107p` · bulk role creation via preset packs (category → multiselect → audited bulk create) · `disbot/utils/role_packs.py`, `disbot/views/roles/creation_panel.py`, `disbot/views/roles/role_menu_builder.py`, `disbot/services/reaction_role_service.py` · 2026-06-22
