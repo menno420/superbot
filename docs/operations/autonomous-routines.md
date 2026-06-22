@@ -159,6 +159,12 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     (a `check_docs` reachability orphan is usually one missing README link), leave the owner's.
     "Noting" a PR is not disposition — act on it. (This sweep was missing: #766 sat red + #771
     redundant for ~21h, unnoticed by sessions and two prior passes.)
+  - GC STALE CLAIM FILES (Q-0195): run `python3.10 scripts/check_stale_claims.py` over
+    `docs/owner/claims/` and `--prune` any whose branch is gone/merged (a session that forgot to
+    delete its own claim file at close). This is the failsafe that keeps the per-claim ledger from
+    accumulating — sessions delete their own claim at close, the pass sweeps the orphans. Commit the
+    deletions with the pass. (Never collapse the claim files back into one shared file — that
+    re-imports the ~98% merge-conflict rate the split removed; `tools/sim/claim_layout_sim.py`.)
   - CONTROL-PLANE (Q-0135): run `python3.10 scripts/check_loop_health.py` (reads live GitHub) and
     reconcile the § Control-plane state table against its PASS/FAIL/SKIP verdicts — tick/untick the
     verifiable rows (ROUTINE_PAT, DATABASE_PUBLIC_URL, loop-self-fired) so the table can't silently
