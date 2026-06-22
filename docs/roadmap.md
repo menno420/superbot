@@ -84,7 +84,12 @@
 > **executor** (Claude-in-repo · Hermes-VPS · maintainer) — both defined in the dispatch contract
 > ([`repo-sector-map.md`](repo-sector-map.md) § "dispatch targets"); a `Now` that is entirely ⛔/👤 is
 > **not** autonomously dispatchable (fall through to the first ▶). Each sector's **Dispatch** line says
-> what *plan* vs *execute·continue* mean for it. This index makes the
+> what *plan* vs *execute·continue* mean for it, **plus an orthogonal unattended-fit tag** — 🟢 `auto`
+> (offline-verifiable + self-mergeable) · 🟡 `review` (build offline but ships `needs-hermes-review`) · 🔵
+> `live` (needs a live guild walk / creds to verify) · 🟠 `ext-data` (commits external data, owner-confirm
+> first) — so a *scheduled empty-fire* run can tell whether a `▶` lane is one it can actually **complete
+> and merge** unattended, not just begin (the dimension `python3.10 scripts/dispatch_menu.py --unattended`
+> resolves; contract in `repo-sector-map.md` § "the unattended-fit tag"; Q-0143/#1285). This index makes the
 > sectors **dispatch-ready**; the Hermes/routine **wiring** that turns a phone message into a `/fire`
 > is **Q-0137 Thread 1** (owner-undecided) and is *not* built here — the actions map onto the existing
 > routine fleet in [`operations/autonomous-routines.md`](operations/autonomous-routines.md).
@@ -110,9 +115,10 @@
 - **Later:** server-mgmt **PR13 AI generation layer** + governance setup (gated Q-0008/Q-0011) · media
   channel-summary (gated Q-0099) · the 4-button Help Home navigation doctrine (Q-0078) · games deferred
   follow-ups · the product-growth drafts (most of the Later/Someday product-growth list below).
-- **Dispatch:** `S1` (executor **Claude-in-repo**) · *plan* = pick a verified slice from a folio /
-  production-readiness map and write or refine its plan · *execute·continue* = advance the next **▶
-  startable** Now item (currently Layer B or games P0-1). **Live queue →** the eight S1 areas in the
+- **Dispatch:** `S1` (executor **Claude-in-repo**, unattended-fit **🟡 review**) · *plan* = pick a
+  verified slice from a folio / production-readiness map and write or refine its plan · *execute·continue*
+  = advance the next **▶ startable** Now item (currently Layer B or games P0-1). *(Both are groundedness-/
+  money-safety runtime → buildable offline but ship `needs-hermes-review`, not self-merge.)* **Live queue →** the eight S1 areas in the
   drill-down below; folios: [`subsystems/`](subsystems/README.md).
 
 ### S2 — BTD6  ·  *the Bloons TD 6 vertical — runtime + offline data, one standing sector*
@@ -126,9 +132,10 @@
   is S2.*
 - **Later:** BTD6 product-extension routing (rules/trivia · challenges · runs · leaderboards) — gated
   on ADR-006 provenance / source-health.
-- **Dispatch:** `S2` (executor **Claude-in-repo**) · *plan* = structure a decode item or an extension
-  feature into a plan · *execute·continue* = the next **▶ startable** item (the BTD6 grounding-eval
-  cases — both Now items are ⛔/👤). **Live queue →** the **S2 BTD6**
+- **Dispatch:** `S2` (executor **Claude-in-repo**, unattended-fit **🟢 auto**) · *plan* = structure a
+  decode item or an extension feature into a plan · *execute·continue* = the next **▶ startable** item
+  (the BTD6 grounding-eval cases — both Now items are ⛔/👤). *(The eval cases are offline test
+  assertions over already-grounded facts → offline-verifiable + self-mergeable.)* **Live queue →** the **S2 BTD6**
   area in the drill-down below; folio: [`subsystems/btd6.md`](subsystems/btd6.md) · provenance:
   [ADR-006](decisions/006-btd6-data-provenance-ownership.md).
 
@@ -144,9 +151,10 @@
 - **Later:** promote the journal's earned candidate rules into CLAUDE.md (Q-0120) · the Context7-adopted
   plugins remainder (Postgres-MCP · pyright-LSP, Q-0096) · substrate-as-product productization (the
   future S5-of-S3 outward face).
-- **Dispatch:** `S3` (executor **Claude-in-repo**) · *plan* = design a new mechanism (a checker, a hook,
-  a loop seam, a substrate-kit layer) · *execute·continue* = build the next substrate-kit / tooling
-  slice. **Live queue →** the
+- **Dispatch:** `S3` (executor **Claude-in-repo**, unattended-fit **🟢 auto**) · *plan* = design a new
+  mechanism (a checker, a hook, a loop seam, a substrate-kit layer) · *execute·continue* = build the next
+  substrate-kit / tooling slice. *(Mechanism/tooling slices are offline-verifiable + self-mergeable; a
+  CLAUDE.md/executable-config edit is the 🟡 exception — born-red for owner review per Q-0106.)* **Live queue →** the
   **S3** area in the drill-down below; refs:
   [`operations/autonomous-routines.md`](operations/autonomous-routines.md) ·
   [`operations/hook-policy.md`](operations/hook-policy.md) ·
@@ -161,9 +169,9 @@
 - **Later / recurring:** the **Q-0107 reconciliation** *content* pass (de-stale docs · refactor the
   roadmap · keep the ledger honest) — its trigger/checker **machinery** is S3, the docs it produces are
   S4. Cadence: every 30th PR (Q-0134).
-- **Dispatch:** `S4` (executor **Claude-in-repo**) · *plan* = identify a doc gap / drift and scope its
-  fix · *execute·continue* = groom the idea backlog, de-stale a doc area, or run the docs-reconciliation
-  pass. **Live queue →** the
+- **Dispatch:** `S4` (executor **Claude-in-repo**, unattended-fit **🟢 auto**) · *plan* = identify a doc
+  gap / drift and scope its fix · *execute·continue* = groom the idea backlog, de-stale a doc area, or run
+  the docs-reconciliation pass. *(Docs/folio/leaf-wiring work is offline-verifiable + self-mergeable.)* **Live queue →** the
   **S4** area in the drill-down below; refs:
   [`AGENT_ORIENTATION.md`](AGENT_ORIENTATION.md) · [`repo-sector-map.md`](repo-sector-map.md).
 
@@ -177,9 +185,11 @@
   owner-undecided) · `ROUTINE_PAT` expiry monitoring · a Neon read-only role for DB-level checks.
 - **Later:** Hermes Docker backend + SSH-key hardening · security/authority tracking as Hermes gains
   write scope (Q-0117/Q-0121) · `BUG-0011` Hermes gateway restart crash-loop ([bug book](health/bug-book.md)).
-- **Dispatch:** `S5` (executor **Hermes-VPS / maintainer** — the outlier; only in-repo `check_*` /
-  workflow tooling is Claude-in-repo) · *plan* = design an ops check / a control-plane improvement ·
-  *execute·continue* = build a read-only ops skill, verify a live control-plane row, or harden the loop's reliability.
+- **Dispatch:** `S5` (executor **Hermes-VPS / maintainer** — the outlier, unattended-fit **🔵 live**;
+  only in-repo `check_*` / workflow tooling is Claude-in-repo) · *plan* = design an ops check / a
+  control-plane improvement · *execute·continue* = build a read-only ops skill, verify a live
+  control-plane row, or harden the loop's reliability. *(The live ops lanes need a maintainer token /
+  runtime to verify; the thin in-repo `check_*`/workflow-tooling sub-lane is itself 🟢 auto.)*
   **Live queue →** the **S5** area in the drill-down below; refs:
   [`operations/production-deployment.md`](operations/production-deployment.md) ·
   [`operations/hermes-control-plane.md`](operations/hermes-control-plane.md) ·
