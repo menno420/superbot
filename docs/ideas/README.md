@@ -38,6 +38,18 @@ Current broad captures:
   sim assumed (the bite→click round trip), so a later session can replay live data through the sim and
   validate/correct its load-bearing constants. Makes a design sim **self-verifying** — the ground-truth
   path the Q-0105 "unverified" header asks for. Agent-workflow / meta. Disposable (Q-0105).
+- [`karma-reputation-system-2026-06-22.md`](./karma-reputation-system-2026-06-22.md) —
+  **owner-dropped "Karma" (2026-06-22), clarified to thanks/upvote reputation:** members grant each other
+  peer reputation; per-user totals + a leaderboard, on an audited mutation seam modelled on economy/XP.
+  Anti-abuse (no self/bot, per-giver→receiver cooldown, daily cap, positive-only) is the hard part.
+  Routed → [`../planning/karma-reputation-plan-2026-06-22.md`](../planning/karma-reputation-plan-2026-06-22.md).
+  Community lane.
+- [`audited-score-subsystem-scaffold-2026-06-22.md`](./audited-score-subsystem-scaffold-2026-06-22.md) —
+  **captured by the Karma planning session (2026-06-22):** economy/xp/karma repeat the identical six-piece
+  "audited per-user score" shape by hand. A `new_score_subsystem` scaffold + a leaderboard-parity guard
+  (every score table has a `RankProvider` or an explicit exclusion) make the next one fill-in-the-blanks
+  and stop the INV-test / leaderboard-provider pieces from being forgotten. Agent-workflow / meta.
+  Disposable (Q-0105).
 - [`reconcile-open-pr-staleness-classifier-2026-06-22.md`](./reconcile-open-pr-staleness-classifier-2026-06-22.md) —
   **captured by the band-#1290 reconciliation pass (2026-06-22):** the Q-0125 open-PR disposition step is the
   one part of the recon pass with **no tooling assist** (manual `list_pull_requests` + eyeball each PR's

@@ -288,6 +288,12 @@ numbers: [discord-platform-limits](operations/discord-platform-limits.md).
 - **Later** — social feed notifications, YouTube-first (Q-0041 direction approved; the
   summarization enrichment layer rides the Q-0082 ceiling). Other sources + custom
   commands: Someday (see below).
+- **Later (owner-directed, plan-first)** — **Karma (thanks/upvote reputation)**: members grant each
+  other peer reputation; per-user totals + a leaderboard provider, on an audited mutation seam
+  modelled on economy/XP. Buildable 2–3-PR spec in
+  [karma-reputation-plan](planning/karma-reputation-plan-2026-06-22.md); gate: the owner's answers to
+  the 5 design questions (grant surface · downvotes · pure-rep vs. economy bridge · karma-roles ·
+  defaults). Idea: [karma-reputation-system](ideas/karma-reputation-system-2026-06-22.md).
 
 ### ⚙️ Settings / bindings / provisioning · **S1 Bot** — Next
 
