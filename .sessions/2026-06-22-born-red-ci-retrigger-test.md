@@ -17,3 +17,7 @@
 ## Result
 
 _(pending — recorded after the second push)_
+
+## Second push marker
+
+Second commit pushed to the open PR branch to test the `synchronize` trigger.
