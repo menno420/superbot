@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T16:55:58Z",
+    "generated_at": "2026-06-22T17:24:16Z",
     "build": {
-      "commit": "4fd9b5f",
-      "subject": "Fishing rod ladder: domain + persistence + audited purchase + knob wiring + UI",
-      "committed_at": "2026-06-22T16:55:58Z"
+      "commit": "76f3e7d",
+      "subject": "Fishing menu: real interactive panel (Cast · Rod · Fishdex)",
+      "committed_at": "2026-06-22T17:24:16Z"
     }
   },
   "counts": {
-    "commands": 371,
+    "commands": 372,
     "features": 37,
     "games": 9
   },
@@ -4552,6 +4552,27 @@
       "permissions": "user",
       "usage": "Cast a line — wait for the bite, then reel it in before it gets away.",
       "description": "Cast a line — wait for the bite, then reel it in before it gets away.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "fishing",
+      "aliases": [
+        "fishmenu"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the interactive fishing menu — cast, upgrade your rod, browse the dex.",
+      "description": "Open the interactive fishing menu — cast, upgrade your rod, browse the dex.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",

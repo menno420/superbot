@@ -95,6 +95,8 @@ back_button:
       reason: "Root diagnostics hub opened directly by the diagnostic cog command; top of its stack."
     - pattern: views/explore/world_hub.py::ExploreWorldHubView
       reason: "Root `!world` panel; opened as a Mining-hub child the opener attaches '↩ Mining Hub' externally (views/mining/main_panel.py explore_btn). No parent on the root open."
+    - pattern: views/fishing/menu.py::FishingMenuView
+      reason: "Root `!fishing` panel; opened as a `!help`/Games-hub child the parent attaches back externally (HelpCategoryView). No parent on the root open; its Cast/Rod sub-screens take over the message rather than nest."
     - pattern: views/games/deathmatch_panel.py::DeathmatchPanelView
       reason: "Root deathmatch game panel opened directly by the deathmatch cog command; no parent."
     - pattern: views/settings/hub.py::SettingsHubView

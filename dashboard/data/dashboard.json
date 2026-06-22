@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T16:55:58Z",
+    "generated_at": "2026-06-22T17:24:16Z",
     "build": {
-      "commit": "4fd9b5f",
-      "subject": "Fishing rod ladder: domain + persistence + audited purchase + knob wiring + UI",
-      "committed_at": "2026-06-22T16:55:58Z"
+      "commit": "76f3e7d",
+      "subject": "Fishing menu: real interactive panel (Cast · Rod · Fishdex)",
+      "committed_at": "2026-06-22T17:24:16Z"
     },
     "counts": {
       "functions": 37,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 47,
-      "commands": 371,
+      "commands": 372,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -2322,6 +2322,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-fishing-menu-buttons.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing menu: real buttons (the interactable panel)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-ci-strand-cancel-in-progress.md",
       "date": "2026-06-22",
       "title": "Session — CI strand root cause: code-quality cancel-in-progress (2026-06-22)",
@@ -2341,6 +2349,14 @@
       "file": "2026-06-22-bulk-role-creation-packs.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Bulk role creation via preset packs",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-bulk-role-creation-enhancements.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Bulk role creation enhancements",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2631,22 +2647,6 @@
       "title": "2026-06-21 — \"Free for everyone, forever\": codify the product North Star",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-early-pr-mandate.md",
-      "date": "2026-06-21",
-      "title": "Session — open the session PR FAST (Q-0189, owner-directed in-session)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-dashboard-autopr-conflict-rootcause.md",
-      "date": "2026-06-21",
-      "title": "Session — dashboard auto-PR conflict root cause (2026-06-21, autonomous)",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
@@ -5678,6 +5678,19 @@
           "parent": null,
           "aliases": [],
           "brief": "Cast a line — wait for the bite, then reel it in before it gets away.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "fishing",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "fishmenu"
+          ],
+          "brief": "Open the interactive fishing menu — cast, upgrade your rod, browse the dex.",
           "classification": "",
           "has_panel": true,
           "button_backed": true
