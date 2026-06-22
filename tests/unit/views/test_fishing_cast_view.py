@@ -1,9 +1,11 @@
-"""fishing cast minigame view — reel resolution + lifecycle (owner design Q-0175).
+"""fishing cast minigame view — reel resolution, trophy reel-fight, lifecycle.
 
-Pins the ``cast → wait → BITE → reel`` contract that the design sim recommends
-and the owner ratified (2026-06-22): reel before the bite or too late = the fish
-gets away (no write); reel within the window = the catch is committed. Discord
-timing is driven directly (no real sleeps); the writes are mocked.
+Pins the ``cast → wait → BITE → reel`` contract the design sim recommends and the
+owner ratified (2026-06-22): reel before the bite or too late = the fish gets away
+(no write); an *ordinary* fish lands on the first reel; a *trophy* hooks into a
+reel-fight (extra timed taps, each able to snap free) and only commits once every
+tap lands. Discord timing is driven directly (no real sleeps / no real background
+tasks); the writes are mocked.
 """
 
 from __future__ import annotations
@@ -16,10 +18,18 @@ import pytest
 from services import fishing_workflow
 from utils.fishing.fish import Catch, FishSpecies
 from views.fishing import active_casts
-from views.fishing.cast_view import FishingCastView
+from views.fishing.cast_view import _PHASE_FIGHT, FishingCastView
 
-_SPECIES = FishSpecies("trout", 8, "🐠")
-_CAST = fishing_workflow.Cast(catch=Catch(species=_SPECIES), level_before=3)
+# An *ordinary* fish: size 2, far below the level-7 trophy threshold (cap 21).
+_ORDINARY = fishing_workflow.Cast(
+    catch=Catch(species=FishSpecies("minnow", 2, "🐟")),
+    level_before=7,
+)
+# A *trophy*: size 8 at level 3 (cap 9, threshold 6) → 3-tap reel-fight.
+_TROPHY = fishing_workflow.Cast(
+    catch=Catch(species=FishSpecies("trout", 8, "🐠")),
+    level_before=3,
+)
 
 
 def _interaction(user_id: int = 1) -> MagicMock:
@@ -33,16 +43,31 @@ def _interaction(user_id: int = 1) -> MagicMock:
     return interaction
 
 
-def _make_view() -> FishingCastView:
-    view = FishingCastView(user_id=1, guild_id=99, cast=_CAST)
+def _make_view(cast: fishing_workflow.Cast = _ORDINARY) -> FishingCastView:
+    view = FishingCastView(user_id=1, guild_id=99, cast=cast)
     view.message = MagicMock()
     return view
 
 
 def _reel(view: FishingCastView, interaction: MagicMock):
-    # @discord.ui.button stores the original coroutine on the class; call it
-    # with self=view explicitly (mirrors the blackjack view tests).
+    # @discord.ui.button stores the original coroutine on the class; call it with
+    # self=view explicitly (mirrors the blackjack view tests).
     return type(view).reel_btn(view, interaction, MagicMock())
+
+
+def _spawn_stub() -> MagicMock:
+    """A ``tasks.spawn`` stand-in that closes the coroutine it's handed (the real
+    spawn would schedule it) so no 'coroutine never awaited' warning leaks."""
+
+    def _consume(name, coro, **_):  # noqa: ANN001
+        coro.close()
+
+    return MagicMock(side_effect=_consume)
+
+
+def _arm(view: FishingCastView) -> None:
+    view._armed = True
+    view._armed_at = time.monotonic()  # elapsed ≈ 0 → comfortably in time
 
 
 @pytest.fixture(autouse=True)
@@ -52,10 +77,15 @@ def _clear_active():
     active_casts.clear()
 
 
+# ---------------------------------------------------------------------------
+# Bite phase
+# ---------------------------------------------------------------------------
+
+
 @pytest.mark.asyncio
 async def test_reel_before_bite_spooks_the_fish_and_never_writes():
     view = _make_view()
-    active_casts.add((1, 99))  # start() would have added this
+    active_casts.add((1, 99))
     interaction = _interaction()
     assert view._armed is False
 
@@ -72,16 +102,15 @@ async def test_reel_before_bite_spooks_the_fish_and_never_writes():
 
 
 @pytest.mark.asyncio
-async def test_reel_within_window_commits_the_catch():
-    view = _make_view()
+async def test_ordinary_fish_commits_on_the_first_reel():
+    view = _make_view(_ORDINARY)
     active_casts.add((1, 99))
-    view._armed = True
-    view._bite_at = time.monotonic()  # elapsed ≈ 0 → comfortably in time
+    _arm(view)
     interaction = _interaction()
 
     result = fishing_workflow.FishResult(
-        catch=_CAST.catch,
-        fishing_level=3,
+        catch=_ORDINARY.catch,
+        fishing_level=7,
         unlocked_bigger=False,
     )
     with (
@@ -95,8 +124,8 @@ async def test_reel_within_window_commits_the_catch():
     ):
         await _reel(view, interaction)
 
-    commit.assert_awaited_once_with(1, 99, _CAST)  # the rolled cast is committed
-    edit.assert_awaited()  # the success embed is rendered
+    commit.assert_awaited_once_with(1, 99, _ORDINARY)
+    edit.assert_awaited()
     assert view._resolved is True
     assert (1, 99) not in active_casts
 
@@ -106,8 +135,7 @@ async def test_reel_too_late_lets_the_fish_get_away():
     view = _make_view()
     active_casts.add((1, 99))
     view._armed = True
-    # Bite happened well past the window → too slow.
-    view._bite_at = time.monotonic() - 99.0
+    view._armed_at = time.monotonic() - 99.0  # bite well past the window
     interaction = _interaction()
 
     with (
@@ -117,9 +145,140 @@ async def test_reel_too_late_lets_the_fish_get_away():
     ):
         await _reel(view, interaction)
 
-    commit.assert_not_awaited()  # missed the window → no catch
+    commit.assert_not_awaited()
     assert view._resolved is True
     assert (1, 99) not in active_casts
+
+
+# ---------------------------------------------------------------------------
+# Trophy reel-fight
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_trophy_hook_starts_the_fight_without_committing():
+    view = _make_view(_TROPHY)
+    active_casts.add((1, 99))
+    _arm(view)
+    interaction = _interaction()
+
+    with (
+        patch.object(fishing_workflow, "commit_catch", AsyncMock()) as commit,
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.tasks.spawn", _spawn_stub()) as spawn,
+    ):
+        await _reel(view, interaction)
+
+    commit.assert_not_awaited()  # the trophy isn't landed until the fight ends
+    assert view._phase == _PHASE_FIGHT
+    assert view._taps_total == 3 and view._taps_left == 3
+    spawn.assert_called_once()  # a fight round was scheduled
+    assert view._resolved is False
+    assert (1, 99) in active_casts  # still fighting → guard held
+
+
+@pytest.mark.asyncio
+async def test_landing_the_final_fight_tap_commits_the_trophy():
+    view = _make_view(_TROPHY)
+    active_casts.add((1, 99))
+    view._phase = _PHASE_FIGHT
+    view._taps_total = 3
+    view._taps_left = 1  # the last tap
+    _arm(view)
+    interaction = _interaction()
+
+    result = fishing_workflow.FishResult(
+        catch=_TROPHY.catch,
+        fishing_level=3,
+        unlocked_bigger=False,
+    )
+    with (
+        patch.object(
+            fishing_workflow,
+            "commit_catch",
+            AsyncMock(return_value=result),
+        ) as commit,
+        patch("views.fishing.cast_view.minigame.roll_escape", return_value=False),
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)),
+    ):
+        await _reel(view, interaction)
+
+    commit.assert_awaited_once_with(1, 99, _TROPHY)
+    assert view._resolved is True
+    assert (1, 99) not in active_casts
+
+
+@pytest.mark.asyncio
+async def test_a_non_final_fight_tap_advances_without_committing():
+    view = _make_view(_TROPHY)
+    active_casts.add((1, 99))
+    view._phase = _PHASE_FIGHT
+    view._taps_total = 3
+    view._taps_left = 3
+    _arm(view)
+    interaction = _interaction()
+
+    with (
+        patch.object(fishing_workflow, "commit_catch", AsyncMock()) as commit,
+        patch("views.fishing.cast_view.minigame.roll_escape", return_value=False),
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.tasks.spawn", _spawn_stub()) as spawn,
+    ):
+        await _reel(view, interaction)
+
+    commit.assert_not_awaited()
+    assert view._taps_left == 2  # one tap landed
+    spawn.assert_called_once()  # next round scheduled
+    assert view._resolved is False
+
+
+@pytest.mark.asyncio
+async def test_a_snapped_line_loses_the_trophy():
+    view = _make_view(_TROPHY)
+    active_casts.add((1, 99))
+    view._phase = _PHASE_FIGHT
+    view._taps_total = 3
+    view._taps_left = 2
+    _arm(view)
+    interaction = _interaction()
+
+    with (
+        patch.object(fishing_workflow, "commit_catch", AsyncMock()) as commit,
+        patch("views.fishing.cast_view.minigame.roll_escape", return_value=True),
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)),
+    ):
+        await _reel(view, interaction)
+
+    commit.assert_not_awaited()  # it snapped free → no catch
+    assert view._resolved is True
+    assert (1, 99) not in active_casts
+
+
+@pytest.mark.asyncio
+async def test_extra_taps_between_fight_rounds_are_ignored():
+    view = _make_view(_TROPHY)
+    view._phase = _PHASE_FIGHT
+    view._armed = False  # between rounds — no window open
+    interaction = _interaction()
+
+    with (
+        patch.object(fishing_workflow, "commit_catch", AsyncMock()) as commit,
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)) as defer,
+    ):
+        await _reel(view, interaction)
+
+    commit.assert_not_awaited()
+    defer.assert_awaited()  # the mash is swallowed, not a terminal
+    assert view._resolved is False
+
+
+# ---------------------------------------------------------------------------
+# Lifecycle guards
+# ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
