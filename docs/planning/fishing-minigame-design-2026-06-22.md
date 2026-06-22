@@ -195,18 +195,34 @@ Your `cast → wait → BITE → reel` instinct is **right**. Three data-driven 
 - **Line-snap as a soft-fail, not a hard-fail** — an escaped fish could leave a clue ("a *big* one
   got away") to bait the next cast rather than just denying the reward — keeps frustration low.
 
-## Open questions — genuinely the owner's call (do NOT decide unprompted)
+## Owner decisions (resolved 2026-06-22, via AskUserQuestion)
 
-1. **Mechanic depth:** the recommended **hybrid** (single reel for normal fish, reel-fight only for
-   trophies), or the simpler **single-reel-for-everything**, or the fuller **reel-fight always**?
-   The sim supports all three; it's a feel/complexity call.
-2. **Failure stakes:** when you miss the reel, does the fish **get away (no catch)**, or do you
-   **always catch but a miss downgrades** size/quality? The first is more game-y, the second is
-   gentler — matters for how punishing it feels.
-3. **Bait:** in at v1, or a later layer?
-4. **Pacing/anti-spam:** today fishing is unpaced (which is why fish sell cheap, #1289). Should the
-   minigame add a soft **energy/cooldown**, or stay spammable and keep rewards low?
-5. **Phase order:** ship the **shore minigame first** (Phase 1), boat/deepwater second — confirm.
+The owner answered the design-feel questions — these are now **decided** and bind the build:
+
+1. **Mechanic depth → HYBRID.** Single reel for ordinary fish (shore stays relaxing); a short
+   reel-fight only for big/trophy fish. (The sim's recommended option — best fun-per-complexity.)
+2. **Failure stakes → THE FISH GETS AWAY.** A missed reel = no catch (real stakes; makes rods +
+   attention matter). Pair with low-stakes "a big one got away" clues to keep frustration down
+   (Other-ideas list) rather than an empty, punishing feeling.
+3. **Pacing → SOFT ENERGY/COOLDOWN.** Add light pacing so fish can carry **more coin value** than
+   today's deliberately-cheap unpaced rate (#1289). Ties into the existing energy/cook loop — design
+   the cooldown so cooking-for-energy and fishing pace each other rather than two separate meters.
+   *(Re-tune the #1289 fish sell values upward once the cooldown lands — flag for the build PR.)*
+4. **Bait → LATER LAYER.** Ship the core cast/reel/boat loop first; add bait as a follow-up economy
+   knob once the base feels good. (Keeps v1 scope tight.)
+5. **Phase order → shore minigame first** (Phase 1), boat/deepwater second (consistent with the
+   expansion plan's phase split; confirm at build time).
+
+### What this means for the build (v1 scope)
+
+- A `views/fishing/` panel (mirroring `views/blackjack/solo_view.py`): 🎣 Cast · 🎒 Tackle · 📖
+  Fishdex · 🍳 Cook now; ⛵ Set sail and 🪱 Bait are **Phase 2 / later**.
+- Cast loop: randomised 3–6 s wait (1.5 s floor) + fake-out → `BITE` → ~2.5 s reel window (rod adds
+  to it). Ordinary fish: one reel, miss = it gets away. Trophy fish (top size-ranks): the reel-fight,
+  each fumbled/escaped tap = it gets away.
+- A **soft energy/cooldown** on casting (reuse the mining energy seam), and **raise fish sell values**
+  off the #1289 floor to match the new pacing.
+- Rod tiers (`bronze…diamond`) turning the 4 knobs in §4; level (`game_xp`) still gates size-bands.
 
 ## Verification / rollback
 
