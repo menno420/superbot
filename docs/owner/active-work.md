@@ -25,12 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/upbeat-clarke-73fm43` · **mining grid Mine (hub-redesign PR 3)** (owner-directed —
-  "continue the mining plan") — the (x,y,z) seed-deterministic procedural grid + 6-direction
-  movement + fog-of-war discovery, replacing the interim linear descend/ascend `MineView`
-  (Q-0173 design) · `utils/mining/grid.py` + migration 085 + `utils/db/games/mining_grid.py` +
-  `services/mining_workflow.py` + `views/mining/grid_mine_view.py` + `cogs/mining_cog.py` +
-  tests · 2026-06-22 · **PR (this session, auto-merge on green)**
 - `claude/friction-to-guard-reflex` · **wrong-branch guard hook + friction→guard reflex**
   (owner-directed, Q-0194) — extend `check_branch_freshness.py` PreToolUse to warn on
   commit/merge/rebase from a wrong/stale branch + institutionalize the "any friction → ship a
@@ -47,6 +41,11 @@ and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work l
 
 ## Recently cleared
 
+- `claude/upbeat-clarke-73fm43` · **mining grid Mine (hub-redesign PR 3)** (owner-directed —
+  "continue the mining plan") — (x,y,z) seed-deterministic grid + 6-direction movement + fog-of-war,
+  replacing the interim linear `MineView` (Q-0173) · `utils/mining/grid.py` + migration 085 +
+  `mining_grid.py` + `mining_workflow.move/mine_here/reseed_world` + `grid_mine_view.py` +
+  `!mineworld` · 2026-06-22 · **PR #1281 (auto-merge on green)**
 - `claude/starboard-v1` · **Starboard PR 1** (⚑ self-initiated, executes the #1254 plan) — Hall-of-Fame
   v1: migration 082 + `utils/db/starboard` + audited `starboard_service` + `starboard_cog` raw-reaction
   listener + `!starboard` config + teardown · 2026-06-21 · **PR #1259 (merge on green)**
