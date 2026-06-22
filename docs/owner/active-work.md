@@ -25,16 +25,16 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/funny-franklin-m4ocsx` · **Starboard PR 2 — config panel + polish** (dispatch routine,
-  band-#1260 queue B1; builds on the freshly-merged #1259) — `self_star` exclusion (correctness) +
-  ignore-channels list (feature) + a `BaseView` admin-hub config panel (UX); the optional XP bonus is
-  deferred (economy/star-farming risk → wants owner input) · `disbot/migrations/084_*` /
-  `utils/db/starboard.py` / `services/starboard_service.py` / `cogs/starboard_cog.py` /
-  `disbot/views/…` · 2026-06-22 · **PR (this session, auto-merge on green)**
+- `claude/funny-franklin-mjvqrx` · **BUG-0023 slash under-coverage root fix** (dispatch routine,
+  empty-fire, bugs-first) — teach `scan_commands.py` to detect attribute-assigned `app_commands.Group`
+  groups so their 40 subcommands + 6 groups are scanned (closes the static-25-vs-live-71 gap at the
+  root) + regen dashboard/site data + mark the bug FIXED · `scripts/scan_commands.py` /
+  `tests/unit/scripts/test_scan_commands.py` / regenerated data artifacts / `docs/health/bug-book.md`
+  · 2026-06-22 · **PR (this session, self-merge on green)**
 
-*(2026-06-22 prune, Q-0166: every prior Active claim's PR had merged — `list_pull_requests` (state=open)
-returned empty — so the whole block was stale and polluting `check_lane_overlap.py`. Pruned to the one
-live claim above; the merged work is recorded in `current-state.md` + Recently cleared below.)*
+*(2026-06-22 prune, Q-0166: the prior Starboard-PR-2 claim was stale — its PR #1270 merged and
+`list_pull_requests` (state=open) returned empty — so it was pruned; merged work is in
+`current-state.md` + Recently cleared below.)*
 
 ## Recently cleared
 
