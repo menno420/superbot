@@ -54,12 +54,21 @@ be hub-homed, and the Community hub's button view was at Discord's 5-per-row cap
 capacity evolution any new community subsystem would have triggered) rather than hide karma
 from help. Existing buttons keep their positions; karma + the wrapped row are additive.
 
+Full first-class integration also required: `KarmaCog.build_help_menu_view` (the Community-hub
+button target + the `help_hook` discoverability path), pinning `/karma` in the top-level
+slash-surface ledger, homing the karma folio to sector S1, karma sections in the
+settings-customization command-map + the help-command-surface-map inventory (with count bumps),
+and updates to the pinned hub/registry/view/provider tests. Several rounds were driven by the
+PR's own CI feedback (the new-subsystem ripple surfaced as failing invariants one tranche at a
+time) plus two rebases onto a moving `main` (PR #1331 farm, then #f768c5f) — generated-artifact
+conflicts resolved by regeneration each time.
+
 ⚑ **Self-initiated:** none — owner explicitly authorized building the plan ("you can
 execute this plan"). PR 3 (reaction-grant + karma-roles) deferred, owner-gated.
 
-Verification: `check_quality.py --full` green (lint + mypy + 11.8k pytest);
-`check_architecture --mode strict` clean (no new karma violations); `check_docs --strict`
-+ `check_current_state_ledger --strict` green.
+Verification: `check_quality.py --full` green (black + ruff + isort + mypy[801 files] + 11.8k
+pytest) on the final rebased head; `check_architecture --mode strict` clean (no new karma
+violations); `check_docs --strict` + `check_current_state_ledger --strict` green.
 
 ## 💡 Session idea (Q-0089)
 
