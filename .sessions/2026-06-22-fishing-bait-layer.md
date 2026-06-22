@@ -27,7 +27,7 @@ fishing seams:
 
 - `utils/fishing/bait.py` — pure bait catalog (Worm / Glow Grub / Shimmer Lure),
   like `rods.py`.
-- `disbot/migrations/090_fishing_bait.sql` + `utils/db/games/fishing_bait.py` —
+- `disbot/migrations/091_fishing_bait.sql` + `utils/db/games/fishing_bait.py` —
   per-(user,guild) active-bait loadout (key + charges), conn-aware CRUD, wired
   into `utils/db/__init__`.
 - `services/fishing_workflow.py` — `buy_bait` audited coin sink (mirrors
@@ -122,7 +122,7 @@ cheapest durable help is a folio/pre-pr pointer, done below.
 ## 📤 Run report
 
 - **Did:** shipped the fishing Bait layer (the design plan's named second economy knob) end-to-end · **Outcome:** shipped
-- **Shipped:** #1329 — fishing Bait: coin-bought rarity consumable (catalog + migration 090 + audited `buy_bait` + per-cast consume + 🪱 shop panel + `!bait`), tests + regenerated artifacts; CI green
+- **Shipped:** #1329 — fishing Bait: coin-bought rarity consumable (catalog + migration 091 + audited `buy_bait` + per-cast consume + 🪱 shop panel + `!bait`), tests + regenerated artifacts; CI green
 - **Run type:** `routine · dispatch`
 - **⚑ Owner decisions needed:** none (bait's rarity-only scope + stack/replace + single-active-bait are reversible defaults, ratify-if-you-disagree)
 - **⚑ Owner manual steps:** none (a merge auto-deploys; no data seed — bait knobs live in code, the table defaults to bait-less)

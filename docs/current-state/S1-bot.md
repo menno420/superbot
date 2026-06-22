@@ -19,7 +19,7 @@
 - **Mining grid** — seed-deterministic (x,y,z) grid + dig-moves-you (#1281/#1282).
 - **Starboard / Hall-of-Fame** — plan #1254 → PR 1 #1259 → PR 2 #1270.
 - **Fishing minigame** — cast/reel loop + rod ladder + energy (#1296–#1304); **Bait layer** (the
-  second economy knob — coin-bought rarity consumable, migration 090, `!bait` + shop panel, #1329).
+  second economy knob — coin-bought rarity consumable, migration 091, `!bait` + shop panel, #1329).
 
 **▶ Next startable (one of):**
 - **Fishing follow-ups** (turn-key, on the just-shipped bait seam) — the bait **speed knob**

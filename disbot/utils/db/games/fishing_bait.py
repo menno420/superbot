@@ -1,6 +1,6 @@
 """fishing_bait CRUD — the per-(user, guild) loaded bait + remaining charges.
 
-Migration 090. Plain CRUD only; the bait knob values live in
+Migration 091. Plain CRUD only; the bait knob values live in
 :mod:`utils.fishing.bait` and the purchase/consume policy in
 :mod:`services.fishing_workflow`.
 
