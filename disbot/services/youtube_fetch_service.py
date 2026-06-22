@@ -133,7 +133,7 @@ async def fetch_transcript(video_id: str) -> list[dict]:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(
             None,
-            lambda: YouTubeTranscriptApi.get_transcript(video_id),
+            lambda: YouTubeTranscriptApi().fetch(video_id).to_raw_data(),
         )
     except Exception:
         return []
