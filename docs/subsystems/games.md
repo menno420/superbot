@@ -189,8 +189,11 @@ on **Q-0182**.
   testable (`utils/fishing/minigame.py`: ~2.5 s window, 3–6 s bite + fake-out). **PR2 (the hybrid)
   shipped/building:** hooking a **trophy** (top third of the unlocked band) starts a short
   **reel-fight** — 2–4 more timed taps (scale with size), each able to snap free; land them all to
-  commit. **Deferred to next PRs:** rod ladder (turns the already-present `escape_resist` knob),
-  energy pacing + sell-value rebalance, boat/deepwater.
+  commit. **PR3 (rod ladder) shipped/building:** `!rod` buys up a 5-tier rod ladder
+  (`utils/fishing/rods.py`; bronze→diamond, coins, audited `fishing_workflow.buy_rod`); each tier
+  turns the 4 knobs — `window_bonus` (reaction window), `bite_speed` (faster bite), `rarity_pull`
+  (bigger catches within-band), `escape_resist` (fewer fight escapes). Level = *what* you catch;
+  rod = *how well*. **Deferred to next PRs:** energy pacing + sell-value rebalance, boat/deepwater.
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
   Phase 1 (fishing v1 + gear-switching) buildable; the loadout/minigame tail is owner-design-gated (Q-0175).
   **Fish *use* is now decided + shipped (#1289, owner 2026-06-22):** a caught fish enters the mining

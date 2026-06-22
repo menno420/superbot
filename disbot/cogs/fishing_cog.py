@@ -29,9 +29,15 @@ from discord.ext import commands
 from core.runtime import guild_resources as resources
 from services import fishing_workflow, game_xp_service
 from utils import db
+from utils.fishing import rods as rods_mod
 from utils.fishing.fish import MAX_LEVEL, SPECIES, max_size_rank_for_level
 from utils.ui_constants import GAME_COLOR, INFO_COLOR
-from views.fishing import FishingCastView, active_casts
+from views.fishing import (
+    FishingCastView,
+    RodShopView,
+    active_casts,
+    build_rod_embed,
+)
 
 logger = logging.getLogger("bot.cogs.fishing")
 
@@ -59,14 +65,17 @@ class FishingCog(commands.Cog):
             )
             return
 
+        # The equipped rod tunes the cast (rarity-pull on the roll; window /
+        # bite-speed / escape-resist in the view).
+        rod = await fishing_workflow.get_rod(ctx.author.id, ctx.guild.id)
         # Roll the catch now (read-only) so the minigame knows what's biting;
         # the write happens only if the player reels it in (commit_catch).
-        cast = await fishing_workflow.roll_cast(ctx.author.id, ctx.guild.id)
+        cast = await fishing_workflow.roll_cast(ctx.author.id, ctx.guild.id, rod)
         if cast.catch is None:
             await ctx.send("🎣 The fishing spot is unavailable right now — try later.")
             return
 
-        view = FishingCastView(ctx.author.id, ctx.guild.id, cast)
+        view = FishingCastView(ctx.author.id, ctx.guild.id, cast, rod=rod)
         embed = discord.Embed(
             description=(
                 f"{ctx.author.mention} casts a line… 🎣\n"
@@ -152,6 +161,17 @@ class FishingCog(commands.Cog):
         embed.description = "\n".join(lines)
         await ctx.send(embed=embed)
 
+    @commands.command(name="rod", aliases=["rodshop", "buyrod"])
+    async def rod(self, ctx):
+        """View your fishing rod and upgrade it for coins."""
+        tier = await db.get_rod_tier(ctx.author.id, ctx.guild.id)
+        current = rods_mod.rod_for_tier(tier)
+        nxt = rods_mod.next_rod(tier)
+        balance = await db.get_coins(ctx.author.id, ctx.guild.id)
+        embed = build_rod_embed(current, nxt, balance)
+        view = RodShopView(ctx.author, ctx.guild.id, at_max=nxt is None)
+        view.message = await ctx.send(embed=embed, view=view)
+
     # ------------------------------------------------------------------ help hook
 
     async def build_help_menu_view(
@@ -167,9 +187,10 @@ class FishingCog(commands.Cog):
             title="🎣 Fishing",
             description=(
                 f"Cast a line to catch from **{len(SPECIES)}** size-ranked fish. "
-                "Level up your fishing to unlock bigger catches, and fill out your "
-                "collection log.\n\n"
-                "**`!fish`** — cast a line\n"
+                "Wait for the bite, reel it in, and fight the big ones. Level up to "
+                "unlock bigger catches and buy better rods.\n\n"
+                "**`!fish`** — cast a line (wait → bite → reel)\n"
+                "**`!rod`** — view & upgrade your rod\n"
                 "**`!fishlog`** — your collection\n"
                 "**`!fishtop`** — the server leaderboard"
             ),

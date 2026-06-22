@@ -49,3 +49,40 @@ def test_smaller_fish_are_more_common_than_bigger_ones():
 def test_roll_returns_none_when_no_species_unlocked(monkeypatch):
     monkeypatch.setattr("utils.fishing.rewards.unlocked_species", lambda level: [])
     assert roll_catch(1) is None
+
+
+def test_rarity_pull_biases_toward_bigger_fish():
+    """A higher rarity_pull should raise the average size of the catch."""
+    import random as _random
+
+    from utils.fishing.rewards import roll_catch
+
+    def avg_size(pull):
+        rng = _random.Random(123)
+        sizes = [
+            roll_catch(7, rng, rarity_pull=pull).species.size_rank  # type: ignore[union-attr]
+            for _ in range(4000)
+        ]
+        return sum(sizes) / len(sizes)
+
+    base = avg_size(1.0)
+    pulled = avg_size(1.7)
+    assert pulled > base  # the rod knob makes catches bigger, on average
+
+
+def test_rarity_pull_below_one_is_clamped_to_neutral():
+    """Pull < 1 must not *penalise* big fish — it clamps to the base weighting."""
+    import random as _random
+
+    from utils.fishing.rewards import roll_catch
+
+    def avg_size(pull):
+        rng = _random.Random(7)
+        sizes = [
+            roll_catch(7, rng, rarity_pull=pull).species.size_rank  # type: ignore[union-attr]
+            for _ in range(2000)
+        ]
+        return sum(sizes) / len(sizes)
+
+    # 0.5 clamps to 1.0 → same distribution as neutral (same seed → same draws).
+    assert avg_size(0.5) == avg_size(1.0)

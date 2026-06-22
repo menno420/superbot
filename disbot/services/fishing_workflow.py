@@ -19,11 +19,17 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-from services import game_xp_service
+from core.events import bus
+from services import economy_service, game_xp_service
 from utils import db
-from utils.fishing import MAX_LEVEL, Catch, roll_catch
+from utils.fishing import MAX_LEVEL, Catch
+from utils.fishing import rods as rods_mod
+from utils.fishing import roll_catch
 
 logger = logging.getLogger("bot.fishing_workflow")
+
+#: Audit/event reason tag for a rod purchase (mirrors mining's "<game>:<action>").
+ROD_PURCHASE_REASON = "fishing:rod_purchase"
 
 
 def fishing_level_from_xp(fishing_xp: int) -> int:
@@ -67,18 +73,27 @@ class Cast:
     level_before: int
 
 
-async def roll_cast(user_id: int, guild_id: int) -> Cast:
+async def roll_cast(
+    user_id: int,
+    guild_id: int,
+    rod: rods_mod.Rod | None = None,
+) -> Cast:
     """Read the player's level and roll a catch **without writing anything**.
 
     The read-only half of a cast: the minigame calls this when the line goes
     out, holds the rolled :class:`Cast`, and only calls :func:`commit_catch`
     once the reel succeeds. Returns ``Cast(catch=None, …)`` if the catalog
     failed to load (no species) — the caller surfaces an honest empty result.
+
+    *rod* (defaulting to the starter) applies its ``rarity_pull`` knob: a better
+    rod biases the catch toward the big end of the *same* unlocked band — never a
+    new band (that stays the fishing-level axis).
     """
+    rod = rod or rods_mod.STARTER
     xp_map = await db.get_game_xp(user_id, guild_id)
     fishing_xp_before = xp_map.get(game_xp_service.GAME_FISHING, 0)
     level_before = fishing_level_from_xp(fishing_xp_before)
-    catch = roll_catch(level_before)
+    catch = roll_catch(level_before, rarity_pull=rod.rarity_pull)
     if catch is None:
         logger.error("fishing: no catchable species (catalog empty?)")
     return Cast(catch=catch, level_before=level_before)
@@ -140,3 +155,77 @@ async def fish(user_id: int, guild_id: int) -> FishResult:
     """
     cast = await roll_cast(user_id, guild_id)
     return await commit_catch(user_id, guild_id, cast)
+
+
+# ---------------------------------------------------------------------------
+# Rod ladder — the coin-bought progression axis (Q-0175)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class RodPurchaseResult:
+    """The outcome of a ``buy_rod`` attempt — a flag + a player-facing message."""
+
+    success: bool
+    message: str
+    #: The rod tier owned *after* the attempt (unchanged on failure).
+    tier: int
+
+
+async def get_rod(user_id: int, guild_id: int) -> rods_mod.Rod:
+    """The player's currently-equipped rod (the highest tier they own)."""
+    tier = await db.get_rod_tier(user_id, guild_id)
+    return rods_mod.rod_for_tier(tier)
+
+
+async def buy_rod(user_id: int, guild_id: int) -> RodPurchaseResult:
+    """Buy the next rod up the ladder — an audited coin sink.
+
+    Mirrors ``mining_workflow.vault_upgrade``: read state + cost, debit coins and
+    raise the owned tier inside ONE transaction (the debit audits itself), then
+    emit the balance event after commit. Insufficient funds rolls everything back.
+    """
+    current_tier = await db.get_rod_tier(user_id, guild_id)
+    nxt = rods_mod.next_rod(current_tier)
+    if nxt is None:
+        top = rods_mod.rod_for_tier(current_tier)
+        return RodPurchaseResult(
+            False,
+            f"You already wield the **{top.name}** {top.emoji} — the finest rod there is!",
+            current_tier,
+        )
+
+    try:
+        async with db.transaction() as conn:
+            new_balance = await economy_service.debit_in_txn(
+                conn,
+                guild_id,
+                user_id,
+                nxt.price,
+                reason=ROD_PURCHASE_REASON,
+                actor_id=user_id,
+            )
+            await db.set_rod_tier(user_id, guild_id, nxt.tier, conn=conn)
+    except economy_service.InsufficientFundsError:
+        balance = await db.get_coins(user_id, guild_id)
+        return RodPurchaseResult(
+            False,
+            f"The **{nxt.name}** {nxt.emoji} costs **{nxt.price}** 🪙 — "
+            f"you only have **{balance}** 🪙.",
+            current_tier,
+        )
+
+    await bus.emit(
+        economy_service.EVT_BALANCE_CHANGED,
+        guild_id=guild_id,
+        user_id=user_id,
+        delta=-nxt.price,
+        new_balance=new_balance,
+        reason=ROD_PURCHASE_REASON,
+    )
+    return RodPurchaseResult(
+        True,
+        f"You upgraded to the **{nxt.name}** {nxt.emoji} for **{nxt.price}** 🪙! "
+        f"Balance: **{new_balance}** 🪙.",
+        nxt.tier,
+    )

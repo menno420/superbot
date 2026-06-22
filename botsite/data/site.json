@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T15:56:26Z",
+    "generated_at": "2026-06-22T16:55:58Z",
     "build": {
-      "commit": "4a36b7d",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/fishing-minigame-pr1",
-      "committed_at": "2026-06-22T15:56:26Z"
+      "commit": "4fd9b5f",
+      "subject": "Fishing rod ladder: domain + persistence + audited purchase + knob wiring + UI",
+      "committed_at": "2026-06-22T16:55:58Z"
     }
   },
   "counts": {
-    "commands": 370,
+    "commands": 371,
     "features": 37,
     "games": 9
   },
@@ -5397,6 +5397,28 @@
       "examples": [],
       "status": "finished",
       "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "rod",
+      "aliases": [
+        "rodshop",
+        "buyrod"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "View your fishing rod and upgrade it for coins.",
+      "description": "View your fishing rod and upgrade it for coins.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
