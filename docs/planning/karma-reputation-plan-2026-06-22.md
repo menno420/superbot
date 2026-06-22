@@ -1,5 +1,12 @@
 # Plan — Karma (thanks/upvote reputation) subsystem
 
+> **▶ BUILT 2026-06-22 (PR #1332, owner-authorized).** PR 1 (foundation + audited
+> seam) + PR 2 (cog + leaderboard) shipped as one PR with the recommended defaults
+> (both surfaces with reaction off by default · positive-only · pure reputation ·
+> karma-roles deferred · 1h cooldown / 10-per-day cap). Live folio:
+> [`../subsystems/karma.md`](../subsystems/karma.md). **PR 3 (reaction-grant +
+> karma-roles) remains deferred** — owner-gated. This plan is kept as the design record.
+>
 > **Status:** `plan` — buildable spec, owner-directed (2026-06-22). Answers the maintainer's one-word
 > prompt "Karma" + the AskUserQuestion clarification (**plan-first**, flavor **thanks/upvote
 > reputation**). **No code shipped this session** — this is the design; implementation awaits the

@@ -1,24 +1,24 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T22:22:42Z",
+    "generated_at": "2026-06-22T21:53:51Z",
     "build": {
-      "commit": "6109030",
-      "subject": "docs(session): flip treasury session card to complete (PR #1334)",
-      "committed_at": "2026-06-22T22:22:42Z"
+      "commit": "5873795",
+      "subject": "Karma build: claim lane + born-red session card",
+      "committed_at": "2026-06-22T21:53:51Z"
     },
     "counts": {
       "functions": 39,
-      "ideas": 128,
+      "ideas": 127,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
       "cogs": 49,
-      "commands": 377,
-      "setting_keys": 104,
-      "setting_domains": 15,
-      "typed_settings": 85,
+      "commands": 378,
+      "setting_keys": 107,
+      "setting_domains": 16,
+      "typed_settings": 88,
       "visible_subsystems": 39,
       "synonyms": 87,
       "bot_changelog": 3
@@ -391,33 +391,6 @@
       "capabilities": [
         "mining.resource.mine",
         "mining.resource.view"
-      ]
-    },
-    {
-      "key": "treasury",
-      "display_name": "Treasury",
-      "description": "Server-owned coin pool — contribute coins; managers disburse",
-      "emoji": "🏛️",
-      "visibility_tier": "user",
-      "visibility_mode": "normal",
-      "category": "economy",
-      "tags": [
-        "treasury",
-        "economy",
-        "coins",
-        "governance"
-      ],
-      "entry_points": [
-        "treasury"
-      ],
-      "related_subsystems": [
-        "economy",
-        "inventory"
-      ],
-      "capabilities": [
-        "treasury.pool.view",
-        "treasury.pool.contribute",
-        "treasury.pool.disburse"
       ]
     },
     {
@@ -898,6 +871,35 @@
       ]
     },
     {
+      "key": "karma",
+      "display_name": "Karma",
+      "description": "Peer reputation — thank helpful members with !thanks",
+      "emoji": "✨",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "progression",
+      "tags": [
+        "karma",
+        "reputation",
+        "thanks",
+        "progression",
+        "leaderboard"
+      ],
+      "entry_points": [
+        "thanks",
+        "karma"
+      ],
+      "related_subsystems": [
+        "xp",
+        "leaderboard"
+      ],
+      "capabilities": [
+        "karma.card.view",
+        "karma.grant.give",
+        "karma.settings.configure"
+      ]
+    },
+    {
       "key": "leaderboard",
       "display_name": "Leaderboard",
       "description": "Server leaderboards for XP, coins, and games",
@@ -1052,16 +1054,6 @@
   ],
   "ideas": [
     {
-      "file": "ai-self-curated-memory-notebook-2026-06-22.md",
-      "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
-      "status": "ideas",
-      "date": "2026-06-22",
-      "summary": "Give the bot's in-product AI a **narrow, audited, write-back seam**: a dedicated table it may",
-      "subsystems": [
-        "ai"
-      ]
-    },
-    {
       "file": "audited-score-subsystem-scaffold-2026-06-22.md",
       "title": "Idea — \"audited per-user score\" subsystem scaffold + parity guard",
       "status": "ideas",
@@ -1096,7 +1088,7 @@
     {
       "file": "idle-game-offline-summary-2026-06-22.md",
       "title": "Idea — \"while you were away\" offline-progress summary for idle games",
-      "status": "historical",
+      "status": "ideas",
       "date": "2026-06-22",
       "summary": "The chicken farm (shipped this session) is the bot's first **idle** game: progress",
       "subsystems": null
@@ -2331,14 +2323,6 @@
       "self_initiated": true
     },
     {
-      "file": "2026-06-22-server-treasury.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Server treasury (collective coin pool)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
       "file": "2026-06-22-route-mining-encounters.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — route the mining-grid-encounters design to the owner (Q-0198)",
@@ -2483,6 +2467,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-karma-build.md",
+      "date": "2026-06-22",
+      "title": "Session — 2026-06-22 · Karma (thanks/upvote reputation) — build",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-idle-chicken-farm.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — NEW idle egg/chicken farm game",
@@ -2585,14 +2577,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-farm-freshstart-and-idle-summary.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — farm fresh-start faucet fix + \"while you were away\" idle summary",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     },
     {
       "file": "2026-06-22-ci-strand-cancel-in-progress.md",
@@ -2769,6 +2753,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-21-reaction-roles-self-heal.md",
+      "date": "2026-06-21",
+      "title": "2026-06-21 — Reaction roles: listener self-heal for dead bindings",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -6173,6 +6165,63 @@
       ]
     },
     {
+      "cog": "KarmaCog",
+      "file": "disbot/cogs/karma_cog.py",
+      "subsystem": "karma",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "karma",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show a member's karma standing: ``!karma [@user]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "karma",
+          "type": "slash",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show your karma (peer reputation) — or another member's.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "thanks",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "rep",
+            "thank"
+          ],
+          "brief": "Give a karma point to a helpful member: ``!thanks @user [reason]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "give",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "karma",
+          "aliases": [
+            "add"
+          ],
+          "brief": "Give a karma point: ``!karma give @user [reason]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "LeaderboardCog",
       "file": "disbot/cogs/leaderboard_cog.py",
       "subsystem": "leaderboard",
@@ -7895,56 +7944,6 @@
       ]
     },
     {
-      "cog": "TreasuryCog",
-      "file": "disbot/cogs/treasury_cog.py",
-      "subsystem": "treasury",
-      "is_cog": true,
-      "commands": [
-        {
-          "name": "treasury",
-          "type": "prefix",
-          "is_group": true,
-          "parent": null,
-          "aliases": [
-            "bank",
-            "pool"
-          ],
-          "brief": "Open the server treasury — view the pool and contribute coins.",
-          "classification": "",
-          "has_panel": true,
-          "button_backed": true
-        },
-        {
-          "name": "contribute",
-          "type": "prefix",
-          "is_group": false,
-          "parent": "treasury",
-          "aliases": [
-            "donate",
-            "deposit"
-          ],
-          "brief": "Donate *amount* of your own coins into the server treasury.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "grant",
-          "type": "prefix",
-          "is_group": false,
-          "parent": "treasury",
-          "aliases": [
-            "disburse",
-            "payout"
-          ],
-          "brief": "Disburse *amount* from the treasury to *member* (managers only).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        }
-      ]
-    },
-    {
       "cog": "UtilityCog",
       "file": "disbot/cogs/utility_cog.py",
       "subsystem": "utility",
@@ -8625,6 +8624,36 @@
       ]
     },
     {
+      "domain": "karma",
+      "purpose": "Settings keys owned by the Karma subsystem (cogs.karma_cog).",
+      "keys": [
+        {
+          "constant": "KARMA_ENABLED",
+          "key": "karma_enabled",
+          "type": "bool",
+          "hint": "Master switch for karma. When off, the !thanks / !karma give commands politely decline. On by default.",
+          "allowed_values": [],
+          "default": true
+        },
+        {
+          "constant": "KARMA_COOLDOWN",
+          "key": "karma_cooldown",
+          "type": "int",
+          "hint": "How long a member must wait before thanking the same recipient again (seconds). The main anti-farm guard. 0 disables the cooldown.",
+          "allowed_values": [],
+          "default": 3600
+        },
+        {
+          "constant": "KARMA_DAILY_CAP",
+          "key": "karma_daily_cap",
+          "type": "int",
+          "hint": "Maximum karma grants one member can give per rolling 24 hours.",
+          "allowed_values": [],
+          "default": 10
+        }
+      ]
+    },
+    {
       "domain": "logging",
       "purpose": "Settings keys owned by the server-logging service (services.server_logging).",
       "keys": [
@@ -9063,12 +9092,6 @@
             "emoji": "⛏️"
           },
           {
-            "key": "treasury",
-            "display_name": "Treasury",
-            "category": "economy",
-            "emoji": "🏛️"
-          },
-          {
             "key": "btd6",
             "display_name": "BTD6 Assistant",
             "category": "games",
@@ -9127,6 +9150,12 @@
             "display_name": "Word Chain",
             "category": "games",
             "emoji": "🔗"
+          },
+          {
+            "key": "karma",
+            "display_name": "Karma",
+            "category": "progression",
+            "emoji": "✨"
           },
           {
             "key": "leaderboard",

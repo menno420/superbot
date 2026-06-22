@@ -25,16 +25,72 @@ registry entry · INV-K invariant test + service tests · `docs/ownership.md` ro
 
 ## What changed
 
-_(filled at close)_
+Implemented the Karma subsystem end-to-end (plan PR 1 + PR 2 in one PR; PR 3 deferred):
+- **DB:** migration `092_karma.sql` (`karma` + append-only `karma_audit_log`) ·
+  `utils/db/karma.py` (credit/get/top/rank + the two anti-abuse reads + audit insert) ·
+  re-exported from `utils/db/__init__.py`.
+- **Service:** `services/karma_service.py` (`give` — positive-only, no-self, cooldown,
+  daily cap; `get_record`) emitting the catalogued `karma.granted` · config read model
+  `services/karma_config.py` (`KarmaPolicy`/`load_policy`).
+- **Settings:** `utils/settings_keys/karma.py` (+ re-export) · `cogs/karma/schemas.py`
+  (`enabled`/`cooldown_seconds`/`daily_cap` SettingSpecs).
+- **Cog + leaderboard:** `cogs/karma_cog.py` (`!thanks`, `!karma [give]`, `/karma`) ·
+  `KarmaProvider` in `rank_providers.py` (+ `rep`/`reputation`/`karmalb` aliases) ·
+  `config.py` extension · `subsystem_registry.py` entry.
+- **Tests:** INV-K invariant (`test_inv_k_karma_service.py`) · `test_karma_service.py`
+  (grant/audit/event + self/cooldown/cap/disabled rejections) · `test_karma_schemas.py`
+  (default parity). Updated `test_rank_providers.py` canonical-categories set.
+- **Docs + generated artifacts:** `docs/ownership.md` rows (table/service/event/audit) ·
+  new folio `docs/subsystems/karma.md` · plan rebadged BUILT. Regenerated the crosswalk
+  (`extension_roles.yaml` + doc), dashboard/site.json, atlas, and the env-vars doc head
+  (the config.py line shift from adding the extension).
+
+**Decisions made autonomously (owner offline):** delivered PR1+PR2 as one PR (net-new
+isolated subsystem — contained risk); used the plan's recommended defaults; homed karma as
+a **first-class governance subsystem under the Community hub** (`parent_hub: "community"`,
+alongside XP/Role). The repo invariant (post-#1290) requires every advertisable subsystem to
+be hub-homed, and the Community hub's button view was at Discord's 5-per-row cap — so I
+**generalized `CommunityHubView` to wrap buttons past 5/row** (a contained, test-covered
+capacity evolution any new community subsystem would have triggered) rather than hide karma
+from help. Existing buttons keep their positions; karma + the wrapped row are additive.
+
+⚑ **Self-initiated:** none — owner explicitly authorized building the plan ("you can
+execute this plan"). PR 3 (reaction-grant + karma-roles) deferred, owner-gated.
+
+Verification: `check_quality.py --full` green (lint + mypy + 11.8k pytest);
+`check_architecture --mode strict` clean (no new karma violations); `check_docs --strict`
++ `check_current_state_ledger --strict` green.
 
 ## 💡 Session idea (Q-0089)
 
-_(filled at close)_
+[`audited-score-subsystem-scaffold`](../docs/ideas/audited-score-subsystem-scaffold-2026-06-22.md)
+(carried from the planning session, now *validated by building it*): adding karma required
+hand-editing **a dozen+** coordinated surfaces beyond the core seam — `config.py`,
+`subsystem_registry.py`, `hub_registry.py`, `extension_roles.yaml`, the sector-folio map, the
+`CommunityHubView` row-wrap, three regenerated artifacts (dashboard, atlas, env-vars), and
+five pinned hub/registry tests. A `new_score_subsystem` scaffold
++ a "new-subsystem ripple" checklist (the artifacts/registries a new subsystem must touch)
+would turn this from archaeology into a fill-in-the-blanks job. The build is the ground-truth
+the idea's Q-0105 header asked for — promote it.
 
 ## ⟲ Previous-session review (Q-0102)
 
-_(filled at close)_
+The previous session (the Karma *planning* session, PR #1330) paid off directly here: its
+"mirror economy/XP exactly" framing and concrete code-pointers (db→service→cog→provider) were
+accurate against source, so the build had almost no rework on the core seam. One genuine miss
+it could have flagged: the plan enumerated the *seam* files but **not the registry/artifact
+ripple** (subsystem_registry, extension crosswalk, dashboard/atlas/env-vars regen, hub
+capacity) — exactly where the 31 first-run test failures landed. **System improvement
+(initiated):** that ripple is mechanical and knowable, so it belongs in a checklist/scaffold,
+not rediscovered per subsystem — captured as the Q-0089 idea above and worth a `new-subsystem`
+skill step.
 
 ## 📋 Doc audit (Q-0104)
 
-_(filled at close)_
+- `check_docs --strict` green (425 docs; folio reachable, badges valid, ratchets at 20).
+- `check_current_state_ledger --strict` — only benign-lag (8 PRs newer than marker #1320;
+  the next reconciliation records them). #1332 records on merge — no manual ledger edit now
+  (adding an unmerged PR would break the Recently-shipped ratchet).
+- New owner decision (build authorization + the recommended-defaults selection) is captured
+  here + in the plan's BUILT banner; no router Q needed (no rule change).
+- All generated artifacts regenerated and verified fresh by their drift tests.

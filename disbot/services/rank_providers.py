@@ -430,6 +430,38 @@ class CountingProvider(RankProvider):
         return None, None
 
 
+class KarmaProvider(RankProvider):
+    name = "karma"
+    display_title = "✨ Karma Leaderboard"
+    select_label = "Karma"
+    select_emoji = "✨"
+    empty_hint = "No karma yet. Thank a helpful member with `!thanks @user`."
+
+    async def top(self, guild: discord.Guild) -> list[RankEntry]:
+        rows = await db.top_karma(guild.id, 10)
+        return [
+            RankEntry(
+                label=(
+                    f"**{resources.member_display(guild, row['user_id'])}** "
+                    f"— {row['karma_points']} ✨"
+                ),
+            )
+            for row in rows
+        ]
+
+    async def member_rank(
+        self,
+        guild: discord.Guild,
+        user_id: int,
+    ) -> tuple[int | None, str | None]:
+        row = await db.get_karma(user_id, guild.id)
+        points = int(row.get("karma_points", 0) or 0)
+        if points <= 0:
+            return None, None
+        rank = await db.karma_rank(user_id, guild.id)
+        return rank, f"{points} ✨"
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -447,6 +479,7 @@ _PROVIDERS: dict[str, RankProvider] = {
         DeathmatchProvider(),
         RpsProvider(),
         CountingProvider(),
+        KarmaProvider(),
     )
 }
 
@@ -470,6 +503,9 @@ ALIASES: dict[str, str] = {
     "rpslb": "rps",
     "countlb": "counting",
     "counting_leaderboard": "counting",
+    "rep": "karma",
+    "reputation": "karma",
+    "karmalb": "karma",
 }
 
 

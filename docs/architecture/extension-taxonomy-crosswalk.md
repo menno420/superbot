@@ -36,14 +36,14 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | 8 | `automod` | `product_subsystem` | ✓ |  | Automod rules engine (Q-0108). |
 | 9 | `image_moderation` | `product_subsystem` | ✓ |  | Image moderation — OpenAI omni-moderation filter (Q-0108). |
 | 10 | `xp` | `product_subsystem` | ✓ |  |  |
-| 11 | `blackjack` | `product_subsystem` | ✓ |  | Game. |
-| 12 | `rps_tournament` | `product_subsystem` | ✓ |  | Game (tournament orchestration). |
-| 13 | `utility` | `shared_platform` | ✓ |  | General utility commands. |
-| 14 | `cleanup` | `product_subsystem` | ✓ |  | Message-cleanup policy. |
-| 15 | `channel` | `product_subsystem` | ✓ |  | Channel management (server-management area). |
-| 16 | `inventory` | `product_subsystem` | ✓ |  |  |
-| 17 | `economy` | `product_subsystem` | ✓ |  |  |
-| 18 | `treasury` | `product_subsystem` | ✓ |  | Server-owned coin pool — the economy↔governance seam (contribute / manager-disburse). |
+| 11 | `karma` | `product_subsystem` | ✓ |  | Peer reputation (thanks/upvote); audited karma_service seam + leaderboard. |
+| 12 | `blackjack` | `product_subsystem` | ✓ |  | Game. |
+| 13 | `rps_tournament` | `product_subsystem` | ✓ |  | Game (tournament orchestration). |
+| 14 | `utility` | `shared_platform` | ✓ |  | General utility commands. |
+| 15 | `cleanup` | `product_subsystem` | ✓ |  | Message-cleanup policy. |
+| 16 | `channel` | `product_subsystem` | ✓ |  | Channel management (server-management area). |
+| 17 | `inventory` | `product_subsystem` | ✓ |  |  |
+| 18 | `economy` | `product_subsystem` | ✓ |  |  |
 | 19 | `counting` | `product_subsystem` | ✓ |  | Counting game. |
 | 20 | `deathmatch` | `product_subsystem` | ✓ |  | Game (1v1 duels). |
 | 21 | `proof_channel` | `product_subsystem` | ✓ |  |  |
