@@ -40,6 +40,11 @@ _FORBIDDEN_ANY_RECEIVER = {
     "set_structure_level",
     # title selection (Slice F) — written only through services/title_service.py.
     "set_equipped_title",
+    # grid Mine (hub-redesign PR 3) — lateral position, the per-guild world seed,
+    # and fog-of-war discovery, all written only through services/mining_workflow.
+    "set_position",
+    "set_world_seed",
+    "mark_discovered",
 }
 
 # Names that collide with other subsystems (``setup_session.set_depth`` is the

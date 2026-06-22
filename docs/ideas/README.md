@@ -131,6 +131,12 @@ Current broad captures:
   non-bot messages accrue a per-channel counter → the bot spawns a Claim-button encounter → first valid
   claimer gets a reward routed through `economy`/`game_xp`/inventory. The **one Pokétwo mechanic with no
   analog** (fishing/mining are command-only); net-new, ungated, anti-P2W, docks into the Explore world hub.
+- [`mining-grid-encounters-2026-06-22.md`](./mining-grid-encounters-2026-06-22.md) —
+  **owner-named follow-up to the grid Mine (Q-0173):** the grid Mine (hub-redesign PR 3) shipped
+  encounter-free by decision; this captures the deferred **depth-gated, sparse** random encounters while
+  roaming the grid ("after a certain depth … but not too many"), routed through `mining_workflow` (RS02).
+  Distinct from wild-encounters (exploration-triggered vs. chat-activity-triggered) but could share one
+  resolution engine. → relates `planning/mining-hub-redesign-2026-06-15` · Q-0173 · Q-0087.
   **SPEC'D → plan (Lane A):** [`planning/poketwo-musicbot-feature-mapping-plan-2026-06-20`](../planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md);
   build sequence + spawn design routed as **Q-0186**. → relates `planning/{explore-hub-federated-world-plan,fishing-open-world-expansion}`.
 - [`plan-homing-guard-2026-06-19.md`](./plan-homing-guard-2026-06-19.md) — **SHIPPED 2026-06-20 (PR #1174).**

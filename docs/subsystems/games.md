@@ -188,8 +188,15 @@ on **Q-0182**.
   🧍 Character · 🧰 Gear · 🔨 Workshop); a **Character** sub-hub (`views/mining/character_hub.py`)
   groups Overview/Inventory/Stats/Skills/Vault/Home and an **Explore** stub sub-hub
   (`views/mining/explore_hub.py`) previews the open-world explorer (Fishing/Roam/Quests — early).
-  Descend/Ascend + the depth-event explore folded into the Mine action (`MineView`). **PR3 (grid Mine)
-  is owner-sign-off-gated, not built.**
+  **PR3 (grid Mine) shipped (2026-06-22):** the Mine action is now a (x, y, z) grid navigator
+  (`views/mining/grid_mine_view.py` `MineGridView`) — six movement buttons + Mine here over a
+  **seed-deterministic procedural world** (pure `utils/mining/grid.py`; z = the existing depth band, so
+  `utils/mining/world.py` balance carries over), with **per-guild shareable seed** + **fog-of-war
+  discovery** (migration 085: `pos_x`/`pos_y` + `mining_world` + `mining_discovered`;
+  `utils/db/games/mining_grid.py` + `mining_workflow.move`/`mine_here`/`reseed_world` on the RS02 seam).
+  `!mine` opens it; `!mineworld` shows/reseeds the shared seed. It **replaced** the interim linear
+  `MineView`. v1 is **encounter-free** (owner Q-0173: encounters are a deferred later session →
+  [`../ideas/mining-grid-encounters-2026-06-22.md`](../ideas/mining-grid-encounters-2026-06-22.md)).
 - [games-economy-faucet-sink-diagnostic-plan](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) —
   read-only economy faucet/sink read model (turn-key).
 - *Shipped → `historical`:* [mining-structures-skill-tree-plan](../planning/mining-structures-skill-tree-plan-2026-06-14.md)
