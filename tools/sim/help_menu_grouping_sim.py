@@ -31,9 +31,17 @@ An analytical `auto(k)` sweep (greedy cohesion-maximising assignment into k
 sections) is printed as a reference frontier -- it shows how close the
 implementable schemes get to the best possible logical cohesion.
 
-Stdlib only. Read-only. Run:  python3.10 tools/sim/help_menu_grouping_sim.py
+Stdlib only. Read-only.
+  Report:  python3.10 tools/sim/help_menu_grouping_sim.py
+  Guard:   python3.10 tools/sim/help_menu_grouping_sim.py --check   (exit 1 on
+           any orphan / >3-click / paginated-section violation; this is the
+           load-bearing guard wired into CI via
+           tests/unit/invariants/test_help_reachability.py).
 
-Provenance: added 2026-06-22 for the owner-directed Help regrouping (PR #1290).
+Provenance: added 2026-06-22 for the owner-directed Help regrouping (PR #1290);
+the --check reachability guard added the same day (PR #1297) once the "All
+Commands / Advanced" catch-all was removed (PR #1294) and homing became
+mandatory for reachability.
 Verifiable: its inventory is the live registry and its click model mirrors
 panels.py -- re-run after any registry change. Disposable: if the Help nav
 model changes shape, delete this rather than work around it.
@@ -142,6 +150,48 @@ def advanced_list(scheme: Scheme, tier: int) -> list[str]:
 
 def orphans_of(scheme: Scheme) -> list[str]:
     return [k for k in LEAVES if scheme.section_of(k) is None]
+
+
+MAX_CLICKS = 3  # the reachability contract: every feature reachable in <= 3 clicks
+
+
+def check_reachability() -> list[str]:
+    """Return reachability-invariant violations for the LIVE help grouping.
+
+    Empty list == healthy. This is the guard the Help menu relies on now that
+    the "All Commands / Advanced" catch-all is gone (PR #1294): with no
+    fallback, an un-homed subsystem is *completely unreachable*, so every
+    advertisable subsystem must be homed (a hub host or a hub child) and
+    reachable within ``MAX_CLICKS`` with no dropdown pagination.
+
+    Used by ``--check`` (CLI / local) and the CI invariant
+    ``tests/unit/invariants/test_help_reachability.py``.
+    """
+    scheme = scheme_live()
+    violations: list[str] = []
+
+    orphans = orphans_of(scheme)
+    if orphans:
+        violations.append(
+            "un-homed subsystem(s) reachable from no hub — set parent_hub to a "
+            f"registered hub (or add a hub): {', '.join(sorted(orphans))}",
+        )
+
+    admin = TIER_RANK["administrator"]
+    for sec in scheme.sections:
+        n = len(visible_children(sec, admin))
+        if n > PAGE_SIZE:
+            violations.append(
+                f"section {sec.key!r} has {n} children (> {PAGE_SIZE}) — its "
+                "dropdown paginates, breaking the 3-click guarantee",
+            )
+
+    for leaf in sorted(LEAVES):
+        clicks = clicks_to(scheme, leaf, admin)
+        if clicks is not None and clicks > MAX_CLICKS:
+            violations.append(f"{leaf!r} needs {clicks} clicks (> {MAX_CLICKS})")
+
+    return violations
 
 
 def clicks_to(scheme: Scheme, leaf: str, tier: int) -> int | None:
@@ -433,4 +483,32 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Help-menu grouping simulation + reachability guard.",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help=(
+            "exit non-zero if the LIVE help grouping violates the reachability "
+            "invariant (every subsystem homed, <=3 clicks, no dropdown pagination)"
+        ),
+    )
+    args = parser.parse_args()
+
+    if args.check:
+        problems = check_reachability()
+        if problems:
+            print("help reachability check FAILED:")
+            for p in problems:
+                print(f"  - {p}")
+            sys.exit(1)
+        print(
+            "help reachability check OK — every subsystem homed, "
+            f"<= {MAX_CLICKS} clicks, no pagination.",
+        )
+        sys.exit(0)
+
     main()
