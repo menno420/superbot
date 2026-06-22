@@ -1,17 +1,16 @@
-"""Unit tests for HelpCategoryView (S3 — Help category index).
+"""Unit tests for HelpCategoryView (the Help category index).
 
-Pins the S3 behaviour:
+Pins the behaviour:
 
-- ``!help`` opens a category-grouped view, not the legacy paginated
-  subsystem list.
-- The dropdown shows one option per visible mother hub + the permanent
-  ALL_COMMANDS fallback. Hub children never appear at this level.
+- ``!help`` opens a category-grouped view of the mother hubs.
+- The dropdown shows one option per visible mother hub. Hub children
+  never appear at this level. (The legacy "All Commands / Advanced"
+  fallback was removed once every subsystem was homed into a hub —
+  PR #1294.)
 - Selecting a hub category opens the hub's ``build_help_menu_view``
   and attaches Back-to-Help (which rebuilds the category view).
-- Selecting ALL_COMMANDS swaps the view to :class:`HelpPanelView`
-  populated with a parent_hub-filtered visible list.
 - Permission/role matrix: admin-restricted hubs hide from non-admin
-  users; the ALL_COMMANDS option is always visible.
+  users.
 - Failure paths surface as ephemerals; the message is never left
   half-edited.
 """
@@ -25,9 +24,7 @@ import pytest
 
 from cogs import help_cog
 from cogs.help_cog import (
-    ALL_COMMANDS_KEY,
     HelpCategoryView,
-    HelpPanelView,
     build_categories_overview_embed,
 )
 
@@ -60,24 +57,27 @@ def test_categories_embed_lists_each_visible_hub_with_purpose_and_entry_cmd():
     field_names = [f.name for f in embed.fields]
     field_values = [f.value for f in embed.fields]
 
-    # The four S3-v1 hubs must each appear as a top-level field.
+    # Top-level sections after the help-menu regrouping (PR #1290): Games and
+    # the consolidated Server & Admin section must each appear as a field.
+    # Settings / Platform / Server Management are now children of Server &
+    # Admin, not top-level fields.
     assert any("Games" in n for n in field_names)
-    assert any("Admin" in n for n in field_names)
-    assert any("Settings" in n for n in field_names)
-    assert any("Platform" in n for n in field_names)
+    assert any("Server & Admin" in n for n in field_names)
+    assert not any("Settings / Configuration" in n for n in field_names)
+    assert not any("Platform / Diagnostics" in n for n in field_names)
 
     # Each field value contains the typed entry command.
     joined = "\n".join(field_values)
     assert "!games" in joined
     assert "!adminmenu" in joined
-    assert "!settings" in joined
-    assert "!platform" in joined
 
 
-def test_categories_embed_always_includes_all_commands_fallback():
+def test_categories_embed_has_no_all_commands_fallback():
+    # The redundant "All Commands / Advanced" row was removed (PR #1294).
     embed = build_categories_overview_embed(member_tier="user")
     field_names = [f.name for f in embed.fields]
-    assert any("All Commands" in n for n in field_names)
+    assert not any("All Commands" in n for n in field_names)
+    assert not any("Advanced" in n for n in field_names)
 
 
 def test_categories_embed_hides_admin_only_hubs_from_normal_users():
@@ -88,9 +88,8 @@ def test_categories_embed_hides_admin_only_hubs_from_normal_users():
     assert not any("Admin" in n for n in field_names)
     assert not any("Settings" in n for n in field_names)
     assert not any("Platform" in n for n in field_names)
-    # But Games (user tier) and the fallback are still visible.
+    # But Games (user tier) is still visible.
     assert any("Games" in n for n in field_names)
-    assert any("All Commands" in n for n in field_names)
 
 
 def test_categories_embed_uses_uniform_row_shape_with_no_includes_line():
@@ -115,14 +114,14 @@ def test_categories_embed_uses_uniform_row_shape_with_no_includes_line():
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_one_select_with_visible_hubs_plus_all_commands():
+def test_view_has_one_select_with_visible_hubs():
     view = HelpCategoryView(member_tier="administrator")
     select = _select(view)
     values = {opt.value for opt in select.options}
-    # Committed hubs visible to administrator + ALL_COMMANDS sentinel.
-    # Economy joined in S7, Moderation in S8, Community in S9, Utility
-    # in S10. M1 of the BTD6-top-level + AI-central-policy initiative
-    # added BTD6 Assistant as its own top-level hub.
+    # The 7 hubs visible to an administrator — no "All Commands" sentinel
+    # (removed PR #1294). Help-menu regrouping (PR #1290): Settings,
+    # Diagnostics/Platform, and Server Management are children of the
+    # consolidated Server & Admin (``admin``) section.
     assert values == {
         "games",
         "btd6",
@@ -131,10 +130,6 @@ def test_view_has_one_select_with_visible_hubs_plus_all_commands():
         "community",
         "utility",
         "admin",
-        "settings",
-        "diagnostic",
-        "server_management",
-        ALL_COMMANDS_KEY,
     }
 
 
@@ -146,7 +141,6 @@ def test_user_tier_view_omits_admin_hubs():
     assert "btd6" in values
     assert "community" in values
     assert "utility" in values
-    assert ALL_COMMANDS_KEY in values
     # Moderation is moderator-tier — must not surface for normal users.
     assert "moderation" not in values
     assert "admin" not in values
@@ -169,9 +163,9 @@ def test_view_has_no_individual_hub_child_options():
         "counting",
         "chain",
     ):
-        assert hub_child not in values, (
-            f"hub child {hub_child!r} leaked into HelpCategoryView top-level"
-        )
+        assert (
+            hub_child not in values
+        ), f"hub child {hub_child!r} leaked into HelpCategoryView top-level"
 
 
 def test_view_default_member_tier_is_user_when_unspecified():
@@ -183,43 +177,6 @@ def test_view_default_member_tier_is_user_when_unspecified():
     select = _select(view)
     values = {opt.value for opt in select.options}
     assert "admin" not in values
-
-
-# ---------------------------------------------------------------------------
-# Routing — All Commands branch swaps to HelpPanelView
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_selecting_all_commands_swaps_to_help_panel_view(monkeypatch):
-    """Selecting "All Commands / Advanced" opens the legacy paginated
-    view in place. Custom IDs from the new dropdown go away because
-    Discord matches the next click against the new view's custom_ids.
-    """
-    interaction = _interaction()
-    interaction.data = {"values": [ALL_COMMANDS_KEY]}
-
-    vis_result = MagicMock()
-    vis_result.visible_subsystems = set(["economy", "mining", "games"])
-    vis_result.member_tier = "owner"
-
-    monkeypatch.setattr(
-        help_cog.governance_service,
-        "resolve_visibility",
-        AsyncMock(return_value=vis_result),
-    )
-    monkeypatch.setattr(
-        help_cog.GovernanceContext,
-        "from_interaction",
-        lambda i: MagicMock(),
-    )
-
-    view = HelpCategoryView(member_tier="owner")
-    await view._on_select(interaction)
-
-    interaction.response.edit_message.assert_awaited_once()
-    _args, kwargs = interaction.response.edit_message.call_args
-    assert isinstance(kwargs["view"], HelpPanelView)
 
 
 # ---------------------------------------------------------------------------

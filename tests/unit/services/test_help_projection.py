@@ -36,7 +36,7 @@ from services.help_projection import (
     project_help_with_execution,
 )
 from utils.hub_registry import HUBS, hubs_for_tier
-from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
+from utils.subsystem_registry import SUBSYSTEMS
 
 _ALL = set(SUBSYSTEMS)
 
@@ -124,8 +124,10 @@ def test_hub_hides_when_host_subsystem_is_governance_hidden():
 
 
 def test_hub_tier_floor_still_applies():
+    # Help-menu regrouping (PR #1290): "settings" is no longer a hub — "admin"
+    # (Server & Admin) is the administrator-tier hub a normal user can't see.
     projection = HelpProjection.from_visibility(_vis(_ALL, "user"))
-    decision = projection.hub_decision("settings")
+    decision = projection.hub_decision("admin")
     assert decision is not None
     assert decision.state is HelpEntryState.GOVERNANCE_HIDDEN
     assert decision.reason_code == "tier_floor"
@@ -135,21 +137,6 @@ def test_unknown_tier_string_degrades_to_user_floor():
     projection = HelpProjection.from_visibility(_vis(_ALL, "everyone"))
     visible = {h.key for h in projection.visible_hubs()}
     assert visible == {h.key for h in hubs_for_tier("user")}
-
-
-def test_advanced_list_matches_the_legacy_expression():
-    """advanced_subsystems() == the exact list Advanced derived before the
-    seam: governance-visible, top-level, ui_priority order."""
-    narrowed = _ALL - {"ai", "blackjack"}
-    projection = HelpProjection.from_visibility(_vis(narrowed, "administrator"))
-    legacy = [
-        name
-        for name, meta in all_subsystems_sorted()
-        if name in narrowed and not meta.get("parent_hub")
-    ]
-    assert projection.advanced_subsystems() == legacy
-    # Children never appear even when governance-visible.
-    assert "blackjack" not in projection.advanced_subsystems()
 
 
 # ---------------------------------------------------------------------------
@@ -342,7 +329,7 @@ def test_overlay_hide_is_display_hidden_and_hides():
     assert decision.state is HelpEntryState.DISPLAY_HIDDEN
     assert decision.reason_code == "overlay_hidden"
     assert not decision.advertised
-    assert "xp" not in projection.advanced_subsystems()
+    assert not projection.is_subsystem_advertised("xp")
 
 
 def test_overlay_hide_applies_to_hubs():
@@ -424,7 +411,7 @@ def test_orphan_rows_are_reported_never_rendered():
     assert orphan.reason_code == "unknown_key"
     # The live decision set is unaffected by the orphan…
     assert projection.subsystem_decision("retired_thing") is None
-    assert "retired_thing" not in projection.advanced_subsystems()
+    assert not projection.is_subsystem_advertised("retired_thing")
     # …while the valid row still applies.
     assert not projection.is_subsystem_advertised("xp")
 

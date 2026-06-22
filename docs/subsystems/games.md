@@ -181,8 +181,30 @@ on **Q-0182**.
 ## Plans / pending approval
 
 **Active games plans** (live buildable set — full index: [`planning/README.md`](../planning/README.md)):
+- [fishing-minigame-design](../planning/fishing-minigame-design-2026-06-22.md) — sim-backed
+  (`tools/sim/fishing_minigame_sim.py`) interactive catch loop. **PR1 building/shipped:** `!fish` now
+  launches an interactive `cast → wait → BITE → reel` view (`views/fishing/cast_view.py`); the catch is
+  rolled at cast (`fishing_workflow.roll_cast`) and committed only on a successful reel
+  (`commit_catch`) — a missed/early reel = the fish gets away (owner decision). Tuning is pure +
+  testable (`utils/fishing/minigame.py`: ~2.5 s window, 3–6 s bite + fake-out). **PR2 (the hybrid)
+  shipped/building:** hooking a **trophy** (top third of the unlocked band) starts a short
+  **reel-fight** — 2–4 more timed taps (scale with size), each able to snap free; land them all to
+  commit. **PR3 (rod ladder) shipped/building:** `!rod` buys up a 5-tier rod ladder
+  (`utils/fishing/rods.py`; bronze→diamond, coins, audited `fishing_workflow.buy_rod`); each tier
+  turns the 4 knobs — `window_bonus` (reaction window), `bite_speed` (faster bite), `rarity_pull`
+  (bigger catches within-band), `escape_resist` (fewer fight escapes). Level = *what* you catch;
+  rod = *how well*. **Interactive menu shipped:** `!fishing` (and the Help-hub fishing panel) is a
+  real `FishingMenuView` (🎣 Cast launches the minigame in place · 🎒 Rod opens the shop · 📖 Fishdex)
+  — `build_help_menu_view` returns it instead of the old static empty view. **Deferred to next PRs:**
+  energy pacing + sell-value rebalance, boat/deepwater.
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
-  Phase 1 (fishing v1 + gear-switching) buildable; the loadout/value/minigame tail is owner-design-gated (Q-0175).
+  Phase 1 (fishing v1 + gear-switching) buildable; the loadout/minigame tail is owner-design-gated (Q-0175).
+  **Fish *use* is now decided + shipped (#1289, owner 2026-06-22):** a caught fish enters the mining
+  inventory (`fishing_workflow.fish` grants it; the catch-log stays the dex), is **sellable** for coins
+  (modest, size-scaled `RESOURCE` value in `utils/mining/items.py`), and is **cookable** into a
+  `cooked fish` food (+30 energy) at a built **Campfire** structure (`!cook`,
+  `mining_workflow.cook`; campfire in `utils/mining/structures.py`). Balance caveat: fishing is currently
+  unpaced, so fish sell value is kept low on purpose (don't re-open the mining-faucet fix via fishing).
 - [mining-hub-redesign](../planning/mining-hub-redesign-2026-06-15.md) — owner-picked Option A sub-hub split.
   **PR2 (hub declutter) shipped:** the main hub is now six buttons (⛏️ Mine · 🌲 Harvest · 🗺️ Explore ·
   🧍 Character · 🧰 Gear · 🔨 Workshop); a **Character** sub-hub (`views/mining/character_hub.py`)

@@ -387,6 +387,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -861,6 +865,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -883,6 +891,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -903,6 +915,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -953,6 +969,10 @@ const COMMANDS = [
       "!buy iron sword"
     ],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -1115,6 +1135,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -1150,6 +1174,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -1335,6 +1363,36 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": []
+  },
+  {
+    "name": "cook",
+    "area": "economy",
+    "status": "in-progress",
+    "summary": "Cook a caught fish into food at your campfire (refills mining energy).",
+    "description": "Cook a caught fish into food at your campfire (refills mining energy).",
+    "usage": "!cook",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!cook <fish>",
+      "!cook <amount> <fish>",
+      "!cook 3 minnow"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      },
+      {
+        "status": "idea",
+        "title": "Mining & Exploration — Brainstorm & Roadmap"
+      }
+    ]
   },
   {
     "name": "count_info",
@@ -1623,6 +1681,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -1850,6 +1912,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -1917,6 +1983,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -1950,6 +2020,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2009,10 +2083,30 @@ const COMMANDS = [
     "name": "fish",
     "area": "games",
     "status": "in-progress",
-    "summary": "Cast a line and catch a fish — level up to unlock bigger fish.",
-    "description": "Cast a line and catch a fish — level up to unlock bigger fish.",
+    "summary": "Cast a line — wait for the bite, then reel it in before it gets away.",
+    "description": "Cast a line — wait for the bite, then reel it in before it gets away.",
     "usage": "!fish",
     "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
+    "name": "fishing",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Open the interactive fishing menu — cast, upgrade your rod, browse the dex.",
+    "description": "Open the interactive fishing menu — cast, upgrade your rod, browse the dex.",
+    "usage": "!fishing",
+    "aliases": [
+      "fishmenu"
+    ],
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
@@ -2116,6 +2210,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -2190,6 +2288,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -2225,6 +2327,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2361,6 +2467,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2775,6 +2885,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -2823,6 +2937,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -2847,6 +2965,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -2867,6 +2989,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2891,6 +3017,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -2913,6 +3043,10 @@ const COMMANDS = [
       "!mineworld 12345"
     ],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -3293,6 +3427,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -3564,6 +3702,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -3599,6 +3741,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -3662,6 +3808,27 @@ const COMMANDS = [
       "!restart"
     ],
     "planned": []
+  },
+  {
+    "name": "rod",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "View your fishing rod and upgrade it for coins.",
+    "description": "View your fishing rod and upgrade it for coins.",
+    "usage": "!rod",
+    "aliases": [
+      "rodshop",
+      "buyrod"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
   },
   {
     "name": "rolecreator",
@@ -4082,6 +4249,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -4102,6 +4273,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -4489,6 +4664,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -4509,6 +4688,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -4741,6 +4924,10 @@ const COMMANDS = [
       "!stash diamond 5"
     ],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -5116,6 +5303,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -5237,6 +5428,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -5318,6 +5513,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -5338,6 +5537,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -5436,6 +5639,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -5456,6 +5663,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -5613,6 +5824,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -5840,7 +6055,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "0f51c31",
+    "build": "76f3e7d",
     "title": "New public bot website",
     "changes": [
       {
@@ -5852,7 +6067,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "0f51c31",
+    "build": "76f3e7d",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5864,7 +6079,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "0f51c31",
+    "build": "76f3e7d",
     "title": "Command-alias suggestions",
     "changes": [
       {

@@ -97,6 +97,10 @@ from utils.db.games.fishing import (
     record_catch,
     top_fishers,
 )
+from utils.db.games.fishing_rod import (
+    get_rod_tier,
+    set_rod_tier,
+)
 from utils.db.games.game_xp import (
     add_game_xp,
     get_game_xp,
@@ -132,12 +136,14 @@ from utils.db.games.mining_grid import (
 )
 from utils.db.games.mining_player_state import (
     get_depth,
+    get_energy,
     get_equipped_title,
     get_last_broken,
     get_max_depth,
     get_vault_level,
     record_depth,
     set_depth,
+    set_energy,
     set_equipped_title,
     set_last_broken,
     set_vault_level,
@@ -356,6 +362,8 @@ __all__ = [
     "unequip_slot",
     "get_depth",
     "set_depth",
+    "get_energy",
+    "set_energy",
     "get_last_broken",
     "set_last_broken",
     "get_vault_level",
@@ -371,6 +379,8 @@ __all__ = [
     "get_fishing_log",
     "record_catch",
     "top_fishers",
+    "get_rod_tier",
+    "set_rod_tier",
     "get_creature_collection",
     "record_creature_catch",
     "top_collectors",

@@ -16,18 +16,30 @@ import random
 from utils.fishing.fish import Catch, FishSpecies, unlocked_species
 
 
-def roll_catch(fishing_level: int, rng: random.Random | None = None) -> Catch | None:
+def roll_catch(
+    fishing_level: int,
+    rng: random.Random | None = None,
+    *,
+    rarity_pull: float = 1.0,
+) -> Catch | None:
     """Roll one catch from the fish unlocked at *fishing_level*.
 
     Bigger fish are rarer: within the unlocked band the pick is weighted by the
     inverse of size rank, so the common small fish dominate and a freshly
     unlocked big fish is a treat — without ever being unreachable. Returns
     ``None`` only if the catalog failed to load (no fish unlocked).
+
+    ``rarity_pull`` (≥ 1, the rod knob) flattens that size penalty toward the big
+    end of the band: at 1.0 it is the base inverse-size weighting; above 1.0 the
+    big fish get relatively likelier (``→ ∞`` approaches a uniform pick), so a
+    better rod catches *better* fish within the same unlocked band — never new
+    bands (that is the fishing-level axis).
     """
     pool = unlocked_species(fishing_level)
     if not pool:
         return None
     r = rng or random.Random()
-    weights = [1.0 / s.size_rank for s in pool]
+    pull = max(1.0, rarity_pull)
+    weights = [1.0 / (s.size_rank ** (1.0 / pull)) for s in pool]
     species: FishSpecies = r.choices(pool, weights=weights, k=1)[0]
     return Catch(species=species)

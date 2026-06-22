@@ -494,20 +494,31 @@ def supports_role_gradients(guild: discord.Guild) -> bool:
     return any("ROLE" in f and ("COLOR" in f or "COLOUR" in f) for f in feats)
 
 
-async def ensure_color_role(
+async def ensure_role(
     guild: discord.Guild,
     *,
     name: str,
     color: discord.Color,
+    hoist: bool = False,
+    mentionable: bool = False,
     secondary: discord.Color | None = None,
     tertiary: discord.Color | None = None,
     actor: object | None,
+    reason: str = "Bulk role creation",
 ) -> tuple[int | None, bool, str]:
-    """Reuse a same-named role, or create a colour role via the audited seam.
+    """Reuse a same-named role, or create one via the audited lifecycle seam.
 
-    Returns ``(role_id, created, note)``. A gradient/holographic style is applied
-    only when the guild supports Enhanced Role Styles; a gradient create Discord
-    rejects anyway falls back to a solid colour so the operator still gets a role.
+    The general "make sure this role exists" primitive shared by the colour
+    auto-create flow (:func:`ensure_color_role`) and the bulk role-pack flows
+    (creation panel + menu builder). Returns ``(role_id, created, note)``.
+
+    When ``secondary`` is given it attempts an Enhanced-Role-Styles gradient; a
+    gradient Discord rejects falls back to a solid colour so the operator still
+    gets a role. The **caller** decides whether a gradient is appropriate (e.g.
+    only on guilds with the perk — see :func:`ensure_color_role`); this seam just
+    attempts what it's handed and degrades. Creation goes through the audited
+    ``RoleLifecycleService`` (the only sanctioned ``create_role`` caller), never
+    raw ``guild.create_role`` from a view.
     """
     from core.runtime import resources
     from services.role_lifecycle_service import (
@@ -515,7 +526,7 @@ async def ensure_color_role(
         RoleLifecycleService,
     )
 
-    name = (name or "").strip()[:100] or "colour"
+    name = (name or "").strip()[:100] or "role"
     existing = resources.resolve_role(guild, name=name)
     if existing is not None:
         return existing.id, False, ""
@@ -532,9 +543,11 @@ async def ensure_color_role(
                 operation="create",
                 name=name,
                 color=color,
+                hoist=hoist,
+                mentionable=mentionable,
                 secondary_color=sec,
                 tertiary_color=ter,
-                reason="Colour role (reaction-role menu)",
+                reason=reason,
             ),
             actor,
             actor_type="admin",
@@ -544,17 +557,42 @@ async def ensure_color_role(
             return int(applied[0].target_id), ""
         return None, result.first_error
 
-    want_gradient = secondary is not None and supports_role_gradients(guild)
-    role_id, note = await _create(
-        secondary if want_gradient else None,
-        tertiary if want_gradient else None,
-    )
-    if role_id is None and want_gradient:
-        # The perk may be unavailable after all — retry as a plain solid colour.
+    role_id, note = await _create(secondary, tertiary)
+    if role_id is None and secondary is not None:
+        # The gradient may have been rejected — retry as a plain solid colour.
         role_id, note = await _create(None, None)
         if role_id is not None:
             note = "Gradient unavailable here — created a solid colour role."
     return role_id, role_id is not None, note
+
+
+async def ensure_color_role(
+    guild: discord.Guild,
+    *,
+    name: str,
+    color: discord.Color,
+    secondary: discord.Color | None = None,
+    tertiary: discord.Color | None = None,
+    actor: object | None,
+) -> tuple[int | None, bool, str]:
+    """Reuse a same-named role, or create a colour role via the audited seam.
+
+    Thin colour-specialised wrapper over :func:`ensure_role`: a gradient/
+    holographic style is offered **only** when the guild supports Enhanced Role
+    Styles (the perk gate lives here; the create + solid fallback live in
+    ``ensure_role``). Returns ``(role_id, created, note)``.
+    """
+    name = (name or "").strip()[:100] or "colour"
+    want_gradient = secondary is not None and supports_role_gradients(guild)
+    return await ensure_role(
+        guild,
+        name=name,
+        color=color,
+        secondary=secondary if want_gradient else None,
+        tertiary=tertiary if want_gradient else None,
+        actor=actor,
+        reason="Colour role (reaction-role menu)",
+    )
 
 
 async def delete_menu(
@@ -898,6 +936,7 @@ __all__ = [
     "create_menu",
     "delete_menu",
     "ensure_color_role",
+    "ensure_role",
     "get_binding",
     "get_menu",
     "get_menu_options",

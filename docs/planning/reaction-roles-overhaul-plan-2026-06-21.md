@@ -71,6 +71,27 @@
 > creation-side cause was fixed in #1234; this clears rows already left behind. (The Add-modal
 > `💀 ❤️ 😘` placeholder is an intended multi-emote preview and stays.)
 >
+> **▶ Refinement (2026-06-22, owner-relayed user request — PR #1300):** **bulk role creation via
+> preset packs.** Modelled on the 🎨 Colours auto-create flow: pick a **category** (gaming / staff /
+> pronouns / notifications / region / interests / platforms), then a **multiselect of predefined
+> roles**, and the bot bulk-creates them in one step (reuse a same-named role, else create through the
+> audited seam). New pure-data catalogue `utils/role_packs.py` (`RolePack`/`PackRole`); the colour
+> auto-create core generalised to `reaction_role_service.ensure_role` (`ensure_color_role` now delegates,
+> no behaviour change); shared flow `views/roles/_role_pack_flow.RolePackView` surfaced on **two**
+> surfaces — a **📦 Role Packs** button on the standalone `RoleCreatePanel` (bulk-create into the server)
+> and a **📦 Packs** button beside 🎨 Colours in `RoleMenuBuilder` (bulk-create + add to the menu draft).
+> Pure data + UI on the existing audited `RoleLifecycleService` create path; no schema change.
+>
+> **▶ Refinement (2026-06-22, owner follow-up — PR #1302):** **bulk-create enhancements** (built on
+> #1300's `RolePackView` + `ensure_role` — the most-efficient option, no new subsystem). (1) The
+> standard presets were **enlarged and made multi-select** by promoting them to the **⭐ Essentials**
+> pack in `utils/role_packs.py`; `_helpers.ROLE_PRESETS` is now *derived* from that pack (one data
+> source — the single-create dropdown and the multi-select pack never drift). (2) **✏️ Custom (bulk)**
+> on `RolePackView` — type many names (one per line / comma-separated, deduped + capped) → bulk-create.
+> (3) An **optional preset colour select** (`_COLOR_OPTIONS` enlarged 8 → 20) applied to the whole
+> custom batch, or "create with no colour". Both bulk paths share one `_create_roles` tail and the
+> `on_created` hook, so they work on both surfaces (creation panel + menu builder).
+>
 > **▶ Refinement (2026-06-21 — PR #1250):** **listener self-heal** makes #1248's cleanup automatic —
 > `reaction_role_service._self_heal_dead_binding` drops a binding whose role was deleted the moment a
 > member reacts (or un-reacts) on it, audited as a **`system`** action (an `actor_type` param was

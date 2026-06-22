@@ -126,20 +126,44 @@ def test_build_data_includes_build_meta(mod):
     assert mod._git_meta(mod.Path("/nonexistent-not-a-repo")) == {}
 
 
-def test_generated_at_is_deterministic_not_wall_clock(mod):
+def test_generated_at_is_deterministic_not_wall_clock(mod, monkeypatch):
     # `generated_at` must be the latest-commit time, NOT wall-clock — so two regenerations at the
     # same commit are byte-identical. A wall-clock value churned a refresh PR every run and
     # guaranteed a merge conflict whenever two branches regenerated the file (#1261 root cause).
-    # Two builds is the minimum needed to prove determinism; reuse the 2nd for the build check
-    # rather than a 3rd call (build_data() does a whole-repo scan — keep this test to 2, not 3).
+    #
+    # HERMETIC (BUG-0024): pin `_git_meta` instead of letting `build_data` shell out to real `git`.
+    # The production `_git_meta` runs git with `timeout=5, check=True`; under `pytest -n auto` load
+    # those calls can time out, returning {} so `generated_at` falls back to wall-clock — which made
+    # this assertion flaky (the BUG-0021 real-clock class). Pinning the commit context exercises the
+    # determinism logic deterministically (the git-absent fallback is covered by the test below).
+    fixed_build = {
+        "commit": "abc1234",
+        "subject": "pinned commit for a hermetic test",
+        "committed_at": "2026-06-22T00:00:00Z",
+    }
+    monkeypatch.setattr(mod, "_git_meta", lambda repo_root: dict(fixed_build))
     first = mod.build_data()["meta"]
     second = mod.build_data()["meta"]
     assert (
         first["generated_at"] == second["generated_at"]
     ), "generated_at changed between runs at the same commit (not deterministic)"
-    build = second["build"]
-    if build:  # in the git checkout, generated_at anchors to the commit's committed_at
-        assert first["generated_at"] == build["committed_at"]
+    # generated_at anchors to the commit's committed_at — never wall-clock when a build is present.
+    assert first["generated_at"] == fixed_build["committed_at"]
+    assert second["build"] == fixed_build
+
+
+def test_generated_at_falls_back_to_wall_clock_when_git_unavailable(mod, monkeypatch):
+    # When git is unavailable (`_git_meta` -> {}), `build` is empty and `generated_at` degrades to a
+    # wall-clock ISO timestamp rather than crashing. Guards the intentional fallback branch.
+    monkeypatch.setattr(mod, "_git_meta", lambda repo_root: {})
+    meta = mod.build_data()["meta"]
+    assert meta["build"] == {}
+    # An ISO-8601 "...Z" wall-clock string (parses, ends in Z).
+    assert meta["generated_at"].endswith("Z")
+    import datetime as _dt
+
+    _dt.datetime.fromisoformat(meta["generated_at"].replace("Z", "+00:00"))
+
 
 
 def test_build_data_includes_env_usage_section(mod):

@@ -5,6 +5,12 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  # Manual/automated re-kick (Q-0195): ci-rerun-watchdog.yml dispatches this on a claude/* branch
+  # when GitHub dropped the pull_request:synchronize event and the head got no run. The
+  # docs-detector below treats a dispatch (no PR base) as "base unavailable -> run full CI", and
+  # the resulting `code-quality` check on the branch head satisfies the required check for a
+  # same-repo PR.
+  workflow_dispatch:
 
 # Concurrency: do NOT cancel in-progress runs.
 #

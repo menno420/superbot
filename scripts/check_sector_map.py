@@ -44,6 +44,8 @@ FOLIO_DIR = REPO_ROOT / "docs" / "subsystems"
 
 EXPECTED_SECTORS = ["S1", "S2", "S3", "S4", "S5"]
 STARTABILITY_GLYPHS = ("▶", "⛔", "👤", "✅")
+# The orthogonal unattended-fit tag (#1285): can a scheduled empty-fire run *finish & merge* it?
+_UNATTENDED_FIT = re.compile(r"unattended-fit \*\*[^*]+\*\*")
 
 _FOLIO_MAP_BLOCK = re.compile(
     r"<!--\s*BEGIN sector-folio-map.*?-->(.*?)<!--\s*END sector-folio-map",
@@ -190,6 +192,12 @@ def check_roadmap_convention(text: str) -> list[str]:
         if dispatch is None or "executor" not in dispatch:
             errors.append(
                 f"roadmap.md {sector}: Dispatch bullet is missing an 'executor' label.",
+            )
+        if dispatch is not None and not _UNATTENDED_FIT.search(dispatch):
+            errors.append(
+                f"roadmap.md {sector}: Dispatch bullet is missing an 'unattended-fit "
+                f"**<glyph> <auto|review|live|ext-data>**' tag (the #1285 dimension — "
+                f"see repo-sector-map.md § 'the unattended-fit tag').",
             )
         now = bullet_text(block, "Now")
         if now is None:

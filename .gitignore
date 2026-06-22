@@ -91,6 +91,7 @@ build/
 ########################################
 node_modules/
 storybook-static/
+dist-app/
 *.tsbuildinfo
 
 ########################################

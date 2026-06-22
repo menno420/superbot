@@ -624,6 +624,40 @@ class RoleMenuBuilder(BaseView):
             ephemeral=True,
         )
 
+    @discord.ui.button(label="📦 Packs", style=discord.ButtonStyle.grey, row=0)
+    async def packs_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        from views.roles._role_pack_flow import RolePackView
+
+        view = RolePackView(
+            interaction.user,
+            self.guild,
+            on_created=self._add_pack_roles,
+        )
+        await interaction.response.send_message(
+            "Bulk-create roles and add them to this menu — pick a category and "
+            "multiselect its roles, or **✏️ Custom (bulk)** to type your own:",
+            view=view,
+            ephemeral=True,
+        )
+
+    async def _add_pack_roles(
+        self,
+        interaction: discord.Interaction,
+        role_ids: list[int],
+    ) -> None:
+        """on_created hook: fold the newly created pack roles into the draft."""
+        for role_id in role_ids:
+            if role_id not in self.role_ids and len(self.role_ids) < MAX_MENU_ROLES:
+                self.role_ids.append(role_id)
+        await self._rerender()
+
     @discord.ui.button(label="🧩 Template", style=discord.ButtonStyle.grey, row=0)
     async def template_btn(
         self,
@@ -645,7 +679,10 @@ class RoleMenuBuilder(BaseView):
             ephemeral=True,
         )
 
-    @discord.ui.button(label="🖼️ Card", style=discord.ButtonStyle.grey, row=0)
+    # Row 2 (the action row, with 🚀 Post + ↩ Back): row 0 filled to Discord's
+    # 5-button cap once the 📦 Packs button landed, so the banner-card toggle sits
+    # next to Post — the last thing you set before posting.
+    @discord.ui.button(label="🖼️ Card", style=discord.ButtonStyle.grey, row=2)
     async def card_btn(
         self,
         interaction: discord.Interaction,

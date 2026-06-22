@@ -66,10 +66,13 @@ having; not built this run (out of PR 6's scope) — captured for a grooming pic
 Reviewed `.sessions/2026-06-21-reaction-roles-pr3-5.md` (PRs 3–5, the same arc). **Did well:** shipped
 three migrations (079/080/081) as one owner-directed PR with the migration-renumber note recorded in
 the plan — that discipline is what let me confidently pick the next free migration number. **Live
-proof of why that matters:** I first claimed **085**, but a parallel session's `085_mining_grid.sql`
-merged to main while this PR was in flight, so resolving the conflict-guard failure meant renumbering
-to **086** at merge time. Migration numbers are a shared append point — always re-check the highest on
-`origin/main` at merge, not just at branch time. **Could improve / surfaced:** the arc has now run
+proof of why that matters:** this PR's migration was renumbered **twice** during review — claimed
+**085**, bumped to **086** when `085_mining_grid.sql` merged, then to **088** when `086_mining_energy`
++ `087_fishing_rod` merged too (two separate `conflict-guard` fires while the held PR sat for review).
+Migration numbers are a shared append point under a very active routine fleet — re-check the highest on
+`origin/main` at *every* merge, not just at branch time. A bigger system lesson: a long-held
+`needs-hermes-review` PR will keep colliding on migration numbers + shared docs; assigning the
+migration number as late as possible (or a non-numeric scheme) would cut this treadmill. **Could improve / surfaced:** the arc has now run
 *eight* PRs (#1219–#1250) past the original
 "2–3 PRs" plan span — each refinement was individually justified, but the plan's PR-map header grew a
 long `▶ Refinement` stack that's getting hard to scan. **System improvement:** when a plan's

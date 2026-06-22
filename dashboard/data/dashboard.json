@@ -1,21 +1,21 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T14:18:00Z",
+    "generated_at": "2026-06-22T17:29:55Z",
     "build": {
-      "commit": "70e3c472",
-      "subject": "Merge pull request #1284 from menno420/claude/sweet-sagan-jeyjsy",
-      "committed_at": "2026-06-22T14:18:00Z"
+      "commit": "91a3b375",
+      "subject": "Fishing menu: real buttons (Cast · Rod · Fishdex panel) (#1303)",
+      "committed_at": "2026-06-22T17:29:55Z"
     },
     "counts": {
       "functions": 37,
-      "ideas": 117,
-      "bugs": 23,
+      "ideas": 120,
+      "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
       "cogs": 47,
-      "commands": 369,
+      "commands": 372,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -997,11 +997,35 @@
   ],
   "ideas": [
     {
+      "file": "ci-dropped-synchronize-auto-retrigger-2026-06-22.md",
+      "title": "Idea: auto-re-trigger Code Quality when GitHub drops the `pull_request: synchronize` event",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "On a `claude/*` PR branch, `code-quality.yml` runs **only** via `pull_request: synchronize` — its",
+      "subsystems": []
+    },
+    {
       "file": "mining-grid-encounters-2026-06-22.md",
       "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)",
       "status": "ideas",
       "date": "2026-06-22",
       "summary": "Layer **sparse, depth-gated random encounters** onto the shipped grid-Mine navigator",
+      "subsystems": null
+    },
+    {
+      "file": "reconcile-open-pr-staleness-classifier-2026-06-22.md",
+      "title": "Idea — reconcile-pass open-PR staleness classifier",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "The reconciliation routine's **open-PR disposition step (Q-0125)** is the one part of the pass with **no",
+      "subsystems": null
+    },
+    {
+      "file": "sim-assumption-telemetry-loop-2026-06-22.md",
+      "title": "Idea — close the loop: instrument shipped features with the metric their design-sim assumed",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "When we use a Monte-Carlo simulation to design a feature (e.g.",
       "subsystems": null
     },
     {
@@ -1999,6 +2023,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0024",
+      "title": "test_generated_at_is_deterministic_not_wall_clock flaky under pytest -n auto (real-clock dependent) — FIXED (root)",
+      "status": "unknown",
+      "summary": "Symptom (observed 2026-06-22, in a full check_quality.py --full run during the Q-0195 state-file-restructure session): tests/unit/scripts/test_export_dashboard_data.py:: test_generated_at_is_deterministic_not_wall_clock fails intermittently in the parallel (-n auto) suite, but p…"
+    },
+    {
       "id": "BUG-0023",
       "title": "public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = FIXED (root)",
       "status": "unknown",
@@ -2140,6 +2170,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-22-unattended-fit-dispatch-dimension.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Unattended-fit dimension for the per-sector dispatch contract",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-state-file-restructure.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — State-file restructure: per-claim active-work + per-sector current-state",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-starboard-pr2-config-polish.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Starboard PR 2: self-star exclusion + ignore-channels + config panel",
@@ -2164,11 +2210,35 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-reconcile-band1290.md",
+      "date": "2026-06-22",
+      "title": "Session — 2026-06-22 · band-#1290 Q-0107 docs reconciliation",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-mining-grid-mine.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Mining grid Mine (hub-redesign PR 3)",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-mining-fish-cooking.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Mining: fish cooking + sellable fish (energy refill via campfire)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-mining-energy-rebalance.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Mining rebalance + energy system",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2188,6 +2258,30 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-help-remove-advanced.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Remove the redundant \"All Commands / Advanced\" help surface",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-help-reachability-guard.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Help reachability guard (orphan check)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-help-menu-regrouping.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Help-menu regrouping (simulation + implementation)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-friction-to-guard-reflex.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Wrong-branch guard hook + the \"friction → guard\" self-prevention reflex",
@@ -2196,9 +2290,73 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-22-fishing-minigame-sim.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing minigame: design simulation + analysis",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-fishing-minigame-pr3.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing minigame PR3: the rod ladder (the orthogonal progression axis)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-fishing-minigame-pr2.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing minigame PR2: the trophy reel-fight (completing the hybrid)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-fishing-minigame-pr1.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing minigame PR1: the interactive cast → wait → BITE → reel loop",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-fishing-menu-buttons.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing menu: real buttons (the interactable panel)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-ci-strand-cancel-in-progress.md",
       "date": "2026-06-22",
       "title": "Session — CI strand root cause: code-quality cancel-in-progress (2026-06-22)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-ci-rerun-watchdog.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — CI dropped-`synchronize` auto-re-trigger watchdog",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-bulk-role-creation-packs.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Bulk role creation via preset packs",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-bulk-role-creation-enhancements.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Bulk role creation enhancements",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2210,6 +2368,22 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-bug-0024-dashboard-flake.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — BUG-0024: make the dashboard `generated_at` determinism test hermetic",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-btd6-grounding-anchors.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — P1-1 BTD6 grounding-anchor eval guard (the #704 finding)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
     },
     {
       "file": "2026-06-22-band-pr-themes-classifier.md",
@@ -2474,150 +2648,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-early-pr-mandate.md",
-      "date": "2026-06-21",
-      "title": "Session — open the session PR FAST (Q-0189, owner-directed in-session)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-dashboard-autopr-conflict-rootcause.md",
-      "date": "2026-06-21",
-      "title": "Session — dashboard auto-PR conflict root cause (2026-06-21, autonomous)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-creature-sim-engine-parity-guard.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature sim↔engine constant parity guard (PR 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-pvp-result-recording.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP: result recording + win/loss records + battle leaderboard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-creature-pvp-rematch-button.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP: rematch button (⚑ self-initiated)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-pvp-battle-flow.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP battle flow (cog + views + service)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-leaderboard-provider.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature collector leaderboard provider (central hub integration)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-game-catch-collection.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature game runtime v1: catch + collection (dex)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-creature-challenge-expiry.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP: challenge-expiry on timeout (⚑ self-initiated)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-battle-engine.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature game PvP: the pure battle engine (foundation slice)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-carl-bot-reaction-roles-research-plan.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Carl-bot reaction-roles research + overhaul plan",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-bug0020-trim-floor-pointer-prose.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — CI-reliability batch: BUG-0020 + BUG-0021 + BUG-0022",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-btd6-seed-data-changed-report.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — BTD6: seed-data reports which files it changed",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-btd6-data-auto-seed.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — BTD6 data: auto-seed the postgres blob store on boot",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-btd6-content-drift-surface.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — BTD6: surface same-version data drift (sha-based seed reminder)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-btd6-buff-uptime.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — BTD6 Alchemist buff-uptime calculator + game-data decode",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-btd6-buff-uptime-verify-and-populate.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — BTD6 buff-uptime: verify binding against the real dump + populate data",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-btd6-buff-uptime-multitarget.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — BTD6 buff-uptime: rebuffBlockTime decode + multi-target uptime",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -5647,10 +5677,23 @@
           "is_group": false,
           "parent": null,
           "aliases": [],
-          "brief": "Cast a line and catch a fish — level up to unlock bigger fish.",
+          "brief": "Cast a line — wait for the bite, then reel it in before it gets away.",
           "classification": "",
-          "has_panel": false,
-          "button_backed": false
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "fishing",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "fishmenu"
+          ],
+          "brief": "Open the interactive fishing menu — cast, upgrade your rod, browse the dex.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
         },
         {
           "name": "fishlog",
@@ -5677,6 +5720,20 @@
           "classification": "",
           "has_panel": false,
           "button_backed": false
+        },
+        {
+          "name": "rod",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "rodshop",
+            "buyrod"
+          ],
+          "brief": "View your fishing rod and upgrade it for coins.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
         }
       ]
     },
@@ -6148,6 +6205,17 @@
           "classification": "panel_action",
           "has_panel": false,
           "button_backed": true
+        },
+        {
+          "name": "cook",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Cook a caught fish into food at your campfire (refills mining energy).",
+          "classification": "hidden",
+          "has_panel": false,
+          "button_backed": false
         },
         {
           "name": "descend",

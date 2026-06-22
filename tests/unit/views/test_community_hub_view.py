@@ -155,10 +155,12 @@ def test_embed_section_headings_present():
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_six_child_buttons():
+def test_view_has_eight_child_buttons():
+    # welcome + counters homed under Community by the help-menu regrouping
+    # (PR #1290): 5 primary + 3 cross-link = 8 children when unfiltered.
     view = CommunityHubView(_author())
     buttons = [c for c in view.children if isinstance(c, _CommunityChildButton)]
-    assert len(buttons) == 6
+    assert len(buttons) == 8
 
 
 def test_buttons_cover_each_target_subsystem():
@@ -172,6 +174,8 @@ def test_buttons_cover_each_target_subsystem():
         "xp",
         "community_spotlight",
         "role",
+        "welcome",
+        "counters",
         "counting",
         "chain",
         "leaderboard",
@@ -185,6 +189,8 @@ def test_button_custom_ids_are_stable_and_namespaced():
         "community:open:xp",
         "community:open:community_spotlight",
         "community:open:role",
+        "community:open:welcome",
+        "community:open:counters",
         "community:open:counting",
         "community:open:chain",
         "community:open:leaderboard",
@@ -192,9 +198,10 @@ def test_button_custom_ids_are_stable_and_namespaced():
 
 
 def test_buttons_split_across_two_rows():
-    """Primary children (XP/Spotlight/Roles, parent_hub="community") on
-    row 0; cross-links (Counting/Chain/Leaderboard, declared in
-    hub_registry.cross_link_children) on row 1.
+    """Primary children (parent_hub="community") on row 0; cross-links
+    (Counting/Chain/Leaderboard, declared in hub_registry.cross_link_children)
+    on row 1. welcome + counters were homed here by the help-menu regrouping
+    (PR #1290), filling row 0 to its 5-button Discord limit.
     """
     view = CommunityHubView(_author())
     row0 = {
@@ -207,7 +214,7 @@ def test_buttons_split_across_two_rows():
         for btn in view.children
         if isinstance(btn, _CommunityChildButton) and btn.row == 1
     }
-    assert row0 == {"xp", "community_spotlight", "role"}
+    assert row0 == {"xp", "community_spotlight", "role", "welcome", "counters"}
     assert row1 == {"counting", "chain", "leaderboard"}
 
 
@@ -340,9 +347,9 @@ async def test_child_panel_preserves_back_to_help_chain():
         c.custom_id for c in fake_view.children if isinstance(c, discord.ui.Button)
     }
     assert "community:back" in custom_ids
-    assert "help:back" in custom_ids, (
-        "child opened from a Help-rooted Community hub must keep Back-to-Help"
-    )
+    assert (
+        "help:back" in custom_ids
+    ), "child opened from a Help-rooted Community hub must keep Back-to-Help"
     # The back-chain propagates so deeper navigation can keep unwinding.
     assert getattr(fake_view, "_back_target", None) is parent_view._back_target
 
@@ -431,11 +438,14 @@ def test_view_falls_back_to_unfiltered_when_lists_omitted():
         for c in view.children
         if isinstance(c, _CommunityChildButton)
     }
-    # Same as before PR D — all six children rendered when nothing is filtered.
+    # All eight children rendered when nothing is filtered (welcome + counters
+    # homed under Community by the help-menu regrouping, PR #1290).
     assert buttons == {
         "xp",
         "community_spotlight",
         "role",
+        "welcome",
+        "counters",
         "counting",
         "chain",
         "leaderboard",

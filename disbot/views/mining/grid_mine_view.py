@@ -14,13 +14,14 @@ the navigator persists instead of swapping to a results screen.
 from __future__ import annotations
 
 import logging
+import time
 
 import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
 from utils import db
-from utils.mining import grid, world
+from utils.mining import energy, grid, world
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
@@ -59,8 +60,11 @@ async def build_grid_embed(
         description = f"{note}\n\n{description}"
 
     embed = discord.Embed(title="⛏️ Mine", description=description, color=color)
+    e_cur, e_ts = await db.get_energy(suid, guild_id)
+    e_now = energy.settle(energy.EnergyState(e_cur, e_ts), int(time.time())).current
     embed.add_field(name="📍 Depth", value=world.describe_position(depth), inline=True)
     embed.add_field(name="🧭 Position", value=f"({x}, {y})", inline=True)
+    embed.add_field(name="⚡ Energy", value=energy.bar(e_now), inline=True)
     embed.add_field(name="🌐 World seed", value=str(seed), inline=True)
     embed.add_field(
         name="🗺️ Map",

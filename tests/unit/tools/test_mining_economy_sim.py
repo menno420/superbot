@@ -80,6 +80,14 @@ def test_max_depth_parity(mod):
     assert mod.MAX_DEPTH == world.MAX_DEPTH
 
 
+def test_base_roll_parity(mod):
+    """The sim's base-roll mirror matches live rewards.BASE_ROLL_MAX."""
+    from utils.mining import rewards
+
+    assert mod.BASE_ROLL_MAX == rewards.BASE_ROLL_MAX
+    assert mod.CURRENT.base_max == rewards.BASE_ROLL_MAX
+
+
 def test_current_config_mirrors_live_feature_mix(mod):
     """The CURRENT config's cell feature mix mirrors utils/mining/grid.py."""
     from utils.mining import grid
@@ -99,20 +107,39 @@ def test_current_config_mirrors_live_feature_mix(mod):
         grid._RICHNESS[grid.CellFeature.BARREN],
         grid._RICHNESS[grid.CellFeature.TREASURE],
     )
-    assert cur.dig_cooldown_s == 0.0  # the live game has no dig cooldown
+    # The live game has no per-dig cooldown; CURRENT models the energy throttle
+    # (regen ≈ 360/hr) as its operationally-equivalent ~10s effective interval.
+    assert cur.dig_cooldown_s == mod.ENERGY_THROTTLE_S
+
+
+def test_energy_throttle_parity(mod):
+    """The sim's energy throttle mirrors utils/mining/energy.py regen."""
+    from utils.mining import energy
+
+    assert mod.ENERGY_REGEN_PER_HOUR == 3600 // energy.REGEN_SECONDS * energy.DIG_COST
 
 
 # --- Diagnosis: the sim must detect the imbalance it was built to find -------
 
 
-def test_current_faucet_is_over_target(mod):
-    """The live faucet over-pays every profile vs the hourly target (the bug)."""
+def test_pre_rebalance_faucet_was_over_target(mod):
+    """The PRE-REBALANCE faucet over-paid every profile (the documented bug)."""
     rng = random.Random(1)
-    score = mod.score_config(mod.CURRENT, 3000, rng)
+    score = mod.score_config(mod.PRE_REBALANCE, 3000, rng)
     for r in score.results:
         assert r.coins_per_hour > mod.TARGET_HOUR_HI
-    # and the geared/fresh gap is far past the playable bound
+    # and the geared/fresh gap was far past the playable bound
     assert score.ratio > mod.MAX_VET_NEWCOMER_RATIO
+
+
+def test_current_config_is_balanced(mod):
+    """The applied rebalance + energy throttle lands every profile in target."""
+    rng = random.Random(1)
+    score = mod.score_config(mod.CURRENT, 3000, rng)
+    assert score.penalty < 0.5
+    for r in score.results:
+        assert mod.TARGET_HOUR_LO * 0.9 <= r.coins_per_hour <= mod.TARGET_HOUR_HI * 1.1
+    assert score.ratio <= mod.MAX_VET_NEWCOMER_RATIO
 
 
 def test_deeper_pays_more(mod):
@@ -159,8 +186,9 @@ def test_sweep_is_deterministic(mod):
 
 
 def test_bonanza_rate_math(mod):
-    """RICH+TREASURE share of cells — the 'too frequent' lever."""
-    assert mod.CURRENT.bonanza_rate() == pytest.approx(0.25)
+    """RICH+TREASURE share of cells — the 'too frequent' lever (before → after)."""
+    assert mod.PRE_REBALANCE.bonanza_rate() == pytest.approx(0.25)
+    assert mod.CURRENT.bonanza_rate() == pytest.approx(0.12)
 
 
 def test_main_runs_and_reports(mod, capsys, monkeypatch):

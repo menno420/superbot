@@ -184,6 +184,53 @@ async def set_equipped_title(
     )
 
 
+async def get_energy(
+    user_id: str,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> tuple[int, int]:
+    """Return ``(energy, energy_updated_at)`` — the player's stored energy fuel.
+
+    A missing row returns ``(0, 0)``: ``utils.mining.energy.settle`` reads that as
+    "0 energy as of the epoch", which regenerates to a full bar by now — so a
+    fresh player always starts full without this layer knowing ``MAX_ENERGY``
+    (no constant duplicated outside the pure energy domain).
+    """
+    row = await pool.fetchone(
+        "SELECT energy, energy_updated_at FROM mining_player_state "
+        "WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
+        conn=conn,
+    )
+    return (row["energy"], row["energy_updated_at"]) if row else (0, 0)
+
+
+async def set_energy(
+    user_id: str,
+    guild_id: int,
+    energy: int,
+    updated_at: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> None:
+    """Persist settled energy + its timestamp (upsert).
+
+    On the RS02 write-boundary ratchet — only ``services/mining_workflow.py``
+    may call it (the dig spend / food restore both compose it inside their
+    transaction; the workflow owns commit — Q-0071).
+    """
+    await pool.execute(
+        """INSERT INTO mining_player_state
+               (user_id, guild_id, energy, energy_updated_at)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (user_id, guild_id)
+           DO UPDATE SET energy=$3, energy_updated_at=$4, updated_at=now()""",
+        (user_id, guild_id, energy, updated_at),
+        conn=conn,
+    )
+
+
 async def record_depth(
     user_id: str,
     guild_id: int,

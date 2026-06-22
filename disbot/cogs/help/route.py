@@ -5,7 +5,7 @@ Both the ``!help <name>`` command and the Help dropdown call
 regardless of entry point. The opener is :func:`open_route` in this
 module; the cog wires it into the two entry points.
 
-Routes have five kinds:
+Routes have four kinds:
 
 - ``hub``       — open a mother-hub panel via the host cog's
                   ``build_help_menu_view`` (or the override named in
@@ -13,7 +13,6 @@ Routes have five kinds:
 - ``subsystem`` — open a subsystem panel via ``build_help_menu_view``
                   with a command-list embed fallback when the hook is
                   missing or raises.
-- ``advanced``  — open the legacy paginated ``HelpPanelView``.
 - ``command``   — render a single-command help embed.
 - ``unknown``   — render the "not found" fallback embed.
 
@@ -43,21 +42,22 @@ from utils.ui_constants import UTILITY_COLOR
 
 logger = logging.getLogger("bot")
 
-# Aliases that route to the legacy paginated subsystem browser.
-ADVANCED_ALIASES = frozenset({"advanced", "all", "commands", "all commands"})
-
 # Hub aliases beyond the registered key / display_name / entry_command.
 # Keep this small — it's a typed-name shorthand, not a second registry.
+# ``platform`` opens the consolidated Server & Admin section (help-menu
+# regrouping, PR #1290), where the Platform view lives as a child surface —
+# Diagnostics/Platform is no longer its own top-level hub.
 HUB_ALIAS_OVERRIDES: dict[str, str] = {
     "mod": "moderation",
-    "platform": "diagnostic",
+    "platform": "admin",
 }
 
-# Subsystem aliases that must NOT collide with a hub. ``diagnostics`` /
-# ``diag`` open the Diagnostics Hub via the subsystem route (it uses
-# ``build_help_menu_view`` which returns ``_DiagnosticsHubView``);
-# routing them through the hub key ``diagnostic`` would instead open
-# Platform Hub via ``build_platform_help_menu_view``.
+# Subsystem aliases that resolve a typed name straight to a subsystem panel
+# (the subsystem route uses ``build_help_menu_view``). After the help-menu
+# regrouping (PR #1290) Settings, Diagnostics, and Server Management are
+# children of the Server & Admin hub, not top-level hubs, so their typed
+# shorthands resolve here. ``diagnostics`` / ``diag`` open the Diagnostics Hub;
+# ``servermanagement`` opens the Server Management hub.
 #
 # PR 3 (RPS rename) also registers ``rps`` and ``rock paper scissors``
 # here so they open the Rock Paper Scissors subsystem panel rather
@@ -67,19 +67,19 @@ HUB_ALIAS_OVERRIDES: dict[str, str] = {
 SUBSYSTEM_ALIAS_OVERRIDES: dict[str, str] = {
     "diagnostics": "diagnostic",
     "diag": "diagnostic",
+    "servermanagement": "server_management",
+    "server management": "server_management",
     "rps": "rps_tournament",
     "rock paper scissors": "rps_tournament",
 }
 
 # Hubs whose dedicated Help builder is NOT ``build_help_menu_view``.
-# Keep this minimal — additions require a source-grounded justification.
-# The Platform / Diagnostics hub is the canonical example: its host cog
-# ``DiagnosticCog`` exposes ``build_help_menu_view`` (Diagnostics Hub)
-# for Admin → Diagnostics and ``build_platform_help_menu_view`` (Platform
-# Hub) for the Help "Platform / Diagnostics" entry.
-HUB_PANEL_BUILDERS: dict[str, str] = {
-    "diagnostic": "build_platform_help_menu_view",
-}
+# Currently empty: the one historical entry (Diagnostics/Platform) was dropped
+# when Diagnostics stopped being a top-level hub (help-menu regrouping, PR
+# #1290). The Platform view is now reached via the Server & Admin panel's
+# Platform button. Keep this dict (the help route + a re-export read it) so a
+# future top-level hub with a non-standard builder can register here again.
+HUB_PANEL_BUILDERS: dict[str, str] = {}
 
 
 @dataclass(frozen=True)
@@ -93,7 +93,7 @@ class HelpRoute:
     """
 
     key: str
-    kind: Literal["hub", "subsystem", "advanced", "command", "unknown"]
+    kind: Literal["hub", "subsystem", "command", "unknown"]
     target: str | None = None
 
 
@@ -206,20 +206,15 @@ def resolve_route(name: str, *, bot: commands.Bot) -> HelpRoute:
     same name produces the same destination regardless of entry point.
 
     Priority:
-      1. Advanced aliases (``advanced``, ``all``, ``commands``, ...).
-      2. Subsystem alias overrides (``diagnostics`` / ``diag``) — these
-         must run before the hub match so they aren't captured by the
-         Platform / Diagnostics hub.
-      3. Hub aliases (key / display_name / entry_command + a small
-         shorthand table for ``mod`` and ``platform``).
-      4. Subsystem key / display_name.
-      5. Command name (after alias resolution).
-      6. Unknown — caller renders the not-found fallback.
+      1. Subsystem alias overrides (``diagnostics`` / ``diag`` /
+         ``servermanagement``) — resolve straight to the subsystem panel.
+      2. Hub aliases (key / display_name / entry_command + a small
+         shorthand table for ``mod`` and ``platform`` → Server & Admin).
+      3. Subsystem key / display_name.
+      4. Command name (after alias resolution).
+      5. Unknown — caller renders the not-found fallback.
     """
     n = name.strip().lower()
-
-    if n in ADVANCED_ALIASES:
-        return HelpRoute(key=name, kind="advanced")
 
     if n in SUBSYSTEM_ALIAS_OVERRIDES:
         return HelpRoute(
@@ -266,28 +261,14 @@ async def open_route(
     projection hides renders not-found exactly like a nonexistent name
     (no information leak about hidden surfaces).
 
-    Imports of ``HelpPanelView``, ``_build_page_embed``, ``build_cog_embed``,
-    and ``_cog_for_subsystem`` are function-local to avoid an import
-    cycle with ``cogs.help_cog`` (where the cog and views live).
+    Imports of ``build_cog_embed`` and ``_cog_for_subsystem`` are
+    function-local to avoid an import cycle with ``cogs.help_cog`` (where
+    the cog and views live).
     """
     from cogs.help_cog import (
-        HelpPanelView,
-        _build_page_embed,
         _cog_for_subsystem,
         build_cog_embed,
     )
-
-    if route.kind == "advanced":
-        visible_list = projection.advanced_subsystems()
-        view = HelpPanelView(visible_list, page=0, projection=projection)
-        embed = _build_page_embed(
-            opener.client,
-            visible_list,
-            0,
-            projection.member_tier,
-            projection=projection,
-        )
-        return embed, view
 
     if route.kind == "hub":
         if route.target is None:

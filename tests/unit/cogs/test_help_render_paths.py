@@ -1,9 +1,10 @@
 """Characterization tests for the five Help render paths (Lane 8 + Batch 6).
 
-These pin the behavior of — Home (hub category index) · Advanced
-(paginated subsystem browser) · typed routes (`resolve_route`) · the
-generic command-list embed · dedicated panels (`build_help_menu_view`
-dispatch + fallbacks). The #642 net pinned the pre-seam divergence;
+These pin the behavior of — Home (hub category index) · typed routes
+(`resolve_route`) · the generic command-list embed · dedicated panels
+(`build_help_menu_view` dispatch + fallbacks). (The legacy Advanced
+paginated browser was removed in PR #1294.) The #642 net pinned the
+pre-seam divergence;
 the **Batch 6 projection seam (HLP-2) consciously changed the pins**
 marked below: every path now consumes one
 :class:`services.help_projection.HelpProjection`, so
@@ -25,7 +26,6 @@ are presentation-only, and an absent overlay is byte-identical.
 
 from __future__ import annotations
 
-import math
 from types import SimpleNamespace
 
 import discord
@@ -42,8 +42,6 @@ from cogs.help.route import (
     resolve_route,
 )
 from cogs.help_cog import (
-    _PAGE_SIZE,
-    HelpPanelView,
     build_categories_overview_embed,
     build_cog_embed,
 )
@@ -105,7 +103,6 @@ def _opener(bot) -> HelpOpener:
 
 
 _ALL_VISIBLE = set(SUBSYSTEMS)
-_TOP_LEVEL = [name for name, meta in SUBSYSTEMS.items() if not meta.get("parent_hub")]
 
 
 def _projection(visible: set[str], tier: str) -> HelpProjection:
@@ -125,17 +122,17 @@ def _projection(visible: set[str], tier: str) -> HelpProjection:
 # ---------------------------------------------------------------------------
 
 
-def test_home_lists_tier_visible_hubs_plus_permanent_advanced_row():
+def test_home_lists_exactly_the_tier_visible_hubs():
     embed = build_categories_overview_embed("user")
     field_names = [f.name for f in embed.fields]
 
-    # One field per tier-visible hub, in registry order, + the permanent
-    # Advanced row at the end.
+    # One field per tier-visible hub, in registry order — and nothing else.
+    # The legacy "Advanced / All Commands" row was removed (PR #1294).
     expected_hubs = hubs_for_tier("user")
-    assert len(field_names) == len(expected_hubs) + 1
+    assert len(field_names) == len(expected_hubs)
     for hub, field_name in zip(expected_hubs, field_names):
         assert hub.display_name in field_name
-    assert field_names[-1] == "📋 Advanced / All Commands"
+    assert not any("Advanced" in n or "All Commands" in n for n in field_names)
 
 
 def test_home_user_tier_sees_exactly_the_user_hubs_today():
@@ -148,7 +145,9 @@ def test_home_user_tier_sees_exactly_the_user_hubs_today():
 def test_home_admin_tier_sees_every_registered_hub():
     visible = {h.key for h in hubs_for_tier("administrator")}
     assert visible == {h.key for h in HUBS}
-    assert len(visible) == 10  # the reconciled hub count (surface map §1)
+    # Help-menu regrouping (PR #1290): 7 top-level sections (Settings,
+    # Diagnostics/Platform, Server Management consolidated under Server & Admin).
+    assert len(visible) == 7
 
 
 def test_home_hub_rows_carry_purpose_and_entry_command():
@@ -159,93 +158,9 @@ def test_home_hub_rows_carry_purpose_and_entry_command():
 
 
 # ---------------------------------------------------------------------------
-# Path 2 — Advanced: the paginated top-level subsystem browser
+# Path 2 — typed routes: resolve_route priority order
+# (The legacy "Advanced / All Commands" browser was removed — PR #1294.)
 # ---------------------------------------------------------------------------
-
-
-async def test_advanced_lists_only_visible_top_level_subsystems():
-    bot = _bot()
-    embed, view = await open_route(
-        HelpRoute(key="advanced", kind="advanced"),
-        _opener(bot),
-        projection=_projection(_ALL_VISIBLE, "administrator"),
-    )
-
-    assert isinstance(view, HelpPanelView)
-    text = " ".join(f"{f.name} {f.value}" for f in embed.fields)
-    # Parent-hub children never appear on Advanced — they are reachable
-    # through their hub panel (and typed routes).
-    for child in ("Blackjack", "XP & Levels"):
-        assert child not in text
-    # A first-page top-level subsystem does appear.
-    first_page = _TOP_LEVEL[:_PAGE_SIZE]
-    assert any(
-        SUBSYSTEMS[name].get("display_name", name) in text for name in first_page
-    )
-
-
-async def test_advanced_respects_governance_visibility():
-    bot = _bot()
-    narrowed = _ALL_VISIBLE - {"ai"}
-    embed, _view = await open_route(
-        HelpRoute(key="advanced", kind="advanced"),
-        _opener(bot),
-        projection=_projection(narrowed, "administrator"),
-    )
-    text = " ".join(f"{f.name} {f.value}" for f in embed.fields)
-    assert SUBSYSTEMS["ai"]["display_name"] not in text
-
-
-async def test_advanced_paginates_top_level_list_at_page_size():
-    bot = _bot()
-    embed, _view = await open_route(
-        HelpRoute(key="advanced", kind="advanced"),
-        _opener(bot),
-        projection=_projection(_ALL_VISIBLE, "administrator"),
-    )
-    pages = max(1, math.ceil(len(_TOP_LEVEL) / _PAGE_SIZE))
-    if pages > 1:
-        assert f"Page 1 of {pages}" in (embed.description or "")
-    else:  # pragma: no cover — only if the registry shrinks below one page
-        assert "Select a category" in (embed.description or "")
-
-
-def test_advanced_top_level_set_today():
-    """Characterization: the current top-level (non-child) subsystem set —
-    the Advanced browser's source list. Re-parenting a subsystem must
-    consciously update this pin (post-#626: spotlight is a community child)."""
-    assert sorted(_TOP_LEVEL) == [
-        "admin",
-        "ai",
-        "btd6",
-        "channel",
-        "community",
-        "counters",
-        "creature",
-        "diagnostic",
-        "economy",
-        "fishing",
-        "games",
-        "help",
-        "moderation",
-        "security",
-        "server_management",
-        "settings",
-        "utility",
-        "ux_lab",
-        "welcome",
-    ]
-
-
-# ---------------------------------------------------------------------------
-# Path 3 — typed routes: resolve_route priority order
-# ---------------------------------------------------------------------------
-
-
-def test_route_advanced_aliases_win_first():
-    bot = _bot()
-    for name in ("advanced", "ALL", "Commands", "all commands"):
-        assert resolve_route(name, bot=bot).kind == "advanced", name
 
 
 def test_route_subsystem_alias_overrides_beat_hub_match():
@@ -262,7 +177,9 @@ def test_route_subsystem_alias_overrides_beat_hub_match():
 def test_route_hub_aliases_and_forms():
     bot = _bot()
     assert resolve_route("mod", bot=bot).target == "moderation"
-    assert resolve_route("platform", bot=bot).target == "diagnostic"
+    # Help-menu regrouping (PR #1290): "platform" now opens the consolidated
+    # Server & Admin hub (where the Platform view lives).
+    assert resolve_route("platform", bot=bot).target == "admin"
     # Hub key, display name, and entry command all resolve to the hub.
     for form in ("moderation", "Moderation & Safety", "modmenu"):
         route = resolve_route(form, bot=bot)
@@ -271,10 +188,12 @@ def test_route_hub_aliases_and_forms():
 
 def test_route_hub_name_shadows_same_named_subsystem():
     """Characterization of the priority quirk: keys that are both a hub and
-    a subsystem (`games`, `settings`, …) resolve to the HUB. The subsystem
-    row is reached through the hub panel, never by its bare name."""
+    a subsystem (`games`, `economy`, …) resolve to the HUB. The subsystem
+    row is reached through the hub panel, never by its bare name. (After the
+    help-menu regrouping, PR #1290, `settings` is no longer a hub — it resolves
+    to the subsystem; see the subsystem-route tests.)"""
     bot = _bot()
-    for name in ("games", "settings", "economy"):
+    for name in ("games", "economy", "admin"):
         assert resolve_route(name, bot=bot).kind == "hub", name
 
 
@@ -380,24 +299,24 @@ async def test_subsystem_hook_failure_falls_back_to_command_list():
     assert "`!xpmenu`" in " ".join(f.name for f in embed.fields)
 
 
-async def test_hub_route_uses_panel_builder_override_table():
-    """The `diagnostic` hub routes through `build_platform_help_menu_view`
-    (Platform Hub), NOT the generic hook (Diagnostics Hub)."""
-    assert HUB_PANEL_BUILDERS == {"diagnostic": "build_platform_help_menu_view"}
+async def test_hub_route_uses_generic_builder_when_no_override():
+    """Help-menu regrouping (PR #1290): the panel-builder override table is now
+    empty (Diagnostics/Platform stopped being a top-level hub), so every hub
+    route uses the generic ``build_help_menu_view`` hook."""
+    assert HUB_PANEL_BUILDERS == {}
 
     cog = _StubCog(
-        [_command("platform")],
-        hook=_panel_pair("WRONG: DIAGNOSTICS"),
-        platform_hook=_panel_pair("PLATFORM HUB"),
+        [_command("adminmenu")],
+        hook=_panel_pair("SERVER & ADMIN HUB"),
     )
-    bot = _bot(cogs={"DiagnosticCog": cog})
+    bot = _bot(cogs={"AdminCog": cog})
 
     embed, _view = await open_route(
-        HelpRoute(key="platform", kind="hub", target="diagnostic"),
+        HelpRoute(key="admin", kind="hub", target="admin"),
         _opener(bot),
         projection=_projection(_ALL_VISIBLE, "administrator"),
     )
-    assert embed.title == "PLATFORM HUB"
+    assert embed.title == "SERVER & ADMIN HUB"
 
 
 async def test_hub_hook_failure_renders_not_found():
@@ -453,12 +372,12 @@ def test_home_hides_hub_whose_host_subsystem_is_governance_hidden():
     assert "Economy" in names  # unaffected sibling
 
 
-async def test_advanced_and_typed_route_agree_on_hidden_subsystem():
-    """Paths 2+3: a governance-hidden subsystem is absent from Advanced AND
-    its typed route renders not-found — the same decision, not two filters."""
+async def test_typed_route_renders_not_found_for_hidden_subsystem():
+    """A governance-hidden subsystem's typed route renders not-found —
+    indistinguishable from a nonexistent name (no information leak)."""
     narrowed = _ALL_VISIBLE - {"ai"}
     projection = _projection(narrowed, "administrator")
-    assert "ai" not in projection.advanced_subsystems()
+    assert not projection.is_subsystem_advertised("ai")
 
     embed, view = await open_route(
         HelpRoute(key="ai", kind="subsystem", target="ai"),
@@ -619,7 +538,7 @@ async def test_typed_route_treats_overlay_hidden_like_any_hidden_target():
     assert "No command or category named" in (embed.description or "")
 
 
-async def test_advanced_and_cog_embed_render_overlay_renames():
+def test_cog_embed_renders_overlay_renames():
     projection = _overlay_projection(
         _ALL_VISIBLE,
         "administrator",
@@ -630,39 +549,10 @@ async def test_advanced_and_cog_embed_render_overlay_renames():
             "description": "Coins and trading",
         },
     )
-    # Path 2 — the Advanced page embed shows the effective name.
-    from cogs.help_cog import _build_page_embed
-
-    embed = _build_page_embed(
-        _bot(),
-        projection.advanced_subsystems(),
-        0,
-        "administrator",
-        projection=projection,
-    )
-    text = " ".join(f.value for f in embed.fields)
-    assert "**Bank** — Coins and trading" in text
-
-    # Path 4 — the command-list embed title takes the effective name.
+    # The command-list embed title takes the effective (overlay) name.
     cog = _StubCog([_command("economymenu", help="Open the menu.")])
     cog_embed = build_cog_embed(cog, "!", "economy", projection=projection)
     assert "Bank" in (cog_embed.title or "")
-
-
-def test_help_panel_view_options_render_overlay_renames():
-    projection = _overlay_projection(
-        _ALL_VISIBLE,
-        "administrator",
-        {"entity_kind": "subsystem", "entity_key": "economy", "display_name": "Bank"},
-    )
-    view = HelpPanelView(
-        projection.advanced_subsystems(),
-        page=0,
-        projection=projection,
-    )
-    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
-    by_value = {opt.value: opt.label for opt in select.options}
-    assert by_value["economy"] == "Bank"
 
 
 def test_overlay_absent_keeps_render_paths_byte_identical():

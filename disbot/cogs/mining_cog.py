@@ -287,6 +287,27 @@ class MiningCog(commands.Cog):
             return await ctx.send(result.message)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
+    @commands.command(hidden=True, extras={"classification": "hidden"})
+    async def cook(self, ctx, *, fish: str = None):
+        """Cook a caught fish into food at your campfire (refills mining energy).
+
+        Usage: `!cook <fish>` or `!cook <amount> <fish>` (e.g. `!cook 3 minnow`).
+        """
+        if not fish:
+            return await ctx.send(
+                "Specify a fish to cook, e.g. `!cook minnow` (needs a 🔥 Campfire).",
+            )
+        amount = 1
+        parts = fish.split()
+        if len(parts) > 1 and parts[0].isdigit():
+            amount = max(1, int(parts[0]))
+            fish = " ".join(parts[1:])
+        fish = resolve_item_name(fish, catalog_names()) or fish
+        result = await mining_workflow.cook(ctx.author.id, ctx.guild.id, fish, amount)
+        if not result.ok:
+            return await ctx.send(result.message)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
     # ---------------------------------------------------------- gear / equipment
 
     @commands.command(hidden=True, extras={"classification": "hidden"})

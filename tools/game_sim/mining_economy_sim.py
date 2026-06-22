@@ -94,14 +94,24 @@ SURFACE_ORE_WEIGHTS: dict[str, float] = {
     "diamond": 0.5,
 }
 
-# Tool multipliers by tier — rewards.mine_multiplier (1 + mining_power // 2).
-TOOL_MULT: dict[str, int] = {
-    "none": 1,
-    "pickaxe": 2,
-    "iron": 3,
-    "gold": 4,
-    "diamond": 5,
+# Tool multipliers by tier — rewards.mine_multiplier (1 + power*0.0625, the
+# 2026-06-22 rebalance; powers 0/2/4/6/8 → ×1/1.125/1.25/1.375/1.5).
+TOOL_MULT: dict[str, float] = {
+    "none": 1.0,
+    "pickaxe": 1.125,
+    "iron": 1.25,
+    "gold": 1.375,
+    "diamond": 1.5,
 }
+
+# Base ore per dig — rewards.BASE_ROLL_MAX (rebalanced 3 → 2 on 2026-06-22).
+BASE_ROLL_MAX = 2
+
+# Energy throttle — the owner's chosen frequency brake (utils/mining/energy.py):
+# +1 energy / 10s = 360 digs / active hour. Operationally identical to a 10s
+# dig interval for the sustained faucet, so the sim models it as that cooldown.
+ENERGY_REGEN_PER_HOUR = 360
+ENERGY_THROTTLE_S = 3600 / ENERGY_REGEN_PER_HOUR  # = 10.0s effective interval
 
 MAX_DEPTH = 3  # utils/mining/world.py — SURFACE/CAVERN/DEEP/MAGMA (0..3)
 
@@ -172,13 +182,29 @@ class MiningConfig:
         return (r + t) / (n + r + b + t)
 
 
-CURRENT = MiningConfig(
-    name="CURRENT (live #1282)",
+# The faucet BEFORE the 2026-06-22 rebalance — the imbalance the sim diagnosed
+# (uncapped clicking, steep ×1-5 tools, 25% bonanza). Kept as the documented
+# "before" so the diagnosis section stays reproducible.
+PRE_REBALANCE = MiningConfig(
+    name="PRE-REBALANCE (live #1282, the bug)",
     base_max=3,
-    tool_mult=dict(TOOL_MULT),
+    tool_mult={"none": 1.0, "pickaxe": 2.0, "iron": 3.0, "gold": 4.0, "diamond": 5.0},
     feature_weights=(60.0, 20.0, 15.0, 5.0),
     feature_richness=(1.0, 2.0, 0.5, 3.0),
     dig_cooldown_s=0.0,
+)
+
+# The CURRENT live config — the applied rebalance (#1286): smaller base roll,
+# flat tool curve, 12% bonanza, AND the energy throttle (modeled as its ~10s
+# effective dig interval). This is what the bot now does; the parity test pins
+# every mirror to the live source.
+CURRENT = MiningConfig(
+    name="CURRENT (live, rebalanced + energy throttle)",
+    base_max=BASE_ROLL_MAX,
+    tool_mult=dict(TOOL_MULT),
+    feature_weights=(70.0, 10.0, 18.0, 2.0),
+    feature_richness=(1.0, 2.0, 0.5, 2.0),
+    dig_cooldown_s=ENERGY_THROTTLE_S,
 )
 
 
@@ -501,31 +527,37 @@ def main() -> int:
 
     warns = 0
 
-    # 1. Diagnose the current live config (expect: way over the faucet target).
+    # 1. The pre-rebalance faucet — the bug the sim diagnosed (over target).
+    pre = _report_config(
+        "[1] PRE-REBALANCE faucet — too large & too frequent (the bug)",
+        PRE_REBALANCE,
+        args.trials,
+        rng,
+    )
+    worst = max(pre.results, key=lambda r: r.coins_per_hour)
+    mins_to_daily = daily / (worst.coins_per_hour / 60.0)
+    print(
+        f"    → a '{worst.profile.name.split('(')[0].strip()}' earned a full !daily "
+        f"({daily:,.0f}) in ~{mins_to_daily:.1f} active min; bonanza "
+        f"{PRE_REBALANCE.bonanza_rate() * 100:.0f}%; gap {pre.ratio:.1f}× — "
+        "confirmed the owner's read.",
+    )
+
+    # 1b. The CURRENT live faucet — rebalanced magnitude + the energy throttle.
     cur = _report_config(
-        "[1] CURRENT live faucet — is it too large & too frequent?",
+        "[1b] CURRENT live faucet — applied rebalance + energy throttle",
         CURRENT,
         args.trials,
         rng,
     )
     over = [r for r in cur.results if r.coins_per_hour > TARGET_HOUR_HI]
-    if over:
-        worst = max(cur.results, key=lambda r: r.coins_per_hour)
-        mins_to_daily = daily / (worst.coins_per_hour / 60.0)
-        print(
-            f"    → DIAGNOSIS: {len(over)}/{len(cur.results)} profiles exceed the "
-            f"hourly target. A '{worst.profile.name.split('(')[0].strip()}' earns a "
-            f"full !daily ({daily:,.0f}) in ~{mins_to_daily:.1f} active min.",
-        )
-        print("    → too large AND too frequent — confirms the owner's read.  WARN")
-        warns += 1
-    if CURRENT.bonanza_rate() > TARGET_BONANZA_HI:
-        print(
-            f"    → lucky strikes fire on {CURRENT.bonanza_rate() * 100:.0f}% of "
-            f"cells (target ≤ {TARGET_BONANZA_HI * 100:.0f}%): rewards too frequent."
-            "  WARN",
-        )
-        warns += 1
+    in_band = not over and cur.ratio <= MAX_VET_NEWCOMER_RATIO
+    warns += not in_band
+    print(
+        f"    → energy regen ≈ {ENERGY_REGEN_PER_HOUR}/hr is the frequency brake "
+        f"(no per-dig wait); faucet now {'IN BAND' if in_band else 'still off'}.  "
+        f"{_flag(in_band)}",
+    )
 
     # 2. Sweep candidate configs for the most balanced one.
     print("\n[2] Config sweep — searching for the most balanced configuration…")

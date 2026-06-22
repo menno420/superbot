@@ -135,10 +135,10 @@ async def restore_anchors(bot: commands.Bot) -> None:
     for anchor in anchors:
         subsystem = anchor["subsystem"]
         # Help is invoke-and-see, not a stable hub (see help_cog.help_command).
-        # Restoring it would either re-attach a HelpPanelView with empty
-        # _visible/_page state or require schema work to persist that state.
-        # Neither matches the lifecycle — drop the anchor so the user's next
-        # !help creates a clean panel via panel_manager.
+        # Restoring it would re-attach a stale HelpCategoryView snapshot rather
+        # than reflect the user's current access. Neither matches the
+        # lifecycle — drop the anchor so the user's next !help creates a clean
+        # panel via panel_manager.
         if subsystem == "help":
             await mark_stale(str(anchor["anchor_id"]))
             stale += 1

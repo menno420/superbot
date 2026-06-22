@@ -29,16 +29,22 @@ def _deterministic():
 def test_roll_mine_loot_returns_known_ore_name():
     found, amount = rewards.roll_mine_loot(has_pickaxe=False)
     assert found in rewards.ORE_WEIGHTS
-    assert 1 <= amount <= 3
+    assert 1 <= amount <= rewards.BASE_ROLL_MAX  # base roll, no multiplier
 
 
-def test_roll_mine_loot_pickaxe_doubles_amount():
-    """With the same RNG seed, pickaxe path yields exactly 2× the no-pickaxe path."""
+def test_roll_mine_loot_pickaxe_applies_legacy_bonus():
+    """The inventory-pickaxe path applies the (flattened) legacy multiplier.
+
+    Post-2026-06-22 rebalance the legacy pickaxe bonus is a gentle ×1.125 (not
+    ×2), rounded into a whole ore count — so it never falls below the no-pickaxe
+    amount and matches the documented LEGACY_PICKAXE_MULT.
+    """
     random.seed(1)
     _, no_pickaxe = rewards.roll_mine_loot(has_pickaxe=False)
     random.seed(1)
     _, with_pickaxe = rewards.roll_mine_loot(has_pickaxe=True)
-    assert with_pickaxe == no_pickaxe * 2
+    assert with_pickaxe == max(1, round(no_pickaxe * rewards.LEGACY_PICKAXE_MULT))
+    assert with_pickaxe >= no_pickaxe
 
 
 def test_ore_weights_contain_all_six_resources():

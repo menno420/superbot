@@ -10,7 +10,6 @@ fail loudly if a hub is added without a corresponding panel.
 from __future__ import annotations
 
 from utils.hub_registry import (
-    ALL_COMMANDS_KEY,
     HUBS,
     HubEntry,
     get_hub,
@@ -38,21 +37,17 @@ def test_hub_keys_are_unique():
     assert len(keys) == len(set(keys)), f"duplicate hub keys: {keys}"
 
 
-def test_all_commands_key_is_not_a_hub():
-    """ALL_COMMANDS_KEY is a sentinel for the permanent fallback option,
-    not a mother hub. It must not appear in HUBS.
-    """
-    assert ALL_COMMANDS_KEY not in {hub.key for hub in HUBS}
-
-
 def test_committed_hub_set_matches_promoted_hubs():
-    """The committed hub set is the union of S3 v1 (Games, Admin,
-    Settings, Platform) plus any hubs promoted in later PRs.
+    """The committed top-level hub set after the help-menu regrouping
+    (PR #1290): Games, BTD6, Economy, Moderation & Safety, Community,
+    Utility, and the consolidated Server & Admin section.
 
-    S7 → Economy. S8 → Moderation/Safety. S9 → Community. S10 →
-    Utility. M1 of the BTD6-top-level + AI-central-policy
-    initiative → BTD6 Assistant. Future PRs that add hubs must come
-    with a real panel or fail this test.
+    The regrouping nested the four former child-less admin hubs
+    (Admin, Settings, Diagnostics/Platform, Server Management) into one
+    ``admin`` section so the admin-side Help index stops being crowded —
+    ``settings`` / ``diagnostic`` / ``server_management`` are now
+    ``admin`` children, not top-level hubs. Future PRs that add a
+    top-level hub must come with a real panel or fail this test.
     """
     assert {hub.key for hub in HUBS} == {
         "games",
@@ -62,9 +57,6 @@ def test_committed_hub_set_matches_promoted_hubs():
         "community",
         "utility",
         "admin",
-        "settings",
-        "diagnostic",
-        "server_management",
     }
 
 
@@ -96,7 +88,15 @@ def test_community_hub_uses_new_cog():
     assert community is not None
     assert community.entry_command == "!community"
     assert community.minimum_tier == "user"
-    assert community.primary_children == ("xp", "community_spotlight", "role")
+    # welcome + counters homed here by the help-menu regrouping (PR #1290);
+    # both are administrator-tier so they stay operator-only in the user view.
+    assert community.primary_children == (
+        "xp",
+        "community_spotlight",
+        "role",
+        "welcome",
+        "counters",
+    )
     assert community.cross_link_children == ("counting", "chain", "leaderboard")
     assert community.panel_available is True
 
@@ -111,15 +111,42 @@ def test_moderation_hub_uses_existing_panel():
     assert moderation is not None
     assert moderation.entry_command == "!modmenu"
     assert moderation.minimum_tier == "moderator"
+    # security homed here by the help-menu regrouping (PR #1290).
     assert moderation.primary_children == (
         "automod",
         "image_moderation",
         "cleanup",
         "logging",
         "proof_channel",
+        "security",
     )
     assert moderation.cross_link_children == ()
     assert moderation.panel_available is True
+
+
+def test_admin_hub_consolidates_ops_sections():
+    """Help-menu regrouping (PR #1290): the Server & Admin hub is the single
+    operator section. The four former child-less admin hubs (Admin, Settings,
+    Diagnostics/Platform, Server Management) plus Channels, AI Platform, and
+    UX Lab are now its primary children, so the admin-side Help index is no
+    longer crowded. Pinned so a future change can't silently re-split them.
+    """
+    admin = get_hub("admin")
+    assert admin is not None
+    assert admin.display_name == "Server & Admin"
+    assert admin.minimum_tier == "administrator"
+    assert set(admin.primary_children) == {
+        "ux_lab",
+        "channel",
+        "server_management",
+        "ai",
+        "settings",
+        "diagnostic",
+    }
+    # The nested ops surfaces are no longer top-level hubs.
+    hub_keys = {hub.key for hub in HUBS}
+    for nested in ("settings", "diagnostic", "server_management"):
+        assert nested not in hub_keys
 
 
 def test_btd6_is_top_level_hub():
@@ -282,9 +309,6 @@ def test_hubs_for_tier_administrator_sees_all():
         "community",
         "utility",
         "admin",
-        "settings",
-        "diagnostic",
-        "server_management",
     }
 
 
@@ -298,9 +322,6 @@ def test_hubs_for_tier_owner_sees_all():
         "community",
         "utility",
         "admin",
-        "settings",
-        "diagnostic",
-        "server_management",
     }
 
 

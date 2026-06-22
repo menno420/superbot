@@ -26,6 +26,10 @@ _BASE_READS = dict(
     get_skills=lambda: AsyncMock(return_value={}),
     get_mining_inventory=lambda: AsyncMock(return_value={}),
     get_world_seed=lambda: AsyncMock(return_value=123),
+    # Energy fuel: (0, 0) settles to a full bar (epoch-0 timestamp), so digs are
+    # never energy-blocked in these move/loot tests; set_energy is a no-op write.
+    get_energy=lambda: AsyncMock(return_value=(0, 0)),
+    set_energy=lambda: AsyncMock(),
 )
 
 
@@ -207,6 +211,93 @@ async def test_dig_rich_cell_features_its_ore_and_sets_a_note():
 
     assert result.found == "gold"  # the rich vein's featured ore
     assert result.cell_note is not None
+
+
+# ---------------------------------------------------------------------------
+# energy — the frequency brake (2026-06-22)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_dig_blocked_when_out_of_energy():
+    """0 energy as of a far-future timestamp ⇒ no regen ⇒ blocked, no writes."""
+    set_position = AsyncMock()
+    update_mining_item = AsyncMock()
+    set_energy = AsyncMock()
+    with patch.multiple(
+        "services.mining_workflow.db",
+        **_reads(
+            get_energy=AsyncMock(return_value=(0, 9_999_999_999)),
+            set_position=set_position,
+            update_mining_item=update_mining_item,
+            set_energy=set_energy,
+            mark_discovered=AsyncMock(),
+        ),
+    ):
+        result = await mining_workflow.dig(7, 99, grid.NORTH)
+
+    assert result.moved is False
+    assert result.found is None and result.amount == 0
+    assert result.hint is not None and "energy" in result.hint.lower()
+    set_position.assert_not_awaited()
+    update_mining_item.assert_not_awaited()
+    set_energy.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_dig_spends_energy_in_the_transaction():
+    set_energy = AsyncMock()
+    with patch.multiple(
+        "services.mining_workflow.db",
+        **_reads(
+            get_energy=AsyncMock(return_value=(10, 9_999_999_999)),  # 10, no regen
+            set_position=AsyncMock(),
+            update_mining_item=AsyncMock(),
+            set_energy=set_energy,
+            mark_discovered=AsyncMock(),
+        ),
+    ):
+        result = await mining_workflow.dig(7, 99, grid.NORTH)
+
+    assert result.moved is True
+    # one dig debits one energy (10 → 9), persisted on the conn.
+    set_energy.assert_awaited_once()
+    assert set_energy.await_args.args[2] == 9
+
+
+@pytest.mark.asyncio
+async def test_use_ration_restores_energy_and_consumes_it():
+    update_mining_item = AsyncMock()
+    set_energy = AsyncMock()
+    with patch.multiple(
+        "services.mining_workflow.db",
+        get_mining_inventory=AsyncMock(return_value={"ration": 2}),
+        get_energy=AsyncMock(return_value=(20, 9_999_999_999)),  # 20, no regen
+        update_mining_item=update_mining_item,
+        set_energy=set_energy,
+    ):
+        result = await mining_workflow.use_item(7, 99, "ration")
+
+    assert result.ok is True
+    update_mining_item.assert_awaited_once_with("7", 99, "ration", -1, conn=ANY)
+    set_energy.assert_awaited_once()
+    assert set_energy.await_args.args[2] == 45  # 20 + 25 ration restore
+
+
+@pytest.mark.asyncio
+async def test_use_food_at_full_energy_is_refused():
+    update_mining_item = AsyncMock()
+    with patch.multiple(
+        "services.mining_workflow.db",
+        get_mining_inventory=AsyncMock(return_value={"energy drink": 1}),
+        get_energy=AsyncMock(return_value=(60, 0)),  # already full
+        update_mining_item=update_mining_item,
+        set_energy=AsyncMock(),
+    ):
+        result = await mining_workflow.use_item(7, 99, "energy drink")
+
+    assert result.ok is False
+    update_mining_item.assert_not_awaited()  # the item is NOT wasted
 
 
 # ---------------------------------------------------------------------------
