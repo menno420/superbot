@@ -25,12 +25,14 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/funny-franklin-mjvqrx` · **BUG-0023 slash under-coverage root fix** (dispatch routine,
-  empty-fire, bugs-first) — teach `scan_commands.py` to detect attribute-assigned `app_commands.Group`
-  groups so their 40 subcommands + 6 groups are scanned (closes the static-25-vs-live-71 gap at the
-  root) + regen dashboard/site data + mark the bug FIXED · `scripts/scan_commands.py` /
-  `tests/unit/scripts/test_scan_commands.py` / regenerated data artifacts / `docs/health/bug-book.md`
-  · 2026-06-22 · **PR (this session, self-merge on green)**
+- `claude/funny-franklin-h6cjlg` · **allow read-only network probes (curl)** (dispatch routine,
+  owner-directed in-session) — move `curl` `ask`→`allow` in `.claude/settings.json` + the `timeout`
+  wrapper; prune the stale BUG-0023 claim · `.claude/settings.json` / `docs/owner/active-work.md` ·
+  2026-06-22 · **PR (this session, owner-directed self-merge on green)**
+
+*(2026-06-22 prune, Q-0166: the BUG-0023 slash-under-coverage claim on `claude/funny-franklin-mjvqrx`
+was stale — its PR #1272 merged (in `git log`, bug-book marked FIXED) and `list_pull_requests`
+(state=open) returned empty — so it was pruned; merged work is in `current-state.md` + the bug-book.)*
 
 *(2026-06-22 prune, Q-0166: the prior Starboard-PR-2 claim was stale — its PR #1270 merged and
 `list_pull_requests` (state=open) returned empty — so it was pruned; merged work is in

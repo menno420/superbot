@@ -124,7 +124,9 @@
       "Bash(rm _*)",
       "Bash(python3 /tmp/*)",
       "Bash(npx -y @optave/codegraph*)",
-      "Bash(npx @optave/codegraph*)"
+      "Bash(npx @optave/codegraph*)",
+      "Bash(curl*)",
+      "Bash(timeout*)"
     ],
     "ask": [
       "Bash(rm -r*)",
@@ -141,7 +143,6 @@
       "Bash(psql*)",
       "Bash(pg_dump*)",
       "Bash(pg_restore*)",
-      "Bash(curl*)",
       "Bash(wget*)",
       "Bash(docker*)"
     ]
