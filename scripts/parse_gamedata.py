@@ -4248,6 +4248,83 @@ def build_income_sets(dump: Path) -> dict[str, Any]:
     }
 
 
+# --- XP per round (bloonswiki-sourced formula, not in the game data dump) ------
+# The game data dump stores NO per-round XP (verified: Rounds/*/N.json carry only
+# bloon composition + timing; bloon models carry no xp/cash). In BTD6 the XP a
+# round awards is a FIXED amount per round number — independent of the bloons
+# popped — given by a piecewise-linear formula. This reproduces it from
+# bloonswiki.com (the same source as rounds.json), validated against that wiki's
+# own "Base XP" round-table column at every band boundary (see
+# tests/unit/services/test_btd6_round_xp.py). The split among tower types (by
+# share of cash invested) and Monkey-Knowledge modifiers are gameplay-dependent
+# and are NOT static per-round data, so only the base amount + the global
+# difficulty / freeplay multipliers are stored.
+_ROUND_XP_COUNT = 140  # cover ABR's full 1-140 range (standard play is 1-100)
+# Map-difficulty XP multipliers (Beginner is the ×1.0 base).
+_XP_DIFFICULTY_MULTIPLIERS: dict[str, float] = {
+    "beginner": 1.0,
+    "intermediate": 1.1,
+    "advanced": 1.2,
+    "expert": 1.3,
+}
+# Freeplay reduces XP to 30% of the round's XP through round 100, then 10% on
+# rounds 101+.
+_XP_FREEPLAY_MULTIPLIERS: dict[str, float] = {
+    "through_round_100": 0.3,
+    "round_101_plus": 0.1,
+}
+
+
+def _round_base_xp(r: int) -> int:
+    """Base XP a round awards, before difficulty / freeplay / MK modifiers.
+
+    The BTD6 piecewise-linear formula (bloonswiki.com), validated against that
+    wiki's own "Base XP" round-table column:
+        XP(r) = 20r + 20          for r <= 20
+        XP(r) = 40(r - 20) + 420   for 21 <= r <= 50
+        XP(r) = 90(r - 50) + 1620  for r >= 51
+    """
+    if r <= 20:
+        return 20 * r + 20
+    if r <= 50:
+        return 40 * (r - 20) + 420
+    return 90 * (r - 50) + 1620
+
+
+def build_round_xp(_dump: Path | None = None) -> dict[str, Any]:
+    """The ``round_xp.json`` payload: base XP per round 1-140 + global modifiers.
+
+    Pure formula — needs neither the dump nor the network (the dump has no XP
+    field). ``game_version`` is read from the committed ``rounds.json`` so the XP
+    table stays stamped in lock-step with the round data it complements.
+    """
+    rounds_meta = json.loads((_DATA_ROOT / "rounds.json").read_text("utf-8"))
+    rows = [
+        {"round": r, "xp": _round_base_xp(r)} for r in range(1, _ROUND_XP_COUNT + 1)
+    ]
+    return {
+        "schema_version": 1,
+        "data_version": "1.0",
+        "game_version": str(rounds_meta.get("game_version", "")),
+        "source": "bloonswiki.com (Tower XP / Experience / List of rounds 'Base XP')",
+        "xp_source": (
+            "Per-round XP is NOT in the BTD Mod Helper game data dump (round "
+            "files store only bloon composition + timing; bloon models store no "
+            "xp/cash). BTD6 awards a FIXED XP amount per round number, "
+            "independent of bloons popped: XP(r) = 20r+20 (r<=20) / 40(r-20)+420 "
+            "(21<=r<=50) / 90(r-50)+1620 (r>=51). Validated against bloonswiki's "
+            "own 'Base XP' column (List_of_rounds_in_BTD6) at every band "
+            "boundary. base_xp is the Beginner (x1.0), non-freeplay amount before "
+            "Monkey Knowledge; multiply by difficulty_multipliers and "
+            "freeplay_multipliers as needed. Tower XP is then split among tower "
+            "types by share of cash invested (gameplay-dependent, not stored)."
+        ),
+        "difficulty_multipliers": _XP_DIFFICULTY_MULTIPLIERS,
+        "freeplay_multipliers": _XP_FREEPLAY_MULTIPLIERS,
+        "rounds": rows,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
@@ -4323,6 +4400,11 @@ def main(argv: list[str] | None = None) -> int:
         "--income-sets",
         action="store_true",
         help="rebuild income_sets.json from the dump's IncomeSets/ folder (7 cash-decay curves)",
+    )
+    ap.add_argument(
+        "--round-xp",
+        action="store_true",
+        help="rebuild round_xp.json (base XP per round 1-140 from the validated bloonswiki formula; no dump needed)",
     )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
@@ -4405,6 +4487,19 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 f"wrote {dest.relative_to(_REPO_ROOT)} "
                 f"({len(payload['income_sets'])} sets)",
+            )
+        return 0
+
+    if args.round_xp:
+        payload = build_round_xp()
+        dest = _DATA_ROOT / "round_xp.json"
+        if args.dry_run:
+            print(json.dumps(payload, indent=2, ensure_ascii=False)[:1500])
+        else:
+            _write(dest, payload)
+            print(
+                f"wrote {dest.relative_to(_REPO_ROOT)} "
+                f"({len(payload['rounds'])} rounds, game v{payload['game_version']})",
             )
         return 0
 

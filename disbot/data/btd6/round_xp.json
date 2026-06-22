@@ -1,0 +1,579 @@
+{
+  "schema_version": 1,
+  "data_version": "1.0",
+  "game_version": "55.1",
+  "source": "bloonswiki.com (Tower XP / Experience / List of rounds 'Base XP')",
+  "xp_source": "Per-round XP is NOT in the BTD Mod Helper game data dump (round files store only bloon composition + timing; bloon models store no xp/cash). BTD6 awards a FIXED XP amount per round number, independent of bloons popped: XP(r) = 20r+20 (r<=20) / 40(r-20)+420 (21<=r<=50) / 90(r-50)+1620 (r>=51). Validated against bloonswiki's own 'Base XP' column (List_of_rounds_in_BTD6) at every band boundary. base_xp is the Beginner (x1.0), non-freeplay amount before Monkey Knowledge; multiply by difficulty_multipliers and freeplay_multipliers as needed. Tower XP is then split among tower types by share of cash invested (gameplay-dependent, not stored).",
+  "difficulty_multipliers": {
+    "beginner": 1.0,
+    "intermediate": 1.1,
+    "advanced": 1.2,
+    "expert": 1.3
+  },
+  "freeplay_multipliers": {
+    "through_round_100": 0.3,
+    "round_101_plus": 0.1
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "xp": 40
+    },
+    {
+      "round": 2,
+      "xp": 60
+    },
+    {
+      "round": 3,
+      "xp": 80
+    },
+    {
+      "round": 4,
+      "xp": 100
+    },
+    {
+      "round": 5,
+      "xp": 120
+    },
+    {
+      "round": 6,
+      "xp": 140
+    },
+    {
+      "round": 7,
+      "xp": 160
+    },
+    {
+      "round": 8,
+      "xp": 180
+    },
+    {
+      "round": 9,
+      "xp": 200
+    },
+    {
+      "round": 10,
+      "xp": 220
+    },
+    {
+      "round": 11,
+      "xp": 240
+    },
+    {
+      "round": 12,
+      "xp": 260
+    },
+    {
+      "round": 13,
+      "xp": 280
+    },
+    {
+      "round": 14,
+      "xp": 300
+    },
+    {
+      "round": 15,
+      "xp": 320
+    },
+    {
+      "round": 16,
+      "xp": 340
+    },
+    {
+      "round": 17,
+      "xp": 360
+    },
+    {
+      "round": 18,
+      "xp": 380
+    },
+    {
+      "round": 19,
+      "xp": 400
+    },
+    {
+      "round": 20,
+      "xp": 420
+    },
+    {
+      "round": 21,
+      "xp": 460
+    },
+    {
+      "round": 22,
+      "xp": 500
+    },
+    {
+      "round": 23,
+      "xp": 540
+    },
+    {
+      "round": 24,
+      "xp": 580
+    },
+    {
+      "round": 25,
+      "xp": 620
+    },
+    {
+      "round": 26,
+      "xp": 660
+    },
+    {
+      "round": 27,
+      "xp": 700
+    },
+    {
+      "round": 28,
+      "xp": 740
+    },
+    {
+      "round": 29,
+      "xp": 780
+    },
+    {
+      "round": 30,
+      "xp": 820
+    },
+    {
+      "round": 31,
+      "xp": 860
+    },
+    {
+      "round": 32,
+      "xp": 900
+    },
+    {
+      "round": 33,
+      "xp": 940
+    },
+    {
+      "round": 34,
+      "xp": 980
+    },
+    {
+      "round": 35,
+      "xp": 1020
+    },
+    {
+      "round": 36,
+      "xp": 1060
+    },
+    {
+      "round": 37,
+      "xp": 1100
+    },
+    {
+      "round": 38,
+      "xp": 1140
+    },
+    {
+      "round": 39,
+      "xp": 1180
+    },
+    {
+      "round": 40,
+      "xp": 1220
+    },
+    {
+      "round": 41,
+      "xp": 1260
+    },
+    {
+      "round": 42,
+      "xp": 1300
+    },
+    {
+      "round": 43,
+      "xp": 1340
+    },
+    {
+      "round": 44,
+      "xp": 1380
+    },
+    {
+      "round": 45,
+      "xp": 1420
+    },
+    {
+      "round": 46,
+      "xp": 1460
+    },
+    {
+      "round": 47,
+      "xp": 1500
+    },
+    {
+      "round": 48,
+      "xp": 1540
+    },
+    {
+      "round": 49,
+      "xp": 1580
+    },
+    {
+      "round": 50,
+      "xp": 1620
+    },
+    {
+      "round": 51,
+      "xp": 1710
+    },
+    {
+      "round": 52,
+      "xp": 1800
+    },
+    {
+      "round": 53,
+      "xp": 1890
+    },
+    {
+      "round": 54,
+      "xp": 1980
+    },
+    {
+      "round": 55,
+      "xp": 2070
+    },
+    {
+      "round": 56,
+      "xp": 2160
+    },
+    {
+      "round": 57,
+      "xp": 2250
+    },
+    {
+      "round": 58,
+      "xp": 2340
+    },
+    {
+      "round": 59,
+      "xp": 2430
+    },
+    {
+      "round": 60,
+      "xp": 2520
+    },
+    {
+      "round": 61,
+      "xp": 2610
+    },
+    {
+      "round": 62,
+      "xp": 2700
+    },
+    {
+      "round": 63,
+      "xp": 2790
+    },
+    {
+      "round": 64,
+      "xp": 2880
+    },
+    {
+      "round": 65,
+      "xp": 2970
+    },
+    {
+      "round": 66,
+      "xp": 3060
+    },
+    {
+      "round": 67,
+      "xp": 3150
+    },
+    {
+      "round": 68,
+      "xp": 3240
+    },
+    {
+      "round": 69,
+      "xp": 3330
+    },
+    {
+      "round": 70,
+      "xp": 3420
+    },
+    {
+      "round": 71,
+      "xp": 3510
+    },
+    {
+      "round": 72,
+      "xp": 3600
+    },
+    {
+      "round": 73,
+      "xp": 3690
+    },
+    {
+      "round": 74,
+      "xp": 3780
+    },
+    {
+      "round": 75,
+      "xp": 3870
+    },
+    {
+      "round": 76,
+      "xp": 3960
+    },
+    {
+      "round": 77,
+      "xp": 4050
+    },
+    {
+      "round": 78,
+      "xp": 4140
+    },
+    {
+      "round": 79,
+      "xp": 4230
+    },
+    {
+      "round": 80,
+      "xp": 4320
+    },
+    {
+      "round": 81,
+      "xp": 4410
+    },
+    {
+      "round": 82,
+      "xp": 4500
+    },
+    {
+      "round": 83,
+      "xp": 4590
+    },
+    {
+      "round": 84,
+      "xp": 4680
+    },
+    {
+      "round": 85,
+      "xp": 4770
+    },
+    {
+      "round": 86,
+      "xp": 4860
+    },
+    {
+      "round": 87,
+      "xp": 4950
+    },
+    {
+      "round": 88,
+      "xp": 5040
+    },
+    {
+      "round": 89,
+      "xp": 5130
+    },
+    {
+      "round": 90,
+      "xp": 5220
+    },
+    {
+      "round": 91,
+      "xp": 5310
+    },
+    {
+      "round": 92,
+      "xp": 5400
+    },
+    {
+      "round": 93,
+      "xp": 5490
+    },
+    {
+      "round": 94,
+      "xp": 5580
+    },
+    {
+      "round": 95,
+      "xp": 5670
+    },
+    {
+      "round": 96,
+      "xp": 5760
+    },
+    {
+      "round": 97,
+      "xp": 5850
+    },
+    {
+      "round": 98,
+      "xp": 5940
+    },
+    {
+      "round": 99,
+      "xp": 6030
+    },
+    {
+      "round": 100,
+      "xp": 6120
+    },
+    {
+      "round": 101,
+      "xp": 6210
+    },
+    {
+      "round": 102,
+      "xp": 6300
+    },
+    {
+      "round": 103,
+      "xp": 6390
+    },
+    {
+      "round": 104,
+      "xp": 6480
+    },
+    {
+      "round": 105,
+      "xp": 6570
+    },
+    {
+      "round": 106,
+      "xp": 6660
+    },
+    {
+      "round": 107,
+      "xp": 6750
+    },
+    {
+      "round": 108,
+      "xp": 6840
+    },
+    {
+      "round": 109,
+      "xp": 6930
+    },
+    {
+      "round": 110,
+      "xp": 7020
+    },
+    {
+      "round": 111,
+      "xp": 7110
+    },
+    {
+      "round": 112,
+      "xp": 7200
+    },
+    {
+      "round": 113,
+      "xp": 7290
+    },
+    {
+      "round": 114,
+      "xp": 7380
+    },
+    {
+      "round": 115,
+      "xp": 7470
+    },
+    {
+      "round": 116,
+      "xp": 7560
+    },
+    {
+      "round": 117,
+      "xp": 7650
+    },
+    {
+      "round": 118,
+      "xp": 7740
+    },
+    {
+      "round": 119,
+      "xp": 7830
+    },
+    {
+      "round": 120,
+      "xp": 7920
+    },
+    {
+      "round": 121,
+      "xp": 8010
+    },
+    {
+      "round": 122,
+      "xp": 8100
+    },
+    {
+      "round": 123,
+      "xp": 8190
+    },
+    {
+      "round": 124,
+      "xp": 8280
+    },
+    {
+      "round": 125,
+      "xp": 8370
+    },
+    {
+      "round": 126,
+      "xp": 8460
+    },
+    {
+      "round": 127,
+      "xp": 8550
+    },
+    {
+      "round": 128,
+      "xp": 8640
+    },
+    {
+      "round": 129,
+      "xp": 8730
+    },
+    {
+      "round": 130,
+      "xp": 8820
+    },
+    {
+      "round": 131,
+      "xp": 8910
+    },
+    {
+      "round": 132,
+      "xp": 9000
+    },
+    {
+      "round": 133,
+      "xp": 9090
+    },
+    {
+      "round": 134,
+      "xp": 9180
+    },
+    {
+      "round": 135,
+      "xp": 9270
+    },
+    {
+      "round": 136,
+      "xp": 9360
+    },
+    {
+      "round": 137,
+      "xp": 9450
+    },
+    {
+      "round": 138,
+      "xp": 9540
+    },
+    {
+      "round": 139,
+      "xp": 9630
+    },
+    {
+      "round": 140,
+      "xp": 9720
+    }
+  ]
+}
