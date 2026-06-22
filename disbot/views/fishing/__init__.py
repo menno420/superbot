@@ -9,5 +9,11 @@ trophy reel-fight layer on top in later slices, per
 from __future__ import annotations
 
 from views.fishing.cast_view import FishingCastView, active_casts
+from views.fishing.rod_shop import RodShopView, build_rod_embed
 
-__all__ = ["FishingCastView", "active_casts"]
+__all__ = [
+    "FishingCastView",
+    "RodShopView",
+    "active_casts",
+    "build_rod_embed",
+]

@@ -61,10 +61,15 @@ FIGHT_MAX_TAPS = 4
 SHORE_ESCAPE_CHANCE = 0.06  # per-tap snap-free chance on shore (no rod yet)
 
 
-def roll_bite_delay(rng: random.Random | None = None) -> float:
-    """Seconds to wait before the bite — uniform in the band, never below floor."""
+def roll_bite_delay(rng: random.Random | None = None, *, speed: float = 1.0) -> float:
+    """Seconds to wait before the bite — uniform in the band, never below floor.
+
+    ``speed`` (the rod ``bite_speed`` knob, ≤ 1 = faster) scales the random draw
+    before the floor is applied, so a better rod bites sooner / paces faster
+    without ever dropping below the anticipation floor.
+    """
     r = rng or random.Random()
-    return max(BITE_DELAY_FLOOR, r.uniform(BITE_DELAY_MIN, BITE_DELAY_MAX))
+    return max(BITE_DELAY_FLOOR, r.uniform(BITE_DELAY_MIN, BITE_DELAY_MAX) * speed)
 
 
 def roll_fakeout(rng: random.Random | None = None) -> bool:

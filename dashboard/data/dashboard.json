@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T15:56:26Z",
+    "generated_at": "2026-06-22T16:43:22Z",
     "build": {
-      "commit": "4a36b7d",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/fishing-minigame-pr1",
-      "committed_at": "2026-06-22T15:56:26Z"
+      "commit": "0da66ab",
+      "subject": "Fishing minigame PR3: born-red card + lane claim",
+      "committed_at": "2026-06-22T16:43:22Z"
     },
     "counts": {
       "functions": 37,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 47,
-      "commands": 370,
+      "commands": 371,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -2298,6 +2298,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-fishing-minigame-pr3.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing minigame PR3: the rod ladder (the orthogonal progression axis)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-fishing-minigame-pr2.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Fishing minigame PR2: the trophy reel-fight (completing the hybrid)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-fishing-minigame-pr1.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Fishing minigame PR1: the interactive cast → wait → BITE → reel loop",
@@ -2629,22 +2645,6 @@
       "file": "2026-06-21-creature-sim-engine-parity-guard.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Creature sim↔engine constant parity guard (PR 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-creature-pvp-result-recording.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP: result recording + win/loss records + battle leaderboard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-creature-pvp-rematch-button.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Creature PvP: rematch button (⚑ self-initiated)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -5707,6 +5707,20 @@
           "classification": "",
           "has_panel": false,
           "button_backed": false
+        },
+        {
+          "name": "rod",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "rodshop",
+            "buyrod"
+          ],
+          "brief": "View your fishing rod and upgrade it for coins.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
         }
       ]
     },

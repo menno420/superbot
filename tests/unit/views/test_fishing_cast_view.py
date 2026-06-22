@@ -305,3 +305,20 @@ async def test_only_the_caster_can_reel():
 
     assert allowed is False
     intruder.response.send_message.assert_awaited_once()
+
+
+def test_a_better_rod_widens_the_reaction_window():
+    from utils.fishing import rods
+
+    starter_view = FishingCastView(1, 99, _ORDINARY, rod=rods.STARTER)
+    diamond_view = FishingCastView(1, 99, _ORDINARY, rod=rods.rod_for_tier(4))
+
+    # the rod's window_bonus is added to every reaction window (the fairness knob)
+    assert starter_view._window == minigame_window()
+    assert diamond_view._window > starter_view._window
+
+
+def minigame_window():
+    from utils.fishing import minigame
+
+    return minigame.REACTION_WINDOW

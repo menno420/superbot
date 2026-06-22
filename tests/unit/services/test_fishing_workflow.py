@@ -12,9 +12,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from services import economy_service
 from services import fishing_workflow as wf
 from services import game_xp_service
-from utils.fishing import MAX_LEVEL
+from utils.fishing import MAX_LEVEL, rods
 from utils.fishing.fish import Catch, FishSpecies
 
 
@@ -90,7 +91,7 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
         assert item == "trout" and qty == 1  # the caught fish enters the inventory
 
     with (
-        patch.object(wf, "roll_catch", lambda level, rng=None: _CATCH),
+        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 5})),
         patch.object(wf.db, "transaction", _txn(sentinel_conn, events)),
         patch.object(wf.db, "record_catch", AsyncMock(side_effect=_record)),
@@ -104,8 +105,8 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
         assert events.index(leg) < events.index("txn_exit")
     # XP events emit only after the transaction commits.
     emit_xp.assert_awaited_once()
-    # v1 pays no coins → the workflow never touches the economy seam.
-    assert not hasattr(wf, "economy_service")
+    # A *catch* pays no coins (only the separate rod purchase touches the
+    # economy seam) — the catch flow never debited/credited here.
     assert result.catch is _CATCH
 
 
@@ -119,7 +120,7 @@ async def test_crossing_a_fishing_level_flags_unlocked_bigger():
 
     # Pre-read xp 50 → level 1; post-award game_total huge → MAX_LEVEL.
     with (
-        patch.object(wf, "roll_catch", lambda level, rng=None: _CATCH),
+        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 50})),
         patch.object(wf.db, "transaction", _ctx),
         patch.object(wf.db, "record_catch", AsyncMock()),
@@ -147,7 +148,7 @@ async def test_roll_is_gated_by_the_players_current_fishing_level():
     async def _ctx():
         yield sentinel_conn
 
-    def _roll(level, rng=None):
+    def _roll(level, rng=None, *, rarity_pull=1.0):
         seen_levels.append(level)
         return _CATCH
 
@@ -172,7 +173,7 @@ async def test_roll_is_gated_by_the_players_current_fishing_level():
 @pytest.mark.asyncio
 async def test_empty_catalog_writes_nothing():
     with (
-        patch.object(wf, "roll_catch", lambda level, rng=None: None),
+        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: None),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
         patch.object(wf.db, "record_catch", AsyncMock()) as record,
     ):
@@ -191,7 +192,7 @@ async def test_empty_catalog_writes_nothing():
 async def test_roll_cast_reads_the_level_and_rolls_without_writing():
     """The read-only half: a cast rolls a catch but touches no write seam."""
     with (
-        patch.object(wf, "roll_catch", lambda level, rng=None: _CATCH),
+        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "record_catch", AsyncMock()) as record,
         patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
@@ -244,3 +245,127 @@ async def test_commit_catch_on_empty_cast_writes_nothing():
     assert result.catch is None
     assert result.fishing_level == 2
     record.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# roll_cast — the rod's rarity_pull reaches the roll
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_roll_cast_passes_the_rods_rarity_pull_to_the_roll():
+    seen = {}
+
+    def _roll(level, rng=None, *, rarity_pull=1.0):
+        seen["pull"] = rarity_pull
+        return _CATCH
+
+    gold = rods.rod_for_tier(3)
+    with (
+        patch.object(wf, "roll_catch", _roll),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+    ):
+        await wf.roll_cast(99, 1, gold)
+
+    assert seen["pull"] == gold.rarity_pull  # the rod knob reaches the roll
+
+
+@pytest.mark.asyncio
+async def test_roll_cast_defaults_to_the_starter_rod():
+    seen = {}
+
+    def _roll(level, rng=None, *, rarity_pull=1.0):
+        seen["pull"] = rarity_pull
+        return _CATCH
+
+    with (
+        patch.object(wf, "roll_catch", _roll),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
+    ):
+        await wf.roll_cast(99, 1)  # no rod given
+
+    assert seen["pull"] == 1.0  # starter → neutral pull
+
+
+# ---------------------------------------------------------------------------
+# buy_rod — the audited coin-sink purchase
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_buy_rod_debits_coins_and_raises_the_tier():
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    bronze = rods.rod_for_tier(1)
+    with (
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(
+            wf.economy_service,
+            "debit_in_txn",
+            AsyncMock(return_value=900),
+        ) as debit,
+        patch.object(wf.db, "set_rod_tier", AsyncMock()) as set_tier,
+        patch.object(wf.bus, "emit", AsyncMock()) as emit,
+    ):
+        result = await wf.buy_rod(99, 1)
+
+    assert result.success is True
+    assert result.tier == 1
+    # debited the bronze price on the workflow's own conn, with the audit reason
+    args, kwargs = debit.await_args
+    assert args[0] is sentinel_conn
+    assert bronze.price in args
+    assert kwargs["reason"] == wf.ROD_PURCHASE_REASON
+    set_tier.assert_awaited_once_with(99, 1, 1, conn=sentinel_conn)
+    emit.assert_awaited_once()  # balance event after commit
+
+
+@pytest.mark.asyncio
+async def test_buy_rod_with_insufficient_funds_writes_nothing():
+    @asynccontextmanager
+    async def _ctx():
+        yield MagicMock()
+
+    with (
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(
+            wf.economy_service,
+            "debit_in_txn",
+            AsyncMock(side_effect=economy_service.InsufficientFundsError("broke")),
+        ),
+        patch.object(wf.db, "set_rod_tier", AsyncMock()) as set_tier,
+        patch.object(wf.db, "get_coins", AsyncMock(return_value=10)),
+        patch.object(wf.bus, "emit", AsyncMock()) as emit,
+    ):
+        result = await wf.buy_rod(99, 1)
+
+    assert result.success is False
+    assert result.tier == 0  # unchanged
+    set_tier.assert_not_awaited()  # rolled back with the transaction
+    emit.assert_not_awaited()  # no balance event on failure
+
+
+@pytest.mark.asyncio
+async def test_buy_rod_at_max_tier_is_a_noop():
+    with (
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=rods.MAX_TIER)),
+        patch.object(wf.economy_service, "debit_in_txn", AsyncMock()) as debit,
+    ):
+        result = await wf.buy_rod(99, 1)
+
+    assert result.success is False
+    assert result.tier == rods.MAX_TIER
+    debit.assert_not_awaited()  # never touches the economy at the top of the ladder
+
+
+@pytest.mark.asyncio
+async def test_get_rod_resolves_the_owned_tier():
+    with patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=2)):
+        rod = await wf.get_rod(99, 1)
+    assert rod is rods.rod_for_tier(2)

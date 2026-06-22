@@ -110,3 +110,16 @@ def test_roll_escape_matches_its_probability():
     hits = sum(minigame.roll_escape(fish, rng=rng) for _ in range(20000))
     expected = minigame.fight_escape_chance(fish)
     assert abs(hits / 20000 - expected) < 0.02
+
+
+def test_bite_speed_shortens_the_wait_but_respects_the_floor():
+    import random as _random
+
+    fast = [
+        minigame.roll_bite_delay(_random.Random(i), speed=0.7) for i in range(500)
+    ]
+    slow = [
+        minigame.roll_bite_delay(_random.Random(i), speed=1.0) for i in range(500)
+    ]
+    assert sum(fast) / len(fast) < sum(slow) / len(slow)  # faster rod bites sooner
+    assert all(d >= minigame.BITE_DELAY_FLOOR for d in fast)  # never below the floor

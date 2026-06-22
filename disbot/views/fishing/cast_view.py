@@ -43,6 +43,7 @@ from core.runtime import tasks
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import fishing_workflow
 from utils.fishing import minigame
+from utils.fishing import rods as rods_mod
 from utils.fishing.fish import SPECIES, max_size_rank_for_level
 from utils.ui_constants import ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
 from views.base import handle_view_error as _on_view_error
@@ -74,11 +75,16 @@ class FishingCastView(discord.ui.View):
         user_id: int,
         guild_id: int,
         cast: fishing_workflow.Cast,
+        rod: rods_mod.Rod | None = None,
     ) -> None:
         super().__init__(timeout=_VIEW_TIMEOUT)
         self.user_id = user_id
         self.guild_id = guild_id
         self.cast = cast
+        self.rod = rod or rods_mod.STARTER
+        #: The rod's window bonus widens every reaction window (bite + each fight
+        #: tap) — the fairness knob, so a weak connection on a good rod is comfy.
+        self._window = minigame.REACTION_WINDOW + self.rod.window_bonus
         self.message: discord.Message | None = None
 
         self._phase = _PHASE_BITE
@@ -113,7 +119,7 @@ class FishingCastView(discord.ui.View):
 
     async def _run_bite(self) -> None:
         """Wait → (maybe fake-out) → arm the bite → expire the window if ignored."""
-        delay = minigame.roll_bite_delay()
+        delay = minigame.roll_bite_delay(speed=self.rod.bite_speed)
         fakeout = minigame.roll_fakeout()
 
         if fakeout and delay - minigame.FAKEOUT_LEAD > minigame.BITE_DELAY_FLOOR:
@@ -135,7 +141,7 @@ class FishingCastView(discord.ui.View):
             SUCCESS_COLOR,
             "Reel it in!",
         )
-        await asyncio.sleep(minigame.REACTION_WINDOW)
+        await asyncio.sleep(self._window)
         if self._resolved or self._round_id != my_id:
             return
         await self._fail("🌊 *...the line goes slack. The fish got away.*")
@@ -151,7 +157,7 @@ class FishingCastView(discord.ui.View):
             GAME_COLOR,
             "Reel!",
         )
-        await asyncio.sleep(minigame.FIGHT_WINDOW)
+        await asyncio.sleep(self._window)
         if self._resolved or self._round_id != my_id:
             return
         await self._fail("🌊 You let the line go slack — it thrashed free and escaped.")
@@ -186,7 +192,7 @@ class FishingCastView(discord.ui.View):
         self._armed = False
         self._round_id += 1
 
-        if not minigame.reel_is_in_time(elapsed):
+        if not minigame.reel_is_in_time(elapsed, self._window):
             await self._terminate_interaction(
                 interaction,
                 "🌊 *...too slow. The fish got away.*",
@@ -223,7 +229,10 @@ class FishingCastView(discord.ui.View):
     async def _on_fight_tap(self, interaction: discord.Interaction) -> None:
         """A successful in-time fight tap: maybe snap free, else advance / land."""
         species = self.cast.catch.species if self.cast.catch else None
-        if species is not None and minigame.roll_escape(species):
+        if species is not None and minigame.roll_escape(
+            species,
+            escape_resist=self.rod.escape_resist,
+        ):
             await self._terminate_interaction(
                 interaction,
                 "💥 It gave one last thrash, **snapped the line**, and bolted!",

@@ -97,6 +97,10 @@ from utils.db.games.fishing import (
     record_catch,
     top_fishers,
 )
+from utils.db.games.fishing_rod import (
+    get_rod_tier,
+    set_rod_tier,
+)
 from utils.db.games.game_xp import (
     add_game_xp,
     get_game_xp,
@@ -375,6 +379,8 @@ __all__ = [
     "get_fishing_log",
     "record_catch",
     "top_fishers",
+    "get_rod_tier",
+    "set_rod_tier",
     "get_creature_collection",
     "record_creature_catch",
     "top_collectors",
