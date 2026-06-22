@@ -25,10 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/upbeat-clarke-73fm43` · **mining grid: dig-moves-you** (owner design correction, in-chat) —
-  unify movement + Mine-here into one directional `dig(direction)` so every dig moves you one cell and
-  mines it (the owner's actual grid intent) · `services/mining_workflow.py` + `utils/mining/grid.py` +
-  `views/mining/grid_mine_view.py` + tests · 2026-06-22 · **PR (this session, auto-merge on green)**
 - `claude/friction-to-guard-reflex` · **wrong-branch guard hook + friction→guard reflex**
   (owner-directed, Q-0194) — extend `check_branch_freshness.py` PreToolUse to warn on
   commit/merge/rebase from a wrong/stale branch + institutionalize the "any friction → ship a
@@ -45,6 +41,10 @@ and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work l
 
 ## Recently cleared
 
+- `claude/upbeat-clarke-73fm43` · **mining grid: dig-moves-you** (owner design correction, in-chat) —
+  unified movement + Mine-here into one directional `dig(direction)` (each dig moves you one cell and
+  mines it) · `mining_workflow.dig` + `grid_mine_view` six dig buttons · 2026-06-22 ·
+  **PR #1282 (auto-merge on green)**
 - `claude/upbeat-clarke-73fm43` · **mining grid Mine (hub-redesign PR 3)** (owner-directed —
   "continue the mining plan") — (x,y,z) seed-deterministic grid + 6-direction movement + fog-of-war,
   replacing the interim linear `MineView` (Q-0173) · `utils/mining/grid.py` + migration 085 +
