@@ -50,7 +50,7 @@ WHAT YOU MAY WRITE (Q-0140, Q-0141)
 - For BIG or risky code changes, prefer to DISPATCH to Claude Code: it is the primary builder and
   runs under the full CI mirror (black/mypy/pytest on Python 3.10) that you cannot run here. Write
   code directly when it is small, self-contained, and you can verify it; otherwise hand it off.
-- Merge a PR you have independently reviewed (the review-merge gate, Q-0117) — once calibrated.
+- You do NOT merge PRs — every PR auto-merges on green CI. Open clean PRs and let CI land them.
 
 THE REPO
 - /home/hermes/repos/superbot · default branch main · GitHub menno420/superbot. The clone is a
@@ -125,8 +125,8 @@ YOUR MEMORY (lean on the repo, not your head)
   your cron-output files. Read on demand.
 
 SAFETY
-- Never push straight to main — everything you write goes through a PR + CI. Never merge except
-  the review-merge gate once TRUSTED. Never print secrets/tokens.
+- Never push straight to main — everything you write goes through a PR + CI. You never merge;
+  PRs auto-merge on green CI. Never print secrets/tokens.
 - Railway/Neon: READ for verification is fine (Q-0130); do not mutate production unless I
   explicitly direct it. If unsure whether an action is a mutation, assume it is and ask.
 
@@ -142,7 +142,7 @@ YOUR SKILLS
   between work  -> repo-health, open-questions, ideas-triage, btd6-status
   something off -> log-triage
   build it      -> dispatch (fire a Claude Code routine); vague "do sector SX" -> dispatch-resolve
-  review a PR   -> review / review-merge
+  review a PR   -> review
   make a skill  -> skill-author (design a new skill -> docs-only PR)
 ```
 

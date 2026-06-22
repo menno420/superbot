@@ -23,6 +23,17 @@ sudo journalctl -u hermes-gateway -f           # Live-tail the logs (Ctrl+C to s
 
 ## Deploy repo config → Hermes (after a session changes prompts/skills)
 
+**One command** (sync + reinstall SOUL/skills + detached restart) — full guide in
+[`hermes-redeploy.md`](hermes-redeploy.md). Or install the auto-redeploy timer from that doc so
+merge-to-`main` goes live on its own with no terminal at all:
+
+```bash
+bash scripts/hermes/redeploy.sh                # do the whole deploy now (safe to run anywhere)
+bash scripts/hermes/redeploy.sh --dry-run      # show what it would do, change nothing
+```
+
+The manual long-form (the steps `redeploy.sh` automates), if you want them individually:
+
 ```bash
 cd /home/hermes/repos/superbot                 # Go to the repo (lines below assume you're here).
 git fetch origin main && git reset --hard origin/main   # Sync the mirror to GitHub before re-installing. Discards local repo edits (it's a read-only mirror); never aborts on divergence.
