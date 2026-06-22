@@ -20,7 +20,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import karma_service
 from services.karma_service import (
@@ -37,7 +36,11 @@ logger = logging.getLogger("bot")
 _KARMA_COLOR = discord.Color.magenta()
 
 
-def _karma_card(guild: discord.Guild, member: discord.abc.User, record) -> discord.Embed:
+def _karma_card(
+    guild: discord.Guild,
+    member: discord.abc.User,
+    record,
+) -> discord.Embed:
     """Render a member's karma standing as an embed."""
     rank_line = f"#{record.rank}" if record.rank is not None else "unranked"
     embed = discord.Embed(
@@ -169,7 +172,7 @@ class KarmaCog(commands.Cog):
         record = await karma_service.get_record(ctx.guild.id, target.id)
         await ctx.send(embed=_karma_card(ctx.guild, target, record))
 
-    @karma.command(name="give", aliases=["add"])
+    @karma.command(name="give", aliases=["add"])  # type: ignore[arg-type]
     async def karma_give(
         self,
         ctx: commands.Context,
