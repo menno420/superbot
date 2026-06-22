@@ -1,0 +1,54 @@
+name: ci-rerun-watchdog
+
+# Re-kick `code-quality` when GitHub DROPPED the pull_request:synchronize event for a claude/* PR
+# head, leaving it with NO run at all (Q-0195, idea ci-dropped-synchronize-auto-retrigger-2026-06-22).
+#
+# Why this exists: the cancellation race was fixed by code-quality.yml's `cancel-in-progress: false`
+# (#1275). But a DISTINCT failure remains — GitHub sometimes drops the synchronize event delivery, so
+# the head gets no code-quality run. That is the *silent* stall: no run => no failure webhook => native
+# auto-merge waits forever with nothing red to notice (observed on PR #1283). Manual remedy was an
+# empty commit; this automates it.
+#
+# How: a scheduled pass enumerates open claude/* non-draft, non-carved PRs (same scoping as
+# pr-auto-update.yml) and, for any head SHA with no `code-quality` check run that is past a grace
+# window, dispatches code-quality.yml on the branch. The presence check is a natural cap — once a run
+# exists (even queued), the next pass sees it and does not re-dispatch, so there is no loop.
+#
+# Auth: ROUTINE_PAT (not GITHUB_TOKEN) so the dispatched run is attributed to a real user and is not
+# suppressed by the Actions recursion guard — the same token pr-auto-update.yml / auto-merge-enabler.yml
+# already require.
+#
+# Provenance + reliability (Q-0105): added 2026-06-22, owner-endorsed. Delete this workflow + its
+# script if it misfires; a missing run is always re-kickable by hand
+# (`gh workflow run code-quality.yml --ref <branch>` / an empty commit / the "Re-run" button).
+
+on:
+  schedule:
+    - cron: "*/12 * * * *"   # every 12 min — covers the dropped-event gap without churn
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write          # gh workflow run (dispatch code-quality)
+  pull-requests: read
+
+concurrency:
+  group: ci-rerun-watchdog
+  cancel-in-progress: false
+
+jobs:
+  watchdog:
+    if: github.repository == 'menno420/superbot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (script only)
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Re-kick code-quality for heads with a dropped run
+        env:
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/check_ci_coverage.py --rekick

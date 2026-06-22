@@ -1,6 +1,7 @@
 # Idea: auto-re-trigger Code Quality when GitHub drops the `pull_request: synchronize` event
 
-> **Status:** `ideas` — captured 2026-06-22. Class: CI / control-plane reliability. Root-cause guard.
+> **Status:** `ideas` — captured 2026-06-22; **BUILDING same day (PR #1288)** — promoted to
+> implementation under Q-0172/Q-0195. Class: CI / control-plane reliability. Root-cause guard.
 > **Subsystem:** none — agent-workflow/CI, not a bot subsystem (explicit tag stops the slug heuristic
 > cross-matching a bot subsystem; see `idea-subsystem-tag-on-ideas-2026-06-19.md`).
 > **Owner-endorsed** in-session (2026-06-22): "Yes that's a good idea." Promotable to a plan/build
