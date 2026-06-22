@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-s56i3y-3` · scope: docs/CI hygiene — ledger drift fix (#1279 reaction-roles PR6) + S1 sector de-stale + design-system CI paths gap (the #1308 cross-package contract) + stale-claim GC · area: `docs/current-state*.md`, `.github/workflows/design-system-ci.yml`, `docs/owner/claims/` · 2026-06-22

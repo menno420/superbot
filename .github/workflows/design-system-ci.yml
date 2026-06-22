@@ -24,11 +24,21 @@ on:
     paths:
       - "design-system/**"
       - ".github/workflows/design-system-ci.yml"
+      # The TS contract test (design-system/src/app/data.test.ts) validates the React
+      # adapter against this cross-package contract file + the botsite producer that
+      # owns it — so a change to either must re-run this leg (the #1308 design↔data guard).
+      - "botsite/data/site_data_contract.json"
+      - "botsite/site_data.py"
   pull_request:
     branches: ["main"]
     paths:
       - "design-system/**"
       - ".github/workflows/design-system-ci.yml"
+      # The TS contract test (design-system/src/app/data.test.ts) validates the React
+      # adapter against this cross-package contract file + the botsite producer that
+      # owns it — so a change to either must re-run this leg (the #1308 design↔data guard).
+      - "botsite/data/site_data_contract.json"
+      - "botsite/site_data.py"
 
 concurrency:
   group: design-system-ci-${{ github.ref }}

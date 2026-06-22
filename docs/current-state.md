@@ -263,8 +263,9 @@ Source code and merged PRs win over anything written here.
   `role_grants_cog`), message picker for the Add flow — no more copy-paste message ID (#1243), role presets +
   management-panel UX (#1245), gradient presets gallery (#1246), **dead-binding self-heal** — cleanup on
   role-delete + panel hint (#1248) and auto-heal on the live reaction-listener path (#1250). The arc is now
-  Carl-bot-mature; only PR 6 (PIL banner cards) + the gated web builder remain
-  ([plan](planning/reaction-roles-overhaul-plan-2026-06-21.md)).
+  Carl-bot-mature; **PR 6 (PIL banner cards) shipped 2026-06-22 (#1279** — optional `role_menus.card_template`
+  banner via the `welcome_render` PIL pattern, graceful embed-only fallback); only the gated web builder
+  (Surface A) remains ([plan](planning/reaction-roles-overhaul-plan-2026-06-21.md)).
 - **#1238 · #1239 · #1240 (2026-06-21, Project Moon knowledge-domain program — design, Q-0192)** — a NEW
   large program stood up as design: the **wiki-feasibility idea** ("can we serve a fandom wiki like BTD6
   data?", #1238), the **full-parity program plan** (#1239, Q-0192), and the **pre-build recon** — data
@@ -287,8 +288,8 @@ Source code and merged PRs win over anything written here.
   + cog routing/teardown (#1220); **PR 2** the in-Discord role-menu builder (Surface B, buttons/selects/modals,
   #1219); **PR 3–5 together** (one owner-directed PR, Q-0191 merge-immediately, #1227) — per-message emoji
   modes [migration 079] · free temp-roles `RoleGrantsCog`/`!temprole`/`utils/duration` [migration 080] ·
-  role-pickup analytics [migration 081]. Only **PR 6 (PIL banner cards) + the gated web builder (Surface A)**
-  remain ([plan](planning/reaction-roles-overhaul-plan-2026-06-21.md)).
+  role-pickup analytics [migration 081]. **PR 6 (PIL banner cards) shipped 2026-06-22 (#1279);** only the
+  gated **web builder (Surface A)** remains ([plan](planning/reaction-roles-overhaul-plan-2026-06-21.md)).
 - **#1208 · #1213 (2026-06-21, creature game — design → runtime)** — **catch + collection/dex** shipped as the
   first runtime slice (#1208 — `disbot/cogs/creature_cog.py`, fishing-mirrored spine, `utils/creatures/` pure
   domain + `services/creature_workflow.py` audited write + migration 077 + the 36-creature catalog +

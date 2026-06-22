@@ -11,7 +11,8 @@
 **Recently shipped (this sector):**
 - **Reaction-roles arc — Carl-bot-mature** (#1234/#1237/#1242/#1243/#1245/#1246/#1248/#1250):
   multi-emote-per-message, channel/message pickers, role + gradient presets, free temp-roles
-  member view, dead-binding self-heal. Only PR 6 (PIL banner cards) + the gated web builder remain
+  member view, dead-binding self-heal. **PR 6 (PIL banner cards) shipped (#1279);** only the gated web
+  builder (Surface A) remains
   ([plan](../planning/reaction-roles-overhaul-plan-2026-06-21.md)).
 - **Creature game** — runtime catch/collection (#1208), level-normalized PvP engine + flow
   (#1213/#1230), leaderboard provider (#1244).
@@ -27,7 +28,7 @@
 **In flight (don't duplicate):** Starboard PR 2 (#1270) config polish · botsite React-SPA
 migration **PR 1** (#1305 — runnable data-fed React app + `/site-data.json`; foundation).
 
-**Owner-paced / gated:** reaction-roles PR 6 + web builder · creature PvP balance + art (Q-0187) ·
+**Owner-paced / gated:** reaction-roles web builder (Surface A; PR 6 shipped #1279) · creature PvP balance + art (Q-0187) ·
 website rollout ·
 [feedback-board PR 1](../planning/feedback-board-generalization-plan-2026-06-19.md) (owner auth) ·
 AI-ticket build (Q-0183) · Explore-hub PR 2 + gated layers (Q-0182) · dashboard writes / control-API
