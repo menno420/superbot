@@ -122,6 +122,9 @@ extensions:
     note: >-
       Creature PvP battle cog (!cbattle) — part of the Creatures subsystem (not a
       separate registered subsystem; surfaced via creature_cog's Help hook).
+  farm:
+    role: product_subsystem
+    note: Idle egg/chicken farm — the bot's first idle (accrue-over-time) game.
   diagnostic:
     role: shared_platform
     note: "`!platform` diagnostics; broad cross-subsystem read-model surface."

@@ -1,1 +1,0 @@
-- claude/affectionate-darwin-xnyxrj · NEW idle egg/chicken farm game (lazy-accrual idle loop: collect → buy chickens → upgrade coop) · new cog/views/service/db/migration + utils/farm + subsystem registry + Explore-world entry · 2026-06-22

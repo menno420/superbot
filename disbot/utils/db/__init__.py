@@ -92,6 +92,10 @@ from utils.db.games.deathmatch import (
     get_deathmatch_stats,
     update_deathmatch,
 )
+from utils.db.games.farm import (
+    get_chicken_farm,
+    set_chicken_farm,
+)
 from utils.db.games.fishing import (
     get_fishing_log,
     record_catch,
@@ -387,6 +391,8 @@ __all__ = [
     "set_rod_tier",
     "get_fishing_energy",
     "set_fishing_energy",
+    "get_chicken_farm",
+    "set_chicken_farm",
     "get_creature_collection",
     "record_creature_catch",
     "top_collectors",
