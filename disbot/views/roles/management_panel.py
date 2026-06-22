@@ -40,8 +40,11 @@ class ManagementPanel(BaseView):
 
     async def build_embed(self) -> discord.Embed:
         guild = self.ctx.guild
+        # Render each role as a mention so Discord shows it in the role's own
+        # colour (matching the reaction-role panel) — mentions in an embed never
+        # ping. Falls back to the plain name for the rare role that can't mention.
         lines = [
-            f"**{role.name}** — "
+            f"{getattr(role, 'mention', None) or f'**{role.name}**'} — "
             f"{sum(1 for m in guild.members if role in m.roles)} members"
             for role in reversed(guild.roles)
             if role != guild.default_role

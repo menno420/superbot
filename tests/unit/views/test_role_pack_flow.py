@@ -163,3 +163,32 @@ async def test_custom_bulk_commit_no_colour_uses_default() -> None:
     with patch("services.reaction_role_service.ensure_role", new=ensure):
         await _role_pack_flow._commit_custom_roles(interaction, bulk, None)
     assert ensure.await_args.kwargs["color"] == discord.Color.default()
+
+
+@pytest.mark.asyncio
+async def test_per_role_colour_walk_creates_each_with_its_colour() -> None:
+    import discord
+
+    on_created = AsyncMock()
+    flow = _view(on_created=on_created)
+    walker = _role_pack_flow._PerRoleColourView(flow, ["Artist", "Writer"])
+    # The first step names the first role + its position in the walk.
+    assert "Artist" in walker.prompt()
+    assert "1/2" in walker.prompt()
+
+    interaction = _interaction()
+    ids = iter([401, 402])
+    ensure = AsyncMock(side_effect=lambda *a, **k: (next(ids), True, ""))
+    with patch("services.reaction_role_service.ensure_role", new=ensure):
+        await walker._on_pick(interaction, "#e74c3c")  # Artist → red, advance
+        assert walker.index == 1
+        assert "Writer" in walker.prompt()
+        await walker._on_pick(interaction, "")  # Writer → no colour, finish
+
+    assert ensure.await_count == 2
+    assert [c.kwargs["name"] for c in ensure.await_args_list] == ["Artist", "Writer"]
+    colours = [c.kwargs["color"] for c in ensure.await_args_list]
+    assert colours[0] == discord.Color(0xE74C3C)  # picked colour
+    assert colours[1] == discord.Color.default()  # "no colour" → default
+    on_created.assert_awaited_once()
+    assert on_created.await_args.args[1] == [401, 402]
