@@ -20,6 +20,8 @@ Usage::
 
     python3.10 scripts/dispatch_menu.py            # all sectors
     python3.10 scripts/dispatch_menu.py S2          # one sector
+    python3.10 scripts/dispatch_menu.py --unattended  # the empty-fire pick (#1285): which
+                                                      # lane can a scheduled run finish & merge?
 """
 
 from __future__ import annotations
@@ -36,7 +38,13 @@ ROADMAP = REPO_ROOT / "docs" / "roadmap.md"
 _SECTOR_HEADING = re.compile(r"^###\s+(S\d)\s+—\s+(.+?)\s+·")
 _BULLET_HEAD = re.compile(r"^- \*\*([^:*]+):\*\*")
 _EXECUTOR = re.compile(r"executor \*\*([^*]+)\*\*")
+_UNATTENDED_FIT = re.compile(r"unattended-fit \*\*([^*]+)\*\*")
 _ITEM_SEP = re.compile(r" · | — | \(")
+
+# The unattended-fit keyword → can a *scheduled empty-fire* run complete AND merge it?
+# (Orthogonal to the ▶/⛔/👤 startability glyph, which only says "may Claude *begin* it?".)
+# Contract: docs/repo-sector-map.md § "the unattended-fit tag".
+_FIT_KEYWORDS = ("auto", "review", "live", "ext-data")
 
 
 def _read(path: Path) -> str:
@@ -119,6 +127,23 @@ def resolve(block: str) -> tuple[str, str]:
     return executor, dispatch
 
 
+def unattended_fit(block: str) -> str | None:
+    """Return the sector's unattended-fit keyword (``auto``/``review``/``live``/``ext-data``).
+
+    Reads the ``unattended-fit **<glyph> <keyword>**`` token on the ``Dispatch`` line and
+    returns the bare keyword; ``None`` when the tag is absent (``check_sector_map.py``
+    forbids that, so a ``None`` in live output is a roadmap drift signal).
+    """
+    m = _UNATTENDED_FIT.search(bullet_text(block, "Dispatch"))
+    if not m:
+        return None
+    value = m.group(1).strip().lower()
+    for keyword in _FIT_KEYWORDS:
+        if keyword in value:
+            return keyword
+    return None
+
+
 def menu_line(block: str) -> str:
     """Return the one-line 'what's dispatchable' summary for a sector block."""
     now = bullet_text(block, "Now")
@@ -175,6 +200,7 @@ def sector_record(sid: str, name: str, block: str) -> dict[str, str | None]:
         "state": state,
         "startable_item": item,
         "source": source,
+        "unattended_fit": unattended_fit(block),
     }
 
 
@@ -202,11 +228,70 @@ def build_menu(text: str, only: str | None = None) -> list[str]:
         if only and sid != only:
             continue
         executor, _ = resolve(block)
-        lines.append(f"{sid}  {name:<22}  exec: {executor}")
+        fit = unattended_fit(block) or "?(untagged — roadmap drift)"
+        lines.append(f"{sid}  {name:<22}  exec: {executor}  fit: {fit}")
         lines.append(f"      {menu_line(block)}")
     if only and not any(line.startswith(only) for line in lines):
         return [f"(sector {only} not found — valid: S1..S5)"]
     return lines
+
+
+def build_unattended_summary(text: str) -> list[str]:
+    """Answer one question for a *scheduled empty-fire* run: can I complete-and-merge a lane now?
+
+    Aggregates the per-sector resolution + unattended-fit tag and ranks the sectors a
+    truly-unattended run can actually finish. The point (the #1274/#1285 lesson): a `▶`
+    glyph means "may begin", not "can finish unattended" — so an empty-fire run should pick
+    from the 🟢 ``auto`` lanes, fall back to a 🟡 ``review`` lane (build + open PR, do not
+    self-merge), and only then consider promoting an idea → plan → build (Q-0172).
+    """
+    records = build_records(text)
+    # Only Claude-in-repo sectors with a resolved startable lane can be built in-repo at all.
+    buildable = [
+        r for r in records if r["state"] in ("startable", "now_blocked_fallthrough")
+    ]
+    by_fit: dict[str, list[dict[str, str | None]]] = {k: [] for k in _FIT_KEYWORDS}
+    untagged: list[dict[str, str | None]] = []
+    for rec in buildable:
+        fit = rec["unattended_fit"]
+        if fit in by_fit:
+            by_fit[fit].append(rec)
+        else:
+            untagged.append(rec)
+
+    header = "Unattended-fire pick (can an empty-fire run finish & merge a lane?)"
+    out: list[str] = [header, "-" * 72]
+
+    def _fmt(rec: dict[str, str | None]) -> str:
+        return f"{rec['sector']} ({rec['source']}): {rec['startable_item']}"
+
+    if by_fit["auto"]:
+        out.append("🟢 SELF-MERGEABLE now (offline-verifiable, auto-merge on green):")
+        out.extend(f"   {_fmt(r)}" for r in by_fit["auto"])
+    else:
+        out.append("🟢 auto: none — no offline-verifiable + self-mergeable lane.")
+
+    if by_fit["review"]:
+        out.append("🟡 build PR for review (needs-hermes-review, no self-merge):")
+        out.extend(f"   {_fmt(r)}" for r in by_fit["review"])
+    if by_fit["live"]:
+        out.append("🔵 weak fit (needs a live guild walk / runtime creds to verify):")
+        out.extend(f"   {_fmt(r)}" for r in by_fit["live"])
+    if by_fit["ext-data"]:
+        out.append("🟠 owner-confirm first (commits externally-sourced data):")
+        out.extend(f"   {_fmt(r)}" for r in by_fit["ext-data"])
+    if untagged:
+        out.append("?  untagged (roadmap drift — run check_sector_map.py):")
+        out.extend(f"   {_fmt(r)}" for r in untagged)
+
+    out.append("-" * 72)
+    if by_fit["auto"]:
+        out.append("→ pick a 🟢 lane: build it, let auto-merge fire on green.")
+    elif by_fit["review"]:
+        out.append("→ no 🟢 lane: build a 🟡 review lane OR promote an idea (Q-0172).")
+    else:
+        out.append("→ no lane: promote a docs/ideas/ entry → plan → build (Q-0172).")
+    return out
 
 
 def main() -> int:
@@ -222,6 +307,11 @@ def main() -> int:
         action="store_true",
         help="emit the per-sector resolution as JSON (for the dispatch-resolve skill)",
     )
+    parser.add_argument(
+        "--unattended",
+        action="store_true",
+        help="rank lanes a scheduled empty-fire run can complete & merge (the #1285 lens)",
+    )
     args = parser.parse_args()
 
     text = _read(ROADMAP)
@@ -235,13 +325,19 @@ def main() -> int:
         print(json.dumps(build_records(text, only), indent=2))
         return 0
 
+    if args.unattended:
+        for line in build_unattended_summary(text):
+            print(line)
+        return 0
+
     print("SuperBot — sector dispatch menu  (live, from docs/roadmap.md § By sector)")
     print("=" * 72)
     for line in build_menu(text, only):
         print(line)
     print("=" * 72)
     print(
-        "tags: ▶ startable · ⛔ gated · 👤 maintainer   |   contract: repo-sector-map.md",
+        "tags: ▶ startable · ⛔ gated · 👤 maintainer  |  unattended-fit: "
+        "🟢 auto · 🟡 review · 🔵 live · 🟠 ext-data  |  --unattended for the empty-fire pick",
     )
     return 0
 
