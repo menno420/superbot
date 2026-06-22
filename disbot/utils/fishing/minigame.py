@@ -43,9 +43,22 @@ FAKEOUT_CHANCE = 0.45
 FAKEOUT_LEAD = 0.6
 
 #: A catch is a "trophy" when it sits in the top third of the player's currently
-#: unlocked size band — the payoff fish that (in a later PR) trigger the
-#: reel-fight. Exposed now so the cast view can flavour the BITE message.
+#: unlocked size band — the payoff fish that trigger the reel-fight. Exposed so
+#: the cast view can flavour the BITE message and branch into the fight.
 TROPHY_BAND_FRACTION = 1.0 / 3.0
+
+#: Reel-fight (trophy) tuning. The fight is a short sequence of timed reel taps:
+#: each tap is its own presence-check window (kept at the *full* generous window,
+#: NOT the sim's tighter ``w*0.8`` — over Discord a tighter window punishes
+#: latency, not skill, and trophies are already harder via more taps + escape).
+#: A tap that lands in time can still let the fish snap free with a small escape
+#: chance; that is the "the big one got away" tension (rod escape-resist will buy
+#: this down in a later PR).
+FIGHT_WINDOW = REACTION_WINDOW
+FIGHT_INTER_ROUND_DELAY = 0.8  # a suspense beat between reel taps
+FIGHT_MIN_TAPS = 2
+FIGHT_MAX_TAPS = 4
+SHORE_ESCAPE_CHANCE = 0.06  # per-tap snap-free chance on shore (no rod yet)
 
 
 def roll_bite_delay(rng: random.Random | None = None) -> float:
@@ -70,6 +83,40 @@ def is_trophy(species: FishSpecies, fishing_level: int) -> bool:
     cap = max_size_rank_for_level(fishing_level)
     threshold = cap - cap * TROPHY_BAND_FRACTION
     return species.size_rank > threshold
+
+
+def reel_fight_taps(species: FishSpecies) -> int:
+    """How many reel taps it takes to land *species* — scales with its size.
+
+    The smallest trophy is a quick :data:`FIGHT_MIN_TAPS`-tap tussle; the biggest
+    fish in the catalog is a full :data:`FIGHT_MAX_TAPS`-tap fight. Bigger fish
+    fight harder (sim §1's ``tension`` model — taps scale with rarity).
+    """
+    span = FIGHT_MAX_TAPS - FIGHT_MIN_TAPS
+    return FIGHT_MIN_TAPS + round(span * (species.size_rank / 21.0))
+
+
+def fight_escape_chance(species: FishSpecies, escape_resist: float = 0.0) -> float:
+    """Per-tap chance the fish snaps free, before/after rod escape-resist.
+
+    ``escape_resist`` (0…1) is the rod knob a later PR turns; at v1 it is 0, so
+    every fight runs at the base shore chance. Bigger fish are slightly more
+    likely to throw the hook.
+    """
+    rarity = species.size_rank / 21.0
+    base = SHORE_ESCAPE_CHANCE * (0.6 + rarity)
+    return max(0.0, base * (1.0 - escape_resist))
+
+
+def roll_escape(
+    species: FishSpecies,
+    *,
+    escape_resist: float = 0.0,
+    rng: random.Random | None = None,
+) -> bool:
+    """Roll whether the fish snaps free on this tap (see :func:`fight_escape_chance`)."""
+    r = rng or random.Random()
+    return r.random() < fight_escape_chance(species, escape_resist)
 
 
 def reel_is_in_time(elapsed: float, window: float = REACTION_WINDOW) -> bool:
