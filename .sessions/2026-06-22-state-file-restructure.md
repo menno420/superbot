@@ -83,3 +83,8 @@ one-file read. Worth having because it closes the loop between the discoverabili
 and the machine dispatch path; small, stdlib, testable. (Dedup-checked `docs/ideas/` + roadmap — not
 already present.)
 
+**Second idea (owner-endorsed, captured mid-session):**
+[`ci-dropped-synchronize-auto-retrigger-2026-06-22.md`](../docs/ideas/ci-dropped-synchronize-auto-retrigger-2026-06-22.md)
+— a watcher that auto-re-kicks Code Quality when GitHub drops the `pull_request: synchronize` event
+(the cause of this PR's own "CI stuck waiting"). The owner said "good idea"; promotable to build next.
+
