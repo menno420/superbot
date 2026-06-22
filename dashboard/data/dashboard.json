@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T01:30:23Z",
+    "generated_at": "2026-06-22T00:09:51Z",
     "build": {
-      "commit": "968d1f19",
-      "subject": "Merge pull request #1268 from menno420/claude/peaceful-mayer-rgc20t",
-      "committed_at": "2026-06-22T01:30:23Z"
+      "commit": "3f874fb3",
+      "subject": "session(born-red): Starboard PR 2 — config panel + polish — card + claim",
+      "committed_at": "2026-06-22T00:09:51Z"
     },
     "counts": {
       "functions": 37,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 47,
-      "commands": 318,
+      "commands": 322,
       "setting_keys": 104,
       "setting_domains": 15,
       "typed_settings": 85,
@@ -2132,6 +2132,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-22-starboard-pr2-config-polish.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Starboard PR 2: self-star exclusion + ignore-channels + config panel",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-21-website-count-and-pin-fixes.md",
       "date": "2026-06-21",
       "title": "2026-06-21 — Website count reconciliation + pin-drift guard (rebuilt after parallel-work collision)",
@@ -2602,14 +2610,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-20-pr-auto-update-deterministic-fix.md",
-      "date": "2026-06-20",
-      "title": "2026-06-20 — pr-auto-update: deterministic behind-detection (same async race as the conflict guard)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -7088,12 +7088,56 @@
           "button_backed": false
         },
         {
+          "name": "ignore",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "starboard",
+          "aliases": [],
+          "brief": "Exclude a channel — its messages never enter the board.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "off",
           "type": "prefix",
           "is_group": false,
           "parent": "starboard",
           "aliases": [],
           "brief": "Disable the starboard (config is preserved).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "panel",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "starboard",
+          "aliases": [],
+          "brief": "Open the interactive starboard config panel.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "selfstar",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "starboard",
+          "aliases": [],
+          "brief": "Count the author's own ⭐? ``!starboard selfstar on|off`` (default off).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "unignore",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "starboard",
+          "aliases": [],
+          "brief": "Stop ignoring a channel (messages there can enter the board again).",
           "classification": "",
           "has_panel": false,
           "button_backed": false

@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-21T22:36:08Z",
+    "generated_at": "2026-06-22T00:09:51Z",
     "build": {
-      "commit": "0b918dd",
-      "subject": "session(born-red): dashboard auto-PR conflict root cause — card + claim",
-      "committed_at": "2026-06-21T22:36:08Z"
+      "commit": "3f874fb3",
+      "subject": "session(born-red): Starboard PR 2 — config panel + polish — card + claim",
+      "committed_at": "2026-06-22T00:09:51Z"
     }
   },
   "counts": {
-    "commands": 318,
+    "commands": 322,
     "features": 37,
     "games": 9
   },
@@ -6228,6 +6228,20 @@
       "notes": null
     },
     {
+      "name": "ignore",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Exclude a channel — its messages never enter the board.",
+      "description": "Exclude a channel — its messages never enter the board.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "lifecycle",
       "aliases": [],
       "category": "other",
@@ -6291,6 +6305,20 @@
       "permissions": "",
       "usage": "Disable the starboard (config is preserved).",
       "description": "Disable the starboard (config is preserved).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "panel",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open the interactive starboard config panel.",
+      "description": "Open the interactive starboard config panel.",
       "use_cases": null,
       "examples": [],
       "status": "finished",
@@ -6407,6 +6435,22 @@
       "description": "Registered SubsystemSchema instances (Phase 1a).",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "selfstar",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Count the author's own ⭐? ``!starboard selfstar on|off`` (default off).",
+      "description": "Count the author's own ⭐? !starboard selfstar on|off (default off).",
+      "use_cases": null,
+      "examples": [
+        "!starboard selfstar on|off"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
@@ -6708,6 +6752,20 @@
       "permissions": "",
       "usage": "List active temporary roles. Usage: !temproles (yours) or !temproles @member (staff).",
       "description": "List active temporary roles. Usage: !temproles (yours) or !temproles @member (staff).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "unignore",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Stop ignoring a channel (messages there can enter the board again).",
+      "description": "Stop ignoring a channel (messages there can enter the board again).",
       "use_cases": null,
       "examples": [],
       "status": "finished",

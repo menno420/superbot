@@ -59,8 +59,14 @@ class StarboardCog(commands.Cog):
             return
         # Fast-path gate: bail immediately unless this guild has a starboard and
         # the reacted emoji is its trigger emoji (the vast majority of reactions).
-        emoji = await starboard_service.trigger_emoji(guild.id)
-        if emoji is None or str(payload.emoji) != emoji:
+        # One settings read also gives us ``self_star`` so the cog knows whether
+        # the author's own ⭐ should be discounted (only then do we pay the extra
+        # reactor-list fetch to find out if the author reacted).
+        settings = await starboard_service.get_settings(guild.id)
+        if settings is None or not settings["enabled"]:
+            return
+        emoji = settings["emoji"]
+        if str(payload.emoji) != emoji:
             return
 
         source = self.bot.get_channel(payload.channel_id)
@@ -72,11 +78,15 @@ class StarboardCog(commands.Cog):
             return
 
         star_count = _count_emoji(message, emoji)
+        author_starred = False
+        if not settings["self_star"]:
+            author_starred = await _author_starred(message, emoji)
         outcome = await starboard_service.handle_star_change(
             guild_id=guild.id,
             source_channel_id=payload.channel_id,
             source_message_id=payload.message_id,
             star_count=star_count,
+            author_starred=author_starred,
         )
         await self._apply(guild, message, emoji, outcome)
 
@@ -187,6 +197,66 @@ class StarboardCog(commands.Cog):
         await starboard_service.disable(guild_id=ctx.guild.id, actor_id=ctx.author.id)
         await ctx.send("✅ Starboard disabled. Re-enable with `!starboard #channel`.")
 
+    @starboard_group.command(name="selfstar")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def starboard_selfstar(self, ctx: commands.Context, value: str) -> None:
+        """Count the author's own ⭐? ``!starboard selfstar on|off`` (default off)."""
+        on = value.strip().lower() in {"on", "yes", "true", "1", "enable", "enabled"}
+        await starboard_service.set_self_star(
+            guild_id=ctx.guild.id,
+            self_star=on,
+            actor_id=ctx.author.id,
+        )
+        await ctx.send(
+            (
+                "✅ Self-stars **count** toward the threshold."
+                if on
+                else "✅ Self-stars are **ignored** (the author's own ⭐ doesn't count)."
+            ),
+        )
+
+    @starboard_group.command(name="ignore")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def starboard_ignore(
+        self,
+        ctx: commands.Context,
+        channel: discord.TextChannel,
+    ) -> None:
+        """Exclude a channel — its messages never enter the board."""
+        await starboard_service.add_ignore_channel(
+            guild_id=ctx.guild.id,
+            channel_id=channel.id,
+            actor_id=ctx.author.id,
+        )
+        await ctx.send(
+            f"✅ Ignoring {channel.mention} — its messages won't be starred.",
+        )
+
+    @starboard_group.command(name="unignore")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def starboard_unignore(
+        self,
+        ctx: commands.Context,
+        channel: discord.TextChannel,
+    ) -> None:
+        """Stop ignoring a channel (messages there can enter the board again)."""
+        await starboard_service.remove_ignore_channel(
+            guild_id=ctx.guild.id,
+            channel_id=channel.id,
+            actor_id=ctx.author.id,
+        )
+        await ctx.send(f"✅ No longer ignoring {channel.mention}.")
+
+    @starboard_group.command(name="panel")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def starboard_panel(self, ctx: commands.Context) -> None:
+        """Open the interactive starboard config panel."""
+        from views.base import send_panel
+        from views.starboard import StarboardConfigPanel
+
+        panel = StarboardConfigPanel(ctx)
+        await send_panel(ctx, embed=await panel.build_embed(), view=panel)
+
 
 def _count_emoji(message: discord.Message, emoji: str) -> int:
     """Live count of ``emoji`` reactions on a message (recount, not delta)."""
@@ -194,6 +264,29 @@ def _count_emoji(message: discord.Message, emoji: str) -> int:
         if str(reaction.emoji) == emoji:
             return int(reaction.count)
     return 0
+
+
+async def _author_starred(message: discord.Message, emoji: str) -> bool:
+    """Whether the message author is among the ``emoji`` reactors.
+
+    Only called when ``self_star`` is off (the cog discounts the author's own
+    ⭐). Fetches the reactor list for the trigger reaction; on any API failure it
+    returns ``False`` (fail open — never wrongly suppress a genuine star).
+    """
+    author_id = getattr(message.author, "id", None)
+    if author_id is None:
+        return False
+    for reaction in message.reactions:
+        if str(reaction.emoji) != emoji:
+            continue
+        try:
+            async for user in reaction.users():
+                if getattr(user, "id", None) == author_id:
+                    return True
+        except (discord.HTTPException, discord.Forbidden):
+            return False
+        return False
+    return False
 
 
 def _header(emoji: str, star_count: int, message: discord.Message) -> str:
