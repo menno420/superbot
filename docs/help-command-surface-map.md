@@ -23,8 +23,8 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 37 of the 51 loaded extensions (`config.INITIAL_EXTENSIONS`) define
-  `build_help_menu_view` — equivalently, 37 of the 38 subsystem-owning
+- 38 of the 52 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+  `build_help_menu_view` — equivalently, 38 of the 39 subsystem-owning
   cogs expose it. The 14 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
@@ -86,8 +86,8 @@ so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 
 ## 2. Subsystem inventory
 
-38 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 51 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+39 registered subsystems in `utils/subsystem_registry.py` (one row
+each below); 52 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 14 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
@@ -117,6 +117,7 @@ falls back to the command-list embed when the hook is missing or raises.
 | `four_twenty` | `four_twenty_cog.py` | `420`, `fourtwenty` | — | `_FourTwentyPanelView` | `!help 420` → opens 420 panel (shared resolver) | reached via Utility (`parent_hub="utility"` since PR #420) | hub child (Utility) — declared; passive `FourTwentyStage` 🍃-reacts to `420` mentions |
 | `help` | `help_cog.py` | `help` (alias `hilfe`) | — | **no panel hook (Help itself is the panel)** | n/a (Help Home embeds + `HelpCategoryView` dropdown) | dropdown root | Help Home |
 | `inventory` | `inventory_cog.py:376` | `inventory`, `inv` | — | `UnifiedInventoryView` | `!help inventory` → opens Inventory panel (shared resolver) | reached via Economy (Inventory btn → in-place edit + Back-to-Economy; PR #143). `parent_hub="economy"` since PR #3. | hub child (Economy) — declared |
+| `treasury` | `treasury_cog.py` | `treasury`/`bank`/`pool` (+ `contribute`, `grant` subcommands) | — | `TreasuryCog` | `!help treasury` → actionable Treasury panel (Help hook → `TreasuryView`: Contribute · Refresh) | Economy-hub child (`parent_hub="economy"`, user tier); also reachable via `!treasury` | the bot's first **server-owned** coin pool (the economy↔governance seam) — members contribute their own coins (a sink); managers disburse with `!treasury grant @member <amount>` (a `manage_guild` gate) |
 | `leaderboard` | `leaderboard_cog.py:200` | (none public-flagged; entry inferred from registry) | — | `LeaderboardView` | `!help leaderboard` → opens Leaderboard panel (shared resolver) | `parent_hub="economy"` since PR #3; Community cross-link migrates in PR #4 | hub child (Economy) — declared; Community cross-link in PR #4 |
 | `logging` | `logging_cog.py:88` | `logging` | — | `LoggingPanelView` | `!help logging` → opens Logging panel (shared resolver) | reached via Moderation / Admin; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
 | `mining` | `mining_cog.py:65` | `mineinv`/`mineinventory`, `minestats` | mining game flow commands (start/dig/etc.) | `MiningHubView` | `!help mining` → opens Mining panel (shared resolver) | reached via Games (primary, `parent_hub="games"`); Economy hub declares Mining as a `cross_link_children` since PR #3 | hub child (Games); Economy cross-link |

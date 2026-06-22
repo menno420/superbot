@@ -183,7 +183,7 @@ def test_economy_hub_uses_existing_panel():
     economy = get_hub("economy")
     assert economy is not None
     assert economy.entry_command == "!economymenu"
-    assert economy.primary_children == ("inventory", "leaderboard")
+    assert economy.primary_children == ("inventory", "leaderboard", "treasury")
     assert economy.cross_link_children == ("mining",)
     assert economy.panel_available is True
     assert economy.minimum_tier == "user"

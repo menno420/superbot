@@ -195,6 +195,38 @@ SUBSYSTEMS: dict[str, dict] = {
             "inventory.craft.recipe",
         ],
     },
+    # Server treasury (owner-directed task "treasury") — the bot's first
+    # SERVER-OWNED (collective) coin pool, the seam between the per-user economy
+    # and governance. Members contribute their own coins (a sink); server
+    # managers disburse from the pool with `!treasury grant` (a manage_guild
+    # gate). Homed under the Economy hub (a child, like inventory/leaderboard)
+    # and reachable via the Help hook + `!treasury`. Soft-depends on economy
+    # (it moves coins) but declares no HARD dependency so the panel still opens
+    # (read-only) when the economy subsystem is disabled.
+    "treasury": {
+        "display_name": "Treasury",
+        "description": "Server-owned coin pool — contribute coins; managers disburse",
+        "emoji": "🏛️",
+        "color": ECONOMY_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "economy",
+        "tags": ["treasury", "economy", "coins", "governance"],
+        "entry_points": ["treasury"],
+        "default_channels": ["economy", "bot-commands"],
+        "related_subsystems": ["economy", "inventory"],
+        "dependencies": [],
+        "soft_dependencies": ["economy"],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 16,
+        "parent_hub": "economy",
+        "capabilities": [
+            "treasury.pool.view",
+            "treasury.pool.contribute",
+            "treasury.pool.disburse",
+        ],
+    },
     "mining": {
         "display_name": "Mining",
         "description": "Mining minigame and resource collection",

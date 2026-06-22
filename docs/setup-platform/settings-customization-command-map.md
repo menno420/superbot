@@ -560,6 +560,41 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: S10.
 
+### treasury
+
+1. **cog_module**: `disbot/cogs/treasury_cog.py`.
+2. **subsystem**: `treasury`
+3. **current_commands**: `!treasury`/`!bank`/`!pool`, `!treasury contribute <amount>`,
+   `!treasury grant @member <amount>`.
+4. **current_command_groups**: `treasury` (group; subcommands `contribute`, `grant`).
+5. **current_command_panel_or_menu**: `TreasuryView` (Contribute · Refresh) —
+   `disbot/views/treasury/`; Contribute opens a one-field amount modal.
+6. **help_menu_discoverable**: Yes (actionable panel via `build_help_menu_view`).
+7. **dedicated_panel_command**: `!treasury`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (live `TreasuryView`).
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `treasury.pool.view`, `treasury.pool.contribute`, `treasury.pool.disburse`.
+    Disburse (`!treasury grant`) is additionally gated on Discord `manage_guild`.
+14. **hardcoded_or_env_only_behavior**: none — the treasury holds no tunables. It is
+    the bot's first **server-owned** (collective) coin pool: members contribute their
+    own coins into the guild pool (a sink) and server managers disburse from it (a
+    `manage_guild`-gated grant), through the audited `services/treasury_service.py`
+    seam (one txn per op; user coin legs via `economy_service.*_in_txn`). The seam
+    between the economy (where coins come from) and governance (who may spend them).
+15. **missing_customization_commands**: per-guild contribution caps / a configurable
+    auto-tithe from game winnings (future).
+16. **missing_settings_pages**: Settings Manager treasury page (future — e.g. who may
+    disburse, beyond the `manage_guild` default).
+17. **missing_menu_buttons_selects_modals**: an in-panel manager Disburse control
+    (future; today disburse is command-only by design).
+18. **setting_class_per_value**: contribution cap → scalar; disburse-authority role →
+    role setting (future).
+19. **target_Settings_Manager_page**: `!settings subsystem treasury` (future).
+
 ### farm
 
 1. **cog_module**: `disbot/cogs/farm_cog.py`.
