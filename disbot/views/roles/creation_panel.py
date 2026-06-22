@@ -161,8 +161,9 @@ class RoleCreatePanel(BaseView):
         view = RolePackView(interaction.user, interaction.guild)
         await interaction.response.send_message(
             content=(
-                "📦 **Bulk-create roles from a pack.** Pick a category, then the "
-                "roles to create — existing same-named roles are reused:"
+                "📦 **Bulk-create roles.** Pick a category and multiselect its "
+                "roles, or **✏️ Custom (bulk)** to type your own names with an "
+                "optional preset colour — existing same-named roles are reused:"
             ),
             view=view,
             ephemeral=True,

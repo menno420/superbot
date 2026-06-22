@@ -63,6 +63,78 @@ class RolePack:
 # generic (not tied to one server's theme); colours drawn from a readable palette.
 _PACKS: tuple[RolePack, ...] = (
     RolePack(
+        "essentials",
+        "⭐ Essentials",
+        "Common server roles — a general starter set (the standard presets).",
+        roles=(
+            PackRole("Member", "#2ecc71", emoji="🙂", description="General member."),
+            PackRole(
+                "Verified",
+                "#1abc9c",
+                emoji="✅",
+                description="Passed verification.",
+            ),
+            PackRole("Newcomer", "#95a5a6", emoji="🌱", description="Just joined."),
+            PackRole("Active", "#3498db", emoji="⚡", description="Active member."),
+            PackRole("Regular", "#9b59b6", emoji="🔆", description="Long-time member."),
+            PackRole(
+                "VIP",
+                "#f1c40f",
+                hoist=True,
+                emoji="💎",
+                description="Supporter / VIP — shown separately.",
+            ),
+            PackRole(
+                "Supporter",
+                "#e91e63",
+                emoji="💖",
+                description="Supports the server.",
+            ),
+            PackRole(
+                "Content Creator",
+                "#e67e22",
+                emoji="🎥",
+                description="Streams / makes content.",
+            ),
+            PackRole("DJ", "#1abc9c", emoji="🎧", description="Music DJ."),
+            PackRole("Bot", "#5865f2", emoji="🤖", description="Bot account."),
+            PackRole(
+                "Helper",
+                "#2ecc71",
+                hoist=True,
+                emoji="🤝",
+                description="Community helper.",
+            ),
+            PackRole(
+                "Event Host",
+                "#9b59b6",
+                hoist=True,
+                emoji="🎉",
+                description="Runs events.",
+            ),
+            PackRole(
+                "Moderator",
+                "#3498db",
+                hoist=True,
+                emoji="🛡️",
+                description="Moderation team.",
+            ),
+            PackRole(
+                "Admin",
+                "#e74c3c",
+                hoist=True,
+                emoji="👑",
+                description="Administrator.",
+            ),
+            PackRole(
+                "Muted",
+                "#607d8b",
+                emoji="🔇",
+                description="Restricted (used by moderation).",
+            ),
+        ),
+    ),
+    RolePack(
         "gaming",
         "🎮 Gaming",
         "Per-game roles members opt into for squads and pings.",
