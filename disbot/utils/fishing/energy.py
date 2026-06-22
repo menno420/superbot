@@ -24,12 +24,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 # --- Fishing-energy tunables (separate from mining; tune against live play) ---
-# A cast is a multi-second skill moment (bite wait + reel), not a one-shot dig,
-# so the bar is smaller and regens slower than mining's 60/360-per-hour: a short
-# burst of ~CASTS, then a gentle ~120/hour sustained rate — pacing, not a wall.
-MAX_ENERGY = 20  # a full bar ≈ a 20-cast session before you regen-throttle
-CAST_COST = 1  # energy spent per cast
-REGEN_SECONDS = 30  # +1 energy every 30s → 120/hour sustained
+# A SEPARATE 60-unit bar, scale-parallel to mining's (the owner's pictured model,
+# AskUserQuestion 2026-06-22), but paced gentler because a cast is a multi-second
+# skill moment, not a one-shot dig: each cast costs 2 and energy regens 1/30s, so
+# a full bar is a ~30-cast burst, then a gentle sustained rate — pacing, not a wall.
+MAX_ENERGY = 60  # a full bar ≈ a 30-cast session before you regen-throttle
+CAST_COST = 2  # energy spent per cast
+REGEN_SECONDS = 30  # +1 energy every 30s (≈ 1 cast / minute sustained at cost 2)
 
 
 @dataclass(frozen=True)
@@ -109,7 +110,7 @@ def seconds_until(
 
 
 def bar(current: int, max_energy: int = MAX_ENERGY, *, width: int = 10) -> str:
-    """A compact ``⚡ 14/20 [▰▰▰▰▰▰▰▱▱▱]`` energy gauge for the fishing panel."""
+    """A compact ``⚡ 42/60 [▰▰▰▰▰▰▰▱▱▱]`` energy gauge for the fishing panel."""
     current = max(0, min(max_energy, current))
     filled = round(width * current / max_energy) if max_energy else 0
     return f"⚡ {current}/{max_energy} [{'▰' * filled}{'▱' * (width - filled)}]"

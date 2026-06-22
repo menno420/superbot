@@ -29,7 +29,7 @@ _SET_ENERGY_SQL = """
 """
 
 #: Defaults for a player with no row yet — a full bar (see migration 088).
-_DEFAULT_ENERGY = 20
+_DEFAULT_ENERGY = 60
 
 
 async def get_fishing_energy(

@@ -390,7 +390,7 @@ async def test_begin_cast_spends_energy_and_rolls_when_charged():
 
     assert start.ok is True
     assert start.cast.catch is _CATCH
-    assert start.energy_current == 9  # 10 settled − 1 cast
+    assert start.energy_current == 8  # 10 settled − CAST_COST (2)
     set_energy.assert_awaited_once()  # the spend was persisted
 
 

@@ -31,8 +31,10 @@ This PR:
 ## Shipped (PR #1304)
 
 - **`utils/fishing/energy.py`** — pure pacing math (settle/spend/can_cast/seconds_until/bar) + own
-  tunables (MAX 20, CAST_COST 1, REGEN 30s = ~120/hr). Self-contained (separate bar); regen math
-  mirrors mining's with a rule-of-three note (don't extract a shared core until a 3rd consumer).
+  tunables: a **60-unit bar** scale-parallel to mining's, **cost 2 per cast**, regen 1/30s (the model
+  the owner pictured + confirmed, AskUserQuestion 2026-06-22 — a full bar ≈ 30 casts, ~1 cast/min
+  sustained). Self-contained (separate bar); regen math mirrors mining's with a rule-of-three note
+  (don't extract a shared core until a 3rd consumer).
 - **Persistence** — migration `088_fishing_energy.sql` (`fishing_energy`, defaults to a full bar so
   every existing/new player starts full) + `utils/db/games/fishing_energy.py` + re-export.
 - **`fishing_workflow.begin_cast`** — settle → out-of-energy returns a "ready in Ns" message → else

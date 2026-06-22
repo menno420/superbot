@@ -17,7 +17,7 @@ async def test_get_fishing_energy_defaults_to_a_full_bar_when_no_row():
         return_value=None,
     ):
         cur, ts = await fishing_energy.get_fishing_energy(99, 1)
-    assert (cur, ts) == (20, 0)  # full bar @ epoch → settles to full
+    assert (cur, ts) == (60, 0)  # full bar @ epoch → settles to full
 
 
 @pytest.mark.asyncio

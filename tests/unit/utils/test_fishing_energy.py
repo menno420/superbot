@@ -30,9 +30,11 @@ def test_settle_preserves_sub_interval_remainder():
 def test_can_cast_and_spend():
     empty = _state(0, 0)
     assert energy.can_cast(empty, now=0) is False
-    assert energy.can_cast(_state(1, 0), now=0) is True
+    # a cast costs CAST_COST (2): 1 energy is not enough, the full cost is
+    assert energy.can_cast(_state(energy.CAST_COST - 1, 0), now=0) is False
+    assert energy.can_cast(_state(energy.CAST_COST, 0), now=0) is True
     after = energy.spend(_state(5, 0), now=0)
-    assert after.current == 4  # one cast = one energy
+    assert after.current == 5 - energy.CAST_COST  # one cast = one CAST_COST
     # spending never drops below zero (caller is meant to gate with can_cast)
     assert energy.spend(empty, now=0).current == 0
 

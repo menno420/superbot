@@ -9,12 +9,12 @@
 -- it was last settled at.  Effective energy at any instant is computed from
 -- elapsed time in pure code (utils/fishing/energy.py) — no background ticker
 -- (ADR-001/002: no external state, no scheduler).  energy defaults to the full
--- bar (20) and energy_updated_at to 0, so every existing player and every fresh
+-- bar (60) and energy_updated_at to 0, so every existing player and every fresh
 -- row starts with a full bar (a huge elapsed-from-0 simply settles to the cap).
 CREATE TABLE IF NOT EXISTS fishing_energy (
     user_id           BIGINT  NOT NULL,
     guild_id          BIGINT  NOT NULL DEFAULT 0,
-    energy            INTEGER NOT NULL DEFAULT 20,
+    energy            INTEGER NOT NULL DEFAULT 60,
     energy_updated_at BIGINT  NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, guild_id)
 );
