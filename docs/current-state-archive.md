@@ -86,6 +86,40 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1208 · #1213 (2026-06-21, creature game — design → runtime)** — **catch + collection/dex** shipped as the
+  first runtime slice (#1208 — `disbot/cogs/creature_cog.py`, fishing-mirrored spine, `utils/creatures/` pure
+  domain + `services/creature_workflow.py` audited write + migration 077 + the 36-creature catalog +
+  `GAME_CREATURE` xp track), and the **level-normalized PvP battle engine** graduated into pure domain
+  `disbot/utils/creatures/battle.py` (#1213, `needs-hermes-review`) with 24 fairness-gate tests. The
+  user-facing PvP flow shipped (#1230 — `!cbattle`, `BaseView`-locked challenge → read-only
+  `services/creature_battle_service.py` → engine; auto-resolves at `NORMALIZED_LEVEL`). [plan](planning/creature-game-design-and-sim-2026-06-20.md) §4.
+- **#1226 · #1228 · #1229 · #1231 (2026-06-21, "free for everyone, forever" product North Star + license)** —
+  codified the North Star (Q-0190, #1226), answered the open-source/self-host posture under it (#1228), and
+  recorded the **license decision — stay MIT for now** (free-use-only deferred, #1229/#1231). Owner-directed
+  design decisions; also folded in the creature sim↔engine combat-constant parity guard (#1229).
+- **#1211 · #1212 · #1223 · #1224 · #1225 (2026-06-21, workflow tooling)** — a **permission-overlap guard** +
+  force-push ask-residual fix (#1212) on the `git push --force-with-lease`/`cd` allowlist (#1211); the
+  **lane-overlap claim-scan** now reads the `active-work.md` claim ledger (#1223, `scripts/check_lane_overlap.py`);
+  **Q-0189 — open the session PR fast (~2 min)** codified (#1224); pruned stale `active-work.md` claims (#1225).
+- **#1210 (2026-06-21, `public-data-contract-field-snapshot` redaction guard)** — the public `site.json`
+  redaction guard now pins **leaf fields per family** (`SITE_FIELD_CONTRACT` in `export_dashboard_data.py` +
+  the within-family whitelist in `check_dashboard_data.check_site_subset`), so keys *and* leaves both fail
+  closed — completing the ungated stdlib-guard cluster.
+- **#1203 · #1205 · #1206 · #1207 (2026-06-21, bug fixes + CI/design-system)** — recorded the Claude-Design
+  connector as read-only (migration-plan Decision D, #1203); aligned Storybook deps on v10 to fix the
+  design-system CI install (#1205); root-fixed **BUG-0020** (`trim_recently_shipped.py` floor-pointer prose
+  contamination) + **BUG-0021** (flaky lock-wait test) + **BUG-0022** (suite clobbers tracked `data.js`)
+  (#1206); **BUG-0023** botsite command-count reconcile + a tool-pin drift guard (#1207).
+- **#1209 · #1214 · #1222 (2026-06-21, dashboard generated-data refresh band)** — the per-source-merge
+  `dashboard-data-refresh` cadence regen of `dashboard/data/dashboard.json` (Q-0167).
+- **#1183 · #1185 · #1193 · #1194 (2026-06-20, NEW creature-catch/PvP game — design + sim + catalog +
+  combat, no runtime yet)** — an original-IP (no Pokémon names) creature game stood up as design+tooling+data:
+  a stdlib deterministic Monte-Carlo **playability simulator** (`tools/game_sim/creature_battle_sim.py`,
+  verdict **PLAYABLE**, surfaced the core rule *PvP must be level-normalized*) + v1 ruleset + the copyright
+  answer (#1183), creature roster sizing + legal music-bot findings (#1185), a data-driven **36-creature
+  catalog** sim-validated playable (#1193), and the **complete combat model** — moves / damage types / 6v6
+  (#1194). No `disbot/` cog yet — the runtime build is the next buildable lane (Q-0187;
+  [plan](planning/creature-game-design-and-sim-2026-06-20.md)).
 - **#1180 · #1182 (2026-06-20, Pokétwo + MusicBot research → feature-mapping plan + BUG-0019)** — a
   research report → a feature-mapping plan ([plan](planning/poketwo-musicbot-feature-mapping-plan-2026-06-20.md),
   #1180), plus **BUG-0019** capture (the AI replied to *other bots'* mentions) + the Pokétwo demand signal

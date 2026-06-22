@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T18:21:56Z",
+    "generated_at": "2026-06-22T21:39:59Z",
     "build": {
-      "commit": "6bd8c97",
-      "subject": "Tune fishing energy to the owner's pictured model (60-unit bar, 2 per cast)",
-      "committed_at": "2026-06-22T18:21:56Z"
+      "commit": "cfd93bf5",
+      "subject": "Merge pull request #1320 from menno420/claude/funny-franklin-s56i3y-4",
+      "committed_at": "2026-06-22T21:39:59Z"
     },
     "counts": {
       "functions": 37,
-      "ideas": 120,
+      "ideas": 123,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -997,6 +997,14 @@
   ],
   "ideas": [
     {
+      "file": "band-queue-hit-rate-metric-2026-06-22.md",
+      "title": "Idea — measure whether the planned next-band queue actually predicts the band",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "Every Q-0107 reconciliation pass plans a \"next full band\" (~30 slices of buildable work, depth ≥",
+      "subsystems": null
+    },
+    {
       "file": "ci-dropped-synchronize-auto-retrigger-2026-06-22.md",
       "title": "Idea: auto-re-trigger Code Quality when GitHub drops the `pull_request: synchronize` event",
       "status": "ideas",
@@ -1005,11 +1013,27 @@
       "subsystems": []
     },
     {
+      "file": "migration-number-collision-guard-2026-06-22.md",
+      "title": "Idea: pre-merge migration-number collision guard (kill the renumber treadmill)",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "`needs-hermes-review` PR whose migration was renumbered **four times** (085→086→088→089)",
+      "subsystems": null
+    },
+    {
       "file": "mining-grid-encounters-2026-06-22.md",
       "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)",
       "status": "ideas",
       "date": "2026-06-22",
       "summary": "Layer **sparse, depth-gated random encounters** onto the shipped grid-Mine navigator",
+      "subsystems": null
+    },
+    {
+      "file": "pil-card-render-contract-guard-2026-06-22.md",
+      "title": "Idea: a shared `bytes | None` lazy-PIL contract guard for the card-render family",
+      "status": "ideas",
+      "date": "2026-06-22",
+      "summary": "cards, #1279) — generated as the Q-0089 session idea. · **Lane:** small / decided — implementable.",
       "subsystems": null
     },
     {
@@ -2178,6 +2202,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-22-tool-pins-ci-guard.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — make `check_tool_pins` a CI guard (close the #1315 drift class at the root)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-22-state-file-restructure.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — State-file restructure: per-claim active-work + per-sector current-state",
@@ -2192,6 +2224,22 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-site-data-contract-guard.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — botsite↔design-system data-contract guard (de-risking the React-SPA cutover)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-role-list-colours-and-per-role-bulk-colour.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — Role list colours + per-role bulk colour",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-22-repo-navigation-cleanup.md",
@@ -2215,6 +2263,22 @@
       "title": "Session — 2026-06-22 · band-#1290 Q-0107 docs reconciliation",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-reaction-roles-pr6-pil-cards.md",
+      "date": "2026-06-22",
+      "title": "Session — reaction-roles PR 6: PIL banner cards (§4.6d)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-22-monkey-knowledge-all-roster.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — \"list all monkey knowledge\" regression (whole-catalog MK roster)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2256,6 +2320,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-ledger-and-ci-hygiene.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — ledger drift fix + design-system CI-coverage gap (post-botsite hygiene)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-22-help-remove-advanced.md",
@@ -2389,6 +2461,14 @@
       "file": "2026-06-22-btd6-grounding-anchors.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — P1-1 BTD6 grounding-anchor eval guard (the #704 finding)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-22-botsite-react-spa-pr1.md",
+      "date": "2026-06-22",
+      "title": "2026-06-22 — botsite React-SPA migration PR 1 (foundation: a buildable, data-fed React app)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -2592,62 +2672,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-project-moon-prebuild-recon.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Project Moon: pre-build reconnaissance (data sources + seam contract)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-project-moon-plan-promotion.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Project Moon knowledge domain: idea → program plan (owner picked full parity)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-pr-mergeable-trust-the-git-check.md",
-      "date": "2026-06-21",
-      "title": "Session — PR mergeability: trust the git check, not GitHub's `mergeable_state` (2026-06-21)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-permission-overlap-guard.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Permission-overlap guard + force-push `ask` residual fix",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-merge-equals-deploy-clarity.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — \"Merge = deploy\" clarity (kill the \"restart is yours\" misinformation)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-lane-overlap-claim-scan.md",
-      "date": "2026-06-21",
-      "title": "Session — check_lane_overlap.py gains an active-work.md claim-ledger scan",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-journal-workflow-lessons.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Journal: capture recurring workflow lessons from the reaction-roles chain",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [

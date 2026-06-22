@@ -9,13 +9,15 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
-- **Twentieth Q-0107 reconciliation pass** (band-#1290, issue #1292 —
-  [pass record](../planning/reconciliation-pass-2026-06-22-band1290.md)): reconciled the ledger
-  (band #1265–#1291 as six grouped entries), trimmed Recently-shipped to 20, planned the next band.
+- **Twenty-first Q-0107 reconciliation pass** (band-#1320, issue #1321 —
+  [pass record](../planning/reconciliation-pass-2026-06-22-band1320.md)): reconciled the ledger
+  (band #1294–#1320 as seven grouped entries), trimmed Recently-shipped to 20, planned the next band.
+- **Help-reachability CI guard (#1297)** — `check_docs`/the help tree now fails CI when a subsystem
+  isn't homed, and a **tool-pin CI guard (#1320)** closes the three-places-pin-drift class at the root.
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
 
 **▶ Next:**
-- **Next reconciliation pass due once merged PRs cross #1320** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1350** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).
