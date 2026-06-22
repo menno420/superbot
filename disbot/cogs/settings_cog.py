@@ -108,9 +108,9 @@ class SettingsCog(commands.Cog):
 
     Public hooks:
 
-    * ``build_help_menu_view`` — direct-navigation entry from
-      :class:`cogs.help_cog.HelpPanelView` so picking *Settings
-      Manager* from the help dropdown opens the hub in place.
+    * ``build_help_menu_view`` — direct-navigation entry from the Help
+      navigation (the Server & Admin hub panel) so opening *Settings
+      Manager* swaps to the hub in place.
     """
 
     def __init__(self, bot: commands.Bot) -> None:
@@ -174,10 +174,10 @@ class SettingsCog(commands.Cog):
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Help-menu direct-navigation hook.
 
-        Called by ``HelpPanelView._on_select`` when the operator
-        picks *Settings Manager* from the help dropdown.  Returns
-        the same ``(embed, view)`` shape that ``!settings`` would
-        produce, with one exception: when the gate flag is OFF the
+        Called from the Help navigation (the Server & Admin hub panel)
+        when the operator opens *Settings Manager*.  Returns the same
+        ``(embed, view)`` shape that ``!settings`` would produce, with
+        one exception: when the gate flag is OFF the
         returned view is a tiny "disabled" view with only a
         back-to-help button, so users see a coherent explanation
         instead of an interactive hub that does nothing.

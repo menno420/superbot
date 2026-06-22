@@ -10,7 +10,6 @@ fail loudly if a hub is added without a corresponding panel.
 from __future__ import annotations
 
 from utils.hub_registry import (
-    ALL_COMMANDS_KEY,
     HUBS,
     HubEntry,
     get_hub,
@@ -36,13 +35,6 @@ def test_hubs_are_immutable_tuple_of_hubentry():
 def test_hub_keys_are_unique():
     keys = [hub.key for hub in HUBS]
     assert len(keys) == len(set(keys)), f"duplicate hub keys: {keys}"
-
-
-def test_all_commands_key_is_not_a_hub():
-    """ALL_COMMANDS_KEY is a sentinel for the permanent fallback option,
-    not a mother hub. It must not appear in HUBS.
-    """
-    assert ALL_COMMANDS_KEY not in {hub.key for hub in HUBS}
 
 
 def test_committed_hub_set_matches_promoted_hubs():

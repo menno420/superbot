@@ -204,7 +204,6 @@ class TestBackCallbackErrorHandling:
     async def test_resolve_visibility_failure_sends_ephemeral(self):
         import cogs.help_cog as help_cog
 
-        view = help_cog.HelpPanelView(visible_list=["general"], page=0)
         interaction = _make_interaction(responded=False)
         interaction.client = MagicMock()
 

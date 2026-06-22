@@ -100,8 +100,8 @@ class General(commands.Cog):
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Help-menu direct-navigation hook.
 
-        Called by HelpPanelView._on_select when the user picks "General" from
-        the help dropdown.  Returns the same (embed, view) pair that
+        Called from the Help navigation (the Utility hub panel) when the
+        user opens "General".  Returns the same (embed, view) pair that
         !generalmenu would produce, so the help message can be replaced in
         place with the General panel — no secondary navigation step required.
         Governance has already been resolved at the help layer.

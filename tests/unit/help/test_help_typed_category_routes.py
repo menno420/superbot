@@ -223,24 +223,20 @@ async def test_subsystem_route_falls_back_to_command_list_on_hook_failure(monkey
 
 
 # ---------------------------------------------------------------------------
-# Advanced route — opens HelpPanelView
+# Advanced route — removed (PR #1294): "advanced"/"all"/"commands" no longer
+# resolve to a route; they fall through to the not-found fallback.
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_help_advanced_opens_help_panel_view():
-    """``!help advanced`` opens the paginated HelpPanelView."""
+async def test_help_advanced_alias_is_now_unknown():
+    """``!help advanced`` (and friends) no longer open a paginated browser —
+    the surface was removed, so the alias is an unknown route."""
     opener = _opener()
-    route = help_cog._resolve_route("advanced", bot=opener.client)
-    assert route.kind == "advanced"
-
-    embed, view = await help_cog._open_route(
-        route,
-        opener,
-        projection=_projection({"games", "economy"}, "user"),
-    )
-    assert isinstance(view, help_cog.HelpPanelView)
-    assert isinstance(embed, discord.Embed)
+    opener.client.get_command = MagicMock(return_value=None)
+    for name in ("advanced", "all", "commands", "all commands"):
+        route = help_cog._resolve_route(name, bot=opener.client)
+        assert route.kind == "unknown", name
 
 
 # ---------------------------------------------------------------------------

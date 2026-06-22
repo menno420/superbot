@@ -344,7 +344,7 @@ async def test_open_via_help_hook_handles_hook_exception():
 
 
 # ---------------------------------------------------------------------------
-# Help button — resolves governance and opens HelpPanelView
+# Help button — resolves governance and opens HelpCategoryView
 # ---------------------------------------------------------------------------
 
 
