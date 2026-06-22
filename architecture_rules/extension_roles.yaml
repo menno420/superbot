@@ -87,6 +87,9 @@ extensions:
   blackjack:
     role: product_subsystem
     note: Game.
+  casino:
+    role: product_subsystem
+    note: Game (multiplayer poker / casino table).
   rps_tournament:
     role: product_subsystem
     note: Game (tournament orchestration).

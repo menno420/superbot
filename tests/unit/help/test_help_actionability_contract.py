@@ -292,6 +292,23 @@ def _panel_construction_patches(subsystem: str):
                 new=AsyncMock(return_value=[]),
             )
         )
+    if subsystem == "casino":
+        # The Casino hub's "New Poker Table" button posts a public channel
+        # message (launch_table → channel.send) before its ephemeral ack; stub
+        # the launch so the classifier reaches the response action without a
+        # live channel/bot.
+        patches.append(
+            patch(
+                "views.casino.hub.poker_table.launch_table",
+                new=AsyncMock(return_value=MagicMock()),
+            )
+        )
+        patches.append(
+            patch(
+                "views.casino.hub.poker_table.get_table",
+                new=MagicMock(return_value=None),
+            )
+        )
     if subsystem == "farm":
         from services.farm_workflow import FarmStatus
         from utils.farm import FarmState
@@ -383,6 +400,10 @@ async def _build_panel_for(
         from cogs.farm_cog import FarmCog
 
         cog = FarmCog(MagicMock())
+    elif subsystem == "casino":
+        from cogs.casino_cog import CasinoCog
+
+        cog = CasinoCog(MagicMock())
     else:
         raise NotImplementedError(
             f"No cog mapping for actionability target {subsystem!r}. "
@@ -405,6 +426,9 @@ async def _build_panel_for(
     [
         pytest.param("rps_tournament"),
         pytest.param("blackjack"),
+        # Casino hub's "New Poker Table" button launches a multiplayer table
+        # (a real action), so it is a strict target from day one.
+        pytest.param("casino"),
         pytest.param("deathmatch"),
         pytest.param("mining"),
         pytest.param("counting"),
@@ -621,6 +645,7 @@ def test_actionability_targets_match_registry_games_children() -> None:
     # the BTD6 cog's own tests now.
     expected = {
         "blackjack",
+        "casino",
         "rps_tournament",
         "deathmatch",
         "mining",

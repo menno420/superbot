@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T22:40:17Z",
+    "generated_at": "2026-06-23T00:51:14Z",
     "build": {
-      "commit": "fb983bd",
-      "subject": "Karma: session-card close-out notes (status still held)",
-      "committed_at": "2026-06-22T22:40:17Z"
+      "commit": "a4f3aac",
+      "subject": "Merge branch 'main' into claude/great-goldberg-extjsi",
+      "committed_at": "2026-06-23T00:51:14Z"
     }
   },
   "counts": {
-    "commands": 381,
-    "features": 40,
-    "games": 10
+    "commands": 383,
+    "features": 41,
+    "games": 11
   },
   "catalogue": [
     {
@@ -292,6 +292,24 @@
         "games",
         "blackjack",
         "cards"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "casino",
+      "display_name": "Casino",
+      "description": "Group card games like multiplayer poker",
+      "emoji": "🎰",
+      "category": "games",
+      "tags": [
+        "games",
+        "casino",
+        "poker",
+        "cards",
+        "multiplayer"
       ],
       "badges": [
         "games"
@@ -4284,6 +4302,20 @@
       "notes": null
     },
     {
+      "name": "casino",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Casino hub — group card games like poker.",
+      "description": "Open the Casino hub — group card games like poker.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "catch",
       "aliases": [
         "hunt"
@@ -5431,6 +5463,22 @@
           "status": "ideas"
         }
       ],
+      "notes": null
+    },
+    {
+      "name": "poker",
+      "aliases": [
+        "holdem"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open a multiplayer Texas Hold'em table in this channel.",
+      "description": "Open a multiplayer Texas Hold'em table in this channel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {

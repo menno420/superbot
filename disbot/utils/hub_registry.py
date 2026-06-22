@@ -106,6 +106,7 @@ HUBS: tuple[HubEntry, ...] = (
         # the Advanced browser.
         primary_children=(
             "blackjack",
+            "casino",
             "deathmatch",
             "rps_tournament",
             "mining",

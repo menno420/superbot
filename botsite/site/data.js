@@ -39,9 +39,9 @@ const AREAS = [
     "points": [
       "BTD6 Assistant",
       "Blackjack",
+      "Casino",
       "Chicken Farm",
-      "Counting",
-      "Creatures"
+      "Counting"
     ]
   },
   {
@@ -1016,6 +1016,19 @@ const COMMANDS = [
     "summary": "Cache state: F-1 guild_config + governance.cache.",
     "description": "Cache state: F-1 guild_config + governance.cache.",
     "usage": "!caches",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "casino",
+    "area": "games",
+    "status": "finished",
+    "summary": "Open the Casino hub — group card games like poker.",
+    "description": "Open the Casino hub — group card games like poker.",
+    "usage": "!casino",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
@@ -3394,6 +3407,21 @@ const COMMANDS = [
     "examples": [
       "!platform"
     ],
+    "planned": []
+  },
+  {
+    "name": "poker",
+    "area": "games",
+    "status": "finished",
+    "summary": "Open a multiplayer Texas Hold'em table in this channel.",
+    "description": "Open a multiplayer Texas Hold'em table in this channel.",
+    "usage": "!poker",
+    "aliases": [
+      "holdem"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
     "planned": []
   },
   {
@@ -6101,10 +6129,24 @@ const GAMES = [
     ]
   },
   {
+    "id": "casino",
+    "name": "Casino",
+    "icon": "gamepad",
+    "color": "var(--g-bright)",
+    "command": "casino",
+    "tagline": "Group card games like multiplayer poker",
+    "description": "Group card games like multiplayer poker",
+    "howTo": [
+      "Run !casino to get started.",
+      "Follow the prompts and buttons in the channel.",
+      "Wins and progress feed into XP and the leaderboards."
+    ]
+  },
+  {
     "id": "farm",
     "name": "Chicken Farm",
     "icon": "gamepad",
-    "color": "var(--g-bright)",
+    "color": "var(--pink)",
     "command": "farm",
     "tagline": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
     "description": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
@@ -6118,7 +6160,7 @@ const GAMES = [
     "id": "counting",
     "name": "Counting",
     "icon": "gamepad",
-    "color": "var(--pink)",
+    "color": "var(--amber)",
     "command": "count_info",
     "tagline": "Collaborative counting game",
     "description": "Collaborative counting game",
@@ -6132,7 +6174,7 @@ const GAMES = [
     "id": "creature",
     "name": "Creatures",
     "icon": "gamepad",
-    "color": "var(--amber)",
+    "color": "var(--indigo)",
     "command": "games",
     "tagline": "Catch original creatures and build your collection dex",
     "description": "Catch original creatures and build your collection dex",
@@ -6147,7 +6189,7 @@ const GAMES = [
     "id": "deathmatch",
     "name": "Deathmatch",
     "icon": "gamepad",
-    "color": "var(--indigo)",
+    "color": "var(--g)",
     "command": "dm_challenge",
     "tagline": "1v1 duel battles",
     "description": "1v1 duel battles",
@@ -6161,7 +6203,7 @@ const GAMES = [
     "id": "fishing",
     "name": "Fishing",
     "icon": "gamepad",
-    "color": "var(--g)",
+    "color": "var(--sky)",
     "command": "fish",
     "tagline": "Fishing minigame — cast a line, build your collection",
     "description": "Fishing minigame — cast a line, build your collection",
@@ -6176,7 +6218,7 @@ const GAMES = [
     "id": "games",
     "name": "Games",
     "icon": "gamepad",
-    "color": "var(--sky)",
+    "color": "var(--g-bright)",
     "command": "games",
     "tagline": "Competitive games and channel activities",
     "description": "Competitive games and channel activities",
@@ -6191,7 +6233,7 @@ const GAMES = [
     "id": "rps_tournament",
     "name": "Rock Paper Scissors",
     "icon": "gamepad",
-    "color": "var(--g-bright)",
+    "color": "var(--pink)",
     "command": "rps",
     "tagline": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
     "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
@@ -6206,7 +6248,7 @@ const GAMES = [
     "id": "chain",
     "name": "Word Chain",
     "icon": "gamepad",
-    "color": "var(--pink)",
+    "color": "var(--amber)",
     "command": "chain",
     "tagline": "Word-chaining game",
     "description": "Word-chaining game",
@@ -6222,7 +6264,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "fb983bd",
+    "build": "a4f3aac",
     "title": "New public bot website",
     "changes": [
       {
@@ -6234,7 +6276,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "fb983bd",
+    "build": "a4f3aac",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6246,7 +6288,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "fb983bd",
+    "build": "a4f3aac",
     "title": "Command-alias suggestions",
     "changes": [
       {

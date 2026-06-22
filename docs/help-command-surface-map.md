@@ -23,8 +23,8 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 39 of the 53 loaded extensions (`config.INITIAL_EXTENSIONS`) define
-  `build_help_menu_view` — equivalently, 39 of the 40 subsystem-owning
+- 40 of the 54 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+  `build_help_menu_view` — equivalently, 40 of the 41 subsystem-owning
   cogs expose it. The 14 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
@@ -86,8 +86,8 @@ so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 
 ## 2. Subsystem inventory
 
-40 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 53 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+41 registered subsystems in `utils/subsystem_registry.py` (one row
+each below); 54 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 14 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
@@ -102,6 +102,7 @@ falls back to the command-list embed when the hook is missing or raises.
 | `image_moderation` | `image_moderation_cog.py` | `imagemod` | — | `HubView` | `!help image_moderation` → image-mod policy summary (shared resolver) | reached via Moderation; `parent_hub="moderation"` (Q-0108) | hub child (Moderation) — declared; config via `!settings` → Image moderation |
 | `btd6` | `btd6_cog.py` | `btd6`, `btd6menu`, `btd6 ask`, `btd6 tower`, `btd6 hero`, `btd6 round`, `btd6 relic`, `btd6 ct`, `btd6 leaderboard`, `btd6 live`, `btd6 event`, `btd6 status`, `btd6 diagnostics`, `btd6 test-intent` | — | `BTD6PanelView` | `!help btd6` → opens BTD6 panel (shared resolver) | dropdown BTD6 → panel | hub top-level (BTD6 Assistant) |
 | `blackjack` | `blackjack_cog.py:95` | `blackjack`, `bj`, `bjtournament`, `bjstart`, `bjstatus` | — | `BlackjackPanelView` | `!help blackjack` → opens Blackjack panel (shared resolver) | reached via Games | hub child (Games) |
+| `casino` | `casino_cog.py` | `casino`, `poker`, `holdem` | — | `CasinoHubView` | `!help casino` → opens Casino hub (shared resolver) | reached via Games | hub child (Games) |
 | `chain` | `chain_cog.py` | `chain`, `chainmenu` | — | `_ChainMenuView` | `!help chain` → opens Chain panel (shared resolver) | reached via Games / Community | hub child |
 | `channel` | `channel_cog.py:144` | `lock`, `unlock` | several `*_channel`-family commands | `_ChannelManagerView` | `!help channel` → opens Channel panel (shared resolver) | reached via Admin | hub child (Admin) |
 | `cleanup` | `cleanup_cog.py:324` | `cleanuphistory`, `word`, `wordmenu`, `cleanup` | — | `CleanupPanelView` | `!help cleanup` → opens Cleanup panel (shared resolver) | reached via Moderation; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |

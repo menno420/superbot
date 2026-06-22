@@ -104,27 +104,27 @@ five split BTD6 cogs (`btd6_reference_cog`, `btd6_events_cog`,
 the single `btd6` subsystem. (Counts re-verified against source 2026-06-21;
 `starboard_cog` added 2026-06-21.)
 
-Cogs (50): `admin_cog`, `ai_cog`, `automod_cog`, `blackjack_cog`,
+Cogs (53): `admin_cog`, `ai_cog`, `automod_cog`, `blackjack_cog`, `casino_cog`,
 `bootstrap_access_cog`, `btd6_cog`, `btd6_events_cog`, `btd6_ops_cog`,
 `btd6_reference_cog`, `btd6_strategy_cog`, `chain_cog`, `channel_cog`,
 `cleanup_cog`, `community_cog`, `community_spotlight_cog`, `counters_cog`,
 `counting_cog`, `creature_battle_cog`, `creature_cog`, `deathmatch_cog`,
 `diagnostic_cog`, `economy_cog`, `fishing_cog`, `four_twenty_cog`,
 `games_cog`, `general_cog`, `health_maintenance_cog`, `help_cog`,
-`hermes_cog`, `image_moderation_cog`, `inventory_cog`, `leaderboard_cog`,
+`hermes_cog`, `image_moderation_cog`, `inventory_cog`, `karma_cog`, `leaderboard_cog`,
 `logging_cog`, `media_maintenance_cog`, `mining_cog`, `moderation_cog`,
 `paragon_cog`, `proof_channel_cog`, `role_cog`, `role_grants_cog`,
 `rps_tournament_cog`, `security_cog`, `server_management_cog`, `settings_cog`,
-`setup_cog`, `starboard_cog`, `utility_cog`, `ux_lab_cog`, `welcome_cog`,
-`xp_cog`.
+`setup_cog`, `starboard_cog`, `treasury_cog`, `utility_cog`, `ux_lab_cog`,
+`welcome_cog`, `xp_cog`.
 
-Subsystems (37): `admin`, `ai`, `automod`, `blackjack`, `btd6`, `chain`,
+Subsystems (40): `admin`, `ai`, `automod`, `blackjack`, `casino`, `btd6`, `chain`,
 `channel`, `cleanup`, `community`, `community_spotlight`, `counters`,
 `counting`, `creature`, `deathmatch`, `diagnostic`, `economy`, `fishing`,
 `four_twenty`, `games`, `general`, `help`, `image_moderation`, `inventory`,
-`leaderboard`, `logging`, `mining`, `moderation`, `proof_channel`, `role`,
-`rps_tournament`, `security`, `server_management`, `settings`, `utility`,
-`ux_lab`, `welcome`, `xp`.
+`karma`, `leaderboard`, `logging`, `mining`, `moderation`, `proof_channel`, `role`,
+`rps_tournament`, `security`, `server_management`, `settings`, `treasury`,
+`utility`, `ux_lab`, `welcome`, `xp`.
 
 ## Per-cog inventory
 
@@ -1181,6 +1181,38 @@ deliberately absent — no external calls, no PII stored.
 21. **target_help_or_menu_route**: Help direct-nav.
 22. **provisionable_resources**: none.
 23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+### casino
+
+1. **cog_module**: `disbot/cogs/casino_cog.py` (+ `disbot/views/casino/`,
+   `disbot/utils/cards/`, `disbot/utils/poker/`).
+2. **subsystem**: `casino`
+3. **current_commands**: `!casino`, `!poker`/`!holdem`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: Casino hub + multiplayer poker table.
+6. **help_menu_discoverable**: Yes (Games-hub child).
+7. **dedicated_panel_command**: `!casino`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (Casino hub).
+9. **existing_SettingSpec_declarations**: none (v1 play-chips; tuning is module
+   constants in `disbot/views/casino/poker_table.py`).
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `casino.game.play`.
+14. **hardcoded_or_env_only_behavior**: start stack, blinds, seat cap, turn
+    timeout (play-chip constants).
+15. **missing_customization_commands**: blinds/buy-in editor (gated on real-coin
+    buy-in — N-party escrow follow-up).
+16. **missing_settings_pages**: Settings Manager casino page (future).
+17. **missing_menu_buttons_selects_modals**: custom raise-amount modal.
+18. **setting_class_per_value**: blinds/stack → scalar.
+19. **target_Settings_Manager_page**: `!settings subsystem casino` (future).
+20. **target_mutation_path**: `SettingsMutationPipeline`.
+21. **target_help_or_menu_route**: Games hub → Casino.
+22. **provisionable_resources**: none.
+23. **priority**: `P3`.
 24. **recommended_PR_phase**: post-S11.
 
 ### deathmatch

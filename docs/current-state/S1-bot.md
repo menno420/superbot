@@ -20,6 +20,10 @@
 - **Starboard / Hall-of-Fame** — plan #1254 → PR 1 #1259 → PR 2 #1270.
 - **Fishing minigame** — cast/reel loop + rod ladder + energy (#1296–#1304); **Bait layer** (the
   second economy knob — coin-bought rarity consumable, migration 091, `!bait` + shop panel, #1329).
+- **Casino — multiplayer poker** (PR #1333) — a new Games-hub child for **group** card games with
+  **per-player auto-updating ephemeral** hands; v1 = Texas Hold'em (play-chips). Pure `utils/cards/`
+  + `utils/poker/` (eval + engine w/ side pots, fully tested) + the `views/casino/` ephemeral
+  broadcast table. [design](../planning/casino-poker-design-2026-06-22.md).
 
 **▶ Next startable (one of):**
 - **Fishing follow-ups** (turn-key, on the just-shipped bait seam) — the bait **speed knob**
