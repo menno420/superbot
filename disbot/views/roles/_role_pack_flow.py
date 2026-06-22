@@ -221,8 +221,9 @@ class _CustomBulkModal(discord.ui.Modal, title="Bulk-create custom roles"):  # t
             return
         await interaction.response.send_message(
             content=(
-                f"Creating **{len(names)}** role(s): {', '.join(names)[:1500]}\n\n"
-                "Pick a colour for them (optional), or **Create with no colour**:"
+                f"Creating **{len(names)}** role(s): {', '.join(names)[:1400]}\n\n"
+                "Pick **one colour for them all**, **🎨 Per-role colours** to choose "
+                "each one, or **Create with no colour**:"
             ),
             view=_BulkColourView(self.flow, names),
             ephemeral=True,
@@ -262,6 +263,26 @@ class _BulkColourView(BaseView):
         self.add_item(_ColourPresetSelect(self))
 
     @discord.ui.button(
+        label="🎨 Per-role colours",
+        style=discord.ButtonStyle.blurple,
+        row=1,
+    )
+    async def per_role_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Walk each name with its own colour picker (the emote→role-walk method)."""
+        if not _can_manage(interaction):
+            await interaction.response.send_message(
+                "You need the **Manage Roles** permission to do that.",
+                ephemeral=True,
+            )
+            return
+        walker = _PerRoleColourView(self.flow, self.names)
+        await interaction.response.edit_message(content=walker.prompt(), view=walker)
+
+    @discord.ui.button(
         label="Create with no colour",
         style=discord.ButtonStyle.grey,
         row=1,
@@ -293,6 +314,91 @@ async def _commit_custom_roles(
         specs,
         reason="Bulk role creation (custom)",
     )
+
+
+# ---------------------------------------------------------------------------
+# Per-role colour walk — one colour picker per name (the emote→role-walk method)
+# ---------------------------------------------------------------------------
+
+
+class _PerRoleColourSelect(discord.ui.Select):
+    """One step of the walk: pick the current role's colour (or no colour)."""
+
+    def __init__(self, walker: _PerRoleColourView) -> None:
+        self._walker = walker
+        super().__init__(
+            placeholder=f"Colour for {walker.current_name}…"[:150],
+            row=0,
+            max_values=1,
+            options=[
+                discord.SelectOption(label="⬜ No colour (default)", value=""),
+                *(
+                    discord.SelectOption(label=label, value=hex_value)
+                    for label, hex_value in _COLOR_OPTIONS
+                ),
+            ],
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await self._walker._on_pick(interaction, self.values[0])
+
+
+class _PerRoleColourView(BaseView):
+    """Walk each custom name, picking its own colour — mirrors ``_BindEmotesView``.
+
+    The reaction-role flow walks each emote with its own role picker; this walks
+    each role name with its own colour picker, then bulk-creates them all with
+    their chosen colours through the shared :func:`_create_roles` seam.
+    """
+
+    def __init__(self, flow: RolePackView, names: list[str]) -> None:
+        super().__init__(flow._author, timeout=300)
+        self.flow = flow
+        self.names = names
+        self.index = 0
+        self.specs: list[tuple[str, discord.Color, bool]] = []
+        self._attach()
+
+    @property
+    def current_name(self) -> str:
+        return self.names[self.index]
+
+    def prompt(self) -> str:
+        return (
+            f"Pick a colour for **{self.current_name}** "
+            f"({self.index + 1}/{len(self.names)}):"
+        )
+
+    def _attach(self) -> None:
+        self.clear_items()
+        self.add_item(_PerRoleColourSelect(self))
+
+    async def _on_pick(self, interaction: discord.Interaction, hex_value: str) -> None:
+        if self.index >= len(self.names):  # pragma: no cover - guards a stale click
+            await safe_defer(interaction)
+            return
+        color = discord.Color.default()
+        if hex_value:
+            try:
+                color = _parse_color(hex_value)
+            except (ValueError, OverflowError):  # pragma: no cover - constant data
+                color = discord.Color.default()
+        self.specs.append((self.current_name, color, False))
+        self.index += 1
+        if self.index < len(self.names):
+            self._attach()
+            await interaction.response.edit_message(content=self.prompt(), view=self)
+            return
+        # All colours chosen — clear the picker, then create through the shared seam
+        # (safe_defer is a no-op once the response is done, so followup still works).
+        await interaction.response.edit_message(content="🎨 Creating roles…", view=None)
+        self.stop()
+        await _create_roles(
+            interaction,
+            self.flow,
+            self.specs,
+            reason="Bulk role creation (custom, per-role colour)",
+        )
 
 
 # ---------------------------------------------------------------------------

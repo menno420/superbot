@@ -33,6 +33,33 @@ def _parent() -> MagicMock:
 
 
 @pytest.mark.asyncio
+async def test_management_list_renders_role_mentions_for_colour():
+    """The role list renders each role as a mention (Discord colours it), not as
+    plain bold text — matching the reaction-role panel (owner ask, 2026-06-22).
+    """
+    from views.roles.management_panel import ManagementPanel
+
+    red = SimpleNamespace(id=10, name="Red", mention="<@&10>")
+    blue = SimpleNamespace(id=20, name="Blue", mention="<@&20>")
+    everyone = SimpleNamespace(id=1, name="@everyone", mention="@everyone")
+    member = SimpleNamespace(roles=[red])
+    guild = SimpleNamespace(
+        roles=[everyone, red, blue],
+        default_role=everyone,
+        members=[member],
+    )
+    ctx = SimpleNamespace(author=SimpleNamespace(id=7), guild=guild)
+
+    embed = await ManagementPanel(ctx).build_embed()
+    desc = embed.description
+
+    assert "<@&10> — 1 members" in desc
+    assert "<@&20> — 0 members" in desc
+    assert "**Red**" not in desc  # no longer plain bold names
+    assert "@everyone" not in desc  # default role excluded
+
+
+@pytest.mark.asyncio
 async def test_edit_role_modal_edits_the_picked_role_by_id():
     """The Edit modal acts on the already-picked role (id-first) and routes the
     change through the audited RoleLifecycleService, then re-renders the panel.
