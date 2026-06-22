@@ -58,6 +58,14 @@ class SampleCog(commands.Cog):
     async def grp_sub(self, ctx):
         """A subcommand."""
 
+    # Slash group declared as a class *attribute* (not a decorated method) — the
+    # very common discord.py form that the decorator-only scan missed (BUG-0023).
+    appgrp = app_commands.Group(name="ag", description="An app-command group.")
+
+    @appgrp.command(name="agsub", description="An app-group subcommand.")
+    async def appgrp_sub(self, interaction):
+        """App-group subcommand."""
+
 
 class SampleMixin:
     """A command-bearing mixin — not a real Cog."""
@@ -102,6 +110,38 @@ def test_scan_commands_types_aliases_and_buttons(mod, tmp_path):
     assert by_name["panelcmd"]["button_backed"] is True
     assert by_name["opensview"]["button_backed"] is True
     assert by_name["sub"]["parent"] == "grp"
+
+
+def test_attribute_assigned_app_command_group_is_scanned(mod, tmp_path):
+    """A slash group declared as a class attribute + its subcommands are scanned.
+
+    Regression for BUG-0023 (slash under-coverage): before the fix, an
+    ``app_commands.Group`` assigned to a class attribute and its ``@<attr>.command``
+    subcommands were invisible to the scanner — it only detected decorated-method
+    groups. Both the group record and the subcommand must now appear, typed slash.
+    """
+    by_cog = {c["cog"]: c for c in mod.scan_commands(_write_repo(tmp_path))}
+    by_name = {c["name"]: c for c in by_cog["SampleCog"]["commands"]}
+    # the group itself, counted like a decorated-method group
+    assert by_name["ag"]["type"] == "slash"
+    assert by_name["ag"]["is_group"] is True
+    assert by_name["ag"]["parent"] is None
+    # its subcommand, slash-typed and parented to the group
+    assert by_name["agsub"]["type"] == "slash"
+    assert by_name["agsub"]["parent"] == "ag"
+
+
+def test_attribute_app_group_subcommands_counted_in_real_repo(mod):
+    """The real repo's attribute-assigned slash groups now reconcile to the bot tree.
+
+    The 6 cogs declaring ``app_commands.Group`` as a class attribute (ai / the five
+    btd6 cogs) contribute their groups + subcommands, so the scanner's slash total
+    matches the live ``bot.tree.walk_commands()`` count instead of under-reporting.
+    """
+    summary = mod.summarise(mod.scan_commands())
+    # by_type counts every command of a type (groups + subcommands + standalone);
+    # this is the metric that aligns with the bot's slash count (BUG-0023).
+    assert summary["by_type"]["slash"] >= 70
 
 
 def test_cog_to_subsystem_is_acronym_aware(mod):
