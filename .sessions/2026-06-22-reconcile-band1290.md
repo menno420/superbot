@@ -1,7 +1,6 @@
 # Session — 2026-06-22 · band-#1290 Q-0107 docs reconciliation
 
-> **Status:** `in-progress` — born-red; the docs-reconciliation routine fired by `reconcile` issue #1292.
-> Flipped to `complete` as the deliberate final step.
+> **Status:** `complete` — the docs-reconciliation routine fired by `reconcile` issue #1292.
 
 **Run type:** routine · reconciliation. **Branch:** `claude/reconcile-1290`. **Trigger:** issue #1292
 (authored by `menno420` → ROUTINE_PAT set, loop self-fires).
