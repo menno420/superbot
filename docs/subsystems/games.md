@@ -202,6 +202,12 @@ on **Q-0182**.
   "Mine here".
 - [games-economy-faucet-sink-diagnostic-plan](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) —
   read-only economy faucet/sink read model (turn-key).
+- [mining-economy-balance-2026-06-22](../planning/mining-economy-balance-2026-06-22.md) — **sim-pinned
+  rebalance numbers** for the live grid-Mine faucet (owner: "rewards too large & too frequent"). The
+  simulator (`tools/game_sim/mining_economy_sim.py`) quantifies the live faucet at ~7–55× a `!daily`/hr
+  and recommends a config (frequency brake + smaller base roll + flatter tool curve + 12% bonanza) that
+  lands every player at ~1–3 dailies/active-hr. Design record — owner approves + picks the frequency
+  mechanic (energy vs cooldown) before any runtime edit.
 - *Shipped → `historical`:* [mining-structures-skill-tree-plan](../planning/mining-structures-skill-tree-plan-2026-06-14.md)
   (every slice landed) · [games-wager-money-safety-plan](../planning/games-wager-money-safety-plan-2026-06-12.md) (#748).
 
