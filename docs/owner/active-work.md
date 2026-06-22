@@ -41,6 +41,11 @@ and `claude/funny-franklin-mjvqrx` (PR #1272) — all pruned here. Merged work l
 
 ## Recently cleared
 
+- `claude/sweet-sagan-jeyjsy` · **mining economy/balance simulation** (owner-directed, in-chat —
+  "run a simulation to find a balanced way to configure the mining game") — stdlib Monte-Carlo design
+  sim quantifying the live faucet (7–55× a `!daily`/hr) + a 144-config sweep for a balanced config ·
+  `tools/game_sim/mining_economy_sim.py` + test + `docs/planning/mining-economy-balance-2026-06-22.md` ·
+  2026-06-22 · **PR #1284 (auto-merge on green)**
 - `claude/upbeat-clarke-73fm43` · **mining grid: dig-moves-you** (owner design correction, in-chat) —
   unified movement + Mine-here into one directional `dig(direction)` (each dig moves you one cell and
   mines it) · `mining_workflow.dig` + `grid_mine_view` six dig buttons · 2026-06-22 ·
