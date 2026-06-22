@@ -89,11 +89,57 @@ def test_build_menu_embed_uses_theme_colour():
     assert "<@&10>" in roles_field.value
 
 
+def test_build_menu_message_without_card_has_no_files_or_image():
+    guild = FakeGuild([FakeRole(10, "Gamer")])
+    embed, files = rmv.build_menu_message(_menu(), _opts(), guild)
+    assert files == []
+    assert embed.image.url is None  # no attachment referenced
+
+
+def test_render_menu_card_none_when_no_template():
+    assert rmv.render_menu_card(_menu()) is None
+
+
+def test_render_menu_card_none_for_unknown_template():
+    menu = _menu()
+    menu["card_template"] = "bogus"
+    assert rmv.render_menu_card(menu) is None
+
+
+def test_build_menu_message_with_card_attaches_file_and_sets_image():
+    pytest.importorskip("PIL")
+    guild = FakeGuild([FakeRole(10, "Gamer")])
+    menu = _menu()
+    menu["card_template"] = "banner"
+    menu["card_text"] = "Choose below"
+    embed, files = rmv.build_menu_message(menu, _opts(), guild)
+    assert len(files) == 1
+    assert files[0].filename == rmv._CARD_FILENAME
+    assert embed.image.url == f"attachment://{rmv._CARD_FILENAME}"
+
+
+def test_render_menu_card_degrades_to_none_without_pillow(monkeypatch):
+    import builtins
+
+    real_import = builtins.__import__
+
+    def _fail_pil(name, *args, **kwargs):
+        if name.startswith("PIL"):
+            raise ImportError("no pillow")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _fail_pil)
+    menu = _menu()
+    menu["card_template"] = "banner"
+    assert rmv.render_menu_card(menu) is None
+
+
 def test_view_is_persistent_but_not_in_anchor_registry():
     """A role menu is a public data-driven message re-bound by reattach_role_menus,
     not a per-user anchor panel — so it is intentionally NOT register()'d (which
     would collide with RoleHubPanelView's SUBSYSTEM='role' and trip the
-    identity-contract SUBSYSTEMS parity check)."""
+    identity-contract SUBSYSTEMS parity check).
+    """
     from core.runtime import persistent_views
 
     assert issubclass(rmv.RoleMenuView, persistent_views.PersistentView)
@@ -109,7 +155,8 @@ async def test_reattach_binds_each_posted_menu():
     menus = [_menu()]
     options = [
         __import__(
-            "services.reaction_role_service", fromlist=["RoleOption"],
+            "services.reaction_role_service",
+            fromlist=["RoleOption"],
         ).RoleOption(10),
     ]
     with (

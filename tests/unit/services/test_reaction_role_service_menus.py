@@ -81,7 +81,10 @@ async def test_toggle_adds_role_when_absent():
     p1, p2 = _patch_menu(_menu("normal"), [10, 20])
     with p1, p2:
         out = await svc.toggle_role(
-            menu_id=1, member=member, guild=guild, clicked_role_id=10
+            menu_id=1,
+            member=member,
+            guild=guild,
+            clicked_role_id=10,
         )
     assert out.added == (10,)
     assert out.removed == ()
@@ -96,7 +99,10 @@ async def test_toggle_removes_role_when_held():
     p1, p2 = _patch_menu(_menu("normal"), [10, 20])
     with p1, p2:
         out = await svc.toggle_role(
-            menu_id=1, member=member, guild=guild, clicked_role_id=10
+            menu_id=1,
+            member=member,
+            guild=guild,
+            clicked_role_id=10,
         )
     assert out.removed == (10,)
     assert out.added == ()
@@ -111,7 +117,10 @@ async def test_toggle_unique_clears_sibling():
     p1, p2 = _patch_menu(_menu("unique"), [10, 20])
     with p1, p2:
         out = await svc.toggle_role(
-            menu_id=1, member=member, guild=guild, clicked_role_id=20
+            menu_id=1,
+            member=member,
+            guild=guild,
+            clicked_role_id=20,
         )
     assert out.added == (20,)
     assert out.removed == (10,)  # sibling cleared
@@ -125,7 +134,10 @@ async def test_toggle_verify_never_removes():
     p1, p2 = _patch_menu(_menu("verify"), [10])
     with p1, p2:
         out = await svc.toggle_role(
-            menu_id=1, member=member, guild=guild, clicked_role_id=10
+            menu_id=1,
+            member=member,
+            guild=guild,
+            clicked_role_id=10,
         )
     assert out.added == ()
     assert out.removed == ()
@@ -141,7 +153,10 @@ async def test_toggle_max_roles_blocks_extra_pick():
     p1, p2 = _patch_menu(_menu("normal", max_roles=1), [10, 20])
     with p1, p2:
         out = await svc.toggle_role(
-            menu_id=1, member=member, guild=guild, clicked_role_id=20
+            menu_id=1,
+            member=member,
+            guild=guild,
+            clicked_role_id=20,
         )
     assert out.added == ()
     assert out.blocked == (20,)
@@ -155,7 +170,10 @@ async def test_toggle_unknown_role_is_rejected():
     p1, p2 = _patch_menu(_menu("normal"), [10])
     with p1, p2:
         out = await svc.toggle_role(
-            menu_id=1, member=member, guild=guild, clicked_role_id=999
+            menu_id=1,
+            member=member,
+            guild=guild,
+            clicked_role_id=999,
         )
     assert not out.changed
     member.add_roles.assert_not_awaited()
@@ -174,7 +192,10 @@ async def test_apply_selection_reconciles_add_and_remove():
     p1, p2 = _patch_menu(_menu("normal"), [10, 20, 30])
     with p1, p2:
         out = await svc.apply_selection(
-            menu_id=1, member=member, guild=guild, selected_ids=[20, 30]
+            menu_id=1,
+            member=member,
+            guild=guild,
+            selected_ids=[20, 30],
         )
     assert set(out.added) == {20, 30}
     assert out.removed == (10,)  # A deselected
@@ -188,7 +209,10 @@ async def test_apply_selection_verify_only_adds():
     p1, p2 = _patch_menu(_menu("verify"), [10, 20])
     with p1, p2:
         out = await svc.apply_selection(
-            menu_id=1, member=member, guild=guild, selected_ids=[20]
+            menu_id=1,
+            member=member,
+            guild=guild,
+            selected_ids=[20],
         )
     assert out.added == (20,)
     assert out.removed == ()  # verify never removes the held role
@@ -202,7 +226,10 @@ async def test_apply_selection_unique_keeps_one():
     p1, p2 = _patch_menu(_menu("unique"), [10, 20])
     with p1, p2:
         out = await svc.apply_selection(
-            menu_id=1, member=member, guild=guild, selected_ids=[10, 20]
+            menu_id=1,
+            member=member,
+            guild=guild,
+            selected_ids=[10, 20],
         )
     # Unique caps the desired set to one role.
     assert len(out.added) == 1
@@ -217,7 +244,9 @@ async def test_apply_selection_unique_keeps_one():
 async def test_create_menu_emits_audit_and_validates():
     with (
         patch.object(
-            svc.menus_db, "create_menu", new=AsyncMock(return_value=7)
+            svc.menus_db,
+            "create_menu",
+            new=AsyncMock(return_value=7),
         ) as create,
         patch.object(svc.menus_db, "replace_options", new=AsyncMock()) as setopts,
         patch(
@@ -252,6 +281,93 @@ async def test_create_menu_emits_audit_and_validates():
 
 
 @pytest.mark.asyncio
+async def test_create_menu_threads_card_fields_to_db():
+    """Banner-card fields (PR 6, §4.6d) pass through create → db, blanks → None."""
+    with (
+        patch.object(
+            svc.menus_db,
+            "create_menu",
+            new=AsyncMock(return_value=8),
+        ) as create,
+        patch.object(svc.menus_db, "replace_options", new=AsyncMock()),
+        patch(
+            "services.audit_events.emit_audit_action",
+            new=AsyncMock(return_value=True),
+        ),
+    ):
+        await svc.create_menu(
+            guild_id=1,
+            channel_id=2,
+            title="Roles",
+            description=None,
+            style="dropdown",
+            mode="normal",
+            max_roles=0,
+            options=[svc.RoleOption(10)],
+            card_template="banner",
+            card_text="Choose below",
+            actor_id=99,
+        )
+        await svc.create_menu(
+            guild_id=1,
+            channel_id=2,
+            title="Roles",
+            description=None,
+            style="dropdown",
+            mode="normal",
+            max_roles=0,
+            options=[svc.RoleOption(10)],
+            card_template="",  # blank coerced to None (no card)
+            card_text="",
+            actor_id=99,
+        )
+    assert create.await_args_list[0].kwargs["card_template"] == "banner"
+    assert create.await_args_list[0].kwargs["card_text"] == "Choose below"
+    assert create.await_args_list[1].kwargs["card_template"] is None
+    assert create.await_args_list[1].kwargs["card_text"] is None
+
+
+@pytest.mark.asyncio
+async def test_update_menu_threads_card_fields_to_db():
+    with (
+        patch.object(
+            svc.menus_db,
+            "get_menu",
+            new=AsyncMock(
+                return_value={
+                    "title": "T",
+                    "style": "dropdown",
+                    "mode": "normal",
+                    "max_roles": 0,
+                },
+            ),
+        ),
+        patch.object(svc.menus_db, "get_options", new=AsyncMock(return_value=[])),
+        patch.object(svc.menus_db, "update_menu", new=AsyncMock()) as update,
+        patch.object(svc.menus_db, "replace_options", new=AsyncMock()),
+        patch(
+            "services.audit_events.emit_audit_action",
+            new=AsyncMock(return_value=True),
+        ),
+    ):
+        await svc.update_menu(
+            menu_id=5,
+            guild_id=1,
+            title="Roles",
+            description=None,
+            style="dropdown",
+            mode="normal",
+            max_roles=0,
+            options=[svc.RoleOption(10)],
+            card_template="gradient",
+            card_text=None,
+            actor_id=99,
+        )
+    assert update.await_args.kwargs["card_template"] == "gradient"
+    assert update.await_args.kwargs["card_text"] is None
+
+
+@pytest.mark.asyncio
 async def test_delete_menu_emits_audit():
     with (
         patch.object(
@@ -279,9 +395,7 @@ async def test_toggle_does_not_emit_audit():
     member = FakeMember(roles=[])
     p1, p2 = _patch_menu(_menu("normal"), [10])
     with p1, p2, patch("services.audit_events.emit_audit_action") as audit:
-        await svc.toggle_role(
-            menu_id=1, member=member, guild=guild, clicked_role_id=10
-        )
+        await svc.toggle_role(menu_id=1, member=member, guild=guild, clicked_role_id=10)
     audit.assert_not_called()
 
 
@@ -309,9 +423,13 @@ _TERTIARY = object()
 
 
 def test_supports_role_gradients_matches_feature_variants():
-    assert svc.supports_role_gradients(SimpleNamespace(features=["ENHANCED_ROLE_COLORS"]))
+    assert svc.supports_role_gradients(
+        SimpleNamespace(features=["ENHANCED_ROLE_COLORS"]),
+    )
     # Defensive substring match survives a rollout rename.
-    assert svc.supports_role_gradients(SimpleNamespace(features=["GUILD_ROLE_COLOURS_X"]))
+    assert svc.supports_role_gradients(
+        SimpleNamespace(features=["GUILD_ROLE_COLOURS_X"]),
+    )
     assert not svc.supports_role_gradients(SimpleNamespace(features=["COMMUNITY"]))
     assert not svc.supports_role_gradients(SimpleNamespace(features=[]))
 

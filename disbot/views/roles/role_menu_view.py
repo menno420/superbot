@@ -18,6 +18,7 @@ thin UI over that seam (no DB writes, no role math here).
 
 from __future__ import annotations
 
+import io
 import logging
 
 import discord
@@ -26,6 +27,7 @@ from discord.ext import commands
 from core.runtime import resources
 from core.runtime.persistent_views import PersistentView
 from utils import role_menu_presentation as presentation
+from utils import role_menu_render
 from views.base import handle_view_error
 
 logger = logging.getLogger("bot.views.role_menu")
@@ -33,6 +35,10 @@ logger = logging.getLogger("bot.views.role_menu")
 # Discord caps a select at 25 options and a view at 25 components (5×5 buttons),
 # so a menu offers at most this many roles (the builder enforces it too).
 MAX_MENU_ROLES = 25
+
+# The attachment filename a banner card is sent under (the embed image references
+# ``attachment://`` this name); kept stable so an edit replaces the same slot.
+_CARD_FILENAME = "role_menu_card.png"
 
 
 def build_menu_embed(
@@ -76,6 +82,45 @@ def build_menu_embed(
         hint = f"You can hold up to {max_roles} of these roles."
     embed.set_footer(text=hint or theme.footer or "Pick the roles you want.")
     return embed
+
+
+def render_menu_card(menu: dict) -> bytes | None:
+    """Render a menu's optional banner card → PNG bytes, or ``None`` (no card / no PIL).
+
+    Returns ``None`` when the menu carries no ``card_template``, the template key is
+    unknown, or Pillow is unavailable — so every caller degrades to embed-only. The
+    card's accent is the menu theme's colour so the banner matches the embed.
+    """
+    card = presentation.get_card_template(menu.get("card_template"))
+    if card is None:
+        return None
+    theme = presentation.get_theme(menu.get("theme"))
+    return role_menu_render.render_role_menu_card(
+        style=card.style,
+        title=menu.get("title") or "Pick your roles",
+        overlay=(menu.get("card_text") or None),
+        accent=theme.color.to_rgb(),
+    )
+
+
+def build_menu_message(
+    menu: dict,
+    options: list[dict],
+    guild: discord.Guild,
+) -> tuple[discord.Embed, list[discord.File]]:
+    """Compose a menu's message body: the themed embed + an optional banner card.
+
+    When the menu has a banner card (and Pillow is available) the embed's image is
+    set to the attached card; otherwise the file list is empty and the embed is
+    image-free. Callers send with ``files=`` (post/repost) or edit with
+    ``attachments=`` (edit-in-place) — passing ``[]`` removes a prior card cleanly.
+    """
+    embed = build_menu_embed(menu, options, guild)
+    card_bytes = render_menu_card(menu)
+    if card_bytes is None:
+        return embed, []
+    embed.set_image(url=f"attachment://{_CARD_FILENAME}")
+    return embed, [discord.File(io.BytesIO(card_bytes), filename=_CARD_FILENAME)]
 
 
 def _select_bounds(mode: str, max_roles: int, option_count: int) -> tuple[int, int]:
@@ -361,6 +406,8 @@ __all__ = [
     "MAX_MENU_ROLES",
     "RoleMenuView",
     "build_menu_embed",
+    "build_menu_message",
     "reattach_role_menus",
+    "render_menu_card",
     "reset_reattach_state",
 ]
