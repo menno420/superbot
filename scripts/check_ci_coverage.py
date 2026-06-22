@@ -37,7 +37,7 @@ from datetime import datetime, timezone
 REQUIRED_CHECK = "code-quality"
 GRACE_MIN = 8  # don't re-kick a head younger than this (run may not be registered yet)
 MAX_REKICKS = 5  # per invocation, defensive cap
-CARVE_OUT_LABELS = ("needs-hermes-review", "do-not-automerge")
+CARVE_OUT_LABELS = ("do-not-automerge",)
 
 
 # --------------------------------------------------------------------------- #

@@ -27,7 +27,7 @@ session N leaves session N+1 better-equipped.
 
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
-| **superbot dispatch** — the single execution routine | **console Schedule** (every ~2–3h, `0 */2 * * *`, owner-tuned, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice (or promote an idea→plan→build when the backlog is thin, Q-0172); a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | small → self-merge (Q-0113); substantial step → Hermes reviews + merges (Q-0117); *self-invented* feature → build + ship, flag ⚑ Self-initiated (Q-0172; phase gate now advisory) |
+| **superbot dispatch** — the single execution routine | **console Schedule** (every ~2–3h, `0 */2 * * *`, owner-tuned, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice (or promote an idea→plan→build when the backlog is thin, Q-0172); a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | every PR self-merges on green CI (Q-0113/Q-0123; the Q-0117 hermes-review gate retired by Q-0197); *self-invented* feature → build + ship, flag ⚑ Self-initiated (Q-0172; phase gate now advisory) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, **promote an idea→plan when plans run low** (Q-0144), contribute one idea. | `docs` → self-merge on green |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
@@ -257,17 +257,17 @@ issue is still a valid human-filed handoff signal a dispatch run reads on its ne
 
 ---
 
-## The three issue/PR labels (the routine signals)
+## The two issue labels (the routine signals)
 
 | Label | Opened by | Fires | Effect |
 |---|---|---|---|
 | `reconcile` | the cadence Action (every 30-PR band) **or** any agent/maintainer who spots docs drift | docs reconciliation routine | the Q-0107 docs-only pass; routine closes the issue |
 | `continue` | a maintainer filing a handoff (the dispatch routine itself no longer opens them — it hands off via ▶ Next action) | dispatch (fired by the console Schedule) reads it on its next fire | resume the explicit handoff; chain again if still unfinished |
-| `needs-hermes-review` | the **dispatch** routine on a substantial plan-step PR | (a PR label, not an issue) — **Hermes** `superbot-review-merge` | Hermes reviews the diff and **merges if sound**, else requests changes (Q-0117) |
 
-This is the self-driving loop in three signals: reconcile keeps the docs honest, continue
-chains big work across bounded runs, and needs-hermes-review puts a *different model* between
-the dispatch routine's big steps and `main`.
+This is the self-driving loop in two signals: reconcile keeps the docs honest, and continue
+chains big work across bounded runs. (The `needs-hermes-review` PR-review gate was retired
+2026-06-22, Q-0197 — every PR now auto-merges on green CI; `do-not-automerge` is the only
+remaining by-hand merge hold.)
 
 ## The `reconcile` issue — how to fire the docs pass by hand
 
@@ -307,7 +307,7 @@ behind branch without a merge queue). They split the two cases:
 
 | Workflow | Trigger | Does | Net effect |
 |---|---|---|---|
-| **`pr-auto-update.yml`** | `push: main` | brings open non-draft `claude/*` PRs that are **BEHIND** up to date (`update-branch`); carve-outs (`needs-hermes-review`/`do-not-automerge`) left alone; a real conflict fails the update and falls through to the guard | **behind = handled silently** → re-tests against current main → auto-merge fires |
+| **`pr-auto-update.yml`** | `push: main` | brings open non-draft `claude/*` PRs that are **BEHIND** up to date (`update-branch`); the `do-not-automerge` carve-out is left alone; a real conflict fails the update and falls through to the guard | **behind = handled silently** → re-tests against current main → auto-merge fires |
 | **`pr-conflict-guard.yml`** | `push: main` + schedule (sweep all PRs) · `pull_request` (that PR only) | posts a **red `conflict-guard` commit status** on any **DIRTY** PR, clears it on resolution (skips `UNKNOWN` to avoid flap). A PR's own push checks only itself; the all-PR sweep runs on `push: main`/schedule (when a PR can newly conflict) — keeps the noise off every PR | **conflict = loud red** → an agent / the maintainer sees it and resolves it |
 
 `push: main` is the load-bearing trigger for both: a conflict/behind state arises when *main moves*
@@ -364,5 +364,4 @@ branch" / the conflict banner remain available by hand.
 - `scripts/check_plan_homing.py` — asserts every live `plan` doc is linked from a routing doc (PR #1174); run `--strict` in the reconciliation pass after (re)planning.
 - `.github/workflows/reconciliation-trigger.yml` — opens the `reconcile` issue on the 30-PR boundary.
   *(The dispatch cadence is the console Schedule, `0 */2 * * *`, Q-0146 — `executor-nightly.yml` was removed 2026-06-15.)*
-- [`hermes-skills/review-merge.md`](./hermes-skills/review-merge.md) — Hermes' independent review + merge gate for `needs-hermes-review` PRs (Q-0117).
 - `docs/owner/ai-project-workflow.md` §10 (staging/continuation) · §12 (the loop).

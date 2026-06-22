@@ -18,10 +18,11 @@ name: auto-merge-enabler
 #      cadence. (Same GITHUB_TOKEN-author gotcha this repo hit with the routine issue triggers.)
 #
 # CARVE-OUTS (never auto-merge) — opt-out by label:
-#   * `needs-hermes-review` (Q-0117) — a substantial executor step; Hermes reviews + merges.
 #   * `do-not-automerge` — generic hold (agent-originated features Q-0114, or any PR a human
 #     wants to gate). Set this label AT PR-OPEN. v1 limitation: a label added AFTER open does
 #     not retroactively disable an already-enabled auto-merge.
+#   (The `needs-hermes-review` carve-out was retired 2026-06-22, Q-0197 — the label was unused
+#    and only got in the way of clean merges.)
 #
 # Provenance + reliability (Q-0105): added 2026-06-13. UNVERIFIED — watch the first few PRs to
 # confirm it enables auto-merge only on the right PRs and that merges attribute to the PAT
@@ -46,7 +47,6 @@ jobs:
       github.repository == 'menno420/superbot' &&
       github.event.pull_request.draft == false &&
       startsWith(github.head_ref, 'claude/') &&
-      !contains(github.event.pull_request.labels.*.name, 'needs-hermes-review') &&
       !contains(github.event.pull_request.labels.*.name, 'do-not-automerge')
     runs-on: ubuntu-latest
     steps:

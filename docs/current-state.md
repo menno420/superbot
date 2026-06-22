@@ -19,9 +19,10 @@
 > | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 21st Q-0107 pass done (band-#1320); next recon at #1350; **no PLAN-BACKLOG-THIN flag** |
 > | **S5 Operations** | [`current-state/S5-ops.md`](current-state/S5-ops.md) | merge=deploy clarity (Q-0193); loop self-fires; ▶ website rollout (owner/Hermes) |
 >
-> **Honest caveat (cross-sector, carried):** the *cleanly-ungated self-merge* subset is thinner than
-> the headline — most buildable depth is runtime / `needs-hermes-review`, so an empty *autonomous*
-> fire should prefer a substantial review-gated lane or promote a fresh idea → plan → build (Q-0172).
+> **Honest caveat (cross-sector, carried):** much buildable depth is substantial runtime work — but
+> every PR now auto-merges on green CI (the `needs-hermes-review` review gate was retired, Q-0197), so
+> an empty *autonomous* fire just builds the next substantial lane or promotes a fresh idea → plan →
+> build (Q-0172).
 > *(Trust the per-sector files + the Recently-shipped list below, never a lower "next ▶" in the
 > historical narrative.)*
 >

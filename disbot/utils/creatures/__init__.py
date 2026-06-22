@@ -7,7 +7,7 @@ Monte-Carlo battle sim before graduating here. v1 ships the **catch + collection
 half — wild encounters, a rarity-weighted catch roll, and a collection "dex";
 leveling reuses the shared ``game_xp`` track. The level-normalized PvP battle
 engine (:mod:`utils.creatures.battle`) is the foundation for the later
-``needs-hermes-review`` cog/views slice.
+substantial-runtime cog/views slice.
 
 stdlib-only, state-in/return-out, no Discord and no DB. The catalog
 (:mod:`utils.creatures.creature`), the encounter/catch roll

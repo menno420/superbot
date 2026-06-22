@@ -148,7 +148,7 @@ Hermes config/data paths shown during setup:
     override above the org-inherited cap.
 - **Recommended `config.yaml` for gpt-5.4-mini (verify key names against the installed version —
   Q-0105 unverified):** `agent.reasoning_effort: medium` (it **is** a reasoning model — never `none`,
-  which was only the gpt-4o-mini workaround; the review-merge role can go `high`).
+  which was only the gpt-4o-mini workaround; the review role can go `high`).
   `compression.threshold: 0.50` (the default) is fine now — on a 400K window that already leaves
   ~200K before compaction, so the old `apply_context_fixes.sh` 0.75 bump is **optional**, not
   required. `prompt_caching.cache_ttl: 1h` trims cost on long sessions. Pin
@@ -498,7 +498,7 @@ hermes gateway
   Methods: Hetzner snapshot · periodic `tar`.
 - **Discord automated reports (optional)** — the Discord **gateway is live** (you chat with Hermes
   there now); what's still optional is having it auto-*post* repo-health / CI / review summaries to a
-  private admin channel (the `repo-health` / `review-merge` skill blueprints can `deliver` there).
+  private admin channel (the `repo-health` skill blueprint can `deliver` there).
   Low priority.
 
 ### Done — items that were on this list (kept as a record)
@@ -512,9 +512,9 @@ hermes gateway
   **Schedule** trigger (every 2h, Q-0146); reconciliation auto-fires at the PR-band boundary. Hermes'
   own cron can still post read-only Telegram reports if wanted. See
   [`autonomous-routines.md`](./autonomous-routines.md).
-- **GitHub write access** ✅ (scoped) — Hermes may now author **PRs** (docs, bug reports, small
-  self-tooling — Q-0140/Q-0141) and **merge** a PR it independently reviewed (the review-merge gate,
-  Q-0117). It never pushes to `main` and never merges outside that gate; the exact boundary is the
+- **GitHub write access** ✅ (scoped) — Hermes may author **PRs** (docs, bug reports, small
+  self-tooling — Q-0140/Q-0141). It does **not** merge: the Q-0117 review-merge gate is retired
+  (Q-0197) — every PR auto-merges on green CI. It never pushes to `main`; the exact boundary is the
   operating prompt's "WHAT YOU MAY WRITE". (Supersedes the old "keep Hermes read-only only" note.)
 
 ### Autonomous-loop seams (built 2026-06-12; dispatch now wired)
@@ -528,9 +528,9 @@ Three repo-side seams keep Hermes safe while letting it review and dispatch (Q-0
   feature origination).
 - **`superbot-dispatch`** + [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — turns a
   work order into a Claude Code Routine `/fire` call. **Now wired** via the console **Schedule**
-  trigger (every ~2–3h, Q-0146) — no longer pending maintainer setup. Merge gate: self-merge on green
-  CI (Q-0113); a substantial step is labeled needs-hermes-review (Q-0117); self-initiated feature work
-  ships flagged on the run-report ⚑ Self-initiated line for review (Q-0172).
+  trigger (every ~2–3h, Q-0146) — no longer pending maintainer setup. Merge gate: every PR self-merges
+  on green CI (Q-0113/Q-0123; the Q-0117 hermes-review gate is retired by Q-0197); self-initiated
+  feature work ships flagged on the run-report ⚑ Self-initiated line for review (Q-0172).
 
 ### Read-only log triage — shipped
 

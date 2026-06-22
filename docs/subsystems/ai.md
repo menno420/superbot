@@ -100,7 +100,7 @@ scoped tools (including owner-gated diagnostics). Source:
 - **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — source-verified answerability/self-awareness bridge with BTD6 round cash as the first proof path. **Phase 1A/1B (round cash, #612) + Phase 2 (`services/ai_introspection_service.py`, the read-only composition read model) + Phase 3 (#639, Q-0047 — the three self-awareness tools `get_ai_tool_catalog` / `get_ai_policy_explanation` / `btd6_answerability`, audience-tiered at construction over the Phase 2 read model) shipped 2026-06-09.** `btd6_answerability` deliberately carries the btd6 grounding domain (and so the `btd6_*` name) — its counts/versions must join the faithfulness ledger or the number-guard would block its own replies. The remaining exposure lanes stay gated: any settings UI is Phase 4 (per-exposure ask + settings foundation), the generated dashboard Phase 5.
 - **`docs/planning/ai-panel-inplace-navigation-plan-2026-06-19.md`** (`plan`, 2–3 PRs) — migrate the
   `views/ai/` settings/panel family off per-click ephemeral messages onto the rest-of-bot in-place
-  **HubView** pattern (V-02) + centralize the seven scattered subpanels. **`needs-hermes-review` + wants a
+  **HubView** pattern (V-02) + centralize the seven scattered subpanels. **Substantial runtime + wants a
   live guild walk;** it is the blocker for graduating the consistency linter's `edit_in_place` rule (its
   17 remaining findings are exactly this family). Idea: `ideas/ai-panel-inplace-navigation-2026-06-11.md`.
 

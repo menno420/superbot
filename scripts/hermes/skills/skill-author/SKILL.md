@@ -32,7 +32,7 @@ STEP 2 — DESIGN. Decide:
     ("run the health check; if X dispatch a fix; else propose a continuation"), and REFERENCE
     the atoms rather than re-implementing them. Do not duplicate another skill's body.
   - Bake in the standing rules so the skill is safe on its own:
-      * read-only by default; the only writes are docs-only PRs and the review-merge gate;
+      * read-only by default; the only write is the docs-only PR;
       * anything touching code is DISPATCHED to Claude Code, never edited here;
       * verify, don't assume (railway_vars.py / check_* / gh) — say what you verified;
       * never print secrets; reference env vars by name only;
