@@ -23,19 +23,26 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
-## BUG-0024 — `test_generated_at_is_deterministic_not_wall_clock` flaky under `pytest -n auto` (real-clock dependent) — OPEN
+## BUG-0024 — `test_generated_at_is_deterministic_not_wall_clock` flaky under `pytest -n auto` (real-clock dependent) — FIXED (root)
 
 - **Symptom (observed 2026-06-22, in a full `check_quality.py --full` run during the Q-0195
   state-file-restructure session):** `tests/unit/scripts/test_export_dashboard_data.py::
   test_generated_at_is_deterministic_not_wall_clock` fails intermittently in the parallel
   (`-n auto`) suite, but **passes 3/3 in isolation** on both the working tree and clean
   `origin/main`. Unrelated to the session's docs/script changes (no mechanism connects them).
-- **Likely root (unconfirmed):** the same class as the FIXED **BUG-0021** — a real-clock-dependent
-  assertion that races under xdist worker scheduling. The export's `generated_at` determinism is
-  asserted against a value that can straddle a wall-clock tick when workers are loaded.
-- **Stays-fixed guard (to ship with the fix):** make the determinism assertion clock-injected (freeze
-  / inject the timestamp source) like BUG-0021's fix, so it cannot depend on real-clock timing under
-  `-n auto`. Left OPEN — out of scope for the restructure session; a good empty-fire dispatch pick.
+- **Root cause (confirmed, PR #1291):** `export_dashboard_data._git_meta` runs `git` with
+  `timeout=5, check=True`. Under a saturated `-n auto` run a call can time out → `_git_meta` returns
+  `{}` → `generated_at` falls back to wall-clock (`datetime.now()`). The test calls `build_data()`
+  twice and asserts the two `generated_at` values match — only true when git succeeds both times.
+  The **production** logic is correct (commit time is deterministic; the wall-clock fallback is an
+  intentional git-absent degrade); the **test** was non-hermetic — the same real-clock class as the
+  FIXED BUG-0021.
+- **Fix (PR #1291):** make the test hermetic — pin `_git_meta` (clock/source injection, the BUG-0021
+  pattern) so the determinism logic runs without a real subprocess that can time out. No production
+  change.
+- **Stays-fixed guard:** the determinism test now passes deterministically under `-n auto` (verified
+  35/35 ×3), and a new `test_generated_at_falls_back_to_wall_clock_when_git_unavailable` covers the
+  intentional git-absent fallback branch — so both branches stay tested and the flake cannot recur.
 
 ## BUG-0023 — public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = FIXED (root)
 
