@@ -55,6 +55,18 @@ _COMMAND_DECORATORS: dict[str, tuple[str, bool]] = {
     "tree.command": ("slash", False),
 }
 _SUBCOMMAND_LEAVES = {"command", "group", "subcommand"}
+# Group *constructors* assigned to a class attribute (vs. the decorated-method form
+# handled by _COMMAND_DECORATORS). discord.py slash groups are very commonly declared
+# as a class attribute — ``my_group = app_commands.Group(name="…", …)`` — with their
+# subcommands decorated ``@my_group.command(…)``. The decorator-only scan missed both
+# the group and every subcommand under it (BUG-0023 slash under-coverage). Maps the
+# constructor's dotted path -> invocation type.
+_GROUP_CONSTRUCTORS: dict[str, str] = {
+    "app_commands.Group": "slash",
+    "Group": "slash",
+    "commands.HybridGroup": "both",
+    "HybridGroup": "both",
+}
 _PANEL_TOKENS = ("panel_manager", "send_panel", "View(", "view=")
 # Acronym-aware CamelCase -> snake_case: split before a Capitalised word that
 # follows an acronym run (HTTPServer -> HTTP_Server) and between a lower/digit
@@ -179,6 +191,44 @@ def _find_groups(class_node: ast.ClassDef) -> dict[str, tuple[str, str]]:
     return groups
 
 
+def _find_attr_groups(
+    class_node: ast.ClassDef,
+) -> dict[str, tuple[str, str, str]]:
+    """Map an attribute-assigned group's *variable* name -> (command name, type, brief).
+
+    Catches the ``my_group = app_commands.Group(name="…", description="…")`` form
+    (and ``HybridGroup``) that ``_find_groups`` (decorated *methods* only) misses.
+    The variable name is the key because subcommands reference it as
+    ``@my_group.command`` -> the same ``parts[0]`` lookup ``_scan_method`` already
+    does for method groups. The command name is the ``name=`` kwarg when set, else
+    the variable name; the brief is the ``description=`` kwarg.
+    """
+    out: dict[str, tuple[str, str, str]] = {}
+    for item in class_node.body:
+        targets: list[str] = []
+        value: ast.expr | None = None
+        if isinstance(item, ast.Assign):
+            value = item.value
+            for tgt in item.targets:
+                if isinstance(tgt, ast.Name):
+                    targets.append(tgt.id)
+        elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
+            value = item.value
+            targets.append(item.target.id)
+        if not targets or not isinstance(value, ast.Call):
+            continue
+        kind = _GROUP_CONSTRUCTORS.get(_decorator_path(value))
+        if kind is None:
+            continue
+        name = _kwarg(value, "name")
+        desc = _kwarg(value, "description")
+        brief = desc if isinstance(desc, str) else ""
+        for var in targets:
+            cmd_name = name if isinstance(name, str) else var
+            out[var] = (cmd_name, kind, brief)
+    return out
+
+
 def _scan_method(
     method: ast.AST,
     source: str,
@@ -233,7 +283,28 @@ def _scan_method(
 
 def _scan_class(class_node: ast.ClassDef, source: str, rel_path: str) -> dict | None:
     groups = _find_groups(class_node)
+    attr_groups = _find_attr_groups(class_node)
+    # Attribute-assigned groups feed subcommand resolution the same way method
+    # groups do (``@<var>.command`` -> parent lookup on ``parts[0]``).
+    groups.update({var: (name, kind) for var, (name, kind, _) in attr_groups.items()})
     commands: list[dict] = []
+    # Synthesize a record for each attribute-assigned group so it is counted like a
+    # decorated-method group (which _scan_method already emits). The bot's live tree
+    # counts the group itself plus each subcommand (BUG-0023 reconciliation).
+    for _var, (name, kind, brief) in attr_groups.items():
+        commands.append(
+            {
+                "name": name,
+                "type": kind,
+                "is_group": True,
+                "parent": None,
+                "aliases": [],
+                "brief": _truncate(brief, 160),
+                "classification": "",
+                "has_panel": False,
+                "button_backed": False,
+            },
+        )
     for item in class_node.body:
         cmd = _scan_method(item, source, groups)
         if cmd is not None:

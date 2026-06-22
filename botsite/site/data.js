@@ -270,7 +270,7 @@ const COMMANDS = [
     "name": "ai",
     "area": "admin",
     "status": "in-progress",
-    "summary": "Open the AI Platform panel.",
+    "summary": "AI Platform diagnostics (administrator only).",
     "description": "Open the AI Platform panel.",
     "usage": "!ai",
     "aliases": [],
@@ -654,7 +654,7 @@ const COMMANDS = [
     "name": "btd6",
     "area": "games",
     "status": "in-progress",
-    "summary": "Open the BTD6 panel.",
+    "summary": "BTD6 Assistant — panel, status, ask, diagnostics.",
     "description": "Open the BTD6 panel.",
     "usage": "!btd6",
     "aliases": [],
@@ -684,7 +684,7 @@ const COMMANDS = [
     "name": "btd6events",
     "area": "games",
     "status": "in-progress",
-    "summary": "BTD6 live events, leaderboards, and data-source diagnostics.",
+    "summary": "BTD6 live events, leaderboards, and data sources.",
     "description": "BTD6 live events, leaderboards, and data-source diagnostics.",
     "usage": "!btd6events",
     "aliases": [],
@@ -776,7 +776,7 @@ const COMMANDS = [
     "name": "btd6ref",
     "area": "games",
     "status": "in-progress",
-    "summary": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
+    "summary": "BTD6 reference — tower/hero/round/relic/CT lookups.",
     "description": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
     "usage": "!btd6ref",
     "aliases": [],
@@ -806,7 +806,7 @@ const COMMANDS = [
     "name": "btd6strat",
     "area": "games",
     "status": "in-progress",
-    "summary": "BTD6 strategy memory (browse / submit / review).",
+    "summary": "BTD6 strategy memory — browse, submit, review.",
     "description": "BTD6 strategy memory (browse / submit / review).",
     "usage": "!btd6strat",
     "aliases": [],
@@ -5816,7 +5816,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "3f874fb3",
+    "build": "9b9df82d",
     "title": "New public bot website",
     "changes": [
       {
@@ -5828,7 +5828,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "3f874fb3",
+    "build": "9b9df82d",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -5840,7 +5840,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "3f874fb3",
+    "build": "9b9df82d",
     "title": "Command-alias suggestions",
     "changes": [
       {

@@ -23,7 +23,7 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
-## BUG-0023 — public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = INVESTIGATE
+## BUG-0023 — public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = FIXED (root)
 
 - **Symptom (owner-reported, 2026-06-20, live):** the bot's `Bot Online` embed shows **`Commands
   354 (283 prefix · 71 slash)`**, the public website shows **~280**, and `site.json` says **308** —
@@ -40,18 +40,37 @@
      surface (a dual-surface command is counted in *both* 283 and 71 → "mostly duplicates"); the site
      **dedupes by name** (308 source defs → 280 unique, one page per `#/command/<name>`). Verified:
      source scan = **283 prefix + 25 slash = 308**, prefix matching the bot **exactly**.
-  3. **Slash under-coverage (the one real gap — INVESTIGATE):** static scan finds **25** slash, the
-     live tree has **71**. `scan_commands.py` already expands slash *group* subcommands, so the ~46
-     missing are most likely **dynamically-registered app commands / context menus / tree additions**
-     the AST cannot see → the website under-documents slash commands.
-- **Fix (this entry — documentation):** reconciled in
-  [`website-explained.md`](../owner/website-explained.md) ("why the counts differ") and the
-  [React-migration plan §9](../planning/botsite-react-spa-migration-plan-2026-06-20.md). The *display*
-  reconciliation (show the bot's `prefix · slash` breakdown on the site) needs an `app.js`/React edit
-  → folded into the migration **PR 1**. The slash under-coverage (root) is left scoped: it needs
-  runtime-aware counting, **not** an unattended wide-blast data regen, so it gets a focused session.
-- **Status:** **EXPECTED / documented** for the count *difference*; **slash under-coverage =
-  INVESTIGATE** (root fix scoped, not yet built).
+  3. **Slash under-coverage (the one real gap — ROOT-CAUSED + FIXED 2026-06-22):** static scan found
+     **25** slash, the live tree has **71**. The earlier hypothesis here — *"dynamically-registered app
+     commands / context menus / tree additions the AST cannot see"* — was **wrong** (investigated
+     2026-06-22: 0 context menus, 0 `tree.add_command`, 0 hybrids in the codebase). The real cause: 6
+     cogs (ai · btd6 · btd6_events · btd6_ops · btd6_reference · btd6_strategy) declare their slash
+     group as a **class *attribute*** — `ai_app_group = app_commands.Group(name="ai", …)` — with
+     subcommands decorated `@ai_app_group.command(…)`. `scan_commands._find_groups` only detected groups
+     declared as **decorated methods** (`@app_commands.group`), so it missed these 6 groups **and all 40
+     subcommands under them**. Exact reconciliation: **25 standalone + 40 subcommands + 6 groups = 71** =
+     the live tree count → every missing command is **statically discoverable** (no runtime-aware
+     counting needed; the prior "needs a runtime-aware session" scoping note was based on the wrong
+     hypothesis).
+- **Fix:**
+  - **Count-*difference* (#1 + #2): documentation** — reconciled in
+    [`website-explained.md`](../owner/website-explained.md) ("why the counts differ") and the
+    [React-migration plan §9](../planning/botsite-react-spa-migration-plan-2026-06-20.md). The *display*
+    reconciliation (show the bot's `prefix · slash` breakdown on the site) is still an `app.js`/React
+    edit folded into the migration **PR 1**.
+  - **Slash under-coverage (#3): root fix (2026-06-22)** — `scripts/scan_commands.py` now detects
+    attribute-assigned `app_commands.Group` / `HybridGroup` groups (`_find_attr_groups`), registers
+    them so their `@<group>.command` subcommands are scanned (inheriting slash/both), and emits the
+    synthesized group record. The scanner's `by_type["slash"]` is now **71** (was 25), matching the live
+    tree; the regenerated `site.json` / `dashboard.json` / `data.js` carry the 46 previously-missing
+    commands so the website documents them.
+- **Stays-fixed guard:** `tests/unit/scripts/test_scan_commands.py` ::
+  `test_attribute_assigned_app_command_group_is_scanned` (a sample cog whose slash group + subcommand
+  are now scanned — fails against the pre-fix decorator-only behaviour) +
+  `test_attribute_app_group_subcommands_counted_in_real_repo` (the real-repo slash total reconciles to
+  the bot tree, `>= 70`).
+- **Status:** **EXPECTED / documented** for the count *difference* (#1 + #2); **slash under-coverage
+  (#3) = FIXED (root) 2026-06-22** (PR #1272).
 
 ## BUG-0022 — full test suite rewrites the tracked `botsite/site/data.js` (live-HEAD build sha) → `git add -A` reddens botsite-tests — FIXED
 
