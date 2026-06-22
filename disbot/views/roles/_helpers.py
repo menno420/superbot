@@ -24,6 +24,7 @@ from dataclasses import dataclass
 
 import discord
 
+from utils import role_packs
 from views.selectors._resource_helpers import _find_role_normalized
 
 __all__ = [
@@ -36,11 +37,23 @@ __all__ = [
 
 _COLOR_OPTIONS = [
     ("Red", "#e74c3c"),
-    ("Blue", "#3498db"),
-    ("Green", "#2ecc71"),
-    ("Yellow", "#f1c40f"),
-    ("Purple", "#9b59b6"),
+    ("Crimson", "#c0392b"),
     ("Orange", "#e67e22"),
+    ("Gold", "#f1c40f"),
+    ("Yellow", "#ffeb3b"),
+    ("Lime", "#a4d007"),
+    ("Green", "#2ecc71"),
+    ("Emerald", "#1abc9c"),
+    ("Teal", "#009688"),
+    ("Cyan", "#00bcd4"),
+    ("Blue", "#3498db"),
+    ("Blurple", "#5865f2"),
+    ("Navy", "#34495e"),
+    ("Purple", "#9b59b6"),
+    ("Magenta", "#e91e63"),
+    ("Pink", "#ff79c6"),
+    ("Brown", "#795548"),
+    ("Grey", "#95a5a6"),
     ("White", "#ffffff"),
     ("Black", "#000000"),
 ]
@@ -65,31 +78,15 @@ class RolePreset:
     description: str = ""
 
 
-# A small, generic starter set — common server roles, not tied to any one
-# server's theme.  "A few presets" (owner constraint); extend freely.  Colours
-# are drawn from the same palette as ``_COLOR_OPTIONS``.
+# The quick-create presets ARE the ⭐ Essentials role pack (``utils.role_packs``)
+# — one data source, so enlarging the pack enlarges this single-create dropdown
+# too (and the bulk-create flow shows the same names as a multiselect). Converted
+# to ``RolePreset`` for the creation menu's name+colour staging, which only reads
+# name / color / hoist / description. Extend via the pack, not here.
+_ESSENTIALS = role_packs.get_pack("essentials")
 ROLE_PRESETS: list[RolePreset] = [
-    RolePreset("Member", "#2ecc71", description="General member."),
-    RolePreset("Verified", "#1abc9c", description="Passed verification."),
-    RolePreset(
-        "VIP",
-        "#f1c40f",
-        hoist=True,
-        description="Supporter / VIP — shown separately.",
-    ),
-    RolePreset(
-        "Moderator",
-        "#3498db",
-        hoist=True,
-        description="Staff — shown separately.",
-    ),
-    RolePreset(
-        "Admin",
-        "#e74c3c",
-        hoist=True,
-        description="Administrator — shown separately.",
-    ),
-    RolePreset("Muted", "#607d8b", description="Restricted (used by moderation)."),
+    RolePreset(r.name, r.color, hoist=r.hoist, description=r.description)
+    for r in (_ESSENTIALS.roles if _ESSENTIALS else ())
 ]
 
 

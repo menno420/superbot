@@ -19,6 +19,7 @@ Layer: a thin UI over the service — no DB writes, no role math here. Authority
 
 from __future__ import annotations
 
+import re
 from collections.abc import Awaitable, Callable
 
 import discord
@@ -26,7 +27,7 @@ import discord
 from core.runtime.interaction_helpers import safe_defer
 from utils import role_packs
 from views.base import BaseView
-from views.roles._helpers import _parse_color
+from views.roles._helpers import _COLOR_OPTIONS, _parse_color
 from views.selectors import attach_multi_select
 
 # Invoked after roles are created/reused, with the resulting role ids — lets the
@@ -77,6 +78,25 @@ class RolePackView(BaseView):
         self._pack: role_packs.RolePack | None = None
         self.add_item(_PackCategorySelect(self))
 
+    @discord.ui.button(
+        label="✏️ Custom (bulk)",
+        style=discord.ButtonStyle.blurple,
+        row=1,
+    )
+    async def custom_bulk_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Type several custom role names → optional colour → bulk-create them."""
+        if not _can_manage(interaction):
+            await interaction.response.send_message(
+                "You need the **Manage Roles** permission to do that.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_modal(_CustomBulkModal(self))
+
     async def _on_pack(self, interaction: discord.Interaction, key: str) -> None:
         pack = role_packs.get_pack(key)
         if pack is None:  # pragma: no cover - select can only emit known keys
@@ -122,9 +142,7 @@ async def _commit_pack_roles(
     view: RolePackView,
     names: list[str],
 ) -> None:
-    """Create/reuse one role per picked name; report, then run the on_created hook."""
-    from services import reaction_role_service
-
+    """Create/reuse one role per picked pack name; report + run the on_created hook."""
     if not _can_manage(interaction):
         await interaction.response.send_message(
             "You need the **Manage Roles** permission to do that.",
@@ -138,15 +156,8 @@ async def _commit_pack_roles(
             ephemeral=True,
         )
         return
-    # Creating several roles is multiple API calls — defer first, report after.
-    if not await safe_defer(interaction, ephemeral=True, thinking=True):
-        return
-
     by_name = {role.name: role for role in pack.roles}
-    created: list[str] = []
-    reused: list[str] = []
-    role_ids: list[int] = []
-    notes: list[str] = []
+    specs: list[tuple[str, discord.Color, bool]] = []
     for name in names:
         spec = by_name.get(name)
         if spec is None:  # pragma: no cover - select only emits catalogue names
@@ -155,13 +166,177 @@ async def _commit_pack_roles(
             color = _parse_color(spec.color)
         except (ValueError, OverflowError):  # pragma: no cover - constant data
             color = discord.Color.default()
+        specs.append((spec.name, color, spec.hoist))
+    await _create_roles(interaction, view, specs, reason="Bulk role creation (pack)")
+
+
+# ---------------------------------------------------------------------------
+# Custom bulk creation — type many names, optional preset colour
+# ---------------------------------------------------------------------------
+
+
+def _parse_role_names(raw: str, *, limit: int = 25) -> list[str]:
+    """Split free-text into role names (one per line / comma-separated), deduped.
+
+    Case-insensitive de-dup preserving first-seen order; names capped at 100
+    chars (Discord's limit) and the batch capped at ``limit`` (extras dropped).
+    """
+    seen: set[str] = set()
+    names: list[str] = []
+    for part in re.split(r"[\n,]+", raw or ""):
+        name = part.strip()[:100]
+        if not name:
+            continue
+        key = name.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        names.append(name)
+        if len(names) >= limit:
+            break
+    return names
+
+
+class _CustomBulkModal(discord.ui.Modal, title="Bulk-create custom roles"):  # type: ignore[call-arg]
+    """Collect several custom role names, then offer an optional preset colour."""
+
+    names_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Role names",
+        style=discord.TextStyle.paragraph,
+        placeholder="One per line, or comma-separated — e.g.\nArtist\nWriter, Gamer",
+        max_length=2000,
+    )
+
+    def __init__(self, flow: RolePackView) -> None:
+        super().__init__()
+        self.flow = flow
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        names = _parse_role_names(self.names_in.value)
+        if not names:
+            await interaction.response.send_message(
+                "❌ Enter at least one role name.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            content=(
+                f"Creating **{len(names)}** role(s): {', '.join(names)[:1500]}\n\n"
+                "Pick a colour for them (optional), or **Create with no colour**:"
+            ),
+            view=_BulkColourView(self.flow, names),
+            ephemeral=True,
+        )
+
+
+class _ColourPresetSelect(discord.ui.Select):
+    """Single-pick preset colour applied to every custom role in the batch."""
+
+    def __init__(self, view: _BulkColourView) -> None:
+        self._view = view
+        super().__init__(
+            placeholder="Pick a colour for these roles (optional)…",
+            row=0,
+            max_values=1,
+            options=[
+                discord.SelectOption(label=label, value=hex_value)
+                for label, hex_value in _COLOR_OPTIONS
+            ],
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        try:
+            color = _parse_color(self.values[0])
+        except (ValueError, OverflowError):  # pragma: no cover - constant data
+            color = None
+        await _commit_custom_roles(interaction, self._view, color)
+
+
+class _BulkColourView(BaseView):
+    """Optional preset-colour picker for a batch of custom roles."""
+
+    def __init__(self, flow: RolePackView, names: list[str]) -> None:
+        super().__init__(flow._author, timeout=180)
+        self.flow = flow
+        self.names = names
+        self.add_item(_ColourPresetSelect(self))
+
+    @discord.ui.button(
+        label="Create with no colour",
+        style=discord.ButtonStyle.grey,
+        row=1,
+    )
+    async def no_colour_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await _commit_custom_roles(interaction, self, None)
+
+
+async def _commit_custom_roles(
+    interaction: discord.Interaction,
+    view: _BulkColourView,
+    color: discord.Color | None,
+) -> None:
+    """Bulk-create the typed custom names with one shared colour (or default)."""
+    if not _can_manage(interaction):
+        await interaction.response.send_message(
+            "You need the **Manage Roles** permission to do that.",
+            ephemeral=True,
+        )
+        return
+    specs = [(name, color or discord.Color.default(), False) for name in view.names]
+    await _create_roles(
+        interaction,
+        view.flow,
+        specs,
+        reason="Bulk role creation (custom)",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Shared creator
+# ---------------------------------------------------------------------------
+
+
+async def _create_roles(
+    interaction: discord.Interaction,
+    flow: RolePackView,
+    specs: list[tuple[str, discord.Color, bool]],
+    *,
+    reason: str,
+) -> None:
+    """Create/reuse each ``(name, colour, hoist)`` spec; report + run on_created.
+
+    The shared tail of both bulk paths (pack picks + custom names): defer (several
+    role creations are multiple API calls), create through the audited
+    ``ensure_role`` seam, report created/reused/failed, then fold the new ids into
+    the menu draft via the optional ``on_created`` hook.
+    """
+    from services import reaction_role_service
+
+    if not specs:
+        await interaction.response.send_message(
+            "Nothing to create.",
+            ephemeral=True,
+        )
+        return
+    if not await safe_defer(interaction, ephemeral=True, thinking=True):
+        return
+
+    created: list[str] = []
+    reused: list[str] = []
+    role_ids: list[int] = []
+    notes: list[str] = []
+    for name, color, hoist in specs:
         role_id, was_created, note = await reaction_role_service.ensure_role(
-            view.guild,
-            name=spec.name,
+            flow.guild,
+            name=name,
             color=color,
-            hoist=spec.hoist,
+            hoist=hoist,
             actor=interaction.user,
-            reason="Bulk role creation (role pack)",
+            reason=reason,
         )
         if role_id is None:
             notes.append(f"{name}: {note or 'could not be created'}")
@@ -182,8 +357,8 @@ async def _commit_pack_roles(
         "\n".join(parts) or "No roles were created.",
         ephemeral=True,
     )
-    if view.on_created is not None and role_ids:
-        await view.on_created(interaction, role_ids)
+    if flow.on_created is not None and role_ids:
+        await flow.on_created(interaction, role_ids)
 
 
 __all__ = ["OnRolesReady", "RolePackView"]
