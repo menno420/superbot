@@ -71,7 +71,8 @@ const AREAS = [
     "points": [
       "Economy",
       "Inventory",
-      "Mining"
+      "Mining",
+      "Treasury"
     ]
   },
   {
@@ -280,6 +281,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -289,10 +294,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -312,6 +313,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -321,10 +326,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -1390,6 +1391,22 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "contribute",
+    "area": "economy",
+    "status": "finished",
+    "summary": "Donate *amount* of your own coins into the server treasury.",
+    "description": "Donate *amount* of your own coins into the server treasury.",
+    "usage": "!contribute",
+    "aliases": [
+      "donate",
+      "deposit"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "cook",
     "area": "economy",
     "status": "in-progress",
@@ -1796,6 +1813,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -1805,10 +1826,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -2293,6 +2310,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -2302,10 +2323,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -2406,6 +2423,22 @@ const COMMANDS = [
     "description": "Give XP to a user (admin only).",
     "usage": "!givexp",
     "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "grant",
+    "area": "economy",
+    "status": "finished",
+    "summary": "Disburse *amount* from the treasury to *member* (managers only).",
+    "description": "Disburse *amount* from the treasury to *member* (managers only).",
+    "usage": "!grant",
+    "aliases": [
+      "disburse",
+      "payout"
+    ],
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
@@ -3377,6 +3410,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -3386,10 +3423,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -3446,6 +3479,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -3455,10 +3492,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -3582,6 +3615,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -3591,10 +3628,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -4045,6 +4078,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -4054,10 +4091,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -4549,6 +4582,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -4558,10 +4595,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -5033,6 +5066,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -5042,10 +5079,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -5183,6 +5216,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -5192,10 +5229,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -5478,6 +5511,22 @@ const COMMANDS = [
         "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
+  },
+  {
+    "name": "treasury",
+    "area": "economy",
+    "status": "finished",
+    "summary": "Open the server treasury — view the pool and contribute coins.",
+    "description": "Open the server treasury — view the pool and contribute coins.",
+    "usage": "!treasury",
+    "aliases": [
+      "bank",
+      "pool"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
   },
   {
     "name": "trivia",
@@ -5856,6 +5905,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "AI self-curated memory notebook — a write-back learning seam for the…"
+      },
+      {
+        "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
       },
       {
@@ -5865,10 +5918,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI panels → in-place navigation + centralized settings…"
-      },
-      {
-        "status": "idea",
-        "title": "AI Extra Tool Capability Ideas Backlog"
       }
     ]
   },
@@ -6173,7 +6222,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "b9b1e05",
+    "build": "3a751c8",
     "title": "New public bot website",
     "changes": [
       {
@@ -6185,7 +6234,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "b9b1e05",
+    "build": "3a751c8",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6197,7 +6246,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "b9b1e05",
+    "build": "3a751c8",
     "title": "Command-alias suggestions",
     "changes": [
       {
