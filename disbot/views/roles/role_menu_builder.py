@@ -25,7 +25,11 @@ from views.base import BaseView
 from views.navigation import attach_back_button
 from views.paginated_select import PaginatedSelectView
 from views.roles._helpers import _COLOR_OPTIONS, _parse_color
-from views.roles.role_menu_view import MAX_MENU_ROLES, RoleMenuView, build_menu_embed
+from views.roles.role_menu_view import (
+    MAX_MENU_ROLES,
+    RoleMenuView,
+    build_menu_message,
+)
 from views.selectors import (
     attach_channel_select,
     attach_multi_role_select,
@@ -352,11 +356,9 @@ class RoleMenuListView(BaseView):
         view = RoleMenuView(menu, opt_dicts)
 
         await self._delete_old_message(menu)
+        embed, files = build_menu_message(menu, opt_dicts, self.guild)
         try:
-            message = await target.send(
-                embed=build_menu_embed(menu, opt_dicts, self.guild),
-                view=view,
-            )
+            message = await target.send(embed=embed, view=view, files=files)
         except discord.Forbidden:
             await interaction.followup.send(
                 "I couldn't repost the menu — I lack permission to send messages "
@@ -454,6 +456,8 @@ class RoleMenuBuilder(BaseView):
         self.max_roles = 0
         self.theme = presentation.DEFAULT_THEME_KEY
         self.template: str | None = None
+        self.card_template: str | None = None
+        self.card_text: str | None = None
         self.role_ids: list[int] = []
 
         if parent is not None:
@@ -507,6 +511,8 @@ class RoleMenuBuilder(BaseView):
         builder.max_roles = int(menu.get("max_roles") or 0)
         builder.theme = menu.get("theme") or presentation.DEFAULT_THEME_KEY
         builder.template = menu.get("template")
+        builder.card_template = menu.get("card_template")
+        builder.card_text = menu.get("card_text")
         builder.role_ids = [o.role_id for o in options]
         return builder
 
@@ -543,13 +549,15 @@ class RoleMenuBuilder(BaseView):
             if supports_role_gradients(self.guild)
             else ""
         )
+        card = presentation.get_card_template(self.card_template)
+        card_str = card.label if card else "none"
         embed.add_field(
             name="Settings",
             value=(
                 f"Style: **{_STYLE_LABEL.get(self.style, self.style)}**\n"
                 f"Mode: **{_MODE_LABEL.get(self.mode, self.mode)}**\n"
                 f"Limit: **{limit}** · Theme: **{theme.label}**\n"
-                f"Channel: {channel_str}{gradient_note}"
+                f"Card: **{card_str}** · Channel: {channel_str}{gradient_note}"
             ),
             inline=False,
         )
@@ -634,6 +642,19 @@ class RoleMenuBuilder(BaseView):
                 self._apply_template,
                 placeholder="Pick a starter template…",
             ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🖼️ Card", style=discord.ButtonStyle.grey, row=0)
+    async def card_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_message(
+            "Add an optional **banner image** above the menu, or set its overlay "
+            "text. Pick **✖️ None** to remove the card:",
+            view=_CardPickView(self),
             ephemeral=True,
         )
 
@@ -823,16 +844,16 @@ class RoleMenuBuilder(BaseView):
             max_roles=self.max_roles,
             options=options,
             theme=self.theme,
+            card_template=self.card_template,
+            card_text=self.card_text,
             actor_id=interaction.user.id,
         )
         menu = await service.get_menu(menu_id)
         opt_dicts = _option_dicts(await service.get_menu_options(menu_id))
         view = RoleMenuView(menu, opt_dicts)
+        embed, files = build_menu_message(menu, opt_dicts, self.guild)
         try:
-            message = await channel.send(
-                embed=build_menu_embed(menu, opt_dicts, self.guild),
-                view=view,
-            )
+            message = await channel.send(embed=embed, view=view, files=files)
         except discord.Forbidden:
             await interaction.followup.send(
                 "I couldn't post the menu — I lack permission to send messages here.",
@@ -864,6 +885,8 @@ class RoleMenuBuilder(BaseView):
             max_roles=self.max_roles,
             options=options,
             theme=self.theme,
+            card_template=self.card_template,
+            card_text=self.card_text,
             actor_id=interaction.user.id,
         )
         menu = await service.get_menu(self.menu_id)
@@ -878,10 +901,10 @@ class RoleMenuBuilder(BaseView):
             if isinstance(channel, discord.abc.Messageable):
                 try:
                     message = await channel.fetch_message(int(menu["message_id"]))
-                    await message.edit(
-                        embed=build_menu_embed(menu, opt_dicts, self.guild),
-                        view=view,
-                    )
+                    embed, files = build_menu_message(menu, opt_dicts, self.guild)
+                    # ``attachments=`` replaces the card (or clears it when [] —
+                    # so removing a card on edit drops the old image too).
+                    await message.edit(embed=embed, view=view, attachments=files)
                     interaction.client.add_view(view, message_id=message.id)
                     edited = True
                 except (discord.NotFound, discord.Forbidden, discord.HTTPException):
@@ -984,6 +1007,79 @@ class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[c
             )
             return
         self.builder.max_roles = value
+        if not await safe_defer(interaction):
+            return
+        await self.builder._rerender()
+
+
+class _CardPickView(BaseView):
+    """Pick a banner-card style (or None) and optionally set its overlay text."""
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__(builder._author, timeout=180)
+        self.builder = builder
+        options = [
+            discord.SelectOption(
+                label="✖️ None",
+                value="",
+                description="No banner image",
+                default=not builder.card_template,
+            ),
+        ]
+        for card in presentation.card_templates():
+            options.append(
+                discord.SelectOption(
+                    label=card.label,
+                    value=card.key,
+                    default=card.key == builder.card_template,
+                ),
+            )
+        self._select: discord.ui.Select = discord.ui.Select(  # type: ignore[type-arg]
+            placeholder="Banner card style…",
+            options=options,
+            min_values=1,
+            max_values=1,
+            row=0,
+        )
+        self._select.callback = self._on_pick  # type: ignore[method-assign]
+        self.add_item(self._select)
+
+    async def _on_pick(self, interaction: discord.Interaction) -> None:
+        value = self._select.values[0]
+        self.builder.card_template = value or None
+        card = presentation.get_card_template(value)
+        msg = f"✓ Card set to {card.label}." if card else "✓ Banner card removed."
+        await interaction.response.edit_message(content=msg, view=None)
+        await self.builder._rerender()
+
+    @discord.ui.button(
+        label="✏️ Overlay text",
+        style=discord.ButtonStyle.blurple,
+        row=1,
+    )
+    async def overlay_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(_CardTextModal(self.builder))
+
+
+class _CardTextModal(discord.ui.Modal, title="Card overlay text"):  # type: ignore[call-arg]
+    text_in = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Overlay text (optional)",
+        placeholder="e.g. Choose your roles below",
+        required=False,
+        max_length=80,
+    )
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__()
+        self.builder = builder
+        self.text_in.default = builder.card_text or ""
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        self.builder.card_text = self.text_in.value.strip() or None
         if not await safe_defer(interaction):
             return
         await self.builder._rerender()

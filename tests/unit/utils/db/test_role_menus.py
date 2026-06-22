@@ -63,6 +63,60 @@ async def test_delete_for_guild_returns_count(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_create_menu_persists_card_columns(monkeypatch):
+    """The banner-card columns (migration 085) flow into the INSERT params."""
+    captured: dict[str, object] = {}
+
+    async def _fetchone(sql, params=()):
+        captured["sql"] = sql
+        captured["params"] = params
+        return {"menu_id": 9}
+
+    monkeypatch.setattr(role_menus.pool, "fetchone", AsyncMock(side_effect=_fetchone))
+
+    await role_menus.create_menu(
+        1,
+        2,
+        title="Pick",
+        description=None,
+        card_template="banner",
+        card_text="Choose below",
+    )
+
+    assert "card_template" in captured["sql"]
+    assert "card_text" in captured["sql"]
+    assert "banner" in captured["params"]
+    assert "Choose below" in captured["params"]
+
+
+@pytest.mark.asyncio
+async def test_update_menu_persists_card_columns(monkeypatch):
+    captured: dict[str, object] = {}
+
+    async def _execute(sql, params=()):
+        captured["sql"] = sql
+        captured["params"] = params
+
+    monkeypatch.setattr(role_menus.pool, "execute", AsyncMock(side_effect=_execute))
+
+    await role_menus.update_menu(
+        9,
+        title="Pick",
+        description=None,
+        style="dropdown",
+        mode="normal",
+        max_roles=0,
+        theme="default",
+        card_template="gradient",
+        card_text=None,
+    )
+
+    assert "card_template=$8" in captured["sql"]
+    assert "card_text=$9" in captured["sql"]
+    assert "gradient" in captured["params"]
+
+
+@pytest.mark.asyncio
 async def test_add_option_upserts(monkeypatch):
     captured: dict[str, str] = {}
 
