@@ -1,6 +1,9 @@
 # Idea — "while you were away" offline-progress summary for idle games
 
-> **Status:** `ideas` — captured 2026-06-22. Not approved; refine into a plan before building.
+> **Status:** `historical` — **BUILT 2026-06-22** (PR #1331): `utils/idle_summary.py`
+> (`format_duration` + `summarize_idle_gain`) shipped + wired into the farm panel as its
+> first consumer. Kept for provenance. The reuse-by-a-second-idle-system step is the live
+> remainder (fold the mining/fishing energy hubs onto the same helper on the rule of three).
 
 ## The idea
 

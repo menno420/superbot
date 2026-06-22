@@ -36,16 +36,65 @@ BUY_CHICKEN_REASON = "farm:buy_chicken"
 UPGRADE_COOP_REASON = "farm:upgrade_coop"
 
 
+def _stored_state(
+    now: int,
+    chickens: int,
+    eggs: int,
+    ts: int,
+    coop: int,
+) -> farm_mod.FarmState:
+    """Build the stored ``FarmState``, normalizing an uninitialized timestamp.
+
+    A fresh ``chicken_farm`` row defaults ``eggs_updated_at`` to ``0`` (the unix
+    epoch). Settling from 1970 would instantly fill the coop — a free full collect
+    for every brand-new player — so a zero timestamp means **uninitialized**:
+    accrual starts from *now* (an empty coop), never retroactively from 1970. The
+    first collect/buy/upgrade then persists a real timestamp. This is the single
+    place the normalization lives, used by every read/write path below.
+    """
+    return farm_mod.FarmState(chickens, eggs, ts or now, coop)
+
+
 async def get_state(user_id: int, guild_id: int) -> farm_mod.FarmState:
     """The player's *settled* farm state (read-only — writes nothing).
 
     Accrual is pure (a stored value + a timestamp), so showing the panel never
     needs to persist; only the coin-moving ops below settle-and-write.
     """
+    now = int(time.time())
     chickens, eggs, ts, coop = await db.get_chicken_farm(user_id, guild_id)
-    return farm_mod.settle(
-        farm_mod.FarmState(chickens, eggs, ts, coop),
-        int(time.time()),
+    return farm_mod.settle(_stored_state(now, chickens, eggs, ts, coop), now)
+
+
+@dataclass(frozen=True)
+class FarmStatus:
+    """A settled read plus the deltas the "while you were away" blurb needs."""
+
+    state: farm_mod.FarmState
+    #: Eggs accrued since the last action (stored → settled); 0 for a fresh farm.
+    eggs_gained: int
+    #: Seconds since the last action (``now - stored.updated_at``); 0 for fresh.
+    elapsed_seconds: int
+    #: True when the coop is at capacity (so the blurb can nudge a collect).
+    at_capacity: bool
+
+
+async def get_status(user_id: int, guild_id: int) -> FarmStatus:
+    """Read + settle the farm and report what accrued since the last action.
+
+    Read-only (the same no-persist contract as :func:`get_state`). The deltas are
+    measured against the *stored* state, so a fresh farm (normalized to *now*)
+    reports ``eggs_gained=0`` / ``elapsed_seconds=0`` — no spurious return-moment.
+    """
+    now = int(time.time())
+    chickens, eggs, ts, coop = await db.get_chicken_farm(user_id, guild_id)
+    stored = _stored_state(now, chickens, eggs, ts, coop)
+    settled = farm_mod.settle(stored, now)
+    return FarmStatus(
+        state=settled,
+        eggs_gained=max(0, settled.eggs - stored.eggs),
+        elapsed_seconds=max(0, now - stored.updated_at),
+        at_capacity=settled.eggs >= farm_mod.coop_capacity(settled.coop_level),
     )
 
 
@@ -72,7 +121,7 @@ async def collect(user_id: int, guild_id: int) -> CollectResult:
     """
     now = int(time.time())
     chickens, eggs, ts, coop = await db.get_chicken_farm(user_id, guild_id)
-    settled = farm_mod.settle(farm_mod.FarmState(chickens, eggs, ts, coop), now)
+    settled = farm_mod.settle(_stored_state(now, chickens, eggs, ts, coop), now)
     if settled.eggs <= 0:
         return CollectResult(
             False,
@@ -154,7 +203,7 @@ async def buy_chicken(user_id: int, guild_id: int) -> PurchaseResult:
             f"🐔 Your flock is at the cap of **{farm_mod.MAX_CHICKENS}** hens — "
             "that's a lot of clucking!",
         )
-    settled = farm_mod.settle(farm_mod.FarmState(chickens, eggs, ts, coop), now)
+    settled = farm_mod.settle(_stored_state(now, chickens, eggs, ts, coop), now)
     price = farm_mod.chicken_price(chickens)
 
     try:
@@ -213,7 +262,7 @@ async def upgrade_coop(user_id: int, guild_id: int) -> PurchaseResult:
             f"🏠 Your coop is already maxed at level **{farm_mod.MAX_COOP_LEVEL}** "
             f"(holds **{farm_mod.coop_capacity(coop)}** eggs).",
         )
-    settled = farm_mod.settle(farm_mod.FarmState(chickens, eggs, ts, coop), now)
+    settled = farm_mod.settle(_stored_state(now, chickens, eggs, ts, coop), now)
     price = farm_mod.coop_upgrade_price(coop)
     new_capacity = farm_mod.coop_capacity(coop + 1)
 

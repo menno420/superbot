@@ -21,19 +21,12 @@ import discord
 from services import farm_workflow
 from utils import db
 from utils import farm as farm_mod
+from utils import idle_summary
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 
-
-def _fmt_wait(seconds: int) -> str:
-    """Human "fills in" — ``45s`` / ``2m 05s`` / ``1h 03m``."""
-    if seconds <= 0:
-        return "now"
-    if seconds < 60:
-        return f"{seconds}s"
-    if seconds < 3600:
-        return f"{seconds // 60}m {seconds % 60:02d}s"
-    return f"{seconds // 3600}h {(seconds % 3600) // 60:02d}m"
+#: The capped nudge for the farm's "while you were away" blurb.
+_COOP_FULL_NOTE = "The coop is full — collect to keep your hens laying!"
 
 
 def build_farm_embed(
@@ -41,8 +34,13 @@ def build_farm_embed(
     balance: int,
     *,
     seconds_to_full: int = 0,
+    away_summary: str | None = None,
 ) -> discord.Embed:
-    """The main farm-panel embed — flock, coop fill, lay rate, and balance."""
+    """The main farm-panel embed — flock, coop fill, lay rate, and balance.
+
+    *away_summary* (the optional "while you were away" blurb) renders as the first
+    field when something accrued since the player's last action.
+    """
     capacity = farm_mod.coop_capacity(state.coop_level)
     rate = farm_mod.lay_rate_per_hour(state.chickens)
     pending_value = farm_mod.collect_value(state.eggs)
@@ -54,10 +52,12 @@ def build_farm_embed(
         ),
         color=GAME_COLOR,
     )
+    if away_summary:
+        embed.add_field(name="🌙 Welcome back", value=away_summary, inline=False)
     fill = (
         "**full!**"
         if state.eggs >= capacity
-        else f"fills in {_fmt_wait(seconds_to_full)}"
+        else f"fills in {idle_summary.format_duration(seconds_to_full)}"
     )
     embed.add_field(
         name="Coop",
@@ -123,12 +123,20 @@ def build_shop_embed(
 async def _panel_data(
     user_id: int,
     guild_id: int,
-) -> tuple[farm_mod.FarmState, int, int]:
-    """Read the settled state, balance, and seconds-to-full for a redraw."""
-    state = await farm_workflow.get_state(user_id, guild_id)
+) -> tuple[farm_mod.FarmState, int, int, str | None]:
+    """Read the settled state, balance, seconds-to-full, and the away blurb."""
+    status = await farm_workflow.get_status(user_id, guild_id)
     balance = await db.get_coins(user_id, guild_id)
-    to_full = farm_mod.seconds_until_full(state, int(time.time()))
-    return state, balance, to_full
+    to_full = farm_mod.seconds_until_full(status.state, int(time.time()))
+    away = idle_summary.summarize_idle_gain(
+        status.eggs_gained,
+        status.elapsed_seconds,
+        noun_singular="egg",
+        noun_plural="eggs",
+        capped=status.at_capacity,
+        capped_note=_COOP_FULL_NOTE,
+    )
+    return status.state, balance, to_full, away
 
 
 async def open_farm_panel(
@@ -140,9 +148,14 @@ async def open_farm_panel(
     The one entry point shared by ``!farm``, the Help hook, and the Explore-world
     opener, so none of them duplicate the read-then-build sequence.
     """
-    state, balance, to_full = await _panel_data(user.id, guild_id)
+    state, balance, to_full, away = await _panel_data(user.id, guild_id)
     return (
-        build_farm_embed(state, balance, seconds_to_full=to_full),
+        build_farm_embed(
+            state,
+            balance,
+            seconds_to_full=to_full,
+            away_summary=away,
+        ),
         FarmMenuView(user, guild_id),
     )
 
@@ -159,11 +172,19 @@ class FarmMenuView(HubView):
         interaction: discord.Interaction,
         flash: str | None,
     ) -> None:
-        state, balance, to_full = await _panel_data(self._author.id, self.guild_id)
+        state, balance, to_full, away = await _panel_data(
+            self._author.id,
+            self.guild_id,
+        )
         # Redraw onto a fresh view instance so the panel's timeout clock resets
         # on every interaction (and the classifier sees a real in-place update).
         view = FarmMenuView(self._author, self.guild_id)
-        embed = build_farm_embed(state, balance, seconds_to_full=to_full)
+        embed = build_farm_embed(
+            state,
+            balance,
+            seconds_to_full=to_full,
+            away_summary=away,
+        )
         if flash:
             embed.description = f"{flash}\n\n{embed.description}"
         await interaction.response.edit_message(embed=embed, view=view)
@@ -213,7 +234,7 @@ class FarmShopView(HubView):
         interaction: discord.Interaction,
         flash: str | None,
     ) -> None:
-        state, balance, _ = await _panel_data(self._author.id, self.guild_id)
+        state, balance, _, _ = await _panel_data(self._author.id, self.guild_id)
         view = FarmShopView(self._author, self.guild_id)
         embed = build_shop_embed(state, balance)
         if flash:
@@ -249,10 +270,18 @@ class FarmShopView(HubView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        state, balance, to_full = await _panel_data(self._author.id, self.guild_id)
+        state, balance, to_full, away = await _panel_data(
+            self._author.id,
+            self.guild_id,
+        )
         view = FarmMenuView(self._author, self.guild_id)
         await interaction.response.edit_message(
-            embed=build_farm_embed(state, balance, seconds_to_full=to_full),
+            embed=build_farm_embed(
+                state,
+                balance,
+                seconds_to_full=to_full,
+                away_summary=away,
+            ),
             view=view,
         )
         view.message = interaction.message

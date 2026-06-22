@@ -1,1 +1,0 @@
-- claude/affectionate-darwin-xnyxrj · farm fresh-start faucet fix + "while you were away" idle summary · services/farm_workflow.py + utils/idle_summary.py + views/farm/menu.py + tests · 2026-06-22
