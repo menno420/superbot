@@ -112,62 +112,6 @@ def test_general_cog_has_build_help_menu_view():
     )
 
 
-# P1 PR-7: the two prior tests asserting "fake_cog.build_help_menu_view
-# was awaited once" and "build_cog_embed was called once" lived in heavy
-# 30-LOC mock setups for a single mock-comparison assertion.  The
-# behaviour they covered (HelpPanelView dispatches to the right helper
-# based on cog hooks) is exercised end-to-end by the registry/identity
-# tests + the live help command — removing them dropped 55 LOC of
-# fragile plumbing without losing coverage of any user-visible path.
-
-
-@pytest.mark.asyncio
-async def test_help_on_select_handles_missing_cog():
-    """When _cog_for_subsystem returns None the user gets a friendly ephemeral.
-
-    HLP-2: ``_on_select`` re-resolves governance and checks the projection
-    *before* the cog lookup, so the governance mock must advertise the
-    selected subsystem (a real registry key) for this test to reach the
-    missing-cog branch.
-    """
-    from unittest.mock import patch
-
-    from cogs import help_cog as help_cog_module
-    from cogs.help_cog import HelpPanelView
-    from utils.subsystem_registry import SUBSYSTEMS
-
-    view = HelpPanelView(visible_list=["xp"], page=0)
-
-    interaction = MagicMock()
-    interaction.data = {"values": ["xp"]}
-    interaction.response.send_message = AsyncMock()
-    interaction.response.edit_message = AsyncMock()
-    interaction.client = MagicMock()
-
-    vis_result = MagicMock()
-    vis_result.visible_subsystems = set(SUBSYSTEMS)
-    vis_result.member_tier = "user"
-
-    with patch(
-        "cogs.help_cog._cog_for_subsystem",
-        return_value=None,
-    ), patch.object(
-        help_cog_module.governance_service,
-        "resolve_visibility",
-        new=AsyncMock(return_value=vis_result),
-    ), patch.object(
-        help_cog_module.GovernanceContext,
-        "from_interaction",
-        lambda i: MagicMock(),
-    ):
-        await view._on_select(interaction)
-
-    interaction.response.send_message.assert_awaited_once()
-    msg = interaction.response.send_message.await_args.args[0]
-    assert "no longer loaded" in msg
-    interaction.response.edit_message.assert_not_called()
-
-
 @pytest.mark.asyncio
 async def test_help_command_deletes_stale_anchor_and_sends_new():
     """!help must always send a fresh message; old anchor message must be deleted.

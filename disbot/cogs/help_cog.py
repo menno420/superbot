@@ -7,12 +7,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import config
-from cogs.help.panels import _PAGE_SIZE  # noqa: F401 — re-export (tests)
-from cogs.help.panels import (
-    HelpCategoryView,
-    HelpPanelView,
-    _build_page_embed,
-)
+from cogs.help.panels import HelpCategoryView
 from cogs.help.route import HUB_PANEL_BUILDERS as _HUB_PANEL_BUILDERS
 from cogs.help.route import (
     HelpOpener,
@@ -24,25 +19,21 @@ from cogs.help.route import resolve_route as _resolve_route
 from services import governance_service, help_overlay
 from services.governance_service import GovernanceContext
 from services.help_projection import HelpProjection, is_command_displayable
-from utils.hub_registry import ALL_COMMANDS_KEY  # noqa: F401 — re-export (tests)
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import UTILITY_COLOR
 
 logger = logging.getLogger("bot")
 
 # Re-exports kept for test compatibility — the canonical definitions live
-# in ``cogs.help.route`` (route model) and ``cogs.help.panels`` (the two
-# persistent views + page embed, decomposed when HLP-3 pushed this file
-# past the 800-LOC cog ceiling). The Help route model is shared by the
-# typed ``!help <name>`` command and the Help dropdown so the same name
-# produces the same destination regardless of entry point.
+# in ``cogs.help.route`` (route model) and ``cogs.help.panels``
+# (``HelpCategoryView``, the category index). The Help route model is shared
+# by the typed ``!help <name>`` command and the Help dropdown so the same
+# name produces the same destination regardless of entry point.
 __all__ = [
     "HelpCategoryView",
     "HelpOpener",
-    "HelpPanelView",
     "HelpRoute",
     "_HUB_PANEL_BUILDERS",
-    "_build_page_embed",
     "_open_route",
     "_resolve_route",
 ]
@@ -146,11 +137,6 @@ def build_cog_embed(
     return embed
 
 
-def _build_help_page_view(visible_list: list[str], page: int) -> HelpPanelView:
-    """Construct a HelpPanelView for the given page of visible subsystems."""
-    return HelpPanelView(visible_list, page)
-
-
 def _attach_back_to_help_button(view: discord.ui.View) -> None:
     """Add a "↩ Back to Help" control to a panel surfaced from Help.
 
@@ -162,10 +148,8 @@ def _attach_back_to_help_button(view: discord.ui.View) -> None:
     to reflects current visibility (not the stale snapshot from when the
     panel was opened).
 
-    S3: rebuilds :class:`HelpCategoryView` — the new top-level of Help
-    after the category-index refactor. The pre-S3 implementation rebuilt
-    a paginated :class:`HelpPanelView`; that view is still reachable as
-    the "All Commands / Advanced" category but is no longer the top.
+    Rebuilds :class:`HelpCategoryView` — the top-level of Help (the
+    mother-hub category index).
 
     AB2: also stashes a :class:`BackTarget` on ``view._back_target`` so
     that openers further down the chain can use :func:`chain_back` to
@@ -223,10 +207,10 @@ def build_categories_overview_embed(
     tiers — tests / restore symmetry only, byte-equivalent to the pre-seam
     tier-only rule).
 
-    Always appends the permanent "Advanced / All Commands" fallback row.
     Each hub row is a uniform two-line shape — purpose + typed entry
     command — with no ``Includes:`` line. Child rosters live inside each
-    hub panel.
+    hub panel. (The legacy "All Commands / Advanced" row was removed once
+    every subsystem was homed into a hub — PR #1294.)
     """
     if projection is None:
         projection = HelpProjection.registry_defaults(member_tier or "user")
@@ -250,14 +234,6 @@ def build_categories_overview_embed(
             inline=False,
         )
 
-    # Advanced / All Commands is permanent — guarantees discoverability
-    # for every visible subsystem even when no mother hub owns it.
-    embed.add_field(
-        name="📋 Advanced / All Commands",
-        value="Browse every available command directly.",
-        inline=False,
-    )
-
     if not embed.fields:
         embed.description = "No commands are available in this channel."
     return embed
@@ -273,10 +249,8 @@ async def resolve_help_panel_state(
     ``views.mining.mine_view._MineResultsView.help_btn``) so they
     don't re-implement governance resolution + embed construction.
 
-    S3: the returned view is :class:`HelpCategoryView` — the new
-    mother-hub category index. The legacy :class:`HelpPanelView` is
-    reached by selecting "All Commands / Advanced" inside the
-    category view.
+    The returned view is :class:`HelpCategoryView` — the mother-hub
+    category index (the top of Help).
 
     Raises whatever ``governance_service.resolve_visibility`` raises;
     callers are responsible for catching to fall back to an in-place
@@ -328,16 +302,14 @@ class HelpCog(commands.Cog):
                 await ctx.send(embed=embed, delete_after=60)
                 return
 
-            # For typed Help with a hub/subsystem/advanced surface, send
-            # the panel as a fresh message and attach Back-to-Help so the
-            # user can return to the category index.
+            # For typed Help with a hub/subsystem surface, send the panel
+            # as a fresh message and attach Back-to-Help so the user can
+            # return to the category index.
             _attach_back_to_help_button(sub_view)
             await ctx.send(embed=embed, view=sub_view)
             return
 
-        # S3: the top of Help is the mother-hub category index. The
-        # legacy paginated subsystem list is reached only via the
-        # "Advanced / All Commands" entry inside HelpCategoryView.
+        # The top of Help is the mother-hub category index.
         view = HelpCategoryView(projection=projection)
         embed = build_categories_overview_embed(projection=projection)
 
@@ -395,9 +367,9 @@ class HelpCog(commands.Cog):
           gets their own panel without polluting the channel).
         * No message-anchor bookkeeping (Discord owns the ephemeral
           lifecycle; there is no anchor to clean up).
-        * For hub/subsystem/advanced routes, the Back-to-Help button is
-          attached so the user can return to the category index without
-          rerunning ``/help``.
+        * For hub/subsystem routes, the Back-to-Help button is attached
+          so the user can return to the category index without rerunning
+          ``/help``.
 
         PR #9 — first slash command in the bot. Proves the
         ``HelpRoute`` reuse pattern; follow-ups can land
@@ -428,9 +400,9 @@ class HelpCog(commands.Cog):
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
 
-            # Mirror the prefix path: any hub/subsystem/advanced surface
-            # gets a Back-to-Help button so the user can return to the
-            # category index in place.
+            # Mirror the prefix path: any hub/subsystem surface gets a
+            # Back-to-Help button so the user can return to the category
+            # index in place.
             _attach_back_to_help_button(sub_view)
             await interaction.response.send_message(
                 embed=embed,

@@ -88,12 +88,12 @@ async def test_second_call_is_noop():
 
 @pytest.mark.asyncio
 async def test_help_anchors_are_skipped_and_marked_stale():
-    """Help is invoke-and-see — never restore HelpPanelView at startup.
+    """Help is invoke-and-see — never restore the help panel at startup.
 
-    HelpPanelView holds stateful _visible/_page that cannot be reconstructed
-    from the anchor row alone.  restore_anchors must mark help anchors stale
-    and never call bot.add_view for them, so the next !help creates a clean
-    panel via panel_manager.
+    A restored help view would be a stale snapshot rather than the user's
+    current access.  restore_anchors must mark help anchors stale and never
+    call bot.add_view for them, so the next !help creates a clean panel via
+    panel_manager.
     """
     anchors = [
         {

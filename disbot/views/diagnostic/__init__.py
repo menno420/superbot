@@ -23,7 +23,7 @@ None of these views are PersistentViews — all are ephemeral,
 timeout-based.  Each hub view takes only the invoking ``author`` and
 reads ``bot`` from ``interaction.client`` at callback time, so the
 same view can be safely instantiated from either the typed command
-or ``HelpPanelView._on_select``.
+or the Help navigation (the Server & Admin hub panel).
 """
 
 from __future__ import annotations

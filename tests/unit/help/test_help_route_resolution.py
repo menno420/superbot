@@ -1,10 +1,11 @@
 """Unit tests for :func:`cogs.help_cog._resolve_route` — the single
 resolver shared by typed ``!help <name>`` and the Help dropdown.
 
-The resolver normalizes the input name and returns one of five route
-kinds: ``hub``, ``subsystem``, ``advanced``, ``command``, ``unknown``.
-Typed Help and the dropdown both call this so the same name produces
-the same destination regardless of entry point.
+The resolver normalizes the input name and returns one of four route
+kinds: ``hub``, ``subsystem``, ``command``, ``unknown``. Typed Help and
+the dropdown both call this so the same name produces the same
+destination regardless of entry point. (The ``advanced`` kind was
+removed with the All Commands browser — PR #1294.)
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ def _bot(command_names: tuple[str, ...] = ()) -> MagicMock:
 
 
 # ---------------------------------------------------------------------------
-# Advanced aliases
+# Advanced aliases removed (PR #1294) — they no longer special-case.
 # ---------------------------------------------------------------------------
 
 
@@ -39,9 +40,9 @@ def _bot(command_names: tuple[str, ...] = ()) -> MagicMock:
     "name",
     ["advanced", "all", "commands", "all commands", "Advanced", "ALL"],
 )
-def test_advanced_aliases_resolve_to_advanced(name):
+def test_former_advanced_aliases_are_unknown(name):
     route = help_cog._resolve_route(name, bot=_bot())
-    assert route.kind == "advanced"
+    assert route.kind == "unknown"
 
 
 # ---------------------------------------------------------------------------

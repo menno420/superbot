@@ -1,6 +1,6 @@
 """Help-menu direct-navigation contract tests.
 
-When the user picks a category in the help dropdown, HelpPanelView._on_select
+When the user picks a category in the help dropdown, HelpCategoryView._on_select
 calls ``cog.build_help_menu_view(interaction)`` and replaces the help embed
 with the cog's hub panel directly — no inline command-list fallback, no
 secondary click.

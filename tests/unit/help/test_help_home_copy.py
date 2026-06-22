@@ -38,13 +38,14 @@ def test_each_hub_row_has_uniform_two_line_shape():
         assert len(lines) >= 2, f"row {field.name!r} has fewer than 2 lines"
 
 
-def test_advanced_row_is_present_for_every_tier():
+def test_no_advanced_row_at_any_tier():
+    # The redundant "All Commands / Advanced" row was removed (PR #1294).
     for tier in ("user", "moderator", "administrator", "owner"):
         embed = build_categories_overview_embed(member_tier=tier)
         names = [f.name for f in embed.fields]
-        assert any(
-            "Advanced" in n for n in names
-        ), f"Advanced row missing at tier={tier}"
+        assert not any(
+            "Advanced" in n or "All Commands" in n for n in names
+        ), f"Advanced row still present at tier={tier}"
 
 
 def test_admin_tier_sees_all_hubs():

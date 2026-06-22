@@ -119,7 +119,7 @@ async def test_typed_help_mining_opens_panel_with_back_to_help(monkeypatch):
 async def test_dropdown_help_mining_opens_panel_with_back_to_help(monkeypatch):
     """Dropdown Help → Mining must also carry Back-to-Help. Dropdown
     uses the same ``_open_route`` + ``_attach_back_to_help_button`` pair
-    via ``HelpCategoryView._on_select`` and ``HelpPanelView._on_select``.
+    via ``HelpCategoryView._on_select``.
     """
     opener = _opener()
     route = help_cog._resolve_route("mining", bot=opener.client)

@@ -11,7 +11,7 @@ buttons. The shape contract this file pins:
 * Every rendered hub button is actionable: not ``disabled``, no
   "coming soon" / placeholder labels.
 * Component count stays safely below Discord's 25-component cap
-  (worst case includes Back-to-Help added by ``HelpPanelView``).
+  (worst case includes Back-to-Help added by the Help layer).
 * ``attach_back_to_games_button`` adds a button and no-ops at the cap.
 * The child-open callback routes through
   ``GamesHubView.handle_select``, gracefully handling missing cog,
@@ -203,7 +203,7 @@ def test_view_does_not_shadow_discord_internal_children_attr():
 
 
 def test_view_has_no_built_in_back_to_help_button():
-    """Back-to-Help is added by HelpPanelView when surfaced from the
+    """Back-to-Help is added by the Help layer when surfaced from the
     help menu; direct ``!games`` invocation has no back nav (mirrors
     ``!countingmenu``).
     """
@@ -311,7 +311,7 @@ def test_no_placeholder_or_coming_soon_labels():
 
 def test_component_count_is_under_discord_cap():
     """Components per view ≤ 25 (Discord hard cap), including the
-    worst-case scenario where ``HelpPanelView`` appends Back-to-Help
+    worst-case scenario where the Help layer appends Back-to-Help
     when opening via Help.
     """
     view = GamesHubView(_author())

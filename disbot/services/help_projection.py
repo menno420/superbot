@@ -263,21 +263,6 @@ class HelpProjection:
                 out.append(presentation)
         return out
 
-    def advanced_subsystems(self) -> list[str]:
-        """Top-level subsystem keys the Advanced browser lists, in
-        ``ui_priority`` order (parent-hub children stay inside their hub).
-        """
-        from services.help_catalogue import build_help_catalogue
-
-        catalogue = build_help_catalogue()
-        return [
-            d.key
-            for d in self.subsystems
-            if d.advertised
-            and (row := catalogue.subsystem(d.key)) is not None
-            and row.top_level
-        ]
-
     def is_subsystem_advertised(self, key: str) -> bool:
         decision = self.subsystem_decision(key)
         return decision is not None and decision.advertised
