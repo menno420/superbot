@@ -46,10 +46,15 @@ def _tool(name: str, *args: str) -> list[str]:
 #     turned the prescribed pre-push check permanently red for no real
 #     reason and caused wasted back-and-forth.
 #   * CI runs mypy only against disbot/.
-# black --exclude / ruff --exclude take a regex / comma-list; isort uses
-# --skip-glob. Kept byte-for-byte aligned with the workflow.
+# black --exclude / ruff --exclude take a regex / comma-list. isort's
+# --skip-glob takes a GLOB (not a regex): the old "*/(\.github|tests|...)/*" was
+# regex alternation inside a glob, so it matched nothing and isort silently
+# scanned tests/ — diverging from CI, which excludes tests/ via directory-name
+# --skip flags (code-quality.yml, fixed 2026-06-15). We mirror CI exactly: one
+# --skip <dir> per excluded directory (recurses). Kept aligned with the workflow;
+# tests/unit/scripts/test_check_quality_ci_parity.py guards against re-drift.
 _BLACK_EXCLUDE = r"(\.github|tests|venv|env|build|dist)"
-_ISORT_SKIP_GLOB = r"*/(\.github|tests|venv|env|build|dist)/*"
+_ISORT_SKIP_DIRS = (".github", "tests", "venv", "env", "build", "dist")
 _RUFF_EXCLUDE = ".github,tests,venv,env,build,dist"
 
 
@@ -98,8 +103,11 @@ def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
                     "isort",
                     *(["--check-only"] if check_only else []),
                     ".",
-                    "--skip-glob",
-                    _ISORT_SKIP_GLOB,
+                    *(
+                        arg
+                        for directory in _ISORT_SKIP_DIRS
+                        for arg in ("--skip", directory)
+                    ),
                 ),
             ),
         ),
