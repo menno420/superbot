@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T20:15:50Z",
+    "generated_at": "2026-06-24T00:40:50Z",
     "build": {
-      "commit": "9ac17a3c",
-      "subject": "feat(setup): AI-setup advisor — Accept · Deny · Edit (Q-0048 finalize) (#1386)",
-      "committed_at": "2026-06-23T20:15:50Z"
+      "commit": "9496361e",
+      "subject": "Merge pull request #1394 from menno420/claude/magical-fermat-9uiogg",
+      "committed_at": "2026-06-24T00:40:50Z"
     },
     "counts": {
       "functions": 41,
-      "ideas": 135,
+      "ideas": 136,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1107,6 +1107,16 @@
     }
   ],
   "ideas": [
+    {
+      "file": "btd6-runtime-mechanics-from-game-2026-06-23.md",
+      "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+      "status": "ideas",
+      "date": "2026-06-23",
+      "summary": "Every BTD6 number dispute we've had traces to the same root: **the data we have is",
+      "subsystems": [
+        "btd6"
+      ]
+    },
     {
       "file": "competitive-positioning-north-star-2026-06-23.md",
       "title": "Vision: competitive positioning — what makes people choose us over any other bot",
@@ -2405,6 +2415,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-23-wordfilter-deobfuscation.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Obfuscation-resistant word filter (beat Sapphire's content filter)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-visual-card-engine.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Themeable card-render engine + profile card (out-visual Dank Memer, PR 1)",
@@ -2482,6 +2500,14 @@
       "title": "2026-06-23 — Docs reconciliation pass (band-#1350, Q-0107)",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-q0199-ai-setup-apply.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Record Q-0199 (AI-setup apply decision) in the router",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2637,6 +2663,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-23-consolidation-docs-reconcile.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Reconcile consolidation-audit docs to today's shipped work",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-competitive-positioning.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Competitive-positioning north-star (what makes people choose us)",
@@ -2701,6 +2735,30 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-23-btd6-runtime-extraction-idea.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Capture: BTD6 runtime mechanics straight from the game",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-btd6-freeplay-curve-and-rbe.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — BTD6 freeplay curve fix + ground-truth round-scaled RBE",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-btd6-cash-empirical-validation.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — BTD6 cash model: empirical validation (capture)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-btd6-bloon-health-round-scaling.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — BTD6 late-game/freeplay bloon health scaling (round-scaled HP)",
@@ -2731,6 +2789,14 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-ai-setup-edit-rebind.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — AI-setup Edit: re-pick target for `bind` suggestions (self-initiated)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-23-ai-setup-edit-button.md",
@@ -2826,62 +2892,6 @@
       "title": "2026-06-22 — Merge all open PRs + retire the `needs-hermes-review` label/rule",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-repo-navigation-cleanup.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Repo navigation cleanup: stale claims + conflicting instructions",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-remove-false-ci-synchronize-claim.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Remove the disproven \"synchronize doesn't re-fire CI\" claim",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-reconcile-band1320.md",
-      "date": "2026-06-22",
-      "title": "Session — 2026-06-22 · twenty-first Q-0107 reconciliation pass (band-#1320)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-reconcile-band1290.md",
-      "date": "2026-06-22",
-      "title": "Session — 2026-06-22 · band-#1290 Q-0107 docs reconciliation",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-reaction-roles-pr6-pil-cards.md",
-      "date": "2026-06-22",
-      "title": "Session — reaction-roles PR 6: PIL banner cards (§4.6d)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-monkey-knowledge-all-roster.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — \"list all monkey knowledge\" regression (whole-catalog MK roster)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-mining-grid-mine.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Mining grid Mine (hub-redesign PR 3)",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": false
     }
   ],
