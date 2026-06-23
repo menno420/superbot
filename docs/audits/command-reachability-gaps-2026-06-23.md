@@ -29,7 +29,8 @@ is a subsystem `entry_point`.
 ## Run summary (2026-06-23, `e8b25e6` baseline)
 
 ```
-214 prefix commands  →  75 reachable · 138 exempt · 1 GAP   (was 2 — !btd6strat fixed in PR #1372)
+214 prefix commands  →  76 reachable · 138 exempt · 0 GAP   (all gaps cleared:
+  !btd6strat #1372, !temproles #1377 — the baseline is now empty)
 ```
 
 The static guard initially flagged **8** member-tier commands across 6 orphan cogs
@@ -40,8 +41,8 @@ checker's bug) split them: **5 were already reachable via a hub-panel button / p
 help-text** → allowlisted with a source citation; **2 were small omissions fixed by
 adding a surface** (`!cbrecord` — one line in the creature panel text, Session 1;
 `!btd6strat` — a **Strategy button on `BTD6PanelView`**, PR #1372 / fleet unit U4),
-then allowlisted; **1 is genuinely unsurfaced** → the baseline (`!temproles`, routed
-to fleet unit U2).
+then allowlisted; **1 was genuinely unsurfaced** (`!temproles`) — **now also cleared**
+by fleet unit U2 (#1377), so the baseline is **empty**.
 
 ### Exempt — operator-gated (allowlisted, verified by reading the cogs)
 
@@ -60,14 +61,14 @@ to fleet unit U2).
 | `!cbrecord` | Creature panel **help text** — the missing line, added in Session 1. |
 | `!btd6strat` | BTD6 hub panel **"Strategy"** button — added in PR #1372 (U4); opens `strategy_browse.build_browse_embed`. |
 
-### The 1 genuine gap (the baseline — `test_command_reachability._BASELINE`)
+### The baseline — now EMPTY (`test_command_reachability._BASELINE == frozenset()`)
 
-Member-tier commands verified **not** surfaced by any homed help-list, panel button,
-or panel text. Recorded (ratcheted — *new* gaps fail) as the per-cog follow-on work.
+All gaps are cleared; the ratchet (`test_no_new_command_reachability_gaps`) now holds at **0** and a
+*new* unreachable member command fails CI. Historical record of the last entry:
 
-| Cog | Command | Why it's a gap (verified) | Suggested follow-on |
-|---|---|---|---|
-| `role_grants_cog.py` | `!temproles` | `RoleGrantsCog` maps to no subsystem; the member view of one's temp roles isn't surfaced in any roles panel. | **Fleet unit U2 (roles):** home under the `role` subsystem or surface via the roles panel + allowlist. |
+| Cog | Command | Disposition |
+|---|---|---|
+| `role_grants_cog.py` | `!temproles` | **CLEARED (#1377)** — surfaced via the role hub's **Time Roles** panel (`views/roles/time_roles_panel.py` → "⏳ My Temp Roles" → `_TempRolesView`); reachable through `!roles` → ⏱️ Time Roles. Allowlisted (the typed `!temproles` is a shortcut) and removed from `_BASELINE`. |
 
 ## How to clear an entry
 

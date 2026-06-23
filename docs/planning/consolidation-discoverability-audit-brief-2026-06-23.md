@@ -8,15 +8,18 @@
 > [settings-bindings-provisioning](../subsystems/settings-bindings-provisioning.md) ·
 > [ai](../subsystems/ai.md).
 
-> **▶ Session 1 SHIPPED (2026-06-23, PR #1370).** Foundation done: the general-cog
-> "unfindable" **root cause is found statically** (the Utility hub panel didn't surface its
-> `general`/`four_twenty` children — §3.2) and **fixed** (the panel now renders child buttons +
-> lists them in the embed, mirroring the Games/Community hubs); the **per-command reachability
-> guard** is built (`scripts/check_command_reachability.py` +
-> `tests/unit/invariants/test_command_reachability.py`, warn-first ratchet) and emits the **per-cog
-> gap list** ([214 commands → 2 genuine gaps; 6 reachable-via-panel commands source-verified +
-> allowlisted, incl. a `!cbrecord` one-line fix](../audits/command-reachability-gaps-2026-06-23.md)).
-> Sessions 2 (AI panel) and 3 (roles) remain; the 2 gap cogs are tiny per-cog follow-ons.
+> **✅ AUDIT COMPLETE (2026-06-23).** All five goals shipped + CI-guarded. **Session 1** (#1370):
+> general-cog "unfindable" root-caused (Utility hub didn't surface its children) + fixed; the
+> **per-command reachability guard** built (warn-first ratchet). **Ultracode fleet** (#1375): cleared the
+> `edit_in_place` backlog and **graduated the rule to error** — U1 AI panels (#1376), U2 roles + the
+> `!temproles` gap (#1377), U3 games hub (#1378); both gap cogs closed (`btd6strat` #1372, `temproles`
+> #1377) → **0 command gaps**, baseline empty. **Never-stranded:** universal Help + Back-to-hub on every
+> panel (#1382) + game-result continuation buttons (#1383). **Settings centralized:** the
+> settings-reachability guard (#1385 — 19/19, 0 gaps). **AI advisor finalized:** describe → propose →
+> Accept/Deny/Edit → confirm → audited apply (#1386 + bind re-pick #1390); Q-0048 decided → **Q-0199**
+> (#1389). **▶ Remaining (optional polish, not blocking):** the setup-wizard *per-section* walk (U10) ·
+> the visual card-engine migration (§3.6) · the `channel-deployed-component` primitive (§5). The §7
+> session order / Appendix A below are the *historical* plan — kept for provenance, not a live to-do.
 
 ## 1. Mandate (why now)
 

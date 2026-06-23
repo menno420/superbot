@@ -45,26 +45,24 @@
   broadcast table. [design](../planning/casino-poker-design-2026-06-22.md).
 
 **▶ Next startable (one of):**
-- **▶ Consolidation / discoverability audit (owner-directed, top priority 2026-06-23)** — solidify what
-  we shipped this week: every command findable + buttonized, setup wizard improved, AI advisor finalized,
-  per-cog + general settings centralized; no orphaned ephemeral panels, no missing cogs/commands in help.
-  One cog / connected-group at a time. Staging brief + per-cog rubric + first targets:
+- **✅ Consolidation / discoverability audit — COMPLETE (owner-directed, 2026-06-23).** All five goals
+  shipped and CI-guarded where possible. Staging brief + per-cog rubric:
   [`planning/consolidation-discoverability-audit-brief-2026-06-23.md`](../planning/consolidation-discoverability-audit-brief-2026-06-23.md).
-  **Session 1 (foundation) SHIPPED (PR #1370):** general-cog "unfindable" root-caused (the Utility hub
-  panel didn't surface its `general`/`four_twenty` children) + fixed; the **per-command reachability
-  guard** built (`scripts/check_command_reachability.py` + warn-first invariant) → 214 commands, 2
-  genuine gaps recorded ([gap ledger](../audits/command-reachability-gaps-2026-06-23.md)).
-  **Ultracode consolidation fleet SHIPPED (2026-06-23, coordinator PR #1375):** the parallel worker fleet
-  cleared the whole `edit_in_place` backlog and **graduated the rule warn→error** (now CI-enforced via
-  `check_consistency --mode strict`). **U1 (#1376):** all 17 `views/ai/` findings migrated to true
-  in-place navigation (new `views/ai/_nav.py` page-swap helper). **U2 (#1377):** roles Create flow in
-  place + `!temproles` surfaced (reachability GAP→0, baseline emptied); the 14 remaining roles buttons
-  source-verified as genuine sub-flow-picker / report-toast cases and allowlisted (not muted). **U3
-  (#1378):** games child-buttons migrated onto the shared `HubChildButton` (−77 lines). **U3b:** the 3
-  casino/cleanup cases allowlisted. Both prior gap cogs are closed (`btd6strat` #1372, `temproles` #1377).
-  **▶ Remaining (deferred / gated):** the AI-advisor *generative* finalize + settings centralization (the
-  AI-nav plan's PR 3 — Q-0048 owner-gated) · the `channel-deployed-component` roles primitive (idea, not
-  yet built).
+  - **Every command findable + buttonized** — per-command reachability guard (#1370); gap cogs closed
+    (`btd6strat` #1372, `temproles` #1377) → **0 gaps**, baseline emptied, CI-enforced.
+  - **No loose ends / forgotten panels** — the ultracode fleet cleared the `edit_in_place` backlog and
+    **graduated the rule warn→error** (#1375; U1 AI panels #1376, U2 roles #1377, U3 games hub #1378);
+    **universal Help + Back-to-hub on every panel** (#1382); **game-result continuation buttons** (#1383).
+  - **Settings centralized** — the settings-reachability guard (#1385): 19/19 reachable, 0 gaps, CI-enforced.
+  - **AI advisor finalized** — describe → propose → **Accept/Deny/Edit** → confirm → audited apply
+    (#1386 + bind re-pick #1390); Q-0048 decided (AI applies only after confirmation) → recorded as
+    **Q-0199** (#1389).
+  - Shared primitives extracted along the way: `views/hub_children.py` `discover_hub_children` +
+    `HubChildButton` (#1371/#1373); `views/navigation.py` `attach_standard_nav` (#1382).
+  - **▶ Remaining (optional polish tail, not blocking):** the setup-wizard **per-section walk** (fleet
+    unit U10 — confirm every *manual* section yields a real op / honest link-only; the AI-describe side
+    is done) · the **visual card-engine migration** (§3.6 — rank/profile/leaderboard onto `card_render`,
+    still plain embeds) · the `channel-deployed-component` roles primitive (idea, not yet built).
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:
