@@ -110,6 +110,46 @@ class SetupCog(commands.Cog):
 
         await open_wizard_from_slash(interaction)
 
+    @commands.command(name="setupdescribe", aliases=["describesetup"])
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def setup_describe_cmd(
+        self,
+        ctx: commands.Context,
+        *,
+        description: str = "",
+    ) -> None:
+        """Describe your server in words; propose how to wire it to the bot.
+
+        Natural-language setup wedge: the configured advisor reads your
+        description **and** the live server, then proposes which channels/roles
+        bind to which subsystems. Read-only — nothing changes until you accept
+        and apply in the review panel (still gated by setup access).
+        """
+        from cogs.setup._describe_entry import open_describe_from_prefix
+
+        await open_describe_from_prefix(ctx, description)
+
+    @app_commands.command(
+        name="setup-describe",
+        description="Describe your server; the AI proposes a setup plan to review.",
+    )
+    @app_commands.describe(
+        description="What your server is for and how it's organised.",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_describe_slash(
+        self,
+        interaction: discord.Interaction,
+        description: str,
+    ) -> None:
+        """Ephemeral natural-language setup proposal (admin-gated)."""
+        from cogs.setup._describe_entry import open_describe_from_slash
+
+        await open_describe_from_slash(interaction, description)
+
     @app_commands.command(
         name="setup-hub",
         description="Open the legacy section-list hub (compat).",

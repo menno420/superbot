@@ -4725,6 +4725,19 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "setup-describe",
+    "area": "other",
+    "status": "finished",
+    "summary": "Describe your server; the AI proposes a setup plan to review.",
+    "description": "Ephemeral natural-language setup proposal (admin-gated).",
+    "usage": "!setup-describe",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "setup-hub",
     "area": "other",
     "status": "finished",
@@ -4813,6 +4826,21 @@ const COMMANDS = [
     "description": "Drop section from the session's skipped_sections set.",
     "usage": "!setup-unskip",
     "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "setupdescribe",
+    "area": "other",
+    "status": "finished",
+    "summary": "Describe your server in words; propose how to wire it to the bot.",
+    "description": "Describe your server in words; propose how to wire it to the bot.",
+    "usage": "!setupdescribe",
+    "aliases": [
+      "describesetup"
+    ],
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
@@ -6310,7 +6338,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "a622a83",
+    "build": "b6bf85d",
     "title": "New public bot website",
     "changes": [
       {
@@ -6322,7 +6350,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "a622a83",
+    "build": "b6bf85d",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6334,7 +6362,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "a622a83",
+    "build": "b6bf85d",
     "title": "Command-alias suggestions",
     "changes": [
       {

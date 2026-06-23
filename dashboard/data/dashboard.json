@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T09:16:14Z",
+    "generated_at": "2026-06-23T09:37:22Z",
     "build": {
-      "commit": "a622a83",
-      "subject": "Competitive-positioning north-star vision doc (what makes people choose us) (#1352)",
-      "committed_at": "2026-06-23T09:16:14Z"
+      "commit": "b6bf85d",
+      "subject": "Open AI natural-language setup wedge session (born-red): claim + card",
+      "committed_at": "2026-06-23T09:37:22Z"
     },
     "counts": {
       "functions": 41,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 51,
-      "commands": 386,
+      "commands": 388,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2389,6 +2389,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-23-reconcile.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Docs reconciliation pass (band-#1350, Q-0107)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-new-subsystem-checker-gaps.md",
       "date": "2026-06-23",
       "title": "Session — 2026-06-23 · Close the new-subsystem checker's blind spots",
@@ -2491,6 +2499,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-ai-setup-wedge.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — AI natural-language setup wedge (`/setup-describe`)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-22-unattended-fit-dispatch-dimension.md",
@@ -2842,22 +2858,6 @@
       "title": "2026-06-22 — Bulk role creation enhancements",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-bug0023-slash-scan-coverage.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — BUG-0023 root fix: scanner discovers `app_commands.Group` attribute slash commands",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-bug-0024-dashboard-flake.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — BUG-0024: make the dashboard `generated_at` determinism test hermetic",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
@@ -3428,13 +3428,13 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 175,
+          "line": 188,
           "layer": "services",
           "has_default": true
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 406,
+          "line": 447,
           "layer": "services",
           "has_default": true
         }
@@ -3519,7 +3519,7 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 173,
+          "line": 186,
           "layer": "services",
           "has_default": true
         }
@@ -3549,7 +3549,7 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 393,
+          "line": 434,
           "layer": "services",
           "has_default": true
         }
@@ -7973,6 +7973,17 @@
           "button_backed": false
         },
         {
+          "name": "setup-describe",
+          "type": "slash",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Describe your server; the AI proposes a setup plan to review.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "setup-hub",
           "type": "slash",
           "is_group": false,
@@ -8034,6 +8045,19 @@
           "parent": null,
           "aliases": [],
           "brief": "Remove a section from the skipped set (owner/delegated admin only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "setupdescribe",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "describesetup"
+          ],
+          "brief": "Describe your server in words; propose how to wire it to the bot.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

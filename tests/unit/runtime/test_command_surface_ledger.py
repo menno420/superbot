@@ -1048,6 +1048,7 @@ EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
     "setup": None,
     "setup-delegate": None,
     "setup-depth": None,
+    "setup-describe": None,  # natural-language setup wedge
     "setup-hub": "legacy_duplicate",  # FIND-B07: explicit compat UI
     "setup-reset": None,
     "setup-skip": None,
