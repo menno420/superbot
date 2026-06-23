@@ -38,6 +38,11 @@ _NEW_CUSTOM_IDS = frozenset(
         # Strategy browse — added 2026-06-23 (discoverability audit U4) so the
         # !btd6strat strategy memory is reachable by clicking through the BTD6 hub.
         "btd6:strategy",
+        # Universal Help control auto-attached to every SUBSYSTEM panel by
+        # views.navigation.attach_standard_nav (the "never stranded" contract,
+        # owner directive 2026-06-23). btd6 is a top-level hub (no parent_hub),
+        # so it gets the Help button but no Back-to-hub button.
+        "nav:help",
     },
 )
 

@@ -60,8 +60,13 @@ def _opener() -> help_cog.HelpOpener:
 
 
 def _has_back_to_help(view: discord.ui.View) -> bool:
+    # A leaf panel reaches Help either via the legacy externally-pushed
+    # "help:back" button OR — since 2026-06-23 — the universal "nav:help"
+    # control auto-attached in its __init__ (attach_standard_nav). Both satisfy
+    # the "Mining is one click from Help" contract this module pins.
     return any(
-        getattr(c, "custom_id", None) == "help:back" for c in view.children
+        getattr(c, "custom_id", None) in ("help:back", "nav:help")
+        for c in view.children
     )
 
 
@@ -154,6 +159,10 @@ async def test_back_to_help_attaches_below_25_component_cap():
         f"Back-to-Help would push it to or past Discord's 25-cap and the "
         f"button would silently be dropped"
     )
+    # MiningHubView now auto-attaches the universal nav:help in __init__, so it
+    # already carries a back-to-Help affordance under the cap; the legacy
+    # external push is correctly de-duplicated to a no-op.
+    assert _has_back_to_help(view)
     help_cog._attach_back_to_help_button(view)
     assert _has_back_to_help(view)
-    assert len(view.children) == component_count_before + 1
+    assert len(view.children) == component_count_before  # no duplicate added

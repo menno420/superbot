@@ -110,7 +110,19 @@ class BaseView(discord.ui.View):
     - Invoker restriction (public=False, the default) or public access
     - Disable-on-timeout — never removes the view from the message
     - Message reference tracking for timeout editing
+    - Standard nav: when the subclass declares ``SUBSYSTEM`` (and leaves
+      ``STANDARD_NAV`` True), a 📚 Help button — and a ↩ Back-to-hub button
+      when the subsystem has a ``parent_hub`` — are auto-attached on every
+      construction, so a panel reached by *any* command stays one click from
+      Help and its mother hub and never loses them on a redraw (owner
+      directive 2026-06-23).
     """
+
+    # Declared by panels that should carry standard nav (mirrors the
+    # PersistentView contract). Empty ⇒ no auto-nav (confirmations, transient
+    # sub-views). Set STANDARD_NAV = False to opt a SUBSYSTEM panel out.
+    SUBSYSTEM: str = ""
+    STANDARD_NAV: bool = True
 
     def __init__(
         self,
@@ -123,6 +135,9 @@ class BaseView(discord.ui.View):
         self._author = author
         self._public = public
         self.message: discord.Message | None = None
+        from views.navigation import attach_standard_nav
+
+        attach_standard_nav(self)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if self._public:

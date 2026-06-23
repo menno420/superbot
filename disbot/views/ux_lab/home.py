@@ -78,6 +78,8 @@ async def home_builder(
 class UxLabHomeView(HubView):
     """The gallery's category hub (admin workbench — author-locked)."""
 
+    SUBSYSTEM = "ux_lab"
+
     def __init__(self, author: discord.Member | discord.User) -> None:
         super().__init__(author)
         wings: tuple[tuple[str, str, type[ExhibitWingView], int], ...] = (

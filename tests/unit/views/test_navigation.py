@@ -40,10 +40,14 @@ import pytest
 
 from views.navigation import (
     MAX_COMPONENTS,
+    NAV_HELP_ID,
     BackTarget,
     attach_back_button,
     attach_back_target,
+    attach_standard_nav,
+    carry_back,
     chain_back,
+    has_standard_nav,
     transition_to,
 )
 
@@ -801,3 +805,169 @@ async def test_shop_subview_back_btn_with_no_origin_omits_chain():
     # No spurious back buttons.
     assert "help:back" not in rebuilt_custom_ids
     assert "economy:back" not in rebuilt_custom_ids
+
+
+# ---------------------------------------------------------------------------
+# carry_back — the games/admin panel back-loss fix
+# ---------------------------------------------------------------------------
+#
+# Regression guard for the class the owner's live walk surfaced (2026-06-23):
+# a panel that redraws onto a FRESH view instance on an action (the
+# edit_in_place idiom) dropped the Back-to-[hub] button the hub attached to the
+# ORIGINAL instance. carry_back() re-applies it. This is the runtime check the
+# static `back_button` consistency rule structurally cannot make (it only checks
+# a view CLASS has a back affordance somewhere, not that a redraw keeps it).
+
+
+async def _parent_builder(_interaction):
+    return discord.Embed(title="parent"), discord.ui.View()
+
+
+def _back_ids(view: discord.ui.View) -> set[str]:
+    return {
+        b.custom_id
+        for b in view.children
+        if isinstance(b, discord.ui.Button) and b.custom_id
+    }
+
+
+def test_carry_back_reattaches_back_to_a_fresh_view():
+    old = discord.ui.View()
+    attach_back_button(
+        old,
+        label="↩ Back to Games",
+        custom_id="games:back",
+        parent_builder=_parent_builder,
+    )
+    assert "games:back" in _back_ids(old)
+
+    new = discord.ui.View()  # the fresh redraw instance — no back of its own
+    assert "games:back" not in _back_ids(new)
+
+    carry_back(old, new)
+    assert "games:back" in _back_ids(new)  # the fix: it survives the redraw
+
+
+def test_carry_back_replays_every_recorded_back():
+    """Both Back-to-[hub] and a chained Back-to-Help survive together."""
+    old = discord.ui.View()
+    attach_back_button(
+        old,
+        label="↩ Back to Games",
+        custom_id="games:back",
+        parent_builder=_parent_builder,
+    )
+    attach_back_button(
+        old,
+        label="↩ Back to Help",
+        custom_id="help:back",
+        parent_builder=_parent_builder,
+    )
+    new = discord.ui.View()
+    carry_back(old, new)
+    assert {"games:back", "help:back"} <= _back_ids(new)
+
+
+def test_carry_back_is_noop_without_a_recorded_back():
+    old = discord.ui.View()  # never had a back attached
+    new = discord.ui.View()
+    carry_back(old, new)  # must not raise
+    assert _back_ids(new) == set()
+
+
+def test_carry_back_carries_the_back_target_for_chaining():
+    old = discord.ui.View()
+    target = BackTarget(
+        label="↩ Back to Help",
+        custom_id="help:back",
+        builder=_parent_builder,
+    )
+    attach_back_target(old, target)
+    new = discord.ui.View()
+    carry_back(old, new)
+    assert getattr(new, "_back_target", None) is target
+
+
+# ---------------------------------------------------------------------------
+# Idempotency guard (the lynchpin that lets auto-nav coexist with the legacy
+# external back-pushers without ever duplicating a control).
+# ---------------------------------------------------------------------------
+
+
+def test_attach_back_button_is_idempotent_by_custom_id():
+    view = discord.ui.View()
+    assert attach_back_button(
+        view, label="A", custom_id="dup", parent_builder=_parent_builder
+    )
+    # Second attach with the same custom_id (different label) is a no-op.
+    assert attach_back_button(
+        view, label="B", custom_id="dup", parent_builder=_parent_builder
+    )
+    dup_buttons = [c for c in view.children if getattr(c, "custom_id", None) == "dup"]
+    assert len(dup_buttons) == 1
+    assert dup_buttons[0].label == "A"  # the first one wins
+
+
+# ---------------------------------------------------------------------------
+# Standard nav — the "never stranded" auto-attach (owner directive 2026-06-23).
+# ---------------------------------------------------------------------------
+
+
+class _NavView(discord.ui.View):
+    """A minimal view that opts into standard nav for a given subsystem."""
+
+    def __init__(self, subsystem: str, *, standard_nav: bool = True) -> None:
+        super().__init__(timeout=None)
+        self.SUBSYSTEM = subsystem
+        self.STANDARD_NAV = standard_nav
+        attach_standard_nav(self)
+
+
+def test_standard_nav_attaches_help_and_back_to_hub_for_a_child_subsystem():
+    # farm → parent_hub "games"
+    view = _NavView("farm")
+    assert _back_ids(view) == {NAV_HELP_ID, "nav:hub:games"}
+    assert has_standard_nav(view)
+
+
+def test_standard_nav_attaches_only_help_for_a_top_level_hub():
+    # games is a mother hub — no parent_hub, so only the Help button.
+    view = _NavView("games")
+    assert _back_ids(view) == {NAV_HELP_ID}
+
+
+def test_standard_nav_skips_help_button_on_the_help_menu_itself():
+    view = _NavView("help")
+    assert _back_ids(view) == set()
+
+
+def test_standard_nav_is_noop_without_a_subsystem():
+    view = discord.ui.View()
+    attach_standard_nav(view)  # no SUBSYSTEM attr
+    assert _back_ids(view) == set()
+    assert not has_standard_nav(view)
+
+
+def test_standard_nav_respects_the_opt_out_flag():
+    view = _NavView("farm", standard_nav=False)
+    assert _back_ids(view) == set()
+
+
+def test_standard_nav_is_idempotent_across_redraws():
+    view = _NavView("farm")
+    before = _back_ids(view)
+    attach_standard_nav(view)  # a second construction-style call
+    assert _back_ids(view) == before
+
+
+def test_standard_nav_skips_unknown_subsystem():
+    view = _NavView("not_a_real_subsystem")
+    assert _back_ids(view) == set()
+
+
+def test_has_standard_nav_detects_hub_back_without_help():
+    view = discord.ui.View()
+    attach_back_button(
+        view, label="↩ Games", custom_id="nav:hub:games", parent_builder=_parent_builder
+    )
+    assert has_standard_nav(view)

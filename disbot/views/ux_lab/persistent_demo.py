@@ -24,6 +24,10 @@ class UxLabPersistentDemo(PersistentView):
     """Two buttons that keep working across bot restarts."""
 
     SUBSYSTEM = "ux_lab"
+    # A teaching mockup, not a navigable panel: it demonstrates the persistent
+    # custom_id contract with exactly two buttons, so it opts out of the
+    # universal Help / Back-to-hub auto-attach (which would pollute the demo).
+    STANDARD_NAV = False
 
     @discord.ui.button(
         label="Press me (survives restarts)",

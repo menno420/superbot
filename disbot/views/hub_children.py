@@ -34,7 +34,7 @@ import discord
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.subsystem_registry import SUBSYSTEMS
-from views.navigation import BackTarget, attach_back_target
+from views.navigation import BackTarget, attach_back_target, has_standard_nav
 
 logger = logging.getLogger("bot.views.hub_children")
 
@@ -202,11 +202,15 @@ class HubChildButton(discord.ui.Button):
 
         # Attach the hub's Back button to the child view, threading any
         # Back-to-Help grandparent the hub carries so a Help → hub → child → back
-        # round-trip keeps Back-to-Help.
-        back_target: BackTarget | None = getattr(self.view, "_back_target", None)
-        self._back_attacher(sub_view, interaction.user, grandparent=back_target)
-        if back_target is not None:
-            attach_back_target(sub_view, back_target)
-        sub_view._back_target = back_target  # type: ignore[attr-defined]
+        # round-trip keeps Back-to-Help. Skipped when the child already carries
+        # standard nav (attach_standard_nav ran in its __init__ — a SUBSYSTEM
+        # panel): it already has its own ↩ Back-to-hub + 📚 Help, so pushing the
+        # hub's external back here would only duplicate it.
+        if not has_standard_nav(sub_view):
+            back_target: BackTarget | None = getattr(self.view, "_back_target", None)
+            self._back_attacher(sub_view, interaction.user, grandparent=back_target)
+            if back_target is not None:
+                attach_back_target(sub_view, back_target)
+            sub_view._back_target = back_target  # type: ignore[attr-defined]
 
         await interaction.response.edit_message(embed=embed, view=sub_view)

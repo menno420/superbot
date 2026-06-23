@@ -37,8 +37,12 @@ def _author() -> MagicMock:
 
 
 def _has_back_to_games(view: discord.ui.View) -> bool:
+    # A child reaches Games either via the legacy externally-pushed "games:back"
+    # button OR — since 2026-06-23 — the universal "nav:hub:games" control
+    # auto-attached in the panel's __init__ (attach_standard_nav).
     return any(
-        getattr(c, "custom_id", None) == "games:back" for c in view.children
+        getattr(c, "custom_id", None) in ("games:back", "nav:hub:games")
+        for c in view.children
     )
 
 
@@ -106,8 +110,9 @@ async def test_games_hub_button_attaches_back_to_games_on_child(monkeypatch):
     swapped = kwargs["view"]
     assert swapped is mining_view
     assert _has_back_to_games(swapped), (
-        "Games → Mining must carry custom_id='games:back' attached by "
-        "the shared HubChildButton callback via attach_back_to_games_button."
+        "Games → Mining must let the user return to Games. MiningHubView "
+        "self-attaches 'nav:hub:games' in __init__, so the shared HubChildButton "
+        "callback de-duplicates the external attach_back_to_games_button push."
     )
 
 

@@ -88,12 +88,17 @@ def test_view_has_expected_button_custom_ids():
         for c in view.children
         if isinstance(c, discord.ui.Button)
     }
+    # The five routing buttons, plus the universal standard nav auto-attached
+    # to every leaf panel (📚 Help + ↩ Moderation, since cleanup's parent_hub is
+    # moderation) — views.navigation.attach_standard_nav, 2026-06-23.
     assert custom_ids == {
         "cleanup:words",
         "cleanup:logging",
         "cleanup:settings",
         "cleanup:policies",
         "cleanup:refresh",
+        "nav:help",
+        "nav:hub:moderation",
     }
 
 
@@ -104,8 +109,9 @@ def test_view_buttons_use_two_rows():
         for c in view.children
         if isinstance(c, discord.ui.Button)
     }
-    # Top-row routing buttons + the refresh button on a second row.
-    assert rows == {0, 1}
+    # Top-row routing buttons + the refresh button on a second row, plus the
+    # standard-nav controls on the bottom row (4).
+    assert rows == {0, 1, 4}
 
 
 # ---------------------------------------------------------------------------
