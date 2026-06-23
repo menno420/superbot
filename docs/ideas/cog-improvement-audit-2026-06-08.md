@@ -148,6 +148,9 @@ style — rare recipes as loot, not auto-discoverable.
 ### Community (`community_cog.py`)
 - **Gap:** No giveaway or raffle command. (Polls also missing per previous
   session; giveaway/raffle is the next most requested.)
+  - **▶ Routed (2026-06-23):** competitive teardown of jagrosh's GiveawayBot +
+    buildable plan — [`giveaway-competitive-teardown`](./giveaway-competitive-teardown-2026-06-23.md)
+    → [`giveaway-system-plan`](../planning/giveaway-system-plan-2026-06-23.md).
 
 ### Chain (`chain_cog.py`)
 - **State:** Currently does not do anything meaningful.

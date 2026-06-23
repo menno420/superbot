@@ -227,6 +227,7 @@ A condensed version of `docs/help-command-surface-map.md` and
 | general | `cogs/general_cog.py` | — | reads `data/json/general_content.json` | n/a |
 | help | `cogs/help_cog.py` (+ `cogs/help/`) | — | `cogs/help/route.py` (resolver) | n/a |
 | inventory | `cogs/inventory_cog.py` | — | direct CRUD | `utils/db/inventory.py` |
+| karma | `cogs/karma_cog.py` (+ `cogs/karma/`) | — | `services/karma_service.py` (peer reputation; audited seam) | `utils/db/karma.py` |
 | leaderboard | `cogs/leaderboard_cog.py` | — | read-only | reads multiple |
 | logging | `cogs/logging_cog.py` (+ `cogs/logging/`) | — | `services/server_logging.py` | `utils/db/settings.py` |
 | mining | `cogs/mining_cog.py` (+ `cogs/mining/`) | `views/mining/` | direct CRUD | `utils/db/games/mining.py` |

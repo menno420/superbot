@@ -39,6 +39,11 @@ Current broad captures:
   (vetted exact response, preloaded, zero API call). Privacy (no PII, ever) is the gating constraint; phase
   the **preset layer first** (smallest, no privacy surface). The in-product mirror of the agent network's
   two-part curated memory (`collaboration-model.md`). AI lane.
+- [`giveaway-competitive-teardown-2026-06-23.md`](./giveaway-competitive-teardown-2026-06-23.md) —
+  **owner-directed (2026-06-23):** maintainer shared jagrosh's GiveawayBot and asked what it does, what we
+  lack (no giveaway system today), and how to beat it. Teardown + beat-it feature list (entry requirements,
+  weighted/bonus entries, auto-paid coin prizes, recurring) → routed to a 2–3-PR
+  [plan](../planning/giveaway-system-plan-2026-06-23.md). Community lane.
 - [`fishing-bait-crafting-2026-06-22.md`](./fishing-bait-crafting-2026-06-22.md) —
   **captured by the fishing-bait dispatch run (2026-06-22, PR #1329):** close the fishing economy loop by
   letting the cook/campfire loop (#1289) also craft small caught fish into bait, so catch → craft → bait →

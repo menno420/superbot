@@ -1,1 +1,1 @@
-- `claude/peaceful-franklin-klgw3f` · **build**: implement the Karma (thanks/upvote reputation) subsystem per the approved plan · `disbot/` (db/service/cog/leaderboard/settings) + migration + tests + docs · 2026-06-22
+- `claude/peaceful-franklin-klgw3f` · **tooling**: extend `scripts/new_subsystem.py` touch-point checker with the gaps the Karma build revealed (sector-folio map · extension_roles.yaml · config.py loading) + fix karma's missing repo-navigation-map row · `scripts/`, `tests/`, `docs/` · 2026-06-23
