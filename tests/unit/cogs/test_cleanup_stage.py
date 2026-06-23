@@ -335,3 +335,65 @@ class TestRemoveUnwantedMessageRoutesToModerationService:
 
         assert handled is False
         auto_delete.assert_not_awaited()
+
+
+class TestAntiEvasionStrictMode:
+    """Opt-in obfuscation-resistant matching (migration 097)."""
+
+    @staticmethod
+    def _armed_cog(strict: bool):
+        import re
+
+        cog = _make_cog()
+        cog._pattern_cache[99] = [re.compile(r"\bbadword\b", re.IGNORECASE)]
+        cog._word_cache[99] = ["badword"]
+        cog._strict_cache[99] = strict
+        return cog
+
+    @pytest.mark.asyncio
+    async def test_strict_off_ignores_obfuscated_word(self):
+        """Default OFF → an obfuscated banned word is NOT caught (byte-identical
+        to the old behaviour: the exact pass alone runs)."""
+        cog = self._armed_cog(strict=False)
+        msg = _make_message(content="b a d w o r d")  # spaced evasion
+
+        with patch(
+            "cogs.cleanup_cog.moderation_service.auto_delete",
+            new_callable=AsyncMock,
+        ) as auto_delete:
+            handled = await cog.remove_unwanted_message(msg)
+
+        assert handled is False
+        auto_delete.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_strict_on_catches_invisible_insertion(self):
+        """ON → a word broken up by zero-width characters is deleted, routed
+        through the same audited prohibited-words seam."""
+        cog = self._armed_cog(strict=True)
+        msg = _make_message(content="​".join("badword"))  # b<zwsp>a<zwsp>d…
+
+        with patch(
+            "cogs.cleanup_cog.moderation_service.auto_delete",
+            new_callable=AsyncMock,
+        ) as auto_delete:
+            handled = await cog.remove_unwanted_message(msg)
+
+        assert handled is True
+        auto_delete.assert_awaited_once()
+        assert auto_delete.call_args.kwargs["rule"] == "cleanup.prohibited_words"
+
+    @pytest.mark.asyncio
+    async def test_strict_on_still_ignores_clean_message(self):
+        """ON must not turn into a false-positive machine on ordinary text."""
+        cog = self._armed_cog(strict=True)
+        msg = _make_message(content="just chatting nicely")
+
+        with patch(
+            "cogs.cleanup_cog.moderation_service.auto_delete",
+            new_callable=AsyncMock,
+        ) as auto_delete:
+            handled = await cog.remove_unwanted_message(msg)
+
+        assert handled is False
+        auto_delete.assert_not_awaited()

@@ -1,7 +1,9 @@
 # Server management subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + the status tracker win.
-> **Last updated:** 2026-06-10 (#671 Help Preview migrated onto the Help projection seam; earlier same day: #656 subpanels recorded).
+> **Last updated:** 2026-06-23 (reaction-role overhaul reconciled — the surface shipped to
+> Carl-bot-parity-plus, no longer "documented debt"; earlier: 2026-06-10 #671 Help Preview onto the
+> projection seam, #656 subpanels).
 
 ## What & where
 
@@ -169,12 +171,18 @@ Hub) was built 2026-06-08** (registered first-class as the `server_management` s
 owner decision Q-0016; key snake_cased per Q-0026). The only remaining item is the gated PR13 AI generation layer. Link to
 the tracker for exact order and dependencies rather than copying them here.
 
-**Reaction-role overhaul (2026-06-21, `plan`):** the role hub's reaction-role surface is the
-clearest piece of documented debt (direct DB writes / no audit / read-only panel — see the
-audits below) and "self-role menu" is on the command-expansion backlog. The buildable plan to
-reach **Carl-bot parity-plus** — audited mutation seam (PR 1), native button/dropdown role menus
-(PR 2), Carl-style modes + interactive panel (PR 3) — is
-[`planning/reaction-roles-overhaul-plan-2026-06-21.md`](../planning/reaction-roles-overhaul-plan-2026-06-21.md).
+**Reaction-role overhaul — SHIPPED (`historical` plan).** The role hub's reaction-role surface
+reached **Carl-bot-parity-plus** and is **no longer documented debt** (the old "direct DB writes /
+no audit / read-only panel" description is stale — that was the *problem*, fixed by PR 1 of the
+overhaul). Shipped: the audited `reaction_role_service` mutation seam + `utils/db/role_menus`
+(migrations 078–081), native button/dropdown role menus with restart re-attach, Carl-style message
+modes (normal / unique / verify), an interactive in-Discord builder (theme/colour/gradient presets
+that **auto-create the roles** via the audited `RoleLifecycleService`, packs, templates), temp roles
+with expiry (`!temprole`, `role_grants`), role-pickup analytics, and PIL banner cards — via
+**#1219 / #1220 / #1234 / #1237 / #1242 / #1243 / #1245 / #1246 / #1248 / #1250 / #1279**. Only the
+**web builder (Surface A)** remains, owner-paced. Record:
+[`planning/reaction-roles-overhaul-plan-2026-06-21.md`](../planning/reaction-roles-overhaul-plan-2026-06-21.md)
+(now `historical`); live state: [`current-state/S1-bot.md`](../current-state/S1-bot.md).
 
 ## Ideas (not approved)
 

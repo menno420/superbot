@@ -19,6 +19,7 @@ from services.history_cleanup import (
     build_history_cleanup_plan,
 )
 from utils import db
+from utils.text_obfuscation import find_obfuscated_match
 from utils.ui_constants import ADMIN_COLOR
 from views.base import HubView, send_panel
 
@@ -77,9 +78,10 @@ class Cleanup(commands.Cog):
         self.bot = bot
         self.logger = logging.getLogger(__name__)
 
-        # Per-guild caches: guild_id → (words, patterns)
+        # Per-guild caches: guild_id → (words, patterns, strict-mode flag)
         self._word_cache: dict[int, list[str]] = {}
         self._pattern_cache: dict[int, list] = {}
+        self._strict_cache: dict[int, bool] = {}
 
         self.command_prefixes = ["?", "!"]
         self.command_pattern = re.compile(
@@ -105,11 +107,18 @@ class Cleanup(commands.Cog):
         self._pattern_cache[guild_id] = [
             re.compile(rf"\b{re.escape(w)}\b", re.IGNORECASE) for w in words
         ]
+        self._strict_cache[guild_id] = await db.get_wordfilter_strict(guild_id)
 
     async def _get_patterns(self, guild_id: int) -> list:
         if guild_id not in self._pattern_cache:
             await self._load_guild(guild_id)
         return self._pattern_cache[guild_id]
+
+    async def _get_strict(self, guild_id: int) -> bool:
+        """Whether obfuscation-resistant (anti-evasion) matching is enabled."""
+        if guild_id not in self._strict_cache:
+            await self._load_guild(guild_id)
+        return self._strict_cache[guild_id]
 
     async def _delete_if_command_blocked(self, message, command_name: str) -> bool:
         """Delete a command-style message when Command Access denies it here.
@@ -218,32 +227,51 @@ class Cleanup(commands.Cog):
             return False
 
         guild_id = message.guild.id if message.guild else 0
+
+        # Exact pass (default, always on): \bword\b on the raw content.
         for pattern in await self._get_patterns(guild_id):
             if pattern.search(message.content):
-                await moderation_service.auto_delete(
-                    message,
-                    reason="Prohibited word match",
-                    rule="cleanup.prohibited_words",
-                )
-                try:
-                    warning_msg = await message.channel.send(
-                        f"A message from {message.author.mention} was deleted "
-                        "because it contained prohibited content.",
-                    )
-                    await warning_msg.delete(delay=10)
-                except discord.DiscordException as e:
-                    self.logger.error(
-                        "Failed to post prohibited-word warning: %s",
-                        e,
-                    )
-                return True
+                return await self._delete_prohibited(message)
+
+        # Anti-evasion pass (opt-in, migration 097): de-obfuscate the message
+        # and re-match, catching leet / unicode-confusable / invisible-character
+        # / spaced-letter bypasses that walk straight through the exact match.
+        # ``_get_patterns`` above already triggered ``_load_guild`` (which
+        # populates the strict-mode cache) on the first message per guild, so
+        # read the flag directly — no second DB round-trip on the hot path.
+        if self._strict_cache.get(guild_id, False):
+            words = self._word_cache.get(guild_id) or []
+            if find_obfuscated_match(message.content, words) is not None:
+                return await self._delete_prohibited(message)
 
         return False
+
+    async def _delete_prohibited(self, message) -> bool:
+        """Remove a prohibited-word match (audited) and post a brief notice.
+
+        Shared by the exact and anti-evasion passes so both route through one
+        ``moderation_service.auto_delete`` seam (``mod_logs`` + ``EVT_MOD_ACTION``).
+        """
+        await moderation_service.auto_delete(
+            message,
+            reason="Prohibited word match",
+            rule="cleanup.prohibited_words",
+        )
+        try:
+            warning_msg = await message.channel.send(
+                f"A message from {message.author.mention} was deleted "
+                "because it contained prohibited content.",
+            )
+            await warning_msg.delete(delay=10)
+        except discord.DiscordException as e:
+            self.logger.error("Failed to post prohibited-word warning: %s", e)
+        return True
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         self._word_cache.pop(guild.id, None)
         self._pattern_cache.pop(guild.id, None)
+        self._strict_cache.pop(guild.id, None)
 
     @commands.command(name="cleanuphistory")
     @commands.has_permissions(manage_messages=True)
@@ -553,6 +581,17 @@ class _WordMenuView(HubView):
             )
         else:
             embed.description = "No prohibited words are currently set."
+        strict = self.cog._strict_cache.get(self.ctx.guild.id, False)
+        embed.add_field(
+            name="🛡️ Anti-evasion matching",
+            value=(
+                "🟢 **On** — also catches leet, unicode look-alikes, "
+                "invisible characters, and spaced-out letters"
+                if strict
+                else "⚫ **Off** — exact word match only"
+            ),
+            inline=False,
+        )
         embed.set_footer(text="Use buttons below to manage prohibited words.")
         return embed
 
@@ -576,6 +615,23 @@ class _WordMenuView(HubView):
     )
     async def btn_scan(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_ScanHistoryModal(self.cog))
+
+    @discord.ui.button(
+        label="🛡️ Anti-evasion",
+        style=discord.ButtonStyle.secondary,
+        row=1,
+    )
+    async def btn_strict(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        """Toggle obfuscation-resistant matching for this guild."""
+        guild_id = self.ctx.guild.id
+        new_value = not await self.cog._get_strict(guild_id)
+        await db.set_wordfilter_strict(guild_id, new_value)
+        self.cog._strict_cache[guild_id] = new_value
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
 
 class _ScanHistoryModal(discord.ui.Modal, title="Scan Channel History"):  # type: ignore[call-arg]

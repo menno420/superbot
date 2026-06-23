@@ -200,8 +200,10 @@ from utils.db.moderation import (
     get_mod_logs,
     get_prohibited_words,
     get_warnings,
+    get_wordfilter_strict,
     log_mod_action,
     remove_prohibited_word,
+    set_wordfilter_strict,
 )
 
 # ──────────────────────────────────────────────────────────────────────
@@ -309,8 +311,10 @@ __all__ = [
     "get_mod_logs",
     "get_prohibited_words",
     "get_warnings",
+    "get_wordfilter_strict",
     "log_mod_action",
     "remove_prohibited_word",
+    "set_wordfilter_strict",
     # economy
     "add_coins",
     "claim_daily_if_ready",

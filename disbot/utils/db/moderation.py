@@ -107,3 +107,30 @@ async def remove_prohibited_word(guild_id: int, word: str) -> bool:
         word,
     )
     return result == "DELETE 1"
+
+
+# ---------------------------------------------------------------------------
+# Word-filter mode (cleanup_cog anti-evasion toggle, migration 097)
+# ---------------------------------------------------------------------------
+
+
+async def get_wordfilter_strict(guild_id: int) -> bool:
+    """Return True when obfuscation-resistant matching is enabled for the guild.
+
+    Default False (no row) → only the exact whole-word prohibited-words match
+    runs, so a guild that never opts in behaves exactly as before.
+    """
+    row = await pool.fetchone(
+        "SELECT strict FROM wordfilter_config WHERE guild_id=$1",
+        (guild_id,),
+    )
+    return bool(row["strict"]) if row else False
+
+
+async def set_wordfilter_strict(guild_id: int, strict: bool) -> None:
+    """Enable/disable obfuscation-resistant prohibited-word matching."""
+    await pool.execute(
+        """INSERT INTO wordfilter_config (guild_id, strict) VALUES ($1, $2)
+           ON CONFLICT (guild_id) DO UPDATE SET strict=EXCLUDED.strict""",
+        (guild_id, strict),
+    )
