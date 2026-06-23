@@ -6,11 +6,10 @@ Pins:
   owned by the per-guild DB-backed policy (migration 050) read
   through :func:`core.runtime.command_access.resolve_command_access`,
   not by an env var with hardcoded fallback IDs.
-* ``config.CLEANUP_WHITELIST_CHANNELS`` is intentionally preserved
-  because cleanup whitelist is a separate concern owned by
-  ``cogs/cleanup_cog.py``.  A future PR can migrate that to a
-  DB-backed policy in the same shape; this test fails loud if
-  someone deletes it in the same sweep.
+* ``config.CLEANUP_WHITELIST_CHANNELS`` is now deleted too — the
+  hardcoded channel whitelist was a remnant of an old bot version and
+  is fully replaced by per-channel cleanup policies (set a channel to
+  ``Off``).  This test fails loud if someone reintroduces the symbol.
 * ``BOT_ALLOWED_CHANNELS`` is no longer read anywhere under
   ``disbot/`` outside of comments referencing the historical
   behaviour — a grep-style check guards against a future drive-by
@@ -39,16 +38,17 @@ def test_allowed_channels_is_gone_from_config():
     )
 
 
-def test_cleanup_whitelist_channels_is_preserved():
-    """Cleanup whitelist is a separate concern; it stays env-driven
-    until a follow-up PR migrates it.  This test fails if someone
-    deletes it in the same sweep as ALLOWED_CHANNELS — which would
-    silently break the cleanup_cog's whitelist semantics.
+def test_cleanup_whitelist_channels_is_gone_from_config():
+    """The hardcoded cleanup whitelist was removed: exemption is owned by
+    per-channel cleanup policies (set a channel to ``Off``), not by a
+    static env list of old-server channel IDs.  Do not reintroduce it.
     """
     import config
 
-    assert hasattr(config, "CLEANUP_WHITELIST_CHANNELS")
-    assert isinstance(config.CLEANUP_WHITELIST_CHANNELS, set)
+    assert not hasattr(config, "CLEANUP_WHITELIST_CHANNELS"), (
+        "config.CLEANUP_WHITELIST_CHANNELS was removed — channel exemption "
+        "is owned by per-channel cleanup policies.  Do not reintroduce it."
+    )
 
 
 def test_bot_allowed_channels_env_var_is_not_read_in_production_code():
@@ -80,23 +80,16 @@ def test_hardcoded_main_server_channel_ids_only_appear_in_the_backfill_migration
     channel_id: int,
 ):
     """The two main-server channel IDs that used to live in
-    ``config.py`` as the ``ALLOWED_CHANNELS`` fallback are now
-    confined to the backfill migration (051) for command-access
-    semantics.  ``config.py`` retains them in the unrelated
-    ``CLEANUP_WHITELIST_CHANNELS`` default — different concern,
-    explicitly out of scope for PR-7 — so it stays on the
-    allowlist for this scan.  Any OTHER production file
+    ``config.py`` (first as the ``ALLOWED_CHANNELS`` fallback, then in
+    the ``CLEANUP_WHITELIST_CHANNELS`` default) are now confined to the
+    backfill migration (051) for command-access semantics — the cleanup
+    whitelist that retained them was removed.  Any OTHER production file
     referencing these IDs would silently re-create the
     fresh-guild-onboarding bug for new deployments.
     """
-    # Files where the IDs legitimately appear (and are pinned by
-    # other tests).
+    # The IDs now legitimately appear only in the backfill migration.
     _ALLOWED = {
         "disbot/migrations/051_command_access_main_server_backfill.sql",
-        # CLEANUP_WHITELIST_CHANNELS preserves the IDs as the cleanup
-        # cog's whitelist fallback — pinned by
-        # test_cleanup_whitelist_channels_is_preserved above.
-        "disbot/config.py",
     }
     bad: list[str] = []
     for path in _DISBOT.rglob("*"):
@@ -113,6 +106,6 @@ def test_hardcoded_main_server_channel_ids_only_appear_in_the_backfill_migration
             bad.append(rel)
     assert not bad, (
         f"hardcoded channel id {channel_id} should only live in "
-        "migrations/051 (and config.CLEANUP_WHITELIST_CHANNELS for "
-        "the unrelated cleanup whitelist); found elsewhere in:\n  " + "\n  ".join(bad)
+        "migrations/051 (command-access backfill); found elsewhere in:\n  "
+        + "\n  ".join(bad)
     )
