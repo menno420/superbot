@@ -123,8 +123,11 @@ def build_ai_review_embed(draft: SetupPlanDraft) -> discord.Embed:
         lines = []
         for rec in by_sub[subsystem]:
             icon = _CONFIDENCE_ICON[rec.confidence]
+            # A "create" rec proposes making a new resource (➕); a "bind" rec
+            # wires an existing one (→).
+            arrow = "→ ➕ create" if getattr(rec, "mode", "bind") == "create" else "→"
             lines.append(
-                f"{icon} `{rec.binding_name}` → `{rec.target_name}` — {rec.reason}",
+                f"{icon} `{rec.binding_name}` {arrow} `{rec.target_name}` — {rec.reason}",
             )
         value = "\n".join(lines)
         if len(value) > 1000:

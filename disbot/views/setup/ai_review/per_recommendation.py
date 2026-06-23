@@ -54,12 +54,20 @@ def build_per_recommendation_embed(
     color = _CONFIDENCE_COLOR[rec.confidence]
     is_accepted = accepted.contains(rec)
     state_label = "✅ accepted" if is_accepted else "⬜ pending"
+    # A "create" rec has no existing id — it proposes making the resource and
+    # binding it; a "bind" rec wires an existing one (shown with its id).
+    if getattr(rec, "mode", "bind") == "create":
+        target_line = (
+            f"**Create & bind:** ➕ `{rec.target_name}` (new `{rec.target_kind}`)\n"
+        )
+    else:
+        target_line = f"**Target:** `{rec.target_name}` (id `{rec.target_id}`)\n"
     embed = discord.Embed(
         title=(f"🤖 Suggestion {safe_index + 1} / {total} · {state_label}"),
         description=(
             f"**Subsystem:** `{rec.subsystem}`\n"
             f"**Binding:** `{rec.binding_name}` (`{rec.target_kind}`)\n"
-            f"**Target:** `{rec.target_name}` (id `{rec.target_id}`)\n"
+            f"{target_line}"
             f"**Confidence:** `{rec.confidence}`\n"
             f"**Source:** `{rec.source}`\n\n"
             f"_{rec.reason}_"
