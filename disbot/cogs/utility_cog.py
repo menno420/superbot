@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 
 import discord
 from discord import app_commands
@@ -8,9 +9,53 @@ from discord.ext import commands
 
 from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
+from services import governance_service
+from services.governance_service import GovernanceContext
 from utils import embeds as em
+from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
 from views.base import HubView, send_panel
+from views.navigation import (
+    BackTarget,
+    attach_back_button,
+    attach_back_target,
+    chain_back,
+)
+
+logger = logging.getLogger("bot.cogs.utility")
+
+
+def discover_utility_children() -> list[tuple[str, dict]]:
+    """``SUBSYSTEMS`` entries whose ``parent_hub`` is the Utility hub.
+
+    Mirrors :func:`views.games.hub.discover_game_children` /
+    :func:`views.community.hub.discover_community_children`.  The Utility hub is a
+    *hybrid* surface — it has its own action buttons (server info, poll, …) **and**
+    hosts child subsystems (General, 420).  Before the discoverability-audit fix the
+    panel rendered only its own actions, so the child subsystems — and every command
+    they own (``!joke`` / ``!fact`` / …) — were unreachable by clicking through
+    ``!help`` (the "general cog is unfindable from the help menu" report).  Surfacing
+    them as buttons here is the same way every other parent hub surfaces its children.
+
+    Sorted by ``ui_priority`` then key so the button order is deterministic.
+    """
+    children = [
+        (name, dict(meta))
+        for name, meta in SUBSYSTEMS.items()
+        if meta.get("parent_hub") == "utility"
+    ]
+    children.sort(key=lambda item: (item[1].get("ui_priority", 99), item[0]))
+    return children
+
+
+def _format_child_label(subsystem: str, meta: dict) -> str:
+    """``{emoji} {display_name}`` button label, capped at Discord's 80-char limit.
+
+    Mirrors the identical helper in the Games / Community hub views.
+    """
+    emoji = meta.get("emoji") or ""
+    display = meta.get("display_name") or subsystem
+    return f"{emoji} {display}".strip()[:80]
 
 
 async def _remind_later(
@@ -279,12 +324,139 @@ class UtilityCog(commands.Cog):
 # ---------------------------------------------------------------------------
 
 
+def attach_back_to_utility_button(
+    view: discord.ui.View,
+    author: discord.Member | discord.User,
+    *,
+    grandparent: BackTarget | None = None,
+) -> bool:
+    """Append a "↩ Back to Utility" control to a child view opened from the hub.
+
+    Mirrors :func:`views.community.hub.attach_back_to_community_button`.  The
+    parent-builder closure captures ``author`` so the rebuilt Utility panel stays
+    invoker-restricted; when ``grandparent`` is supplied (e.g. a Back-to-Help
+    target set by :func:`cogs.help_cog._attach_back_to_help_button`),
+    :func:`views.navigation.chain_back` wraps the builder so the rebuilt Utility
+    panel re-attaches that grandparent too.
+    """
+
+    async def _build_utility_parent(
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        parent = _UtilityPanelView(help_ctx_shim(interaction))
+        return parent.build_embed(), parent
+
+    builder = chain_back(_build_utility_parent, grandparent)
+    return attach_back_button(
+        view,
+        label="↩ Back to Utility",
+        custom_id="utility:back",
+        parent_builder=builder,
+        row=4,
+        style=discord.ButtonStyle.secondary,
+        error_message="Could not reload the Utility hub. Please try again.",
+    )
+
+
+class _UtilityChildButton(discord.ui.Button):
+    """A Utility-hub button that opens a child subsystem's panel in place.
+
+    Mirrors :class:`views.community.hub._CommunityChildButton`: it forwards to the
+    target cog's ``build_help_menu_view`` hook (no business logic here), with a
+    click-time governance recheck so a child that became invisible since render
+    fails closed instead of opening.
+    """
+
+    def __init__(self, *, subsystem: str, label: str, row: int) -> None:
+        super().__init__(
+            label=label,
+            style=discord.ButtonStyle.primary,
+            custom_id=f"utility:open:{subsystem}",
+            row=row,
+        )
+        self._subsystem = subsystem
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        # Click-time governance recheck — fail closed if the child has become
+        # invisible since this button was rendered (cached resolve, ~free).
+        gctx = GovernanceContext.from_interaction(interaction)
+        vis_result = await governance_service.resolve_visibility(gctx)
+        if self._subsystem not in vis_result.visible_subsystems:
+            await interaction.response.send_message(
+                "That feature is no longer available in this channel.",
+                ephemeral=True,
+            )
+            return
+
+        # Local import keeps the help cog out of module-import time (and the
+        # import graph acyclic).
+        from cogs.help_cog import _cog_for_subsystem
+
+        cog = _cog_for_subsystem(interaction.client, self._subsystem)  # type: ignore[arg-type]
+        builder = getattr(cog, "build_help_menu_view", None) if cog else None
+        if not callable(builder):
+            await interaction.response.send_message(
+                f"The {self._subsystem!r} panel is not available right now.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            embed, sub_view = await builder(interaction)
+        except Exception as exc:  # noqa: BLE001 — navigation must not crash
+            logger.warning(
+                "Utility hub: build_help_menu_view failed for %r: %s",
+                self._subsystem,
+                exc,
+                exc_info=True,
+            )
+            await interaction.response.send_message(
+                f"Could not open the {self._subsystem!r} panel — see bot logs.",
+                ephemeral=True,
+            )
+            return
+
+        # Attach Back-to-Utility to the child view, threading any Back-to-Help
+        # grandparent the help layer set on this hub (mirrors the Community hub).
+        parent_view = self.view
+        back_target: BackTarget | None = getattr(parent_view, "_back_target", None)
+        attach_back_to_utility_button(
+            sub_view,
+            interaction.user,  # type: ignore[arg-type]
+            grandparent=back_target,
+        )
+        if back_target is not None:
+            attach_back_target(sub_view, back_target)
+            sub_view._back_target = back_target  # type: ignore[attr-defined]
+
+        await interaction.response.edit_message(embed=embed, view=sub_view)
+
+
 class _UtilityPanelView(HubView):
-    """Interactive utility panel — quick access to common utility actions."""
+    """Interactive utility panel — quick access to common utility actions.
+
+    Hybrid surface: the decorated buttons below are the Utility cog's own actions;
+    the child-subsystem buttons added in ``__init__`` (General, 420) surface the
+    hub's ``parent_hub="utility"`` children so they are reachable by clicking
+    through ``!help`` (the discoverability-audit fix — see
+    :func:`discover_utility_children`).
+    """
 
     def __init__(self, ctx: commands.Context):
         super().__init__(ctx.author, public=True)
         self.ctx = ctx
+        # Surface child subsystems as forwarding buttons (row 3 — rows 0-2 hold the
+        # cog's own actions, row 4 is reserved for the help layer's Back button).
+        # Rendered unfiltered; visibility is enforced at click time in
+        # _UtilityChildButton.callback (matches the Community hub's unfiltered path).
+        for subsystem, meta in discover_utility_children():
+            self.add_item(
+                _UtilityChildButton(
+                    subsystem=subsystem,
+                    label=_format_child_label(subsystem, meta),
+                    row=3,
+                ),
+            )
 
     def build_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -299,6 +471,17 @@ class _UtilityPanelView(HubView):
             ),
             color=UTILITY_COLOR,
         )
+        children = discover_utility_children()
+        if children:
+            embed.add_field(
+                name="More in Utility",
+                value="\n".join(
+                    f"{meta.get('emoji', '')} **{meta.get('display_name', name)}** — "
+                    f"{meta.get('description', '')}".strip()
+                    for name, meta in children
+                ),
+                inline=False,
+            )
         embed.set_footer(text="Click an action below.")
         return embed
 

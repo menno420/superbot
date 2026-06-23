@@ -1,0 +1,54 @@
+# Allowlist for scripts/check_command_reachability.py (the per-command help-
+# reachability guard, discoverability-audit Session 1, 2026-06-23).
+#
+# This is the ONLY valid way to exempt a command from the reachability check —
+# never suppress the check itself. Each entry is a `cog_file` (repo-relative; the
+# `disbot/` prefix is optional) plus a `reason`. Add a `command:` to scope the
+# exemption to one command in that file; omit it to exempt the whole file.
+#
+# Keep entries genuine: an exception documents a command that is correctly NOT a
+# member-facing help-tree listing (operator/owner-gated at runtime, an internal
+# tool, or surfaced only via a deliberate panel button), NOT a way to mute a real
+# discoverability gap that should be fixed by homing the cog or buttonizing it.
+#
+# The remaining (non-allowlisted) gaps are the genuine per-cog gap list — see
+# docs/audits/command-reachability-gaps-2026-06-23.md. Those are deliberately NOT
+# allowlisted: they are the real findings the audit's follow-on per-cog sessions
+# clear (home the cog / surface via a panel button), and the guard stays warn-only
+# (ratcheted against a baseline) until they are.
+
+exceptions:
+  # Operator/owner-gated at runtime — the permission check lives inside the
+  # command body / its subcommands (not a decorator the static scan can read), so
+  # the guard sees member-tier. These are reached through the Server & Admin hub,
+  # not as member-facing help-tree listings; verified by reading the cogs.
+  - cog_file: cogs/setup_cog.py
+    command: setup
+    reason: "The setup wizard is owner / administrator / delegated-setup-admin gated (checked inside the command, not via a decorator). Operator-tier; reached via the Server & Admin hub, not a member listing."
+  - cog_file: cogs/btd6_ops_cog.py
+    command: btd6ops
+    reason: "BTD6 data-ops group; every mutating subcommand is administrator-only (is_administrator_member runtime check). Operator tooling, not a member-facing command."
+
+  # Reachable via a hub-panel button / panel help-text (the brief's rubric item 2
+  # accepts a "buttonized panel action" as reachable). The cog class doesn't map to
+  # a registered subsystem, so the static guard can't see the panel path — verified
+  # against source 2026-06-23. The typed command is a power-user shortcut; the
+  # action itself is discoverable in the hub panel.
+  - cog_file: cogs/btd6_events_cog.py
+    command: btd6events
+    reason: "Surfaced via the BTD6 hub panel 'Live Events' button (views/btd6/panel.py BTD6PanelView). Reachable through !btd6; the typed !btd6events is a shortcut."
+  - cog_file: cogs/btd6_reference_cog.py
+    command: btd6ref
+    reason: "Reference lookups surfaced via the BTD6 hub panel 'Towers' / 'Heroes' / 'CT' buttons. Reachable through !btd6; the typed !btd6ref is a shortcut."
+  - cog_file: cogs/paragon_cog.py
+    command: paragon
+    reason: "Surfaced via the BTD6 hub panel 'Paragon' button. Reachable through !btd6; the typed !paragon is a shortcut."
+  - cog_file: cogs/creature_battle_cog.py
+    command: cbattle
+    reason: "Listed in the creature panel help text (creature_cog.build_help_menu_view: '!cbattle @member — challenge ...'). Reachable through !help creature."
+  - cog_file: cogs/creature_battle_cog.py
+    command: cbattletop
+    reason: "Listed in the creature panel help text (creature_cog.build_help_menu_view: '!cbattletop — the PvP win ladder'). Reachable through !help creature."
+  - cog_file: cogs/creature_battle_cog.py
+    command: cbrecord
+    reason: "Listed in the creature panel help text (creature_cog.build_help_menu_view: '!cbrecord — your battle record', added 2026-06-23 — it was the one battle sibling missing). Reachable through !help creature."
