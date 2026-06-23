@@ -70,7 +70,22 @@ def _interaction(*, guild_id=1):
     interaction.response = MagicMock()
     interaction.response.send_message = AsyncMock()
     interaction.response.edit_message = AsyncMock()
+    interaction.response.send_modal = AsyncMock()
     return interaction
+
+
+def _create_rec(*, subsystem="welcome", binding="welcome_channel", name="welcome"):
+    """A ``create``-mode recommendation (target_id=None) — the Edit case."""
+    return SetupRecommendation(
+        subsystem=subsystem,
+        binding_name=binding,
+        target_kind="channel",
+        target_name=name,
+        confidence="high",
+        reason="x",
+        mode="create",
+        source="openai",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -399,7 +414,7 @@ async def test_per_recommendation_accept_advances():
 
 
 @pytest.mark.asyncio
-async def test_per_recommendation_reject_removes_and_advances():
+async def test_per_recommendation_deny_removes_and_advances():
     draft = SetupPlanDraft(recommendations=(_rec(),))
     accepted = AcceptedSet()
     accepted.add(draft.recommendations[0])
@@ -413,10 +428,88 @@ async def test_per_recommendation_reject_removes_and_advances():
     )
     interaction = _interaction()
 
-    await view._reject.callback(interaction)
+    await view._deny.callback(interaction)
 
     assert accepted.count == 0
     # End of list → returns to overview (parent's embed gets edited in).
+    interaction.response.edit_message.assert_awaited()
+
+
+# ---------------------------------------------------------------------------
+# Edit (Q-0048 finalize — Accept / Deny / Edit)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_per_recommendation_edit_opens_modal_for_create_rec():
+    """A `create` suggestion's Edit button opens the rename modal."""
+    draft = SetupPlanDraft(recommendations=(_create_rec(),))
+    view = PerRecommendationView(_author(), draft=draft, accepted=AcceptedSet(), index=0)
+    interaction = _interaction()
+
+    await view._edit.callback(interaction)
+
+    interaction.response.send_modal.assert_awaited_once()
+    interaction.response.edit_message.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_per_recommendation_edit_explains_for_bind_rec():
+    """A `bind` suggestion can't be renamed — Edit sends an ephemeral, no modal."""
+    draft = SetupPlanDraft(recommendations=(_rec(),))  # _rec() is bind-mode
+    view = PerRecommendationView(_author(), draft=draft, accepted=AcceptedSet(), index=0)
+    interaction = _interaction()
+
+    await view._edit.callback(interaction)
+
+    interaction.response.send_modal.assert_not_awaited()
+    interaction.response.send_message.assert_awaited_once()
+    assert interaction.response.send_message.await_args.kwargs.get("ephemeral") is True
+
+
+def test_apply_edit_rewrites_name_swaps_draft_and_accepts():
+    rec = _create_rec(name="welcome")
+    draft = SetupPlanDraft(recommendations=(rec,))
+    accepted = AcceptedSet()
+    parent = AIReviewPanelView(_author(), draft=draft, accepted=accepted)
+    view = PerRecommendationView(
+        _author(), draft=draft, accepted=accepted, index=0, parent_view=parent,
+    )
+
+    edited = view.apply_edit(rec, "greetings")
+
+    assert edited.target_name == "greetings"
+    assert edited.mode == "create"
+    # Swapped into both this view's draft and the parent overview's draft.
+    assert view.draft.recommendations[0].target_name == "greetings"
+    assert parent.draft.recommendations[0].target_name == "greetings"
+    # The edited recommendation is now accepted (exactly once — keyed by binding).
+    assert accepted.count == 1
+    assert accepted.recommendations[0].target_name == "greetings"
+
+
+@pytest.mark.asyncio
+async def test_edit_modal_submit_applies_and_advances():
+    from views.setup.ai_review.per_recommendation import _EditRecommendationModal
+
+    rec = _create_rec(name="welcome")
+    draft = SetupPlanDraft(recommendations=(rec,))
+    accepted = AcceptedSet()
+    parent = AIReviewPanelView(_author(), draft=draft, accepted=accepted)
+    view = PerRecommendationView(
+        _author(), draft=draft, accepted=accepted, index=0, parent_view=parent,
+    )
+    modal = _EditRecommendationModal(view, rec)
+    modal.name_input.default = "greetings"
+    # Simulate the submitted value (TextInput.value reads the live component).
+    object.__setattr__(modal.name_input, "_value", "greetings")
+    interaction = _interaction()
+
+    await modal.on_submit(interaction)
+
+    assert accepted.count == 1
+    assert accepted.recommendations[0].target_name == "greetings"
+    # End of single-item list → returned to overview.
     interaction.response.edit_message.assert_awaited()
 
 

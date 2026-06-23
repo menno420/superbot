@@ -1,0 +1,23 @@
+# Allowlist for scripts/check_settings_reachability.py (the settings-reachability
+# guard — consolidation/discoverability audit, settings half, 2026-06-23).
+#
+# This is the ONLY valid way to exempt a subsystem from the settings-reachability
+# check — never suppress the check itself. Each entry is a `subsystem` (the
+# registry key) plus a `reason`.
+#
+# Keep entries genuine: an exception documents a subsystem whose config is
+# correctly NOT in the centralized `!settings` schema hub — because the config is
+# a domain-specific per-channel / per-game setup owned by the cog's own panel, or
+# because the `*.configure` capability is an admin *action* rather than stored
+# guild config. It is NOT a way to mute a real centralization gap that should be
+# fixed by adding a SubsystemSchema.
+#
+# Full write-up + disposition: docs/audits/settings-reachability-2026-06-23.md
+
+exceptions:
+  - subsystem: counting
+    reason: "Configured via its own !countingmenu panel — per-channel game enablement (which channels count, their mode, reset) is a bespoke per-channel data model, not a guild-scalar setting that fits the SubsystemSchema → !settings model. Intentionally domain-panel-owned (counting.game.configure)."
+  - subsystem: chain
+    reason: "Configured via its own !chainmenu panel — like counting, per-channel word-chain enablement is per-channel game setup, not a guild-scalar setting. Intentionally domain-panel-owned (chain.game.configure)."
+  - subsystem: channel
+    reason: "`channel.visibility.configure` is an administrator *action* (restrict/unrestrict a channel via the Channels panel), not stored guild configuration — there is no persistent 'channel settings' to surface in the !settings hub. The Channels admin panel is reached via the Server & Admin hub."
