@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T09:37:22Z",
+    "generated_at": "2026-06-23T10:09:05Z",
     "build": {
-      "commit": "b6bf85d",
-      "subject": "Open AI natural-language setup wedge session (born-red): claim + card",
-      "committed_at": "2026-06-23T09:37:22Z"
+      "commit": "0f0f04a3",
+      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-trophy-follow' into claude/funny-franklin-trophy-follow",
+      "committed_at": "2026-06-23T10:09:05Z"
     }
   },
   "counts": {
-    "commands": 388,
+    "commands": 389,
     "features": 41,
     "games": 11
   },
@@ -6994,6 +6994,28 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "trophies",
+      "aliases": [
+        "bigfish",
+        "fishtrophy"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show this server's heaviest catches — the biggest-fish hall of fame.",
+      "description": "Show this server's heaviest catches — the biggest-fish hall of fame.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
       ],

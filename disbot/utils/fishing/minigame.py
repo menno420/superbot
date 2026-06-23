@@ -105,6 +105,21 @@ def is_trophy(
     return species.size_rank > threshold
 
 
+def escape_clue(species: FishSpecies, fishing_level: int) -> str | None:
+    """A "the one that got away" clue when a *trophy* slips the hook (else ``None``).
+
+    The design's soft-fail idea (``fishing-minigame-design-2026-06-22.md``
+    §"Other ideas"): an escaped *big* fish should leave a teasing, species-named
+    clue that baits the next cast, rather than a flat denial. Only trophies (the
+    top of the unlocked band, :func:`is_trophy`) earn a story — losing an
+    ordinary minnow does not, so this returns ``None`` for them and the caller
+    keeps its plain "got away" line.
+    """
+    if not is_trophy(species, fishing_level):
+        return None
+    return f"💭 *...it looked like a real **{species.name.title()}**, too.*"
+
+
 def reel_fight_taps(species: FishSpecies) -> int:
     """How many reel taps it takes to land *species* — scales with its size.
 

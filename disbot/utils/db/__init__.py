@@ -101,6 +101,7 @@ from utils.db.games.fishing import (
     get_fishing_records,
     record_catch,
     top_fishers,
+    top_trophies,
 )
 from utils.db.games.fishing_bait import (
     clear_active_bait,
@@ -428,6 +429,7 @@ __all__ = [
     "get_fishing_records",
     "record_catch",
     "top_fishers",
+    "top_trophies",
     "get_rod_tier",
     "set_rod_tier",
     "get_fishing_energy",

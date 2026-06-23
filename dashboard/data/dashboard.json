@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T09:56:15Z",
+    "generated_at": "2026-06-23T10:09:05Z",
     "build": {
-      "commit": "dbcbf5b8",
-      "subject": "AI natural-language setup wedge (/setup-describe) (#1355)",
-      "committed_at": "2026-06-23T09:56:15Z"
+      "commit": "0f0f04a3",
+      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-trophy-follow' into claude/funny-franklin-trophy-follow",
+      "committed_at": "2026-06-23T10:09:05Z"
     },
     "counts": {
       "functions": 41,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 51,
-      "commands": 388,
+      "commands": 389,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2437,6 +2437,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-23-fishing-trophy-followups.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Fishing trophy follow-ups: soft-fail clue + heaviest-catch leaderboard",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-fishing-test-helpers.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Fishing test helpers: kill the duplicated roll_catch mock (slice 3)",
@@ -2848,14 +2856,6 @@
       "file": "2026-06-22-casino-card-table.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Casino subsystem: multiplayer card-game table framework + Texas Hold'em poker",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-bulk-role-creation-packs.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Bulk role creation via preset packs",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -6051,6 +6051,20 @@
             "dock"
           ],
           "brief": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "trophies",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "bigfish",
+            "fishtrophy"
+          ],
+          "brief": "Show this server's heaviest catches — the biggest-fish hall of fame.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

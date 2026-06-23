@@ -217,7 +217,9 @@ class FishingCastView(discord.ui.View):
         await asyncio.sleep(self._window)
         if self._resolved or self._round_id != my_id:
             return
-        await self._fail("🌊 *...the line goes slack. The fish got away.*")
+        await self._fail(
+            self._got_away("🌊 *...the line goes slack. The fish got away.*"),
+        )
 
     async def _run_fight_round(self) -> None:
         """One reel-fight round: a suspense beat, arm the tap, expire if ignored."""
@@ -233,9 +235,26 @@ class FishingCastView(discord.ui.View):
         await asyncio.sleep(self._window)
         if self._resolved or self._round_id != my_id:
             return
-        await self._fail("🌊 You let the line go slack — it thrashed free and escaped.")
+        await self._fail(
+            self._got_away(
+                "🌊 You let the line go slack — it thrashed free and escaped.",
+            ),
+        )
 
     # ------------------------------------------------------------------ the button
+
+    def _got_away(self, text: str) -> str:
+        """A 'got away' line, with a trophy clue appended when a big one escaped.
+
+        Soft-fail UX (the design's "Other ideas"): if the fish on the line was a
+        trophy, name it so the loss baits the next cast (``minigame.escape_clue``)
+        instead of a flat denial. Ordinary fish keep the plain *text*.
+        """
+        species = self.cast.catch.species if self.cast.catch else None
+        if species is None:
+            return text
+        clue = minigame.escape_clue(species, self.cast.level_before)
+        return f"{text}\n{clue}" if clue else text
 
     @discord.ui.button(label="🎣 Waiting for a bite…", style=discord.ButtonStyle.grey)
     async def reel_btn(
@@ -268,7 +287,7 @@ class FishingCastView(discord.ui.View):
         if not minigame.reel_is_in_time(elapsed, self._window):
             await self._terminate_interaction(
                 interaction,
-                "🌊 *...too slow. The fish got away.*",
+                self._got_away("🌊 *...too slow. The fish got away.*"),
             )
             return
 
@@ -309,7 +328,9 @@ class FishingCastView(discord.ui.View):
         ):
             await self._terminate_interaction(
                 interaction,
-                "💥 It gave one last thrash, **snapped the line**, and bolted!",
+                self._got_away(
+                    "💥 It gave one last thrash, **snapped the line**, and bolted!",
+                ),
             )
             return
 
