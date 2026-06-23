@@ -1,1 +1,0 @@
-claude/ai-setup-create · AI setup wedge: propose resource CREATION from a description (create+bind) · `disbot/services/setup_plan.py`, `disbot/services/setup_ai_advisor.py`, `disbot/services/setup_operations.py`, `disbot/views/setup/ai_review/` · stacked on #1355 · 2026-06-23

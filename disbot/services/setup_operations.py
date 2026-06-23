@@ -181,6 +181,15 @@ _TARGET_KIND_TO_OP_KIND: dict[str, str] = {
     "member": "bind_member",
 }
 
+# A ``create`` recommendation maps to the create-and-bind provisioning op for
+# its resource kind (the pipeline creates the resource, then binds it). Only
+# these three kinds are creatable; anything else stays a binding op.
+_TARGET_KIND_TO_CREATE_OP_KIND: dict[str, str] = {
+    "channel": "create_channel",
+    "role": "create_role",
+    "category": "create_category",
+}
+
 
 @dataclass
 class SetupOperation:
@@ -1001,20 +1010,41 @@ def operations_from_recommendations(
     recs: list[Any],  # list[services.setup_plan.SetupRecommendation]
 ) -> list[SetupOperation]:
     """Adapt :class:`services.setup_plan.SetupRecommendation` objects to
-    :class:`SetupOperation` binding operations.
+    :class:`SetupOperation`s.
 
-    The current recommendation model only produces binding proposals, so every
-    ``SetupRecommendation`` maps to a ``bind_*`` operation.  Unknown
-    ``target_kind`` values produce operations whose kind is not in
-    ``_KNOWN_KINDS`` — the dispatcher will surface them as
-    ``"not_yet_implemented"`` rather than silently dropping them.
+    A ``mode="bind"`` recommendation maps to a ``bind_*`` operation against an
+    existing resource. A ``mode="create"`` recommendation maps to a
+    ``create_<kind>`` operation (``resource_mode="create"``) — the provisioning
+    pipeline creates the resource named ``target_name`` and then binds it to
+    ``subsystem.binding_name`` in one audited step. Unknown ``target_kind``
+    values produce operations whose kind is not in ``_KNOWN_KINDS`` — the
+    dispatcher surfaces them as ``"not_yet_implemented"`` rather than silently
+    dropping them.
 
-    Future recommendation shapes (``set_setting``, ``create_resource``, etc.)
-    will extend this adapter in follow-up PRs.
+    Future recommendation shapes (``set_setting``, …) will extend this adapter.
     """
     result: list[SetupOperation] = []
     for rec in recs:
         raw_kind = (rec.target_kind or "").lower()
+        if getattr(rec, "mode", "bind") == "create":
+            # Create-and-bind: the new resource has no id yet; its name rides
+            # ``resource_name`` for the provisioning pipeline.
+            kind = _TARGET_KIND_TO_CREATE_OP_KIND.get(
+                raw_kind,
+                f"create_{raw_kind}" if raw_kind else "create_unknown",
+            )
+            result.append(
+                SetupOperation(
+                    kind=kind,
+                    subsystem=rec.subsystem,
+                    binding_name=rec.binding_name,
+                    target_kind=rec.target_kind,
+                    resource_name=rec.target_name,
+                    resource_mode="create",
+                    metadata=metadata_from_recommendation(rec),
+                ),
+            )
+            continue
         kind = _TARGET_KIND_TO_OP_KIND.get(
             raw_kind,
             # Unknown target_kind → synthetic kind that the dispatcher
