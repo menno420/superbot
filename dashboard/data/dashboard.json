@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T10:06:36Z",
+    "generated_at": "2026-06-23T10:09:05Z",
     "build": {
-      "commit": "bc2c4059",
-      "subject": "Fishing: soft-fail clue + heaviest-catch leaderboard",
-      "committed_at": "2026-06-23T10:06:36Z"
+      "commit": "0f0f04a3",
+      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-trophy-follow' into claude/funny-franklin-trophy-follow",
+      "committed_at": "2026-06-23T10:09:05Z"
     },
     "counts": {
       "functions": 41,
