@@ -195,8 +195,13 @@ Your `cast → wait → BITE → reel` instinct is **right**. Three data-driven 
 - **Bait as the second economy knob** — fish are now sellable + cookable (#1289), so bait gives the
   coins somewhere to go *and* a pre-cast decision ("spend bait on this deep trip?"). Low-risk, high
   texture. *(captured as an idea — see `docs/ideas/`)*
-- **Fake-out bites** — converts waiting from dead time into a nerve-holding skill; makes the
-  `premature_grace` rod knob meaningful. Cheap, big feel-payoff.
+- **Fake-out bites** — **✅ SHIPPED** (`minigame.roll_fakeout` + the cast view's "you reeled too
+  early — the fish darted off" penalty): converts waiting from dead time into a nerve-holding skill.
+  The **`premature_grace` rod knob it was meant to make meaningful is now built too (PR #1365)** — a
+  fifth rod knob (0…1, scaling bare 0.0 → diamond 0.60) that forgives **one** premature reel per cast
+  (the line stays in the water, the real bite still comes), so a slip on a good rod is rescued without
+  ever rewarding button-mashing. Pure `minigame.roll_premature_grace`; the view spends it once per
+  cast. Cheap, big feel-payoff.
 - **Weather / time-of-day modifier** — **✅ SHIPPED 2026-06-23 (PR #1341).** A date-seeded global
   bias (`disbot/utils/fishing/weather.py`, no DB — derived from the calendar date so it's the same
   for everyone each day) that compounds onto the cast as a third how-well knob beside the rod and

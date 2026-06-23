@@ -162,6 +162,7 @@ class FishingCastView(discord.ui.View):
         self._resolved = False  # terminal reached
         self._taps_total = 0  # reel-fight length (trophy only)
         self._taps_left = 0
+        self._grace_used = False  # the rod's one premature-reel forgiveness, spent
 
     # ------------------------------------------------------------------ lifecycle
 
@@ -268,11 +269,28 @@ class FishingCastView(discord.ui.View):
 
         if not self._armed:
             if self._phase == _PHASE_BITE:
-                # Reeled before the bite — spooked it.
-                await self._terminate_interaction(
-                    interaction,
-                    "🌀 You reeled too early — the fish darted off. *Hold your nerve!*",
-                )
+                # Reeled before the bite. A good rod's premature_grace can forgive
+                # one such slip per cast — the line stays in the water and the real
+                # bite still comes (the still-running bite task arms it). A second
+                # slip, or a bare rod (grace 0), spooks the fish for good.
+                if not self._grace_used and minigame.roll_premature_grace(
+                    self.rod.premature_grace,
+                ):
+                    self._grace_used = True
+                    await safe_defer(interaction)
+                    await self._edit_message(
+                        "😅 *You twitch the rod too soon — but the "
+                        f"{self.rod.name} steadies it. The line's still in the "
+                        "water… hold your nerve.*",
+                        GAME_COLOR,
+                    )
+                else:
+                    # Spooked it (no grace left / bare rod).
+                    await self._terminate_interaction(
+                        interaction,
+                        "🌀 You reeled too early — the fish darted off. "
+                        "*Hold your nerve!*",
+                    )
             else:
                 # Between fight rounds — ignore the extra mash.
                 await safe_defer(interaction)

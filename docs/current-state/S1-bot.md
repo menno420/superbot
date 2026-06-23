@@ -50,10 +50,11 @@
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:
   the literal §5 **shore-cap-at-12 rebalance** (owner balance call, flagged in #1340) ·
   *(weather/time-of-day modifier ✅ #1341 · trophy records per species ✅ #1351 · soft-fail clue +
-  heaviest-catch leaderboard ✅ #1356)* · the **open-world expansion**
+  heaviest-catch leaderboard ✅ #1356 · fake-out bites + the **`premature_grace` rod knob** that makes
+  them meaningful ✅ PR #1365 — the design's 5th rod knob, forgives one early reel per cast)* · the
+  **open-world expansion**
   ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2+: the
-  boat-as-structure / travel-timer / destinations layer) ·
-  **fake-out bites** ([design](../planning/fishing-minigame-design-2026-06-22.md) §"Other ideas").
+  boat-as-structure / travel-timer / destinations layer).
 - **Project Moon runtime PR 1** — the `KnowledgeDomain` seam + first ingest
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
 - **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
