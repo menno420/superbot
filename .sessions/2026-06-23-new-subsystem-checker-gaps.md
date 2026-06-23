@@ -1,6 +1,6 @@
 # Session — 2026-06-23 · Close the new-subsystem checker's blind spots
 
-> **Status:** `in-progress` — born-red HOLD card; flip to `complete` as the final step.
+> **Status:** `complete` — checker gaps closed + karma nav-map drift fixed; full CI-mirror suite green.
 
 **Run type:** owner-directed. **Branch:** `claude/peaceful-franklin-klgw3f`.
 **Trigger:** after the Karma build (PR #1332), the owner approved implementing the
