@@ -12,9 +12,9 @@ from core.runtime.interaction_helpers import help_ctx_shim
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils import embeds as em
-from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
 from views.base import HubView, send_panel
+from views.hub_children import discover_hub_children
 from views.navigation import (
     BackTarget,
     attach_back_button,
@@ -39,13 +39,7 @@ def discover_utility_children() -> list[tuple[str, dict]]:
 
     Sorted by ``ui_priority`` then key so the button order is deterministic.
     """
-    children = [
-        (name, dict(meta))
-        for name, meta in SUBSYSTEMS.items()
-        if meta.get("parent_hub") == "utility"
-    ]
-    children.sort(key=lambda item: (item[1].get("ui_priority", 99), item[0]))
-    return children
+    return discover_hub_children("utility")
 
 
 def _format_child_label(subsystem: str, meta: dict) -> str:

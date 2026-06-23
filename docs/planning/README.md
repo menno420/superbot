@@ -73,6 +73,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 | [repo-structure-improvement](repo-structure-improvement-plan-2026-06-19.md) | governance baseline shipped (#1064/#1082); remaining items buildable | `governance-files-presence-guard` |
 | [extension-taxonomy-crosswalk](extension-taxonomy-crosswalk-plan-2026-06-16.md) | crosswalk PR1 **shipped #958**; the thin-atlas **PR2** is the live remainder | `architecture-atlas-and-structure-review` |
 | [ultracode-fleet](ultracode-fleet-plan-2026-06-19.md) | parallel-build fleet coordination brief; Wave A shipped, Wave B in-flight (near-consumed) | — |
+| [consolidation-fleet-plan](consolidation-fleet-plan-2026-06-23.md) | **▶ the discoverability/consolidation ultracode run** — Phase-0 rails status (per-command guard #1370 + shared `hub_children` primitive done; settings guard = Phase-0.5 specced) + the file-disjoint unit roster + held-set + born-red→coordinator-merge protocol | [consolidation brief](consolidation-discoverability-audit-brief-2026-06-23.md) |
 
 ### S5 — Operations / control-plane
 
