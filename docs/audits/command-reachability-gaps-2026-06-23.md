@@ -29,7 +29,7 @@ is a subsystem `entry_point`.
 ## Run summary (2026-06-23, `e8b25e6` baseline)
 
 ```
-214 prefix commands  →  75 reachable · 137 exempt · 2 GAP
+214 prefix commands  →  75 reachable · 138 exempt · 1 GAP   (was 2 — !btd6strat fixed in PR #1372)
 ```
 
 The static guard initially flagged **8** member-tier commands across 6 orphan cogs
@@ -37,9 +37,11 @@ The static guard initially flagged **8** member-tier commands across 6 orphan co
 command-list). **Verifying each against source** (the rubric accepts a *buttonized
 panel action* as reachable, and Q-0120 says a checker that fights the evidence is the
 checker's bug) split them: **5 were already reachable via a hub-panel button / panel
-help-text** → allowlisted with a source citation; **1 (`!cbrecord`) was a one-line
-omission, fixed in this session** (added to the creature panel text next to its two
-siblings, then allowlisted like them); **2 are genuinely unsurfaced** → the baseline.
+help-text** → allowlisted with a source citation; **2 were small omissions fixed by
+adding a surface** (`!cbrecord` — one line in the creature panel text, Session 1;
+`!btd6strat` — a **Strategy button on `BTD6PanelView`**, PR #1372 / fleet unit U4),
+then allowlisted; **1 is genuinely unsurfaced** → the baseline (`!temproles`, routed
+to fleet unit U2).
 
 ### Exempt — operator-gated (allowlisted, verified by reading the cogs)
 
@@ -55,18 +57,17 @@ siblings, then allowlisted like them); **2 are genuinely unsurfaced** → the ba
 | `!paragon` | BTD6 hub panel **"Paragon"** button. |
 | `!cbattle` | Creature panel **help text** (`creature_cog.build_help_menu_view`). |
 | `!cbattletop` | Creature panel **help text**. |
-| `!cbrecord` | Creature panel **help text** — **the missing line, added this session**. |
+| `!cbrecord` | Creature panel **help text** — the missing line, added in Session 1. |
+| `!btd6strat` | BTD6 hub panel **"Strategy"** button — added in PR #1372 (U4); opens `strategy_browse.build_browse_embed`. |
 
-### The 2 genuine gaps (the baseline — `test_command_reachability._BASELINE`)
+### The 1 genuine gap (the baseline — `test_command_reachability._BASELINE`)
 
 Member-tier commands verified **not** surfaced by any homed help-list, panel button,
 or panel text. Recorded (ratcheted — *new* gaps fail) as the per-cog follow-on work.
-Both need a small design decision, so they're left for the per-cog audit sessions.
 
 | Cog | Command | Why it's a gap (verified) | Suggested follow-on |
 |---|---|---|---|
-| `btd6_strategy_cog.py` | `!btd6strat` | The BTD6 hub panel has **no Strategy button**; the strategy *browse* leg is member-facing (submit/review are staff). | Add a "Strategy" button to `BTD6PanelView`, or register a `btd6_strategy` subsystem under the BTD6 hub. |
-| `role_grants_cog.py` | `!temproles` | `RoleGrantsCog` maps to no subsystem; the member view of one's temp roles isn't surfaced in any roles panel. | Home under the `role` subsystem or surface via the roles panel. |
+| `role_grants_cog.py` | `!temproles` | `RoleGrantsCog` maps to no subsystem; the member view of one's temp roles isn't surfaced in any roles panel. | **Fleet unit U2 (roles):** home under the `role` subsystem or surface via the roles panel + allowlist. |
 
 ## How to clear an entry
 

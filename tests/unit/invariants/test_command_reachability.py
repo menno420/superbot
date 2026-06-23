@@ -60,10 +60,8 @@ _CHECK = _load_checker()
 # ---------------------------------------------------------------------------
 _BASELINE: frozenset[tuple[str, str]] = frozenset(
     {
-        # !btd6strat — the BTD6 hub panel has no Strategy button and the strategy
-        # browse leg is member-facing (submit/review are staff). Genuinely unsurfaced.
-        ("disbot/cogs/btd6_strategy_cog.py", "btd6strat"),
         # !temproles — member view of one's temp roles; not surfaced in any roles panel.
+        # Routed to fleet unit U2 (roles) — see the consolidation-fleet-plan.
         ("disbot/cogs/role_grants_cog.py", "temproles"),
     },
 )
