@@ -13,9 +13,11 @@ buttons. The shape contract this file pins:
 * Component count stays safely below Discord's 25-component cap
   (worst case includes Back-to-Help added by the Help layer).
 * ``attach_back_to_games_button`` adds a button and no-ops at the cap.
-* The child-open callback routes through
-  ``GamesHubView.handle_select``, gracefully handling missing cog,
-  missing ``build_help_menu_view`` hook, and exceptions from the hook.
+* The child-open callback routes through the shared
+  ``views.hub_children.HubChildButton.callback`` (``_GameHubButton`` is now a
+  thin subclass), gracefully handling missing cog, missing
+  ``build_help_menu_view`` hook, and exceptions from the hook (in-place
+  no-panel fallback embed).
 * Click-time governance recheck fails closed for stale visibility.
 """
 
@@ -38,6 +40,7 @@ from views.games.hub import (
     build_games_hub_embed,
     discover_game_children,
 )
+from views.hub_children import HubChildButton
 
 
 def _author(id_: int = 1) -> MagicMock:
@@ -46,15 +49,39 @@ def _author(id_: int = 1) -> MagicMock:
     return author
 
 
+def _interaction() -> MagicMock:
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.client = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
+    return interaction
+
+
+def _game_button(subsystem: str = "blackjack") -> _GameHubButton:
+    """Build a standalone ``_GameHubButton`` for callback tests.
+
+    Mirrors the Community hub's button-callback tests: the routing brain
+    now lives in the shared ``HubChildButton.callback`` the button
+    inherits, so each routing case exercises the button directly.
+    """
+    return _GameHubButton(
+        subsystem=subsystem,
+        label="🃏 Blackjack",
+        style=discord.ButtonStyle.primary,
+        row=0,
+    )
+
+
 @contextmanager
 def _all_visible():
     """Stub resolve_visibility to return every subsystem visible.
 
-    Click-time recheck inside ``handle_select`` and the rebuilt-hub
-    path inside ``attach_back_to_games_button`` go through
-    ``build_games_hub_panel`` which resolves governance; tests that
-    aren't designed to exercise the gating need a stub so the factory
-    doesn't hit the real DB.
+    Click-time recheck inside ``HubChildButton.callback`` (the shared
+    button ``_GameHubButton`` subclasses) and the rebuilt-hub path inside
+    ``attach_back_to_games_button`` go through ``resolve_visibility`` /
+    ``build_games_hub_panel``; tests that aren't designed to exercise the
+    gating need a stub so the recheck doesn't hit the real DB.
     """
     vis_result = VisibilityResult(
         visible_subsystems=set(SUBSYSTEMS),
@@ -157,6 +184,22 @@ def test_view_has_no_select_components():
         "Games Hub v2 uses buttons exclusively; the legacy "
         "_GamesHubSelect dropdown was removed in PR 2."
     )
+
+
+def test_game_hub_button_is_hubchildbutton_subclass():
+    """Consolidation pin (U3): the Games child button must be a thin
+    subclass of the shared ``views.hub_children.HubChildButton`` — the
+    single child-forwarding seam every hub delegates to (#1373). If a
+    future refactor reintroduces a bespoke button/``handle_select`` this
+    fails loudly.
+    """
+    assert issubclass(_GameHubButton, HubChildButton)
+    btn = _game_button("blackjack")
+    assert isinstance(btn, HubChildButton)
+    # The shared button owns the routing logic — the subclass adds none.
+    assert _GameHubButton.callback is HubChildButton.callback
+    # GamesHubView no longer carries a hand-rolled routing method.
+    assert not hasattr(GamesHubView, "handle_select")
 
 
 def test_view_renders_one_game_hub_button_per_visible_child():
@@ -367,75 +410,71 @@ def test_attach_back_button_noops_at_25_children():
 
 
 # ---------------------------------------------------------------------------
-# handle_select routing (shared by every _GameHubButton)
+# Button callback routing (inherited from the shared HubChildButton)
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_handle_select_unknown_subsystem_sends_ephemeral():
-    view = GamesHubView(_author())
-    interaction = MagicMock(spec=discord.Interaction)
-    interaction.client = MagicMock()
-    interaction.response = MagicMock()
-    interaction.response.send_message = AsyncMock()
-    interaction.response.edit_message = AsyncMock()
+async def test_button_missing_cog_renders_fallback_in_place():
+    """No cog loaded for the subsystem → Games keeps its in-place
+    no-panel fallback embed (``fallback_builder``), not an ephemeral.
+    """
+    btn = _game_button("blackjack")
+    interaction = _interaction()
 
-    await view.handle_select(interaction, "not_a_real_subsystem")
-
-    interaction.response.send_message.assert_awaited_once()
-    interaction.response.edit_message.assert_not_called()
-
-
-@pytest.mark.asyncio
-async def test_handle_select_missing_cog_renders_fallback():
-    view = GamesHubView(_author())
-    interaction = MagicMock(spec=discord.Interaction)
-    interaction.client = MagicMock()
-    interaction.response = MagicMock()
-    interaction.response.send_message = AsyncMock()
-    interaction.response.edit_message = AsyncMock()
-
-    with _all_visible(), patch("views.games.hub.SUBSYSTEMS") as fake_subs:
-        sub_name = "blackjack"
-        fake_subs.get.return_value = dict(SUBSYSTEMS[sub_name])
-        with patch("cogs.help_cog._cog_for_subsystem", return_value=None):
-            await view.handle_select(interaction, sub_name)
+    with _all_visible(), patch("cogs.help_cog._cog_for_subsystem", return_value=None):
+        await btn.callback(interaction)
 
     interaction.response.edit_message.assert_awaited_once()
-    args, kwargs = interaction.response.edit_message.call_args
-    assert kwargs["view"] is view  # falls back to the hub itself + back btn
+    _args, kwargs = interaction.response.edit_message.call_args
     embed: discord.Embed = kwargs["embed"]
     assert "Blackjack" in (embed.title or "")
+    interaction.response.send_message.assert_not_called()
 
 
 @pytest.mark.asyncio
-async def test_handle_select_hook_failure_renders_fallback():
-    view = GamesHubView(_author())
-    interaction = MagicMock(spec=discord.Interaction)
-    interaction.client = MagicMock()
-    interaction.response = MagicMock()
-    interaction.response.send_message = AsyncMock()
-    interaction.response.edit_message = AsyncMock()
+async def test_button_cog_without_hook_renders_fallback_in_place():
+    """Cog present but no ``build_help_menu_view`` → in-place fallback."""
+    btn = _game_button("blackjack")
+    fake_cog = MagicMock(spec=[])  # no build_help_menu_view attr
+    interaction = _interaction()
 
+    with (
+        _all_visible(),
+        patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog),
+    ):
+        await btn.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    interaction.response.send_message.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_button_hook_failure_renders_fallback_in_place():
+    btn = _game_button("blackjack")
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(side_effect=RuntimeError("boom"))
+    interaction = _interaction()
 
     with _all_visible(), patch(
         "cogs.help_cog._cog_for_subsystem", return_value=fake_cog,
     ):
-        await view.handle_select(interaction, "blackjack")
+        await btn.callback(interaction)
 
     interaction.response.edit_message.assert_awaited_once()
     fake_cog.build_help_menu_view.assert_awaited_once()
 
 
 @pytest.mark.asyncio
-async def test_handle_select_success_attaches_back_button():
-    view = GamesHubView(_author())
-    interaction = MagicMock(spec=discord.Interaction)
-    interaction.client = MagicMock()
-    interaction.response = MagicMock()
-    interaction.response.edit_message = AsyncMock()
+async def test_button_success_attaches_back_to_games_button():
+    """Successful child open edits in place and attaches Back-to-Games."""
+    parent_view = GamesHubView(_author())
+    btn = next(
+        c
+        for c in parent_view.children
+        if isinstance(c, _GameHubButton) and c._subsystem == "blackjack"  # type: ignore[attr-defined]
+    )
+    interaction = _interaction()
 
     child_view = discord.ui.View()
     child_embed = discord.Embed(title="Blackjack")
@@ -445,10 +484,10 @@ async def test_handle_select_success_attaches_back_button():
     with _all_visible(), patch(
         "cogs.help_cog._cog_for_subsystem", return_value=fake_cog,
     ):
-        await view.handle_select(interaction, "blackjack")
+        await btn.callback(interaction)
 
     interaction.response.edit_message.assert_awaited_once()
-    args, kwargs = interaction.response.edit_message.call_args
+    _args, kwargs = interaction.response.edit_message.call_args
     assert kwargs["embed"] is child_embed
     assert kwargs["view"] is child_view
     back_buttons = [
@@ -460,25 +499,38 @@ async def test_handle_select_success_attaches_back_button():
 
 
 @pytest.mark.asyncio
-async def test_button_callback_delegates_to_handle_select():
-    """Clicking a ``_GameHubButton`` must call
-    ``GamesHubView.handle_select`` with its bound subsystem — that is
-    how it shares the routing brain with the legacy dropdown's path.
+async def test_button_fails_closed_when_subsystem_invisible():
+    """Click-time recheck: if the subsystem drops out of visibility
+    between render and click, the button surfaces an ephemeral and does
+    NOT call into the cog.
     """
-    view = GamesHubView(_author())
-    btn = next(
-        c
-        for c in view.children
-        if isinstance(c, _GameHubButton) and c._subsystem == "blackjack"  # type: ignore[attr-defined]
+    btn = _game_button("blackjack")
+    interaction = _interaction()
+    interaction.user = _author()
+    interaction.guild_id = 7
+    interaction.channel = MagicMock()
+
+    vis_result = VisibilityResult(
+        visible_subsystems=set(),
+        member_tier="member",
+        resolved_from={},
+        traces={},
     )
-    interaction = MagicMock(spec=discord.Interaction)
-    with patch.object(
-        GamesHubView,
-        "handle_select",
-        new=AsyncMock(),
-    ) as mock_handle:
+    cog_lookup = MagicMock()
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ), patch("cogs.help_cog._cog_for_subsystem", cog_lookup):
         await btn.callback(interaction)
-    mock_handle.assert_awaited_once_with(interaction, "blackjack")
+
+    interaction.response.send_message.assert_awaited_once()
+    args, kwargs = interaction.response.send_message.call_args
+    message = args[0] if args else kwargs.get("content", "")
+    assert "no longer available" in message
+    assert kwargs.get("ephemeral") is True
+    cog_lookup.assert_not_called()
+    interaction.response.edit_message.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -642,42 +694,3 @@ async def test_build_games_hub_panel_raises_without_context():
 
     with pytest.raises(ValueError, match="interaction or ctx"):
         await build_games_hub_panel(_author())
-
-
-@pytest.mark.asyncio
-async def test_handle_select_fails_closed_when_subsystem_invisible():
-    """Click-time recheck: if a subsystem drops out of visibility
-    between render and click, ``handle_select`` must surface an
-    ephemeral and NOT call into the cog.
-    """
-    view = GamesHubView(_author())
-    interaction = MagicMock(spec=discord.Interaction)
-    interaction.client = MagicMock()
-    interaction.user = _author()
-    interaction.guild_id = 7
-    interaction.channel = MagicMock()
-    interaction.response = MagicMock()
-    interaction.response.send_message = AsyncMock()
-    interaction.response.edit_message = AsyncMock()
-
-    vis_result = VisibilityResult(
-        visible_subsystems=set(),
-        member_tier="member",
-        resolved_from={},
-        traces={},
-    )
-    cog_lookup = MagicMock()
-    with patch(
-        "services.governance_service.resolve_visibility",
-        new_callable=AsyncMock,
-        return_value=vis_result,
-    ), patch("cogs.help_cog._cog_for_subsystem", cog_lookup):
-        await view.handle_select(interaction, "blackjack")
-
-    interaction.response.send_message.assert_awaited_once()
-    args, kwargs = interaction.response.send_message.call_args
-    message = args[0] if args else kwargs.get("content", "")
-    assert "no longer available" in message
-    assert kwargs.get("ephemeral") is True
-    cog_lookup.assert_not_called()
-    interaction.response.edit_message.assert_not_called()
