@@ -1,1 +1,0 @@
-- `claude/funny-franklin-3z6s2p` · fishing boat/deepwater venue (design §5 / expansion Phase 2) · `disbot/utils/fishing/`, `disbot/services/fishing_workflow.py`, `disbot/views/fishing/`, `disbot/cogs/fishing_cog.py`, `disbot/utils/db/games/`, migration 094, fishing tests · 2026-06-23
