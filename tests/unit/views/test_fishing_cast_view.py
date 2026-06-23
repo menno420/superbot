@@ -121,7 +121,9 @@ async def test_ordinary_fish_commits_on_the_first_reel():
             AsyncMock(return_value=result),
         ) as commit,
         patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
-        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)) as edit,
+        patch(
+            "views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)
+        ) as edit,
     ):
         await _reel(view, interaction)
 
@@ -152,7 +154,9 @@ async def test_caught_embed_shows_weight_and_personal_best():
             AsyncMock(return_value=result),
         ),
         patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
-        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)) as edit,
+        patch(
+            "views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)
+        ) as edit,
     ):
         await _reel(view, interaction)
 
@@ -310,7 +314,9 @@ async def test_extra_taps_between_fight_rounds_are_ignored():
 
     with (
         patch.object(fishing_workflow, "commit_catch", AsyncMock()) as commit,
-        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)) as defer,
+        patch(
+            "views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)
+        ) as defer,
     ):
         await _reel(view, interaction)
 

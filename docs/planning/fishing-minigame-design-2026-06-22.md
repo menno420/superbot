@@ -210,8 +210,11 @@ Your `cast → wait → BITE → reel` instinct is **right**. Three data-driven 
   now that weight has a purpose). The Fishdex shows your personal-best weight beside each tally, and a
   fresh record celebrates with "🏅 New personal best!" on the catch. A cheap long-tail goal —
   "personal best" beats raw counts for retention.
-- **Line-snap as a soft-fail, not a hard-fail** — an escaped fish could leave a clue ("a *big* one
-  got away") to bait the next cast rather than just denying the reward — keeps frustration low.
+- **Line-snap as a soft-fail, not a hard-fail** — **✅ SHIPPED 2026-06-23 (PR #1356).** An escaped
+  **trophy** now leaves a teasing, species-named clue (`minigame.escape_clue` → "💭 *...it looked like
+  a real **Marlin**, too.*") at every got-away site, baiting the next cast instead of a flat denial;
+  ordinary fish keep the plain line. Shipped alongside the **heaviest-catch leaderboard** (`!trophies`
+  / `bigfish` — a "Biggest Catches" hall of fame off the #1351 `best_weight` record).
 
 ## Owner decisions (resolved 2026-06-22, via AskUserQuestion)
 

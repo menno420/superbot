@@ -1,1 +1,0 @@
-- `claude/funny-franklin-trophy-follow` · fishing trophy follow-ups: soft-fail clue + heaviest-catch leaderboard · `disbot/utils/fishing/minigame.py` + `views/fishing/cast_view.py` + `utils/db/games/fishing.py` + `cogs/fishing_cog.py` · 2026-06-23

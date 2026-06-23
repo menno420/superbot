@@ -19,11 +19,17 @@ async def test_record_catch_upserts_count_and_tracks_best_weight():
         prev = await fishing.record_catch(99, 1, "trout", 3.4)
     query, params = mock_fetch.await_args.args
     flat = " ".join(query.split())
-    assert "INSERT INTO fishing_catch_log (user_id, guild_id, species, count, best_weight)" in flat
+    assert (
+        "INSERT INTO fishing_catch_log (user_id, guild_id, species, count, best_weight)"
+        in flat
+    )
     assert "ON CONFLICT (user_id, guild_id, species) DO UPDATE" in flat
     assert "count = fishing_catch_log.count + 1" in flat
     # best_weight only ever grows (GREATEST against the incoming catch).
-    assert "best_weight = GREATEST(fishing_catch_log.best_weight, EXCLUDED.best_weight)" in flat
+    assert (
+        "best_weight = GREATEST(fishing_catch_log.best_weight, EXCLUDED.best_weight)"
+        in flat
+    )
     # The prior best is captured (CTE) and returned so the caller can detect a PB.
     assert "WITH prev AS" in flat
     assert "RETURNING (SELECT best_weight FROM prev) AS prev_best" in flat
@@ -124,7 +130,10 @@ async def test_get_fishing_log_returns_species_to_count():
     with patch(
         "utils.db.games.fishing.pool.fetchall",
         new_callable=AsyncMock,
-        return_value=[{"species": "trout", "count": 4}, {"species": "bass", "count": 1}],
+        return_value=[
+            {"species": "trout", "count": 4},
+            {"species": "bass", "count": 1},
+        ],
     ):
         log = await fishing.get_fishing_log(99, 1)
     assert log == {"trout": 4, "bass": 1}

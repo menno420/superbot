@@ -217,7 +217,9 @@ class FishingCastView(discord.ui.View):
         await asyncio.sleep(self._window)
         if self._resolved or self._round_id != my_id:
             return
-        await self._fail(self._got_away("🌊 *...the line goes slack. The fish got away.*"))
+        await self._fail(
+            self._got_away("🌊 *...the line goes slack. The fish got away.*"),
+        )
 
     async def _run_fight_round(self) -> None:
         """One reel-fight round: a suspense beat, arm the tap, expire if ignored."""
@@ -234,7 +236,9 @@ class FishingCastView(discord.ui.View):
         if self._resolved or self._round_id != my_id:
             return
         await self._fail(
-            self._got_away("🌊 You let the line go slack — it thrashed free and escaped."),
+            self._got_away(
+                "🌊 You let the line go slack — it thrashed free and escaped.",
+            ),
         )
 
     # ------------------------------------------------------------------ the button

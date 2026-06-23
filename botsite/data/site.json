@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T09:16:14Z",
+    "generated_at": "2026-06-23T09:42:20Z",
     "build": {
-      "commit": "a622a83",
-      "subject": "Competitive-positioning north-star vision doc (what makes people choose us) (#1352)",
-      "committed_at": "2026-06-23T09:16:14Z"
+      "commit": "b390928e",
+      "subject": "Fishing trophy follow-ups: born-red session card + claim",
+      "committed_at": "2026-06-23T09:42:20Z"
     }
   },
   "counts": {
-    "commands": 386,
+    "commands": 387,
     "features": 41,
     "games": 11
   },
@@ -6994,6 +6994,28 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "trophies",
+      "aliases": [
+        "bigfish",
+        "fishtrophy"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show this server's heaviest catches — the biggest-fish hall of fame.",
+      "description": "Show this server's heaviest catches — the biggest-fish hall of fame.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
       ],
