@@ -52,6 +52,24 @@ def build_bait_embed(
             f"(×{bait.charges} casts, {bait_mod.effect_text(bait)})",
         )
     embed.add_field(name="The shelf", value="\n".join(shelf), inline=False)
+
+    craftable = []
+    for key in bait_mod.CRAFTABLE_KEYS:
+        bait = bait_mod.bait_by_key(key)
+        recipe = bait_mod.craft_recipe(key)
+        if bait is None or recipe is None:
+            continue
+        craftable.append(
+            f"{bait.emoji} **{bait.name}** — {bait_mod.recipe_text(recipe)}",
+        )
+    if craftable:
+        embed.add_field(
+            name="Craft from fish",
+            value="\n".join(craftable)
+            + "\n*Turn small catches into bait — no coins needed.*",
+            inline=False,
+        )
+
     embed.add_field(
         name="Your balance",
         value=f"**{balance}** 🪙",
@@ -100,8 +118,51 @@ class _BaitSelect(discord.ui.Select):
         await safe_edit(interaction, embed=embed, view=view)
 
 
+class _BaitCraftSelect(discord.ui.Select):
+    """Pick a craftable bait — turn small caught fish into a pack (no coins)."""
+
+    def __init__(self) -> None:
+        options = []
+        for key in bait_mod.CRAFTABLE_KEYS:
+            bait = bait_mod.bait_by_key(key)
+            recipe = bait_mod.craft_recipe(key)
+            if bait is None or recipe is None:
+                continue
+            options.append(
+                discord.SelectOption(
+                    label=f"{bait.name} — {bait_mod.recipe_text(recipe)}",
+                    value=bait.key,
+                    emoji=bait.emoji,
+                    description=f"×{bait.charges} casts · {bait_mod.effect_text(bait)}",
+                ),
+            )
+        super().__init__(
+            placeholder="Craft a pack from caught fish…",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction):
+            return
+        view: BaitShopView = self.view  # type: ignore[assignment]
+        result = await fishing_workflow.craft_bait(
+            view._author.id,
+            view.guild_id,
+            self.values[0],
+        )
+        active, charges = await fishing_workflow.get_active_bait(
+            view._author.id,
+            view.guild_id,
+        )
+        balance = await db.get_coins(view._author.id, view.guild_id)
+        embed = build_bait_embed(active, charges, balance, note=result.message)
+        await safe_edit(interaction, embed=embed, view=view)
+
+
 class BaitShopView(BaseView):
-    """Author-restricted bait-shop panel with a buy select."""
+    """Author-restricted bait-shop panel: buy with coins or craft from fish."""
 
     def __init__(
         self,
@@ -111,3 +172,4 @@ class BaitShopView(BaseView):
         super().__init__(author, timeout=120)
         self.guild_id = guild_id
         self.add_item(_BaitSelect())
+        self.add_item(_BaitCraftSelect())

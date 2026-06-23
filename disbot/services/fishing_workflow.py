@@ -26,6 +26,7 @@ from utils import db
 from utils.fishing import MAX_LEVEL, Catch
 from utils.fishing import bait as bait_mod
 from utils.fishing import energy as fish_energy
+from utils.fishing import fish as fish_mod
 from utils.fishing import rods as rods_mod
 from utils.fishing import roll_catch
 
@@ -436,6 +437,112 @@ async def buy_bait(
         f"{verb} **{bait.name}** {bait.emoji} ({bait_mod.effect_text(bait)}) — "
         f"**{new_charges}** casts ready for **{bait.price}** 🪙. "
         f"Balance: **{new_balance}** 🪙.",
+        bait=bait,
+        charges=new_charges,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Bait crafting — turn small caught fish into bait (the catch→bait loop, idea
+# fishing-bait-crafting-2026-06-22). The gameplay-native second source beside
+# the coin shop: an inventory→bait conversion, NOT a coin sink.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class BaitCraftResult:
+    """The outcome of a ``craft_bait`` attempt — a flag + a player-facing message."""
+
+    success: bool
+    message: str
+    #: The bait loaded after the attempt (``None`` on failure / when unchanged).
+    bait: bait_mod.Bait | None = None
+    #: Charges loaded after the attempt.
+    charges: int = 0
+
+
+def _plan_fish_spend(
+    inventory: dict[str, int],
+    recipe: bait_mod.BaitRecipe,
+) -> dict[str, int] | None:
+    """Choose which eligible fish to consume for *recipe* (smallest-first).
+
+    Eligible = a known fish species whose ``size_rank`` is ``≤ recipe.max_size_rank``.
+    Consumes the smallest ranks first (ties broken by name) so the player keeps
+    their bigger catches. Returns a ``{fish_name: count}`` spend map, or ``None``
+    when the player lacks ``recipe.fish_count`` eligible fish.
+    """
+    eligible: list[tuple[int, str, int]] = []  # (size_rank, name, have)
+    for name, have in inventory.items():
+        if have <= 0:
+            continue
+        species = fish_mod.species_by_name(name)
+        if species is None or species.size_rank > recipe.max_size_rank:
+            continue
+        eligible.append((species.size_rank, name, have))
+
+    if sum(have for _, _, have in eligible) < recipe.fish_count:
+        return None
+
+    eligible.sort(key=lambda e: (e[0], e[1]))  # smallest size, then name
+    spend: dict[str, int] = {}
+    remaining = recipe.fish_count
+    for _, name, have in eligible:
+        if remaining <= 0:
+            break
+        take = min(have, remaining)
+        spend[name] = take
+        remaining -= take
+    return spend
+
+
+async def craft_bait(
+    user_id: int,
+    guild_id: int,
+    bait_key: str,
+) -> BaitCraftResult:
+    """Craft one pack of *bait_key* from small caught fish — the catch→bait loop.
+
+    Mirrors :func:`mining_workflow.cook` / :func:`mining_workflow.craft`: an
+    inventory-only conversion (no coins, no external call) — debit the eligible
+    fish and load/stack the bait in ONE ``db.transaction()`` (Q-0071). Like
+    :func:`buy_bait`, crafting the same bait stacks charges and a different bait
+    replaces the loadout. Only baits with a recipe are craftable; the premium
+    combo stays a pure coin sink.
+    """
+    bait = bait_mod.bait_by_key(bait_key)
+    recipe = bait_mod.craft_recipe(bait_key)
+    if bait is None or recipe is None:
+        return BaitCraftResult(
+            False,
+            "That bait can't be crafted from fish — buy it with `!bait`.",
+        )
+
+    inventory = await db.get_mining_inventory(str(user_id), guild_id)
+    spend = _plan_fish_spend(inventory, recipe)
+    if spend is None:
+        return BaitCraftResult(
+            False,
+            f"You need **{recipe.fish_count}** fish of size ≤ "
+            f"**{recipe.max_size_rank}** to craft **{bait.name}** {bait.emoji} — "
+            "catch more small fish with `!fish`.",
+        )
+
+    cur_key, cur_charges = await db.get_active_bait(user_id, guild_id)
+    stacking = cur_key == bait.key and cur_charges > 0
+    new_charges = (cur_charges if stacking else 0) + bait.charges
+
+    deltas = {name: -qty for name, qty in spend.items()}
+    async with db.transaction() as conn:
+        await db.apply_inventory_deltas(str(user_id), guild_id, deltas, conn=conn)
+        await db.set_active_bait(user_id, guild_id, bait.key, new_charges, conn=conn)
+
+    used = ", ".join(f"{qty}× {name}" for name, qty in spend.items())
+    verb = "Topped up" if stacking else "Crafted"
+    return BaitCraftResult(
+        True,
+        f"{verb} **{bait.name}** {bait.emoji} ({bait_mod.effect_text(bait)}) from "
+        f"**{used}** — **{new_charges}** casts ready.",
         bait=bait,
         charges=new_charges,
     )

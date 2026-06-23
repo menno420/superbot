@@ -1,8 +1,13 @@
 # Idea — Bait crafting from caught fish (close the fishing economy loop)
 
-> **Status:** `ideas` · **Subsystem:** games (fishing) · **Captured:** 2026-06-22
-> (the bait-layer dispatch run, PR #1329). Builds directly on the now-shipped
-> bait layer + the cook/campfire loop (#1289).
+> **Status:** `historical` — **SHIPPED 2026-06-23 (PR #1338).** · **Subsystem:** games (fishing) ·
+> **Captured:** 2026-06-22 (the bait-layer dispatch run, PR #1329). Built on the
+> shipped bait layer (#1329/#1337) + the cook/campfire loop (#1289).
+>
+> **Shipped as:** `utils/fishing/bait.py` `CRAFT_RECIPES` (small fish → bait, smallest-first
+> spend) + `fishing_workflow.craft_bait` (inventory→bait in one transaction, no coins) +
+> the `🪱 Bait` shop "Craft from fish" select + `!craftbait [bait]`. The premium combo
+> ("feast") stays coin-only as the top-end spend reason.
 
 ## The idea
 

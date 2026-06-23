@@ -175,7 +175,9 @@ async def test_begin_cast_consumes_a_bait_charge_and_compounds_rarity():
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
-        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),  # starter, pull 1.0
+        patch.object(
+            wf.db, "get_rod_tier", AsyncMock(return_value=0)
+        ),  # starter, pull 1.0
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("worm", 2))),
         patch.object(wf, "roll_catch", _rarity_recorder(seen)),
@@ -201,7 +203,9 @@ async def test_begin_cast_clears_bait_when_the_last_charge_is_spent():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("worm", 1))),
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
+        patch.object(
+            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH
+        ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
         patch.object(wf.db, "clear_active_bait", AsyncMock()) as clear_bait,
@@ -250,7 +254,9 @@ async def test_begin_cast_compounds_bite_speed_from_rod_and_bait():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("spinner", 2))),
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
+        patch.object(
+            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH
+        ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()),
         patch.object(wf.db, "clear_active_bait", AsyncMock()),
@@ -258,7 +264,9 @@ async def test_begin_cast_compounds_bite_speed_from_rod_and_bait():
         start = await wf.begin_cast(99, 1)
 
     assert start.bait_used is _SPINNER
-    assert start.effective_bite_speed == pytest.approx(gold.bite_speed * _SPINNER.bite_speed)
+    assert start.effective_bite_speed == pytest.approx(
+        gold.bite_speed * _SPINNER.bite_speed
+    )
 
 
 @pytest.mark.asyncio
@@ -270,7 +278,9 @@ async def test_begin_cast_bite_speed_is_rod_only_without_bait():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
+        patch.object(
+            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH
+        ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()),
         patch.object(wf.db, "clear_active_bait", AsyncMock()),
@@ -278,3 +288,146 @@ async def test_begin_cast_bite_speed_is_rod_only_without_bait():
         start = await wf.begin_cast(99, 1)
 
     assert start.effective_bite_speed == pytest.approx(gold.bite_speed)  # rod only
+
+
+# ---------------------------------------------------------------------------
+# _plan_fish_spend — choose which eligible fish to consume (smallest-first)
+# ---------------------------------------------------------------------------
+# fish.json size ranks: minnow=1, guppy=2, sardine=3, anchovy=4 … trout=8.
+_WORM_RECIPE = bait_mod.craft_recipe("worm")  # 3 fish, size ≤ 3
+
+
+def test_plan_fish_spend_takes_smallest_eligible_first():
+    inv = {"sardine": 5, "minnow": 5, "guppy": 5, "trout": 5}  # trout is rank 8 (>3)
+    spend = wf._plan_fish_spend(inv, _WORM_RECIPE)
+    assert spend == {"minnow": 3}  # smallest rank fills the recipe, bigger kept
+
+
+def test_plan_fish_spend_spreads_across_ranks_when_needed():
+    inv = {"minnow": 2, "guppy": 5}  # need 3 small fish; only 2 minnow
+    spend = wf._plan_fish_spend(inv, _WORM_RECIPE)
+    assert spend == {"minnow": 2, "guppy": 1}  # smallest first, then next rank
+
+
+def test_plan_fish_spend_returns_none_without_enough_eligible_fish():
+    # 10 trout (rank 8) are all too big for the size-≤-3 recipe → no plan.
+    assert wf._plan_fish_spend({"trout": 10}, _WORM_RECIPE) is None
+    assert wf._plan_fish_spend({"minnow": 2}, _WORM_RECIPE) is None  # short by one
+    assert wf._plan_fish_spend({}, _WORM_RECIPE) is None
+    # non-fish inventory items never count as ingredients
+    assert wf._plan_fish_spend({"copper ore": 50}, _WORM_RECIPE) is None
+
+
+# ---------------------------------------------------------------------------
+# craft_bait — the inventory→bait conversion (catch→bait loop)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_craft_bait_debits_fish_and_loads_a_fresh_pack():
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    with (
+        patch.object(
+            wf.db,
+            "get_mining_inventory",
+            AsyncMock(return_value={"minnow": 5}),
+        ),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "apply_inventory_deltas", AsyncMock()) as deltas,
+        patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
+        patch.object(wf.economy_service, "debit_in_txn", AsyncMock()) as debit,
+    ):
+        result = await wf.craft_bait(99, 1, "worm")
+
+    assert result.success is True
+    assert result.bait is _WORM
+    assert result.charges == _WORM.charges
+    # consumed 3 minnow (the recipe), no coins ever touched
+    deltas.assert_awaited_once_with("99", 1, {"minnow": -3}, conn=sentinel_conn)
+    set_bait.assert_awaited_once_with(99, 1, "worm", _WORM.charges, conn=sentinel_conn)
+    debit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_craft_bait_stacks_charges_for_the_same_bait():
+    @asynccontextmanager
+    async def _ctx():
+        yield MagicMock()
+
+    with (
+        patch.object(
+            wf.db,
+            "get_mining_inventory",
+            AsyncMock(return_value={"minnow": 9}),
+        ),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("worm", 4))),
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "apply_inventory_deltas", AsyncMock()),
+        patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
+    ):
+        result = await wf.craft_bait(99, 1, "worm")
+
+    assert result.charges == 4 + _WORM.charges  # stacked onto the loaded worm
+    _, _, key, charges = set_bait.await_args.args
+    assert (key, charges) == ("worm", 4 + _WORM.charges)
+
+
+@pytest.mark.asyncio
+async def test_craft_bait_replaces_a_different_loaded_bait():
+    @asynccontextmanager
+    async def _ctx():
+        yield MagicMock()
+
+    with (
+        patch.object(
+            wf.db,
+            "get_mining_inventory",
+            AsyncMock(return_value={"minnow": 9}),
+        ),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("lure", 5))),
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "apply_inventory_deltas", AsyncMock()),
+        patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
+    ):
+        result = await wf.craft_bait(99, 1, "worm")
+
+    assert result.bait is _WORM
+    assert result.charges == _WORM.charges  # fresh pack, old lure charges dropped
+
+
+@pytest.mark.asyncio
+async def test_craft_bait_without_enough_fish_writes_nothing():
+    with (
+        patch.object(
+            wf.db,
+            "get_mining_inventory",
+            AsyncMock(return_value={"trout": 10}),  # all too big for size ≤ 3
+        ),
+        patch.object(wf.db, "apply_inventory_deltas", AsyncMock()) as deltas,
+        patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
+    ):
+        result = await wf.craft_bait(99, 1, "worm")
+
+    assert result.success is False
+    deltas.assert_not_awaited()
+    set_bait.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_craft_bait_rejects_an_uncraftable_or_unknown_bait():
+    with (
+        patch.object(wf.db, "get_mining_inventory", AsyncMock()) as inv,
+        patch.object(wf.db, "apply_inventory_deltas", AsyncMock()) as deltas,
+    ):
+        feast = await wf.craft_bait(99, 1, "feast")  # premium = coin-only
+        nope = await wf.craft_bait(99, 1, "nonexistent")
+
+    assert feast.success is False and nope.success is False
+    inv.assert_not_awaited()  # bails before reading inventory
+    deltas.assert_not_awaited()
