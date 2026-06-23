@@ -1047,16 +1047,20 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
     if str(getattr(entry, "category", "")) == "moab_class" and isinstance(health, int):
         from services import btd6_data_service
 
+        bid = str(getattr(entry, "id", ""))
         mult100 = btd6_data_service.moab_class_health_multiplier(100)
         if mult100 is not None:
-            r100 = int(round(health * mult100))
+            r100_hp = int(round(health * mult100))
+            rbe100 = btd6_data_service.bloon_rbe_at_round(bid, 100)
+            rbe_bit = f", {rbe100:,} RBE" if isinstance(rbe100, int) else ""
             lines.append(
                 _cap(
                     f"[btd6_bloon] {canonical} — late-game/freeplay scaling: MOAB-class "
-                    f"health ramps +2% of base per round from round 81 (×{mult100:g} by "
-                    f"round 100), so {health:,} HP holds only through round 80; it first "
-                    f"appears on round 100 at {r100:,} HP. Runtime ramp, not in the game "
-                    f"files (source: {_dataset_label()}).",
+                    f"health ramps from round 81 (×{mult100:g} by round 100, steepening "
+                    f"sharply past 100), so {health:,} HP holds only through round 80; it "
+                    f"first appears on round 100 at {r100_hp:,} HP{rbe_bit}. Runtime ramp "
+                    f"(health + spawned-tree RBE), not in the game files (source: "
+                    f"{_dataset_label()}).",
                 ),
             )
 
@@ -3353,8 +3357,8 @@ def deterministic_bloon_health_reply(message_text: str) -> str | None:
         return (
             f"A {fort_label}**{bloon.canonical}** has **{base:,} HP** — its health "
             f"is the same on every round. Only MOAB-class bloons "
-            f"(MOAB/BFB/ZOMG/DDT/BAD) scale with the round: in late game / freeplay "
-            f"they gain +2% of base health per round from round 81."
+            f"(MOAB/BFB/ZOMG/DDT/BAD) scale with the round in late game / freeplay "
+            f"(from round 81); other bloons keep their base health."
         )
 
     scaled = btd6_data_service.bloon_health_at_round(
@@ -3365,16 +3369,19 @@ def deterministic_bloon_health_reply(message_text: str) -> str | None:
     multiplier = btd6_data_service.moab_class_health_multiplier(round_number)
     if scaled is None or multiplier is None:
         return None
-    r100 = int(
-        round(base * (btd6_data_service.moab_class_health_multiplier(100) or 1.0)),
+    rbe = btd6_data_service.bloon_rbe_at_round(
+        bloon.id,
+        round_number,
+        fortified=fortified,
     )
+    rbe_clause = f" and **{rbe:,} RBE**" if isinstance(rbe, int) else ""
     return (
-        f"A {fort_label}**{bloon.canonical}** has **{scaled:,} HP** on "
+        f"A {fort_label}**{bloon.canonical}** has **{scaled:,} HP**{rbe_clause} on "
         f"**round {round_number}** — base **{base:,}** × **{multiplier:g}** "
-        f"late-game/freeplay scaling. MOAB-class bloons gain +2% of base health "
-        f"per round from round 81, so a {fort_label}{bloon.canonical} first appears "
-        f"on round 100 already at **{r100:,} HP**, not its {base:,} base. "
-        f"(The ramp is a runtime formula, not in the game files.)"
+        f"late-game/freeplay scaling. MOAB-class bloons get tougher each round from "
+        f"round 81 (×1.4 by round 100, then steepening sharply), so they sit well "
+        f"above their {base:,} base on late rounds. (Runtime ramp — health and the "
+        f"recomputed spawn-tree RBE — not stored in the game files.)"
     )
 
 
@@ -4126,7 +4133,39 @@ def deterministic_round_economy_reply(message_text: str) -> str | None:
     set_label = "ABR" if roundset == "alternate" else "default rounds"
     lines = [f"**Round {round_number} — RBE, cash & XP** ({set_label})"]
     if entry.rbe is not None:
-        lines.append(f"• **RBE** {entry.rbe:,}")
+        rbe_line = f"• **RBE** {entry.rbe:,}"
+        start = btd6_data_service.get_dataset().moab_health_start_round or 81
+        if round_number >= start and entry.groups:
+            # Recompute the round's total RBE with freeplay scaling, but only when
+            # every spawn group resolves through the validated MOAB-class/ceramic
+            # path (lone basic-bloon spawn-halving is out of scope, so it's skipped
+            # rather than reported approximately).
+            scaled_total = 0
+            reliable = True
+            for group in entry.groups:
+                cid = str(group.get("bloon_id", ""))
+                record = btd6_data_service.get_bloon(cid)
+                if record is None or (
+                    record.category != "moab_class" and record.id != "ceramic"
+                ):
+                    reliable = False
+                    break
+                fort = "fortified" in (group.get("modifiers", ()) or ())
+                scaled = btd6_data_service.bloon_rbe_at_round(
+                    cid,
+                    round_number,
+                    fortified=fort,
+                )
+                if scaled is None:
+                    reliable = False
+                    break
+                scaled_total += int(group.get("count", 0)) * scaled
+            if reliable and scaled_total != entry.rbe:
+                rbe_line += (
+                    f" base → **{scaled_total:,}** on round {round_number} "
+                    f"(MOAB-class late-game/freeplay scaling)"
+                )
+        lines.append(rbe_line)
     if entry.cash is not None:
         cumulative = (
             f" (cumulative ${entry.cumulative_cash:,.0f})"
