@@ -793,8 +793,7 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
     `channel.delete.any`, `channel.restrict.apply`,
     `channel.visibility.configure`.
 14. **hardcoded_or_env_only_behavior**: channel-name conventions
-    (e.g. category seeds in `disbot/config.py:CLEANUP_WHITELIST_CHANNELS`
-    and similar).
+    (e.g. category/name seeds hardcoded in `disbot/config.py` and similar).
 15. **missing_customization_commands**: per-guild channel name / category
     convention editor.
 16. **missing_settings_pages**: Settings Manager channel page.
@@ -826,9 +825,10 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
 8. **help_menu_direct_navigation_hook**: `none`.
 9. **existing_SettingSpec_declarations**: none yet (governance owns
     cleanup_policies; cleanup-level scalars are roadmap work in S8 v2/v3).
-10. **existing_settings_keys**: cleanup-related toggles live in
-    `disbot/config.py` (`CLEANUP_WHITELIST_CHANNELS`, ignored-channel
-    CSV in legacy KV) — to be migrated.
+10. **existing_settings_keys**: none — the legacy
+    `CLEANUP_WHITELIST_CHANNELS` env list was removed (channel exemption is
+    now a per-channel cleanup policy set to `Off`); only the ignored-channel
+    CSV in legacy KV remains to be migrated.
 11. **existing_BindingSpec_entries**: none. **Cleanup must not own a
     duplicate `cleanup_log_channel` binding** — the logging subsystem owns
     `cleanup_channel`; cleanup deep-links to it.
@@ -836,8 +836,9 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
 13. **current_access_policy_behavior**: `visibility_tier=administrator`;
     capabilities `cleanup.word.add`, `cleanup.word.remove`,
     `cleanup.history.scan`, `cleanup.policy.configure`.
-14. **hardcoded_or_env_only_behavior**: `CLEANUP_WHITELIST_CHANNELS` in
-    `disbot/config.py:83`, ignored-channels CSV, prohibited-words seed list.
+14. **hardcoded_or_env_only_behavior**: ignored-channels CSV,
+    prohibited-words seed list. (The `CLEANUP_WHITELIST_CHANNELS` env list
+    was removed — exemption is a per-channel cleanup policy set to `Off`.)
 15. **missing_customization_commands**: `!cleanup ignore add #channel`,
     `!cleanup unignore #channel`, `!cleanup prohibited add <word>`,
     list/clear variants.

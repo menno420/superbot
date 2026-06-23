@@ -34,33 +34,11 @@ def _author(id_: int = 1) -> MagicMock:
     return author
 
 
-def _channel(name: str) -> MagicMock:
-    ch = MagicMock()
-    ch.name = name
-    return ch
-
-
-def _cog(
-    words: list[str] | None = None,
-    channels: list[int] | None = None,
-    guild_channels: dict[int, str] | None = None,
-) -> MagicMock:
-    """A fake Cleanup cog.
-
-    ``channels`` is the *global* static whitelist (``CLEANUP_WHITELIST_CHANNELS``);
-    ``guild_channels`` maps the ids that actually exist in guild 42 to their name,
-    so the panel can resolve + filter to the current server.
-    """
+def _cog(words: list[str] | None = None) -> MagicMock:
+    """A fake Cleanup cog (the overview reads only the word cache now)."""
     cog = MagicMock()
     cog._word_cache = {42: list(words or [])}
     cog._load_guild = AsyncMock()
-    cog.whitelisted_channels = list(channels or [])
-
-    resolved = {cid: _channel(name) for cid, name in (guild_channels or {}).items()}
-    guild = MagicMock()
-    guild.get_channel = lambda cid: resolved.get(cid)
-    cog.bot = MagicMock()
-    cog.bot.get_guild = lambda gid: guild if gid == 42 else None
     return cog
 
 
@@ -83,35 +61,11 @@ def test_overview_embed_shows_empty_word_list_gracefully():
     assert "None" in word_field.value
 
 
-def test_overview_embed_lists_whitelist_channels_by_name():
-    cog = _cog(
-        words=[],
-        channels=[111, 222],
-        guild_channels={111: "general", 222: "memes"},
-    )
+def test_overview_embed_has_no_whitelist_field():
+    """The legacy 'Whitelisted Channels' field was removed with the whitelist."""
+    cog = _cog(words=[])
     embed = build_cleanup_overview_embed(cog, guild_id=42)
-    whitelist_field = next(f for f in embed.fields if "Whitelist" in f.name)
-    # Channel names, not raw ids / mentions.
-    assert "#general" in whitelist_field.value
-    assert "#memes" in whitelist_field.value
-    assert "<#" not in whitelist_field.value
-
-
-def test_overview_embed_filters_whitelist_to_current_guild():
-    # 111 is in this guild; 999 belongs to another server → must be omitted.
-    cog = _cog(words=[], channels=[111, 999], guild_channels={111: "general"})
-    embed = build_cleanup_overview_embed(cog, guild_id=42)
-    whitelist_field = next(f for f in embed.fields if "Whitelist" in f.name)
-    assert "#general" in whitelist_field.value
-    assert "999" not in whitelist_field.value
-
-
-def test_overview_embed_whitelist_none_in_this_server():
-    # The whitelist has ids, but none resolve in this guild.
-    cog = _cog(words=[], channels=[111, 222], guild_channels={})
-    embed = build_cleanup_overview_embed(cog, guild_id=42)
-    whitelist_field = next(f for f in embed.fields if "Whitelist" in f.name)
-    assert "None in this server" in whitelist_field.value
+    assert not any("Whitelist" in f.name for f in embed.fields)
 
 
 def test_overview_embed_when_guild_unloaded():
