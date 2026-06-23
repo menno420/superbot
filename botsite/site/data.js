@@ -2286,6 +2286,27 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "forecast",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Show today's fishing forecast — the date-seeded weather everyone shares.",
+    "description": "Show today's fishing forecast — the date-seeded weather everyone shares.",
+    "usage": "!forecast",
+    "aliases": [
+      "fishforecast",
+      "fishingweather"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "forge",
     "area": "economy",
     "status": "in-progress",
@@ -6285,7 +6306,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "16efe539",
+    "build": "7968e5e1",
     "title": "New public bot website",
     "changes": [
       {
@@ -6297,7 +6318,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "16efe539",
+    "build": "7968e5e1",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6309,7 +6330,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "16efe539",
+    "build": "7968e5e1",
     "title": "Command-alias suggestions",
     "changes": [
       {

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T06:10:51Z",
+    "generated_at": "2026-06-23T06:42:29Z",
     "build": {
-      "commit": "16efe539",
-      "subject": "fishing: open deepwater-venue session (born-red card + claim)",
-      "committed_at": "2026-06-23T06:10:51Z"
+      "commit": "7968e5e1",
+      "subject": "fishing: open weather-forecast session (born-red card + claim)",
+      "committed_at": "2026-06-23T06:42:29Z"
     },
     "counts": {
       "functions": 41,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 51,
-      "commands": 385,
+      "commands": 386,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2347,12 +2347,20 @@
   "reviews": [],
   "updates": [
     {
-      "file": "2026-06-23-fishing-deepwater-venue.md",
+      "file": "2026-06-23-fishing-weather-forecast.md",
       "date": "2026-06-23",
-      "title": "2026-06-23 — Fishing: the boat / deepwater venue (⛵ Set sail / Dock)",
+      "title": "2026-06-23 — Fishing: daily weather forecast (slice 2)",
       "status": "in-progress",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-fishing-deepwater-venue.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Fishing: the boat / deepwater venue (⛵ Set sail / Dock)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-23-fishing-bait-speed-knob.md",
@@ -2817,14 +2825,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-site-field-level-redaction-contract.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — site.json field-level redaction contract",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -5975,6 +5975,20 @@
             "topfishers"
           ],
           "brief": "Show this server's top anglers by total fish caught.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "forecast",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "fishforecast",
+            "fishingweather"
+          ],
+          "brief": "Show today's fishing forecast — the date-seeded weather everyone shares.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

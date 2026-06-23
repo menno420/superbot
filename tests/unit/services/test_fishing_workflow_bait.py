@@ -176,6 +176,7 @@ async def test_begin_cast_consumes_a_bait_charge_and_compounds_rarity():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(
             wf.db, "get_rod_tier", AsyncMock(return_value=0)
         ),  # starter, pull 1.0
@@ -202,6 +203,7 @@ async def test_begin_cast_clears_bait_when_the_last_charge_is_spent():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("worm", 1))),
@@ -226,6 +228,7 @@ async def test_begin_cast_without_bait_uses_only_the_rod_pull():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
@@ -255,6 +258,7 @@ async def test_begin_cast_compounds_bite_speed_from_rod_and_bait():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("spinner", 2))),
@@ -280,6 +284,7 @@ async def test_begin_cast_bite_speed_is_rod_only_without_bait():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),

@@ -31,6 +31,7 @@ from services import fishing_workflow, game_xp_service
 from utils import db
 from utils.fishing import bait as bait_mod
 from utils.fishing import rods as rods_mod
+from utils.fishing import weather as weather_mod
 from utils.fishing.fish import SPECIES
 from views.fishing import (
     BaitShopView,
@@ -80,6 +81,25 @@ class FishingCog(commands.Cog):
             embed=build_menu_embed(energy, profile),
             view=view,
         )
+
+    @commands.command(name="forecast", aliases=["fishforecast", "fishingweather"])
+    async def forecast(self, ctx):
+        """Show today's fishing forecast — the date-seeded weather everyone shares.
+
+        Weather biases every cast for the day (faster/slower bites, rarer fish);
+        it's the same for everyone, so it's a shared reason to fish *today*.
+        """
+        w = fishing_workflow.get_forecast()
+        embed = discord.Embed(
+            title=f"{w.emoji} Today's fishing forecast: {w.name}",
+            description=(
+                f"{w.blurb}\n\n"
+                f"**Effect on every cast:** {weather_mod.effect_text(w)}"
+            ),
+            color=_FISHING_COLOR,
+        )
+        embed.set_footer(text="Same for everyone today · 🎣 !fish to cast")
+        await ctx.send(embed=embed)
 
     @commands.command(name="sail", aliases=["setsail", "dock"])
     async def sail(self, ctx):

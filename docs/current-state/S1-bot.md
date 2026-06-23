@@ -23,12 +23,15 @@
   economy knobs: rarity (#1329) + the **bite-speed** half (#1337) on the same
   `CastStart`/cast-view seam, plus speed/combo baits. **Bait crafting** — turn small caught
   fish into bait packs (`fishing_workflow.craft_bait`, the `🪱 Bait` Craft select + `!craftbait`),
-  closing `catch → craft → bait → bigger catch` (#1338). **⛵ Boat/deepwater venue** (#1340, this
-  PR) — a persisted shore↔deepwater toggle (`!sail` + the menu button, migration 094
-  `fishing_venue`); deepwater holds 11 **boat-only species** (uncatchable from shore) and runs a
-  **tougher minigame** (6–12 s bites · 22% base escape) so the rod escape-resist knob finally pays
-  off — additive (the original 21 shore fish unchanged), the literal §5 shore-cap rebalance left as
-  an owner balance call.
+  closing `catch → craft → bait → bigger catch` (#1338). **⛵ Boat/deepwater venue** (#1340) — a
+  persisted shore↔deepwater toggle (`!sail` + the menu button, migration 094 `fishing_venue`);
+  deepwater holds 11 **boat-only species** (uncatchable from shore) and runs a **tougher minigame**
+  (6–12 s bites · 22% base escape) so the rod escape-resist knob finally pays off — additive (the
+  original 21 shore fish unchanged), the literal §5 shore-cap rebalance left as an owner balance
+  call. **Daily weather forecast** (#1341, this PR) — a date-seeded global bias
+  (`utils/fishing/weather.py`, no DB) compounding onto the cast as a third how-well knob
+  (rod × bait × weather): clear/rain/calm/fog/storm, the same for everyone each day; `!forecast` +
+  a menu/cast forecast line.
 - **Casino — multiplayer poker** (PR #1333) — a new Games-hub child for **group** card games with
   **per-player auto-updating ephemeral** hands; v1 = Texas Hold'em (play-chips). Pure `utils/cards/`
   + `utils/poker/` (eval + engine w/ side pots, fully tested) + the `views/casino/` ephemeral
@@ -39,7 +42,7 @@
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:
   the literal §5 **shore-cap-at-12 rebalance** (owner balance call, flagged in #1340) ·
-  **weather/time-of-day modifier** · **trophy records per species**
+  *(weather/time-of-day modifier ✅ #1341)* · **trophy records per species**
   ([plan](../planning/fishing-minigame-design-2026-06-22.md) §"Other ideas" +
   [open-world expansion](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2+: the
   boat-as-structure / travel-timer / destinations layer).

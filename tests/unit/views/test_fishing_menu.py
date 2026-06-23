@@ -57,6 +57,12 @@ def test_menu_embed_advertises_the_actions():
     assert "Cast" in text and "Rod" in text and "Fishdex" in text
 
 
+def test_menu_embed_shows_todays_forecast():
+    # The daily weather is surfaced as a field so the menu is a reason to fish today.
+    field_names = [f.name for f in build_menu_embed().fields]
+    assert any("forecast" in n.lower() for n in field_names)
+
+
 def test_fishlog_embed_counts_only_known_species():
     log = {"minnow": 3, "golden koi": 99}  # the koi is a legacy/unknown row
     embed = build_fishlog_embed("Anya", log, level=7)
