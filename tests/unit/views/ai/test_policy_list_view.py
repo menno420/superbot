@@ -228,12 +228,13 @@ async def test_chooser_list_button_opens_real_list_view(monkeypatch):
     interaction.user.guild_permissions.administrator = True
     interaction.guild = MagicMock()
     interaction.guild.id = 999
-    interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
+    # In-place navigation (AI nav plan PR 2): the anchor is edited to the
+    # override-list page rather than a new ephemeral.
     await view.list_btn.callback(interaction)
 
-    _, kwargs = interaction.response.send_message.call_args
+    _, kwargs = interaction.response.edit_message.call_args
     assert isinstance(kwargs["view"], PolicyListView)
-    assert kwargs.get("ephemeral") is True
     embed = kwargs["embed"]
     assert "AI policy overrides" in (embed.title or "")
 

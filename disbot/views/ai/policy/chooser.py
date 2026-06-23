@@ -1,10 +1,13 @@
 """Entry-point chooser for the AI policy admin UI (PR4A).
 
 Reached from the main :class:`views.ai.panel.AIPanelView` ``Policy``
-button. The chooser is sent as an ephemeral follow-up so the operator
-sees a private window with the four scope buttons (Channel / Category
-/ Role / List). Each scope button opens its own ephemeral follow-up
-in the same conversation.
+button. The chooser is a **page of the one anchor message** (AI nav
+plan PR 2): the Policy button ``edit_message``-es the anchor to this
+chooser, and each scope button (Channel / Category / Role / Effective
+policy / List) ``edit_message``-es the anchor to that scope's picker —
+navigation happens in place on the same message, with a Back button
+unwinding the page stack. Ephemerals are reserved for the modal
+confirmations / errors the scope pickers raise.
 
 The chooser View is transient — created per click, not persisted —
 because the user is actively interacting and the timeout handles
@@ -21,6 +24,11 @@ logger = logging.getLogger("bot.views.ai.policy.chooser")
 
 _PANEL_COLOR = discord.Color.blurple()
 _CHOOSER_TIMEOUT_SECONDS = 180
+
+
+def build_policy_chooser_page() -> tuple[discord.Embed, PolicyChooserView]:
+    """Return the chooser ``(embed, view)`` — the Back target for scope pages."""
+    return build_chooser_embed(), PolicyChooserView()
 
 
 def build_chooser_embed() -> discord.Embed:
@@ -74,6 +82,9 @@ class PolicyChooserView(discord.ui.View):
 
     def __init__(self) -> None:
         super().__init__(timeout=_CHOOSER_TIMEOUT_SECONDS)
+        from views.ai._nav import add_back_button, ai_home_page
+
+        add_back_button(self, label="↩ AI home", builder=ai_home_page)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         member = interaction.user
@@ -94,10 +105,14 @@ class PolicyChooserView(discord.ui.View):
     ) -> None:
         from views.ai.policy.channel_view import ChannelPolicySelectView
 
-        await interaction.response.send_message(
-            "Pick a channel to set its AI policy.",
-            view=ChannelPolicySelectView(),
-            ephemeral=True,
+        view = ChannelPolicySelectView()
+        _add_back_to_policy(view)
+        await interaction.response.edit_message(
+            embed=_scope_page_embed(
+                "Channel AI policy",
+                "Pick a channel to set its AI policy.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(label="Category", style=discord.ButtonStyle.primary, row=0)
@@ -108,10 +123,14 @@ class PolicyChooserView(discord.ui.View):
     ) -> None:
         from views.ai.policy.category_view import CategoryPolicySelectView
 
-        await interaction.response.send_message(
-            "Pick a category to set its AI policy.",
-            view=CategoryPolicySelectView(),
-            ephemeral=True,
+        view = CategoryPolicySelectView()
+        _add_back_to_policy(view)
+        await interaction.response.edit_message(
+            embed=_scope_page_embed(
+                "Category AI policy",
+                "Pick a category to set its AI policy.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(label="Role", style=discord.ButtonStyle.primary, row=0)
@@ -122,10 +141,14 @@ class PolicyChooserView(discord.ui.View):
     ) -> None:
         from views.ai.policy.role_view import RolePolicySelectView
 
-        await interaction.response.send_message(
-            "Pick a role to set its AI policy.",
-            view=RolePolicySelectView(),
-            ephemeral=True,
+        view = RolePolicySelectView()
+        _add_back_to_policy(view)
+        await interaction.response.edit_message(
+            embed=_scope_page_embed(
+                "Role AI policy",
+                "Pick a role to set its AI policy.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(
@@ -144,10 +167,14 @@ class PolicyChooserView(discord.ui.View):
         # callback name (preview_btn) is its custom_id contract.
         from views.ai.policy.preview_view import PreviewChannelSelectView
 
-        await interaction.response.send_message(
-            "Pick a channel to see the effective AI policy as your user.",
-            view=PreviewChannelSelectView(),
-            ephemeral=True,
+        view = PreviewChannelSelectView()
+        _add_back_to_policy(view)
+        await interaction.response.edit_message(
+            embed=_scope_page_embed(
+                "Effective AI policy (dry-run)",
+                "Pick a channel to see the effective AI policy as your user.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(
@@ -167,6 +194,7 @@ class PolicyChooserView(discord.ui.View):
         )
 
         if interaction.guild is None:
+            # Genuine validation error → ephemeral toast (reserved use).
             await interaction.response.send_message(
                 "❌ Listing overrides requires a guild context.",
                 ephemeral=True,
@@ -174,11 +202,25 @@ class PolicyChooserView(discord.ui.View):
             return
         entries = await collect_entries(interaction.guild.id)
         embed, _total = build_list_embed(entries, page=1)
-        await interaction.response.send_message(
-            embed=embed,
-            view=PolicyListView(entries, page=1),
-            ephemeral=True,
-        )
+        view = PolicyListView(entries, page=1)
+        _add_back_to_policy(view)
+        await interaction.response.edit_message(embed=embed, view=view)
 
 
-__all__ = ["PolicyChooserView", "build_chooser_embed"]
+def _scope_page_embed(title: str, instruction: str) -> discord.Embed:
+    """A focused page embed for a policy scope picker rendered on the anchor."""
+    return discord.Embed(
+        title=title,
+        description=instruction,
+        color=_PANEL_COLOR,
+    ).set_footer(text="Administrator-only · in-place navigation.")
+
+
+def _add_back_to_policy(view: discord.ui.View) -> None:
+    """Attach a Back button that returns the anchor to the policy chooser."""
+    from views.ai._nav import add_back_button
+
+    add_back_button(view, label="↩ AI Policy", builder=build_policy_chooser_page)
+
+
+__all__ = ["PolicyChooserView", "build_chooser_embed", "build_policy_chooser_page"]

@@ -18,7 +18,12 @@ from __future__ import annotations
 
 from views.ai.behavior.chooser import (  # noqa: F401
     BehaviorChooserView,
+    build_behavior_chooser_page,
     build_behavior_embed,
 )
 
-__all__ = ["BehaviorChooserView", "build_behavior_embed"]
+__all__ = [
+    "BehaviorChooserView",
+    "build_behavior_chooser_page",
+    "build_behavior_embed",
+]

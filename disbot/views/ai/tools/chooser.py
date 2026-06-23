@@ -1,9 +1,11 @@
 """Entry-point chooser for the Tools & Workflows admin UI (Phase 3).
 
 Reached from the main :class:`views.ai.panel.AIPanelView` ``Tools`` button. The
-chooser is an ephemeral follow-up with one button per scope (Guild / Channel /
-Category) plus a dry-run Preview. Each opens its own ephemeral follow-up; writes
-flow through :mod:`services.ai_orchestration_mutation`.
+chooser is a **page of the one AI anchor message** (AI nav plan PR 2) with one
+button per scope (Guild / Channel / Category) plus a dry-run Preview. Each button
+``edit_message``-es the anchor to that scope's picker with a Back button, instead
+of opening a new ephemeral; writes flow through
+:mod:`services.ai_orchestration_mutation`.
 
 This is the "Tools & workflows" surface the orchestration plan §9.4 asks for —
 an operator narrows toolsets / requires a grounding group for a channel without
@@ -22,6 +24,16 @@ logger = logging.getLogger("bot.views.ai.tools.chooser")
 
 _PANEL_COLOR = discord.Color.blurple()
 _CHOOSER_TIMEOUT_SECONDS = 180
+
+
+def build_tools_chooser_page() -> tuple[discord.Embed, ToolsChooserView]:
+    """Return the chooser ``(embed, view)`` — the Back target for its pages.
+
+    The static intro embed (no snapshot) is used for Back navigation; the
+    live "Current" decoration is only rendered on the first entry from the
+    AI panel, where the snapshot is read best-effort.
+    """
+    return build_tools_embed(None), ToolsChooserView()
 
 
 def build_tools_embed(snapshot: Any = None) -> discord.Embed:
@@ -81,6 +93,9 @@ class ToolsChooserView(discord.ui.View):
 
     def __init__(self) -> None:
         super().__init__(timeout=_CHOOSER_TIMEOUT_SECONDS)
+        from views.ai._nav import add_back_button, ai_home_page
+
+        add_back_button(self, label="↩ AI home", builder=ai_home_page)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         member = interaction.user
@@ -101,10 +116,14 @@ class ToolsChooserView(discord.ui.View):
     ) -> None:
         from views.ai.tools.scope_view import GuildToolsProfileView
 
-        await interaction.response.send_message(
-            "Pick the guild-default orchestration profile.",
-            view=GuildToolsProfileView(),
-            ephemeral=True,
+        view = GuildToolsProfileView()
+        _add_back_to_tools(view)
+        await interaction.response.edit_message(
+            embed=_tools_page_embed(
+                "Tools · guild default",
+                "Pick the guild-default orchestration profile.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(label="Channel", style=discord.ButtonStyle.primary, row=0)
@@ -115,10 +134,14 @@ class ToolsChooserView(discord.ui.View):
     ) -> None:
         from views.ai.tools.scope_view import ChannelToolsSelectView
 
-        await interaction.response.send_message(
-            "Pick a channel — the next step lists the orchestration profiles.",
-            view=ChannelToolsSelectView(),
-            ephemeral=True,
+        view = ChannelToolsSelectView()
+        _add_back_to_tools(view)
+        await interaction.response.edit_message(
+            embed=_tools_page_embed(
+                "Tools · channel",
+                "Pick a channel — the next step lists the orchestration profiles.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(label="Category", style=discord.ButtonStyle.primary, row=0)
@@ -129,10 +152,14 @@ class ToolsChooserView(discord.ui.View):
     ) -> None:
         from views.ai.tools.scope_view import CategoryToolsSelectView
 
-        await interaction.response.send_message(
-            "Pick a category — the next step lists the orchestration profiles.",
-            view=CategoryToolsSelectView(),
-            ephemeral=True,
+        view = CategoryToolsSelectView()
+        _add_back_to_tools(view)
+        await interaction.response.edit_message(
+            embed=_tools_page_embed(
+                "Tools · category",
+                "Pick a category — the next step lists the orchestration profiles.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(
@@ -147,11 +174,35 @@ class ToolsChooserView(discord.ui.View):
     ) -> None:
         from views.ai.tools.preview_view import ToolsPreviewChannelSelectView
 
-        await interaction.response.send_message(
-            "Pick a channel to preview the resolved AI tool orchestration.",
-            view=ToolsPreviewChannelSelectView(),
-            ephemeral=True,
+        view = ToolsPreviewChannelSelectView()
+        _add_back_to_tools(view)
+        await interaction.response.edit_message(
+            embed=_tools_page_embed(
+                "Tools · preview (dry-run)",
+                "Pick a channel to preview the resolved AI tool orchestration.",
+            ),
+            view=view,
         )
 
 
-__all__ = ["ToolsChooserView", "build_tools_embed"]
+def _tools_page_embed(title: str, instruction: str) -> discord.Embed:
+    """A focused page embed for a Tools sub-page rendered on the anchor."""
+    return discord.Embed(
+        title=title,
+        description=instruction,
+        color=_PANEL_COLOR,
+    ).set_footer(text="Administrator-only · in-place navigation.")
+
+
+def _add_back_to_tools(view: discord.ui.View) -> None:
+    """Attach a Back button that returns the anchor to the Tools chooser."""
+    from views.ai._nav import add_back_button
+
+    add_back_button(view, label="↩ AI Tools", builder=build_tools_chooser_page)
+
+
+__all__ = [
+    "ToolsChooserView",
+    "build_tools_chooser_page",
+    "build_tools_embed",
+]
