@@ -127,6 +127,32 @@ def _render_pending_line(item: Any) -> str:
     )
 
 
+# Op kinds that *create* a Discord resource (vs. binding an existing one).
+# Mirrors the resource-provisioning phase of :data:`_PHASE_ORDER`.
+_CREATE_OP_KINDS: frozenset[str] = frozenset(
+    {"create_channel", "create_role", "create_category"},
+)
+
+
+def _created_resource_names(accepted: list[Any] | tuple[Any, ...]) -> list[str]:
+    """Names of resources a staged plan would CREATE (not just bind).
+
+    Handles both staged shapes: a :class:`SetupOperation` (``kind`` in the
+    create set → ``resource_name``) and a :class:`SetupRecommendation`
+    (``mode == "create"`` → ``target_name``). Returns the display names so the
+    apply screen can call out exactly what will be made before the operator
+    commits — creating channels/roles is higher-impact than binding, so it
+    should never be rubber-stamped.
+    """
+    names: list[str] = []
+    for item in accepted:
+        if getattr(item, "kind", None) in _CREATE_OP_KINDS:
+            names.append(str(getattr(item, "resource_name", None) or "?"))
+        elif getattr(item, "mode", "bind") == "create":
+            names.append(str(getattr(item, "target_name", None) or "?"))
+    return names
+
+
 def build_final_review_embed(
     accepted: list[Any] | tuple[Any, ...],
     *,
@@ -178,6 +204,23 @@ def build_final_review_embed(
         if len(value) > 1000:
             value = value[:997] + "..."
         embed.add_field(name="Pending", value=value, inline=False)
+        # Call out resource CREATION distinctly: creating channels/roles is
+        # higher-impact + harder to undo than binding existing ones, so the
+        # operator should see the count + names before committing.
+        created = _created_resource_names(accepted)
+        if created:
+            shown = ", ".join(f"`{n}`" for n in created[:10])
+            if len(created) > 10:
+                shown += f" _+{len(created) - 10} more_"
+            embed.add_field(
+                name=f"➕ {len(created)} new resource(s) will be created",
+                value=(
+                    f"Applying this plan **creates** these and binds them: {shown}. "
+                    "Binding an existing resource is reversible; a created "
+                    "channel/role/category is new and must be deleted to undo."
+                ),
+                inline=False,
+            )
         # No-rollback caveat (plan §D3): apply has no automatic undo.
         # Operations run through idempotent pipelines in phase order; if
         # one fails midway, the ones already applied stay applied.
