@@ -1,1 +1,0 @@
-claude/ai-setup-plan · AI natural-language setup wedge (`/setup-describe`) · `disbot/services/setup_natural_language_advisor.py`, `disbot/services/setup_ai_advisor.py`, `disbot/cogs/setup/_describe_entry.py`, `disbot/cogs/setup_cog.py` · 2026-06-23

@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T09:16:14Z",
+    "generated_at": "2026-06-23T09:37:22Z",
     "build": {
-      "commit": "a622a83",
-      "subject": "Competitive-positioning north-star vision doc (what makes people choose us) (#1352)",
-      "committed_at": "2026-06-23T09:16:14Z"
+      "commit": "b6bf85d",
+      "subject": "Open AI natural-language setup wedge session (born-red): claim + card",
+      "committed_at": "2026-06-23T09:37:22Z"
     }
   },
   "counts": {
-    "commands": 386,
+    "commands": 388,
     "features": 41,
     "games": 11
   },
@@ -8773,6 +8773,20 @@
       "notes": null
     },
     {
+      "name": "setup-describe",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Describe your server; the AI proposes a setup plan to review.",
+      "description": "Ephemeral natural-language setup proposal (admin-gated).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "setup-hub",
       "aliases": [],
       "category": "other",
@@ -8867,6 +8881,22 @@
       "permissions": "",
       "usage": "Remove a section from the skipped set (owner/delegated admin only).",
       "description": "Drop section from the session's skipped_sections set.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "setupdescribe",
+      "aliases": [
+        "describesetup"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Describe your server in words; propose how to wire it to the bot.",
+      "description": "Describe your server in words; propose how to wire it to the bot.",
       "use_cases": null,
       "examples": [],
       "status": "finished",
