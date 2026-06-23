@@ -31,25 +31,19 @@ avoiding duplicates.
 
 from __future__ import annotations
 
-import logging
-
 import discord
 from discord.ext import commands
 
 from services import governance_service
 from services.governance_service import GovernanceContext
-from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
-from views.hub_children import discover_hub_children
+from views.hub_children import HubChildButton, discover_hub_children
 from views.navigation import (
     BackTarget,
     attach_back_button,
-    attach_back_target,
     chain_back,
 )
-
-logger = logging.getLogger("bot.views.games")
 
 # Hub group rendering order. Groups not listed sort last (alphabetically).
 _GROUP_ORDER: dict[str, int] = {"competitive": 0, "activities": 1}
@@ -272,13 +266,20 @@ def _build_no_panel_embed(name: str, meta: dict) -> discord.Embed:
     return embed
 
 
-class _GameHubButton(discord.ui.Button):
-    """Direct game button on the Games hub (PR 2).
+class _GameHubButton(HubChildButton):
+    """Direct game button on the Games hub.
 
-    Routes to the child cog's ``build_help_menu_view`` hook by
-    delegating to :meth:`GamesHubView.handle_select` — the same routing
-    brain the legacy dropdown used, so click-time governance recheck,
-    missing-cog fallback, and exception handling stay identical.
+    Thin subclass of the shared :class:`views.hub_children.HubChildButton` (the
+    consolidation's "first consolidation"): it binds the Games ``hub_key`` + the
+    Back-to-Games attacher + the in-place no-panel fallback, and inherits all the
+    forwarding logic (click-time governance recheck → resolve the child cog →
+    ``build_help_menu_view`` → back-nav → edit in place). Unlike Community/Utility,
+    Games passes ``fallback_builder=_build_no_panel_embed`` so a child with no panel
+    edits the hub message to a graceful "no panel yet" embed in place rather than
+    failing closed with an ephemeral — preserving the prior Games behaviour exactly.
+
+    ``custom_id`` stays ``f"games:open:{subsystem}"`` (via ``hub_key="games"``) so
+    persistent anchors keep routing.
     """
 
     def __init__(
@@ -290,22 +291,14 @@ class _GameHubButton(discord.ui.Button):
         row: int,
     ) -> None:
         super().__init__(
+            hub_key="games",
+            subsystem=subsystem,
             label=label,
             style=style,
-            custom_id=f"games:open:{subsystem}",
             row=row,
+            back_attacher=attach_back_to_games_button,
+            fallback_builder=_build_no_panel_embed,
         )
-        self._subsystem = subsystem
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        view = self.view
-        if not isinstance(view, GamesHubView):
-            await interaction.response.send_message(
-                "This button is no longer attached to the Games hub.",
-                ephemeral=True,
-            )
-            return
-        await view.handle_select(interaction, self._subsystem)
 
 
 class GamesHubView(HubView):
@@ -313,11 +306,12 @@ class GamesHubView(HubView):
 
     Discovers ``parent_hub == "games"`` children from
     :data:`utils.subsystem_registry.SUBSYSTEMS` and renders one direct
-    button per child, grouped by ``hub_group`` (competitive on row 0,
-    activities on row 1). Clicking a button calls that child cog's
-    ``build_help_menu_view`` hook via :meth:`handle_select`; if the
-    hook is missing the hub falls back to a typed-command embed so the
-    operator can still discover commands.
+    :class:`_GameHubButton` per child, grouped by ``hub_group``
+    (competitive on row 0, activities on row 1). Clicking a button (the
+    shared :class:`views.hub_children.HubChildButton` callback) calls that
+    child cog's ``build_help_menu_view`` hook; if the cog or hook is
+    missing the button falls back in place to a typed-command embed
+    (``_build_no_panel_embed``) so the operator can still discover commands.
 
     The view itself contains zero game logic — pure routing.
     """
@@ -341,8 +335,9 @@ class GamesHubView(HubView):
         # :func:`build_games_hub_panel` so only governance-visible
         # subsystems render. ``None`` falls back to the unfiltered
         # discovery — used by tests and any caller that constructs
-        # the view directly. Click-time recheck in :meth:`handle_select`
-        # still gates correctly even on the unfiltered path.
+        # the view directly. Click-time recheck in the shared
+        # :class:`views.hub_children.HubChildButton` callback still gates
+        # correctly even on the unfiltered path.
         if children is None:
             children = discover_game_children()
         self._game_children = children
@@ -379,75 +374,3 @@ class GamesHubView(HubView):
                 ),
             )
             col += 1
-
-    async def handle_select(
-        self,
-        interaction: discord.Interaction,
-        sub_name: str,
-    ) -> None:
-        """Open the selected child's help panel in place."""
-        if sub_name == "__none__":
-            await interaction.response.send_message(
-                "No games are routed to the Games hub yet.",
-                ephemeral=True,
-            )
-            return
-
-        meta = SUBSYSTEMS.get(sub_name)
-        if meta is None or meta.get("parent_hub") != "games":
-            await interaction.response.send_message(
-                "That game is no longer routed to the Games hub.",
-                ephemeral=True,
-            )
-            return
-
-        # PR D: click-time governance recheck. If the subsystem has
-        # become invisible between render and click (visibility change,
-        # role removal, channel scope override), fail closed with an
-        # ephemeral. ``resolve_visibility`` is cached by
-        # ``(guild_id, channel_id, tier, role_ids)`` so the re-check is
-        # essentially free in steady state.
-        gctx = GovernanceContext.from_interaction(interaction)
-        vis_result = await governance_service.resolve_visibility(gctx)
-        if sub_name not in vis_result.visible_subsystems:
-            await interaction.response.send_message(
-                "That feature is no longer available in this channel.",
-                ephemeral=True,
-            )
-            return
-
-        # Local import keeps the helper out of module-import time and
-        # avoids dragging the help cog into every consumer of this view.
-        from cogs.help_cog import _cog_for_subsystem
-
-        cog = _cog_for_subsystem(interaction.client, sub_name)  # type: ignore[arg-type]
-        if cog is None:
-            embed = _build_no_panel_embed(sub_name, dict(meta))
-            await interaction.response.edit_message(embed=embed, view=self)
-            return
-
-        build_panel = getattr(cog, "build_help_menu_view", None)
-        if not callable(build_panel):
-            embed = _build_no_panel_embed(sub_name, dict(meta))
-            await interaction.response.edit_message(embed=embed, view=self)
-            return
-
-        try:
-            embed, sub_view = await build_panel(interaction)
-        except Exception as exc:  # noqa: BLE001 — navigation must not crash
-            logger.warning(
-                "Games hub: build_help_menu_view failed for subsystem=%r: %s",
-                sub_name,
-                exc,
-                exc_info=True,
-            )
-            fallback = _build_no_panel_embed(sub_name, dict(meta))
-            await interaction.response.edit_message(embed=fallback, view=self)
-            return
-
-        back_target: BackTarget | None = getattr(self, "_back_target", None)
-        attach_back_to_games_button(sub_view, self._author, grandparent=back_target)
-        if back_target is not None:
-            attach_back_target(sub_view, back_target)
-        sub_view._back_target = back_target  # type: ignore[attr-defined]
-        await interaction.response.edit_message(embed=embed, view=sub_view)

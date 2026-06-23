@@ -1,9 +1,9 @@
 """Regression tests for PR #1 — Games → Mining attaches Back-to-Games.
 
-Live Discord testing reported that opening Mining from the Games hub
-dropdown did not show a visible Back-to-Games button. Code inspection
-of ``GamesHubView.handle_select`` shows ``attach_back_to_games_button``
-IS called on the child view at line 296 of ``disbot/views/games/hub.py``.
+Live Discord testing reported that opening Mining from the Games hub did
+not show a visible Back-to-Games button. The Games child button (now the
+shared ``views.hub_children.HubChildButton`` that ``_GameHubButton``
+subclasses) calls ``attach_back_to_games_button`` on the child view.
 
 These tests pin the model-level contract: after Games → Mining the
 returned view carries ``custom_id="games:back"``. They reuse the
@@ -25,7 +25,7 @@ import pytest
 
 from governance.models import VisibilityResult
 from utils.subsystem_registry import SUBSYSTEMS
-from views.games.hub import GamesHubView, attach_back_to_games_button
+from views.games.hub import GamesHubView, _GameHubButton, attach_back_to_games_button
 from views.mining.main_panel import MiningHubView
 
 
@@ -53,12 +53,18 @@ def test_attach_back_to_games_button_adds_games_back_id():
 
 
 @pytest.mark.asyncio
-async def test_games_hub_select_attaches_back_to_games_on_child(monkeypatch):
-    """End-to-end via ``GamesHubView.handle_select``: picking Mining
-    from the Games hub must call ``attach_back_to_games_button`` on the
-    child MiningHubView so the user can return to Games.
+async def test_games_hub_button_attaches_back_to_games_on_child(monkeypatch):
+    """End-to-end via the Games child button (the shared
+    ``HubChildButton`` callback ``_GameHubButton`` inherits): clicking
+    Mining from the Games hub must call ``attach_back_to_games_button``
+    on the child MiningHubView so the user can return to Games.
     """
     hub = GamesHubView(_author())
+    button = next(
+        c
+        for c in hub.children
+        if isinstance(c, _GameHubButton) and c._subsystem == "mining"  # type: ignore[attr-defined]
+    )
 
     mining_view = MiningHubView()
     mining_embed = discord.Embed(title="Mining")
@@ -67,7 +73,7 @@ async def test_games_hub_select_attaches_back_to_games_on_child(monkeypatch):
         return_value=(mining_embed, mining_view),
     )
 
-    # ``handle_select`` does a local import; patch the help-cog symbol
+    # The shared callback does a local import; patch the help-cog symbol
     # it pulls in at that point.
     monkeypatch.setattr(
         "cogs.help_cog._cog_for_subsystem",
@@ -79,9 +85,9 @@ async def test_games_hub_select_attaches_back_to_games_on_child(monkeypatch):
     interaction.client = MagicMock()
     interaction.response.edit_message = AsyncMock()
 
-    # PR D: GamesHubView.handle_select now re-resolves governance at
-    # click time. Stub it to return every subsystem visible so the test
-    # exercises the routing path, not the gating.
+    # The button re-resolves governance at click time. Stub it to return
+    # every subsystem visible so the test exercises the routing path, not
+    # the gating.
     vis_result = VisibilityResult(
         visible_subsystems=set(SUBSYSTEMS),
         member_tier="moderator",
@@ -93,7 +99,7 @@ async def test_games_hub_select_attaches_back_to_games_on_child(monkeypatch):
         new_callable=AsyncMock,
         return_value=vis_result,
     ):
-        await hub.handle_select(interaction, "mining")
+        await button.callback(interaction)
 
     interaction.response.edit_message.assert_awaited_once()
     kwargs = interaction.response.edit_message.await_args.kwargs
@@ -101,7 +107,7 @@ async def test_games_hub_select_attaches_back_to_games_on_child(monkeypatch):
     assert swapped is mining_view
     assert _has_back_to_games(swapped), (
         "Games → Mining must carry custom_id='games:back' attached by "
-        "GamesHubView.handle_select via attach_back_to_games_button."
+        "the shared HubChildButton callback via attach_back_to_games_button."
     )
 
 
