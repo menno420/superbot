@@ -1,1 +1,0 @@
-- `claude/funny-franklin-3z6s2p` · fishing test-helper consolidation (slice 3, test-infra) · `tests/unit/services/_fishing_helpers.py`, `tests/unit/services/test_fishing_workflow*.py` · 2026-06-23
