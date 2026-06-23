@@ -38,6 +38,7 @@ from utils.hub_registry import get_hub
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GENERAL_COLOR
 from views.base import HubView
+from views.hub_children import discover_hub_children
 from views.navigation import (
     BackTarget,
     attach_back_button,
@@ -66,12 +67,7 @@ def discover_community_children() -> (
     a WARNING — the hub stays functional even if a cross-link points
     at a subsystem that was unloaded.
     """
-    primary = [
-        (name, dict(meta))
-        for name, meta in SUBSYSTEMS.items()
-        if meta.get("parent_hub") == "community"
-    ]
-    primary.sort(key=lambda item: (item[1].get("ui_priority", 99), item[0]))
+    primary = discover_hub_children("community")
 
     cross_link: list[tuple[str, dict]] = []
     hub = get_hub("community")

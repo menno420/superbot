@@ -41,6 +41,7 @@ from services.governance_service import GovernanceContext
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
+from views.hub_children import discover_hub_children
 from views.navigation import (
     BackTarget,
     attach_back_button,
@@ -100,19 +101,7 @@ def discover_game_children() -> list[tuple[str, dict]]:
     ``ui_priority``, then by subsystem key — fully deterministic so the
     UI ordering is stable.
     """
-    children = [
-        (name, dict(meta))
-        for name, meta in SUBSYSTEMS.items()
-        if meta.get("parent_hub") == "games"
-    ]
-    children.sort(
-        key=lambda item: (
-            _GROUP_ORDER.get(item[1].get("hub_group") or "", 99),
-            item[1].get("ui_priority", 99),
-            item[0],
-        ),
-    )
-    return children
+    return discover_hub_children("games", group_order=_GROUP_ORDER)
 
 
 def build_games_hub_embed(
