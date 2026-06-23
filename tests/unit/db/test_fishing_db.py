@@ -45,6 +45,35 @@ async def test_record_catch_first_catch_returns_none():
 
 
 @pytest.mark.asyncio
+async def test_top_trophies_orders_by_weight_and_filters_known_species():
+    known = ["minnow", "trout", "shark"]
+    with patch(
+        "utils.db.games.fishing.pool.fetchall",
+        new_callable=AsyncMock,
+        return_value=[{"user_id": 7, "species": "shark", "best_weight": 12.5}],
+    ) as mock_fetch:
+        out = await fishing.top_trophies(1, known, limit=5)
+    query, params = mock_fetch.await_args.args
+    flat = " ".join(query.split())
+    assert "ORDER BY best_weight DESC" in flat
+    assert "species = ANY($2::text[])" in flat  # current-catalog allow-list
+    assert "best_weight > 0" in flat  # pre-trophy-era rows excluded
+    assert params == (1, known, 5)
+    assert out == [(7, "shark", 12.5)]
+
+
+@pytest.mark.asyncio
+async def test_top_trophies_empty_allow_list_short_circuits():
+    with patch(
+        "utils.db.games.fishing.pool.fetchall",
+        new_callable=AsyncMock,
+    ) as mock_fetch:
+        out = await fishing.top_trophies(1, [])
+    assert out == []
+    mock_fetch.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_get_fishing_records_returns_species_to_best_weight():
     with patch(
         "utils.db.games.fishing.pool.fetchall",

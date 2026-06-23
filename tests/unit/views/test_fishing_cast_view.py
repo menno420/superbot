@@ -183,6 +183,16 @@ async def test_reel_too_late_lets_the_fish_get_away():
     assert (1, 99) not in active_casts
 
 
+def test_got_away_appends_a_clue_for_a_trophy_but_not_an_ordinary_fish():
+    base = "🌊 *...the fish got away.*"
+    # A trophy that escapes leaves a teasing, species-named clue (soft-fail UX).
+    trophy_text = _make_view(_TROPHY)._got_away(base)
+    assert base in trophy_text
+    assert "Trout" in trophy_text
+    # An ordinary fish keeps the plain line — no story for a lost minnow.
+    assert _make_view(_ORDINARY)._got_away(base) == base
+
+
 # ---------------------------------------------------------------------------
 # Trophy reel-fight
 # ---------------------------------------------------------------------------

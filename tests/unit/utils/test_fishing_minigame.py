@@ -73,6 +73,22 @@ def test_trophy_scales_with_progression():
     assert minigame.is_trophy(fish, fishing_level=7) is False
 
 
+def test_escape_clue_only_fires_for_a_trophy_and_names_the_fish():
+    big = FishSpecies("whopper", 3, "🐠")
+    small = FishSpecies("minnow", 1, "🐟")
+    clue = minigame.escape_clue(big, fishing_level=1)
+    assert clue is not None
+    assert "Whopper" in clue  # the species is named so the loss baits the next cast
+    # An ordinary fish gets no story — only big ones leave a clue.
+    assert minigame.escape_clue(small, fishing_level=1) is None
+
+
+def test_escape_clue_follows_the_progression_band():
+    fish = FishSpecies("whopper", 3, "🐠")
+    assert minigame.escape_clue(fish, fishing_level=1) is not None
+    assert minigame.escape_clue(fish, fishing_level=7) is None  # no longer a trophy
+
+
 # ---------------------------------------------------------------------------
 # Reel-fight (trophy) helpers
 # ---------------------------------------------------------------------------

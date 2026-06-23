@@ -119,3 +119,29 @@ async def top_fishers(
         (guild_id, known_species, limit),
     )
     return [(r["user_id"], r["caught"], r["species"]) for r in rows]
+
+
+async def top_trophies(
+    guild_id: int,
+    known_species: list[str],
+    *,
+    limit: int = 10,
+) -> list[tuple[int, str, float]]:
+    """``[(user_id, species, best_weight)]`` — the guild's heaviest catches.
+
+    A "biggest fish" hall of fame: the single heaviest catch rows server-wide,
+    ordered by weight, so a trophy lunker competes against everyone (the catch
+    log's per-(user, species) ``best_weight`` is each angler's record for that
+    fish). An angler can appear more than once for different species. Filtered to
+    the current catalog (like :func:`top_fishers`) so legacy rows never show, and
+    to ``best_weight > 0`` so pre-trophy-era rows (migration 095) are skipped.
+    """
+    if not known_species:
+        return []
+    rows = await pool.fetchall(
+        "SELECT user_id, species, best_weight FROM fishing_catch_log "
+        "WHERE guild_id=$1 AND species = ANY($2::text[]) AND best_weight > 0 "
+        "ORDER BY best_weight DESC LIMIT $3",
+        (guild_id, known_species, limit),
+    )
+    return [(r["user_id"], r["species"], r["best_weight"]) for r in rows]
