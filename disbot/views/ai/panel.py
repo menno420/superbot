@@ -203,19 +203,19 @@ class AIPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # PR4A: open the policy chooser as an ephemeral follow-up.
+        # In-place navigation (AI nav plan PR 1): swap the anchor message
+        # to the policy chooser *page* instead of opening a new ephemeral.
         # The chooser dispatches each scope (channel / category / role /
-        # list) into its own ephemeral view. Writes flow through
+        # list) on the same anchor; writes flow through
         # ``services.ai_policy_mutation`` from inside those scope views.
         from views.ai.policy.chooser import (
             PolicyChooserView,
             build_chooser_embed,
         )
 
-        await interaction.response.send_message(
+        await interaction.response.edit_message(
             embed=build_chooser_embed(),
             view=PolicyChooserView(),
-            ephemeral=True,
         )
 
     @discord.ui.button(
@@ -229,17 +229,17 @@ class AIPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # PR-C: open the usability-first Behavior chooser as an ephemeral
-        # follow-up. Bind presets without learning the raw policy knobs.
+        # In-place navigation (AI nav plan PR 1): swap the anchor to the
+        # usability-first Behavior chooser page. Bind presets without
+        # learning the raw policy knobs.
         from views.ai.behavior import (
             BehaviorChooserView,
             build_behavior_embed,
         )
 
-        await interaction.response.send_message(
+        await interaction.response.edit_message(
             embed=build_behavior_embed(),
             view=BehaviorChooserView(),
-            ephemeral=True,
         )
 
     @discord.ui.button(
@@ -253,17 +253,19 @@ class AIPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # Phase 3: open the Tools & Workflows chooser (orchestration profiles).
+        # In-place navigation (AI nav plan PR 1): swap the anchor to the
+        # Tools & Workflows chooser page (orchestration profiles).
         # Reads the snapshot best-effort so the chooser shows the current
         # guild-default profile + override counts; writes flow through
         # services.ai_orchestration_mutation from inside the scope views.
         from views.ai.tools import ToolsChooserView, build_tools_embed
 
         snapshot = await _best_effort_ai_snapshot(interaction.guild_id)
-        await interaction.response.send_message(
+        if interaction.response.is_done():
+            return
+        await interaction.response.edit_message(
             embed=build_tools_embed(snapshot),
             view=ToolsChooserView(),
-            ephemeral=True,
         )
 
 
@@ -375,10 +377,12 @@ async def handle_ai_interaction(
                 build_chooser_embed,
             )
 
-            await interaction.response.send_message(
+            # Post-restart fallback: the in-memory view is gone but the
+            # anchor message persists, so navigate it in place (matching
+            # the live button path) rather than spawning a new ephemeral.
+            await interaction.response.edit_message(
                 embed=build_chooser_embed(),
                 view=PolicyChooserView(),
-                ephemeral=True,
             )
             return
 
@@ -388,10 +392,9 @@ async def handle_ai_interaction(
                 build_behavior_embed,
             )
 
-            await interaction.response.send_message(
+            await interaction.response.edit_message(
                 embed=build_behavior_embed(),
                 view=BehaviorChooserView(),
-                ephemeral=True,
             )
             return
 
@@ -401,10 +404,9 @@ async def handle_ai_interaction(
             snapshot = await _best_effort_ai_snapshot(interaction.guild_id)
             if interaction.response.is_done():
                 return
-            await interaction.response.send_message(
+            await interaction.response.edit_message(
                 embed=build_tools_embed(snapshot),
                 view=ToolsChooserView(),
-                ephemeral=True,
             )
             return
 

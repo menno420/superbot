@@ -6,8 +6,11 @@ Top-level workflow dispatcher. Rows:
 * Row 1: ``Preview`` (reuses PR4B :class:`PreviewChannelSelectView`)
   and ``Advanced`` (opens the PR4A policy chooser for raw edits).
 
-The chooser is ephemeral and times out; it carries no persistent
-state. Each button opens its own ephemeral follow-up.
+The chooser is a **page of the one AI anchor message** (AI nav plan
+PR 2): each button ``edit_message``-es the anchor to the next page
+(scope picker / preview / advanced) with a Back button, instead of
+spawning a new ephemeral. The chooser carries no persistent state and
+times out.
 """
 
 from __future__ import annotations
@@ -20,6 +23,11 @@ logger = logging.getLogger("bot.views.ai.behavior.chooser")
 
 _PANEL_COLOR = discord.Color.blurple()
 _CHOOSER_TIMEOUT_SECONDS = 180
+
+
+def build_behavior_chooser_page() -> tuple[discord.Embed, BehaviorChooserView]:
+    """Return the chooser ``(embed, view)`` — the Back target for its pages."""
+    return build_behavior_embed(), BehaviorChooserView()
 
 
 def build_behavior_embed() -> discord.Embed:
@@ -84,6 +92,9 @@ class BehaviorChooserView(discord.ui.View):
 
     def __init__(self) -> None:
         super().__init__(timeout=_CHOOSER_TIMEOUT_SECONDS)
+        from views.ai._nav import add_back_button, ai_home_page
+
+        add_back_button(self, label="↩ AI home", builder=ai_home_page)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         member = interaction.user
@@ -108,10 +119,14 @@ class BehaviorChooserView(discord.ui.View):
     ) -> None:
         from views.ai.behavior.scope_picker import BehaviorChannelSelectView
 
-        await interaction.response.send_message(
-            "Pick a channel — the next step lists the available presets.",
-            view=BehaviorChannelSelectView(),
-            ephemeral=True,
+        view = BehaviorChannelSelectView()
+        _add_back_to_behavior(view)
+        await interaction.response.edit_message(
+            embed=_behavior_page_embed(
+                "Behavior · channel",
+                "Pick a channel — the next step lists the available presets.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(
@@ -126,10 +141,14 @@ class BehaviorChooserView(discord.ui.View):
     ) -> None:
         from views.ai.behavior.scope_picker import BehaviorCategorySelectView
 
-        await interaction.response.send_message(
-            "Pick a category — the next step lists the available presets.",
-            view=BehaviorCategorySelectView(),
-            ephemeral=True,
+        view = BehaviorCategorySelectView()
+        _add_back_to_behavior(view)
+        await interaction.response.edit_message(
+            embed=_behavior_page_embed(
+                "Behavior · category",
+                "Pick a category — the next step lists the available presets.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(
@@ -146,10 +165,14 @@ class BehaviorChooserView(discord.ui.View):
         # path.
         from views.ai.policy.preview_view import PreviewChannelSelectView
 
-        await interaction.response.send_message(
-            "Pick a channel to preview the effective AI policy as your user.",
-            view=PreviewChannelSelectView(),
-            ephemeral=True,
+        view = PreviewChannelSelectView()
+        _add_back_to_behavior(view)
+        await interaction.response.edit_message(
+            embed=_behavior_page_embed(
+                "Behavior · preview (dry-run)",
+                "Pick a channel to preview the effective AI policy as your user.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(
@@ -166,10 +189,14 @@ class BehaviorChooserView(discord.ui.View):
         # the resolver runs in dry-run mode.
         from views.ai.routing import RoutingMatrixSelectView
 
-        await interaction.response.send_message(
-            "Pick a channel to dry-run the AI routing matrix.",
-            view=RoutingMatrixSelectView(),
-            ephemeral=True,
+        view = RoutingMatrixSelectView()
+        _add_back_to_behavior(view)
+        await interaction.response.edit_message(
+            embed=_behavior_page_embed(
+                "Behavior · routing matrix",
+                "Pick a channel to dry-run the AI routing matrix.",
+            ),
+            view=view,
         )
 
     @discord.ui.button(
@@ -183,17 +210,32 @@ class BehaviorChooserView(discord.ui.View):
         _: discord.ui.Button,
     ) -> None:
         # Punt to the existing raw policy chooser (PR4A); the sentinel
-        # PR-C-pre landed means partial edits there are now safe.
-        from views.ai.policy.chooser import (
-            PolicyChooserView,
-            build_chooser_embed,
-        )
+        # PR-C-pre landed means partial edits there are now safe. Swap
+        # the anchor to the policy chooser page in place.
+        from views.ai.policy.chooser import build_policy_chooser_page
 
-        await interaction.response.send_message(
-            embed=build_chooser_embed(),
-            view=PolicyChooserView(),
-            ephemeral=True,
-        )
+        embed, view = build_policy_chooser_page()
+        await interaction.response.edit_message(embed=embed, view=view)
 
 
-__all__ = ["BehaviorChooserView", "build_behavior_embed"]
+def _behavior_page_embed(title: str, instruction: str) -> discord.Embed:
+    """A focused page embed for a Behavior sub-page rendered on the anchor."""
+    return discord.Embed(
+        title=title,
+        description=instruction,
+        color=_PANEL_COLOR,
+    ).set_footer(text="Administrator-only · in-place navigation.")
+
+
+def _add_back_to_behavior(view: discord.ui.View) -> None:
+    """Attach a Back button that returns the anchor to the Behavior chooser."""
+    from views.ai._nav import add_back_button
+
+    add_back_button(view, label="↩ AI Behavior", builder=build_behavior_chooser_page)
+
+
+__all__ = [
+    "BehaviorChooserView",
+    "build_behavior_chooser_page",
+    "build_behavior_embed",
+]

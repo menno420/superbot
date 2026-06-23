@@ -20,6 +20,7 @@ def _admin_interaction() -> MagicMock:
     interaction = MagicMock()
     interaction.user.guild_permissions.administrator = True
     interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
     return interaction
 
 
@@ -74,11 +75,11 @@ async def test_channel_button_opens_channel_select_view():
     view = PolicyChooserView()
     interaction = _admin_interaction()
     await view.channel_btn.callback(interaction)
-    interaction.response.send_message.assert_awaited_once()
-    _, kwargs = interaction.response.send_message.call_args
-    # The follow-up is ephemeral and carries a view (the
-    # ChannelPolicySelectView created lazily inside the callback).
-    assert kwargs.get("ephemeral") is True
+    # In-place navigation (AI nav plan PR 2): the anchor message is
+    # edited to the channel-policy page, not a new ephemeral.
+    interaction.response.edit_message.assert_awaited_once()
+    interaction.response.send_message.assert_not_awaited()
+    _, kwargs = interaction.response.edit_message.call_args
     assert kwargs.get("view") is not None
     # Imported here so the test does not force the module to load
     # at collection time.
@@ -98,11 +99,11 @@ async def test_all_scope_buttons_have_real_implementations():
 
 
 def test_chooser_view_has_one_button_per_scope():
-    """Smoke check: five buttons (Channel / Category / Role on row 0,
-    Effective policy / List overrides on row 1) sit on the chooser.
-    The Preview button was renamed to Effective policy in PR-2; the
-    underlying ``preview_btn`` handler (and its custom_id contract)
-    is unchanged.
+    """Smoke check: five scope buttons (Channel / Category / Role on row 0,
+    Effective policy / List overrides on row 1) sit on the chooser, plus
+    an in-place "↩ AI home" Back button (AI nav plan PR 2). The Preview
+    button was renamed to Effective policy in PR-2; the underlying
+    ``preview_btn`` handler (and its custom_id contract) is unchanged.
     """
     view = PolicyChooserView()
     labels = sorted(
@@ -116,4 +117,5 @@ def test_chooser_view_has_one_button_per_scope():
         "Effective policy",
         "List overrides",
         "Role",
+        "↩ AI home",
     ]

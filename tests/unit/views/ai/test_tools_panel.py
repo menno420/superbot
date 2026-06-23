@@ -63,7 +63,7 @@ def test_tools_button_is_success_on_second_row() -> None:
 # --- router fallback -------------------------------------------------------
 
 
-async def test_router_dispatches_tools_as_ephemeral() -> None:
+async def test_router_dispatches_tools_in_place() -> None:
     interaction = _admin_interaction()
     await panel.handle_ai_interaction(
         interaction,
@@ -71,11 +71,12 @@ async def test_router_dispatches_tools_as_ephemeral() -> None:
         session=None,
         request_id="req",
     )
-    interaction.response.send_message.assert_awaited_once()
-    _, kwargs = interaction.response.send_message.call_args
-    assert kwargs.get("ephemeral") is True
+    # In-place navigation (AI nav plan PR 2): the persistent anchor is
+    # edited to the Tools chooser page, not a new ephemeral.
+    interaction.response.edit_message.assert_awaited_once()
+    _, kwargs = interaction.response.edit_message.call_args
     assert isinstance(kwargs.get("view"), ToolsChooserView)
-    interaction.response.edit_message.assert_not_awaited()
+    interaction.response.send_message.assert_not_awaited()
 
 
 async def test_router_rejects_non_admin_for_tools() -> None:

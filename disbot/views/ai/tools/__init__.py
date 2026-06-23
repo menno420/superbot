@@ -5,6 +5,14 @@ Reached from the AI panel's ``Tools`` button. See
 ``docs/ai-config-ownership.md`` (orchestration mutation seam).
 """
 
-from views.ai.tools.chooser import ToolsChooserView, build_tools_embed
+from views.ai.tools.chooser import (
+    ToolsChooserView,
+    build_tools_chooser_page,
+    build_tools_embed,
+)
 
-__all__ = ["ToolsChooserView", "build_tools_embed"]
+__all__ = [
+    "ToolsChooserView",
+    "build_tools_chooser_page",
+    "build_tools_embed",
+]

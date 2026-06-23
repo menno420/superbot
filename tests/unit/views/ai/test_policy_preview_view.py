@@ -220,11 +220,12 @@ async def test_chooser_preview_button_opens_preview_view():
     view = PolicyChooserView()
     interaction = MagicMock()
     interaction.user.guild_permissions.administrator = True
-    interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
+    # In-place navigation (AI nav plan PR 2): the anchor is edited to the
+    # effective-policy preview page rather than a new ephemeral.
     await view.preview_btn.callback(interaction)
-    _, kwargs = interaction.response.send_message.call_args
+    _, kwargs = interaction.response.edit_message.call_args
     assert isinstance(kwargs["view"], PreviewChannelSelectView)
-    assert kwargs.get("ephemeral") is True
 
 
 def test_chooser_has_preview_button_on_row_one_with_list():
