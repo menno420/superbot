@@ -45,13 +45,14 @@ def _row(**kw):
     return CleanupScopeRow(**base)
 
 
-def _preview(will_change=True, warnings=()):
+def _preview(will_change=True, warnings=(), level="Strict"):
     return CleanupPolicyPreview(
         scope_type="channel",
         scope_id=111,
         target_label="#general",
-        level="Strict",
+        level=level,
         new_delete_message=True,
+        new_delete_failed_commands=True,
         new_delete_after_seconds=2,
         current=CleanupPolicy(
             delete_message=False,
@@ -75,6 +76,7 @@ def _interaction(admin: bool = True):
     it.response = MagicMock()
     it.response.send_message = AsyncMock()
     it.response.edit_message = AsyncMock()
+    it.response.send_modal = AsyncMock()
     return it
 
 
@@ -89,10 +91,19 @@ def test_diagnostics_embed_lists_rows_and_flags():
     diag = CleanupDiagnostics(
         guild_id=42,
         rows=(
-            _row(scope_type="guild", scope_id=0, target_label="Guild default",
-                 level_name="Standard", is_ineffective=True),
-            _row(scope_type="channel", scope_id=999, target_label="channel 999 (deleted)",
-                 is_stale=True),
+            _row(
+                scope_type="guild",
+                scope_id=0,
+                target_label="Guild default",
+                level_name="Standard",
+                is_ineffective=True,
+            ),
+            _row(
+                scope_type="channel",
+                scope_id=999,
+                target_label="channel 999 (deleted)",
+                is_stale=True,
+            ),
         ),
         level_counts={"Standard": 1, "Light": 1},
     )
@@ -103,7 +114,9 @@ def test_diagnostics_embed_lists_rows_and_flags():
 
 
 def test_preview_embed_change_shows_warnings():
-    embed = panel.preview_embed_from(_preview(will_change=True, warnings=("watch out",)))
+    embed = panel.preview_embed_from(
+        _preview(will_change=True, warnings=("watch out",)),
+    )
     assert any("watch out" in f.value for f in embed.fields)
 
 
@@ -152,7 +165,9 @@ async def test_refresh_button_rerenders_diagnostics():
     it = _interaction()
     fake_embed = discord.Embed(title="diag")
     with patch.object(
-        panel, "build_cleanup_diagnostics_embed", AsyncMock(return_value=fake_embed),
+        panel,
+        "build_cleanup_diagnostics_embed",
+        AsyncMock(return_value=fake_embed),
     ):
         await _btn(view, "cleanup_policy:refresh").callback(it)
     it.response.edit_message.assert_awaited_once()
@@ -181,13 +196,16 @@ async def test_level_select_previews_without_writing():
     sel._values = ["Strict"]
     it = _interaction()
     with (
-        patch.object(panel, "preview_cleanup_change", AsyncMock(return_value=_preview())),
-        patch.object(panel, "apply_cleanup_change", AsyncMock()) as applier,
+        patch.object(
+            panel, "preview_cleanup_change", AsyncMock(return_value=_preview()),
+        ),
+        patch.object(panel, "apply_cleanup_columns", AsyncMock()) as applier,
     ):
         await sel.callback(it)
     it.response.send_message.assert_awaited_once()
     assert isinstance(
-        it.response.send_message.call_args.kwargs["view"], panel._ConfirmApplyView,
+        it.response.send_message.call_args.kwargs["view"],
+        panel._ConfirmApplyView,
     )
     applier.assert_not_called()  # dry-run only
 
@@ -199,7 +217,9 @@ async def test_level_select_previews_without_writing():
 
 def _confirm_btn(view, label):
     return next(
-        c for c in view.children if isinstance(c, discord.ui.Button) and c.label == label
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.label == label
     )
 
 
@@ -207,7 +227,7 @@ def _confirm_btn(view, label):
 async def test_apply_button_requires_admin():
     view = panel._ConfirmApplyView(MagicMock(), MagicMock(), _preview())
     it = _interaction(admin=False)
-    with patch.object(panel, "apply_cleanup_change", AsyncMock()) as applier:
+    with patch.object(panel, "apply_cleanup_columns", AsyncMock()) as applier:
         await _confirm_btn(view, "✅ Apply").callback(it)
     applier.assert_not_called()
     it.response.send_message.assert_awaited_once()
@@ -218,15 +238,18 @@ async def test_apply_button_admin_calls_service():
     guild = MagicMock()
     view = panel._ConfirmApplyView(MagicMock(), guild, _preview())
     it = _interaction(admin=True)
-    with patch.object(panel, "apply_cleanup_change", AsyncMock()) as applier:
+    with patch.object(panel, "apply_cleanup_columns", AsyncMock()) as applier:
         await _confirm_btn(view, "✅ Apply").callback(it)
     applier.assert_awaited_once()
     args = applier.await_args.args
-    # (guild, member, scope_type, scope_id, level)
+    kwargs = applier.await_args.kwargs
+    # (guild, member, scope_type, scope_id) + explicit columns
     assert args[0] is guild
     assert args[2] == "channel"
     assert args[3] == 111
-    assert args[4] == "Strict"
+    assert kwargs["delete_invalid_commands"] is True
+    assert kwargs["delete_failed_commands"] is True
+    assert kwargs["delete_after_seconds"] == 2
     it.response.edit_message.assert_awaited_once()
 
 
@@ -236,7 +259,7 @@ async def test_apply_button_surfaces_governance_error():
     it = _interaction(admin=True)
     with patch.object(
         panel,
-        "apply_cleanup_change",
+        "apply_cleanup_columns",
         AsyncMock(side_effect=GovernanceError("nope")),
     ):
         await _confirm_btn(view, "✅ Apply").callback(it)
@@ -248,8 +271,177 @@ async def test_apply_button_surfaces_governance_error():
 async def test_cancel_button_writes_nothing():
     view = panel._ConfirmApplyView(MagicMock(), MagicMock(), _preview())
     it = _interaction(admin=True)
-    with patch.object(panel, "apply_cleanup_change", AsyncMock()) as applier:
+    with patch.object(panel, "apply_cleanup_columns", AsyncMock()) as applier:
         await _confirm_btn(view, "✖ Cancel").callback(it)
     applier.assert_not_called()
     it.response.edit_message.assert_awaited_once()
     assert "Cancelled" in it.response.edit_message.call_args.kwargs["content"]
+
+
+# ---------------------------------------------------------------------------
+# Custom level
+# ---------------------------------------------------------------------------
+
+
+def test_level_options_include_custom():
+    values = [o.value for o in panel._level_options()]
+    assert panel._CUSTOM_VALUE in values
+    # the four presets are still present
+    assert {"Off", "Light", "Standard", "Strict"} <= set(values)
+
+
+@pytest.mark.asyncio
+async def test_level_select_custom_opens_modal():
+    sel = panel._LevelSelect(MagicMock(), "channel", 111, "#general")
+    sel._values = [panel._CUSTOM_VALUE]
+    it = _interaction()
+    await sel.callback(it)
+    it.response.send_modal.assert_awaited_once()
+    assert isinstance(
+        it.response.send_modal.call_args.args[0],
+        panel._CustomLevelModal,
+    )
+
+
+@pytest.mark.asyncio
+async def test_custom_modal_previews_columns_without_writing():
+    modal = panel._CustomLevelModal(MagicMock(), "channel", 111)
+    modal.delete_after = MagicMock(value="8")
+    modal.delete_invalid = MagicMock(value="yes")
+    modal.delete_failed = MagicMock(value="no")
+    it = _interaction()
+    with (
+        patch.object(
+            panel,
+            "preview_cleanup_columns",
+            AsyncMock(return_value=_preview()),
+        ) as previewer,
+        patch.object(panel, "apply_cleanup_columns", AsyncMock()) as applier,
+    ):
+        await modal.on_submit(it)
+    previewer.assert_awaited_once()
+    kwargs = previewer.await_args.kwargs
+    assert kwargs["delete_invalid_commands"] is True
+    assert kwargs["delete_failed_commands"] is False
+    assert kwargs["delete_after_seconds"] == 8
+    applier.assert_not_called()  # dry-run only
+
+
+@pytest.mark.asyncio
+async def test_custom_modal_rejects_non_numeric_seconds():
+    modal = panel._CustomLevelModal(MagicMock(), "channel", 111)
+    modal.delete_after = MagicMock(value="soon")
+    modal.delete_invalid = MagicMock(value="yes")
+    modal.delete_failed = MagicMock(value="no")
+    it = _interaction()
+    with patch.object(panel, "preview_cleanup_columns", AsyncMock()) as previewer:
+        await modal.on_submit(it)
+    previewer.assert_not_called()
+    it.response.send_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_custom_modal_rejects_out_of_range_seconds():
+    modal = panel._CustomLevelModal(MagicMock(), "channel", 111)
+    modal.delete_after = MagicMock(value="999")
+    modal.delete_invalid = MagicMock(value="yes")
+    modal.delete_failed = MagicMock(value="no")
+    it = _interaction()
+    with patch.object(panel, "preview_cleanup_columns", AsyncMock()) as previewer:
+        await modal.on_submit(it)
+    previewer.assert_not_called()
+    it.response.send_message.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# Remove flow
+# ---------------------------------------------------------------------------
+
+
+def _diag(*rows):
+    return CleanupDiagnostics(
+        guild_id=42,
+        rows=tuple(rows),
+        level_counts={},
+    )
+
+
+@pytest.mark.asyncio
+async def test_remove_button_requires_admin():
+    view = panel.CleanupPolicyPanelView(MagicMock(), MagicMock())
+    it = _interaction(admin=False)
+    await _btn(view, "cleanup_policy:remove").callback(it)
+    it.response.send_message.assert_awaited_once()
+    assert "Administrator" in it.response.send_message.call_args.args[0]
+
+
+@pytest.mark.asyncio
+async def test_remove_button_no_rows_message():
+    view = panel.CleanupPolicyPanelView(MagicMock(), MagicMock())
+    it = _interaction(admin=True)
+    with patch.object(
+        panel,
+        "collect_cleanup_diagnostics",
+        AsyncMock(return_value=_diag()),
+    ):
+        await _btn(view, "cleanup_policy:remove").callback(it)
+    it.response.send_message.assert_awaited_once()
+    assert "no stored cleanup overrides" in it.response.send_message.call_args.args[0]
+
+
+@pytest.mark.asyncio
+async def test_remove_button_opens_select_with_rows():
+    view = panel.CleanupPolicyPanelView(MagicMock(), MagicMock())
+    it = _interaction(admin=True)
+    diag = _diag(
+        _row(
+            scope_type="guild",
+            scope_id=0,
+            target_label="Guild default",
+            level_name="Light",
+            is_ineffective=True,
+        ),
+    )
+    with patch.object(
+        panel,
+        "collect_cleanup_diagnostics",
+        AsyncMock(return_value=diag),
+    ):
+        await _btn(view, "cleanup_policy:remove").callback(it)
+    sent_view = it.response.send_message.call_args.kwargs["view"]
+    sel = next(c for c in sent_view.children if isinstance(c, panel._RemoveSelect))
+    assert sel.options[0].value == "guild:0"
+    assert "legacy" in sel.options[0].label
+
+
+@pytest.mark.asyncio
+async def test_remove_select_calls_service_and_reports():
+    guild = MagicMock()
+    diag = _diag(_row(scope_type="guild", scope_id=0, is_ineffective=True))
+    sel = panel._RemoveSelect(guild, diag)
+    sel._values = ["guild:0"]
+    it = _interaction(admin=True)
+    with patch.object(
+        panel,
+        "remove_cleanup_change",
+        AsyncMock(return_value=True),
+    ) as remover:
+        await sel.callback(it)
+    remover.assert_awaited_once()
+    args = remover.await_args.args
+    assert args[0] is guild
+    assert args[2] == "guild"
+    assert args[3] == 0  # literal scope_id, not remapped
+    it.response.edit_message.assert_awaited_once()
+    assert "Removed" in it.response.edit_message.call_args.kwargs["content"]
+
+
+@pytest.mark.asyncio
+async def test_remove_select_requires_admin():
+    sel = panel._RemoveSelect(MagicMock(), _diag(_row()))
+    sel._values = ["channel:111"]
+    it = _interaction(admin=False)
+    with patch.object(panel, "remove_cleanup_change", AsyncMock()) as remover:
+        await sel.callback(it)
+    remover.assert_not_called()
+    it.response.send_message.assert_awaited_once()

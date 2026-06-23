@@ -215,7 +215,9 @@ async def test_preview_writes_nothing(monkeypatch):
     writer = AsyncMock()
     monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
 
-    await svc.preview_cleanup_change(_guild({111: _channel("g")}), "channel", 111, "Off")
+    await svc.preview_cleanup_change(
+        _guild({111: _channel("g")}), "channel", 111, "Off",
+    )
 
     writer.assert_not_called()
 
@@ -266,7 +268,11 @@ async def test_apply_rejects_thread_scope(monkeypatch):
     monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
     with pytest.raises(ValueError, match="thread"):
         await svc.apply_cleanup_change(
-            _guild({}), MagicMock(spec=discord.Member), "thread", 1, "Off",
+            _guild({}),
+            MagicMock(spec=discord.Member),
+            "thread",
+            1,
+            "Off",
         )
     writer.assert_not_called()
 
@@ -277,6 +283,168 @@ async def test_apply_rejects_unknown_level(monkeypatch):
     monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
     with pytest.raises(ValueError, match="level"):
         await svc.apply_cleanup_change(
-            _guild({}), MagicMock(spec=discord.Member), "guild", None, "Nuclear",
+            _guild({}),
+            MagicMock(spec=discord.Member),
+            "guild",
+            None,
+            "Nuclear",
         )
     writer.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# apply_cleanup_columns (custom)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_apply_columns_passes_explicit_values(monkeypatch):
+    writer = AsyncMock()
+    monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
+    member = MagicMock(spec=discord.Member)
+
+    await svc.apply_cleanup_columns(
+        _guild({}),
+        member,
+        "channel",
+        555,
+        delete_invalid_commands=True,
+        delete_failed_commands=False,
+        delete_after_seconds=8,
+    )
+
+    _ctx, scope_type, scope_id = writer.await_args.args
+    assert scope_type == "channel"
+    assert scope_id == 555
+    kwargs = writer.await_args.kwargs
+    assert kwargs["delete_invalid_commands"] is True
+    assert kwargs["delete_failed_commands"] is False
+    assert kwargs["delete_after_seconds"] == 8
+
+
+@pytest.mark.asyncio
+async def test_apply_columns_guild_scope_keys_on_guild_id(monkeypatch):
+    writer = AsyncMock()
+    monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
+
+    await svc.apply_cleanup_columns(
+        _guild({}),
+        MagicMock(spec=discord.Member),
+        "guild",
+        None,
+        delete_invalid_commands=True,
+        delete_failed_commands=True,
+        delete_after_seconds=4,
+    )
+
+    _ctx, scope_type, scope_id = writer.await_args.args
+    assert scope_type == "guild"
+    assert scope_id == _GID  # guild_id, not 0
+
+
+@pytest.mark.asyncio
+async def test_apply_columns_rejects_out_of_range_seconds(monkeypatch):
+    writer = AsyncMock()
+    monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
+    with pytest.raises(ValueError, match="delete_after_seconds"):
+        await svc.apply_cleanup_columns(
+            _guild({}),
+            MagicMock(spec=discord.Member),
+            "channel",
+            555,
+            delete_invalid_commands=True,
+            delete_failed_commands=False,
+            delete_after_seconds=10_000,
+        )
+    writer.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_preview_columns_names_matching_preset(monkeypatch):
+    # Light's exact columns → labelled "Light", not "Custom".
+    monkeypatch.setattr(
+        svc,
+        "resolve_cleanup_policy",
+        AsyncMock(return_value=_policy(False, 0, PolicySource.FALLBACK_DEFAULT)),
+    )
+    preview = await svc.preview_cleanup_columns(
+        _guild({111: _channel("general")}),
+        "channel",
+        111,
+        delete_invalid_commands=True,
+        delete_failed_commands=False,
+        delete_after_seconds=10,
+    )
+    assert preview.level == "Light"
+    assert preview.new_delete_failed_commands is False
+
+
+@pytest.mark.asyncio
+async def test_preview_columns_labels_non_preset_custom(monkeypatch):
+    monkeypatch.setattr(
+        svc,
+        "resolve_cleanup_policy",
+        AsyncMock(return_value=_policy(False, 0, PolicySource.FALLBACK_DEFAULT)),
+    )
+    preview = await svc.preview_cleanup_columns(
+        _guild({111: _channel("general")}),
+        "channel",
+        111,
+        delete_invalid_commands=True,
+        delete_failed_commands=True,
+        delete_after_seconds=8,  # no preset has 8s
+    )
+    assert preview.level == svc.CUSTOM_LEVEL_LABEL
+    assert preview.new_delete_after_seconds == 8
+
+
+# ---------------------------------------------------------------------------
+# remove_cleanup_change
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_remove_passes_literal_scope_id(monkeypatch):
+    """Remove must NOT remap guild scope to guild_id — it clears the exact row."""
+    remover = AsyncMock(return_value=True)
+    monkeypatch.setattr(svc, "remove_cleanup_policy_for_scope", remover)
+    member = MagicMock(spec=discord.Member)
+
+    result = await svc.remove_cleanup_change(_guild({}), member, "guild", 0)
+
+    assert result is True
+    ctx_arg, scope_type, scope_id = remover.await_args.args
+    assert scope_type == "guild"
+    assert scope_id == 0  # the legacy row's literal key, not _GID
+    assert ctx_arg.guild_id == _GID
+    assert ctx_arg.member is member
+
+
+@pytest.mark.asyncio
+async def test_remove_rejects_thread_scope(monkeypatch):
+    remover = AsyncMock()
+    monkeypatch.setattr(svc, "remove_cleanup_policy_for_scope", remover)
+    with pytest.raises(ValueError, match="thread"):
+        await svc.remove_cleanup_change(
+            _guild({}),
+            MagicMock(spec=discord.Member),
+            "thread",
+            1,
+        )
+    remover.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_remove_returns_false_when_nothing_removed(monkeypatch):
+    monkeypatch.setattr(
+        svc,
+        "remove_cleanup_policy_for_scope",
+        AsyncMock(return_value=False),
+    )
+    result = await svc.remove_cleanup_change(
+        _guild({}),
+        MagicMock(spec=discord.Member),
+        "channel",
+        555,
+    )
+    assert result is False

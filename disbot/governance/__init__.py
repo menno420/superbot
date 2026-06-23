@@ -71,6 +71,7 @@ from governance.templates import (  # noqa: F401
 from governance.writes import (  # noqa: F401
     GovernanceMutationPipeline,
     check_governance_version,
+    remove_cleanup_policy_for_scope,
     set_cleanup_policy_for_scope,
     set_subsystem_visibility,
 )
@@ -295,6 +296,7 @@ __all__ = [
     "GovernanceMutationPipeline",
     "UnauthorizedGovernanceWriteError",
     "check_governance_version",
+    "remove_cleanup_policy_for_scope",
     "set_cleanup_policy_for_scope",
     "set_subsystem_visibility",
     # templates

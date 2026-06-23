@@ -170,6 +170,7 @@ from utils.db.games.mining_vault import get_vault, update_vault_item
 from utils.db.games.player_skills import get_skills, set_skill_points
 from utils.db.games.rps import rps_ensure_player, rps_get_leaderboard, rps_update_stat
 from utils.db.governance import (
+    delete_cleanup_policy,
     get_all_cleanup_for_guild,
     get_all_visibility_for_guild,
     get_cleanup_policy,
@@ -340,6 +341,7 @@ __all__ = [
     "recent_grant_count",
     "top_karma",
     # governance
+    "delete_cleanup_policy",
     "get_all_cleanup_for_guild",
     "get_all_visibility_for_guild",
     "get_cleanup_policy",

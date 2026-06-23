@@ -70,6 +70,7 @@ _EXPECTED_PUBLIC = [
     "get_cleanup_policy",
     "get_all_cleanup_for_guild",
     "set_cleanup_policy",
+    "delete_cleanup_policy",
     "write_governance_audit",
     # sessions
     "get_or_create_session",

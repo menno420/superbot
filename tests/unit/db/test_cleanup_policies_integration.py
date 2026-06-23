@@ -64,7 +64,8 @@ async def postgres_pool():
 
 async def test_legacy_insert_backfills_policy_version_to_one(postgres_pool):
     """A legacy-shape write (the 3 columns, no policy_version) still resolves to
-    version 1 via the column DEFAULT — proving 058 applied and backfills."""
+    version 1 via the column DEFAULT — proving 058 applied and backfills.
+    """
     await gov_db.set_cleanup_policy(_TEST_GUILD, "guild", _TEST_GUILD, True, True, 5)
 
     rows = await gov_db.get_all_cleanup_for_guild(_TEST_GUILD)
@@ -88,7 +89,8 @@ async def test_get_all_cleanup_returns_policy_version_per_scope(postgres_pool):
 
 async def test_guild_default_keyed_by_guild_id_resolves(postgres_pool):
     """Regression (PR9 root-cause fix): a guild-default policy keyed by guild_id
-    is actually read by the resolver and yields a GUILD_OVERRIDE."""
+    is actually read by the resolver and yields a GUILD_OVERRIDE.
+    """
     from governance.cleanup import resolve_cleanup_policy
     from governance.models import GovernanceContext, PolicySource
     from services.cleanup_levels import cleanup_scope_id
@@ -107,7 +109,8 @@ async def test_guild_default_keyed_by_guild_id_resolves(postgres_pool):
 async def test_legacy_guild_scope_zero_is_not_resolved(postgres_pool):
     """The pre-fix convention (scope_id=0) is a silent no-op: the resolver looks
     up guild policy at scope_id=guild_id, so a 0 row is never read.  Guards
-    against a regression back to 0."""
+    against a regression back to 0.
+    """
     from governance.cleanup import resolve_cleanup_policy
     from governance.models import GovernanceContext, PolicySource
 
@@ -116,3 +119,23 @@ async def test_legacy_guild_scope_zero_is_not_resolved(postgres_pool):
     policy = await resolve_cleanup_policy(ctx)
     assert policy.resolved_from == PolicySource.FALLBACK_DEFAULT
     assert policy.delete_after_seconds == 5
+
+
+async def test_delete_cleanup_policy_removes_row_and_reports(postgres_pool):
+    """delete_cleanup_policy clears the exact row (incl. a legacy scope_id=0 one)
+    and reports whether a row was actually removed.
+    """
+    # A legacy guild row + a live channel row.
+    await gov_db.set_cleanup_policy(_TEST_GUILD, "guild", 0, True, True, 2)
+    await gov_db.set_cleanup_policy(_TEST_GUILD, "channel", 111, True, False, 10)
+    assert len(await gov_db.get_all_cleanup_for_guild(_TEST_GUILD)) == 2
+
+    # Removing the legacy row by its literal key returns True and leaves the
+    # channel row intact.
+    removed = await gov_db.delete_cleanup_policy(_TEST_GUILD, "guild", 0)
+    assert removed is True
+    remaining = await gov_db.get_all_cleanup_for_guild(_TEST_GUILD)
+    assert [r["scope_type"] for r in remaining] == ["channel"]
+
+    # Removing something that isn't there is a no-op → False.
+    assert await gov_db.delete_cleanup_policy(_TEST_GUILD, "guild", 0) is False

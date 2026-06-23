@@ -28,7 +28,10 @@ import discord
 
 from governance.cleanup import resolve_cleanup_policy
 from governance.models import CleanupPolicy, GovernanceContext, PolicySource
-from governance.writes import set_cleanup_policy_for_scope
+from governance.writes import (
+    remove_cleanup_policy_for_scope,
+    set_cleanup_policy_for_scope,
+)
 from services.cleanup_levels import (
     cleanup_scope_id,
     columns_for_level,
@@ -39,6 +42,10 @@ from utils.db import governance as gov_db
 
 # Cleanup scopes the resolver honours (RC-5: no thread scope).
 CLEANUP_SCOPE_TYPES: frozenset[str] = frozenset({"guild", "category", "channel"})
+
+# Bounds for a custom (non-preset) ``delete_after_seconds`` value.  0 = delete
+# immediately; the upper bound keeps the auto-delete timer sane (5 minutes).
+MAX_DELETE_AFTER_SECONDS = 300
 
 _SOURCE_FOR_SCOPE: dict[str, PolicySource] = {
     "guild": PolicySource.GUILD_OVERRIDE,
@@ -167,8 +174,9 @@ class CleanupPolicyPreview:
     scope_type: str
     scope_id: int
     target_label: str
-    level: str
-    new_delete_message: bool
+    level: str  # preset name, or "Custom" for an operator-tuned policy
+    new_delete_message: bool  # == delete_invalid_commands (drives resolution)
+    new_delete_failed_commands: bool
     new_delete_after_seconds: int
     current: CleanupPolicy
     will_change: bool
@@ -198,21 +206,37 @@ def _resolve_ctx_for_scope(
     )
 
 
-async def preview_cleanup_change(
+async def preview_cleanup_columns(
     guild: discord.Guild,
     scope_type: str,
     scope_id: int,
-    level: str,
+    *,
+    delete_invalid_commands: bool,
+    delete_failed_commands: bool,
+    delete_after_seconds: int,
+    level_label: str | None = None,
 ) -> CleanupPolicyPreview:
-    """Compute the dry-run preview for setting ``scope`` to ``level``.
+    """Dry-run preview for setting ``scope`` to explicit column values.
 
     Reuses the real :func:`resolve_cleanup_policy` for the *current* state so
     the preview matches runtime exactly.  Writes nothing, emits nothing.
+    ``level_label`` is the display name (a preset name, else "Custom" by the
+    matching preset or ``CUSTOM_LEVEL_LABEL``).
     """
-    _validate(scope_type, level)
-    cols = columns_for_level(level)
-    new_delete = bool(cols["delete_invalid_commands"])
-    new_after = int(cols["delete_after_seconds"])
+    _validate_scope(scope_type)
+    _validate_columns(delete_after_seconds)
+    new_delete = bool(delete_invalid_commands)
+    new_failed = bool(delete_failed_commands)
+    new_after = int(delete_after_seconds)
+
+    label_name = level_label or (
+        level_for_columns(
+            delete_invalid_commands=new_delete,
+            delete_failed_commands=new_failed,
+            delete_after_seconds=new_after,
+        )
+        or CUSTOM_LEVEL_LABEL
+    )
 
     current = await resolve_cleanup_policy(
         _resolve_ctx_for_scope(guild, scope_type, scope_id),
@@ -244,8 +268,9 @@ async def preview_cleanup_change(
         scope_type=scope_type,
         scope_id=scope_id,
         target_label=label,
-        level=level,
+        level=label_name,
         new_delete_message=new_delete,
+        new_delete_failed_commands=new_failed,
         new_delete_after_seconds=new_after,
         current=current,
         will_change=will_change,
@@ -253,9 +278,60 @@ async def preview_cleanup_change(
     )
 
 
+async def preview_cleanup_change(
+    guild: discord.Guild,
+    scope_type: str,
+    scope_id: int,
+    level: str,
+) -> CleanupPolicyPreview:
+    """Compute the dry-run preview for setting ``scope`` to a preset ``level``."""
+    _validate(scope_type, level)
+    cols = columns_for_level(level)
+    return await preview_cleanup_columns(
+        guild,
+        scope_type,
+        scope_id,
+        delete_invalid_commands=bool(cols["delete_invalid_commands"]),
+        delete_failed_commands=bool(cols["delete_failed_commands"]),
+        delete_after_seconds=int(cols["delete_after_seconds"]),
+        level_label=level,
+    )
+
+
 # ---------------------------------------------------------------------------
-# Audited apply
+# Audited apply / remove
 # ---------------------------------------------------------------------------
+
+
+async def apply_cleanup_columns(
+    guild: discord.Guild,
+    member: discord.Member,
+    scope_type: str,
+    scope_id: int | None,
+    *,
+    delete_invalid_commands: bool,
+    delete_failed_commands: bool,
+    delete_after_seconds: int,
+) -> None:
+    """Persist explicit column values for ``scope`` via the pipeline (audited).
+
+    The single apply seam for both presets and custom-tuned policies.  Guild
+    scope is keyed by ``guild_id`` (see
+    :func:`services.cleanup_levels.cleanup_scope_id`); the pipeline writes the
+    row + governance audit + events in one transaction and enforces authority.
+    """
+    _validate_scope(scope_type)
+    _validate_columns(delete_after_seconds)
+    effective_id = cleanup_scope_id(scope_type, guild.id, scope_id)
+    ctx = GovernanceContext(guild_id=guild.id, member=member)
+    await set_cleanup_policy_for_scope(
+        ctx,
+        scope_type,
+        effective_id,
+        delete_invalid_commands=bool(delete_invalid_commands),
+        delete_failed_commands=bool(delete_failed_commands),
+        delete_after_seconds=int(delete_after_seconds),
+    )
 
 
 async def apply_cleanup_change(
@@ -265,32 +341,58 @@ async def apply_cleanup_change(
     scope_id: int | None,
     level: str,
 ) -> None:
-    """Persist ``level`` for ``scope`` via the governance pipeline (audited).
-
-    Guild scope is keyed by ``guild_id`` (see
-    :func:`services.cleanup_levels.cleanup_scope_id`); the pipeline writes the
-    row + governance audit + events in one transaction and enforces authority.
+    """Persist a preset ``level`` for ``scope`` (audited).  Thin wrapper over
+    :func:`apply_cleanup_columns`.
     """
     _validate(scope_type, level)
     cols = columns_for_level(level)
-    effective_id = cleanup_scope_id(scope_type, guild.id, scope_id)
-    ctx = GovernanceContext(guild_id=guild.id, member=member)
-    await set_cleanup_policy_for_scope(
-        ctx,
+    await apply_cleanup_columns(
+        guild,
+        member,
         scope_type,
-        effective_id,
-        delete_invalid_commands=cols["delete_invalid_commands"],
-        delete_failed_commands=cols["delete_failed_commands"],
-        delete_after_seconds=cols["delete_after_seconds"],
+        scope_id,
+        delete_invalid_commands=bool(cols["delete_invalid_commands"]),
+        delete_failed_commands=bool(cols["delete_failed_commands"]),
+        delete_after_seconds=int(cols["delete_after_seconds"]),
     )
 
 
-def _validate(scope_type: str, level: str) -> None:
+async def remove_cleanup_change(
+    guild: discord.Guild,
+    member: discord.Member,
+    scope_type: str,
+    scope_id: int,
+) -> bool:
+    """Delete one stored cleanup override for ``scope`` (audited).
+
+    Keyed by the *literal* ``scope_id`` so a stale or legacy-keyed row (e.g. a
+    guild row written at ``scope_id=0`` the resolver never reads) can be cleared
+    from the panel — unlike apply, this does **not** remap guild scope to
+    ``guild_id``.  Returns ``True`` if a row was removed.
+    """
+    _validate_scope(scope_type)
+    ctx = GovernanceContext(guild_id=guild.id, member=member)
+    return await remove_cleanup_policy_for_scope(ctx, scope_type, int(scope_id))
+
+
+def _validate_scope(scope_type: str) -> None:
     if scope_type not in CLEANUP_SCOPE_TYPES:
         raise ValueError(
             f"cleanup scope_type {scope_type!r} is not one of "
             f"{sorted(CLEANUP_SCOPE_TYPES)} (threads inherit; RC-5)",
         )
+
+
+def _validate_columns(delete_after_seconds: int) -> None:
+    if not 0 <= int(delete_after_seconds) <= MAX_DELETE_AFTER_SECONDS:
+        raise ValueError(
+            f"delete_after_seconds must be between 0 and "
+            f"{MAX_DELETE_AFTER_SECONDS} (got {delete_after_seconds!r})",
+        )
+
+
+def _validate(scope_type: str, level: str) -> None:
+    _validate_scope(scope_type)
     if level not in known_level_names():
         raise ValueError(
             f"cleanup level {level!r} is not one of {sorted(known_level_names())}",
