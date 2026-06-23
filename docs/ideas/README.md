@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`btd6-runtime-mechanics-from-game-2026-06-23.md`](./btd6-runtime-mechanics-from-game-2026-06-23.md) —
+  **owner-raised (2026-06-23):** get the BTD6 *runtime/simulation* layer (freeplay health/speed ramp,
+  superceramic swap, per-round RBE & cash) **straight from the game** — the dump only exports entity
+  *models*, so every "conflicting numbers" dispute (topper64 vs cyberquincy vs us: cash ~300K/350K/400K;
+  the wrong r>100 health brackets in #1384) comes from re-deriving runtime mechanics against contradictory
+  secondary sources. Proposes a BTD Mod Helper runtime-extraction mod as the game-sourced oracle. Subsystem: btd6.
 - [`ultracode-worker-pr-scope-guard-2026-06-23.md`](./ultracode-worker-pr-scope-guard-2026-06-23.md) —
   **session-idea (2026-06-23, Q-0089) from the ultracode consolidation fleet (#1375):** a coordinator-side
   `scripts/check_worker_pr_scope.py` that asserts a worker PR's diff touches *only* its declared ALLOWED
