@@ -43,6 +43,22 @@ def test_fakeout_is_a_coin_flip_around_its_chance():
     assert abs(rate - minigame.FAKEOUT_CHANCE) < 0.05
 
 
+def test_premature_grace_zero_never_forgives_and_one_always_does():
+    # the bare rod (grace 0) can never forgive; a hypothetical full-grace always does
+    rng = random.Random(11)
+    assert not any(minigame.roll_premature_grace(0.0, rng) for _ in range(1000))
+    assert all(minigame.roll_premature_grace(1.0, rng) for _ in range(1000))
+    # negative is treated as zero (defensive)
+    assert minigame.roll_premature_grace(-0.5, rng) is False
+
+
+def test_premature_grace_matches_its_probability():
+    rng = random.Random(13)
+    hits = sum(minigame.roll_premature_grace(0.45, rng) for _ in range(20000))
+    rate = hits / 20000
+    assert abs(rate - 0.45) < 0.02
+
+
 def test_reel_is_in_time_window_boundaries():
     assert minigame.reel_is_in_time(0.0) is True
     assert minigame.reel_is_in_time(minigame.REACTION_WINDOW) is True

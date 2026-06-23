@@ -1,1 +1,0 @@
-- `claude/peaceful-franklin-klgw3f` · **tooling**: extend `scripts/new_subsystem.py` touch-point checker with the gaps the Karma build revealed (sector-folio map · extension_roles.yaml · config.py loading) + fix karma's missing repo-navigation-map row · `scripts/`, `tests/`, `docs/` · 2026-06-23

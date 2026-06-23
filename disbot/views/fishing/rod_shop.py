@@ -28,6 +28,7 @@ def _knob_summary(rod: rods_mod.Rod) -> str:
         f"bites {round((1 - rod.bite_speed) * 100)}% faster",
         "better catches in your band",
         f"{round(rod.escape_resist * 100)}% less escape in fights",
+        f"{round(rod.premature_grace * 100)}% chance to forgive an early reel",
     ]
     return " · ".join(bits)
 
