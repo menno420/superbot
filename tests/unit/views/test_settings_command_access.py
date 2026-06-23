@@ -41,10 +41,12 @@ from views.settings.edit_command_access import (
 def _snapshot(
     mode: str | None,
     *channel_ids: int,
+    delete_blocked_commands: bool = False,
 ) -> CommandAccessPolicySnapshot:
     return CommandAccessPolicySnapshot(
         mode=mode,
         allowed_channels=frozenset(channel_ids),
+        delete_blocked_commands=delete_blocked_commands,
     )
 
 
@@ -145,6 +147,100 @@ async def test_embed_handles_missing_guild_context():
     """
     embed = await build_command_access_embed(guild_id=None)
     assert "Guild context" in " ".join(f.value for f in embed.fields)
+
+
+@pytest.mark.asyncio
+async def test_embed_shows_delete_blocked_state():
+    with patch(
+        "services.command_access_service.get_policy_snapshot",
+        new=AsyncMock(
+            return_value=_snapshot("selected_channels", 100, delete_blocked_commands=True),
+        ),
+    ):
+        embed = await build_command_access_embed(guild_id=10)
+    field = next(f for f in embed.fields if f.name == "Delete blocked commands")
+    assert "On" in field.value
+
+
+@pytest.mark.asyncio
+async def test_embed_shows_delete_blocked_off_by_default():
+    with patch(
+        "services.command_access_service.get_policy_snapshot",
+        new=AsyncMock(return_value=_snapshot("all_channels")),
+    ):
+        embed = await build_command_access_embed(guild_id=10)
+    field = next(f for f in embed.fields if f.name == "Delete blocked commands")
+    assert "Off" in field.value
+
+
+# ---------------------------------------------------------------------------
+# _DeleteBlockedToggleButton callback
+# ---------------------------------------------------------------------------
+
+
+def _toggle_button(view: CommandAccessView):
+    from views.settings.edit_command_access import _DeleteBlockedToggleButton
+
+    return next(
+        c for c in view.children if isinstance(c, _DeleteBlockedToggleButton)
+    )
+
+
+@pytest.mark.asyncio
+async def test_toggle_flips_off_to_on_for_admin():
+    interaction = _make_interaction()
+    view = CommandAccessView(interaction.user)
+
+    with (
+        patch(
+            "services.command_access_service.get_policy_snapshot",
+            new=AsyncMock(return_value=_snapshot("all_channels", delete_blocked_commands=False)),
+        ),
+        patch(
+            "services.command_access_service.set_delete_blocked_commands",
+            new=AsyncMock(),
+        ) as mock_set,
+    ):
+        await _toggle_button(view).callback(interaction)
+
+    mock_set.assert_awaited_once_with(guild_id=10, enabled=True, actor_id=42)
+    interaction.followup.send.assert_awaited_once()
+    assert "On" in interaction.followup.send.await_args.args[0]
+
+
+@pytest.mark.asyncio
+async def test_toggle_flips_on_to_off():
+    interaction = _make_interaction()
+    view = CommandAccessView(interaction.user)
+
+    with (
+        patch(
+            "services.command_access_service.get_policy_snapshot",
+            new=AsyncMock(return_value=_snapshot("selected_channels", delete_blocked_commands=True)),
+        ),
+        patch(
+            "services.command_access_service.set_delete_blocked_commands",
+            new=AsyncMock(),
+        ) as mock_set,
+    ):
+        await _toggle_button(view).callback(interaction)
+
+    mock_set.assert_awaited_once_with(guild_id=10, enabled=False, actor_id=42)
+
+
+@pytest.mark.asyncio
+async def test_toggle_rejects_non_admin():
+    interaction = _make_interaction(user=_non_admin_user())
+    view = CommandAccessView(interaction.user)
+
+    with patch(
+        "services.command_access_service.set_delete_blocked_commands",
+        new=AsyncMock(),
+    ) as mock_set:
+        await _toggle_button(view).callback(interaction)
+
+    mock_set.assert_not_awaited()
+    interaction.response.send_message.assert_awaited_once()
 
 
 # ---------------------------------------------------------------------------
