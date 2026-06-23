@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T10:09:05Z",
+    "generated_at": "2026-06-23T14:26:35Z",
     "build": {
-      "commit": "0f0f04a3",
-      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-trophy-follow' into claude/funny-franklin-trophy-follow",
-      "committed_at": "2026-06-23T10:09:05Z"
+      "commit": "86028ad2",
+      "subject": "Merge pull request #1367 from menno420/claude/audit-brief-verified-findings",
+      "committed_at": "2026-06-23T14:26:35Z"
     },
     "counts": {
       "functions": 41,
-      "ideas": 132,
+      "ideas": 133,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1131,6 +1131,14 @@
       "status": "ideas",
       "date": "2026-06-23",
       "summary": "The band-#1350 pass stood up **four** brand-new subsystems in a single arc — an idle **farm** (#1328),",
+      "subsystems": null
+    },
+    {
+      "file": "session-followups-visual-ai-setup-2026-06-23.md",
+      "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+      "status": "ideas",
+      "date": "2026-06-23",
+      "summary": "These are the genuine forward ideas generated during the 2026-06-23 visual / AI-setup arc (PRs",
       "subsystems": null
     },
     {
@@ -2389,6 +2397,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-23-setup-create-confirm.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Final Review create-count guard + #1351 ledger drift fix",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-session-idea-capture.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Promote loose session ideas into the docs/ideas backlog",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-reconcile.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Docs reconciliation pass (band-#1350, Q-0107)",
@@ -2453,6 +2477,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-23-fishing-premature-grace.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Fishing: the `premature_grace` rod knob (the design's 5th knob)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-23-fishing-deepwater-venue.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Fishing: the boat / deepwater venue (⛵ Set sail / Dock)",
@@ -2485,6 +2517,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-23-delete-blocked-commands.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Delete command-style messages in not-allowed channels (tied to Command Access)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-consolidation-findings-brief.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Consolidation findings brief + stale-claim reconciliation",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-competitive-positioning.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Competitive-positioning north-star (what makes people choose us)",
@@ -2509,6 +2557,22 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-23-cleanup-panel-access-hint.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Cleanup panel: hint pointing at Command Access delete toggle",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-cleanup-custom-selects.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Button/select-driven Custom cleanup level (no typing)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-23-check-quality-isort-parity.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Fix: check_quality isort scope drifted from CI (false-red on tests/)",
@@ -2517,9 +2581,33 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-23-card-render-golden.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Render-structure (\"golden\") tests for the card engine",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-audit-brief-verified-findings.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Consolidation audit: record three code-verified findings into the brief",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-23-ai-setup-wedge.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — AI natural-language setup wedge (`/setup-describe`)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-ai-setup-create.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — AI setup wedge: propose resource CREATION from a description",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2776,86 +2864,6 @@
       "file": "2026-06-22-fishing-minigame-sim.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Fishing minigame: design simulation + analysis",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-fishing-minigame-pr3.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Fishing minigame PR3: the rod ladder (the orthogonal progression axis)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-fishing-minigame-pr2.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Fishing minigame PR2: the trophy reel-fight (completing the hybrid)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-fishing-minigame-pr1.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Fishing minigame PR1: the interactive cast → wait → BITE → reel loop",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-fishing-menu-buttons.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Fishing menu: real buttons (the interactable panel)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-fishing-energy-pacing.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Fishing PR4: separate energy bar (pacing) + generous sell rebalance",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-fishing-bait-layer.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Fishing Bait economy layer",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-farm-freshstart-and-idle-summary.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — farm fresh-start faucet fix + \"while you were away\" idle summary",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-ci-strand-cancel-in-progress.md",
-      "date": "2026-06-22",
-      "title": "Session — CI strand root cause: code-quality cancel-in-progress (2026-06-22)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-ci-rerun-watchdog.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — CI dropped-`synchronize` auto-re-trigger watchdog",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-casino-card-table.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Casino subsystem: multiplayer card-game table framework + Texas Hold'em poker",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3428,13 +3436,13 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 188,
+          "line": 205,
           "layer": "services",
           "has_default": true
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 447,
+          "line": 485,
           "layer": "services",
           "has_default": true
         }
@@ -3519,7 +3527,7 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 186,
+          "line": 203,
           "layer": "services",
           "has_default": true
         }
@@ -3549,7 +3557,7 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 434,
+          "line": 472,
           "layer": "services",
           "has_default": true
         }
