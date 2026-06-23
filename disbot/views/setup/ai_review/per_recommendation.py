@@ -1,27 +1,31 @@
 """Per-recommendation review view — Phase 9f / Track 5 PR 14.
 
-One-at-a-time walkthrough over a :class:`SetupPlanDraft`. The
-operator advances index-by-index and accepts / rejects each
-recommendation into the shared :class:`AcceptedSet`.
+One-at-a-time walkthrough over a :class:`SetupPlanDraft`. The operator advances
+index-by-index, deciding each AI suggestion with the **Accept · Deny · Edit**
+controls (the Q-0048 finalize) into the shared :class:`AcceptedSet`.
 
 Buttons:
 
 * **Accept** — adds the current recommendation to :class:`AcceptedSet`
   and advances to the next index.
-* **Reject** — removes any existing acceptance and advances.
+* **Deny** — removes any existing acceptance and advances.
+* **Edit** — for a ``create`` suggestion, opens a modal to rename the resource
+  the bot will create, then accepts the edited version and advances. A ``bind``
+  suggestion (an existing resource) can't be renamed — Edit explains that.
 * **Skip** — advances without changing the accepted set.
 * **Back to overview** — returns to :class:`AIReviewPanelView`.
 
-The current index is bounded ``[0, len(recommendations))``. Once
-the operator advances past the last recommendation the view
-auto-returns to the overview panel.
+The current index is bounded ``[0, len(recommendations))``. Once the operator
+advances past the last recommendation the view auto-returns to the overview.
 
-No DB writes, no Discord resource creation — only state mutations on
-the shared :class:`AcceptedSet`.
+No DB writes, no Discord resource creation — only state mutations on the shared
+:class:`AcceptedSet` and the in-memory draft. The accepted (possibly edited)
+operations apply only later, through the gated Final Review.
 """
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 from typing import TYPE_CHECKING
 
@@ -74,8 +78,16 @@ def build_per_recommendation_embed(
         ),
         color=color,
     )
+    edit_hint = (
+        " · Edit to rename before accepting"
+        if getattr(rec, "mode", "bind") == "create"
+        else ""
+    )
     embed.set_footer(
-        text=f"Accepted set: {accepted.count} · use Skip to defer, Back to return.",
+        text=(
+            f"Accepted set: {accepted.count} · Accept / Deny / Edit"
+            f"{edit_hint} · Skip to defer, Back to return."
+        ),
     )
     return embed
 
@@ -153,7 +165,33 @@ class PerRecommendationView(BaseView):
             view=self.parent_view,
         )
 
-    @discord.ui.button(label="Accept", style=discord.ButtonStyle.success)
+    def apply_edit(
+        self,
+        old: SetupRecommendation,
+        new_name: str,
+    ) -> SetupRecommendation:
+        """Rewrite the current ``create`` recommendation's target name in place.
+
+        Swaps the edited copy into both this view's draft and the parent
+        overview's draft (so the change survives the return), then accepts the
+        edited recommendation. Pure in-memory state mutation — no DB write, no
+        Discord resource creation (the edited op still applies only through the
+        gated Final Review). Returns the edited recommendation.
+        """
+        edited = dataclasses.replace(old, target_name=new_name)
+        recs = list(self.draft.recommendations)
+        if 0 <= self.index < len(recs):
+            recs[self.index] = edited
+        self.draft = dataclasses.replace(self.draft, recommendations=tuple(recs))
+        if self.parent_view is not None:
+            self.parent_view.draft = self.draft
+        # Reflect the edit in the accepted set: drop any prior acceptance of this
+        # binding, then accept the edited version.
+        self.accepted.remove(old.subsystem, old.binding_name)
+        self.accepted.add(edited)
+        return edited
+
+    @discord.ui.button(label="Accept", style=discord.ButtonStyle.success, row=0)
     async def _accept(
         self,
         interaction: discord.Interaction,
@@ -167,8 +205,8 @@ class PerRecommendationView(BaseView):
         self.accepted.add(rec)
         await self._advance_or_return(interaction)
 
-    @discord.ui.button(label="Reject", style=discord.ButtonStyle.danger)
-    async def _reject(
+    @discord.ui.button(label="Deny", style=discord.ButtonStyle.danger, row=0)
+    async def _deny(
         self,
         interaction: discord.Interaction,
         button: discord.ui.Button,
@@ -181,7 +219,32 @@ class PerRecommendationView(BaseView):
         self.accepted.remove(rec.subsystem, rec.binding_name)
         await self._advance_or_return(interaction)
 
-    @discord.ui.button(label="Skip", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="Edit", style=discord.ButtonStyle.primary, row=0)
+    async def _edit(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        del button
+        rec = self.current
+        if rec is None:
+            await self._return_to_overview(interaction)
+            return
+        # Edit rewrites the name of a resource the bot will CREATE. A "bind"
+        # suggestion points at an existing resource — we never rename those, so
+        # editing it would mislabel; tell the operator to Deny + rebind instead.
+        if getattr(rec, "mode", "bind") != "create":
+            await interaction.response.send_message(
+                f"**Edit** only changes the name of a `{rec.target_kind}` the bot "
+                f"will create. This suggestion binds an existing `{rec.target_kind}` "
+                f"(`{rec.target_name}`) — **Deny** it and bind a different one if "
+                "it isn't right.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_modal(_EditRecommendationModal(self, rec))
+
+    @discord.ui.button(label="Skip", style=discord.ButtonStyle.secondary, row=1)
     async def _skip(
         self,
         interaction: discord.Interaction,
@@ -193,6 +256,7 @@ class PerRecommendationView(BaseView):
     @discord.ui.button(
         label="Back to overview",
         style=discord.ButtonStyle.secondary,
+        row=1,
     )
     async def _back(
         self,
@@ -201,6 +265,44 @@ class PerRecommendationView(BaseView):
     ) -> None:
         del button
         await self._return_to_overview(interaction)
+
+
+class _EditRecommendationModal(discord.ui.Modal, title="Edit suggestion"):
+    """Edit the name of a ``create`` suggestion before accepting it.
+
+    A single text field pre-filled with the AI-proposed name. On submit it
+    rewrites the recommendation (via :meth:`PerRecommendationView.apply_edit`),
+    accepts the edited version, and advances the walkthrough. No DB / Discord
+    writes — the edit only changes what the gated Final Review will create.
+    """
+
+    def __init__(
+        self,
+        view: PerRecommendationView,
+        rec: SetupRecommendation,
+    ) -> None:
+        super().__init__()
+        self._view = view
+        self._rec = rec
+        self.name_input: discord.ui.TextInput = discord.ui.TextInput(
+            label=f"{rec.target_kind.title()} name to create",
+            default=rec.target_name,
+            min_length=1,
+            max_length=100,
+            required=True,
+        )
+        self.add_item(self.name_input)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        new_name = self.name_input.value.strip()
+        if not new_name:
+            await interaction.response.send_message(
+                "The name can't be empty — nothing was changed.",
+                ephemeral=True,
+            )
+            return
+        self._view.apply_edit(self._rec, new_name)
+        await self._view._advance_or_return(interaction)
 
 
 __all__ = [
