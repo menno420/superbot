@@ -1,9 +1,11 @@
 # Plan — AI panels → in-place navigation (+ settings centralization)
 
-> **Status:** `plan` — executable plan promoted from
-> [`ideas/ai-panel-inplace-navigation-2026-06-11.md`](../ideas/ai-panel-inplace-navigation-2026-06-11.md)
-> (owner-requested live, 2026-06-11; roadmap AI § Later). Promoted 2026-06-19 under the open idea→plan
-> gate (Q-0172) — flagged self-initiated on that run's report. Source + the binding contracts win.
+> **Status:** `historical` — ✅ **SHIPPED (2026-06-23, fleet unit U1 — PR #1376).** All 17 `views/ai/` `edit_in_place`
+> findings migrated to true in-place navigation (new `views/ai/_nav.py` page-swap helper), which
+> unblocked graduating the consistency linter's `edit_in_place` rule to error (#1375). The **AI setup
+> advisor** half (the generative finalize this plan also scoped) shipped separately as the
+> Accept/Deny/Edit flow (#1386/#1390, owner decision Q-0048 → Q-0199). Kept for design provenance.
+> Promoted 2026-06-19 under the open idea→plan gate (Q-0172). Source + the binding contracts win.
 >
 > **Why now:** this redesign is the *only* blocker for graduating the consistency linter's
 > **`edit_in_place` rule** — its 17 remaining warn-only findings are *exactly* the `views/ai/` family

@@ -158,12 +158,11 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    `_XpHubView`. Allowlisted all 7 with per-class reasons + a re-verify note (a future root opened *from*
    another panel needs a back button, not an allowlist entry). No genuine missing-back bug exists now; the
    rule still catches a future *child* sub-panel without a back affordance. `back_button` warn-only **7 → 0**.
-   **▶ Next consistency-linter slice:** three rules (`back_button`, `panel_base_class`,
-   `select_option_truncation`) are now at 0 on a clean tree — graduation prep (flip to error + wire into
-   `code-quality.yml`) once each stays clean across a couple more sessions. **Rule 1 (`edit_in_place`)
-   cannot graduate** until the AI-nav redesign clears its remaining 17 — promote
-   [`ideas/ai-panel-inplace-navigation-2026-06-11.md`](../ideas/ai-panel-inplace-navigation-2026-06-11.md)
-   to a `docs/planning/` plan (Q-0172) to unblock it.
+   **✅ ALL FOUR RULES GRADUATED TO ERROR (2026-06-23).** `back_button` / `panel_base_class` /
+   `select_option_truncation` graduated earlier (#1094); **Rule 1 (`edit_in_place`) graduated with the
+   ultracode consolidation fleet (#1375)** — the AI-nav redesign (U1, #1376) cleared its remaining 17 and
+   the roles/games units cleared the rest, so the backlog hit 0 and the rule flipped to error + is wired
+   into `code-quality.yml --mode strict`. The linter is now fully load-bearing; no warn-only rules remain.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.

@@ -1,10 +1,12 @@
 # Consolidation & Discoverability — ultracode fleet plan
 
-> **Status:** `plan` — the coordination brief a multi-agent ("ultracode") **parallel** run reads to
-> execute the per-cog consolidation/discoverability audit safely. Companion to the
-> [staging brief](consolidation-discoverability-audit-brief-2026-06-23.md) (the *what/why* + per-cog
-> rubric) and modeled on [`ultracode-fleet-plan-2026-06-19.md`](ultracode-fleet-plan-2026-06-19.md)
-> (the proven format). Source code + merged PRs win over this doc. **Sector:** S1/S4 (cross-cutting).
+> **Status:** `historical` — ✅ **EXECUTED (2026-06-23).** The ultracode fleet ran: coordinator #1375
+> (Phase-0 verify + Phase-2 `edit_in_place`→error graduation), workers U1 AI panels #1376, U2 roles +
+> `!temproles` #1377, U3 games hub #1378. The remaining units (U4–U11) were covered by the guards
+> (#1370/#1371/#1385) + follow-on PRs (#1382/#1383/#1386/#1390) rather than a second fleet wave — see the
+> [audit brief](consolidation-discoverability-audit-brief-2026-06-23.md) status header for the full
+> disposition. Kept for provenance (the parallel-run model + the unit roster); not a live to-do.
+> Source code + merged PRs win over this doc. **Sector:** S1/S4 (cross-cutting).
 
 ## The model in one paragraph
 
