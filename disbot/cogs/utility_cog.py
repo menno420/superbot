@@ -82,14 +82,11 @@ class UtilityCog(commands.Cog):
         that registered a per-user surface. Read-only (PR A); the panel is
         owner-locked so only you can interact with it.
         """
-        from views.profile import ProfileHomeView, build_profile_embed
+        from views.profile import ProfileHomeView, build_profile_card
 
         view = ProfileHomeView(ctx.author, ctx.guild.id)
-        await send_panel(
-            ctx,
-            embed=await build_profile_embed(ctx.author, ctx.guild.id),
-            view=view,
-        )
+        embed, file = await build_profile_card(ctx.author, ctx.guild.id)
+        await send_panel(ctx, embed=embed, view=view, file=file)
 
     @app_commands.command(
         name="myprofile",
@@ -102,7 +99,7 @@ class UtilityCog(commands.Cog):
         Ephemeral by construction and scoped to the invoking user (no
         member parameter) — being yourself is the whole access model.
         """
-        from views.profile import ProfileHomeView, build_profile_embed
+        from views.profile import ProfileHomeView, build_profile_card
 
         guild_id = interaction.guild_id
         if guild_id is None:
@@ -113,10 +110,12 @@ class UtilityCog(commands.Cog):
             return
 
         view = ProfileHomeView(interaction.user, guild_id)
+        embed, file = await build_profile_card(interaction.user, guild_id)
         await interaction.response.send_message(
-            embed=await build_profile_embed(interaction.user, guild_id),
+            embed=embed,
             view=view,
             ephemeral=True,
+            **({"file": file} if file is not None else {}),
         )
 
     @commands.command(name="clear", aliases=["purge"])

@@ -16,6 +16,7 @@ from views.profile.editor import (
 from views.profile.profile_view import (
     PREFERENCE_KEY_SEP,
     ProfileHomeView,
+    build_profile_card,
     build_profile_embed,
     preference_key,
 )
@@ -25,6 +26,7 @@ __all__ = [
     "ProfileEditorHomeView",
     "ProfileHomeView",
     "ProfileSubsystemEditorView",
+    "build_profile_card",
     "build_profile_embed",
     "preference_key",
 ]
