@@ -1,8 +1,8 @@
 # 2026-06-23 — Promote loose session ideas into the docs/ideas backlog
 
-> **Status:** `in-progress` — born-red card (Q-0133). Flip to `complete` as the final step.
+> **Status:** `complete` — born-red card (Q-0133) flipped green as the final step.
 > Owner-directed (chat: "make sure all ideas etc are properly documented so nothing important from
-> this session is lost"). Docs-only. PR auto-merges on green (Q-0123).
+> this session is lost"). Docs-only. PR #1362 auto-merges on green (Q-0123).
 
 ## Arc
 
