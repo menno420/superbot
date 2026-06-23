@@ -70,9 +70,16 @@ system is well-architected at the **subsystem** level (see §3.1) — the gaps a
   `entry_points`) + `utils/hub_registry.py` (the 6 hubs) drive homing. `validate_registry()` runs at
   boot (unique entry-points, valid parent_hub, no two-hop hubs).
 - PR #1294 removed the legacy "All Commands / Advanced" fallback; PR #1297 added a help-reachability
-  guard. **Audit TODO:** confirm exactly what #1297 enforces — subsystem-homing only, or per-command
-  reachability? (A grep this session did not locate a standalone `check_help_reachability.py`; the guard
-  may live inside `check_consistency.py`, a test, or under another name. Verify before trusting.)
+  guard. **Audit TODO — RESOLVED 2026-06-23 (code-verified):** the guard is **subsystem-level only,
+  not per-command**. It lives as the invariant test **`tests/unit/invariants/test_help_reachability.py`**
+  (which delegates to `tools/sim/help_menu_grouping_sim.py::check_reachability`) plus the sibling
+  **`tests/unit/invariants/test_discoverability.py`** (every subsystem must have a discovery path:
+  `build_help_menu_view` hook / `KNOWN_PANEL_COMMANDS` entry / `.+menu` entry-point / `internal`). Both
+  assert **subsystem** homing — no orphan, ≤3 clicks, no dropdown overflow. **Neither checks per-command
+  reachability**, so **rubric item 2 (§4) is currently UNGUARDED** — making it a CI guard is the
+  "strongest possible outcome" the audit can still pursue (§6/§8), but it is a genuinely new, non-trivial
+  check (mapping each registered command → whether its subsystem's help menu actually surfaces it), so
+  scope it as its own slice, not a drive-by.
 
 ### 3.2 The real gap: command-level findability + buttonization (the owner's actual point)
 
@@ -87,10 +94,14 @@ from the help menu"* — is best read as a **command-level** complaint, and it g
   static analysis says "findable."
 - **But the owner experiences it as unfindable** — and the owner's lived experience is ground truth over
   static analysis (CLAUDE.md: a green check that contradicts visible evidence is a bug in the check).
-  The likely causes (the audit must **reproduce live** and confirm which): (a) only the `generalmenu`
-  *entry* is surfaced; the 7 individual commands (`!joke`, `!fact`, …) are not individually listed or
-  buttonized, so a user scanning help never sees them; (b) Utility is a low-priority hub two taps deep;
-  (c) a runtime governance/routing default hides it. **This is the audit's first concrete repro task.**
+  **Code-verified 2026-06-23 narrowing the cause:** `GeneralMenuView` (in `general_cog.py`) **already
+  buttonizes all 8 commands** (`fact_btn`/`joke_btn`/`quote_btn`/`trivia_btn`/`motivate_btn`/
+  `eightball_btn`/`greet_btn`/`overview_btn`), and `general` is a Utility `primary_child` with a
+  `build_help_menu_view` hook — so once you *reach* the general menu, the commands ARE buttoned. That
+  **rules out cause (a)** (the buttons exist) and points the live repro at **(b) the path to the menu**
+  (Utility is two taps deep / the individual `!joke`,`!fact` aren't listed in the *help-tree text* before
+  you open the panel) or **(c) a runtime governance/routing default**. **This is still the audit's first
+  concrete repro task** — reproduce live to confirm (b) vs (c).
 - **Generalize it:** for *every* cog, the audit's bar is **every user-facing command is reachable from
   the help tree AND has a button affordance**, not merely "the cog's menu entry exists." `general` is the
   exemplar; the same check applies to all 55 cogs.
@@ -122,7 +133,11 @@ the audit should mine:
 - **`panels_without_settings`** — panels with no settings → actionability gaps.
 
 **Audit TODO:** run these and drive both lists to zero (or explicit exemption) — that *is* the
-"every cog's settings reachable from a hub" goal, made checkable.
+"every cog's settings reachable from a hub" goal, made checkable. **Code-verified 2026-06-23:**
+`build_catalogue(None).findings` already reports **`settings_without_panel == ()` and
+`panels_without_settings == ()`** (both empty) in the static build — so this sub-goal is **already at
+zero**. The audit still needs a *live-bot* build to exercise the `bot`-dependent signals
+(`subsystems_missing_help_hook`, `undiscoverable_surfaces`), which the no-bot static build skips.
 
 ### 3.5 Setup wizard + AI advisor (two named finalize targets)
 
@@ -206,8 +221,8 @@ The audit should consolidate these recurring shapes rather than leave parallel c
 
 - **General-cog repro:** what *exactly* is unfindable — the cog, its individual commands, or the Utility
   hub itself? (Reproduce in a live guild; the static registry is clean.)
-- **#1297 scope:** subsystem-homing only, or per-command? (Determines whether rubric item 2 is already
-  guarded.)
+- **#1297 scope — RESOLVED 2026-06-23:** subsystem-homing only (see §3.1). Rubric item 2 (per-command
+  reachability) is **not** guarded; making it one is a standalone slice, not a drive-by.
 - **AI-advisor generative step:** confirm the owner wants the "describe-your-server → staged ops"
   capability (Pillar 2 wedge) and route it through the Q-0048 per-exposure decision before building.
 - **Casino vs. gambling headwind:** the north-star flags Discord's 2026 teen-safety/age-gating push at
