@@ -11,12 +11,16 @@ from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from tests.unit.services._fishing_helpers import (
+    CATCH,
+    fake_roll_catch,
+    recording_roll_catch,
+)
 
 from services import economy_service
 from services import fishing_workflow as wf
 from services import game_xp_service
 from utils.fishing import MAX_LEVEL, rods
-from utils.fishing.fish import Catch, FishSpecies
 
 
 def _txn(sentinel_conn, events):
@@ -29,7 +33,7 @@ def _txn(sentinel_conn, events):
     return _ctx
 
 
-_CATCH = Catch(species=FishSpecies("trout", 8, "🐠"))
+_CATCH = CATCH  # the shared sentinel the helpers return (identity asserts)
 
 
 def _award(*, game_total, leveled_up=False, level=1, amount=5):
@@ -91,7 +95,7 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
         assert item == "trout" and qty == 1  # the caught fish enters the inventory
 
     with (
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH),
+        patch.object(wf, "roll_catch", fake_roll_catch()),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 5})),
         patch.object(wf.db, "transaction", _txn(sentinel_conn, events)),
         patch.object(wf.db, "record_catch", AsyncMock(side_effect=_record)),
@@ -120,7 +124,7 @@ async def test_crossing_a_fishing_level_flags_unlocked_bigger():
 
     # Pre-read xp 50 → level 1; post-award game_total huge → MAX_LEVEL.
     with (
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH),
+        patch.object(wf, "roll_catch", fake_roll_catch()),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 50})),
         patch.object(wf.db, "transaction", _ctx),
         patch.object(wf.db, "record_catch", AsyncMock()),
@@ -142,18 +146,14 @@ async def test_crossing_a_fishing_level_flags_unlocked_bigger():
 async def test_roll_is_gated_by_the_players_current_fishing_level():
     """The roll is called with the level derived from the pre-read fishing xp."""
     sentinel_conn = MagicMock(name="conn")
-    seen_levels: list[int] = []
+    rec: dict = {}
 
     @asynccontextmanager
     async def _ctx():
         yield sentinel_conn
 
-    def _roll(level, rng=None, *, rarity_pull=1.0, venue='shore'):
-        seen_levels.append(level)
-        return _CATCH
-
     with (
-        patch.object(wf, "roll_catch", _roll),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "transaction", _ctx),
         patch.object(wf.db, "record_catch", AsyncMock()),
@@ -167,13 +167,13 @@ async def test_roll_is_gated_by_the_players_current_fishing_level():
     ):
         await wf.fish(99, 1)
 
-    assert seen_levels == [1]  # 0 xp → level 1
+    assert rec["level"] == 1  # 0 xp → level 1
 
 
 @pytest.mark.asyncio
 async def test_empty_catalog_writes_nothing():
     with (
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': None),
+        patch.object(wf, "roll_catch", fake_roll_catch(None)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
         patch.object(wf.db, "record_catch", AsyncMock()) as record,
     ):
@@ -192,7 +192,7 @@ async def test_empty_catalog_writes_nothing():
 async def test_roll_cast_reads_the_level_and_rolls_without_writing():
     """The read-only half: a cast rolls a catch but touches no write seam."""
     with (
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH),
+        patch.object(wf, "roll_catch", fake_roll_catch()),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "record_catch", AsyncMock()) as record,
         patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
@@ -254,37 +254,27 @@ async def test_commit_catch_on_empty_cast_writes_nothing():
 
 @pytest.mark.asyncio
 async def test_roll_cast_passes_the_rods_rarity_pull_to_the_roll():
-    seen = {}
-
-    def _roll(level, rng=None, *, rarity_pull=1.0, venue='shore'):
-        seen["pull"] = rarity_pull
-        return _CATCH
-
+    rec: dict = {}
     gold = rods.rod_for_tier(3)
     with (
-        patch.object(wf, "roll_catch", _roll),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
     ):
         await wf.roll_cast(99, 1, gold)
 
-    assert seen["pull"] == gold.rarity_pull  # the rod knob reaches the roll
+    assert rec["rarity_pull"] == gold.rarity_pull  # the rod knob reaches the roll
 
 
 @pytest.mark.asyncio
 async def test_roll_cast_defaults_to_the_starter_rod():
-    seen = {}
-
-    def _roll(level, rng=None, *, rarity_pull=1.0, venue='shore'):
-        seen["pull"] = rarity_pull
-        return _CATCH
-
+    rec: dict = {}
     with (
-        patch.object(wf, "roll_catch", _roll),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
     ):
         await wf.roll_cast(99, 1)  # no rod given
 
-    assert seen["pull"] == 1.0  # starter → neutral pull
+    assert rec["rarity_pull"] == 1.0  # starter → neutral pull
 
 
 # ---------------------------------------------------------------------------
@@ -386,7 +376,7 @@ async def test_begin_cast_spends_energy_and_rolls_when_charged():
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH),
+        patch.object(wf, "roll_catch", fake_roll_catch()),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
     ):
         start = await wf.begin_cast(99, 1)
@@ -424,7 +414,7 @@ async def test_begin_cast_does_not_charge_on_an_empty_catalog():
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
-        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': None),
+        patch.object(wf, "roll_catch", fake_roll_catch(None)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
     ):
         start = await wf.begin_cast(99, 1)
@@ -491,12 +481,7 @@ async def test_toggle_venue_flips_from_the_stored_value():
 async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
     from utils.fishing import venue as venue_mod
 
-    seen: dict[str, str] = {}
-
-    def _roll(level, rng=None, *, rarity_pull=1.0, venue="shore"):
-        seen["venue"] = venue
-        return _CATCH
-
+    rec: dict = {}
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
@@ -505,13 +490,13 @@ async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
-        patch.object(wf, "roll_catch", _roll),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
     ):
         start = await wf.begin_cast(99, 1)
 
     assert start.ok is True
-    assert seen["venue"] == "deepwater"  # the stored venue gated the roll
+    assert rec["venue"] == "deepwater"  # the stored venue gated the roll
     assert start.venue_profile is venue_mod.DEEPWATER_PROFILE  # ...and the view's tuning
     assert start.cast.venue == "deepwater"
 
@@ -524,16 +509,11 @@ async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
 @pytest.mark.asyncio
 async def test_begin_cast_compounds_the_days_weather_onto_the_knobs():
     """Weather multiplies the rod×bait bite-speed/rarity and rides on CastStart."""
-    from utils.fishing import rods, venue
+    from utils.fishing import rods
     from utils.fishing import weather as weather_mod
 
     storm = next(c for c in weather_mod.CONDITIONS if c.key == "storm")
-    seen: dict[str, float] = {}
-
-    def _roll(level, rng=None, *, rarity_pull=1.0, venue="shore"):
-        seen["pull"] = rarity_pull
-        return _CATCH
-
+    rec: dict = {}
     gold = rods.rod_for_tier(3)
     with (
         patch.object(wf.time, "time", lambda: 1000),
@@ -543,14 +523,14 @@ async def test_begin_cast_compounds_the_days_weather_onto_the_knobs():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
-        patch.object(wf, "roll_catch", _roll),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
     ):
         start = await wf.begin_cast(99, 1)
 
     assert start.weather is storm
     # rod-only knobs, each scaled by the storm multiplier (no bait here).
-    assert seen["pull"] == pytest.approx(gold.rarity_pull * storm.rarity_mult)
+    assert rec["rarity_pull"] == pytest.approx(gold.rarity_pull * storm.rarity_mult)
     assert start.effective_bite_speed == pytest.approx(
         gold.bite_speed * storm.bite_speed_mult,
     )
