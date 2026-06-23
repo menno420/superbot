@@ -52,10 +52,12 @@ def test_policy_button_is_on_the_second_row_next_to_settings():
     assert policy_btn.style == discord.ButtonStyle.success
 
 
-async def test_router_handler_dispatches_policy_action_as_ephemeral():
+async def test_router_handler_dispatches_policy_action_in_place():
     """When the View's callback path is bypassed (e.g. after a process
     restart, where the in-memory view is gone), the router handler
-    must still serve the policy action and send an ephemeral chooser.
+    must still serve the policy action by swapping the anchor message to
+    the chooser page in place (AI nav plan PR 2) — the persistent anchor
+    message survives a restart, so navigation stays in place.
     """
     interaction = _admin_panel_interaction()
     await panel.handle_ai_interaction(
@@ -64,17 +66,15 @@ async def test_router_handler_dispatches_policy_action_as_ephemeral():
         session=None,
         request_id="req-test",
     )
-    interaction.response.send_message.assert_awaited_once()
-    _, kwargs = interaction.response.send_message.call_args
-    assert kwargs.get("ephemeral") is True
+    interaction.response.edit_message.assert_awaited_once()
+    _, kwargs = interaction.response.edit_message.call_args
     assert kwargs.get("embed") is not None
     assert kwargs.get("view") is not None
     from views.ai.policy.chooser import PolicyChooserView
 
     assert isinstance(kwargs["view"], PolicyChooserView)
-    # The router path uses send_message (ephemeral follow-up), NOT
-    # edit_message — the persistent main panel stays intact.
-    interaction.response.edit_message.assert_not_awaited()
+    # In-place navigation: no new ephemeral message is spawned.
+    interaction.response.send_message.assert_not_awaited()
 
 
 async def test_router_handler_rejects_non_admin_for_policy():

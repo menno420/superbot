@@ -58,7 +58,8 @@ async def test_admin_gate_rejects_non_admin():
 @pytest.mark.asyncio
 async def test_preview_button_reuses_preview_channel_select_view(monkeypatch):
     """The Preview button must reuse the PR4B view, never reimplement
-    the dry-run flow.
+    the dry-run flow. In-place navigation (AI nav plan PR 2): the anchor
+    is edited to the preview page rather than a new ephemeral.
     """
     from types import SimpleNamespace
     from unittest.mock import AsyncMock, MagicMock
@@ -70,12 +71,12 @@ async def test_preview_button_reuses_preview_channel_select_view(monkeypatch):
         guild_permissions=SimpleNamespace(administrator=True),
     )
 
-    async def _send_message(*args, **kwargs):
+    async def _edit_message(*args, **kwargs):
         captured.update(kwargs)
         if args:
             captured["content"] = args[0]
 
-    interaction.response.send_message = AsyncMock(side_effect=_send_message)
+    interaction.response.edit_message = AsyncMock(side_effect=_edit_message)
 
     view = BehaviorChooserView()
     # Find the preview button by label.
@@ -103,12 +104,12 @@ async def test_advanced_button_reuses_policy_chooser(monkeypatch):
         guild_permissions=SimpleNamespace(administrator=True),
     )
 
-    async def _send_message(*args, **kwargs):
+    async def _edit_message(*args, **kwargs):
         captured.update(kwargs)
         if args:
             captured["content"] = args[0]
 
-    interaction.response.send_message = AsyncMock(side_effect=_send_message)
+    interaction.response.edit_message = AsyncMock(side_effect=_edit_message)
 
     view = BehaviorChooserView()
     advanced = next(

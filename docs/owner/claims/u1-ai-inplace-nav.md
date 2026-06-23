@@ -1,0 +1,1 @@
+- `claude/u1-ai-inplace-nav` · AI panels → in-place navigation (Ultracode U1) · `disbot/views/ai/**` (+ mirrored tests `tests/unit/views/ai/**`, `tests/unit/cogs/ai/**`) · 2026-06-23

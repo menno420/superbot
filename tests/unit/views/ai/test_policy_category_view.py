@@ -189,8 +189,9 @@ async def test_chooser_category_button_opens_real_select_view():
     view = PolicyChooserView()
     interaction = MagicMock()
     interaction.user.guild_permissions.administrator = True
-    interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
+    # In-place navigation (AI nav plan PR 2): the anchor is edited to the
+    # category-policy page rather than a new ephemeral.
     await view.category_btn.callback(interaction)
-    _, kwargs = interaction.response.send_message.call_args
+    _, kwargs = interaction.response.edit_message.call_args
     assert isinstance(kwargs["view"], CategoryPolicySelectView)
-    assert kwargs.get("ephemeral") is True
