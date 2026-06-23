@@ -11,14 +11,18 @@ from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from tests.unit.services._fishing_helpers import (
+    CATCH,
+    fake_roll_catch,
+    recording_roll_catch,
+)
 
 from services import economy_service
 from services import fishing_workflow as wf
 from utils.fishing import bait as bait_mod
 from utils.fishing import rods as rods_mod
-from utils.fishing.fish import Catch, FishSpecies
 
-_CATCH = Catch(species=FishSpecies("trout", 8, "🐠"))
+_CATCH = CATCH  # the shared sentinel the helpers return (identity asserts)
 _WORM = bait_mod.bait_by_key("worm")
 _LURE = bait_mod.bait_by_key("lure")
 _SPINNER = bait_mod.bait_by_key("spinner")  # a pure speed bait (bite_speed < 1)
@@ -161,17 +165,9 @@ async def test_buy_bait_rejects_an_unknown_key():
 # ---------------------------------------------------------------------------
 
 
-def _rarity_recorder(seen: list[float]):
-    def _roll(level, rng=None, *, rarity_pull=1.0, venue='shore'):
-        seen.append(rarity_pull)
-        return _CATCH
-
-    return _roll
-
-
 @pytest.mark.asyncio
 async def test_begin_cast_consumes_a_bait_charge_and_compounds_rarity():
-    seen: list[float] = []
+    rec: dict = {}
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
@@ -182,7 +178,7 @@ async def test_begin_cast_consumes_a_bait_charge_and_compounds_rarity():
         ),  # starter, pull 1.0
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("worm", 2))),
-        patch.object(wf, "roll_catch", _rarity_recorder(seen)),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
         patch.object(wf.db, "clear_active_bait", AsyncMock()) as clear_bait,
@@ -192,7 +188,7 @@ async def test_begin_cast_consumes_a_bait_charge_and_compounds_rarity():
     assert start.ok is True
     assert start.bait_used is _WORM
     assert start.bait_charges_left == 1  # spent one of the two
-    assert seen == [pytest.approx(_WORM.rarity_pull)]  # 1.0 (rod) × worm pull
+    assert rec["rarity_pull"] == pytest.approx(_WORM.rarity_pull)  # 1.0 (rod) × worm pull
     set_bait.assert_awaited_once_with(99, 1, "worm", 1)
     clear_bait.assert_not_awaited()
 
@@ -208,7 +204,7 @@ async def test_begin_cast_clears_bait_when_the_last_charge_is_spent():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("worm", 1))),
         patch.object(
-            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH
+            wf, "roll_catch", fake_roll_catch()
         ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
@@ -223,7 +219,7 @@ async def test_begin_cast_clears_bait_when_the_last_charge_is_spent():
 
 @pytest.mark.asyncio
 async def test_begin_cast_without_bait_uses_only_the_rod_pull():
-    seen: list[float] = []
+    rec: dict = {}
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
@@ -232,7 +228,7 @@ async def test_begin_cast_without_bait_uses_only_the_rod_pull():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
-        patch.object(wf, "roll_catch", _rarity_recorder(seen)),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
         patch.object(wf.db, "clear_active_bait", AsyncMock()) as clear_bait,
@@ -240,7 +236,7 @@ async def test_begin_cast_without_bait_uses_only_the_rod_pull():
         start = await wf.begin_cast(99, 1)
 
     assert start.bait_used is None
-    assert seen == [pytest.approx(1.0)]  # bare starter, no bait
+    assert rec["rarity_pull"] == pytest.approx(1.0)  # bare starter, no bait
     set_bait.assert_not_awaited()
     clear_bait.assert_not_awaited()
 
@@ -263,7 +259,7 @@ async def test_begin_cast_compounds_bite_speed_from_rod_and_bait():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("spinner", 2))),
         patch.object(
-            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH
+            wf, "roll_catch", fake_roll_catch()
         ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()),
@@ -289,7 +285,7 @@ async def test_begin_cast_bite_speed_is_rod_only_without_bait():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(
-            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH
+            wf, "roll_catch", fake_roll_catch()
         ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()),
