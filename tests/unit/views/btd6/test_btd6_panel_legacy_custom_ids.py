@@ -35,6 +35,9 @@ _NEW_CUSTOM_IDS = frozenset(
         "btd6:paragon",
         "btd6:ct",
         "btd6:maps",
+        # Strategy browse — added 2026-06-23 (discoverability audit U4) so the
+        # !btd6strat strategy memory is reachable by clicking through the BTD6 hub.
+        "btd6:strategy",
     },
 )
 

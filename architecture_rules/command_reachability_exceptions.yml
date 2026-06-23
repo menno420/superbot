@@ -43,6 +43,9 @@ exceptions:
   - cog_file: cogs/paragon_cog.py
     command: paragon
     reason: "Surfaced via the BTD6 hub panel 'Paragon' button. Reachable through !btd6; the typed !paragon is a shortcut."
+  - cog_file: cogs/btd6_strategy_cog.py
+    command: btd6strat
+    reason: "Surfaced via the BTD6 hub panel 'Strategy' button (views/btd6/panel.py BTD6PanelView.strategy_btn -> strategy_browse.build_browse_embed, added 2026-06-23). Reachable through !btd6; the typed !btd6strat is a shortcut."
   - cog_file: cogs/creature_battle_cog.py
     command: cbattle
     reason: "Listed in the creature panel help text (creature_cog.build_help_menu_view: '!cbattle @member — challenge ...'). Reachable through !help creature."

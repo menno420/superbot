@@ -401,3 +401,27 @@ class BTD6PanelView(PersistentView):
             embed=build_maps_embed(),
             ephemeral=True,
         )
+
+    @discord.ui.button(
+        label="📋 Strategy",
+        style=discord.ButtonStyle.secondary,
+        row=2,
+        custom_id="btd6:strategy",
+    )
+    async def strategy_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # Browse published community strategies — the same surface as
+        # `!btd6strat browse`, surfaced here so the strategy memory is
+        # reachable by clicking through the BTD6 hub (discoverability audit).
+        from views.btd6 import strategy_browse
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        await safe_followup(
+            interaction,
+            embed=await strategy_browse.build_browse_embed(limit=10),
+            ephemeral=True,
+        )

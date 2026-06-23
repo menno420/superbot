@@ -44,11 +44,17 @@ attention. This plan supplies all three.
 - ⏳ **Settings-orphan guard — Phase 0.5, specced not built (this session's finding).** The live
   `customization_catalogue` discovers panels by **walking the live bot**, so `build_catalogue(None)`
   returns 0/0 in CI — it's blind offline. A CI-safe guard must reimplement panel discovery statically.
-  **Turn-key approach:** reuse `check_command_reachability._subsystem_discoverable` (already does the
-  AST panel/hook detection) + `core.runtime.subsystem_schema.all_schemas()` (offline) to assert *every
-  subsystem that declares settings has a discovery path* (settings-without-panel), warn-first with an
-  allowlist. ~80 lines + a ratchet test. **Build this before the settings/admin fleet units** (it is not
-  a blocker for the AI-panel / roles units, which `edit_in_place` + `back_button` already gate).
+  **Approach:** reuse `check_command_reachability._subsystem_discoverable` (already does the AST panel/hook
+  detection) to assert *every subsystem that declares settings has a discovery path*
+  (settings-without-panel), warn-first with an allowlist. ~80 lines + a ratchet test.
+  **⚠ Correction (2026-06-23, verified):** the originally-specced offline source
+  `core.runtime.subsystem_schema.all_schemas()` is **also bot-walk-dependent — it returns `{}` offline**
+  (schemas register at `cog_load`). Use a **static** "declares settings" source instead: the
+  per-subsystem `disbot/utils/settings_keys/<x>.py` files (one per settings domain) and/or AST-scanning
+  the `register_schemas` call sites in cog files. Mind that `settings_keys/` names are *domains*, not
+  always 1:1 subsystems (`btd6_cache`, `governance`) — map carefully to keep false-positives low. This
+  makes Phase 0.5 a genuine (not turn-key) design task. **Build this before the settings/admin fleet
+  units** (not a blocker for the AI-panel / roles units, which `edit_in_place` + `back_button` already gate).
 
 **Phase-0 remaining before fan-out:** the settings-orphan guard (0.5, above) **if** the first wave
 includes settings work; otherwise the rails are complete for the AI-panel + roles waves now.
