@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T18:36:23Z",
+    "generated_at": "2026-06-23T20:15:50Z",
     "build": {
-      "commit": "de80ca62",
-      "subject": "Merge pull request #1378 from menno420/claude/u3-games-hubchildbutton",
-      "committed_at": "2026-06-23T18:36:23Z"
+      "commit": "9ac17a3c",
+      "subject": "feat(setup): AI-setup advisor — Accept · Deny · Edit (Q-0048 finalize) (#1386)",
+      "committed_at": "2026-06-23T20:15:50Z"
     },
     "counts": {
       "functions": 41,
-      "ideas": 134,
+      "ideas": 135,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1147,6 +1147,14 @@
       "status": "ideas",
       "date": "2026-06-23",
       "summary": "While building the [ultracode map](../ultracode/shared-dependency-ownership-map.md), four read-only",
+      "subsystems": null
+    },
+    {
+      "file": "ultracode-worker-pr-scope-guard-2026-06-23.md",
+      "title": "Idea — `check_worker_pr_scope.py` (ultracode coordinator scope guard)",
+      "status": "ideas",
+      "date": "2026-06-23",
+      "summary": "Surfaced by the **2026-06-23 ultracode consolidation fleet** (coordinator PR #1375). The fleet's safety",
       "subsystems": null
     },
     {
@@ -2413,9 +2421,33 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-23-ultracode-consolidation-coordinator.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Ultracode consolidation fleet (coordinator)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-23-u3-games-hubchildbutton.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — U3 Games hub child-button migration onto shared `HubChildButton`",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-u2-roles-inplace-nav.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — U2 Roles & access panels: in-place nav + temproles reachability",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-u1-ai-inplace-nav.md",
+      "date": "2026-06-23",
+      "title": "Session — U1 AI panels → in-place navigation (Ultracode worker)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2426,6 +2458,14 @@
       "title": "2026-06-23 — Final Review create-count guard + #1351 ledger drift fix",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-settings-centralization.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Settings centralization: a static settings-reachability guard",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2448,6 +2488,14 @@
       "file": "2026-06-23-phase0-completion.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Phase-0 completion: hub-child primitive + settings-orphan guard + fleet plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-panel-back-nav-fix.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Universal panel nav: every panel is one click from Help + its hub",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -2490,6 +2538,14 @@
       "title": "2026-06-23 — Plan: native giveaway system (GiveawayBot teardown + beat-it plan)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-game-result-continuations.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Game-result continuation buttons (never-stranded follow-up)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2645,6 +2701,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-23-btd6-bloon-health-round-scaling.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — BTD6 late-game/freeplay bloon health scaling (round-scaled HP)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-audit-kickoff-prompt.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Append the audit kickoff prompt to the discoverability brief",
@@ -2666,6 +2730,14 @@
       "title": "2026-06-23 — AI natural-language setup wedge (`/setup-describe`)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-ai-setup-edit-button.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — AI-setup advisor: Accept · Deny · Edit (the Q-0048 finalize)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2810,70 +2882,6 @@
       "title": "2026-06-22 — Mining grid Mine (hub-redesign PR 3)",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-mining-fish-cooking.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Mining: fish cooking + sellable fish (energy refill via campfire)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-mining-energy-rebalance.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Mining rebalance + energy system",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-mining-economy-sim.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Mining economy / balance simulation",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-mining-dig-moves.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Mining grid: dig-moves-you (unified mine+move)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-migration-collision-guard.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — migration-number collision guard (kill the renumber treadmill)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-ledger-and-ci-hygiene.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — ledger drift fix + design-system CI-coverage gap (post-botsite hygiene)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-karma-reputation-plan.md",
-      "date": "2026-06-22",
-      "title": "Session — 2026-06-22 · Karma (thanks/upvote reputation) — plan-first",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-karma-build.md",
-      "date": "2026-06-22",
-      "title": "Session — 2026-06-22 · Karma (thanks/upvote reputation) — build",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
