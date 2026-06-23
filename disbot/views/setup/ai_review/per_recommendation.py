@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import dataclasses
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import discord
 
@@ -165,31 +165,57 @@ class PerRecommendationView(BaseView):
             view=self.parent_view,
         )
 
-    def apply_edit(
+    def _swap_and_accept(
         self,
         old: SetupRecommendation,
-        new_name: str,
+        edited: SetupRecommendation,
     ) -> SetupRecommendation:
-        """Rewrite the current ``create`` recommendation's target name in place.
+        """Swap ``edited`` in for ``old`` at the current index and accept it.
 
-        Swaps the edited copy into both this view's draft and the parent
-        overview's draft (so the change survives the return), then accepts the
-        edited recommendation. Pure in-memory state mutation — no DB write, no
-        Discord resource creation (the edited op still applies only through the
-        gated Final Review). Returns the edited recommendation.
+        Updates both this view's draft and the parent overview's draft (so the
+        change survives the return), then re-accepts under the (unchanged)
+        binding key. Pure in-memory state mutation — no DB write, no Discord
+        resource creation (the edited op still applies only through the gated
+        Final Review). Returns the edited recommendation.
         """
-        edited = dataclasses.replace(old, target_name=new_name)
         recs = list(self.draft.recommendations)
         if 0 <= self.index < len(recs):
             recs[self.index] = edited
         self.draft = dataclasses.replace(self.draft, recommendations=tuple(recs))
         if self.parent_view is not None:
             self.parent_view.draft = self.draft
-        # Reflect the edit in the accepted set: drop any prior acceptance of this
-        # binding, then accept the edited version.
         self.accepted.remove(old.subsystem, old.binding_name)
         self.accepted.add(edited)
         return edited
+
+    def apply_edit(
+        self,
+        old: SetupRecommendation,
+        new_name: str,
+    ) -> SetupRecommendation:
+        """Rewrite a ``create`` recommendation's target name, then accept it."""
+        return self._swap_and_accept(
+            old,
+            dataclasses.replace(old, target_name=new_name),
+        )
+
+    def apply_retarget(
+        self,
+        old: SetupRecommendation,
+        *,
+        target_id: int,
+        target_name: str,
+    ) -> SetupRecommendation:
+        """Re-point a ``bind`` recommendation at a different existing resource.
+
+        Used by the Edit → re-pick flow: the operator corrects which live
+        channel/role/category the AI proposed to bind. ``mode`` stays ``bind``;
+        only the target id + name change. Then accept it.
+        """
+        return self._swap_and_accept(
+            old,
+            dataclasses.replace(old, target_id=target_id, target_name=target_name),
+        )
 
     @discord.ui.button(label="Accept", style=discord.ButtonStyle.success, row=0)
     async def _accept(
@@ -230,19 +256,24 @@ class PerRecommendationView(BaseView):
         if rec is None:
             await self._return_to_overview(interaction)
             return
-        # Edit rewrites the name of a resource the bot will CREATE. A "bind"
-        # suggestion points at an existing resource — we never rename those, so
-        # editing it would mislabel; tell the operator to Deny + rebind instead.
-        if getattr(rec, "mode", "bind") != "create":
+        # A "create" suggestion → rename the resource the bot will create (modal).
+        if getattr(rec, "mode", "bind") == "create":
+            await interaction.response.send_modal(_EditRecommendationModal(self, rec))
+            return
+        # A "bind" suggestion points at an existing resource. For a selectable
+        # kind, let the operator re-pick the target in place; otherwise we can't
+        # offer a picker, so tell them to Deny + rebind.
+        if rec.target_kind not in _REPICKABLE_KINDS:
             await interaction.response.send_message(
-                f"**Edit** only changes the name of a `{rec.target_kind}` the bot "
-                f"will create. This suggestion binds an existing `{rec.target_kind}` "
-                f"(`{rec.target_name}`) — **Deny** it and bind a different one if "
-                "it isn't right.",
+                f"**Edit** can't re-pick a `{rec.target_kind}` here — **Deny** this "
+                "suggestion and bind a different one if it isn't right.",
                 ephemeral=True,
             )
             return
-        await interaction.response.send_modal(_EditRecommendationModal(self, rec))
+        await interaction.response.edit_message(
+            embed=_build_repick_embed(rec),
+            view=_RepickTargetView(self._author, per_view=self, rec=rec),
+        )
 
     @discord.ui.button(label="Skip", style=discord.ButtonStyle.secondary, row=1)
     async def _skip(
@@ -303,6 +334,97 @@ class _EditRecommendationModal(discord.ui.Modal, title="Edit suggestion"):
             return
         self._view.apply_edit(self._rec, new_name)
         await self._view._advance_or_return(interaction)
+
+
+# Resource kinds the Edit → re-pick flow can offer a native picker for. Threads
+# and members have no component select here, so a "bind" suggestion of those
+# kinds keeps the Deny + rebind path.
+_REPICKABLE_KINDS: frozenset[str] = frozenset({"channel", "category", "role"})
+
+_CHANNEL_TYPES_FOR_KIND: dict[str, list[discord.ChannelType]] = {
+    "channel": [discord.ChannelType.text, discord.ChannelType.news],
+    "category": [discord.ChannelType.category],
+}
+
+
+def _build_repick_embed(rec: SetupRecommendation) -> discord.Embed:
+    """Prompt embed for the Edit → re-pick target sub-view."""
+    return discord.Embed(
+        title="✏️ Re-pick target",
+        description=(
+            f"Choose a different `{rec.target_kind}` to bind to "
+            f"`{rec.subsystem}.{rec.binding_name}`.\n"
+            f"The AI proposed **{rec.target_name}**. Your pick is accepted "
+            "immediately — it still applies only through Final Review."
+        ),
+        color=_CONFIDENCE_COLOR.get(rec.confidence, discord.Color.blurple()),
+    )
+
+
+class _RepickTargetView(BaseView):
+    """Edit → re-pick the existing target of a ``bind`` suggestion.
+
+    Shows a kind-appropriate :class:`discord.ui.ChannelSelect` /
+    :class:`discord.ui.RoleSelect`; selecting a resource re-points the
+    recommendation (via :meth:`PerRecommendationView.apply_retarget`), accepts
+    it, and advances. Cancel returns to the suggestion unchanged. No DB /
+    Discord writes — only the in-memory draft/accepted set change.
+    """
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        *,
+        per_view: PerRecommendationView,
+        rec: SetupRecommendation,
+    ) -> None:
+        super().__init__(author, public=per_view._public, timeout=per_view.timeout)
+        self._per = per_view
+        self._rec = rec
+        # discord.py's Select is generic per value-type (RoleSelect[Role] vs
+        # ChannelSelect[channel] vs the default Select[str]); the kind is chosen
+        # at runtime, so keep one ``Any``-typed handle rather than a union.
+        self._select: Any
+        if rec.target_kind == "role":
+            self._select = discord.ui.RoleSelect(
+                placeholder=f"Pick a role for {rec.binding_name}…",
+                min_values=1,
+                max_values=1,
+            )
+        else:
+            self._select = discord.ui.ChannelSelect(
+                channel_types=_CHANNEL_TYPES_FOR_KIND.get(rec.target_kind, []),
+                placeholder=f"Pick a {rec.target_kind} for {rec.binding_name}…",
+                min_values=1,
+                max_values=1,
+            )
+        self._select.callback = self._on_select
+        self.add_item(self._select)
+
+    async def _on_select(self, interaction: discord.Interaction) -> None:
+        picked = self._select.values[0]
+        self._per.apply_retarget(
+            self._rec,
+            target_id=picked.id,
+            target_name=getattr(picked, "name", str(picked.id)),
+        )
+        await self._per._advance_or_return(interaction)
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, row=1)
+    async def _cancel(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        del button
+        await interaction.response.edit_message(
+            embed=build_per_recommendation_embed(
+                self._per.draft,
+                self._per.index,
+                self._per.accepted,
+            ),
+            view=self._per,
+        )
 
 
 __all__ = [
