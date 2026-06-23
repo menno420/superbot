@@ -68,6 +68,8 @@ from services import ai_gateway as _ai_gateway_service
 from services.guild_snapshot import GuildSnapshot
 from services.setup_plan import (
     CONFIDENCES,
+    CREATABLE_KINDS,
+    RECOMMENDATION_MODES,
     DeterministicAdvisor,
     SetupPlanDraft,
     SetupRecommendation,
@@ -101,7 +103,11 @@ _RECOMMENDATION_JSON_SCHEMA: dict[str, Any] = {
                         "subsystem": {"type": "string"},
                         "binding_name": {"type": "string"},
                         "target_kind": {"type": "string"},
-                        "target_id": {"type": "integer"},
+                        # ``bind`` → use an existing resource (``target_id`` set);
+                        # ``create`` → make a new resource named ``target_name``
+                        # (``target_id`` null).
+                        "mode": {"type": "string", "enum": ["bind", "create"]},
+                        "target_id": {"type": ["integer", "null"]},
                         "target_name": {"type": "string"},
                         "confidence": {
                             "type": "string",
@@ -109,10 +115,14 @@ _RECOMMENDATION_JSON_SCHEMA: dict[str, Any] = {
                         },
                         "reason": {"type": "string"},
                     },
+                    # Strict structured output requires every property in
+                    # ``required``; ``target_id`` is made optional via its
+                    # nullable type, not by omission from this list.
                     "required": [
                         "subsystem",
                         "binding_name",
                         "target_kind",
+                        "mode",
                         "target_id",
                         "target_name",
                         "confidence",
@@ -146,7 +156,14 @@ _SYSTEM_PROMPT = (
     "JSON schema provided. Never invent a subsystem name, binding name, or "
     "target kind that does not appear in the snapshot's settings_snapshot "
     "or bindings_snapshot. If you are unsure, return fewer recommendations "
-    "rather than guessing."
+    "rather than guessing.\n"
+    "Each recommendation has a `mode`: use `bind` to wire an EXISTING resource "
+    "to a subsystem binding — set `target_id` to that resource's id and "
+    "`target_name` to its name. Use `create` ONLY when the server is clearly "
+    "missing a resource an important binding needs — set `target_id` to null "
+    "and `target_name` to a short, conventional name to create (e.g. "
+    "`mod-logs`, `welcome`). Prefer binding an existing resource over creating "
+    "a new one whenever a reasonable match exists."
 )
 
 # Appended to the system prompt when the operator supplies a free-form
@@ -353,19 +370,40 @@ def _validate_ai_payload(parsed: Any) -> SetupPlanDraft:
                 f"openai: item[{index}] bad confidence {confidence!r}",
             )
             continue
+        # ``mode`` defaults to "bind" so a model that omits it (or an older
+        # payload) keeps the original behaviour. A "create" rec carries no
+        # existing id; a "bind" rec must.
+        mode = item.get("mode", "bind")
+        if mode not in RECOMMENDATION_MODES:
+            dropped.append(f"openai: item[{index}] bad mode {mode!r}")
+            continue
         try:
+            raw_target_id = item["target_id"]
+            target_id = (
+                None
+                if mode == "create" or raw_target_id is None
+                else int(raw_target_id)
+            )
             rec = SetupRecommendation(
                 subsystem=item["subsystem"],
                 binding_name=item["binding_name"],
                 target_kind=item["target_kind"],
-                target_id=int(item["target_id"]),
+                target_id=target_id,
                 target_name=item["target_name"],
                 confidence=confidence,
                 reason=item["reason"],
+                mode=mode,
                 source=OPENAI,
             )
         except (KeyError, TypeError, ValueError) as exc:
             dropped.append(f"openai: item[{index}] {type(exc).__name__}: {exc}")
+            continue
+
+        if rec.mode == "create" and rec.target_kind not in CREATABLE_KINDS:
+            dropped.append(
+                f"openai: {rec.subsystem}.{rec.binding_name}: cannot create "
+                f"a {rec.target_kind!r} (only {sorted(CREATABLE_KINDS)})",
+            )
             continue
 
         reason = _validate_against_schema(rec)

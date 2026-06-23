@@ -48,18 +48,37 @@ CONFIDENCES: frozenset[str] = frozenset({"high", "medium", "low"})
 
 _CONFIDENCE_ORDER = {"high": 0, "medium": 1, "low": 2}
 
+# A recommendation either **binds** an existing resource (the original model —
+# ``target_id`` points at a live channel/role/category) or proposes **creating**
+# a new one (``target_id is None``; ``target_name`` is the name to create, which
+# the provisioning pipeline then binds to ``subsystem.binding_name``).
+RecommendationMode = Literal["bind", "create"]
+
+RECOMMENDATION_MODES: frozenset[str] = frozenset({"bind", "create"})
+
+# Resource kinds the bot can create on the operator's behalf (a ``create``
+# recommendation of any other kind is invalid — we never fabricate members/threads).
+CREATABLE_KINDS: frozenset[str] = frozenset({"channel", "role", "category"})
+
 
 @dataclass(frozen=True)
 class SetupRecommendation:
-    """One proposed binding for the wizard to surface to the operator."""
+    """One proposed setup action for the wizard to surface to the operator.
+
+    ``mode`` distinguishes binding an existing resource (``"bind"`` — the
+    default; ``target_id`` is the live resource) from proposing a new one
+    (``"create"`` — ``target_id is None`` and ``target_name`` is the name to
+    create + bind).
+    """
 
     subsystem: str
     binding_name: str
     target_kind: str  # "channel" / "category" / "role" / "thread" / "member"
-    target_id: int
     target_name: str
     confidence: Confidence
     reason: str
+    target_id: int | None = None  # required for "bind"; None for "create"
+    mode: RecommendationMode = "bind"
     source: str = "deterministic"
 
     def __post_init__(self) -> None:
@@ -68,6 +87,15 @@ class SetupRecommendation:
                 f"confidence must be one of {sorted(CONFIDENCES)}, "
                 f"got {self.confidence!r}",
             )
+        if self.mode not in RECOMMENDATION_MODES:
+            raise ValueError(
+                f"mode must be one of {sorted(RECOMMENDATION_MODES)}, "
+                f"got {self.mode!r}",
+            )
+        if self.mode == "bind" and self.target_id is None:
+            raise ValueError("a 'bind' recommendation requires a target_id")
+        if self.mode == "create" and not self.target_name:
+            raise ValueError("a 'create' recommendation requires a target_name")
 
 
 @dataclass(frozen=True)
