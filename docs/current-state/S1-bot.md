@@ -50,6 +50,13 @@
   per-cog + general settings centralized; no orphaned ephemeral panels, no missing cogs/commands in help.
   One cog / connected-group at a time. Staging brief + per-cog rubric + first targets:
   [`planning/consolidation-discoverability-audit-brief-2026-06-23.md`](../planning/consolidation-discoverability-audit-brief-2026-06-23.md).
+  **Session 1 (foundation) SHIPPED (PR #1370):** general-cog "unfindable" root-caused (the Utility hub
+  panel didn't surface its `general`/`four_twenty` children) + fixed; the **per-command reachability
+  guard** built (`scripts/check_command_reachability.py` + warn-first invariant) → 214 commands, 2
+  genuine gaps recorded ([gap ledger](../audits/command-reachability-gaps-2026-06-23.md)).
+  **▶ Next:** Session 2 (AI panel `views/ai/` 18 `edit_in_place` + AI-advisor finalize) · Session 3
+  (roles `views/roles/` 15 `edit_in_place` + channel-deployed-component primitive) · the 2 gap cogs
+  (`btd6strat` Strategy button · `temproles` homing) as tiny per-cog follow-ons.
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:

@@ -8,6 +8,16 @@
 > [settings-bindings-provisioning](../subsystems/settings-bindings-provisioning.md) ·
 > [ai](../subsystems/ai.md).
 
+> **▶ Session 1 SHIPPED (2026-06-23, PR #1370).** Foundation done: the general-cog
+> "unfindable" **root cause is found statically** (the Utility hub panel didn't surface its
+> `general`/`four_twenty` children — §3.2) and **fixed** (the panel now renders child buttons +
+> lists them in the embed, mirroring the Games/Community hubs); the **per-command reachability
+> guard** is built (`scripts/check_command_reachability.py` +
+> `tests/unit/invariants/test_command_reachability.py`, warn-first ratchet) and emits the **per-cog
+> gap list** ([214 commands → 2 genuine gaps; 6 reachable-via-panel commands source-verified +
+> allowlisted, incl. a `!cbrecord` one-line fix](../audits/command-reachability-gaps-2026-06-23.md)).
+> Sessions 2 (AI panel) and 3 (roles) remain; the 2 gap cogs are tiny per-cog follow-ons.
+
 ## 1. Mandate (why now)
 
 The last ~week was heavy net-new feature shipping — farm, karma, casino/poker, treasury, deep fishing,
@@ -100,8 +110,20 @@ from the help menu"* — is best read as a **command-level** complaint, and it g
   `build_help_menu_view` hook — so once you *reach* the general menu, the commands ARE buttoned. That
   **rules out cause (a)** (the buttons exist) and points the live repro at **(b) the path to the menu**
   (Utility is two taps deep / the individual `!joke`,`!fact` aren't listed in the *help-tree text* before
-  you open the panel) or **(c) a runtime governance/routing default**. **This is still the audit's first
-  concrete repro task** — reproduce live to confirm (b) vs (c).
+  you open the panel) or **(c) a runtime governance/routing default**.
+  **ROOT CAUSE FOUND + FIXED 2026-06-23 (Session 1, PR #1370) — it was (b), structural.** The Utility
+  hub panel (`_UtilityPanelView` in `cogs/utility_cog.py`) is a **hybrid** surface — a functional cog
+  (server-info/poll/remind/…) *and* the parent hub of `general`/`four_twenty` — but its hand-built panel
+  rendered **only its own action buttons and never surfaced its child subsystems**. Unlike the Games
+  (`views/games/hub.py`) and Community (`views/community/hub.py`) hubs, which discover children from
+  `SUBSYSTEMS` (`parent_hub == …`) and render forwarding buttons, Utility surfaced nothing — so the
+  click-path dead-ended (`!help` → Utility → 6 utility buttons, **no General**) and a new user could
+  never reach the General panel or see `!joke`/`!fact` exist. **Cause (c) ruled out:** `general` is
+  `visibility_tier: user` / `visibility_mode: normal`, never default-hidden. **Fix:** the Utility panel
+  now renders a forwarding button per child (`discover_utility_children()` + `_UtilityChildButton`,
+  row 3, click-time governance recheck + Back-to-Utility) **and** lists the children in its embed —
+  guarded by `tests/unit/cogs/test_utility_hub_children.py`. The owner's live screenshot is still
+  welcome as confirmation but is **no longer needed to diagnose**.
 - **Generalize it:** for *every* cog, the audit's bar is **every user-facing command is reachable from
   the help tree AND has a button affordance**, not merely "the cog's menu entry exists." `general` is the
   exemplar; the same check applies to all 55 cogs.
@@ -219,8 +241,9 @@ The audit should consolidate these recurring shapes rather than leave parallel c
 
 ## 8. Open questions to resolve live / with the owner
 
-- **General-cog repro:** what *exactly* is unfindable — the cog, its individual commands, or the Utility
-  hub itself? (Reproduce in a live guild; the static registry is clean.)
+- **General-cog repro — RESOLVED 2026-06-23 (Session 1):** the Utility hub panel didn't surface its
+  `general` child (structural cause (b), found statically — see §3.2), now fixed (PR #1370). An owner
+  screenshot of `!help` → Utility is still welcome as live confirmation but isn't needed to diagnose.
 - **#1297 scope — RESOLVED 2026-06-23:** subsystem-homing only (see §3.1). Rubric item 2 (per-command
   reachability) is **not** guarded; making it one is a standalone slice, not a drive-by.
 - **AI-advisor generative step:** confirm the owner wants the "describe-your-server → staged ops"

@@ -43,7 +43,12 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   (the Starboard / Hall-of-Fame raw-reaction listener plus the `!starboard`
   config command — no subsystem row of its own). "Loaded
   extension", "subsystem", and "Help category" are different concepts —
-  do not conflate them (help audit §4).
+  do not conflate them (help audit §4). **Per-command reachability of these
+  no-row cogs is guarded** by `scripts/check_command_reachability.py` +
+  `tests/unit/invariants/test_command_reachability.py` (discoverability audit
+  Session 1, 2026-06-23): every member-tier command must resolve to a homed
+  help-list **or** a panel button/text, else it is a recorded gap — the per-cog
+  gap ledger is [`docs/audits/command-reachability-gaps-2026-06-23.md`](audits/command-reachability-gaps-2026-06-23.md).
 - After the help-menu regrouping (PR #1290) `diagnostic` is a child of the
   Server & Admin hub, not a top-level hub. `HUB_PANEL_BUILDERS` is now empty
   (the legacy Platform override was dropped). Typed `platform` opens the
@@ -81,7 +86,7 @@ so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 | `economy` | 💰 Economy | `!economymenu` | `economy_cog` | `EconomyPanelView` | user |
 | `moderation` | 🛡️ Moderation & Safety | `!modmenu` | `moderation_cog` | `ModPanelView` | moderator |
 | `community` | 🌱 Community | `!community` | `community_cog` | `CommunityHubView` | user |
-| `utility` | 🧰 Utility | `!utilitymenu` | `utility_cog` | `UtilityPanelView` | user |
+| `utility` | 🧰 Utility | `!utilitymenu` | `utility_cog` | `_UtilityPanelView` (hybrid: own actions + child buttons → general · four_twenty, since PR #1370) | user |
 | `admin` | ⚙️ Server & Admin | `!adminmenu` | `admin_cog` | `_AdminPanelView` (children: settings · diagnostic · server_management · channel · ai · ux_lab) | administrator |
 
 ## 2. Subsystem inventory
