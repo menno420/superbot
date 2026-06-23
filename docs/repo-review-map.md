@@ -159,6 +159,10 @@ This map is a **partition over** the existing structure, not a replacement for i
   S3↔A3, S4↔A4, S5↔A3-config+live-state) lives in `repo-sector-map.md` § "Two taxonomies"; route by
   the **question you're asking** (planning a roadmap → sector; scoping a PR review → review unit).
 - **Review/refactor scoping** ("what's the self-contained unit for *this* change?") → **this file.**
+- **Parallel-refactor / fleet coordination** ("which units run in parallel, which files are
+  shared-held, how do workers avoid colliding?") → [`ultracode/`](ultracode/README.md) — it
+  operationalizes the B-slice / B-platform split below into a parallel-safety rating + touch policy
+  for an Ultracode fleet.
 
 When this file and any of those disagree, they win — and fix this file in the same PR.
 

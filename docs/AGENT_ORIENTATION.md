@@ -84,6 +84,7 @@ read **`docs/helper-policy.md`** first.
 | 6 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
 | 6b | [`docs/repo-sector-map.md`](repo-sector-map.md) | **The 3-tap navigation top layer** — the 5 planning sectors (Bot · BTD6 · AI-Memory system · Documentation system · Operations), each linking down to its subsystems (folios) and cogs/ideas. Planning lens; pairs with the review-scoping `repo-review-map.md`. |
 | 7 | `docs/repo-review-map.md` (when scoping a review/refactor) | The review/refactor partition: for a given change, what is the smallest self-contained unit (subsystem slice vs. shared platform layer vs. data/tooling/docs domain). |
+| 7b | [`docs/ultracode/`](ultracode/README.md) (when scoping a **parallel** refactor / fleet run) | The parallel-safety partition: which units a fleet can build at once without colliding, the shared-held surfaces + touch policy, the collision matrix, and the worker-scope template. Operationalizes row 7 for an Ultracode fleet. |
 | 8 | `docs/owner/maintainer-question-router.md` (when needed) | Unresolved maintainer-facing questions and preserved owner intent. Unanswered questions are not approval. |
 
 ### Adding a new subsystem / cog

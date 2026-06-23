@@ -40,3 +40,17 @@ Make "a new subsystem shipped" produce a **self-maintaining follow-up backlog**:
 
 If the `## Follow-ups` convention proves to drift faster than it helps (stubs go stale, no one prunes them),
 delete the checker and the stub-writer — it is a convenience guard, not load-bearing.
+
+## Grooming note (2026-06-23, ultracode-map session)
+
+The ultracode shared-dependency-map session **verified a second face of this same drift**: the four (now
+more) new subsystems aren't just under-tracked for *follow-up depth* — they're missing from the repo's
+**inventory tables** too. `repo-navigation-map.md`'s cheat-sheet table omits 18 shipped cogs, and
+`ownership.md`'s tables list only `fishing` of the new set (treasury/farm/casino/creature/starboard
+absent). The verified delta is enumerated in
+[`ultracode/report-reconciliation-2026-06-23.md`](../ultracode/report-reconciliation-2026-06-23.md) § 2–3.
+A sibling guard idea — [`subsystem-inventory-homed-guard-2026-06-23.md`](subsystem-inventory-homed-guard-2026-06-23.md)
+— proposes asserting per-cog presence in those tables. **Convergence:** both ideas are the same root cause
+("a new subsystem ships but its durable-doc homes aren't all updated"); a single
+`new_subsystem.py`-writes-the-stub + ratchet-checks-the-rows mechanism could satisfy both (folio
+`## Follow-ups` **and** the inventory/ownership rows). Worth planning as one tooling slice, not two.

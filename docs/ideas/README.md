@@ -44,6 +44,14 @@ Current broad captures:
   prose. Make `new_subsystem.py` write a `## Follow-ups` stub into each subsystem folio + a stdlib checker
   that lists them, so the dispatch/reconciliation routines pull buildable slices from *real shipped depth*
   instead of aspirational runtime initiatives. Complements the band-queue hit-rate metric idea. Subsystem: S4/S3 tooling.
+  *(Groomed 2026-06-23: cross-linked to the inventory-homed guard below — same root cause, plan as one slice.)*
+- [`subsystem-inventory-homed-guard-2026-06-23.md`](./subsystem-inventory-homed-guard-2026-06-23.md) —
+  **workflow idea (2026-06-23, Q-0089, ultracode-map session):** four mapping agents verified the repo's own
+  inventory docs lag source — `repo-navigation-map.md`'s cheat-sheet table omits **18 shipped cogs** (54 in
+  source) and `ownership.md` lists only `fishing` of the newer subsystems. Propose a warn-first ratchet guard
+  (`check_subsystem_inventory_homed.py` + test + exceptions yml, the proven 3-file shape) asserting every
+  `*_cog.py` / `SUBSYSTEMS` key is homed in the canonical inventory + ownership tables — closing the drift
+  class at the root. Sibling to the follow-up-tracker idea above. Subsystem: none (S4/S3 tooling).
 - [`competitive-positioning-north-star-2026-06-23.md`](./competitive-positioning-north-star-2026-06-23.md) —
   **owner-directed (2026-06-23):** follow-up to the Dank Memer visual work — *"what would make people prefer
   ours over any other bot?"* Grounded in a fan-out research pass across 15+ bots (Dank Memer, UnbelievaBoat,
