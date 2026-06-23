@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "data_version": "1.0",
+  "game_version": "55.1",
+  "source": "bloons.fandom.com Late Game and Freeplay (BTD6) + Big Airship of Doom + topper64.co.uk/nk/btd6/rounds (CC BY-NC-SA / community)",
+  "scaling_source": "Round-relative bloon health scaling is NOT in the BTD Mod Helper game data dump: round files store only bloon composition + spawn timing, and BloonModel stores only the BASE maxHealth (BAD = 20000). BTD6 applies a RUNTIME late-game/freeplay health ramp to MOAB-class bloons (MOAB/BFB/ZOMG/DDT/BAD): from round 81 they gain +2% of base health per round, a piecewise-linear curve with step-ups at rounds 101/151/201/252. v(100)=1.40, so a BAD first naturally spawns on round 100 already at 20000*1.40=28000 HP (67200 RBE). The r<=100 bracket is cross-verified (BAD=28000 HP / 67200 RBE @ r100, three independent sources); the >100 brackets are the wiki's documented continuation (extend/verify against the live Late Game and Freeplay table). Regular (non-MOAB-class) bloons do NOT take this multiplier - ceramics are instead swapped for superceramics at round 81. multiplier(r) = base + (r - anchor_round) * per_round, clamped to the bracket whose min_round <= r <= max_round; rounds below the first bracket are 1.0 (unscaled).",
+  "moab_class_health": {
+    "applies_to_category": "moab_class",
+    "start_round": 81,
+    "per_round_pct_of_base": 0.02,
+    "brackets": [
+      { "min_round": 1, "max_round": 80, "anchor_round": 80, "base": 1.0, "per_round": 0.0 },
+      { "min_round": 81, "max_round": 100, "anchor_round": 80, "base": 1.0, "per_round": 0.02 },
+      { "min_round": 101, "max_round": 150, "anchor_round": 101, "base": 1.6, "per_round": 0.02 },
+      { "min_round": 151, "max_round": 200, "anchor_round": 151, "base": 3.0, "per_round": 0.02 },
+      { "min_round": 201, "max_round": 251, "anchor_round": 201, "base": 4.5, "per_round": 0.02 },
+      { "min_round": 252, "max_round": 1000, "anchor_round": 252, "base": 6.0, "per_round": 0.02 }
+    ]
+  }
+}

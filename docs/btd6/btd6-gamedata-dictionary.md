@@ -122,3 +122,20 @@ old label), `rogueData.json` (Rogue Legends spin-off balance),
   the wiki).
 - **Rounds (all modes) / IncomeSets** → only standard rounds come from the wiki
   today; the dump has every mode + the income curves.
+
+## Runtime-formula facts the dump does NOT store (curated sidecars)
+
+Some per-round quantities are **engine formulas**, not data — the dump's round
+files hold only bloon *composition + spawn timing*, and `BloonModel` stores only
+*base* stats. These live as curated, source-noted sidecars under
+`disbot/data/btd6/` (each carries a `*_source` note stating it is absent from the
+dump, mirroring the validation discipline):
+
+- **Per-round XP / cash** → `round_xp.json` (`xp_source`); cash is derived from
+  composition. Neither is a dump field.
+- **MOAB-class late-game/freeplay health scaling** → `bloon_scaling.json`
+  (`scaling_source`). MOAB-class bloons gain **+2% of base HP per round from round
+  81** (`v(100)=1.40`), so a **BAD first spawns on round 100 already at 28,000 HP**
+  (20,000 base), not 20,000. `bloons.json` holds only the round-≤80 base; the ramp
+  is applied at runtime by `btd6_data_service.bloon_health_at_round()`. So "where
+  is the per-round health modifier in the dump?" → it isn't; it's this curve.
