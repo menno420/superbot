@@ -15,11 +15,13 @@ import pytest
 from services import economy_service
 from services import fishing_workflow as wf
 from utils.fishing import bait as bait_mod
+from utils.fishing import rods as rods_mod
 from utils.fishing.fish import Catch, FishSpecies
 
 _CATCH = Catch(species=FishSpecies("trout", 8, "🐠"))
 _WORM = bait_mod.bait_by_key("worm")
 _LURE = bait_mod.bait_by_key("lure")
+_SPINNER = bait_mod.bait_by_key("spinner")  # a pure speed bait (bite_speed < 1)
 
 
 # ---------------------------------------------------------------------------
@@ -231,3 +233,48 @@ async def test_begin_cast_without_bait_uses_only_the_rod_pull():
     assert seen == [pytest.approx(1.0)]  # bare starter, no bait
     set_bait.assert_not_awaited()
     clear_bait.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# begin_cast — bite-speed knob compounding (rod × bait), exposed on CastStart
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_compounds_bite_speed_from_rod_and_bait():
+    # Gold rod (tier 3, bite_speed 0.80) + a pure speed bait → product on CastStart.
+    gold = rods_mod.rod_for_tier(3)
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("spinner", 2))),
+        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()),
+        patch.object(wf.db, "set_active_bait", AsyncMock()),
+        patch.object(wf.db, "clear_active_bait", AsyncMock()),
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert start.bait_used is _SPINNER
+    assert start.effective_bite_speed == pytest.approx(gold.bite_speed * _SPINNER.bite_speed)
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_bite_speed_is_rod_only_without_bait():
+    gold = rods_mod.rod_for_tier(3)
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
+        patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()),
+        patch.object(wf.db, "set_active_bait", AsyncMock()),
+        patch.object(wf.db, "clear_active_bait", AsyncMock()),
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert start.effective_bite_speed == pytest.approx(gold.bite_speed)  # rod only

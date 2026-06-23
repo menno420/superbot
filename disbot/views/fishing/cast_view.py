@@ -85,7 +85,13 @@ async def prepare_cast(
     start = await fishing_workflow.begin_cast(user_id, guild_id)
     if not start.ok or start.cast is None:
         return start.message or "🎣 You can't cast right now — try later."
-    view = FishingCastView(user_id, guild_id, start.cast, rod=start.rod)
+    view = FishingCastView(
+        user_id,
+        guild_id,
+        start.cast,
+        rod=start.rod,
+        bite_speed=start.effective_bite_speed,
+    )
     embed = discord.Embed(
         description=(
             "You cast a line… 🎣\n"
@@ -110,6 +116,7 @@ class FishingCastView(discord.ui.View):
         guild_id: int,
         cast: fishing_workflow.Cast,
         rod: rods_mod.Rod | None = None,
+        bite_speed: float | None = None,
     ) -> None:
         super().__init__(timeout=_VIEW_TIMEOUT)
         self.user_id = user_id
@@ -119,6 +126,10 @@ class FishingCastView(discord.ui.View):
         #: The rod's window bonus widens every reaction window (bite + each fight
         #: tap) — the fairness knob, so a weak connection on a good rod is comfy.
         self._window = minigame.REACTION_WINDOW + self.rod.window_bonus
+        #: The bite-wait multiplier (≤ 1 = faster). ``begin_cast`` compounds the
+        #: rod's ``bite_speed`` with any loaded bait's and passes it here; the
+        #: direct ``!fish``/test path falls back to the rod's own knob.
+        self._bite_speed = self.rod.bite_speed if bite_speed is None else bite_speed
         self.message: discord.Message | None = None
 
         self._phase = _PHASE_BITE
@@ -153,7 +164,7 @@ class FishingCastView(discord.ui.View):
 
     async def _run_bite(self) -> None:
         """Wait → (maybe fake-out) → arm the bite → expire the window if ignored."""
-        delay = minigame.roll_bite_delay(speed=self.rod.bite_speed)
+        delay = minigame.roll_bite_delay(speed=self._bite_speed)
         fakeout = minigame.roll_fakeout()
 
         if fakeout and delay - minigame.FAKEOUT_LEAD > minigame.BITE_DELAY_FLOOR:

@@ -326,6 +326,66 @@ def minigame_window():
 
 
 # ---------------------------------------------------------------------------
+# Bite-speed knob — the bait/rod compounded pacing threaded into the view
+# ---------------------------------------------------------------------------
+
+
+def test_view_bite_speed_defaults_to_the_rod_when_unset():
+    # The direct !fish/test path passes no bite_speed → falls back to the rod's.
+    diamond = rods.rod_for_tier(4)
+    view = FishingCastView(1, 99, _ORDINARY, rod=diamond)
+    assert view._bite_speed == diamond.bite_speed
+
+
+def test_view_bite_speed_takes_the_threaded_value_over_the_rod():
+    view = FishingCastView(1, 99, _ORDINARY, rod=rods.STARTER, bite_speed=0.42)
+    assert view._bite_speed == 0.42  # the compounded rod×bait value from begin_cast
+
+
+@pytest.mark.asyncio
+async def test_run_bite_paces_on_the_threaded_bite_speed():
+    view = FishingCastView(1, 99, _ORDINARY, rod=rods.STARTER, bite_speed=0.5)
+    view.message = MagicMock()
+    view._resolved = True  # return right after the first sleep, before arming
+    seen: dict[str, float] = {}
+
+    def _delay(rng=None, *, speed=1.0):  # noqa: ANN001
+        seen["speed"] = speed
+        return 0.0
+
+    with (
+        patch("views.fishing.cast_view.minigame.roll_bite_delay", _delay),
+        patch("views.fishing.cast_view.minigame.roll_fakeout", return_value=False),
+        patch("views.fishing.cast_view.asyncio.sleep", AsyncMock()),
+    ):
+        await view._run_bite()
+
+    assert seen["speed"] == 0.5  # the bite wait uses the compounded speed, not the rod
+
+
+@pytest.mark.asyncio
+async def test_prepare_cast_threads_effective_bite_speed_into_the_view():
+    from views.fishing.cast_view import prepare_cast
+
+    start = fishing_workflow.CastStart(
+        ok=True,
+        cast=_ORDINARY,
+        rod=rods.STARTER,
+        energy_current=9,
+        effective_bite_speed=0.36,
+    )
+    with patch(
+        "views.fishing.cast_view.fishing_workflow.begin_cast",
+        AsyncMock(return_value=start),
+    ):
+        result = await prepare_cast(1, 99)
+
+    assert not isinstance(result, str)
+    _, view = result
+    assert view._bite_speed == 0.36
+
+
+# ---------------------------------------------------------------------------
 # prepare_cast — the shared cast-launch helper
 # ---------------------------------------------------------------------------
 
