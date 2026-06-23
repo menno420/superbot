@@ -158,6 +158,26 @@ class RoundXpEntry:
 
 
 @dataclass(frozen=True)
+class HealthScalingBracket:
+    """One piece of the MOAB-class late-game/freeplay health-multiplier curve.
+
+    ``multiplier(r) = base + (r - anchor_round) * per_round`` for any round ``r``
+    in ``[min_round, max_round]``. BTD6 ramps MOAB-class HP from round 81 (+2% of
+    base/round); ``v(100) = 1.40`` so a BAD first spawns on round 100 at 28,000 HP
+    (20,000 base). The ramp is a **runtime formula, absent from the game dump**, so
+    it is curated in ``bloon_scaling.json`` (see that file's ``scaling_source``) —
+    the health analogue of ``round_xp.json``. Pinned by
+    tests/unit/services/test_btd6_bloon_scaling.py.
+    """
+
+    min_round: int
+    max_round: int
+    anchor_round: int
+    base: float
+    per_round: float
+
+
+@dataclass(frozen=True)
 class BloonEntry:
     id: str
     canonical: str
@@ -334,6 +354,11 @@ class BTD6DataSet:
     round_xp: tuple[RoundXpEntry, ...] = ()
     xp_difficulty_multipliers: dict[str, float] = field(default_factory=dict)
     xp_freeplay_multipliers: dict[str, float] = field(default_factory=dict)
+    # MOAB-class late-game/freeplay health-multiplier curve (bloon_scaling.json).
+    # The ramp is a runtime formula (not in the dump), so it is its own curated
+    # table rather than a per-BloonEntry field. Empty when the fixture is absent.
+    moab_health_scaling: tuple[HealthScalingBracket, ...] = ()
+    moab_health_start_round: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -645,6 +670,26 @@ def _parse_round_xp(raw: dict[str, Any]) -> RoundXpEntry:
     return RoundXpEntry(round_number=round_number, base_xp=int(xp_raw))
 
 
+def _parse_health_bracket(raw: dict[str, Any]) -> HealthScalingBracket:
+    try:
+        bracket = HealthScalingBracket(
+            min_round=int(raw["min_round"]),
+            max_round=int(raw["max_round"]),
+            anchor_round=int(raw["anchor_round"]),
+            base=float(raw["base"]),
+            per_round=float(raw["per_round"]),
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise BTD6DataValidationError(
+            f"bloon_scaling bracket {raw!r}: {exc}",
+        ) from exc
+    if bracket.min_round > bracket.max_round:
+        raise BTD6DataValidationError(
+            f"bloon_scaling bracket {raw!r}: min_round > max_round",
+        )
+    return bracket
+
+
 def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
     _require_keys(raw, _REQUIRED_BLOON_FIELDS, where=f"bloon {raw.get('id')!r}")
     category = str(raw["category"])
@@ -838,6 +883,7 @@ _OPTIONAL_FIXTURES = (
     "bosses.json",
     "abr_rounds.json",
     "round_xp.json",
+    "bloon_scaling.json",
 )
 
 
@@ -1166,6 +1212,9 @@ def _load_dataset() -> BTD6DataSet:
     # round_xp.json is the base XP per round (bloonswiki-sourced formula; the
     # game dump has no XP field). Optional like the other sidecars.
     round_xp_raw = _load_file_optional("round_xp.json")
+    # bloon_scaling.json is the MOAB-class late-game/freeplay health-multiplier
+    # curve — also a runtime formula the dump omits (sibling of round_xp.json).
+    bloon_scaling_raw = _load_file_optional("bloon_scaling.json")
 
     towers = tuple(_parse_tower(t) for t in towers_raw.get("towers", []))
     heroes = tuple(_parse_hero(h) for h in heroes_raw.get("heroes", []))
@@ -1182,6 +1231,15 @@ def _load_dataset() -> BTD6DataSet:
         if round_xp_raw is not None
         else ()
     )
+    moab_health_block = (
+        bloon_scaling_raw.get("moab_class_health", {}) or {}
+        if bloon_scaling_raw is not None
+        else {}
+    )
+    moab_health_scaling = tuple(
+        _parse_health_bracket(b) for b in moab_health_block.get("brackets", [])
+    )
+    moab_health_start_round = int(moab_health_block.get("start_round", 0) or 0)
     bloons = (
         tuple(_parse_bloon(b) for b in bloons_raw.get("bloons", []))
         if bloons_raw is not None
@@ -1318,6 +1376,8 @@ def _load_dataset() -> BTD6DataSet:
         sources["abr_rounds"] = str(abr_rounds_raw["source"])
     if round_xp_raw is not None:
         sources["round_xp"] = str(round_xp_raw["source"])
+    if bloon_scaling_raw is not None:
+        sources["bloon_scaling"] = str(bloon_scaling_raw["source"])
 
     xp_difficulty_multipliers = (
         {str(k): float(v) for k, v in round_xp_raw["difficulty_multipliers"].items()}
@@ -1349,6 +1409,8 @@ def _load_dataset() -> BTD6DataSet:
         round_xp=round_xp,
         xp_difficulty_multipliers=xp_difficulty_multipliers,
         xp_freeplay_multipliers=xp_freeplay_multipliers,
+        moab_health_scaling=moab_health_scaling,
+        moab_health_start_round=moab_health_start_round,
     )
 
 
@@ -1820,6 +1882,61 @@ def bloon_modifiers() -> tuple[BloonEntry, ...]:
     the deterministic layer OWNS the grounded explanation.
     """
     return tuple(b for b in get_dataset().bloons if b.category == "modifier")
+
+
+def moab_class_health_multiplier(round_number: int) -> float | None:
+    """The late-game/freeplay health multiplier applied to MOAB-class bloons on
+    ``round_number``, or ``None`` when the ``bloon_scaling.json`` fixture is absent.
+
+    BTD6 ramps MOAB-class HP from round 81 (+2% of base per round, piecewise-
+    linear), so ``v(100) = 1.40``. The multiplier is a runtime formula — *not* in
+    the game dump — so it is curated (see ``bloon_scaling.json:scaling_source``).
+    Regular (non-MOAB-class) bloons do not take this multiplier. Rounds below the
+    first bracket are unscaled (``1.0``); rounds past the last clamp to its end.
+    """
+    brackets = get_dataset().moab_health_scaling
+    if not brackets:
+        return None
+    for bracket in brackets:
+        if bracket.min_round <= round_number <= bracket.max_round:
+            value = (
+                bracket.base + (round_number - bracket.anchor_round) * bracket.per_round
+            )
+            return round(value, 4)
+    if round_number < brackets[0].min_round:
+        return 1.0
+    last = brackets[-1]
+    return round(last.base + (last.max_round - last.anchor_round) * last.per_round, 4)
+
+
+def bloon_health_at_round(
+    bloon_id: str,
+    round_number: int,
+    *,
+    fortified: bool = False,
+) -> int | None:
+    """A bloon's effective health when it appears on ``round_number``.
+
+    Applies the MOAB-class late-game/freeplay ramp
+    (:func:`moab_class_health_multiplier`) to the base ``health`` (or
+    ``health_fortified`` when ``fortified``). Non-MOAB-class bloons return their
+    base health unchanged (the ramp is MOAB-class-only; ceramics instead become
+    superceramics). ``None`` when the bloon or its base health is unknown, or when
+    the scaling fixture is absent. Example: ``bloon_health_at_round("bad", 100)``
+    ``== 28000`` (20,000 base × 1.40).
+    """
+    bloon = get_bloon(bloon_id)
+    if bloon is None:
+        return None
+    base = bloon.health_fortified if fortified else bloon.health
+    if not isinstance(base, int):
+        return None
+    if bloon.category != "moab_class":
+        return base
+    multiplier = moab_class_health_multiplier(round_number)
+    if multiplier is None:
+        return None
+    return int(round(base * multiplier))
 
 
 def resolve_bloon_id(name: str) -> str | None:
