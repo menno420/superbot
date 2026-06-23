@@ -56,9 +56,16 @@ class FishSpecies:
 
 @dataclass(frozen=True)
 class Catch:
-    """One rolled catch — just the species (no value/weight in v1)."""
+    """One rolled catch — the species plus this catch's individual weight (kg).
+
+    ``weight`` is rolled per catch (:mod:`utils.fishing.weight`) so the catch-log
+    can track a "biggest caught" trophy record per species. It defaults to ``0``
+    so older call sites / fixtures that build a bare ``Catch(species=…)`` stay
+    valid (a 0-weight catch simply never sets a personal best).
+    """
 
     species: FishSpecies
+    weight: float = 0.0
 
 
 def _load_species() -> tuple[FishSpecies, ...]:

@@ -76,6 +76,21 @@ def test_fishlog_embed_counts_only_known_species():
     assert any("Deepwater" in n for n in field_names)
 
 
+def test_fishlog_embed_shows_the_personal_best_weight():
+    log = {"minnow": 5}
+    records = {"minnow": 2.4}
+    embed = build_fishlog_embed("Anya", log, level=7, records=records)
+    body = "\n".join(f.value for f in embed.fields)
+    assert "2.4kg" in body  # the trophy record renders beside the tally
+
+
+def test_fishlog_embed_omits_the_trophy_when_no_record():
+    log = {"minnow": 5}
+    embed = build_fishlog_embed("Anya", log, level=7)  # no records given
+    body = "\n".join(f.value for f in embed.fields)
+    assert "kg" not in body  # a caught species with no recorded best shows no trophy
+
+
 # ---------------------------------------------------------------------------
 # Buttons
 # ---------------------------------------------------------------------------
@@ -171,6 +186,7 @@ async def test_fishdex_button_renders_the_collection_and_keeps_the_menu():
     interaction = _interaction()
     with (
         patch("views.fishing.menu.db.get_fishing_log", AsyncMock(return_value={})),
+        patch("views.fishing.menu.db.get_fishing_records", AsyncMock(return_value={})),
         patch("views.fishing.menu.db.get_game_xp", AsyncMock(return_value={})),
     ):
         await _click(view, "fishdex_btn", interaction)

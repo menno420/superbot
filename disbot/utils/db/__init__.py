@@ -98,6 +98,7 @@ from utils.db.games.farm import (
 )
 from utils.db.games.fishing import (
     get_fishing_log,
+    get_fishing_records,
     record_catch,
     top_fishers,
 )
@@ -424,6 +425,7 @@ __all__ = [
     "get_structures",
     "set_structure_level",
     "get_fishing_log",
+    "get_fishing_records",
     "record_catch",
     "top_fishers",
     "get_rod_tier",

@@ -132,6 +132,38 @@ async def test_ordinary_fish_commits_on_the_first_reel():
 
 
 @pytest.mark.asyncio
+async def test_caught_embed_shows_weight_and_personal_best():
+    view = _make_view(_ORDINARY)
+    active_casts.add((1, 99))
+    _arm(view)
+    interaction = _interaction()
+
+    result = fishing_workflow.FishResult(
+        catch=_ORDINARY.catch,
+        fishing_level=7,
+        unlocked_bigger=False,
+        weight=3.7,
+        new_personal_best=True,
+    )
+    with (
+        patch.object(
+            fishing_workflow,
+            "commit_catch",
+            AsyncMock(return_value=result),
+        ),
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)) as edit,
+    ):
+        await _reel(view, interaction)
+
+    # The catch embed reports the weight and celebrates the new record.
+    _, kwargs = edit.await_args
+    desc = kwargs["embed"].description
+    assert "3.7 kg" in desc
+    assert "personal best" in desc.lower()
+
+
+@pytest.mark.asyncio
 async def test_reel_too_late_lets_the_fish_get_away():
     view = _make_view()
     active_casts.add((1, 99))

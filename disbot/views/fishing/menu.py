@@ -85,16 +85,27 @@ def build_menu_embed(
     return embed
 
 
-def _venue_log_lines(log: dict[str, int], venue: str, cap: int) -> list[str]:
-    """The per-species log lines for one venue (caught / unlocked / locked)."""
+def _venue_log_lines(
+    log: dict[str, int],
+    venue: str,
+    cap: int,
+    records: dict[str, float],
+) -> list[str]:
+    """The per-species log lines for one venue (caught / unlocked / locked).
+
+    A caught species shows its tally and, when a trophy weight has been recorded
+    (``records``), the player's heaviest catch — the personal-best long-tail goal.
+    """
     lines = []
     for species in species_for_venue(venue):
         count = log.get(species.name, 0)
         unlocked = species.size_rank <= cap
         if count:
+            best = records.get(species.name, 0.0)
+            trophy = f" · 🏅 {best:g}kg" if best > 0 else ""
             lines.append(
                 f"{species.emoji} **{species.name.title()}** "
-                f"(#{species.size_rank}) ×{count}",
+                f"(#{species.size_rank}) ×{count}{trophy}",
             )
         elif unlocked:
             lines.append(
@@ -110,6 +121,7 @@ def build_fishlog_embed(
     display_name: str,
     log: dict[str, int],
     level: int,
+    records: dict[str, float] | None = None,
 ) -> discord.Embed:
     """The collection embed — shared by ``!fishlog`` and the Fishdex button.
 
@@ -118,6 +130,7 @@ def build_fishlog_embed(
     legacy rows from a superseded catalog (Q-0175 reconciliation) never show
     impossible progress.
     """
+    records = records or {}
     all_species = species_for_venue(venue_mod.SHORE) + species_for_venue(
         venue_mod.DEEPWATER,
     )
@@ -137,7 +150,7 @@ def build_fishlog_embed(
         (venue_mod.DEEPWATER, "⛵ Deepwater (boat-only)"),
     ):
         cap = max_size_rank_for_level(level, venue)
-        lines = _venue_log_lines(log, venue, cap)
+        lines = _venue_log_lines(log, venue, cap, records)
         if lines:
             embed.add_field(
                 name=f"{label} — up to size #{cap}",
@@ -156,11 +169,12 @@ async def _fishdex_embed(
     display_name: str,
 ) -> discord.Embed:
     log = await db.get_fishing_log(user_id, guild_id)
+    records = await db.get_fishing_records(user_id, guild_id)
     xp_map = await db.get_game_xp(user_id, guild_id)
     level = fishing_workflow.fishing_level_from_xp(
         xp_map.get(game_xp_service.GAME_FISHING, 0),
     )
-    return build_fishlog_embed(display_name, log, level)
+    return build_fishlog_embed(display_name, log, level, records)
 
 
 class FishingMenuView(HubView):

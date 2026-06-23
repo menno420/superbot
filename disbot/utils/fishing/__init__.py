@@ -41,6 +41,7 @@ from utils.fishing.weather import (
     current_weather,
     weather_for_date,
 )
+from utils.fishing.weight import nominal_weight, roll_weight
 
 __all__ = [
     "CONDITIONS",
@@ -56,8 +57,10 @@ __all__ = [
     "Weather",
     "current_weather",
     "max_size_rank_for_level",
+    "nominal_weight",
     "profile_for",
     "roll_catch",
+    "roll_weight",
     "species_by_name",
     "species_for_venue",
     "toggle",

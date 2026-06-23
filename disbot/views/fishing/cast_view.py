@@ -365,6 +365,10 @@ class FishingCastView(discord.ui.View):
             f"You reeled in {species.emoji} a **{species.name.title()}**!  "
             f"(size #{species.size_rank} of {pool_size} {self._profile.name.lower()})"
         )
+        if result.weight > 0:
+            desc += f"\n⚖️ It weighs **{result.weight:g} kg**."
+            if result.new_personal_best:
+                desc += " 🏅 **New personal best!**"
         if result.unlocked_bigger:
             cap = max_size_rank_for_level(result.fishing_level, species.venue)
             desc += (
