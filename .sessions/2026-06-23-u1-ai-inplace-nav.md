@@ -1,6 +1,10 @@
 # Session — U1 AI panels → in-place navigation (Ultracode worker)
 
-> **Status:** `in-progress`
+> **Status:** `complete` — coordinator Phase-2 verified (2026-06-23): diff scoped to `views/ai/**`
+> (incl. new `_nav.py`) + `tests/unit/views/ai/**` + claim/card only; all 17 `views/ai/` `edit_in_place`
+> findings → 0 (36→19, the residual being roles+casino/cleanup handled by other units); both checks green
+> on CI (sole red = the born-red gate); no allowlisting needed (all fixed to true in-place); custom_ids
+> preserved (AIPanelView stays persistent). Flipped + merged by the coordinator.
 
 Ultracode fleet worker **U1**. Branch `claude/u1-ai-inplace-nav` off clean `origin/main`.
 
