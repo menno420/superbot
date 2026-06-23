@@ -12,8 +12,9 @@ Pinned facts (the resolver's current contract — preserved, not "fixed"):
 * ``delete_after_seconds`` passes through unchanged; ``send_feedback`` is True for
   an override; the source is the matched scope.
 * An extra ``policy_version`` key in the row is inert.
-* With no override and a non-whitelisted channel, the hardcoded default is
-  delete=True / 5s / FALLBACK_DEFAULT.
+* With no override, the hardcoded default is delete=True / 5s /
+  FALLBACK_DEFAULT.  (The old channel-whitelist exemption was removed — a
+  channel is now exempted by an explicit ``Off`` policy, not a config list.)
 """
 
 from __future__ import annotations
@@ -70,12 +71,10 @@ async def test_extra_policy_version_key_is_inert(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_no_override_falls_back_to_default(monkeypatch):
-    """No row + non-whitelisted channel → hardcoded compat default (unchanged)."""
+    """No override row → hardcoded compat default (delete=True / 5s)."""
     fake_db = MagicMock()
     fake_db.get_cleanup_policy = AsyncMock(return_value=None)
     monkeypatch.setattr(cleanup_mod, "db", fake_db)
-    # Ensure the channel is not in the whitelist fallback.
-    monkeypatch.setattr(cleanup_mod._config, "CLEANUP_WHITELIST_CHANNELS", set())
 
     policy = await cleanup_mod.resolve_cleanup_policy(_ctx())
 

@@ -7,7 +7,6 @@ and external utils (db, config).
 
 from __future__ import annotations
 
-import config as _config
 from governance.models import CleanupPolicy, GovernanceContext, PolicySource
 from governance.resolver import _build_scope_chain
 from utils import db
@@ -22,7 +21,10 @@ except Exception:
 async def _resolve_cleanup_overrides(ctx: GovernanceContext) -> CleanupPolicy:
     """Resolve cleanup policy via scope fallback: thread > channel > category > guild.
 
-    Default preserves backwards-compatible behavior (config whitelist logic).
+    With no matching override row, the compat default applies (delete invalid
+    commands after 5s).  To exempt a specific channel, set its cleanup policy to
+    ``Off`` — the old hardcoded channel whitelist was removed in favour of that
+    per-channel policy.
     """
     chain = _build_scope_chain(ctx)
     for scope_type, scope_id in chain:
@@ -42,14 +44,6 @@ async def _resolve_cleanup_overrides(ctx: GovernanceContext) -> CleanupPolicy:
                 resolved_from=source_map.get(scope_type, PolicySource.GUILD_OVERRIDE),
             )
 
-    # Backwards-compatible default: behave like config.CLEANUP_WHITELIST_CHANNELS
-    if ctx.channel_id and ctx.channel_id in _config.CLEANUP_WHITELIST_CHANNELS:
-        return CleanupPolicy(
-            delete_message=False,
-            delete_after_seconds=0,
-            send_feedback=False,
-            resolved_from=PolicySource.FALLBACK_DEFAULT,
-        )
     return CleanupPolicy(
         delete_message=True,
         delete_after_seconds=5,
