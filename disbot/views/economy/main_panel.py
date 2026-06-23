@@ -290,6 +290,34 @@ class EconomyPanelView(PersistentView):
         await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
+        label="🏛️ Treasury",
+        style=discord.ButtonStyle.grey,
+        custom_id="economy:treasury",
+        row=1,
+    )
+    async def treasury_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        # views→views (clean): the treasury panel opener lives in the view layer.
+        from views.treasury import open_treasury_panel
+
+        if not await safe_defer(interaction):
+            return
+        embed, view = await open_treasury_panel(interaction.user, interaction.guild_id)
+        # Forward this panel's own back target (back-to-Help if opened via
+        # /help economy) so back-to-Economy from Treasury rebuilds Economy WITH
+        # back-to-Help re-attached — mirrors inventory_btn.
+        attach_back_to_economy_button(
+            view,
+            interaction.user,
+            grandparent=getattr(self, "_back_target", None),
+        )
+        await safe_edit(interaction, embed=embed, view=view)
+        view.message = interaction.message
+
+    @discord.ui.button(
         label="↩ Overview",
         style=discord.ButtonStyle.secondary,
         custom_id="economy:overview",
