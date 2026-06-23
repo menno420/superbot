@@ -22,7 +22,6 @@ import logging
 import discord
 
 from services.cleanup_diagnostics import (
-    MAX_DELETE_AFTER_SECONDS,
     CleanupDiagnostics,
     CleanupPolicyPreview,
     apply_cleanup_columns,
@@ -317,12 +316,16 @@ class _LevelSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> None:
         level = self.values[0]
         if level == _CUSTOM_VALUE:
-            await interaction.response.send_modal(
-                _CustomLevelModal(
-                    self._guild,
-                    self._scope_type,
-                    self._scope_id,
-                ),
+            view = _CustomLevelView(
+                interaction.user,
+                self._guild,
+                self._scope_type,
+                self._scope_id,
+            )
+            await interaction.response.send_message(
+                content=view.summary(),
+                view=view,
+                ephemeral=True,
             )
             return
         try:
@@ -346,69 +349,156 @@ class _LevelSelect(discord.ui.Select):
         )
 
 
-def _parse_bool(raw: str) -> bool:
-    """Parse a lenient yes/no text-input answer.  Blank → False."""
-    return raw.strip().lower() in {"y", "yes", "true", "1", "on"}
+# Duration choices for the custom builder — all within the service's
+# 0–MAX_DELETE_AFTER_SECONDS bound, so no typing or range-checking is needed.
+_DURATION_OPTIONS: tuple[tuple[int, str], ...] = (
+    (0, "Instant (0s)"),
+    (2, "2 seconds"),
+    (5, "5 seconds"),
+    (10, "10 seconds"),
+    (30, "30 seconds"),
+    (60, "1 minute"),
+    (120, "2 minutes"),
+    (300, "5 minutes"),
+)
+_DURATION_LABELS: dict[int, str] = dict(_DURATION_OPTIONS)
 
 
-class _CustomLevelModal(discord.ui.Modal, title="Custom cleanup policy"):
-    """Collect arbitrary cleanup columns, then route to the shared dry-run."""
+class _DeleteAfterSelect(discord.ui.Select):
+    """Pick the delete-after duration from a fixed menu (no typing)."""
 
-    delete_after: discord.ui.TextInput = discord.ui.TextInput(
-        label="Delete after (seconds, 0–300)",
-        placeholder="e.g. 8",
-        required=True,
-        max_length=3,
-    )
-    delete_invalid: discord.ui.TextInput = discord.ui.TextInput(
-        label="Delete invalid commands? (yes/no)",
-        placeholder="yes",
-        required=True,
-        max_length=3,
-    )
-    delete_failed: discord.ui.TextInput = discord.ui.TextInput(
-        label="Delete failed commands? (yes/no)",
-        placeholder="no",
-        required=True,
-        max_length=3,
-    )
+    def __init__(self, current: int) -> None:
+        super().__init__(
+            placeholder="Delete after…",
+            min_values=1,
+            max_values=1,
+            row=0,
+            options=[
+                discord.SelectOption(
+                    label=label,
+                    value=str(seconds),
+                    default=(seconds == current),
+                )
+                for seconds, label in _DURATION_OPTIONS
+            ],
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: _CustomLevelView = self.view  # type: ignore[assignment]
+        await view.update(interaction, after=int(self.values[0]))
+
+
+class _CustomYesNoSelect(discord.ui.Select):
+    """A Yes/No picker for one boolean cleanup column."""
+
+    def __init__(self, field: str, label: str, current: bool, row: int) -> None:
+        self._field = field
+        super().__init__(
+            placeholder=label,
+            min_values=1,
+            max_values=1,
+            row=row,
+            options=[
+                discord.SelectOption(label="Yes", value="yes", default=current),
+                discord.SelectOption(label="No", value="no", default=not current),
+            ],
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: _CustomLevelView = self.view  # type: ignore[assignment]
+        value = self.values[0] == "yes"
+        if self._field == "invalid":
+            await view.update(interaction, invalid=value)
+        else:
+            await view.update(interaction, failed=value)
+
+
+class _CustomPreviewButton(discord.ui.Button):
+    def __init__(self) -> None:
+        super().__init__(
+            label="🔎 Preview & apply",
+            style=discord.ButtonStyle.primary,
+            row=3,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: _CustomLevelView = self.view  # type: ignore[assignment]
+        await view.preview(interaction)
+
+
+class _CustomLevelView(BaseView):
+    """Select-driven custom cleanup policy builder — no typing required.
+
+    Three pickers (delete-after duration, delete-invalid Yes/No, delete-failed
+    Yes/No) hold the choice as view state; a Preview button routes the same
+    explicit columns through the shared dry-run + audited apply as the presets.
+    Changing a picker rebuilds the view so each select reflects the current pick.
+    """
 
     def __init__(
         self,
+        author: discord.Member | discord.User,
         guild: discord.Guild,
         scope_type: str,
         scope_id: int,
+        *,
+        after: int = 10,
+        invalid: bool = True,
+        failed: bool = False,
     ) -> None:
-        super().__init__()
+        super().__init__(author, public=False, timeout=_EPHEMERAL_TIMEOUT)
         self._guild = guild
         self._scope_type = scope_type
         self._scope_id = scope_id
+        self._after = after
+        self._invalid = invalid
+        self._failed = failed
+        self.add_item(_DeleteAfterSelect(after))
+        self.add_item(
+            _CustomYesNoSelect("invalid", "Delete invalid commands?", invalid, 1),
+        )
+        self.add_item(
+            _CustomYesNoSelect("failed", "Delete failed commands?", failed, 2),
+        )
+        self.add_item(_CustomPreviewButton())
 
-    async def on_submit(self, interaction: discord.Interaction) -> None:
-        raw_after = self.delete_after.value.strip()
+    def summary(self) -> str:
+        return (
+            "**Custom cleanup policy** — pick values, then **Preview & apply**:\n"
+            f"• Delete after: **{_DURATION_LABELS.get(self._after, f'{self._after}s')}**\n"
+            f"• Delete invalid commands: **{'Yes' if self._invalid else 'No'}**\n"
+            f"• Delete failed commands: **{'Yes' if self._failed else 'No'}**"
+        )
+
+    async def update(
+        self,
+        interaction: discord.Interaction,
+        *,
+        after: int | None = None,
+        invalid: bool | None = None,
+        failed: bool | None = None,
+    ) -> None:
+        """Rebuild with the changed value so the selects show the new state."""
+        new = _CustomLevelView(
+            self._author,
+            self._guild,
+            self._scope_type,
+            self._scope_id,
+            after=self._after if after is None else after,
+            invalid=self._invalid if invalid is None else invalid,
+            failed=self._failed if failed is None else failed,
+        )
+        await interaction.response.edit_message(content=new.summary(), view=new)
+
+    async def preview(self, interaction: discord.Interaction) -> None:
         try:
-            after = int(raw_after)
-        except ValueError:
-            await interaction.response.send_message(
-                f"`{raw_after}` is not a whole number of seconds.",
-                ephemeral=True,
-            )
-            return
-        if not 0 <= after <= MAX_DELETE_AFTER_SECONDS:
-            await interaction.response.send_message(
-                f"Delete-after must be between 0 and {MAX_DELETE_AFTER_SECONDS} "
-                "seconds.",
-                ephemeral=True,
-            )
-            return
-        try:
-            preview = await preview_cleanup_columns(
+            built = await preview_cleanup_columns(
                 self._guild,
                 self._scope_type,
                 self._scope_id,
-                delete_invalid_commands=_parse_bool(self.delete_invalid.value),
-                delete_failed_commands=_parse_bool(self.delete_failed.value),
-                delete_after_seconds=after,
+                delete_invalid_commands=self._invalid,
+                delete_failed_commands=self._failed,
+                delete_after_seconds=self._after,
             )
         except Exception:  # noqa: BLE001 — preview must never crash the flow
             logger.exception("cleanup custom preview failed")
@@ -418,8 +508,8 @@ class _CustomLevelModal(discord.ui.Modal, title="Custom cleanup policy"):
             )
             return
         await interaction.response.send_message(
-            embed=preview_embed_from(preview),
-            view=_ConfirmApplyView(interaction.user, self._guild, preview),
+            embed=preview_embed_from(built),
+            view=_ConfirmApplyView(interaction.user, self._guild, built),
             ephemeral=True,
         )
 
