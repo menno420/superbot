@@ -132,14 +132,14 @@ class TestRemoveUnwantedMessageRoutesToModerationService:
         assert "banned_cmd" in auto_delete.call_args.kwargs["reason"]
 
     @pytest.mark.asyncio
-    async def test_whitelist_fallback_routes_through_auto_delete(self):
-        """The whitelist branch fires when command_pattern matches but the
-        governance path is skipped (guild None or command_name None).  Using
-        guild=None to force the fallthrough — equivalent in the unit-test
-        boundary, since the in-pipeline path doesn't reach DMs anyway.
+    async def test_unresolvable_command_message_is_not_deleted(self):
+        """When command_pattern matches but the governance path is skipped
+        (guild None or command_name None) we can't make a policy decision, so
+        nothing is auto-deleted.  The old hardcoded channel-whitelist branch
+        that used to delete here was removed — exemption is now an explicit
+        ``Off`` cleanup policy.
         """
         cog = _make_cog()
-        cog.whitelisted_channels = set()  # empty → not whitelisted
         msg = _make_message(content="!hello")
         msg.guild = None  # forces the if-guild-and-command-name fallthrough
 
@@ -149,9 +149,8 @@ class TestRemoveUnwantedMessageRoutesToModerationService:
         ) as auto_delete:
             handled = await cog.remove_unwanted_message(msg)
 
-        assert handled is True
-        auto_delete.assert_awaited_once()
-        assert auto_delete.call_args.kwargs["rule"] == "cleanup.whitelist"
+        assert handled is False
+        auto_delete.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_clean_message_returns_false_no_delete(self):

@@ -7,7 +7,6 @@ import re
 import discord
 from discord.ext import commands
 
-import config as _config
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from core.runtime.message_pipeline import (
     MessagePipelineContext,
@@ -86,8 +85,6 @@ class Cleanup(commands.Cog):
             re.IGNORECASE,
         )
 
-        self.whitelisted_channels = _config.CLEANUP_WHITELIST_CHANNELS
-
     async def cog_load(self) -> None:
         from cogs.cleanup.schemas import register_schemas
         from core.runtime import message_pipeline
@@ -152,14 +149,11 @@ class Cleanup(commands.Cog):
                             self.logger.error("Cleanup feedback error: %s", e)
                     return True
                 return False
-            # DM or unknown guild — fall back to whitelist behavior
-            if message.channel.id not in self.whitelisted_channels:
-                await moderation_service.auto_delete(
-                    message,
-                    reason="Command-style message in non-whitelisted channel",
-                    rule="cleanup.whitelist",
-                )
-                return True
+            # No guild context or an unparseable command name → we can't make a
+            # governance-policy decision, so we don't auto-delete.  (Cleanup is
+            # policy-driven: the old hardcoded channel whitelist that used to
+            # delete command-style messages here was removed — exempt a channel
+            # by setting its cleanup policy to Off instead.)
             return False
 
         guild_id = message.guild.id if message.guild else 0
