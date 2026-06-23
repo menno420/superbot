@@ -7,8 +7,9 @@ author-restricted :class:`BaseView` panel (not a game-state view); the timed
 cast/reel lifecycle lives in :mod:`views.fishing.cast_view`.
 
 Bait is the *consumable* how-well knob beside the permanent rod ladder: while you
-hold charges, each cast spends one and multiplies the rod's rarity pull, biasing
-the catch toward bigger fish within your unlocked band.
+hold charges, each cast spends one and turns one or both of its knobs — rarity
+pull (bias the catch toward bigger fish) and bite speed (fish bite sooner) — on
+top of the equipped rod's.
 """
 
 from __future__ import annotations
@@ -35,20 +36,20 @@ def build_bait_embed(
     if active is not None and charges > 0:
         embed.description = (
             f"Loaded: **{active.name}** {active.emoji} — "
-            f"**{charges}** casts left (×{active.rarity_pull:g} rarity pull).\n"
-            "*Each cast spends one charge and pulls your catch toward bigger fish.*"
+            f"**{charges}** casts left ({bait_mod.effect_text(active)}).\n"
+            "*Each cast spends one charge and applies these on top of your rod.*"
         )
     else:
         embed.description = (
             "No bait loaded — you're fishing bare (which catches fine!).\n"
-            "*Load a pack to bias your casts toward rarer, bigger fish.*"
+            "*Load a pack for rarer, bigger fish or quicker bites.*"
         )
 
     shelf = []
     for bait in bait_mod.BAIT_CATALOG:
         shelf.append(
             f"{bait.emoji} **{bait.name}** — {bait.price} 🪙 "
-            f"(×{bait.charges} casts, ×{bait.rarity_pull:g} rarity)",
+            f"(×{bait.charges} casts, {bait_mod.effect_text(bait)})",
         )
     embed.add_field(name="The shelf", value="\n".join(shelf), inline=False)
     embed.add_field(
@@ -70,9 +71,7 @@ class _BaitSelect(discord.ui.Select):
                 label=f"{bait.name} — {bait.price} coins",
                 value=bait.key,
                 emoji=bait.emoji,
-                description=(
-                    f"×{bait.charges} casts · ×{bait.rarity_pull:g} rarity pull"
-                ),
+                description=f"×{bait.charges} casts · {bait_mod.effect_text(bait)}",
             )
             for bait in bait_mod.BAIT_CATALOG
         ]

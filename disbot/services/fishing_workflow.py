@@ -182,6 +182,9 @@ class CastStart:
     rod: rods_mod.Rod = rods_mod.STARTER
     #: Energy remaining after the (successful) cast — for the ⚡ gauge.
     energy_current: int = 0
+    #: The bite-wait multiplier this cast runs at — ``rod.bite_speed`` compounded
+    #: with any loaded bait's (≤ 1 = faster). The cast view paces its bite on it.
+    effective_bite_speed: float = 1.0
     #: The bait consumed by this cast (``None`` = fished bait-less), for the
     #: 🪱 cast-panel note. Its ``rarity_pull`` was already applied to the roll.
     bait_used: bait_mod.Bait | None = None
@@ -244,9 +247,11 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
 
     rod = rods_mod.rod_for_tier(await db.get_rod_tier(user_id, guild_id))
     bait, bait_charges = await get_active_bait(user_id, guild_id)
-    # Bait's rarity_pull compounds on the rod's (both ≥ 1); a loaded lure pulls
-    # the catch toward the big end of the SAME unlocked band, never a new band.
+    # Bait's two knobs compound on the rod's: rarity_pull (both ≥ 1) pulls the
+    # catch toward the big end of the SAME unlocked band (never a new band); and
+    # bite_speed (both ≤ 1) shortens the bite wait so a loaded lure bites sooner.
     effective_pull = rod.rarity_pull * (bait.rarity_pull if bait else 1.0)
+    effective_bite_speed = rod.bite_speed * (bait.bite_speed if bait else 1.0)
     cast = await roll_cast(user_id, guild_id, rod, rarity_pull=effective_pull)
     if cast.catch is None:
         return CastStart(
@@ -274,6 +279,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         cast=cast,
         rod=rod,
         energy_current=spent.current,
+        effective_bite_speed=effective_bite_speed,
         bait_used=bait,
         bait_charges_left=charges_left,
     )
@@ -427,7 +433,7 @@ async def buy_bait(
     verb = "Topped up" if stacking else "Loaded"
     return BaitPurchaseResult(
         True,
-        f"{verb} **{bait.name}** {bait.emoji} (×{bait.rarity_pull:g} rarity) — "
+        f"{verb} **{bait.name}** {bait.emoji} ({bait_mod.effect_text(bait)}) — "
         f"**{new_charges}** casts ready for **{bait.price}** 🪙. "
         f"Balance: **{new_balance}** 🪙.",
         bait=bait,
