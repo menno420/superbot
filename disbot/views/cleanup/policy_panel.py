@@ -81,6 +81,23 @@ def _format_row(row) -> str:
     return f"• **{row.target_label}** → `{row.display_level}` ({row.delete_after_seconds}s){flags}"
 
 
+_COMMAND_ACCESS_HINT = (
+    "These levels only delete **invalid/blocked** command-style messages. "
+    "To delete **any** command typed in a channel where commands aren't "
+    "allowed, use **Command Access → 🗑️ Delete blocked commands** in `!settings`."
+)
+
+
+def _add_command_access_hint(embed: discord.Embed) -> None:
+    """Clarify how cleanup levels relate to the Command Access delete toggle.
+
+    The two systems are easily confused: a cleanup *level* only acts on
+    blocked commands, while "delete on sight in a no-command channel" lives
+    under Command Access.  Surfacing it here, at the point of confusion.
+    """
+    embed.add_field(name="ℹ️ Tip", value=_COMMAND_ACCESS_HINT, inline=False)
+
+
 def diagnostics_embed_from(diag: CleanupDiagnostics) -> discord.Embed:
     """Build the diagnostics embed from an already-collected report (testable)."""
     embed = discord.Embed(
@@ -97,6 +114,7 @@ def diagnostics_embed_from(diag: CleanupDiagnostics) -> discord.Embed:
             value="_None — every scope uses the fallback default (delete after 5s)._",
             inline=False,
         )
+        _add_command_access_hint(embed)
         embed.set_footer(text="Use “Set a policy” to add one.")
         return embed
 
@@ -133,6 +151,7 @@ def diagnostics_embed_from(diag: CleanupDiagnostics) -> discord.Embed:
             ),
             inline=False,
         )
+    _add_command_access_hint(embed)
     embed.set_footer(
         text="Read-only summary. Use the buttons below to set or remove policies.",
     )
