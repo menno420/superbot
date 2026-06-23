@@ -1,1 +1,0 @@
-- `claude/bug-0024-dashboard-flake` · **BUG-0024 fix** — make `test_generated_at_is_deterministic_not_wall_clock` hermetic (pin `_git_meta` so it doesn't depend on a real git subprocess that times out under `-n auto` → wall-clock fallback) · `tests/unit/scripts/test_export_dashboard_data.py` `docs/health/bug-book.md` · 2026-06-22 · PR (this session, auto-merge on green)

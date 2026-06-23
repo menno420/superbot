@@ -87,6 +87,27 @@ def roll_fakeout(rng: random.Random | None = None) -> bool:
     return r.random() < FAKEOUT_CHANCE
 
 
+def roll_premature_grace(
+    grace: float,
+    rng: random.Random | None = None,
+) -> bool:
+    """Whether a *premature* reel is forgiven instead of spooking the fish.
+
+    The rod's ``premature_grace`` knob (0…1; ``utils.fishing.rods``): the fake-out
+    tempts an early reel, and on a bare rod that always loses the cast. A better
+    rod gives ``grace`` chance the slip is forgiven — the fish stays on, the real
+    bite still comes. The caller (:mod:`views.fishing.cast_view`) spends this
+    **once per cast**, so it rescues an itchy finger but never rewards mashing.
+    ``grace <= 0`` (the bare rod) can never forgive; ``grace >= 1`` always does.
+    """
+    if grace <= 0.0:
+        return False
+    if grace >= 1.0:
+        return True
+    r = rng or random.Random()
+    return r.random() < grace
+
+
 def is_trophy(
     species: FishSpecies,
     fishing_level: int,
