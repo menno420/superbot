@@ -64,6 +64,11 @@ class FishResult:
     unlocked_bigger: bool = False
     #: Inline shared-game level-up notice (set only when that crossed a level).
     xp_note: str | None = None
+    #: This catch's individual weight in kg (0 when there was no catch).
+    weight: float = 0.0
+    #: True when this catch beat the player's previous heaviest of the species
+    #: (a new trophy record) — drives the "🏆 New personal best!" celebration.
+    new_personal_best: bool = False
 
 
 @dataclass(frozen=True)
@@ -131,7 +136,13 @@ async def commit_catch(user_id: int, guild_id: int, cast: Cast) -> FishResult:
         return FishResult(catch=None, fishing_level=level_before)
 
     async with db.transaction() as conn:
-        await db.record_catch(user_id, guild_id, catch.species.name, conn=conn)
+        prev_best = await db.record_catch(
+            user_id,
+            guild_id,
+            catch.species.name,
+            catch.weight,
+            conn=conn,
+        )
         # The caught fish is now a tangible inventory item (owner decision
         # 2026-06-22): sellable for coins via the market, and cookable into food
         # at a campfire (mining_workflow.cook). The catch-log row above stays the
@@ -156,11 +167,14 @@ async def commit_catch(user_id: int, guild_id: int, cast: Cast) -> FishResult:
         level_after = fishing_level_from_xp(award.game_total)
     else:
         level_after = level_before
+    new_best = catch.weight > 0 and (prev_best is None or catch.weight > prev_best)
     return FishResult(
         catch=catch,
         fishing_level=level_after,
         unlocked_bigger=level_after > level_before,
         xp_note=award.note if award is not None and award.leveled_up else None,
+        weight=catch.weight,
+        new_personal_best=new_best,
     )
 
 

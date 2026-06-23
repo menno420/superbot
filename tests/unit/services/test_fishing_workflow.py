@@ -21,6 +21,7 @@ from services import economy_service
 from services import fishing_workflow as wf
 from services import game_xp_service
 from utils.fishing import MAX_LEVEL, rods
+from utils.fishing.fish import FishSpecies
 
 
 def _txn(sentinel_conn, events):
@@ -78,10 +79,11 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
     sentinel_conn = MagicMock(name="conn")
     events: list[str] = []
 
-    async def _record(user_id, guild_id, species, *, conn=None):
+    async def _record(user_id, guild_id, species, weight=0.0, *, conn=None):
         events.append("record")
         assert conn is sentinel_conn
         assert species == "trout"
+        return None
 
     async def _award_fn(guild_id, user_id, *, game, action, conn=None, depth=0):
         events.append("award")
@@ -234,6 +236,92 @@ async def test_commit_catch_writes_the_held_cast():
     grant.assert_awaited_once()
     emit.assert_awaited_once()
     assert result.catch is _CATCH
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_threads_weight_and_flags_a_new_personal_best():
+    """The catch's weight reaches record_catch; a heavier-than-prior catch = PB."""
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    heavy = wf.Catch(species=FishSpecies("trout", 8, "🐠"), weight=4.2)
+    cast = wf.Cast(catch=heavy, level_before=1)
+    with (
+        patch.object(wf.db, "transaction", _ctx),
+        # Prior best 1.5 kg < this 4.2 kg catch → a new personal best.
+        patch.object(wf.db, "record_catch", AsyncMock(return_value=1.5)) as record,
+        patch.object(wf.db, "update_mining_item", AsyncMock()),
+        patch.object(
+            wf.game_xp_service,
+            "award",
+            AsyncMock(return_value=_award(game_total=10)),
+        ),
+        patch.object(wf.game_xp_service, "emit_award_events", AsyncMock()),
+    ):
+        result = await wf.commit_catch(99, 1, cast)
+
+    # The rolled weight is passed positionally to the audited write.
+    args, _ = record.await_args
+    assert args[3] == 4.2
+    assert result.weight == 4.2
+    assert result.new_personal_best is True
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_not_a_personal_best_when_lighter_than_prior():
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    light = wf.Catch(species=FishSpecies("trout", 8, "🐠"), weight=0.9)
+    cast = wf.Cast(catch=light, level_before=1)
+    with (
+        patch.object(wf.db, "transaction", _ctx),
+        # Prior best 3.0 kg > this 0.9 kg catch → not a record.
+        patch.object(wf.db, "record_catch", AsyncMock(return_value=3.0)),
+        patch.object(wf.db, "update_mining_item", AsyncMock()),
+        patch.object(
+            wf.game_xp_service,
+            "award",
+            AsyncMock(return_value=_award(game_total=10)),
+        ),
+        patch.object(wf.game_xp_service, "emit_award_events", AsyncMock()),
+    ):
+        result = await wf.commit_catch(99, 1, cast)
+
+    assert result.new_personal_best is False
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_first_catch_of_a_species_is_a_personal_best():
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    first = wf.Catch(species=FishSpecies("trout", 8, "🐠"), weight=1.1)
+    cast = wf.Cast(catch=first, level_before=1)
+    with (
+        patch.object(wf.db, "transaction", _ctx),
+        # No prior row → record_catch returns None → the first catch is a PB.
+        patch.object(wf.db, "record_catch", AsyncMock(return_value=None)),
+        patch.object(wf.db, "update_mining_item", AsyncMock()),
+        patch.object(
+            wf.game_xp_service,
+            "award",
+            AsyncMock(return_value=_award(game_total=10)),
+        ),
+        patch.object(wf.game_xp_service, "emit_award_events", AsyncMock()),
+    ):
+        result = await wf.commit_catch(99, 1, cast)
+
+    assert result.new_personal_best is True
 
 
 @pytest.mark.asyncio

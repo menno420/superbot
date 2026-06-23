@@ -20,12 +20,23 @@ if TYPE_CHECKING:
 
 # Upsert one catch: insert the first catch of a species, or bump the tally —
 # count += 1 and last_caught = now(). first_caught is preserved (INSERT-only).
+# best_weight keeps the heaviest catch of this species (the trophy record):
+# GREATEST against the incoming weight so it only ever grows. The CTE captures
+# the row's PRIOR best before the upsert so the caller can tell whether this
+# catch set a new personal best (prev_best is NULL on the very first catch).
 _RECORD_CATCH_SQL = """
-    INSERT INTO fishing_catch_log (user_id, guild_id, species, count)
-    VALUES ($1, $2, $3, 1)
+    WITH prev AS (
+        SELECT best_weight
+        FROM fishing_catch_log
+        WHERE user_id = $1 AND guild_id = $2 AND species = $3
+    )
+    INSERT INTO fishing_catch_log (user_id, guild_id, species, count, best_weight)
+    VALUES ($1, $2, $3, 1, $4)
     ON CONFLICT (user_id, guild_id, species) DO UPDATE SET
         count       = fishing_catch_log.count + 1,
-        last_caught = now()
+        last_caught = now(),
+        best_weight = GREATEST(fishing_catch_log.best_weight, EXCLUDED.best_weight)
+    RETURNING (SELECT best_weight FROM prev) AS prev_best
 """
 
 
@@ -33,11 +44,22 @@ async def record_catch(
     user_id: int,
     guild_id: int,
     species: str,
+    weight: float = 0.0,
     *,
     conn: asyncpg.Connection | None = None,
-) -> None:
-    """Record one catch of *species* for the player (insert or bump the tally)."""
-    await pool.execute(_RECORD_CATCH_SQL, (user_id, guild_id, species), conn=conn)
+) -> float | None:
+    """Record one catch of *species* (insert or bump the tally) + its weight.
+
+    Returns the species' **prior** best weight (``None`` on the first ever
+    catch), so the caller can detect a new personal best: it is one when the
+    prior best is ``None`` or strictly less than *weight*.
+    """
+    row = await pool.fetchone(
+        _RECORD_CATCH_SQL,
+        (user_id, guild_id, species, weight),
+        conn=conn,
+    )
+    return row["prev_best"] if row else None
 
 
 async def get_fishing_log(
@@ -54,6 +76,26 @@ async def get_fishing_log(
         conn=conn,
     )
     return {r["species"]: r["count"] for r in rows}
+
+
+async def get_fishing_records(
+    user_id: int,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> dict[str, float]:
+    """The player's trophy records: ``{species: best_weight}`` (heaviest caught).
+
+    Only species with a recorded best (> 0) appear, so a freshly-migrated row
+    that has not been re-caught since the weightless era is simply absent.
+    """
+    rows = await pool.fetchall(
+        "SELECT species, best_weight FROM fishing_catch_log "
+        "WHERE user_id=$1 AND guild_id=$2 AND best_weight > 0",
+        (user_id, guild_id),
+        conn=conn,
+    )
+    return {r["species"]: r["best_weight"] for r in rows}
 
 
 async def top_fishers(

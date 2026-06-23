@@ -119,10 +119,11 @@ class FishingCog(commands.Cog):
     async def fishlog(self, ctx):
         """Show your fishing collection — every species you've caught."""
         log = await db.get_fishing_log(ctx.author.id, ctx.guild.id)
+        records = await db.get_fishing_records(ctx.author.id, ctx.guild.id)
         xp_map = await db.get_game_xp(ctx.author.id, ctx.guild.id)
         fishing_xp = xp_map.get(game_xp_service.GAME_FISHING, 0)
         level = fishing_workflow.fishing_level_from_xp(fishing_xp)
-        embed = build_fishlog_embed(ctx.author.display_name, log, level)
+        embed = build_fishlog_embed(ctx.author.display_name, log, level, records)
         await ctx.send(embed=embed)
 
     @commands.command(

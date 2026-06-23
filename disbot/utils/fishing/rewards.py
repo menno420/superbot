@@ -14,6 +14,7 @@ from __future__ import annotations
 import random
 
 from utils.fishing.fish import SHORE_VENUE, Catch, FishSpecies, unlocked_species
+from utils.fishing.weight import roll_weight
 
 
 def roll_catch(
@@ -43,4 +44,4 @@ def roll_catch(
     pull = max(1.0, rarity_pull)
     weights = [1.0 / (s.size_rank ** (1.0 / pull)) for s in pool]
     species: FishSpecies = r.choices(pool, weights=weights, k=1)[0]
-    return Catch(species=species)
+    return Catch(species=species, weight=roll_weight(species, r))
