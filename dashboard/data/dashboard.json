@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T03:08:23Z",
+    "generated_at": "2026-06-23T05:32:28Z",
     "build": {
-      "commit": "7173e338",
-      "subject": "Fishing bait-crafting: born-red session card + claim",
-      "committed_at": "2026-06-23T03:08:23Z"
+      "commit": "dbacca86",
+      "subject": "Merge pull request #1338 from menno420/claude/funny-franklin-yko9ji",
+      "committed_at": "2026-06-23T05:32:28Z"
     },
     "counts": {
       "functions": 41,
@@ -1144,7 +1144,7 @@
     {
       "file": "fishing-bait-crafting-2026-06-22.md",
       "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-22",
       "summary": "Let the existing cook/campfire loop (#1289) also turn **small / common caught",
       "subsystems": null
@@ -2358,9 +2358,9 @@
       "file": "2026-06-23-fishing-bait-crafting.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Fishing bait-crafting (close the catch→cook→bait economy loop)",
-      "status": "in-progress",
-      "run_type": "",
-      "self_initiated": false
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-22-unattended-fit-dispatch-dimension.md",
