@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`new-subsystem-followup-tracker-2026-06-23.md`](./new-subsystem-followup-tracker-2026-06-23.md) —
+  **reconciliation idea (2026-06-23, band-#1350 Q-0089):** the band stood up **four** new subsystems
+  (farm/karma/casino/treasury), each with obvious follow-up depth that lives only in scattered session-card
+  prose. Make `new_subsystem.py` write a `## Follow-ups` stub into each subsystem folio + a stdlib checker
+  that lists them, so the dispatch/reconciliation routines pull buildable slices from *real shipped depth*
+  instead of aspirational runtime initiatives. Complements the band-queue hit-rate metric idea. Subsystem: S4/S3 tooling.
 - [`competitive-positioning-north-star-2026-06-23.md`](./competitive-positioning-north-star-2026-06-23.md) —
   **owner-directed (2026-06-23):** follow-up to the Dank Memer visual work — *"what would make people prefer
   ours over any other bot?"* Grounded in a fan-out research pass across 15+ bots (Dank Memer, UnbelievaBoat,

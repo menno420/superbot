@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T06:42:29Z",
+    "generated_at": "2026-06-23T09:16:14Z",
     "build": {
-      "commit": "7968e5e1",
-      "subject": "fishing: open weather-forecast session (born-red card + claim)",
-      "committed_at": "2026-06-23T06:42:29Z"
+      "commit": "a622a83",
+      "subject": "Competitive-positioning north-star vision doc (what makes people choose us) (#1352)",
+      "committed_at": "2026-06-23T09:16:14Z"
     },
     "counts": {
       "functions": 41,
-      "ideas": 128,
+      "ideas": 132,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1108,6 +1108,40 @@
   ],
   "ideas": [
     {
+      "file": "competitive-positioning-north-star-2026-06-23.md",
+      "title": "Vision: competitive positioning — what makes people choose us over any other bot",
+      "status": "ideas",
+      "date": "2026-06-23",
+      "summary": "people prefer ours over any other?\"*). Grounded in a fan-out competitive-research pass across 15+",
+      "subsystems": null
+    },
+    {
+      "file": "giveaway-competitive-teardown-2026-06-23.md",
+      "title": "Giveaway competitive teardown — GiveawayBot vs. SuperBot (2026-06-23)",
+      "status": "ideas",
+      "date": "2026-06-23",
+      "summary": "The most-used Discord giveaway bot; **deliberately minimal**. Complete feature set:",
+      "subsystems": [
+        "community"
+      ]
+    },
+    {
+      "file": "new-subsystem-followup-tracker-2026-06-23.md",
+      "title": "Idea — new-subsystem follow-up backlog auto-tracker",
+      "status": "ideas",
+      "date": "2026-06-23",
+      "summary": "The band-#1350 pass stood up **four** brand-new subsystems in a single arc — an idle **farm** (#1328),",
+      "subsystems": null
+    },
+    {
+      "file": "visual-card-engine-vision-2026-06-23.md",
+      "title": "Vision: out-visual Dank Memer with a themeable card engine",
+      "status": "ideas",
+      "date": "2026-06-23",
+      "summary": "screenshot and asked us to enumerate DM's commands/functions, dissect its *visual* approach, and",
+      "subsystems": null
+    },
+    {
       "file": "ai-self-curated-memory-notebook-2026-06-22.md",
       "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
       "status": "ideas",
@@ -1123,7 +1157,7 @@
       "status": "ideas",
       "date": "2026-06-22",
       "summary": "Every per-user *score* subsystem in this repo is built from the identical six pieces:",
-      "subsystems": null
+      "subsystems": []
     },
     {
       "file": "band-queue-hit-rate-metric-2026-06-22.md",
@@ -2347,12 +2381,52 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-23-visual-card-engine.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Themeable card-render engine + profile card (out-visual Dank Memer, PR 1)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-new-subsystem-checker-gaps.md",
+      "date": "2026-06-23",
+      "title": "Session — 2026-06-23 · Close the new-subsystem checker's blind spots",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-hub-rendering-plan.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Plan: hub child-rendering consistency + placement coherence",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-giveaway-system-plan.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Plan: native giveaway system (GiveawayBot teardown + beat-it plan)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-fishing-weather-forecast.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Fishing: daily weather forecast (slice 2)",
-      "status": "in-progress",
-      "run_type": "",
-      "self_initiated": false
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-fishing-test-helpers.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Fishing test helpers: kill the duplicated roll_catch mock (slice 3)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-23-fishing-deepwater-venue.md",
@@ -2374,6 +2448,46 @@
       "file": "2026-06-23-fishing-bait-crafting.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Fishing bait-crafting (close the catch→cook→bait economy loop)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-economy-treasury-panel-link.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Economy panel → Treasury button (panel-link fix)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-competitive-positioning.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Competitive-positioning north-star (what makes people choose us)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-cleanup-remove-whitelist.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Remove the legacy cleanup channel whitelist",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-cleanup-panel-ux.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Cleanup panel UX overhaul: readable whitelist, fixable warnings, custom levels",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-check-quality-isort-parity.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Fix: check_quality isort scope drifted from CI (false-red on tests/)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -2745,86 +2859,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-btd6-round-xp-surfaces.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Surface BTD6 round XP (NL reply + round-embed Economy field)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-btd6-round-xp-data.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — BTD6 XP-per-round data (validated formula → round_xp.json)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-btd6-grounding-anchors.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — P1-1 BTD6 grounding-anchor eval guard (the #704 finding)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-botsite-react-spa-pr1.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — botsite React-SPA migration PR 1 (foundation: a buildable, data-fed React app)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-band-pr-themes-classifier.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — `band_pr_status --themes`: draft grouped-entry skeleton",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-allowlist-curl-network-probe.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Allow read-only network probes (curl) + claim-ledger drift prune",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-website-count-and-pin-fixes.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Website count reconciliation + pin-drift guard (rebuilt after parallel-work collision)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-temproles-member-view.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — `!temproles` member-facing temp-role listing",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-starboard-v1.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Starboard PR 1 (foundation + working v1)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-21-starboard-plan.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Starboard / Hall-of-Fame: buildable plan",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -2913,7 +2947,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 188,
+          "line": 168,
           "layer": "config",
           "has_default": true
         },
@@ -2935,7 +2969,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 187,
+          "line": 167,
           "layer": "config",
           "has_default": true
         }
@@ -2968,7 +3002,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 171,
+          "line": 151,
           "layer": "config",
           "has_default": true
         },
@@ -3038,7 +3072,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 226,
+          "line": 206,
           "layer": "config",
           "has_default": true
         }
@@ -3086,7 +3120,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 214,
+          "line": 194,
           "layer": "config",
           "has_default": true
         }
@@ -3102,7 +3136,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 217,
+          "line": 197,
           "layer": "config",
           "has_default": true
         }
@@ -3118,7 +3152,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 220,
+          "line": 200,
           "layer": "config",
           "has_default": true
         }
@@ -3376,7 +3410,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 170,
+          "line": 150,
           "layer": "config",
           "has_default": true
         },
@@ -3417,7 +3451,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 197,
+          "line": 177,
           "layer": "config",
           "has_default": true
         },
@@ -3440,7 +3474,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 201,
+          "line": 181,
           "layer": "config",
           "has_default": true
         },
@@ -3479,7 +3513,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 169,
+          "line": 149,
           "layer": "config",
           "has_default": true
         },
@@ -3503,7 +3537,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 168,
+          "line": 148,
           "layer": "config",
           "has_default": true
         },
