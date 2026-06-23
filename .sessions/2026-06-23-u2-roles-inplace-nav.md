@@ -134,6 +134,29 @@ button are unit-tested but **not** live-verified in Discord (worker leaf — no 
 back-builder's sync/async `build_embed` handling is the one subtle bit; covered by the
 parented-panel test but worth a glance in live verification.
 
+## Finish-worker addendum (2026-06-23, `claude/u2-roles-finish` → PR #1377)
+
+A second Ultracode FINISH worker picked up where the foundation worker came to rest
+early. Status stays `in-progress` (coordinator flips + merges in Phase 2).
+
+- **Task A (was open) — DONE.** The reachability `_BASELINE` in
+  `tests/unit/invariants/test_command_reachability.py` still listed the now-fixed
+  `("disbot/cogs/role_grants_cog.py", "temproles")` entry, so
+  `test_baseline_has_no_stale_entries` was FAILING (a HARD test failure). Emptied
+  `_BASELINE` to `frozenset()` and updated the preceding comment to note all baseline
+  gaps are cleared. `check_command_reachability.py` → **0 GAP** (214 cmds, 75 reachable,
+  139 exempt); all 7 reachability tests green.
+- **Task B (the 14 flagged `edit_in_place` findings) — re-verified, disposition unchanged.**
+  Independently re-checked each of the 14 against live source (not rubber-stamped). The
+  foundation worker's triage holds: all 14 are the genuine *field-editor / sub-flow picker
+  / report-toast* idiom already documented-correct in `consistency_exceptions.yml`
+  (matching the allowlisted `delete_btn`, `TimeRolesPanel.add_btn/remove_btn`,
+  `xp_roles_panel.add_btn/remove_btn`, `run_btn` precedents). **0 additional FIXes; 14
+  remain FLAGGED for coordinator allowlisting** (per-finding precedent in the coordinator
+  report). `views/roles/` `edit_in_place` count stays 14 (the residual the coordinator
+  clears by allowlisting). Forcing `edit_message` on any of these would contradict the
+  checker's own documented policy and break the operator's picker/draft context.
+
 ## Context delta
 
 - **Needed but not pointed to:** the decisive signal for triaging `edit_in_place`
