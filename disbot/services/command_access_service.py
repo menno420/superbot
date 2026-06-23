@@ -71,6 +71,7 @@ MutationType = Literal[
     "add_allowed_channel",
     "remove_allowed_channel",
     "replace_allowed_channels",
+    "set_delete_blocked_commands",
 ]
 
 _ALLOWED_ACTOR_TYPES: frozenset[str] = frozenset(
@@ -444,6 +445,73 @@ async def replace_allowed_channels(
     )
 
 
+async def set_delete_blocked_commands(
+    *,
+    guild_id: int,
+    enabled: bool,
+    actor_id: int | None,
+    actor_type: str = "admin",
+) -> CommandAccessMutationResult:
+    """Set the ``delete_blocked_commands`` toggle for ``guild_id``.
+
+    When ON, a command-style message typed in a channel where Command
+    Access denies it is auto-deleted on sight (with a brief notice) by
+    the cleanup auto-mod path, instead of being silently ignored.
+    Skips the audit emission when the value is unchanged (true no-op).
+    """
+    _validate_actor_type(actor_type)
+
+    mutation_id = str(uuid.uuid4())
+    prev_row = await db.get_policy(guild_id)
+    prev_enabled = bool(prev_row["delete_blocked_commands"]) if prev_row else False
+    new_enabled = bool(enabled)
+
+    if prev_enabled == new_enabled:
+        committed_at = _now_utc()
+        return CommandAccessMutationResult(
+            mutation_id=mutation_id,
+            guild_id=guild_id,
+            mutation_type="set_delete_blocked_commands",
+            prev_value=str(prev_enabled),
+            new_value=str(new_enabled),
+            actor_id=actor_id,
+            actor_type=actor_type,
+            committed_at=committed_at,
+            audit_emitted=False,
+        )
+
+    await db.set_delete_blocked_commands(
+        guild_id=guild_id,
+        enabled=new_enabled,
+        updated_by=actor_id,
+    )
+    invalidate_command_access_policy(guild_id)
+
+    committed_at = _now_utc()
+    audit_emitted = await _emit_audit(
+        mutation_id=mutation_id,
+        mutation_type="set_delete_blocked_commands",
+        target="command_access:delete_blocked_commands",
+        guild_id=guild_id,
+        prev_value=str(prev_enabled),
+        new_value=str(new_enabled),
+        actor_id=actor_id,
+        actor_type=actor_type,
+        committed_at=committed_at,
+    )
+    return CommandAccessMutationResult(
+        mutation_id=mutation_id,
+        guild_id=guild_id,
+        mutation_type="set_delete_blocked_commands",
+        prev_value=str(prev_enabled),
+        new_value=str(new_enabled),
+        actor_id=actor_id,
+        actor_type=actor_type,
+        committed_at=committed_at,
+        audit_emitted=audit_emitted,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Composite
 # ---------------------------------------------------------------------------
@@ -504,6 +572,7 @@ __all__ = [
     "get_policy_snapshot",
     "remove_allowed_channel",
     "replace_allowed_channels",
+    "set_delete_blocked_commands",
     "set_mode",
     "set_policy",
 ]

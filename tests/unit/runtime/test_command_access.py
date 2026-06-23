@@ -9,6 +9,7 @@ import pytest
 
 from core.runtime.command_access import (
     can_bypass_channel_guard,
+    from_message,
     is_bootstrap_command,
 )
 
@@ -50,6 +51,63 @@ def _ctx(
         invoked_with=invoked_with or command_name,
         bot=bot,
     )
+
+
+def _message(
+    *,
+    guild_id: int | None = 5,
+    channel_id: int = 7,
+    author_id: int = 10,
+    owner_id: int = 99,
+    administrator: bool = False,
+    manage_guild: bool = False,
+):
+    guild = SimpleNamespace(id=guild_id, owner_id=owner_id) if guild_id else None
+    author = SimpleNamespace(
+        id=author_id,
+        guild_permissions=SimpleNamespace(
+            administrator=administrator,
+            manage_guild=manage_guild,
+        ),
+    )
+    return SimpleNamespace(
+        guild=guild,
+        channel=SimpleNamespace(id=channel_id),
+        author=author,
+    )
+
+
+@pytest.mark.asyncio
+async def test_from_message_builds_prefix_context():
+    bot = SimpleNamespace(is_owner=AsyncMock(return_value=False))
+    ctx = await from_message(_message(), "blackjack", bot=bot)
+    assert ctx.guild_id == 5
+    assert ctx.channel_id == 7
+    assert ctx.user_id == 10
+    assert ctx.command_name == "blackjack"
+    assert ctx.invocation_type == "prefix"
+    assert ctx.is_dm is False
+    assert ctx.is_guild_operator is False
+    assert ctx.is_bot_owner is False
+
+
+@pytest.mark.asyncio
+async def test_from_message_flags_operator_and_owner():
+    bot = SimpleNamespace(is_owner=AsyncMock(return_value=True))
+    ctx = await from_message(
+        _message(administrator=True),
+        "daily",
+        bot=bot,
+    )
+    assert ctx.is_guild_operator is True
+    assert ctx.is_bot_owner is True
+
+
+@pytest.mark.asyncio
+async def test_from_message_tolerates_missing_bot():
+    ctx = await from_message(_message(), "daily", bot=None)
+    assert ctx.is_bot_owner is False
+    assert ctx.command_name == "daily"
 
 
 def test_is_bootstrap_command_accepts_bare_and_qualified_names():

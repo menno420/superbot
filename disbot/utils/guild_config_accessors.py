@@ -270,6 +270,7 @@ class CommandAccessPolicySnapshot:
 
     mode: str | None
     allowed_channels: frozenset[int]
+    delete_blocked_commands: bool = False
 
 
 def _command_access_policy_loader(
@@ -285,6 +286,7 @@ def _command_access_policy_loader(
         return CommandAccessPolicySnapshot(
             mode=str(row["mode"]),
             allowed_channels=frozenset(channels),
+            delete_blocked_commands=bool(row.get("delete_blocked_commands", False)),
         )
 
     return _load

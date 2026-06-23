@@ -503,6 +503,44 @@ async def from_interaction(
     )
 
 
+async def from_message(
+    message: discord.Message,
+    command_name: str | None,
+    *,
+    bot: Any | None = None,
+) -> CommandAccessContext:
+    """Build a :class:`CommandAccessContext` from a raw ``discord.Message``.
+
+    Used by the cleanup auto-mod path, which inspects every message (not
+    just parsed command invocations) and needs to ask "would Command
+    Access admit this command here?" before deciding to delete it.
+    ``command_name`` is the cleanup cog's extracted command token; ``bot``
+    (when provided) supplies the bot-owner check, mirroring the other
+    adapters.
+    """
+    guild = message.guild
+    author = message.author
+
+    is_owner_fn = getattr(bot, "is_owner", None)
+    is_bot_owner = False
+    if callable(is_owner_fn):
+        try:
+            is_bot_owner = bool(await is_owner_fn(author))
+        except Exception:
+            is_bot_owner = False
+
+    return CommandAccessContext(
+        guild_id=getattr(guild, "id", None),
+        channel_id=getattr(message.channel, "id", None),
+        user_id=getattr(author, "id", None),
+        command_name=command_name,
+        invocation_type="prefix",
+        is_guild_operator=bool(guild and _is_guild_operator(author, guild)),
+        is_bot_owner=is_bot_owner,
+        is_dm=guild is None,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Guild teardown — registered by ``guild_lifecycle.teardown`` in PR-3
 # ---------------------------------------------------------------------------
@@ -533,6 +571,7 @@ __all__ = [
     "can_bypass_channel_guard",
     "forget_guild",
     "from_interaction",
+    "from_message",
     "from_prefix_ctx",
     "is_bootstrap_command",
     "resolve_command_access",

@@ -60,6 +60,7 @@ def db_mock():
         db.add_allowed_channel = AsyncMock()
         db.remove_allowed_channel = AsyncMock()
         db.replace_allowed_channels = AsyncMock()
+        db.set_delete_blocked_commands = AsyncMock()
         yield db
 
 
@@ -176,6 +177,93 @@ async def test_set_mode_writes_invalidates_and_emits_audit(
     assert result.new_value == "selected_channels"
     assert result.audit_emitted is True
     assert kwargs["mutation_id"] == result.mutation_id
+
+
+@pytest.mark.asyncio
+async def test_set_delete_blocked_writes_invalidates_and_emits_audit(
+    db_mock,
+    invalidate_mock,
+    audit_mock,
+):
+    db_mock.get_policy.return_value = {
+        "mode": "selected_channels",
+        "delete_blocked_commands": False,
+    }
+    result = await service.set_delete_blocked_commands(
+        guild_id=10,
+        enabled=True,
+        actor_id=99,
+    )
+
+    db_mock.set_delete_blocked_commands.assert_awaited_once_with(
+        guild_id=10,
+        enabled=True,
+        updated_by=99,
+    )
+    invalidate_mock.assert_called_once_with(10)
+    audit_mock.assert_awaited_once()
+    kwargs = audit_mock.await_args.kwargs
+    assert kwargs["mutation_type"] == "set_delete_blocked_commands"
+    assert kwargs["target"] == "command_access:delete_blocked_commands"
+    assert kwargs["prev_value"] == "False"
+    assert kwargs["new_value"] == "True"
+    assert result.audit_emitted is True
+
+
+@pytest.mark.asyncio
+async def test_set_delete_blocked_noop_skips_audit(
+    db_mock,
+    invalidate_mock,
+    audit_mock,
+):
+    db_mock.get_policy.return_value = {
+        "mode": "all_channels",
+        "delete_blocked_commands": True,
+    }
+    result = await service.set_delete_blocked_commands(
+        guild_id=10,
+        enabled=True,  # unchanged
+        actor_id=99,
+    )
+    db_mock.set_delete_blocked_commands.assert_not_awaited()
+    invalidate_mock.assert_not_called()
+    audit_mock.assert_not_awaited()
+    assert result.audit_emitted is False
+    assert result.prev_value == result.new_value == "True"
+
+
+@pytest.mark.asyncio
+async def test_set_delete_blocked_defaults_false_when_unconfigured(
+    db_mock,
+    invalidate_mock,
+    audit_mock,
+):
+    db_mock.get_policy.return_value = None  # no policy row yet
+    result = await service.set_delete_blocked_commands(
+        guild_id=10,
+        enabled=True,
+        actor_id=99,
+    )
+    db_mock.set_delete_blocked_commands.assert_awaited_once()
+    assert result.prev_value == "False"
+    assert result.new_value == "True"
+
+
+@pytest.mark.asyncio
+async def test_set_delete_blocked_rejects_unknown_actor_type(
+    db_mock,
+    invalidate_mock,
+    audit_mock,
+):
+    with pytest.raises(UnauthorizedCommandAccessActorError):
+        await service.set_delete_blocked_commands(
+            guild_id=10,
+            enabled=True,
+            actor_id=99,
+            actor_type="hacker",
+        )
+    db_mock.set_delete_blocked_commands.assert_not_awaited()
+    audit_mock.assert_not_awaited()
 
 
 @pytest.mark.asyncio
