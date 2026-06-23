@@ -149,6 +149,19 @@ _SYSTEM_PROMPT = (
     "rather than guessing."
 )
 
+# Appended to the system prompt when the operator supplies a free-form
+# description of their server (the natural-language setup wedge). The
+# description adds *intent* the channel names alone can't convey, but it must
+# never widen the mutation surface — every recommendation is still re-validated
+# against the subsystem schema, so an off-schema suggestion is dropped.
+_DESCRIPTION_DIRECTIVE = (
+    " The operator has ALSO described, in their own words, what their server is "
+    "for and how it is organised (field `operator_description`). Use that intent "
+    "to choose better bindings — it can disambiguate a channel whose name is not "
+    "self-explanatory. You still must NEVER invent a subsystem, binding, or "
+    "target kind that is absent from the snapshot."
+)
+
 
 class OpenAISetupAdvisor:
     """OpenAI structured-output adapter.
@@ -183,9 +196,37 @@ class OpenAISetupAdvisor:
             )
 
     async def suggest(self, snapshot: GuildSnapshot) -> SetupPlanDraft:
+        return await self._run(snapshot, description=None)
+
+    async def suggest_with_description(
+        self,
+        snapshot: GuildSnapshot,
+        description: str,
+    ) -> SetupPlanDraft:
+        """Like :meth:`suggest`, but folds the operator's free-form
+        description of the server into the prompt — the natural-language
+        setup wedge. Consumed by
+        :mod:`services.setup_natural_language_advisor`. The description only
+        adds intent signal; recommendations are still re-validated against the
+        subsystem schema, so it can never widen the mutation surface.
+        """
+        return await self._run(snapshot, description=description)
+
+    async def _run(
+        self,
+        snapshot: GuildSnapshot,
+        *,
+        description: str | None,
+    ) -> SetupPlanDraft:
         provider_override = None
         if self._client is not None:
             provider_override = OpenAIProvider(client=self._client)
+
+        system_prompt = _SYSTEM_PROMPT
+        payload = _snapshot_to_prompt(snapshot)
+        if description:
+            system_prompt = _SYSTEM_PROMPT + _DESCRIPTION_DIRECTIVE
+            payload = {**payload, "operator_description": description}
 
         request = AIRequest(
             context=AIRequestContext(
@@ -194,8 +235,8 @@ class OpenAISetupAdvisor:
                 guild_id=snapshot.guild_id,
                 source="setup_ai_advisor",
             ),
-            system_prompt=_SYSTEM_PROMPT,
-            payload=_snapshot_to_prompt(snapshot),
+            system_prompt=system_prompt,
+            payload=payload,
             mode=AIResponseMode.JSON,
             response_schema=_RECOMMENDATION_JSON_SCHEMA,
             # Multi-recommendation plans can be large; give the structured
