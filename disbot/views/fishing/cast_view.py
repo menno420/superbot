@@ -45,6 +45,7 @@ from services import fishing_workflow
 from utils.fishing import energy, minigame
 from utils.fishing import rods as rods_mod
 from utils.fishing import venue as venue_mod
+from utils.fishing import weather as weather_mod
 from utils.fishing.fish import max_size_rank_for_level, species_for_venue
 from utils.ui_constants import ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
 from views.base import handle_view_error as _on_view_error
@@ -107,6 +108,14 @@ async def prepare_cast(
         ),
         color=GAME_COLOR,
     )
+    w = start.weather
+    if w.bite_speed_mult != 1.0 or w.rarity_mult != 1.0:
+        # Only show the forecast when it actually changes the cast (clear = silent).
+        embed.add_field(
+            name=f"{w.emoji} {w.name}",
+            value=f"*{w.blurb}* ({weather_mod.effect_text(w)})",
+            inline=False,
+        )
     footer = f"{profile.emoji} {profile.name} · " + energy.bar(start.energy_current)
     if start.bait_used is not None:
         footer += (

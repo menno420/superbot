@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T06:10:51Z",
+    "generated_at": "2026-06-23T06:42:29Z",
     "build": {
-      "commit": "16efe539",
-      "subject": "fishing: open deepwater-venue session (born-red card + claim)",
-      "committed_at": "2026-06-23T06:10:51Z"
+      "commit": "7968e5e1",
+      "subject": "fishing: open weather-forecast session (born-red card + claim)",
+      "committed_at": "2026-06-23T06:42:29Z"
     }
   },
   "counts": {
-    "commands": 385,
+    "commands": 386,
     "features": 41,
     "games": 11
   },
@@ -4905,6 +4905,28 @@
       "permissions": "user",
       "usage": "Show this server's top anglers by total fish caught.",
       "description": "Show this server's top anglers by total fish caught.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "forecast",
+      "aliases": [
+        "fishforecast",
+        "fishingweather"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show today's fishing forecast — the date-seeded weather everyone shares.",
+      "description": "Show today's fishing forecast — the date-seeded weather everyone shares.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",

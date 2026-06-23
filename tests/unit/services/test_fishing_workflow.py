@@ -385,6 +385,7 @@ async def test_begin_cast_spends_energy_and_rolls_when_charged():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
     ):
@@ -422,6 +423,7 @@ async def test_begin_cast_does_not_charge_on_an_empty_catalog():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': None),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
     ):
@@ -477,6 +479,7 @@ async def test_set_venue_deepwater_message_names_the_tradeoff():
 async def test_toggle_venue_flips_from_the_stored_value():
     with (
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(wf.db, "set_fishing_venue", AsyncMock()) as set_v,
     ):
         change = await wf.toggle_venue(99, 1)
@@ -498,6 +501,7 @@ async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="deepwater")),
+        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
@@ -510,3 +514,53 @@ async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
     assert seen["venue"] == "deepwater"  # the stored venue gated the roll
     assert start.venue_profile is venue_mod.DEEPWATER_PROFILE  # ...and the view's tuning
     assert start.cast.venue == "deepwater"
+
+
+# ---------------------------------------------------------------------------
+# Weather — the daily date-seeded bias compounds onto the cast (Q-0089 idea)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_compounds_the_days_weather_onto_the_knobs():
+    """Weather multiplies the rod×bait bite-speed/rarity and rides on CastStart."""
+    from utils.fishing import rods, venue
+    from utils.fishing import weather as weather_mod
+
+    storm = next(c for c in weather_mod.CONDITIONS if c.key == "storm")
+    seen: dict[str, float] = {}
+
+    def _roll(level, rng=None, *, rarity_pull=1.0, venue="shore"):
+        seen["pull"] = rarity_pull
+        return _CATCH
+
+    gold = rods.rod_for_tier(3)
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(wf.weather_mod, "current_weather", lambda: storm),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
+        patch.object(wf, "roll_catch", _roll),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()),
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert start.weather is storm
+    # rod-only knobs, each scaled by the storm multiplier (no bait here).
+    assert seen["pull"] == pytest.approx(gold.rarity_pull * storm.rarity_mult)
+    assert start.effective_bite_speed == pytest.approx(
+        gold.bite_speed * storm.bite_speed_mult,
+    )
+    assert start.effective_bite_speed != pytest.approx(gold.bite_speed)  # weather moved it
+
+
+@pytest.mark.asyncio
+async def test_get_forecast_returns_todays_weather():
+    from utils.fishing import weather as weather_mod
+
+    rain = next(c for c in weather_mod.CONDITIONS if c.key == "rain")
+    with patch.object(wf.weather_mod, "current_weather", lambda: rain):
+        assert wf.get_forecast() is rain

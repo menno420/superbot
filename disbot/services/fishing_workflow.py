@@ -30,6 +30,7 @@ from utils.fishing import fish as fish_mod
 from utils.fishing import rods as rods_mod
 from utils.fishing import roll_catch
 from utils.fishing import venue as venue_mod
+from utils.fishing import weather as weather_mod
 
 logger = logging.getLogger("bot.fishing_workflow")
 
@@ -200,6 +201,9 @@ class CastStart:
     #: The venue profile this cast runs at — the source of the bite band, reaction
     #: window, and base escape the cast view feeds into the minigame math.
     venue_profile: venue_mod.VenueProfile = venue_mod.SHORE_PROFILE
+    #: The day's weather, already compounded into ``effective_bite_speed`` /
+    #: the roll's rarity pull — carried for the cast-panel forecast note.
+    weather: weather_mod.Weather = weather_mod.CONDITIONS[0]
 
 
 def _fmt_wait(seconds: int) -> str:
@@ -258,12 +262,19 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     rod = rods_mod.rod_for_tier(await db.get_rod_tier(user_id, guild_id))
     venue = await db.get_fishing_venue(user_id, guild_id)
     profile = venue_mod.profile_for(venue)
+    weather = weather_mod.current_weather()
     bait, bait_charges = await get_active_bait(user_id, guild_id)
-    # Bait's two knobs compound on the rod's: rarity_pull (both ≥ 1) pulls the
-    # catch toward the big end of the SAME unlocked band (never a new band); and
-    # bite_speed (both ≤ 1) shortens the bite wait so a loaded lure bites sooner.
-    effective_pull = rod.rarity_pull * (bait.rarity_pull if bait else 1.0)
-    effective_bite_speed = rod.bite_speed * (bait.bite_speed if bait else 1.0)
+    # Three "how-well" knobs compound: rod × bait × the day's weather. rarity_pull
+    # (all ≥ 1) pulls the catch toward the big end of the SAME unlocked band (never
+    # a new band — that stays the fishing-level axis); bite_speed (rod/bait ≤ 1,
+    # weather either way) scales the bite wait. Weather is the transient, shared,
+    # free knob (a storm makes a rarer catch likelier but the wait longer).
+    effective_pull = (
+        rod.rarity_pull * (bait.rarity_pull if bait else 1.0) * weather.rarity_mult
+    )
+    effective_bite_speed = (
+        rod.bite_speed * (bait.bite_speed if bait else 1.0) * weather.bite_speed_mult
+    )
     cast = await roll_cast(
         user_id,
         guild_id,
@@ -304,7 +315,16 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         bait_used=bait,
         bait_charges_left=charges_left,
         venue_profile=profile,
+        weather=weather,
     )
+
+
+def get_forecast() -> weather_mod.Weather:
+    """Today's fishing weather (UTC date) — for the menu / ``!forecast`` command.
+
+    Pure read of the date-seeded weather; the same for everyone on a given day.
+    """
+    return weather_mod.current_weather()
 
 
 # ---------------------------------------------------------------------------

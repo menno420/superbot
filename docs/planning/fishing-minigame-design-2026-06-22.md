@@ -197,9 +197,12 @@ Your `cast → wait → BITE → reel` instinct is **right**. Three data-driven 
   texture. *(captured as an idea — see `docs/ideas/`)*
 - **Fake-out bites** — converts waiting from dead time into a nerve-holding skill; makes the
   `premature_grace` rod knob meaningful. Cheap, big feel-payoff.
-- **Weather / time-of-day modifier** — a global daily bias (e.g. "storm: rare fish biting,
-  shorter windows") gives a reason to fish *today* and a shared talking point, reusing any existing
-  daily-seed. Optional, Phase 2-ish.
+- **Weather / time-of-day modifier** — **✅ SHIPPED 2026-06-23 (PR #1341).** A date-seeded global
+  bias (`disbot/utils/fishing/weather.py`, no DB — derived from the calendar date so it's the same
+  for everyone each day) that compounds onto the cast as a third how-well knob beside the rod and
+  bait: clear (common) / rain (faster bites) / calm / fog (patient, rarer) / storm (rare, slow but
+  the big ones run). Surfaced via `!forecast` + a menu/cast forecast line. *(The "shorter windows"
+  half was left out to keep the cast view untouched; bite-speed + rarity carry the feel.)*
 - **Trophy records per species** (biggest caught) — a cheap long-tail goal layered on the existing
   catch-log; "personal best" beats raw counts for retention.
 - **Line-snap as a soft-fail, not a hard-fail** — an escaped fish could leave a clue ("a *big* one

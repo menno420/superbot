@@ -23,6 +23,7 @@ from utils import db
 from utils.fishing import energy as fish_energy
 from utils.fishing import rods as rods_mod
 from utils.fishing import venue as venue_mod
+from utils.fishing import weather as weather_mod
 from utils.fishing.fish import (
     MAX_LEVEL,
     max_size_rank_for_level,
@@ -67,6 +68,12 @@ def build_menu_embed(
     embed.add_field(
         name="Fishing from",
         value=f"{profile.emoji} **{profile.name}** — {profile.blurb}",
+        inline=False,
+    )
+    forecast = weather_mod.current_weather()
+    embed.add_field(
+        name=f"Today's forecast: {forecast.emoji} {forecast.name}",
+        value=f"*{forecast.blurb}* ({weather_mod.effect_text(forecast)})",
         inline=False,
     )
     if energy_current is not None:

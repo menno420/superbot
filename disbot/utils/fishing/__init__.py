@@ -35,8 +35,15 @@ from utils.fishing.venue import (
     profile_for,
     toggle,
 )
+from utils.fishing.weather import (
+    CONDITIONS,
+    Weather,
+    current_weather,
+    weather_for_date,
+)
 
 __all__ = [
+    "CONDITIONS",
     "DEEPWATER",
     "FISH_PER_LEVEL",
     "MAX_LEVEL",
@@ -46,6 +53,8 @@ __all__ = [
     "Catch",
     "FishSpecies",
     "VenueProfile",
+    "Weather",
+    "current_weather",
     "max_size_rank_for_level",
     "profile_for",
     "roll_catch",
@@ -54,4 +63,5 @@ __all__ = [
     "toggle",
     "unlocked_species",
     "venue_size_cap",
+    "weather_for_date",
 ]
