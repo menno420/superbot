@@ -121,7 +121,9 @@ async def test_ordinary_fish_commits_on_the_first_reel():
             AsyncMock(return_value=result),
         ) as commit,
         patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
-        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)) as edit,
+        patch(
+            "views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)
+        ) as edit,
     ):
         await _reel(view, interaction)
 
@@ -152,7 +154,9 @@ async def test_caught_embed_shows_weight_and_personal_best():
             AsyncMock(return_value=result),
         ),
         patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
-        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)) as edit,
+        patch(
+            "views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)
+        ) as edit,
     ):
         await _reel(view, interaction)
 
@@ -181,6 +185,16 @@ async def test_reel_too_late_lets_the_fish_get_away():
     commit.assert_not_awaited()
     assert view._resolved is True
     assert (1, 99) not in active_casts
+
+
+def test_got_away_appends_a_clue_for_a_trophy_but_not_an_ordinary_fish():
+    base = "🌊 *...the fish got away.*"
+    # A trophy that escapes leaves a teasing, species-named clue (soft-fail UX).
+    trophy_text = _make_view(_TROPHY)._got_away(base)
+    assert base in trophy_text
+    assert "Trout" in trophy_text
+    # An ordinary fish keeps the plain line — no story for a lost minnow.
+    assert _make_view(_ORDINARY)._got_away(base) == base
 
 
 # ---------------------------------------------------------------------------
@@ -300,7 +314,9 @@ async def test_extra_taps_between_fight_rounds_are_ignored():
 
     with (
         patch.object(fishing_workflow, "commit_catch", AsyncMock()) as commit,
-        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)) as defer,
+        patch(
+            "views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)
+        ) as defer,
     ):
         await _reel(view, interaction)
 

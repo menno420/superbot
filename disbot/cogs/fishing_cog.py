@@ -32,7 +32,7 @@ from utils import db
 from utils.fishing import bait as bait_mod
 from utils.fishing import rods as rods_mod
 from utils.fishing import weather as weather_mod
-from utils.fishing.fish import SPECIES
+from utils.fishing.fish import SPECIES, species_by_name
 from views.fishing import (
     BaitShopView,
     FishingMenuView,
@@ -149,6 +149,34 @@ class FishingCog(commands.Cog):
             lines.append(
                 f"{prefix} {name} — **{caught}** caught "
                 f"({species}/{len(SPECIES)} species)",
+            )
+        embed.description = "\n".join(lines)
+        await ctx.send(embed=embed)
+
+    @commands.command(
+        name="trophies",
+        aliases=["bigfish", "fishtrophy"],
+    )
+    async def trophies(self, ctx):
+        """Show this server's heaviest catches — the biggest-fish hall of fame."""
+        rows = await db.top_trophies(ctx.guild.id, [s.name for s in SPECIES])
+        embed = discord.Embed(title="🏅 Biggest Catches", color=_FISHING_COLOR)
+        if not rows:
+            embed.description = (
+                "No trophies landed yet — reel in a big one with `!fish`!"
+            )
+            await ctx.send(embed=embed)
+            return
+        medals = ["🥇", "🥈", "🥉"]
+        lines = []
+        for rank, (user_id, species, weight) in enumerate(rows):
+            prefix = medals[rank] if rank < len(medals) else f"**{rank + 1}.**"
+            member = resources.resolve_member(ctx.guild, user_id)
+            name = member.display_name if member else f"User {user_id}"
+            fish = species_by_name(species)
+            emoji = fish.emoji if fish else "🐟"
+            lines.append(
+                f"{prefix} {emoji} **{weight:g} kg** {species.title()} — {name}",
             )
         embed.description = "\n".join(lines)
         await ctx.send(embed=embed)
