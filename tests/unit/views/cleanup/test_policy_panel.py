@@ -291,66 +291,82 @@ def test_level_options_include_custom():
 
 
 @pytest.mark.asyncio
-async def test_level_select_custom_opens_modal():
+async def test_level_select_custom_opens_select_view():
     sel = panel._LevelSelect(MagicMock(), "channel", 111, "#general")
     sel._values = [panel._CUSTOM_VALUE]
     it = _interaction()
     await sel.callback(it)
-    it.response.send_modal.assert_awaited_once()
-    assert isinstance(
-        it.response.send_modal.call_args.args[0],
-        panel._CustomLevelModal,
-    )
+    # No modal — a select-driven view is sent instead (no typing).
+    it.response.send_modal.assert_not_awaited()
+    it.response.send_message.assert_awaited_once()
+    sent_view = it.response.send_message.call_args.kwargs["view"]
+    assert isinstance(sent_view, panel._CustomLevelView)
+    # All inputs are selects/buttons — no TextInput anywhere.
+    assert not any(isinstance(c, discord.ui.TextInput) for c in sent_view.children)
+    assert any(isinstance(c, panel._DeleteAfterSelect) for c in sent_view.children)
+
+
+def test_custom_view_durations_are_within_bounds():
+    from services.cleanup_diagnostics import MAX_DELETE_AFTER_SECONDS
+
+    for seconds, _label in panel._DURATION_OPTIONS:
+        assert 0 <= seconds <= MAX_DELETE_AFTER_SECONDS
+    assert 0 in dict(panel._DURATION_OPTIONS)  # Instant is offered
 
 
 @pytest.mark.asyncio
-async def test_custom_modal_previews_columns_without_writing():
-    modal = panel._CustomLevelModal(MagicMock(), "channel", 111)
-    modal.delete_after = MagicMock(value="8")
-    modal.delete_invalid = MagicMock(value="yes")
-    modal.delete_failed = MagicMock(value="no")
+async def test_custom_view_duration_select_updates_state():
+    view = panel._CustomLevelView(MagicMock(), MagicMock(), "channel", 111)
+    after_sel = next(
+        c for c in view.children if isinstance(c, panel._DeleteAfterSelect)
+    )
+    after_sel._values = ["30"]
+    it = _interaction()
+    await after_sel.callback(it)
+    # Rebuilds the view with the new duration reflected.
+    it.response.edit_message.assert_awaited_once()
+    new_view = it.response.edit_message.call_args.kwargs["view"]
+    assert new_view._after == 30
+
+
+@pytest.mark.asyncio
+async def test_custom_view_yesno_select_updates_state():
+    view = panel._CustomLevelView(MagicMock(), MagicMock(), "channel", 111)
+    failed_sel = next(
+        c
+        for c in view.children
+        if isinstance(c, panel._CustomYesNoSelect) and c._field == "failed"
+    )
+    failed_sel._values = ["yes"]
+    it = _interaction()
+    await failed_sel.callback(it)
+    new_view = it.response.edit_message.call_args.kwargs["view"]
+    assert new_view._failed is True
+
+
+@pytest.mark.asyncio
+async def test_custom_view_preview_uses_state_without_writing():
+    view = panel._CustomLevelView(
+        MagicMock(), MagicMock(), "channel", 111, after=30, invalid=True, failed=False,
+    )
+    btn = next(c for c in view.children if isinstance(c, panel._CustomPreviewButton))
     it = _interaction()
     with (
         patch.object(
-            panel,
-            "preview_cleanup_columns",
-            AsyncMock(return_value=_preview()),
+            panel, "preview_cleanup_columns", AsyncMock(return_value=_preview()),
         ) as previewer,
         patch.object(panel, "apply_cleanup_columns", AsyncMock()) as applier,
     ):
-        await modal.on_submit(it)
+        await btn.callback(it)
     previewer.assert_awaited_once()
     kwargs = previewer.await_args.kwargs
     assert kwargs["delete_invalid_commands"] is True
     assert kwargs["delete_failed_commands"] is False
-    assert kwargs["delete_after_seconds"] == 8
+    assert kwargs["delete_after_seconds"] == 30
     applier.assert_not_called()  # dry-run only
-
-
-@pytest.mark.asyncio
-async def test_custom_modal_rejects_non_numeric_seconds():
-    modal = panel._CustomLevelModal(MagicMock(), "channel", 111)
-    modal.delete_after = MagicMock(value="soon")
-    modal.delete_invalid = MagicMock(value="yes")
-    modal.delete_failed = MagicMock(value="no")
-    it = _interaction()
-    with patch.object(panel, "preview_cleanup_columns", AsyncMock()) as previewer:
-        await modal.on_submit(it)
-    previewer.assert_not_called()
-    it.response.send_message.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-async def test_custom_modal_rejects_out_of_range_seconds():
-    modal = panel._CustomLevelModal(MagicMock(), "channel", 111)
-    modal.delete_after = MagicMock(value="999")
-    modal.delete_invalid = MagicMock(value="yes")
-    modal.delete_failed = MagicMock(value="no")
-    it = _interaction()
-    with patch.object(panel, "preview_cleanup_columns", AsyncMock()) as previewer:
-        await modal.on_submit(it)
-    previewer.assert_not_called()
-    it.response.send_message.assert_awaited_once()
+    assert isinstance(
+        it.response.send_message.call_args.kwargs["view"], panel._ConfirmApplyView,
+    )
 
 
 # ---------------------------------------------------------------------------
