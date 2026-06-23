@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T05:32:28Z",
+    "generated_at": "2026-06-23T06:10:51Z",
     "build": {
-      "commit": "dbacca86",
-      "subject": "Merge pull request #1338 from menno420/claude/funny-franklin-yko9ji",
-      "committed_at": "2026-06-23T05:32:28Z"
+      "commit": "16efe539",
+      "subject": "fishing: open deepwater-venue session (born-red card + claim)",
+      "committed_at": "2026-06-23T06:10:51Z"
     },
     "counts": {
       "functions": 41,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 51,
-      "commands": 384,
+      "commands": 385,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2347,6 +2347,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-23-fishing-deepwater-venue.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Fishing: the boat / deepwater venue (⛵ Set sail / Dock)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-fishing-bait-speed-knob.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Fishing bait speed knob",
@@ -2816,14 +2824,6 @@
       "title": "2026-06-21 — site.json field-level redaction contract",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-role-presets-and-management-ux.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Role presets + role-management UX overhaul",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
@@ -5992,6 +5992,20 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "sail",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "setsail",
+            "dock"
+          ],
+          "brief": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         }
       ]
     },

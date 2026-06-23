@@ -162,7 +162,7 @@ async def test_buy_bait_rejects_an_unknown_key():
 
 
 def _rarity_recorder(seen: list[float]):
-    def _roll(level, rng=None, *, rarity_pull=1.0):
+    def _roll(level, rng=None, *, rarity_pull=1.0, venue='shore'):
         seen.append(rarity_pull)
         return _CATCH
 
@@ -175,6 +175,7 @@ async def test_begin_cast_consumes_a_bait_charge_and_compounds_rarity():
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
             wf.db, "get_rod_tier", AsyncMock(return_value=0)
         ),  # starter, pull 1.0
@@ -200,11 +201,12 @@ async def test_begin_cast_clears_bait_when_the_last_charge_is_spent():
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("worm", 1))),
         patch.object(
-            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH
+            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH
         ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
@@ -223,6 +225,7 @@ async def test_begin_cast_without_bait_uses_only_the_rod_pull():
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
@@ -251,11 +254,12 @@ async def test_begin_cast_compounds_bite_speed_from_rod_and_bait():
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("spinner", 2))),
         patch.object(
-            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH
+            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH
         ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()),
@@ -275,11 +279,12 @@ async def test_begin_cast_bite_speed_is_rod_only_without_bait():
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(
-            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0: _CATCH
+            wf, "roll_catch", lambda level, rng=None, *, rarity_pull=1.0, venue='shore': _CATCH
         ),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
         patch.object(wf.db, "set_active_bait", AsyncMock()),

@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T03:08:23Z",
+    "generated_at": "2026-06-23T06:10:51Z",
     "build": {
-      "commit": "7173e338",
-      "subject": "Fishing bait-crafting: born-red session card + claim",
-      "committed_at": "2026-06-23T03:08:23Z"
+      "commit": "16efe539",
+      "subject": "fishing: open deepwater-venue session (born-red card + claim)",
+      "committed_at": "2026-06-23T06:10:51Z"
     }
   },
   "counts": {
-    "commands": 384,
+    "commands": 385,
     "features": 41,
     "games": 11
   },
@@ -3737,10 +3737,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -4433,10 +4429,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -4855,10 +4847,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -4879,10 +4867,6 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
-        {
-          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
-          "status": "ideas"
-        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -4905,10 +4889,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -4929,10 +4909,6 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
-        {
-          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
-          "status": "ideas"
-        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -5766,10 +5742,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -6048,6 +6020,30 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "sail",
+      "aliases": [
+        "setsail",
+        "dock"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+      "description": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+      "use_cases": null,
+      "examples": [
+        "!fish"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
       ],

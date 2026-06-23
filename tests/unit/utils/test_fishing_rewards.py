@@ -47,7 +47,10 @@ def test_smaller_fish_are_more_common_than_bigger_ones():
 
 
 def test_roll_returns_none_when_no_species_unlocked(monkeypatch):
-    monkeypatch.setattr("utils.fishing.rewards.unlocked_species", lambda level: [])
+    monkeypatch.setattr(
+        "utils.fishing.rewards.unlocked_species",
+        lambda level, venue="shore": [],
+    )
     assert roll_catch(1) is None
 
 
@@ -97,3 +100,21 @@ def test_fish_items_sell_for_their_size_rank():
         item = lookup(s.name)
         assert item is not None
         assert item.value == s.size_rank  # 1…21, up from the old 1…7
+
+
+def test_roll_yields_only_the_requested_venues_fish():
+    """A deepwater cast can only ever produce deepwater (boat-only) species."""
+    rng = random.Random(3)
+    deep_names = {s.name for s in fish.species_for_venue("deepwater")}
+    for _ in range(500):
+        catch = roll_catch(fish.MAX_LEVEL, rng, venue="deepwater")
+        assert catch is not None
+        assert catch.species.venue == "deepwater"
+        assert catch.species.name in deep_names
+
+
+def test_shore_and_deepwater_rolls_draw_from_disjoint_pools():
+    rng = random.Random(11)
+    shore = {roll_catch(fish.MAX_LEVEL, rng, venue="shore").species.name for _ in range(400)}
+    deep = {roll_catch(fish.MAX_LEVEL, rng, venue="deepwater").species.name for _ in range(400)}
+    assert shore.isdisjoint(deep)

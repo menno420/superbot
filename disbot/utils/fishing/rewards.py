@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import random
 
-from utils.fishing.fish import Catch, FishSpecies, unlocked_species
+from utils.fishing.fish import SHORE_VENUE, Catch, FishSpecies, unlocked_species
 
 
 def roll_catch(
@@ -21,8 +21,9 @@ def roll_catch(
     rng: random.Random | None = None,
     *,
     rarity_pull: float = 1.0,
+    venue: str = SHORE_VENUE,
 ) -> Catch | None:
-    """Roll one catch from the fish unlocked at *fishing_level*.
+    """Roll one catch from the fish unlocked at *fishing_level* in *venue*.
 
     Bigger fish are rarer: within the unlocked band the pick is weighted by the
     inverse of size rank, so the common small fish dominate and a freshly
@@ -35,7 +36,7 @@ def roll_catch(
     better rod catches *better* fish within the same unlocked band — never new
     bands (that is the fishing-level axis).
     """
-    pool = unlocked_species(fishing_level)
+    pool = unlocked_species(fishing_level, venue)
     if not pool:
         return None
     r = rng or random.Random()

@@ -44,7 +44,8 @@ from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import fishing_workflow
 from utils.fishing import energy, minigame
 from utils.fishing import rods as rods_mod
-from utils.fishing.fish import SPECIES, max_size_rank_for_level
+from utils.fishing import venue as venue_mod
+from utils.fishing.fish import max_size_rank_for_level, species_for_venue
 from utils.ui_constants import ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
 from views.base import handle_view_error as _on_view_error
 
@@ -91,15 +92,22 @@ async def prepare_cast(
         start.cast,
         rod=start.rod,
         bite_speed=start.effective_bite_speed,
+        profile=start.venue_profile,
+    )
+    profile = start.venue_profile
+    where = (
+        "from the boat, out over the deep water"
+        if profile.key == venue_mod.DEEPWATER
+        else "from the shoreline"
     )
     embed = discord.Embed(
         description=(
-            "You cast a line… 🎣\n"
+            f"You cast a line {where}… {profile.emoji}\n"
             "*Watch the water — hit **Reel** the moment it bites, but not before!*"
         ),
         color=GAME_COLOR,
     )
-    footer = energy.bar(start.energy_current)
+    footer = f"{profile.emoji} {profile.name} · " + energy.bar(start.energy_current)
     if start.bait_used is not None:
         footer += (
             f" · {start.bait_used.emoji} {start.bait_used.name} "
@@ -117,15 +125,21 @@ class FishingCastView(discord.ui.View):
         cast: fishing_workflow.Cast,
         rod: rods_mod.Rod | None = None,
         bite_speed: float | None = None,
+        profile: venue_mod.VenueProfile | None = None,
     ) -> None:
         super().__init__(timeout=_VIEW_TIMEOUT)
         self.user_id = user_id
         self.guild_id = guild_id
         self.cast = cast
         self.rod = rod or rods_mod.STARTER
+        #: The venue this cast runs at — its profile carries the bite band,
+        #: base reaction window, and base escape the deep makes far higher.
+        self._profile = profile or venue_mod.profile_for(cast.venue)
         #: The rod's window bonus widens every reaction window (bite + each fight
         #: tap) — the fairness knob, so a weak connection on a good rod is comfy.
-        self._window = minigame.REACTION_WINDOW + self.rod.window_bonus
+        #: The base window is the venue's (deepwater's is a touch tighter, but a
+        #: rod buys it back — the design's "rod expected" deepwater window).
+        self._window = self._profile.reaction_window + self.rod.window_bonus
         #: The bite-wait multiplier (≤ 1 = faster). ``begin_cast`` compounds the
         #: rod's ``bite_speed`` with any loaded bait's and passes it here; the
         #: direct ``!fish``/test path falls back to the rod's own knob.
@@ -164,7 +178,12 @@ class FishingCastView(discord.ui.View):
 
     async def _run_bite(self) -> None:
         """Wait → (maybe fake-out) → arm the bite → expire the window if ignored."""
-        delay = minigame.roll_bite_delay(speed=self._bite_speed)
+        delay = minigame.roll_bite_delay(
+            speed=self._bite_speed,
+            lo=self._profile.bite_delay_min,
+            hi=self._profile.bite_delay_max,
+            floor=self._profile.bite_delay_floor,
+        )
         fakeout = minigame.roll_fakeout()
 
         if fakeout and delay - minigame.FAKEOUT_LEAD > minigame.BITE_DELAY_FLOOR:
@@ -277,6 +296,7 @@ class FishingCastView(discord.ui.View):
         if species is not None and minigame.roll_escape(
             species,
             escape_resist=self.rod.escape_resist,
+            base_escape=self._profile.base_escape,
         ):
             await self._terminate_interaction(
                 interaction,
@@ -330,13 +350,14 @@ class FishingCastView(discord.ui.View):
             return
         species = result.catch.species
         trophy = minigame.is_trophy(species, result.fishing_level)
+        pool_size = len(species_for_venue(species.venue))
         title = "🏆 Trophy landed!" if trophy else "🎣 Caught it!"
         desc = (
             f"You reeled in {species.emoji} a **{species.name.title()}**!  "
-            f"(size #{species.size_rank} of {len(SPECIES)})"
+            f"(size #{species.size_rank} of {pool_size} {self._profile.name.lower()})"
         )
         if result.unlocked_bigger:
-            cap = max_size_rank_for_level(result.fishing_level)
+            cap = max_size_rank_for_level(result.fishing_level, species.venue)
             desc += (
                 f"\n\n🌟 **Fishing level {result.fishing_level}!** "
                 f"You can now catch fish up to size #{cap}."

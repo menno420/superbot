@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import random
 
-from utils.fishing.fish import FishSpecies, max_size_rank_for_level
+from utils.fishing.fish import SHORE_VENUE, FishSpecies, max_size_rank_for_level
 
 # --- tuning (sim-recommended; re-tune against live telemetry once shipped) ---
 
@@ -61,15 +61,24 @@ FIGHT_MAX_TAPS = 4
 SHORE_ESCAPE_CHANCE = 0.06  # per-tap snap-free chance on shore (no rod yet)
 
 
-def roll_bite_delay(rng: random.Random | None = None, *, speed: float = 1.0) -> float:
+def roll_bite_delay(
+    rng: random.Random | None = None,
+    *,
+    speed: float = 1.0,
+    lo: float = BITE_DELAY_MIN,
+    hi: float = BITE_DELAY_MAX,
+    floor: float = BITE_DELAY_FLOOR,
+) -> float:
     """Seconds to wait before the bite — uniform in the band, never below floor.
 
     ``speed`` (the rod ``bite_speed`` knob, ≤ 1 = faster) scales the random draw
     before the floor is applied, so a better rod bites sooner / paces faster
-    without ever dropping below the anticipation floor.
+    without ever dropping below the anticipation floor. ``lo``/``hi``/``floor``
+    default to the shore band but the deepwater venue passes its own slower band
+    (``utils.fishing.venue`` — the boat's longer, more suspenseful waits).
     """
     r = rng or random.Random()
-    return max(BITE_DELAY_FLOOR, r.uniform(BITE_DELAY_MIN, BITE_DELAY_MAX) * speed)
+    return max(floor, r.uniform(lo, hi) * speed)
 
 
 def roll_fakeout(rng: random.Random | None = None) -> bool:
@@ -78,14 +87,20 @@ def roll_fakeout(rng: random.Random | None = None) -> bool:
     return r.random() < FAKEOUT_CHANCE
 
 
-def is_trophy(species: FishSpecies, fishing_level: int) -> bool:
-    """True when *species* is a trophy for a player at *fishing_level*.
+def is_trophy(
+    species: FishSpecies,
+    fishing_level: int,
+    venue: str = SHORE_VENUE,
+) -> bool:
+    """True when *species* is a trophy for a player at *fishing_level* in *venue*.
 
     Trophy = the top :data:`TROPHY_BAND_FRACTION` of the unlocked size band, so
     it scales with progression: a freshly-unlocked big fish always reads as a
-    trophy, while the same fish becomes ordinary once you out-level it.
+    trophy, while the same fish becomes ordinary once you out-level it. The band
+    is the species' *own* venue (a deepwater fish is judged against the deepwater
+    cap) — ``species.venue`` is authoritative, so a caller need not pass it.
     """
-    cap = max_size_rank_for_level(fishing_level)
+    cap = max_size_rank_for_level(fishing_level, species.venue or venue)
     threshold = cap - cap * TROPHY_BAND_FRACTION
     return species.size_rank > threshold
 
@@ -101,15 +116,22 @@ def reel_fight_taps(species: FishSpecies) -> int:
     return FIGHT_MIN_TAPS + round(span * (species.size_rank / 21.0))
 
 
-def fight_escape_chance(species: FishSpecies, escape_resist: float = 0.0) -> float:
+def fight_escape_chance(
+    species: FishSpecies,
+    escape_resist: float = 0.0,
+    *,
+    base_escape: float = SHORE_ESCAPE_CHANCE,
+) -> float:
     """Per-tap chance the fish snaps free, before/after rod escape-resist.
 
-    ``escape_resist`` (0…1) is the rod knob a later PR turns; at v1 it is 0, so
-    every fight runs at the base shore chance. Bigger fish are slightly more
-    likely to throw the hook.
+    ``escape_resist`` (0…1) is the rod knob that buys this down — at the shore
+    base it barely matters, but ``base_escape`` is far higher in deepwater
+    (``utils.fishing.venue`` — the boat's ~22%), which is exactly where a good
+    rod's escape-resist earns its keep (the sim §5 "optimization, not a gate").
+    Bigger fish are slightly more likely to throw the hook.
     """
     rarity = species.size_rank / 21.0
-    base = SHORE_ESCAPE_CHANCE * (0.6 + rarity)
+    base = base_escape * (0.6 + rarity)
     return max(0.0, base * (1.0 - escape_resist))
 
 
@@ -117,11 +139,16 @@ def roll_escape(
     species: FishSpecies,
     *,
     escape_resist: float = 0.0,
+    base_escape: float = SHORE_ESCAPE_CHANCE,
     rng: random.Random | None = None,
 ) -> bool:
     """Roll whether the fish snaps free on this tap (see :func:`fight_escape_chance`)."""
     r = rng or random.Random()
-    return r.random() < fight_escape_chance(species, escape_resist)
+    return r.random() < fight_escape_chance(
+        species,
+        escape_resist,
+        base_escape=base_escape,
+    )
 
 
 def reel_is_in_time(elapsed: float, window: float = REACTION_WINDOW) -> bool:

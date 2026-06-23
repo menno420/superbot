@@ -74,8 +74,23 @@ class FishingCog(commands.Cog):
     async def fishing(self, ctx):
         """Open the interactive fishing menu — cast, upgrade your rod, browse the dex."""
         energy = await fishing_workflow.get_energy(ctx.author.id, ctx.guild.id)
+        profile = await fishing_workflow.get_venue(ctx.author.id, ctx.guild.id)
         view = FishingMenuView(ctx.author, ctx.guild.id)
-        view.message = await ctx.send(embed=build_menu_embed(energy), view=view)
+        view.message = await ctx.send(
+            embed=build_menu_embed(energy, profile),
+            view=view,
+        )
+
+    @commands.command(name="sail", aliases=["setsail", "dock"])
+    async def sail(self, ctx):
+        """Set sail for deepwater (or dock back on shore) — toggles your fishing venue.
+
+        Deepwater holds rare boat-only fish that bite slower and fight harder;
+        shore is the relaxed everyday catch. Your choice persists, so ``!fish``
+        casts wherever you last set sail to.
+        """
+        change = await fishing_workflow.toggle_venue(ctx.author.id, ctx.guild.id)
+        await ctx.send(change.message)
 
     @commands.command(
         name="fishlog",
@@ -179,7 +194,11 @@ class FishingCog(commands.Cog):
             interaction.user.id,
             interaction.guild.id,
         )
-        return build_menu_embed(energy), FishingMenuView(
+        profile = await fishing_workflow.get_venue(
+            interaction.user.id,
+            interaction.guild.id,
+        )
+        return build_menu_embed(energy, profile), FishingMenuView(
             interaction.user,
             interaction.guild.id,
         )

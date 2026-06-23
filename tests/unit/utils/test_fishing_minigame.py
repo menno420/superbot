@@ -24,13 +24,15 @@ def test_bite_delay_stays_in_band_and_never_below_floor():
     assert min(samples) < max(samples)
 
 
-def test_bite_delay_floor_dominates_when_band_is_below_it(monkeypatch):
-    # If the band were tuned below the floor, the floor still wins (never instant).
-    monkeypatch.setattr(minigame, "BITE_DELAY_MIN", 0.1)
-    monkeypatch.setattr(minigame, "BITE_DELAY_MAX", 0.2)
+def test_bite_delay_floor_dominates_when_band_is_below_it():
+    # If a venue's band were tuned below the floor, the floor still wins (never
+    # instant). The band is now passed per-venue (lo/hi/floor args), so this
+    # checks the floor clamp directly.
     rng = random.Random(1)
     assert all(
-        minigame.roll_bite_delay(rng) == minigame.BITE_DELAY_FLOOR for _ in range(50)
+        minigame.roll_bite_delay(rng, lo=0.1, hi=0.2, floor=minigame.BITE_DELAY_FLOOR)
+        == minigame.BITE_DELAY_FLOOR
+        for _ in range(50)
     )
 
 
@@ -123,3 +125,61 @@ def test_bite_speed_shortens_the_wait_but_respects_the_floor():
     ]
     assert sum(fast) / len(fast) < sum(slow) / len(slow)  # faster rod bites sooner
     assert all(d >= minigame.BITE_DELAY_FLOOR for d in fast)  # never below the floor
+
+
+# ---------------------------------------------------------------------------
+# Venue awareness (Q-0175 §5) — the deepwater band & escape thread through
+# ---------------------------------------------------------------------------
+
+
+def test_base_escape_param_scales_the_snap_free_chance():
+    fish = FishSpecies("x", 10, "🐟")
+    shore = minigame.fight_escape_chance(fish)  # shore default
+    deep = minigame.fight_escape_chance(fish, base_escape=0.22)
+    # A higher venue base escape makes the fish snap free more often (the deep).
+    assert deep > shore
+    assert deep == pytest.approx(shore * (0.22 / minigame.SHORE_ESCAPE_CHANCE))
+
+
+def test_roll_escape_honours_the_venue_base_escape():
+    fish = FishSpecies("y", 14, "🐠")
+    rng = random.Random(5)
+    hits = sum(
+        minigame.roll_escape(fish, base_escape=0.22, rng=rng) for _ in range(20000)
+    )
+    expected = minigame.fight_escape_chance(fish, base_escape=0.22)
+    assert abs(hits / 20000 - expected) < 0.02
+
+
+def test_is_trophy_judges_a_fish_against_its_own_venue_band():
+    # A deepwater fish is judged against the deepwater cap, not the shore cap —
+    # species.venue is authoritative, so the caller need not pass the venue.
+    deep_big = FishSpecies("colossal squid", 20, "🦑", venue="deepwater")
+    assert minigame.is_trophy(deep_big, fishing_level=7) is True
+    deep_small = FishSpecies("lanternfish", 2, "🐟", venue="deepwater")
+    assert minigame.is_trophy(deep_small, fishing_level=7) is False
+
+
+def test_deepwater_band_bites_slower_than_shore_on_the_same_seed():
+    from utils.fishing import venue
+
+    shore_p, deep_p = venue.SHORE_PROFILE, venue.DEEPWATER_PROFILE
+    shore = [
+        minigame.roll_bite_delay(
+            random.Random(i),
+            lo=shore_p.bite_delay_min,
+            hi=shore_p.bite_delay_max,
+            floor=shore_p.bite_delay_floor,
+        )
+        for i in range(500)
+    ]
+    deep = [
+        minigame.roll_bite_delay(
+            random.Random(i),
+            lo=deep_p.bite_delay_min,
+            hi=deep_p.bite_delay_max,
+            floor=deep_p.bite_delay_floor,
+        )
+        for i in range(500)
+    ]
+    assert sum(deep) / len(deep) > sum(shore) / len(shore)
