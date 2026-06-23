@@ -87,6 +87,21 @@ def test_diagnostics_embed_empty():
     assert "None" in text
 
 
+def test_diagnostics_embed_includes_command_access_hint():
+    """Both the empty and populated embeds point operators at the Command
+    Access delete toggle for "delete any command in a no-command channel"."""
+    empty = panel.diagnostics_embed_from(
+        CleanupDiagnostics(guild_id=42, rows=(), level_counts={}),
+    )
+    populated = panel.diagnostics_embed_from(
+        CleanupDiagnostics(guild_id=42, rows=(_row(),), level_counts={"Light": 1}),
+    )
+    for embed in (empty, populated):
+        text = " ".join(f.value for f in embed.fields)
+        assert "Command Access" in text
+        assert "Delete blocked commands" in text
+
+
 def test_diagnostics_embed_lists_rows_and_flags():
     diag = CleanupDiagnostics(
         guild_id=42,
