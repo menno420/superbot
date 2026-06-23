@@ -1,1 +1,0 @@
-- `claude/funny-franklin-3z6s2p` · fix check_quality isort scope drift from CI + parity guard · `scripts/check_quality.py`, `tests/unit/scripts/test_check_quality_ci_parity.py` · 2026-06-23
