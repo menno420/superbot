@@ -32,24 +32,14 @@ _HEIGHT = 360
 
 
 def _fonts(size_big: int, size_small: int):  # noqa: ANN202 — PIL lazy types
-    """Best-effort font pair; Pillow's default bitmap font as the fallback."""
-    from PIL import ImageFont  # lazy: optional at import time
+    """Best-effort (bold-big, regular-small) DejaVu pair.
 
-    big: ImageFont.FreeTypeFont | ImageFont.ImageFont
-    small: ImageFont.FreeTypeFont | ImageFont.ImageFont
-    try:
-        big = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-            size_big,
-        )
-        small = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            size_small,
-        )
-    except Exception:  # noqa: BLE001 — font availability is environmental
-        big = ImageFont.load_default()
-        small = ImageFont.load_default()
-    return big, small
+    Delegates to the shared card engine so the font loader lives in exactly one
+    place (was triplicated across the renderers).
+    """
+    from utils.card_render import dejavu_fonts
+
+    return dejavu_fonts(size_big, size_small)
 
 
 def _initials_disc(

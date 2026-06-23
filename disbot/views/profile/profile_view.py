@@ -22,9 +22,13 @@ schema registry only.
 
 from __future__ import annotations
 
+import io
+from dataclasses import dataclass
+
 import discord
 
 from core.runtime import participation_schema
+from utils.profile_render import render_profile_card
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import INFO_COLOR
 from utils.user_config_accessors import (
@@ -36,6 +40,10 @@ from utils.user_config_accessors import (
     is_subscribed,
 )
 from views.base import BaseView
+
+# The hero-image attachment filename; the embed references it via
+# ``attachment://`` so the rendered card sits at the top of the profile card.
+_CARD_FILENAME = "profile.png"
 
 # Per-user preferences are stored under one flat key per (user, guild); we
 # namespace each subsystem's preference by joining the subsystem name and the
@@ -82,8 +90,13 @@ async def _subsystem_section(
     guild_id: int,
     subsystem: str,
     schema,
-) -> str:
-    """Render one subsystem's lines for the profile card."""
+) -> tuple[str, ParticipationState]:
+    """Render one subsystem's lines + return its participation state.
+
+    Returning the state lets :func:`_gather_profile` tally engagement for the
+    hero card in the **same** DB pass that builds the embed — no second round
+    of ``get_participation`` calls.
+    """
     lines: list[str] = []
 
     state = await get_participation(user_id, guild_id, subsystem)
@@ -120,18 +133,32 @@ async def _subsystem_section(
         visibility = await get_visibility(user_id, guild_id, subsystem)
         lines.append(f"**Visibility:** {_VISIBILITY_LABEL[visibility]}")
 
-    return "\n".join(lines)
+    return "\n".join(lines), state
 
 
-async def build_profile_embed(
+@dataclass(frozen=True)
+class ProfileSummary:
+    """Headline engagement numbers for the hero card (one DB pass).
+
+    *features* is how many participation-aware subsystems exist on the server;
+    *opted_in* is how many the viewer has explicitly opted into.
+    """
+
+    features: int
+    opted_in: int
+
+
+async def _gather_profile(
     user: discord.abc.User,
     guild_id: int,
-) -> discord.Embed:
-    """Compose the read-only profile card for ``user`` in ``guild_id``.
+) -> tuple[discord.Embed, ProfileSummary]:
+    """Build the profile embed and engagement summary in a single pass.
 
-    Iterates the registered participation schemas alphabetically; each
-    becomes one embed field. With no registrants (or an empty schema) the
-    card renders an honest empty state rather than a blank embed.
+    The single data-gathering seam: :func:`build_profile_embed` (which keeps
+    its embed-only signature for callers/tests) and :func:`build_profile_card`
+    (which also needs the tally for the rendered card) both route through here,
+    so the embed and the card can never disagree and the participation lookups
+    run once.
     """
     embed = discord.Embed(
         title=f"👤 {user.display_name} — your profile",
@@ -154,15 +181,18 @@ async def build_profile_embed(
             ),
             inline=False,
         )
-        return embed
+        return embed, ProfileSummary(features=0, opted_in=0)
 
+    opted_in = 0
     for subsystem in sorted(schemas):
-        section = await _subsystem_section(
+        section, state = await _subsystem_section(
             user.id,
             guild_id,
             subsystem,
             schemas[subsystem],
         )
+        if state == ParticipationState.OPTED_IN:
+            opted_in += 1
         embed.add_field(
             name=_subsystem_display(subsystem),
             value=section or "*(nothing to configure)*",
@@ -170,7 +200,57 @@ async def build_profile_embed(
         )
 
     embed.set_footer(text="Tap ⚙️ Manage settings to opt in/out and set preferences.")
+    return embed, ProfileSummary(features=len(schemas), opted_in=opted_in)
+
+
+async def build_profile_embed(
+    user: discord.abc.User,
+    guild_id: int,
+) -> discord.Embed:
+    """Compose the read-only profile card for ``user`` in ``guild_id``.
+
+    Iterates the registered participation schemas alphabetically; each
+    becomes one embed field. With no registrants (or an empty schema) the
+    card renders an honest empty state rather than a blank embed.
+    """
+    embed, _summary = await _gather_profile(user, guild_id)
     return embed
+
+
+async def build_profile_card(
+    user: discord.abc.User,
+    guild_id: int,
+) -> tuple[discord.Embed, discord.File | None]:
+    """The embed plus a rendered hero-card image attachment (or ``None``).
+
+    The image-as-screen upgrade: the same schema-driven embed gains a designed
+    hero card (avatar disc + name, feature/opt-in stat panels, an engagement
+    progress bar) on the themeable card engine. When Pillow is unavailable the
+    renderer returns ``None`` and we keep the embed exactly as before — the
+    card is strictly additive, never a regression.
+    """
+    embed, summary = await _gather_profile(user, guild_id)
+
+    progress = (
+        ("Profile engagement", summary.opted_in / summary.features)
+        if summary.features
+        else None
+    )
+    png = render_profile_card(
+        display_name=user.display_name,
+        subtitle="Your server profile",
+        stats=[
+            ("Features", str(summary.features)),
+            ("Opted in", f"{summary.opted_in}/{summary.features}"),
+        ],
+        progress=progress,
+        footer="SuperBot · /myprofile",
+    )
+    if png is None:
+        return embed, None
+
+    embed.set_image(url=f"attachment://{_CARD_FILENAME}")
+    return embed, discord.File(io.BytesIO(png), filename=_CARD_FILENAME)
 
 
 class ProfileHomeView(BaseView):
@@ -193,15 +273,24 @@ class ProfileHomeView(BaseView):
     async def render_embed(self) -> discord.Embed:
         return await build_profile_embed(self._author, self._guild_id)
 
+    async def render_card(self) -> tuple[discord.Embed, discord.File | None]:
+        """Embed + hero-card image attachment (``None`` file = render fallback)."""
+        return await build_profile_card(self._author, self._guild_id)
+
     @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.secondary)
     async def refresh(
         self,
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
+        embed, file = await self.render_card()
+        # ``attachments`` must be set explicitly on edit: pass the freshly
+        # rendered card, or an empty list to drop any prior image when the
+        # renderer is unavailable.
         await interaction.response.edit_message(
-            embed=await self.render_embed(),
+            embed=embed,
             view=self,
+            attachments=[file] if file is not None else [],
         )
 
     @discord.ui.button(label="⚙️ Manage settings", style=discord.ButtonStyle.primary)

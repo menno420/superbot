@@ -31,6 +31,23 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`competitive-positioning-north-star-2026-06-23.md`](./competitive-positioning-north-star-2026-06-23.md) —
+  **owner-directed (2026-06-23):** follow-up to the Dank Memer visual work — *"what would make people prefer
+  ours over any other bot?"* Grounded in a fan-out research pass across 15+ bots (Dank Memer, UnbelievaBoat,
+  MEE6, Carl-bot, Dyno, ProBot, Wick, Tatsu, Lurkr, Amari, Pokétwo/PokéMeow, OwO, Mudae, IdleRPG, Sapphire +
+  an AI-native/market-gaps synthesis). Finding: **four failure modes recur in nearly every incumbent** —
+  utility paywalls (the MEE6 backlash), pay-to-win, setup friction, and jack-of-all-trades mediocrity. Our
+  wedge: the **AI-operated, best-in-class-per-feature all-in-one with cosmetic-only monetization by promise**.
+  Pillars ranked by defensibility + the honest counter-arguments (the "specialize-as-you-grow" objection; the
+  AI-setup lane is now contested; Discord's 2026 gambling headwind). Product-positioning north-star. Subsystem: none.
+- [`visual-card-engine-vision-2026-06-23.md`](./visual-card-engine-vision-2026-06-23.md) —
+  **owner-directed (2026-06-23):** the maintainer shared a Dank Memer fishing season-card screenshot and
+  asked us to enumerate DM's commands/functions, dissect its *visual* approach, and plan how to **beat** it.
+  Finding: DM's moat is **server-rendered PNG/GIF cards, not embeds** ("image is the screen, buttons are the
+  controls"), each season a re-skin of one templated engine. **Foundation built same session** — the themeable
+  card engine (`utils/card_render.py`) + the first feature card (`utils/profile_render.py` → `/myprofile`);
+  H2–H5 (migrate existing renderers · skinnable season cards · real art/fonts · animation + per-user themes)
+  remain. Presentation-layer product depth. Subsystem: none (cross-cutting render layer).
 - [`ai-self-curated-memory-notebook-2026-06-22.md`](./ai-self-curated-memory-notebook-2026-06-22.md) —
   **owner-dropped (2026-06-22), alongside the treasury build:** give the bot's in-product AI a narrow,
   audited write-back seam — a staging table it appends small *non-personal* notes to (user corrections,

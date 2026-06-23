@@ -125,32 +125,12 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 # channel IDs are gone; main-server channels are seeded by migration
 # 051 so existing behavior is preserved.  Configure new guilds via
 # ``!settings → Command access``.
-
-
-def _parse_channel_ids(env_key: str, fallback: list[int]) -> set[int]:
-    raw = os.getenv(env_key, "")
-    if raw.strip():
-        try:
-            return {int(c.strip()) for c in raw.split(",") if c.strip()}
-        except ValueError:
-            pass
-    return set(fallback)
-
-
-# Channels exempt from the cleanup cog's command-deletion rule.
-# Still env-driven because cleanup whitelist is a separate concern
-# from command-access policy and is consumed by ``cogs/cleanup_cog.py``
-# at scope-resolution time.  A future PR can migrate this to a
-# DB-backed per-guild policy along the same shape as command access.
-CLEANUP_WHITELIST_CHANNELS: set[int] = _parse_channel_ids(
-    "BOT_CLEANUP_WHITELIST",
-    [
-        1348795460948590622,
-        1349693768365903912,
-        1349851456509055047,
-        1403818013408624642,
-    ],
-)
+#
+# The cleanup cog's old ``CLEANUP_WHITELIST_CHANNELS`` env list (a
+# remnant of an earlier bot version, hardcoded to dead old-server
+# channels) was removed in favour of per-channel **cleanup policies**:
+# to exempt a channel from command-style cleanup, set its policy to
+# ``Off`` in the Cleanup Policies panel.
 
 
 # ==========================

@@ -50,33 +50,19 @@ def build_cleanup_overview_embed(
 ) -> discord.Embed:
     """Read-only summary of cleanup state for the current guild.
 
-    Cleanup currently has no DB-persisted scalar knobs — its
-    user-visible state is the prohibited-words list (per-guild) and a
-    static whitelist of channels read from configuration at startup
-    (``config.CLEANUP_WHITELIST_CHANNELS``). The overview surfaces
-    both without touching any state.
+    Cleanup has no DB-persisted scalar knobs — its user-visible state is
+    the prohibited-words list (per-guild) and the per-scope cleanup
+    policies. The overview surfaces the word count and points at the
+    Cleanup Policies panel without touching any state.
     """
     word_count = len(cog._word_cache.get(guild_id, [])) if guild_id is not None else 0
-
-    # The whitelist is a *global* static config list (config.CLEANUP_WHITELIST_
-    # CHANNELS) shared across every guild the bot is in. Resolve each id against
-    # *this* server only, so we never show another server's channels, and render
-    # the channel name (a raw "<#id>" mention can't resolve cross-guild and
-    # shows as a meaningless id). Channels not in this guild are simply omitted.
-    guild = cog.bot.get_guild(guild_id) if guild_id is not None else None
-    whitelist_lines: list[str] = []
-    if guild is not None:
-        for cid in cog.whitelisted_channels or ():
-            channel = guild.get_channel(cid)
-            if channel is not None:
-                whitelist_lines.append(f"#{channel.name}")
 
     embed = discord.Embed(
         title="🧹 Cleanup Hub",
         description=(
             "Auto-moderation policies for command-style messages and "
-            "prohibited content. Channels you explicitly whitelist below "
-            "are exempt from the command-pattern check."
+            "prohibited content. Per-channel behaviour is configured under "
+            "**Cleanup Policies** below."
         ),
         color=ADMIN_COLOR,
     )
@@ -86,18 +72,11 @@ def build_cleanup_overview_embed(
         inline=True,
     )
     embed.add_field(
-        name="Whitelisted Channels",
-        value=(
-            "\n".join(whitelist_lines) if whitelist_lines else "_None in this server_"
-        ),
-        inline=True,
-    )
-    embed.add_field(
         name="Auto-Delete",
         value=(
-            "Command-style messages outside whitelisted channels are "
-            "removed. Prohibited-word matches are removed with a brief "
-            "warning."
+            "Invalid/failed command-style messages are removed per the "
+            "channel's cleanup policy (set a channel to **Off** to exempt "
+            "it). Prohibited-word matches are removed with a brief warning."
         ),
         inline=False,
     )

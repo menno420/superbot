@@ -25,6 +25,7 @@ async def send_panel(
     *,
     embed: discord.Embed,
     view: BaseView,
+    file: discord.File | None = None,
 ) -> discord.Message:
     """Send ``embed`` + ``view`` in ``ctx.channel`` and bind the message to view.
 
@@ -33,10 +34,17 @@ async def send_panel(
     :meth:`BaseView.on_timeout` edit the message to disable the buttons when
     the view expires.
 
+    *file* is an optional attachment (e.g. a rendered hero-card image the embed
+    references via ``attachment://``); omitted keeps the embed-only behaviour
+    byte-identical.
+
     Returns the sent message so callers that still need the reference can
     use it directly.
     """
-    msg = await ctx.send(embed=embed, view=view)
+    if file is not None:
+        msg = await ctx.send(embed=embed, view=view, file=file)
+    else:
+        msg = await ctx.send(embed=embed, view=view)
     view.message = msg
     return msg
 
