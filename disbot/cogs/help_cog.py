@@ -159,7 +159,14 @@ def _attach_back_to_help_button(view: discord.ui.View) -> None:
     # the cogs layer. Function-local import keeps the import graph
     # acyclic in case the navigation module ever grows imports of its
     # own.
-    from views.navigation import BackTarget, attach_back_button
+    from views.navigation import BackTarget, attach_back_button, has_standard_nav
+
+    # A SUBSYSTEM panel auto-attaches a 📚 Help button in its __init__
+    # (attach_standard_nav), which already routes to the Help home. Pushing a
+    # second "↩ Back to Help" here would only duplicate it, so skip — the panel
+    # is already one click from Help.
+    if has_standard_nav(view):
+        return
 
     async def _build_help_parent(
         interaction: discord.Interaction,

@@ -164,6 +164,8 @@ async def open_farm_panel(
 class FarmMenuView(HubView):
     """The main idle-farm panel (Collect · Shop · Refresh)."""
 
+    SUBSYSTEM = "farm"
+
     def __init__(self, author: discord.Member | discord.User, guild_id: int) -> None:
         super().__init__(author)
         self.guild_id = guild_id
@@ -227,6 +229,8 @@ class FarmMenuView(HubView):
 
 class FarmShopView(HubView):
     """The farm shop sub-panel (Buy hen · Upgrade coop · Back)."""
+
+    SUBSYSTEM = "farm"
 
     def __init__(self, author: discord.Member | discord.User, guild_id: int) -> None:
         super().__init__(author)

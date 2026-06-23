@@ -95,8 +95,21 @@ class PersistentView(discord.ui.View):
     # click only touches their own data and the ownership check is cosmetic.
     FAIL_CLOSED_ON_MISSING_ANCHOR: ClassVar[bool] = False
 
+    # Standard nav opt-out (mirrors views.base.BaseView). When the subsystem
+    # has a parent_hub, a ↩ Back-to-hub button is auto-attached; a 📚 Help
+    # button is auto-attached on every SUBSYSTEM panel. Set False to opt out.
+    STANDARD_NAV: ClassVar[bool] = True
+
     def __init__(self) -> None:
         super().__init__(timeout=None)
+        # Auto-attach the universal Help / Back-to-hub controls (owner directive
+        # 2026-06-23). Function-local views import — core must not import views at
+        # module scope; this mirrors the on_error → handle_view_error seam below.
+        # The nav buttons carry stable custom_ids, so they satisfy the persistent
+        # view contract and survive restart matching.
+        from views.navigation import attach_standard_nav
+
+        attach_standard_nav(self)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """Allow only the panel's owner to interact."""

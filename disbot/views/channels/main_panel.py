@@ -22,6 +22,8 @@ logger = logging.getLogger("bot")
 class _ChannelManagerView(HubView):
     """Top-level channel management panel with three action modes."""
 
+    SUBSYSTEM = "channel"
+
     def __init__(self, ctx: commands.Context):
         super().__init__(ctx.author)
         self.ctx = ctx

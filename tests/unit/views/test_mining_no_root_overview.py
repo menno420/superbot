@@ -56,7 +56,14 @@ def test_mining_hub_view_is_exactly_the_six_option_a_actions():
     """
     view = MiningHubView()
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    ids = {getattr(c, "custom_id", None) for c in buttons}
+    # Exclude the universal standard nav (📚 Help + ↩ Games) auto-attached to
+    # every leaf panel — this test pins the *action* surface against re-bloat,
+    # not the nav controls (views.navigation.attach_standard_nav, 2026-06-23).
+    ids = {
+        getattr(c, "custom_id", None)
+        for c in buttons
+        if not (getattr(c, "custom_id", "") or "").startswith("nav:")
+    }
     assert ids == {
         "mining:mine",
         "mining:harvest",
@@ -65,7 +72,7 @@ def test_mining_hub_view_is_exactly_the_six_option_a_actions():
         "mining:gear",
         "mining:workshop",
     }
-    assert len(buttons) == 6
+    assert len(ids) == 6
     # The moved/folded actions are gone from the persistent main panel.
     for gone in (
         "mining:inventory",

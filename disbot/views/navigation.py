@@ -46,7 +46,17 @@ from typing import TypeAlias
 
 import discord
 
+from utils.subsystem_registry import SUBSYSTEMS
+
 logger = logging.getLogger("bot.views.navigation")
+
+# Canonical custom_ids for the two standard-nav controls auto-attached to every
+# subsystem panel (the "never stranded" contract — owner directive 2026-06-23).
+# Stable strings so they survive persistent-view restart matching and so the
+# idempotency guard in :func:`attach_back_button` dedupes against any external
+# back-pusher (Help / hub child openers) that targets the same destination.
+NAV_HELP_ID = "nav:help"
+NAV_HUB_ID_PREFIX = "nav:hub:"
 
 # Public type alias: callers pass an async function that, given the
 # current interaction, returns the parent panel's ``(embed, view)``
@@ -129,6 +139,14 @@ def attach_back_button(
     The callback defers before invoking ``parent_builder`` so slow
     rebuilds do not exhaust Discord's initial response window.
     """
+    # Idempotency guard: a button with this custom_id is already present (e.g.
+    # the standard Help/Back-to-hub auto-attach ran in __init__, then a Help or
+    # hub child-opener tried to push the same destination). Skip silently so the
+    # panel never shows a duplicate back control. This is what lets the universal
+    # auto-attach (attach_standard_nav) coexist with the legacy external pushers.
+    if any(getattr(child, "custom_id", None) == custom_id for child in view.children):
+        return True
+
     if len(view.children) >= MAX_COMPONENTS:
         logger.warning(
             "navigation.attach_back_button: %s already has %d children — "
@@ -171,7 +189,19 @@ def attach_back_button(
         await safe_edit(interaction, embed=embed, view=parent_view)
 
     btn.callback = _back_callback  # type: ignore[method-assign]
-    view.add_item(btn)
+    try:
+        view.add_item(btn)
+    except ValueError:
+        # Discord rejects a row that already holds 5 components. A panel that
+        # packs its bottom row full can't take a back button there — log and
+        # skip rather than crash the whole panel build.
+        logger.warning(
+            "navigation.attach_back_button: %s row %d is full — %r button skipped.",
+            type(view).__name__,
+            row,
+            label,
+        )
+        return False
 
     # Record a re-attach closure so a panel that REDRAWS onto a fresh view
     # instance (the ``edit_in_place`` idiom — e.g. farm Collect → ``FarmMenuView()``)
@@ -217,6 +247,153 @@ def carry_back(old_view: discord.ui.View, new_view: discord.ui.View) -> None:
     target = getattr(old_view, "_back_target", None)
     if target is not None and getattr(new_view, "_back_target", None) is None:
         new_view._back_target = target  # type: ignore[attr-defined]
+
+
+async def _open_help_home(
+    interaction: discord.Interaction,
+) -> tuple[discord.Embed, discord.ui.View]:
+    """Click-time builder for the universal Help button → the Help home menu.
+
+    Function-local cogs import (the ``hub_children`` house idiom): the views
+    layer must not import ``cogs`` at module scope, but a click-time closure
+    resolving the Help home is the established seam. Rebuilds the governance
+    projection so Home reflects live visibility, never the open-time snapshot.
+    """
+    from cogs.help.panels import HelpCategoryView  # noqa: PLC0415
+    from cogs.help_cog import (  # noqa: PLC0415 — views→cogs click-time seam
+        _resolve_projection,
+        build_categories_overview_embed,
+    )
+    from services.governance_service import GovernanceContext  # noqa: PLC0415
+
+    gctx = GovernanceContext.from_interaction(interaction)
+    projection = await _resolve_projection(gctx)
+    embed = build_categories_overview_embed(projection=projection)
+    return embed, HelpCategoryView(projection=projection)
+
+
+def _make_hub_opener(hub_key: str) -> ParentBuilder:
+    """Return a click-time builder that rebuilds the ``hub_key`` mother hub.
+
+    Resolves the hub's cog via the runtime client and calls its
+    ``build_help_menu_view`` hook — the same universal hub-rebuild seam
+    :class:`views.hub_children.HubChildButton` uses, so a Back-to-hub button
+    re-renders the live, governance-filtered hub panel.
+    """
+
+    async def _open(
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        from cogs.help_cog import _cog_for_subsystem  # noqa: PLC0415
+
+        cog = _cog_for_subsystem(interaction.client, hub_key)  # type: ignore[arg-type]
+        builder = getattr(cog, "build_help_menu_view", None) if cog else None
+        if not callable(builder):
+            raise RuntimeError(f"hub {hub_key!r} has no build_help_menu_view")
+        return await builder(interaction)
+
+    return _open
+
+
+def has_standard_nav(view: discord.ui.View) -> bool:
+    """True when ``view`` already carries a standard-nav control.
+
+    Used by the legacy external back-pushers (Help's Back-to-Help, the hub
+    child openers) to skip their push when :func:`attach_standard_nav` already
+    gave the panel its Help / Back-to-hub buttons — preventing duplicate
+    controls without either side knowing about the other.
+    """
+    for child in view.children:
+        cid = getattr(child, "custom_id", None) or ""
+        if cid == NAV_HELP_ID or cid.startswith(NAV_HUB_ID_PREFIX):
+            return True
+    return False
+
+
+def _self_navigates(view: discord.ui.View) -> bool:
+    """True when ``view`` already provides its own hub/help/back navigation.
+
+    The mother-hub and operator panels (admin, utility, logging, settings, …)
+    define their own ``📚 Help`` / ``↩ Overview`` / ``↩ Back to <hub>`` buttons
+    as decorated components, so they keep that nav across redraws on their own
+    and must NOT receive a duplicate from :func:`attach_standard_nav`. The
+    panels that genuinely lose nav (the leaf panels — farm, mining, the game
+    panels, the AI/channel/ux_lab panels) have *no* nav button of their own and
+    relied on an externally-attached back; those are exactly the ones that get
+    auto-nav.
+
+    Detection is label-based (the codebase uses stable ``Help`` / ``Overview``
+    / ``Back to`` button copy) plus the canonical nav custom_ids. Heuristic —
+    if a future panel's button copy diverges this may misfire; revisit if a
+    self-navigating panel ever shows a duplicate or a leaf panel stays
+    stranded.
+    """
+    for child in view.children:
+        cid = getattr(child, "custom_id", None) or ""
+        if cid == NAV_HELP_ID or cid.startswith(NAV_HUB_ID_PREFIX):
+            return True
+        label = (getattr(child, "label", None) or "").lower()
+        if "help" in label or "overview" in label or "back to" in label:
+            return True
+    return False
+
+
+def attach_standard_nav(view: discord.ui.View) -> None:
+    """Auto-attach the universal Help (+ Back-to-hub) controls to a panel.
+
+    The "never stranded" mechanism (owner directive 2026-06-23): every panel
+    that declares a ``SUBSYSTEM`` gets, on construction, a **📚 Help** button
+    (opens the Help home) and — when the subsystem has a ``parent_hub`` — a
+    **↩ <hub>** button (rebuilds its mother hub). Because this runs in the base
+    view ``__init__``, the controls reappear on every redraw onto a fresh view
+    instance (the ``edit_in_place`` idiom that previously dropped them), and any
+    panel reachable by *any* command stays one click from Help and its hub.
+
+    Idempotent (via :func:`attach_back_button`'s custom_id guard) and a no-op
+    for views without a ``SUBSYSTEM`` (confirmations, transient sub-views) or
+    with ``STANDARD_NAV = False``. Best-effort: never raises into a constructor.
+    """
+    subsystem = getattr(view, "SUBSYSTEM", "") or ""
+    if not subsystem or not getattr(view, "STANDARD_NAV", True):
+        return
+    meta = SUBSYSTEMS.get(subsystem)
+    if meta is None:
+        return
+    # A panel that already defines its own Help / Overview / Back-to-hub nav
+    # keeps it across redraws on its own — don't duplicate it. Auto-nav exists
+    # for the leaf panels that have no nav of their own.
+    if _self_navigates(view):
+        return
+    try:
+        # The Help button is universal — except on the Help menu itself, which
+        # would otherwise link to its own home.
+        if subsystem != "help":
+            attach_back_button(
+                view,
+                label="📚 Help",
+                custom_id=NAV_HELP_ID,
+                parent_builder=_open_help_home,
+                row=4,
+                error_message="Could not load the Help menu. Please try again.",
+            )
+        parent_hub = meta.get("parent_hub")
+        if parent_hub:
+            hub_meta = SUBSYSTEMS.get(parent_hub) or {}
+            hub_name = hub_meta.get("display_name", parent_hub)
+            attach_back_button(
+                view,
+                label=f"↩ {hub_name}",
+                custom_id=f"{NAV_HUB_ID_PREFIX}{parent_hub}",
+                parent_builder=_make_hub_opener(parent_hub),
+                row=4,
+                error_message=f"Could not reload {hub_name}. Please try again.",
+            )
+    except Exception:  # noqa: BLE001 — nav attach must never break a panel ctor
+        logger.warning(
+            "navigation.attach_standard_nav: failed for subsystem %r",
+            subsystem,
+            exc_info=True,
+        )
 
 
 async def transition_to(
@@ -331,10 +508,15 @@ def chain_back(
 
 __all__ = [
     "MAX_COMPONENTS",
+    "NAV_HELP_ID",
+    "NAV_HUB_ID_PREFIX",
     "BackTarget",
     "ParentBuilder",
     "attach_back_button",
     "attach_back_target",
+    "attach_standard_nav",
+    "carry_back",
     "chain_back",
+    "has_standard_nav",
     "transition_to",
 ]
