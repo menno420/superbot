@@ -134,8 +134,15 @@ dump, mirroring the validation discipline):
 - **Per-round XP / cash** → `round_xp.json` (`xp_source`); cash is derived from
   composition. Neither is a dump field.
 - **MOAB-class late-game/freeplay health scaling** → `bloon_scaling.json`
-  (`scaling_source`). MOAB-class bloons gain **+2% of base HP per round from round
-  81** (`v(100)=1.40`), so a **BAD first spawns on round 100 already at 28,000 HP**
-  (20,000 base), not 20,000. `bloons.json` holds only the round-≤80 base; the ramp
+  (`scaling_source`). MOAB-class bloons take a **piecewise-linear health multiplier
+  `v(r)` from round 81** that **steepens sharply past round 100** (NOT a flat
+  +2%/round): `v(100)=1.40`, `v(140)=5.00` — both cross-verified (BAD 28,000 @ r100;
+  fortified BAD 200,000 @ r140). So a **BAD first spawns on round 100 already at
+  28,000 HP** (20,000 base). `bloons.json` holds only the round-≤80 base; the ramp
   is applied at runtime by `btd6_data_service.bloon_health_at_round()`. So "where
   is the per-round health modifier in the dump?" → it isn't; it's this curve.
+- **Round-scaled RBE** → same file's `freeplay` block +
+  `btd6_data_service.bloon_rbe_at_round()`. Late-game RBE is the spawn tree
+  recomputed with **every MOAB-class layer × `v(r)`** *and* **ceramics →
+  superceramics** (RBE 68, vs base 104), which reproduces the authoritative
+  **BAD @ r100 = 67,200 RBE** exactly (vs 55,760 base). It is *not* `base × v(r)`.
