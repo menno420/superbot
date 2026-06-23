@@ -10,9 +10,10 @@ These are the genuine forward ideas generated during the 2026-06-23 visual / AI-
 The two *implemented* ideas from the same arc (resource **creation** from a description → #1357; the
 **create-count guard** → #1361) are already shipped and need no capture. These three remain open.
 
-## 1. Golden-image snapshot tests for the card engine
+## 1. Golden-image snapshot tests for the card engine ✅ IMPLEMENTED
 
 **From:** `.sessions/2026-06-23-visual-card-engine.md` (Q-0089). **Lane:** dev quality / tooling.
+**Shipped:** `tests/unit/utils/test_card_render_structure.py` (the environment-stable form — see below).
 
 The card renderers (`utils/card_render.py`, `utils/profile_render.py`, and the older
 `mining_render` / `welcome_render` / `character_render`) are only asserted on "returns PNG bytes /
@@ -23,6 +24,13 @@ regressions the byte-check can't. **It becomes load-bearing at card-engine roadm
 existing renderers migrate onto `CardCanvas` — that refactor is exactly where a silent visual
 regression would slip in. Contained, dev-only (Pillow already present; gate the dep with
 `pytest.importorskip`). See `docs/ideas/visual-card-engine-vision-2026-06-23.md` (the engine roadmap).
+
+> **As built:** committing reference PNGs proved the wrong shape (fragile across font/Pillow
+> versions). The shipped form samples **solid-fill regions** (header band, panels, the progress
+> bar's filled-vs-empty split, background corners) at coordinates away from text and asserts the
+> pixel equals the theme's declared colour — environment-independent, but still catches a moved
+> panel / swapped theme colour / shifted layout. Same goal (catch visual regressions the byte-check
+> misses), robust delivery.
 
 ## 2. User-visible "cosmetic-only monetization" pledge surface
 
