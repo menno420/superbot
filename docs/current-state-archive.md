@@ -86,6 +86,49 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1276 · #1278 · #1274 · #1269 · #1273 · #1287 (2026-06-22, docs / chore / config + dashboard refresh)** —
+  repo navigation cleanup + prune the stale claim ledger (#1276); deleted the disproven "synchronize doesn't
+  re-fire CI" journal claim (#1278); allow read-only network probes (`curl`) in settings + prune a stale claim
+  (#1274); and the per-source-merge `dashboard-data-refresh` cadence regen (#1269 · #1273 · #1287, Q-0167).
+- **#1235 · #1249 · #1251 · #1255 · #1258 · #1263 (2026-06-21, BTD6 buff-uptime + data auto-seed/drift)** — a
+  long BTD6 data session: the **buff-uptime upgrade-detail** model — `btd6_upgrade_detail_service` + an AI tool
+  + `parse_gamedata` extraction (#1235), data verify + populate (alchemist, #1249), **multi-target** buff
+  uptime (#1251); then the **data-lifecycle hardening** — auto-seed BTD6 blob data on boot (`btd6_data_service`
+  + env-var, #1255), a **content-drift surface** (#1258), and the `!btd6ops seed-data` **changed-report**
+  (#1263). Closes the standing "owner must remember to run `seed-data`" manual step.
+- **#1234 · #1237 · #1242 · #1243 · #1245 · #1246 · #1248 · #1250 (2026-06-21, reaction-roles arc —
+  continuation / polish past the overhaul's PR 1–5)** — multi-emote-per-message + menu reuse/repost (#1234),
+  post-channel picker + auto-created colour/gradient roles (#1237), free temp-roles **member view** (#1242,
+  `role_grants_cog`), message picker for the Add flow — no more copy-paste message ID (#1243), role presets +
+  management-panel UX (#1245), gradient presets gallery (#1246), **dead-binding self-heal** — cleanup on
+  role-delete + panel hint (#1248) and auto-heal on the live reaction-listener path (#1250). The arc is now
+  Carl-bot-mature; **PR 6 (PIL banner cards) shipped 2026-06-22 (#1279** — optional `role_menus.card_template`
+  banner via the `welcome_render` PIL pattern, graceful embed-only fallback); only the gated web builder
+  (Surface A) remains ([plan](planning/reaction-roles-overhaul-plan-2026-06-21.md)).
+- **#1238 · #1239 · #1240 (2026-06-21, Project Moon knowledge-domain program — design, Q-0192)** — a NEW
+  large program stood up as design: the **wiki-feasibility idea** ("can we serve a fandom wiki like BTD6
+  data?", #1238), the **full-parity program plan** (#1239, Q-0192), and the **pre-build recon** — data
+  sources + the generalized `KnowledgeDomain` seam contract (#1240). Docs-only; the runtime build is a
+  buildable lane ([plan](planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
+- **#1244 · #1254 (2026-06-21, creature leaderboard provider + Starboard plan)** — the creature-PvP
+  **leaderboard rank provider** (`rank_providers`, #1244) feeding the shared ranking surface; and the
+  **Starboard / Hall-of-Fame plan** (#1254, idea B1) whose PR 1 (#1259, migration 082) is in flight on the
+  reaction-listener seam. [plan](planning/starboard-plan-2026-06-21.md).
+- **#1247 · #1253 · #1256 (2026-06-21, workflow / docs)** — **Q-0193 merge=deploy clarity** (Railway
+  auto-redeploys `worker` on merge → never tell the owner to "restart/deploy" a merge; CLAUDE.md +
+  `production-deployment.md` + router, #1247); a journal capture of recurring **reaction-roles-chain workflow
+  lessons** (#1253); a repo-state review + `check_docs` guard hardening (#1256).
+- **#1236 · #1241 · #1252 (2026-06-21, dashboard generated-data refresh band)** — the per-source-merge
+  `dashboard-data-refresh` cadence regen of `dashboard/data/dashboard.json` (Q-0167).
+- **#1215 · #1216 · #1217 · #1218 · #1220 · #1219 · #1227 (2026-06-21, reaction-roles / role-menu overhaul —
+  Carl-bot parity, end-to-end)** — the plan (#1215 overhaul plan · #1216 UI direction = web dashboard vs
+  in-Discord · #1217 presentation/editing §4.6 · #1218 owner decisions locked + role-pickup analytics) then
+  the build: **PR 1** audited `reaction_role_service` seam + `utils/db/role_menus` data layer + migration 078
+  + cog routing/teardown (#1220); **PR 2** the in-Discord role-menu builder (Surface B, buttons/selects/modals,
+  #1219); **PR 3–5 together** (one owner-directed PR, Q-0191 merge-immediately, #1227) — per-message emoji
+  modes [migration 079] · free temp-roles `RoleGrantsCog`/`!temprole`/`utils/duration` [migration 080] ·
+  role-pickup analytics [migration 081]. **PR 6 (PIL banner cards) shipped 2026-06-22 (#1279);** only the
+  gated **web builder (Surface A)** remains ([plan](planning/reaction-roles-overhaul-plan-2026-06-21.md)).
 - **#1208 · #1213 (2026-06-21, creature game — design → runtime)** — **catch + collection/dex** shipped as the
   first runtime slice (#1208 — `disbot/cogs/creature_cog.py`, fishing-mirrored spine, `utils/creatures/` pure
   domain + `services/creature_workflow.py` audited write + migration 077 + the 36-creature catalog +
