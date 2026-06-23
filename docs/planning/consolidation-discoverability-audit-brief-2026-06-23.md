@@ -161,6 +161,15 @@ the audit should mine:
 zero**. The audit still needs a *live-bot* build to exercise the `bot`-dependent signals
 (`subsystems_missing_help_hook`, `undiscoverable_surfaces`), which the no-bot static build skips.
 
+**SHIPPED 2026-06-23 — the static settings-reachability guard** (the settings analog of the #1370
+command guard): `scripts/check_settings_reachability.py` + `tests/unit/invariants/test_settings_reachability.py`
+assert every subsystem that declares a `SubsystemSchema` is non-internal (so it surfaces in `!settings`)
+and that every `*.configure`/`*.settings.*`-capability subsystem is either schema'd or explicitly
+allowlisted (`architecture_rules/settings_reachability_exceptions.yml`). Result: **19 reachable · 3 exempt
+· 0 GAP** — settings are structurally centralized, and now *un-regressably* so. Finding + exemption
+ledger: [`audits/settings-reachability-2026-06-23.md`](../audits/settings-reachability-2026-06-23.md).
+The *live-bot* signal verification above remains the owner's (it needs a running bot).
+
 ### 3.5 Setup wizard + AI advisor (two named finalize targets)
 
 - **Setup wizard** (`cogs/setup/`, `views/setup/sections/`, `services/setup_session.py`,
