@@ -1,9 +1,9 @@
 # 2026-06-23 — Economy panel → Treasury button (panel-link fix)
 
-> **Status:** `in-progress` — born-red card (Q-0133); flips to `complete` as the final step.
+> **Status:** `complete` — born-red card (Q-0133) flipped green as the final step.
 > Owner-directed (the maintainer reported treasury wasn't reachable from any panel and asked me to
 > find out what went wrong). Follow-up to the merged treasury build (#1334).
-> PR: this session → auto-merges on green CI (Q-0123).
+> PR #1344 → auto-merge armed; merges on green CI (Q-0123/Q-0127).
 
 ## The bug (what the maintainer caught)
 
@@ -41,8 +41,9 @@ is panel-linked" are surfaced as follow-ups (Enders), not built here.
 
 ## Verification
 
-- `pytest tests/unit/views/test_economy_treasury_button.py + test_economy_inventory_edit.py` → 8 passed.
-- (to fill on close) full `check_quality.py --check-only` · `mypy disbot/` · `check_architecture`.
+- Full suite: **11967 passed**, 0 failed. `check_quality.py --check-only` ✓ · `mypy disbot/` 0 ·
+  `check_architecture --mode strict` 0 errors. (The one CI `code-quality` red before this flip was
+  the intended born-red session gate, not a defect.)
 
 ## Enders
 
