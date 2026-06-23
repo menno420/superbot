@@ -61,6 +61,31 @@ game-authoritative source for the *runtime* layer ends that whole class of bug.
   planning effort when capacity allows; a first slice could target just the freeplay
   health curve + per-round RBE/cash (the exact things we fought this session).
 
+## Empirical validation log — 2026-06-23 (cash)
+
+First real-game data point against the cash model (owner-run, BTD6 **sandbox**), and a
+preview of why the controlled per-round capture matters:
+
+- **r100→r120, clean** (2 paragons, no income, every round sent fully): cash gained
+  **$176,369**.
+- **Three confounds nearly caused wrong "fixes":** (1) **double cash** active (÷2);
+  (2) **sandbox has no `$100+n` round bonus**; (3) **CHIMPS ≠ sandbox**. Removing them:
+  de-doubled pop cash ≈ **$88,185** vs our model's pop cash **$85,468** → **within ~3%.
+  Cash model VALIDATED.** (Each confound flipped the conclusion mid-thread — the whole
+  point of the runtime-extraction idea: read clean engine values under known conditions.)
+- **Settled the calculator spread.** CyberQuincy ($139k for r100–120) **over-counts
+  fortified bloons** — it pays extra cash for fortified, and the per-round divergence from
+  us tracks fortified density exactly (r100 *no fortified* → matches us to the cent;
+  r101/r102 *heavily fortified* → 1.6–1.7× our pop cash; r140 *half-fortified* → 1.48×).
+  The game gives **fortified-independent cash**, confirming our `modifier-independent`
+  assumption — **CQ is the one that's off**; topper is low (stale 0.02 decay past r120).
+- **Residual ~3%** = the superceramic payout (we treat superceramic = normal ceramic; the
+  +$86 may pay a hair more than exact compensation) and/or screenshot timing — too small to
+  chase by fitting one measurement.
+- **Owner's next step (planned):** a detailed **per-round** in-game cash capture (every
+  round, no modifiers) → diff against our per-round numbers to pin that ~3% exactly. That
+  table is the oracle the runtime-extraction mod (or a drift test) pins to.
+
 ## Links
 - `docs/btd6/btd6-game-file-extraction-plan.md` — Phase 1 (models), historical.
 - `docs/btd6/btd6-gamedata-dictionary.md` § "Runtime-formula facts the dump does NOT store".
