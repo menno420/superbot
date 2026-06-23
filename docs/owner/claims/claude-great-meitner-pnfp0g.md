@@ -1,0 +1,1 @@
+- `claude/great-meitner-pnfp0g` · BTD6 late-game/freeplay MOAB-class health scaling (round-scaled bloon HP grounding) · `disbot/data/btd6/bloon_scaling.json`, `disbot/services/btd6_data_service.py`, `disbot/services/btd6_context_service.py`, `tests/unit/services/` · 2026-06-23
