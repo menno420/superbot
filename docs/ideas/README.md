@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`session-followups-visual-ai-setup-2026-06-23.md`](./session-followups-visual-ai-setup-2026-06-23.md) —
+  **session-idea promotion (2026-06-23, Q-0089):** the three open forward-ideas from the visual-engine /
+  AI-setup arc (PRs #1349/#1352/#1355/#1357/#1361), lifted out of their `.sessions/` logs into the
+  backlog so grooming finds them — **(1)** golden-image snapshot tests for the card engine (catches
+  layout regressions the byte-check misses; load-bearing at engine roadmap H2), **(2)** a user-visible
+  *cosmetic-only monetization pledge* surface (the north-star's Pillar 1, user-facing half), **(3)** a
+  per-kind breakdown in the #1361 setup create-count guard. Cross-cutting; build-when-convenient.
 - [`new-subsystem-followup-tracker-2026-06-23.md`](./new-subsystem-followup-tracker-2026-06-23.md) —
   **reconciliation idea (2026-06-23, band-#1350 Q-0089):** the band stood up **four** new subsystems
   (farm/karma/casino/treasury), each with obvious follow-up depth that lives only in scattered session-card
