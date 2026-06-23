@@ -1,6 +1,6 @@
 # 2026-06-23 — Universal panel nav: every panel is one click from Help + its hub
 
-> **Status:** `in-progress` — owner-directed (Option 1). Building the "never stranded"
+> **Status:** `complete` — owner-directed (Option 1). Built the "never stranded"
 > mechanism: every leaf panel auto-attaches **📚 Help** + **↩ <parent hub>** on construction, so
 > a panel reached by *any* command (e.g. `!games`, `!farm`) is always one click from Help and its
 > mother hub, and never loses them on a redraw. PR this session; auto-merge armed on green (Q-0127);
@@ -61,4 +61,37 @@ carry `nav:help` + `nav:hub:<parent>`.
   cases. Updated leaf-panel pins (mining ×4, cleanup ×2, btd6 legacy ids) to the new contract; the
   self-navigating panels (admin/utility/logging/flag_manager/server_management) stayed green unchanged.
 
-(Close-out enders at session close.)
+## Close-out
+
+**Verification:** full suite `12154 passed, 48 skipped`; `mypy disbot/` clean (824 files);
+`check_architecture --mode strict` 0 errors; `check_quality --check-only` green;
+ledger + `check_docs --strict` pass (Q-0104 docs audit — nothing this session belongs in a
+durable home that isn't already here; no new owner *decision*, this was an owner *directive*
+already captured in CLAUDE.md's Working agreement, so no router Q needed).
+
+**💡 Session idea (Q-0089):** *A CI invariant test that every `SUBSYSTEM`-declaring panel
+carries a reachable Help affordance.* This session made "never stranded" true at runtime via
+`attach_standard_nav`; the natural next guard is to make it **machine-checkable** — construct each
+registered panel (or each `build_help_menu_view` result) in a test and assert it exposes a
+`nav:help` (or self-navigating Help/Overview) control, so a future panel can't regress into a
+dead-end. Distinct from the existing `check_command_reachability` / `test_help_reachability`
+(those pin *command/help discoverability*, not that a *constructed panel* carries Help). Worth
+having — it converts the owner's "one centralized app, never stranded" directive into a contract
+the next agent can't silently break. Captured here; substantial enough to promote to a
+`docs/ideas/` file in a grooming pass.
+
+**⟲ Previous-session review (Q-0102):** the prior session (commit `6f5a5b8`, `carry_back`) correctly
+root-caused the fresh-view-redraw mechanism and shipped a working fix + tests for farm — solid
+diagnosis. What it **missed**: it solved the class **per-redraw-site** (`carry_back(self, view)` at
+every rebuild), which would mean ~30 hand-edits and stays regression-prone (a new panel/redraw site
+silently lacks it). The owner's very next message ("one script that loads them to all panels")
+pointed at the better altitude. **System improvement surfaced & applied:** when the *same* concern
+recurs across many panels, prefer a **base-class/constructor-level mechanism** over per-call-site
+patches — it's regression-proof and covers *future* panels for free. This session moved the fix from
+`carry_back` (per-site) to `attach_standard_nav` in `BaseView`/`PersistentView.__init__` (universal).
+The `carry_back` work isn't wasted — it's the primitive (recorded re-attachers + idempotency) the
+universal layer builds on. General rule worth keeping: *reach for the constructor seam before the
+call-site patch.*
+
+**Claim** `docs/owner/claims/claude__panel-back-nav-fix.md` deleted at close (Q-0126).
+
