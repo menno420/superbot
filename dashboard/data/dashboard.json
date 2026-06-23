@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T14:26:35Z",
+    "generated_at": "2026-06-23T18:36:23Z",
     "build": {
-      "commit": "86028ad2",
-      "subject": "Merge pull request #1367 from menno420/claude/audit-brief-verified-findings",
-      "committed_at": "2026-06-23T14:26:35Z"
+      "commit": "de80ca62",
+      "subject": "Merge pull request #1378 from menno420/claude/u3-games-hubchildbutton",
+      "committed_at": "2026-06-23T18:36:23Z"
     },
     "counts": {
       "functions": 41,
-      "ideas": 133,
+      "ideas": 134,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1139,6 +1139,14 @@
       "status": "ideas",
       "date": "2026-06-23",
       "summary": "These are the genuine forward ideas generated during the 2026-06-23 visual / AI-setup arc (PRs",
+      "subsystems": null
+    },
+    {
+      "file": "subsystem-inventory-homed-guard-2026-06-23.md",
+      "title": "Idea — a `check_subsystem_inventory_homed` guard (close the inventory-table drift class)",
+      "status": "ideas",
+      "date": "2026-06-23",
+      "summary": "While building the [ultracode map](../ultracode/shared-dependency-ownership-map.md), four read-only",
       "subsystems": null
     },
     {
@@ -2397,6 +2405,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-23-ultracode-shared-dependency-map.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Ultracode shared-dependency / ownership map",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-u3-games-hubchildbutton.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — U3 Games hub child-button migration onto shared `HubChildButton`",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-setup-create-confirm.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Final Review create-count guard + #1351 ledger drift fix",
@@ -2421,6 +2445,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-23-phase0-completion.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Phase-0 completion: hub-child primitive + settings-orphan guard + fleet plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-23-new-subsystem-checker-gaps.md",
       "date": "2026-06-23",
       "title": "Session — 2026-06-23 · Close the new-subsystem checker's blind spots",
@@ -2435,6 +2467,22 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-hub-child-button-consolidation.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — HubChildButton consolidation (discoverability fleet, first consolidation)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-help-discoverability-foundation.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Discoverability audit Session 1: help-findability foundation",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-23-giveaway-system-plan.md",
@@ -2586,6 +2634,22 @@
       "title": "2026-06-23 — Render-structure (\"golden\") tests for the card engine",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-23-btd6-strategy-discoverability.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Discoverability U4: surface `!btd6strat` (BTD6 Strategy button)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-audit-kickoff-prompt.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Append the audit kickoff prompt to the discoverability brief",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2808,62 +2872,6 @@
       "file": "2026-06-22-karma-build.md",
       "date": "2026-06-22",
       "title": "Session — 2026-06-22 · Karma (thanks/upvote reputation) — build",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-idle-chicken-farm.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — NEW idle egg/chicken farm game",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-hermes-redeploy.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Hermes one-command + auto redeploy (no more Terminus)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-help-remove-advanced.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Remove the redundant \"All Commands / Advanced\" help surface",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-help-reachability-guard.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Help reachability guard (orphan check)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-help-menu-regrouping.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Help-menu regrouping (simulation + implementation)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-friction-to-guard-reflex.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Wrong-branch guard hook + the \"friction → guard\" self-prevention reflex",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-fishing-minigame-sim.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Fishing minigame: design simulation + analysis",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
