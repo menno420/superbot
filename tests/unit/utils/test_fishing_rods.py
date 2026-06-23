@@ -21,11 +21,13 @@ def test_starter_rod_is_free_and_neutral():
     assert starter.bite_speed == 1.0
     assert starter.rarity_pull == 1.0
     assert starter.escape_resist == 0.0
+    assert starter.premature_grace == 0.0  # the bare rod never forgives an early reel
 
 
 def test_knobs_and_price_improve_monotonically_up_the_ladder():
     ladder = rods.ROD_LADDER
-    # each step strictly improves every knob (window↑, bite faster, pull↑, resist↑)
+    # each step strictly improves every knob (window↑, bite faster, pull↑, resist↑,
+    # grace↑)
     assert all(
         a.window_bonus < b.window_bonus for a, b in zip(ladder, ladder[1:])
     )
@@ -34,8 +36,16 @@ def test_knobs_and_price_improve_monotonically_up_the_ladder():
     assert all(
         a.escape_resist < b.escape_resist for a, b in zip(ladder, ladder[1:])
     )
+    assert all(
+        a.premature_grace < b.premature_grace for a, b in zip(ladder, ladder[1:])
+    )
     # and costs more (the price curve)
     assert all(a.price < b.price for a, b in zip(ladder, ladder[1:]))
+
+
+def test_premature_grace_stays_a_probability_across_the_ladder():
+    # the grace knob is a 0…1 chance — never out of range on any rung
+    assert all(0.0 <= r.premature_grace <= 1.0 for r in rods.ROD_LADDER)
 
 
 def test_rod_for_tier_clamps_out_of_range():

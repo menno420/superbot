@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-to4alr` · scope: add the `premature_grace` fishing rod knob (the design's 5th knob — forgive one premature reel/cast, scaling up the ladder) + fix S1/design-doc fake-out drift + GC stale claims · area: `disbot/utils/fishing/`, `disbot/views/fishing/`, tests, `docs/` · 2026-06-23

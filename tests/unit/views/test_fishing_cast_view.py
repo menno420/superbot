@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from services import fishing_workflow
-from utils.fishing import rods
+from utils.fishing import minigame, rods
 from utils.fishing.fish import Catch, FishSpecies
 from views.fishing import active_casts
 from views.fishing.cast_view import _PHASE_FIGHT, FishingCastView
@@ -100,6 +100,82 @@ async def test_reel_before_bite_spooks_the_fish_and_never_writes():
     commit.assert_not_awaited()  # premature → the fish got away, no catch
     assert view._resolved is True
     assert (1, 99) not in active_casts  # guard released
+
+
+@pytest.mark.asyncio
+async def test_premature_reel_is_forgiven_once_by_the_rods_grace():
+    # a rod with full premature_grace forgives the first early reel: the cast
+    # survives (not resolved, guard still held) so the real bite can still come.
+    view = FishingCastView(
+        user_id=1,
+        guild_id=99,
+        cast=_ORDINARY,
+        rod=rods.rod_for_tier(4),  # diamond — best grace
+    )
+    view.message = MagicMock()
+    view.message.edit = AsyncMock()  # the "steadies it" anchor edit
+    active_casts.add((1, 99))
+    interaction = _interaction()
+
+    with (
+        patch.object(fishing_workflow, "commit_catch", AsyncMock()) as commit,
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
+        patch.object(minigame, "roll_premature_grace", return_value=True),
+    ):
+        await _reel(view, interaction)
+
+    commit.assert_not_awaited()
+    view.message.edit.assert_awaited()  # showed the reassuring "still in the water"
+    assert view._grace_used is True
+    assert view._resolved is False  # the line is still in the water
+    assert (1, 99) in active_casts  # cast not torn down
+
+
+@pytest.mark.asyncio
+async def test_grace_is_spent_once_a_second_early_reel_spooks_the_fish():
+    view = FishingCastView(
+        user_id=1,
+        guild_id=99,
+        cast=_ORDINARY,
+        rod=rods.rod_for_tier(4),
+    )
+    view.message = MagicMock()
+    view._grace_used = True  # already forgiven once this cast
+    active_casts.add((1, 99))
+    interaction = _interaction()
+
+    with (
+        patch.object(fishing_workflow, "commit_catch", AsyncMock()) as commit,
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)),
+        # grace should NOT even be rolled when already used; assert by never patching
+        # it to True — if it were rolled the bare default would still spook anyway.
+        patch.object(minigame, "roll_premature_grace", return_value=True) as grace,
+    ):
+        await _reel(view, interaction)
+
+    grace.assert_not_called()  # the flag short-circuits before the roll
+    commit.assert_not_awaited()
+    assert view._resolved is True  # spooked for good
+    assert (1, 99) not in active_casts
+
+
+@pytest.mark.asyncio
+async def test_bare_rod_never_forgives_a_premature_reel():
+    # the default _make_view uses the bare rod (grace 0); an early reel always spooks
+    view = _make_view()
+    active_casts.add((1, 99))
+    interaction = _interaction()
+
+    with (
+        patch.object(fishing_workflow, "commit_catch", AsyncMock()),
+        patch("views.fishing.cast_view.safe_defer", AsyncMock(return_value=True)),
+        patch("views.fishing.cast_view.safe_edit", AsyncMock(return_value=True)),
+    ):
+        await _reel(view, interaction)
+
+    assert view._grace_used is False  # nothing to spend
+    assert view._resolved is True  # spooked
 
 
 @pytest.mark.asyncio
