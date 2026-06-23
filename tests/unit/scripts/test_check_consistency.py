@@ -311,6 +311,37 @@ class CompareView(HubView):
 """
 
 
+# A dynamic hub that declares SUBSYSTEM — attach_standard_nav auto-attaches its
+# 📚 Help / ↩ <hub> control in __init__, so it is NOT a back gap even though the
+# module references no attach_back_button (the never-stranded mechanism).
+_HUB_SUBSYSTEM_AUTO_NAV = """\
+import discord
+
+
+class FishingDone(HubView):
+    SUBSYSTEM = "fishing"
+
+    def __init__(self, author):
+        super().__init__(author)
+        self.add_item(discord.ui.Button(label="Cast again", custom_id="x:again"))
+"""
+
+# Same, but opts out of auto-nav (STANDARD_NAV = False) — it genuinely has no
+# nav, so the rule must still flag it.
+_HUB_SUBSYSTEM_NAV_OPT_OUT = """\
+import discord
+
+
+class DemoHub(HubView):
+    SUBSYSTEM = "ux_lab"
+    STANDARD_NAV = False
+
+    def __init__(self, author):
+        super().__init__(author)
+        self.add_item(discord.ui.Button(label="Ping", custom_id="x:ping"))
+"""
+
+
 def _back_findings(mod, tmp_path, monkeypatch, src, *, rel="views/settings_hub.py"):
     _write(mod, tmp_path, monkeypatch, rel, src)
     return mod.rule_back_button([tmp_path / rel], {})
@@ -357,6 +388,23 @@ def test_back_transition_to_helper_is_clean(mod, tmp_path, monkeypatch):
     as a nav affordance (the UX-lab compare/probes/wing pattern).
     """
     assert _back_findings(mod, tmp_path, monkeypatch, _HUB_TRANSITION_TO) == []
+
+
+def test_back_subsystem_panel_with_auto_nav_is_clean(mod, tmp_path, monkeypatch):
+    """A SUBSYSTEM-declaring panel auto-attaches standard nav (📚 Help / ↩ hub)
+    in its constructor — the affordance is present at runtime, so the static
+    rule must not flag it even with no attach_back_button in the module.
+    """
+    assert _back_findings(mod, tmp_path, monkeypatch, _HUB_SUBSYSTEM_AUTO_NAV) == []
+
+
+def test_back_flags_subsystem_panel_that_opts_out_of_auto_nav(mod, tmp_path, monkeypatch):
+    """STANDARD_NAV = False opts out of auto-nav, so such a panel genuinely has
+    no back affordance and must still be flagged.
+    """
+    findings = _back_findings(mod, tmp_path, monkeypatch, _HUB_SUBSYSTEM_NAV_OPT_OUT)
+    assert len(findings) == 1
+    assert findings[0].qualname == "DemoHub"
 
 
 def test_back_allowlist_suppresses_by_class(mod, tmp_path, monkeypatch):

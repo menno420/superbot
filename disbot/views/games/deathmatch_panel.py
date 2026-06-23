@@ -278,10 +278,10 @@ class _BotDuelView(discord.ui.View):
         action_text: str,
     ) -> None:
         self.duel.is_over = True
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
         # NOTE: deliberately NO call to ``cog.update_leaderboard`` /
         # ``db.update_deathmatch`` — see plan §13 bot-duel stats rule.
+        # Swap to the terminal result view (Play again + standard nav) so the
+        # finished duel is never a dead-end (owner directive 2026-06-23).
         await interaction.response.edit_message(
             embed=build_bot_duel_result_embed(
                 self.duel,
@@ -289,7 +289,7 @@ class _BotDuelView(discord.ui.View):
                 self.bot_user,
                 action_text,
             ),
-            view=self,
+            view=_BotDuelResultView(self.player, self.bot_user),
         )
         self.stop()
 
@@ -297,8 +297,6 @@ class _BotDuelView(discord.ui.View):
         if self.duel.is_over:
             return
         self.duel.is_over = True
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
             title="⚔️ Bot Duel — Timeout",
             description=(
@@ -310,9 +308,56 @@ class _BotDuelView(discord.ui.View):
         )
         if self.message:
             try:
-                await self.message.edit(embed=embed, view=self)
+                await self.message.edit(
+                    embed=embed,
+                    view=_BotDuelResultView(self.player, self.bot_user),
+                )
             except Exception:
                 pass
+
+
+class _BotDuelResultView(HubView):
+    """Terminal screen after a bot duel — never a dead-end.
+
+    A ``HubView`` with ``SUBSYSTEM = "deathmatch"`` so
+    :func:`views.navigation.attach_standard_nav` auto-attaches **📚 Help** and
+    **↩ Games** — the player is one click from the Deathmatch hub and Help.
+    The **🔁 Play again** button re-runs the Fight Bot flow (re-fetched gear,
+    a fresh :class:`_BotDuelView`), mirroring ``DeathmatchPanelView.btn_fight_bot``.
+    """
+
+    SUBSYSTEM = "deathmatch"
+
+    def __init__(
+        self,
+        player: discord.Member | discord.User,
+        bot_user: discord.User | discord.ClientUser,
+    ) -> None:
+        super().__init__(player)
+        self.player = player
+        self.bot_user = bot_user
+
+    @discord.ui.button(
+        label="🔁 Play again",
+        style=discord.ButtonStyle.success,
+        custom_id="bot_duel_result:again",
+        row=0,
+    )
+    async def btn_again(
+        self,
+        interaction: discord.Interaction,
+        _button: discord.ui.Button,
+    ) -> None:
+        bot_user = interaction.client.user or self.bot_user
+        player_stats = equipment.compute_stats(
+            await db.get_equipment(str(interaction.user.id), interaction.guild_id or 0),
+        )
+        view = _BotDuelView(interaction.user, bot_user, player_stats=player_stats)
+        await interaction.response.edit_message(
+            embed=build_bot_duel_embed(view.duel, interaction.user, bot_user),
+            view=view,
+        )
+        view.message = interaction.message
 
 
 # ---------------------------------------------------------------------------

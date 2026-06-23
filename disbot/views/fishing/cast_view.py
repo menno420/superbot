@@ -48,6 +48,7 @@ from utils.fishing import venue as venue_mod
 from utils.fishing import weather as weather_mod
 from utils.fishing.fish import max_size_rank_for_level, species_for_venue
 from utils.ui_constants import ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
+from views.base import HubView
 from views.base import handle_view_error as _on_view_error
 
 logger = logging.getLogger("bot.views.fishing")
@@ -417,9 +418,15 @@ class FishingCastView(discord.ui.View):
         if result.xp_note:
             desc += f"\n{result.xp_note}"
         embed = discord.Embed(title=title, description=desc, color=SUCCESS_COLOR)
-        embed.set_footer(text="!fish to cast again · !fishlog for your collection")
-        self._disable()
-        await safe_edit(interaction, embed=embed, view=self)
+        embed.set_footer(text="🎣 Cast again · !fishlog for your collection")
+        # Hand off to the terminal continuation view (Cast again + standard nav)
+        # so a landed catch is never a dead-end (owner directive 2026-06-23).
+        await safe_edit(
+            interaction,
+            embed=embed,
+            view=_FishingDoneView(interaction.user, self.guild_id),
+        )
+        self.stop()
 
     def _disable(self) -> None:
         for item in self.children:
@@ -456,11 +463,16 @@ class FishingCastView(discord.ui.View):
         if not already_terminal:
             self._resolved = True
             self._release()
-        self._disable()
         if not await safe_defer(interaction):
             self.stop()
             return
-        await safe_edit(interaction, embed=self._embed(text, ERROR_COLOR), view=self)
+        # Continuation view (Cast again + standard nav) — even a fish that got
+        # away leaves the player one click from another cast, the hub, and Help.
+        await safe_edit(
+            interaction,
+            embed=self._embed(text, ERROR_COLOR),
+            view=_FishingDoneView(interaction.user, self.guild_id),
+        )
         self.stop()
 
     def _terminate_silent(self) -> None:
@@ -501,3 +513,43 @@ class FishingCastView(discord.ui.View):
     ) -> None:
         self._release()
         await _on_view_error(self, interaction, error, item)
+
+
+class _FishingDoneView(HubView):
+    """Terminal screen after a cast resolves — never a dead-end.
+
+    A ``HubView`` with ``SUBSYSTEM = "fishing"`` so
+    :func:`views.navigation.attach_standard_nav` auto-attaches **📚 Help** and
+    **↩ Games** — the player is one click from the Games hub and Help. The
+    **🎣 Cast again** button re-runs :func:`prepare_cast`, mirroring
+    ``FishingMenuView.cast_btn`` so a landed (or escaped) catch flows straight
+    into the next cast.
+    """
+
+    SUBSYSTEM = "fishing"
+
+    def __init__(self, author: discord.Member | discord.User, guild_id: int) -> None:
+        super().__init__(author)
+        self.guild_id = guild_id
+
+    @discord.ui.button(
+        label="Cast again",
+        emoji="🎣",
+        style=discord.ButtonStyle.success,
+        custom_id="fishing_done:cast_again",
+        row=0,
+    )
+    async def cast_again(
+        self,
+        interaction: discord.Interaction,
+        _button: discord.ui.Button,
+    ) -> None:
+        prepared = await prepare_cast(self._author.id, self.guild_id)
+        if isinstance(prepared, str):
+            await interaction.response.send_message(prepared, ephemeral=True)
+            return
+        embed, view = prepared
+        await interaction.response.edit_message(embed=embed, view=view)
+        view.message = interaction.message
+        view.start()
+        self.stop()

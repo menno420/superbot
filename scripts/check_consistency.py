@@ -467,6 +467,45 @@ def _is_hub_view_class(node: ast.ClassDef) -> bool:
     return any(base.rsplit(".", 1)[-1] == "HubView" for base in _class_bases(node))
 
 
+def _class_gets_auto_nav(node: ast.ClassDef) -> bool:
+    """True if the class auto-attaches standard nav (the never-stranded mechanism).
+
+    A panel that declares a non-empty ``SUBSYSTEM`` (and does not opt out with
+    ``STANDARD_NAV = False``) gets a ``📚 Help`` (+ ``↩ <hub>``) control on
+    construction from ``views.navigation.attach_standard_nav`` (run in the
+    ``BaseView`` / ``PersistentView`` ``__init__``). It is therefore never a
+    back/nav gap, even when its module references no ``attach_back_button`` —
+    the auto-nav IS the affordance. Recognising it here keeps this static rule
+    from false-flagging the leaf panels the universal mechanism already covers
+    (the Q-0120 "a check that contradicts the evidence is a bug in the check").
+    """
+    has_subsystem = False
+    standard_nav_off = False
+    for stmt in node.body:
+        targets: list[ast.expr] = []
+        value: ast.expr | None = None
+        if isinstance(stmt, ast.Assign):
+            targets, value = stmt.targets, stmt.value
+        elif isinstance(stmt, ast.AnnAssign):
+            targets, value = [stmt.target], stmt.value
+        for tgt in targets:
+            if not isinstance(tgt, ast.Name):
+                continue
+            if (
+                tgt.id == "SUBSYSTEM"
+                and isinstance(value, ast.Constant)
+                and bool(value.value)
+            ):
+                has_subsystem = True
+            if (
+                tgt.id == "STANDARD_NAV"
+                and isinstance(value, ast.Constant)
+                and value.value is False
+            ):
+                standard_nav_off = True
+    return has_subsystem and not standard_nav_off
+
+
 def _class_adds_items_dynamically(node: ast.ClassDef) -> bool:
     """True if the class builds controls via ``add_item(...)`` rather than
     decorated ``@ui.button``/``@ui.select`` callbacks.
@@ -522,6 +561,11 @@ def rule_back_button(
                 for fn in cls.body
             ) or _class_adds_items_dynamically(cls)
             if not has_child_control:
+                continue
+            # A SUBSYSTEM-declaring panel auto-attaches standard nav in its
+            # constructor (attach_standard_nav) — the affordance is present at
+            # runtime even though no attach_back_button call appears statically.
+            if _class_gets_auto_nav(cls):
                 continue
             if _is_allowlisted(rel, cls.name, cfg):
                 continue
