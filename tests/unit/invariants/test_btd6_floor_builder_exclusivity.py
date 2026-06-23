@@ -89,6 +89,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_bloon_modifier_reply",
     ),
     (
+        "how much health does a bad have on round 100",
+        "deterministic_bloon_health_reply",
+    ),
+    (
         "what economy relics are there",
         "deterministic_relic_roster_reply",
     ),
