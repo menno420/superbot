@@ -7256,3 +7256,34 @@ runtime-verified. **Home:** this Q-block (canonical) + the
 [`planning/mining-hub-redesign-2026-06-15.md`](../planning/mining-hub-redesign-2026-06-15.md) (PR 3's
 "Later — encounters"). Related: **Q-0173** (grid design), **Q-0186** (wild-encounters spawn design —
 shared engine), Q-0087 (never mandatory), Q-0071 (atomic workflow).
+
+### Q-0199 — ANSWERED (owner decision, in-session): AI may APPLY setup changes, but only after confirmation — per-suggestion Accept/Deny/Edit (2026-06-23)
+
+**Context.** The generative AI-setup wedge — *"describe your server → AI proposes channels/roles/automod
+→ staged ops → apply"* — had its read/propose seams shipped (`/setup-describe` #1355, propose-resource
+#1357, Final-Review create-count guard #1361, `views/setup/ai_review/`), but the **apply** (guild-mutating)
+step was the one remaining consolidation item, deliberately held under **Q-0048**'s rule (AI *writes* need
+a per-exposure design + owner decision before shipping). Asked for the decision, the owner directed,
+in-session: *"yes AI should apply them but only after a confirmation, AI should spawn three buttons —
+accept, deny, edit."*
+
+**The decision.** AI **may apply** the setup changes it generates (create/bind channels, roles, categories,
+automod config from a described plan) — but **never autonomously**. Every applied change is **human-gated**:
+each AI suggestion is decided per-item with **Accept · Deny · Edit**, and the accepted set applies **only**
+through the existing audited **Final Review** confirmation (`setup_draft` → `FinalReviewView` → the audited
+dispatcher, behind the `setup_access.can_apply_setup` permission floor). The AI never writes to a guild
+without an operator pressing apply on a reviewed plan. This is the per-exposure **write** lift Q-0048
+reserves — granted for *this* exposure (setup provisioning) with the confirmation guardrail above; it does
+**not** generalize to other AI write surfaces (each still needs its own lift).
+
+**Applied this session.** The propose→stage→Final-Review→audited-apply path already existed; PR **#1386**
+added the missing **Edit** affordance (and renamed Reject→Deny) on the per-recommendation walkthrough
+(`views/setup/ai_review/per_recommendation.py`): Edit opens a modal to rename a `create` suggestion before
+accepting; a `bind` suggestion can't be renamed (Deny + rebind). The review surface stays **propose-only**
+(zero DB/Discord writes there — the module's zero-write contract tests hold); application remains the gated
+Final Review. A noted follow-on (not yet built): Edit could re-pick the *target* of a `bind` suggestion via
+a channel/role select.
+
+**Home:** this Q-block (canonical) + `.sessions/2026-06-23-ai-setup-edit-button.md` +
+`docs/subsystems/settings-bindings-provisioning.md`. Related: **Q-0048** (AI exposure gate / per-exposure
+write lift — the parent rule), Q-0123 (auto-merge on green).
