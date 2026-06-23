@@ -24,6 +24,7 @@ from utils import farm as farm_mod
 from utils import idle_summary
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
+from views.navigation import carry_back
 
 #: The capped nudge for the farm's "while you were away" blurb.
 _COOP_FULL_NOTE = "The coop is full — collect to keep your hens laying!"
@@ -179,6 +180,7 @@ class FarmMenuView(HubView):
         # Redraw onto a fresh view instance so the panel's timeout clock resets
         # on every interaction (and the classifier sees a real in-place update).
         view = FarmMenuView(self._author, self.guild_id)
+        carry_back(self, view)
         embed = build_farm_embed(
             state,
             balance,
@@ -210,6 +212,7 @@ class FarmMenuView(HubView):
     ) -> None:
         # Static shop landing — no DB read, so the shop always opens instantly.
         view = FarmShopView(self._author, self.guild_id)
+        carry_back(self, view)
         await interaction.response.edit_message(embed=build_shop_embed(), view=view)
         view.message = interaction.message
 
@@ -236,6 +239,7 @@ class FarmShopView(HubView):
     ) -> None:
         state, balance, _, _ = await _panel_data(self._author.id, self.guild_id)
         view = FarmShopView(self._author, self.guild_id)
+        carry_back(self, view)
         embed = build_shop_embed(state, balance)
         if flash:
             embed.description = f"{flash}\n\n{embed.description}"
@@ -275,6 +279,7 @@ class FarmShopView(HubView):
             self.guild_id,
         )
         view = FarmMenuView(self._author, self.guild_id)
+        carry_back(self, view)
         await interaction.response.edit_message(
             embed=build_farm_embed(
                 state,

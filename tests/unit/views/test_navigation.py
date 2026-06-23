@@ -43,6 +43,7 @@ from views.navigation import (
     BackTarget,
     attach_back_button,
     attach_back_target,
+    carry_back,
     chain_back,
     transition_to,
 )
@@ -801,3 +802,84 @@ async def test_shop_subview_back_btn_with_no_origin_omits_chain():
     # No spurious back buttons.
     assert "help:back" not in rebuilt_custom_ids
     assert "economy:back" not in rebuilt_custom_ids
+
+
+# ---------------------------------------------------------------------------
+# carry_back — the games/admin panel back-loss fix
+# ---------------------------------------------------------------------------
+#
+# Regression guard for the class the owner's live walk surfaced (2026-06-23):
+# a panel that redraws onto a FRESH view instance on an action (the
+# edit_in_place idiom) dropped the Back-to-[hub] button the hub attached to the
+# ORIGINAL instance. carry_back() re-applies it. This is the runtime check the
+# static `back_button` consistency rule structurally cannot make (it only checks
+# a view CLASS has a back affordance somewhere, not that a redraw keeps it).
+
+
+async def _parent_builder(_interaction):
+    return discord.Embed(title="parent"), discord.ui.View()
+
+
+def _back_ids(view: discord.ui.View) -> set[str]:
+    return {
+        b.custom_id
+        for b in view.children
+        if isinstance(b, discord.ui.Button) and b.custom_id
+    }
+
+
+def test_carry_back_reattaches_back_to_a_fresh_view():
+    old = discord.ui.View()
+    attach_back_button(
+        old,
+        label="↩ Back to Games",
+        custom_id="games:back",
+        parent_builder=_parent_builder,
+    )
+    assert "games:back" in _back_ids(old)
+
+    new = discord.ui.View()  # the fresh redraw instance — no back of its own
+    assert "games:back" not in _back_ids(new)
+
+    carry_back(old, new)
+    assert "games:back" in _back_ids(new)  # the fix: it survives the redraw
+
+
+def test_carry_back_replays_every_recorded_back():
+    """Both Back-to-[hub] and a chained Back-to-Help survive together."""
+    old = discord.ui.View()
+    attach_back_button(
+        old,
+        label="↩ Back to Games",
+        custom_id="games:back",
+        parent_builder=_parent_builder,
+    )
+    attach_back_button(
+        old,
+        label="↩ Back to Help",
+        custom_id="help:back",
+        parent_builder=_parent_builder,
+    )
+    new = discord.ui.View()
+    carry_back(old, new)
+    assert {"games:back", "help:back"} <= _back_ids(new)
+
+
+def test_carry_back_is_noop_without_a_recorded_back():
+    old = discord.ui.View()  # never had a back attached
+    new = discord.ui.View()
+    carry_back(old, new)  # must not raise
+    assert _back_ids(new) == set()
+
+
+def test_carry_back_carries_the_back_target_for_chaining():
+    old = discord.ui.View()
+    target = BackTarget(
+        label="↩ Back to Help",
+        custom_id="help:back",
+        builder=_parent_builder,
+    )
+    attach_back_target(old, target)
+    new = discord.ui.View()
+    carry_back(old, new)
+    assert getattr(new, "_back_target", None) is target

@@ -172,7 +172,51 @@ def attach_back_button(
 
     btn.callback = _back_callback  # type: ignore[method-assign]
     view.add_item(btn)
+
+    # Record a re-attach closure so a panel that REDRAWS onto a fresh view
+    # instance (the ``edit_in_place`` idiom — e.g. farm Collect → ``FarmMenuView()``)
+    # can carry this externally-attached back button forward via :func:`carry_back`.
+    # Without it, the Back-to-[hub] / Back-to-Help button vanishes on the next
+    # action because it lived on the *original* instance (the games/admin panel
+    # back-loss class).
+    reattachers = getattr(view, "_back_reattachers", None)
+    if reattachers is None:
+        reattachers = []
+        view._back_reattachers = reattachers  # type: ignore[attr-defined]
+    reattachers.append(
+        lambda v: attach_back_button(
+            v,
+            label=label,
+            custom_id=custom_id,
+            parent_builder=parent_builder,
+            row=row,
+            style=style,
+            error_message=error_message,
+        ),
+    )
     return True
+
+
+def carry_back(old_view: discord.ui.View, new_view: discord.ui.View) -> None:
+    """Re-attach to ``new_view`` every back button that was attached to ``old_view``.
+
+    The fix for the games/admin panel back-loss class: a panel that redraws onto a
+    **fresh view instance** on an action (the ``edit_in_place`` idiom) drops the
+    Back-to-[hub] / Back-to-Help button the hub attached to the *original* instance.
+    Call ``carry_back(self, new_view)`` immediately before ``edit_message`` so the
+    navigation survives the redraw. No-op when ``old_view`` carries no recorded back.
+    """
+    for reattach in getattr(old_view, "_back_reattachers", ()):  # type: ignore[attr-defined]
+        try:
+            reattach(new_view)
+        except Exception:  # noqa: BLE001 — a failed carry must never crash a redraw
+            logger.warning(
+                "navigation.carry_back: a back re-attacher failed",
+                exc_info=True,
+            )
+    target = getattr(old_view, "_back_target", None)
+    if target is not None and getattr(new_view, "_back_target", None) is None:
+        new_view._back_target = target  # type: ignore[attr-defined]
 
 
 async def transition_to(
