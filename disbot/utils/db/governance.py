@@ -126,6 +126,29 @@ async def get_all_cleanup_for_guild(guild_id: int) -> list[dict]:
     return [dict(r) for r in rows]
 
 
+async def delete_cleanup_policy(
+    guild_id: int,
+    scope_type: str,
+    scope_id: int,
+) -> bool:
+    """Delete one cleanup policy row.  Returns ``True`` if a row was removed.
+
+    Keyed by the *literal* stored ``scope_id`` so an operator can clear a stale
+    or legacy-keyed row (e.g. a guild row written at ``scope_id=0`` that the
+    resolver never reads — see :func:`services.cleanup_levels.cleanup_scope_id`).
+    No-op + ``False`` when no matching row exists.
+    """
+    status = await pool.get().execute(
+        "DELETE FROM cleanup_policies"
+        " WHERE guild_id=$1 AND scope_type=$2 AND scope_id=$3",
+        guild_id,
+        scope_type,
+        scope_id,
+    )
+    # asyncpg returns a command tag like "DELETE 1" / "DELETE 0".
+    return status.rsplit(" ", 1)[-1] != "0"
+
+
 async def set_cleanup_policy(
     guild_id: int,
     scope_type: str,

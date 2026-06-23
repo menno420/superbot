@@ -57,7 +57,19 @@ def build_cleanup_overview_embed(
     both without touching any state.
     """
     word_count = len(cog._word_cache.get(guild_id, [])) if guild_id is not None else 0
-    whitelist_channels = list(cog.whitelisted_channels or ())
+
+    # The whitelist is a *global* static config list (config.CLEANUP_WHITELIST_
+    # CHANNELS) shared across every guild the bot is in. Resolve each id against
+    # *this* server only, so we never show another server's channels, and render
+    # the channel name (a raw "<#id>" mention can't resolve cross-guild and
+    # shows as a meaningless id). Channels not in this guild are simply omitted.
+    guild = cog.bot.get_guild(guild_id) if guild_id is not None else None
+    whitelist_lines: list[str] = []
+    if guild is not None:
+        for cid in cog.whitelisted_channels or ():
+            channel = guild.get_channel(cid)
+            if channel is not None:
+                whitelist_lines.append(f"#{channel.name}")
 
     embed = discord.Embed(
         title="🧹 Cleanup Hub",
@@ -76,9 +88,7 @@ def build_cleanup_overview_embed(
     embed.add_field(
         name="Whitelisted Channels",
         value=(
-            "\n".join(f"<#{cid}>" for cid in whitelist_channels)
-            if whitelist_channels
-            else "_None_"
+            "\n".join(whitelist_lines) if whitelist_lines else "_None in this server_"
         ),
         inline=True,
     )

@@ -369,6 +369,107 @@ class GovernanceMutationPipeline:
                 exc_info=True,
             )
 
+    async def remove_cleanup_policy(
+        self,
+        ctx: GovernanceContext,
+        scope_type: str,
+        scope_id: int,
+    ) -> bool:
+        """Delete a cleanup policy override for a scope (audited).
+
+        The mirror of :meth:`set_cleanup_policy` for clearing a row.  Keyed by
+        the *literal* ``scope_id`` so a stale or legacy-keyed row (e.g. a guild
+        row written at ``scope_id=0`` the resolver never reads) can be removed.
+        Returns ``True`` when a row was deleted, ``False`` when none matched
+        (still a valid, audited no-op — the operator learns it was already gone).
+        Same scope-type and authority rules as the set path; DELETE + audit run
+        in one transaction.
+        """
+        if scope_type not in _VALID_CLEANUP_SCOPE_TYPES:
+            raise GovernanceError(
+                f"Invalid scope_type {scope_type!r} for cleanup policy. "
+                f"Must be one of: {sorted(_VALID_CLEANUP_SCOPE_TYPES)}. "
+                "cleanup_policies does not support thread scope (migration 009).",
+            )
+
+        _validate_authority(ctx)
+
+        mutation_id = str(uuid.uuid4())
+        committed_at = datetime.now(tz=timezone.utc)
+        occurred_at = committed_at.isoformat()
+
+        pool = db.get()
+        async with pool.acquire() as conn, conn.transaction():
+            status = await conn.execute(
+                "DELETE FROM cleanup_policies"
+                " WHERE guild_id=$1 AND scope_type=$2 AND scope_id=$3",
+                ctx.guild_id,
+                scope_type,
+                scope_id,
+            )
+            removed = status.rsplit(" ", 1)[-1] != "0"
+            await conn.execute(
+                """INSERT INTO governance_audit_log
+                       (guild_id, actor_id, action, scope_type, scope_id,
+                        subsystem, old_value, new_value)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                ctx.guild_id,
+                ctx.member.id if ctx.member else 0,
+                "remove_cleanup",
+                scope_type,
+                scope_id,
+                None,
+                {"removed": removed},
+                None,  # JSONB codec handles None
+            )
+
+        invalidate_guild_cache(ctx.guild_id)
+
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem="governance",
+            mutation_type="remove_cleanup_policy",
+            target=f"{scope_type}:{scope_id}",
+            scope=scope_type,
+            guild_id=ctx.guild_id,
+            prev_value="present" if removed else "absent",
+            new_value=None,
+            actor_id=ctx.member.id if ctx.member else None,
+            actor_type="user",
+            occurred_at=committed_at,
+        )
+
+        try:
+            await _emit_governance_event(
+                EVT_CLEANUP_CHANGED,
+                {
+                    "guild_id": ctx.guild_id,
+                    "scope_type": scope_type,
+                    "scope_id": scope_id,
+                    "mutation_id": mutation_id,
+                    "occurred_at": occurred_at,
+                    "actor_id": ctx.member.id if ctx.member else 0,
+                },
+            )
+            await _emit_governance_event(
+                EVT_CACHE_INVALIDATED,
+                {
+                    "guild_id": ctx.guild_id,
+                    "mutation_id": mutation_id,
+                    "occurred_at": occurred_at,
+                },
+            )
+        except Exception as exc:
+            logger.error(
+                "Governance event emission failed after successful DB commit "
+                "(mutation_id=%s): %s",
+                mutation_id,
+                exc,
+                exc_info=True,
+            )
+
+        return removed
+
 
 # ---------------------------------------------------------------------------
 # Module-level convenience functions (thin wrappers around the pipeline)
@@ -406,6 +507,15 @@ async def set_cleanup_policy_for_scope(
         delete_failed_commands=delete_failed_commands,
         delete_after_seconds=delete_after_seconds,
     )
+
+
+async def remove_cleanup_policy_for_scope(
+    ctx: GovernanceContext,
+    scope_type: str,
+    scope_id: int,
+) -> bool:
+    """Delete a cleanup policy override for a scope.  Delegates to GovernanceMutationPipeline."""
+    return await _pipeline.remove_cleanup_policy(ctx, scope_type, scope_id)
 
 
 async def check_governance_version(guild_id: int) -> None:
