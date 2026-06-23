@@ -9,6 +9,10 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Twenty-second Q-0107 reconciliation pass** (band-#1350, issue #1353 —
+  [pass record](../planning/reconciliation-pass-2026-06-23-band1350.md)): reconciled the ledger
+  (band #1322–#1352 as eight grouped entries), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`), planned the next band, reset the marker #1320 → #1352.
 - **Twenty-first Q-0107 reconciliation pass** (band-#1320, issue #1321 —
   [pass record](../planning/reconciliation-pass-2026-06-22-band1320.md)): reconciled the ledger
   (band #1294–#1320 as seven grouped entries), trimmed Recently-shipped to 20, planned the next band.
@@ -17,7 +21,7 @@
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
 
 **▶ Next:**
-- **Next reconciliation pass due once merged PRs cross #1350** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1380** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

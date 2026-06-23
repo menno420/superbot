@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T06:42:29Z",
+    "generated_at": "2026-06-23T09:16:14Z",
     "build": {
-      "commit": "7968e5e1",
-      "subject": "fishing: open weather-forecast session (born-red card + claim)",
-      "committed_at": "2026-06-23T06:42:29Z"
+      "commit": "a622a83",
+      "subject": "Competitive-positioning north-star vision doc (what makes people choose us) (#1352)",
+      "committed_at": "2026-06-23T09:16:14Z"
     }
   },
   "counts": {
@@ -2242,6 +2242,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Giveaway competitive teardown — GiveawayBot vs. SuperBot (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
           "status": "ideas"
         }
@@ -2260,6 +2264,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Giveaway competitive teardown — GiveawayBot vs. SuperBot (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
           "status": "ideas"
