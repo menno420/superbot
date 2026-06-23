@@ -55,3 +55,6 @@ exceptions:
   - cog_file: cogs/creature_battle_cog.py
     command: cbrecord
     reason: "Listed in the creature panel help text (creature_cog.build_help_menu_view: '!cbrecord — your battle record', added 2026-06-23 — it was the one battle sibling missing). Reachable through !help creature."
+  - cog_file: cogs/role_grants_cog.py
+    command: temproles
+    reason: "Surfaced via the role hub Time Roles panel '⏳ My Temp Roles' button (views/roles/time_roles_panel.py TimeRolesPanel.temp_roles_btn -> _TempRolesView, added 2026-06-23). Reachable through !roles -> ⏱️ Time Roles; the typed !temproles is a shortcut."

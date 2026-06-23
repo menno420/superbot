@@ -208,6 +208,73 @@ class TimeRolesPanel(BaseView):
                 ephemeral=True,
             )
 
+    @discord.ui.button(label="⏳ My Temp Roles", style=discord.ButtonStyle.grey, row=1)
+    async def temp_roles_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # Surfaces the `!temproles` listing (the member's own active *temporary*
+        # role grants — RoleGrantsCog) inside the role hub, so the command is
+        # reachable by clicking through (command-reachability audit). Navigates
+        # in place to a read-only listing with a Back button to this panel.
+        listing = _TempRolesView(self)
+        listing.message = self.message
+        await interaction.response.edit_message(
+            embed=await listing.build_embed(interaction),
+            view=listing,
+        )
+
+
+class _TempRolesView(BaseView):
+    """Read-only listing of the viewer's active *temporary* role grants.
+
+    The in-hub surface for ``!temproles`` (RoleGrantsCog): it shows the acting
+    member's own active temp grants — the no-argument form of the command —
+    reached by clicking through the role hub rather than typing the command.
+    A Back button returns to the time-roles panel.
+    """
+
+    def __init__(self, parent: TimeRolesPanel) -> None:
+        super().__init__(parent.ctx.author, timeout=300)
+        self.parent = parent
+
+        async def _build_parent(
+            _interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            return await parent.build_embed(), parent
+
+        attach_back_button(
+            self,
+            label="↩ Back",
+            custom_id="role:temproles:back",
+            parent_builder=_build_parent,
+            row=0,
+        )
+
+    async def build_embed(self, interaction: discord.Interaction) -> discord.Embed:
+        from services import role_grants_service
+
+        grants = await role_grants_service.list_active_grants(
+            interaction.guild,
+            interaction.user.id,
+        )
+        embed = discord.Embed(title="⏳ My Temp Roles", color=ROLE_COLOR)
+        if grants:
+            embed.description = "\n".join(
+                f"• {role.mention} — expires <t:{int(expires.timestamp())}:R>"
+                for role, expires in grants
+            )
+            embed.set_footer(
+                text="Temporary roles are removed automatically when they expire.",
+            )
+        else:
+            embed.description = "📭 You have no active temp roles."
+            embed.set_footer(
+                text="Staff grant temporary roles with !temprole @member 2h @role.",
+            )
+        return embed
+
 
 class _TimeRolePickView(BaseView):
     """Ephemeral one-shot picker: choose a role, then enter the day threshold."""

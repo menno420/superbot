@@ -45,11 +45,11 @@ class RoleHubView(BaseView):
             return
         from views.roles.creation_panel import RoleCreatePanel
 
-        panel = RoleCreatePanel(self.ctx)
-        await interaction.response.send_message(
+        panel = RoleCreatePanel(self.ctx, parent=self)
+        panel.message = self.message
+        await interaction.response.edit_message(
             embed=panel.build_embed(),
             view=panel,
-            ephemeral=True,
         )
 
     @discord.ui.button(label="🗂️ Manage", style=discord.ButtonStyle.blurple, row=0)

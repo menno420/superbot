@@ -49,22 +49,22 @@ _CHECK = _load_checker()
 # ---------------------------------------------------------------------------
 # Baseline — the accepted pre-existing per-cog gaps (audit follow-on work).
 #
-# Each is a member-tier command whose cog maps to no homed + help-discoverable
-# subsystem, so it is not auto-listed under any hub.  They are recorded (not
-# allowlisted) on purpose: they are real findings a later per-cog audit session
-# clears.  REMOVE an entry here when its cog is homed / its command buttonized —
-# `test_baseline_has_no_stale_entries` enforces that the baseline shrinks.
+# Each entry was a member-tier command whose cog mapped to no homed +
+# help-discoverable subsystem.  They were recorded (not allowlisted) on purpose:
+# real findings a later per-cog audit session clears.  REMOVE an entry here when
+# its cog is homed / its command buttonized — `test_baseline_has_no_stale_entries`
+# enforces that the baseline only ever shrinks.
+#
+# ALL baseline gaps are now CLEARED: the last entry — `!temproles` — was surfaced
+# by fleet unit U2 (roles) via the Time Roles panel "⏳ My Temp Roles" button
+# (PR #1377), so it is reachable and was removed.  The baseline is now empty;
+# `check_command_reachability.py` reports 0 GAPs.  Keep it `frozenset()` until a
+# genuinely new pre-existing gap is intentionally accepted again.
 #
 # Full per-cog write-up + disposition:
 #   docs/audits/command-reachability-gaps-2026-06-23.md
 # ---------------------------------------------------------------------------
-_BASELINE: frozenset[tuple[str, str]] = frozenset(
-    {
-        # !temproles — member view of one's temp roles; not surfaced in any roles panel.
-        # Routed to fleet unit U2 (roles) — see the consolidation-fleet-plan.
-        ("disbot/cogs/role_grants_cog.py", "temproles"),
-    },
-)
+_BASELINE: frozenset[tuple[str, str]] = frozenset()
 
 
 # ---------------------------------------------------------------------------

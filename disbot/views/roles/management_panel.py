@@ -87,11 +87,11 @@ class ManagementPanel(BaseView):
     ) -> None:
         from views.roles.creation_panel import RoleCreatePanel
 
-        panel = RoleCreatePanel(self.ctx)
-        await interaction.response.send_message(
+        panel = RoleCreatePanel(self.ctx, parent=self)
+        panel.message = self.message
+        await interaction.response.edit_message(
             embed=panel.build_embed(),
             view=panel,
-            ephemeral=True,
         )
 
     @discord.ui.button(label="✏️ Edit Role", style=discord.ButtonStyle.blurple, row=0)
