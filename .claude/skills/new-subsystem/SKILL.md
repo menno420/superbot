@@ -6,10 +6,13 @@ reading route from `docs/AGENT_ORIENTATION.md`.
 
 ## What this does
 
-A real script already exists — `scripts/new_subsystem.py` scaffolds + verifies the ~8 subsystem
-registration touch-points. This skill makes it discoverable and pairs it with the binding reading
-route, so a new cog gets wired the standard way instead of by hand. Wrapper around the existing
-script + orientation route, not new policy.
+A real script already exists — `scripts/new_subsystem.py` scaffolds + verifies the subsystem
+registration touch-points (registry entry · hub linkage · panel-command · cog/help-hook · the
+help-surface / command-map / navigation-map doc rows · **config.py loading · extension-role overlay
+· sector-folio homing** — the last three added 2026-06-23 after the Karma build hit them as uncaught
+CI failures). This skill makes it discoverable and pairs it with the binding reading route, so a new
+cog gets wired the standard way instead of by hand. Wrapper around the existing script + orientation
+route, not new policy.
 
 ## Invocation
 

@@ -1,8 +1,16 @@
 # Idea — "audited per-user score" subsystem scaffold + parity guard
 
-> **Status:** `ideas` — capture, not a plan. **Subsystem:** none (agent-workflow / meta).
-> Captured by the Karma planning session (2026-06-22): designing karma made it obvious that
-> `economy`, `xp`, and now `karma` are the **same shape** repeated by hand.
+> **Status:** `ideas` — **partially implemented (2026-06-23, PR #1346).** **Subsystem:** none
+> (agent-workflow / meta). Captured by the Karma planning session (2026-06-22): designing karma made
+> it obvious that `economy`, `xp`, and now `karma` are the **same shape** repeated by hand.
+>
+> **Update (2026-06-23):** a general-subsystem scaffold/checker already existed
+> (`scripts/new_subsystem.py` + the `/new-subsystem` skill). Rather than mint a parallel score-only
+> generator, PR #1346 **closed the checker's blind spots** the Karma build revealed — it now also
+> verifies `config.py` extension-loading, the `extension_roles.yaml` overlay, and sector-folio homing
+> (the three touch-points that each cost a round of red CI). **Still open:** the **score-specific**
+> half below — the `RankProvider` parity guard (item 6 / "Parity guard"), which the general checker
+> does not cover because it's leaderboard-specific.
 
 ## The pattern that keeps repeating
 

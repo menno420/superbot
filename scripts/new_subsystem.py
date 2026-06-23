@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.10
-"""new_subsystem.py — scaffold + verify the ~8 subsystem registration touch-points.
+"""new_subsystem.py — scaffold + verify the subsystem registration touch-points.
 
 Provenance: custom repo tooling (CLAUDE.md tooling rule), built 2026-06-09 for
 owner decision **Q-0025** (first consumer: registering Community Spotlight,
@@ -8,8 +8,8 @@ Q-0044). It encodes the verified touch-point list from
 integration standard grows a touch-point, extend ``build_checks`` here and
 ``docs/building-roadmap/command-integration-standard.md`` together.
 
-Adding a hub child/subsystem requires ~8 coordinated edits with no automation.
-This tool makes the list executable:
+Adding a hub child/subsystem requires ~a dozen coordinated edits with no
+automation. This tool makes the list executable:
 
 * ``check``    — verify every touch-point for a subsystem key; exit 1 on gaps.
 * ``scaffold`` — print ready-to-paste snippets for each *missing* touch-point
@@ -44,14 +44,21 @@ COMMAND_MAP = (
     REPO_ROOT / "docs" / "setup-platform" / "settings-customization-command-map.md"
 )
 NAV_MAP = REPO_ROOT / "docs" / "repo-navigation-map.md"
+CONFIG = DISBOT / "config.py"
+EXTENSION_ROLES = REPO_ROOT / "architecture_rules" / "extension_roles.yaml"
+SECTOR_MAP = REPO_ROOT / "docs" / "repo-sector-map.md"
+SUBSYSTEMS_FOLIO_DIR = REPO_ROOT / "docs" / "subsystems"
 
-# The post-edit verification set (touch-point 8): the enumeration tests that
-# pin registry ↔ docs ↔ source agreement.
+# The post-edit verification set: the enumeration tests that pin
+# registry ↔ docs ↔ source agreement (the last two cover the loader /
+# extension-role / sector-folio touch-points added 2026-06-23).
 ENUMERATION_TESTS = (
     "tests/unit/utils/test_subsystem_registry.py",
     "tests/unit/docs/test_help_surface_map_doc.py",
     "tests/unit/docs/test_settings_customization_doc.py",
     "tests/unit/services/test_customization_catalogue.py",
+    "tests/unit/scripts/test_extension_crosswalk.py",
+    "tests/unit/scripts/test_check_sector_map.py",
 )
 
 
@@ -295,7 +302,86 @@ def build_checks(
             f"| {key} | `cogs/...` | `views/...` | <data path> | <db owner> |",
         ),
     )
+
+    # 8. config.py INITIAL_EXTENSIONS — the cog must actually be loaded.
+    #    A subsystem can be fully registered yet never imported (the cog never
+    #    runs); the enumeration tests don't catch this because they read the
+    #    registry, not the loader. (Gap surfaced by the Karma build, #1332.)
+    if cog_file is not None:
+        ext_module = f"cogs.{cog_file.stem}"
+        config_src = CONFIG.read_text(encoding="utf-8")
+        loaded = f'"{ext_module}"' in config_src
+        checks.append(
+            Check(
+                "extension-loaded",
+                loaded,
+                f"config.py INITIAL_EXTENSIONS {'lists' if loaded else 'missing'} {ext_module!r}",
+                f'    "{ext_module}",  # inside INITIAL_EXTENSIONS',
+            ),
+        )
+
+        # 9. extension_roles.yaml overlay — every loaded extension must be
+        #    classified or `extension_crosswalk.py --check` (and its test) fails.
+        #    Keyed by the extension name (cog stem minus the _cog suffix).
+        ext_name = cog_file.stem.removesuffix("_cog")
+        roles_src = EXTENSION_ROLES.read_text(encoding="utf-8")
+        classified = f"\n  {ext_name}:" in roles_src
+        checks.append(
+            Check(
+                "extension-role",
+                classified,
+                f"architecture_rules/extension_roles.yaml {'classifies' if classified else 'missing'} {ext_name!r}",
+                f"  {ext_name}:\n    role: product_subsystem",
+            ),
+        )
+
+    # 10. sector-folio homing — IF a subsystem folio exists it MUST be homed to
+    #     exactly one sector in repo-sector-map.md (test_check_sector_map pins
+    #     it). Folios are only authored for the larger subsystems, so this is
+    #     conditional: no folio → not applicable. (Gap surfaced by Karma.)
+    folio = SUBSYSTEMS_FOLIO_DIR / f"{key}.md"
+    if folio.exists():
+        homed = _folio_homed_to_sector(key)
+        checks.append(
+            Check(
+                "sector-folio",
+                homed,
+                (
+                    f"docs/subsystems/{key}.md exists and is "
+                    f"{'homed in' if homed else 'NOT homed to a sector in'} "
+                    "repo-sector-map.md"
+                ),
+                f"  add `{key}` to an `S<n>:` line in the "
+                "sector-folio-map block of docs/repo-sector-map.md",
+            ),
+        )
+
     return checks
+
+
+def _folio_homed_to_sector(key: str) -> bool:
+    """True if *key* is listed in the machine-readable sector-folio-map block.
+
+    Mirrors ``scripts/check_sector_map.py``'s parse: the block between the
+    ``BEGIN sector-folio-map`` / ``END sector-folio-map`` markers, whose
+    ``S<n>:`` lines list comma-separated folio names.
+    """
+    text = SECTOR_MAP.read_text(encoding="utf-8")
+    block = re.search(
+        r"BEGIN sector-folio-map.*?-->(.*?)<!--\s*END sector-folio-map",
+        text,
+        re.DOTALL,
+    )
+    if block is None:
+        return False
+    for line in block.group(1).splitlines():
+        m = re.match(r"\s*S\d+:\s*(.*)", line)
+        if m is None:
+            continue
+        folios = {f.strip() for f in m.group(1).split(",")}
+        if key in folios:
+            return True
+    return False
 
 
 def main(argv: list[str] | None = None) -> int:
