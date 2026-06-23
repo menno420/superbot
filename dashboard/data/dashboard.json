@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T09:42:20Z",
+    "generated_at": "2026-06-23T10:06:36Z",
     "build": {
-      "commit": "b390928e",
-      "subject": "Fishing trophy follow-ups: born-red session card + claim",
-      "committed_at": "2026-06-23T09:42:20Z"
+      "commit": "bc2c4059",
+      "subject": "Fishing: soft-fail clue + heaviest-catch leaderboard",
+      "committed_at": "2026-06-23T10:06:36Z"
     },
     "counts": {
       "functions": 41,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 51,
-      "commands": 387,
+      "commands": 389,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2517,6 +2517,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-23-ai-setup-wedge.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — AI natural-language setup wedge (`/setup-describe`)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-unattended-fit-dispatch-dimension.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Unattended-fit dimension for the per-sector dispatch contract",
@@ -2848,14 +2856,6 @@
       "file": "2026-06-22-casino-card-table.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Casino subsystem: multiplayer card-game table framework + Texas Hold'em poker",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-bulk-role-creation-packs.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Bulk role creation via preset packs",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3428,13 +3428,13 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 175,
+          "line": 188,
           "layer": "services",
           "has_default": true
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 406,
+          "line": 447,
           "layer": "services",
           "has_default": true
         }
@@ -3519,7 +3519,7 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 173,
+          "line": 186,
           "layer": "services",
           "has_default": true
         }
@@ -3549,7 +3549,7 @@
         },
         {
           "file": "disbot/services/setup_ai_advisor.py",
-          "line": 393,
+          "line": 434,
           "layer": "services",
           "has_default": true
         }
@@ -7987,6 +7987,17 @@
           "button_backed": false
         },
         {
+          "name": "setup-describe",
+          "type": "slash",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Describe your server; the AI proposes a setup plan to review.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "setup-hub",
           "type": "slash",
           "is_group": false,
@@ -8048,6 +8059,19 @@
           "parent": null,
           "aliases": [],
           "brief": "Remove a section from the skipped set (owner/delegated admin only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "setupdescribe",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "describesetup"
+          ],
+          "brief": "Describe your server in words; propose how to wire it to the bot.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

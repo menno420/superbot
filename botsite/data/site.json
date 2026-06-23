@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T09:42:20Z",
+    "generated_at": "2026-06-23T10:06:36Z",
     "build": {
-      "commit": "b390928e",
-      "subject": "Fishing trophy follow-ups: born-red session card + claim",
-      "committed_at": "2026-06-23T09:42:20Z"
+      "commit": "bc2c4059",
+      "subject": "Fishing: soft-fail clue + heaviest-catch leaderboard",
+      "committed_at": "2026-06-23T10:06:36Z"
     }
   },
   "counts": {
-    "commands": 387,
+    "commands": 389,
     "features": 41,
     "games": 11
   },
@@ -8795,6 +8795,20 @@
       "notes": null
     },
     {
+      "name": "setup-describe",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Describe your server; the AI proposes a setup plan to review.",
+      "description": "Ephemeral natural-language setup proposal (admin-gated).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "setup-hub",
       "aliases": [],
       "category": "other",
@@ -8889,6 +8903,22 @@
       "permissions": "",
       "usage": "Remove a section from the skipped set (owner/delegated admin only).",
       "description": "Drop section from the session's skipped_sections set.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "setupdescribe",
+      "aliases": [
+        "describesetup"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Describe your server in words; propose how to wire it to the bot.",
+      "description": "Describe your server in words; propose how to wire it to the bot.",
       "use_cases": null,
       "examples": [],
       "status": "finished",

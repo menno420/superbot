@@ -365,6 +365,60 @@ async def test_openai_advisor_handles_empty_response():
     assert any("empty response" in r for r in draft.dropped)
 
 
+@pytest.mark.asyncio
+async def test_suggest_with_description_folds_and_still_validates(_logging_schema):
+    """``suggest_with_description`` produces the same validated output as
+    ``suggest`` AND forwards the operator's words into the provider call."""
+    payload = {
+        "recommendations": [
+            {
+                "subsystem": "logging",
+                "binding_name": "mod_channel",
+                "target_kind": "channel",
+                "target_id": 100,
+                "target_name": "mod-log",
+                "confidence": "high",
+                "reason": "the operator said this is their moderation log",
+            },
+        ],
+    }
+    fake_client = MagicMock()
+    fake_client.chat = MagicMock()
+    fake_client.chat.completions = MagicMock()
+    fake_client.chat.completions.create = AsyncMock(
+        return_value=_fake_openai_response(payload),
+    )
+
+    advisor = OpenAISetupAdvisor(client=fake_client, api_key="sk-test")
+    draft = await advisor.suggest_with_description(
+        _snap(),
+        "this is a moderation-heavy server; mod-log is for mod actions",
+    )
+
+    assert len(draft.recommendations) == 1
+    assert draft.recommendations[0].binding_name == "mod_channel"
+    sent = str(fake_client.chat.completions.create.call_args)
+    assert "operator_description" in sent
+    assert "moderation-heavy server" in sent
+
+
+@pytest.mark.asyncio
+async def test_suggest_without_description_omits_operator_field(_logging_schema):
+    """Plain ``suggest`` must not leak an ``operator_description`` field."""
+    fake_client = MagicMock()
+    fake_client.chat = MagicMock()
+    fake_client.chat.completions = MagicMock()
+    fake_client.chat.completions.create = AsyncMock(
+        return_value=_fake_openai_response({"recommendations": []}),
+    )
+
+    advisor = OpenAISetupAdvisor(client=fake_client, api_key="sk-test")
+    await advisor.suggest(_snap())
+
+    sent = str(fake_client.chat.completions.create.call_args)
+    assert "operator_description" not in sent
+
+
 # ---------------------------------------------------------------------------
 # Module invariants
 # ---------------------------------------------------------------------------
