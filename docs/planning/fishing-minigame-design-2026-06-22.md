@@ -203,8 +203,13 @@ Your `cast → wait → BITE → reel` instinct is **right**. Three data-driven 
   bait: clear (common) / rain (faster bites) / calm / fog (patient, rarer) / storm (rare, slow but
   the big ones run). Surfaced via `!forecast` + a menu/cast forecast line. *(The "shorter windows"
   half was left out to keep the cast view untouched; bite-speed + rarity carry the feel.)*
-- **Trophy records per species** (biggest caught) — a cheap long-tail goal layered on the existing
-  catch-log; "personal best" beats raw counts for retention.
+- **Trophy records per species** (biggest caught) — **✅ SHIPPED 2026-06-23 (PR #1351).** Each catch
+  now rolls an individual weight (`disbot/utils/fishing/weight.py` — a nominal that grows with
+  `size_rank` × a bounded random spread), and the catch-log keeps the player's heaviest of each
+  species (migration 095 re-adds the `best_weight` column that 076 dropped when v1 went weightless,
+  now that weight has a purpose). The Fishdex shows your personal-best weight beside each tally, and a
+  fresh record celebrates with "🏅 New personal best!" on the catch. A cheap long-tail goal —
+  "personal best" beats raw counts for retention.
 - **Line-snap as a soft-fail, not a hard-fail** — an escaped fish could leave a clue ("a *big* one
   got away") to bait the next cast rather than just denying the reward — keeps frustration low.
 

@@ -1,1 +1,0 @@
-- `claude/funny-franklin-55kdst` · fishing trophy records (per-species biggest-caught) · `disbot/utils/fishing/` + `services/fishing_workflow.py` + `utils/db/games/fishing.py` + `views/fishing/` + migration 095 · 2026-06-23
