@@ -8,7 +8,9 @@
 > **contract-level**. For *review/refactor* scoping — "what is the smallest
 > self-contained unit for this change?" — see
 > [`docs/repo-review-map.md`](repo-review-map.md), which partitions the tree
-> into independently reviewable units over this map.
+> into independently reviewable units over this map. For *parallel* refactor /
+> fleet coordination — "which units can a fleet build at once without
+> colliding?" — see [`docs/ultracode/`](ultracode/README.md).
 >
 > **How to use:** when you do not know which folder a piece of code
 > belongs in, find the row here that matches the responsibility and
