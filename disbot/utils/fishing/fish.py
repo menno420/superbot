@@ -33,13 +33,25 @@ _DATA_FILE = os.path.join(
 )
 
 
+#: The default venue tag for a catalog row with no explicit ``venue`` (the
+#: original 21 shore fish predate the venue split — Q-0175 §5).
+SHORE_VENUE = "shore"
+
+
 @dataclass(frozen=True)
 class FishSpecies:
-    """One catchable species — a static catalog row (ranked by size)."""
+    """One catchable species — a static catalog row (ranked by size).
+
+    ``venue`` (``"shore"`` / ``"deepwater"``) splits the catalog into the two
+    fishing venues (Q-0175 §5): shore fish bite from the shoreline, deepwater
+    (boat-only) fish bite only when you've set sail. Absent in the dataset → a
+    shore fish, so the original 21 stay shore with no data change.
+    """
 
     name: str
     size_rank: int
     emoji: str
+    venue: str = SHORE_VENUE
 
 
 @dataclass(frozen=True)
@@ -60,6 +72,7 @@ def _load_species() -> tuple[FishSpecies, ...]:
                 name=str(r["name"]).strip().lower(),
                 size_rank=int(r["size_rank"]),
                 emoji=str(r.get("emoji", "🐟")),
+                venue=str(r.get("venue", SHORE_VENUE)).strip().lower(),
             )
             for r in rows
             if isinstance(r, dict) and "name" in r and "size_rank" in r
@@ -71,7 +84,7 @@ def _load_species() -> tuple[FishSpecies, ...]:
         return ()
 
 
-#: The full catalog, sorted smallest → largest.
+#: The full catalog (all venues), sorted smallest → largest.
 SPECIES: tuple[FishSpecies, ...] = _load_species()
 
 _BY_NAME: dict[str, FishSpecies] = {s.name: s for s in SPECIES}
@@ -82,17 +95,34 @@ def species_by_name(name: str) -> FishSpecies | None:
     return _BY_NAME.get(name.strip().lower())
 
 
-def max_size_rank_for_level(level: int) -> int:
-    """The largest ``size_rank`` catchable at fishing *level* (1-based).
+def species_for_venue(venue: str = SHORE_VENUE) -> list[FishSpecies]:
+    """Every catalog species whose ``venue`` matches *venue* (sorted by size)."""
+    key = venue.strip().lower()
+    return [s for s in SPECIES if s.venue == key]
 
-    Level 1 → 3, level 2 → 6, … capped at the catalog size (the owner's
-    "each level unlocks +3 bigger fish" rule). Level ≤ 0 is treated as 1.
+
+def venue_size_cap(venue: str = SHORE_VENUE) -> int:
+    """The catalog's largest ``size_rank`` within *venue* (0 when the pool is empty).
+
+    The per-venue cap the level band is clamped against — so a player's level
+    can never "unlock" beyond the species that actually exist in that venue.
+    """
+    pool = species_for_venue(venue)
+    return max((s.size_rank for s in pool), default=0)
+
+
+def max_size_rank_for_level(level: int, venue: str = SHORE_VENUE) -> int:
+    """The largest ``size_rank`` catchable at fishing *level* in *venue* (1-based).
+
+    Level 1 → 3, level 2 → 6, … (the owner's "each level unlocks +3 bigger fish"
+    rule), clamped to the *venue's* own size cap so the band never runs past the
+    fish that exist there. Level ≤ 0 is treated as 1.
     """
     band = max(1, level) * FISH_PER_LEVEL
-    return min(band, len(SPECIES))
+    return min(band, venue_size_cap(venue))
 
 
-def unlocked_species(level: int) -> list[FishSpecies]:
-    """Every species catchable at fishing *level* (size_rank ≤ the band cap)."""
-    cap = max_size_rank_for_level(level)
-    return [s for s in SPECIES if s.size_rank <= cap]
+def unlocked_species(level: int, venue: str = SHORE_VENUE) -> list[FishSpecies]:
+    """Every *venue* species catchable at fishing *level* (size_rank ≤ the cap)."""
+    cap = max_size_rank_for_level(level, venue)
+    return [s for s in species_for_venue(venue) if s.size_rank <= cap]

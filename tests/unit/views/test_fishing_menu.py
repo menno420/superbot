@@ -60,9 +60,14 @@ def test_menu_embed_advertises_the_actions():
 def test_fishlog_embed_counts_only_known_species():
     log = {"minnow": 3, "golden koi": 99}  # the koi is a legacy/unknown row
     embed = build_fishlog_embed("Anya", log, level=7)
-    # 1/21 discovered, 3 total — the legacy koi is ignored, no impossible progress
-    assert "1/21" in embed.description
+    # 1 of the 32-species catalogue (21 shore + 11 deepwater) discovered, 3 total
+    # — the legacy koi is ignored, no impossible progress.
+    assert "1/32" in embed.description
     assert "**3** total" in embed.description
+    # Both venue sections render (the Q-0175 §5 split).
+    field_names = [f.name for f in embed.fields]
+    assert any("Shore" in n for n in field_names)
+    assert any("Deepwater" in n for n in field_names)
 
 
 # ---------------------------------------------------------------------------
@@ -102,6 +107,41 @@ async def test_cast_button_surfaces_the_busy_message_ephemerally():
     interaction.response.send_message.assert_awaited_once()
     assert interaction.response.send_message.await_args.kwargs.get("ephemeral") is True
     interaction.response.edit_message.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_sail_button_toggles_the_venue_and_keeps_the_menu():
+    from utils.fishing import venue as venue_mod
+
+    view = _menu()
+    interaction = _interaction()
+    interaction.followup = MagicMock()
+    interaction.followup.send = AsyncMock()
+    change = fishing_workflow.VenueChange(
+        venue="deepwater",
+        message="⛵ You set sail for deepwater.",
+    )
+    with (
+        patch(
+            "views.fishing.menu.fishing_workflow.toggle_venue",
+            AsyncMock(return_value=change),
+        ) as toggle,
+        patch(
+            "views.fishing.menu.fishing_workflow.get_energy",
+            AsyncMock(return_value=42),
+        ),
+    ):
+        await _click(view, "sail_btn", interaction)
+
+    toggle.assert_awaited_once_with(1, 99)
+    # The panel stays (re-rendered with the new venue) — same view object back.
+    interaction.response.edit_message.assert_awaited_once()
+    _, kwargs = interaction.response.edit_message.await_args
+    assert kwargs["view"] is view
+    assert venue_mod.DEEPWATER_PROFILE.name in kwargs["embed"].fields[0].value
+    # ...and the player gets an ephemeral confirmation of the toggle.
+    interaction.followup.send.assert_awaited_once()
+    assert interaction.followup.send.await_args.kwargs.get("ephemeral") is True
 
 
 @pytest.mark.asyncio

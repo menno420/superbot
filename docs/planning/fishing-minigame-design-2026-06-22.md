@@ -124,6 +124,16 @@ bands), rod = *how well / which-within-band* you catch it.** No parallel progres
 
 ### 5. Boat / deepwater: a genuine **choice**, not a strict upgrade
 
+> **✅ SHIPPED 2026-06-23 (PR #1340).** The ⛵ Set sail / 🏖️ Dock venue toggle is live: a persisted
+> per-player venue (migration 094 `fishing_venue`; `!sail` + the menu button), an additive **11
+> boat-only deepwater species** (`disbot/data/fishing/fish.json`, uncatchable from shore), and a
+> tougher deepwater minigame (6–12 s bites, 3 s floor, 22% base escape) so the rod `escape_resist`
+> knob finally matters — the per-venue numbers live in `disbot/utils/fishing/venue.py`. **Built
+> additively** (the original 21 shore fish are unchanged) rather than the literal "shore caps at
+> rank 12, move 13–21 to deepwater-only" rebalance below, which changes a live mid-progression
+> feature and is **left as an owner balance call**. The aspirational-not-gate shape is delivered via
+> difficulty (escape + longer bites), exactly as the sim models it.
+
 Reward/min and big-fish rate by venue and rod (the `tension` mechanic, where the boat's fights bite):
 
 | rod | venue | big-fish | escape-loss | reward/min |

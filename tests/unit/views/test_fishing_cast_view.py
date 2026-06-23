@@ -349,7 +349,7 @@ async def test_run_bite_paces_on_the_threaded_bite_speed():
     view._resolved = True  # return right after the first sleep, before arming
     seen: dict[str, float] = {}
 
-    def _delay(rng=None, *, speed=1.0):  # noqa: ANN001
+    def _delay(rng=None, *, speed=1.0, lo=0.0, hi=0.0, floor=0.0):  # noqa: ANN001
         seen["speed"] = speed
         return 0.0
 
@@ -429,3 +429,48 @@ async def test_prepare_cast_reports_an_empty_catalog():
         result = await prepare_cast(1, 99)
 
     assert isinstance(result, str)  # honest failure message
+
+
+# ---------------------------------------------------------------------------
+# Venue threading (Q-0175 §5) — the deepwater profile drives the view's tuning
+# ---------------------------------------------------------------------------
+
+
+def test_deepwater_profile_widens_the_window_and_raises_base_escape():
+    from utils.fishing import minigame
+    from utils.fishing import venue as venue_mod
+
+    deep_cast = fishing_workflow.Cast(
+        catch=Catch(species=FishSpecies("colossal squid", 20, "🦑", venue="deepwater")),
+        level_before=7,
+        venue="deepwater",
+    )
+    view = FishingCastView(
+        1,
+        99,
+        deep_cast,
+        rod=rods.STARTER,
+        profile=venue_mod.DEEPWATER_PROFILE,
+    )
+    # The base window is the venue's (deepwater) + the rod bonus (starter = 0).
+    assert view._window == venue_mod.DEEPWATER_PROFILE.reaction_window
+    # A deepwater fight uses the deepwater base escape, far above shore's.
+    species = deep_cast.catch.species
+    deep_chance = minigame.fight_escape_chance(
+        species,
+        base_escape=venue_mod.DEEPWATER_PROFILE.base_escape,
+    )
+    shore_chance = minigame.fight_escape_chance(species)
+    assert deep_chance > shore_chance
+
+
+def test_view_falls_back_to_the_casts_venue_profile_when_unset():
+    from utils.fishing import venue as venue_mod
+
+    deep_cast = fishing_workflow.Cast(
+        catch=Catch(species=FishSpecies("oarfish", 14, "🎏", venue="deepwater")),
+        level_before=7,
+        venue="deepwater",
+    )
+    view = FishingCastView(1, 99, deep_cast, rod=rods.STARTER)  # no profile passed
+    assert view._profile is venue_mod.DEEPWATER_PROFILE

@@ -17,23 +17,41 @@ from __future__ import annotations
 from utils.fishing.fish import (
     FISH_PER_LEVEL,
     MAX_LEVEL,
+    SHORE_VENUE,
     SPECIES,
     Catch,
     FishSpecies,
     max_size_rank_for_level,
     species_by_name,
+    species_for_venue,
     unlocked_species,
+    venue_size_cap,
 )
 from utils.fishing.rewards import roll_catch
+from utils.fishing.venue import (
+    DEEPWATER,
+    SHORE,
+    VenueProfile,
+    profile_for,
+    toggle,
+)
 
 __all__ = [
+    "DEEPWATER",
     "FISH_PER_LEVEL",
     "MAX_LEVEL",
+    "SHORE",
+    "SHORE_VENUE",
     "SPECIES",
     "Catch",
     "FishSpecies",
+    "VenueProfile",
     "max_size_rank_for_level",
+    "profile_for",
     "roll_catch",
     "species_by_name",
+    "species_for_venue",
+    "toggle",
     "unlocked_species",
+    "venue_size_cap",
 ]

@@ -114,6 +114,10 @@ from utils.db.games.fishing_rod import (
     get_rod_tier,
     set_rod_tier,
 )
+from utils.db.games.fishing_venue import (
+    get_fishing_venue,
+    set_fishing_venue,
+)
 from utils.db.games.game_xp import (
     add_game_xp,
     get_game_xp,
@@ -424,6 +428,8 @@ __all__ = [
     "set_rod_tier",
     "get_fishing_energy",
     "set_fishing_energy",
+    "get_fishing_venue",
+    "set_fishing_venue",
     "get_chicken_farm",
     "set_chicken_farm",
     "get_active_bait",

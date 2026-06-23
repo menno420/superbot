@@ -29,6 +29,7 @@ from utils.fishing import energy as fish_energy
 from utils.fishing import fish as fish_mod
 from utils.fishing import rods as rods_mod
 from utils.fishing import roll_catch
+from utils.fishing import venue as venue_mod
 
 logger = logging.getLogger("bot.fishing_workflow")
 
@@ -77,6 +78,9 @@ class Cast:
     catch: Catch | None
     #: The player's fishing level at cast time (gates the roll + the catch math).
     level_before: int
+    #: The venue this cast was made in (``shore`` / ``deepwater``) — picks the
+    #: species pool + the minigame difficulty (``utils.fishing.venue``).
+    venue: str = venue_mod.SHORE
 
 
 async def roll_cast(
@@ -85,6 +89,7 @@ async def roll_cast(
     rod: rods_mod.Rod | None = None,
     *,
     rarity_pull: float | None = None,
+    venue: str = venue_mod.SHORE,
 ) -> Cast:
     """Read the player's level and roll a catch **without writing anything**.
 
@@ -100,14 +105,15 @@ async def roll_cast(
     multiplied by any loaded bait so the two how-well knobs compound.
     """
     rod = rod or rods_mod.STARTER
+    venue = venue_mod.normalize(venue)
     pull = rod.rarity_pull if rarity_pull is None else rarity_pull
     xp_map = await db.get_game_xp(user_id, guild_id)
     fishing_xp_before = xp_map.get(game_xp_service.GAME_FISHING, 0)
     level_before = fishing_level_from_xp(fishing_xp_before)
-    catch = roll_catch(level_before, rarity_pull=pull)
+    catch = roll_catch(level_before, rarity_pull=pull, venue=venue)
     if catch is None:
-        logger.error("fishing: no catchable species (catalog empty?)")
-    return Cast(catch=catch, level_before=level_before)
+        logger.error("fishing: no catchable species (venue=%s, catalog empty?)", venue)
+    return Cast(catch=catch, level_before=level_before, venue=venue)
 
 
 async def commit_catch(user_id: int, guild_id: int, cast: Cast) -> FishResult:
@@ -191,6 +197,9 @@ class CastStart:
     bait_used: bait_mod.Bait | None = None
     #: Bait charges remaining after this cast spent one (0 = pack just ran out).
     bait_charges_left: int = 0
+    #: The venue profile this cast runs at — the source of the bite band, reaction
+    #: window, and base escape the cast view feeds into the minigame math.
+    venue_profile: venue_mod.VenueProfile = venue_mod.SHORE_PROFILE
 
 
 def _fmt_wait(seconds: int) -> str:
@@ -247,17 +256,28 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         )
 
     rod = rods_mod.rod_for_tier(await db.get_rod_tier(user_id, guild_id))
+    venue = await db.get_fishing_venue(user_id, guild_id)
+    profile = venue_mod.profile_for(venue)
     bait, bait_charges = await get_active_bait(user_id, guild_id)
     # Bait's two knobs compound on the rod's: rarity_pull (both ≥ 1) pulls the
     # catch toward the big end of the SAME unlocked band (never a new band); and
     # bite_speed (both ≤ 1) shortens the bite wait so a loaded lure bites sooner.
     effective_pull = rod.rarity_pull * (bait.rarity_pull if bait else 1.0)
     effective_bite_speed = rod.bite_speed * (bait.bite_speed if bait else 1.0)
-    cast = await roll_cast(user_id, guild_id, rod, rarity_pull=effective_pull)
+    cast = await roll_cast(
+        user_id,
+        guild_id,
+        rod,
+        rarity_pull=effective_pull,
+        venue=profile.key,
+    )
     if cast.catch is None:
         return CastStart(
             ok=False,
-            message="🎣 The fishing spot is unavailable right now — try later.",
+            message=(
+                f"{profile.emoji} The {profile.name.lower()} is quiet right now — "
+                "try later."
+            ),
             energy_current=settled.current,
         )
 
@@ -283,7 +303,63 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         effective_bite_speed=effective_bite_speed,
         bait_used=bait,
         bait_charges_left=charges_left,
+        venue_profile=profile,
     )
+
+
+# ---------------------------------------------------------------------------
+# Venue — shore ↔ deepwater (the ⛵ Set sail / 🏖️ Dock toggle, Q-0175 §5)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class VenueChange:
+    """The outcome of a set-sail / dock toggle — the new venue + a message."""
+
+    venue: str
+    message: str
+    #: True when the toggle actually changed the venue (always True today; kept
+    #: so a future "already there" no-op path reads clearly).
+    changed: bool = True
+
+
+async def get_venue(user_id: int, guild_id: int) -> venue_mod.VenueProfile:
+    """The player's current venue profile (shore when no row / unknown)."""
+    return venue_mod.profile_for(await db.get_fishing_venue(user_id, guild_id))
+
+
+async def set_venue(
+    user_id: int,
+    guild_id: int,
+    venue: str,
+) -> VenueChange:
+    """Set the player's fishing venue to *venue* (normalised; unknown → shore).
+
+    Plain game state, like the rod tier / energy — a single CRUD write, no audit
+    (no coins or external effect). Returns the resolved profile + a player-facing
+    line. The deepwater message names what changes (boat-only fish, tougher
+    fights) so the choice reads as the design's "optimization, not a gate".
+    """
+    profile = venue_mod.profile_for(venue)
+    await db.set_fishing_venue(user_id, guild_id, profile.key)
+    if profile.key == venue_mod.DEEPWATER:
+        message = (
+            f"{profile.emoji} **You set sail for deepwater.** Rare boat-only fish "
+            "lurk here — they bite slower and fight harder to break free, so a "
+            "rod with good escape-resist pays off. Cast with `!fish`."
+        )
+    else:
+        message = (
+            f"{profile.emoji} **You docked back on the shore.** Relaxed casting "
+            "for the everyday catch. Cast with `!fish`."
+        )
+    return VenueChange(venue=profile.key, message=message, changed=True)
+
+
+async def toggle_venue(user_id: int, guild_id: int) -> VenueChange:
+    """Flip the player between shore and deepwater (the menu / `!sail` action)."""
+    current = await db.get_fishing_venue(user_id, guild_id)
+    return await set_venue(user_id, guild_id, venue_mod.toggle(current))
 
 
 # ---------------------------------------------------------------------------
