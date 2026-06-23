@@ -45,6 +45,11 @@
   broadcast table. [design](../planning/casino-poker-design-2026-06-22.md).
 
 **▶ Next startable (one of):**
+- **▶ Consolidation / discoverability audit (owner-directed, top priority 2026-06-23)** — solidify what
+  we shipped this week: every command findable + buttonized, setup wizard improved, AI advisor finalized,
+  per-cog + general settings centralized; no orphaned ephemeral panels, no missing cogs/commands in help.
+  One cog / connected-group at a time. Staging brief + per-cog rubric + first targets:
+  [`planning/consolidation-discoverability-audit-brief-2026-06-23.md`](../planning/consolidation-discoverability-audit-brief-2026-06-23.md).
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:
