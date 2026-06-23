@@ -1,0 +1,1 @@
+- `claude/funny-franklin-3z6s2p` · fishing daily weather forecast (slice 2, on the venue seam) · `disbot/utils/fishing/weather.py`, `disbot/services/fishing_workflow.py`, `disbot/views/fishing/`, `disbot/cogs/fishing_cog.py`, fishing tests · 2026-06-23
