@@ -1,9 +1,16 @@
 # 2026-06-23 — U2 Roles & access panels: in-place nav + temproles reachability
 
-> **Status:** `in-progress`
+> **Status:** `complete` — coordinator Phase-2 verified (2026-06-23): `!temproles` GAP→0 (surfaced via
+> the Time Roles panel + allowlisted; stale `_BASELINE` emptied → reachability test green); the 2 Create
+> buttons converted to true in-place. The 14 remaining `views/roles/` `edit_in_place` findings were
+> independently re-verified against source as genuine sub-flow-picker / report-toast cases (matching the
+> already-allowlisted `delete_btn`/`add_btn`/`run_btn` siblings) and are allowlisted in the coordinator PR
+> #1375 — forcing `edit_message` would destroy the builder/draft context. Diff scoped to roles views +
+> reachability test/baseline + temproles allowlist + mirrored test only. Both checks green on CI (sole red
+> = the born-red gate). Flipped + merged by the coordinator (work by two U2 workers).
 >
 > Ultracode fleet **worker U2**. Born-red by design — the **coordinator** flips this
-> badge and merges in Phase 2 (per the worker-scope contract). LEAVE RED.
+> badge and merges in Phase 2 (per the worker-scope contract).
 
 ## Arc
 
