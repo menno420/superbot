@@ -101,6 +101,36 @@ async def test_get_policy_returns_row_dict(_mock_pool):
 
 
 @pytest.mark.asyncio
+async def test_get_policy_selects_delete_blocked_commands(_mock_pool):
+    _mock_pool.fetchrow.return_value = {
+        "mode": "selected_channels",
+        "delete_blocked_commands": True,
+        "updated_by": 99,
+        "updated_at": None,
+        "created_at": None,
+    }
+    row = await db.get_policy(10)
+    sql, *_args = _mock_pool.fetchrow.await_args.args
+    assert "delete_blocked_commands" in sql
+    assert row is not None
+    assert row["delete_blocked_commands"] is True
+
+
+@pytest.mark.asyncio
+async def test_set_delete_blocked_commands_upserts(_mock_pool):
+    await db.set_delete_blocked_commands(guild_id=10, enabled=True, updated_by=99)
+    sql, *args = _mock_pool.execute.await_args.args
+    assert "INSERT INTO guild_command_access_policy" in sql
+    assert "ON CONFLICT (guild_id)" in sql
+    assert "delete_blocked_commands = EXCLUDED.delete_blocked_commands" in sql
+    # On insert it seeds the safe default mode so the toggle works before
+    # a mode is chosen; mode is NOT overwritten on conflict.
+    assert "'all_channels'" in sql
+    assert "mode" not in sql.split("DO UPDATE SET")[1]
+    assert args == [10, True, 99]
+
+
+@pytest.mark.asyncio
 async def test_set_mode_issues_upsert_with_correct_params(_mock_pool):
     await db.set_mode(guild_id=10, mode="all_channels", updated_by=99)
     sql, *args = _mock_pool.execute.await_args.args

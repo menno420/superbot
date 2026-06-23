@@ -55,7 +55,7 @@ async def get_policy(guild_id: int) -> dict[str, Any] | None:
     """
     row = await pool.get().fetchrow(
         """
-        SELECT mode, updated_by, updated_at, created_at
+        SELECT mode, delete_blocked_commands, updated_by, updated_at, created_at
           FROM guild_command_access_policy
          WHERE guild_id = $1
         """,
@@ -88,6 +88,35 @@ async def set_mode(
         """,
         guild_id,
         mode,
+        updated_by,
+    )
+
+
+async def set_delete_blocked_commands(
+    guild_id: int,
+    enabled: bool,
+    updated_by: int | None,
+) -> None:
+    """Upsert the ``delete_blocked_commands`` flag for ``guild_id``.
+
+    Creates a policy row with the safe default mode (``all_channels``) if
+    none exists yet, so the toggle can be flipped before a mode is chosen.
+    Only ``delete_blocked_commands`` (+ bookkeeping) moves on conflict —
+    the mode and channel list are preserved.
+    """
+    await pool.get().execute(
+        """
+        INSERT INTO guild_command_access_policy
+            (guild_id, mode, delete_blocked_commands, updated_by)
+        VALUES ($1, 'all_channels', $2, $3)
+        ON CONFLICT (guild_id)
+        DO UPDATE SET
+            delete_blocked_commands = EXCLUDED.delete_blocked_commands,
+            updated_by              = EXCLUDED.updated_by,
+            updated_at              = NOW()
+        """,
+        guild_id,
+        bool(enabled),
         updated_by,
     )
 
@@ -205,5 +234,6 @@ __all__ = [
     "list_allowed_channels",
     "remove_allowed_channel",
     "replace_allowed_channels",
+    "set_delete_blocked_commands",
     "set_mode",
 ]
