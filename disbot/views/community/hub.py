@@ -38,11 +38,10 @@ from utils.hub_registry import get_hub
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GENERAL_COLOR
 from views.base import HubView
-from views.hub_children import discover_hub_children
+from views.hub_children import HubChildButton, discover_hub_children
 from views.navigation import (
     BackTarget,
     attach_back_button,
-    attach_back_target,
     chain_back,
 )
 
@@ -228,9 +227,15 @@ def attach_back_to_community_button(
     )
 
 
-class _CommunityChildButton(discord.ui.Button):
-    """A button on the Community hub that opens a child cog's
-    ``build_help_menu_view`` in place.
+class _CommunityChildButton(HubChildButton):
+    """A button on the Community hub that opens a child cog's panel in place.
+
+    Thin subclass of the shared :class:`views.hub_children.HubChildButton` (the
+    consolidation's "first consolidation"): it binds the Community ``hub_key`` +
+    the Back-to-Community attacher, and inherits all the forwarding logic
+    (click-time governance recheck → ``build_help_menu_view`` → back-nav → edit
+    in place). Community fails closed with an ephemeral when a child has no panel
+    (no ``fallback_builder``).
     """
 
     def __init__(
@@ -242,94 +247,13 @@ class _CommunityChildButton(discord.ui.Button):
         row: int,
     ) -> None:
         super().__init__(
+            hub_key="community",
+            subsystem=subsystem,
             label=label,
             style=style,
-            custom_id=f"community:open:{subsystem}",
             row=row,
+            back_attacher=attach_back_to_community_button,
         )
-        self._subsystem = subsystem
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        # PR D: click-time governance recheck. If the targeted
-        # subsystem has become invisible since this button was
-        # rendered, fail closed with an ephemeral and do NOT call into
-        # the cog. ``resolve_visibility`` is cached by ``(guild_id,
-        # channel_id, tier, role_ids)`` so the re-check is essentially
-        # free in steady state.
-        gctx = GovernanceContext.from_interaction(interaction)
-        vis_result = await governance_service.resolve_visibility(gctx)
-        if self._subsystem not in vis_result.visible_subsystems:
-            await interaction.response.send_message(
-                "That feature is no longer available in this channel.",
-                ephemeral=True,
-            )
-            return
-
-        # Local import keeps the help cog out of module-import time.
-        from cogs.help_cog import _cog_for_subsystem
-
-        cog = _cog_for_subsystem(interaction.client, self._subsystem)  # type: ignore[arg-type]
-        if cog is None:
-            await interaction.response.send_message(
-                f"The {self._subsystem!r} subsystem is not loaded right now.",
-                ephemeral=True,
-            )
-            return
-
-        build_panel = getattr(cog, "build_help_menu_view", None)
-        if not callable(build_panel):
-            await interaction.response.send_message(
-                f"The {self._subsystem!r} subsystem has no panel yet.",
-                ephemeral=True,
-            )
-            return
-
-        try:
-            embed, sub_view = await build_panel(interaction)
-        except Exception as exc:  # noqa: BLE001 — nav must not crash
-            logger.warning(
-                "CommunityHubView: build_help_menu_view failed for %r: %s",
-                self._subsystem,
-                exc,
-                exc_info=True,
-            )
-            await interaction.response.send_message(
-                f"Could not open the {self._subsystem!r} panel — see bot logs.",
-                ephemeral=True,
-            )
-            return
-
-        # PR 2: attach Back-to-Community to the child view so users can
-        # return to the Community hub from any opened child panel —
-        # mirrors the Games-hub pattern where ``handle_select`` calls
-        # ``attach_back_to_games_button(sub_view, self._author)`` after a
-        # successful child build. Without this, the child panel is
-        # reachable but the user has no Back navigation other than
-        # closing the hub entirely.
-        #
-        # AB2 back-chain (mirrors ``GamesHubView.handle_select``): when this
-        # hub was itself opened from Help, ``_attach_back_to_help_button`` set
-        # ``self._back_target``. Thread it through so (a) the rebuilt Community
-        # hub re-attaches "↩ Back to Help" and (b) the child panel gets its own
-        # direct "↩ Back to Help" too — otherwise a Help → Community → child →
-        # back round-trip silently drops back-to-Help.
-        parent_view = self.view
-        if isinstance(parent_view, CommunityHubView):
-            back_target: BackTarget | None = getattr(
-                parent_view,
-                "_back_target",
-                None,
-            )
-            attach_back_to_community_button(
-                sub_view,
-                parent_view._author,
-                grandparent=back_target,
-            )
-            if back_target is not None:
-                attach_back_target(sub_view, back_target)
-            sub_view._back_target = back_target  # type: ignore[attr-defined]
-
-        await interaction.response.edit_message(embed=embed, view=sub_view)
 
 
 class CommunityHubView(HubView):

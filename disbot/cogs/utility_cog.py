@@ -9,16 +9,13 @@ from discord.ext import commands
 
 from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
-from services import governance_service
-from services.governance_service import GovernanceContext
 from utils import embeds as em
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
 from views.base import HubView, send_panel
-from views.hub_children import discover_hub_children
+from views.hub_children import HubChildButton, discover_hub_children
 from views.navigation import (
     BackTarget,
     attach_back_button,
-    attach_back_target,
     chain_back,
 )
 
@@ -352,78 +349,26 @@ def attach_back_to_utility_button(
     )
 
 
-class _UtilityChildButton(discord.ui.Button):
+class _UtilityChildButton(HubChildButton):
     """A Utility-hub button that opens a child subsystem's panel in place.
 
-    Mirrors :class:`views.community.hub._CommunityChildButton`: it forwards to the
-    target cog's ``build_help_menu_view`` hook (no business logic here), with a
-    click-time governance recheck so a child that became invisible since render
-    fails closed instead of opening.
+    Thin subclass of the shared :class:`views.hub_children.HubChildButton` (the
+    consolidation's "first consolidation"): it binds the Utility ``hub_key`` + the
+    Back-to-Utility attacher, and inherits all the forwarding logic (click-time
+    governance recheck → ``build_help_menu_view`` → back-nav → edit in place).
+    Utility fails closed with an ephemeral when a child has no panel (no
+    ``fallback_builder``).
     """
 
     def __init__(self, *, subsystem: str, label: str, row: int) -> None:
         super().__init__(
+            hub_key="utility",
+            subsystem=subsystem,
             label=label,
             style=discord.ButtonStyle.primary,
-            custom_id=f"utility:open:{subsystem}",
             row=row,
+            back_attacher=attach_back_to_utility_button,
         )
-        self._subsystem = subsystem
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        # Click-time governance recheck — fail closed if the child has become
-        # invisible since this button was rendered (cached resolve, ~free).
-        gctx = GovernanceContext.from_interaction(interaction)
-        vis_result = await governance_service.resolve_visibility(gctx)
-        if self._subsystem not in vis_result.visible_subsystems:
-            await interaction.response.send_message(
-                "That feature is no longer available in this channel.",
-                ephemeral=True,
-            )
-            return
-
-        # Local import keeps the help cog out of module-import time (and the
-        # import graph acyclic).
-        from cogs.help_cog import _cog_for_subsystem
-
-        cog = _cog_for_subsystem(interaction.client, self._subsystem)  # type: ignore[arg-type]
-        builder = getattr(cog, "build_help_menu_view", None) if cog else None
-        if not callable(builder):
-            await interaction.response.send_message(
-                f"The {self._subsystem!r} panel is not available right now.",
-                ephemeral=True,
-            )
-            return
-
-        try:
-            embed, sub_view = await builder(interaction)
-        except Exception as exc:  # noqa: BLE001 — navigation must not crash
-            logger.warning(
-                "Utility hub: build_help_menu_view failed for %r: %s",
-                self._subsystem,
-                exc,
-                exc_info=True,
-            )
-            await interaction.response.send_message(
-                f"Could not open the {self._subsystem!r} panel — see bot logs.",
-                ephemeral=True,
-            )
-            return
-
-        # Attach Back-to-Utility to the child view, threading any Back-to-Help
-        # grandparent the help layer set on this hub (mirrors the Community hub).
-        parent_view = self.view
-        back_target: BackTarget | None = getattr(parent_view, "_back_target", None)
-        attach_back_to_utility_button(
-            sub_view,
-            interaction.user,  # type: ignore[arg-type]
-            grandparent=back_target,
-        )
-        if back_target is not None:
-            attach_back_target(sub_view, back_target)
-            sub_view._back_target = back_target  # type: ignore[attr-defined]
-
-        await interaction.response.edit_message(embed=embed, view=sub_view)
 
 
 class _UtilityPanelView(HubView):

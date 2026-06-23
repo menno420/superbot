@@ -32,9 +32,16 @@ attention. This plan supplies all three.
   command fails the build), allowlist `architecture_rules/command_reachability_exceptions.yml`. This is
   the key guard — it means a worker **cannot merge an orphaned command** (the general-cog class), so the
   fleet can't reintroduce the fragmentation we're removing.
-- ✅ **Shared hub-child discovery primitive (this PR)** — `disbot/views/hub_children.py`
+- ✅ **Shared hub-child discovery primitive (#1371)** — `disbot/views/hub_children.py`
   `discover_hub_children(hub_key)`; the games/community/utility hubs now all delegate to it (one source,
   3 consumers, 68 hub tests green). This is the canonical "which children does my hub surface" seam.
+- ✅ **Shared hub-child *button* primitive (#1373 — the "first consolidation", done)** —
+  `disbot/views/hub_children.py` `HubChildButton`: the shared open-child-in-place logic (governance
+  recheck → `build_help_menu_view` → back-nav → edit), parametrized by `hub_key` + `back_attacher` + an
+  optional `fallback_builder`. **Community + Utility** now bind it as thin subclasses (the two
+  byte-identical copies removed). **Games** keeps its `handle_select` (extra dropdown-legacy guards + the
+  in-place fallback) for now — the shared button already supports its fallback shape via `fallback_builder`,
+  so its migration is a **drop-in U3 follow-on**.
 - ✅ **Already error-level + failing CI** (from the guardrail inventory): `back_button` ·
   `panel_base_class` · `select_option_truncation` (`scripts/check_consistency.py --mode strict`) ·
   layer/mutation boundaries (`scripts/check_architecture.py --mode strict`) · the audited-write
@@ -92,19 +99,21 @@ the per-unit *work* is items **3 (edit-in-place → 0)**, **6 (settings reachabl
 | **U3 Games hub** | the 12 minigames (`blackjack`/`rps`/`deathmatch`/`mining`/`counting`/`chain`/`casino`/`creature`/`farm`/`fishing`/`games`) | casino 2 `edit_in_place` → 0; per-game buttonization polish; **migrate the games child-buttons onto a shared `HubChildButton`** (see "first consolidation" below). Subdivide per-game for more parallelism. |
 | **U4 BTD6** | `btd6_*`, `paragon_cog` (+ `views/btd6/`) | **fix the `!btd6strat` gap** — add a Strategy child to `BTD6PanelView` (bespoke hand-built panel; mirror its Live-Events/Towers buttons) + allowlist once surfaced. |
 | **U5 Economy & inventory** | `economy`, `inventory`, `leaderboard`, `treasury` | settings reachability; verify economy hub renders its children via the primitive. |
-| **U6 Community** | `community`, `community_spotlight`, `xp`, `karma`, `welcome`, `counters` | cleanup 1 `edit_in_place`; migrate the community child-buttons onto `HubChildButton`. |
+| **U6 Community** | `community`, `community_spotlight`, `xp`, `karma`, `welcome`, `counters` | cleanup 1 `edit_in_place`. *(child-buttons → `HubChildButton`: done #1373.)* |
 | **U7 Moderation & safety** | `moderation`, `automod`, `image_moderation`, `logging`, `security`, `cleanup`, `counters` | settings reachability; ephemeral→in-place polish. |
 | **U8 Admin & diagnostics** | `admin`, `diagnostic`, `server_management`, `channel`, `proof_channel` | verify admin hub renders children; settings reachability. |
 | **U9 Settings & UX-lab** | `settings`, `ux_lab` | gated on the Phase-0.5 settings guard. |
 | **U10 Setup** | `setup` (+ `views/setup/`) | the wizard walk (every section yields a real op or honest link-only); `setup/launcher.py` BaseView warning. |
-| **U11 Utility/foundation** | `utility`, `general`, `four_twenty`, `bootstrap_access`, maintenance cogs | done for general (#1370); migrate utility's child-button onto `HubChildButton`; xp `rank_view.py` → BaseView + card-engine. |
+| **U11 Utility/foundation** | `utility`, `general`, `four_twenty`, `bootstrap_access`, maintenance cogs | done for general (#1370); *(utility child-button → `HubChildButton`: done #1373);* xp `rank_view.py` → BaseView + card-engine. |
 
-> **First consolidation (good early unit):** the discovery half is now shared
-> (`discover_hub_children`); the **button half** (`_CommunityChildButton`/`_UtilityChildButton` + the
-> games child button) is still 3 copies. Extracting a shared `HubChildButton` (preserve the
-> `f"{hub_key}:open:{subsystem}"` custom_id for persistence; parametrize the back-attacher) into
-> `views/hub_children.py` and migrating the 3 hubs onto it is a clean, test-guarded consolidation —
-> ideal as U3/U6/U11's shared first task or a dedicated unit.
+> **First consolidation — DONE (#1373).** Both halves are now shared in `views/hub_children.py`:
+> `discover_hub_children` (discovery, #1371) + `HubChildButton` (the forwarding button, #1373).
+> **Community + Utility** bind `HubChildButton` as thin subclasses (2 of 3 copies removed). **Games**
+> migration is the only remainder — a **drop-in for U3**: subclass `HubChildButton` with
+> `back_attacher=attach_back_to_games_button` + `fallback_builder=_build_no_panel_embed`, then drop
+> `_GameHubButton`/`handle_select` (its `__none__`/wrong-parent guards are dropdown-legacy — the direct
+> buttons never pass them). The U6/U11 "migrate child-buttons onto `HubChildButton`" tasks are already
+> done by #1373.
 
 ## Rules of engagement (every worker)
 
