@@ -178,13 +178,13 @@ def test_only_scans_views(mod, tmp_path, monkeypatch):
 def test_real_tree_produces_no_graduated_rule_errors(mod):
     """The live tree must parse and surface zero error-severity findings.
 
-    The three GRADUATED rules (back_button / panel_base_class /
-    select_option_truncation) carry ``severity="error"``, so any finding from
-    them on the live tree would be an error — and `--mode strict` (now wired into
-    CI) would fail. This test mirrors that CI gate locally: it must stay clean, or
-    a regression reintroduced a front-truncated select / direct-`discord.ui.View`
-    panel / back-affordance-less hub. Warn-only rules (edit_in_place) may still
-    produce warnings — those don't fail CI.
+    All four consistency rules are now GRADUATED — edit_in_place joined
+    back_button / panel_base_class / select_option_truncation via the ultracode
+    consolidation fleet (#1375), so every rule carries ``severity="error"`` and any
+    live finding is an error that `--mode strict` (wired into CI) would fail on.
+    This test mirrors that CI gate locally: it must stay clean, or a regression
+    reintroduced an ephemeral-instead-of-in-place panel / front-truncated select /
+    direct-`discord.ui.View` panel / back-affordance-less hub.
     """
     findings = mod.run_checks(mod._all_files(), mod._load_exceptions())
     errors = [f for f in findings if f.severity == "error"]
@@ -195,14 +195,14 @@ def test_real_tree_produces_no_graduated_rule_errors(mod):
 
 
 def test_graduated_rules_carry_error_severity(mod):
-    """The three graduated rules are CI-enforced (severity='error'); the AI-nav
-    rule stays warn-only until its redesign plan ships."""
+    """All four consistency rules are now CI-enforced (severity='error') — the
+    ultracode consolidation fleet (#1375) cleared the edit_in_place backlog and
+    graduated the last warn-only rule."""
     by_name = {r.name: r for r in mod.RULES}
-    for name in ("back_button", "panel_base_class", "select_option_truncation"):
+    for name in ("edit_in_place", "back_button", "panel_base_class", "select_option_truncation"):
         assert by_name[name].severity == "error", f"{name} should be graduated"
         # A graduated rule carries no leftover blocker note.
         assert by_name[name].graduation_blocker == ""
-    assert by_name["edit_in_place"].severity == "warning"
 
 
 # ---------------------------------------------------------------------------
@@ -667,19 +667,22 @@ def test_run_checks_stamps_findings_with_rule_severity(mod, tmp_path, monkeypatc
     assert edit_findings and all(f.severity == "error" for f in edit_findings)
 
 
-def test_live_edit_in_place_rule_is_blocked_on_the_ai_nav_plan(mod):
-    """The real edit_in_place rule documents its graduation blocker (the AI-nav plan)."""
+def test_live_edit_in_place_rule_is_graduated(mod):
+    """The real edit_in_place rule graduated to error (ultracode fleet #1375): the
+    AI-nav redesign shipped (U1 #1376) and the remaining genuine cases are
+    allowlisted, so it enforces a clean tree and carries no leftover blocker."""
     rule = next(r for r in mod.RULES if r.name == "edit_in_place")
-    assert rule.severity == "warning"
-    assert "ai-panel-inplace-navigation-plan" in rule.graduation_blocker
+    assert rule.severity == "error"
+    assert rule.graduation_blocker == ""
 
 
 def test_graduation_mode_ignores_file_filter(mod, monkeypatch, capsys):
     """--graduation always scans the full tree, never a filtered subset (Codex P2).
 
-    Pointing ``--file`` at a single clean file must NOT make the report show a
-    false ELIGIBLE — the graduation decision is whole-tree, so ``edit_in_place``
-    must still be reported BLOCKED with its real (>0) full-tree finding count.
+    Pointing ``--file`` at a single file must not change the graduation verdict —
+    the decision is whole-tree. With every rule now graduated (#1375), the tracker
+    reports them GRADUATED regardless of the filter; the report still renders the
+    full rule set rather than a filtered subset.
     """
     monkeypatch.setattr(
         sys,
@@ -690,8 +693,8 @@ def test_graduation_mode_ignores_file_filter(mod, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "graduation tracker" in out
-    # base.py alone has no edit_in_place finding; full-tree mode must still BLOCK it.
-    assert "edit_in_place" in out and "BLOCKED" in out
+    # The full rule set is reported (not filtered to base.py), all GRADUATED.
+    assert "edit_in_place" in out and "GRADUATED" in out
 
 
 # ---------------------------------------------------------------------------
@@ -740,9 +743,9 @@ def test_select_option_truncation_default_scope_skips_cogs(mod, tmp_path, monkey
 def test_registry_scopes_rules_3_and_4_to_cogs(mod):
     """The registry opts rules 3+4 into the cog layer and keeps rules 1+2 views-only.
 
-    Rule 1 (edit_in_place) is warn-only / blocked on the AI-nav redesign and
-    rule 2 (back_button)'s HubView nav panels live in ``views/``; rules 3+4 are
-    the patterns that also occur in the cog layer (BUG-0017).
+    Rules 1 (edit_in_place) + 2 (back_button) target panel / HubView nav that lives
+    in ``views/``; rules 3+4 are the patterns that also occur in the cog layer
+    (BUG-0017).
     """
     by_name = {r.name: r for r in mod.RULES}
     assert by_name["edit_in_place"].roots == ("views/",)

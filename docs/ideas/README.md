@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`ultracode-worker-pr-scope-guard-2026-06-23.md`](./ultracode-worker-pr-scope-guard-2026-06-23.md) —
+  **session-idea (2026-06-23, Q-0089) from the ultracode consolidation fleet (#1375):** a coordinator-side
+  `scripts/check_worker_pr_scope.py` that asserts a worker PR's diff touches *only* its declared ALLOWED
+  file globs (and no held-set files) — mechanizing the by-hand Phase-2 scope review that protects the
+  file-disjoint guarantee. The post-work half of `check_lane_overlap.py`. Cross-cutting / agent workflow.
 - [`session-followups-visual-ai-setup-2026-06-23.md`](./session-followups-visual-ai-setup-2026-06-23.md) —
   **session-idea promotion (2026-06-23, Q-0089):** the three open forward-ideas from the visual-engine /
   AI-setup arc (PRs #1349/#1352/#1355/#1357/#1361), lifted out of their `.sessions/` logs into the
