@@ -229,6 +229,69 @@ The audit should consolidate these recurring shapes rather than leave parallel c
   gambling mechanics; casino/poker shipped the same week. A product-coherence call for the owner (not a
   blocker for this audit, but worth surfacing).
 
+## Appendix A — Session 1 kickoff prompt (paste-ready)
+
+> **Session order vs. §7:** §7 ranks the targets by *consistency debt* (AI panel highest). This appendix
+> sets the *owner-prioritized session order* — **findability foundation first**, because it is the
+> owner's stated #1 goal *and* it produces the rubric + CI guard that make every later per-cog session
+> mechanical. AI panel + roles become Sessions 2 and 3.
+
+Paste the block below into a fresh session to start the audit cleanly from the repo:
+
+---
+
+**Target: Help discoverability foundation — command-level findability + the General/Utility exemplar + a
+per-command reachability guard.**
+
+Read first: **this brief** (your mandate, the per-cog rubric §4, the resolved findings §3). Then
+`.claude/CLAUDE.md` → `docs/current-state.md` → `docs/current-state/S1-bot.md`.
+
+**Context (already code-verified — don't re-derive):** the help tree homes *subsystems* well
+(`cogs/help/`, `services/help_projection.py`, `utils/subsystem_registry.py`, `utils/hub_registry.py`);
+the #1297 guard is **subsystem-level only** (`tests/unit/invariants/test_help_reachability.py` +
+`test_discoverability.py` — see §3.1). `GeneralMenuView` in `general_cog.py` **already buttonizes all 8
+general commands** (§3.2). So the gap is **command-level discoverability**, not missing buttons.
+
+**Do, in order:**
+
+1. **Reproduce the general-cog report (static — no live guild here).** Trace the exact render path
+   `!help` → `HelpCategoryView` → Utility hub → General. Determine why a new user can't find
+   `!joke`/`!fact`/etc.: **(b)** is Utility surfaced clearly in the top dropdown, and are individual
+   commands shown in the help-tree *text* before the panel is opened? **(c)** is there a routing /
+   governance default hiding Utility or `general`? Write the root cause with file:line evidence, and
+   **flag explicitly the one thing that needs the owner's live screenshot to confirm** (§8).
+2. **Fix the deterministic part of that root cause** — e.g. surface individual commands in the subsystem
+   help text, raise Utility's discoverability, or correct a wrong routing default — **through the existing
+   `help_projection` seam**, no new parallel system. One contained change.
+3. **Build the per-command reachability guard** (rubric item 2; the §6/§8 "strongest outcome"): extend the
+   invariants so every registered user-facing command resolves to *either* a help-tree listing *or* a
+   buttonized panel action — `internal`/owner-tier exempt via allowlist, **warn-first**. Model it on
+   `check_consistency.py` house style + the existing `test_discoverability.py`. This is what makes "every
+   command findable" un-regressable and the rest of the audit mechanical.
+4. **Run it across all 55 cogs**, record the per-cog gap list (append to this brief or a sibling ledger),
+   and note which cogs are clean vs. need a follow-on session.
+
+**Acceptance:** general-cog root cause documented + the deterministic part fixed; the per-command guard
+exists (warn-first) and emits the full per-cog gap list; `python3.10 scripts/check_quality.py --full` +
+`python3.10 scripts/check_architecture.py --mode strict` green. **Scope discipline:** this is the
+*foundation* session — do **not** also refactor the AI/roles panels (Sessions 2/3). Born-red session card
+first, claim the lane, open the PR ready, auto-merge on green.
+
+**Owner live-confirm needed:** one screenshot of `!help` → Utility (or wherever you land) to confirm the
+general-cog repro.
+
+---
+
+**Then (each a standalone session, per "one cog / connected group at a time"):**
+
+- **Session 2 — AI panel family** (`views/ai/`, 18 `edit_in_place` findings) + finalize the AI setup
+  advisor (the generative "describe-your-server → staged `SetupOperation` drafts" step on the existing
+  `setup_advisor_review` seam, §3.5). Largest consistency-debt cluster; has a plan
+  ([`ai-panel-inplace-navigation-plan-2026-06-19`](ai-panel-inplace-navigation-plan-2026-06-19.md)); the
+  advisor's generative write is gated by Q-0048 (its own per-exposure decision first).
+- **Session 3 — Roles family** (`views/roles/`, 15 `edit_in_place` findings) + extract the
+  channel-deployed-component primitive (§5).
+
 ## Related
 
 - [`ideas/competitive-positioning-north-star-2026-06-23.md`](../ideas/competitive-positioning-north-star-2026-06-23.md)
