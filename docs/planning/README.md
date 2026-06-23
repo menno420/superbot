@@ -61,7 +61,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 
 | Plan | Status / gate | Related ideas |
 |---|---|---|
-| [repo-consistency-linter](repo-consistency-linter-plan-2026-06-17.md) | active buildable lane (Q-0170); rules 2/3/4 **graduated to error** (#1094); `edit_in_place` warn-only, **blocked on the AI-nav plan** | `repo-consistency-linter` |
+| [repo-consistency-linter](repo-consistency-linter-plan-2026-06-17.md) | active buildable lane (Q-0170); **all 4 rules graduated to error** — rules 2/3/4 (#1094) + `edit_in_place` (#1375, ultracode consolidation fleet cleared the backlog to 0) | `repo-consistency-linter` |
 | [codex-review-integration](codex-review-integration-plan-2026-06-17.md) | partially wired (CI posts @codex on card flip); Hermes-timer + routine-fix-first remain | `codex-automated-pr-review` |
 | [portable-substrate-kit-extraction](portable-substrate-kit-extraction-2026-06-13.md) | owner-approved OSS arc; in-repo layers shipped, **external package not yet extracted** — **owner-action** (demoted from the plannable queue after its fourth band-carry) | `portable-agent-memory-package`, `autonomous-improvement-loop-vision`. Review companion: [portable-agent-substrate-revision](portable-agent-substrate-revision-2026-06-13.md) |
 

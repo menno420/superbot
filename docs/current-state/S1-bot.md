@@ -54,9 +54,17 @@
   panel didn't surface its `general`/`four_twenty` children) + fixed; the **per-command reachability
   guard** built (`scripts/check_command_reachability.py` + warn-first invariant) → 214 commands, 2
   genuine gaps recorded ([gap ledger](../audits/command-reachability-gaps-2026-06-23.md)).
-  **▶ Next:** Session 2 (AI panel `views/ai/` 18 `edit_in_place` + AI-advisor finalize) · Session 3
-  (roles `views/roles/` 15 `edit_in_place` + channel-deployed-component primitive) · the 2 gap cogs
-  (`btd6strat` Strategy button · `temproles` homing) as tiny per-cog follow-ons.
+  **Ultracode consolidation fleet SHIPPED (2026-06-23, coordinator PR #1375):** the parallel worker fleet
+  cleared the whole `edit_in_place` backlog and **graduated the rule warn→error** (now CI-enforced via
+  `check_consistency --mode strict`). **U1 (#1376):** all 17 `views/ai/` findings migrated to true
+  in-place navigation (new `views/ai/_nav.py` page-swap helper). **U2 (#1377):** roles Create flow in
+  place + `!temproles` surfaced (reachability GAP→0, baseline emptied); the 14 remaining roles buttons
+  source-verified as genuine sub-flow-picker / report-toast cases and allowlisted (not muted). **U3
+  (#1378):** games child-buttons migrated onto the shared `HubChildButton` (−77 lines). **U3b:** the 3
+  casino/cleanup cases allowlisted. Both prior gap cogs are closed (`btd6strat` #1372, `temproles` #1377).
+  **▶ Remaining (deferred / gated):** the AI-advisor *generative* finalize + settings centralization (the
+  AI-nav plan's PR 3 — Q-0048 owner-gated) · the `channel-deployed-component` roles primitive (idea, not
+  yet built).
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:

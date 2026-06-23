@@ -34,6 +34,39 @@ edit_in_place:
       reason: "Opens the remove picker; the panel re-renders in place via _rerender after removal."
     - pattern: views/cleanup/policy_panel.py::CleanupPolicyPanelView.btn_build
       reason: "Opens the scope-select policy builder sub-flow (the sibling btn_refresh edits the panel in place)."
+    - pattern: views/cleanup/policy_panel.py::CleanupPolicyPanelView.btn_remove
+      reason: "Sibling of the allowlisted btn_build; opens the admin-gated remove-policy select sub-flow as an ephemeral (the in-place edit happens at _RemoveSelect.callback; the sibling btn_refresh edits the panel in place)."
+    # Ultracode roles fleet (U2, 2026-06-23): the roles-hub picker/builder buttons —
+    # each opens a transient sub-picker ephemeral that folds back into the parent
+    # panel/draft via _rerender on completion (the same idiom as delete_btn /
+    # time_roles add_btn above). Forcing edit_message would destroy the operator's
+    # builder/draft context. Source-verified against the matching siblings.
+    - pattern: views/roles/creation_panel.py::RoleCreatePanel.packs_btn
+      reason: "Opens the RolePackView bulk-create sub-flow; created roles fold back into the create panel (same idiom as the allowlisted role pickers)."
+    - pattern: views/roles/management_panel.py::ManagementPanel.edit_btn
+      reason: "Opens the _EditRolePickView -> edit modal; the panel re-renders in place via _rerender on submit (sibling of delete_btn)."
+    - pattern: views/roles/reaction_panel.py::ReactionRolesPanel.add_btn
+      reason: "Opens the _AddSourceView add-binding sub-flow (pick message -> emoji -> role); the panel re-renders on completion."
+    - pattern: views/roles/reaction_panel.py::ReactionRolesPanel.remove_btn
+      reason: "Opens a PaginatedSelectView binding picker; _do_remove re-renders the panel in place (sibling of delete_btn)."
+    - pattern: views/roles/reaction_panel.py::ReactionRolesPanel.mode_btn
+      reason: "Opens a PaginatedSelectView mode picker; the selection chains the panel forward via edit_message."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.roles_btn
+      reason: "Opens the _RolePickView role picker; the chosen roles fold into the menu draft via _rerender (the builder's own style_btn/post_btn edit in place and are not flagged)."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.colours_btn
+      reason: "Opens the _ColourRolesView preset/custom-colour picker; created roles fold into the draft via _rerender."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.packs_btn
+      reason: "Opens RolePackView(on_created=_add_pack_roles); the created pack roles fold into the draft via _rerender."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.template_btn
+      reason: "Opens a PaginatedSelectView template picker; _apply_template folds the template into the draft via _rerender."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.card_btn
+      reason: "Opens the _CardPickView banner picker; the chosen card applies to the draft via _rerender."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.theme_btn
+      reason: "Opens a PaginatedSelectView theme picker; _apply_theme folds the theme into the draft via _rerender."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.mode_btn
+      reason: "Opens a PaginatedSelectView mode picker; _apply_mode folds the mode into the draft via _rerender."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.channel_btn
+      reason: "Opens the _ChannelPickView channel picker; the chosen channel applies to the draft via _rerender."
     - pattern: views/server_management/hub.py::ServerManagementHubView.help_editor_btn
       reason: "Persistent shared hub message opens the admin-private Help editor as an ephemeral sub-flow (can't edit a shared persistent message per-user)."
     # --- Persistent / shared-anchor views: the message is shared across users or
@@ -51,6 +84,11 @@ edit_in_place:
       reason: "Shared PvP match message; opens each player's private move picker as an ephemeral (the public match message must not change)."
     - pattern: views/blackjack/tournament_views.py::_TournRegistrationView.join_btn
       reason: "Shared tournament-lobby join; per-user ephemeral confirm + the lobby embed updates via _update_tourn_embed (not this message's view)."
+    - pattern: views/casino/hub.py::CasinoHubView.new_poker
+      reason: "Opens a shared public poker table via poker_table.launch_table (channel.send -> PokerLobbyView); the per-user ephemeral confirms and points at the public lobby. Editing the casino hub in place would lose the shared lobby (same pattern as the rps/blackjack join_btn entries above)."
+    # --- Disabled "coming soon" placeholder: the button can never fire. ---
+    - pattern: views/casino/hub.py::CasinoHubView.roulette
+      reason: "Permanently disabled placeholder (disabled=True, # pragma: no cover); the 'coming soon' ephemeral can never fire and there is no panel to swap to."
     # --- In-place via a module-level helper; the ephemeral is a fallback. ---
     - pattern: views/channels/create_panel.py::_CreateSubView.create_btn
       reason: "Restores the parent manager panel in place via restore_parent_or_send_fresh; the ephemeral send is only the parent-message-gone fallback."
@@ -60,6 +98,8 @@ edit_in_place:
       reason: "One-shot role-assignment run report; the panel lists configured thresholds, not run results, so a toast is the correct carrier."
     - pattern: views/roles/time_roles_panel.py::TimeRolesPanel.run_btn
       reason: "One-shot role-assignment run report; the panel lists thresholds, unchanged by a run."
+    - pattern: views/roles/management_panel.py::_ConfirmDeleteView.confirm
+      reason: "Per-role delete report toast (followup.send) after applying the deletions; the parent management panel re-renders in place via _rerender (same idiom as diagnostics run_btn)."
     - pattern: views/setup/final_review.py::FinalReviewView._ai_review
       reason: "Supplementary advisory AI review ('nothing staged or applied'); the Final Review panel is itself an ephemeral follow-up over the wizard anchor."
     - pattern: views/setup/template_picker.py::TemplateConfigView._apply

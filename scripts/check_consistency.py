@@ -767,15 +767,19 @@ class Rule:
 
 
 RULES: list[Rule] = [
+    # edit_in_place GRADUATED 2026-06-23 (ultracode consolidation fleet, PR #1375):
+    # U1 (#1376) migrated ALL 17 views/ai/ findings to true in-place navigation;
+    # U2 (#1377) converted the roles Create flow in place, and the remaining roles
+    # sub-flow-picker / report-toast cases were source-verified as genuine and
+    # allowlisted (not muted); U3b allowlisted the 3 casino/cleanup cases. 0 findings
+    # on a clean tree -> severity flipped "warning"->"error" (a finding now fails
+    # --mode strict, wired into code-quality.yml + check_quality.py). Reverting a
+    # graduation = flip severity back to "warning" (disposable per the Q-0105 header).
     Rule(
         "edit_in_place",
         rule_edit_in_place,
         "panel callbacks that reply with a standalone ephemeral instead of editing in place",
-        graduation_blocker=(
-            "the 17 remaining views/ai/ findings need the AI-nav redesign — "
-            "docs/planning/ai-panel-inplace-navigation-plan-2026-06-19.md (PR 2 "
-            "clears the chooser sub-trees; allowlisting them would mute the bug)"
-        ),
+        severity="error",
     ),
     # The three rules below GRADUATED 2026-06-19 (#1094): they ran clean (0 findings)
     # across #1056→#1062 and the `--graduation` tracker confirmed each ELIGIBLE, so

@@ -1,1 +1,0 @@
-- `claude/u3-games-hubchildbutton` · U3 Games hub child-button migration onto shared `HubChildButton` (behaviour-preserving dedup) · `disbot/views/games/hub.py` + `tests/unit/views/test_games_hub_view.py` · 2026-06-23
