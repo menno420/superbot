@@ -359,6 +359,12 @@ class BTD6DataSet:
     # table rather than a per-BloonEntry field. Empty when the fixture is absent.
     moab_health_scaling: tuple[HealthScalingBracket, ...] = ()
     moab_health_start_round: int = 0
+    # Freeplay superceramic RBE (bloon_scaling.json ``freeplay``): from round 81
+    # every Ceramic is replaced by a Super Ceramic (60 HP shell, one halved line of
+    # children) whose RBE is 68 (128 fortified), vs base ceramic 104. Used by
+    # ``bloon_rbe_at_round`` to recompute MOAB-class trees. 0 when absent.
+    freeplay_superceramic_rbe: int = 0
+    freeplay_superceramic_rbe_fortified: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -1240,6 +1246,15 @@ def _load_dataset() -> BTD6DataSet:
         _parse_health_bracket(b) for b in moab_health_block.get("brackets", [])
     )
     moab_health_start_round = int(moab_health_block.get("start_round", 0) or 0)
+    freeplay_block = (
+        bloon_scaling_raw.get("freeplay", {}) or {}
+        if bloon_scaling_raw is not None
+        else {}
+    )
+    freeplay_superceramic_rbe = int(freeplay_block.get("superceramic_rbe", 0) or 0)
+    freeplay_superceramic_rbe_fortified = int(
+        freeplay_block.get("superceramic_rbe_fortified", 0) or 0,
+    )
     bloons = (
         tuple(_parse_bloon(b) for b in bloons_raw.get("bloons", []))
         if bloons_raw is not None
@@ -1411,6 +1426,8 @@ def _load_dataset() -> BTD6DataSet:
         xp_freeplay_multipliers=xp_freeplay_multipliers,
         moab_health_scaling=moab_health_scaling,
         moab_health_start_round=moab_health_start_round,
+        freeplay_superceramic_rbe=freeplay_superceramic_rbe,
+        freeplay_superceramic_rbe_fortified=freeplay_superceramic_rbe_fortified,
     )
 
 
@@ -1937,6 +1954,82 @@ def bloon_health_at_round(
     if multiplier is None:
         return None
     return int(round(base * multiplier))
+
+
+def _rbe_at_round(
+    bloon_id: str,
+    round_number: int,
+    fortified: bool,
+    multiplier: float | None,
+    start: int,
+    dataset: BTD6DataSet,
+) -> int | None:
+    """Recursive worker for :func:`bloon_rbe_at_round` (one round, one fortified
+    state). Bottoms out at Ceramic (→ Super Ceramic) and at any non-MOAB-class
+    bloon (stored base RBE), so a MOAB-class tree always terminates.
+    """
+    bloon = get_bloon(bloon_id)
+    if bloon is None:
+        return None
+    # No freeplay band (no fixture, or round ≤ 80) → the stored base RBE is exact.
+    if multiplier is None or round_number < start:
+        base_rbe = bloon.rbe_fortified if fortified else bloon.rbe
+        return base_rbe if isinstance(base_rbe, int) else None
+    # Ceramic → the freeplay Super Ceramic (the MOAB-class tree bottoms out here).
+    if bloon.id == "ceramic":
+        superc = (
+            dataset.freeplay_superceramic_rbe_fortified
+            if fortified
+            else dataset.freeplay_superceramic_rbe
+        )
+        return superc or None
+    # Any other non-MOAB-class bloon does not take the ramp → stored base RBE.
+    if bloon.category != "moab_class":
+        base_rbe = bloon.rbe_fortified if fortified else bloon.rbe
+        return base_rbe if isinstance(base_rbe, int) else None
+    base_health = bloon.health_fortified if fortified else bloon.health
+    if not isinstance(base_health, int):
+        return None
+    total = int(round(base_health * multiplier))
+    for child in bloon.children_list:
+        cid = str(child.get("bloon_id", ""))
+        count = int(child.get("count", 0))
+        child_fort = fortified or "fortified" in (child.get("modifiers", ()) or ())
+        child_rbe = _rbe_at_round(
+            cid,
+            round_number,
+            child_fort,
+            multiplier,
+            start,
+            dataset,
+        )
+        if child_rbe is None:
+            return None
+        total += count * child_rbe
+    return total
+
+
+def bloon_rbe_at_round(
+    bloon_id: str,
+    round_number: int,
+    *,
+    fortified: bool = False,
+) -> int | None:
+    """A bloon's effective RBE when it appears on ``round_number``.
+
+    Recomputes the spawn tree with the two freeplay rules: every MOAB-class layer's
+    health is scaled by :func:`moab_class_health_multiplier`, and every Ceramic is
+    replaced by a Super Ceramic (freeplay RBE from ``bloon_scaling.json``). Through
+    round 80 — and for non-MOAB-class bloons — this is just the stored base ``rbe``
+    (``rbe_fortified`` when ``fortified``); the sub-ceramic spawn-halving for lone
+    basic bloons is out of scope. Validated exact at the canonical anchor:
+    ``bloon_rbe_at_round("bad", 100) == 67200``. ``None`` when the bloon or its RBE
+    is unknown, or the scaling fixture is absent.
+    """
+    dataset = get_dataset()
+    multiplier = moab_class_health_multiplier(round_number)
+    start = dataset.moab_health_start_round or 81
+    return _rbe_at_round(bloon_id, round_number, fortified, multiplier, start, dataset)
 
 
 def resolve_bloon_id(name: str) -> str | None:
