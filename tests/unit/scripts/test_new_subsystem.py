@@ -88,6 +88,51 @@ def test_enumeration_test_files_exist(ns):
         assert (_REPO_ROOT / rel).exists(), rel
 
 
+# ---------------------------------------------------------------------------
+# Loader / extension-role / sector-folio touch-points (added 2026-06-23 after
+# the Karma build, #1332, hit all three as uncaught CI failures).
+# ---------------------------------------------------------------------------
+
+
+def test_new_touch_points_pass_for_fully_wired_subsystem(ns):
+    """Karma is wired through every touch-point including the three the
+    checker gained 2026-06-23 — they must all report OK.
+    """
+    checks = _by_name(
+        ns.build_checks("karma", "KarmaCog", "karma", "community", has_panel=False),
+    )
+    for name in ("extension-loaded", "extension-role", "sector-folio"):
+        assert name in checks, f"{name} check missing from build_checks"
+        assert checks[name].ok, f"{name} regressed: {checks[name].detail}"
+
+
+def test_extension_loaded_and_role_checks_present_for_any_cog(ns):
+    """The loader + extension-role checks attach whenever the cog file is
+    found — community_spotlight is a config-only subsystem with no folio, so
+    sector-folio is correctly absent while the other two are present.
+    """
+    checks = _by_name(
+        ns.build_checks(
+            "community_spotlight",
+            "CommunitySpotlightCog",
+            "spotlight",
+            "community",
+        ),
+    )
+    assert checks["extension-loaded"].ok
+    assert checks["extension-role"].ok
+    # No docs/subsystems/community_spotlight.md folio → the conditional
+    # sector-folio check is skipped, not failed.
+    assert "sector-folio" not in checks
+
+
+def test_sector_folio_helper_reads_the_machine_readable_block(ns):
+    # ``karma`` is homed to S1 in the sector-folio-map block.
+    assert ns._folio_homed_to_sector("karma") is True
+    # A name absent from every S<n>: line is not homed.
+    assert ns._folio_homed_to_sector("definitely_not_a_homed_folio") is False
+
+
 def test_cli_check_exits_zero_for_registered_subsystem(ns, capsys):
     rc = ns.main(
         [
