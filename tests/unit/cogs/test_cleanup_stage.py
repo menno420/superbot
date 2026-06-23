@@ -132,6 +132,175 @@ class TestRemoveUnwantedMessageRoutesToModerationService:
         assert "banned_cmd" in auto_delete.call_args.kwargs["reason"]
 
     @pytest.mark.asyncio
+    async def test_command_access_blocked_deletes_with_notice(self):
+        """Toggle ON + Command Access denies (channel not allowed) → delete
+        on sight + brief notice, without consulting the governance path."""
+        from core.runtime.command_access import DecisionReason
+
+        cog = _make_cog()
+        msg = _make_message(content="!blackjack")
+        snapshot = SimpleNamespace(delete_blocked_commands=True)
+        decision = SimpleNamespace(
+            allowed=False,
+            reason=DecisionReason.CHANNEL_NOT_ALLOWED,
+            feedback="Commands aren't enabled in this channel.",
+        )
+
+        with (
+            patch(
+                "utils.guild_config_accessors.get_command_access_policy",
+                new_callable=AsyncMock,
+                return_value=snapshot,
+            ),
+            patch(
+                "core.runtime.command_access.resolve_command_access",
+                new_callable=AsyncMock,
+                return_value=decision,
+            ),
+            patch(
+                "cogs.cleanup_cog.governance_service.resolve_command_policy",
+                new_callable=AsyncMock,
+            ) as governance,
+            patch(
+                "cogs.cleanup_cog.moderation_service.auto_delete",
+                new_callable=AsyncMock,
+            ) as auto_delete,
+        ):
+            handled = await cog.remove_unwanted_message(msg)
+
+        assert handled is True
+        auto_delete.assert_awaited_once()
+        assert auto_delete.call_args.kwargs["rule"] == "cleanup.command_access"
+        # The brief notice was posted; governance path was never reached.
+        msg.channel.send.assert_awaited_once_with(decision.feedback)
+        governance.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_command_access_toggle_off_falls_through(self):
+        """Toggle OFF → the delete-blocked check is skipped entirely and the
+        normal governance path runs (here it allows, so nothing is deleted)."""
+        cog = _make_cog()
+        msg = _make_message(content="!blackjack")
+        snapshot = SimpleNamespace(delete_blocked_commands=False)
+        allowed_policy = SimpleNamespace(
+            allowed=True,
+            feedback="",
+            cleanup=SimpleNamespace(delete_message=False, delete_after_seconds=0),
+        )
+
+        with (
+            patch(
+                "utils.guild_config_accessors.get_command_access_policy",
+                new_callable=AsyncMock,
+                return_value=snapshot,
+            ),
+            patch(
+                "core.runtime.command_access.resolve_command_access",
+                new_callable=AsyncMock,
+            ) as resolve_access,
+            patch(
+                "cogs.cleanup_cog.governance_service.resolve_command_policy",
+                new_callable=AsyncMock,
+                return_value=allowed_policy,
+            ),
+            patch(
+                "cogs.cleanup_cog.moderation_service.auto_delete",
+                new_callable=AsyncMock,
+            ) as auto_delete,
+        ):
+            handled = await cog.remove_unwanted_message(msg)
+
+        assert handled is False
+        auto_delete.assert_not_awaited()
+        resolve_access.assert_not_awaited()  # short-circuited before resolving
+
+    @pytest.mark.asyncio
+    async def test_command_access_allowed_does_not_delete(self):
+        """Toggle ON but Command Access ALLOWS the command → no delete-on-sight;
+        falls through to the governance path."""
+        cog = _make_cog()
+        msg = _make_message(content="!blackjack")
+        snapshot = SimpleNamespace(delete_blocked_commands=True)
+        decision = SimpleNamespace(allowed=True, reason=None, feedback=None)
+        allowed_policy = SimpleNamespace(
+            allowed=True,
+            feedback="",
+            cleanup=SimpleNamespace(delete_message=False, delete_after_seconds=0),
+        )
+
+        with (
+            patch(
+                "utils.guild_config_accessors.get_command_access_policy",
+                new_callable=AsyncMock,
+                return_value=snapshot,
+            ),
+            patch(
+                "core.runtime.command_access.resolve_command_access",
+                new_callable=AsyncMock,
+                return_value=decision,
+            ),
+            patch(
+                "cogs.cleanup_cog.governance_service.resolve_command_policy",
+                new_callable=AsyncMock,
+                return_value=allowed_policy,
+            ),
+            patch(
+                "cogs.cleanup_cog.moderation_service.auto_delete",
+                new_callable=AsyncMock,
+            ) as auto_delete,
+        ):
+            handled = await cog.remove_unwanted_message(msg)
+
+        assert handled is False
+        auto_delete.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_command_access_other_denial_reason_does_not_delete(self):
+        """A non-channel denial (e.g. lifecycle/DM) must NOT trigger
+        delete-on-sight even with the toggle on."""
+        from core.runtime.command_access import DecisionReason
+
+        cog = _make_cog()
+        msg = _make_message(content="!blackjack")
+        snapshot = SimpleNamespace(delete_blocked_commands=True)
+        decision = SimpleNamespace(
+            allowed=False,
+            reason=DecisionReason.LIFECYCLE_DRAINING,
+            feedback=None,
+        )
+        allowed_policy = SimpleNamespace(
+            allowed=True,
+            feedback="",
+            cleanup=SimpleNamespace(delete_message=False, delete_after_seconds=0),
+        )
+
+        with (
+            patch(
+                "utils.guild_config_accessors.get_command_access_policy",
+                new_callable=AsyncMock,
+                return_value=snapshot,
+            ),
+            patch(
+                "core.runtime.command_access.resolve_command_access",
+                new_callable=AsyncMock,
+                return_value=decision,
+            ),
+            patch(
+                "cogs.cleanup_cog.governance_service.resolve_command_policy",
+                new_callable=AsyncMock,
+                return_value=allowed_policy,
+            ),
+            patch(
+                "cogs.cleanup_cog.moderation_service.auto_delete",
+                new_callable=AsyncMock,
+            ) as auto_delete,
+        ):
+            handled = await cog.remove_unwanted_message(msg)
+
+        assert handled is False
+        auto_delete.assert_not_awaited()
+
+    @pytest.mark.asyncio
     async def test_unresolvable_command_message_is_not_deleted(self):
         """When command_pattern matches but the governance path is skipped
         (guild None or command_name None) we can't make a policy decision, so

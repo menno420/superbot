@@ -30,6 +30,8 @@ CLEANUP_STAGE_ORDER = 10
 MAX_CLEANUP_HISTORY_LIMIT = 1000
 SPAM_DUPLICATE_WINDOW_SECONDS = 15
 HELPER_DELETE_DELAY_SECONDS = 3
+# How long the "commands aren't allowed here" notice stays before self-deleting.
+_BLOCKED_COMMAND_NOTICE_SECONDS = 8
 
 
 def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
@@ -109,6 +111,59 @@ class Cleanup(commands.Cog):
             await self._load_guild(guild_id)
         return self._pattern_cache[guild_id]
 
+    async def _delete_if_command_blocked(self, message, command_name: str) -> bool:
+        """Delete a command-style message when Command Access denies it here.
+
+        Opt-in per guild via the ``delete_blocked_commands`` toggle on the
+        Command Access policy.  Only deletes for a genuine channel/disabled
+        denial (``CHANNEL_NOT_ALLOWED`` / ``COMMANDS_DISABLED``) — bootstrap
+        commands by operators are admitted by the resolver and never reach
+        here, and DM/lifecycle denials are ignored.  A brief notice is posted
+        and auto-deleted so the user learns why their message vanished.
+
+        Returns ``True`` when it deleted the message (caller should stop).
+        """
+        from core.runtime import command_access
+        from utils.guild_config_accessors import get_command_access_policy
+
+        try:
+            snapshot = await get_command_access_policy(message.guild.id)
+        except Exception:  # noqa: BLE001 — never crash auto-mod on a policy read
+            self.logger.debug(
+                "command-access snapshot read failed; skipping delete-blocked check",
+                exc_info=True,
+            )
+            return False
+        if not snapshot.delete_blocked_commands:
+            return False
+
+        ctx = await command_access.from_message(
+            message,
+            command_name,
+            bot=self.bot,
+        )
+        decision = await command_access.resolve_command_access(ctx)
+        if decision.allowed:
+            return False
+        if decision.reason not in (
+            command_access.DecisionReason.CHANNEL_NOT_ALLOWED,
+            command_access.DecisionReason.COMMANDS_DISABLED,
+        ):
+            return False
+
+        await moderation_service.auto_delete(
+            message,
+            reason=f"Command not allowed in this channel: {command_name}",
+            rule="cleanup.command_access",
+        )
+        if decision.feedback:
+            try:
+                warn = await message.channel.send(decision.feedback)
+                await warn.delete(delay=_BLOCKED_COMMAND_NOTICE_SECONDS)
+            except discord.DiscordException as e:
+                self.logger.error("Cleanup command-access notice error: %s", e)
+        return True
+
     async def remove_unwanted_message(self, message):
         """Delete message if it is a command in a governed channel or contains prohibited content.
 
@@ -126,6 +181,12 @@ class Cleanup(commands.Cog):
                 self.command_prefixes,
             )
             if message.guild and command_name:
+                # Command Access: if this guild opted in to deleting blocked
+                # commands, and Command Access denies this command in this
+                # channel, delete it on sight (restores the old-bot behaviour:
+                # "instantly delete commands where commands aren't allowed").
+                if await self._delete_if_command_blocked(message, command_name):
+                    return True
                 # Route through governance_service for policy-driven decision
                 gctx = GovernanceContext.from_message(message)
                 policy = await governance_service.resolve_command_policy(

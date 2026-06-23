@@ -120,6 +120,17 @@ async def build_command_access_embed(guild_id: int | None) -> discord.Embed:
         value=_format_channel_list(snapshot.allowed_channels),
         inline=False,
     )
+    embed.add_field(
+        name="Delete blocked commands",
+        value=(
+            "**On** — a command typed in a not-allowed channel is deleted "
+            "on sight, with a brief auto-deleting notice."
+            if snapshot.delete_blocked_commands
+            else "**Off** — commands in not-allowed channels are ignored "
+            "(the command doesn't run, but the message stays)."
+        ),
+        inline=False,
+    )
 
     if snapshot.mode == "disabled_except_bootstrap":
         embed.add_field(
@@ -359,6 +370,80 @@ class _ChannelAllowlistSelect(discord.ui.ChannelSelect):
             )
 
 
+class _DeleteBlockedToggleButton(discord.ui.Button):
+    """Flip the per-guild ``delete_blocked_commands`` toggle.
+
+    Reads the current value, writes the opposite through the audited
+    service, then refreshes the panel.  Label/state are surfaced in the
+    embed (the button stays static like the mode buttons).
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            label="Delete blocked commands (toggle)",
+            style=discord.ButtonStyle.secondary,
+            emoji="🗑️",
+            custom_id="settings_command_access.delete_blocked",
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not _is_admin(interaction.user):
+            await interaction.response.send_message(
+                "❌ Administrator or Manage Guild permission required.",
+                ephemeral=True,
+            )
+            return
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "❌ Command access can only be configured inside a server.",
+                ephemeral=True,
+            )
+            return
+
+        from services.command_access_service import (
+            CommandAccessMutationError,
+            get_policy_snapshot,
+            set_delete_blocked_commands,
+        )
+
+        snapshot = await get_policy_snapshot(interaction.guild_id)
+        new_value = not snapshot.delete_blocked_commands
+        try:
+            await set_delete_blocked_commands(
+                guild_id=interaction.guild_id,
+                enabled=new_value,
+                actor_id=interaction.user.id,
+            )
+        except CommandAccessMutationError as exc:
+            await interaction.response.send_message(
+                f"❌ {type(exc).__name__}: {exc}",
+                ephemeral=True,
+            )
+            return
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.exception(
+                "CommandAccessView: set_delete_blocked_commands raised for guild=%s",
+                interaction.guild_id,
+            )
+            await interaction.response.send_message(
+                f"❌ Unexpected error: {type(exc).__name__}: {exc}",
+                ephemeral=True,
+            )
+            return
+
+        from core.runtime.interaction_helpers import safe_defer
+
+        if not await safe_defer(interaction):
+            return
+        await _refresh_panel(interaction, _view_of(self))
+        state = "On" if new_value else "Off"
+        await interaction.followup.send(
+            f"✅ Delete blocked commands is now **{state}**.",
+            ephemeral=True,
+        )
+
+
 class _BackToHubButton(discord.ui.Button):
     def __init__(self) -> None:
         super().__init__(
@@ -366,7 +451,7 @@ class _BackToHubButton(discord.ui.Button):
             style=discord.ButtonStyle.secondary,
             emoji="↩",
             custom_id="settings_command_access.back",
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -407,6 +492,7 @@ class CommandAccessView(HubView):
         self.add_item(_SelectedChannelsButton())
         self.add_item(_DisabledButton())
         self.add_item(_ChannelAllowlistSelect())
+        self.add_item(_DeleteBlockedToggleButton())
         self.add_item(_BackToHubButton())
 
 
