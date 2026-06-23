@@ -34,6 +34,8 @@ edit_in_place:
       reason: "Opens the remove picker; the panel re-renders in place via _rerender after removal."
     - pattern: views/cleanup/policy_panel.py::CleanupPolicyPanelView.btn_build
       reason: "Opens the scope-select policy builder sub-flow (the sibling btn_refresh edits the panel in place)."
+    - pattern: views/cleanup/policy_panel.py::CleanupPolicyPanelView.btn_remove
+      reason: "Sibling of the allowlisted btn_build; opens the admin-gated remove-policy select sub-flow as an ephemeral (the in-place edit happens at _RemoveSelect.callback; the sibling btn_refresh edits the panel in place)."
     - pattern: views/server_management/hub.py::ServerManagementHubView.help_editor_btn
       reason: "Persistent shared hub message opens the admin-private Help editor as an ephemeral sub-flow (can't edit a shared persistent message per-user)."
     # --- Persistent / shared-anchor views: the message is shared across users or
@@ -51,6 +53,11 @@ edit_in_place:
       reason: "Shared PvP match message; opens each player's private move picker as an ephemeral (the public match message must not change)."
     - pattern: views/blackjack/tournament_views.py::_TournRegistrationView.join_btn
       reason: "Shared tournament-lobby join; per-user ephemeral confirm + the lobby embed updates via _update_tourn_embed (not this message's view)."
+    - pattern: views/casino/hub.py::CasinoHubView.new_poker
+      reason: "Opens a shared public poker table via poker_table.launch_table (channel.send -> PokerLobbyView); the per-user ephemeral confirms and points at the public lobby. Editing the casino hub in place would lose the shared lobby (same pattern as the rps/blackjack join_btn entries above)."
+    # --- Disabled "coming soon" placeholder: the button can never fire. ---
+    - pattern: views/casino/hub.py::CasinoHubView.roulette
+      reason: "Permanently disabled placeholder (disabled=True, # pragma: no cover); the 'coming soon' ephemeral can never fire and there is no panel to swap to."
     # --- In-place via a module-level helper; the ephemeral is a fallback. ---
     - pattern: views/channels/create_panel.py::_CreateSubView.create_btn
       reason: "Restores the parent manager panel in place via restore_parent_or_send_fresh; the ephemeral send is only the parent-message-gone fallback."
