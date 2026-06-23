@@ -1038,6 +1038,28 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
             ),
         )
 
+    # MOAB-class bloons take a runtime late-game/freeplay health ramp (+2% of base
+    # HP per round from round 81; ×1.40 by round 100) that is NOT in the game files,
+    # so the base `health` above is only the round-≤80 value. Surface it so the
+    # model never claims a BAD "keeps its 20,000 base" on a late round (the bug this
+    # fixes) — this is the conversational-follow-up complement to the deterministic
+    # "HP of <bloon> at round N" floor.
+    if str(getattr(entry, "category", "")) == "moab_class" and isinstance(health, int):
+        from services import btd6_data_service
+
+        mult100 = btd6_data_service.moab_class_health_multiplier(100)
+        if mult100 is not None:
+            r100 = int(round(health * mult100))
+            lines.append(
+                _cap(
+                    f"[btd6_bloon] {canonical} — late-game/freeplay scaling: MOAB-class "
+                    f"health ramps +2% of base per round from round 81 (×{mult100:g} by "
+                    f"round 100), so {health:,} HP holds only through round 80; it first "
+                    f"appears on round 100 at {r100:,} HP. Runtime ramp, not in the game "
+                    f"files (source: {_dataset_label()}).",
+                ),
+            )
+
     if description:
         lines.append(
             _cap(
@@ -3252,6 +3274,110 @@ def _format_bloon_immunity_roster(label: str, hits: list[Any]) -> str:
     return f"**BTD6 bloons immune to {label} damage ({len(hits)}):** {names}."
 
 
+# --- "HP of <bloon> at round N" deterministic reply ---------------------------
+# Owns the round-scaled bloon-health answer. The bot previously said a BAD "keeps
+# its 20,000 HP base" on round 100 — wrong: MOAB-class bloons take a runtime
+# late-game/freeplay health ramp (+2%/round from round 81; v(100)=1.40), so a BAD
+# first spawns on round 100 already at 28,000 HP. The ramp is not in the dump
+# (curated in bloon_scaling.json), and the base-only grounding let the model
+# flatten it — so the deterministic layer OWNS the round-specific value. Fires
+# only on a bloon + a round number + a health cue; otherwise defers (the base
+# "how much HP does a BAD have" question still reaches the model with grounding).
+_BLOON_HEALTH_CUE_RE = re.compile(r"\b(?:health|hp|hit\s?points?|hitpoints?)\b", re.I)
+_BLOON_FORTIFIED_CUE_RE = re.compile(r"\bfortif(?:ied|y|ication)\b", re.I)
+
+
+def _resolve_bloon_in_text(text_lower: str) -> Any | None:
+    """The BloonEntry whose name/alias appears in ``text_lower``, or ``None``.
+
+    Whole-word match against every bloon's id / canonical / aliases (modifier
+    marker rows excluded), preferring the longest matched surface so "big airship
+    of doom" beats a stray "bad" and a specific blimp beats a generic word.
+    """
+    from services import btd6_data_service
+
+    best: Any | None = None
+    best_len = 0
+    for bloon in btd6_data_service.get_dataset().bloons:
+        if bloon.category == "modifier":
+            continue
+        surfaces = {
+            bloon.id,
+            bloon.canonical.lower(),
+            *(a.lower() for a in bloon.aliases),
+        }
+        for surface in surfaces:
+            if not surface:
+                continue
+            if (
+                re.search(rf"\b{re.escape(surface)}\b", text_lower)
+                and len(surface) > best_len
+            ):
+                best, best_len = bloon, len(surface)
+    return best
+
+
+def deterministic_bloon_health_reply(message_text: str) -> str | None:
+    """A code-built "HP of <bloon> on round N" answer, or ``None``.
+
+    Fires on a resolvable bloon + a round number + a health/HP cue, served as a
+    pre-emptive floor. For MOAB-class bloons it applies the late-game/freeplay
+    ramp (``bloon_health_at_round``); for everything else it states the flat base
+    health and that only MOAB-class bloons scale. Defers (``None``) without all
+    three signals, or when the bloon's base health / scaling data is unavailable —
+    those reach the model.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _BLOON_HEALTH_CUE_RE.search(low):
+        return None
+    number_match = _ROUND_XP_NUMBER_RE.search(low)
+    if number_match is None:
+        return None
+    round_number = int(number_match.group(1) or number_match.group(2))
+    bloon = _resolve_bloon_in_text(low)
+    if bloon is None:
+        return None
+
+    from services import btd6_data_service
+
+    fortified = bool(_BLOON_FORTIFIED_CUE_RE.search(low))
+    base = bloon.health_fortified if fortified else bloon.health
+    if not isinstance(base, int):
+        return None
+    fort_label = "fortified " if fortified else ""
+
+    if bloon.category != "moab_class":
+        return (
+            f"A {fort_label}**{bloon.canonical}** has **{base:,} HP** — its health "
+            f"is the same on every round. Only MOAB-class bloons "
+            f"(MOAB/BFB/ZOMG/DDT/BAD) scale with the round: in late game / freeplay "
+            f"they gain +2% of base health per round from round 81."
+        )
+
+    scaled = btd6_data_service.bloon_health_at_round(
+        bloon.id,
+        round_number,
+        fortified=fortified,
+    )
+    multiplier = btd6_data_service.moab_class_health_multiplier(round_number)
+    if scaled is None or multiplier is None:
+        return None
+    r100 = int(
+        round(base * (btd6_data_service.moab_class_health_multiplier(100) or 1.0)),
+    )
+    return (
+        f"A {fort_label}**{bloon.canonical}** has **{scaled:,} HP** on "
+        f"**round {round_number}** — base **{base:,}** × **{multiplier:g}** "
+        f"late-game/freeplay scaling. MOAB-class bloons gain +2% of base health "
+        f"per round from round 81, so a {fort_label}{bloon.canonical} first appears "
+        f"on round 100 already at **{r100:,} HP**, not its {base:,} base. "
+        f"(The ramp is a runtime formula, not in the game files.)"
+    )
+
+
 def deterministic_bloon_roster_reply(message_text: str) -> str | None:
     """A code-built bloon roster — MOAB-class list or immunity roster — or ``None``.
 
@@ -4035,6 +4161,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_geraldo_per_level_reply,
     deterministic_modes_reply,
     deterministic_capability_roster_reply,
+    deterministic_bloon_health_reply,
     deterministic_bloon_roster_reply,
     deterministic_bloon_modifier_reply,
     deterministic_boss_immunity_reply,
