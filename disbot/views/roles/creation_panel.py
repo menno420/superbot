@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import logging
 
 import discord
@@ -12,6 +13,7 @@ from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleS
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
+from views.navigation import attach_back_button
 from views.roles._helpers import _COLOR_OPTIONS, ROLE_PRESETS, _parse_color
 
 logger = logging.getLogger("bot")
@@ -81,6 +83,25 @@ class RoleCreatePanel(BaseView):
         self._color_explicit = False
         self.add_item(_PresetNameSelect(self))
         self.add_item(_PresetColorSelect(self))
+
+        if parent is not None:
+
+            async def _build_parent(
+                _interaction: discord.Interaction,
+            ) -> tuple[discord.Embed, discord.ui.View]:
+                # The parent's build_embed may be sync (RoleHubView) or async
+                # (ManagementPanel) — await it only when it returns a coroutine.
+                built = parent.build_embed()
+                embed = await built if inspect.isawaitable(built) else built
+                return embed, parent
+
+            attach_back_button(
+                self,
+                label="↩ Back",
+                custom_id="role:create:back",
+                parent_builder=_build_parent,
+                row=3,
+            )
 
     def build_embed(self) -> discord.Embed:
         return discord.Embed(
