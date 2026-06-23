@@ -20,20 +20,20 @@
 - **Starboard / Hall-of-Fame** — plan #1254 → PR 1 #1259 → PR 2 #1270.
 - **Fishing minigame** — cast/reel loop + rod ladder + energy (#1296–#1304, incl. the generous
   sell-value rebalance 1–7 → 1–21 in #1304); **Bait layer** — coin-bought consumable with **both**
-  economy knobs: rarity (#1329) + the **bite-speed** half (#1337, this PR) on the same
-  `CastStart`/cast-view seam, plus speed/combo baits.
+  economy knobs: rarity (#1329) + the **bite-speed** half (#1337) on the same
+  `CastStart`/cast-view seam, plus speed/combo baits. **Bait crafting** — turn small caught
+  fish into bait packs (`fishing_workflow.craft_bait`, the `🪱 Bait` Craft select + `!craftbait`),
+  closing `catch → craft → bait → bigger catch` (#1338, this PR).
 - **Casino — multiplayer poker** (PR #1333) — a new Games-hub child for **group** card games with
   **per-player auto-updating ephemeral** hands; v1 = Texas Hold'em (play-chips). Pure `utils/cards/`
   + `utils/poker/` (eval + engine w/ side pots, fully tested) + the `views/casino/` ephemeral
   broadcast table. [design](../planning/casino-poker-design-2026-06-22.md).
 
 **▶ Next startable (one of):**
-- **Fishing follow-ups** (turn-key, on the bait seam) — *(the bait speed knob ✅ #1337 and the
-  sell-value re-tune ✅ #1304 are both done; the two flagged tuning items are closed)* — remaining:
+- **Fishing follow-ups** (turn-key, on the bait seam) — *(bait speed knob ✅ #1337, sell-value
+  re-tune ✅ #1304, and bait-crafting ✅ #1338 are all done)* — remaining:
   **boat/deepwater** venue ([plan](../planning/fishing-minigame-design-2026-06-22.md) §5 +
-  [open-world expansion](../planning/fishing-open-world-expansion-plan-2026-06-18.md)) · the
-  **bait-crafting** idea (turn small caught fish → bait, closing the catch→cook→bait loop —
-  [idea](../ideas/fishing-bait-crafting-2026-06-22.md)).
+  [open-world expansion](../planning/fishing-open-world-expansion-plan-2026-06-18.md)).
 - **Project Moon runtime PR 1** — the `KnowledgeDomain` seam + first ingest
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
 - **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover

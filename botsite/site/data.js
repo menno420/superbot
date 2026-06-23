@@ -1532,6 +1532,32 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "craftbait",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Craft bait from small caught fish — closes the catch→bait loop.",
+    "description": "Craft bait from small caught fish — closes the catch→bait loop.",
+    "usage": "!craftbait",
+    "aliases": [
+      "baitcraft"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!craftbait worm"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)"
+      },
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "create",
     "area": "admin",
     "status": "in-progress",
@@ -6264,7 +6290,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "a4f3aac",
+    "build": "7173e338",
     "title": "New public bot website",
     "changes": [
       {
@@ -6276,7 +6302,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "a4f3aac",
+    "build": "7173e338",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6288,7 +6314,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "a4f3aac",
+    "build": "7173e338",
     "title": "Command-alias suggestions",
     "changes": [
       {

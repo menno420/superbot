@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-22T23:03:59Z",
+    "generated_at": "2026-06-23T03:08:23Z",
     "build": {
-      "commit": "b4fd137e",
-      "subject": "Casino subsystem — multiplayer card-game table framework + Texas Hold'em poker (#1333)",
-      "committed_at": "2026-06-22T23:03:59Z"
+      "commit": "7173e338",
+      "subject": "Fishing bait-crafting: born-red session card + claim",
+      "committed_at": "2026-06-23T03:08:23Z"
     },
     "counts": {
       "functions": 41,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 51,
-      "commands": 383,
+      "commands": 384,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2347,6 +2347,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-23-fishing-bait-speed-knob.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Fishing bait speed knob",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-23-fishing-bait-crafting.md",
+      "date": "2026-06-23",
+      "title": "2026-06-23 — Fishing bait-crafting (close the catch→cook→bait economy loop)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-22-unattended-fit-dispatch-dimension.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Unattended-fit dimension for the per-sector dispatch contract",
@@ -2809,22 +2825,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-repo-state-review-cleanup.md",
-      "date": "2026-06-21",
-      "title": "Session — repo-state review cleanup (2026-06-21)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-21-reconcile-band1260.md",
-      "date": "2026-06-21",
-      "title": "2026-06-21 — Nineteenth Q-0107 reconciliation pass (band-#1260, issue #1264)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -5915,6 +5915,19 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "craftbait",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "baitcraft"
+          ],
+          "brief": "Craft bait from small caught fish — closes the catch→bait loop.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         },
         {
           "name": "fish",

@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T00:51:14Z",
+    "generated_at": "2026-06-23T03:08:23Z",
     "build": {
-      "commit": "a4f3aac",
-      "subject": "Merge branch 'main' into claude/great-goldberg-extjsi",
-      "committed_at": "2026-06-23T00:51:14Z"
+      "commit": "7173e338",
+      "subject": "Fishing bait-crafting: born-red session card + claim",
+      "committed_at": "2026-06-23T03:08:23Z"
     }
   },
   "counts": {
-    "commands": 383,
+    "commands": 384,
     "features": 41,
     "games": 11
   },
@@ -4414,6 +4414,33 @@
       "examples": [],
       "status": "finished",
       "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "craftbait",
+      "aliases": [
+        "baitcraft"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Craft bait from small caught fish — closes the catch→bait loop.",
+      "description": "Craft bait from small caught fish — closes the catch→bait loop.",
+      "use_cases": null,
+      "examples": [
+        "!craftbait worm"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — Bait crafting from caught fish (close the fishing economy loop)",
+          "status": "ideas"
+        },
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {

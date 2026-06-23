@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-yko9ji` · scope: fishing bait-crafting (turn caught fish → bait) · files: `disbot/utils/fishing/bait.py`, `disbot/services/fishing_workflow.py`, `disbot/views/fishing/bait_shop.py`, `disbot/cogs/fishing_cog.py`, tests · 2026-06-23

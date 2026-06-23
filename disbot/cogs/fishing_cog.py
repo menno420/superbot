@@ -29,6 +29,7 @@ from discord.ext import commands
 from core.runtime import guild_resources as resources
 from services import fishing_workflow, game_xp_service
 from utils import db
+from utils.fishing import bait as bait_mod
 from utils.fishing import rods as rods_mod
 from utils.fishing.fish import SPECIES
 from views.fishing import (
@@ -138,6 +139,30 @@ class FishingCog(commands.Cog):
         embed = build_bait_embed(active, charges, balance)
         view = BaitShopView(ctx.author, ctx.guild.id)
         view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="craftbait", aliases=["baitcraft"])
+    async def craftbait(self, ctx, *, bait: str = ""):
+        """Craft bait from small caught fish — closes the catch→bait loop.
+
+        With a bait name (e.g. ``!craftbait worm``) crafts that pack directly;
+        with no argument, opens the bait panel where the Craft select lists the
+        recipes. Only the cheaper / mid baits are craftable.
+        """
+        key = bait_mod.craftable_key_for(bait)
+        if not bait:
+            await self.bait(ctx)
+            return
+        if key is None:
+            craftable = ", ".join(
+                bait_mod.bait_by_key(k).name  # type: ignore[union-attr]
+                for k in bait_mod.CRAFTABLE_KEYS
+            )
+            await ctx.send(
+                f"You can't craft **{bait}** from fish. Craftable: {craftable}.",
+            )
+            return
+        result = await fishing_workflow.craft_bait(ctx.author.id, ctx.guild.id, key)
+        await ctx.send(result.message)
 
     # ------------------------------------------------------------------ help hook
 

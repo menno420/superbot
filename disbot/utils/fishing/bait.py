@@ -117,3 +117,81 @@ def effect_text(bait: Bait) -> str:
     if bait.bite_speed < 1.0:
         parts.append(f"−{round((1.0 - bait.bite_speed) * 100)}% wait")
     return " · ".join(parts) or "no effect"
+
+
+# ---------------------------------------------------------------------------
+# Bait crafting — turn caught fish into bait, the gameplay-native second source
+# ---------------------------------------------------------------------------
+#
+# The fishing economy loops back on itself (idea ``fishing-bait-crafting-2026-06-22``):
+# the cook/campfire loop (#1289) made fish a tangible inventory item; crafting lets
+# the *small, common* catches (which otherwise just sell cheap) become the lure that
+# lands the trophy — ``catch → craft → bait → bigger catch``. A recipe consumes
+# ``fish_count`` fish whose ``size_rank`` is ``≤ max_size_rank`` (smallest-first, so
+# the player keeps their bigger fish) and yields one pack (``Bait.charges`` casts).
+#
+# Only the cheaper / mid baits are craftable — the premium combo ("feast") stays a
+# pure coin sink, so spending coins keeps a top-end reason to exist beside fishing.
+
+
+@dataclass(frozen=True)
+class BaitRecipe:
+    """A fish → bait recipe: consume *fish_count* small fish, yield one pack.
+
+    Only fish whose ``size_rank`` is ``≤ max_size_rank`` count as ingredients
+    (so crafting drains the low-rank catches first); the produced pack carries
+    the bait's own :attr:`Bait.charges`.
+    """
+
+    bait_key: str
+    fish_count: int  # number of eligible fish consumed per craft
+    max_size_rank: int  # only fish with size_rank ≤ this are eligible ingredients
+
+
+#: The craft shelf, keyed by bait key. Cheaper baits cost a few of the smallest
+#: fish; better baits want more / larger fish. The premium combo ("feast") is
+#: deliberately ABSENT — it stays a pure coin sink (the top-end spend reason).
+CRAFT_RECIPES: dict[str, BaitRecipe] = {
+    "worm": BaitRecipe("worm", fish_count=3, max_size_rank=3),
+    "minnow": BaitRecipe("minnow", fish_count=3, max_size_rank=3),
+    "grub": BaitRecipe("grub", fish_count=5, max_size_rank=6),
+    "spinner": BaitRecipe("spinner", fish_count=5, max_size_rank=6),
+    "lure": BaitRecipe("lure", fish_count=6, max_size_rank=9),
+}
+
+#: Craftable bait keys, in shelf order (skips any without a recipe).
+CRAFTABLE_KEYS: tuple[str, ...] = tuple(
+    b.key for b in BAIT_CATALOG if b.key in CRAFT_RECIPES
+)
+
+
+def craft_recipe(key: str | None) -> BaitRecipe | None:
+    """The :class:`BaitRecipe` for *key*, or ``None`` if that bait isn't craftable."""
+    if not key:
+        return None
+    return CRAFT_RECIPES.get(key)
+
+
+def recipe_text(recipe: BaitRecipe) -> str:
+    """A short human label of a recipe's cost, e.g. ``3 fish (size ≤ 3)``."""
+    return f"{recipe.fish_count} fish (size ≤ {recipe.max_size_rank})"
+
+
+def craftable_key_for(text: str | None) -> str | None:
+    """Resolve typed *text* (a key or a bait name) to a **craftable** bait key.
+
+    Case-insensitive; matches either the stable key (``worm``) or the display
+    name (``Worm Bait``). Returns ``None`` for empty input or a bait that has no
+    recipe — so ``!craftbait worm`` and ``!craftbait "worm bait"`` both work but
+    a non-craftable bait (the premium combo) does not resolve.
+    """
+    if not text:
+        return None
+    needle = text.strip().lower()
+    for key in CRAFTABLE_KEYS:
+        bait = _BY_KEY.get(key)
+        if bait is None:
+            continue
+        if needle in (key.lower(), bait.name.lower()):
+            return key
+    return None
