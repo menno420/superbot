@@ -1,1 +1,0 @@
-- branch `claude/jolly-ritchie-fx7xqk` · scope: giveaway-system plan (docs-only, planning) · area: docs/planning + docs/ideas + indexes · 2026-06-23
