@@ -31,10 +31,14 @@
   call. **Daily weather forecast** (#1341) — a date-seeded global bias
   (`utils/fishing/weather.py`, no DB) compounding onto the cast as a third how-well knob
   (rod × bait × weather): clear/rain/calm/fog/storm, the same for everyone each day; `!forecast` +
-  a menu/cast forecast line. **Trophy records per species** (#1351, this PR) — each catch now rolls
+  a menu/cast forecast line. **Trophy records per species** (#1351) — each catch now rolls
   an individual weight (`utils/fishing/weight.py`); the catch-log keeps your heaviest of each species
   (migration 095 re-adds `best_weight`), the Fishdex shows the personal-best beside each tally, and a
   fresh record celebrates "🏅 New personal best!" on the catch — a cheap long-tail retention goal.
+  **Trophy follow-ups** (#1356, this PR) — the **soft-fail clue** (a *trophy* that slips the hook now
+  names itself, `minigame.escape_clue`, so a lost big fish baits the next cast) + the **heaviest-catch
+  leaderboard** `!trophies` (`bigfish`/`fishtrophy`, `db.top_trophies` off the `best_weight` record) —
+  a "Biggest Catches" hall of fame where trophies compete server-wide.
 - **Casino — multiplayer poker** (PR #1333) — a new Games-hub child for **group** card games with
   **per-player auto-updating ephemeral** hands; v1 = Texas Hold'em (play-chips). Pure `utils/cards/`
   + `utils/poker/` (eval + engine w/ side pots, fully tested) + the `views/casino/` ephemeral
@@ -45,12 +49,11 @@
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:
   the literal §5 **shore-cap-at-12 rebalance** (owner balance call, flagged in #1340) ·
-  *(weather/time-of-day modifier ✅ #1341 · trophy records per species ✅ #1351)* ·
-  the **open-world expansion**
+  *(weather/time-of-day modifier ✅ #1341 · trophy records per species ✅ #1351 · soft-fail clue +
+  heaviest-catch leaderboard ✅ #1356)* · the **open-world expansion**
   ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2+: the
   boat-as-structure / travel-timer / destinations layer) ·
-  the **soft-fail clue** ("a *big* one got away") + fake-out bites
-  ([design](../planning/fishing-minigame-design-2026-06-22.md) §"Other ideas").
+  **fake-out bites** ([design](../planning/fishing-minigame-design-2026-06-22.md) §"Other ideas").
 - **Project Moon runtime PR 1** — the `KnowledgeDomain` seam + first ingest
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
 - **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
