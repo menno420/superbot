@@ -454,17 +454,94 @@ async def test_per_recommendation_edit_opens_modal_for_create_rec():
 
 
 @pytest.mark.asyncio
-async def test_per_recommendation_edit_explains_for_bind_rec():
-    """A `bind` suggestion can't be renamed — Edit sends an ephemeral, no modal."""
-    draft = SetupPlanDraft(recommendations=(_rec(),))  # _rec() is bind-mode
+async def test_per_recommendation_edit_opens_repick_for_bind_channel():
+    """A `bind` channel suggestion's Edit opens the re-pick target sub-view."""
+    from views.setup.ai_review.per_recommendation import _RepickTargetView
+
+    draft = SetupPlanDraft(recommendations=(_rec(),))  # _rec() is a bind channel
     view = PerRecommendationView(_author(), draft=draft, accepted=AcceptedSet(), index=0)
     interaction = _interaction()
 
     await view._edit.callback(interaction)
 
     interaction.response.send_modal.assert_not_awaited()
+    interaction.response.edit_message.assert_awaited_once()
+    assert isinstance(
+        interaction.response.edit_message.await_args.kwargs["view"],
+        _RepickTargetView,
+    )
+
+
+@pytest.mark.asyncio
+async def test_per_recommendation_edit_explains_for_unselectable_bind_kind():
+    """A `bind` suggestion of a non-pickable kind (thread/member) still explains."""
+    thread_rec = SetupRecommendation(
+        subsystem="logging",
+        binding_name="thread_target",
+        target_kind="thread",
+        target_id=55,
+        target_name="some-thread",
+        confidence="medium",
+        reason="x",
+    )
+    draft = SetupPlanDraft(recommendations=(thread_rec,))
+    view = PerRecommendationView(_author(), draft=draft, accepted=AcceptedSet(), index=0)
+    interaction = _interaction()
+
+    await view._edit.callback(interaction)
+
+    interaction.response.send_modal.assert_not_awaited()
+    interaction.response.edit_message.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
     assert interaction.response.send_message.await_args.kwargs.get("ephemeral") is True
+
+
+def test_apply_retarget_swaps_id_and_name_and_accepts():
+    rec = _rec(target_id=100)  # bind channel, target_name "mod_channel-100"
+    draft = SetupPlanDraft(recommendations=(rec,))
+    accepted = AcceptedSet()
+    parent = AIReviewPanelView(_author(), draft=draft, accepted=accepted)
+    view = PerRecommendationView(
+        _author(), draft=draft, accepted=accepted, index=0, parent_view=parent,
+    )
+
+    edited = view.apply_retarget(rec, target_id=777, target_name="staff-logs")
+
+    assert edited.target_id == 777
+    assert edited.target_name == "staff-logs"
+    assert edited.mode == "bind"
+    assert view.draft.recommendations[0].target_id == 777
+    assert parent.draft.recommendations[0].target_id == 777
+    assert accepted.count == 1
+    assert accepted.recommendations[0].target_id == 777
+
+
+@pytest.mark.asyncio
+async def test_repick_select_retargets_and_advances():
+    from views.setup.ai_review.per_recommendation import _RepickTargetView
+
+    rec = _rec(target_id=100)
+    draft = SetupPlanDraft(recommendations=(rec,))
+    accepted = AcceptedSet()
+    parent = AIReviewPanelView(_author(), draft=draft, accepted=accepted)
+    per = PerRecommendationView(
+        _author(), draft=draft, accepted=accepted, index=0, parent_view=parent,
+    )
+    repick = _RepickTargetView(_author(), per_view=per, rec=rec)
+    # Simulate the operator picking a channel (#777 "staff-logs"). NB: ``name``
+    # is a reserved MagicMock kwarg, so set the attribute explicitly.
+    picked = MagicMock(id=777)
+    picked.name = "staff-logs"
+    repick._select = MagicMock(values=[picked])
+    interaction = _interaction()
+
+    await repick._on_select(interaction)
+
+    assert accepted.count == 1
+    assert accepted.recommendations[0].target_id == 777
+    assert accepted.recommendations[0].target_name == "staff-logs"
+    # End of single-item list → returned to overview.
+    interaction.response.edit_message.assert_awaited()
 
 
 def test_apply_edit_rewrites_name_swaps_draft_and_accepts():
