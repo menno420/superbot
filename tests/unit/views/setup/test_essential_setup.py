@@ -53,20 +53,24 @@ def pipeline():
 
 def test_flow_counter_and_navigation():
     flow = es.EssentialFlow(_member(), _guild())
-    assert flow.total == 2
-    assert flow.step_counter() == "Step 1 of 2"
-    assert isinstance(flow.current_view(), es.GreetMembersStep)
+    assert flow.total == 4
+    assert flow.step_counter() == "Step 1 of 4"
+    expected = [
+        es.GreetMembersStep,
+        es.ModeratorsStep,
+        es.BlockSpamStep,
+        es.HelpDeskStep,
+    ]
+    for i, cls in enumerate(expected):
+        assert flow.step_counter() == f"Step {i + 1} of 4"
+        assert isinstance(flow.current_view(), cls)
+        flow.advance()
 
-    flow.advance()
-    assert flow.step_counter() == "Step 2 of 2"
-    assert isinstance(flow.current_view(), es.ModeratorsStep)
-
-    flow.advance()
     assert flow.done
     assert isinstance(flow.current_view(), es.EssentialSummaryView)
 
     flow.back()
-    assert isinstance(flow.current_view(), es.ModeratorsStep)
+    assert isinstance(flow.current_view(), es.HelpDeskStep)
 
 
 def test_first_step_has_no_back_button():
@@ -153,6 +157,79 @@ async def test_moderators_applies_role_and_dm(pipeline):
     assert ("moderation", "moderator_role") in calls
     assert ("moderation", "dm_on_action") in calls
     assert flow.index == 1
+
+
+# ---------------------------------------------------------------------------
+# Block spam
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_block_spam_applies_automod_with_all_filters(pipeline):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 2
+    step = es.BlockSpamStep(flow)
+    await step.apply(_interaction())
+    # enabled + 4 filters = 5 immediate writes, all to automod
+    assert pipeline.set_value.await_count == 5
+    subsystems = {c.args[1] for c in pipeline.set_value.await_args_list}
+    assert subsystems == {"automod"}
+    names = {c.args[2] for c in pipeline.set_value.await_args_list}
+    assert names == {
+        "enabled",
+        "spam_enabled",
+        "invites_enabled",
+        "caps_enabled",
+        "mentions_enabled",
+    }
+    assert flow.index == 3
+
+
+@pytest.mark.asyncio
+async def test_block_spam_respects_toggled_off_filter(pipeline):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 2
+    step = es.BlockSpamStep(flow)
+    step.filters["caps_enabled"] = False
+    await step.apply(_interaction())
+    by_name = {c.args[2]: c.args[3] for c in pipeline.set_value.await_args_list}
+    assert by_name["caps_enabled"] is False
+    assert by_name["spam_enabled"] is True
+
+
+# ---------------------------------------------------------------------------
+# Help desk
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_help_desk_requires_staff_role():
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 3
+    step = es.HelpDeskStep(flow)
+    interaction = _interaction()
+    with patch("services.ticket_mutation.update_config", new=AsyncMock()) as upd:
+        await step.apply(interaction)
+    upd.assert_not_awaited()
+    assert flow.index == 3
+    assert "staff" in interaction.response.send_message.await_args.args[0].lower()
+
+
+@pytest.mark.asyncio
+async def test_help_desk_enables_tickets_and_advances():
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 3
+    step = es.HelpDeskStep(flow)
+    step.staff_role_id = 321
+    step.log_channel_id = 654
+    with patch("services.ticket_mutation.update_config", new=AsyncMock()) as upd:
+        await step.apply(_interaction())
+    upd.assert_awaited_once()
+    kwargs = upd.await_args.kwargs
+    assert kwargs["enabled"] is True
+    assert kwargs["staff_role_id"] == 321
+    assert kwargs["log_channel_id"] == 654
+    assert flow.index == 4
 
 
 # ---------------------------------------------------------------------------

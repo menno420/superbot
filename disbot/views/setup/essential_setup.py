@@ -19,10 +19,10 @@ Design (plan ``docs/planning/setup-wizard-restructure-plan-2026-06-24.md`` §5):
 
 This module is **additive** — the existing wizard (``views/setup/wizard.py``)
 is untouched and remains the full/advanced path; Essential Setup is the new
-quick spine.  This first installment ships the flow framework + the two
-highest-value steps (greet new members · set moderators) + the summary; the
-remaining steps (block spam · log channel · rewards · help desk) are mechanical
-follow-ons on this same pattern.
+quick spine.  Live steps: greet new members · set your moderators · block spam
+and bad links · set up a help desk (+ the closing summary).  Remaining
+follow-ons on this same pattern: choose a log channel (with auto-create),
+reward activity (xp + auto-role), and the server-type starter preset.
 """
 
 from __future__ import annotations
@@ -67,6 +67,8 @@ class EssentialFlow:
         self._steps: list[Callable[[EssentialFlow], _StepView]] = [
             GreetMembersStep,
             ModeratorsStep,
+            BlockSpamStep,
+            HelpDeskStep,
         ]
 
     @property
@@ -411,6 +413,221 @@ class ModeratorsStep(_StepView):
             interaction,
             f"Moderator role set to <@&{self.mod_role_id}>"
             + (" · members told why" if self.dm_on else ""),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Step 3 — Block spam and bad links  (automod)
+# ---------------------------------------------------------------------------
+
+# (setting name, operator-facing label)
+_SPAM_FILTERS: list[tuple[str, str]] = [
+    ("spam_enabled", "Repeated spam"),
+    ("invites_enabled", "Invite links"),
+    ("caps_enabled", "ALL-CAPS shouting"),
+    ("mentions_enabled", "Mass pings"),
+]
+
+
+class _FilterToggle(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self, key: str, label: str, on: bool, row: int) -> None:
+        super().__init__(
+            label=f"{label}: {'ON' if on else 'OFF'}",
+            style=(
+                discord.ButtonStyle.success if on else discord.ButtonStyle.secondary
+            ),
+            row=row,
+        )
+        self._key = key
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: BlockSpamStep = self.view  # type: ignore[assignment]
+        view.filters[self._key] = not view.filters[self._key]
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _SpamSaveButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="Turn on protection",
+            emoji="🧹",
+            style=discord.ButtonStyle.success,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: BlockSpamStep = self.view  # type: ignore[assignment]
+        await view.apply(interaction)
+
+
+class BlockSpamStep(_StepView):
+    title = "Block spam and bad links"
+    skip_label = "Skip spam protection"
+
+    def __init__(self, flow: EssentialFlow) -> None:
+        self.filters: dict[str, bool] = {key: True for key, _ in _SPAM_FILTERS}
+        super().__init__(flow)
+
+    def build_items(self) -> None:
+        self.refresh_items()
+
+    def refresh_items(self) -> None:
+        for child in list(self.children):
+            if isinstance(child, (_FilterToggle, _SpamSaveButton)):
+                self.remove_item(child)
+        for i, (key, label) in enumerate(_SPAM_FILTERS):
+            self.add_item(_FilterToggle(key, label, self.filters[key], row=i // 2))
+        self.add_item(_SpamSaveButton())
+
+    def render(self) -> discord.Embed:
+        embed = discord.Embed(
+            title=f"🧹 {self.title}",
+            description=(
+                "Automatically clean up the noise so you don't have to. "
+                "Everything below is on by default — tap any to turn it off, "
+                "then press **Turn on protection**."
+            ),
+            color=discord.Color.blurple(),
+        )
+        for key, label in _SPAM_FILTERS:
+            embed.add_field(
+                name=label,
+                value="On" if self.filters[key] else "Off",
+                inline=True,
+            )
+        embed.set_footer(text=self.flow.step_counter())
+        return embed
+
+    async def apply(self, interaction: discord.Interaction) -> None:
+        try:
+            await self._set("automod", "enabled", True)
+            for key, _ in _SPAM_FILTERS:
+                await self._set("automod", key, self.filters[key])
+        except Exception:
+            logger.exception("essential setup: block-spam step apply failed")
+            await interaction.response.send_message(
+                "Something went wrong turning on protection — please try again.",
+                ephemeral=True,
+            )
+            return
+        on_labels = [label for key, label in _SPAM_FILTERS if self.filters[key]]
+        line = "Spam protection on"
+        if on_labels:
+            line += " · " + ", ".join(on_labels).lower()
+        await self.complete(interaction, line)
+
+
+# ---------------------------------------------------------------------------
+# Step 4 — Set up a help desk  (tickets)
+# ---------------------------------------------------------------------------
+
+
+class _StaffRoleSelect(discord.ui.RoleSelect):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Who answers support requests? (staff role)",
+            min_values=1,
+            max_values=1,
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: HelpDeskStep = self.view  # type: ignore[assignment]
+        view.staff_role_id = self.values[0].id
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _TranscriptChannelSelect(discord.ui.ChannelSelect):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Where to save closed-request logs? (optional)",
+            channel_types=[discord.ChannelType.text],
+            min_values=1,
+            max_values=1,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: HelpDeskStep = self.view  # type: ignore[assignment]
+        view.log_channel_id = self.values[0].id
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _HelpDeskSaveButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="Turn on the help desk",
+            emoji="🎫",
+            style=discord.ButtonStyle.success,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: HelpDeskStep = self.view  # type: ignore[assignment]
+        await view.apply(interaction)
+
+
+class HelpDeskStep(_StepView):
+    title = "Set up a help desk"
+    skip_label = "Skip help desk"
+
+    def __init__(self, flow: EssentialFlow) -> None:
+        self.staff_role_id: int | None = None
+        self.log_channel_id: int | None = None
+        super().__init__(flow)
+
+    def build_items(self) -> None:
+        self.add_item(_StaffRoleSelect())
+        self.add_item(_TranscriptChannelSelect())
+        self.add_item(_HelpDeskSaveButton())
+
+    def render(self) -> discord.Embed:
+        embed = discord.Embed(
+            title=f"🎫 {self.title}",
+            description=(
+                "Let members open a private request that only your staff can "
+                "see. Pick who should answer them; we set up the rest.\n\n"
+                "Then press **Turn on the help desk**."
+            ),
+            color=discord.Color.blurple(),
+        )
+        staff = (
+            f"<@&{self.staff_role_id}>" if self.staff_role_id else "_not chosen yet_"
+        )
+        log = f"<#{self.log_channel_id}>" if self.log_channel_id else "_none_"
+        embed.add_field(name="Who answers requests", value=staff, inline=False)
+        embed.add_field(name="Save chat logs to", value=log, inline=False)
+        embed.set_footer(text=self.flow.step_counter())
+        return embed
+
+    async def apply(self, interaction: discord.Interaction) -> None:
+        if self.staff_role_id is None:
+            await interaction.response.send_message(
+                "Pick a **staff role** first — it's who can see and answer requests.",
+                ephemeral=True,
+            )
+            return
+        try:
+            from services import ticket_mutation
+
+            await ticket_mutation.update_config(
+                self.flow.guild.id,
+                self.flow.author.id,
+                enabled=True,
+                staff_role_id=self.staff_role_id,
+                log_channel_id=self.log_channel_id,
+            )
+        except Exception:
+            logger.exception("essential setup: help-desk step apply failed")
+            await interaction.response.send_message(
+                "Something went wrong setting up the help desk — please try again.",
+                ephemeral=True,
+            )
+            return
+        await self.complete(
+            interaction,
+            f"Help desk on, answered by <@&{self.staff_role_id}>",
         )
 
 
