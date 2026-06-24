@@ -61,7 +61,12 @@ could be the real setup experience. All three shipped:
 - The on-join launcher is now a **mixed** surface: Start Setup → Essential (new), but its other
   buttons (Readiness / Smart Suggestions / Choose Preset / View Summary) still open the *advanced*
   draft system. That's the intended interim state — the plan's PR 2/PR 3 reorganize extras/advanced.
-- Slash-command rename takes effect on the next slash sync (`!syncslash`), as with any rename.
+- Slash-command rename auto-applies: `services/command_tree_sync.py` (diff-gated startup auto-sync,
+  added 2026-06-24, wired from `bot1.on_ready`) re-syncs when command **paths** change — a rename is a
+  path change, so it fires on the next deploy/boot. No manual `!syncslash` needed (it remains the backstop;
+  the auto-sync is Q-0105 "unverified" until proven across a few deploys). Documented in
+  `services/command_tree_sync.py` + `docs/operations/production-deployment.md` / `env-vars.md`
+  (`AUTO_SYNC_COMMANDS` kill-switch).
 
 ## Context delta
 
@@ -109,8 +114,10 @@ instead of discovering it via a 4-minute red suite.
 - **Run type:** `manual`
 - **⚑ Owner decisions needed:** ratify the launcher Start-Setup gate broadening (owner-only → admin) —
   minor, reversible.
-- **⚑ Owner manual steps:** run `!syncslash` after deploy so `/setup` + `/setup-advanced` replace
-  `/quicksetup` + the old `/setup` in Discord.
+- **⚑ Owner manual steps:** none — the diff-gated startup auto-sync (`command_tree_sync.py`) re-syncs the
+  slash tree on the next deploy because the command **paths** changed (rename). `!syncslash` is only the
+  backstop. *(Corrected mid-session — initially (wrongly) said "run !syncslash"; the auto-sync was added
+  2026-06-24 and is documented in the code docstring + ops docs.)*
 - **⚑ Self-initiated:** none (owner-directed task).
 - **↪ Next:** setup step-0 server-type preset (needs a direct-apply preset path) · PR 2 extras menu +
   "Check my setup" · PR 3 retire dead/legacy sections + rework the Advanced editor.
