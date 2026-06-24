@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-6ehowb` · scope: visual card-engine H3 — render the `!xpmenu` hub panel as the rank image card (S1 consolidation polish tail) · area: disbot/views/xp/main_panel.py, disbot/cogs/xp_cog.py · 2026-06-24
