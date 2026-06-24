@@ -76,9 +76,15 @@ they'd envy. The four moves:
   `render_leaderboard_image` / `render_event_poster`, **and** `role_menu_render` are now rebased onto
   `CardCanvas` (the triplicated dark-blurple palette + the duplicated `_fit`/`_fonts`/`_mix`/`_initials*`
   helpers collapsed onto one engine path; a pure `card_render.mix()` blend helper added for gradients).
-  **Remaining H2 work:** `mining_render` (its pure-spec `build_card_spec` pattern is a larger,
-  riskier rebase, deferred) and **shipping the leaderboard card as a real feature** (wiring
-  `render_leaderboard_image` into `leaderboard_cog` as an optional attachment with embed fallback).
+  **Remaining H2 work:** `mining_render` and **shipping the leaderboard card as a real feature**
+  (wiring `render_leaderboard_image` into `leaderboard_cog` as an optional attachment with embed
+  fallback). **Note on `mining_render` (2026-06-24 finding):** it is **not** a clean dedup rebase — it
+  uses **no fonts at all** (every `draw.text` uses Pillow's default bitmap font, with hardcoded
+  `8 * len(text)` width math) and a deliberately *specialized* rarity palette (`_KIND_COLOR`), so
+  moving it onto `CardCanvas` would *change the card's look* (loaded DejaVu fonts, new metrics) and
+  require re-tuning the layout — a **visual redesign decision for the owner**, not a mechanical rebase.
+  The dedup invariant is now CI-guarded by the `card_engine_helper_duplication` consistency rule (PR
+  after #1396) so no renderer can re-grow the triplication.
 - **H3 — Skinnable feature cards.** A fishing/collection **season card** (the FOOTONCLASH analogue)
   and a cross-game **world identity card** on themed skin packs; "new season = new `Theme` + asset
   pack", no layout code.
