@@ -13,7 +13,7 @@ key string leaks into cogs.
 Channel source precedence (Settings Phase 2 / Q-0064): the first-class
 ``btd6.version_announce_channel`` **binding** wins when bound (set through
 the canonical binding flow with a native channel selector); the legacy KV
-pointer written by ``!btd6ops announcechannel`` is the fallback lane.
+pointer written by ``!btd6 ops announcechannel`` is the fallback lane.
 Write-path convergence (retiring the KV lane) is settings Phase 3
 territory — until then the typed command keeps working and warns when a
 binding shadows it.

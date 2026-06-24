@@ -3,7 +3,7 @@
 Pure read-side aggregation: collapses the env gate, supervisor state,
 source-registry counts, per-source freshness, open circuit breakers, and
 recent ingestion-run outcomes into a single :class:`ReadinessVerdict` that
-the operator surface (the ``!btd6ops readiness`` command + the admin panel)
+the operator surface (the ``!btd6 ops readiness`` command + the admin panel)
 renders.
 
 Reads only — never mutates. Imports services / utils / db (never views or

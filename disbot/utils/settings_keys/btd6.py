@@ -24,7 +24,7 @@ event, so the value is expected to be re-pasted when it goes stale.
 int) where the bot posts an announcement when patch-notes ingestion detects
 a newly-released BTD6 version. It is read/written through
 :mod:`services.btd6_version_announce` (never via a raw key) and configured
-with the ``!btd6ops announcechannel`` admin command; unset (``""``) disables
+with the ``!btd6 ops announcechannel`` admin command; unset (``""``) disables
 the announcement for that guild.
 """
 

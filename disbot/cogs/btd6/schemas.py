@@ -9,7 +9,7 @@ Settings Phase 2 (Q-0064, 2026-06-09) promoted the **version-announcement
 channel** to a first-class binding: ``services.btd6_version_announce``
 reads the binding first and falls back to the legacy
 ``BTD6_VERSION_ANNOUNCEMENT_CHANNEL`` KV pointer (the typed
-``!btd6ops announcechannel`` command still writes the KV lane — write-path
+``!btd6 ops announcechannel`` command still writes the KV lane — write-path
 convergence is settings Phase 3 territory).
 """
 
@@ -44,7 +44,7 @@ BTD6_BINDINGS: tuple[BindingSpec, ...] = (
         hint=(
             "Channel where new BTD6 game versions are announced. When "
             "bound it takes precedence over the legacy "
-            "`!btd6ops announcechannel` pointer; leave both unset to "
+            "`!btd6 ops announcechannel` pointer; leave both unset to "
             "disable announcements."
         ),
         capability_required=_CAPABILITY,
