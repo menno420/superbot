@@ -7362,12 +7362,12 @@ needed the owner. Asked as one `AskUserQuestion` batch; answers verbatim below. 
 (scope, name); two settle *later* PRs (step-0 preset = Q-C, the Advanced editor = Q-E) "while you're here".
 
 **The decisions.**
-1. **Log scope = moderation log only.** The step is *one* channel: it turns on `logging.enabled` and binds
-   `logging.mod_channel` (the catch-all slot every other logging route falls back to) to the picked-or-
-   created channel. **Member-activity (joins/leaves/roles) and message-content logging stay OFF** — they
-   are a later follow-on, not this step. This supersedes the plan §5 "log channel pair" framing and matches
-   the PR-1 note's "*a* binding write" (singular). The step copy was corrected to stop promising
-   joins/edits.
+1. **Log scope = moderation log only.** ⚠️ **SUPERSEDED by Q-0203 (2026-06-24, same day).** The step is
+   *one* channel: it turns on `logging.enabled` and binds `logging.mod_channel` (the catch-all slot every
+   other logging route falls back to) to the picked-or-created channel. **Member-activity (joins/leaves/
+   roles) and message-content logging stay OFF** — they are a later follow-on, not this step. *(Reversed
+   the same day: the owner clarified "moderation only" was the first slice, not a cap, and asked for a quick
+   multi-select of logging types across two channels — see Q-0203. Decisions 2–4 below still stand.)*
 2. **Auto-create naming (plan Q-D) = plain-language names.** Auto-created channels/roles use the short §4
    wording — `#mod-log` / `#server-log`, "Level 10", "Regular" — **not** the longer `bot-`-prefixed
    `suggested_name` convention. (The log step creates `#mod-log`.)
@@ -7391,3 +7391,36 @@ and binds `logging.mod_channel` via `BindingMutationPipeline` (lazy-imported per
 **Home:** this Q-block (canonical) + the plan §7 PR-1 note / §5 step 4 / §10 (Q-C/Q-D/Q-E) +
 `.sessions/2026-06-24-setup-log-channel-step.md`. Related: **Q-A** (direct-apply per step), the
 setup-wizard restructure plan.
+
+### Q-0203 — ANSWERED (owner decision, in-session): the "Choose a log channel" step is a two-channel + multi-select, not moderation-only (2026-06-24)
+
+**Context.** Q-0202(1) scoped the log step to **moderation only** and shipped it that way (#1429). Same
+day, the owner clarified that "moderation only" was meant as the **first slice of a multi-step logging
+config, not a permanent cap** — and that owners should be able to **choose a few important logging types**
+via a **quick multi-select**, kept light ("should not become too much work for server owners, but they
+should have the option"). Asked where the chosen logs should go (one channel / two channels / per-type
+channels via `AskUserQuestion`), the owner chose **two channels (moderation + activity)**.
+
+**The decision.** The step now offers a **quick multi-select of activity types** — members joining/leaving
+(default on) · role changes (default on) · message edits/deletions (⚠️ shows content, default **off**) —
+across **two channels**: a **moderation log** (always on → `logging.mod_channel`, the catch-all) and an
+**activity log** (→ `logging.events_channel`) for the ticked categories. **Leave a channel empty and the
+bot auto-creates it** (`#mod-log` / `#server-log`), so accepting the defaults is one tap. On Save (direct
+lane): `logging.enabled=True`; bind `mod_channel`; set the `members_enabled`/`roles_enabled`/
+`messages_enabled` flags per the multi-select; bind `events_channel` when any activity type is on. Message
+logging stays opt-in because it exposes edited/deleted content (the schema's privacy warning).
+
+**Scope / non-generalization.** This **supersedes Q-0202(1) only** — the naming (Q-0202(2): `#mod-log` /
+`#server-log`), the step-0 preset (Q-0202(3)=Q-C), and the Advanced-editor rework (Q-0202(4)=Q-E)
+decisions are unaffected. It does **not** promote the full per-category logging surface (the other ~10
+channel slots + per-category routing) into the spine — that stays in the existing `!logging` admin UI; the
+spine offers a curated few.
+
+**Applied.** PR **#1432** reworks `LogChannelStep` on `EssentialFlow` into the two-channel + multi-select
+design above (multi-select + two `_LogChannelPicker`s + auto-create blanks via
+`ChannelLifecycleService.create_channels`; bindings via `BindingMutationPipeline`, both lazy-imported per
+the setup-view invariant). Reworked tests cover defaults-create-both, picked-channels, activity-off
+(moderation only), and create-failure.
+
+**Home:** this Q-block (canonical) + the plan §5 step 4 / §7 PR-1 note + Q-0202(1) (superseded) +
+`.sessions/2026-06-24-setup-log-channel-rework.md`. Related: **Q-0202**, **Q-A** (direct-apply per step).
