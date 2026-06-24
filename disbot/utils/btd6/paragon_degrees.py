@@ -90,6 +90,30 @@ def boss_multiplier(degree: int) -> float:
     return 2.25
 
 
+# Paragons deal DOUBLE their boss damage to **Elite** Bosses. This is a runtime
+# constant the engine applies, NOT a field in the game-data dump: verified absent
+# from the paragon tower models (Dart / Ice Monkey carry only Boss/Ceramic/Moabs
+# DamageModifierForTagModel tags, all damageMultiplier 1.0) and from
+# paragonDegreeData.json (a single bonusBossDamage* field, no elite variant). So
+# it is curated here, like the freeplay/cash runtime constants. Sources: Fandom
+# "Extra Damage to Boss" / "Paragons" ("Against Elite Bosses, the extra damage
+# from Paragons is doubled … applies for towers of the Paragons category … even
+# at degree 1"); cross-checked vs hemi's paragon bot (ed = 2x bd, 326 = 2x163).
+# Paragon-category only and degree-independent (applies from degree 1), so it
+# multiplies the degree-scaled boss multiplier rather than being part of it.
+ELITE_BOSS_DAMAGE_MULTIPLIER = 2.0
+
+
+def elite_boss_multiplier(degree: int) -> float:
+    """Elite-boss damage multiplier for ``degree``.
+
+    Paragons deal ``ELITE_BOSS_DAMAGE_MULTIPLIER`` (×2) their boss damage to Elite
+    Bosses at every degree, so this is :func:`boss_multiplier` doubled (e.g. Degree
+    35 → ×2.5, Degree 100 → ×4.5). The ×2 elite factor itself is degree-independent.
+    """
+    return boss_multiplier(degree) * ELITE_BOSS_DAMAGE_MULTIPLIER
+
+
 def scale_cooldown(rate: float, degree: int) -> float:
     """Attack/ability cooldown at ``degree`` (decreases with degree)."""
     return rate / (1 + 0.01 * math.sqrt((degree - 1) * 50))
@@ -149,6 +173,7 @@ class DegreeRow:
     degree: int
     power: int
     boss_multiplier: float
+    elite_boss_multiplier: float
     stats: tuple[DegreeStat, ...]
 
 
@@ -266,6 +291,7 @@ def degree_row(base: dict[str, Any], degree: int) -> DegreeRow:
         degree=d,
         power=power_for_degree(d),
         boss_multiplier=boss_multiplier(d),
+        elite_boss_multiplier=elite_boss_multiplier(d),
         stats=tuple(stats),
     )
 
@@ -284,11 +310,13 @@ def degree_stat_groups(base: dict[str, Any]) -> tuple[str, ...]:
 
 
 __all__ = [
+    "ELITE_BOSS_DAMAGE_MULTIPLIER",
     "MAX_DEGREE",
     "DegreeRow",
     "DegreeStat",
     "boss_multiplier",
     "degree_row",
+    "elite_boss_multiplier",
     "degree_stat_groups",
     "format_value",
     "power_for_degree",

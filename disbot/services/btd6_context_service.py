@@ -587,11 +587,12 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
 
     max_bits = _paragon_main_bits(pstats.base, 100)
     boss = paragon_degrees.boss_multiplier(100)
+    elite = paragon_degrees.elite_boss_multiplier(100)
     lines.append(
         _cap(
             f"[btd6_paragon_stats normal] {name} at Degree 100 (max): "
             f"{_sanitise(', '.join(max_bits)) if max_bits else 'see base'}; "
-            f"boss-damage multiplier ×{boss} "
+            f"boss-damage multiplier ×{boss}, elite-boss multiplier ×{elite:g} "
             f"(stats scale per degree 1-100; source: {src})",
         ),
     )
@@ -611,6 +612,15 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
             "cooldown = rate / (1 + 0.01*sqrt(50*(degree-1))), so early degrees "
             "gain most. Boss-damage steps every 20 degrees (1.0 to 2.0), 2.25 "
             "at Degree 100.",
+        ),
+    )
+    lines.append(
+        _cap(
+            "[btd6_paragon_stats scaling] Against ELITE Bosses, paragons deal "
+            "DOUBLE their boss damage — paragon-category only, at every degree "
+            "(including Degree 1). So the elite-boss damage multiplier is twice "
+            "the boss one (×2 to ×4.5: Degree 1 ×2, Degree 100 ×4.5). This ×2 "
+            "elite factor is a runtime constant, not in the game files.",
         ),
     )
     # Degree-independent extras. Income + buff/zone auras were committed
