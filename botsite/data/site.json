@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T07:18:58Z",
+    "generated_at": "2026-06-24T07:59:34Z",
     "build": {
-      "commit": "7b458bb",
-      "subject": "btd6: open per-round economy commands session (born-red card)",
-      "committed_at": "2026-06-24T07:18:58Z"
+      "commit": "2d0b127b",
+      "subject": "btd6: per-round economy slash commands (cash / RBE / bloons) (#1404)",
+      "committed_at": "2026-06-24T07:59:34Z"
     }
   },
   "counts": {
