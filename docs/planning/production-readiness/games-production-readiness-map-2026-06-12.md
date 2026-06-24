@@ -175,14 +175,20 @@ has one readiness disposition without turning the inventory into a method-per-ro
 - **Good:** Blackjack solo disables action buttons on finish and provides a replay result
   view; replay behavior has direct tests.
 - **Good:** Deathmatch PvP and bot-duel terminal paths disable controls and stop the view.
-- **Partial:** RPS PvP/challenge and blackjack tournament timeout handlers catch and hide
-  message-edit failures; no shared observable timeout policy exists.
-- **Partial:** Deathmatch bot-duel timeout disables controls only if its stored message can
-  be edited, and the exception is silently ignored.
+- **Partial:** RPS PvP `_resolve` and the deathmatch bot-duel now log their hidden message-edit
+  failures at debug (2026-06-24 dispatch run); RPS challenge and blackjack tournament timeout
+  handlers still catch and hide them, and no shared observable timeout policy exists.
+- **Partial → improving:** Deathmatch bot-duel and RPS PvP now route their settle/timeout edit
+  failures through a debug log (matching `BaseView.on_timeout`) instead of a silent `except: pass`
+  (2026-06-24 dispatch run). Blackjack tournament timeout handlers still swallow silently.
 - **Partial:** Mining views inherit the shared BaseView lifecycle, but real Discord
   interaction expiry/defer/edit sequences have not been live-verified in this review.
-- **Not Done:** no cross-game test proves terminal controls cannot trigger a second
-  settlement after a result, timeout, or delayed duplicate interaction.
+- **Partial (was Not Done — 2026-06-24 dispatch run):** the cross-game terminal contract now has a
+  shared **settle-once guard** (`disbot/views/terminal_guard.py` `SettleOnceMixin.claim_settlement()`)
+  adopted by **RPS PvP** (`_resolve`) and **deathmatch bot-duel** (`_finish`/`on_timeout`), with
+  regression tests proving a second settlement short-circuits (no duplicate result post, no redundant
+  wager settle). **Remaining adopters:** blackjack PvP/tournament settlement (the other money-handling
+  terminal path) — a follow-up PR adopts the same mixin.
 
 ## Gated or accepted limitations
 

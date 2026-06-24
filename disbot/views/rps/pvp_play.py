@@ -22,11 +22,12 @@ from views.rps._helpers import (
     RPS_PVP_PENDING_VERSION,
     rps_pvp_canonical_user_id,
 )
+from views.terminal_guard import SettleOnceMixin
 
 logger = logging.getLogger("bot.rps.pvp_play")
 
 
-class _RpsPvpPlayView(discord.ui.View):
+class _RpsPvpPlayView(SettleOnceMixin, discord.ui.View):
     """Visible to the channel; each player clicks for their ephemeral picker."""
 
     def __init__(
@@ -105,12 +106,20 @@ class _RpsPvpPlayView(discord.ui.View):
             await self._resolve()
 
     async def _resolve(self):
+        # Settle-once: ``_resolve`` is reachable twice — both players' picks
+        # landing near-simultaneously (the second ``record_choice`` re-sees
+        # ``len == 2`` while the first is still awaiting), or ``on_timeout``
+        # racing a final pick. A second settlement would post a duplicate result
+        # embed and re-call the (idempotent) wager settle. Claim synchronously
+        # before any await so the loser short-circuits.
+        if not self.claim_settlement():
+            return
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         try:
             await self.message.edit(view=self)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("rps_pvp _resolve: disable-buttons edit failed: %s", exc)
         self.stop()
 
         m1 = self.choices.get(self.p1.id, "forfeit")
