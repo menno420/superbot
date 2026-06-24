@@ -58,17 +58,19 @@ def test_render_handles_overlong_names_without_error():
 
 
 def test_fit_truncates_to_width():
-    """The width-clamp helper ellipsises text that exceeds the budget."""
-    from PIL import Image, ImageDraw
+    """The migrated renderer ellipsises overflow via the shared engine's
+    ``CardCanvas.fit`` (the private ``_fit`` copy is gone)."""
+    from utils.card_render import get_theme, new_canvas
 
-    draw = ImageDraw.Draw(Image.new("RGB", (10, 10)))
-    big, _ = welcome_render._fonts(56, 30)
+    canvas = new_canvas(10, 10, get_theme("midnight"))
+    assert canvas is not None
+    font = canvas.font(56, bold=True)
     long = "Welcome, " + "Z" * 100 + "!"
-    fitted = welcome_render._fit(draw, long, big, 400)
+    fitted = canvas.fit(long, font, 400)
     assert fitted.endswith("…")
-    assert draw.textlength(fitted, font=big) <= 400
+    assert canvas.draw.textlength(fitted, font=font) <= 400
     # A short string is returned unchanged (no needless ellipsis).
-    assert welcome_render._fit(draw, "Hi!", big, 400) == "Hi!"
+    assert canvas.fit("Hi!", font, 400) == "Hi!"
 
 
 def test_gallery_reexports_the_production_renderer():

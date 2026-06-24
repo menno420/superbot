@@ -16,72 +16,11 @@ or fail on a CDN round-trip.  The real avatar still rides the embed thumbnail.
 
 from __future__ import annotations
 
-import io
-
-# Shared card palette (dark-theme friendly) — mirrors the Discord blurple set.
-_BG = (24, 25, 31)
-_PANEL = (32, 34, 42)
-_ACCENT = (88, 101, 242)  # blurple
-_TEXT = (235, 236, 240)
-_SUBTLE = (148, 155, 164)
-_GOLD = (240, 178, 50)
+from utils.card_render import get_theme, initials, new_canvas
 
 # Card geometry.
 _WIDTH = 960
 _HEIGHT = 360
-
-
-def _fonts(size_big: int, size_small: int):  # noqa: ANN202 — PIL lazy types
-    """Best-effort (bold-big, regular-small) DejaVu pair.
-
-    Delegates to the shared card engine so the font loader lives in exactly one
-    place (was triplicated across the renderers).
-    """
-    from utils.card_render import dejavu_fonts
-
-    return dejavu_fonts(size_big, size_small)
-
-
-def _initials_disc(
-    draw,
-    *,
-    cx: int,
-    cy: int,
-    r: int,
-    initials: str,
-    font,
-) -> None:  # noqa: ANN001
-    """The no-network avatar: accent ring + initials disc."""
-    draw.ellipse(
-        (cx - r - 6, cy - r - 6, cx + r + 6, cy + r + 6),
-        outline=_ACCENT,
-        width=6,
-    )
-    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=_PANEL)
-    box = draw.textbbox((0, 0), initials, font=font)
-    tw, th = box[2] - box[0], box[3] - box[1]
-    draw.text((cx - tw / 2, cy - th / 2 - box[1]), initials, font=font, fill=_TEXT)
-
-
-def _initials(name: str) -> str:
-    """First two alphanumerics of the display name, upper-cased (``?`` if none)."""
-    letters = [c for c in name if c.isalnum()]
-    return ("".join(letters[:2]) or "?").upper()
-
-
-def _fit(draw, text: str, font, max_width: int) -> str:  # noqa: ANN001
-    """Truncate ``text`` with an ellipsis until it fits within ``max_width`` px.
-
-    Discord names and server names are unbounded, so a long one would run off
-    the right edge of the fixed-width card.  This clamps any string to the
-    drawable area, ellipsising the overflow.
-    """
-    if draw.textlength(text, font=font) <= max_width:
-        return text
-    ellipsis = "…"
-    while text and draw.textlength(text + ellipsis, font=font) > max_width:
-        text = text[:-1]
-    return (text + ellipsis) if text else ellipsis
 
 
 def render_welcome_card(
@@ -94,39 +33,40 @@ def render_welcome_card(
     Pure / no-network; returns JPEG bytes, or ``None`` when Pillow is absent so
     callers fall back to the embed-only greeting.  The defaults make it a
     self-contained gallery sample (the UX-lab preview calls it bare).
+
+    Drawn on the shared :class:`utils.card_render.CardCanvas` (theme
+    ``midnight`` — the dark-blurple palette this card always used), so the
+    palette, font loader, width-fit and initials-disc primitives are the one
+    engine code path, not private copies.
     """
-    try:
-        from PIL import Image, ImageDraw  # lazy: degrade gracefully
-    except Exception:  # noqa: BLE001
+    canvas = new_canvas(_WIDTH, _HEIGHT, get_theme("midnight"))
+    if canvas is None:  # Pillow unavailable → caller keeps the embed fallback.
         return None
-    img = Image.new("RGB", (_WIDTH, _HEIGHT), _BG)
-    draw = ImageDraw.Draw(img)
-    big, small = _fonts(56, 30)
-    _initials_disc(
-        draw,
-        cx=180,
-        cy=180,
-        r=96,
-        initials=_initials(member_name),
-        font=big,
-    )
+    canvas.initials_disc((180, 180), 96, initials(member_name), size=56)
     # Text column: x=340 to the right margin — clamp both lines so an unbounded
     # member/server name can never run off the card edge.
     text_x = 340
     text_max = _WIDTH - text_x - 60
-    greeting = _fit(draw, f"Welcome, {member_name}!", big, text_max)
-    subtitle = _fit(
-        draw,
-        f"You are member #{member_number:,} of {server_name}",
-        small,
-        text_max,
+    canvas.text(
+        (text_x, 110),
+        f"Welcome, {member_name}!",
+        size=56,
+        bold=True,
+        max_width=text_max,
     )
-    draw.text((text_x, 110), greeting, font=big, fill=_TEXT)
-    draw.text((text_x + 2, 196), subtitle, font=small, fill=_SUBTLE)
-    draw.line((text_x, 260, _WIDTH - 60, 260), fill=_ACCENT, width=3)
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=85)
-    return buf.getvalue()
+    canvas.text(
+        (text_x + 2, 196),
+        f"You are member #{member_number:,} of {server_name}",
+        size=30,
+        color=canvas.theme.subtle,
+        max_width=text_max,
+    )
+    canvas.draw.line(
+        (text_x, 260, _WIDTH - 60, 260),
+        fill=canvas.theme.accent,
+        width=3,
+    )
+    return canvas.to_jpeg(quality=85)
 
 
 __all__ = ["render_welcome_card"]
