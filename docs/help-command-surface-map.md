@@ -30,9 +30,11 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   surface), the five split BTD6 support cogs (`btd6_reference` /
   `btd6_events` / `btd6_strategy` / `paragon` / `btd6_ops` — their
   commands route under the one `btd6` subsystem via `btd6_cog`'s hook),
-  `setup_cog` (an orchestrator with no `SUBSYSTEMS` row),
-  `quicksetup_cog` (the Essential Setup front door `!quicksetup` —
-  no subsystem row),
+  `setup_cog` (an orchestrator with no `SUBSYSTEMS` row — the advanced
+  `!setupadvanced` / `/setup-advanced` wizard + on-join launcher + `/setup-*`
+  helpers),
+  `quicksetup_cog` (the Essential Setup front door — the primary `!setup` /
+  `/setup` — no subsystem row),
   `hermes_cog` (the Hermes→Claude dispatch bridge — admin-only slash
   commands, no subsystem row), `media_maintenance_cog` (the YouTube
   cache-retention task owner — no commands, no subsystem row),

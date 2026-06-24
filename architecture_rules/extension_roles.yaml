@@ -220,12 +220,13 @@ extensions:
   setup:
     role: bootstrap
     backs: server_management
-    note: Guided setup wizard; lifecycle-critical, load-order sensitive.
+    note: Advanced setup wizard (!setupadvanced / /setup-advanced) + on-join
+      launcher + /setup-* helpers; lifecycle-critical, load-order sensitive.
   quicksetup:
     role: bootstrap
     backs: server_management
-    note: Essential Setup front door (!quicksetup / /quicksetup); thin command
-      surface over views.setup.essential_setup (the plain-language spine).
+    note: Essential Setup — the primary setup front door (!setup / /setup); thin
+      command surface over views.setup.essential_setup (the plain-language spine).
   server_management:
     role: hub
     note: Routing-only hub (moderation/channels/roles/cleanup/setup); holds no

@@ -45,12 +45,15 @@
   broadcast table. [design](../planning/casino-poker-design-2026-06-22.md).
 
 **▶ Next startable (one of):**
-- **Essential Setup spine (`!quicksetup`) — PR 1 COMPLETE + polished (owner-directed, 2026-06-24).** A
-  new plain-language, button/dropdown/multi-select-only quick-setup flow (6 steps: greet · moderators ·
-  block spam · choose a log channel · reward active members · help desk + summary), separate from and
-  additive to the legacy `!setup` wizard. Each step applies immediately (direct lane) through an audited
-  service; typing is optional everywhere (Q-0205). Shipped #1425/#1427/#1429/#1432/#1434 + polish #1435;
-  decisions Q-0202/Q-0203/Q-0204/Q-0205. **▶ Next:** step 0 (server-type starter preset — needs a
+- **Essential Setup spine — PR 1 COMPLETE + polished + CUT OVER as the primary `!setup` (owner-directed,
+  2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow (6 steps: greet ·
+  moderators · block spam · choose a log channel · reward active members · help desk + summary). Each step
+  applies immediately (direct lane) through an audited service; typing is optional everywhere (Q-0205).
+  Shipped #1425/#1427/#1429/#1432/#1434 + polish #1435; decisions Q-0202/Q-0203/Q-0204/Q-0205. **Cutover
+  (owner-directed, 2026-06-24):** Essential Setup is now the **primary `!setup` / `/setup`** (was
+  `!quicksetup`); the old section-list wizard moved to **`!setupadvanced` / `/setup-advanced`**; Essential
+  Setup now opens in a separate **`#superbot-setup`** channel (not the invoking channel) and is what the
+  on-join launcher's **Start Setup** opens. **▶ Next:** step 0 (server-type starter preset — needs a
   direct-apply preset path, verify source first) · PR 2 (extras menu + "Check my setup") · PR 3 (retire
   dead/legacy sections + rework the Advanced editor). Tracker:
   [`planning/setup-wizard-restructure-plan-2026-06-24.md`](../planning/setup-wizard-restructure-plan-2026-06-24.md).

@@ -663,3 +663,143 @@ async def test_entry_rejects_non_admin():
         await es.open_essential_setup(interaction)
     interaction.response.send_message.assert_awaited_once()
     assert "admin" in interaction.response.send_message.await_args.args[0].lower()
+
+
+# ---------------------------------------------------------------------------
+# Separate setup channel — the flow opens in #superbot-setup, not in-channel
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_open_in_setup_channel_posts_flow_and_returns_ok():
+    guild = _guild()
+    member = _member()
+    channel = MagicMock()
+    channel.name = "superbot-setup"
+    channel.send = AsyncMock(return_value=MagicMock(id=123))
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new=AsyncMock(return_value=None),
+        ),
+        patch(
+            "services.setup_channel.ensure_setup_channel",
+            new=AsyncMock(return_value=(channel, True)),
+        ),
+    ):
+        ch, msg, reason = await es.open_essential_setup_in_setup_channel(guild, member)
+
+    assert reason == "ok"
+    assert ch is channel
+    channel.send.assert_awaited_once()
+    # The posted message carries the first step's embed + an interactive view.
+    assert channel.send.await_args.kwargs.get("view") is not None
+    assert channel.send.await_args.kwargs.get("embed") is not None
+
+
+@pytest.mark.asyncio
+async def test_open_in_setup_channel_reports_no_channel_when_uncreatable():
+    guild = _guild()
+    member = _member()
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new=AsyncMock(return_value=None),
+        ),
+        patch(
+            "services.setup_channel.ensure_setup_channel",
+            new=AsyncMock(return_value=(None, False)),
+        ),
+    ):
+        ch, msg, reason = await es.open_essential_setup_in_setup_channel(guild, member)
+
+    assert reason == "no_channel"
+    assert ch is None
+    assert msg is None
+
+
+@pytest.mark.asyncio
+async def test_open_essential_setup_slash_points_to_channel():
+    """Happy path: the flow posts to #superbot-setup; the slash reply is an
+    ephemeral pointer, not the flow itself."""
+    interaction = _interaction()
+    interaction.guild = _guild()
+    member = MagicMock()
+    member.guild_permissions.administrator = True
+    interaction.user = member
+
+    channel = MagicMock(mention="<#777>")
+    message = MagicMock(jump_url="https://discord.com/channels/1/2/3")
+
+    with (
+        patch.object(es.discord, "Member", MagicMock),
+        patch.object(
+            es,
+            "open_essential_setup_in_setup_channel",
+            new=AsyncMock(return_value=(channel, message, "ok")),
+        ),
+    ):
+        await es.open_essential_setup(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs.get("ephemeral") is True
+    # Pointer reply mentions the channel; no view is sent in the invoking channel.
+    assert "<#777>" in interaction.response.send_message.await_args.args[0]
+    assert kwargs.get("view") is None
+
+
+@pytest.mark.asyncio
+async def test_open_essential_setup_slash_falls_back_in_channel():
+    """No Manage Channels → the flow opens inline in the invoking channel so
+    setup still works, with a one-line hint."""
+    interaction = _interaction()
+    interaction.guild = _guild()
+    member = MagicMock()
+    member.guild_permissions.administrator = True
+    interaction.user = member
+
+    with (
+        patch.object(es.discord, "Member", MagicMock),
+        patch.object(
+            es,
+            "open_essential_setup_in_setup_channel",
+            new=AsyncMock(return_value=(None, None, "no_channel")),
+        ),
+    ):
+        await es.open_essential_setup(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    # Inline fallback: the flow (embed + view) is sent in the invoking channel.
+    assert kwargs.get("view") is not None
+    assert kwargs.get("embed") is not None
+    assert "manage channels" in (kwargs.get("content") or "").lower()
+
+
+@pytest.mark.asyncio
+async def test_open_essential_setup_prefix_points_to_channel():
+    channel = MagicMock(mention="<#777>")
+    message = MagicMock(jump_url="https://discord.com/channels/1/2/3")
+    ctx = SimpleNamespace(
+        guild=_guild(),
+        author=MagicMock(),
+        send=AsyncMock(),
+    )
+    ctx.author.guild_permissions.administrator = True
+
+    with (
+        patch.object(es.discord, "Member", MagicMock),
+        patch.object(
+            es,
+            "open_essential_setup_in_setup_channel",
+            new=AsyncMock(return_value=(channel, message, "ok")),
+        ),
+    ):
+        await es.open_essential_setup_prefix(ctx)
+
+    ctx.send.assert_awaited_once()
+    assert "<#777>" in ctx.send.await_args.args[0]
+    assert ctx.send.await_args.kwargs.get("view") is None

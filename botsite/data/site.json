@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T13:45:19Z",
+    "generated_at": "2026-06-24T19:38:12Z",
     "build": {
-      "commit": "e02a66d",
-      "subject": "Merge branch 'main' into claude/serene-mccarthy-lv5z94",
-      "committed_at": "2026-06-24T13:45:19Z"
+      "commit": "de1b502",
+      "subject": "Merge pull request #1436 from menno420/claude/blissful-hamilton-xdzbak",
+      "committed_at": "2026-06-24T19:38:12Z"
     }
   },
   "counts": {
@@ -10583,36 +10583,6 @@
       "notes": null
     },
     {
-      "name": "quicksetup",
-      "aliases": [
-        "essentialsetup"
-      ],
-      "category": "other",
-      "cooldown": null,
-      "permissions": "",
-      "usage": "Open Essential Setup — a few simple steps, each saved instantly.",
-      "description": "Open Essential Setup — a few simple steps, each saved instantly.",
-      "use_cases": null,
-      "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
-      "notes": null
-    },
-    {
-      "name": "quicksetup",
-      "aliases": [],
-      "category": "other",
-      "cooldown": null,
-      "permissions": "",
-      "usage": "Quick guided setup — a few simple steps, no jargon.",
-      "description": "Open Essential Setup — a few simple steps, each saved instantly.",
-      "use_cases": null,
-      "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
-      "notes": null
-    },
-    {
       "name": "resource-requirements",
       "aliases": [],
       "category": "other",
@@ -10730,12 +10700,15 @@
     },
     {
       "name": "setup",
-      "aliases": [],
+      "aliases": [
+        "quicksetup",
+        "essentialsetup"
+      ],
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Open or resume the linear setup wizard.",
-      "description": "Open or resume the linear setup wizard.",
+      "usage": "Open Essential Setup — a few simple steps, each saved instantly.",
+      "description": "Open Essential Setup — a few simple steps, each saved instantly.",
       "use_cases": null,
       "examples": [],
       "status": "finished",
@@ -10748,8 +10721,22 @@
       "category": "other",
       "cooldown": null,
       "permissions": "",
-      "usage": "Open the setup wizard (owner, delegated admin, or admin).",
-      "description": "Open or resume the linear setup wizard.",
+      "usage": "Guided setup — a few simple steps, no jargon.",
+      "description": "Open Essential Setup — a few simple steps, each saved instantly.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "setup-advanced",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open the advanced setup wizard (power users; /setup is the quick one).",
+      "description": "Ephemeral slash front door for the advanced (linear) setup wizard.",
       "use_cases": null,
       "examples": [],
       "status": "finished",
@@ -10895,6 +10882,24 @@
       "description": "Drop section from the session's skipped_sections set.",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "setupadvanced",
+      "aliases": [
+        "advancedsetup"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open or resume the advanced (linear) setup wizard.",
+      "description": "Open or resume the advanced (linear) setup wizard.",
+      "use_cases": null,
+      "examples": [
+        "!setup"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null

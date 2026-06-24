@@ -459,25 +459,25 @@ def _mock_interaction(user, guild_id: int = 1):
 
 
 @pytest.mark.asyncio
-async def test_start_button_refuses_non_owner():
+async def test_start_button_refuses_non_admin():
+    """Start Setup now opens Essential Setup on the broad setup-admin gate
+    (owner / administrator / delegated), so a plain member is refused — an
+    administrator is allowed (see test_start_button_opens_essential_for_admin).
+    """
     view = SetupLauncherView()
-    interaction = _mock_interaction(_admin_member())
+    interaction = _mock_interaction(_random_member())
 
     with patch("services.setup_session.resume_session", AsyncMock(return_value=None)):
-        with patch(
-            "services.setup_session.start_session", AsyncMock(return_value=None)
-        ):
-            await view._start.callback(interaction)
+        await view._start.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()
-    assert (
-        "server owner" in interaction.response.send_message.await_args.args[0].lower()
-    )
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    assert "owner" in msg or "admin" in msg
 
 
 @pytest.mark.asyncio
-async def test_start_button_opens_wizard_for_owner():
-    """Start Setup must open the linear wizard in #superbot-setup."""
+async def test_start_button_opens_essential_setup_for_owner():
+    """Start Setup must open Essential Setup in #superbot-setup."""
     view = SetupLauncherView()
     interaction = _mock_interaction(_owner_member())
 
@@ -486,17 +486,19 @@ async def test_start_button_opens_wizard_for_owner():
     mock_message = MagicMock()
     mock_message.jump_url = "https://discord.com/channels/1/2/3"
 
-    with patch("services.setup_session.resume_session", AsyncMock(return_value=None)):
-        with patch(
-            "services.setup_session.start_session", AsyncMock(return_value=None)
-        ):
-            with patch(
-                "views.setup.wizard.open_setup_workspace",
-                AsyncMock(return_value=(mock_channel, mock_message, "ok")),
-            ) as open_mock:
-                await view._start.callback(interaction)
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            AsyncMock(return_value=None),
+        ),
+        patch(
+            "views.setup.essential_setup.open_essential_setup_in_setup_channel",
+            AsyncMock(return_value=(mock_channel, mock_message, "ok")),
+        ) as open_mock,
+    ):
+        await view._start.callback(interaction)
 
-    # open_setup_workspace must be called exactly once.
+    # The essential-setup opener must be called exactly once.
     open_mock.assert_awaited_once()
 
     interaction.response.send_message.assert_awaited_once()
@@ -504,7 +506,36 @@ async def test_start_button_opens_wizard_for_owner():
     assert kwargs.get("ephemeral") is True
     msg = interaction.response.send_message.await_args.args[0]
     assert "#superbot-setup" in msg
-    assert "wizard" in msg.lower() or "open" in msg.lower()
+    assert "setup" in msg.lower() or "open" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_start_button_opens_essential_for_admin():
+    """A plain administrator (not owner, not delegated) can Start Setup —
+    the gate broadened from owner-only to the setup-admin ladder when Start
+    began opening the admin-accessible Essential Setup."""
+    view = SetupLauncherView()
+    interaction = _mock_interaction(_admin_member())
+
+    mock_channel = MagicMock()
+    mock_channel.mention = "#superbot-setup"
+    mock_message = MagicMock()
+    mock_message.jump_url = "https://discord.com/channels/1/2/3"
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            AsyncMock(return_value=None),
+        ),
+        patch(
+            "views.setup.essential_setup.open_essential_setup_in_setup_channel",
+            AsyncMock(return_value=(mock_channel, mock_message, "ok")),
+        ) as open_mock,
+    ):
+        await view._start.callback(interaction)
+
+    open_mock.assert_awaited_once()
+    interaction.response.send_message.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -1198,7 +1229,7 @@ async def test_setup_cmd_opens_wizard_for_owner():
             return_value=(channel, message, "ok"),
         ) as open_mock,
     ):
-        await cog.setup_cmd.callback(cog, ctx)
+        await cog.setupadvanced_cmd.callback(cog, ctx)
 
     open_mock.assert_awaited_once()
     # Invoking channel reply mentions the workspace channel and the
@@ -1238,7 +1269,7 @@ async def test_setup_cmd_starts_session_when_missing():
             return_value=(channel, message, "ok"),
         ),
     ):
-        await cog.setup_cmd.callback(cog, ctx)
+        await cog.setupadvanced_cmd.callback(cog, ctx)
 
     start_mock.assert_awaited_once()
     ctx.send.assert_awaited_once()
@@ -1266,7 +1297,7 @@ async def test_setup_cmd_handles_missing_setup_channel():
             return_value=(None, None, "no_channel"),
         ),
     ):
-        await cog.setup_cmd.callback(cog, ctx)
+        await cog.setupadvanced_cmd.callback(cog, ctx)
 
     ctx.send.assert_awaited_once()
     msg = ctx.send.await_args.args[0].lower()
@@ -1369,7 +1400,7 @@ async def test_setup_cmd_returns_readiness_for_plain_admin():
             return_value=fake_embed,
         ),
     ):
-        await cog.setup_cmd.callback(cog, ctx)
+        await cog.setupadvanced_cmd.callback(cog, ctx)
 
     ctx.send.assert_awaited_once()
     # Readiness path sends an embed but no view.
@@ -1402,7 +1433,7 @@ async def test_setup_cmd_opens_wizard_for_delegated_admin():
             return_value=(channel, message, "ok"),
         ) as open_mock,
     ):
-        await cog.setup_cmd.callback(cog, ctx)
+        await cog.setupadvanced_cmd.callback(cog, ctx)
 
     open_mock.assert_awaited_once()
     ctx.send.assert_awaited_once()
@@ -1422,7 +1453,7 @@ async def test_setup_cmd_denies_random_member():
         new_callable=AsyncMock,
         return_value=_delegated_session(delegated=()),
     ):
-        await cog.setup_cmd.callback(cog, ctx)
+        await cog.setupadvanced_cmd.callback(cog, ctx)
 
     ctx.send.assert_awaited_once()
     msg = ctx.send.await_args.args[0]
@@ -1440,7 +1471,7 @@ async def test_setup_cmd_requires_guild_context():
     # Author isn't a discord.Member outside a guild — make it a User.
     ctx.author = MagicMock()  # not isinstance discord.Member
 
-    await cog.setup_cmd.callback(cog, ctx)
+    await cog.setupadvanced_cmd.callback(cog, ctx)
 
     ctx.send.assert_awaited_once()
     assert "server" in ctx.send.await_args.args[0].lower()
@@ -1470,7 +1501,7 @@ async def test_setup_slash_opens_wizard_for_owner():
             return_value=(channel, message, "ok"),
         ) as open_mock,
     ):
-        await cog.setup_slash.callback(cog, interaction)
+        await cog.setupadvanced_slash.callback(cog, interaction)
 
     open_mock.assert_awaited_once()
     interaction.response.send_message.assert_awaited_once()
@@ -1501,7 +1532,7 @@ async def test_setup_slash_returns_readiness_for_plain_admin():
             return_value=fake_embed,
         ),
     ):
-        await cog.setup_slash.callback(cog, interaction)
+        await cog.setupadvanced_slash.callback(cog, interaction)
 
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs

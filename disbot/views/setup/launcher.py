@@ -22,14 +22,14 @@ logger = logging.getLogger("bot.views.setup.launcher")
 
 _LAUNCHER_TITLE = "🛰 SuperBot setup"
 _LAUNCHER_DESC = (
-    "Welcome! I'll help you wire SuperBot up to this server.\n\n"
-    "Use **Start Setup** for the guided step-by-step wizard, **Run Readiness Scan** "
-    "to see what's already configured, or **Dismiss** to defer.\n\n"
-    "**Quick commands:** `!setup` / `/setup` to open the guided wizard, "
-    "`/setup-hub` for the advanced section list, "
-    "`/setup-status` for a read-only peek, `/setup-reset` to clear "
-    "staged operations.\n\n"
-    "🎫 The wizard includes a **Support Tickets** step — enable private "
+    "Welcome! I'll help you set SuperBot up for this server.\n\n"
+    "Click **Start Setup** for the quick guided setup — a few simple steps, "
+    "each saved as you go. The other buttons are optional extras, or "
+    "**Dismiss** to defer.\n\n"
+    "**Quick commands:** `!setup` / `/setup` for the quick guided setup, "
+    "`/setup-advanced` for the full editor, "
+    "`/setup-status` for a read-only peek, `/setup-reset` to start over.\n\n"
+    "🎫 Setup includes a **Support Tickets** step — enable private "
     "member↔staff tickets there, or run `!ticketsetup @StaffRole [#log]`."
 )
 
@@ -206,33 +206,25 @@ class SetupLauncherView(discord.ui.View):
             await self._deny(interaction, "This can only be used in a server.")
             return
 
-        # Resolve or start the session so can_apply_setup sees a real row.
-        # On a brand-new guild the session may not exist yet; starting it
-        # here avoids incorrectly denying the server owner.
+        # Gate on the broad "can use setup" ladder (owner / administrator /
+        # delegated setup admin) — same accessibility as the `!setup` command,
+        # so a plain admin who joins isn't refused at the launcher.
         session = await self._resolve_session(interaction)
-        if session is None:
-            try:
-                session = await setup_session.start_session(
-                    guild_id=guild.id,
-                    guild_name=guild.name,
-                    owner_id=guild.owner_id or member.id,
-                )
-            except Exception:
-                logger.exception("setup launcher: start_session failed")
-
-        if not setup_access.can_apply_setup(member, session):
+        if not setup_access.is_setup_admin(member, session):
             await self._deny(
                 interaction,
-                "Only the server owner or a delegated setup admin can start setup.",
+                "Only the server owner, an administrator, or a delegated "
+                "setup admin can start setup.",
             )
             return
 
-        from views.setup.wizard import jump_link, open_setup_workspace
+        # Start Setup opens the plain-language Essential Setup spine (the
+        # primary `!setup` flow), not the advanced section-list wizard.
+        from views.setup.essential_setup import open_essential_setup_in_setup_channel
 
-        channel, message, reason = await open_setup_workspace(
+        channel, message, reason = await open_essential_setup_in_setup_channel(
             guild,
-            member=member,
-            session=session,
+            member,
         )
         if reason == "no_channel" or channel is None:
             await interaction.response.send_message(
@@ -245,13 +237,13 @@ class SetupLauncherView(discord.ui.View):
         if reason == "post_failed" or message is None:
             await interaction.response.send_message(
                 f"The `#superbot-setup` channel exists ({channel.mention}) "
-                "but I couldn't post the wizard there — check my permissions "
+                "but I couldn't post setup there — check my permissions "
                 "in that channel.",
                 ephemeral=True,
             )
             return
         await interaction.response.send_message(
-            f"Setup wizard is open in {channel.mention} — {jump_link(message)}.",
+            f"✅ Setup is ready in {channel.mention} — [open it]({message.jump_url}).",
             ephemeral=True,
         )
 
