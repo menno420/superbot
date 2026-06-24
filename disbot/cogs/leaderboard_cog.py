@@ -72,6 +72,7 @@ def _render_card(
         tuple(rows),
         title=provider.display_title,
         value_texts=value_texts,
+        theme=provider.card_theme,
     )
     if jpeg is None:  # Pillow unavailable → embed-only fallback.
         return None

@@ -56,6 +56,19 @@ def test_render_card_returns_file_when_rows_are_structured():
     assert kwargs["value_texts"] == ("250 XP", "100 XP")
 
 
+def test_render_card_forwards_the_provider_theme():
+    """The board renders in the provider's declared skin (the H2-polish slice)."""
+    provider = get_provider("mining")  # declares card_theme="abyss"
+    assert provider is not None
+    with patch(
+        "cogs.leaderboard_cog.render_leaderboard_image",
+        return_value=b"\xff\xd8jpeg-bytes",
+    ) as render:
+        _render_card(provider, _structured_entries())
+    _args, kwargs = render.call_args
+    assert kwargs["theme"] == "abyss"
+
+
 def test_render_card_is_none_for_empty_board():
     provider = get_provider("xp")
     assert provider is not None
@@ -133,4 +146,11 @@ def test_renderer_honours_title_and_value_texts():
         title="🏆 XP Leaderboard",
         value_texts=("250 XP", "100 XP"),
     )
+    assert data is not None and len(data) > 0
+
+
+@pytest.mark.parametrize("theme", ["midnight", "ember", "verdant", "abyss"])
+def test_renderer_renders_in_every_named_theme(theme):
+    pytest.importorskip("PIL")
+    data = render_leaderboard_image((("Alice", 250.0),), theme=theme)
     assert data is not None and len(data) > 0
