@@ -154,3 +154,10 @@ dump, mirroring the validation discipline):
   1"). So `elite_boss_multiplier(d) = boss_multiplier(d) × 2`. Same class as the
   freeplay/cash constants — the dump stores the base boss bonus, the engine doubles
   it for elite.
+
+These per-round quantities are **player-queryable** via the reference commands
+(prefix + slash): `/btd6ref income <start> [end]` (verified `round_cash`),
+`/btd6ref rbe <start> [end]` (base + freeplay-scaled `round_rbe`), and
+`/btd6ref round <n>` (composition + effective RBE). The income table deliberately
+shows our audited total, which is *lower* than CyberQuincy's (it over-counts
+fortified) — same divergence proven in the r100-120 cash validation.

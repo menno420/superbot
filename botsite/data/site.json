@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-23T10:09:05Z",
+    "generated_at": "2026-06-24T07:18:58Z",
     "build": {
-      "commit": "0f0f04a3",
-      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-trophy-follow' into claude/funny-franklin-trophy-follow",
-      "committed_at": "2026-06-23T10:09:05Z"
+      "commit": "7b458bb",
+      "subject": "btd6: open per-round economy commands session (born-red card)",
+      "committed_at": "2026-06-24T07:18:58Z"
     }
   },
   "counts": {
-    "commands": 389,
+    "commands": 393,
     "features": 41,
     "games": 11
   },
@@ -762,6 +762,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -800,6 +804,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -842,6 +850,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -882,6 +894,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1007,6 +1023,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -1045,6 +1065,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1117,6 +1141,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -1155,6 +1183,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1310,6 +1342,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -1348,6 +1384,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1388,6 +1428,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -1426,6 +1470,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1482,6 +1530,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -1520,6 +1572,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1611,6 +1667,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -1649,6 +1709,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1753,6 +1817,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -1791,6 +1859,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1891,6 +1963,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -1929,6 +2005,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -1988,6 +2068,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
+        {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
         },
@@ -2026,6 +2110,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -2202,6 +2290,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
+          "status": "ideas"
+        },
         {
           "title": "AI self-curated memory notebook — a write-back learning seam for the bot's AI",
           "status": "ideas"
@@ -2905,8 +2997,13 @@
       "description": "Show your (or another user's) unified inventory hub.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — a `check_subsystem_inventory_homed` guard (close the inventory-table drift class)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -3600,6 +3697,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -3637,6 +3738,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -3672,6 +3777,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -3706,6 +3815,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -3824,6 +3937,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -3858,6 +3975,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -3894,6 +4015,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -3928,6 +4053,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -3964,6 +4093,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -3998,6 +4131,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -4036,6 +4173,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4073,6 +4214,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4108,6 +4253,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4142,6 +4291,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -4178,6 +4331,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4212,6 +4369,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -4248,6 +4409,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4282,6 +4447,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -4472,6 +4641,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4507,6 +4680,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4541,6 +4718,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -4644,6 +4825,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4678,6 +4863,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -4766,6 +4955,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -4802,6 +4995,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5005,6 +5202,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5039,6 +5240,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5075,6 +5280,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5109,6 +5318,88 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "income",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Verified cash per round — single round or an inclusive range.",
+      "description": "Verified cash per round — single round or an inclusive range.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "income",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Verified cash earned per round (single round or a range).",
+      "description": "Verified cash per round — single round or an inclusive range.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5145,6 +5436,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5179,6 +5474,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5215,6 +5514,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5249,6 +5552,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5301,6 +5608,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5335,6 +5646,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5371,6 +5686,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5405,6 +5724,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5441,6 +5764,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5475,6 +5802,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5515,6 +5846,84 @@
       "notes": null
     },
     {
+      "name": "rbe",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "RBE per round (base + freeplay-scaled) — single round or a range.",
+      "description": "RBE per round (base + freeplay-scaled) — single round or a range.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "rbe",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "RBE per round — base + freeplay-scaled (single round or a range).",
+      "description": "RBE per round (base + freeplay-scaled) — single round or a range.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "readiness",
       "aliases": [],
       "category": "games",
@@ -5526,6 +5935,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5562,6 +5975,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5597,6 +6014,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5631,6 +6052,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5667,6 +6092,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5701,6 +6130,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5791,6 +6224,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -5825,6 +6262,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -5998,6 +6439,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6032,6 +6477,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6092,6 +6541,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6126,6 +6579,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6194,6 +6651,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6229,6 +6690,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6263,6 +6728,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6299,6 +6768,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6333,6 +6806,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6369,6 +6846,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6404,6 +6885,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6438,6 +6923,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6490,6 +6979,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6525,6 +7018,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6560,6 +7057,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6594,6 +7095,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6630,6 +7135,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6664,6 +7173,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6700,6 +7213,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6734,6 +7251,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6770,6 +7291,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6804,6 +7329,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6840,6 +7369,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6874,6 +7407,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -6942,6 +7479,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -6976,6 +7517,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
@@ -7034,6 +7579,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"
         },
@@ -7068,6 +7617,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
         {
           "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
           "status": "ideas"

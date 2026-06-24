@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T05:36:36Z",
+    "generated_at": "2026-06-24T07:18:58Z",
     "build": {
-      "commit": "8d5a40ef",
-      "subject": "Merge pull request #1399 from menno420/claude/funny-franklin-qvy92e",
-      "committed_at": "2026-06-24T05:36:36Z"
+      "commit": "7b458bb",
+      "subject": "btd6: open per-round economy commands session (born-red card)",
+      "committed_at": "2026-06-24T07:18:58Z"
     },
     "counts": {
       "functions": 41,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 38,
       "cogs": 51,
-      "commands": 389,
+      "commands": 393,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2415,6 +2415,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-24-rank-card-image.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Rank card as a themed image (card-engine H3, first feature card)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-24-leaderboard-image-card.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Leaderboard image card: ship the H2 card-engine tail as a real feature",
@@ -2426,6 +2434,14 @@
       "file": "2026-06-24-leaderboard-card-themes.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Per-category leaderboard card themes (card-engine H2 polish)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-24-card-theme-conformance-guard.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Provider `card_theme` conformance guard",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -2445,6 +2461,22 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-24-btd6-per-round-economy-commands.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — BTD6 per-round economy slash commands (cash / RBE / bloons)",
+      "status": "in-progress",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-btd6-paragon-elite-boss-damage.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — BTD6 paragon elite-boss damage multiplier",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
     },
     {
       "file": "2026-06-23-wordfilter-deobfuscation.md",
@@ -2861,38 +2893,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-state-file-restructure.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — State-file restructure: per-claim active-work + per-sector current-state",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-starboard-pr2-config-polish.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Starboard PR 2: self-star exclusion + ignore-channels + config panel",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-site-data-contract-guard.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — botsite↔design-system data-contract guard (de-risking the React-SPA cutover)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-server-treasury.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Server treasury (collective coin pool)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4630,6 +4630,50 @@
           "parent": "btd6ref",
           "aliases": [],
           "brief": "Look up a hero.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "income",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6ref",
+          "aliases": [],
+          "brief": "Verified cash per round — single round or an inclusive range.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "income",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6ref",
+          "aliases": [],
+          "brief": "Verified cash earned per round (single round or a range).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "rbe",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6ref",
+          "aliases": [],
+          "brief": "RBE per round (base + freeplay-scaled) — single round or a range.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "rbe",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6ref",
+          "aliases": [],
+          "brief": "RBE per round — base + freeplay-scaled (single round or a range).",
           "classification": "",
           "has_panel": false,
           "button_backed": false

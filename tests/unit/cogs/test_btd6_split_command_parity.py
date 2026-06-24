@@ -21,7 +21,7 @@ from cogs.btd6_reference_cog import BTD6ReferenceCog
 from cogs.btd6_strategy_cog import BTD6StrategyCog
 
 _EXPECTED: dict[type[commands.Cog], set[str]] = {
-    BTD6ReferenceCog: {"tower", "hero", "round", "relic", "ct"},
+    BTD6ReferenceCog: {"tower", "hero", "round", "relic", "ct", "income", "rbe"},
     BTD6EventsCog: {
         "live",
         "event",
