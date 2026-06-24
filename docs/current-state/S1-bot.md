@@ -45,14 +45,17 @@
   broadcast table. [design](../planning/casino-poker-design-2026-06-22.md).
 
 **▶ Next startable (one of):**
-- **Essential Setup spine (`!quicksetup`) — PR 1 COMPLETE + polished (owner-directed, 2026-06-24).** A
-  new plain-language, button/dropdown/multi-select-only quick-setup flow (6 steps: greet · moderators ·
-  block spam · choose a log channel · reward active members · help desk + summary), separate from and
-  additive to the legacy `!setup` wizard. Each step applies immediately (direct lane) through an audited
-  service; typing is optional everywhere (Q-0205). Shipped #1425/#1427/#1429/#1432/#1434 + polish #1435;
-  decisions Q-0202/Q-0203/Q-0204/Q-0205. **▶ Next:** step 0 (server-type starter preset — needs a
-  direct-apply preset path, verify source first) · PR 2 (extras menu + "Check my setup") · PR 3 (retire
-  dead/legacy sections + rework the Advanced editor). Tracker:
+- **Essential Setup spine (`!quicksetup`) — PR 1 COMPLETE + polished, incl. step 0 (owner-directed,
+  2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow (**7 steps**:
+  what kind of server is this · greet · moderators · block spam · choose a log channel · reward active
+  members · help desk + summary), separate from and additive to the legacy `!setup` wizard. Each step
+  applies immediately (direct lane) through an audited service; typing is optional everywhere (Q-0205).
+  Shipped #1425/#1427/#1429/#1432/#1434 + polish #1435; decisions Q-0202/Q-0203/Q-0204/Q-0205. **Step 0
+  (server-type starter preset) shipped 2026-06-24 (#1437)** — `ServerTypeStep`, the new first step; five starter
+  sets applied as pure direct-apply settings bundles (`_SERVER_TYPES`, automod/moderation/XP-rate),
+  instant + reversible, no resource creation (the draft-only `SERVER_PRESETS` deliberately not reused).
+  **▶ Next:** PR 2 (extras menu + "Check my setup") · PR 3 (retire dead/legacy sections + rework the
+  Advanced editor). Tracker:
   [`planning/setup-wizard-restructure-plan-2026-06-24.md`](../planning/setup-wizard-restructure-plan-2026-06-24.md).
 - **✅ Consolidation / discoverability audit — COMPLETE (owner-directed, 2026-06-23).** All five goals
   shipped and CI-guarded where possible. Staging brief + per-cog rubric:
