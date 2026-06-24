@@ -146,3 +146,11 @@ dump, mirroring the validation discipline):
   recomputed with **every MOAB-class layer × `v(r)`** *and* **ceramics →
   superceramics** (RBE 68, vs base 104), which reproduces the authoritative
   **BAD @ r100 = 67,200 RBE** exactly (vs 55,760 base). It is *not* `base × v(r)`.
+- **Paragon Elite-Boss damage ×2** → `paragon_degrees.ELITE_BOSS_DAMAGE_MULTIPLIER`.
+  Paragons deal **double** their boss damage to **Elite** Bosses — a *global*,
+  paragon-category-wide constant (NOT per-paragon: verified no `Elite` damage tag on
+  the Dart/Ice paragon models, and no elite field in `paragonDegreeData.json`), flat
+  across **all degrees** (Fandom *Extra Damage to Boss*: "applies … even at degree
+  1"). So `elite_boss_multiplier(d) = boss_multiplier(d) × 2`. Same class as the
+  freeplay/cash constants — the dump stores the base boss bonus, the engine doubles
+  it for elite.
