@@ -458,6 +458,92 @@ async def remove_participant(
 # --------------------------------------------------------------------------- #
 
 
+_LOG_CHANNEL_NAME = "ticket-transcripts"
+
+
+@dataclass
+class TicketChannelResult:
+    """Outcome of an auto-created ticket channel."""
+
+    success: bool
+    message: str = ""
+    channel_id: int | None = None
+
+
+async def create_log_channel(
+    guild: discord.Guild,
+    actor_id: int,
+    *,
+    staff_role_id: int | None,
+) -> TicketChannelResult:
+    """Auto-create a private ``#ticket-transcripts`` channel + set it as the log.
+
+    Lets an operator wire up transcript logging with one button instead of
+    pre-creating a channel and selecting it (the "no typing, no wrong names"
+    setup goal). Created through the audited ``ChannelLifecycleService`` seam
+    (the same one the ticket-open path uses — never a raw ``guild.create_*``),
+    then locked down staff-only: hidden from ``@everyone``, visible to the bot
+    and the staff role. Best-effort — a creation failure (e.g. missing **Manage
+    Channels**) becomes a clear operator message, never a crash.
+    """
+    result = await ChannelLifecycleService().create_channels(
+        guild,
+        [_LOG_CHANNEL_NAME],
+        actor_id,
+        kind="text",
+        reason="Ticket transcript log (auto-created via setup)",
+    )
+    if result.outcome != lc.SUCCESS or not result.applied:
+        logger.warning(
+            "ticket setup: log channel create failed for guild=%s: %s",
+            guild.id,
+            result.first_error,
+        )
+        return TicketChannelResult(
+            False,
+            "I couldn't create the log channel — I may be missing the "
+            "**Manage Channels** permission.",
+        )
+
+    channel_id = result.applied[0].target_id
+    channel = guild.get_channel(channel_id)
+    if isinstance(channel, discord.TextChannel):
+        overwrites: dict[Any, discord.PermissionOverwrite] = {
+            guild.default_role: discord.PermissionOverwrite(view_channel=False),
+        }
+        me = guild.me
+        if me is not None:
+            overwrites[me] = discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=True,
+                embed_links=True,
+                attach_files=True,
+                read_message_history=True,
+            )
+        if staff_role_id is not None:
+            staff_role = guild_resources.resolve_role(guild, role_id=staff_role_id)
+            if staff_role is not None:
+                overwrites[staff_role] = discord.PermissionOverwrite(
+                    view_channel=True,
+                    read_message_history=True,
+                )
+        try:
+            await channel.edit(overwrites=overwrites, reason="Ticket log privacy")
+        except Exception:  # pragma: no cover — defensive; channel still usable
+            logger.exception(
+                "ticket setup: log channel overwrite apply failed for %s",
+                channel_id,
+            )
+
+    await update_config(guild.id, actor_id, log_channel_id=channel_id)
+    mention = channel.mention if isinstance(channel, discord.TextChannel) else "the log"
+    return TicketChannelResult(
+        True,
+        f"✅ Created {mention} for ticket transcripts.",
+        channel_id=channel_id,
+    )
+
+
 async def update_config(
     guild_id: int,
     actor_id: int,
