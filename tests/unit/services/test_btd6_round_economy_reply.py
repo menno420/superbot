@@ -119,3 +119,53 @@ def test_pure_xp_question_routes_to_the_xp_builder_not_economy():
         )
         is None
     )
+
+
+# --- range totals (regression: "rbe of r20 to r80" used to return only Round 20) ---
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "what's the rbe of r20 to r80",
+        "what's the total rbe of r20 to r80",
+        "rbe of rounds 20-80",
+    ],
+)
+def test_range_query_returns_total_not_single_round(phrase):
+    reply = btd6_context_service.deterministic_round_economy_reply(phrase)
+    assert reply is not None
+    assert "Rounds 20" in reply and "80" in reply
+    assert "Total RBE" in reply
+    # The bug was returning the single first-round card instead of the range.
+    assert "Round 20 — RBE, cash & XP" not in reply
+
+
+def test_range_total_reproduces_the_proven_abr_anchor():
+    # The 06/18 known-good answer: ABR rounds 8-66 = 168,518 total RBE, heaviest
+    # R65/R63/R62. Pin it so the deterministic range reply can't drift from it.
+    reply = btd6_context_service.deterministic_round_economy_reply(
+        "how much rbe is in rounds 8 to 66 in abr",
+    )
+    assert reply is not None
+    assert "ABR" in reply
+    assert "168,518" in reply
+    assert "R65" in reply and "R63" in reply
+
+
+def test_single_round_economy_still_works():
+    reply = btd6_context_service.deterministic_round_economy_reply(
+        "what's the rbe of round 20",
+    )
+    assert reply is not None
+    assert "Round 20 — RBE, cash & XP" in reply
+
+
+def test_two_ranges_defer_to_the_comparison_floor():
+    # ≥2 ranges is the §7.5 comparison floor's job — the economy floor must defer.
+    assert (
+        btd6_context_service.deterministic_round_economy_reply(
+            "rbe of rounds 1-30 or rounds 30-60",
+        )
+        is None
+    )
