@@ -174,37 +174,62 @@ def _docstring_first_line(method: ast.AST) -> str:
     return doc.strip().splitlines()[0] if doc else ""
 
 
-def _find_groups(class_node: ast.ClassDef) -> dict[str, tuple[str, str]]:
-    """Map a group *method* name -> (command name, invocation type)."""
+def _find_groups(body: list[ast.stmt]) -> dict[str, tuple[str, str]]:
+    """Map a group *method/function* name -> (command name, invocation type).
+
+    Works on a class body OR a module body (the unified ``/btd6`` tree declares
+    its groups at module level). A fixpoint pass resolves *nested* groups: a
+    ``@<parent>.group(...)`` decorated function inherits the parent group's type,
+    but only once the parent itself is known — so we re-scan until no new group is
+    discovered (e.g. ``btd6`` -> ``strat`` -> its subcommands).
+    """
     groups: dict[str, tuple[str, str]] = {}
-    for item in class_node.body:
-        if not isinstance(item, ast.FunctionDef | ast.AsyncFunctionDef):
-            continue
-        for dec in item.decorator_list:
-            path = _decorator_path(dec)
-            spec = _COMMAND_DECORATORS.get(path)
-            if spec and spec[1]:  # is a group
+    changed = True
+    while changed:
+        changed = False
+        for item in body:
+            if not isinstance(item, ast.FunctionDef | ast.AsyncFunctionDef):
+                continue
+            if item.name in groups:
+                continue
+            for dec in item.decorator_list:
+                path = _decorator_path(dec)
                 call = dec if isinstance(dec, ast.Call) else None
-                name = _kwarg(call, "name")
-                gname = name if isinstance(name, str) else item.name
-                groups[item.name] = (gname, spec[0])
+                spec = _COMMAND_DECORATORS.get(path)
+                if spec and spec[1]:  # a top-level group decorator
+                    name = _kwarg(call, "name")
+                    gname = name if isinstance(name, str) else item.name
+                    groups[item.name] = (gname, spec[0])
+                    changed = True
+                    break
+                parts = path.split(".")
+                if len(parts) == 2 and parts[0] in groups and parts[1] == "group":
+                    # nested subcommand-group — inherits the parent group's type.
+                    _parent, ptype = groups[parts[0]]
+                    name = _kwarg(call, "name")
+                    gname = name if isinstance(name, str) else item.name
+                    groups[item.name] = (gname, ptype)
+                    changed = True
+                    break
     return groups
 
 
 def _find_attr_groups(
-    class_node: ast.ClassDef,
-) -> dict[str, tuple[str, str, str]]:
-    """Map an attribute-assigned group's *variable* name -> (command name, type, brief).
+    body: list[ast.stmt],
+) -> dict[str, tuple[str, str, str, str | None]]:
+    """Map an attribute-assigned group var -> (command name, type, brief, parent var).
 
     Catches the ``my_group = app_commands.Group(name="…", description="…")`` form
-    (and ``HybridGroup``) that ``_find_groups`` (decorated *methods* only) misses.
-    The variable name is the key because subcommands reference it as
-    ``@my_group.command`` -> the same ``parts[0]`` lookup ``_scan_method`` already
-    does for method groups. The command name is the ``name=`` kwarg when set, else
-    the variable name; the brief is the ``description=`` kwarg.
+    (and ``HybridGroup``) that ``_find_groups`` (decorated *methods* only) misses —
+    in a class body OR a module body (the unified ``/btd6`` slash tree assigns its
+    groups, including nested ``parent=…`` subgroups, at module level). The variable
+    name is the key because subcommands reference it as ``@my_group.command`` ->
+    the same ``parts[0]`` lookup ``_scan_method`` already does. ``parent var`` is
+    the variable name of the ``parent=`` group when set (else None), so a nested
+    slash subgroup is recorded under its parent rather than as a second top-level.
     """
-    out: dict[str, tuple[str, str, str]] = {}
-    for item in class_node.body:
+    out: dict[str, tuple[str, str, str, str | None]] = {}
+    for item in body:
         targets: list[str] = []
         value: ast.expr | None = None
         if isinstance(item, ast.Assign):
@@ -223,9 +248,13 @@ def _find_attr_groups(
         name = _kwarg(value, "name")
         desc = _kwarg(value, "description")
         brief = desc if isinstance(desc, str) else ""
+        parent_var: str | None = None
+        for kw in value.keywords:
+            if kw.arg == "parent" and isinstance(kw.value, ast.Name):
+                parent_var = kw.value.id
         for var in targets:
             cmd_name = name if isinstance(name, str) else var
-            out[var] = (cmd_name, kind, brief)
+            out[var] = (cmd_name, kind, brief, parent_var)
     return out
 
 
@@ -281,23 +310,44 @@ def _scan_method(
     }
 
 
-def _scan_class(class_node: ast.ClassDef, source: str, rel_path: str) -> dict | None:
-    groups = _find_groups(class_node)
-    attr_groups = _find_attr_groups(class_node)
+def _scan_body(
+    body: list[ast.stmt],
+    source: str,
+    *,
+    cog_name: str,
+    file: str,
+    subsystem: str,
+    is_cog: bool,
+) -> dict | None:
+    """Scan a class OR module body for its command surface (shared by both).
+
+    The unified ``/btd6`` tree declares its groups + subcommands at module level,
+    so the same group resolution that handled cog class attributes now serves both.
+    """
+    groups = _find_groups(body)
+    attr_groups = _find_attr_groups(body)
     # Attribute-assigned groups feed subcommand resolution the same way method
     # groups do (``@<var>.command`` -> parent lookup on ``parts[0]``).
-    groups.update({var: (name, kind) for var, (name, kind, _) in attr_groups.items()})
+    groups.update(
+        {var: (name, kind) for var, (name, kind, _b, _p) in attr_groups.items()},
+    )
     commands: list[dict] = []
     # Synthesize a record for each attribute-assigned group so it is counted like a
     # decorated-method group (which _scan_method already emits). The bot's live tree
-    # counts the group itself plus each subcommand (BUG-0023 reconciliation).
-    for _var, (name, kind, brief) in attr_groups.items():
+    # counts the group itself plus each subcommand (BUG-0023 reconciliation); a
+    # nested ``parent=…`` slash group is parented to its parent group's name.
+    for _var, (name, kind, brief, parent_var) in attr_groups.items():
+        parent_name: str | None = None
+        if parent_var is not None and parent_var in attr_groups:
+            parent_name = attr_groups[parent_var][0]
+        elif parent_var is not None and parent_var in groups:
+            parent_name = groups[parent_var][0]
         commands.append(
             {
                 "name": name,
                 "type": kind,
                 "is_group": True,
-                "parent": None,
+                "parent": parent_name,
                 "aliases": [],
                 "brief": _truncate(brief, 160),
                 "classification": "",
@@ -305,7 +355,7 @@ def _scan_class(class_node: ast.ClassDef, source: str, rel_path: str) -> dict | 
                 "button_backed": False,
             },
         )
-    for item in class_node.body:
+    for item in body:
         cmd = _scan_method(item, source, groups)
         if cmd is not None:
             commands.append(cmd)
@@ -313,31 +363,53 @@ def _scan_class(class_node: ast.ClassDef, source: str, rel_path: str) -> dict | 
         return None
     commands.sort(key=lambda c: (c["parent"] or "", c["name"]))
     return {
-        "cog": class_node.name,
-        "file": rel_path,
-        "subsystem": _cog_to_subsystem(class_node.name),
-        "is_cog": _is_cog(class_node),
+        "cog": cog_name,
+        "file": file,
+        "subsystem": subsystem,
+        "is_cog": is_cog,
         "commands": commands,
     }
+
+
+def _scan_class(class_node: ast.ClassDef, source: str, rel_path: str) -> dict | None:
+    return _scan_body(
+        class_node.body,
+        source,
+        cog_name=class_node.name,
+        file=rel_path,
+        subsystem=_cog_to_subsystem(class_node.name),
+        is_cog=_is_cog(class_node),
+    )
+
+
+def _module_subsystem(rel_path: str) -> str:
+    """Subsystem key for a module-level command tree, by package path.
+
+    The unified ``/btd6`` tree lives in ``disbot/cogs/btd6/_unified.py``; anything
+    under a ``cogs/<key>/`` *package* belongs to that subsystem so the dashboard
+    joins it to the right card rather than rendering a generic ``(_unified.py)``.
+    A top-level ``cogs/<file>.py`` module (not a package) names no subsystem.
+    """
+    norm = rel_path.replace("\\", "/")
+    marker = "disbot/cogs/"
+    if marker in norm:
+        rest = norm.split(marker, 1)[1]
+        head = rest.split("/", 1)[0]
+        if "/" in rest and not head.endswith(".py"):
+            return head
+    return ""
 
 
 def _scan_module(tree: ast.Module, source: str, rel_path: str) -> dict | None:
-    """Scan module-level functions (e.g. ``bot1.py``'s ``@bot.command``)."""
-    commands: list[dict] = []
-    for item in tree.body:
-        cmd = _scan_method(item, source, {})
-        if cmd is not None:
-            commands.append(cmd)
-    if not commands:
-        return None
-    commands.sort(key=lambda c: (c["parent"] or "", c["name"]))
-    return {
-        "cog": f"({Path(rel_path).name})",
-        "file": rel_path,
-        "subsystem": "",
-        "is_cog": False,
-        "commands": commands,
-    }
+    """Scan module-level commands (e.g. ``bot1.py``; the unified ``/btd6`` tree)."""
+    return _scan_body(
+        tree.body,
+        source,
+        cog_name=f"({Path(rel_path).name})",
+        file=rel_path,
+        subsystem=_module_subsystem(rel_path),
+        is_cog=False,
+    )
 
 
 def scan_commands(repo_root: Path = REPO_ROOT) -> list[dict]:

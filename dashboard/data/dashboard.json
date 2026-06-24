@@ -1,21 +1,21 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T09:44:32Z",
+    "generated_at": "2026-06-24T11:05:38Z",
     "build": {
-      "commit": "787c3b83",
-      "subject": "docs: twenty-fourth Q-0107 reconciliation pass (band-#1410) (#1412)",
-      "committed_at": "2026-06-24T09:44:32Z"
+      "commit": "beb1dd4",
+      "subject": "btd6: unify five command groups under one /btd6 (Flattest layout)",
+      "committed_at": "2026-06-24T11:05:38Z"
     },
     "counts": {
       "functions": 42,
-      "ideas": 139,
+      "ideas": 140,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
       "cogs": 52,
-      "commands": 405,
+      "commands": 436,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -1131,6 +1131,16 @@
     }
   ],
   "ideas": [
+    {
+      "file": "bot-migration-assistant-2026-06-24.md",
+      "title": "Bot-migration assistant — detect → map → replicate → retire other bots (2026-06-24)",
+      "status": "ideas",
+      "date": "2026-06-24",
+      "summary": "This is a **bot-migration / consolidation assistant**: the operator runs one flow, SuperBot inventories",
+      "subsystems": [
+        "setup"
+      ]
+    },
     {
       "file": "help-nav-attachment-seam-2026-06-24.md",
       "title": "Help-nav attachment seam — let hub panels carry their image card through Help",
@@ -2471,6 +2481,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-24-ticket-setup-discoverability.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Tickets: setup-wizard discoverability",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-ticket-ai-confirm.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Ticket AI open: one-click confirm (follow-up to #1405)",
@@ -2484,6 +2502,22 @@
       "title": "2026-06-24 — Support-ticket subsystem (command + AI natural language)",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-setup-wizard-restructure-plan.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · setup-wizard restructure plan",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-setup-copy-jargon-guard.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · setup-copy jargon guard (PR 1a)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2501,6 +2535,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-readiness-grades-tickets.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Setup readiness scan grades tickets",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-24-rank-card-image.md",
@@ -2551,6 +2593,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-24-btd6-unified-command-tree.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — BTD6: unify five command groups under one `/btd6`",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-btd6-round-range-command.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Fix duplicate slash-command sync + /btd6ref round range",
@@ -2580,6 +2630,22 @@
       "title": "2026-06-24 — BTD6 AI floor coverage: range RBE + paragon elite-boss multiplier",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-bot-migration-assistant-plan.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · bot-migration-assistant plan",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-bot-migration-assistant-idea.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · capture owner idea: bot-migration assistant",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2885,62 +2951,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-card-render-golden.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Render-structure (\"golden\") tests for the card engine",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-btd6-strategy-discoverability.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Discoverability U4: surface `!btd6strat` (BTD6 Strategy button)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-btd6-runtime-extraction-idea.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Capture: BTD6 runtime mechanics straight from the game",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-btd6-freeplay-curve-and-rbe.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — BTD6 freeplay curve fix + ground-truth round-scaled RBE",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-btd6-cash-empirical-validation.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — BTD6 cash model: empirical validation (capture)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-btd6-bloon-health-round-scaling.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — BTD6 late-game/freeplay bloon health scaling (round-scaled HP)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-audit-kickoff-prompt.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Append the audit kickoff prompt to the discoverability brief",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3006,7 +3016,7 @@
       "usages": [
         {
           "file": "disbot/services/diagnostic_embeds.py",
-          "line": 1265,
+          "line": 1269,
           "layer": "services",
           "has_default": false
         },
@@ -3656,6 +3666,839 @@
   ],
   "cogs": [
     {
+      "cog": "(_unified.py)",
+      "file": "disbot/cogs/btd6/_unified.py",
+      "subsystem": "btd6",
+      "is_cog": false,
+      "commands": [
+        {
+          "name": "btd6",
+          "type": "slash",
+          "is_group": true,
+          "parent": null,
+          "aliases": [],
+          "brief": "BTD6 Assistant — lookups, strategy, live events, and ops.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "btd6",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [],
+          "brief": "BTD6 Assistant — open the panel, or run a subcommand (income/round/…).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "ask",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Ask a BTD6 question.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ask",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Deterministic Q&A (with optional AI augmentation).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ct",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Browse active Contested Territory events and relic tiles.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ct",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Browse active Contested Territory events and their relic tiles.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ctteam",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "View or set this server's CT team (paste the bracket group id / URL).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "diagnostics",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "BTD6 dataset diagnostics.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "diagnostics",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "events",
+          "type": "slash",
+          "is_group": true,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "BTD6 live events, leaderboards, and data sources.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "events",
+          "type": "prefix",
+          "is_group": true,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "BTD6 live events, leaderboards, and data-source diagnostics.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "hero",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Look up a hero.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "hero",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "income",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Verified cash earned per round (single round or a range).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "income",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Verified cash per round — single round or an inclusive range.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ops",
+          "type": "slash",
+          "is_group": true,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "BTD6 ingestion operations (staff readable; toggles are admin).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ops",
+          "type": "prefix",
+          "is_group": true,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "BTD6 ingestion operations (staff readable; toggles are admin).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "rbe",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "RBE per round — base + freeplay-scaled (single round or a range).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "rbe",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "RBE per round (base + freeplay-scaled) — single round or a range.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "relic",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Look up a Contested Territory relic's effect and tile.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "relic",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "round",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Look up a round, or a values table across a range of rounds.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "round",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "A single round's detail, or a values table across a round range.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "status",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "BTD6 assistant status.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "status",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "strat",
+          "type": "slash",
+          "is_group": true,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "BTD6 strategy memory — browse, submit, review.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "strat",
+          "type": "prefix",
+          "is_group": true,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "BTD6 strategy memory (browse / submit / review).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "test-intent",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Show what the resolver extracted from a message.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "test-intent",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "tower",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Look up a tower.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "tower",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "event",
+          "type": "slash",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Show one specific BTD6 event with tower restrictions.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "event",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Show one specific BTD6 event with its tower restrictions.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "grounding",
+          "type": "slash",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Grounding facts that fed an AI response.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "grounding",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Show the grounding facts that fed an AI response.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "latest-data",
+          "type": "slash",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Newest fact envelope per entity_kind.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "latest-data",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Show newest fact envelope per entity_kind.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "leaderboard",
+          "type": "slash",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Show race / boss leaderboard.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "leaderboard",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Top-N race or boss leaderboard. No event_id = newest active.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "live",
+          "type": "slash",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Show recent live events (race/boss/ct/odyssey/event).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "live",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Show recent live events for ``kind`` (race / boss / ct / odyssey / event).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "refresh-source",
+          "type": "slash",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Manually refresh one Ninja Kiwi source (staff-only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "refresh-source",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Manually refresh one Ninja Kiwi source (staff-only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "source-health",
+          "type": "slash",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "BTD6 source registry freshness overview.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "source-health",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "Show source registry freshness.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "sources",
+          "type": "slash",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "List BTD6 source registry rows.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "sources",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "events",
+          "aliases": [],
+          "brief": "List BTD6 source registry rows.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "announcechannel",
+          "type": "slash",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "Set/clear the BTD6 new-version announcement channel (admin).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "announcechannel",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "Set/clear the BTD6 new-version announcement channel (administrator).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "readiness",
+          "type": "slash",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "Show BTD6 ingestion readiness.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "readiness",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "runs",
+          "type": "slash",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "Show recent BTD6 ingestion runs.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "runs",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "seed-data",
+          "type": "slash",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "Seed the Postgres data store from the bundled files (admin).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "seed-data",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "Seed the Postgres data store from the bundled files (administrator).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "source_disable",
+          "type": "slash",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "Disable a BTD6 ingestion source (administrator only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "source_disable",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "source_enable",
+          "type": "slash",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "Enable a BTD6 ingestion source (administrator only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "source_enable",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ops",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "browse",
+          "type": "slash",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Browse published BTD6 strategies.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "browse",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Browse published BTD6 strategies.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "mine",
+          "type": "slash",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "List my own strategy submissions in this guild.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "mine",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "List my own strategy submissions in this guild.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "pending",
+          "type": "slash",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "List pending strategy submissions (staff-only).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "pending",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "List pending strategy submissions with review buttons (staff-only).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "strategies",
+          "type": "slash",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "List strategy memory entries available in this guild.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "strategies",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "List strategy memory entries available in this guild.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "strategy",
+          "type": "slash",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Show one strategy in detail.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "strategy",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Show one strategy in detail.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "strategy-audit",
+          "type": "slash",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Per-strategy audit log.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "strategy-audit",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Show the per-strategy audit log.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "submit",
+          "type": "slash",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Submit a BTD6 strategy.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "submit",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Open a strategy submission modal (slash-only on Discord).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "why-no-response",
+          "type": "slash",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Recent BTD6 denials/skips for this guild.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "why-no-response",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "strat",
+          "aliases": [],
+          "brief": "Show the most recent BTD6 denials / skips for this guild.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "(bot1.py)",
       "file": "disbot/bot1.py",
       "subsystem": "",
@@ -4098,28 +4941,6 @@
       "is_cog": true,
       "commands": [
         {
-          "name": "btd6",
-          "type": "slash",
-          "is_group": true,
-          "parent": null,
-          "aliases": [],
-          "brief": "BTD6 Assistant — panel, status, ask, diagnostics.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "btd6",
-          "type": "prefix",
-          "is_group": true,
-          "parent": null,
-          "aliases": [],
-          "brief": "Open the BTD6 panel.",
-          "classification": "",
-          "has_panel": true,
-          "button_backed": true
-        },
-        {
           "name": "btd6menu",
           "type": "prefix",
           "is_group": false,
@@ -4140,105 +4961,6 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
-        },
-        {
-          "name": "ask",
-          "type": "prefix",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "Deterministic Q&A. Module 5 adds optional AI augmentation.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "ask",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "Ask a BTD6 question.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "ctteam",
-          "type": "prefix",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "View or set this server's CT team (paste the bracket group id / URL).",
-          "classification": "",
-          "has_panel": true,
-          "button_backed": true
-        },
-        {
-          "name": "diagnostics",
-          "type": "prefix",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "diagnostics",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "BTD6 dataset diagnostics.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "status",
-          "type": "prefix",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "status",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "BTD6 assistant status.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "test-intent",
-          "type": "prefix",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "test-intent",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6",
-          "aliases": [],
-          "brief": "Show what the resolver extracted from a message.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
         }
       ]
     },
@@ -4250,23 +4972,12 @@
       "commands": [
         {
           "name": "btd6events",
-          "type": "slash",
-          "is_group": true,
-          "parent": null,
-          "aliases": [],
-          "brief": "BTD6 live events, leaderboards, and data sources.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "btd6events",
           "type": "prefix",
           "is_group": true,
           "parent": null,
           "aliases": [],
-          "brief": "BTD6 live events, leaderboards, and data-source diagnostics.",
-          "classification": "",
+          "brief": "BTD6 live events — hidden alias of `!btd6 events`.",
+          "classification": "legacy_duplicate",
           "has_panel": false,
           "button_backed": false
         },
@@ -4277,17 +4988,6 @@
           "parent": "btd6events",
           "aliases": [],
           "brief": "Show one specific BTD6 event with its tower restrictions.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "event",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6events",
-          "aliases": [],
-          "brief": "Show one specific BTD6 event with tower restrictions.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4304,34 +5004,12 @@
           "button_backed": false
         },
         {
-          "name": "grounding",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6events",
-          "aliases": [],
-          "brief": "Grounding facts that fed an AI response.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "latest-data",
           "type": "prefix",
           "is_group": false,
           "parent": "btd6events",
           "aliases": [],
           "brief": "Show newest fact envelope per entity_kind (PR-D).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "latest-data",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6events",
-          "aliases": [],
-          "brief": "Newest fact envelope per entity_kind.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4348,17 +5026,6 @@
           "button_backed": false
         },
         {
-          "name": "leaderboard",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6events",
-          "aliases": [],
-          "brief": "Show race / boss leaderboard.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "live",
           "type": "prefix",
           "is_group": false,
@@ -4370,30 +5037,8 @@
           "button_backed": false
         },
         {
-          "name": "live",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6events",
-          "aliases": [],
-          "brief": "Show recent live events (race/boss/ct/odyssey/event).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "refresh-source",
           "type": "prefix",
-          "is_group": false,
-          "parent": "btd6events",
-          "aliases": [],
-          "brief": "Manually refresh one Ninja Kiwi source (staff-only).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "refresh-source",
-          "type": "slash",
           "is_group": false,
           "parent": "btd6events",
           "aliases": [],
@@ -4414,30 +5059,8 @@
           "button_backed": false
         },
         {
-          "name": "source-health",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6events",
-          "aliases": [],
-          "brief": "BTD6 source registry freshness overview.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "sources",
           "type": "prefix",
-          "is_group": false,
-          "parent": "btd6events",
-          "aliases": [],
-          "brief": "List BTD6 source registry rows.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "sources",
-          "type": "slash",
           "is_group": false,
           "parent": "btd6events",
           "aliases": [],
@@ -4456,23 +5079,12 @@
       "commands": [
         {
           "name": "btd6ops",
-          "type": "slash",
-          "is_group": true,
-          "parent": null,
-          "aliases": [],
-          "brief": "BTD6 ingestion operations (staff readable; toggles are admin).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "btd6ops",
           "type": "prefix",
           "is_group": true,
           "parent": null,
           "aliases": [],
-          "brief": "BTD6 ingestion operations (staff readable; toggles are admin).",
-          "classification": "",
+          "brief": "BTD6 ingestion operations — hidden alias of `!btd6 ops`.",
+          "classification": "legacy_duplicate",
           "has_panel": false,
           "button_backed": false
         },
@@ -4488,17 +5100,6 @@
           "button_backed": false
         },
         {
-          "name": "announcechannel",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ops",
-          "aliases": [],
-          "brief": "Set/clear the BTD6 new-version announcement channel (admin).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "readiness",
           "type": "prefix",
           "is_group": false,
@@ -4510,34 +5111,12 @@
           "button_backed": false
         },
         {
-          "name": "readiness",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ops",
-          "aliases": [],
-          "brief": "Show BTD6 ingestion readiness.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "runs",
           "type": "prefix",
           "is_group": false,
           "parent": "btd6ops",
           "aliases": [],
           "brief": "",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "runs",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ops",
-          "aliases": [],
-          "brief": "Show recent BTD6 ingestion runs.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4554,17 +5133,6 @@
           "button_backed": false
         },
         {
-          "name": "seed-data",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ops",
-          "aliases": [],
-          "brief": "Seed the Postgres data store from the bundled files (admin).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "source_disable",
           "type": "prefix",
           "is_group": false,
@@ -4576,34 +5144,12 @@
           "button_backed": false
         },
         {
-          "name": "source_disable",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ops",
-          "aliases": [],
-          "brief": "Disable a BTD6 ingestion source (administrator only).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "source_enable",
           "type": "prefix",
           "is_group": false,
           "parent": "btd6ops",
           "aliases": [],
           "brief": "",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "source_enable",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ops",
-          "aliases": [],
-          "brief": "Enable a BTD6 ingestion source (administrator only).",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4618,23 +5164,12 @@
       "commands": [
         {
           "name": "btd6ref",
-          "type": "slash",
-          "is_group": true,
-          "parent": null,
-          "aliases": [],
-          "brief": "BTD6 reference — tower/hero/round/relic/CT lookups.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "btd6ref",
           "type": "prefix",
           "is_group": true,
           "parent": null,
           "aliases": [],
-          "brief": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
-          "classification": "",
+          "brief": "BTD6 reference lookups — hidden alias of `!btd6` (towers/heroes/rounds/…).",
+          "classification": "legacy_duplicate",
           "has_panel": false,
           "button_backed": false
         },
@@ -4650,34 +5185,12 @@
           "button_backed": false
         },
         {
-          "name": "ct",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ref",
-          "aliases": [],
-          "brief": "Browse active Contested Territory events and relic tiles.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "hero",
           "type": "prefix",
           "is_group": false,
           "parent": "btd6ref",
           "aliases": [],
           "brief": "",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "hero",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ref",
-          "aliases": [],
-          "brief": "Look up a hero.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4694,34 +5207,12 @@
           "button_backed": false
         },
         {
-          "name": "income",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ref",
-          "aliases": [],
-          "brief": "Verified cash earned per round (single round or a range).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "rbe",
           "type": "prefix",
           "is_group": false,
           "parent": "btd6ref",
           "aliases": [],
           "brief": "RBE per round (base + freeplay-scaled) — single round or a range.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "rbe",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ref",
-          "aliases": [],
-          "brief": "RBE per round — base + freeplay-scaled (single round or a range).",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4738,34 +5229,12 @@
           "button_backed": false
         },
         {
-          "name": "relic",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ref",
-          "aliases": [],
-          "brief": "Look up a Contested Territory relic's effect and tile.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "round",
           "type": "prefix",
           "is_group": false,
           "parent": "btd6ref",
           "aliases": [],
           "brief": "A single round's detail, or a values table across a round range.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "round",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ref",
-          "aliases": [],
-          "brief": "Look up a round, or a values table across a range of rounds.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4780,17 +5249,6 @@
           "classification": "",
           "has_panel": false,
           "button_backed": false
-        },
-        {
-          "name": "tower",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6ref",
-          "aliases": [],
-          "brief": "Look up a tower.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
         }
       ]
     },
@@ -4802,23 +5260,12 @@
       "commands": [
         {
           "name": "btd6strat",
-          "type": "slash",
-          "is_group": true,
-          "parent": null,
-          "aliases": [],
-          "brief": "BTD6 strategy memory — browse, submit, review.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "btd6strat",
           "type": "prefix",
           "is_group": true,
           "parent": null,
           "aliases": [],
-          "brief": "BTD6 strategy memory (browse / submit / review).",
-          "classification": "",
+          "brief": "BTD6 strategy memory — hidden alias of `!btd6 strat`.",
+          "classification": "legacy_duplicate",
           "has_panel": false,
           "button_backed": false
         },
@@ -4829,17 +5276,6 @@
           "parent": "btd6strat",
           "aliases": [],
           "brief": "Browse published BTD6 strategies (PR-F).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "browse",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6strat",
-          "aliases": [],
-          "brief": "Browse published BTD6 strategies.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4856,17 +5292,6 @@
           "button_backed": false
         },
         {
-          "name": "mine",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6strat",
-          "aliases": [],
-          "brief": "List my own strategy submissions in this guild.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "pending",
           "type": "prefix",
           "is_group": false,
@@ -4878,30 +5303,8 @@
           "button_backed": true
         },
         {
-          "name": "pending",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6strat",
-          "aliases": [],
-          "brief": "List pending strategy submissions (staff-only).",
-          "classification": "",
-          "has_panel": true,
-          "button_backed": true
-        },
-        {
           "name": "strategies",
           "type": "prefix",
-          "is_group": false,
-          "parent": "btd6strat",
-          "aliases": [],
-          "brief": "List strategy memory entries available in this guild.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "strategies",
-          "type": "slash",
           "is_group": false,
           "parent": "btd6strat",
           "aliases": [],
@@ -4922,34 +5325,12 @@
           "button_backed": false
         },
         {
-          "name": "strategy",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6strat",
-          "aliases": [],
-          "brief": "Show one strategy in detail.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "strategy-audit",
           "type": "prefix",
           "is_group": false,
           "parent": "btd6strat",
           "aliases": [],
           "brief": "Show the per-strategy audit log (PR-F).",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "strategy-audit",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6strat",
-          "aliases": [],
-          "brief": "Per-strategy audit log.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4966,34 +5347,12 @@
           "button_backed": false
         },
         {
-          "name": "submit",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6strat",
-          "aliases": [],
-          "brief": "Submit a BTD6 strategy.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "why-no-response",
           "type": "prefix",
           "is_group": false,
           "parent": "btd6strat",
           "aliases": [],
           "brief": "Show the most recent BTD6 denials / skips for this guild.",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "why-no-response",
-          "type": "slash",
-          "is_group": false,
-          "parent": "btd6strat",
-          "aliases": [],
-          "brief": "Recent BTD6 denials/skips for this guild.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

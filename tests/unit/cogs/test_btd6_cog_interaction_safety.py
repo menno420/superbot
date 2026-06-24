@@ -16,27 +16,27 @@ import pytest
 
 _DISBOT_COGS = Path(__file__).resolve().parents[3] / "disbot" / "cogs"
 
-# The BTD6 slash surface is split across the mother cog + sibling cogs; a
-# handler may live in any of them, so the AST scan sweeps all four.
+# The BTD6 slash surface is now the unified module-level tree
+# (``cogs.btd6._unified``); ``btd6menu_slash`` is the only slash handler still
+# on the mother cog. The AST scan sweeps both so a handler is found wherever it
+# lives.
 _COG_PATHS = (
     _DISBOT_COGS / "btd6_cog.py",
-    _DISBOT_COGS / "btd6_reference_cog.py",
-    _DISBOT_COGS / "btd6_events_cog.py",
-    _DISBOT_COGS / "btd6_strategy_cog.py",
+    _DISBOT_COGS / "btd6" / "_unified.py",
 )
 
 # Handlers that previously did async DB/service work before the first
-# response. ``btd6_diagnostics_slash`` and ``btd6_test_intent_slash``
+# response. ``diagnostics_slash`` and ``test_intent_slash``
 # build their embeds synchronously and stay on ``interaction.response.
 # send_message`` directly — confirmed sync-only path.
 _HANDLERS_REQUIRING_SAFE_DEFER = (
-    "btd6_ask_slash",
-    "btd6_hero_slash",
-    "btd6_strategy_audit_slash",
-    "btd6_grounding_slash",
+    "ask_slash",
+    "hero_slash",
+    "strat_audit_slash",
+    "events_grounding_slash",
     "btd6menu_slash",
-    "btd6_strategies_slash",
-    "btd6_sources_slash",
+    "strat_strategies_slash",
+    "events_sources_slash",
 )
 
 

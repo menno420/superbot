@@ -1061,11 +1061,12 @@ EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
     # group's surface decision; extend the pin per-subcommand only if
     # a group ever needs one classified individually)
     "ai": None,
+    # BTD6 unified its five command groups into one `/btd6` (owner request,
+    # 2026-06-24): the old btd6ref/btd6ops/btd6events/btd6strat slash groups
+    # were removed; their actions are now nested subgroups under `/btd6`
+    # (strat/ops/events) which ride this namespace's decision, and the old
+    # prefix groups stay only as hidden `legacy_duplicate` aliases.
     "btd6": None,
-    "btd6events": None,
-    "btd6ops": None,
-    "btd6ref": None,
-    "btd6strat": None,
 }
 
 
@@ -1165,13 +1166,20 @@ def _enumerate_declared_routes() -> list[_DeclaredRoute]:
             ):
                 continue
             group_name = None
+            has_parent = False
             for kw in node.value.keywords:
                 if kw.arg == "name" and isinstance(_const(kw.value), str):
                     group_name = _const(kw.value)
+                elif kw.arg == "parent":
+                    has_parent = True
             for target in node.targets:
                 if isinstance(target, ast.Name):
                     app_group_vars.add(target.id)
-            if group_name is not None:
+            # A nested subgroup (``parent=…``, e.g. the unified ``/btd6 strat``)
+            # rides its parent's top-level surface decision — its var still marks
+            # ``@<var>.command`` as slash-sub, but it is NOT itself a top-level
+            # slash namespace, so it does not enter the Rule-S pin.
+            if group_name is not None and not has_parent:
                 routes.append(
                     _DeclaredRoute(
                         file=file,

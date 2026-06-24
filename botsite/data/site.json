@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T09:29:27Z",
+    "generated_at": "2026-06-24T11:05:38Z",
     "build": {
-      "commit": "314e5e25",
-      "subject": "docs: twenty-fourth Q-0107 reconciliation pass (band-#1410)",
-      "committed_at": "2026-06-24T09:29:27Z"
+      "commit": "beb1dd4",
+      "subject": "btd6: unify five command groups under one /btd6 (Flattest layout)",
+      "committed_at": "2026-06-24T11:05:38Z"
     }
   },
   "counts": {
-    "commands": 405,
+    "commands": 436,
     "features": 42,
     "games": 11
   },
@@ -3882,12 +3882,10 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set/clear the BTD6 new-version announcement channel (administrator).",
-      "description": "Set/clear the BTD6 new-version announcement channel (administrator).",
+      "usage": "Set/clear the BTD6 new-version announcement channel (admin).",
+      "description": null,
       "use_cases": null,
-      "examples": [
-        "!btd6ops announcechannel #updates"
-      ],
+      "examples": [],
       "status": "in-progress",
       "linked_ideas": [
         {
@@ -3923,7 +3921,46 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set/clear the BTD6 new-version announcement channel (admin).",
+      "usage": "Set/clear the BTD6 new-version announcement channel (administrator).",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "announcechannel",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Set/clear the BTD6 new-version announcement channel (administrator).",
       "description": "Set/clear the BTD6 new-version announcement channel (administrator).",
       "use_cases": null,
       "examples": [
@@ -3964,8 +4001,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Deterministic Q&A. Module 5 adds optional AI augmentation.",
-      "description": "Deterministic Q&A. Module 5 adds optional AI augmentation.",
+      "usage": "Ask a BTD6 question.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -4003,8 +4040,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Ask a BTD6 question.",
-      "description": "Deterministic Q&A. Module 5 adds optional AI augmentation.",
+      "usage": "Deterministic Q&A (with optional AI augmentation).",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -4124,8 +4161,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Browse published BTD6 strategies (PR-F).",
-      "description": "Browse published BTD6 strategies (PR-F).",
+      "usage": "Browse published BTD6 strategies.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -4164,6 +4201,45 @@
       "cooldown": null,
       "permissions": "user",
       "usage": "Browse published BTD6 strategies.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "browse",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Browse published BTD6 strategies (PR-F).",
       "description": "Browse published BTD6 strategies (PR-F).",
       "use_cases": null,
       "examples": [],
@@ -4202,8 +4278,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 Assistant — panel, status, ask, diagnostics.",
-      "description": "Open the BTD6 panel.",
+      "usage": "BTD6 Assistant — lookups, strategy, live events, and ops.",
+      "description": "BTD6 Assistant — open the panel, or run a subcommand (income/round/…).",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -4241,8 +4317,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open the BTD6 panel.",
-      "description": "Open the BTD6 panel.",
+      "usage": "BTD6 Assistant — open the panel, or run a subcommand (income/round/…).",
+      "description": "BTD6 Assistant — open the panel, or run a subcommand (income/round/…).",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -4280,49 +4356,12 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 live events, leaderboards, and data sources.",
-      "description": "BTD6 live events, leaderboards, and data-source diagnostics.",
+      "usage": "BTD6 live events — hidden alias of `!btd6 events`.",
+      "description": "BTD6 live events — hidden alias of !btd6 events.",
       "use_cases": null,
-      "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
-          "status": "ideas"
-        },
-        {
-          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a generated \"deterministic floor catalogue\" index",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
-          "status": "ideas"
-        }
+      "examples": [
+        "!btd6 events"
       ],
-      "notes": null
-    },
-    {
-      "name": "btd6events",
-      "aliases": [],
-      "category": "games",
-      "cooldown": null,
-      "permissions": "user",
-      "usage": "BTD6 live events, leaderboards, and data-source diagnostics.",
-      "description": "BTD6 live events, leaderboards, and data-source diagnostics.",
-      "use_cases": null,
-      "examples": [],
       "status": "in-progress",
       "linked_ideas": [
         {
@@ -4440,49 +4479,12 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 ingestion operations (staff readable; toggles are admin).",
-      "description": "BTD6 ingestion operations (staff readable; toggles are admin).",
+      "usage": "BTD6 ingestion operations — hidden alias of `!btd6 ops`.",
+      "description": "BTD6 ingestion operations — hidden alias of !btd6 ops.",
       "use_cases": null,
-      "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
-          "status": "ideas"
-        },
-        {
-          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a generated \"deterministic floor catalogue\" index",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
-          "status": "ideas"
-        }
+      "examples": [
+        "!btd6 ops"
       ],
-      "notes": null
-    },
-    {
-      "name": "btd6ops",
-      "aliases": [],
-      "category": "games",
-      "cooldown": null,
-      "permissions": "user",
-      "usage": "BTD6 ingestion operations (staff readable; toggles are admin).",
-      "description": "BTD6 ingestion operations (staff readable; toggles are admin).",
-      "use_cases": null,
-      "examples": [],
       "status": "in-progress",
       "linked_ideas": [
         {
@@ -4518,49 +4520,12 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 reference — tower/hero/round/relic/CT lookups.",
-      "description": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
+      "usage": "BTD6 reference lookups — hidden alias of `!btd6` (towers/heroes/rounds/…).",
+      "description": "BTD6 reference lookups — hidden alias of !btd6 (towers/heroes/rounds/…).",
       "use_cases": null,
-      "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
-          "status": "ideas"
-        },
-        {
-          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a generated \"deterministic floor catalogue\" index",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
-          "status": "ideas"
-        }
+      "examples": [
+        "!btd6"
       ],
-      "notes": null
-    },
-    {
-      "name": "btd6ref",
-      "aliases": [],
-      "category": "games",
-      "cooldown": null,
-      "permissions": "user",
-      "usage": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
-      "description": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
-      "use_cases": null,
-      "examples": [],
       "status": "in-progress",
       "linked_ideas": [
         {
@@ -4596,49 +4561,12 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 strategy memory — browse, submit, review.",
-      "description": "BTD6 strategy memory (browse / submit / review).",
+      "usage": "BTD6 strategy memory — hidden alias of `!btd6 strat`.",
+      "description": "BTD6 strategy memory — hidden alias of !btd6 strat.",
       "use_cases": null,
-      "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
-          "status": "ideas"
-        },
-        {
-          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a generated \"deterministic floor catalogue\" index",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
-          "status": "ideas"
-        }
+      "examples": [
+        "!btd6 strat"
       ],
-      "notes": null
-    },
-    {
-      "name": "btd6strat",
-      "aliases": [],
-      "category": "games",
-      "cooldown": null,
-      "permissions": "user",
-      "usage": "BTD6 strategy memory (browse / submit / review).",
-      "description": "BTD6 strategy memory (browse / submit / review).",
-      "use_cases": null,
-      "examples": [],
       "status": "in-progress",
       "linked_ideas": [
         {
@@ -4828,8 +4756,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Browse active Contested Territory events and their relic tiles.",
-      "description": "Browse active Contested Territory events and their relic tiles.",
+      "usage": "Browse active Contested Territory events and relic tiles.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -4867,7 +4795,46 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Browse active Contested Territory events and relic tiles.",
+      "usage": "Browse active Contested Territory events and their relic tiles.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "ct",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Browse active Contested Territory events and their relic tiles.",
       "description": "Browse active Contested Territory events and their relic tiles.",
       "use_cases": null,
       "examples": [],
@@ -5012,7 +4979,7 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "",
+      "usage": "BTD6 dataset diagnostics.",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -5051,7 +5018,7 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 dataset diagnostics.",
+      "usage": "",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -5140,6 +5107,84 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
+      "usage": "Show one specific BTD6 event with tower restrictions.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "event",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show one specific BTD6 event with its tower restrictions.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "event",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
       "usage": "Show one specific BTD6 event with its tower restrictions.",
       "description": "Show one specific BTD6 event with its tower restrictions.",
       "use_cases": null,
@@ -5176,17 +5221,54 @@
       "notes": null
     },
     {
-      "name": "event",
+      "name": "events",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show one specific BTD6 event with tower restrictions.",
-      "description": "Show one specific BTD6 event with its tower restrictions.",
+      "usage": "BTD6 live events, leaderboards, and data sources.",
+      "description": "BTD6 live events, leaderboards, and data-source diagnostics.",
       "use_cases": null,
-      "examples": [
-        "!btd6events live <kind>"
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
       ],
+      "notes": null
+    },
+    {
+      "name": "events",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "BTD6 live events, leaderboards, and data-source diagnostics.",
+      "description": "BTD6 live events, leaderboards, and data-source diagnostics.",
+      "use_cases": null,
+      "examples": [],
       "status": "in-progress",
       "linked_ideas": [
         {
@@ -5389,8 +5471,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show the grounding facts that fed an AI response (PR-D).",
-      "description": "Show the grounding facts that fed an AI response (PR-D).",
+      "usage": "Grounding facts that fed an AI response.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -5428,8 +5510,86 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Grounding facts that fed an AI response.",
+      "usage": "Show the grounding facts that fed an AI response.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "grounding",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the grounding facts that fed an AI response (PR-D).",
       "description": "Show the grounding facts that fed an AI response (PR-D).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "hero",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Look up a hero.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -5506,7 +5666,85 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Look up a hero.",
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "income",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Verified cash earned per round (single round or a range).",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "income",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Verified cash per round — single round or an inclusive range.",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -5579,13 +5817,52 @@
       "notes": null
     },
     {
-      "name": "income",
+      "name": "latest-data",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Verified cash earned per round (single round or a range).",
-      "description": "Verified cash per round — single round or an inclusive range.",
+      "usage": "Newest fact envelope per entity_kind.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "latest-data",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show newest fact envelope per entity_kind.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -5657,13 +5934,52 @@
       "notes": null
     },
     {
-      "name": "latest-data",
+      "name": "leaderboard",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Newest fact envelope per entity_kind.",
-      "description": "Show newest fact envelope per entity_kind (PR-D).",
+      "usage": "Show race / boss leaderboard.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "leaderboard",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Top-N race or boss leaderboard. No event_id = newest active.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -5735,13 +6051,29 @@
       "notes": null
     },
     {
-      "name": "leaderboard",
+      "name": "list",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show race / boss leaderboard.",
-      "description": "Top-N race or boss leaderboard. No event_id = newest active.",
+      "usage": "List all active chains and word limits in the server.",
+      "description": "List all active chains and word limits in the server.",
+      "use_cases": null,
+      "examples": [
+        "!chain list"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "live",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show recent live events (race/boss/ct/odyssey/event).",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -5774,19 +6106,42 @@
       "notes": null
     },
     {
-      "name": "list",
+      "name": "live",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List all active chains and word limits in the server.",
-      "description": "List all active chains and word limits in the server.",
+      "usage": "Show recent live events for ``kind`` (race / boss / ct / odyssey / event).",
+      "description": null,
       "use_cases": null,
-      "examples": [
-        "!chain list"
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
       ],
-      "status": "finished",
-      "linked_ideas": [],
       "notes": null
     },
     {
@@ -5829,13 +6184,52 @@
       "notes": null
     },
     {
-      "name": "live",
+      "name": "mine",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show recent live events (race/boss/ct/odyssey/event).",
-      "description": "Show recent live events for kind (race / boss / ct / odyssey / event).",
+      "usage": "List my own strategy submissions in this guild.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "mine",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List my own strategy submissions in this guild.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -5907,13 +6301,130 @@
       "notes": null
     },
     {
-      "name": "mine",
+      "name": "ops",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List my own strategy submissions in this guild.",
-      "description": "List my own strategy submissions in this guild (PR-F).",
+      "usage": "BTD6 ingestion operations (staff readable; toggles are admin).",
+      "description": "BTD6 ingestion operations (staff readable; toggles are admin).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "ops",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "BTD6 ingestion operations (staff readable; toggles are admin).",
+      "description": "BTD6 ingestion operations (staff readable; toggles are admin).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "pending",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List pending strategy submissions (staff-only).",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "pending",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List pending strategy submissions with review buttons (staff-only).",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -5985,13 +6496,29 @@
       "notes": null
     },
     {
-      "name": "pending",
+      "name": "poker",
+      "aliases": [
+        "holdem"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open a multiplayer Texas Hold'em table in this channel.",
+      "description": "Open a multiplayer Texas Hold'em table in this channel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "rbe",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List pending strategy submissions (staff-only).",
-      "description": "List pending strategy submissions with review buttons.",
+      "usage": "RBE per round — base + freeplay-scaled (single round or a range).",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6024,19 +6551,42 @@
       "notes": null
     },
     {
-      "name": "poker",
-      "aliases": [
-        "holdem"
-      ],
+      "name": "rbe",
+      "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Open a multiplayer Texas Hold'em table in this channel.",
-      "description": "Open a multiplayer Texas Hold'em table in this channel.",
+      "usage": "RBE per round (base + freeplay-scaled) — single round or a range.",
+      "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -6079,13 +6629,13 @@
       "notes": null
     },
     {
-      "name": "rbe",
+      "name": "readiness",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "RBE per round — base + freeplay-scaled (single round or a range).",
-      "description": "RBE per round (base + freeplay-scaled) — single round or a range.",
+      "usage": "Show BTD6 ingestion readiness.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6162,7 +6712,85 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show BTD6 ingestion readiness.",
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "refresh-source",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Manually refresh one Ninja Kiwi source (staff-only).",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "refresh-source",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Manually refresh one Ninja Kiwi source (staff-only).",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -6235,13 +6863,13 @@
       "notes": null
     },
     {
-      "name": "refresh-source",
+      "name": "relic",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Manually refresh one Ninja Kiwi source (staff-only).",
-      "description": "Manually refresh one Ninja Kiwi source (staff-only).",
+      "usage": "Look up a Contested Territory relic's effect and tile.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6280,7 +6908,7 @@
       "cooldown": null,
       "permissions": "user",
       "usage": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
-      "description": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6318,7 +6946,7 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Look up a Contested Territory relic's effect and tile.",
+      "usage": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
       "description": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
       "use_cases": null,
       "examples": [],
@@ -6411,8 +7039,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "A single round's detail, or a values table across a round range.",
-      "description": "A single round's detail, or a values table across a round range.",
+      "usage": "Look up a round, or a values table across a range of rounds.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6450,7 +7078,46 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Look up a round, or a values table across a range of rounds.",
+      "usage": "A single round's detail, or a values table across a round range.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "round",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "A single round's detail, or a values table across a round range.",
       "description": "A single round's detail, or a values table across a round range.",
       "use_cases": null,
       "examples": [],
@@ -6626,6 +7293,45 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
+      "usage": "Show recent BTD6 ingestion runs.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "runs",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
       "usage": "",
       "description": null,
       "use_cases": null,
@@ -6665,7 +7371,7 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show recent BTD6 ingestion runs.",
+      "usage": "",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -6728,8 +7434,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Seed the Postgres data store from the bundled files (administrator).",
-      "description": "Seed the Postgres data store from the bundled files (administrator).",
+      "usage": "Seed the Postgres data store from the bundled files (admin).",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6767,7 +7473,46 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Seed the Postgres data store from the bundled files (admin).",
+      "usage": "Seed the Postgres data store from the bundled files (administrator).",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "seed-data",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Seed the Postgres data store from the bundled files (administrator).",
       "description": "Seed the Postgres data store from the bundled files (administrator).",
       "use_cases": null,
       "examples": [],
@@ -6838,8 +7583,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show source registry freshness (PR-D).",
-      "description": "Show source registry freshness (PR-D).",
+      "usage": "BTD6 source registry freshness overview.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6877,8 +7622,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 source registry freshness overview.",
-      "description": "Show source registry freshness (PR-D).",
+      "usage": "Show source registry freshness.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6911,13 +7656,13 @@
       "notes": null
     },
     {
-      "name": "source_disable",
+      "name": "source-health",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "",
-      "description": null,
+      "usage": "Show source registry freshness (PR-D).",
+      "description": "Show source registry freshness (PR-D).",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6989,7 +7734,46 @@
       "notes": null
     },
     {
-      "name": "source_enable",
+      "name": "source_disable",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "source_disable",
       "aliases": [],
       "category": "games",
       "cooldown": null,
@@ -7067,13 +7851,130 @@
       "notes": null
     },
     {
+      "name": "source_enable",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "source_enable",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "sources",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
       "usage": "List BTD6 source registry rows.",
-      "description": "List BTD6 source registry rows.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "sources",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List BTD6 source registry rows.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -7166,7 +8067,7 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "",
+      "usage": "BTD6 assistant status.",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -7205,7 +8106,163 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "BTD6 assistant status.",
+      "usage": "",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "strat",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "BTD6 strategy memory — browse, submit, review.",
+      "description": "BTD6 strategy memory (browse / submit / review).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "strat",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "BTD6 strategy memory (browse / submit / review).",
+      "description": "BTD6 strategy memory (browse / submit / review).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "strategies",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List strategy memory entries available in this guild.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "strategies",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List strategy memory entries available in this guild.",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -7278,13 +8335,52 @@
       "notes": null
     },
     {
-      "name": "strategies",
+      "name": "strategy",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "List strategy memory entries available in this guild.",
-      "description": "List strategy memory entries available in this guild.",
+      "usage": "Show one strategy in detail.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "strategy",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show one strategy in detail.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -7356,13 +8452,52 @@
       "notes": null
     },
     {
-      "name": "strategy",
+      "name": "strategy-audit",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show one strategy in detail.",
-      "description": "Show one strategy in detail (PR-F).",
+      "usage": "Per-strategy audit log.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "strategy-audit",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the per-strategy audit log.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -7434,13 +8569,52 @@
       "notes": null
     },
     {
-      "name": "strategy-audit",
+      "name": "submit",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Per-strategy audit log.",
-      "description": "Show the per-strategy audit log (PR-F).",
+      "usage": "Submit a BTD6 strategy.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "submit",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open a strategy submission modal (slash-only on Discord).",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -7512,51 +8686,12 @@
       "notes": null
     },
     {
-      "name": "submit",
-      "aliases": [],
-      "category": "games",
-      "cooldown": null,
-      "permissions": "user",
-      "usage": "Submit a BTD6 strategy.",
-      "description": "Open a strategy submission modal (slash-only on Discord).",
-      "use_cases": null,
-      "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
-          "status": "ideas"
-        },
-        {
-          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a generated \"deterministic floor catalogue\" index",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
-          "status": "ideas"
-        },
-        {
-          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
-          "status": "ideas"
-        }
-      ],
-      "notes": null
-    },
-    {
       "name": "test-intent",
       "aliases": [],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "",
+      "usage": "Show what the resolver extracted from a message.",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -7595,7 +8730,7 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show what the resolver extracted from a message.",
+      "usage": "",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -7666,6 +8801,45 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
+      "usage": "Look up a tower.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "tower",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
       "usage": "",
       "description": null,
       "use_cases": null,
@@ -7705,7 +8879,7 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Look up a tower.",
+      "usage": "",
       "description": null,
       "use_cases": null,
       "examples": [],
@@ -7766,8 +8940,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show the most recent BTD6 denials / skips for this guild.",
-      "description": "Show the most recent BTD6 denials / skips for this guild.",
+      "usage": "Recent BTD6 denials/skips for this guild.",
+      "description": null,
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -7805,7 +8979,46 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Recent BTD6 denials/skips for this guild.",
+      "usage": "Show the most recent BTD6 denials / skips for this guild.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "why-no-response",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the most recent BTD6 denials / skips for this guild.",
       "description": "Show the most recent BTD6 denials / skips for this guild.",
       "use_cases": null,
       "examples": [],

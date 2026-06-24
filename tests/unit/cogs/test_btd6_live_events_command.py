@@ -13,6 +13,7 @@ from unittest.mock import AsyncMock, MagicMock
 import discord
 import pytest
 
+from cogs.btd6 import _unified
 from cogs.btd6._builders import (
     _coerce_body,
     _event_window,
@@ -369,9 +370,8 @@ async def test_live_slash_defers_before_db_call(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
-    await cog.btd6_live_slash.callback(cog, interaction, "race", 3)
+    await _unified.events_live_slash.callback(interaction, "race", 3)
 
     assert call_order == ["defer", "db", "followup"]
 
@@ -397,9 +397,8 @@ async def test_live_slash_unknown_kind_followups_with_error_embed(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup)
 
-    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
-    await cog.btd6_live_slash.callback(cog, interaction, "nonsense", 5)
+    await _unified.events_live_slash.callback(interaction, "nonsense", 5)
 
     embed = sent[0].get("embed") if sent else None
     assert embed is not None

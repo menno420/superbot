@@ -55,13 +55,17 @@ def test_subsystem_registry_has_btd6_entry():
 
 
 def test_btd6_cog_declares_entry_point_commands():
+    from cogs.btd6 import _unified
+
     class _FakeBot:
         pass
 
     cog = BTD6Cog(_FakeBot())
     names = {cmd.name for cmd in cog.walk_commands()}
-    assert "btd6" in names
+    # The mother cog owns the panel opener; the `btd6` group itself is the
+    # module-level unified tree (cogs.btd6._unified), registered in setup().
     assert "btd6menu" in names
+    assert _unified.btd6_prefix.name == "btd6"
 
 
 @pytest.mark.asyncio
@@ -178,12 +182,14 @@ async def test_btd6_ask_runs_deterministically_without_ai_gateway(monkeypatch):
 
     monkeypatch.setattr(ai_gateway, "execute", _fail_if_called)
 
-    cog = BTD6Cog(MagicMock())
+    from cogs.btd6 import _unified
+
     fake_ctx = MagicMock()
     fake_ctx.send = AsyncMock()
 
-    callback = cog.btd6_ask.callback
-    await callback(cog, fake_ctx, question="Dart Monkey")
+    # `ask` is now a module-level command in the unified tree (no `self`).
+    callback = _unified.ask_prefix.callback
+    await callback(fake_ctx, question="Dart Monkey")
 
     assert called is False
     fake_ctx.send.assert_awaited_once()
@@ -197,8 +203,21 @@ async def test_setup_adds_cog_to_bot():
     added: list = []
 
     class _FakeBot:
+        def __init__(self):
+            # setup() also registers the module-level unified /btd6 tree via
+            # _unified.register(bot), which probes bot.tree / bot.get_command.
+            self.tree = MagicMock()
+            self.tree.get_command = MagicMock(return_value=None)
+            self.tree.add_command = MagicMock()
+
         async def add_cog(self, cog):
             added.append(cog)
+
+        def get_command(self, _name):
+            return None
+
+        def add_command(self, _cmd):
+            return None
 
     from cogs.btd6_cog import setup
 
@@ -237,10 +256,16 @@ def _slash_interaction():
     return interaction
 
 
+def _unified_command(name: str):
+    """Fetch a unified-tree slash command object by its module-level func name."""
+    from cogs.btd6 import _unified
+
+    return getattr(_unified, name)
+
+
 @pytest.mark.parametrize(
     (
-        "cog_class",
-        "command_attr",
+        "command_func",
         "builder_module",
         "builder_name",
         "kwargs",
@@ -249,17 +274,15 @@ def _slash_interaction():
     ),
     [
         (
-            BTD6StrategyCog,
-            "btd6_pending_slash",
+            "strat_pending_slash",
             "cogs.btd6._builders",
             "build_pending_review_payload",
             {"limit": 5},
             "pending_list",
-            "cogs.btd6_strategy_cog",
+            "cogs.btd6._unified",
         ),
         (
-            BTD6EventsCog,
-            "btd6_source_health_slash",
+            "events_source_health_slash",
             "cogs.btd6._builders",
             "build_source_health_embed",
             {"limit": 25},
@@ -267,8 +290,7 @@ def _slash_interaction():
             "cogs.btd6._reply",
         ),
         (
-            BTD6StrategyCog,
-            "btd6_browse_slash",
+            "strat_browse_slash",
             "views.btd6.strategy_browse",
             "build_browse_embed",
             {"limit": 10},
@@ -276,8 +298,7 @@ def _slash_interaction():
             "cogs.btd6._reply",
         ),
         (
-            BTD6StrategyCog,
-            "btd6_mine_slash",
+            "strat_mine_slash",
             "views.btd6.strategy_browse",
             "build_mine_embed",
             {"limit": 10},
@@ -285,8 +306,7 @@ def _slash_interaction():
             "cogs.btd6._reply",
         ),
         (
-            BTD6StrategyCog,
-            "btd6_strategy_slash",
+            "strat_strategy_slash",
             "views.btd6.strategy_browse",
             "build_detail_embed",
             {"strategy_id": 1},
@@ -298,23 +318,20 @@ def _slash_interaction():
 @pytest.mark.asyncio
 async def test_slash_command_defers_before_db_work(
     monkeypatch,
-    cog_class,
-    command_attr,
+    command_func,
     builder_module,
     builder_name,
     kwargs,
     return_kind,
     defer_module,
 ):
-    """Every named BTD6 slash command must call ``safe_defer`` before
-    invoking its builder so DB latency doesn't trip the interaction
-    token. Patch targets are the source modules because the cog uses
-    function-body lazy imports — ``from cogs.btd6._builders import
-    build_…`` re-resolves at call time. ``defer_module`` is where
-    ``safe_defer``/``safe_followup`` actually resolve for this command:
-    ``cogs.btd6._reply`` for twins routed through ``reply_ephemeral``, or
-    the owning cog module for commands that call ``safe_defer`` directly
-    (e.g. ``pending``'s multi-followup loop).
+    """Every named BTD6 slash command must call ``safe_defer`` before invoking
+    its builder so DB latency doesn't trip the interaction token. The commands
+    now live in the module-level unified tree (cogs.btd6._unified), so their
+    callbacks take no ``self``. ``defer_module`` is where ``safe_defer`` /
+    ``safe_followup`` resolve for this command: ``cogs.btd6._reply`` for twins
+    routed through ``reply_ephemeral``, or ``cogs.btd6._unified`` for commands
+    that call ``safe_defer`` directly (e.g. ``pending``'s multi-followup loop).
     """
     import importlib
 
@@ -324,9 +341,8 @@ async def test_slash_command_defers_before_db_work(
 
     async def _build_capture(*_a, **_kw):
         call_order.append("build")
-        # Match the real return shape per builder so the cog's
-        # downstream branching (e.g. ``isinstance(payload, str)``,
-        # ``for embed, view in payload``) doesn't TypeError.
+        # Match the real return shape so the handler's downstream branching
+        # (``isinstance(payload, str)``, ``for embed, view in payload``) is safe.
         if return_kind == "pending_list":
             return [(MagicMock(spec=discord.Embed), MagicMock())]
         return MagicMock(spec=discord.Embed)
@@ -349,9 +365,8 @@ async def test_slash_command_defers_before_db_work(
     monkeypatch.setattr(defer_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(defer_mod, "safe_followup", _followup_capture)
 
-    cog = cog_class(MagicMock())
     interaction = _slash_interaction()
-    callback = getattr(cog, command_attr).callback
-    await callback(cog, interaction, **kwargs)
+    callback = _unified_command(command_func).callback
+    await callback(interaction, **kwargs)
 
     assert call_order[:2] == ["defer", "build"], call_order
