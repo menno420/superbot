@@ -91,6 +91,23 @@ def test_historical_aliases_match_pre_pr_g_map():
         assert (get_provider(alias) or MagicMock()).name == canonical
 
 
+def test_each_provider_declares_a_registered_card_theme():
+    """Every provider's leaderboard-card skin must be a real engine theme so
+    the boards render in a known palette (not silently fall back)."""
+    from utils.card_render import THEMES
+
+    for name in provider_names():
+        provider = get_provider(name)
+        assert provider is not None
+        assert provider.card_theme in THEMES, f"{name}: {provider.card_theme!r}"
+
+
+def test_card_themes_are_differentiated_across_categories():
+    """The whole point of the slice: boards are not all one skin."""
+    themes = {get_provider(n).card_theme for n in provider_names()}  # type: ignore[union-attr]
+    assert len(themes) >= 3
+
+
 def test_each_provider_has_select_metadata():
     """Select options in the leaderboard view come from providers —
     every provider must declare label/emoji/title so the registry

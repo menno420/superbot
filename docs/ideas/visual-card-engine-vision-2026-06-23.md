@@ -80,7 +80,10 @@ they'd envy. The four moves:
   gained a `title` + per-row `value_texts`, `RankEntry` exposes a structured `(name, score, value_text)`
   projection populated by every provider, and `leaderboard_cog` attaches the rendered card to the board
   (embed `set_image(attachment://…)`) with a clean embed-only fallback when Pillow is unavailable, the
-  board is empty, or a category hasn't opted in. **Remaining H2 work:** only `mining_render`.
+  board is empty, or a category hasn't opted in. **Each category also renders in its own skin**
+  (`RankProvider.card_theme`: combat/forge → `ember`, nature → `verdant`, underground → `abyss`,
+  economy → `midnight`) — the first real consumer of the multi-theme registry, dogfooding "a new look =
+  a few RGB tuples". **Remaining H2 work:** only `mining_render`.
   **Note on `mining_render` (2026-06-24 finding):** it is **not** a clean dedup rebase — it
   uses **no fonts at all** (every `draw.text` uses Pillow's default bitmap font, with hardcoded
   `8 * len(text)` width math) and a deliberately *specialized* rarity palette (`_KIND_COLOR`), so

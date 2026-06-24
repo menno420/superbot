@@ -72,6 +72,12 @@ class RankProvider(ABC):
     select_label: str
     select_emoji: str | None
     empty_hint: str
+    # The card_render skin the leaderboard image card renders in. A safe
+    # default ("midnight"); get_theme() falls back to the default skin on an
+    # unknown key, so an override can never take a render down. Overridden
+    # per category for at-a-glance visual distinction (zero new art — the
+    # engine's "a new look = a few RGB tuples" property, in practice).
+    card_theme: str = "midnight"
 
     @abstractmethod
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
@@ -187,6 +193,7 @@ class MiningProvider(RankProvider):
     select_label = "Mining"
     select_emoji = "⛏️"
     empty_hint = "No mining records yet. Use `!mine` to start collecting items."
+    card_theme = "abyss"  # the underground / deep-cave skin
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.get_all_mining_totals(guild.id)
@@ -229,6 +236,7 @@ class CreaturesProvider(RankProvider):
     select_label = "Creatures"
     select_emoji = "🐾"
     empty_hint = "No creatures caught yet. Use `!catch` to start your collection."
+    card_theme = "verdant"  # the nature / collection skin
 
     @staticmethod
     def _render(caught: int, species: int) -> str:
@@ -314,6 +322,7 @@ class CraftingProvider(RankProvider):
     select_label = "Crafting"
     select_emoji = "🔧"
     empty_hint = "No crafting XP yet. Craft or repair gear at the 🔧 Workshop."
+    card_theme = "ember"  # the forge / fire skin
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.top_game_xp(guild.id, "crafting")
@@ -350,6 +359,7 @@ class DeathmatchProvider(RankProvider):
     empty_hint = (
         "No deathmatch results yet. Start a match with `!deathmatch` to appear here."
     )
+    card_theme = "ember"  # the combat / fire skin
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.get_deathmatch_leaderboard(guild.id)

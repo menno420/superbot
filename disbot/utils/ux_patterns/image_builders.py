@@ -40,6 +40,7 @@ def render_leaderboard_image(
     *,
     title: str = "🏆 Top members",
     value_texts: tuple[str, ...] | None = None,
+    theme: str | None = None,
 ) -> bytes | None:
     """Top-N horizontal bars — the image alternative to the embed board.
 
@@ -49,12 +50,15 @@ def render_leaderboard_image(
     the per-row label drawn at each bar's end (e.g. ``"5W / 2L"``) so a
     category whose statistic isn't a bare count still reads correctly;
     when omitted the score is shown formatted with thousands separators.
+    ``theme`` names the card skin (one of :data:`card_render.THEMES`); it
+    defaults to this wing's dark-blurple ``midnight`` and falls back to the
+    engine default on an unknown key, so the call can never break a render.
     Returns ``None`` when Pillow is unavailable so the caller keeps its
     embed fallback.
     """
     if not rows:  # empty board → let the caller post its embed-only empty state.
         return None
-    canvas = new_canvas(720, 96 + 64 * len(rows), get_theme(_THEME))
+    canvas = new_canvas(720, 96 + 64 * len(rows), get_theme(theme or _THEME))
     if canvas is None:  # Pillow unavailable → caller keeps the embed fallback.
         return None
     t = canvas.theme
