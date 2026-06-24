@@ -14,7 +14,7 @@ _DISBOT = Path(__file__).parents[3] / "disbot"
 if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
 
-from views.terminal_guard import SettleOnceMixin  # noqa: E402
+from utils.terminal_guard import SettleOnceMixin  # noqa: E402
 
 
 class _Settleable(SettleOnceMixin):

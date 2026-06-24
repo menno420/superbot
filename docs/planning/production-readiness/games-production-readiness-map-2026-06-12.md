@@ -183,12 +183,14 @@ has one readiness disposition without turning the inventory into a method-per-ro
   (2026-06-24 dispatch run). Blackjack tournament timeout handlers still swallow silently.
 - **Partial:** Mining views inherit the shared BaseView lifecycle, but real Discord
   interaction expiry/defer/edit sequences have not been live-verified in this review.
-- **Partial (was Not Done — 2026-06-24 dispatch run):** the cross-game terminal contract now has a
-  shared **settle-once guard** (`disbot/views/terminal_guard.py` `SettleOnceMixin.claim_settlement()`)
-  adopted by **RPS PvP** (`_resolve`) and **deathmatch bot-duel** (`_finish`/`on_timeout`), with
-  regression tests proving a second settlement short-circuits (no duplicate result post, no redundant
-  wager settle). **Remaining adopters:** blackjack PvP/tournament settlement (the other money-handling
-  terminal path) — a follow-up PR adopts the same mixin.
+- **Done (was Not Done — 2026-06-24 dispatch run):** the cross-game terminal contract now has a shared
+  **settle-once guard** (`disbot/utils/terminal_guard.py` `SettleOnceMixin.claim_settlement()`) adopted by
+  all three money/terminal paths — **RPS PvP** (`_resolve`), **deathmatch bot-duel**
+  (`_finish`/`on_timeout`), and **blackjack PvP** (`_resolve_pvp`, via the `_PvPState` carrier) — each
+  with regression tests proving a second settlement short-circuits (no duplicate result post, no redundant
+  wager settle). The mixin lives in `utils/` so the `services`-layer `_PvPState` can adopt it without the
+  banned `services → views` import. *(Blackjack **tournament** settlement is a separate multi-round flow,
+  not a single-shot PvP settle; revisit if a double-settle vector is found there.)*
 
 ## Gated or accepted limitations
 

@@ -24,13 +24,18 @@ controls cannot trigger a second settlement"* row in
 ``docs/planning/production-readiness/games-production-readiness-map-2026-06-12.md``
 and continues the BUG-0013 challenge-timer lineage (``docs/health/bug-book.md``).
 
-Mixin, not a base class, because game-state views intentionally extend
-``discord.ui.View`` directly (the documented divergence in ``views/base.py``)
-and a mixin composes without disturbing their bespoke lifecycle. It declares no
-``__init__`` — the class-level ``_settlement_claimed = False`` default is the
+Lives in ``utils/`` (not ``views/``) because the terminal state it guards lives
+in different layers: a ``discord.ui.View`` subclass for RPS PvP / the deathmatch
+bot-duel, but a plain ``services`` state object (``_PvPState``) for blackjack
+PvP. A shared helper needed by both ``services/`` and ``views/`` belongs in
+``utils/`` (``docs/helper-policy.md``), and ``services/`` may not import
+``views/`` at all. It is a mixin, not a base class, so it composes onto views
+that intentionally extend ``discord.ui.View`` directly (the documented
+divergence in ``views/base.py``) and onto bare state objects alike. It declares
+no ``__init__`` — the class-level ``_settlement_claimed = False`` default is the
 unclaimed state, and the first claim writes a per-instance attribute (``bool``
-is immutable, so the class attribute is never mutated and no state leaks
-between instances).
+is immutable, so the class attribute is never mutated and no state leaks between
+instances).
 """
 
 from __future__ import annotations

@@ -191,6 +191,15 @@ async def _start_pvp(
 
 
 async def _resolve_pvp(state: _PvPState, channel: discord.TextChannel):
+    # Settle-once: ``_resolve_pvp`` is reachable from both players' finish
+    # callbacks and the instant-blackjack path; a re-entry (a per-player
+    # ``BlackjackView`` firing ``on_finish`` twice, or a late duplicate) would
+    # post a second result embed and re-call the (idempotent) wager settle.
+    # Claim the terminal transition synchronously before any await so the second
+    # caller short-circuits. (The ``_pvp.pop`` below stays — it drops the live
+    # match registry entry — but is no longer the de-facto double-settle guard.)
+    if not state.claim_settlement():
+        return
     key = frozenset({state.p1, state.p2})
     _pvp.pop(key, None)
     # PR G3 — match is fully resolved; drop the persisted gameplay row.
