@@ -161,6 +161,102 @@ async def test_resolve_clears_persisted_state():
 
 
 @pytest.mark.asyncio
+async def test_resolve_settles_once_no_double_payout_or_post():
+    """``_resolve`` is reachable twice (both-picks race · timeout racing a final
+    pick). The settle-once guard must claim the terminal transition exactly once:
+    a second ``_resolve`` short-circuits — no duplicate result post, no second
+    (idempotent) wager settle, no second state clear.
+    """
+    from views.rps.pvp_play import _RpsPvpPlayView
+
+    p1 = MagicMock()
+    p1.id = 100
+    p1.mention = "<@100>"
+    p2 = MagicMock()
+    p2.id = 200
+    p2.mention = "<@200>"
+    channel = MagicMock()
+    channel.id = 999
+    channel.send = AsyncMock()
+    view = _RpsPvpPlayView(p1, p2, guild_id=111, bet=50, channel=channel)
+    view.message = MagicMock()
+    view.message.edit = AsyncMock()
+    view.choices = {100: "rock", 200: "scissors"}  # rock beats scissors
+
+    with (
+        patch(
+            "views.rps.pvp_play.game_state_service.save",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "views.rps.pvp_play.game_state_service.clear",
+            new_callable=AsyncMock,
+        ) as mock_clear,
+        patch(
+            "views.rps.pvp_play.game_wager_workflow.settle_pvp",
+            new_callable=AsyncMock,
+        ) as mock_settle,
+        patch(
+            "views.rps.pvp_play.game_wager_workflow.refund_pvp",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await view._resolve()
+        assert view.is_settled is True
+        # A racing duplicate resolution must do nothing.
+        await view._resolve()
+
+    mock_settle.assert_awaited_once()
+    channel.send.assert_awaited_once()
+    mock_clear.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_timeout_after_resolve_does_not_double_settle():
+    """If a timeout fires after both players already resolved, ``on_timeout``'s
+    ``_resolve`` shares the claim and short-circuits — no second settlement."""
+    from views.rps.pvp_play import _RpsPvpPlayView
+
+    p1 = MagicMock()
+    p1.id = 100
+    p1.mention = "<@100>"
+    p2 = MagicMock()
+    p2.id = 200
+    p2.mention = "<@200>"
+    channel = MagicMock()
+    channel.id = 999
+    channel.send = AsyncMock()
+    view = _RpsPvpPlayView(p1, p2, guild_id=111, bet=50, channel=channel)
+    view.message = MagicMock()
+    view.message.edit = AsyncMock()
+    view.choices = {100: "rock", 200: "scissors"}
+
+    with (
+        patch(
+            "views.rps.pvp_play.game_state_service.save",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "views.rps.pvp_play.game_state_service.clear",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "views.rps.pvp_play.game_wager_workflow.settle_pvp",
+            new_callable=AsyncMock,
+        ) as mock_settle,
+        patch(
+            "views.rps.pvp_play.game_wager_workflow.refund_pvp",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await view._resolve()
+        await view.on_timeout()  # late timeout → forfeits fill, then _resolve no-ops
+
+    mock_settle.assert_awaited_once()
+    channel.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_cog_load_clears_orphan_rows():
     """On cog_load, _recover_rps_pvp_pending lists every active row and
     clears each by id.  No refund — RPS PvP doesn't pre-debit.

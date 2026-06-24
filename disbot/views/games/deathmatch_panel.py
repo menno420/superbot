@@ -26,6 +26,7 @@ from utils import db, equipment
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 from views.games.common import BackToPanelButton
+from views.terminal_guard import SettleOnceMixin
 
 if TYPE_CHECKING:
     # Type-only — the panel reuses the deathmatch cog's ``_Duel`` state class
@@ -168,7 +169,7 @@ def build_deathmatch_challenge_picker_embed() -> discord.Embed:
 # ---------------------------------------------------------------------------
 
 
-class _BotDuelView(discord.ui.View):
+class _BotDuelView(SettleOnceMixin, discord.ui.View):
     """Player-vs-bot duel view (PR 6).
 
     Reuses the cog's ``_Duel`` state class for HP / attack / defend /
@@ -277,6 +278,11 @@ class _BotDuelView(discord.ui.View):
         interaction: discord.Interaction,
         action_text: str,
     ) -> None:
+        # Settle-once: a finishing-blow double-click (or a timeout racing the
+        # final move) can re-enter the settlement path; claim it synchronously
+        # before any await so the second caller short-circuits.
+        if not self.claim_settlement():
+            return
         self.duel.is_over = True
         # NOTE: deliberately NO call to ``cog.update_leaderboard`` /
         # ``db.update_deathmatch`` — see plan §13 bot-duel stats rule.
@@ -294,7 +300,9 @@ class _BotDuelView(discord.ui.View):
         self.stop()
 
     async def on_timeout(self) -> None:
-        if self.duel.is_over:
+        # Shares the settle-once claim with ``_finish`` so a timeout firing just
+        # as the duel finishes can't post a second terminal screen.
+        if not self.claim_settlement():
             return
         self.duel.is_over = True
         embed = discord.Embed(
@@ -312,8 +320,8 @@ class _BotDuelView(discord.ui.View):
                     embed=embed,
                     view=_BotDuelResultView(self.player, self.bot_user),
                 )
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("bot-duel on_timeout: message.edit failed: %s", exc)
 
 
 class _BotDuelResultView(HubView):

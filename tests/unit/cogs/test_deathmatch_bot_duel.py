@@ -104,6 +104,55 @@ async def test_bot_duel_does_not_call_update_leaderboard():
 
 
 @pytest.mark.asyncio
+async def test_bot_duel_finish_settles_once_no_double_terminal():
+    """A second terminal transition (finishing-blow double-click / timeout race)
+    must short-circuit — the settle-once guard claims it exactly once."""
+    from views.games.deathmatch_panel import _BotDuelView
+
+    player = _player(100)
+    bot_user = _bot_user(999)
+    view = _BotDuelView(player, bot_user)
+    view.message = MagicMock(id=444)
+    view.message.edit = AsyncMock()
+
+    # Drive the duel to a finish via _finish directly (the settlement path).
+    first = _stub_interaction(player)
+    await view._finish(first, "finishing blow")
+    assert view.is_settled is True
+    assert view.duel.is_over is True
+    first.response.edit_message.assert_awaited_once()
+
+    # A racing duplicate finish must not post a second terminal screen.
+    second = _stub_interaction(player)
+    await view._finish(second, "duplicate finishing blow")
+    second.response.edit_message.assert_not_called()
+
+    # A timeout firing after settlement shares the claim → no extra edit.
+    await view.on_timeout()
+    view.message.edit.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_bot_duel_timeout_then_finish_settles_once():
+    """A timeout that wins the claim blocks a later finish from double-settling."""
+    from views.games.deathmatch_panel import _BotDuelView
+
+    player = _player(100)
+    bot_user = _bot_user(999)
+    view = _BotDuelView(player, bot_user)
+    view.message = MagicMock(id=444)
+    view.message.edit = AsyncMock()
+
+    await view.on_timeout()
+    assert view.is_settled is True
+    view.message.edit.assert_awaited_once()
+
+    late = _stub_interaction(player)
+    await view._finish(late, "too late")
+    late.response.edit_message.assert_not_called()
+
+
+@pytest.mark.asyncio
 async def test_bot_duel_does_not_call_db_update_deathmatch():
     """Plan §13: bot duels must not call ``db.update_deathmatch``."""
     from views.games.deathmatch_panel import _BotDuelView
