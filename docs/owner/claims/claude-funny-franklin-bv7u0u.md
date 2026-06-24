@@ -1,0 +1,1 @@
+claude/funny-franklin-bv7u0u · route manual !syncslash global through the diff-gated auto_sync helper (retire last unconditional tree.sync) + diff preview + force escape · disbot/cogs/admin_cog.py, disbot/services/command_tree_sync.py, tests · 2026-06-24
