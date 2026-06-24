@@ -7287,3 +7287,33 @@ a channel/role select.
 **Home:** this Q-block (canonical) + `.sessions/2026-06-23-ai-setup-edit-button.md` +
 `docs/subsystems/settings-bindings-provisioning.md`. Related: **Q-0048** (AI exposure gate / per-exposure
 write lift — the parent rule), Q-0123 (auto-merge on green).
+
+### Q-0200 — DISCUSS: add a "grep `def <exact_name>` before defining a new service function" step to the dedup discipline (2026-06-24)
+
+> **PROPOSED — surfaced by a real collision this session** (`.sessions/2026-06-24-btd6-per-round-economy-commands.md`).
+> This proposes a rule addition, so it routes here rather than self-editing CLAUDE.md / `helper-policy.md`
+> (the binding-rule channel). The owner is the live reviewer when present; otherwise it waits.
+
+**Context:** building the per-round economy commands (PR #1404), I added a new `round_composition` to
+`btd6_data_service` **without noticing one already existed** (the range/AI variant). Python took my later
+definition, shadowing the original and breaking its AI-tool + ABR tests — caught only at the full CI
+mirror, not pre-implementation. Root cause: the "claim before starting / don't duplicate" scan (CLAUDE.md
+§ Session workflow) and `helper-policy.md` both aim at *file/area* overlap, but my dedup grep was keyed on
+the **concepts** (`cash`/`income`/`rbe`) and command names — I never grepped the **exact function name** I
+was about to define. `round_rbe` (genuinely new) was fine; `round_composition` was a name I should have
+checked.
+
+**The proposal:** add one mechanical line to the dedup discipline (in `helper-policy.md`, mirrored in the
+CLAUDE.md helper rules): *before defining a new `services/`-or-`utils/` function, grep `def <exact_name>`
+in the target module **and** its sibling modules, plus the 1-2 nearest concept synonyms.* Cheap,
+deterministic, and it converts a class of "shadowed an existing symbol" bug from a full-mirror catch into
+a five-second pre-write check.
+
+**Open question for the owner:** worth codifying as a rule, or leave as session-log lore? It's the kind of
+tiny guard the kill-switch convention (Q-0105) covers — adopt it, delete it later if it proves noise.
+Recommendation: **adopt** in `helper-policy.md` (not a CI gate — a checklist line), since the failure it
+prevents is silent until CI and trivially avoidable.
+
+**Home:** this Q-block (canonical) + the session log. Related: **Q-0014** (claim/dedup before starting),
+**helper-policy.md** (the durable home if adopted), Q-0120 (verify-tool-vs-evidence — same "catch it
+earlier" instinct).
