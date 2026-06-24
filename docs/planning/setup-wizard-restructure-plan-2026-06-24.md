@@ -145,13 +145,21 @@ decision with architectural weight → called out as open question Q-A below.
 
 ## 7. PR breakdown (≤3 PRs)
 
+- **PR 1a — the jargon guard (SHIPPED 2026-06-24, ahead of the spine):** `scripts/check_setup_copy.py`
+  (Q-0105 warn-first disposable tool) + ratchet invariant test
+  (`tests/unit/invariants/test_setup_copy_jargon.py`). It AST-scans operator-facing strings (UI kwargs +
+  `send`/`followup` args, excluding docstrings/logs) in `disbot/views/setup/` for the §4 banned list. It
+  is independent of Q-A, so it shipped first. **Measured ground-truth baseline: 207 jargon strings across
+  33 files** (top offenders: `stage`×66, `guild`×58, `final review`×46, `operation`×40) — far above the
+  *modelled* 44 in the sim, which only counted the standard-depth spine. The ratchet tolerates the
+  existing copy but fails on any *new* jargon or any new dirty setup file; the spine rewrite drives the
+  count to zero, then the guard graduates to `--strict` in CI. This is Law 2's durable enforcement.
 - **PR 1 — the essentials spine (the headline):** a new linear wizard flow (`views/setup/`) rendering
   steps 0–7 above with plain-language copy, **direct-apply** per step, button/dropdown-only input, and
   **auto-create** for the welcome channel, log channels, and reward roles. Add the two missing steps
   (welcome, automod) using their existing config services (`welcome_config`, `automod_config`) — no new
-  mutation primitives. Ships a wizard a non-technical owner can finish. Includes a **jargon CI guard**
-  (`scripts/check_setup_copy.py`, Q-0105 disposable-tool header) that fails if any operator-facing setup
-  string contains a term from the §4 banned list — the durable enforcement of Law 2.
+  mutation primitives. Ships a wizard a non-technical owner can finish. Each cleaned section lowers the
+  PR-1a jargon baseline (`_BASELINE_TOTAL`) toward zero.
 - **PR 2 — extras + health check:** the **Extras menu** (each existing config surface as a one-action
   step: starboard, counters, security, image-mod, karma, AI, reaction roles, giveaways) + the single
   **"Check my setup"** health button (folds in scan/readiness/diagnostics/suggestions). Wires the
