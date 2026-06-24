@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import discord
 
-from services.xp_helpers import _build_rank_embed
+from services.xp_helpers import build_rank_response
 
 
 # Extends discord.ui.View directly (not BaseView): specialized lifecycle —
@@ -77,9 +77,16 @@ class _RankSelect(discord.ui.Select):
         stat = self.values[0]
         for opt in self.options:
             opt.default = opt.value == stat
-        embed = await _build_rank_embed(
+        embed, card = await build_rank_response(
             self._rank_view.member,
             self._rank_view.guild,
             stat,
         )
-        await interaction.response.edit_message(embed=embed, view=self.view)
+        # Re-render on toggle (the "image is the screen, controls re-render it"
+        # grammar): pass attachments explicitly so the new card replaces the
+        # old one, or clears it ([]) on a Pillow-less embed-only fallback.
+        await interaction.response.edit_message(
+            embed=embed,
+            view=self.view,
+            attachments=[card] if card is not None else [],
+        )
