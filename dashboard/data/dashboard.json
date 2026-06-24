@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T14:21:50Z",
+    "generated_at": "2026-06-24T18:22:47Z",
     "build": {
-      "commit": "f7ea4962",
-      "subject": "Merge pull request #1425 from menno420/claude/serene-mccarthy-lv5z94",
-      "committed_at": "2026-06-24T14:21:50Z"
+      "commit": "2319639d",
+      "subject": "Merge pull request #1432 from menno420/claude/blissful-hamilton-xdzbak",
+      "committed_at": "2026-06-24T18:22:47Z"
     },
     "counts": {
       "functions": 42,
@@ -1144,7 +1144,7 @@
     {
       "file": "help-nav-attachment-seam-2026-06-24.md",
       "title": "Help-nav attachment seam — let hub panels carry their image card through Help",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-24",
       "summary": "The visual card engine (H3) is rolling showpiece **image cards** onto bot features:",
       "subsystems": []
@@ -2505,6 +2505,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-24-syncslash-gated-unification.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Route `!syncslash global` through the diff-gated auto-sync helper",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-support-tickets.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Support-ticket subsystem (command + AI natural language)",
@@ -2524,6 +2532,22 @@
       "file": "2026-06-24-setup-spine-build.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · build the essentials spine (PR 1)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-setup-log-channel-step.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · Essential Setup step \"Choose a log channel\"",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-setup-log-channel-rework.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · \"Choose a log channel\" rework (two-channel + multi-select)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2591,6 +2615,30 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-24-help-nav-seam-hardening.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Harden the help-nav attachment seam (forward-path regression pins)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-24-help-nav-attachment-seam.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Help-nav attachment seam (visual card-engine H3)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-24-essential-setup-steps-3-4.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · Essential Setup steps 3-4 (block spam · help desk)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-24-command-tree-auto-sync.md",
@@ -2902,54 +2950,6 @@
       "title": "2026-06-23 — Fishing bait-crafting (close the catch→cook→bait economy loop)",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-economy-treasury-panel-link.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Economy panel → Treasury button (panel-link fix)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-delete-blocked-commands.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Delete command-style messages in not-allowed channels (tied to Command Access)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-consolidation-findings-brief.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Consolidation findings brief + stale-claim reconciliation",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-consolidation-docs-reconcile.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Reconcile consolidation-audit docs to today's shipped work",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-competitive-positioning.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Competitive-positioning north-star (what makes people choose us)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-cleanup-remove-whitelist.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Remove the legacy cleanup channel whitelist",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": true
     }
   ],
