@@ -94,6 +94,16 @@ they'd envy. The four moves:
 - **H3 — Skinnable feature cards.** A fishing/collection **season card** (the FOOTONCLASH analogue)
   and a cross-game **world identity card** on themed skin packs; "new season = new `Theme` + asset
   pack", no layout code.
+  **🟢 Started (2026-06-24, dispatch run):** the flagship single-user **`!rank`** card now renders as
+  a themed image (`utils/card_render.py` engine → `utils/profile_render.py` for `/myprofile` (H1) and
+  the new `utils/rank_render.py` for `!rank`) — a header band + a 3-column stat-panel **grid** (up to
+  six panels, so the "both" view shows XP-rank/level/total-XP/messages/coin-rank/coins) + the level
+  progress bar. The `_RankView` stat-toggle re-renders the card and swaps the attachment on each
+  switch — the literal *"image is the screen; the dropdown is the control; each click re-runs the
+  renderer"* grammar. `services.xp_helpers.build_rank_response` fetches the rank data **once** (a
+  `RankCardData` value object) and builds both the embed and the image from it, with a clean
+  embed-only fallback when Pillow is unavailable. **Remaining H3:** the rank/profile **hub panels**
+  (`!xpmenu`) + the genuine season/world skin packs.
 - **H4 — Real art + fonts.** Owner art pack lands file-for-file; brand fonts named per theme.
 - **H5 — Animation + per-user themes (the exceed move).** Frame-sequence animated cards and a
   cosmetic theme picker (premium-gated), the visual differentiator over DM.
