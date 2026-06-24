@@ -19,15 +19,15 @@ Design (plan ``docs/planning/setup-wizard-restructure-plan-2026-06-24.md`` §5):
 
 This module is **additive** — the existing wizard (``views/setup/wizard.py``)
 is untouched and remains the full/advanced path; Essential Setup is the new
-quick spine.  Live steps: greet new members · set your moderators · block spam
-and bad links · choose a log channel · reward active members · set up a help
-desk (+ the closing summary).  Remaining follow-on on this same pattern: the
-server-type starter preset.
+quick spine.  Live steps: what kind of server is this (starter set) · greet new
+members · set your moderators · block spam and bad links · choose a log channel
+· reward active members · set up a help desk (+ the closing summary).
 """
 
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import discord
@@ -65,6 +65,7 @@ class EssentialFlow:
         self.skipped: list[str] = []
         # Step factories, in order. Add new steps here as they are built.
         self._steps: list[Callable[[EssentialFlow], _StepView]] = [
+            ServerTypeStep,
             GreetMembersStep,
             ModeratorsStep,
             BlockSpamStep,
@@ -195,6 +196,240 @@ class _StepView(BaseView):
             value,
             self.flow.author,
             actor_type="user",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Step 0 — What kind of server is this?  (server-type starter set)
+# ---------------------------------------------------------------------------
+#
+# The opening step makes the old metadata-only ``purpose`` section actually *do*
+# something: you pick what kind of server you run and we instantly switch on a
+# curated bundle of safe defaults for it (owner decision Q-C, 2026-06-24 —
+# "fastest, nothing irreversible").
+#
+# Design decision — the direct-apply path (the plan flagged "presets are
+# draft-only today; needs a design decision before building"): these starter
+# sets are **pure settings bundles** applied through the same audited
+# ``SettingsMutationPipeline`` every other spine step uses (``_set``).  They
+# deliberately do **not** reuse the draft-only
+# ``services.automation_templates.SERVER_PRESETS``, which bind channels and
+# create roles/rules and so need operator picks plus a Final Review — the wrong
+# shape for a one-tap, instant, fully-reversible starter.  Every value here is a
+# channel-independent boolean/scalar, so picking a type never creates or binds
+# anything and can be changed later from each feature's own panel.
+
+
+@dataclass(frozen=True)
+class _ServerTypePreset:
+    """One server-type starter set — a bundle of safe, reversible settings."""
+
+    key: str
+    label: str
+    emoji: str
+    blurb: str  # one-line plain summary of what it switches on
+    # (subsystem, setting-name, value), applied verbatim through ``_set``.
+    settings: tuple[tuple[str, str, object], ...]
+    # Key into ``_XP_RATES`` (resolved at apply time), or None to leave XP as-is.
+    xp_rate: str | None = None
+
+
+# The five starter sets.  Each uses only the channel-independent settings the
+# other spine steps already write (automod toggles, moderation dm-on-action, the
+# XP rate), so nothing here needs a channel/role pick or creates a resource.
+_SERVER_TYPES: tuple[_ServerTypePreset, ...] = (
+    _ServerTypePreset(
+        key="community",
+        label="Community",
+        emoji="💬",
+        blurb="balanced spam protection, members told why they're actioned, steady XP",
+        settings=(
+            ("automod", "enabled", True),
+            ("automod", "spam_enabled", True),
+            ("automod", "invites_enabled", True),
+            ("automod", "caps_enabled", False),
+            ("automod", "mentions_enabled", True),
+            ("moderation", "dm_on_action", True),
+        ),
+        xp_rate="standard",
+    ),
+    _ServerTypePreset(
+        key="gaming",
+        label="Gaming",
+        emoji="🎮",
+        blurb="spam & mass-ping protection (invite links allowed), faster XP",
+        settings=(
+            ("automod", "enabled", True),
+            ("automod", "spam_enabled", True),
+            ("automod", "invites_enabled", False),
+            ("automod", "caps_enabled", False),
+            ("automod", "mentions_enabled", True),
+            ("moderation", "dm_on_action", True),
+        ),
+        xp_rate="active",
+    ),
+    _ServerTypePreset(
+        key="support",
+        label="Support / Help desk",
+        emoji="🛟",
+        blurb="strict protection on everything, members told why, relaxed XP",
+        settings=(
+            ("automod", "enabled", True),
+            ("automod", "spam_enabled", True),
+            ("automod", "invites_enabled", True),
+            ("automod", "caps_enabled", True),
+            ("automod", "mentions_enabled", True),
+            ("moderation", "dm_on_action", True),
+        ),
+        xp_rate="relaxed",
+    ),
+    _ServerTypePreset(
+        key="creator",
+        label="Creator / Content",
+        emoji="🎨",
+        blurb="balanced spam protection, members told why, steady XP",
+        settings=(
+            ("automod", "enabled", True),
+            ("automod", "spam_enabled", True),
+            ("automod", "invites_enabled", True),
+            ("automod", "caps_enabled", False),
+            ("automod", "mentions_enabled", True),
+            ("moderation", "dm_on_action", True),
+        ),
+        xp_rate="standard",
+    ),
+    _ServerTypePreset(
+        key="exploring",
+        label="Just exploring",
+        emoji="🧭",
+        blurb="just basic spam protection — set everything else up yourself",
+        settings=(
+            ("automod", "enabled", True),
+            ("automod", "spam_enabled", True),
+        ),
+        xp_rate=None,
+    ),
+)
+
+
+def _server_type(key: str) -> _ServerTypePreset | None:
+    for preset in _SERVER_TYPES:
+        if preset.key == key:
+            return preset
+    return None
+
+
+class _ServerTypeSelect(discord.ui.Select):  # type: ignore[type-arg]
+    def __init__(self, current: str | None) -> None:
+        options = [
+            discord.SelectOption(
+                label=preset.label,
+                value=preset.key,
+                emoji=preset.emoji,
+                description=preset.blurb[:100],
+                default=preset.key == current,
+            )
+            for preset in _SERVER_TYPES
+        ]
+        super().__init__(
+            placeholder="What kind of server is this?",
+            options=options,
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: ServerTypeStep = self.view  # type: ignore[assignment]
+        view.server_type = self.values[0]
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _ServerTypeSaveButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="Save & continue",
+            emoji="✨",
+            style=discord.ButtonStyle.success,
+            row=3,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: ServerTypeStep = self.view  # type: ignore[assignment]
+        await view.apply(interaction)
+
+
+class ServerTypeStep(_StepView):
+    title = "What kind of server is this?"
+    skip_label = "Skip — set things up myself"
+
+    def __init__(self, flow: EssentialFlow) -> None:
+        self.server_type: str | None = None
+        super().__init__(flow)
+
+    def build_items(self) -> None:
+        self.add_item(_ServerTypeSelect(self.server_type))
+        self.add_item(_ServerTypeSaveButton())
+
+    def render(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="✨ What kind of server is this?",
+            description=(
+                "Pick the closest match and we'll switch on a set of safe, "
+                "sensible defaults right away — you can change any of it later. "
+                "We won't create or delete anything; this just turns on a few "
+                "settings to get you started.\n\n"
+                "Then press **Save & continue**."
+            ),
+            color=discord.Color.blurple(),
+        )
+        if self.server_type:
+            preset = _server_type(self.server_type)
+            if preset is not None:
+                embed.add_field(
+                    name="Starter set",
+                    value=f"{preset.emoji} **{preset.label}** — {preset.blurb}",
+                    inline=False,
+                )
+        else:
+            embed.add_field(
+                name="Starter set",
+                value="_pick one above_",
+                inline=False,
+            )
+        embed.set_footer(text=self.flow.step_counter())
+        return embed
+
+    async def apply(self, interaction: discord.Interaction) -> None:
+        if self.server_type is None:
+            await interaction.response.send_message(
+                "Pick the kind of server you run first — or press Skip.",
+                ephemeral=True,
+            )
+            return
+        preset = _server_type(self.server_type)
+        if preset is None:  # defensive — the picker only offers known keys
+            await interaction.response.send_message(
+                "That server type isn't available — please pick another.",
+                ephemeral=True,
+            )
+            return
+        try:
+            for subsystem, name, value in preset.settings:
+                await self._set(subsystem, name, value)
+            if preset.xp_rate is not None:
+                _label, xp_min, xp_max, cooldown = _XP_RATES[preset.xp_rate]
+                await self._set("xp", "xp_min", xp_min)
+                await self._set("xp", "xp_max", xp_max)
+                await self._set("xp", "xp_cooldown", cooldown)
+        except Exception:
+            logger.exception("essential setup: server-type step apply failed")
+            await interaction.response.send_message(
+                "Something went wrong applying the starter set — please try again.",
+                ephemeral=True,
+            )
+            return
+        await self.complete(
+            interaction,
+            f"{preset.emoji} {preset.label} starter set on · {preset.blurb}",
         )
 
 

@@ -8,13 +8,13 @@
 > jargon, quick with buttons/dropdowns, each step is one complete action that actually completes a setup
 > step properly."* This plan answers that directly. Plan-first: greenlight before build.
 >
-> **▶ Build progress:** **PR 1 (the jargon-free essentials spine) COMPLETE + polished.** Six live steps
-> (greet · moderators · block spam · choose a log channel · reward active members · help desk) + the
-> All-done summary, opened by `!quicksetup` / `/quicksetup`; shipped across #1425/#1427/#1429/#1432/#1434
-> and given a consistency + optional-typing polish pass (#1435, Q-0205). **Remaining:** step 0
-> (server-type starter preset — needs a direct-apply preset path; verify against source first), then
-> **PR 2** = extras menu + "Check my setup", **PR 3** = retire dead/legacy sections + rework the Advanced
-> editor (Q-E).
+> **▶ Build progress:** **PR 1 (the jargon-free essentials spine) COMPLETE + polished, incl. step 0.**
+> Seven live steps (**what kind of server is this** · greet · moderators · block spam · choose a log
+> channel · reward active members · help desk) + the All-done summary, opened by `!quicksetup` /
+> `/quicksetup`; shipped across #1425/#1427/#1429/#1432/#1434, polished (#1435, Q-0205), and the
+> **server-type starter preset (step 0) shipped 2026-06-24** (direct-apply path resolved — see §5/§7
+> below). **Remaining:** **PR 2** = extras menu + "Check my setup", **PR 3** = retire dead/legacy
+> sections + rework the Advanced editor (Q-E).
 >
 > **Sim:** [`tools/sim/setup_wizard_sim.py`](../../tools/sim/setup_wizard_sim.py) (runnable) —
 > models a non-technical owner walking the flow. Current standard-depth flow scores **~4% finish**
@@ -103,8 +103,13 @@ The fix is not more sections — it is a **structure** built from four laws.
 
 **Spine — the guided essentials (each applies immediately, direct lane):**
 
-0. **What kind of server is this?** — Community · Gaming · Support · Creator · Just exploring. Applies a
-   matching **starter set** of safe defaults right away (this is `purpose` made actionable + `preset`).
+0. **What kind of server is this?** *(SHIPPED 2026-06-24)* — Community · Gaming · Support · Creator · Just
+   exploring. Applies a matching **starter set** of safe defaults right away (this is `purpose` made
+   actionable + `preset`). **Direct-apply path resolved:** each starter set is a **pure settings bundle**
+   (channel-independent automod toggles + `moderation.dm_on_action` + an XP rate) applied through the
+   same audited `SettingsMutationPipeline` (`_set`) as every other spine step — *not* the draft-only
+   `automation_templates.SERVER_PRESETS` (those bind channels / create roles+rules, needing operator
+   picks + Final Review). So picking a type is instant and fully reversible; nothing is created or bound.
 1. **Greet new members** *(NEW)* — turn on a welcome message; pick **or auto-create** the channel;
    optionally give newcomers a role. (`welcome` + entry role.)
 2. **Who are your moderators?** — pick the role that can warn/remove people; set safe defaults
@@ -200,9 +205,12 @@ decision with architectural weight → called out as open question Q-A below.
     direct-apply role-threshold service (the one genuine gap)" was wrong — `role_automation.set_xp_threshold`
     / `set_time_threshold` already ARE the audited direct-apply paths, and
     `RoleLifecycleService.apply(operation="create")` does the role auto-create. No new service was needed.
-  - **Server-type starter preset** (step 0) — **needs a direct-apply preset path** (presets are
-    draft-only today); design decision before building. Must follow the **optional-typing principle**
-    (Q-0205) for any named resource it creates.
+  - **Server-type starter preset** (step 0) *(SHIPPED 2026-06-24)* — `ServerTypeStep`, the new **first**
+    step. The direct-apply path the plan flagged is resolved by **not** reusing the draft-only
+    `SERVER_PRESETS`: the five starter sets are pure settings bundles (`_SERVER_TYPES` in
+    `essential_setup.py`) applied verbatim through the audited `_set` (settings pipeline), so each pick
+    is instant + reversible and creates/binds nothing. No named resource is created, so the Q-0205
+    optional-typing principle is satisfied trivially (nothing to name).
 - **PR 1 polish pass (SHIPPED 2026-06-24, `#1435`, owner directives Q-0205):** spine consistency + the
   optional-typing principle — block-spam → multi-select (the preferred "pick which" idiom), every step's
   primary button unified to **"Save & continue"** on a consistent row, the skip-recap summary bug fixed
