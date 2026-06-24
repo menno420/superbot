@@ -169,3 +169,88 @@ async def test_claim_rejects_closed_ticket():
         {"id": 1, "guild_id": 1, "status": "closed", "claimed_by": None}, _member(uid=7)
     )
     assert not out.success
+
+
+# --------------------------------------------------------------------------- #
+# create_log_channel — the auto-create-log-channel setup button's service seam
+# --------------------------------------------------------------------------- #
+
+
+def _autocreate_guild(channel):
+    g = MagicMock()
+    g.id = 1
+    g.default_role = MagicMock(name="everyone")
+    g.me = MagicMock(name="me")
+    g.get_channel.return_value = channel
+    return g
+
+
+def _lifecycle(outcome, *, target_id=4242):
+    return lc.LifecycleResult(
+        mutation_id="m",
+        guild_id=1,
+        domain="channel",
+        operation="create",
+        outcome=outcome,
+        reversibility=lc.COMPENSATABLE,
+        steps=(
+            lc.StepResult(target_id=target_id, target_name="ticket-transcripts", ok=True),
+        )
+        if outcome == lc.SUCCESS
+        else (),
+    )
+
+
+@pytest.mark.asyncio
+async def test_create_log_channel_creates_via_seam_locks_down_sets_config(monkeypatch):
+    import discord
+
+    channel = MagicMock(spec=discord.TextChannel)
+    channel.id = 4242
+    channel.mention = "#ticket-transcripts"
+    channel.edit = AsyncMock()
+    guild = _autocreate_guild(channel)
+
+    create = AsyncMock(return_value=_lifecycle(lc.SUCCESS))
+    monkeypatch.setattr(
+        tm,
+        "ChannelLifecycleService",
+        MagicMock(return_value=MagicMock(create_channels=create)),
+    )
+    monkeypatch.setattr(
+        tm.guild_resources, "resolve_role", lambda *a, **k: MagicMock(name="staff")
+    )
+    update_mock = AsyncMock()
+    monkeypatch.setattr(tm, "update_config", update_mock)
+
+    result = await tm.create_log_channel(guild, 7, staff_role_id=99)
+
+    assert result.success is True
+    assert result.channel_id == 4242
+    # Created through the audited lifecycle seam, not a raw guild.create_*.
+    create.assert_awaited_once()
+    # Locked down staff-only: @everyone denied view.
+    channel.edit.assert_awaited_once()
+    overwrites = channel.edit.await_args.kwargs["overwrites"]
+    assert guild.default_role in overwrites
+    # Config updated through the audited update_config seam.
+    update_mock.assert_awaited_once_with(1, 7, log_channel_id=4242)
+
+
+@pytest.mark.asyncio
+async def test_create_log_channel_handles_creation_blocked(monkeypatch):
+    guild = _autocreate_guild(None)
+    create = AsyncMock(return_value=_lifecycle(lc.BLOCKED))
+    monkeypatch.setattr(
+        tm,
+        "ChannelLifecycleService",
+        MagicMock(return_value=MagicMock(create_channels=create)),
+    )
+    update_mock = AsyncMock()
+    monkeypatch.setattr(tm, "update_config", update_mock)
+
+    result = await tm.create_log_channel(guild, 7, staff_role_id=None)
+
+    assert result.success is False
+    assert "Manage Channels" in result.message
+    update_mock.assert_not_awaited()

@@ -5751,8 +5751,8 @@ const COMMANDS = [
     "name": "ticketsetup",
     "area": "community",
     "status": "finished",
-    "summary": "Configure tickets: ``!ticketsetup @StaffRole [#log-channel]`` (managers).",
-    "description": "Configure tickets: !ticketsetup @StaffRole [#log-channel] (managers).",
+    "summary": "Configure tickets — opens a button/dropdown panel (managers).",
+    "description": "Configure tickets — opens a button/dropdown panel (managers).",
     "usage": "!ticketsetup",
     "aliases": [],
     "permissions": "anyone",
@@ -6632,7 +6632,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "beb1dd4",
+    "build": "e337817",
     "title": "New public bot website",
     "changes": [
       {
@@ -6644,7 +6644,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "beb1dd4",
+    "build": "e337817",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6656,7 +6656,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "beb1dd4",
+    "build": "e337817",
     "title": "Command-alias suggestions",
     "changes": [
       {
