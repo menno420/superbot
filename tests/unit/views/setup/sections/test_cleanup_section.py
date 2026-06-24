@@ -102,7 +102,7 @@ def test_embed_describes_scope_chain():
     assert "thread" in description
     assert "channel" in description
     assert "category" in description
-    assert "guild" in description
+    assert "server" in description
 
 
 def test_embed_lists_all_levels():

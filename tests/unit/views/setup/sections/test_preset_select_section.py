@@ -251,7 +251,7 @@ async def test_run_rejects_dm_context():
     await preset_select.run(interaction, MagicMock())
     interaction.response.send_message.assert_awaited_once()
     args = interaction.response.send_message.await_args.args
-    assert "guild" in args[0].lower()
+    assert "server" in args[0].lower()
 
 
 @pytest.mark.asyncio
