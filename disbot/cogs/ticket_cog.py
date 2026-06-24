@@ -34,6 +34,7 @@ from views.tickets import (
     build_confirm_embed,
     build_control_view,
     build_welcome_embed,
+    open_ticket_config_panel,
     open_ticket_hub,
     post_launcher,
 )
@@ -246,35 +247,16 @@ class TicketCog(commands.Cog):
         staff_role: discord.Role | None = None,
         log_channel: discord.TextChannel | None = None,
     ) -> None:
-        """Configure tickets: ``!ticketsetup @StaffRole [#log-channel]`` (managers).
+        """Configure tickets — opens a button/dropdown panel (managers).
 
-        With no arguments, shows the current configuration.
+        With no arguments, opens the interactive setup panel (pick the staff
+        role + log channel from dropdowns, auto-create a log channel, enable,
+        and post the panel — no typing). The positional
+        ``!ticketsetup @StaffRole [#log-channel]`` form stays for power users.
         """
         if staff_role is None:
-            cfg = await ticket_service.get_config(ctx.guild.id)
-            if cfg is None or not cfg.is_set_up:
-                await ctx.send(
-                    "Tickets aren't set up. Run `!ticketsetup @StaffRole [#log]`.",
-                )
-                return
-            role = (
-                guild_resources.resolve_role(ctx.guild, role_id=cfg.staff_role_id)
-                if cfg.staff_role_id
-                else None
-            )
-            log = (
-                ctx.guild.get_channel(cfg.log_channel_id)
-                if cfg.log_channel_id
-                else None
-            )
-            await ctx.send(
-                f"🎫 **Ticket settings**\n"
-                f"• Staff role: {role.mention if role else '—'}\n"
-                f"• Transcript log: "
-                f"{log.mention if isinstance(log, discord.TextChannel) else '—'}\n"
-                f"• Max open per user: {cfg.max_open_per_user}\n"
-                f"• Ping staff on open: {cfg.ping_staff_on_open}",
-            )
+            embed, view = await open_ticket_config_panel(ctx.author, guild=ctx.guild)
+            await ctx.send(embed=embed, view=view)
             return
         await ticket_mutation.update_config(
             ctx.guild.id,

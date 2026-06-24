@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T11:05:38Z",
+    "generated_at": "2026-06-24T11:21:08Z",
     "build": {
-      "commit": "beb1dd4",
-      "subject": "btd6: unify five command groups under one /btd6 (Flattest layout)",
-      "committed_at": "2026-06-24T11:05:38Z"
+      "commit": "e337817",
+      "subject": "tickets: fully button/dropdown setup + auto-create log channel",
+      "committed_at": "2026-06-24T11:21:08Z"
     }
   },
   "counts": {
@@ -2590,8 +2590,8 @@
       "category": "community",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Configure tickets: ``!ticketsetup @StaffRole [#log-channel]`` (managers).",
-      "description": "Configure tickets: !ticketsetup @StaffRole [#log-channel] (managers).",
+      "usage": "Configure tickets — opens a button/dropdown panel (managers).",
+      "description": "Configure tickets — opens a button/dropdown panel (managers).",
       "use_cases": null,
       "examples": [
         "!ticketsetup @StaffRole [#log-channel]"
