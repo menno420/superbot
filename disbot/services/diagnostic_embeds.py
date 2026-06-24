@@ -14,6 +14,7 @@ callbacks produce the same embed as the typed command.
 from __future__ import annotations
 
 import datetime
+import logging
 from typing import TYPE_CHECKING
 
 import discord
@@ -29,6 +30,9 @@ from services.platform_consistency import (
 if TYPE_CHECKING:
     from governance.models import CleanupPolicy, GovernanceSnapshot
     from services.binding_backfill import ApplyResult, DryRunSummary
+
+
+logger = logging.getLogger("bot.services.diagnostic_embeds")
 
 
 # ---------------------------------------------------------------------------
@@ -1911,6 +1915,42 @@ def _render_health_findings(embed, report) -> None:
         )
 
 
+async def _render_ticket_readiness(embed: discord.Embed, guild_id: int) -> None:
+    """Append a Support-Tickets readiness line to the readiness embed.
+
+    Bespoke on purpose: ticket config lives in its own table
+    (``services.ticket_service``), not the schema-declared settings the
+    aggregate readiness score reads, so tickets never appear in the
+    score-driven per-subsystem list. This dedicated line both grades them
+    (enabled / not set up) and doubles as a discovery nudge toward the
+    Support Tickets setup step. Best-effort: a read failure is logged and
+    the line is simply omitted — readiness must never fail on this add-on.
+    """
+    if len(embed.fields) >= _EMBED_FIELD_CAP:
+        return
+    from services import ticket_service
+
+    try:
+        cfg = await ticket_service.get_config(guild_id)
+    except Exception:
+        logger.exception("readiness: ticket config read failed (guild=%d)", guild_id)
+        return
+
+    if cfg is None or not cfg.is_set_up:
+        value = (
+            "🔴 **Not set up** — members can't open support tickets yet. Enable "
+            "them in the **Support Tickets** setup step (`!setup`) or run "
+            "`!ticketsetup @StaffRole [#log]`."
+        )
+    else:
+        log_state = "on" if cfg.log_channel_id else "off"
+        value = (
+            f"🟢 **Enabled** · staff role set · transcript log {log_state} · "
+            f"max {cfg.max_open_per_user} open per member"
+        )
+    embed.add_field(name="🎫 Support Tickets", value=value, inline=False)
+
+
 async def build_setup_readiness_embed(
     guild_id: int,
     *,
@@ -1955,6 +1995,7 @@ async def build_setup_readiness_embed(
     )
 
     _render_health_findings(embed, report)
+    await _render_ticket_readiness(embed, guild_id)
 
     if not report.per_subsystem:
         embed.add_field(
