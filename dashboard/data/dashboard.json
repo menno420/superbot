@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T19:38:12Z",
+    "generated_at": "2026-06-24T18:24:55Z",
     "build": {
-      "commit": "de1b502",
-      "subject": "Merge pull request #1436 from menno420/claude/blissful-hamilton-xdzbak",
-      "committed_at": "2026-06-24T19:38:12Z"
+      "commit": "63b83e2",
+      "subject": "setup: cut Essential Setup over to the primary !setup / /setup",
+      "committed_at": "2026-06-24T18:24:55Z"
     },
     "counts": {
       "functions": 42,
@@ -2529,6 +2529,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-24-setup-step0-server-type-preset.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Essential Setup step 0: server-type starter preset (direct-apply)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-setup-spine-polish.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · Essential Setup spine polish + optional custom naming",
@@ -2654,6 +2662,14 @@
       "title": "Session — 2026-06-24 · Essential Setup steps 3-4 (block spam · help desk)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-essential-setup-cutover.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Essential Setup cutover (primary `!setup`, separate channel, on-join)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2935,22 +2951,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-fishing-test-helpers.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Fishing test helpers: kill the duplicated roll_catch mock (slice 3)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-fishing-premature-grace.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Fishing: the `premature_grace` rod knob (the design's 5th knob)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [

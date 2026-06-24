@@ -100,9 +100,10 @@ def role_service():
 
 def test_flow_counter_and_navigation():
     flow = es.EssentialFlow(_member(), _guild())
-    assert flow.total == 6
-    assert flow.step_counter() == "Step 1 of 6"
+    assert flow.total == 7
+    assert flow.step_counter() == "Step 1 of 7"
     expected = [
+        es.ServerTypeStep,
         es.GreetMembersStep,
         es.ModeratorsStep,
         es.BlockSpamStep,
@@ -111,7 +112,7 @@ def test_flow_counter_and_navigation():
         es.HelpDeskStep,
     ]
     for i, cls in enumerate(expected):
-        assert flow.step_counter() == f"Step {i + 1} of 6"
+        assert flow.step_counter() == f"Step {i + 1} of 7"
         assert isinstance(flow.current_view(), cls)
         flow.advance()
 
@@ -124,27 +125,125 @@ def test_flow_counter_and_navigation():
 
 def test_first_step_has_no_back_button():
     flow = es.EssentialFlow(_member(), _guild())
-    step = es.GreetMembersStep(flow)
+    step = es.ServerTypeStep(flow)
     assert not any(isinstance(c, es._BackButton) for c in step.children)
     # the second step does get a Back button
     flow.advance()
-    step2 = es.ModeratorsStep(flow)
+    step2 = es.GreetMembersStep(flow)
     assert any(isinstance(c, es._BackButton) for c in step2.children)
 
 
 @pytest.mark.asyncio
 async def test_skip_records_step_for_summary():
     flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 1
     step = es.GreetMembersStep(flow)
 
     await step.skip(_interaction())
 
     # Skipping records the step so the summary's "Skipped" recap can list it.
     assert flow.skipped == ["Greet new members"]
-    assert flow.index == 1
+    assert flow.index == 2
     summary = es.EssentialSummaryView(flow).render()
     blob = (summary.description or "") + " ".join(f.value for f in summary.fields)
     assert "Greet new members" in blob
+
+
+# ---------------------------------------------------------------------------
+# Server type (step 0)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_server_type_requires_a_pick(pipeline):
+    flow = es.EssentialFlow(_member(), _guild())
+    step = es.ServerTypeStep(flow)
+    interaction = _interaction()
+
+    await step.apply(interaction)
+
+    pipeline.set_value.assert_not_awaited()
+    interaction.response.send_message.assert_awaited_once()
+    assert flow.index == 0  # did not advance
+
+
+@pytest.mark.asyncio
+async def test_server_type_community_applies_bundle_and_xp_rate(pipeline):
+    flow = es.EssentialFlow(_member(), _guild())
+    step = es.ServerTypeStep(flow)
+    step.server_type = "community"
+
+    await step.apply(_interaction())
+
+    settings = {
+        (c.args[1], c.args[2]): c.args[3] for c in pipeline.set_value.await_args_list
+    }
+    # The curated automod + moderation bundle is applied verbatim.
+    assert settings[("automod", "enabled")] is True
+    assert settings[("automod", "caps_enabled")] is False  # community: caps allowed
+    assert settings[("moderation", "dm_on_action")] is True
+    # The "standard" XP rate triplet is applied (resolved from _XP_RATES).
+    rate = es._XP_RATES["standard"]
+    assert settings[("xp", "xp_min")] == rate[1]
+    assert settings[("xp", "xp_max")] == rate[2]
+    assert settings[("xp", "xp_cooldown")] == rate[3]
+    assert flow.index == 1  # advanced
+    assert flow.applied and "Community" in flow.applied[0]
+
+
+@pytest.mark.asyncio
+async def test_server_type_exploring_is_minimal_and_skips_xp(pipeline):
+    flow = es.EssentialFlow(_member(), _guild())
+    step = es.ServerTypeStep(flow)
+    step.server_type = "exploring"
+
+    await step.apply(_interaction())
+
+    settings = {
+        (c.args[1], c.args[2]): c.args[3] for c in pipeline.set_value.await_args_list
+    }
+    # Exploring = just basic spam protection; XP left untouched (xp_rate=None).
+    assert settings == {
+        ("automod", "enabled"): True,
+        ("automod", "spam_enabled"): True,
+    }
+    assert not any(c.args[1] == "xp" for c in pipeline.set_value.await_args_list)
+    assert flow.index == 1
+
+
+@pytest.mark.asyncio
+async def test_server_type_gaming_allows_invites(pipeline):
+    flow = es.EssentialFlow(_member(), _guild())
+    step = es.ServerTypeStep(flow)
+    step.server_type = "gaming"
+
+    await step.apply(_interaction())
+
+    settings = {
+        (c.args[1], c.args[2]): c.args[3] for c in pipeline.set_value.await_args_list
+    }
+    # Gaming servers share invite links → that filter is off; mass-ping on.
+    assert settings[("automod", "invites_enabled")] is False
+    assert settings[("automod", "mentions_enabled")] is True
+    assert flow.index == 1
+
+
+def test_every_server_type_uses_only_known_settings():
+    # Step 0 must stay channel-independent: only the proven settings the other
+    # spine steps write, and an xp_rate that resolves in _XP_RATES.
+    allowed = {
+        ("automod", "enabled"),
+        ("automod", "spam_enabled"),
+        ("automod", "invites_enabled"),
+        ("automod", "caps_enabled"),
+        ("automod", "mentions_enabled"),
+        ("moderation", "dm_on_action"),
+    }
+    for preset in es._SERVER_TYPES:
+        for subsystem, name, _value in preset.settings:
+            assert (subsystem, name) in allowed, f"{preset.key}: {subsystem}.{name}"
+        if preset.xp_rate is not None:
+            assert preset.xp_rate in es._XP_RATES
 
 
 # ---------------------------------------------------------------------------
@@ -155,6 +254,7 @@ async def test_skip_records_step_for_summary():
 @pytest.mark.asyncio
 async def test_greet_requires_channel_before_applying(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 1
     step = es.GreetMembersStep(flow)
     interaction = _interaction()
 
@@ -163,12 +263,13 @@ async def test_greet_requires_channel_before_applying(pipeline):
     pipeline.set_value.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
     assert "channel" in interaction.response.send_message.await_args.args[0].lower()
-    assert flow.index == 0  # did not advance
+    assert flow.index == 1  # did not advance
 
 
 @pytest.mark.asyncio
 async def test_greet_applies_welcome_settings_and_advances(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 1
     step = es.GreetMembersStep(flow)
     step.channel_id = 555
     step.entry_role_id = 777
@@ -182,13 +283,14 @@ async def test_greet_applies_welcome_settings_and_advances(pipeline):
     names = {c.args[2] for c in pipeline.set_value.await_args_list}
     assert subsystems == {"welcome"}
     assert {"enabled", "join_enabled", "channel", "entry_role"} == names
-    assert flow.index == 1  # advanced
+    assert flow.index == 2  # advanced
     assert flow.applied and "555" in flow.applied[0]
 
 
 @pytest.mark.asyncio
 async def test_greet_without_role_writes_three_settings(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 1
     step = es.GreetMembersStep(flow)
     step.channel_id = 555
     await step.apply(_interaction())
@@ -203,16 +305,18 @@ async def test_greet_without_role_writes_three_settings(pipeline):
 @pytest.mark.asyncio
 async def test_moderators_requires_role(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 2
     step = es.ModeratorsStep(flow)
     interaction = _interaction()
     await step.apply(interaction)
     pipeline.set_value.assert_not_awaited()
-    assert flow.index == 0
+    assert flow.index == 2
 
 
 @pytest.mark.asyncio
 async def test_moderators_applies_role_and_dm(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 2
     step = es.ModeratorsStep(flow)
     step.mod_role_id = 4242
     await step.apply(_interaction())
@@ -220,7 +324,7 @@ async def test_moderators_applies_role_and_dm(pipeline):
     calls = {(c.args[1], c.args[2]) for c in pipeline.set_value.await_args_list}
     assert ("moderation", "moderator_role") in calls
     assert ("moderation", "dm_on_action") in calls
-    assert flow.index == 1
+    assert flow.index == 3
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +335,7 @@ async def test_moderators_applies_role_and_dm(pipeline):
 @pytest.mark.asyncio
 async def test_block_spam_applies_automod_with_all_filters(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 2
+    flow.index = 3
     step = es.BlockSpamStep(flow)
     await step.apply(_interaction())
     # enabled + 4 filters = 5 immediate writes, all to automod
@@ -246,13 +350,13 @@ async def test_block_spam_applies_automod_with_all_filters(pipeline):
         "caps_enabled",
         "mentions_enabled",
     }
-    assert flow.index == 3
+    assert flow.index == 4
 
 
 @pytest.mark.asyncio
 async def test_block_spam_respects_toggled_off_filter(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 2
+    flow.index = 3
     step = es.BlockSpamStep(flow)
     step.filters.discard("caps_enabled")  # untick one in the multi-select
     await step.apply(_interaction())
@@ -280,7 +384,7 @@ async def test_log_channel_defaults_create_both_and_bind(
     channel_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 3
+    flow.index = 4
     step = es.LogChannelStep(flow)  # defaults: members + roles on, messages off
     # No channels picked → auto-create both (mod first, then activity).
     channel_service.create_channels.side_effect = [_created(111), _created(222)]
@@ -306,7 +410,7 @@ async def test_log_channel_defaults_create_both_and_bind(
         c.args[3] == BindingKind.CHANNEL
         for c in binding_pipeline.set_binding.await_args_list
     )
-    assert flow.index == 4
+    assert flow.index == 5
 
 
 @pytest.mark.asyncio
@@ -316,7 +420,7 @@ async def test_log_channel_picked_channels_bind_without_create(
     channel_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 3
+    flow.index = 4
     step = es.LogChannelStep(flow)
     step.mod_channel_id = 700
     step.activity_channel_id = 800
@@ -326,7 +430,7 @@ async def test_log_channel_picked_channels_bind_without_create(
     channel_service.create_channels.assert_not_awaited()
     binds = {c.args[2]: c.args[4] for c in binding_pipeline.set_binding.await_args_list}
     assert binds == {"mod_channel": 700, "events_channel": 800}
-    assert flow.index == 4
+    assert flow.index == 5
 
 
 @pytest.mark.asyncio
@@ -336,7 +440,7 @@ async def test_log_channel_no_activity_logs_moderation_only(
     channel_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 3
+    flow.index = 4
     step = es.LogChannelStep(flow)
     step.activity = set()  # operator unticked every activity type
     step.mod_channel_id = 700
@@ -355,7 +459,7 @@ async def test_log_channel_no_activity_logs_moderation_only(
     assert settings[("logging", "members_enabled")] is False
     assert settings[("logging", "roles_enabled")] is False
     assert settings[("logging", "messages_enabled")] is False
-    assert flow.index == 4
+    assert flow.index == 5
 
 
 @pytest.mark.asyncio
@@ -365,7 +469,7 @@ async def test_log_channel_create_failure_blocks(
     channel_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 3
+    flow.index = 4
     step = es.LogChannelStep(flow)  # defaults; no channels picked → tries mod create
     channel_service.create_channels.return_value = SimpleNamespace(
         applied=(),
@@ -380,7 +484,7 @@ async def test_log_channel_create_failure_blocks(
     binding_pipeline.set_binding.assert_not_awaited()
     pipeline.set_value.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
-    assert flow.index == 3
+    assert flow.index == 4
 
 
 @pytest.mark.asyncio
@@ -390,7 +494,7 @@ async def test_log_channel_custom_names_used_when_creating(
     channel_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 3
+    flow.index = 4
     step = es.LogChannelStep(flow)
     # Optional typing: custom names for both auto-created channels.
     step.mod_channel_name = "staff-log"
@@ -401,7 +505,7 @@ async def test_log_channel_custom_names_used_when_creating(
 
     names = [c.args[1][0] for c in channel_service.create_channels.await_args_list]
     assert names == ["staff-log", "member-log"]
-    assert flow.index == 4
+    assert flow.index == 5
 
 
 # ---------------------------------------------------------------------------
@@ -414,7 +518,7 @@ async def test_reward_no_rewards_applies_rate_only(
     pipeline, role_automation, role_service
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 4
+    flow.index = 5
     step = es.RewardActivityStep(flow)
     step.xp_rate = "active"  # rewards stay empty
 
@@ -425,26 +529,26 @@ async def test_reward_no_rewards_applies_rate_only(
     assert {("xp", "xp_min"), ("xp", "xp_max"), ("xp", "xp_cooldown")} <= names
     role_automation.set_xp_threshold.assert_not_awaited()
     role_service.apply.assert_not_awaited()
-    assert flow.index == 5
+    assert flow.index == 6
 
 
 @pytest.mark.asyncio
 async def test_reward_keep_rate_no_rewards_is_noop_advance(pipeline, role_automation):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 4
+    flow.index = 5
     step = es.RewardActivityStep(flow)  # xp_rate="keep", rewards empty
 
     await step.on_next(_interaction())
 
     pipeline.set_value.assert_not_awaited()
     role_automation.set_xp_threshold.assert_not_awaited()
-    assert flow.index == 5
+    assert flow.index == 6
 
 
 @pytest.mark.asyncio
 async def test_reward_next_with_rewards_enters_role_phase(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 4
+    flow.index = 5
     step = es.RewardActivityStep(flow)
     step.rewards = {"level"}
 
@@ -453,7 +557,7 @@ async def test_reward_next_with_rewards_enters_role_phase(pipeline):
     # Moves to screen 2 without applying or advancing.
     assert step.phase == "roles"
     pipeline.set_value.assert_not_awaited()
-    assert flow.index == 4
+    assert flow.index == 5
 
 
 @pytest.mark.asyncio
@@ -463,7 +567,7 @@ async def test_reward_recommended_creates_role_and_sets_level(
     role_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 4
+    flow.index = 5
     step = es.RewardActivityStep(flow)
     step.rewards = {"level"}
     step.phase = "roles"
@@ -485,7 +589,7 @@ async def test_reward_recommended_creates_role_and_sets_level(
     assert kwargs["guild_id"] == 1
     assert kwargs["actor_id"] == 99
     role_automation.set_time_threshold.assert_not_awaited()
-    assert flow.index == 5
+    assert flow.index == 6
 
 
 @pytest.mark.asyncio
@@ -495,7 +599,7 @@ async def test_reward_existing_role_both_triggers(
     role_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 4
+    flow.index = 5
     step = es.RewardActivityStep(flow)
     step.rewards = {"level", "time"}
     step.phase = "roles"
@@ -510,13 +614,13 @@ async def test_reward_existing_role_both_triggers(
     assert role_automation.set_xp_threshold.await_args.kwargs["role_id"] == 555
     assert role_automation.set_time_threshold.await_args.kwargs["role_id"] == 555
     assert role_automation.set_time_threshold.await_args.kwargs["days"] == 30
-    assert flow.index == 5
+    assert flow.index == 6
 
 
 @pytest.mark.asyncio
 async def test_reward_existing_requires_a_pick(pipeline, role_automation, role_service):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 4
+    flow.index = 5
     step = es.RewardActivityStep(flow)
     step.rewards = {"level"}
     step.phase = "roles"
@@ -528,7 +632,7 @@ async def test_reward_existing_requires_a_pick(pipeline, role_automation, role_s
     role_service.apply.assert_not_awaited()
     role_automation.set_xp_threshold.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
-    assert flow.index == 4  # did not advance
+    assert flow.index == 5  # did not advance
 
 
 @pytest.mark.asyncio
@@ -538,7 +642,7 @@ async def test_reward_role_create_failure_blocks(
     role_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 4
+    flow.index = 5
     step = es.RewardActivityStep(flow)
     step.rewards = {"level"}
     step.phase = "roles"
@@ -555,7 +659,7 @@ async def test_reward_role_create_failure_blocks(
     role_automation.set_xp_threshold.assert_not_awaited()
     pipeline.set_value.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
-    assert flow.index == 4
+    assert flow.index == 5
 
 
 @pytest.mark.asyncio
@@ -565,7 +669,7 @@ async def test_reward_create_uses_custom_role_name(
     role_service,
 ):
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 4
+    flow.index = 5
     step = es.RewardActivityStep(flow)
     step.rewards = {"level"}
     step.phase = "roles"
@@ -583,7 +687,7 @@ async def test_reward_create_uses_custom_role_name(
     assert request.name == "Champion"
     assert role_automation.set_xp_threshold.await_args.kwargs["role_name"] == "Champion"
     assert role_automation.set_xp_threshold.await_args.kwargs["role_id"] == 909
-    assert flow.index == 5
+    assert flow.index == 6
 
 
 # ---------------------------------------------------------------------------
@@ -594,20 +698,20 @@ async def test_reward_create_uses_custom_role_name(
 @pytest.mark.asyncio
 async def test_help_desk_requires_staff_role():
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 5
+    flow.index = 6
     step = es.HelpDeskStep(flow)
     interaction = _interaction()
     with patch("services.ticket_mutation.update_config", new=AsyncMock()) as upd:
         await step.apply(interaction)
     upd.assert_not_awaited()
-    assert flow.index == 5
+    assert flow.index == 6
     assert "staff" in interaction.response.send_message.await_args.args[0].lower()
 
 
 @pytest.mark.asyncio
 async def test_help_desk_enables_tickets_and_advances():
     flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 5
+    flow.index = 6
     step = es.HelpDeskStep(flow)
     step.staff_role_id = 321
     step.log_channel_id = 654
@@ -618,7 +722,7 @@ async def test_help_desk_enables_tickets_and_advances():
     assert kwargs["enabled"] is True
     assert kwargs["staff_role_id"] == 321
     assert kwargs["log_channel_id"] == 654
-    assert flow.index == 6
+    assert flow.index == 7
 
 
 # ---------------------------------------------------------------------------
