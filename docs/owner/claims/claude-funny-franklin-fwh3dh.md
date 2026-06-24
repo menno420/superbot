@@ -1,0 +1,1 @@
+claude/funny-franklin-fwh3dh · settle-once terminal guard for game-state views (cross-game double-settlement contract) · new disbot/views/terminal_guard.py + disbot/views/rps/pvp_play.py + disbot/views/games/deathmatch_panel.py + tests · 2026-06-24
