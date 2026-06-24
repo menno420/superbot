@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import logging
 
 import discord
@@ -8,8 +9,9 @@ from discord.ext import commands
 from core.runtime.interaction_helpers import help_ctx_shim
 from services import xp_service
 from services.rank_providers import get_provider
-from services.xp_helpers import _STAT_TYPES, _build_rank_embed
+from services.xp_helpers import _STAT_TYPES, RANK_CARD_FILENAME, build_rank_response
 from utils import embeds as em
+from utils.rank_render import render_rank_card
 from utils.ui_constants import ECONOMY_COLOR
 from views.base import send_panel
 from views.xp.config_panel import XpConfigView
@@ -19,18 +21,21 @@ from views.xp.rank_view import _RankView
 logger = logging.getLogger("bot")
 
 
-async def _build_rank_provider_embed(
+async def _build_rank_provider_response(
     provider,
     member: discord.Member,
     guild: discord.Guild,
-) -> discord.Embed:
+) -> tuple[discord.Embed, discord.File | None]:
     """Render a single-user rank card for any non-XP provider.
 
     XP and coins keep their richer level / progress-bar card via
-    :func:`cogs.xp._helpers._build_rank_embed`. Everything else uses
-    this thinner card: title from the provider, a single field with
-    the member's rank + provider-formatted value, or an empty-state
-    line when the member has no entry.
+    :func:`services.xp_helpers.build_rank_response`. Everything else uses
+    this thinner card: title from the provider, the member's rank +
+    provider-formatted value, or an empty-state line when the member has no
+    entry. The image rides the provider's own ``card_theme`` (so ``!rank
+    mining`` shows the abyss skin, ``!rank crafting`` the ember skin, etc.) —
+    the same per-category skinning the leaderboard card uses; an unranked
+    member or a Pillow-less host falls back to the plain embed.
     """
     rank_pos, rendered = await provider.member_rank(guild, member.id)
     embed = discord.Embed(
@@ -40,10 +45,20 @@ async def _build_rank_provider_embed(
     embed.set_thumbnail(url=member.display_avatar.url)
     if rank_pos is None:
         embed.description = provider.empty_hint
-    else:
-        embed.add_field(name="Rank", value=f"#{rank_pos}", inline=True)
-        embed.add_field(name="Value", value=rendered, inline=True)
-    return embed
+        return embed, None
+
+    embed.add_field(name="Rank", value=f"#{rank_pos}", inline=True)
+    embed.add_field(name="Value", value=rendered, inline=True)
+    png = render_rank_card(
+        display_name=member.display_name,
+        subtitle=provider.display_title,
+        stats=[("Rank", f"#{rank_pos}"), (provider.select_label, rendered)],
+        theme=provider.card_theme,
+    )
+    if png is None:
+        return embed, None
+    embed.set_image(url=f"attachment://{RANK_CARD_FILENAME}")
+    return embed, discord.File(io.BytesIO(png), filename=RANK_CARD_FILENAME)
 
 
 class XpCog(commands.Cog):
@@ -121,14 +136,24 @@ class XpCog(commands.Cog):
         if category is not None:
             provider = get_provider(category)
             assert provider is not None  # noqa: S101 — guarded above
-            embed = await _build_rank_provider_embed(provider, member, ctx.guild)
-            await ctx.send(embed=embed)
+            embed, card = await _build_rank_provider_response(
+                provider,
+                member,
+                ctx.guild,
+            )
+            if card is not None:
+                await ctx.send(embed=embed, file=card)
+            else:
+                await ctx.send(embed=embed)
             return
 
         stat = stat or "both"
-        embed = await _build_rank_embed(member, ctx.guild, stat)
+        embed, card = await build_rank_response(member, ctx.guild, stat)
         view = _RankView(member, ctx.guild, stat)
-        view.message = await ctx.send(embed=embed, view=view)
+        if card is not None:
+            view.message = await ctx.send(embed=embed, view=view, file=card)
+        else:
+            view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="givexp")
     @commands.has_permissions(administrator=True)
