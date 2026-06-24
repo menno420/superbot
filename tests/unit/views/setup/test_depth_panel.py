@@ -168,4 +168,4 @@ async def test_depth_panel_select_requires_guild_context():
 
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0]
-    assert "guild" in msg.lower()
+    assert "server" in msg.lower()

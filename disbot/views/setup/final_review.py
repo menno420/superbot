@@ -348,7 +348,7 @@ class FinalReviewView(BaseView):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Final review requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -493,7 +493,7 @@ class FinalReviewView(BaseView):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "AI review requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -796,7 +796,7 @@ class PartialApplyRecoveryView(BaseView):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Retry requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -847,7 +847,7 @@ class PartialApplyRecoveryView(BaseView):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Finish requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -960,7 +960,7 @@ class SetupCompleteView(BaseView):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Delete requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return

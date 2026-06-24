@@ -203,7 +203,7 @@ class SetupLauncherView(discord.ui.View):
         guild = interaction.guild
         member = interaction.user
         if guild is None or not isinstance(member, discord.Member):
-            await self._deny(interaction, "Setup requires a guild context.")
+            await self._deny(interaction, "This can only be used in a server.")
             return
 
         # Resolve or start the session so can_apply_setup sees a real row.
@@ -272,7 +272,7 @@ class SetupLauncherView(discord.ui.View):
         if guild is None:
             await self._deny(
                 interaction,
-                "Readiness scan requires a guild context.",
+                "This can only be used in a server.",
             )
             return
         from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
@@ -297,7 +297,7 @@ class SetupLauncherView(discord.ui.View):
         if guild is None or interaction.guild_id is None:
             await self._deny(
                 interaction,
-                "Smart Suggestions requires a guild context.",
+                "This can only be used in a server.",
             )
             return
 
@@ -376,7 +376,7 @@ class SetupLauncherView(discord.ui.View):
         if guild is None or interaction.guild_id is None:
             await self._deny(
                 interaction,
-                "View Summary requires a guild context.",
+                "This can only be used in a server.",
             )
             return
         session = await self._resolve_session(interaction)
@@ -437,7 +437,7 @@ class SetupLauncherView(discord.ui.View):
         if guild is None:
             await self._deny(
                 interaction,
-                "Repost launcher requires a guild context.",
+                "This can only be used in a server.",
             )
             return
 
@@ -486,7 +486,7 @@ class SetupLauncherView(discord.ui.View):
         if interaction.guild_id is None:
             await self._deny(
                 interaction,
-                "Dismiss requires a guild context.",
+                "This can only be used in a server.",
             )
             return
         await setup_session.dismiss(interaction.guild_id)

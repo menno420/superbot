@@ -144,7 +144,7 @@ class PreviewPanelView(BaseView):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Provisioning requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return

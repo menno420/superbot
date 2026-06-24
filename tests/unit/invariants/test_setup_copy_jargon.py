@@ -13,8 +13,10 @@ catch are (a) an existing file growing *more* jargon and (b) a brand-new setup
 section shipping with jargon — a count ceiling catches (a), the file-set guard
 catches (b).
 
-Baseline measured 2026-06-24 against the pre-restructure wizard:
-  207 operator-facing jargon strings across 33 files (``check_setup_copy --json``).
+Baseline (2026-06-24), lowered as copy is cleaned:
+  - 207 strings / 33 files — initial measurement (pre-restructure wizard).
+  - 154 strings / 29 files — after the guild→server plain-language sweep
+    (4 sections went fully clean: server_scan, readiness, suggestions, ticket).
 
 Sibling invariants: ``test_settings_reachability.py``, ``test_command_reachability.py``.
 """
@@ -29,7 +31,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCRIPT = _REPO_ROOT / "scripts" / "check_setup_copy.py"
 
 # Ratchet ceiling — lower this as the spine rewrite cleans copy; never raise it.
-_BASELINE_TOTAL = 207
+_BASELINE_TOTAL = 154
 
 # The setup files that carry jargon debt today. A finding in any file NOT in
 # this set is new jargon and fails — new sections must ship plain-language.
@@ -59,12 +61,8 @@ _BASELINE_FILES = frozenset(
         "disbot/views/setup/sections/moderation.py",
         "disbot/views/setup/sections/preset_select.py",
         "disbot/views/setup/sections/purpose.py",
-        "disbot/views/setup/sections/readiness.py",
         "disbot/views/setup/sections/role_templates.py",
         "disbot/views/setup/sections/roles.py",
-        "disbot/views/setup/sections/server_scan.py",
-        "disbot/views/setup/sections/suggestions.py",
-        "disbot/views/setup/sections/ticket.py",
         "disbot/views/setup/summary.py",
         "disbot/views/setup/template_picker.py",
         "disbot/views/setup/wizard.py",

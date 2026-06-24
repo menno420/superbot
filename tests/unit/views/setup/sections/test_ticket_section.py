@@ -110,7 +110,7 @@ async def test_open_panel_rejects_dm_context():
     interaction.response.send_message = AsyncMock()
     await ticket._open_panel(interaction, None)
     interaction.response.send_message.assert_awaited_once()
-    assert "guild" in interaction.response.send_message.await_args.args[0].lower()
+    assert "server" in interaction.response.send_message.await_args.args[0].lower()
 
 
 @pytest.mark.asyncio

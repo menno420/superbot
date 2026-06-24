@@ -57,7 +57,7 @@ def test_embed_describes_scope_chain_and_default_true():
     description = (embed.description or "").lower()
     assert "channel" in description
     assert "category" in description
-    assert "guild" in description
+    assert "server" in description
     assert "default" in description
 
 

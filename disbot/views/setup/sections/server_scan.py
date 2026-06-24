@@ -62,7 +62,7 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Server scan requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return

@@ -89,7 +89,7 @@ PURPOSE_OPTIONS: tuple[PurposeOption, ...] = (
     PurposeOption(
         slug="testing_private",
         label="Testing / private",
-        description="Private test or staging guild.  Skip strict defaults; "
+        description="Private test or staging server.  Skip strict defaults; "
         "fewer guardrails.",
         emoji="🧪",
     ),
@@ -212,7 +212,7 @@ class PurposePickerView(BaseView):
             guild_id = interaction.guild_id
             if guild_id is None:
                 await interaction.response.send_message(
-                    "Purpose picker requires a guild context.",
+                    "This can only be used in a server.",
                     ephemeral=True,
                 )
                 return

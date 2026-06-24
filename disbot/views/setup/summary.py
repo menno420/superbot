@@ -173,7 +173,7 @@ class _DeleteSetupChannelConfirmView(BaseView):
         guild = interaction.guild
         if guild is None or interaction.guild_id is None:
             await interaction.response.send_message(
-                "Delete requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return

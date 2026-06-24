@@ -65,14 +65,14 @@ def _build_identity_embed(
     embed = discord.Embed(
         title="🪪 Server identity",
         description=(
-            "Identity snapshot for this guild.  Edit the default below to "
+            "Identity snapshot for this server.  Edit the default below to "
             "demonstrate the SetupOperation path; new sections plug into "
             "the same registry."
         ),
         color=discord.Color.blurple(),
     )
     embed.add_field(name="Server", value=guild.name, inline=True)
-    embed.add_field(name="Guild ID", value=str(guild.id), inline=True)
+    embed.add_field(name="Server ID", value=str(guild.id), inline=True)
     embed.add_field(name="Owner", value=owner_display, inline=True)
     embed.add_field(
         name="Members",
@@ -150,7 +150,7 @@ class _WarnThresholdModal(discord.ui.Modal, title="Edit warn threshold"):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Identity edits require a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -239,7 +239,7 @@ async def _customize_run(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Identity requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return
