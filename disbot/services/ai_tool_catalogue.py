@@ -47,6 +47,10 @@ TOOLSET_SERVER_CONTEXT_BASIC = "server_context_basic"
 TOOLSET_SERVER_CONTEXT_SENSITIVE = "server_context_sensitive"
 TOOLSET_DIAGNOSTICS = "diagnostics"
 TOOLSET_SELF_AWARENESS = "self_awareness"
+# Support tickets — the one *action* toolset. ``open_support_ticket`` writes
+# (it opens a ticket through the audited mutation seam), unlike every other
+# catalogued tool, which is read-only.
+TOOLSET_TICKET = "support_ticket"
 
 # --- Scope ordering (canonical home; re-exported by ai_tools as _scope_allows) ----
 
@@ -154,6 +158,11 @@ CATALOGUE: dict[str, AIToolMetadata] = {
         freshness="live",
     ),
     "btd6_answerability": _btd6(TOOLSET_SELF_AWARENESS, TOOLSET_BTD6_REFERENCE),
+    # --- Support tickets (the one write-capable / action tool) ---
+    "open_support_ticket": AIToolMetadata(
+        toolsets=frozenset({TOOLSET_TICKET}),
+        freshness="live",
+    ),
 }
 
 

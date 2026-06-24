@@ -637,6 +637,45 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
     role setting (future).
 19. **target_Settings_Manager_page**: `!settings subsystem treasury` (future).
 
+### ticket
+
+1. **cog_module**: `disbot/cogs/ticket_cog.py`.
+2. **subsystem**: `ticket`
+3. **current_commands**: `!ticket` (hub), `!ticket new <subject>`, `!ticket close [reason]`,
+   `!ticket claim`, `!ticket add @user`, `!ticket remove @user`, `!ticketpanel`,
+   `!ticketsetup @StaffRole [#log]`, `!ticketlimit <n>`, `!ticketblacklist add|remove @user`.
+4. **current_command_groups**: `ticket` (group; subcommands `new`/`close`/`claim`/`add`/`remove`),
+   `ticketblacklist` (group; `add`/`remove`).
+5. **current_command_panel_or_menu**: `TicketHubView` (Open · My tickets · Post panel) —
+   `disbot/views/tickets/`; the public `TicketLauncherView` (persistent "Open a ticket" button)
+   and the in-channel `TicketControlView` (Claim · Close); the `TicketOpenModal` collects the subject.
+6. **help_menu_discoverable**: Yes (actionable hub via `build_help_menu_view`).
+7. **dedicated_panel_command**: `!ticket`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (live `TicketHubView`).
+9. **existing_SettingSpec_declarations**: none (config lives in the `ticket_config` table, not the
+   KV settings store).
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities `ticket.ticket.open`,
+    `ticket.ticket.manage`, `ticket.config.update`. Opening is gated by the per-user open cap +
+    blacklist; claim/close/add/remove require the configured staff role or `manage_guild`/admin;
+    setup commands require `manage_guild`.
+14. **hardcoded_or_env_only_behavior**: none — per-guild config (staff role, ticket category,
+    transcript log channel, max-open-per-user, ping-on-open) lives in `ticket_config` (migration 098)
+    and is written through the audited `services/ticket_mutation.py` seam. Opening creates a private
+    channel through `ChannelLifecycleService` and emits `ticket.opened`; the AI `open_support_ticket`
+    tool shares the same audited open path.
+15. **missing_customization_commands**: multiple ticket categories/panels with per-category staff
+    teams; pre-ticket question forms; auto-close-on-inactivity; feedback ratings (future).
+16. **missing_settings_pages**: Settings Manager ticket page (future — staff roles, category, log,
+    limits as settings rows).
+17. **missing_menu_buttons_selects_modals**: an in-hub setup wizard + a category dropdown on the
+    launcher (future; today setup is command-only).
+18. **setting_class_per_value**: staff role → role setting; category/log → channel settings;
+    max-open → scalar; ping-on-open → boolean (future Settings rows).
+19. **target_Settings_Manager_page**: `!settings subsystem ticket` (future).
+
 ### farm
 
 1. **cog_module**: `disbot/cogs/farm_cog.py`.

@@ -97,6 +97,7 @@ def test_community_hub_uses_new_cog():
         "role",
         "welcome",
         "counters",
+        "ticket",
     )
     assert community.cross_link_children == ("counting", "chain", "leaderboard")
     assert community.panel_available is True

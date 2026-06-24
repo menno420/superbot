@@ -84,6 +84,9 @@ extensions:
   karma:
     role: product_subsystem
     note: Peer reputation (thanks/upvote); audited karma_service seam + leaderboard.
+  ticket:
+    role: product_subsystem
+    note: Support tickets — private channels, claim/close/transcript; opens by command, panel, or AI.
   blackjack:
     role: product_subsystem
     note: Game.

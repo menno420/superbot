@@ -241,6 +241,7 @@ A condensed version of `docs/help-command-surface-map.md` and
 | server_management | `cogs/server_management_cog.py` | `views/server_management/` | n/a (hub — composes setup/diagnostics/lifecycle services) | n/a |
 | settings | `cogs/settings_cog.py` (+ `cogs/settings/`) | `views/settings/` | `services/settings_mutation.py` | `utils/db/settings.py` |
 | setup | `cogs/setup_cog.py` (+ `cogs/setup/`) | `views/setup/` | `services/setup_operations.py` (+ companion services) | `utils/db/setup_session.py`, `utils/db/setup_draft.py` |
+| ticket | `cogs/ticket_cog.py` | `views/tickets/` | `services/ticket_mutation.py` (audited seam) + `services/ticket_service.py` (read model) | `utils/db/tickets.py` |
 | utility | `cogs/utility_cog.py` | — | n/a | n/a |
 | xp | `cogs/xp_cog.py` (+ `cogs/xp/`) | `views/xp/` | `services/xp_service.py` | `utils/db/xp.py` |
 

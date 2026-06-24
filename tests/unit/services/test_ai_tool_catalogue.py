@@ -118,6 +118,7 @@ def test_known_toolsets_are_the_declared_families():
         "server_context_sensitive",
         "diagnostics",
         "self_awareness",
+        "support_ticket",
     }
 
 

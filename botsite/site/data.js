@@ -103,6 +103,7 @@ const AREAS = [
       "Community",
       "Community Spotlight",
       "Server Counters",
+      "Support Tickets",
       "Welcome"
     ]
   },
@@ -230,13 +231,13 @@ const COMMANDS = [
   },
   {
     "name": "add",
-    "area": "moderation",
+    "area": "community",
     "status": "finished",
-    "summary": "Adds a word to the prohibited words list.",
-    "description": "Adds a word to the prohibited words list.",
+    "summary": "Add a member to this ticket (staff).",
+    "description": "Add a member to this ticket (staff).",
     "usage": "!add",
     "aliases": [],
-    "permissions": "Administrator",
+    "permissions": "anyone",
     "cooldown": null,
     "examples": [],
     "planned": []
@@ -1224,6 +1225,19 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "claim",
+    "area": "community",
+    "status": "finished",
+    "summary": "Claim the ticket in this channel (staff).",
+    "description": "Claim the ticket in this channel (staff).",
+    "usage": "!claim",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "cleanup",
     "area": "moderation",
     "status": "finished",
@@ -1315,6 +1329,19 @@ const COMMANDS = [
     "usage": "!clone",
     "aliases": [],
     "permissions": "Administrator",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "close",
+    "area": "community",
+    "status": "finished",
+    "summary": "Close the ticket in this channel (staff or the opener).",
+    "description": "Close the ticket in this channel (staff or the opener).",
+    "usage": "!close",
+    "aliases": [],
+    "permissions": "anyone",
     "cooldown": null,
     "examples": [],
     "planned": []
@@ -3362,6 +3389,24 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "new",
+    "area": "community",
+    "status": "finished",
+    "summary": "Open a ticket directly: ``!ticket new <subject>``.",
+    "description": "Open a ticket directly: !ticket new <subject>.",
+    "usage": "!new",
+    "aliases": [
+      "open",
+      "create"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!ticket new <subject>"
+    ],
+    "planned": []
+  },
+  {
     "name": "off",
     "area": "other",
     "status": "finished",
@@ -3859,13 +3904,13 @@ const COMMANDS = [
   },
   {
     "name": "remove",
-    "area": "moderation",
+    "area": "community",
     "status": "finished",
-    "summary": "Removes a word from the prohibited words list.",
-    "description": "Removes a word from the prohibited words list.",
+    "summary": "Remove a member from this ticket (staff).",
+    "description": "Remove a member from this ticket (staff).",
     "usage": "!remove",
     "aliases": [],
-    "permissions": "Administrator",
+    "permissions": "anyone",
     "cooldown": null,
     "examples": [],
     "planned": []
@@ -5555,6 +5600,75 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "ticket",
+    "area": "community",
+    "status": "finished",
+    "summary": "Open the ticket hub — open a ticket or view your open tickets.",
+    "description": "Open the ticket hub — open a ticket or view your open tickets.",
+    "usage": "!ticket",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "ticketblacklist",
+    "area": "community",
+    "status": "finished",
+    "summary": "Manage who may open tickets: ``!ticketblacklist add|remove @user``.",
+    "description": "Manage who may open tickets: !ticketblacklist add|remove @user.",
+    "usage": "!ticketblacklist",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!ticketblacklist add|remove @user"
+    ],
+    "planned": []
+  },
+  {
+    "name": "ticketlimit",
+    "area": "community",
+    "status": "finished",
+    "summary": "Set the max simultaneously-open tickets per member (managers).",
+    "description": "Set the max simultaneously-open tickets per member (managers).",
+    "usage": "!ticketlimit",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "ticketpanel",
+    "area": "community",
+    "status": "finished",
+    "summary": "Post the public ticket launcher panel in this channel (managers).",
+    "description": "Post the public ticket launcher panel in this channel (managers).",
+    "usage": "!ticketpanel",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "ticketsetup",
+    "area": "community",
+    "status": "finished",
+    "summary": "Configure tickets: ``!ticketsetup @StaffRole [#log-channel]`` (managers).",
+    "description": "Configure tickets: !ticketsetup @StaffRole [#log-channel] (managers).",
+    "usage": "!ticketsetup",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!ticketsetup @StaffRole [#log-channel]"
+    ],
+    "planned": []
+  },
+  {
     "name": "timedprize",
     "area": "moderation",
     "status": "finished",
@@ -6424,7 +6538,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "2d0b127b",
+    "build": "bf27a35",
     "title": "New public bot website",
     "changes": [
       {
@@ -6436,7 +6550,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "2d0b127b",
+    "build": "bf27a35",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6448,7 +6562,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "2d0b127b",
+    "build": "bf27a35",
     "title": "Command-alias suggestions",
     "changes": [
       {

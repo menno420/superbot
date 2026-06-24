@@ -5,7 +5,7 @@
 > `architecture_rules/extension_roles.yaml`. Sources: `disbot/config.py` (`INITIAL_EXTENSIONS`),
 > `disbot/utils/subsystem_registry.py` (`SUBSYSTEMS`), and that overlay. `--check` guards staleness.
 
-_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **54** extensions  ·  **41** registered subsystems  ·  **13** non-1:1 extensions.
+_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **55** extensions  ·  **42** registered subsystems  ·  **13** non-1:1 extensions.
 
 Every loaded extension classified by **role** (editorial — in `architecture_rules/extension_roles.yaml`) and joined to the registry. A ✓ in *Registered* means the extension is a 1:1 subsystem identity; the non-1:1 rows are surfaces/maintenance/adapters that **back** a subsystem or the platform.
 
@@ -18,7 +18,7 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | `lab` | 1 | A development / UX laboratory surface; not a production product surface. |
 | `maintenance` | 3 | A background-loop cog (scheduled work) with no subsystem identity; runtime/ops, not a product surface. |
 | `operational_adapter` | 1 | A bridge to a control plane or external operation (not an in-guild product feature). |
-| `product_subsystem` | 33 | A feature vertical with its own owner, views, and tests. |
+| `product_subsystem` | 34 | A feature vertical with its own owner, views, and tests. |
 | `shared_platform` | 6 | A broad cross-cutting capability with high blast radius (admin, settings, AI, diagnostics, help, utility). |
 | `specialized_surface` | 5 | One of several surfaces within a single domain vertical (e.g. the BTD6 sub-cogs) — backs a registered subsystem rather than being its own. |
 
@@ -75,11 +75,12 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | 47 | `community_spotlight` | `product_subsystem` | ✓ |  | Community Spotlight (community-hub child; registered subsystem). |
 | 48 | `welcome` | `product_subsystem` | ✓ |  | Welcome service (join embeds + optional PIL cards). |
 | 49 | `counters` | `product_subsystem` | ✓ |  | Dynamic server counters. |
-| 50 | `security` | `product_subsystem` | ✓ |  | Security tiers 1+2 — raid detection + account-age filter (Q-0111). |
-| 51 | `setup` | `bootstrap` | — | `server_management` | Guided setup wizard; lifecycle-critical, load-order sensitive. |
-| 52 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
-| 53 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
-| 54 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
+| 50 | `ticket` | `product_subsystem` | ✓ |  | Support tickets — private channels, claim/close/transcript; opens by command, panel, or AI. |
+| 51 | `security` | `product_subsystem` | ✓ |  | Security tiers 1+2 — raid detection + account-age filter (Q-0111). |
+| 52 | `setup` | `bootstrap` | — | `server_management` | Guided setup wizard; lifecycle-critical, load-order sensitive. |
+| 53 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
+| 54 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
+| 55 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
 
 ## Non-1:1 extensions (no registry identity)
 

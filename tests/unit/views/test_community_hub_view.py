@@ -155,14 +155,14 @@ def test_embed_section_headings_present():
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_nine_child_buttons():
-    # 6 primary (xp, karma, community_spotlight, welcome, counters, role) +
-    # 3 cross-link (counting, chain, leaderboard) = 9 children when unfiltered.
-    # Karma (parent_hub="community") was added 2026-06-22; the view wraps
-    # primaries past the 5-per-row Discord cap onto a second row.
+def test_view_has_ten_child_buttons():
+    # 7 primary (xp, karma, community_spotlight, welcome, counters, role,
+    # ticket) + 3 cross-link (counting, chain, leaderboard) = 10 children when
+    # unfiltered. ticket (parent_hub="community") was added with the support-
+    # ticket subsystem; the view wraps primaries past the 5-per-row cap.
     view = CommunityHubView(_author())
     buttons = [c for c in view.children if isinstance(c, _CommunityChildButton)]
-    assert len(buttons) == 9
+    assert len(buttons) == 10
 
 
 def test_buttons_cover_each_target_subsystem():
@@ -179,6 +179,7 @@ def test_buttons_cover_each_target_subsystem():
         "role",
         "welcome",
         "counters",
+        "ticket",
         "counting",
         "chain",
         "leaderboard",
@@ -195,6 +196,7 @@ def test_button_custom_ids_are_stable_and_namespaced():
         "community:open:role",
         "community:open:welcome",
         "community:open:counters",
+        "community:open:ticket",
         "community:open:counting",
         "community:open:chain",
         "community:open:leaderboard",
@@ -203,10 +205,11 @@ def test_button_custom_ids_are_stable_and_namespaced():
 
 def test_primaries_wrap_then_cross_links_follow():
     """Primary children (parent_hub="community") fill rows from 0 at 5/row
-    (Discord's cap); cross-links (Counting/Chain/Leaderboard, declared in
-    hub_registry.cross_link_children) follow on the next free row. With 6
-    primaries (xp, karma, community_spotlight, welcome, counters, role) that
-    is row 0 (5) + row 1 (1), then cross-links on row 2.
+    (Discord's cap), sorted by ui_priority then key; cross-links
+    (Counting/Chain/Leaderboard, declared in hub_registry.cross_link_children)
+    follow on the next free row. With 7 primaries (ticket, xp, karma,
+    community_spotlight, welcome, counters, role by ui_priority) that is
+    row 0 (5) + row 1 (2), then cross-links on row 2.
     """
     view = CommunityHubView(_author())
 
@@ -217,8 +220,8 @@ def test_primaries_wrap_then_cross_links_follow():
             if isinstance(btn, _CommunityChildButton) and btn.row == n
         }
 
-    assert _row(0) == {"xp", "karma", "community_spotlight", "welcome", "counters"}
-    assert _row(1) == {"role"}
+    assert _row(0) == {"ticket", "xp", "karma", "community_spotlight", "welcome"}
+    assert _row(1) == {"counters", "role"}
     assert _row(2) == {"counting", "chain", "leaderboard"}
     # No row exceeds Discord's 5-button cap.
     for n in range(5):
@@ -445,8 +448,9 @@ def test_view_falls_back_to_unfiltered_when_lists_omitted():
         for c in view.children
         if isinstance(c, _CommunityChildButton)
     }
-    # All nine children rendered when nothing is filtered (karma added under
-    # Community 2026-06-22; welcome + counters homed here by PR #1290).
+    # All ten children rendered when nothing is filtered (karma added under
+    # Community 2026-06-22; welcome + counters homed here by PR #1290; ticket
+    # homed here with the support-ticket subsystem).
     assert buttons == {
         "xp",
         "karma",
@@ -454,6 +458,7 @@ def test_view_falls_back_to_unfiltered_when_lists_omitted():
         "role",
         "welcome",
         "counters",
+        "ticket",
         "counting",
         "chain",
         "leaderboard",
