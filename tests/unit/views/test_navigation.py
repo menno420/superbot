@@ -33,6 +33,7 @@ implementation without failing CI.
 
 from __future__ import annotations
 
+import io
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import discord
@@ -48,6 +49,9 @@ from views.navigation import (
     carry_back,
     chain_back,
     has_standard_nav,
+    help_nav_attachments,
+    help_nav_card,
+    help_nav_send_kwargs,
     transition_to,
 )
 
@@ -971,3 +975,59 @@ def test_has_standard_nav_detects_hub_back_without_help():
         view, label="↩ Games", custom_id="nav:hub:games", parent_builder=_parent_builder
     )
     assert has_standard_nav(view)
+
+
+# ---------------------------------------------------------------------------
+# Help-nav attachment seam (visual card-engine H3): the view carries its own
+# image card via ``help_nav_card``; render sites forward it. A view without the
+# attribute (every embed-only hub, the default) yields no card → embed-only.
+# ---------------------------------------------------------------------------
+
+
+class _CardView(discord.ui.View):
+    """Minimal view that opts into the help-nav card seam."""
+
+    def __init__(self, card: object) -> None:
+        super().__init__()
+        self.help_nav_card = card  # type: ignore[assignment]
+
+
+def _png() -> discord.File:
+    return discord.File(io.BytesIO(b"\x89PNG\r\n\x1a\nfake"), filename="card.png")
+
+
+def test_help_nav_card_returns_the_file_when_present():
+    card = _png()
+    assert help_nav_card(_CardView(card)) is card
+
+
+def test_help_nav_card_is_none_when_absent_or_view_is_none():
+    # A plain view (no attribute) and ``None`` both yield no card — the default
+    # embed-only behaviour every un-migrated hub keeps.
+    assert help_nav_card(discord.ui.View()) is None
+    assert help_nav_card(None) is None
+
+
+def test_help_nav_card_ignores_a_non_file_attribute():
+    # Defensive: a stray non-File value must not crash navigation.
+    assert help_nav_card(_CardView("not-a-file")) is None
+    assert help_nav_card(_CardView(None)) is None
+
+
+def test_help_nav_attachments_sets_or_clears():
+    card = _png()
+    # A card → ``[card]`` (sets it on the in-place edit).
+    assert help_nav_attachments(_CardView(card)) == [card]
+    # No card → ``[]`` (clears any prior screen's attachment).
+    assert help_nav_attachments(_CardView(None)) == []
+    assert help_nav_attachments(discord.ui.View()) == []
+
+
+def test_help_nav_send_kwargs_omits_file_when_no_card():
+    card = _png()
+    # A card → ``{"file": card}``; no card → ``{}`` so a fresh send never passes
+    # ``file=None`` (which ``InteractionResponse.send_message`` mis-reads as a
+    # broken attachment rather than "no file").
+    assert help_nav_send_kwargs(_CardView(card)) == {"file": card}
+    assert help_nav_send_kwargs(_CardView(None)) == {}
+    assert help_nav_send_kwargs(discord.ui.View()) == {}

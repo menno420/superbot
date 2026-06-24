@@ -311,9 +311,16 @@ class HelpCog(commands.Cog):
 
             # For typed Help with a hub/subsystem surface, send the panel
             # as a fresh message and attach Back-to-Help so the user can
-            # return to the category index.
+            # return to the category index. Forward any help-nav image card the
+            # hub carries (visual card engine H3) so the card shows through Help.
+            from views.navigation import help_nav_send_kwargs  # noqa: PLC0415
+
             _attach_back_to_help_button(sub_view)
-            await ctx.send(embed=embed, view=sub_view)
+            await ctx.send(
+                embed=embed,
+                view=sub_view,
+                **help_nav_send_kwargs(sub_view),
+            )
             return
 
         # The top of Help is the mother-hub category index.
@@ -409,12 +416,15 @@ class HelpCog(commands.Cog):
 
             # Mirror the prefix path: any hub/subsystem surface gets a
             # Back-to-Help button so the user can return to the category
-            # index in place.
+            # index in place. Forward any help-nav image card (H3).
+            from views.navigation import help_nav_send_kwargs  # noqa: PLC0415
+
             _attach_back_to_help_button(sub_view)
             await interaction.response.send_message(
                 embed=embed,
                 view=sub_view,
                 ephemeral=True,
+                **help_nav_send_kwargs(sub_view),
             )
             return
 

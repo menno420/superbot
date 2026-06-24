@@ -90,9 +90,19 @@ class XpCog(commands.Cog):
         self,
         interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
-        """Help-menu direct-navigation hook (returns the XP hub panel)."""
+        """Help-menu direct-navigation hook (returns the XP hub panel).
+
+        Renders the same rank **image card** the direct ``!xpmenu`` surface shows
+        (visual card engine H3): the card is stashed on the view as
+        ``help_nav_card`` and every help-nav render site forwards it
+        (``views.navigation.help_nav_card``), so the XP hub looks identical
+        whether opened by command or reached through Help / hub navigation. On a
+        Pillow-less host the card is ``None`` and the embed stays the source of
+        truth — byte-identical to the prior embed-only behaviour.
+        """
         view = _XpHubView(help_ctx_shim(interaction))
-        embed = await view.build_embed()
+        embed, card = await view.build_response()
+        view.help_nav_card = card
         return embed, view
 
     # ------------------------------------------------------------------ commands
