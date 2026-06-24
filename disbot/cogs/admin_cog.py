@@ -20,7 +20,7 @@ from core.runtime import lifecycle, resources
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edit
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR  # noqa: F401
 from views.base import HubView, send_panel
-from views.navigation import attach_back_button
+from views.navigation import attach_back_button, help_nav_attachments
 
 
 class AdminCog(commands.Cog):
@@ -751,7 +751,12 @@ class _AdminPanelView(HubView):
             await safe_edit(interaction, embed=embed, view=self)
             return
         attach_back_to_admin_button(sub_view, interaction.user)
-        await safe_edit(interaction, embed=sub_embed, view=sub_view)
+        await safe_edit(
+            interaction,
+            embed=sub_embed,
+            view=sub_view,
+            attachments=help_nav_attachments(sub_view),
+        )
 
 
 class _LogLevelModal(discord.ui.Modal, title="Set Log Level"):  # type: ignore[call-arg]

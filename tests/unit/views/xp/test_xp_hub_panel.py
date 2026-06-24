@@ -121,9 +121,11 @@ async def test_stat_switch_clears_attachment_on_embed_only_fallback():
 
 
 @pytest.mark.asyncio
-async def test_help_menu_hook_path_stays_embed_only():
-    # ``build_embed`` (used by the build_help_menu_view help-nav hook) must not
-    # touch the image-card seam — that path carries no attachment.
+async def test_build_embed_stays_embed_only():
+    # ``build_embed`` is the config-panel back-navigation path (XpConfigView →
+    # parent.build_embed()); it must not touch the image-card seam — that path
+    # rebuilds the parent hub embed only. (The help-nav hook and the direct
+    # ``!xpmenu`` surface render the card via ``build_response``.)
     view = _XpHubView(_ctx())
     embed_stub = discord.Embed(description="rank")
     with (
@@ -139,3 +141,45 @@ async def test_help_menu_hook_path_stays_embed_only():
         embed = await view.build_embed()
 
     assert embed.title == "🏆 XP Panel — AstroFox"
+
+
+@pytest.mark.asyncio
+async def test_build_help_menu_view_stashes_the_card_for_the_nav_seam():
+    # The cog's help-nav hook renders the same image card the direct ``!xpmenu``
+    # surface does and stashes it on the view as ``help_nav_card`` so every
+    # help-nav render site forwards it (visual card engine H3).
+    from cogs.xp_cog import XpCog
+    from views.navigation import help_nav_card
+
+    cog = XpCog(bot=MagicMock())
+    interaction = MagicMock()
+    with (
+        patch("cogs.xp_cog.help_ctx_shim", return_value=_ctx()),
+        _patch_response(_fake_card()),
+    ):
+        embed, view = await cog.build_help_menu_view(interaction)
+
+    assert embed.title == "🏆 XP Panel — AstroFox"
+    assert isinstance(view.help_nav_card, discord.File)
+    # The accessor the render sites use sees exactly that card.
+    assert help_nav_card(view) is view.help_nav_card
+
+
+@pytest.mark.asyncio
+async def test_build_help_menu_view_no_card_without_pillow():
+    # Pillow-less host → no card → the nav seam yields ``None`` → embed-only,
+    # byte-identical to the prior help-nav behaviour.
+    from cogs.xp_cog import XpCog
+    from views.navigation import help_nav_card
+
+    cog = XpCog(bot=MagicMock())
+    interaction = MagicMock()
+    with (
+        patch("cogs.xp_cog.help_ctx_shim", return_value=_ctx()),
+        _patch_response(None),
+    ):
+        embed, view = await cog.build_help_menu_view(interaction)
+
+    assert embed.title == "🏆 XP Panel — AstroFox"
+    assert view.help_nav_card is None
+    assert help_nav_card(view) is None

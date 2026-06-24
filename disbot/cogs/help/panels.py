@@ -29,6 +29,7 @@ from cogs.help.route import resolve_route as _resolve_route
 from core.runtime.persistent_views import PersistentView, register
 from services.governance_service import GovernanceContext
 from services.help_projection import HelpProjection
+from views.navigation import help_nav_attachments
 
 logger = logging.getLogger("bot")
 
@@ -130,7 +131,11 @@ class HelpCategoryView(PersistentView):
         # Attach Back-to-Help on every interactive surface opened from
         # the category index so the user has a one-click return.
         _attach_back_to_help_button(sub_view)
-        await interaction.response.edit_message(embed=embed, view=sub_view)
+        await interaction.response.edit_message(
+            embed=embed,
+            view=sub_view,
+            attachments=help_nav_attachments(sub_view),
+        )
 
 
 __all__ = [

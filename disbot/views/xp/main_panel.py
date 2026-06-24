@@ -24,9 +24,11 @@ class _XpHubView(HubView):
     def _decorate(self, embed: discord.Embed) -> None:
         """Apply the hub's title / footer / admin-button state to ``embed``.
 
-        Shared by every render path (``build_embed`` for the help-nav hook,
-        ``build_response`` for the direct ``!xpmenu`` surface, and the three
-        stat-switch buttons) so the chrome stays in exactly one place.
+        Shared by every render path (``build_response`` for the direct
+        ``!xpmenu`` surface *and* the ``build_help_menu_view`` help-nav hook —
+        both now render the image card via the help-nav attachment seam — the
+        three stat-switch buttons, and ``build_embed`` for the config-panel
+        back-navigation) so the chrome stays in exactly one place.
         """
         embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
         is_admin = self.ctx.author.guild_permissions.administrator  # type: ignore[union-attr]
@@ -54,8 +56,10 @@ class _XpHubView(HubView):
         return embed, card
 
     async def build_embed(self) -> discord.Embed:
-        # Embed-only path for the ``build_help_menu_view`` help-nav hook, which
-        # is embed-only by contract across the codebase (no attachment seam).
+        # Embed-only path for the config-panel back-navigation, which rebuilds
+        # the parent hub embed (``XpConfigView`` → ``parent.build_embed()``). The
+        # help-nav hook and the direct ``!xpmenu`` surface both render the image
+        # card via ``build_response`` + the help-nav attachment seam.
         embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")  # type: ignore[arg-type]
         self._decorate(embed)
         return embed

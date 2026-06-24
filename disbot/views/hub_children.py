@@ -34,7 +34,12 @@ import discord
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.subsystem_registry import SUBSYSTEMS
-from views.navigation import BackTarget, attach_back_target, has_standard_nav
+from views.navigation import (
+    BackTarget,
+    attach_back_target,
+    has_standard_nav,
+    help_nav_attachments,
+)
 
 logger = logging.getLogger("bot.views.hub_children")
 
@@ -213,4 +218,8 @@ class HubChildButton(discord.ui.Button):
                 attach_back_target(sub_view, back_target)
             sub_view._back_target = back_target  # type: ignore[attr-defined]
 
-        await interaction.response.edit_message(embed=embed, view=sub_view)
+        await interaction.response.edit_message(
+            embed=embed,
+            view=sub_view,
+            attachments=help_nav_attachments(sub_view),
+        )

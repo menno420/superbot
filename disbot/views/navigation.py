@@ -68,6 +68,56 @@ ParentBuilder: TypeAlias = Callable[
 ]
 
 
+def help_nav_card(view: discord.ui.View | None) -> discord.File | None:
+    """The optional image card a help-nav hub panel wants rendered.
+
+    The visual card engine (H3) renders showpiece image cards for hubs opened by
+    their **direct command** (the XP hub via ``!xpmenu``, ``!rank``, …). The same
+    hub reached *through Help / hub navigation* goes through the
+    ``build_help_menu_view`` hook, which is embed-only by contract across the
+    codebase — so the showpiece disappears on exactly the discovery path Help is.
+
+    This is the seam that closes that split **without** changing the return shape
+    of all ~47 hooks: a hook that has a card sets it on the view it returns
+    (``view.help_nav_card = card``); every help-nav render site forwards the
+    result here as ``file=`` (fresh send) or ``attachments=`` (in-place edit —
+    ``safe_edit`` already supports it, built for exactly this PIL-card-on-one-
+    anchor case). A view without the attribute — every embed-only hub, the
+    default — yields ``None`` → unchanged embed-only behaviour, so the seam rolls
+    out hub-by-hub and any render site not yet wired keeps working.
+
+    Defensive: a non-``discord.File`` value (or a missing attribute) → ``None``,
+    never raises, so a stray attribute can't crash navigation.
+    """
+    card = getattr(view, "help_nav_card", None)
+    return card if isinstance(card, discord.File) else None
+
+
+def help_nav_attachments(view: discord.ui.View | None) -> list[discord.File]:
+    """``attachments=`` value for an **in-place edit** that opens ``view``.
+
+    ``[card]`` when the panel carries a help-nav card (sets it), else ``[]``
+    (clears any prior screen's attachment so a card from the panel we navigated
+    *away* from does not linger — the documented ``safe_edit`` convention). Fresh
+    sends use :func:`help_nav_card` directly as ``file=``.
+    """
+    card = help_nav_card(view)
+    return [card] if card is not None else []
+
+
+def help_nav_send_kwargs(view: discord.ui.View | None) -> dict[str, discord.File]:
+    """``**kwargs`` carrying ``file=`` for a **fresh send** that opens ``view``.
+
+    ``{"file": card}`` when the panel has a help-nav card, else ``{}``. Used as
+    ``await ctx.send(..., **help_nav_send_kwargs(view))`` /
+    ``interaction.response.send_message(..., **help_nav_send_kwargs(view))`` so a
+    cardless hub never passes ``file=None`` — ``InteractionResponse.send_message``
+    treats ``None`` as a real (broken) attachment rather than "no file".
+    """
+    card = help_nav_card(view)
+    return {"file": card} if card is not None else {}
+
+
 @dataclass(frozen=True)
 class BackTarget:
     """A captured "what comes above me" for back-chain composition (AB2).
@@ -186,7 +236,12 @@ def attach_back_button(
                     send_exc,
                 )
             return
-        await safe_edit(interaction, embed=embed, view=parent_view)
+        await safe_edit(
+            interaction,
+            embed=embed,
+            view=parent_view,
+            attachments=help_nav_attachments(parent_view),
+        )
 
     btn.callback = _back_callback  # type: ignore[method-assign]
     try:
@@ -435,7 +490,12 @@ async def transition_to(
                 send_exc,
             )
         return
-    await safe_edit(interaction, embed=embed, view=view)
+    await safe_edit(
+        interaction,
+        embed=embed,
+        view=view,
+        attachments=help_nav_attachments(view),
+    )
 
 
 def attach_back_target(view: discord.ui.View, target: BackTarget) -> bool:
@@ -518,5 +578,8 @@ __all__ = [
     "carry_back",
     "chain_back",
     "has_standard_nav",
+    "help_nav_attachments",
+    "help_nav_card",
+    "help_nav_send_kwargs",
     "transition_to",
 ]
