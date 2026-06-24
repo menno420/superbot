@@ -1,6 +1,7 @@
 # 2026-06-24 — Provider `card_theme` conformance guard
 
-> **Status:** `in-progress`
+> **Status:** `complete` — the invariant test runs clean over all 10 providers; full CI mirror green
+> (12289 passed, 48 skipped; black/isort/ruff/mypy clean).
 
 > **Run type:** `routine · dispatch`
 
@@ -24,6 +25,21 @@ Tests-only, no runtime change, fully reversible.
 
 CI mirror green before flipping to `complete`.
 
-## What shipped
+## What shipped (PR #1403)
 
-_(filled at close)_
+`tests/unit/invariants/test_provider_card_theme_registered.py` — parametrized over every registered
+`RankProvider`; asserts each `card_theme` is a key in `card_render.THEMES`, plus a meta-test pinning
+that a bogus key is genuinely absent (so the assertion is real, not vacuous). A skin typo is now a
+red build, not a silent default-skin render. Tests-only; no runtime change.
+
+## 📤 Run report footer
+
+- **Run type:** `routine · dispatch`
+- **PR:** #1403 (provider `card_theme` conformance guard) — slice 2 of this dispatch fire (slice 1 =
+  #1401, `!rank` image card). Full session enders (the Q-0089 new idea, the Q-0102 previous-session
+  review, the Q-0104 doc audit) are in the slice-1 card `2026-06-24-rank-card-image.md`; this slice
+  builds *that* card's Q-0089 idea.
+- **⚑ Self-initiated:** yes — built slice-1's own captured Q-0089 idea (Q-0172). Tests-only, reversible.
+- **⚑ Owner-decisions:** none
+- **⚑ Owner-manual-steps:** none
+- **Bug-book:** no new bugs; none fixed.
