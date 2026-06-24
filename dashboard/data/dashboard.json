@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T13:45:19Z",
+    "generated_at": "2026-06-24T14:21:50Z",
     "build": {
-      "commit": "e02a66d",
-      "subject": "Merge branch 'main' into claude/serene-mccarthy-lv5z94",
-      "committed_at": "2026-06-24T13:45:19Z"
+      "commit": "f7ea4962",
+      "subject": "Merge pull request #1425 from menno420/claude/serene-mccarthy-lv5z94",
+      "committed_at": "2026-06-24T14:21:50Z"
     },
     "counts": {
       "functions": 42,
@@ -2524,7 +2524,7 @@
       "file": "2026-06-24-setup-spine-build.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · build the essentials spine (PR 1)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
