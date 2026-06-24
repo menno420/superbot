@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-7n1117` · scope: help-nav attachment seam (visual card-engine H3) — let hub panels carry their image card through Help/hub navigation · area: `disbot/views/navigation.py`, `disbot/cogs/help/`, `disbot/cogs/help_cog.py`, `disbot/views/hub_children.py`, `disbot/cogs/admin_cog.py`, `disbot/cogs/xp_cog.py` + tests · 2026-06-24

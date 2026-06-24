@@ -212,6 +212,48 @@ async def test_attach_back_button_callback_defers_before_calling_builder():
     _args, kwargs = patched_edit.call_args
     assert kwargs["embed"] is parent_embed
     assert kwargs["view"] is parent_view
+    # A cardless parent clears any prior screen's attachment (navigate-away).
+    assert kwargs["attachments"] == []
+
+
+@pytest.mark.asyncio
+async def test_attach_back_button_callback_forwards_the_parent_help_nav_card():
+    """Forward-path pin (help-nav attachment seam, H3): when the rebuilt parent
+    carries a ``help_nav_card``, the in-place edit must forward it as
+    ``attachments=[card]`` so the card survives the back-navigation. A future
+    edit that drops the forwarding fails here."""
+    view = discord.ui.View()
+    parent_embed = discord.Embed(title="parent")
+    parent_view = discord.ui.View()
+    card = discord.File(io.BytesIO(b"\x89PNG\r\n\x1a\nfake"), filename="card.png")
+    parent_view.help_nav_card = card  # type: ignore[attr-defined]
+
+    async def fake_builder(_interaction):
+        return parent_embed, parent_view
+
+    attach_back_button(
+        view,
+        label="↩ Back",
+        custom_id="test:back",
+        parent_builder=fake_builder,
+    )
+
+    interaction = _interaction()
+    btn = view.children[0]
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            AsyncMock(return_value=True),
+        ) as patched_edit,
+    ):
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    _args, kwargs = patched_edit.call_args
+    assert kwargs["attachments"] == [card]
 
 
 @pytest.mark.asyncio
