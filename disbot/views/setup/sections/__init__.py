@@ -31,6 +31,7 @@ from views.setup.sections import (  # noqa: F401 — import side-effect
     roles,
     server_scan,
     suggestions,
+    ticket,
 )
 
 __all__ = [
@@ -51,4 +52,5 @@ __all__ = [
     "roles",
     "server_scan",
     "suggestions",
+    "ticket",
 ]

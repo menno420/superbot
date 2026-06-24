@@ -29,6 +29,7 @@ def test_all_production_sections_are_registered():
         "diagnostics",
         "cog_routing",
         "final_review",
+        "ticket",
     }
     assert (
         expected <= slugs

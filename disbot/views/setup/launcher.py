@@ -28,7 +28,9 @@ _LAUNCHER_DESC = (
     "**Quick commands:** `!setup` / `/setup` to open the guided wizard, "
     "`/setup-hub` for the advanced section list, "
     "`/setup-status` for a read-only peek, `/setup-reset` to clear "
-    "staged operations."
+    "staged operations.\n\n"
+    "🎫 The wizard includes a **Support Tickets** step — enable private "
+    "member↔staff tickets there, or run `!ticketsetup @StaffRole [#log]`."
 )
 
 
