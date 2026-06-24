@@ -1,1 +1,0 @@
-claude/funny-franklin-fwh3dh-bj · settle-once guard for blackjack PvP settlement + relocate SettleOnceMixin to utils/ (cross-layer reuse) · disbot/utils/terminal_guard.py + services/blackjack_state.py + views/blackjack/pvp_view.py + the 2 prior adopters · 2026-06-24

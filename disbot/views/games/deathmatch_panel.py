@@ -23,10 +23,10 @@ from typing import TYPE_CHECKING
 import discord
 
 from utils import db, equipment
+from utils.terminal_guard import SettleOnceMixin
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 from views.games.common import BackToPanelButton
-from views.terminal_guard import SettleOnceMixin
 
 if TYPE_CHECKING:
     # Type-only — the panel reuses the deathmatch cog's ``_Duel`` state class

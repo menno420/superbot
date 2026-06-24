@@ -15,6 +15,7 @@ import logging
 import discord
 
 from services import game_state_service, game_wager_workflow
+from utils.terminal_guard import SettleOnceMixin
 from utils.ui_constants import GAME_COLOR, SUCCESS_COLOR
 from views.rps._helpers import (
     RPS_PVP_ESCROW_SUBSYSTEM,
@@ -22,7 +23,6 @@ from views.rps._helpers import (
     RPS_PVP_PENDING_VERSION,
     rps_pvp_canonical_user_id,
 )
-from views.terminal_guard import SettleOnceMixin
 
 logger = logging.getLogger("bot.rps.pvp_play")
 

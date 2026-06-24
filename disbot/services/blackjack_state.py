@@ -35,6 +35,7 @@ from __future__ import annotations
 import discord
 
 from services.blackjack_engine import new_deck as _new_deck
+from utils.terminal_guard import SettleOnceMixin
 from utils.tournaments import TournamentRegistration
 
 # ---------------------------------------------------------------------------
@@ -102,7 +103,7 @@ class _Game:
             self.dealer.append(self.deck.pop())
 
 
-class _PvPState:
+class _PvPState(SettleOnceMixin):
     def __init__(self, p1: int, p2: int, guild_id: int, bet: int, channel_id: int):
         self.p1 = p1
         self.p2 = p2
