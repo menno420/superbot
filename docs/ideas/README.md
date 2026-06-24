@@ -55,6 +55,14 @@ Current broad captures:
   prose. Make `new_subsystem.py` write a `## Follow-ups` stub into each subsystem folio + a stdlib checker
   that lists them, so the dispatch/reconciliation routines pull buildable slices from *real shipped depth*
   instead of aspirational runtime initiatives. Complements the band-queue hit-rate metric idea. Subsystem: S4/S3 tooling.
+- [`planned-slice-hit-rate-tracker-2026-06-24.md`](./planned-slice-hit-rate-tracker-2026-06-24.md) —
+  **reconciliation idea (2026-06-24, band-#1380 Q-0089):** every pass hand-counts "~N/M planned slices
+  executed" against the previous §4 queue (1/11 band-#1350, 2/12 band-#1380); the band-#1320 pass proposed
+  measuring it but it's still re-derived prose. A stdlib `check_plan_hit_rate.py` that parses a pass
+  record's §4 slice→PR-lineage table against the next band's merges, reporting the measured **hit rate**,
+  makes the buffer-becomes-band gap trend-able instead of an impression. Pairs with the new-subsystem
+  follow-up tracker (one feeds the queue from shipped depth, this measures whether the queue predicts the
+  band). Subsystem: S4/S3 tooling.
   *(Groomed 2026-06-23: cross-linked to the inventory-homed guard below — same root cause, plan as one slice.)*
 - [`subsystem-inventory-homed-guard-2026-06-23.md`](./subsystem-inventory-homed-guard-2026-06-23.md) —
   **workflow idea (2026-06-23, Q-0089, ultracode-map session):** four mapping agents verified the repo's own

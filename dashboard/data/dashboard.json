@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T07:18:58Z",
+    "generated_at": "2026-06-24T07:59:34Z",
     "build": {
-      "commit": "7b458bb",
-      "subject": "btd6: open per-round economy commands session (born-red card)",
-      "committed_at": "2026-06-24T07:18:58Z"
+      "commit": "2d0b127b",
+      "subject": "btd6: per-round economy slash commands (cash / RBE / bloons) (#1404)",
+      "committed_at": "2026-06-24T07:59:34Z"
     },
     "counts": {
       "functions": 41,
-      "ideas": 136,
+      "ideas": 137,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1107,6 +1107,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "planned-slice-hit-rate-tracker-2026-06-24.md",
+      "title": "Idea — planned-slice hit-rate tracker (the reconciliation queue's accountability metric)",
+      "status": "ideas",
+      "date": "2026-06-24",
+      "summary": "Every Q-0107 pass writes a §4 forward queue (slice → PR-lineage) and the *next* pass hand-counts how many",
+      "subsystems": null
+    },
     {
       "file": "btd6-runtime-mechanics-from-game-2026-06-23.md",
       "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
@@ -2466,7 +2474,7 @@
       "file": "2026-06-24-btd6-per-round-economy-commands.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — BTD6 per-round economy slash commands (cash / RBE / bloons)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "manual",
       "self_initiated": false
     },
