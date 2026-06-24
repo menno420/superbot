@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from views.base import BaseView
 
 if TYPE_CHECKING:
@@ -160,7 +161,12 @@ class _StepView(BaseView):
     async def _show_current(self, interaction: discord.Interaction) -> None:
         view = self.flow.current_view()
         embed = view.render() if hasattr(view, "render") else None
-        await interaction.response.edit_message(embed=embed, view=view)
+        # ``safe_edit`` edits the wizard message in place whether or not the
+        # step deferred first.  Resource-creating steps (log channel, reward
+        # role) defer to beat Discord's 3-second interaction deadline, so the
+        # navigation that runs after their slow work must not assume the
+        # response is still un-acknowledged.
+        await safe_edit(interaction, embed=embed, view=view)
 
     async def skip(self, interaction: discord.Interaction) -> None:
         self.flow.record_skipped(self.title)
@@ -1008,6 +1014,15 @@ class LogChannelStep(_StepView):
         return f"a new **#{default_name}** channel"
 
     async def apply(self, interaction: discord.Interaction) -> None:
+        # Creating up to two channels + writing the logging settings/bindings
+        # runs well past Discord's 3-second interaction-token deadline, so
+        # acknowledge the click FIRST.  Without this the channels are created
+        # but the final navigation edit 404s ("This interaction failed") — and
+        # because the create already happened, every retry leaks another
+        # #mod-log / #server-log pair (the reported "keeps building logging
+        # channels and says the step failed" bug).
+        if not await safe_defer(interaction):
+            return
         created: list[str] = []
         mod_name = self.mod_channel_name or _NEW_MOD_CHANNEL_NAME
         activity_name = self.activity_channel_name or _NEW_ACTIVITY_CHANNEL_NAME
@@ -1036,7 +1051,8 @@ class LogChannelStep(_StepView):
                 await self._bind("events_channel", activity_id)
         except Exception:
             logger.exception("essential setup: log-channel step apply failed")
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "Something went wrong saving your log channels — please try again.",
                 ephemeral=True,
             )
@@ -1086,7 +1102,8 @@ class LogChannelStep(_StepView):
                 self.flow.guild.id,
                 result.first_error,
             )
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "Couldn't make a channel — please pick existing ones instead.",
                 ephemeral=True,
             )
@@ -1379,7 +1396,7 @@ class RewardActivityStep(_StepView):
         if self.phase == "roles":
             self.phase = "config"
             self.refresh_items()
-            await interaction.response.edit_message(embed=self.render(), view=self)
+            await safe_edit(interaction, embed=self.render(), view=self)
         else:
             await super().go_back(interaction)
 
@@ -1447,6 +1464,10 @@ class RewardActivityStep(_StepView):
     async def on_next(self, interaction: discord.Interaction) -> None:
         if not self.rewards:
             # No role rewards — apply the XP rate (if changed) and finish.
+            # XP-rate writes can run past the 3s deadline, so acknowledge first
+            # (same deadline reasoning as LogChannelStep.apply).
+            if not await safe_defer(interaction):
+                return
             await self._apply_and_complete(
                 interaction,
                 role_id=None,
@@ -1454,12 +1475,19 @@ class RewardActivityStep(_StepView):
                 created=False,
             )
             return
+        # Instant in-memory screen swap — no slow work, so no defer needed.
         self.phase = "roles"
         self.refresh_items()
-        await interaction.response.edit_message(embed=self.render(), view=self)
+        await safe_edit(interaction, embed=self.render(), view=self)
 
     async def apply(self, interaction: discord.Interaction) -> None:
-        # Screen 2 "Save" — resolve the reward role, then apply everything.
+        # Screen 2 "Save" — creating a role + writing the XP rate and reward
+        # thresholds runs past Discord's 3-second deadline, so acknowledge
+        # first (mirrors LogChannelStep.apply; without it a created role would
+        # be orphaned on the "interaction failed" retry).
+        if not await safe_defer(interaction):
+            return
+        # Resolve the reward role, then apply everything.
         role_id, role_name, created = await self._resolve_role(interaction)
         if role_id is None:
             return  # error already surfaced
@@ -1488,7 +1516,8 @@ class RewardActivityStep(_StepView):
                 await self._set_rewards(role_id, role_name)
         except Exception:
             logger.exception("essential setup: reward step apply failed")
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "Something went wrong saving rewards — please try again.",
                 ephemeral=True,
             )
@@ -1502,7 +1531,8 @@ class RewardActivityStep(_StepView):
         """Resolve the reward role to (id, name, created?), or (None, …) on error."""
         if self.role_source == "existing":
             if self.existing_role_id is None:
-                await interaction.response.send_message(
+                await safe_followup(
+                    interaction,
                     "Pick a role to grant, or switch to **Recommended** to make one.",
                     ephemeral=True,
                 )
@@ -1541,7 +1571,8 @@ class RewardActivityStep(_StepView):
                 self.flow.guild.id,
                 result.first_error,
             )
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "Couldn't make the role — please reuse an existing one instead.",
                 ephemeral=True,
             )
