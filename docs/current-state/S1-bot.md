@@ -51,7 +51,7 @@
   members · help desk + summary), separate from and additive to the legacy `!setup` wizard. Each step
   applies immediately (direct lane) through an audited service; typing is optional everywhere (Q-0205).
   Shipped #1425/#1427/#1429/#1432/#1434 + polish #1435; decisions Q-0202/Q-0203/Q-0204/Q-0205. **Step 0
-  (server-type starter preset) shipped 2026-06-24** — `ServerTypeStep`, the new first step; five starter
+  (server-type starter preset) shipped 2026-06-24 (#1437)** — `ServerTypeStep`, the new first step; five starter
   sets applied as pure direct-apply settings bundles (`_SERVER_TYPES`, automod/moderation/XP-rate),
   instant + reversible, no resource creation (the draft-only `SERVER_PRESETS` deliberately not reused).
   **▶ Next:** PR 2 (extras menu + "Check my setup") · PR 3 (retire dead/legacy sections + rework the

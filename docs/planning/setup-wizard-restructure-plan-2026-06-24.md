@@ -12,7 +12,7 @@
 > Seven live steps (**what kind of server is this** · greet · moderators · block spam · choose a log
 > channel · reward active members · help desk) + the All-done summary, opened by `!quicksetup` /
 > `/quicksetup`; shipped across #1425/#1427/#1429/#1432/#1434, polished (#1435, Q-0205), and the
-> **server-type starter preset (step 0) shipped 2026-06-24** (direct-apply path resolved — see §5/§7
+> **server-type starter preset (step 0) shipped 2026-06-24 (#1437)** (direct-apply path resolved — see §5/§7
 > below). **Remaining:** **PR 2** = extras menu + "Check my setup", **PR 3** = retire dead/legacy
 > sections + rework the Advanced editor (Q-E).
 >
@@ -103,7 +103,7 @@ The fix is not more sections — it is a **structure** built from four laws.
 
 **Spine — the guided essentials (each applies immediately, direct lane):**
 
-0. **What kind of server is this?** *(SHIPPED 2026-06-24)* — Community · Gaming · Support · Creator · Just
+0. **What kind of server is this?** *(SHIPPED 2026-06-24, #1437)* — Community · Gaming · Support · Creator · Just
    exploring. Applies a matching **starter set** of safe defaults right away (this is `purpose` made
    actionable + `preset`). **Direct-apply path resolved:** each starter set is a **pure settings bundle**
    (channel-independent automod toggles + `moderation.dm_on_action` + an XP rate) applied through the
@@ -205,7 +205,7 @@ decision with architectural weight → called out as open question Q-A below.
     direct-apply role-threshold service (the one genuine gap)" was wrong — `role_automation.set_xp_threshold`
     / `set_time_threshold` already ARE the audited direct-apply paths, and
     `RoleLifecycleService.apply(operation="create")` does the role auto-create. No new service was needed.
-  - **Server-type starter preset** (step 0) *(SHIPPED 2026-06-24)* — `ServerTypeStep`, the new **first**
+  - **Server-type starter preset** (step 0) *(SHIPPED 2026-06-24, #1437)* — `ServerTypeStep`, the new **first**
     step. The direct-apply path the plan flagged is resolved by **not** reusing the draft-only
     `SERVER_PRESETS`: the five starter sets are pure settings bundles (`_SERVER_TYPES` in
     `essential_setup.py`) applied verbatim through the audited `_set` (settings pipeline), so each pick
