@@ -132,6 +132,19 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # failed[], occurred_at.  Subscriber failure logged + swallowed;
         # Discord state is authoritative.
         "role.lifecycle_changed",
+        # ── Support tickets (services/ticket_mutation.py) ─────────────────
+        # Advisory. ``ticket.opened`` is emitted after a ticket row + its
+        # private channel are committed; TicketCog subscribes to post the
+        # welcome embed + control panel (Claim/Close) into the new channel
+        # — the single UI seam that serves the command, panel-button, and
+        # AI-natural-language open paths uniformly (a service must not import
+        # views). ``ticket.closed`` fires after a close commits (transcript
+        # already posted by the closer). Payload: guild_id, ticket_id,
+        # channel_id, opener_id, subject, source (opened) / closed_by (closed).
+        # Subscriber failure logged + swallowed; the DB + channel are
+        # authoritative.
+        "ticket.opened",
+        "ticket.closed",
         # ── Feature flags (services/rollout_mutation.py, Phase 2d PR-3) ───
         # Advisory events emitted after the DB commit + audit row land.
         # Subscriber failure is logged with mutation_id and never raised

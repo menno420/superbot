@@ -184,6 +184,7 @@ HUBS: tuple[HubEntry, ...] = (
         # welcome + counters homed here by the help-menu regrouping (PR #1290);
         # both are administrator-tier so they stay operator-only in the
         # user-tier Community view (no clutter for normal members).
+        # ticket (support tickets) homed here as a user-tier child.
         primary_children=(
             "xp",
             "karma",
@@ -191,6 +192,7 @@ HUBS: tuple[HubEntry, ...] = (
             "role",
             "welcome",
             "counters",
+            "ticket",
         ),
         cross_link_children=(
             "counting",

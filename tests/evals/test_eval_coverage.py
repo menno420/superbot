@@ -50,7 +50,13 @@ from services import ai_tools
 # paragon_calculate, power_effect, power_lookup, relic_lookup). A NEW tool added
 # to the surface now MUST get a case (the floor == full catalogue), or be added
 # back here with a reason — the guard fails closed either way.
-_ACK_UNCOVERED_TOOLS: frozenset[str] = frozenset()
+# ``open_support_ticket`` is the one *action* tool (it WRITES — opens a ticket
+# through the audited ``ticket_mutation`` seam), not a read query the eval matrix
+# can replay against fixtures without creating real Discord channels. It is
+# covered instead by ``tests/unit/services/test_ticket_ai_tool.py`` (offering
+# gate + delegation) + the ``ticket_mutation`` / ``ticket_service`` unit tests.
+# Acknowledged here so the surface stays exactly partitioned.
+_ACK_UNCOVERED_TOOLS: frozenset[str] = frozenset({"open_support_ticket"})
 
 # --------------------------------------------------------------------------- #
 # Acknowledged-uncovered TASKS. Most are exercised by their own service/cog

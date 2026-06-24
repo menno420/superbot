@@ -250,6 +250,21 @@ from utils.db.sessions import (
     touch_session,
 )
 from utils.db.settings import get_setting, set_setting
+from utils.db.tickets import (
+    ticket_add_blacklist,
+    ticket_close,
+    ticket_count_open_for_user,
+    ticket_create,
+    ticket_get,
+    ticket_get_by_channel,
+    ticket_get_config,
+    ticket_is_blacklisted,
+    ticket_list_for_user,
+    ticket_list_open,
+    ticket_remove_blacklist,
+    ticket_set_claim,
+    ticket_upsert_config,
+)
 from utils.db.treasury import (
     credit_treasury,
     get_treasury,
@@ -332,6 +347,20 @@ __all__ = [
     "credit_treasury",
     "get_treasury",
     "try_debit_treasury",
+    # tickets (support-ticket subsystem)
+    "ticket_add_blacklist",
+    "ticket_close",
+    "ticket_count_open_for_user",
+    "ticket_create",
+    "ticket_get",
+    "ticket_get_by_channel",
+    "ticket_get_config",
+    "ticket_is_blacklisted",
+    "ticket_list_for_user",
+    "ticket_list_open",
+    "ticket_remove_blacklist",
+    "ticket_set_claim",
+    "ticket_upsert_config",
     # inventory
     "add_item",
     "get_inventory",

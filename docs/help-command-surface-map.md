@@ -23,8 +23,8 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 40 of the 54 loaded extensions (`config.INITIAL_EXTENSIONS`) define
-  `build_help_menu_view` — equivalently, 40 of the 41 subsystem-owning
+- 41 of the 55 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+  `build_help_menu_view` — equivalently, 41 of the 42 subsystem-owning
   cogs expose it. The 14 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
@@ -91,8 +91,8 @@ so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 
 ## 2. Subsystem inventory
 
-41 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 54 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+42 registered subsystems in `utils/subsystem_registry.py` (one row
+each below); 55 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 14 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
@@ -142,6 +142,7 @@ falls back to the command-list embed when the hook is missing or raises.
 | `welcome` | `welcome_cog.py` | `welcome` | — | `HubView` | `!help welcome` → welcome policy summary (shared resolver) | hub-less; surfaced via `!settings` → Welcome + the `!welcome` summary (administrator tier) | member greetings/farewell + optional entry role (Q-0110); config via `!settings` → Welcome |
 | `xp` | `xp_cog.py` | `xpmenu`, `rank`, `givexp`, `resetxp`, `xpconfig` | — | `_XpHubView` | `!help xp` → opens XP panel (shared resolver) | reached via Community; `parent_hub="community"` since PR #3 | hub child (Community) — declared; admin controls live in panel |
 | `karma` | `karma_cog.py` | `thanks` (aliases `rep`/`thank`), `karma`, `karma give`, `/karma` | — | `HubView` (karma card) | `!help karma` → karma card (shared resolver) | reached via Community; `parent_hub="community"` (2026-06-22) | hub child (Community) — peer reputation; audited `karma_service` seam + `karma` leaderboard category |
+| `ticket` | `ticket_cog.py` | `ticket` (group: `new`/`close`/`claim`/`add`/`remove`), `ticketpanel`, `ticketsetup`, `ticketlimit`, `ticketblacklist` | — | `TicketHubView` | `!help ticket` → opens the ticket hub (shared resolver) | reached via Community; `parent_hub="community"` (user tier); also via the public launcher panel + the AI `open_support_ticket` tool | hub child (Community) — private support tickets, open by command, panel button, or natural language; audited `ticket_mutation` seam; claim/close/transcript |
 
 ## 3. Known inconsistencies (resolved by PR #142 / PR #143)
 

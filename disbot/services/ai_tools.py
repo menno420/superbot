@@ -1,16 +1,23 @@
-"""Read-only AI tools the model may call during a natural-language turn.
+"""AI tools the model may call during a natural-language turn.
 
 Handlers live in the services layer (not ``core/runtime``) because they
 read from other services. For a given request the gateway is handed the
 ``{name: handler}`` map; the matching :class:`AIToolSpec` objects travel
-on the request as pure data. Every tool here is **read-only** and returns
-a small, JSON-serialisable dict.
+on the request as pure data. Tools return a small, JSON-serialisable dict.
 
-Adding a write-capable tool is deliberately out of scope: mutations must
-continue to flow through the deterministic mutation services after
-explicit confirmation (see ``docs/ai/ai-service-integration-map.md`` and
-``docs/ai-config-ownership.md`` § "Mutation seam"). Tools added here must
-stay read-only.
+**Almost every tool here is read-only.** The sole, deliberate exception is
+``open_support_ticket`` (the support-ticket subsystem): a write-capable
+*action* tool. Action tools are admitted only when they (a) flow through a
+deterministic, **audited** mutation service — never raw Discord/DB writes
+here — and (b) are bounded against abuse without a UI round-trip. For
+ticket opening the user's natural-language request *is* the explicit
+intent, and the per-user open cap + blacklist + "is this guild even set
+up?" gates bound it deterministically (see ``services.ticket_mutation`` /
+``services.ticket_service``). The historical rule was "tools here must stay
+read-only"; opening a ticket is the owner-directed carve-out (the feature
+was requested to "work through the AI with natural language"). Any *future*
+write tool must clear the same bar — audited seam + deterministic bound —
+or stay read-only (``docs/ai-config-ownership.md`` § "Mutation seam").
 
 Scope gating: ``build_registry`` only includes a tool when the caller's
 :class:`AIScope` satisfies the tool's ``min_scope``. A tool above the
@@ -2410,6 +2417,74 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = ai_tool_catalogue.grounding_tool_nam
 )
 
 
+# --- open_support_ticket (the one ACTION tool) -------------------------
+#
+# Unlike every other tool in this module (all read-only), this one WRITES: it
+# opens a support ticket through the deterministic, audited
+# ``services.ticket_mutation.open_ticket`` seam. That is exactly the mutation
+# path the module contract requires — the "explicit confirmation" is the user's
+# own natural-language request ("open a ticket, I need help with X"), and abuse
+# is bounded deterministically (the per-user open cap + blacklist + the
+# requirement that an admin has set tickets up). Owner-directed (the support-
+# ticket feature was requested to "work through the AI with natural language").
+
+_OPEN_SUPPORT_TICKET_SPEC = AIToolSpec(
+    name="open_support_ticket",
+    description=(
+        "Open a PRIVATE support ticket for the asking user in THIS server. Call "
+        "this when the user wants staff help, wants to report something "
+        "privately, or explicitly asks to open/create a ticket (e.g. 'open a "
+        "ticket, I need help with X', 'can I talk to a mod privately', 'I want to "
+        "report a user'). Pass a concise `subject` summarising their issue. This "
+        "ACTUALLY creates a private ticket channel with the staff team — it is "
+        "not a lookup. It is bounded by the server's per-user open-ticket limit "
+        "and blacklist and only works when an admin has set tickets up; the "
+        "result tells you whether it opened and which channel to point the user "
+        "to. Do NOT call it for general questions you can answer yourself."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "subject": {
+                "type": "string",
+                "description": (
+                    "A short summary of what the user needs help with "
+                    "(becomes the ticket's subject)."
+                ),
+            },
+        },
+        "required": ["subject"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _make_open_support_ticket(guild: Any, member: Any) -> ToolHandler:
+    async def handler(arguments: dict[str, Any]) -> dict[str, Any]:
+        subject = str(arguments.get("subject") or "").strip()
+        if not subject:
+            return {
+                "opened": False,
+                "reason": "missing_subject",
+                "note": "Ask the user what they need help with, then call again.",
+            }
+        from services import ticket_mutation
+
+        result = await ticket_mutation.open_ticket(guild, member, subject, source="ai")
+        if result.success:
+            return {
+                "opened": True,
+                "ticket_id": result.ticket_id,
+                "channel_id": result.channel_id,
+                "channel_mention": f"<#{result.channel_id}>",
+                "note": result.message,
+            }
+        return {"opened": False, "reason": result.reason, "note": result.message}
+
+    return handler
+
+
 # Every registered tool's spec, with no runtime binding (no guild/member/bot, no
 # handlers). ``build_registry`` pairs these same spec constants with runtime-bound
 # handlers per request; this flat tuple is the **runtime-independent** half a read
@@ -2454,6 +2529,7 @@ _ALL_TOOL_SPECS: tuple[AIToolSpec, ...] = (
     _SERVER_CHANNELS_SPEC,
     _MEMBER_LOOKUP_SPEC,
     _MEMBER_LIST_SPEC,
+    _OPEN_SUPPORT_TICKET_SPEC,
 )
 
 
@@ -2580,6 +2656,13 @@ def build_registry(
                     (_MEMBER_LOOKUP_SPEC, _make_lookup_member(guild, member)),
                     (_MEMBER_LIST_SPEC, _make_list_members(guild)),
                 ],
+            )
+        if member is not None:
+            # The one *action* tool — needs the live guild + member to open a
+            # ticket. Self-gating: it only opens when the guild has tickets set
+            # up and the asker is under the open cap / not blacklisted.
+            catalog.append(
+                (_OPEN_SUPPORT_TICKET_SPEC, _make_open_support_ticket(guild, member)),
             )
     decisions = {
         d.name: d

@@ -78,6 +78,7 @@ writes must come from the owning cog or a shared service.
 | `counting`     | `counting_state`                               | direct via `utils/db/games/counting.py` |
 | `mining`       | `mining_inventory`, `mining_equipment`, `mining_player_state`, `mining_gear_wear`, `mining_vault` | **all writes via `services/mining_workflow.py`** (RS02 complete) — one transaction per operation; coin legs via `economy_service.{debit,credit}_in_txn` with reasons `mining:sell_ore` / `mining:buy_gear` / `mining:repair_gear`, events after commit; `mining_vault` deposit/withdraw move items between the pack and the vault atomically (no coin/audit leg — item-state direct-lane); **reads** stay direct via `utils/db/games/mining*.py`. AST-fenced: `tests/unit/invariants/test_mining_write_boundary.py` |
 | `fishing`      | `fishing_catch_log`                            | **all writes via `services/fishing_workflow.py`** — `fish()` records the catch (level-gated by the player's fishing `game_xp`) + awards `GAME_FISHING` xp in one transaction, events after commit; v1 pays no coins (fish value is a deferred owner question, Q-0175); **reads** stay direct via `utils/db/games/fishing.py` |
+| `ticket`       | `ticket_config`, `tickets`, `ticket_blacklist` (migration 098) | **all writes via `services/ticket_mutation.py`** — open (creates the private channel via `channel_lifecycle_service`, applies the overwrites, then inserts the row), claim, close (transcript + DM + teardown), add/remove participant, config, blacklist; one transaction per op, `emit_audit_action` companion + `ticket.opened`/`ticket.closed` after commit. Read model + open eligibility (per-user cap / blacklist / configured gate) via `services/ticket_service.py`; CRUD via `utils/db/tickets.py`. The AI `open_support_ticket` action tool shares the same audited open path |
 | `deathmatch`   | `deathmatch_stats`                             | direct via `utils/db/games/deathmatch.py` |
 | `rps_tournament` | `rps_players`, `rps_matches`                 | direct via `utils/db/games/rps.py`; balance mutations via economy_service |
 | `blackjack`    | (uses `xp.coins`; tournament state in `guild_settings`) | balance via economy_service |
@@ -216,6 +217,8 @@ allowed event name.  Owners of each event:
 | `governance.execution.denied` | `governance.execution.resolve_execution` (deny) | `guild_id`, `user_id`, `capability`, `reason` |
 | `economy.balance_changed` | `services/economy_service.py` | `guild_id`, `user_id`, `delta`, `new_balance`, `reason` |
 | `karma.granted` | `services/karma_service.py` | `guild_id`, `from_user`, `to_user`, `delta`, `new_total`, `source` |
+| `ticket.opened` | `services/ticket_mutation.py` | `guild_id`, `ticket_id`, `channel_id`, `opener_id`, `subject`, `source` (`command`/`panel`/`ai`) — `cogs/ticket_cog.py` subscribes to render the welcome + control panel |
+| `ticket.closed` | `services/ticket_mutation.py` | `guild_id`, `ticket_id`, `channel_id`, `opener_id`, `closed_by` |
 | `xp.awarded` | `services/xp_service.py` | `guild_id`, `user_id`, `delta`, `new_xp`, `new_level`, `source` |
 | `xp.level_up` | `services/xp_service.py` | `guild_id`, `user_id`, `new_level`, `source` |
 | `xp.reset` | `services/xp_service.py` | `guild_id`, `user_id`, `actor_id`, `source` |

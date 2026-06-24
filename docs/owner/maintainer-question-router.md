@@ -7317,3 +7317,45 @@ prevents is silent until CI and trivially avoidable.
 **Home:** this Q-block (canonical) + the session log. Related: **Q-0014** (claim/dedup before starting),
 **helper-policy.md** (the durable home if adopted), Q-0120 (verify-tool-vs-evidence — same "catch it
 earlier" instinct).
+
+---
+
+### Q-0201 — ANSWERED (owner-directed, in-session): the AI may OPEN support tickets in natural language — the first audited *action* AI tool (2026-06-24)
+
+**Context.** The owner requested a support-ticket subsystem that works *"by command as well as through the
+AI with natural language"* — i.e. a user can say *"open a ticket, I need help with X"* and the bot opens
+one. Every AI tool in `services/ai_tools.py` was, until now, **read-only** by a documented + test-pinned
+invariant (the module docstring + `tests/unit/services/test_ai_tools.py`), because **Q-0048** reserves AI
+*writes* for a per-exposure lift. Opening a ticket is a write (it creates a private channel + a DB row), so
+the feature needs that lift.
+
+**The decision (the per-exposure write lift, granted).** `open_support_ticket` ships as the **first
+write-capable AI tool**. It is admitted because it clears the bar a future action tool must also clear:
+1. **Audited seam, never raw writes.** It opens *only* through the deterministic `services/ticket_mutation.py`
+   (one transaction, `emit_audit_action` companion, `ticket.opened` event) — identical to the command and
+   panel-button open paths. No Discord/DB writes live in the AI tool itself.
+2. **Deterministically bounded against abuse** — without a UI round-trip. The shared
+   `ticket_service.check_open_eligibility` gate enforces the per-user open-ticket cap + the blacklist +
+   "is this guild even set up?" (an admin must run `!ticketsetup` first). The user's natural-language
+   request *is* the explicit intent; the bound replaces the per-click confirmation Q-0199 used for the
+   broader, higher-blast-radius setup-apply exposure.
+3. **Reversible + contained.** A ticket is a private channel + a row; closing tears it down and a per-user
+   cap stops spam. Nothing destructive, no @everyone, no money.
+
+**Scope / non-generalization.** This lift is for **ticket opening only**. The `ai_tools.py` rule changes
+from "every tool is read-only" to "read-only **or** an audited+deterministically-bounded action tool"; any
+*future* write tool must clear the same two-part bar (audited seam + deterministic bound) or stay read-only.
+Higher-blast-radius writes (guild config, money, external calls, anything that can't be deterministically
+bounded) still need their own per-exposure lift + likely a human confirmation (cf. Q-0199).
+
+**Applied this session (PR #1405).** New `ticket` subsystem (migration 098; `utils/db/tickets.py`;
+`services/ticket_service.py` read model + eligibility; `services/ticket_mutation.py` audited writes;
+`views/tickets/` launcher + control + hub panels; `cogs/ticket_cog.py` commands). The AI tool
+`open_support_ticket` (toolset `support_ticket`, `min_scope=USER`, offered only with a live guild+member)
+delegates to `ticket_mutation.open_ticket(..., source="ai")`. Covered by
+`tests/unit/services/test_ticket_ai_tool.py` (offering gate + delegation) and acknowledged in the eval
+surface (`tests/evals/test_eval_coverage.py` — an action tool, not a replayable read query).
+
+**Home:** this Q-block (canonical) + `.sessions/2026-06-24-support-tickets.md` + the `ai_tools.py` module
+docstring. Related: **Q-0048** (the parent AI-exposure gate), **Q-0199** (the setup-apply write lift, with
+per-click confirmation), Q-0123 (auto-merge on green).

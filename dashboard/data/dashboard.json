@@ -1,25 +1,25 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T07:59:34Z",
+    "generated_at": "2026-06-24T10:31:22Z",
     "build": {
-      "commit": "2d0b127b",
-      "subject": "btd6: per-round economy slash commands (cash / RBE / bloons) (#1404)",
-      "committed_at": "2026-06-24T07:59:34Z"
+      "commit": "bf27a35",
+      "subject": "Merge branch 'main' into claude/blissful-planck-sf5te4",
+      "committed_at": "2026-06-24T10:31:22Z"
     },
     "counts": {
-      "functions": 41,
+      "functions": 42,
       "ideas": 137,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 38,
-      "cogs": 51,
-      "commands": 393,
+      "cogs": 52,
+      "commands": 405,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
-      "visible_subsystems": 41,
+      "visible_subsystems": 42,
       "synonyms": 87,
       "bot_changelog": 3
     }
@@ -282,6 +282,30 @@
       ],
       "capabilities": [
         "counters.settings.configure"
+      ]
+    },
+    {
+      "key": "ticket",
+      "display_name": "Support Tickets",
+      "description": "Private support tickets — open by command, panel, or the AI",
+      "emoji": "🎫",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "community",
+      "tags": [
+        "tickets",
+        "support",
+        "help",
+        "staff"
+      ],
+      "entry_points": [
+        "ticket"
+      ],
+      "related_subsystems": [],
+      "capabilities": [
+        "ticket.ticket.open",
+        "ticket.ticket.manage",
+        "ticket.config.update"
       ]
     },
     {
@@ -2423,6 +2447,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-24-support-tickets.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Support-ticket subsystem (command + AI natural language)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-reconcile-band1380.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · docs reconciliation (band-#1380, Q-0107 pass 23)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-rank-card-image.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Rank card as a themed image (card-engine H3, first feature card)",
@@ -2482,6 +2522,14 @@
       "file": "2026-06-24-btd6-paragon-elite-boss-damage.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — BTD6 paragon elite-boss damage multiplier",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-btd6-ai-floor-coverage-fixes.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — BTD6 AI floor coverage: range RBE + paragon elite-boss multiplier",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -2877,30 +2925,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-ai-setup-create.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — AI setup wedge: propose resource CREATION from a description",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-unattended-fit-dispatch-dimension.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Unattended-fit dimension for the per-sector dispatch contract",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-tool-pins-ci-guard.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — make `check_tool_pins` a CI guard (close the #1315 drift class at the root)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -2989,7 +3013,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 168,
+          "line": 169,
           "layer": "config",
           "has_default": true
         },
@@ -3011,7 +3035,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 167,
+          "line": 168,
           "layer": "config",
           "has_default": true
         }
@@ -3044,7 +3068,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 151,
+          "line": 152,
           "layer": "config",
           "has_default": true
         },
@@ -3114,7 +3138,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 206,
+          "line": 207,
           "layer": "config",
           "has_default": true
         }
@@ -3162,7 +3186,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 194,
+          "line": 195,
           "layer": "config",
           "has_default": true
         }
@@ -3178,7 +3202,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 197,
+          "line": 198,
           "layer": "config",
           "has_default": true
         }
@@ -3194,7 +3218,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 200,
+          "line": 201,
           "layer": "config",
           "has_default": true
         }
@@ -3354,7 +3378,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 113,
+          "line": 114,
           "layer": "config",
           "has_default": true
         }
@@ -3434,7 +3458,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 114,
+          "line": 115,
           "layer": "config",
           "has_default": true
         }
@@ -3452,7 +3476,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 150,
+          "line": 151,
           "layer": "config",
           "has_default": true
         },
@@ -3493,7 +3517,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 177,
+          "line": 178,
           "layer": "config",
           "has_default": true
         },
@@ -3516,7 +3540,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 181,
+          "line": 182,
           "layer": "config",
           "has_default": true
         },
@@ -3555,7 +3579,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 149,
+          "line": 150,
           "layer": "config",
           "has_default": true
         },
@@ -3579,7 +3603,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 148,
+          "line": 149,
           "layer": "config",
           "has_default": true
         },
@@ -8239,6 +8263,149 @@
       ]
     },
     {
+      "cog": "TicketCog",
+      "file": "disbot/cogs/ticket_cog.py",
+      "subsystem": "ticket",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "ticket",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [],
+          "brief": "Open the ticket hub — open a ticket or view your open tickets.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "ticketblacklist",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [],
+          "brief": "Manage who may open tickets: ``!ticketblacklist add|remove @user``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ticketlimit",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Set the max simultaneously-open tickets per member (managers).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ticketpanel",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Post the public ticket launcher panel in this channel (managers).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ticketsetup",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Configure tickets: ``!ticketsetup @StaffRole [#log-channel]`` (managers).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "add",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ticket",
+          "aliases": [],
+          "brief": "Add a member to this ticket (staff).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "claim",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ticket",
+          "aliases": [],
+          "brief": "Claim the ticket in this channel (staff).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "close",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ticket",
+          "aliases": [],
+          "brief": "Close the ticket in this channel (staff or the opener).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "new",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ticket",
+          "aliases": [
+            "open",
+            "create"
+          ],
+          "brief": "Open a ticket directly: ``!ticket new <subject>``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "remove",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ticket",
+          "aliases": [],
+          "brief": "Remove a member from this ticket (staff).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "add",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ticketblacklist",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "remove",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "ticketblacklist",
+          "aliases": [],
+          "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "TreasuryCog",
       "file": "disbot/cogs/treasury_cog.py",
       "subsystem": "treasury",
@@ -9419,6 +9586,12 @@
             "emoji": "🌟"
           },
           {
+            "key": "ticket",
+            "display_name": "Support Tickets",
+            "category": "community",
+            "emoji": "🎫"
+          },
+          {
             "key": "economy",
             "display_name": "Economy",
             "category": "economy",
@@ -9683,7 +9856,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 41,
+    "total_visible": 42,
     "internal_count": 0
   },
   "synonyms": [
