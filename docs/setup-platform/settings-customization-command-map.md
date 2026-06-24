@@ -1745,14 +1745,18 @@ deliberately absent — no external calls, no PII stored.
 
 1. **cog_module**: `disbot/cogs/btd6_cog.py`
 2. **subsystem**: `btd6`
-3. **current_commands**: `!btd6` (group), `!btd6 status`,
-   `!btd6 diagnostics`, `!btd6 ask <question>`, `!btd6 test-intent <text>`,
-   `!btd6 ctteam`, `!btd6menu`. Slash equivalents (`/btd6 ...`, `/btd6menu`)
-   mirror the prefix surface. The reference / events / strategy command
-   groups now live in sibling cogs (see `btd6_reference`, `btd6_events`,
-   `btd6_strategy` below) so `btd6_cog.py` stays under the 800-LOC ceiling;
-   the mother cog keeps the panel, core diagnostics, and the schema +
-   ingestion-supervisor lifecycle.
+3. **current_commands**: the whole BTD6 surface is now **one unified `/btd6`
+   (`!btd6`) tree** (owner request, 2026-06-24): everyday lookups flat
+   (`/btd6 income`, `/btd6 round`, `/btd6 rbe`, `/btd6 tower`, `/btd6 hero`,
+   `/btd6 relic`, `/btd6 ct`, `/btd6 ask`, `/btd6 status`, `/btd6 diagnostics`,
+   `/btd6 test-intent`; `!btd6 ctteam` is prefix-only) and the bigger buckets
+   nested (`/btd6 strat …`, `/btd6 ops …`, `/btd6 events …`). The tree is
+   module-level in `disbot/cogs/btd6/_unified.py` (cogs can't cleanly share one
+   `app_commands.Group`); the mother `btd6_cog` registers it and keeps the panel
+   (`!btd6menu`) + the schema / ingestion-supervisor lifecycle. The old
+   `btd6_reference` / `btd6_events` / `btd6_strategy` / `btd6_ops` cogs (below)
+   remain only as **hidden prefix aliases** (`!btd6ref …` etc.) so existing
+   muscle-memory keeps working.
 4. **current_command_groups**: `!btd6` group (user-tier).
 5. **current_command_panel_or_menu**: `!btd6menu` (alias for `!btd6`)
    opens the persistent panel `BTD6PanelView`.
@@ -1780,7 +1784,7 @@ deliberately absent — no external calls, no PII stored.
     `BTD6_VERSION_ANNOUNCEMENT_CHANNEL` (the **legacy fallback lane** for the
     version-announcement channel since Settings Phase 2/Q-0064 — the
     `btd6.version_announce_channel` binding takes precedence when bound;
-    `!btd6ops announcechannel` still writes this KV pointer and warns when a
+    `!btd6 ops announcechannel` still writes this KV pointer and warns when a
     binding shadows it; read through `services.btd6_version_announce`), all
     in `disbot/utils/settings_keys/btd6.py`.
 11. **existing_BindingSpec_entries**: `btd6.strategy_submission_channel`
@@ -1821,13 +1825,16 @@ deliberately absent — no external calls, no PII stored.
 ### btd6_reference
 
 1. **cog_module**: `disbot/cogs/btd6_reference_cog.py`
-2. **subsystem**: `btd6` (sibling cog — static game-data lookups split out so
-   `btd6_cog.py` stays under the 800-LOC ceiling; class name maps to no
-   SUBSYSTEMS key, so it shares the `btd6` subsystem like `btd6_ops`).
-3. **current_commands**: `!btd6ref tower <name>`, `!btd6ref hero <name>`,
-   `!btd6ref round <N>`, `!btd6ref relic <name>`, `!btd6ref ct`. Slash twins
-   under `/btd6ref`. Also reachable from `BTD6PanelView` (`!btd6`).
-4. **current_command_groups**: `btd6ref` (prefix) / `/btd6ref` (app group).
+2. **subsystem**: `btd6` (now a **hidden prefix alias** — static game-data
+   lookups. The canonical surface is the unified `/btd6` tree
+   (`cogs/btd6/_unified.py`); this cog keeps `!btd6ref …` so old muscle-memory
+   keeps working).
+3. **current_commands** (canonical): `!btd6 tower <name>`, `!btd6 hero <name>`,
+   `!btd6 round <N>`, `!btd6 rbe <N>`, `!btd6 income <N>`, `!btd6 relic <name>`,
+   `!btd6 ct` (+ slash `/btd6 tower …`). The legacy `!btd6ref tower …` prefix
+   still works (hidden alias). Also reachable from `BTD6PanelView` (`!btd6`).
+4. **current_command_groups**: flat lookups under the unified `/btd6` (`!btd6`)
+   tree; `btd6ref` survives as a hidden **prefix-only** alias (no slash twin).
 5. **current_command_panel_or_menu**: none of its own — surfaced via the
    shared `BTD6PanelView`.
 6. **help_menu_discoverable**: via the BTD6 panel (the `btd6` subsystem owns
@@ -1840,14 +1847,17 @@ deliberately absent — no external calls, no PII stored.
 ### btd6_events
 
 1. **cog_module**: `disbot/cogs/btd6_events_cog.py`
-2. **subsystem**: `btd6` (sibling cog — live Ninja Kiwi events / leaderboards /
-   source diagnostics / grounding, split out of `btd6_cog`).
-3. **current_commands**: `!btd6events live`, `!btd6events event`,
-   `!btd6events leaderboard`, `!btd6events sources`,
-   `!btd6events source-health`, `!btd6events latest-data`,
-   `!btd6events refresh-source <key>` (manage-guild), `!btd6events grounding`.
-   Slash twins under `/btd6events`.
-4. **current_command_groups**: `btd6events` (prefix) / `/btd6events` (app group).
+2. **subsystem**: `btd6` (now a **hidden prefix alias** — live Ninja Kiwi
+   events / leaderboards / source diagnostics / grounding. Canonical surface:
+   the unified `/btd6 events …` subgroup in `cogs/btd6/_unified.py`).
+3. **current_commands** (canonical): `!btd6 events live`, `!btd6 events event`,
+   `!btd6 events leaderboard`, `!btd6 events sources`,
+   `!btd6 events source-health`, `!btd6 events latest-data`,
+   `!btd6 events refresh-source <key>` (manage-guild), `!btd6 events grounding`
+   (+ slash `/btd6 events …`). The legacy `!btd6events …` prefix still works
+   (hidden alias).
+4. **current_command_groups**: `/btd6 events …` (nested under the unified tree);
+   `btd6events` survives as a hidden **prefix-only** alias (no slash twin).
 5. **current_command_panel_or_menu**: none of its own — surfaced via
    `BTD6PanelView`.
 6. **help_menu_discoverable**: via the BTD6 panel.
@@ -1859,14 +1869,17 @@ deliberately absent — no external calls, no PII stored.
 ### btd6_strategy
 
 1. **cog_module**: `disbot/cogs/btd6_strategy_cog.py`
-2. **subsystem**: `btd6` (sibling cog — strategy memory browse/submit/review +
-   `why-no-response`, split out of `btd6_cog`).
-3. **current_commands**: `!btd6strat browse`, `!btd6strat mine`,
-   `!btd6strat strategy <id>`, `!btd6strat strategy-audit <id>`,
-   `!btd6strat submit` (slash opens a modal), `!btd6strat pending`
-   (manage-guild), `!btd6strat strategies`, `!btd6strat why-no-response`.
-   Slash twins under `/btd6strat`.
-4. **current_command_groups**: `btd6strat` (prefix) / `/btd6strat` (app group).
+2. **subsystem**: `btd6` (now a **hidden prefix alias** — strategy memory
+   browse/submit/review + `why-no-response`. Canonical surface: the unified
+   `/btd6 strat …` subgroup in `cogs/btd6/_unified.py`).
+3. **current_commands** (canonical): `!btd6 strat browse`, `!btd6 strat mine`,
+   `!btd6 strat strategy <id>`, `!btd6 strat strategy-audit <id>`,
+   `!btd6 strat submit` (slash opens a modal), `!btd6 strat pending`
+   (manage-guild), `!btd6 strat strategies`, `!btd6 strat why-no-response`
+   (+ slash `/btd6 strat …`). The legacy `!btd6strat …` prefix still works
+   (hidden alias).
+4. **current_command_groups**: `/btd6 strat …` (nested under the unified tree);
+   `btd6strat` survives as a hidden **prefix-only** alias (no slash twin).
 5. **current_command_panel_or_menu**: none of its own — surfaced via
    `BTD6PanelView`.
 6. **help_menu_discoverable**: via the BTD6 panel.
@@ -1915,13 +1928,17 @@ deliberately absent — no external calls, no PII stored.
 ### btd6_ops
 
 1. **cog_module**: `disbot/cogs/btd6_ops_cog.py`
-2. **subsystem**: `btd6` (operator surface for BTD6 ingestion — given its own
-   thin cog so `btd6_cog.py` stays under the 800-LOC ceiling).
-3. **current_commands**: `!btd6ops readiness` (ingestion readiness verdict),
-   `!btd6ops runs` (recent ingestion runs), `!btd6ops source_enable <key>` /
-   `!btd6ops source_disable <key>` (toggle a source). Slash twins under
-   `/btd6ops`. Also reachable from the 🛠️ Admin sub-panel on `!btd6`.
-4. **current_command_groups**: `btd6ops` (prefix group) / `/btd6ops` (app group).
+2. **subsystem**: `btd6` (now a **hidden prefix alias** — operator surface for
+   BTD6 ingestion. Canonical surface: the unified `/btd6 ops …` subgroup in
+   `cogs/btd6/_unified.py`; shared formatters in `cogs/btd6/_ops_helpers.py`).
+3. **current_commands** (canonical): `!btd6 ops readiness` (ingestion readiness
+   verdict), `!btd6 ops runs` (recent ingestion runs), `!btd6 ops source_enable
+   <key>` / `!btd6 ops source_disable <key>` (toggle a source), `!btd6 ops
+   seed-data`, `!btd6 ops announcechannel` (+ slash `/btd6 ops …`). The legacy
+   `!btd6ops …` prefix still works (hidden alias). Also reachable from the 🛠️
+   Admin sub-panel on `!btd6`.
+4. **current_command_groups**: `/btd6 ops …` (nested under the unified tree);
+   `btd6ops` survives as a hidden **prefix-only** alias (no slash twin).
 5. **current_command_panel_or_menu**: the BTD6 Admin panel
    (`views.btd6.admin_panel.BTD6AdminView`) exposes Readiness, Recent Runs, and
    a source enable/disable select + buttons.
@@ -1946,7 +1963,7 @@ deliberately absent — no external calls, no PII stored.
     `services.btd6_source_mutation.set_enabled` (audited); reads via
     `services.btd6_ops_readiness_service` + `utils.db.btd6_sources`.
 21. **target_help_or_menu_route**: existing; the BTD6 hub Admin panel and
-    `!btd6ops` / `/btd6ops`.
+    `!btd6 ops` / `/btd6 ops` (legacy `!btd6ops` still works, hidden).
 22. **provisionable_resources**: none.
 23. **priority**: `P2` — BTD6 ingestion operations.
 24. **recommended_PR_phase**: ships with the BTD6 operator-visibility feature.

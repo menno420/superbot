@@ -13,7 +13,7 @@ it reads it, and whether it is **required** (read without a default anywhere) or
 only — never a value**; the values live in Railway service variables
 (see [`production-deployment.md`](production-deployment.md)).
 
-**38 variables** — 3 required · 35 optional.
+**39 variables** — 3 required · 36 optional.
 
 ## Required (read without a default — the deploy must set these)
 
@@ -32,6 +32,7 @@ only — never a value**; the values live in Railway service variables
 | `AI_FALLBACK_PROVIDER` | core | `disbot/core/runtime/ai/routing.py:128` *(default)* |
 | `ANTHROPIC_API_KEY` | config, core | `disbot/config.py:152` *(default)*<br>`disbot/core/runtime/ai/providers/anthropic_provider.py:93` *(default)* |
 | `AUTOMATION_SCHEDULER_ENABLED` | services | `disbot/services/automation_scheduler.py:397` *(default)* |
+| `AUTO_SYNC_COMMANDS` | config | `disbot/config.py:215` *(default)* |
 | `BOT_OWNER_USER_ID` | config | `disbot/config.py:40` *(default)* |
 | `BOT_PREFIX` | config | `disbot/config.py:28` *(default)* |
 | `BTD6_AUTO_SEED` | config | `disbot/config.py:207` *(default)* |

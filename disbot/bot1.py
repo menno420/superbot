@@ -188,6 +188,11 @@ signal.signal(signal.SIGTERM, _begin_shutdown)
 # and must not re-report. Mirrors lifecycle._startup_duration_observed.
 _startup_health_reported = False
 
+# One-shot guard so the diff-gated command-tree auto-sync
+# (services.command_tree_sync) runs exactly once per process — a gateway
+# reconnect re-fires on_ready and must not re-sync.
+_commands_auto_synced = False
+
 
 async def _report_startup_health() -> None:
     """Collect + cache the settled-startup health snapshot (best-effort).
@@ -277,6 +282,28 @@ def _maybe_report_startup_health() -> None:
     _runtime_tasks.spawn("startup:health_report", _report_startup_health())
 
 
+def _maybe_auto_sync_commands() -> None:
+    """Spawn the diff-gated command-tree auto-sync once per process.
+
+    Reconnect-safe (a gateway reconnect re-fires ``on_ready``). Runs off the
+    on_ready path via the task supervisor and is fully non-fatal — see
+    ``services.command_tree_sync``. Kill-switch: ``AUTO_SYNC_COMMANDS=0``.
+    """
+    global _commands_auto_synced
+    if _commands_auto_synced:
+        return
+    _commands_auto_synced = True
+    from services import command_tree_sync
+
+    _runtime_tasks.spawn(
+        "startup:command_sync",
+        command_tree_sync.auto_sync_if_changed(
+            bot,
+            enabled=command_tree_sync.env_enabled(config.AUTO_SYNC_COMMANDS),
+        ),
+    )
+
+
 @bot.event
 async def on_ready() -> None:
     bot.uptime = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[attr-defined]
@@ -302,6 +329,9 @@ async def on_ready() -> None:
         _lifecycle.set_phase(_lifecycle.Phase.RUNNING, reason="on_ready")
     # Bot-awareness PR3: post-ready startup-health snapshot, exactly once.
     _maybe_report_startup_health()
+    # Diff-gated command-tree auto-sync — push a changed slash tree to Discord on
+    # deploy (no manual !syncslash), exactly once per process. Non-fatal.
+    _maybe_auto_sync_commands()
 
 
 @bot.event

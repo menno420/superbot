@@ -205,3 +205,11 @@ BTD6_DATA_CACHE_DIR = os.getenv("BTD6_DATA_CACHE_DIR", "")
 # no-op for the file backend (reads bundled files directly) and the cloud backend
 # (seeded via its own upload script).
 BTD6_AUTO_SEED = os.getenv("BTD6_AUTO_SEED", "1")
+
+# Startup auto-sync of the application-command tree: on boot, diff the bot's
+# local slash tree against Discord's registered commands and ``tree.sync()`` only
+# when they differ, so a command change (e.g. the BTD6 unification) goes live on
+# deploy with no manual ``!syncslash``. Default on; set to "0"/"false"/"no"/"off"
+# to disable (kill-switch). Failures are non-fatal. See
+# ``services/command_tree_sync.py``.
+AUTO_SYNC_COMMANDS = os.getenv("AUTO_SYNC_COMMANDS", "1")
