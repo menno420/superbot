@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T10:31:22Z",
+    "generated_at": "2026-06-24T08:54:26Z",
     "build": {
-      "commit": "bf27a35",
-      "subject": "Merge branch 'main' into claude/blissful-planck-sf5te4",
-      "committed_at": "2026-06-24T10:31:22Z"
+      "commit": "d792e56",
+      "subject": "btd6: open round-range command session (born-red card)",
+      "committed_at": "2026-06-24T08:54:26Z"
     },
     "counts": {
       "functions": 42,
@@ -2511,6 +2511,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-24-btd6-round-range-command.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — /btd6ref round accepts a round RANGE",
+      "status": "in-progress",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-btd6-per-round-economy-commands.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — BTD6 per-round economy slash commands (cash / RBE / bloons)",
@@ -2917,14 +2925,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-ai-setup-edit-button.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — AI-setup advisor: Accept · Deny · Edit (the Q-0048 finalize)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4738,7 +4738,7 @@
           "is_group": false,
           "parent": "btd6ref",
           "aliases": [],
-          "brief": "",
+          "brief": "A single round's detail, or a values table across a round range.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4749,7 +4749,7 @@
           "is_group": false,
           "parent": "btd6ref",
           "aliases": [],
-          "brief": "Look up a round.",
+          "brief": "Look up a round, or a values table across a range of rounds.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

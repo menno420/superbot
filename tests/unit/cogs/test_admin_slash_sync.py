@@ -45,6 +45,7 @@ def _admin_cog() -> AdminCog:
     bot.tree = MagicMock()
     bot.tree.sync = AsyncMock(return_value=[])
     bot.tree.copy_global_to = MagicMock()
+    bot.tree.clear_commands = MagicMock()
     bot.tree.get_commands = MagicMock(return_value=[])
     return AdminCog(bot=bot)
 
@@ -147,6 +148,71 @@ async def test_syncslash_global_handles_http_failure():
     msg = args[0] if args else kwargs.get("content", "")
     assert "Global sync failed" in msg
     assert "HTTPException" in msg
+
+
+# ---------------------------------------------------------------------------
+# !syncslash — clear scope (fix the global+guild duplicate listing)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_syncslash_clear_scope_clears_guild_copies():
+    cog = _admin_cog()
+    ctx = _ctx()
+
+    await cog.sync_slash_commands.callback(cog, ctx, "clear")
+
+    cog.bot.tree.clear_commands.assert_called_once_with(guild=ctx.guild)
+    cog.bot.tree.sync.assert_awaited_once_with(guild=ctx.guild)
+    # clear must NOT re-copy the global commands (that would re-create the dupes).
+    cog.bot.tree.copy_global_to.assert_not_called()
+    args, kwargs = ctx.send.call_args
+    msg = args[0] if args else kwargs.get("content", "")
+    assert "Cleared" in msg
+    assert "TestGuild" in msg
+
+
+@pytest.mark.asyncio
+async def test_syncslash_clear_in_dm_context_rejects():
+    cog = _admin_cog()
+    ctx = _ctx(guild=False)
+
+    await cog.sync_slash_commands.callback(cog, ctx, "clear")
+
+    cog.bot.tree.clear_commands.assert_not_called()
+    cog.bot.tree.sync.assert_not_called()
+    args, kwargs = ctx.send.call_args
+    msg = args[0] if args else kwargs.get("content", "")
+    assert "guild context" in msg
+
+
+@pytest.mark.asyncio
+async def test_syncslash_clear_handles_http_failure():
+    cog = _admin_cog()
+    cog.bot.tree.sync.side_effect = discord.HTTPException(
+        response=MagicMock(),
+        message="boom",
+    )
+    ctx = _ctx()
+
+    await cog.sync_slash_commands.callback(cog, ctx, "clear")
+
+    args, kwargs = ctx.send.call_args
+    msg = args[0] if args else kwargs.get("content", "")
+    assert "Clear failed" in msg
+
+
+@pytest.mark.asyncio
+async def test_syncslash_guild_message_points_to_clear_for_duplicates():
+    # The guild-sync message must tell the operator how to undo dupes.
+    cog = _admin_cog()
+    ctx = _ctx()
+
+    await cog.sync_slash_commands.callback(cog, ctx, "guild")
+
+    args, kwargs = ctx.send.call_args
+    msg = args[0] if args else kwargs.get("content", "")
+    assert "clear" in msg.lower()
 
 
 # ---------------------------------------------------------------------------
