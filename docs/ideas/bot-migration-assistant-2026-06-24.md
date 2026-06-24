@@ -3,7 +3,10 @@
 > **Status:** `ideas` — captured from an owner chat request (the maintainer asked whether the bot can
 > recognize *other* bots in a server, find out what they offer, suggest steps to replicate their
 > functions with SuperBot, and delete the old bots once setup is complete). He chose **capture**
-> over plan/build. Nothing here is approved for implementation.
+> over plan/build, then (same chat) chose **capture idea + write a plan** → promoted to a buildable
+> plan: [`docs/planning/bot-migration-assistant-plan-2026-06-24.md`](../planning/bot-migration-assistant-plan-2026-06-24.md)
+> (catalog seed = top general bots + ticket/support bots). Nothing is approved for *build* yet — the
+> plan is plan-first.
 > **Subsystem:** setup
 > **Lineage:** the *in-product engine* on top of the **V-14 competitive feature-mining** lane —
 > [`competitive-teardown-2026-06-10.md`](./competitive-teardown-2026-06-10.md),
