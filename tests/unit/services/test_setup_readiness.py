@@ -378,6 +378,81 @@ async def test_build_setup_readiness_embed_handles_empty_registry():
 
 
 # ---------------------------------------------------------------------------
+# Support-tickets readiness line (bespoke — ticket config is not schema-driven)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_readiness_embed_flags_tickets_not_set_up():
+    from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
+
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
+    ), patch(
+        "services.ticket_service.get_config",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        embed = await build_setup_readiness_embed(guild_id=42)
+    ticket_field = next((f for f in embed.fields if "Tickets" in (f.name or "")), None)
+    assert ticket_field is not None
+    assert "not set up" in ticket_field.value.lower()
+    assert "ticketsetup" in ticket_field.value.lower()
+
+
+@pytest.mark.asyncio
+async def test_readiness_embed_grades_enabled_tickets():
+    from types import SimpleNamespace
+
+    from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
+
+    cfg = SimpleNamespace(
+        is_set_up=True,
+        enabled=True,
+        staff_role_id=9,
+        log_channel_id=5,
+        max_open_per_user=3,
+    )
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
+    ), patch(
+        "services.ticket_service.get_config",
+        new_callable=AsyncMock,
+        return_value=cfg,
+    ):
+        embed = await build_setup_readiness_embed(guild_id=42)
+    ticket_field = next(
+        (f for f in embed.fields if "Tickets" in (f.name or "")), None
+    )
+    assert ticket_field is not None
+    assert "enabled" in ticket_field.value.lower()
+    assert "transcript log on" in ticket_field.value.lower()
+
+
+@pytest.mark.asyncio
+async def test_readiness_embed_omits_ticket_line_on_read_failure():
+    from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
+
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
+    ), patch(
+        "services.ticket_service.get_config",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("DB down"),
+    ):
+        embed = await build_setup_readiness_embed(guild_id=42)
+    # Best-effort: the readiness embed still renders, just without a ticket line.
+    assert all("Tickets" not in (f.name or "") for f in embed.fields)
+    assert embed.title is not None
+
+
+# ---------------------------------------------------------------------------
 # Phase 9d / Track 2 PR 5: health_findings + health_summary
 # ---------------------------------------------------------------------------
 
