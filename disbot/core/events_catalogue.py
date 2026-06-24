@@ -143,6 +143,15 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # channel_id, opener_id, subject, source (opened) / closed_by (closed).
         # Subscriber failure logged + swallowed; the DB + channel are
         # authoritative.
+        #
+        # ``ticket.open_requested`` is emitted by the read-only AI tool
+        # ``open_support_ticket`` when a user asks the AI in natural language to
+        # open a ticket: the tool validates eligibility but does NOT write —
+        # TicketCog subscribes and posts a one-click [Open ticket]/[Cancel]
+        # confirmation into the channel, so the actual open stays behind an
+        # explicit human click (the audited mutation runs only then). Payload:
+        # guild_id, channel_id, user_id, subject.
+        "ticket.open_requested",
         "ticket.opened",
         "ticket.closed",
         # ── Feature flags (services/rollout_mutation.py, Phase 2d PR-3) ───
