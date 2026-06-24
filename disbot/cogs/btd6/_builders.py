@@ -138,8 +138,14 @@ async def build_hero_embed(name: str) -> discord.Embed:
 
 
 async def build_round_embed(number: int) -> discord.Embed:
-    """Render the round lookup embed. Static fixture; no DB access."""
+    """Render the round lookup embed: danger / economy + bloon composition.
+
+    The base economy line (RBE / cash / XP) comes from the round fact; this adds
+    the spawn composition and, for freeplay rounds (81+), the effective MOAB-class
+    scaled RBE next to the wiki base figure (see ``btd6_data_service.round_rbe``).
+    """
     from cogs.btd6._embeds import response_to_embed as _response_to_embed
+    from services import btd6_data_service
     from services.btd6_knowledge_service import round_fact
     from services.btd6_resolver_service import resolve
     from services.btd6_response_builder import for_round, for_unresolved
@@ -147,7 +153,221 @@ async def build_round_embed(number: int) -> discord.Embed:
     fact = round_fact(number)
     if fact is None:
         return _response_to_embed(for_unresolved(resolve(f"round {number}")))
-    return _response_to_embed(for_round(fact))
+    embed = _response_to_embed(for_round(fact))
+
+    rbe = btd6_data_service.round_rbe(number)
+    if rbe.get("found") and rbe.get("scaled") and rbe.get("effective_rbe") is not None:
+        embed.add_field(
+            name="Effective RBE (freeplay-scaled)",
+            value=(
+                f"**{rbe['effective_rbe']:,}** — the round-{number} spawn at scaled "
+                f"health (MOAB-class HP ramp + superceramics). Wiki base "
+                f"(unscaled): {rbe['base_rbe']:,}."
+            ),
+            inline=False,
+        )
+    round_entry = btd6_data_service.get_round(number)
+    if round_entry is not None and round_entry.groups:
+        total = sum(int(g.get("count", 0)) for g in round_entry.groups)
+        embed.add_field(
+            name=f"Bloons this round — {total:,} spawned",
+            value=_format_composition(round_entry.groups),
+            inline=False,
+        )
+    return embed
+
+
+# ---------------------------------------------------------------------------
+# per-round economy: income (cash) / rbe tables + composition
+# ---------------------------------------------------------------------------
+
+# Modifier tags shown next to a bloon in the composition list. Plain text (not
+# emoji) so it renders identically across clients.
+_MOD_TAGS = ("fortified", "regrow", "camo")
+
+
+def _format_composition(groups: Sequence[dict[str, Any]]) -> str:
+    """A compact ``<count>× <Bloon> — <modifiers>`` list from a round's raw spawn
+    groups (``{bloon_id, count, modifiers}``), canonical names resolved. Capped at
+    25 lines.
+    """
+    from services import btd6_data_service
+
+    lines = []
+    for g in groups[:25]:
+        bloon = btd6_data_service.get_bloon(str(g.get("bloon_id")))
+        name = bloon.canonical if bloon is not None else str(g.get("bloon_id"))
+        mods = [m for m in _MOD_TAGS if m in (g.get("modifiers") or ())]
+        suffix = f" — {', '.join(mods)}" if mods else ""
+        lines.append(f"`{int(g.get('count', 0)):>5,}×` {name}{suffix}")
+    if len(groups) > 25:
+        lines.append(f"…and {len(groups) - 25} more groups")
+    return "\n".join(lines) or "—"
+
+
+def _elide(rows: list[Any], head: int = 11, tail: int = 9) -> tuple[list[Any], bool]:
+    """Head+tail slice of ``rows`` for a bounded table, plus whether it elided."""
+    if len(rows) <= head + tail + 1:
+        return rows, False
+    return rows[:head] + rows[-tail:], True
+
+
+def _code_table(header: str, rule: str, body_lines: list[str]) -> str:
+    """Wrap a monospace table in a fenced code block."""
+    return "```\n" + "\n".join([header, rule, *body_lines]) + "\n```"
+
+
+async def build_income_embed(
+    round_start: int,
+    round_end: int | None = None,
+    roundset: str = "default",
+) -> discord.Embed:
+    """Per-round cash for a round or inclusive range — our verified model.
+
+    Mirrors the familiar ``/income`` table but with SuperBot's audited cash
+    (``btd6_data_service.round_cash``): Standard/Medium, no income towers. Fails
+    closed with the structured reason when the range is unknown.
+    """
+    from services import btd6_data_service
+
+    res = btd6_data_service.round_cash(round_start, round_end, roundset)
+    if not res.get("found"):
+        return discord.Embed(
+            title="🐵 BTD6 income — no data",
+            description=res.get("note") or "No cash data for that round range.",
+            color=discord.Color.red(),
+        )
+    assumptions = res.get("assumptions") or "Standard/Medium, no income towers."
+
+    if res.get("single_round"):
+        cumulative = res.get("cumulative_cash")
+        cum = f" (cumulative **${cumulative:,.0f}**)" if cumulative is not None else ""
+        embed = discord.Embed(
+            title=f"🐵 BTD6 income — round {res['round_start']}",
+            description=f"Earns **${res['round_cash']:,.1f}**{cum} this round.",
+            color=discord.Color.green(),
+        )
+        embed.set_footer(text=assumptions)
+        return embed
+
+    lo, hi = res["round_start"], res["round_end"]
+    rows, elided = _elide(res.get("per_round", []))
+    body = [
+        f"{('r' + str(r['round'])):>5} │ {r['cash']:>9,.1f} │ {r['cumulative_cash']:>11,.0f}"
+        for r in rows
+    ]
+    if elided:
+        body.insert(len(body) - 9, f"{'⋮':>5} │ {'⋮':>9} │ {'⋮':>11}")
+    table = _code_table(
+        f"{'round':>5} │ {'cash':>9} │ {'cumulative':>11}",
+        "──────┼───────────┼─────────────",
+        body,
+    )
+    embed = discord.Embed(
+        title=f"🐵 BTD6 income — rounds {lo}–{hi}",
+        description=(
+            f"You earn **${res['range_cash']:,.0f}** across rounds {lo}–{hi} "
+            f"({res['rounds_counted']} rounds, both endpoints).\n{table}"
+        ),
+        color=discord.Color.green(),
+    )
+    note = assumptions
+    if res.get("truncated"):
+        note += " · breakdown truncated; total is the full range"
+    embed.set_footer(text=note)
+    return embed
+
+
+async def build_rbe_embed(
+    round_start: int,
+    round_end: int | None = None,
+    roundset: str = "default",
+) -> discord.Embed:
+    """Per-round RBE for a round or inclusive range.
+
+    Shows the wiki **base** RBE and, where the freeplay rules bite (round 81+),
+    the **effective** MOAB-class-scaled RBE alongside it
+    (``btd6_data_service.round_rbe``). Identical columns collapse to one through
+    round 80.
+    """
+    from services import btd6_data_service
+
+    res = btd6_data_service.round_rbe(round_start, round_end, roundset)
+    if not res.get("found"):
+        return discord.Embed(
+            title="🐵 BTD6 RBE — no data",
+            description=res.get("note") or "No RBE data for that round range.",
+            color=discord.Color.red(),
+        )
+
+    scaled = res.get("scaled")
+    scaling_note = (
+        "Effective RBE applies freeplay MOAB-class HP scaling + superceramic swap "
+        "(our model, verified BAD r100 = 67,200); base is the wiki composition at "
+        "base health. Identical through round 80."
+    )
+
+    if res.get("single_round"):
+        base = res.get("base_rbe")
+        eff = res.get("effective_rbe")
+        if scaled and eff is not None:
+            desc = (
+                f"**{eff:,}** effective RBE (freeplay-scaled)\n"
+                f"Wiki base (unscaled): **{base:,}**"
+            )
+        else:
+            desc = f"**{base:,}** RBE"
+        embed = discord.Embed(
+            title=f"🐵 BTD6 RBE — round {res['round']}",
+            description=desc,
+            color=discord.Color.blue(),
+        )
+        if scaled:
+            embed.set_footer(text=scaling_note)
+        return embed
+
+    lo, hi = res["round_start"], res["round_end"]
+    rows, elided = _elide(res.get("per_round", []))
+    if scaled:
+        body = [
+            (
+                f"{('r' + str(r['round'])):>5} │ {r['base_rbe']:>12,} │ "
+                f"{(r['effective_rbe'] if r['effective_rbe'] is not None else '—'):>12,}"
+                if r["effective_rbe"] is not None
+                else f"{('r' + str(r['round'])):>5} │ {r['base_rbe']:>12,} │ {'—':>12}"
+            )
+            for r in rows
+        ]
+        if elided:
+            body.insert(len(body) - 9, f"{'⋮':>5} │ {'⋮':>12} │ {'⋮':>12}")
+        table = _code_table(
+            f"{'round':>5} │ {'base RBE':>12} │ {'effective':>12}",
+            "──────┼──────────────┼──────────────",
+            body,
+        )
+        eff_total = res.get("effective_rbe_total")
+        totals = f"Totals — base **{res['base_rbe_total']:,}**" + (
+            f", effective **{eff_total:,}**" if eff_total is not None else ""
+        )
+    else:
+        body = [f"{('r' + str(r['round'])):>5} │ {r['base_rbe']:>12,}" for r in rows]
+        if elided:
+            body.insert(len(body) - 9, f"{'⋮':>5} │ {'⋮':>12}")
+        table = _code_table(
+            f"{'round':>5} │ {'RBE':>12}",
+            "──────┼──────────────",
+            body,
+        )
+        totals = f"Total RBE — **{res['base_rbe_total']:,}**"
+
+    embed = discord.Embed(
+        title=f"🐵 BTD6 RBE — rounds {lo}–{hi}",
+        description=f"{totals} across {res['rounds_counted']} rounds.\n{table}",
+        color=discord.Color.blue(),
+    )
+    if scaled:
+        embed.set_footer(text=scaling_note)
+    return embed
 
 
 async def build_tower_embed(name: str) -> discord.Embed:
