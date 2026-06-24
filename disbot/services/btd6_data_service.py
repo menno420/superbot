@@ -2461,6 +2461,198 @@ def round_cash(
     return result
 
 
+def _group_fortified(group: dict[str, Any]) -> bool:
+    """Whether a round spawn group carries the ``fortified`` modifier."""
+    mods = group.get("modifiers") or ()
+    return any(str(m).lower() == "fortified" for m in mods)
+
+
+def _bloon_base_rbe(bloon_id: str, *, fortified: bool) -> int | None:
+    """A bloon's stored base RBE (``rbe_fortified`` when fortified, if present)."""
+    bloon = get_bloon(bloon_id)
+    if bloon is None:
+        return None
+    if fortified and bloon.rbe_fortified is not None:
+        return int(bloon.rbe_fortified)
+    return int(bloon.rbe) if bloon.rbe is not None else None
+
+
+def _bloon_label(bloon_id: str) -> str:
+    """A bloon's canonical name, falling back to its id."""
+    bloon = get_bloon(bloon_id)
+    return bloon.canonical if bloon is not None else bloon_id
+
+
+def _effective_round_rbe(entry: RoundEntry) -> int | None:
+    """A round's freeplay-scaled RBE: each group's count x the per-bloon scaled
+    RBE at this round (:func:`bloon_rbe_at_round`). ``None`` if any group's bloon
+    RBE is unknown (so the caller shows only the base figure, never a partial sum
+    passed off as the whole). Identical to ``entry.rbe`` through round 80 — the
+    sum reconstructs the stored base RBE exactly when no scaling applies, which is
+    what makes the 81+ divergence purely the freeplay rules (pinned by
+    ``tests/unit/services/test_btd6_round_rbe.py``).
+    """
+    if not entry.groups:
+        return None
+    total = 0
+    for group in entry.groups:
+        per = bloon_rbe_at_round(
+            str(group.get("bloon_id")),
+            entry.round_number,
+            fortified=_group_fortified(group),
+        )
+        if per is None:
+            return None
+        total += int(group.get("count", 0)) * per
+    return total
+
+
+def round_rbe(
+    round_start: int,
+    round_end: int | None = None,
+    roundset: str = "default",
+) -> dict[str, Any]:
+    """Base and freeplay-scaled RBE for a round or inclusive round range.
+
+    Two RBE notions, identical through round 80 and divergent past it (the
+    freeplay zone) — both returned so neither is misrepresented as the other:
+
+    * ``base_rbe`` — the stored :attr:`RoundEntry.rbe`, the wiki Module:BTD6_rounds
+      total at *base* bloon health. The standard reference figure.
+    * ``effective_rbe`` — the same spawn tree recomputed with the two freeplay
+      rules (every MOAB-class layer's health x :func:`moab_class_health_multiplier`,
+      every Ceramic -> Super Ceramic), via :func:`bloon_rbe_at_round` summed over
+      the round's groups. The RBE you actually face from round 81. Verified at the
+      canonical anchor ``round_rbe(100)["effective_rbe"] == 67200`` (vs 55760 base).
+      The superceramic swap can *lower* it (r81) while MOAB scaling *raises* it
+      (r140 ~4x); ``None`` if a group's bloon RBE is unknown.
+
+    A ``scaled`` flag is True when the two differ. A single round additionally
+    carries a per-bloon ``breakdown``. Mirrors :func:`round_cash`'s structured-dict
+    contract: always ``found``; out-of-range / partial / unknown-set fail closed
+    with a ``reason`` (never a fabricated number); ``per_round`` capped at
+    :data:`_ROUND_DETAIL_CAP` while the range is summed in full.
+    """
+    resolved = resolve_roundset(roundset)
+    if resolved is None:
+        return {
+            "found": False,
+            "reason": "unknown_roundset",
+            "note": f"unknown round set: {roundset!r} (default or alternate/abr)",
+        }
+    set_label = "standard" if resolved == "default" else "alternate (ABR)"
+
+    lo = round_start
+    hi = round_start if round_end is None else round_end
+    normalized = lo > hi
+    if normalized:
+        lo, hi = hi, lo
+
+    rbe_rounds = [
+        r
+        for r in _rounds_for_set(resolved)
+        if r.roundset == resolved and r.rbe is not None
+    ]
+    if not rbe_rounds:
+        return {
+            "found": False,
+            "reason": "no_rbe_data",
+            "note": f"no {set_label} round RBE data is loaded",
+        }
+    available = {r.round_number for r in rbe_rounds}
+    valid_min, valid_max = min(available), max(available)
+
+    in_range = [r for r in rbe_rounds if lo <= r.round_number <= hi]
+    if not in_range:
+        return {
+            "found": False,
+            "reason": "invalid_range",
+            "round_start": lo,
+            "round_end": hi,
+            "note": f"no {set_label} rounds in {lo}-{hi} (valid {valid_min}-{valid_max})",
+        }
+    missing = [n for n in range(lo, hi + 1) if n not in available]
+    if missing:
+        return {
+            "found": False,
+            "reason": "rbe_unavailable",
+            "round_start": lo,
+            "round_end": hi,
+            "note": (
+                f"RBE data is only available for rounds {valid_min}-{valid_max}; "
+                f"missing: {missing[:10]}"
+            ),
+        }
+
+    by_n = {r.round_number: r for r in rbe_rounds}
+
+    if lo == hi:
+        entry = by_n[lo]
+        base = int(entry.rbe) if entry.rbe is not None else None
+        effective = _effective_round_rbe(entry)
+        breakdown = []
+        for g in entry.groups:
+            bid = str(g["bloon_id"])
+            fort = _group_fortified(g)
+            breakdown.append(
+                {
+                    "bloon": _bloon_label(bid),
+                    "bloon_id": bid,
+                    "count": g.get("count"),
+                    "fortified": fort,
+                    "base_rbe_each": _bloon_base_rbe(bid, fortified=fort),
+                    "effective_rbe_each": bloon_rbe_at_round(bid, lo, fortified=fort),
+                },
+            )
+        return {
+            "found": True,
+            "roundset": resolved,
+            "single_round": True,
+            "round": lo,
+            "base_rbe": base,
+            "effective_rbe": effective,
+            "scaled": effective is not None and base is not None and effective != base,
+            "breakdown": breakdown,
+        }
+
+    per_round = [
+        {
+            "round": r.round_number,
+            "base_rbe": int(r.rbe) if r.rbe is not None else None,
+            "effective_rbe": _effective_round_rbe(r),
+        }
+        for r in in_range[:_ROUND_DETAIL_CAP]
+    ]
+    base_total = sum(int(r.rbe) for r in in_range if r.rbe is not None)
+    eff_each = [_effective_round_rbe(r) for r in in_range]
+    effective_total = (
+        sum(e for e in eff_each if e is not None)
+        if all(e is not None for e in eff_each)
+        else None
+    )
+    any_scaled = any(
+        row["effective_rbe"] is not None
+        and row["base_rbe"] is not None
+        and row["effective_rbe"] != row["base_rbe"]
+        for row in per_round
+    )
+    return {
+        "found": True,
+        "roundset": resolved,
+        "single_round": False,
+        "inclusive": True,
+        "normalized": normalized,
+        "round_start": lo,
+        "round_end": hi,
+        "rounds_counted": hi - lo + 1,
+        "base_rbe_total": base_total,
+        "effective_rbe_total": effective_total,
+        "scaled": any_scaled,
+        "per_round": per_round,
+        "truncated": len(in_range) > _ROUND_DETAIL_CAP,
+    }
+
+
 def _find_by_surface(entries: tuple, name: str):
     """First entry whose id / canonical / alias matches ``name`` (case-insensitive)."""
     key = (name or "").strip().lower()

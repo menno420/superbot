@@ -54,6 +54,26 @@ class BTD6ReferenceCog(commands.Cog):
     async def btd6_round(self, ctx: commands.Context, number: int) -> None:
         await ctx.send(embed=await _builders.build_round_embed(number))
 
+    @btd6ref_group.command(name="income")  # type: ignore[arg-type]
+    async def btd6_income(
+        self,
+        ctx: commands.Context,
+        start_round: int,
+        end_round: int | None = None,
+    ) -> None:
+        """Verified cash per round — single round or an inclusive range."""
+        await ctx.send(embed=await _builders.build_income_embed(start_round, end_round))
+
+    @btd6ref_group.command(name="rbe")  # type: ignore[arg-type]
+    async def btd6_rbe(
+        self,
+        ctx: commands.Context,
+        start_round: int,
+        end_round: int | None = None,
+    ) -> None:
+        """RBE per round (base + freeplay-scaled) — single round or a range."""
+        await ctx.send(embed=await _builders.build_rbe_embed(start_round, end_round))
+
     @btd6ref_group.command(name="relic")  # type: ignore[arg-type]
     async def btd6_relic(self, ctx: commands.Context, *, name: str) -> None:
         """CT relic effect + current tile (by name / abbrev e.g. SMS / alias)."""
@@ -100,6 +120,42 @@ class BTD6ReferenceCog(commands.Cog):
     ) -> None:
         embed = await _builders.build_round_embed(number)
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @btd6ref_app_group.command(
+        name="income",
+        description="Verified cash earned per round (single round or a range).",
+    )
+    @app_commands.describe(
+        start_round="The round (or first round of a range).",
+        end_round="Last round of an inclusive range (omit for a single round).",
+        roundset="Round set: 'default' (standard) or 'abr' (alternate).",
+    )
+    async def btd6_income_slash(
+        self,
+        interaction: discord.Interaction,
+        start_round: int,
+        end_round: int | None = None,
+        roundset: str = "default",
+    ) -> None:
+        embed = await _builders.build_income_embed(start_round, end_round, roundset)
+        await interaction.response.send_message(embed=embed)
+
+    @btd6ref_app_group.command(
+        name="rbe",
+        description="RBE per round — base + freeplay-scaled (single round or a range).",
+    )
+    @app_commands.describe(
+        start_round="The round (or first round of a range).",
+        end_round="Last round of an inclusive range (omit for a single round).",
+    )
+    async def btd6_rbe_slash(
+        self,
+        interaction: discord.Interaction,
+        start_round: int,
+        end_round: int | None = None,
+    ) -> None:
+        embed = await _builders.build_rbe_embed(start_round, end_round)
+        await interaction.response.send_message(embed=embed)
 
     @btd6ref_app_group.command(
         name="relic",

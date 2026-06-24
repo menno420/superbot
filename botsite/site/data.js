@@ -281,6 +281,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -290,10 +294,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -313,6 +313,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -322,10 +326,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -358,6 +358,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -367,10 +371,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -414,6 +414,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -423,10 +427,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -660,6 +660,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -669,10 +673,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -690,6 +690,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -699,10 +703,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -720,6 +720,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -729,10 +733,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -752,6 +752,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -761,10 +765,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -782,6 +782,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -791,10 +795,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -812,6 +812,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -821,10 +825,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -842,6 +842,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -851,10 +855,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -1603,6 +1603,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -1612,10 +1616,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -1633,6 +1633,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -1642,10 +1646,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -1848,6 +1848,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -1857,10 +1861,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -2017,6 +2017,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -2026,10 +2030,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -2350,6 +2350,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -2359,10 +2363,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -2511,6 +2511,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -2520,10 +2524,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -2569,6 +2569,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -2578,10 +2582,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -2660,6 +2660,36 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "income",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Verified cash per round — single round or an inclusive range.",
+    "description": "Verified cash per round — single round or an inclusive range.",
+    "usage": "!income",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
+      },
+      {
+        "status": "idea",
+        "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — a generated \"deterministic floor catalogue\" index"
+      }
+    ]
+  },
+  {
     "name": "info",
     "area": "utility",
     "status": "finished",
@@ -2675,7 +2705,7 @@ const COMMANDS = [
   {
     "name": "inventory",
     "area": "economy",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Show your (or another user's) unified inventory hub.",
     "description": "Show your (or another user's) unified inventory hub.",
     "usage": "!inventory",
@@ -2685,7 +2715,12 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — a `check_subsystem_inventory_homed` guard (close the…"
+      }
+    ]
   },
   {
     "name": "invite",
@@ -2808,6 +2843,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -2817,10 +2856,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -2838,6 +2873,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -2847,10 +2886,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -2935,6 +2970,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -2944,10 +2983,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -3392,6 +3427,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -3401,10 +3440,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -3465,6 +3500,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -3474,10 +3513,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -3534,6 +3569,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -3543,10 +3582,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -3637,6 +3672,36 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "rbe",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "RBE per round (base + freeplay-scaled) — single round or a range.",
+    "description": "RBE per round (base + freeplay-scaled) — single round or a range.",
+    "usage": "!rbe",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
+      },
+      {
+        "status": "idea",
+        "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — a generated \"deterministic floor catalogue\" index"
+      }
+    ]
+  },
+  {
     "name": "reactroles",
     "area": "management",
     "status": "in-progress",
@@ -3670,6 +3735,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -3679,10 +3748,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -3715,6 +3780,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -3724,10 +3793,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -3763,6 +3828,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -3772,10 +3841,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -4081,6 +4146,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -4090,10 +4159,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -4129,6 +4194,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -4138,10 +4207,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -4289,6 +4354,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -4298,10 +4367,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -4390,6 +4455,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -4399,10 +4468,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -4656,6 +4721,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -4665,10 +4734,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -4960,6 +5025,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -4969,10 +5038,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -4990,6 +5055,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -4999,10 +5068,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -5020,6 +5085,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -5029,10 +5098,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -5050,6 +5115,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -5059,10 +5128,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -5168,6 +5233,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -5177,10 +5246,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -5198,6 +5263,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -5207,10 +5276,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -5228,6 +5293,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -5237,10 +5306,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -5258,6 +5323,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -5267,10 +5336,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -5288,6 +5353,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -5297,10 +5366,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -5318,6 +5383,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -5327,10 +5396,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -5435,6 +5500,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -5444,10 +5513,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -5598,6 +5663,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
         "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
       },
       {
@@ -5607,10 +5676,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea — a generated \"deterministic floor catalogue\" index"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — round-range comparison: accept round-anchored bare-range lists"
       }
     ]
   },
@@ -6028,6 +6093,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
+      },
+      {
+        "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
       },
       {
@@ -6037,10 +6106,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
-      },
-      {
-        "status": "idea",
-        "title": "AI panels → in-place navigation + centralized settings…"
       }
     ]
   },
@@ -6359,7 +6424,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "0f0f04a3",
+    "build": "7b458bb",
     "title": "New public bot website",
     "changes": [
       {
@@ -6371,7 +6436,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "0f0f04a3",
+    "build": "7b458bb",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6383,7 +6448,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "0f0f04a3",
+    "build": "7b458bb",
     "title": "Command-alias suggestions",
     "changes": [
       {
