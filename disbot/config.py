@@ -103,6 +103,7 @@ INITIAL_EXTENSIONS = [
     "cogs.ticket_cog",
     "cogs.security_cog",
     "cogs.setup_cog",
+    "cogs.quicksetup_cog",
     "cogs.server_management_cog",
     "cogs.hermes_cog",
     "cogs.ux_lab_cog",

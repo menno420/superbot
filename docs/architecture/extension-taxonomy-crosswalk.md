@@ -5,7 +5,7 @@
 > `architecture_rules/extension_roles.yaml`. Sources: `disbot/config.py` (`INITIAL_EXTENSIONS`),
 > `disbot/utils/subsystem_registry.py` (`SUBSYSTEMS`), and that overlay. `--check` guards staleness.
 
-_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **55** extensions  ·  **42** registered subsystems  ·  **13** non-1:1 extensions.
+_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **56** extensions  ·  **42** registered subsystems  ·  **14** non-1:1 extensions.
 
 Every loaded extension classified by **role** (editorial — in `architecture_rules/extension_roles.yaml`) and joined to the registry. A ✓ in *Registered* means the extension is a 1:1 subsystem identity; the non-1:1 rows are surfaces/maintenance/adapters that **back** a subsystem or the platform.
 
@@ -13,7 +13,7 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 
 | Role | Count | Meaning |
 |---|---:|---|
-| `bootstrap` | 2 | Load-order / lifecycle-critical admission or setup; sensitive to INITIAL_EXTENSIONS ordering. |
+| `bootstrap` | 3 | Load-order / lifecycle-critical admission or setup; sensitive to INITIAL_EXTENSIONS ordering. |
 | `hub` | 3 | A routing/composition layer that surfaces other subsystems; owns little or no domain state of its own. |
 | `lab` | 1 | A development / UX laboratory surface; not a production product surface. |
 | `maintenance` | 3 | A background-loop cog (scheduled work) with no subsystem identity; runtime/ops, not a product surface. |
@@ -78,9 +78,10 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | 50 | `ticket` | `product_subsystem` | ✓ |  | Support tickets — private channels, claim/close/transcript; opens by command, panel, or AI. |
 | 51 | `security` | `product_subsystem` | ✓ |  | Security tiers 1+2 — raid detection + account-age filter (Q-0111). |
 | 52 | `setup` | `bootstrap` | — | `server_management` | Guided setup wizard; lifecycle-critical, load-order sensitive. |
-| 53 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
-| 54 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
-| 55 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
+| 53 | `quicksetup` | `bootstrap` | — | `server_management` | Essential Setup front door (!quicksetup / /quicksetup); thin command surface over views.setup.essential_setup (the plain-language spine). |
+| 54 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
+| 55 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
+| 56 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
 
 ## Non-1:1 extensions (no registry identity)
 
@@ -98,4 +99,5 @@ These load as extensions but are **not** registered subsystems — they are clas
 - `paragon` (`specialized_surface` → backs `btd6`) — BTD6 paragon grounding surface.
 - `btd6_ops` (`specialized_surface` → backs `btd6`) — BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical.
 - `setup` (`bootstrap` → backs `server_management`) — Guided setup wizard; lifecycle-critical, load-order sensitive.
+- `quicksetup` (`bootstrap` → backs `server_management`) — Essential Setup front door (!quicksetup / /quicksetup); thin command surface over views.setup.essential_setup (the plain-language spine).
 - `hermes` (`operational_adapter`) — Bridge to the Hermes control plane / external operation.

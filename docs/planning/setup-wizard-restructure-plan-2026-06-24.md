@@ -162,12 +162,20 @@ decision with architectural weight → called out as open question Q-A below.
   This is the Q-A-independent half of the copy cleanup; the structural jargon (`stage`/`draft`/`final
   review`/`operation`, the remaining ~154) is reworded *as part of* the spine rebuild (PR 1), since its
   wording depends on the direct-apply vs. Final-Review decision (Q-A).
-- **PR 1 — the essentials spine (the headline):** a new linear wizard flow (`views/setup/`) rendering
-  steps 0–7 above with plain-language copy, **direct-apply** per step, button/dropdown-only input, and
-  **auto-create** for the welcome channel, log channels, and reward roles. Add the two missing steps
-  (welcome, automod) using their existing config services (`welcome_config`, `automod_config`) — no new
-  mutation primitives. Ships a wizard a non-technical owner can finish. Each cleaned section lowers the
-  PR-1a jargon baseline (`_BASELINE_TOTAL`) toward zero.
+- **PR 1 — the essentials spine (the headline). Owner greenlit + Q-A answered "save each step
+  instantly" (direct lane), 2026-06-24.** Installment 1 SHIPPED: `disbot/views/setup/essential_setup.py`
+  — a new **linear, plain-language, direct-apply** flow (`EssentialFlow` + per-step `BaseView`s with
+  Save/Skip/Back + "Step X of N"), opened by a new **`!quicksetup` / `/quicksetup`** cog
+  (`cogs/quicksetup_cog.py`, admin-gated, server-only). Two highest-value steps live end-to-end —
+  **Greet new members** (welcome enabled/join/channel/entry-role) and **Set your moderators** (mod role +
+  DM-on-action) — each writing through the audited `SettingsMutationPipeline` immediately (no draft, no
+  Final Review), plus an **All-done summary**. Additive: the old wizard is untouched (retired in PR 3).
+  Jargon-clean (guard: new file adds 0 findings). **Remaining steps are mechanical follow-ons on this
+  exact pattern:** block spam (`automod` toggles) · choose log channel (binding + auto-create) · reward
+  activity (xp + role-threshold — needs a small direct-apply role-threshold service) · help desk (reuse
+  `ticket_mutation`) · server-type starter preset (needs a direct-apply preset path — currently
+  draft-only). Auto-create channels/roles (`ChannelLifecycleService`/`RoleLifecycleService`) folds into
+  the channel/reward steps.
 - **PR 2 — extras + health check:** the **Extras menu** (each existing config surface as a one-action
   step: starboard, counters, security, image-mod, karma, AI, reaction roles, giveaways) + the single
   **"Check my setup"** health button (folds in scan/readiness/diagnostics/suggestions). Wires the
