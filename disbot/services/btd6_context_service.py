@@ -4112,6 +4112,42 @@ _ROUND_ECONOMY_CUE_RE = re.compile(
 )
 
 
+def _round_range_economy_reply(lo: int, hi: int, roundset: str) -> str | None:
+    """Deterministic "total RBE + cash across rounds ``lo``-``hi``" answer, or ``None``.
+
+    The range case of :func:`deterministic_round_economy_reply`, off the same audited
+    engines the ``/btd6ref`` commands use — total RBE (base + freeplay-scaled) via
+    ``round_rbe``, total cash via ``round_cash``, heaviest rounds via
+    ``round_composition``. ``None`` when the range is unknown (the data layer fails
+    closed), so the query falls through to the model rather than inventing a partial sum.
+    """
+    from services import btd6_data_service
+
+    rbe = btd6_data_service.round_rbe(lo, hi, roundset)
+    if not rbe.get("found") or rbe.get("base_rbe_total") is None:
+        return None
+    set_label = "ABR" if roundset == "alternate" else "default rounds"
+    base_total = rbe["base_rbe_total"]
+    eff_total = rbe.get("effective_rbe_total")
+    lines = [f"**Rounds {lo}–{hi} — totals** ({set_label})"]
+    if rbe.get("scaled") and eff_total is not None and eff_total != base_total:
+        lines.append(
+            f"• **Total RBE** {base_total:,} base → **{eff_total:,}** with "
+            "MOAB-class freeplay scaling",
+        )
+    else:
+        lines.append(f"• **Total RBE** {base_total:,}")
+    cash = btd6_data_service.round_cash(lo, hi, roundset)
+    if cash.get("found") and cash.get("range_cash") is not None:
+        lines.append(f"• **Total cash** ${cash['range_cash']:,.0f}")
+    comp = btd6_data_service.round_composition(lo, hi, roundset=roundset)
+    heaviest = comp.get("heaviest_by_rbe") if comp.get("found") else None
+    if heaviest:
+        top = ", ".join(f"R{h['round']} ({h['rbe']:,} RBE)" for h in heaviest[:3])
+        lines.append(f"• **Heaviest rounds:** {top}")
+    return "\n".join(lines)
+
+
 def deterministic_round_economy_reply(message_text: str) -> str | None:
     """A code-built "economy of round N" answer (RBE + cash + XP), or ``None``.
 
@@ -4127,14 +4163,26 @@ def deterministic_round_economy_reply(message_text: str) -> str | None:
     low = text.lower()
     if not _ROUND_ECONOMY_CUE_RE.search(low):
         return None
-    number_match = _ROUND_XP_NUMBER_RE.search(low)
-    if number_match is None:
-        return None
-    round_number = int(number_match.group(1) or number_match.group(2))
 
     from services import btd6_data_service
 
     roundset = "alternate" if _ABR_CUE_RE.search(low) else "default"
+
+    # A round RANGE ("r20 to r80", "rounds 8-66") asks for the range TOTAL, not one
+    # round's economy. Without this, the single-number regex below grabs the first
+    # endpoint and answers for that one round — the "rbe of r20 to r80 → only Round
+    # 20" regression. Two+ ranges is the §7.5 comparison floor's job; defer there.
+    proper_ranges = [(lo, hi) for lo, hi in _extract_round_ranges(low) if lo != hi]
+    if len(proper_ranges) >= 2:
+        return None
+    if len(proper_ranges) == 1:
+        lo, hi = proper_ranges[0]
+        return _round_range_economy_reply(lo, hi, roundset)
+
+    number_match = _ROUND_XP_NUMBER_RE.search(low)
+    if number_match is None:
+        return None
+    round_number = int(number_match.group(1) or number_match.group(2))
     entry = btd6_data_service.get_round(round_number, roundset)
     if entry is None:
         return None
@@ -4193,6 +4241,60 @@ def deterministic_round_economy_reply(message_text: str) -> str | None:
     return "\n".join(lines)
 
 
+_ELITE_CUE_RE = re.compile(r"\belite\b", re.I)
+_PARAGON_WORD_RE = re.compile(r"\bparagons?\b", re.I)
+_ELITE_MULT_CUE_RE = re.compile(
+    r"\b(?:multiplier|damage|dmg|bonus|double|doubled|x\s?2|×\s?2)\b",
+    re.I,
+)
+
+
+def deterministic_paragon_elite_reply(message_text: str) -> str | None:
+    """A code-built "paragon Elite-Boss damage multiplier" answer, or ``None``.
+
+    Owns the elite-boss-multiplier question for paragons — general ("the elite boss
+    multiplier for paragons") or a named one ("for the dart paragon"). Both refused
+    in production: the #1402 elite grounding only fires for a *resolved* paragon, and
+    the faithfulness floor killed the model's draft even when it did. The answer is a
+    global runtime constant — paragons deal DOUBLE their boss damage to Elite Bosses,
+    at every degree — so a deterministic reply is correct AND refusal-proof.
+
+    Fires on ``elite`` + a damage/multiplier cue + paragon context (the word, or a
+    resolvable paragon name); defers otherwise. Narrow enough to stay exclusive with
+    the other paragon floors (cost/abilities), which carry no ``elite`` cue.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_ELITE_CUE_RE.search(low) and _ELITE_MULT_CUE_RE.search(low)):
+        return None
+
+    from services import btd6_stats_service
+    from utils.btd6 import paragon_degrees
+
+    has_paragon = bool(_PARAGON_WORD_RE.search(low)) or (
+        btd6_stats_service.resolve_paragon(text) is not None
+    )
+    if not has_paragon:
+        return None
+
+    boss100 = paragon_degrees.boss_multiplier(100)
+    elite1 = paragon_degrees.elite_boss_multiplier(1)
+    elite100 = paragon_degrees.elite_boss_multiplier(100)
+    return (
+        "**Paragon Elite-Boss damage** — against **Elite** Bosses, every Paragon "
+        "deals **double** its boss damage.\n"
+        "• A flat **×2** on top of the boss-damage multiplier, at **every degree** "
+        "(from Degree 1).\n"
+        f"• So the elite-boss multiplier = 2 × the boss multiplier: **×{elite1:g} at "
+        f"Degree 1**, rising to **×{elite100:g} at Degree 100** (boss is ×{boss100:g} "
+        "at Degree 100).\n"
+        "• Global to the whole Paragon category — not per-paragon — and a runtime "
+        "constant, so it is not in the game's exported data."
+    )
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -4218,6 +4320,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_relic_roster_reply,
     deterministic_hero_ability_roster_reply,
     deterministic_paragon_ability_roster_reply,
+    deterministic_paragon_elite_reply,
     deterministic_paragon_cost_comparison_reply,
     deterministic_hero_cost_comparison_reply,
     deterministic_power_cost_comparison_reply,

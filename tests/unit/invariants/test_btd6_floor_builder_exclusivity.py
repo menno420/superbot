@@ -105,6 +105,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_paragon_ability_roster_reply",
     ),
     (
+        "what's the elite boss damage multiplier for paragons",
+        "deterministic_paragon_elite_reply",
+    ),
+    (
         "which bosses are immune to fire",
         "deterministic_boss_immunity_reply",
     ),
