@@ -106,10 +106,12 @@ The fix is not more sections — it is a **structure** built from four laws.
    (DM-on-action, require-reason). (`moderation` + governance mod role.)
 3. **Block spam and bad links** *(NEW)* — one screen of toggles with sensible pre-filled limits.
    (`automod` spam/invites/caps/mentions.)
-4. **Where should activity appear?** — pick **or auto-create** a log channel.
-   (`logging` enable + the `mod_channel` binding.) **Shipped scoped to a single moderation/catch-all
-   channel** (owner decision 2026-06-24, `#1429`); the "pair" + member/message activity is a later
-   follow-on, not this step.
+4. **Where should activity appear?** — a quick **multi-select** of logging types across **two channels**:
+   a **moderation log** (always on → `mod_channel`) and an **activity log** (→ `events_channel`) for the
+   ticked categories (members join/leave · role changes · message edits ⚠️). Pick or **auto-create** each
+   (`#mod-log` / `#server-log`). **Shipped:** moderation-only first (`#1429`), then reworked to the
+   two-channel multi-select (`#1432`, owner decision Q-0203 — "moderation only" was the first slice, not a
+   cap). Full per-category routing stays in the advanced `!logging` UI.
 5. **Reward active members** — turn on levels; optionally auto-grant a role as members stay & chat —
    **the bot creates the roles**. (`xp` + `roles` + `role_templates`, dead-end removed.)
 6. **Set up a help desk** — let members open private support; pick who answers; bot makes the rest.
@@ -175,14 +177,15 @@ decision with architectural weight → called out as open question Q-A below.
   Additive: the old wizard is untouched (retired in PR 3). Jargon-clean (guard: the new file adds 0
   findings). **Remaining steps are mechanical follow-ons on the exact same pattern — append a `_StepView`
   subclass to `EssentialFlow._steps` + a test; no new cog/command/artifact, so no registration fan-out:**
-  - **Choose a log channel** *(SHIPPED 2026-06-24, `#1429`)* — a binding write via
-    `BindingMutationPipeline` (⚠ on the no-top-level-import list — **lazy-imported** inside the step,
-    like `_set` does for settings) + an optional **auto-create** via
-    `ChannelLifecycleService.create_channels`. **Scope = moderation log only (owner decision,
-    2026-06-24):** one screen turns on `logging.enabled` and binds `logging.mod_channel` (the
-    catch-all slot every other route falls back to) to the picked-or-created channel; auto-create makes
-    a `#mod-log`. Member-activity / message-content logging stay OFF — they are a later follow-on, not
-    this step. (The earlier §5 "log channel pair" framing is superseded by this single-channel answer.)
+  - **Choose a log channel** *(SHIPPED 2026-06-24 — `#1429` moderation-only, then reworked in `#1432`)* —
+    binding writes via `BindingMutationPipeline` + auto-create via `ChannelLifecycleService.create_channels`
+    (⚠ both on the no-top-level-import list — **lazy-imported** inside the step, like `_set` does for
+    settings). **Final scope = two-channel + multi-select (owner decision Q-0203, superseding the Q-0202
+    moderation-only answer):** a quick multi-select of activity types (members join/leave + role changes on
+    by default; message edits/deletions ⚠️ off by default) across a **moderation log** (always on →
+    `logging.mod_channel`) and an **activity log** (→ `logging.events_channel`). On Save: `logging.enabled`,
+    bind `mod_channel`, set the `*_enabled` flags per the multi-select, bind `events_channel` when any
+    activity is on. **Leave a channel empty → auto-create** `#mod-log` / `#server-log` (one-tap defaults).
   - **Reward activity** — the `xp` enable toggle is trivial via `_set`; the role-threshold sub-step
     **needs a small new direct-apply role-threshold service** (the one genuine gap — no direct-apply path
     exists today) + `RoleLifecycleService.create_role` for auto-create.

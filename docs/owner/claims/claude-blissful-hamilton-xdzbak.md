@@ -1,1 +1,0 @@
-claude/blissful-hamilton-xdzbak · Essential Setup "Choose a log channel" rework → two-channel (mod + activity) + multi-select of activity types (supersedes Q-0202 moderation-only) · disbot/views/setup/essential_setup.py + tests/unit/views/setup/test_essential_setup.py · 2026-06-24

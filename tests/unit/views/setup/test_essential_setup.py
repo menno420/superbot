@@ -223,75 +223,100 @@ async def test_block_spam_respects_toggled_off_filter(pipeline):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
-async def test_log_channel_requires_a_pick_or_create(
-    pipeline,
-    binding_pipeline,
-    channel_service,
-):
-    flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 3
-    step = es.LogChannelStep(flow)
-    interaction = _interaction()
-
-    await step.apply(interaction)
-
-    # Nothing picked and auto-create off → no writes, no advance.
-    pipeline.set_value.assert_not_awaited()
-    binding_pipeline.set_binding.assert_not_awaited()
-    channel_service.create_channels.assert_not_awaited()
-    interaction.response.send_message.assert_awaited_once()
-    assert "channel" in interaction.response.send_message.await_args.args[0].lower()
-    assert flow.index == 3
-
-
-@pytest.mark.asyncio
-async def test_log_channel_binds_picked_channel_and_advances(pipeline, binding_pipeline):
-    flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 3
-    step = es.LogChannelStep(flow)
-    step.channel_id = 8800
-
-    await step.apply(_interaction())
-
-    # logging.enabled flipped on through the settings pipeline …
-    assert ("logging", "enabled") in {
-        (c.args[1], c.args[2]) for c in pipeline.set_value.await_args_list
-    }
-    # … and mod_channel bound to the picked channel through the binding pipeline.
-    binding_pipeline.set_binding.assert_awaited_once()
-    args = binding_pipeline.set_binding.await_args.args
-    assert args[1] == "logging"
-    assert args[2] == "mod_channel"
-    assert args[3] == BindingKind.CHANNEL
-    assert args[4] == 8800
-    assert flow.index == 4
-    assert flow.applied and "8800" in flow.applied[0]
-
-
-@pytest.mark.asyncio
-async def test_log_channel_auto_creates_then_binds(
-    pipeline,
-    binding_pipeline,
-    channel_service,
-):
-    flow = es.EssentialFlow(_member(), _guild())
-    flow.index = 3
-    step = es.LogChannelStep(flow)
-    step.auto_create = True
-    channel_service.create_channels.return_value = SimpleNamespace(
-        applied=(SimpleNamespace(target_id=4321),),
+def _created(target_id: int):
+    return SimpleNamespace(
+        applied=(SimpleNamespace(target_id=target_id),),
         first_error="",
     )
 
+
+@pytest.mark.asyncio
+async def test_log_channel_defaults_create_both_and_bind(
+    pipeline,
+    binding_pipeline,
+    channel_service,
+):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 3
+    step = es.LogChannelStep(flow)  # defaults: members + roles on, messages off
+    # No channels picked → auto-create both (mod first, then activity).
+    channel_service.create_channels.side_effect = [_created(111), _created(222)]
+
     await step.apply(_interaction())
 
-    channel_service.create_channels.assert_awaited_once()
-    # the created channel id is bound, and the summary notes it was created.
-    binding_pipeline.set_binding.assert_awaited_once()
-    assert binding_pipeline.set_binding.await_args.args[4] == 4321
+    # Both default channels created, in order.
+    assert channel_service.create_channels.await_count == 2
+    names = [c.args[1][0] for c in channel_service.create_channels.await_args_list]
+    assert names == ["mod-log", "server-log"]
+    # logging enabled + the three category flags applied per the defaults.
+    settings = {
+        (c.args[1], c.args[2]): c.args[3] for c in pipeline.set_value.await_args_list
+    }
+    assert settings[("logging", "enabled")] is True
+    assert settings[("logging", "members_enabled")] is True
+    assert settings[("logging", "roles_enabled")] is True
+    assert settings[("logging", "messages_enabled")] is False  # privacy: off default
+    # mod_channel → the mod log, events_channel → the activity log.
+    binds = {
+        c.args[2]: c.args[4] for c in binding_pipeline.set_binding.await_args_list
+    }
+    assert binds == {"mod_channel": 111, "events_channel": 222}
+    assert all(
+        c.args[3] == BindingKind.CHANNEL
+        for c in binding_pipeline.set_binding.await_args_list
+    )
     assert flow.index == 4
-    assert flow.applied and "created" in flow.applied[0].lower()
+
+
+@pytest.mark.asyncio
+async def test_log_channel_picked_channels_bind_without_create(
+    pipeline,
+    binding_pipeline,
+    channel_service,
+):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 3
+    step = es.LogChannelStep(flow)
+    step.mod_channel_id = 700
+    step.activity_channel_id = 800
+
+    await step.apply(_interaction())
+
+    channel_service.create_channels.assert_not_awaited()
+    binds = {
+        c.args[2]: c.args[4] for c in binding_pipeline.set_binding.await_args_list
+    }
+    assert binds == {"mod_channel": 700, "events_channel": 800}
+    assert flow.index == 4
+
+
+@pytest.mark.asyncio
+async def test_log_channel_no_activity_logs_moderation_only(
+    pipeline,
+    binding_pipeline,
+    channel_service,
+):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 3
+    step = es.LogChannelStep(flow)
+    step.activity = set()  # operator unticked every activity type
+    step.mod_channel_id = 700
+
+    await step.apply(_interaction())
+
+    # Only the moderation channel is bound — no activity channel, no create.
+    channel_service.create_channels.assert_not_awaited()
+    assert {
+        c.args[2] for c in binding_pipeline.set_binding.await_args_list
+    } == {"mod_channel"}
+    # The three activity flags are explicitly written off.
+    settings = {
+        (c.args[1], c.args[2]): c.args[3] for c in pipeline.set_value.await_args_list
+    }
+    assert settings[("logging", "members_enabled")] is False
+    assert settings[("logging", "roles_enabled")] is False
+    assert settings[("logging", "messages_enabled")] is False
+    assert flow.index == 4
 
 
 @pytest.mark.asyncio
@@ -302,8 +327,7 @@ async def test_log_channel_create_failure_blocks(
 ):
     flow = es.EssentialFlow(_member(), _guild())
     flow.index = 3
-    step = es.LogChannelStep(flow)
-    step.auto_create = True
+    step = es.LogChannelStep(flow)  # defaults; no channels picked → tries mod create
     channel_service.create_channels.return_value = SimpleNamespace(
         applied=(),
         first_error="missing permission",
@@ -312,7 +336,7 @@ async def test_log_channel_create_failure_blocks(
 
     await step.apply(interaction)
 
-    # Creation failed → surfaced an error, wrote nothing, did not advance.
+    # The mod-channel create failed → surfaced an error, wrote nothing, no advance.
     channel_service.create_channels.assert_awaited_once()
     binding_pipeline.set_binding.assert_not_awaited()
     pipeline.set_value.assert_not_awaited()
