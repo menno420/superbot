@@ -196,7 +196,13 @@ decision with architectural weight → called out as open question Q-A below.
     / `set_time_threshold` already ARE the audited direct-apply paths, and
     `RoleLifecycleService.apply(operation="create")` does the role auto-create. No new service was needed.
   - **Server-type starter preset** (step 0) — **needs a direct-apply preset path** (presets are
-    draft-only today); design decision before building.
+    draft-only today); design decision before building. Must follow the **optional-typing principle**
+    (Q-0205) for any named resource it creates.
+- **PR 1 polish pass (SHIPPED 2026-06-24, `#1435`, owner directives Q-0205):** spine consistency + the
+  optional-typing principle — block-spam → multi-select (the preferred "pick which" idiom), every step's
+  primary button unified to **"Save & continue"** on a consistent row, the skip-recap summary bug fixed
+  (`record_skipped` was never called), and an optional **"✏️ Type a name" modal** added wherever the bot
+  auto-creates a named role/channel (typing always optional, defaults stay fully selectable).
 - **PR 2 — extras + health check:** the **Extras menu** (each existing config surface as a one-action
   step: starboard, counters, security, image-mod, karma, AI, reaction roles, giveaways) + the single
   **"Check my setup"** health button (folds in scan/readiness/diagnostics/suggestions). Wires the

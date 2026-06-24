@@ -1,1 +1,0 @@
-claude/blissful-hamilton-xdzbak · Essential Setup spine polish: skip-recap fix · consistent Save row · block-spam→multi-select · unified Save label · optional custom naming (role + channel names via modal) · disbot/views/setup/essential_setup.py + tests · 2026-06-24

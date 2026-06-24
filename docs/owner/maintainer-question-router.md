@@ -7454,3 +7454,31 @@ was wrong); role auto-create is `RoleLifecycleService.apply(operation="create")`
 **Home:** this Q-block (canonical) + the plan §5 step 5 / §7 PR-1 note +
 `.sessions/2026-06-24-setup-reward-activity.md`. Related: **Q-A** (direct-apply per step), **Q-0202**/
 **Q-0203** (the analogous log-channel step decisions).
+
+### Q-0205 — ANSWERED (owner directives, in-session): Essential Setup spine polish + the "optional typing everywhere sensible" principle (2026-06-24)
+
+**Context.** After an agent review of the six live spine steps (navigation / consistent structure / typing),
+the owner directed applying every finding and adding optional typing.
+
+**The directives.**
+1. **Multi-select is the preferred idiom** for "pick which of these to turn on." Block-spam's four on/off
+   toggle buttons were converted to one multi-select, matching the log/reward steps.
+2. **Consistent primary-button position + one label voice.** Every step's primary button is **row 3**
+   (Back/Skip on row 4) so "Save" is in the same place on every step, and the label is unified to
+   **"Save & continue"** (the module-docstring voice), keeping each step's emoji.
+3. **Fix the skip-recap bug.** `_StepView.skip()` now records the skipped step (`record_skipped`), so the
+   summary's "Skipped (you can do these later)" list actually populates (it was dead code).
+4. **Optional typing everywhere it makes sense (DURABLE PRINCIPLE).** Wherever the bot *creates a named
+   thing* (a role, a channel), offer an **optional** "✏️ Type a name" path (a `discord.ui.Modal`,
+   prefilled with the default). **Typing is always optional, never required** — every default stays
+   fully selectable via buttons/dropdowns. Applied to the reward **role name** and the log **channel
+   names**. **Future steps must follow this** — e.g. the step-0 server-type preset, and any step that
+   auto-creates a named resource, should expose the same optional-type-a-name affordance.
+
+**Scope.** View-layer polish only (no new service / cog / command / artifact). Default thresholds, rate
+presets, and suggested names are unchanged.
+
+**Applied.** PR **#1435** (`essential_setup.py` + tests).
+
+**Home:** this Q-block (canonical) + `.sessions/2026-06-24-setup-spine-polish.md` + the plan §7 PR-1 note.
+Related: **Q-0202**/**Q-0203**/**Q-0204** (the per-step spine decisions), **Q-A** (direct-apply per step).

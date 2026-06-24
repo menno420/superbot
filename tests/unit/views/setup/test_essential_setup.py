@@ -132,6 +132,21 @@ def test_first_step_has_no_back_button():
     assert any(isinstance(c, es._BackButton) for c in step2.children)
 
 
+@pytest.mark.asyncio
+async def test_skip_records_step_for_summary():
+    flow = es.EssentialFlow(_member(), _guild())
+    step = es.GreetMembersStep(flow)
+
+    await step.skip(_interaction())
+
+    # Skipping records the step so the summary's "Skipped" recap can list it.
+    assert flow.skipped == ["Greet new members"]
+    assert flow.index == 1
+    summary = es.EssentialSummaryView(flow).render()
+    blob = (summary.description or "") + " ".join(f.value for f in summary.fields)
+    assert "Greet new members" in blob
+
+
 # ---------------------------------------------------------------------------
 # Greet members
 # ---------------------------------------------------------------------------
@@ -239,7 +254,7 @@ async def test_block_spam_respects_toggled_off_filter(pipeline):
     flow = es.EssentialFlow(_member(), _guild())
     flow.index = 2
     step = es.BlockSpamStep(flow)
-    step.filters["caps_enabled"] = False
+    step.filters.discard("caps_enabled")  # untick one in the multi-select
     await step.apply(_interaction())
     by_name = {c.args[2]: c.args[3] for c in pipeline.set_value.await_args_list}
     assert by_name["caps_enabled"] is False
@@ -366,6 +381,27 @@ async def test_log_channel_create_failure_blocks(
     pipeline.set_value.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
     assert flow.index == 3
+
+
+@pytest.mark.asyncio
+async def test_log_channel_custom_names_used_when_creating(
+    pipeline,
+    binding_pipeline,
+    channel_service,
+):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 3
+    step = es.LogChannelStep(flow)
+    # Optional typing: custom names for both auto-created channels.
+    step.mod_channel_name = "staff-log"
+    step.activity_channel_name = "member-log"
+    channel_service.create_channels.side_effect = [_created(11), _created(22)]
+
+    await step.apply(_interaction())
+
+    names = [c.args[1][0] for c in channel_service.create_channels.await_args_list]
+    assert names == ["staff-log", "member-log"]
+    assert flow.index == 4
 
 
 # ---------------------------------------------------------------------------
@@ -520,6 +556,34 @@ async def test_reward_role_create_failure_blocks(
     pipeline.set_value.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
     assert flow.index == 4
+
+
+@pytest.mark.asyncio
+async def test_reward_create_uses_custom_role_name(
+    pipeline,
+    role_automation,
+    role_service,
+):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 4
+    step = es.RewardActivityStep(flow)
+    step.rewards = {"level"}
+    step.phase = "roles"
+    step.role_source = "create"
+    step.new_role_name = "Champion"  # optional typing → custom role name
+    role_service.apply.return_value = SimpleNamespace(
+        applied=(SimpleNamespace(target_id=909),),
+        first_error="",
+    )
+
+    await step.apply(_interaction())
+
+    # The role is created with the typed name, and the reward is set on it.
+    request = role_service.apply.await_args.args[1]
+    assert request.name == "Champion"
+    assert role_automation.set_xp_threshold.await_args.kwargs["role_name"] == "Champion"
+    assert role_automation.set_xp_threshold.await_args.kwargs["role_id"] == 909
+    assert flow.index == 5
 
 
 # ---------------------------------------------------------------------------
