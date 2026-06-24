@@ -85,6 +85,28 @@ def test_boss_multiplier_ladder():
     assert pd.boss_multiplier(100) == 2.25
 
 
+def test_elite_boss_multiplier_is_boss_times_two_at_every_degree():
+    # Paragons deal DOUBLE their boss damage to Elite Bosses — a flat x2 that
+    # applies at all degrees (Fandom "Extra Damage to Boss"/"Paragons": "the extra
+    # damage from Paragons is doubled ... even at degree 1"; cross-checked vs hemi's
+    # paragon bot ed=2x bd). It is NOT in the dump (verified: no Elite tag on the
+    # Dart/Ice paragon models, no elite field in paragonDegreeData) — a curated
+    # runtime constant. So elite == boss x ELITE_BOSS_DAMAGE_MULTIPLIER for all d.
+    assert pd.ELITE_BOSS_DAMAGE_MULTIPLIER == 2.0
+    for d in (1, 19, 20, 35, 60, 80, 99, 100):
+        assert pd.elite_boss_multiplier(d) == pd.boss_multiplier(d) * 2.0
+    # Anchors: Degree 1 -> x2.0, Degree 35 -> x2.5 (the owner screenshot), 100 -> x4.5
+    assert pd.elite_boss_multiplier(1) == 2.0
+    assert pd.elite_boss_multiplier(35) == 2.5
+    assert pd.elite_boss_multiplier(100) == 4.5
+
+
+def test_degree_row_carries_elite_boss_multiplier():
+    row = pd.degree_row({}, 35)
+    assert row.elite_boss_multiplier == 2.5
+    assert row.elite_boss_multiplier == row.boss_multiplier * 2.0
+
+
 # A cleaned paragon node mirroring the page worked example: one attack with a
 # cooldown and two projectiles carrying boss + ceramic damage modifiers.
 _NODE = {

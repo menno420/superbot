@@ -18,3 +18,14 @@ boss dmg` = `×2` the boss damage (`326 = 2×163`).
   `boss_multiplier(degree) × 2`) to `paragon_degrees.py`, surface it in the paragon
   degree embed and the `[btd6_paragon_stats]` grounding so the bot answers it, with
   tests pinning the anchors (deg 35 → ×2.5, deg 100 → ×4.5; ×2 vs normal boss).
+
+## Verification update
+Owner challenged whether the ×2 is **constant** across degrees or assumed from the
+one (deg-35) screenshot. **Resolved:** a *second* independent search of the Fandom
+*Extra Damage to Boss* / *Paragons* pages states it explicitly — *"Elite Bosses take
+double damage from Paragons. This is a **flat bonus that applies to all Paragon
+degrees**"* and *"applies from the very first degree."* So constant ×2 is confirmed by
+two independent community sources + the screenshot — not an extrapolation. (It hits
+the **total** boss damage, matching JonnyBoy `ed = 2× bd`, not just the bonus.) Full
+CI mirror green (12,280 passed); the only red is the born-red gate. **Holding the
+final flip for the owner's nod** since this point was explicitly contested.
