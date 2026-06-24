@@ -806,6 +806,193 @@ def test_summary_lists_applied_changes():
 
 
 # ---------------------------------------------------------------------------
+# Restart revive (migration 099)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_persist_progress_sets_step_when_not_done():
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 3
+    with (
+        patch("services.setup_session.set_essential_step", new=AsyncMock()) as step,
+        patch("services.setup_session.clear_essential_anchor", new=AsyncMock()) as clr,
+        patch("services.setup_session.mark_complete", new=AsyncMock()) as done,
+    ):
+        await flow.persist_progress()
+    # Mid-flow: persist the position only.
+    step.assert_awaited_once_with(1, 3)
+    clr.assert_not_awaited()
+    done.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_persist_progress_finalizes_when_done():
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = flow.total  # reached the summary
+    with (
+        patch("services.setup_session.set_essential_step", new=AsyncMock()) as step,
+        patch("services.setup_session.clear_essential_anchor", new=AsyncMock()) as clr,
+        patch("services.setup_session.mark_complete", new=AsyncMock()) as done,
+    ):
+        await flow.persist_progress()
+    # Finished: clear the anchor + mark the session complete; no step write.
+    clr.assert_awaited_once_with(1)
+    done.assert_awaited_once_with(1)
+    step.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_resume_rebuilds_flow_at_saved_step():
+    interaction = _interaction()
+    interaction.guild = _guild()
+    interaction.user = MagicMock()
+    session = SimpleNamespace(essential_step=4)  # index 4 == LogChannelStep
+    view = es.EssentialSetupResumeView()
+    with (
+        patch.object(es.discord, "Member", MagicMock),
+        patch(
+            "services.setup_session.resume_session",
+            new=AsyncMock(return_value=session),
+        ),
+        patch("services.setup_access.is_setup_admin", return_value=True),
+    ):
+        await view.resume(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    edited_view = interaction.response.edit_message.await_args.kwargs["view"]
+    assert isinstance(edited_view, es.LogChannelStep)
+    assert edited_view.flow.index == 4
+
+
+@pytest.mark.asyncio
+async def test_resume_denies_non_admin():
+    interaction = _interaction()
+    interaction.guild = _guild()
+    interaction.user = MagicMock()
+    view = es.EssentialSetupResumeView()
+    with (
+        patch.object(es.discord, "Member", MagicMock),
+        patch(
+            "services.setup_session.resume_session",
+            new=AsyncMock(return_value=None),
+        ),
+        patch("services.setup_access.is_setup_admin", return_value=False),
+    ):
+        await view.resume(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    interaction.response.edit_message.assert_not_awaited()
+
+
+def test_build_resume_message_shows_human_step():
+    embed, view = es.build_resume_message(SimpleNamespace(essential_step=4))
+    assert isinstance(view, es.EssentialSetupResumeView)
+    # 0-based step 4 → human-readable "step 5".
+    assert "step 5" in (embed.description or "")
+
+
+@pytest.mark.asyncio
+async def test_open_in_setup_channel_records_essential_anchor():
+    guild = _guild()
+    member = _member()
+    channel = MagicMock()
+    channel.name = "superbot-setup"
+    channel.send = AsyncMock(return_value=MagicMock(id=4321))
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new=AsyncMock(return_value=None),
+        ),
+        patch(
+            "services.setup_channel.ensure_setup_channel",
+            new=AsyncMock(return_value=(channel, True)),
+        ),
+        patch(
+            "services.setup_session.set_essential_anchor",
+            new=AsyncMock(),
+        ) as anchor,
+        patch(
+            "services.setup_session.mark_in_progress",
+            new=AsyncMock(),
+        ) as mip,
+    ):
+        ch, msg, reason = await es.open_essential_setup_in_setup_channel(guild, member)
+
+    assert reason == "ok"
+    # The flow message id + step 0 are recorded so the on-ready sweep can revive it.
+    anchor.assert_awaited_once_with(guild.id, 4321, 0)
+    mip.assert_awaited_once_with(guild.id)
+
+
+@pytest.mark.asyncio
+async def test_revive_one_essential_flow_edits_message():
+    message = MagicMock()
+    message.edit = AsyncMock()
+    channel = MagicMock(spec=es.discord.TextChannel)
+    channel.fetch_message = AsyncMock(return_value=message)
+    guild = SimpleNamespace(id=42, get_channel=MagicMock(return_value=channel))
+    session = SimpleNamespace(
+        essential_message_id=8000,
+        setup_channel_id=7000,
+        essential_step=2,
+    )
+    with patch(
+        "services.setup_session.resume_session",
+        new=AsyncMock(return_value=session),
+    ):
+        result = await es.revive_one_essential_flow(guild)
+
+    assert result is True
+    channel.fetch_message.assert_awaited_once_with(8000)
+    assert isinstance(
+        message.edit.await_args.kwargs["view"],
+        es.EssentialSetupResumeView,
+    )
+
+
+@pytest.mark.asyncio
+async def test_revive_one_essential_flow_clears_anchor_when_gone():
+    resp = MagicMock()
+    resp.status = 404
+    channel = MagicMock(spec=es.discord.TextChannel)
+    channel.fetch_message = AsyncMock(side_effect=es.discord.NotFound(resp, "gone"))
+    guild = SimpleNamespace(id=42, get_channel=MagicMock(return_value=channel))
+    session = SimpleNamespace(
+        essential_message_id=8000,
+        setup_channel_id=7000,
+        essential_step=0,
+    )
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new=AsyncMock(return_value=session),
+        ),
+        patch(
+            "services.setup_session.clear_essential_anchor",
+            new=AsyncMock(),
+        ) as clr,
+    ):
+        result = await es.revive_one_essential_flow(guild)
+
+    assert result is False
+    clr.assert_awaited_once_with(42)
+
+
+@pytest.mark.asyncio
+async def test_revive_one_essential_flow_noop_without_anchor():
+    guild = SimpleNamespace(id=42)
+    session = SimpleNamespace(essential_message_id=None, setup_channel_id=7000)
+    with patch(
+        "services.setup_session.resume_session",
+        new=AsyncMock(return_value=session),
+    ):
+        result = await es.revive_one_essential_flow(guild)
+    assert result is False
+
+
+# ---------------------------------------------------------------------------
 # Entry gate
 # ---------------------------------------------------------------------------
 

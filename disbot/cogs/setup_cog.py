@@ -45,6 +45,7 @@ from cogs.setup._helpers import build_status_embed as _build_status_embed
 from cogs.setup._helpers import resolve_hub_entry as _resolve_hub_entry
 from cogs.setup._helpers import toggle_delegate as _toggle_delegate
 from services import setup_access, setup_session
+from views.setup.essential_setup import EssentialSetupResumeView, revive_essential_flows
 from views.setup.launcher import (
     SetupLauncherView,
 )
@@ -80,6 +81,8 @@ class SetupCog(commands.Cog):
 
     async def cog_load(self) -> None:
         self.bot.add_view(SetupLauncherView())
+        # Resume button for restart-revive (migration 099); shown by on_ready sweep.
+        self.bot.add_view(EssentialSetupResumeView())
 
     @commands.command(name="setupadvanced", aliases=["advancedsetup"])
     @commands.guild_only()
@@ -608,6 +611,7 @@ class SetupCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self) -> None:
         await self._resume_launchers()
+        await revive_essential_flows(self.bot)  # restart-revive sweep (migration 099)
 
     async def _handle_join(self, guild: discord.Guild) -> None:
         """Internal entry point — split out for direct testing.

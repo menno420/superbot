@@ -47,6 +47,11 @@ class SetupSession:
     acknowledged_sections: frozenset[str] = frozenset()
     depth: str | None = None
     purpose: str | None = None
+    # Essential Setup (plain-language spine) restart-revive anchor — the
+    # in-channel flow message id + the step it is on (migration 099). Both
+    # None when no Essential Setup flow is in flight.
+    essential_message_id: int | None = None
+    essential_step: int | None = None
 
     @classmethod
     def from_row(cls, row: dict[str, Any]) -> SetupSession:
@@ -66,6 +71,8 @@ class SetupSession:
             ),
             depth=row.get("depth"),
             purpose=row.get("purpose"),
+            essential_message_id=row.get("essential_message_id"),
+            essential_step=row.get("essential_step"),
         )
 
 
@@ -254,6 +261,36 @@ async def set_setup_message_id(guild_id: int, message_id: int | None) -> None:
     Idempotent.  Side-effect-free above the DB layer.
     """
     await db.set_setup_message_id(guild_id, message_id)
+
+
+async def set_essential_anchor(
+    guild_id: int,
+    message_id: int | None,
+    step: int | None,
+) -> None:
+    """Record (or clear) the Essential Setup flow's message id + step.
+
+    Lets the launcher cog's on-ready sweep revive the in-channel Essential
+    Setup wizard message in place after a restart (migration 099).  Like the
+    other anchor setters this is **session-UI bookkeeping**, not an auditable
+    config mutation — Essential Setup is direct-apply, so every actual
+    configuration change is already audited by its own service.
+    """
+    await db.set_essential_anchor(guild_id, message_id, step)
+
+
+async def set_essential_step(guild_id: int, step: int | None) -> None:
+    """Persist the Essential Setup flow's current step index.
+
+    Called as the operator advances/goes back/skips so a restart resumes at
+    the right step.  Leaves the message-id anchor untouched.
+    """
+    await db.set_essential_step(guild_id, step)
+
+
+async def clear_essential_anchor(guild_id: int) -> None:
+    """Clear the Essential Setup anchor (flow finished or its message is gone)."""
+    await db.clear_essential_anchor(guild_id)
 
 
 async def mark_section_skipped(guild_id: int, slug: str) -> None:
@@ -474,6 +511,7 @@ __all__ = [
     "SetupSession",
     "ack_section",
     "add_delegated_admin",
+    "clear_essential_anchor",
     "detect_drift",
     "dismiss",
     "mark_complete",
@@ -483,6 +521,8 @@ __all__ = [
     "remove_delegated_admin",
     "resume_session",
     "set_depth",
+    "set_essential_anchor",
+    "set_essential_step",
     "set_purpose",
     "set_setup_channel_id",
     "set_setup_message_id",

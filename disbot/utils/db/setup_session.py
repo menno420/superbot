@@ -36,6 +36,7 @@ async def get(guild_id: int) -> dict[str, Any] | None:
                setup_channel_id, setup_message_id, last_readiness_score,
                current_step, delegated_admins, skipped_sections,
                acknowledged_sections, depth, purpose,
+               essential_message_id, essential_step,
                created_at, updated_at
         FROM setup_session
         WHERE guild_id = $1
@@ -322,6 +323,73 @@ async def set_setup_message_id(guild_id: int, message_id: int | None) -> None:
     )
 
 
+async def set_essential_anchor(
+    guild_id: int,
+    message_id: int | None,
+    step: int | None,
+) -> None:
+    """Record (or clear) the Essential Setup flow's message id + step.
+
+    The plain-language Essential Setup spine posts a single message in the
+    private setup channel and re-edits it across the flow; ``message_id`` is
+    that anchor's Discord snowflake and ``step`` is the 0-based step index.
+    Together they let the on-ready resume sweep revive the message in place
+    after a restart (migration 099).  Passing both ``None`` clears the anchor
+    when the flow completes.
+
+    Distinct from ``setup_message_id`` / ``current_step`` (the launcher +
+    advanced wizard anchors), which point at a different coexisting message.
+    """
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET essential_message_id = $2,
+               essential_step       = $3,
+               updated_at           = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+        message_id,
+        step,
+    )
+
+
+async def set_essential_step(guild_id: int, step: int | None) -> None:
+    """Update only the Essential Setup flow's step index.
+
+    Called as the operator moves through the flow so a restart resumes at the
+    right step.  Leaves ``essential_message_id`` untouched.
+    """
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET essential_step = $2,
+               updated_at     = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+        step,
+    )
+
+
+async def clear_essential_anchor(guild_id: int) -> None:
+    """Clear the Essential Setup anchor (message id + step → NULL).
+
+    Used when the flow completes (reaches the summary) or its message can no
+    longer be fetched, so the resume sweep stops trying to revive it.
+    """
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET essential_message_id = NULL,
+               essential_step        = NULL,
+               updated_at            = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+    )
+
+
 KNOWN_DEPTHS: frozenset[str] = frozenset({"quick", "standard", "advanced"})
 
 #: Allowed values for ``setup_session.purpose``.  Validated at the Python
@@ -397,12 +465,15 @@ __all__ = [
     "add_skipped_section",
     "clear",
     "clear_acknowledged_sections",
+    "clear_essential_anchor",
     "clear_skipped_sections",
     "get",
     "remove_acknowledged_section",
     "remove_delegated_admin",
     "remove_skipped_section",
     "set_depth",
+    "set_essential_anchor",
+    "set_essential_step",
     "set_purpose",
     "set_readiness_score",
     "set_setup_channel_id",
