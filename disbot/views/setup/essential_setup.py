@@ -134,15 +134,19 @@ class _SkipButton(discord.ui.Button):  # type: ignore[type-arg]
 class _StepView(BaseView):
     """One step. Subclasses add their pickers + a Save button and a render()."""
 
+    title = "this step"
     skip_label = "Skip this step"
 
     def __init__(self, flow: EssentialFlow) -> None:
         super().__init__(flow.author, public=False, timeout=600)
         self.flow = flow
         self.build_items()
+        # Nav sits on the bottom row (4); each step's primary button uses row 3,
+        # so "Save & continue" lands in the same place on every step regardless
+        # of how many dropdowns the step has (the log step fills rows 0-2).
         if flow.index > 0:
-            self.add_item(_BackButton(row=3))
-        self.add_item(_SkipButton(row=3, label=self.skip_label))
+            self.add_item(_BackButton(row=4))
+        self.add_item(_SkipButton(row=4, label=self.skip_label))
 
     # --- subclass hooks ---
     def build_items(self) -> None:  # pragma: no cover - trivial in subclasses
@@ -158,6 +162,7 @@ class _StepView(BaseView):
         await interaction.response.edit_message(embed=embed, view=view)
 
     async def skip(self, interaction: discord.Interaction) -> None:
+        self.flow.record_skipped(self.title)
         self.flow.advance()
         await self._show_current(interaction)
 
@@ -232,10 +237,10 @@ class _EntryRoleSelect(discord.ui.RoleSelect):  # type: ignore[type-arg]
 class _GreetSaveButton(discord.ui.Button):  # type: ignore[type-arg]
     def __init__(self) -> None:
         super().__init__(
-            label="Turn on greetings",
+            label="Save & continue",
             emoji="👋",
             style=discord.ButtonStyle.success,
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -264,7 +269,7 @@ class GreetMembersStep(_StepView):
                 "Send a friendly message when someone joins, and (if you like) "
                 "give every newcomer a role automatically.\n\n"
                 "Pick a channel for the welcome message below, then press "
-                "**Turn on greetings**."
+                "**Save & continue**."
             ),
             color=discord.Color.blurple(),
         )
@@ -341,10 +346,10 @@ class _DmToggleButton(discord.ui.Button):  # type: ignore[type-arg]
 class _ModSaveButton(discord.ui.Button):  # type: ignore[type-arg]
     def __init__(self) -> None:
         super().__init__(
-            label="Save moderators",
+            label="Save & continue",
             emoji="🛡️",
             style=discord.ButtonStyle.success,
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -431,20 +436,23 @@ _SPAM_FILTERS: list[tuple[str, str]] = [
 ]
 
 
-class _FilterToggle(discord.ui.Button):  # type: ignore[type-arg]
-    def __init__(self, key: str, label: str, on: bool, row: int) -> None:
+class _SpamFilterSelect(discord.ui.Select):  # type: ignore[type-arg]
+    def __init__(self, selected: set[str]) -> None:
+        options = [
+            discord.SelectOption(label=label, value=key, default=key in selected)
+            for key, label in _SPAM_FILTERS
+        ]
         super().__init__(
-            label=f"{label}: {'ON' if on else 'OFF'}",
-            style=(
-                discord.ButtonStyle.success if on else discord.ButtonStyle.secondary
-            ),
-            row=row,
+            placeholder="What should I clean up? (all on by default)",
+            min_values=0,
+            max_values=len(options),
+            options=options,
+            row=0,
         )
-        self._key = key
 
     async def callback(self, interaction: discord.Interaction) -> None:
         view: BlockSpamStep = self.view  # type: ignore[assignment]
-        view.filters[self._key] = not view.filters[self._key]
+        view.filters = set(self.values)
         view.refresh_items()
         await interaction.response.edit_message(embed=view.render(), view=view)
 
@@ -452,10 +460,10 @@ class _FilterToggle(discord.ui.Button):  # type: ignore[type-arg]
 class _SpamSaveButton(discord.ui.Button):  # type: ignore[type-arg]
     def __init__(self) -> None:
         super().__init__(
-            label="Turn on protection",
+            label="Save & continue",
             emoji="🧹",
             style=discord.ButtonStyle.success,
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -468,7 +476,7 @@ class BlockSpamStep(_StepView):
     skip_label = "Skip spam protection"
 
     def __init__(self, flow: EssentialFlow) -> None:
-        self.filters: dict[str, bool] = {key: True for key, _ in _SPAM_FILTERS}
+        self.filters: set[str] = {key for key, _ in _SPAM_FILTERS}
         super().__init__(flow)
 
     def build_items(self) -> None:
@@ -476,10 +484,9 @@ class BlockSpamStep(_StepView):
 
     def refresh_items(self) -> None:
         for child in list(self.children):
-            if isinstance(child, (_FilterToggle, _SpamSaveButton)):
+            if isinstance(child, (_SpamFilterSelect, _SpamSaveButton)):
                 self.remove_item(child)
-        for i, (key, label) in enumerate(_SPAM_FILTERS):
-            self.add_item(_FilterToggle(key, label, self.filters[key], row=i // 2))
+        self.add_item(_SpamFilterSelect(self.filters))
         self.add_item(_SpamSaveButton())
 
     def render(self) -> discord.Embed:
@@ -487,15 +494,15 @@ class BlockSpamStep(_StepView):
             title=f"🧹 {self.title}",
             description=(
                 "Automatically clean up the noise so you don't have to. "
-                "Everything below is on by default — tap any to turn it off, "
-                "then press **Turn on protection**."
+                "Everything is on by default — untick anything you want to "
+                "allow, then press **Save & continue**."
             ),
             color=discord.Color.blurple(),
         )
         for key, label in _SPAM_FILTERS:
             embed.add_field(
                 name=label,
-                value="On" if self.filters[key] else "Off",
+                value="On" if key in self.filters else "Off",
                 inline=True,
             )
         embed.set_footer(text=self.flow.step_counter())
@@ -505,7 +512,7 @@ class BlockSpamStep(_StepView):
         try:
             await self._set("automod", "enabled", True)
             for key, _ in _SPAM_FILTERS:
-                await self._set("automod", key, self.filters[key])
+                await self._set("automod", key, key in self.filters)
         except Exception:
             logger.exception("essential setup: block-spam step apply failed")
             await interaction.response.send_message(
@@ -513,7 +520,7 @@ class BlockSpamStep(_StepView):
                 ephemeral=True,
             )
             return
-        on_labels = [label for key, label in _SPAM_FILTERS if self.filters[key]]
+        on_labels = [label for key, label in _SPAM_FILTERS if key in self.filters]
         line = "Spam protection on"
         if on_labels:
             line += " · " + ", ".join(on_labels).lower()
@@ -603,13 +610,58 @@ class _LogChannelPicker(discord.ui.ChannelSelect):  # type: ignore[type-arg]
         await interaction.response.edit_message(embed=view.render(), view=view)
 
 
+class _ChannelNamesModal(discord.ui.Modal, title="Name the new channels"):  # type: ignore[call-arg]
+    """Optional: type custom names for the channel(s) we auto-create."""
+
+    mod_name = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Moderation log channel name",
+        required=False,
+        max_length=90,
+    )
+    activity_name = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Activity log channel name",
+        required=False,
+        max_length=90,
+    )
+
+    def __init__(self, view: LogChannelStep) -> None:
+        super().__init__()
+        self._view = view
+        self.mod_name.default = view.mod_channel_name or _NEW_MOD_CHANNEL_NAME
+        self.activity_name.default = (
+            view.activity_channel_name or _NEW_ACTIVITY_CHANNEL_NAME
+        )
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        self._view.mod_channel_name = self.mod_name.value.strip() or None
+        self._view.activity_channel_name = self.activity_name.value.strip() or None
+        self._view.refresh_items()
+        await interaction.response.edit_message(
+            embed=self._view.render(),
+            view=self._view,
+        )
+
+
+class _NameChannelsButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="✏️ Name the new channel(s)",
+            style=discord.ButtonStyle.secondary,
+            row=3,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: LogChannelStep = self.view  # type: ignore[assignment]
+        await interaction.response.send_modal(_ChannelNamesModal(view))
+
+
 class _LogSaveButton(discord.ui.Button):  # type: ignore[type-arg]
     def __init__(self) -> None:
         super().__init__(
-            label="Save logging",
+            label="Save & continue",
             emoji="📋",
             style=discord.ButtonStyle.success,
-            row=4,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -625,13 +677,16 @@ class LogChannelStep(_StepView):
         self.mod_channel_id: int | None = None
         self.activity_channel_id: int | None = None
         self.activity: set[str] = set(_DEFAULT_ACTIVITY)
+        # Optional custom names for channels we auto-create (None = default).
+        self.mod_channel_name: str | None = None
+        self.activity_channel_name: str | None = None
         super().__init__(flow)
 
     def build_items(self) -> None:
         self.refresh_items()
 
     def refresh_items(self) -> None:
-        """(Re)build the controls from current state (rows 0/1/2/4).
+        """(Re)build the controls from current state (rows 0/1/2/3).
 
         Rebuilt on every interaction so the multi-select reflects ``activity``;
         the channel pickers reset visually but the chosen ids persist on the
@@ -640,7 +695,12 @@ class LogChannelStep(_StepView):
         for child in list(self.children):
             if isinstance(
                 child,
-                (_ActivityTypeSelect, _LogChannelPicker, _LogSaveButton),
+                (
+                    _ActivityTypeSelect,
+                    _LogChannelPicker,
+                    _NameChannelsButton,
+                    _LogSaveButton,
+                ),
             ):
                 self.remove_item(child)
         self.add_item(_ActivityTypeSelect(self.activity))
@@ -658,6 +718,7 @@ class LogChannelStep(_StepView):
                 row=2,
             ),
         )
+        self.add_item(_NameChannelsButton())
         self.add_item(_LogSaveButton())
 
     def render(self) -> discord.Embed:
@@ -670,25 +731,30 @@ class LogChannelStep(_StepView):
                 "• an **activity log** — the things you tick below\n\n"
                 "Pick a channel for each, or leave one empty and we'll make it "
                 f"for you (**#{_NEW_MOD_CHANNEL_NAME}** / "
-                f"**#{_NEW_ACTIVITY_CHANNEL_NAME}**). Then press **Save logging**."
+                f"**#{_NEW_ACTIVITY_CHANNEL_NAME}** — or tap ✏️ to name it). "
+                "Then press **Save & continue**."
             ),
             color=discord.Color.blurple(),
         )
         embed.add_field(
             name="Moderation log",
-            value=self._where(self.mod_channel_id, _NEW_MOD_CHANNEL_NAME),
+            value=self._where(
+                self.mod_channel_id,
+                self.mod_channel_name or _NEW_MOD_CHANNEL_NAME,
+            ),
             inline=False,
         )
         if self.activity:
             picked = ", ".join(
                 label for flag, label, _ in _ACTIVITY_TYPES if flag in self.activity
             )
+            activity_where = self._where(
+                self.activity_channel_id,
+                self.activity_channel_name or _NEW_ACTIVITY_CHANNEL_NAME,
+            )
             embed.add_field(
                 name="Activity log",
-                value=(
-                    f"{self._where(self.activity_channel_id, _NEW_ACTIVITY_CHANNEL_NAME)}\n"
-                    f"_Logging: {picked}_"
-                ),
+                value=f"{activity_where}\n_Logging: {picked}_",
                 inline=False,
             )
         else:
@@ -708,25 +774,24 @@ class LogChannelStep(_StepView):
 
     async def apply(self, interaction: discord.Interaction) -> None:
         created: list[str] = []
+        mod_name = self.mod_channel_name or _NEW_MOD_CHANNEL_NAME
+        activity_name = self.activity_channel_name or _NEW_ACTIVITY_CHANNEL_NAME
         # Moderation log is the always-on baseline — resolve (or create) it.
         mod_id = self.mod_channel_id
         if mod_id is None:
-            mod_id = await self._create_channel(interaction, _NEW_MOD_CHANNEL_NAME)
+            mod_id = await self._create_channel(interaction, mod_name)
             if mod_id is None:
                 return  # creation failed; error already surfaced
-            created.append(_NEW_MOD_CHANNEL_NAME)
+            created.append(mod_name)
         # Activity log only when at least one activity category is ticked.
         activity_id: int | None = None
         if self.activity:
             activity_id = self.activity_channel_id
             if activity_id is None:
-                activity_id = await self._create_channel(
-                    interaction,
-                    _NEW_ACTIVITY_CHANNEL_NAME,
-                )
+                activity_id = await self._create_channel(interaction, activity_name)
                 if activity_id is None:
                     return
-                created.append(_NEW_ACTIVITY_CHANNEL_NAME)
+                created.append(activity_name)
         try:
             await self._set("logging", "enabled", True)
             await self._bind("mod_channel", mod_id)
@@ -912,10 +977,10 @@ class _RewardTypeSelect(discord.ui.Select):  # type: ignore[type-arg]
 class _RewardNextButton(discord.ui.Button):  # type: ignore[type-arg]
     def __init__(self, has_rewards: bool) -> None:
         super().__init__(
-            label="Next" if has_rewards else "Save",
+            label="Next" if has_rewards else "Save & continue",
             emoji="🏅",
             style=discord.ButtonStyle.success,
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -978,13 +1043,50 @@ class _RewardRoleSelect(discord.ui.RoleSelect):  # type: ignore[type-arg]
         await interaction.response.edit_message(embed=view.render(), view=view)
 
 
+class _RoleNameModal(discord.ui.Modal, title="Name the reward role"):  # type: ignore[call-arg]
+    """Optional: type a custom name for the role we create."""
+
+    role_name = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Role name",
+        required=False,
+        max_length=90,
+    )
+
+    def __init__(self, view: RewardActivityStep) -> None:
+        super().__init__()
+        self._view = view
+        self.role_name.default = view.new_role_name or _DEFAULT_ROLE_NAME
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        self._view.new_role_name = self.role_name.value.strip() or None
+        self._view.role_source = "create"
+        self._view.refresh_items()
+        await interaction.response.edit_message(
+            embed=self._view.render(),
+            view=self._view,
+        )
+
+
+class _TypeRoleNameButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="✏️ Type a name",
+            style=discord.ButtonStyle.secondary,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: RewardActivityStep = self.view  # type: ignore[assignment]
+        await interaction.response.send_modal(_RoleNameModal(view))
+
+
 class _RewardSaveButton(discord.ui.Button):  # type: ignore[type-arg]
     def __init__(self) -> None:
         super().__init__(
-            label="Save rewards",
+            label="Save & continue",
             emoji="🏅",
             style=discord.ButtonStyle.success,
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -1017,6 +1119,7 @@ class RewardActivityStep(_StepView):
             _RewardNextButton,
             _RoleSourceSelect,
             _RoleNameSelect,
+            _TypeRoleNameButton,
             _RewardRoleSelect,
             _RewardSaveButton,
         )
@@ -1031,6 +1134,7 @@ class RewardActivityStep(_StepView):
             self.add_item(_RoleSourceSelect(self.role_source))
             if self.role_source == "create":
                 self.add_item(_RoleNameSelect(self.new_role_name))
+                self.add_item(_TypeRoleNameButton())
             elif self.role_source == "existing":
                 self.add_item(_RewardRoleSelect())
             self.add_item(_RewardSaveButton())
@@ -1291,10 +1395,10 @@ class _TranscriptChannelSelect(discord.ui.ChannelSelect):  # type: ignore[type-a
 class _HelpDeskSaveButton(discord.ui.Button):  # type: ignore[type-arg]
     def __init__(self) -> None:
         super().__init__(
-            label="Turn on the help desk",
+            label="Save & continue",
             emoji="🎫",
             style=discord.ButtonStyle.success,
-            row=2,
+            row=3,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -1322,7 +1426,7 @@ class HelpDeskStep(_StepView):
             description=(
                 "Let members open a private request that only your staff can "
                 "see. Pick who should answer them; we set up the rest.\n\n"
-                "Then press **Turn on the help desk**."
+                "Then press **Save & continue**."
             ),
             color=discord.Color.blurple(),
         )
