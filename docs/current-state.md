@@ -16,7 +16,7 @@
 > | **S1 Bot product** | [`current-state/S1-bot.md`](current-state/S1-bot.md) | reaction-roles arc Carl-bot-mature; creature game + mining grid live; Starboard PR 1+2 shipped (#1259/#1270); karma shipped (#1332); **consolidation/discoverability audit ✅ COMPLETE (2026-06-23)** ([brief](planning/consolidation-discoverability-audit-brief-2026-06-23.md)); ▶ next: Project Moon runtime PR 1 / botsite React migration / consolidation polish tail |
 > | **S2 BTD6** | [`current-state/S2-btd6.md`](current-state/S2-btd6.md) | buff-uptime + data auto-seed/drift shipped (manual `seed-data` step closed); ▶ decode items 3–4 / absence-guard Layer B |
 > | **S3 AI-Memory** | [`current-state/S3-ai-memory.md`](current-state/S3-ai-memory.md) | per-claim/per-sector restructure (this PR); ▶ consistency-linter AI-nav PR 1 / procedures→skills Batch 2 |
-> | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 23rd Q-0107 pass done (band-#1380); next recon at #1410; **no PLAN-BACKLOG-THIN flag** |
+> | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 24th Q-0107 pass done (band-#1410); next recon at #1440; **no PLAN-BACKLOG-THIN flag** |
 > | **S5 Operations** | [`current-state/S5-ops.md`](current-state/S5-ops.md) | merge=deploy clarity (Q-0193); loop self-fires; ▶ website rollout (owner/Hermes) |
 >
 > **Honest caveat (cross-sector, carried):** much buildable depth is substantial runtime work — but
@@ -38,10 +38,10 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-24 — **twenty-third Q-0107 reconciliation pass (band-#1380, issue #1406
-> — [pass record](planning/reconciliation-pass-2026-06-24-band1380.md));** the live state is the
+> **Last updated:** 2026-06-24 — **twenty-fourth Q-0107 reconciliation pass (band-#1410, issue #1411
+> — [pass record](planning/reconciliation-pass-2026-06-24-band1410.md));** the live state is the
 > **▶ Next action** line above + the Recently-shipped list. *(The dated narrative below is historical —
-> passes 10–22 record their state in the ▶ Next action callout + their per-band pass records, not here.)*
+> passes 10–23 record their state in the ▶ Next action callout + their per-band pass records, not here.)*
 > Earlier: 2026-06-15, **ninth Q-0107 reconciliation pass (the band-#930 cadence fire,
 > issue #931)** — scored the band #901–#930 against the band-#900 queue: **the planned decade queue
 > nearly fully executed** — Forge ✅#905 · P1-3 invariants ✅#917/#918 · Railway log-triage ✅#906 ·
@@ -217,14 +217,31 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 >
-> **Last reconciliation pass:** PR #1404 (2026-06-24, twenty-third Q-0107 cadence pass, band-#1380 —
-> [the pass record + next-band queue](planning/reconciliation-pass-2026-06-24-band1380.md)). The next
-> **docs-only review + planning reconciliation** is due once merged PRs cross #1410 (every
+> **Last reconciliation pass:** PR #1410 (2026-06-24, twenty-fourth Q-0107 cadence pass, band-#1410 —
+> [the pass record + next-band queue](planning/reconciliation-pass-2026-06-24-band1410.md)). The next
+> **docs-only review + planning reconciliation** is due once merged PRs cross #1440 (every
 > multiple of **30** — Q-0107 cadence raised 10→20 on 2026-06-12, then 20→30 on 2026-06-14 per
 > Q-0134; `check_reconciliation_due.py` flags it, and `.github/workflows/reconciliation-trigger.yml`
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1405 · #1410 (2026-06-24, NEW support-ticket subsystem — command + AI natural language)** — a complete
+  new `ticket` subsystem (migration 098 `ticket_config`/`tickets`/`ticket_blacklist`, audited
+  `ticket_mutation` seam, anchor-free persistent launcher + in-channel control panel + staff hub + describe
+  modal, `!ticket`/`!ticketpanel`/`!ticketsetup`/`!ticketblacklist`) modeled on the best ticket bots —
+  clickable panels, categories, per-ticket private channels, claim/add/remove, transcripts, per-user limits +
+  blacklist (#1405). It also introduces the **first write-capable AI *action* tool**, `open_support_ticket`,
+  through the deterministic audited mutation service; the follow-up (#1410) re-postured it so **the AI opens
+  a ticket via a one-click confirm, not autonomously** (router **Q-0201**, superseding #1405's direct-open
+  draft).
+- **#1408 · #1409 (2026-06-24, BTD6 AI floor coverage + admin slash-command fix)** — range RBE answers + the
+  paragon **elite-boss damage multiplier** in the AI floor set (#1408, extends the #1402/#1404 round-economy +
+  elite-boss lineage); plus two owner-reported Discord-thread fixes (#1409) — a **`!syncslash clear`** scope
+  that drops duplicate guild-local slash copies (the global+guild double-render), and a **`/btd6ref round`
+  range** (combined per-round RBE/cash/cumulative table).
+- **#1407 (2026-06-24, docs — twenty-third Q-0107 reconciliation pass, band-#1380)** —
+  the previous docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-06-24-band1380.md)).
 - **#1359 · #1360 · #1361 · #1363 · #1366 · #1367 · #1369 · #1370 · #1371 · #1372 · #1373 · #1374 · #1375 · #1376 · #1377 · #1378 · #1382 · #1383 · #1385 (2026-06-23/24, consolidation & discoverability audit — execution arc)** —
   the audit brief executed as a multi-session **ultracode fleet**: Session 1 help-findability foundation + a
   per-command reachability guard (#1370), Phase-0 shared hub-child primitive + settings-orphan guard + the
@@ -304,15 +321,6 @@ Source code and merged PRs win over anything written here.
   creation via preset packs** (#1300), then enhancements — enlarged multi-select presets, bulk custom roles,
   optional colour presets (#1302) — and a **role-list colours** surface + optional per-role colour for bulk
   custom roles (#1306).
-- **#1294 · #1297 (2026-06-22, help surface slimming + reachability guard)** — removed the redundant
-  "All Commands / Advanced" help surface (#1294) and added a **help-reachability CI guard** that fails the
-  build when a subsystem isn't homed in the help tree (#1297).
-- **#1295 · #1316 (2026-06-22, BTD6 answerability)** — a **P1-1 grounding-anchor eval guard** (asserted
-  numbers must be grounded, #1295, closes #704's eval-guard ask) and a **whole-catalog roster** answer for
-  "list all monkey knowledge" (#1316).
-- **#1305 (2026-06-22, botsite React-SPA migration PR 1 — foundation)** — a buildable, data-fed React app
-  foundation (Vite + `design-system/src/app/`, data layer + tests, `botsite/app.py` wiring) — the first slice
-  of migrating the live bot-site onto the design-system React stack.
 - **Older merges (#1320 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.

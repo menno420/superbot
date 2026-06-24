@@ -70,6 +70,15 @@ Current broad captures:
   follow-up tracker (one feeds the queue from shipped depth, this measures whether the queue predicts the
   band). Subsystem: S4/S3 tooling.
   *(Groomed 2026-06-23: cross-linked to the inventory-homed guard below — same root cause, plan as one slice.)*
+- [`recon-cadence-boundary-jitter-2026-06-24.md`](./recon-cadence-boundary-jitter-2026-06-24.md) —
+  **reconciliation idea (2026-06-24, band-#1410 Q-0089):** the band-#1410 pass fired ~50 min after band-#1380
+  on a band of just 4 merges (one being the prev pass itself) — because the prev pass reset its marker to
+  #1404 while #1405–#1410 were already merged/in-flight, so the next merge crossed #1410 instantly. At burst
+  velocity a strict "every 30th PR" can fire a near-empty full-ritual pass right behind a full one. The idea:
+  a **jitter guard** in `check_reconciliation_due.py`/the trigger workflow that suppresses a new `reconcile`
+  issue when the prev pass is too recent **and** too few product PRs have merged since — folding the tiny
+  band into the next real one (recording the skipped boundary, with a hard ceiling). Pairs with the hit-rate
+  tracker above (this keeps each measured band big enough for the metric to mean anything). Subsystem: none.
 - [`subsystem-inventory-homed-guard-2026-06-23.md`](./subsystem-inventory-homed-guard-2026-06-23.md) —
   **workflow idea (2026-06-23, Q-0089, ultracode-map session):** four mapping agents verified the repo's own
   inventory docs lag source — `repo-navigation-map.md`'s cheat-sheet table omits **18 shipped cogs** (54 in
