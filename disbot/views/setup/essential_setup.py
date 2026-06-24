@@ -20,9 +20,9 @@ Design (plan ``docs/planning/setup-wizard-restructure-plan-2026-06-24.md`` §5):
 This module is **additive** — the existing wizard (``views/setup/wizard.py``)
 is untouched and remains the full/advanced path; Essential Setup is the new
 quick spine.  Live steps: greet new members · set your moderators · block spam
-and bad links · set up a help desk (+ the closing summary).  Remaining
-follow-ons on this same pattern: choose a log channel (with auto-create),
-reward activity (xp + auto-role), and the server-type starter preset.
+and bad links · choose a log channel · set up a help desk (+ the closing
+summary).  Remaining follow-ons on this same pattern: reward activity (xp +
+auto-role) and the server-type starter preset.
 """
 
 from __future__ import annotations
@@ -68,6 +68,7 @@ class EssentialFlow:
             GreetMembersStep,
             ModeratorsStep,
             BlockSpamStep,
+            LogChannelStep,
             HelpDeskStep,
         ]
 
@@ -519,7 +520,207 @@ class BlockSpamStep(_StepView):
 
 
 # ---------------------------------------------------------------------------
-# Step 4 — Set up a help desk  (tickets)
+# Step 4 — Choose a log channel  (logging: enable + bind the catch-all channel)
+# ---------------------------------------------------------------------------
+#
+# Scope is **moderation log only** (owner decision, 2026-06-24): one channel for
+# moderation actions (warn/timeout/kick/ban) and anything else the bot reports.
+# Member-activity / message logging stay OFF — they are a later follow-on. So
+# the step writes exactly two things on Save: ``logging.enabled = True`` and the
+# ``logging.mod_channel`` binding (the slot every other logging route falls back
+# to), which is the literal "choose a log channel" the PR-1 note describes.
+
+# Plain-language default name for the channel we offer to create.
+_NEW_LOG_CHANNEL_NAME = "mod-log"
+
+
+class _LogChannelSelect(discord.ui.ChannelSelect):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Pick a channel for the bot's log…",
+            channel_types=[discord.ChannelType.text],
+            min_values=0,
+            max_values=1,
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: LogChannelStep = self.view  # type: ignore[assignment]
+        view.channel_id = self.values[0].id if self.values else None
+        # Picking an existing channel turns off "make one for me".
+        if view.channel_id is not None:
+            view.auto_create = False
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _AutoCreateLogButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self, on: bool) -> None:
+        super().__init__(
+            label=f"Make a #{_NEW_LOG_CHANNEL_NAME} channel: {'ON' if on else 'OFF'}",
+            style=(
+                discord.ButtonStyle.success if on else discord.ButtonStyle.secondary
+            ),
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: LogChannelStep = self.view  # type: ignore[assignment]
+        view.auto_create = not view.auto_create
+        # Choosing "make one for me" clears any existing pick (one target wins).
+        if view.auto_create:
+            view.channel_id = None
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _LogSaveButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="Save log channel",
+            emoji="📋",
+            style=discord.ButtonStyle.success,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: LogChannelStep = self.view  # type: ignore[assignment]
+        await view.apply(interaction)
+
+
+class LogChannelStep(_StepView):
+    title = "Choose a log channel"
+    skip_label = "Skip logging"
+
+    def __init__(self, flow: EssentialFlow) -> None:
+        self.channel_id: int | None = None
+        self.auto_create: bool = False
+        super().__init__(flow)
+
+    def build_items(self) -> None:
+        self.refresh_items()
+
+    def refresh_items(self) -> None:
+        """(Re)build the row-0/1/2 controls — used after a pick / toggle flips."""
+        for child in list(self.children):
+            if isinstance(
+                child,
+                (_LogChannelSelect, _AutoCreateLogButton, _LogSaveButton),
+            ):
+                self.remove_item(child)
+        self.add_item(_LogChannelSelect())
+        self.add_item(_AutoCreateLogButton(self.auto_create))
+        self.add_item(_LogSaveButton())
+
+    def render(self) -> discord.Embed:
+        embed = discord.Embed(
+            title=f"📋 {self.title}",
+            description=(
+                "Keep a record of what the bot does — warnings, timeouts, "
+                "kicks and bans, plus anything else it needs to report — all "
+                "in one channel.\n\n"
+                "Pick a channel below, or let us make a fresh "
+                f"**#{_NEW_LOG_CHANNEL_NAME}** for you, then press "
+                "**Save log channel**."
+            ),
+            color=discord.Color.blurple(),
+        )
+        if self.channel_id:
+            where = f"<#{self.channel_id}>"
+        elif self.auto_create:
+            where = f"a new **#{_NEW_LOG_CHANNEL_NAME}** channel"
+        else:
+            where = "_not chosen yet_"
+        embed.add_field(name="The log goes to", value=where, inline=False)
+        embed.set_footer(text=self.flow.step_counter())
+        return embed
+
+    async def apply(self, interaction: discord.Interaction) -> None:
+        channel_id = self.channel_id
+        created = False
+        if channel_id is None and self.auto_create:
+            channel_id = await self._create_log_channel(interaction)
+            if channel_id is None:
+                return  # creation failed; the error was already surfaced
+            created = True
+        if channel_id is None:
+            await interaction.response.send_message(
+                f"Pick a channel, or choose **Make a #{_NEW_LOG_CHANNEL_NAME} "
+                "channel** first.",
+                ephemeral=True,
+            )
+            return
+        try:
+            await self._set("logging", "enabled", True)
+            await self._bind_log_channel(channel_id)
+        except Exception:
+            logger.exception("essential setup: log-channel step apply failed")
+            await interaction.response.send_message(
+                "Something went wrong saving your log channel — please try again.",
+                ephemeral=True,
+            )
+            return
+        line = f"Logging on, posting to <#{channel_id}>"
+        if created:
+            line += " (created for you)"
+        await self.complete(interaction, line)
+
+    async def _create_log_channel(
+        self,
+        interaction: discord.Interaction,
+    ) -> int | None:
+        """Create the #mod-log channel through the audited lifecycle creator.
+
+        Returns the new channel's id, or ``None`` after surfacing an error (the
+        caller then stops without writing anything).  ``ChannelLifecycleService``
+        is imported lazily to match the setup-view convention (services /
+        pipelines are not imported at module top level here).
+        """
+        from services.channel_lifecycle_service import ChannelLifecycleService
+
+        result = await ChannelLifecycleService().create_channels(
+            self.flow.guild,
+            [_NEW_LOG_CHANNEL_NAME],
+            self.flow.author,
+        )
+        if not result.applied:
+            logger.warning(
+                "essential setup: log channel create failed (guild=%s): %s",
+                self.flow.guild.id,
+                result.first_error,
+            )
+            await interaction.response.send_message(
+                "Couldn't make the channel — please pick an existing one instead.",
+                ephemeral=True,
+            )
+            return None
+        return result.applied[0].target_id
+
+    async def _bind_log_channel(self, channel_id: int) -> None:
+        """Point the bot's log at *channel_id* through the audited write path.
+
+        ``BindingMutationPipeline`` is on the setup-view no-top-level-import list
+        (``test_setup_operations_invariants``), so it — and ``BindingKind`` — are
+        imported lazily here, exactly like ``_set`` does for settings.  We bind
+        ``logging.mod_channel`` (the slot every other logging route falls back
+        to), so a single pick lights up the whole moderation/catch-all log.
+        """
+        from core.runtime.subsystem_schema import BindingKind
+        from services.binding_mutation import BindingMutationPipeline
+
+        await BindingMutationPipeline().set_binding(
+            self.flow.guild,
+            "logging",
+            "mod_channel",
+            BindingKind.CHANNEL,
+            channel_id,
+            self.flow.author,
+            actor_type="user",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Step 5 — Set up a help desk  (tickets)
 # ---------------------------------------------------------------------------
 
 

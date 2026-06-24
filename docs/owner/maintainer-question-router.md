@@ -7353,3 +7353,41 @@ design). The follow-up PR **#pending** implements the owner's confirm-button cho
 **Home:** this Q-block (canonical) + `.sessions/2026-06-24-support-tickets.md` +
 `.sessions/2026-06-24-ticket-ai-confirm.md` + the `ai_tools.py` module docstring. Related: **Q-0048** (the
 parent AI-exposure gate), **Q-0199** (the setup-apply write lift, also click-gated), Q-0123 (auto-merge).
+
+### Q-0202 — ANSWERED (owner decisions, in-session): Essential Setup "Choose a log channel" scope + naming + the step-0 preset + the Advanced editor (2026-06-24)
+
+**Context.** While building the Essential Setup "Choose a log channel" step (plan
+`docs/planning/setup-wizard-restructure-plan-2026-06-24.md`, PR 1; PR **#1429**), four design decisions
+needed the owner. Asked as one `AskUserQuestion` batch; answers verbatim below. Two settle *this* step
+(scope, name); two settle *later* PRs (step-0 preset = Q-C, the Advanced editor = Q-E) "while you're here".
+
+**The decisions.**
+1. **Log scope = moderation log only.** The step is *one* channel: it turns on `logging.enabled` and binds
+   `logging.mod_channel` (the catch-all slot every other logging route falls back to) to the picked-or-
+   created channel. **Member-activity (joins/leaves/roles) and message-content logging stay OFF** — they
+   are a later follow-on, not this step. This supersedes the plan §5 "log channel pair" framing and matches
+   the PR-1 note's "*a* binding write" (singular). The step copy was corrected to stop promising
+   joins/edits.
+2. **Auto-create naming (plan Q-D) = plain-language names.** Auto-created channels/roles use the short §4
+   wording — `#mod-log` / `#server-log`, "Level 10", "Regular" — **not** the longer `bot-`-prefixed
+   `suggested_name` convention. (The log step creates `#mod-log`.)
+3. **Step-0 server-type preset (plan Q-C) = auto-apply safe defaults.** Picking Community/Gaming/Support/
+   Creator instantly switches on a curated, **reversible** bundle (nothing irreversible) — *not* recommend-
+   and-confirm-each. Not built this PR; settles the future step-0 preset path.
+4. **Advanced bulk editor (plan Q-E) = keep but REWORK.** Keep the draft → Final Review editor for power
+   users, but the owner sharpened the offered "keep as-is" to **"keep but rework it — currently most of it
+   does not do anything."** So PR 3 is not only "demote cog_routing/cleanup under Advanced"; it must audit
+   that editor and wire up or strip its dead actions.
+
+**Scope / non-generalization.** (1) and (2) are live in #1429. (3) and (4) are recorded direction for the
+step-0 and PR-3 sessions respectively — no code yet.
+
+**Applied.** PR **#1429** ships the moderation-only log-channel step (decisions 1+2): a `LogChannelStep`
+on `EssentialFlow` that picks or auto-creates a `#mod-log`, enables logging via `SettingsMutationPipeline`,
+and binds `logging.mod_channel` via `BindingMutationPipeline` (lazy-imported per the setup-view invariant)
++ `ChannelLifecycleService.create_channels` for auto-create. Decisions 3+4 are recorded in the plan §10
+(Q-C/Q-E ANSWERED) for their future PRs.
+
+**Home:** this Q-block (canonical) + the plan §7 PR-1 note / §5 step 4 / §10 (Q-C/Q-D/Q-E) +
+`.sessions/2026-06-24-setup-log-channel-step.md`. Related: **Q-A** (direct-apply per step), the
+setup-wizard restructure plan.
