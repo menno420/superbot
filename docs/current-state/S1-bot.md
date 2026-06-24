@@ -65,8 +65,10 @@
     shipped (welcome / UX-lab leaderboard+poster / role-menu rebased onto `CardCanvas`, 2026-06-24
     dispatch run)**; the **leaderboard card now ships as a real feature** (`!leaderboard` attaches a
     rendered top-N image with embed fallback, 2026-06-24 dispatch run) — remaining H2 is only the
-    `mining_render` rebase (owner visual decision) and the **H3** *embed-feature → image-card* move
-    (rank/profile, still plain embeds) —
+    `mining_render` rebase (owner visual decision). **H3 *embed-feature → image-card* is underway:**
+    `/myprofile` (H1) and now **`!rank`** both render real image cards (`utils/rank_render.py`, themed
+    grid + level progress bar, re-rendered on the stat-toggle, embed fallback — 2026-06-24 dispatch
+    run); remaining H3 is the rank/profile **hub panels** (`!xpmenu`) + other showpiece embeds —
     [vision](../ideas/visual-card-engine-vision-2026-06-23.md) · the `channel-deployed-component` roles
     primitive (idea, not yet built).
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
