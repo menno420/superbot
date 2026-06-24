@@ -63,8 +63,10 @@
     unit U10 — confirm every *manual* section yields a real op / honest link-only; the AI-describe side
     is done) · the **visual card-engine migration** — engine **H2** *renderer-dedup* half **🟡 partially
     shipped (welcome / UX-lab leaderboard+poster / role-menu rebased onto `CardCanvas`, 2026-06-24
-    dispatch run)**; remaining is `mining_render` rebase + leaderboard-as-real-feature (H2) and the
-    **H3** *embed-feature → image-card* move (rank/profile/leaderboard, still plain embeds) —
+    dispatch run)**; the **leaderboard card now ships as a real feature** (`!leaderboard` attaches a
+    rendered top-N image with embed fallback, 2026-06-24 dispatch run) — remaining H2 is only the
+    `mining_render` rebase (owner visual decision) and the **H3** *embed-feature → image-card* move
+    (rank/profile, still plain embeds) —
     [vision](../ideas/visual-card-engine-vision-2026-06-23.md) · the `channel-deployed-component` roles
     primitive (idea, not yet built).
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value

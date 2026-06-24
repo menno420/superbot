@@ -133,6 +133,49 @@ async def test_xp_top_returns_rank_entries():
 
 
 @pytest.mark.asyncio
+async def test_top_entries_carry_structured_projection_for_the_image_card():
+    """Every category populates ``name``/``score``/``value_text`` so the
+    leaderboard image card can draw bars without re-parsing ``label``.
+
+    Each provider is exercised through its own ``top`` so the projection is
+    pinned end-to-end (not just on the dataclass default).
+    """
+    cases = [
+        ("xp", "db.fetchall", [{"user_id": 1, "xp": 250, "level": 5}], 250.0),
+        ("coins", "db.fetchall", [{"user_id": 1, "coins": 99}], 99.0),
+        (
+            "deathmatch",
+            "db.get_deathmatch_leaderboard",
+            [{"user_id": 1, "wins": 7, "losses": 2}],
+            7.0,
+        ),
+        (
+            "karma",
+            "db.top_karma",
+            [{"user_id": 1, "karma_points": 12}],
+            12.0,
+        ),
+    ]
+    for cat, target, rows, expected_score in cases:
+        provider = get_provider(cat)
+        assert provider is not None
+        with patch(
+            f"services.rank_providers.{target}",
+            new_callable=AsyncMock,
+            return_value=rows,
+        ), patch(
+            "services.rank_providers.resources.member_display",
+            side_effect=lambda g, uid: f"User{uid}",
+        ):
+            entries = await provider.top(_guild())
+        top = entries[0]
+        assert top.name, cat
+        assert "*" not in (top.name or ""), f"{cat}: name must be markdown-free"
+        assert top.score == expected_score, cat
+        assert top.value_text, cat
+
+
+@pytest.mark.asyncio
 async def test_xp_member_rank_finds_user_on_board():
     provider = get_provider("xp")
     rows = [

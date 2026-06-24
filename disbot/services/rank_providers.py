@@ -42,9 +42,21 @@ class RankEntry:
     prefix — e.g. ``"**Alice** — Level 5 (250 XP)"``. Providers own
     their own formatting so the registry doesn't need a per-category
     schema.
+
+    ``name`` / ``score`` / ``value_text`` are the *structured* projection
+    of the same row, consumed by the leaderboard **image card**
+    (``render_leaderboard_image``): the plain display name (no markdown),
+    the numeric primary statistic that drives the bar width, and the short
+    value text drawn at the bar's end (e.g. ``"250 XP"`` / ``"5W / 2L"``).
+    They default to ``None`` so every existing consumer (the embeds, which
+    render from ``label``) is unaffected; a provider opts a category into
+    the image card by populating all three.
     """
 
     label: str
+    name: str | None = None
+    score: float | None = None
+    value_text: str | None = None
 
 
 class RankProvider(ABC):
@@ -98,15 +110,18 @@ class XpProvider(RankProvider):
             "ORDER BY xp DESC LIMIT 10",
             (guild.id,),
         )
-        return [
-            RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, row['user_id'])}** "
-                    f"— Level {row['level']} ({row['xp']} XP)"
+        entries: list[RankEntry] = []
+        for row in rows:
+            name = resources.member_display(guild, row["user_id"])
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — Level {row['level']} ({row['xp']} XP)",
+                    name=name,
+                    score=float(row["xp"]),
+                    value_text=f"{row['xp']:,} XP",
                 ),
             )
-            for row in rows
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -138,15 +153,18 @@ class CoinsProvider(RankProvider):
             "ORDER BY coins DESC LIMIT 10",
             (guild.id,),
         )
-        return [
-            RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, row['user_id'])}** "
-                    f"— {row['coins']} 🪙"
+        entries: list[RankEntry] = []
+        for row in rows:
+            name = resources.member_display(guild, row["user_id"])
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {row['coins']} 🪙",
+                    name=name,
+                    score=float(row["coins"]),
+                    value_text=f"{row['coins']:,} 🪙",
                 ),
             )
-            for row in rows
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -172,15 +190,18 @@ class MiningProvider(RankProvider):
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.get_all_mining_totals(guild.id)
-        return [
-            RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, user_id)}** "
-                    f"— {total} items"
+        entries: list[RankEntry] = []
+        for user_id, total in rows[:10]:
+            name = resources.member_display(guild, user_id)
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {total} items",
+                    name=name,
+                    score=float(total),
+                    value_text=f"{total:,} items",
                 ),
             )
-            for user_id, total in rows[:10]
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -215,15 +236,18 @@ class CreaturesProvider(RankProvider):
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.top_collectors(guild.id, creature_names())
-        return [
-            RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, user_id)}** "
-                    f"— {self._render(caught, species)}"
+        entries: list[RankEntry] = []
+        for user_id, caught, species in rows[:10]:
+            name = resources.member_display(guild, user_id)
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {self._render(caught, species)}",
+                    name=name,
+                    score=float(caught),
+                    value_text=f"{caught:,} caught",
                 ),
             )
-            for user_id, caught, species in rows[:10]
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -256,15 +280,19 @@ class GameXpProvider(RankProvider):
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.top_total_xp(guild.id)
-        return [
-            RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, user_id)}** "
-                    f"— {self._render(total)}"
+        entries: list[RankEntry] = []
+        for user_id, total in rows[:10]:
+            name = resources.member_display(guild, user_id)
+            level, _, _ = db.level_progress(total)
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {self._render(total)}",
+                    name=name,
+                    score=float(total),
+                    value_text=f"Lv {level} · {total:,} XP",
                 ),
             )
-            for user_id, total in rows[:10]
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -289,15 +317,18 @@ class CraftingProvider(RankProvider):
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.top_game_xp(guild.id, "crafting")
-        return [
-            RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, user_id)}** "
-                    f"— {xp} crafting XP"
+        entries: list[RankEntry] = []
+        for user_id, xp in rows[:10]:
+            name = resources.member_display(guild, user_id)
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {xp} crafting XP",
+                    name=name,
+                    score=float(xp),
+                    value_text=f"{xp:,} XP",
                 ),
             )
-            for user_id, xp in rows[:10]
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -322,15 +353,18 @@ class DeathmatchProvider(RankProvider):
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.get_deathmatch_leaderboard(guild.id)
-        return [
-            RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, row['user_id'])}** "
-                    f"— {row['wins']}W / {row['losses']}L"
+        entries: list[RankEntry] = []
+        for row in rows[:10]:
+            name = resources.member_display(guild, row["user_id"])
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {row['wins']}W / {row['losses']}L",
+                    name=name,
+                    score=float(row["wins"]),
+                    value_text=f"{row['wins']}W / {row['losses']}L",
                 ),
             )
-            for row in rows[:10]
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -357,15 +391,20 @@ class RpsProvider(RankProvider):
         # The RPS leaderboard query already returns a "name" column —
         # display name is captured at game time, so don't re-resolve.
         rows = await db.rps_get_leaderboard(guild.id)
-        return [
-            RankEntry(
-                label=(
-                    f"**{row['name']}** — "
-                    f"{row['wins']}W / {row['losses']}L / {row['ties']}T"
+        entries: list[RankEntry] = []
+        for row in rows[:10]:
+            entries.append(
+                RankEntry(
+                    label=(
+                        f"**{row['name']}** — "
+                        f"{row['wins']}W / {row['losses']}L / {row['ties']}T"
+                    ),
+                    name=str(row["name"]),
+                    score=float(row["wins"]),
+                    value_text=f"{row['wins']}W / {row['losses']}L / {row['ties']}T",
                 ),
             )
-            for row in rows[:10]
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -411,12 +450,18 @@ class CountingProvider(RankProvider):
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         sorted_totals = await self._all_totals(guild)
-        return [
-            RankEntry(
-                label=f"**{resources.member_display(guild, uid)}** — {cnt} counts",
+        entries: list[RankEntry] = []
+        for uid, cnt in sorted_totals[:10]:
+            name = resources.member_display(guild, uid)
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {cnt} counts",
+                    name=name,
+                    score=float(cnt),
+                    value_text=f"{cnt:,} counts",
+                ),
             )
-            for uid, cnt in sorted_totals[:10]
-        ]
+        return entries
 
     async def member_rank(
         self,
@@ -439,15 +484,18 @@ class KarmaProvider(RankProvider):
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
         rows = await db.top_karma(guild.id, 10)
-        return [
-            RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, row['user_id'])}** "
-                    f"— {row['karma_points']} ✨"
+        entries: list[RankEntry] = []
+        for row in rows:
+            name = resources.member_display(guild, row["user_id"])
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {row['karma_points']} ✨",
+                    name=name,
+                    score=float(row["karma_points"]),
+                    value_text=f"{row['karma_points']:,} ✨",
                 ),
             )
-            for row in rows
-        ]
+        return entries
 
     async def member_rank(
         self,

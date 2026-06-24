@@ -26,32 +26,56 @@ from utils.welcome_render import render_welcome_card
 _THEME = "midnight"
 
 
+_DEFAULT_LEADERBOARD_ROWS: tuple[tuple[str, float], ...] = (
+    ("AstroFox", 13_370),
+    ("BananaMage", 11_204),
+    ("CinderWolf", 9_876),
+    ("DuskRunner", 8_545),
+    ("EmberLynx", 7_002),
+)
+
+
 def render_leaderboard_image(
-    rows: tuple[tuple[str, int], ...] = (
-        ("AstroFox", 13_370),
-        ("BananaMage", 11_204),
-        ("CinderWolf", 9_876),
-        ("DuskRunner", 8_545),
-        ("EmberLynx", 7_002),
-    ),
+    rows: tuple[tuple[str, float], ...] = _DEFAULT_LEADERBOARD_ROWS,
+    *,
+    title: str = "🏆 Top members",
+    value_texts: tuple[str, ...] | None = None,
 ) -> bytes | None:
-    """Top-N horizontal bars — the image alternative to the embed board."""
+    """Top-N horizontal bars — the image alternative to the embed board.
+
+    ``rows`` are ``(name, score)`` pairs (highest first); ``score`` only
+    drives the bar width.  ``title`` lets the live feature stamp the
+    category ("🏆 XP Leaderboard").  ``value_texts``, when given, supplies
+    the per-row label drawn at each bar's end (e.g. ``"5W / 2L"``) so a
+    category whose statistic isn't a bare count still reads correctly;
+    when omitted the score is shown formatted with thousands separators.
+    Returns ``None`` when Pillow is unavailable so the caller keeps its
+    embed fallback.
+    """
+    if not rows:  # empty board → let the caller post its embed-only empty state.
+        return None
     canvas = new_canvas(720, 96 + 64 * len(rows), get_theme(_THEME))
     if canvas is None:  # Pillow unavailable → caller keeps the embed fallback.
         return None
     t = canvas.theme
-    canvas.text((32, 24), "🏆 Top members", size=36, bold=True, color=t.gold)
-    top = rows[0][1] if rows else 1
+    canvas.text((32, 24), title, size=36, bold=True, color=t.gold, max_width=656)
+    top = rows[0][1] or 1
     for i, (name, score) in enumerate(rows):
         y = 96 + i * 64
-        width = int(420 * score / top)
-        canvas.draw.rounded_rectangle(
-            (200, y, 200 + width, y + 40),
-            radius=8,
-            fill=t.accent if i else t.gold,
+        width = int(420 * score / top) if top else 0
+        if width > 0:
+            canvas.draw.rounded_rectangle(
+                (200, y, 200 + width, y + 40),
+                radius=8,
+                fill=t.accent if i else t.gold,
+            )
+        canvas.text((32, y + 6), f"{i + 1}. {name}", size=24, max_width=160)
+        value = (
+            value_texts[i]
+            if value_texts is not None and i < len(value_texts)
+            else f"{score:,.0f}"
         )
-        canvas.text((32, y + 6), f"{i + 1}. {name}", size=24)
-        canvas.text((210 + width, y + 6), f"{score:,}", size=24, color=t.subtle)
+        canvas.text((210 + width, y + 6), value, size=24, color=t.subtle)
     return canvas.to_jpeg(quality=85)
 
 

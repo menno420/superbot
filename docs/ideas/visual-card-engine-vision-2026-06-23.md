@@ -76,9 +76,12 @@ they'd envy. The four moves:
   `render_leaderboard_image` / `render_event_poster`, **and** `role_menu_render` are now rebased onto
   `CardCanvas` (the triplicated dark-blurple palette + the duplicated `_fit`/`_fonts`/`_mix`/`_initials*`
   helpers collapsed onto one engine path; a pure `card_render.mix()` blend helper added for gradients).
-  **Remaining H2 work:** `mining_render` and **shipping the leaderboard card as a real feature**
-  (wiring `render_leaderboard_image` into `leaderboard_cog` as an optional attachment with embed
-  fallback). **Note on `mining_render` (2026-06-24 finding):** it is **not** a clean dedup rebase — it
+  **The leaderboard card is now a real feature (2026-06-24, dispatch run):** `render_leaderboard_image`
+  gained a `title` + per-row `value_texts`, `RankEntry` exposes a structured `(name, score, value_text)`
+  projection populated by every provider, and `leaderboard_cog` attaches the rendered card to the board
+  (embed `set_image(attachment://…)`) with a clean embed-only fallback when Pillow is unavailable, the
+  board is empty, or a category hasn't opted in. **Remaining H2 work:** only `mining_render`.
+  **Note on `mining_render` (2026-06-24 finding):** it is **not** a clean dedup rebase — it
   uses **no fonts at all** (every `draw.text` uses Pillow's default bitmap font, with hardcoded
   `8 * len(text)` width math) and a deliberately *specialized* rarity palette (`_KIND_COLOR`), so
   moving it onto `CardCanvas` would *change the card's look* (loaded DejaVu fonts, new metrics) and
