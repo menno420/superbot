@@ -88,6 +88,14 @@ Current broad captures:
   issue when the prev pass is too recent **and** too few product PRs have merged since — folding the tiny
   band into the next real one (recording the skipped boundary, with a hard ceiling). Pairs with the hit-rate
   tracker above (this keeps each measured band big enough for the metric to mean anything). Subsystem: none.
+- [`band-archetype-classifier-2026-06-24.md`](./band-archetype-classifier-2026-06-24.md) —
+  **reconciliation idea (2026-06-24, band-#1440 Q-0089):** three of the last four passes scored "~0–1/N of
+  the forward queue executed; the band was owner-directed off-queue work" (band-#1440 Essential Setup,
+  band-#1410 ticket subsystem, band-#1380 fishing/card) — re-derived by hand each pass, never trended. Tag
+  each pass record with a one-line **band archetype** (`queue-executing` / `owner-directed` / `mixed` /
+  `micro`) computed from named-slice hits vs. owner-directed merges, so a trivial grep yields the owner's
+  real signal: *how much of the roadmap the autonomous fleet drives vs. how much he steers live* — the core
+  "is the workflow self-driving?" metric. Reuses the planned-slice hit-rate tracker's parse. Subsystem: S4/S3 tooling.
 - [`subsystem-inventory-homed-guard-2026-06-23.md`](./subsystem-inventory-homed-guard-2026-06-23.md) —
   **workflow idea (2026-06-23, Q-0089, ultracode-map session):** four mapping agents verified the repo's own
   inventory docs lag source — `repo-navigation-map.md`'s cheat-sheet table omits **18 shipped cogs** (54 in
