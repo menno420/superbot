@@ -394,7 +394,9 @@ def build_paragon_degree_embed(stats: Any, degree: int) -> discord.Embed:
     )
     embed.description = (
         f"**Power required:** {row.power:,}\n"
-        f"**Boss-damage multiplier:** ×{row.boss_multiplier}"
+        f"**Boss-damage multiplier:** ×{row.boss_multiplier}\n"
+        f"**Elite-boss multiplier:** ×{row.elite_boss_multiplier:g} "
+        f"(paragons deal ×2 vs Elite Bosses)"
     )
     grouped: dict[str, list[Any]] = {}
     order: list[str] = []
