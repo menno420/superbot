@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T18:24:55Z",
+    "generated_at": "2026-06-24T21:34:47Z",
     "build": {
-      "commit": "63b83e2",
-      "subject": "setup: cut Essential Setup over to the primary !setup / /setup",
-      "committed_at": "2026-06-24T18:24:55Z"
+      "commit": "a119b857",
+      "subject": "Merge pull request #1439 from menno420/claude/friendly-keller-e8ofhk",
+      "committed_at": "2026-06-24T21:34:47Z"
     },
     "counts": {
       "functions": 42,
@@ -2665,6 +2665,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-24-essential-setup-logging-defer.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · Essential Setup logging step: defer before slow work",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-essential-setup-cutover.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Essential Setup cutover (primary `!setup`, separate channel, on-join)",
@@ -2940,14 +2948,6 @@
       "file": "2026-06-23-fishing-trophy-records.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Fishing trophy records (per-species biggest-caught)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-fishing-trophy-followups.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Fishing trophy follow-ups: soft-fail clue + heaviest-catch leaderboard",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
