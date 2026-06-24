@@ -72,6 +72,13 @@ they'd envy. The four moves:
 - **H2 — Migrate existing renderers onto the engine.** Re-base `mining_render` /
   `welcome_render` / the UX-lab leaderboard + event-poster prototypes on `CardCanvas` so all cards
   share one look and one code path; ship the leaderboard card as a real feature.
+  **🟡 Partially shipped (2026-06-24, dispatch run):** `welcome_render`, the UX-lab
+  `render_leaderboard_image` / `render_event_poster`, **and** `role_menu_render` are now rebased onto
+  `CardCanvas` (the triplicated dark-blurple palette + the duplicated `_fit`/`_fonts`/`_mix`/`_initials*`
+  helpers collapsed onto one engine path; a pure `card_render.mix()` blend helper added for gradients).
+  **Remaining H2 work:** `mining_render` (its pure-spec `build_card_spec` pattern is a larger,
+  riskier rebase, deferred) and **shipping the leaderboard card as a real feature** (wiring
+  `render_leaderboard_image` into `leaderboard_cog` as an optional attachment with embed fallback).
 - **H3 — Skinnable feature cards.** A fishing/collection **season card** (the FOOTONCLASH analogue)
   and a cross-game **world identity card** on themed skin packs; "new season = new `Theme` + asset
   pack", no layout code.

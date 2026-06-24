@@ -61,8 +61,12 @@
     `HubChildButton` (#1371/#1373); `views/navigation.py` `attach_standard_nav` (#1382).
   - **▶ Remaining (optional polish tail, not blocking):** the setup-wizard **per-section walk** (fleet
     unit U10 — confirm every *manual* section yields a real op / honest link-only; the AI-describe side
-    is done) · the **visual card-engine migration** (§3.6 — rank/profile/leaderboard onto `card_render`,
-    still plain embeds) · the `channel-deployed-component` roles primitive (idea, not yet built).
+    is done) · the **visual card-engine migration** — engine **H2** *renderer-dedup* half **🟡 partially
+    shipped (welcome / UX-lab leaderboard+poster / role-menu rebased onto `CardCanvas`, 2026-06-24
+    dispatch run)**; remaining is `mining_render` rebase + leaderboard-as-real-feature (H2) and the
+    **H3** *embed-feature → image-card* move (rank/profile/leaderboard, still plain embeds) —
+    [vision](../ideas/visual-card-engine-vision-2026-06-23.md) · the `channel-deployed-component` roles
+    primitive (idea, not yet built).
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:

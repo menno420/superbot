@@ -39,12 +39,18 @@ def _draw_background(canvas: CardCanvas, style: str, accent: RGB) -> None:
         # Vertical accent → dark gradient (one horizontal line per row).
         top = mix(accent, t.bg, 0.35)
         for y in range(_HEIGHT):
-            draw.line(((0, y), (_WIDTH, y)), fill=mix(top, t.bg, y / max(1, _HEIGHT - 1)))
+            draw.line(
+                ((0, y), (_WIDTH, y)),
+                fill=mix(top, t.bg, y / max(1, _HEIGHT - 1)),
+            )
     elif style == "spotlight":
         # Dark panel with a bold accent block down the left third.
         draw.rectangle((0, 0, _WIDTH, _HEIGHT), fill=t.panel)
         draw.rectangle((0, 0, 18, _HEIGHT), fill=accent)
-        draw.rectangle((_WIDTH - 280, 0, _WIDTH, _HEIGHT), fill=mix(accent, t.panel, 0.78))
+        draw.rectangle(
+            (_WIDTH - 280, 0, _WIDTH, _HEIGHT),
+            fill=mix(accent, t.panel, 0.78),
+        )
     elif style == "minimal":
         # Flat channel-blending dark; the accent shows only as a thin underline.
         draw.rectangle((0, 0, _WIDTH, _HEIGHT), fill=t.bg)
