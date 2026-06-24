@@ -86,6 +86,30 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1349 (2026-06-23, themeable card-render engine — out-visual Dank Memer, PR 1)** — a reusable themeable
+  **card-render engine** + the first profile card (the foundation for best-in-class visual cards;
+  [vision](ideas/visual-card-engine-vision-2026-06-23.md)).
+- **#1322 · #1343 · #1346 (2026-06-23, tooling / CI guards)** — a **migration-collision guard** (pre-push
+  duplicate-number check + tests, #1322), a `check_quality` **isort scope** fix (stop false-reds on `tests/`,
+  #1343), and an extended **`new_subsystem.py` checker** (loader + extension-role + sector-folio + claim +
+  born-red card gaps, #1346).
+- **#1327 (2026-06-23, Hermes ops)** — a Hermes **one-command redeploy** (auto redeploy, no terminal needed,
+  #1327).
+- **#1323 · #1330 · #1335 · #1336 · #1339 · #1347 · #1348 · #1352 (2026-06-23, docs / plans / dashboard)** —
+  the **twenty-first Q-0107 reconciliation pass** (band-#1320, #1323); the **Karma plan** (#1330); plans for
+  **hub child-rendering consistency + placement** (#1347) and a **native giveaway system** (beat GiveawayBot,
+  #1348); the **competitive-positioning north-star** vision doc (#1352); and three per-source-merge
+  **dashboard-data refreshes** (#1335 · #1336 · #1339, Q-0167).
+- **#1296 · #1298 · #1299 · #1301 · #1303 · #1304 (2026-06-22, NEW fishing minigame — design → full game)** —
+  a complete new minigame stood up in one arc: a stdlib **design simulation + analysis** (#1296) drove the
+  interactive **cast → wait → BITE → reel loop** (PR1, #1298), then the **trophy reel-fight** completing the
+  hybrid (PR2, #1299), the **rod ladder** (buy rods with coins, wires the 4 tuning knobs; PR3, #1301), **real
+  menu buttons** (Cast · Rod · Fishdex panel, #1303), and **separate energy pacing + a generous sell
+  rebalance** (PR4, #1304).
+- **#1300 · #1302 · #1306 (2026-06-22, role management — bulk creation + per-role colours)** — **bulk role
+  creation via preset packs** (#1300), then enhancements — enlarged multi-select presets, bulk custom roles,
+  optional colour presets (#1302) — and a **role-list colours** surface + optional per-role colour for bulk
+  custom roles (#1306).
 - **#1294 · #1297 (2026-06-22, help surface slimming + reachability guard)** — removed the redundant
   "All Commands / Advanced" help surface (#1294) and added a **help-reachability CI guard** that fails the
   build when a subsystem isn't homed in the help tree (#1297).

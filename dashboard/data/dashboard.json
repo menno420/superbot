@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T21:34:47Z",
+    "generated_at": "2026-06-24T22:10:51Z",
     "build": {
-      "commit": "a119b857",
-      "subject": "Merge pull request #1439 from menno420/claude/friendly-keller-e8ofhk",
-      "committed_at": "2026-06-24T21:34:47Z"
+      "commit": "1f0e8d9c",
+      "subject": "Merge pull request #1441 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-24T22:10:51Z"
     },
     "counts": {
       "functions": 42,
-      "ideas": 140,
+      "ideas": 141,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1131,6 +1131,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "band-archetype-classifier-2026-06-24.md",
+      "title": "Idea — band-archetype classifier in the reconciliation pass record",
+      "status": "ideas",
+      "date": "2026-06-24",
+      "summary": "Three of the last four Q-0107 passes scored some variant of *\"~0–1/N of the forward queue executed;",
+      "subsystems": null
+    },
     {
       "file": "bot-migration-assistant-2026-06-24.md",
       "title": "Bot-migration assistant — detect → map → replicate → retire other bots (2026-06-24)",
