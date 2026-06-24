@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T18:24:55Z",
+    "generated_at": "2026-06-24T22:10:51Z",
     "build": {
-      "commit": "63b83e2",
-      "subject": "setup: cut Essential Setup over to the primary !setup / /setup",
-      "committed_at": "2026-06-24T18:24:55Z"
+      "commit": "1f0e8d9c",
+      "subject": "Merge pull request #1441 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-24T22:10:51Z"
     }
   },
   "counts": {
