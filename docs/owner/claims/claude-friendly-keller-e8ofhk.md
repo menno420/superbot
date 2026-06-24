@@ -1,1 +1,0 @@
-- branch `claude/friendly-keller-e8ofhk` · scope: fix Essential Setup logging step (interaction-deadline bug — "keeps building channels, step failed") · files: `disbot/views/setup/essential_setup.py` + its test · 2026-06-24

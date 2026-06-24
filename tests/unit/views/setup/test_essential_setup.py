@@ -31,10 +31,30 @@ def _guild(gid: int = 1):
 
 
 def _interaction():
+    """A Discord interaction double that tracks acknowledgement state.
+
+    ``response.is_done()`` starts False and flips True after a defer / send /
+    edit, so the ``safe_defer`` / ``safe_edit`` / ``safe_followup`` helpers
+    route exactly as they would against a real interaction: ``response.*``
+    before the first ack, ``followup.*`` / ``edit_original_response`` after.
+    Resource-creating steps (log channel, reward role) defer before their slow
+    work, so their later edits/errors land on the followup webhook.
+    """
     interaction = MagicMock()
+    state = {"done": False}
+
+    def _ack(*_a, **_k):
+        state["done"] = True
+
     interaction.response = MagicMock()
-    interaction.response.send_message = AsyncMock()
-    interaction.response.edit_message = AsyncMock()
+    interaction.response.is_done = MagicMock(side_effect=lambda: state["done"])
+    interaction.response.defer = AsyncMock(side_effect=_ack)
+    interaction.response.send_message = AsyncMock(side_effect=_ack)
+    interaction.response.edit_message = AsyncMock(side_effect=_ack)
+    interaction.followup = MagicMock()
+    interaction.followup.send = AsyncMock()
+    interaction.followup.edit_message = AsyncMock()
+    interaction.edit_original_response = AsyncMock()
     return interaction
 
 
@@ -480,10 +500,12 @@ async def test_log_channel_create_failure_blocks(
     await step.apply(interaction)
 
     # The mod-channel create failed → surfaced an error, wrote nothing, no advance.
+    # The step defers first, so the error lands on the followup webhook.
     channel_service.create_channels.assert_awaited_once()
     binding_pipeline.set_binding.assert_not_awaited()
     pipeline.set_value.assert_not_awaited()
-    interaction.response.send_message.assert_awaited_once()
+    interaction.response.defer.assert_awaited_once()
+    interaction.followup.send.assert_awaited_once()
     assert flow.index == 4
 
 
@@ -505,6 +527,47 @@ async def test_log_channel_custom_names_used_when_creating(
 
     names = [c.args[1][0] for c in channel_service.create_channels.await_args_list]
     assert names == ["staff-log", "member-log"]
+    assert flow.index == 5
+
+
+@pytest.mark.asyncio
+async def test_log_channel_defers_before_slow_work(
+    pipeline,
+    binding_pipeline,
+    channel_service,
+):
+    """Regression (the reported bug): the log step must ACK the interaction
+    *before* it creates channels + writes settings/bindings.
+
+    Two channel creations + seven audited writes run well past Discord's
+    3-second interaction deadline.  Without an upfront defer the final
+    navigation edit 404s ("This interaction failed") *after* the channels were
+    already created, so every retry leaked another #mod-log / #server-log pair.
+    Pin that (a) the defer happens and (b) it happens before any channel is
+    created, and that navigation lands via the followup webhook — never a stale
+    ``response.edit_message``.
+    """
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 4
+    step = es.LogChannelStep(flow)  # defaults: members + roles on → creates both
+    interaction = _interaction()
+    deferred_before_create = {"ok": False}
+
+    async def _create(*_a, **_k):
+        # Capture whether the interaction was already acknowledged at the moment
+        # the (slow) channel create runs.
+        deferred_before_create["ok"] = interaction.response.is_done()
+        return _created(111)
+
+    channel_service.create_channels.side_effect = _create
+
+    await step.apply(interaction)
+
+    interaction.response.defer.assert_awaited_once()
+    assert deferred_before_create["ok"], "must defer BEFORE creating channels"
+    # Post-defer navigation uses the followup webhook, not response.edit_message.
+    interaction.followup.edit_message.assert_awaited_once()
+    interaction.response.edit_message.assert_not_awaited()
     assert flow.index == 5
 
 
@@ -631,7 +694,8 @@ async def test_reward_existing_requires_a_pick(pipeline, role_automation, role_s
 
     role_service.apply.assert_not_awaited()
     role_automation.set_xp_threshold.assert_not_awaited()
-    interaction.response.send_message.assert_awaited_once()
+    # The step defers first, so the "pick a role" prompt is a followup.
+    interaction.followup.send.assert_awaited_once()
     assert flow.index == 5  # did not advance
 
 
@@ -658,7 +722,8 @@ async def test_reward_role_create_failure_blocks(
     role_service.apply.assert_awaited_once()
     role_automation.set_xp_threshold.assert_not_awaited()
     pipeline.set_value.assert_not_awaited()
-    interaction.response.send_message.assert_awaited_once()
+    # The step defers first, so the create-failure error is a followup.
+    interaction.followup.send.assert_awaited_once()
     assert flow.index == 5
 
 
