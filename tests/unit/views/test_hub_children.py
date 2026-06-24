@@ -135,6 +135,47 @@ async def test_forwards_to_hook_and_attaches_back():
     back.assert_called_once()  # the hub's Back attacher ran on the child view
 
 
+async def test_forwards_help_nav_card_as_attachment():
+    """Forward-path pin (help-nav attachment seam, H3): when the opened child
+    view carries a ``help_nav_card``, the in-place edit must forward it as
+    ``attachments=[card]`` so a card-bearing hub (e.g. the XP hub) shows its
+    image card when reached through hub navigation, not just its direct command.
+    A regression that drops the forward fails here."""
+    import io
+
+    button = _button()
+    interaction = _interaction()
+    embed = discord.Embed(title="XP")
+    sub_view = discord.ui.View()
+    card = discord.File(io.BytesIO(b"\x89PNG\r\n\x1a\nfake"), filename="rank.png")
+    sub_view.help_nav_card = card  # type: ignore[attr-defined]
+    cog = MagicMock()
+    cog.build_help_menu_view = AsyncMock(return_value=(embed, sub_view))
+
+    with _all_visible(), patch("cogs.help_cog._cog_for_subsystem", return_value=cog):
+        await button.callback(interaction)
+
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert kwargs["attachments"] == [card]
+
+
+async def test_cardless_child_clears_attachments():
+    """A child with no card clears any prior screen's attachment (navigate-away),
+    so an image from the panel we came from does not linger."""
+    button = _button()
+    interaction = _interaction()
+    embed = discord.Embed(title="plain")
+    sub_view = discord.ui.View()  # no help_nav_card
+    cog = MagicMock()
+    cog.build_help_menu_view = AsyncMock(return_value=(embed, sub_view))
+
+    with _all_visible(), patch("cogs.help_cog._cog_for_subsystem", return_value=cog):
+        await button.callback(interaction)
+
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert kwargs["attachments"] == []
+
+
 async def test_invisible_child_fails_closed():
     button = _button()
     interaction = _interaction()
