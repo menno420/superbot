@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T00:40:50Z",
+    "generated_at": "2026-06-24T05:36:36Z",
     "build": {
-      "commit": "9496361e",
-      "subject": "Merge pull request #1394 from menno420/claude/magical-fermat-9uiogg",
-      "committed_at": "2026-06-24T00:40:50Z"
+      "commit": "8d5a40ef",
+      "subject": "Merge pull request #1399 from menno420/claude/funny-franklin-qvy92e",
+      "committed_at": "2026-06-24T05:36:36Z"
     },
     "counts": {
       "functions": 41,
@@ -2415,6 +2415,38 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-24-leaderboard-image-card.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Leaderboard image card: ship the H2 card-engine tail as a real feature",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-leaderboard-card-themes.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Per-category leaderboard card themes (card-engine H2 polish)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-24-card-engine-migration.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · Visual card-engine migration (H2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-24-card-engine-guard.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · Card-engine consistency guard (Rule 5)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-23-wordfilter-deobfuscation.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Obfuscation-resistant word filter (beat Sapphire's content filter)",
@@ -2858,38 +2890,6 @@
       "file": "2026-06-22-server-treasury.md",
       "date": "2026-06-22",
       "title": "2026-06-22 — Server treasury (collective coin pool)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-route-mining-encounters.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — route the mining-grid-encounters design to the owner (Q-0198)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-22-round-economy-reply.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Unified round economy NL reply (RBE + cash + XP)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-role-list-colours-and-per-role-bulk-colour.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Role list colours + per-role bulk colour",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-22-retire-needs-hermes-review.md",
-      "date": "2026-06-22",
-      "title": "2026-06-22 — Merge all open PRs + retire the `needs-hermes-review` label/rule",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
