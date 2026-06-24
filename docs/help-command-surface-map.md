@@ -23,14 +23,16 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 41 of the 55 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+- 41 of the 56 loaded extensions (`config.INITIAL_EXTENSIONS`) define
   `build_help_menu_view` — equivalently, 41 of the 42 subsystem-owning
-  cogs expose it. The 14 extensions without the hook: the bootstrap
+  cogs expose it. The 15 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
   `btd6_events` / `btd6_strategy` / `paragon` / `btd6_ops` — their
   commands route under the one `btd6` subsystem via `btd6_cog`'s hook),
   `setup_cog` (an orchestrator with no `SUBSYSTEMS` row),
+  `quicksetup_cog` (the Essential Setup front door `!quicksetup` —
+  no subsystem row),
   `hermes_cog` (the Hermes→Claude dispatch bridge — admin-only slash
   commands, no subsystem row), `media_maintenance_cog` (the YouTube
   cache-retention task owner — no commands, no subsystem row),
@@ -92,9 +94,9 @@ so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 ## 2. Subsystem inventory
 
 42 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 55 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+each below); 56 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
-above for the 14 extensions without a hook). Every subsystem's host cog
+above for the 15 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
 resolver opens a real panel for every subsystem except `help`, and only
 falls back to the command-list embed when the hook is missing or raises.
