@@ -322,7 +322,7 @@ async def _stage_setting(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Moderation edits require a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return
@@ -423,7 +423,7 @@ async def _customize_run(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Moderation section requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return

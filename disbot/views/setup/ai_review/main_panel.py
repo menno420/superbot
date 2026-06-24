@@ -347,7 +347,7 @@ class AIReviewPanelView(BaseView):
         member = interaction.user
         if guild is None or guild_id is None or not isinstance(member, discord.Member):
             await interaction.response.send_message(
-                "Staging requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return

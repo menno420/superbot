@@ -224,7 +224,7 @@ class AISetupView(BaseView):
         guild_id = interaction.guild_id
         if guild_id is None:
             await interaction.response.send_message(
-                "AI setup requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -254,7 +254,7 @@ class AISetupView(BaseView):
         guild_id = interaction.guild_id
         if guild_id is None:
             await interaction.response.send_message(
-                "AI setup requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return

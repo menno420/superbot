@@ -62,7 +62,7 @@ def build_picker_embed() -> discord.Embed:
     embed = discord.Embed(
         title="📦 Choose a preset",
         description=(
-            "Pick an automation template to install in this guild.\n\n"
+            "Pick an automation template to install in this server.\n\n"
             "Every template is created **disabled** — once configured, "
             "flip it on via `!automation enable <name>` (the automation "
             "scheduler must also be activated server-side via "
@@ -280,7 +280,7 @@ class TemplateConfigView(BaseView):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Apply requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return

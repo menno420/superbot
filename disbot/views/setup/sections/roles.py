@@ -251,7 +251,7 @@ async def _stage_threshold(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Role-tier edits require a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return
@@ -361,7 +361,7 @@ async def _customize_run(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Roles section requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return

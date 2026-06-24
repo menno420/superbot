@@ -159,7 +159,7 @@ class ConfirmPanelView(BaseView):
         """
         guild = interaction.guild
         if guild is None:
-            self.error = "Provisioning requires a guild context."
+            self.error = "This can only be used in a server."
             embed = build_confirm_embed(
                 self.request,
                 status="errored",

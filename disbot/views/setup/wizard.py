@@ -561,7 +561,7 @@ class LinearWizardView(BaseView):
         guild = interaction.guild
         if guild is None or interaction.guild_id is None:
             await interaction.response.send_message(
-                "Apply Recommended requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -669,7 +669,7 @@ class LinearWizardView(BaseView):
         guild_id = interaction.guild_id
         if guild is None or guild_id is None:
             await interaction.response.send_message(
-                "Apply all recommended requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -715,7 +715,7 @@ class LinearWizardView(BaseView):
         word = "operation" if total == 1 else "operations"
         if not total and not conflicts_total:
             await interaction.followup.send(
-                "No recommended operations were generated — the guild may "
+                "No recommended operations were generated — the server may "
                 "already cover these, or no channels matched the rules.",
                 ephemeral=True,
             )
@@ -966,7 +966,7 @@ class LinearWizardView(BaseView):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Final Review requires a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return

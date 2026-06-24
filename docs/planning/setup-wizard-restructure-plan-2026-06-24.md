@@ -154,6 +154,14 @@ decision with architectural weight → called out as open question Q-A below.
   *modelled* 44 in the sim, which only counted the standard-depth spine. The ratchet tolerates the
   existing copy but fails on any *new* jargon or any new dirty setup file; the spine rewrite drives the
   count to zero, then the guard graduates to `--strict` in CI. This is Law 2's durable enforcement.
+- **PR 1b — plain-language sweep 1: `guild → server` (SHIPPED 2026-06-24):** reworded the 53 operator-facing
+  strings containing "guild" — the bulk being the uniform *"X requires a guild context."* error
+  collapsed to *"This can only be used in a server."* (which also clears co-located jargon like "Final
+  review"/"Binding"). Zero-risk string-only edits, no behaviour change. **Baseline 207 → 154** (4
+  sections went fully clean: server_scan, readiness, suggestions, ticket); ratchet lowered in lock-step.
+  This is the Q-A-independent half of the copy cleanup; the structural jargon (`stage`/`draft`/`final
+  review`/`operation`, the remaining ~154) is reworded *as part of* the spine rebuild (PR 1), since its
+  wording depends on the direct-apply vs. Final-Review decision (Q-A).
 - **PR 1 — the essentials spine (the headline):** a new linear wizard flow (`views/setup/`) rendering
   steps 0–7 above with plain-language copy, **direct-apply** per step, button/dropdown-only input, and
   **auto-create** for the welcome channel, log channels, and reward roles. Add the two missing steps
