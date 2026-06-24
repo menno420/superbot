@@ -3749,21 +3749,6 @@ const COMMANDS = [
     ]
   },
   {
-    "name": "quicksetup",
-    "area": "other",
-    "status": "finished",
-    "summary": "Open Essential Setup — a few simple steps, each saved instantly.",
-    "description": "Open Essential Setup — a few simple steps, each saved instantly.",
-    "usage": "!quicksetup",
-    "aliases": [
-      "essentialsetup"
-    ],
-    "permissions": "anyone",
-    "cooldown": null,
-    "examples": [],
-    "planned": []
-  },
-  {
     "name": "quote",
     "area": "utility",
     "status": "finished",
@@ -4878,9 +4863,25 @@ const COMMANDS = [
     "name": "setup",
     "area": "other",
     "status": "finished",
-    "summary": "Open or resume the linear setup wizard.",
-    "description": "Open or resume the linear setup wizard.",
+    "summary": "Open Essential Setup — a few simple steps, each saved instantly.",
+    "description": "Open Essential Setup — a few simple steps, each saved instantly.",
     "usage": "!setup",
+    "aliases": [
+      "quicksetup",
+      "essentialsetup"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "setup-advanced",
+    "area": "other",
+    "status": "finished",
+    "summary": "Open the advanced setup wizard (power users; /setup is the quick one).",
+    "description": "Ephemeral slash front door for the advanced (linear) setup wizard.",
+    "usage": "!setup-advanced",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
@@ -5018,6 +5019,23 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
+    "planned": []
+  },
+  {
+    "name": "setupadvanced",
+    "area": "other",
+    "status": "finished",
+    "summary": "Open or resume the advanced (linear) setup wizard.",
+    "description": "Open or resume the advanced (linear) setup wizard.",
+    "usage": "!setupadvanced",
+    "aliases": [
+      "advancedsetup"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!setup"
+    ],
     "planned": []
   },
   {
@@ -6647,7 +6665,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "e02a66d",
+    "build": "63b83e2",
     "title": "New public bot website",
     "changes": [
       {
@@ -6659,7 +6677,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "e02a66d",
+    "build": "63b83e2",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6671,7 +6689,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "e02a66d",
+    "build": "63b83e2",
     "title": "Command-alias suggestions",
     "changes": [
       {

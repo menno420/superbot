@@ -1767,13 +1767,79 @@ class EssentialSummaryView(BaseView):
 _NOT_IN_SERVER = "This can only be used in a server."
 _NOT_ADMIN = "Only a server admin can run setup."
 
+#: Shown when the bot can't make a private setup channel (no Manage Channels)
+#: and Essential Setup falls back to the invoking channel.
+_NO_CHANNEL_HINT = (
+    "ℹ️ I couldn't make a private setup channel (I need the **Manage Channels** "
+    "permission), so I've opened setup right here instead."
+)
+
 
 def _first_embed(flow: EssentialFlow) -> discord.Embed:
     return flow.current_view().render()  # type: ignore[attr-defined,no-any-return]
 
 
+async def open_essential_setup_in_setup_channel(
+    guild: discord.Guild,
+    member: discord.Member,
+) -> tuple[discord.TextChannel | None, discord.Message | None, str]:
+    """Post the Essential Setup flow into the private ``#superbot-setup`` channel.
+
+    Mirrors :func:`views.setup.wizard.open_setup_workspace`'s contract so the
+    ``!setup`` / ``/setup`` commands and the on-join launcher share one shape.
+    Returns ``(channel, message, reason)`` with ``reason`` one of:
+
+    * ``"ok"`` — flow posted; ``channel`` + ``message`` are set.
+    * ``"no_channel"`` — bot lacks Manage Channels (or Discord refused the
+      create); caller should fall back to the invoking channel.
+    * ``"post_failed"`` — channel resolved but the flow couldn't be posted.
+
+    The flow is a fresh, author-bound :class:`EssentialFlow` for ``member``;
+    navigation edits that message in place, so — unlike the advanced wizard's
+    persistent anchor — no session row or cross-restart persistence is needed.
+
+    Imports are lazy: setup view files keep their service imports inside the
+    call body (consistent with ``_StepView._set`` and the no-top-level-pipeline
+    invariant), and it lets tests patch ``ensure_setup_channel`` at its source.
+    """
+    from services import setup_session
+    from services.setup_channel import ensure_setup_channel
+
+    try:
+        session = await setup_session.resume_session(guild.id)
+    except Exception:
+        logger.exception("essential_setup: resume_session failed (guild=%d)", guild.id)
+        session = None
+
+    channel, _was_created = await ensure_setup_channel(
+        guild,
+        existing_channel_id=(session.setup_channel_id if session is not None else None),
+        session=session,
+    )
+    if channel is None:
+        return None, None, "no_channel"
+
+    flow = EssentialFlow(member, guild)
+    try:
+        message = await channel.send(embed=_first_embed(flow), view=flow.current_view())
+    except discord.HTTPException as exc:
+        logger.warning(
+            "essential_setup: failed to post flow in #%s (guild=%d): %s",
+            getattr(channel, "name", "?"),
+            guild.id,
+            exc,
+        )
+        return channel, None, "post_failed"
+    return channel, message, "ok"
+
+
 async def open_essential_setup(interaction: discord.Interaction) -> None:
-    """Open the Essential Setup flow from a slash command. Admin-gated."""
+    """Open the Essential Setup flow from a slash command. Admin-gated.
+
+    Posts the flow into the private ``#superbot-setup`` channel and replies with
+    an ephemeral pointer; falls back to opening it in the invoking channel when
+    the bot can't make the private channel (no Manage Channels).
+    """
     guild = interaction.guild
     member = interaction.user
     if guild is None or not isinstance(member, discord.Member):
@@ -1782,8 +1848,24 @@ async def open_essential_setup(interaction: discord.Interaction) -> None:
     if not member.guild_permissions.administrator:
         await interaction.response.send_message(_NOT_ADMIN, ephemeral=True)
         return
+
+    channel, message, reason = await open_essential_setup_in_setup_channel(
+        guild,
+        member,
+    )
+    if reason == "ok" and channel is not None and message is not None:
+        await interaction.response.send_message(
+            f"✅ Setup is ready in {channel.mention} — "
+            f"[open it]({message.jump_url}).",
+            ephemeral=True,
+        )
+        return
+
+    # Fall back to the invoking channel so setup still works without the
+    # Manage Channels permission.
     flow = EssentialFlow(member, guild)
     await interaction.response.send_message(
+        content=(_NO_CHANNEL_HINT if reason == "no_channel" else None),
         embed=_first_embed(flow),
         view=flow.current_view(),
     )
@@ -1791,6 +1873,10 @@ async def open_essential_setup(interaction: discord.Interaction) -> None:
 
 async def open_essential_setup_prefix(ctx: object) -> None:
     """Open the Essential Setup flow from a prefix command. Admin-gated.
+
+    Posts the flow into the private ``#superbot-setup`` channel and replies in
+    the invoking channel with a pointer; falls back to opening it inline when
+    the bot can't make the private channel.
 
     ``ctx`` is a ``commands.Context`` (typed loosely so this view module does
     not import the ``commands`` extension).
@@ -1804,5 +1890,18 @@ async def open_essential_setup_prefix(ctx: object) -> None:
     if not member.guild_permissions.administrator:
         await send(_NOT_ADMIN)
         return
+
+    channel, message, reason = await open_essential_setup_in_setup_channel(
+        guild,
+        member,
+    )
+    if reason == "ok" and channel is not None and message is not None:
+        await send(
+            f"✅ Setup is ready in {channel.mention} — {message.jump_url}",
+        )
+        return
+
     flow = EssentialFlow(member, guild)
+    if reason == "no_channel":
+        await send(_NO_CHANNEL_HINT)
     await send(embed=_first_embed(flow), view=flow.current_view())

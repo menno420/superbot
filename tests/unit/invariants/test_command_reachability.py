@@ -116,14 +116,18 @@ def test_baseline_has_no_stale_entries():
 
 
 def test_operator_gated_commands_are_exempt():
-    """``!setup`` / ``!btd6ops`` are operator-gated → exempt, never a gap.
+    """``!setupadvanced`` / ``!btd6ops`` are operator-gated → exempt, never a gap.
 
-    They gate at runtime (inside the command / its subcommands), so they are
-    allowlisted in ``command_reachability_exceptions.yml``.
+    The advanced setup wizard gates at runtime (inside the command / its
+    subcommands), so it is allowlisted in ``command_reachability_exceptions.yml``.
+    The primary ``!setup`` (Essential Setup, ``quicksetup_cog``) is decorator-gated
+    administrator, so the static scan classifies it operator without an allowlist
+    entry.
     """
     report = _CHECK.run_check()
     gaps = _CHECK.gap_keys(report)
-    assert ("disbot/cogs/setup_cog.py", "setup") not in gaps
+    assert ("disbot/cogs/setup_cog.py", "setupadvanced") not in gaps
+    assert ("disbot/cogs/quicksetup_cog.py", "setup") not in gaps
     assert ("disbot/cogs/btd6_ops_cog.py", "btd6ops") not in gaps
 
 

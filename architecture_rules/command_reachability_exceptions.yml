@@ -23,8 +23,8 @@ exceptions:
   # the guard sees member-tier. These are reached through the Server & Admin hub,
   # not as member-facing help-tree listings; verified by reading the cogs.
   - cog_file: cogs/setup_cog.py
-    command: setup
-    reason: "The setup wizard is owner / administrator / delegated-setup-admin gated (checked inside the command, not via a decorator). Operator-tier; reached via the Server & Admin hub, not a member listing."
+    command: setupadvanced
+    reason: "The advanced setup wizard (!setupadvanced / /setup-advanced) is owner / administrator / delegated-setup-admin gated (checked inside the command, not via a decorator). Operator-tier; reached via the Server & Admin hub, not a member listing. The primary !setup (Essential Setup, cogs/quicksetup_cog.py) is decorator-gated administrator and auto-classified operator, so it needs no entry here."
   - cog_file: cogs/btd6_ops_cog.py
     command: btd6ops
     reason: "BTD6 data-ops group; every mutating subcommand is administrator-only (is_administrator_member runtime check). Operator tooling, not a member-facing command."

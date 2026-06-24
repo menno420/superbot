@@ -1043,10 +1043,10 @@ EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
     "moderation": None,
     "myprofile": None,
     "platform": None,
-    "quicksetup": None,  # Essential Setup front door (plain-language spine)
     "server-management": None,
     "settings": None,
-    "setup": None,
+    "setup": None,  # Essential Setup front door (plain-language spine; was /quicksetup)
+    "setup-advanced": None,  # advanced section-list / draft wizard (was /setup)
     "setup-delegate": None,
     "setup-depth": None,
     "setup-describe": None,  # natural-language setup wedge

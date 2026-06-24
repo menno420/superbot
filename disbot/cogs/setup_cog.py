@@ -1,14 +1,19 @@
-"""Setup-wizard launcher cog.
+"""Advanced setup-wizard launcher cog.
 
 Discord-facing surface only. The persistent launcher view, embed
 builder, and channel-selection helpers live in
 :mod:`views.setup.launcher`; this file holds:
 
 * the cog class with lifecycle listeners and slash/prefix entry
-  commands (``!setup`` / ``/setup``);
+  commands (``!setupadvanced`` / ``/setup-advanced``);
 * a shared ``_resolve_hub_entry`` helper that branches between the
   guided hub (owner / delegated admin) and the deterministic
   readiness embed (plain administrator).
+
+The plain-language **Essential Setup** spine is now the primary
+``!setup`` / ``/setup`` front door (:mod:`cogs.quicksetup_cog`); this
+cog is the power-user / advanced section-list + draft → Final Review
+path, plus the ``/setup-*`` helper commands and the on-join launcher.
 
 Re-exports the launcher view + post helpers so callers that imported
 ``cogs.setup_cog.SetupLauncherView`` / ``post_launcher`` /
@@ -76,10 +81,14 @@ class SetupCog(commands.Cog):
     async def cog_load(self) -> None:
         self.bot.add_view(SetupLauncherView())
 
-    @commands.command(name="setup")
+    @commands.command(name="setupadvanced", aliases=["advancedsetup"])
     @commands.guild_only()
-    async def setup_cmd(self, ctx: commands.Context) -> None:
-        """Open or resume the linear setup wizard.
+    async def setupadvanced_cmd(self, ctx: commands.Context) -> None:
+        """Open or resume the advanced (linear) setup wizard.
+
+        The power-user path: the full section-list + draft → Final
+        Review editor.  Most operators want the plain-language
+        ``!setup`` (Essential Setup) instead.
 
         Routes through :func:`views.setup.wizard.open_setup_workspace`
         so the wizard message lives in ``#superbot-setup`` and the
@@ -93,14 +102,15 @@ class SetupCog(commands.Cog):
         await open_wizard_from_prefix(ctx)
 
     @app_commands.command(
-        name="setup",
-        description="Open the setup wizard (owner, delegated admin, or admin).",
+        name="setup-advanced",
+        description="Open the advanced setup wizard (power users; "
+        "/setup is the quick one).",
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.guild_only()
-    async def setup_slash(self, interaction: discord.Interaction) -> None:
-        """Ephemeral slash front door for the linear setup wizard.
+    async def setupadvanced_slash(self, interaction: discord.Interaction) -> None:
+        """Ephemeral slash front door for the advanced (linear) setup wizard.
 
         Routes through :func:`views.setup.wizard.open_setup_workspace`
         so the wizard message lives in ``#superbot-setup`` and the
@@ -290,8 +300,8 @@ class SetupCog(commands.Cog):
             return
 
         await interaction.response.send_message(
-            f"✅ Depth set to **{depth.name}**. Run `!setup` / `/setup` to "
-            f"see the filtered section list.",
+            f"✅ Depth set to **{depth.name}**. Run `!setupadvanced` / "
+            f"`/setup-advanced` to see the filtered section list.",
             ephemeral=True,
         )
 
@@ -463,8 +473,8 @@ class SetupCog(commands.Cog):
         word = "operation" if pending_before == 1 else "operations"
         await interaction.response.send_message(
             f"✅ Cleared **{pending_before}** staged {word}. The session "
-            f"keeps its status and depth — run `!setup` or `/setup` to "
-            f"continue.",
+            f"keeps its status and depth — run `!setupadvanced` or "
+            f"`/setup-advanced` to continue.",
             ephemeral=True,
         )
 

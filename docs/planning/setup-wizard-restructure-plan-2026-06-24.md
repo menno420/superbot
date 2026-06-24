@@ -8,13 +8,16 @@
 > jargon, quick with buttons/dropdowns, each step is one complete action that actually completes a setup
 > step properly."* This plan answers that directly. Plan-first: greenlight before build.
 >
-> **▶ Build progress:** **PR 1 (the jargon-free essentials spine) COMPLETE + polished, incl. step 0.**
-> Seven live steps (**what kind of server is this** · greet · moderators · block spam · choose a log
-> channel · reward active members · help desk) + the All-done summary, opened by `!quicksetup` /
-> `/quicksetup`; shipped across #1425/#1427/#1429/#1432/#1434, polished (#1435, Q-0205), and the
-> **server-type starter preset (step 0) shipped 2026-06-24 (#1437)** (direct-apply path resolved — see §5/§7
-> below). **Remaining:** **PR 2** = extras menu + "Check my setup", **PR 3** = retire dead/legacy
-> sections + rework the Advanced editor (Q-E).
+> **▶ Build progress:** **PR 1 (the jargon-free essentials spine) COMPLETE + polished, incl. step 0, +
+> CUT OVER as the primary front door.** Seven live steps (**what kind of server is this** · greet ·
+> moderators · block spam · choose a log channel · reward active members · help desk) + the All-done
+> summary; shipped across #1425/#1427/#1429/#1432/#1434, polished (#1435, Q-0205), and the
+> **server-type starter preset (step 0) shipped 2026-06-24 (#1437)** (direct-apply path resolved — see
+> §5/§7 below). **Cutover (owner-directed, 2026-06-24):** Essential Setup is now the primary **`!setup` /
+> `/setup`** (was `!quicksetup`); the old section-list wizard moved to **`!setupadvanced` /
+> `/setup-advanced`**; Essential Setup now opens in a separate **`#superbot-setup`** channel (not the
+> invoking channel) and is what the on-join launcher's **Start Setup** opens. **Remaining:** **PR 2** =
+> extras menu + "Check my setup", **PR 3** = retire dead/legacy sections + rework the Advanced editor (Q-E).
 >
 > **Sim:** [`tools/sim/setup_wizard_sim.py`](../../tools/sim/setup_wizard_sim.py) (runnable) —
 > models a non-technical owner walking the flow. Current standard-depth flow scores **~4% finish**

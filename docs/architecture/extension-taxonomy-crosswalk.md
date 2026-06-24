@@ -77,8 +77,8 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | 49 | `counters` | `product_subsystem` | ✓ |  | Dynamic server counters. |
 | 50 | `ticket` | `product_subsystem` | ✓ |  | Support tickets — private channels, claim/close/transcript; opens by command, panel, or AI. |
 | 51 | `security` | `product_subsystem` | ✓ |  | Security tiers 1+2 — raid detection + account-age filter (Q-0111). |
-| 52 | `setup` | `bootstrap` | — | `server_management` | Guided setup wizard; lifecycle-critical, load-order sensitive. |
-| 53 | `quicksetup` | `bootstrap` | — | `server_management` | Essential Setup front door (!quicksetup / /quicksetup); thin command surface over views.setup.essential_setup (the plain-language spine). |
+| 52 | `setup` | `bootstrap` | — | `server_management` | Advanced setup wizard (!setupadvanced / /setup-advanced) + on-join launcher + /setup-* helpers; lifecycle-critical, load-order sensitive. |
+| 53 | `quicksetup` | `bootstrap` | — | `server_management` | Essential Setup — the primary setup front door (!setup / /setup); thin command surface over views.setup.essential_setup (the plain-language spine). |
 | 54 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
 | 55 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
 | 56 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
@@ -98,6 +98,6 @@ These load as extensions but are **not** registered subsystems — they are clas
 - `btd6_strategy` (`specialized_surface` → backs `btd6`)
 - `paragon` (`specialized_surface` → backs `btd6`) — BTD6 paragon grounding surface.
 - `btd6_ops` (`specialized_surface` → backs `btd6`) — BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical.
-- `setup` (`bootstrap` → backs `server_management`) — Guided setup wizard; lifecycle-critical, load-order sensitive.
-- `quicksetup` (`bootstrap` → backs `server_management`) — Essential Setup front door (!quicksetup / /quicksetup); thin command surface over views.setup.essential_setup (the plain-language spine).
+- `setup` (`bootstrap` → backs `server_management`) — Advanced setup wizard (!setupadvanced / /setup-advanced) + on-join launcher + /setup-* helpers; lifecycle-critical, load-order sensitive.
+- `quicksetup` (`bootstrap` → backs `server_management`) — Essential Setup — the primary setup front door (!setup / /setup); thin command surface over views.setup.essential_setup (the plain-language spine).
 - `hermes` (`operational_adapter`) — Bridge to the Hermes control plane / external operation.
