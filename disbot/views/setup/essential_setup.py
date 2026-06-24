@@ -33,6 +33,7 @@ from typing import TYPE_CHECKING
 import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
+from core.runtime.persistent_views import PersistentView
 from views.base import BaseView
 
 if TYPE_CHECKING:
@@ -104,6 +105,30 @@ class EssentialFlow:
     def record_skipped(self, line: str) -> None:
         self.skipped.append(line)
 
+    async def persist_progress(self) -> None:
+        """Persist the flow position so a restart can revive it (migration 099).
+
+        Called after every navigation move.  Best-effort: a DB hiccup must
+        never break the wizard.  When the flow reaches the summary it is
+        finished — clear the anchor and mark the session complete so the
+        launcher reflects it and the on-ready resume sweep stops trying to
+        revive a done flow.  Essential Setup is direct-apply, so only the *UI
+        position* is stored here; the configuration is already saved.
+        """
+        from services import setup_session
+
+        try:
+            if self.done:
+                await setup_session.clear_essential_anchor(self.guild.id)
+                await setup_session.mark_complete(self.guild.id)
+            else:
+                await setup_session.set_essential_step(self.guild.id, self.index)
+        except Exception:
+            logger.exception(
+                "essential setup: persist_progress failed (guild=%s)",
+                getattr(self.guild, "id", None),
+            )
+
 
 # ---------------------------------------------------------------------------
 # Nav buttons (shared)
@@ -167,6 +192,9 @@ class _StepView(BaseView):
         # navigation that runs after their slow work must not assume the
         # response is still un-acknowledged.
         await safe_edit(interaction, embed=embed, view=view)
+        # Persist the new position so a bot restart can revive this message in
+        # place at the right step (migration 099). Best-effort; never blocks nav.
+        await self.flow.persist_progress()
 
     async def skip(self, interaction: discord.Interaction) -> None:
         self.flow.record_skipped(self.title)
@@ -1791,6 +1819,182 @@ class EssentialSummaryView(BaseView):
 
 
 # ---------------------------------------------------------------------------
+# Restart revive — a persistent one-button view that resumes an interrupted flow
+# ---------------------------------------------------------------------------
+#
+# The step views above are short-lived in-memory ``BaseView``s, so after a bot
+# restart the wizard message's buttons are dead.  Essential Setup is
+# direct-apply, so no configuration is lost — only the live message.  This view
+# is the persistent bridge: the launcher cog registers one instance at
+# ``cog_load`` and its ``on_ready`` sweep edits each interrupted flow message to
+# show this button; clicking it rebuilds the flow at the saved step (migration
+# 099) and hands control back to the live wizard.
+
+
+class EssentialSetupResumeView(PersistentView):
+    """Persistent one-button view that revives an interrupted Essential Setup flow.
+
+    Extends :class:`PersistentView` (``timeout=None`` + restart-safe routing) so
+    its static-``custom_id`` button keeps working after a bot restart.  It has no
+    ``SUBSYSTEM`` and opts out of the standard Help/Back nav — it is a
+    single-purpose resume prompt, gated to setup admins in the callback.  The
+    launcher cog registers one instance at ``cog_load`` and its ``on_ready``
+    sweep edits each interrupted flow message to show this button.
+    """
+
+    STANDARD_NAV = False
+
+    @discord.ui.button(
+        label="Resume setup",
+        emoji="▶",
+        style=discord.ButtonStyle.success,
+        custom_id="essential_setup:resume",
+    )
+    async def _resume_button(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,  # type: ignore[type-arg]
+    ) -> None:
+        del button
+        await self.resume(interaction)
+
+    async def resume(self, interaction: discord.Interaction) -> None:
+        """Rebuild the flow at the saved step and hand control back to the wizard."""
+        guild = interaction.guild
+        member = interaction.user
+        if guild is None or not isinstance(member, discord.Member):
+            await interaction.response.send_message(_NOT_IN_SERVER, ephemeral=True)
+            return
+
+        from services import setup_access, setup_session
+
+        try:
+            session = await setup_session.resume_session(guild.id)
+        except Exception:
+            logger.exception("essential_setup resume: resume_session failed")
+            session = None
+        if not setup_access.is_setup_admin(member, session):
+            await interaction.response.send_message(
+                "Only the server owner, an administrator, or a delegated setup "
+                "admin can resume setup.",
+                ephemeral=True,
+            )
+            return
+
+        # Rebuild the in-memory flow at the saved step and hand the message back
+        # to the live wizard. Clamp defensively in case the step count changed.
+        flow = EssentialFlow(member, guild)
+        step = session.essential_step if session is not None else None
+        if step is not None:
+            flow.index = max(0, min(step, flow.total))
+        view = flow.current_view()
+        embed = view.render() if hasattr(view, "render") else None
+        await interaction.response.edit_message(embed=embed, view=view)
+
+
+def build_resume_message(
+    session: object | None,
+) -> tuple[discord.Embed, EssentialSetupResumeView]:
+    """Embed + view the on-ready sweep edits an interrupted flow message to.
+
+    Tells the operator the bot restarted (so the wizard paused) and offers the
+    Resume button that continues from the saved step.  ``session`` is the
+    :class:`services.setup_session.SetupSession` (typed loosely so this view
+    module needn't import the service at module scope).
+    """
+    raw_step = getattr(session, "essential_step", None)
+    human_step = (raw_step or 0) + 1
+    embed = discord.Embed(
+        title="⏸️ Setup paused",
+        description=(
+            "I restarted while you were setting things up, so this wizard "
+            "paused for a moment. **Nothing you saved was lost** — each step is "
+            "saved the instant you press its button.\n\n"
+            f"Click **Resume setup** to pick up where you left off (step "
+            f"{human_step})."
+        ),
+        color=discord.Color.blurple(),
+    )
+    return embed, EssentialSetupResumeView()
+
+
+async def revive_essential_flows(bot: object) -> None:
+    """Revive every guild's interrupted Essential Setup message in place.
+
+    The on-ready sweep called from the setup cog: edits each in-flight flow
+    message to show the persistent Resume button so the operator can pick up
+    where they left off after a restart (migration 099).  Per-guild failures are
+    isolated.  ``bot`` is the ``commands.Bot`` (typed loosely so this view module
+    needn't import the commands extension).  Lives here (not in the cog) so the
+    cog stays under its LOC ceiling.
+    """
+    for guild in list(getattr(bot, "guilds", [])):
+        try:
+            await revive_one_essential_flow(guild)
+        except Exception:
+            logger.exception(
+                "essential_setup: revive failed for guild=%s",
+                getattr(guild, "id", None),
+            )
+
+
+async def revive_one_essential_flow(guild: discord.Guild) -> bool:
+    """Edit one guild's in-flight Essential Setup message to show Resume.
+
+    Returns ``True`` when the message was revived; ``False`` when there is no
+    in-flight flow, the ids are missing, or the message can't be fetched.  A
+    vanished message clears the anchor so the sweep stops retrying it.
+    """
+    from services import setup_session
+
+    session = await setup_session.resume_session(guild.id)
+    if session is None:
+        return False
+    if session.essential_message_id is None or session.setup_channel_id is None:
+        return False
+
+    channel = guild.get_channel(session.setup_channel_id)
+    if not isinstance(channel, (discord.TextChannel, discord.Thread)):
+        return False
+
+    try:
+        message = await channel.fetch_message(session.essential_message_id)
+    except discord.NotFound:
+        logger.info(
+            "essential_setup revive: message %s in guild %d is gone; clearing.",
+            session.essential_message_id,
+            guild.id,
+        )
+        await setup_session.clear_essential_anchor(guild.id)
+        return False
+    except discord.Forbidden:
+        logger.warning(
+            "essential_setup revive: cannot fetch flow in guild=%d.",
+            guild.id,
+        )
+        return False
+    except discord.HTTPException as exc:
+        logger.warning(
+            "essential_setup revive: HTTP error fetching flow in guild=%d: %s",
+            guild.id,
+            exc,
+        )
+        return False
+
+    embed, view = build_resume_message(session)
+    try:
+        await message.edit(embed=embed, view=view)
+    except discord.HTTPException as exc:
+        logger.warning(
+            "essential_setup revive: edit failed in guild=%d: %s",
+            guild.id,
+            exc,
+        )
+        return False
+    return True
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -1861,6 +2065,20 @@ async def open_essential_setup_in_setup_channel(
             exc,
         )
         return channel, None, "post_failed"
+
+    # Record the flow's anchor (message id + step 0) and mark the session
+    # in-progress so the on-ready sweep can revive this message in place after a
+    # restart (migration 099). Best-effort: the live flow works without it; only
+    # cross-restart resume depends on it. The channel is the persisted
+    # ``setup_channel_id``, so the sweep re-fetches the message from there.
+    try:
+        await setup_session.set_essential_anchor(guild.id, message.id, 0)
+        await setup_session.mark_in_progress(guild.id)
+    except Exception:
+        logger.exception(
+            "essential_setup: set_essential_anchor failed (guild=%d)",
+            guild.id,
+        )
     return channel, message, "ok"
 
 

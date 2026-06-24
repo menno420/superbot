@@ -83,6 +83,18 @@ def _mock_db():
             "services.setup_session.db.set_purpose",
             new_callable=AsyncMock,
         ) as set_purpose_mock,
+        patch(
+            "services.setup_session.db.set_essential_anchor",
+            new_callable=AsyncMock,
+        ) as set_essential_anchor_mock,
+        patch(
+            "services.setup_session.db.set_essential_step",
+            new_callable=AsyncMock,
+        ) as set_essential_step_mock,
+        patch(
+            "services.setup_session.db.clear_essential_anchor",
+            new_callable=AsyncMock,
+        ) as clear_essential_anchor_mock,
     ):
         yield {
             "get": get_mock,
@@ -97,6 +109,9 @@ def _mock_db():
             "remove_acknowledged_section": remove_acknowledged_mock,
             "clear_acknowledged_sections": clear_acknowledged_mock,
             "set_purpose": set_purpose_mock,
+            "set_essential_anchor": set_essential_anchor_mock,
+            "set_essential_step": set_essential_step_mock,
+            "clear_essential_anchor": clear_essential_anchor_mock,
         }
 
 
@@ -143,6 +158,53 @@ async def test_resume_session_hydrates_dataclass(_mock_db):
     assert session.setup_status == "in_progress"
     assert session.current_step == "logging"
     assert session.delegated_admins == (123, 456)
+
+
+# ---------------------------------------------------------------------------
+# Essential Setup restart-revive anchor (migration 099)
+# ---------------------------------------------------------------------------
+
+
+def test_from_row_hydrates_essential_anchor():
+    session = SetupSession.from_row(
+        {
+            "guild_id": 1,
+            "guild_name": "G",
+            "owner_id": 9,
+            "setup_status": "in_progress",
+            "essential_message_id": 777,
+            "essential_step": 2,
+        },
+    )
+    assert session.essential_message_id == 777
+    assert session.essential_step == 2
+
+
+def test_from_row_essential_anchor_defaults_none_when_absent():
+    # Older rows (pre-migration-099 read paths) simply lack the keys.
+    session = SetupSession.from_row(
+        {"guild_id": 1, "guild_name": "G", "owner_id": 9, "setup_status": "pending"},
+    )
+    assert session.essential_message_id is None
+    assert session.essential_step is None
+
+
+@pytest.mark.asyncio
+async def test_set_essential_anchor_passes_through(_mock_db):
+    await svc.set_essential_anchor(1, 555, 0)
+    _mock_db["set_essential_anchor"].assert_awaited_once_with(1, 555, 0)
+
+
+@pytest.mark.asyncio
+async def test_set_essential_step_passes_through(_mock_db):
+    await svc.set_essential_step(1, 4)
+    _mock_db["set_essential_step"].assert_awaited_once_with(1, 4)
+
+
+@pytest.mark.asyncio
+async def test_clear_essential_anchor_passes_through(_mock_db):
+    await svc.clear_essential_anchor(1)
+    _mock_db["clear_essential_anchor"].assert_awaited_once_with(1)
 
 
 @pytest.mark.asyncio

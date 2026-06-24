@@ -145,3 +145,47 @@ def test_known_statuses_matches_documented_set():
     assert ss_db.KNOWN_STATUSES == frozenset(
         {"pending", "in_progress", "complete", "dismissed"},
     )
+
+
+# ---------------------------------------------------------------------------
+# Essential Setup restart-revive anchor (migration 099)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_get_selects_essential_anchor_columns(_mock_pool):
+    _mock_pool.fetchrow.return_value = {"guild_id": 1, "setup_status": "pending"}
+    await ss_db.get(1)
+    sql = _mock_pool.fetchrow.await_args.args[0]
+    assert "essential_message_id" in sql
+    assert "essential_step" in sql
+
+
+@pytest.mark.asyncio
+async def test_set_essential_anchor_updates_both_columns(_mock_pool):
+    await ss_db.set_essential_anchor(1, 555, 3)
+    _mock_pool.execute.assert_awaited_once()
+    sql, *args = _mock_pool.execute.await_args.args
+    assert "UPDATE setup_session" in sql
+    assert "essential_message_id" in sql
+    assert "essential_step" in sql
+    assert args == [1, 555, 3]
+
+
+@pytest.mark.asyncio
+async def test_set_essential_step_updates_step_only(_mock_pool):
+    await ss_db.set_essential_step(1, 4)
+    sql, *args = _mock_pool.execute.await_args.args
+    assert "essential_step" in sql
+    # Only the step is touched — the message-id anchor is left intact.
+    assert "essential_message_id" not in sql
+    assert args == [1, 4]
+
+
+@pytest.mark.asyncio
+async def test_clear_essential_anchor_nulls_both(_mock_pool):
+    await ss_db.clear_essential_anchor(1)
+    sql, *args = _mock_pool.execute.await_args.args
+    assert "essential_message_id = NULL" in sql
+    assert "essential_step" in sql and "NULL" in sql
+    assert args == [1]
