@@ -77,7 +77,9 @@ class Step:
     copy: str  # the operator-facing blurb (scored for jargon)
     clicks: int  # interactions to complete
     blocks_on_resource: bool = False  # needs a role/channel made elsewhere first
-    in_main_flow: bool = True  # part of the completion path (vs. an optional side panel)
+    in_main_flow: bool = (
+        True  # part of the completion path (vs. an optional side panel)
+    )
 
     def jargon_hits(self) -> int:
         text = f"{self.name} {self.copy}".lower()
@@ -122,23 +124,110 @@ class Wizard:
 CURRENT = Wizard(
     "CURRENT (standard depth)",
     [
-        Step("Server purpose", False, "Pick what this server is for. Metadata only; nothing is configured.", 2),
-        Step("Scan server", False, "Read-only scan of channels, roles and bot permissions.", 1),
-        Step("Run readiness scan", False, "Read-only diagnostic; posts a health embed, makes no changes.", 1),
-        Step("Identity & defaults", True, "Stage a set_setting operation for the warn threshold default.", 3),
-        Step("Load preset", True, "Pick an automation preset; stages every preset operation into the draft.", 2),
-        Step("Channels & log routing", True, "Each pick stages a bind_channel operation in the draft; nothing applies until Final review.", 4, blocks_on_resource=True),
-        Step("Auto roles (time & XP)", True, "Configure thresholds for existing roles. Create roles first in Discord. Stages a set_role_threshold operation.", 4, blocks_on_resource=True),
-        Step("Cleanup inheritance", True, "Configure cleanup at three scopes. The resolver walks thread to channel to category to guild to default.", 4),
-        Step("Moderation", True, "Each pick stages a set_setting operation; Final review applies them through the audited settings pipeline.", 4),
-        Step("Logging presets", True, "Pick a logging preset; stages channel-creation operations into the draft.", 3),
-        Step("Role templates", True, "Pick a role template; stages create_managed_role operations for missing roles.", 3),
-        Step("Cog routing", True, "Enable or disable cogs per scope. The resolver walks channel to category to guild to default-true.", 4),
-        Step("Diagnose & repair", False, "Read setup diagnostics; surfaces blockers, warnings and advisories.", 2),
-        Step("Support Tickets", True, "Pick a staff role and a transcript channel; applies directly.", 3),
-        Step("BTD6 Assistant", False, "Announcement only; shows BTD6 data versions. No per-guild settings yet.", 1),
-        Step("AI policy", False, "Link-only step. Opens /aimenu; emits zero draft operations.", 2),
-        Step("Final review", True, "Apply every staged operation in the draft through the canonical pipelines.", 2),
+        Step(
+            "Server purpose",
+            False,
+            "Pick what this server is for. Metadata only; nothing is configured.",
+            2,
+        ),
+        Step(
+            "Scan server",
+            False,
+            "Read-only scan of channels, roles and bot permissions.",
+            1,
+        ),
+        Step(
+            "Run readiness scan",
+            False,
+            "Read-only diagnostic; posts a health embed, makes no changes.",
+            1,
+        ),
+        Step(
+            "Identity & defaults",
+            True,
+            "Stage a set_setting operation for the warn threshold default.",
+            3,
+        ),
+        Step(
+            "Load preset",
+            True,
+            "Pick an automation preset; stages every preset operation into the draft.",
+            2,
+        ),
+        Step(
+            "Channels & log routing",
+            True,
+            "Each pick stages a bind_channel operation in the draft; nothing applies until Final review.",
+            4,
+            blocks_on_resource=True,
+        ),
+        Step(
+            "Auto roles (time & XP)",
+            True,
+            "Configure thresholds for existing roles. Create roles first in Discord. Stages a set_role_threshold operation.",
+            4,
+            blocks_on_resource=True,
+        ),
+        Step(
+            "Cleanup inheritance",
+            True,
+            "Configure cleanup at three scopes. The resolver walks thread to channel to category to guild to default.",
+            4,
+        ),
+        Step(
+            "Moderation",
+            True,
+            "Each pick stages a set_setting operation; Final review applies them through the audited settings pipeline.",
+            4,
+        ),
+        Step(
+            "Logging presets",
+            True,
+            "Pick a logging preset; stages channel-creation operations into the draft.",
+            3,
+        ),
+        Step(
+            "Role templates",
+            True,
+            "Pick a role template; stages create_managed_role operations for missing roles.",
+            3,
+        ),
+        Step(
+            "Cog routing",
+            True,
+            "Enable or disable cogs per scope. The resolver walks channel to category to guild to default-true.",
+            4,
+        ),
+        Step(
+            "Diagnose & repair",
+            False,
+            "Read setup diagnostics; surfaces blockers, warnings and advisories.",
+            2,
+        ),
+        Step(
+            "Support Tickets",
+            True,
+            "Pick a staff role and a transcript channel; applies directly.",
+            3,
+        ),
+        Step(
+            "BTD6 Assistant",
+            False,
+            "Announcement only; shows BTD6 data versions. No per-guild settings yet.",
+            1,
+        ),
+        Step(
+            "AI policy",
+            False,
+            "Link-only step. Opens /aimenu; emits zero draft operations.",
+            2,
+        ),
+        Step(
+            "Final review",
+            True,
+            "Apply every staged operation in the draft through the canonical pipelines.",
+            2,
+        ),
     ],
 )
 
@@ -149,17 +238,69 @@ CURRENT = Wizard(
 PROPOSED = Wizard(
     "PROPOSED (essentials, direct-apply)",
     [
-        Step("What kind of server is this?", True, "Pick one. We switch on a sensible starter set for you right away.", 1),
-        Step("Greet new members", True, "Turn on a welcome message and pick a channel (we can make one for you). Optionally give newcomers a role.", 3),
-        Step("Who are your moderators?", True, "Choose the role for people who can warn and remove others. We set safe defaults for the rest.", 2),
-        Step("Block spam and bad links", True, "Turn on automatic clean-up of spam, scam links and shouting. Sensible limits are pre-filled.", 2),
-        Step("Where should activity appear?", True, "Pick a channel for logs, or let us create a tidy pair for you.", 2),
-        Step("Reward active members", True, "Turn on levels, and optionally hand out a role automatically as people stay and chat. We create the roles.", 3),
-        Step("Set up a help desk", True, "Let members open a private support request. Pick who answers; we make the rest.", 3),
-        Step("All done", True, "Here is everything you switched on. Add more anytime from the extras menu.", 1),
+        Step(
+            "What kind of server is this?",
+            True,
+            "Pick one. We switch on a sensible starter set for you right away.",
+            1,
+        ),
+        Step(
+            "Greet new members",
+            True,
+            "Turn on a welcome message and pick a channel (we can make one for you). Optionally give newcomers a role.",
+            3,
+        ),
+        Step(
+            "Who are your moderators?",
+            True,
+            "Choose the role for people who can warn and remove others. We set safe defaults for the rest.",
+            2,
+        ),
+        Step(
+            "Block spam and bad links",
+            True,
+            "Turn on automatic clean-up of spam, scam links and shouting. Sensible limits are pre-filled.",
+            2,
+        ),
+        Step(
+            "Where should activity appear?",
+            True,
+            "Pick a channel for logs, or let us create a tidy pair for you.",
+            2,
+        ),
+        Step(
+            "Reward active members",
+            True,
+            "Turn on levels, and optionally hand out a role automatically as people stay and chat. We create the roles.",
+            3,
+        ),
+        Step(
+            "Set up a help desk",
+            True,
+            "Let members open a private support request. Pick who answers; we make the rest.",
+            3,
+        ),
+        Step(
+            "All done",
+            True,
+            "Here is everything you switched on. Add more anytime from the extras menu.",
+            1,
+        ),
         # Optional extras + health check live OUTSIDE the completion path:
-        Step("Extras menu", True, "Hall of Fame, live member counts, raid protection, AI helper, replace another bot.", 1, in_main_flow=False),
-        Step("Check my setup", True, "Optional health check; tells you anything still worth turning on.", 1, in_main_flow=False),
+        Step(
+            "Extras menu",
+            True,
+            "Hall of Fame, live member counts, raid protection, AI helper, replace another bot.",
+            1,
+            in_main_flow=False,
+        ),
+        Step(
+            "Check my setup",
+            True,
+            "Optional health check; tells you anything still worth turning on.",
+            1,
+            in_main_flow=False,
+        ),
     ],
 )
 
@@ -184,12 +325,22 @@ def main() -> None:
     print(fmt(PROPOSED.title, new))
     print("-" * 78)
     print("  Deltas (proposed vs current):")
-    print(f"    screens   : {new['screens'] - cur['screens']:+.0f}  (shorter is better)")
-    print(f"    dead steps: {new['dead_steps'] - cur['dead_steps']:+.0f}  (steps that configure nothing)")
-    print(f"    blocked   : {new['blocked_steps'] - cur['blocked_steps']:+.0f}  (dead-end-on-missing-resource)")
-    print(f"    jargon    : {new['jargon_hits'] - cur['jargon_hits']:+.0f}  (terms a non-tech owner won't know)")
+    print(
+        f"    screens   : {new['screens'] - cur['screens']:+.0f}  (shorter is better)",
+    )
+    print(
+        f"    dead steps: {new['dead_steps'] - cur['dead_steps']:+.0f}  (steps that configure nothing)",
+    )
+    print(
+        f"    blocked   : {new['blocked_steps'] - cur['blocked_steps']:+.0f}  (dead-end-on-missing-resource)",
+    )
+    print(
+        f"    jargon    : {new['jargon_hits'] - cur['jargon_hits']:+.0f}  (terms a non-tech owner won't know)",
+    )
     print(f"    clicks    : {new['clicks'] - cur['clicks']:+.0f}")
-    print(f"    finish    : {(new['completion_rate'] - cur['completion_rate']) * 100:+.1f} pts")
+    print(
+        f"    finish    : {(new['completion_rate'] - cur['completion_rate']) * 100:+.1f} pts",
+    )
     print("=" * 78)
 
     # Per-step jargon hot-spots in the current flow (where to focus the rewrite).
@@ -199,12 +350,16 @@ def main() -> None:
         print(f"  {s.name:28s} {s.jargon_hits()} -> {', '.join(hits)}")
     print("=" * 78)
 
-    verdict = "PASS" if (
-        new["dead_steps"] == 0
-        and new["blocked_steps"] == 0
-        and new["jargon_hits"] < cur["jargon_hits"] / 3
-        and new["completion_rate"] > cur["completion_rate"]
-    ) else "REVIEW"
+    verdict = (
+        "PASS"
+        if (
+            new["dead_steps"] == 0
+            and new["blocked_steps"] == 0
+            and new["jargon_hits"] < cur["jargon_hits"] / 3
+            and new["completion_rate"] > cur["completion_rate"]
+        )
+        else "REVIEW"
+    )
     print(f"VERDICT: proposed structure is {verdict} on the owner's four goals")
     print("  (zero dead steps, zero dead-ends, jargon cut >3x, higher finish rate)")
 
