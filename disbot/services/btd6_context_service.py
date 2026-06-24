@@ -4116,7 +4116,7 @@ def _round_range_economy_reply(lo: int, hi: int, roundset: str) -> str | None:
     """Deterministic "total RBE + cash across rounds ``lo``-``hi``" answer, or ``None``.
 
     The range case of :func:`deterministic_round_economy_reply`, off the same audited
-    engines the ``/btd6ref`` commands use — total RBE (base + freeplay-scaled) via
+    engines the ``/btd6`` lookup commands use — total RBE (base + freeplay-scaled) via
     ``round_rbe``, total cash via ``round_cash``, heaviest rounds via
     ``round_composition``. ``None`` when the range is unknown (the data layer fails
     closed), so the query falls through to the model rather than inventing a partial sum.

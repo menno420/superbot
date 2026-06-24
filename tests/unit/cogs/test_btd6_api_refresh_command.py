@@ -13,6 +13,7 @@ from unittest.mock import AsyncMock, MagicMock
 import discord
 import pytest
 
+from cogs.btd6 import _unified
 from cogs.btd6._builders import (
     _format_known_keys,
     build_latest_data_embed,
@@ -427,10 +428,8 @@ async def test_refresh_source_slash_defers_before_service_call(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
-    await cog.btd6_refresh_source_slash.callback(
-        cog,
+    await _unified.events_refresh_source_slash.callback(
         interaction,
         source_key="nk_btd6_maps",
     )
@@ -464,10 +463,8 @@ async def test_refresh_source_slash_includes_exception_detail(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
-    await cog.btd6_refresh_source_slash.callback(
-        cog,
+    await _unified.events_refresh_source_slash.callback(
         interaction,
         source_key="nk_btd6_maps",
     )
@@ -506,10 +503,8 @@ async def test_refresh_source_slash_handles_service_exception(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
-    await cog.btd6_refresh_source_slash.callback(
-        cog,
+    await _unified.events_refresh_source_slash.callback(
         interaction,
         source_key="nk_btd6_maps",
     )
@@ -540,8 +535,7 @@ def test_refresh_source_prefix_command_has_staff_check():
 
 
 def test_refresh_source_slash_has_default_permissions():
-    cog = BTD6EventsCog(MagicMock())
-    cmd = next(c for c in cog.btd6events_app_group.commands if c.name == "refresh-source")
+    cmd = next(c for c in _unified.events_app.commands if c.name == "refresh-source")
     perms = cmd.default_permissions
     assert perms is not None
     assert perms.manage_guild is True

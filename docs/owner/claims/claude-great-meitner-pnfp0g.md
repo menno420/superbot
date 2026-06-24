@@ -1,1 +1,0 @@
-claude/great-meitner-pnfp0g · unify BTD6 commands under one /btd6 (flatten 5 groups → 1, owner request) · disbot/cogs/btd6*.py + disbot/cogs/btd6/_commands/ + tests/unit/cogs/test_btd6* + disbot/config.py + user-facing command strings · 2026-06-24

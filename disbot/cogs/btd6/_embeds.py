@@ -160,7 +160,7 @@ async def build_status_embed() -> discord.Embed:
             value=(
                 f"The deployed files carry **{bundled}** but this store is "
                 f"serving **{served}** — data PRs do not refresh a "
-                "postgres/cloud store. Run `!btd6ops seed-data` to update "
+                "postgres/cloud store. Run `!btd6 ops seed-data` to update "
                 "(applies immediately, no restart)."
             ),
             inline=False,
@@ -175,7 +175,7 @@ async def build_status_embed() -> discord.Embed:
                 value=(
                     f"**{len(changed)}** committed data file(s) differ from this "
                     "store at the same version (e.g. "
-                    f"`{'`, `'.join(changed[:3])}`). Run `!btd6ops seed-data` to "
+                    f"`{'`, `'.join(changed[:3])}`). Run `!btd6 ops seed-data` to "
                     "apply (applies immediately, no restart)."
                 ),
                 inline=False,

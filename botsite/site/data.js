@@ -347,15 +347,13 @@ const COMMANDS = [
     "name": "announcechannel",
     "area": "games",
     "status": "in-progress",
-    "summary": "Set/clear the BTD6 new-version announcement channel (administrator).",
-    "description": "Set/clear the BTD6 new-version announcement channel (administrator).",
+    "summary": "Set/clear the BTD6 new-version announcement channel (admin).",
+    "description": "Set/clear the BTD6 new-version announcement channel (admin).",
     "usage": "!announcechannel",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
-    "examples": [
-      "!btd6ops announcechannel #updates"
-    ],
+    "examples": [],
     "planned": [
       {
         "status": "idea",
@@ -405,8 +403,8 @@ const COMMANDS = [
     "name": "ask",
     "area": "games",
     "status": "in-progress",
-    "summary": "Deterministic Q&A. Module 5 adds optional AI augmentation.",
-    "description": "Deterministic Q&A. Module 5 adds optional AI augmentation.",
+    "summary": "Ask a BTD6 question.",
+    "description": "Ask a BTD6 question.",
     "usage": "!ask",
     "aliases": [],
     "permissions": "anyone",
@@ -651,8 +649,8 @@ const COMMANDS = [
     "name": "browse",
     "area": "games",
     "status": "in-progress",
-    "summary": "Browse published BTD6 strategies (PR-F).",
-    "description": "Browse published BTD6 strategies (PR-F).",
+    "summary": "Browse published BTD6 strategies.",
+    "description": "Browse published BTD6 strategies.",
     "usage": "!browse",
     "aliases": [],
     "permissions": "anyone",
@@ -681,8 +679,8 @@ const COMMANDS = [
     "name": "btd6",
     "area": "games",
     "status": "in-progress",
-    "summary": "BTD6 Assistant — panel, status, ask, diagnostics.",
-    "description": "Open the BTD6 panel.",
+    "summary": "BTD6 Assistant — lookups, strategy, live events, and ops.",
+    "description": "BTD6 Assistant — open the panel, or run a subcommand (income/round/…).",
     "usage": "!btd6",
     "aliases": [],
     "permissions": "anyone",
@@ -711,13 +709,15 @@ const COMMANDS = [
     "name": "btd6events",
     "area": "games",
     "status": "in-progress",
-    "summary": "BTD6 live events, leaderboards, and data sources.",
-    "description": "BTD6 live events, leaderboards, and data-source diagnostics.",
+    "summary": "BTD6 live events — hidden alias of `!btd6 events`.",
+    "description": "BTD6 live events — hidden alias of !btd6 events.",
     "usage": "!btd6events",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
-    "examples": [],
+    "examples": [
+      "!btd6 events"
+    ],
     "planned": [
       {
         "status": "idea",
@@ -773,13 +773,15 @@ const COMMANDS = [
     "name": "btd6ops",
     "area": "games",
     "status": "in-progress",
-    "summary": "BTD6 ingestion operations (staff readable; toggles are admin).",
-    "description": "BTD6 ingestion operations (staff readable; toggles are admin).",
+    "summary": "BTD6 ingestion operations — hidden alias of `!btd6 ops`.",
+    "description": "BTD6 ingestion operations — hidden alias of !btd6 ops.",
     "usage": "!btd6ops",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
-    "examples": [],
+    "examples": [
+      "!btd6 ops"
+    ],
     "planned": [
       {
         "status": "idea",
@@ -803,13 +805,15 @@ const COMMANDS = [
     "name": "btd6ref",
     "area": "games",
     "status": "in-progress",
-    "summary": "BTD6 reference — tower/hero/round/relic/CT lookups.",
-    "description": "BTD6 reference lookups (towers / heroes / rounds / relics / CT).",
+    "summary": "BTD6 reference lookups — hidden alias of `!btd6` (towers/heroes/rounds/…).",
+    "description": "BTD6 reference lookups — hidden alias of !btd6 (towers/heroes/rounds/…).",
     "usage": "!btd6ref",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
-    "examples": [],
+    "examples": [
+      "!btd6"
+    ],
     "planned": [
       {
         "status": "idea",
@@ -833,13 +837,15 @@ const COMMANDS = [
     "name": "btd6strat",
     "area": "games",
     "status": "in-progress",
-    "summary": "BTD6 strategy memory — browse, submit, review.",
-    "description": "BTD6 strategy memory (browse / submit / review).",
+    "summary": "BTD6 strategy memory — hidden alias of `!btd6 strat`.",
+    "description": "BTD6 strategy memory — hidden alias of !btd6 strat.",
     "usage": "!btd6strat",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
-    "examples": [],
+    "examples": [
+      "!btd6 strat"
+    ],
     "planned": [
       {
         "status": "idea",
@@ -1620,8 +1626,8 @@ const COMMANDS = [
     "name": "ct",
     "area": "games",
     "status": "in-progress",
-    "summary": "Browse active Contested Territory events and their relic tiles.",
-    "description": "Browse active Contested Territory events and their relic tiles.",
+    "summary": "Browse active Contested Territory events and relic tiles.",
+    "description": "Browse active Contested Territory events and relic tiles.",
     "usage": "!ct",
     "aliases": [],
     "permissions": "anyone",
@@ -2032,15 +2038,43 @@ const COMMANDS = [
     "name": "event",
     "area": "games",
     "status": "in-progress",
-    "summary": "Show one specific BTD6 event with its tower restrictions.",
-    "description": "Show one specific BTD6 event with its tower restrictions.",
+    "summary": "Show one specific BTD6 event with tower restrictions.",
+    "description": "Show one specific BTD6 event with tower restrictions.",
     "usage": "!event",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
-    "examples": [
-      "!btd6events live <kind>"
-    ],
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
+      },
+      {
+        "status": "idea",
+        "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — a generated \"deterministic floor catalogue\" index"
+      }
+    ]
+  },
+  {
+    "name": "events",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "BTD6 live events, leaderboards, and data sources.",
+    "description": "BTD6 live events, leaderboards, and data-source diagnostics.",
+    "usage": "!events",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
     "planned": [
       {
         "status": "idea",
@@ -2528,8 +2562,8 @@ const COMMANDS = [
     "name": "grounding",
     "area": "games",
     "status": "in-progress",
-    "summary": "Show the grounding facts that fed an AI response (PR-D).",
-    "description": "Show the grounding facts that fed an AI response (PR-D).",
+    "summary": "Grounding facts that fed an AI response.",
+    "description": "Grounding facts that fed an AI response.",
     "usage": "!grounding",
     "aliases": [],
     "permissions": "anyone",
@@ -2586,8 +2620,8 @@ const COMMANDS = [
     "name": "hero",
     "area": "games",
     "status": "in-progress",
-    "summary": "The hero command.",
-    "description": "The hero command.",
+    "summary": "Look up a hero.",
+    "description": "Look up a hero.",
     "usage": "!hero",
     "aliases": [],
     "permissions": "anyone",
@@ -2690,8 +2724,8 @@ const COMMANDS = [
     "name": "income",
     "area": "games",
     "status": "in-progress",
-    "summary": "Verified cash per round — single round or an inclusive range.",
-    "description": "Verified cash per round — single round or an inclusive range.",
+    "summary": "Verified cash earned per round (single round or a range).",
+    "description": "Verified cash earned per round (single round or a range).",
     "usage": "!income",
     "aliases": [],
     "permissions": "anyone",
@@ -2860,8 +2894,8 @@ const COMMANDS = [
     "name": "latest-data",
     "area": "games",
     "status": "in-progress",
-    "summary": "Show newest fact envelope per entity_kind (PR-D).",
-    "description": "Show newest fact envelope per entity_kind (PR-D).",
+    "summary": "Newest fact envelope per entity_kind.",
+    "description": "Newest fact envelope per entity_kind.",
     "usage": "!latest-data",
     "aliases": [],
     "permissions": "anyone",
@@ -2890,8 +2924,8 @@ const COMMANDS = [
     "name": "leaderboard",
     "area": "games",
     "status": "in-progress",
-    "summary": "Top-N race or boss leaderboard. No event_id = newest active.",
-    "description": "Top-N race or boss leaderboard. No event_id = newest active.",
+    "summary": "Show race / boss leaderboard.",
+    "description": "Show race / boss leaderboard.",
     "usage": "!leaderboard",
     "aliases": [],
     "permissions": "anyone",
@@ -2987,8 +3021,8 @@ const COMMANDS = [
     "name": "live",
     "area": "games",
     "status": "in-progress",
-    "summary": "Show recent live events for ``kind`` (race / boss / ct / odyssey / event).",
-    "description": "Show recent live events for kind (race / boss / ct / odyssey / event).",
+    "summary": "Show recent live events (race/boss/ct/odyssey/event).",
+    "description": "Show recent live events (race/boss/ct/odyssey/event).",
     "usage": "!live",
     "aliases": [],
     "permissions": "anyone",
@@ -3420,6 +3454,36 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "ops",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "BTD6 ingestion operations (staff readable; toggles are admin).",
+    "description": "BTD6 ingestion operations (staff readable; toggles are admin).",
+    "usage": "!ops",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
+      },
+      {
+        "status": "idea",
+        "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — a generated \"deterministic floor catalogue\" index"
+      }
+    ]
+  },
+  {
     "name": "panel",
     "area": "other",
     "status": "finished",
@@ -3462,8 +3526,8 @@ const COMMANDS = [
     "name": "pending",
     "area": "games",
     "status": "in-progress",
-    "summary": "List pending strategy submissions with review buttons.",
-    "description": "List pending strategy submissions with review buttons.",
+    "summary": "List pending strategy submissions (staff-only).",
+    "description": "List pending strategy submissions (staff-only).",
     "usage": "!pending",
     "aliases": [],
     "permissions": "anyone",
@@ -3720,8 +3784,8 @@ const COMMANDS = [
     "name": "rbe",
     "area": "games",
     "status": "in-progress",
-    "summary": "RBE per round (base + freeplay-scaled) — single round or a range.",
-    "description": "RBE per round (base + freeplay-scaled) — single round or a range.",
+    "summary": "RBE per round — base + freeplay-scaled (single round or a range).",
+    "description": "RBE per round — base + freeplay-scaled (single round or a range).",
     "usage": "!rbe",
     "aliases": [],
     "permissions": "anyone",
@@ -3863,8 +3927,8 @@ const COMMANDS = [
     "name": "relic",
     "area": "games",
     "status": "in-progress",
-    "summary": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
-    "description": "CT relic effect + current tile (by name / abbrev e.g. SMS / alias).",
+    "summary": "Look up a Contested Territory relic's effect and tile.",
+    "description": "Look up a Contested Territory relic's effect and tile.",
     "usage": "!relic",
     "aliases": [],
     "permissions": "anyone",
@@ -4181,8 +4245,8 @@ const COMMANDS = [
     "name": "round",
     "area": "games",
     "status": "in-progress",
-    "summary": "A single round's detail, or a values table across a round range.",
-    "description": "A single round's detail, or a values table across a round range.",
+    "summary": "Look up a round, or a values table across a range of rounds.",
+    "description": "Look up a round, or a values table across a range of rounds.",
     "usage": "!round",
     "aliases": [],
     "permissions": "anyone",
@@ -4389,8 +4453,8 @@ const COMMANDS = [
     "name": "runs",
     "area": "games",
     "status": "in-progress",
-    "summary": "The runs command.",
-    "description": "The runs command.",
+    "summary": "Show recent BTD6 ingestion runs.",
+    "description": "Show recent BTD6 ingestion runs.",
     "usage": "!runs",
     "aliases": [],
     "permissions": "anyone",
@@ -4490,8 +4554,8 @@ const COMMANDS = [
     "name": "seed-data",
     "area": "games",
     "status": "in-progress",
-    "summary": "Seed the Postgres data store from the bundled files (administrator).",
-    "description": "Seed the Postgres data store from the bundled files (administrator).",
+    "summary": "Seed the Postgres data store from the bundled files (admin).",
+    "description": "Seed the Postgres data store from the bundled files (admin).",
     "usage": "!seed-data",
     "aliases": [],
     "permissions": "anyone",
@@ -5060,8 +5124,8 @@ const COMMANDS = [
     "name": "source-health",
     "area": "games",
     "status": "in-progress",
-    "summary": "Show source registry freshness (PR-D).",
-    "description": "Show source registry freshness (PR-D).",
+    "summary": "BTD6 source registry freshness overview.",
+    "description": "BTD6 source registry freshness overview.",
     "usage": "!source-health",
     "aliases": [],
     "permissions": "anyone",
@@ -5090,8 +5154,8 @@ const COMMANDS = [
     "name": "source_disable",
     "area": "games",
     "status": "in-progress",
-    "summary": "The source_disable command.",
-    "description": "The source_disable command.",
+    "summary": "Disable a BTD6 ingestion source (administrator only).",
+    "description": "Disable a BTD6 ingestion source (administrator only).",
     "usage": "!source_disable",
     "aliases": [],
     "permissions": "anyone",
@@ -5120,8 +5184,8 @@ const COMMANDS = [
     "name": "source_enable",
     "area": "games",
     "status": "in-progress",
-    "summary": "The source_enable command.",
-    "description": "The source_enable command.",
+    "summary": "Enable a BTD6 ingestion source (administrator only).",
+    "description": "Enable a BTD6 ingestion source (administrator only).",
     "usage": "!source_enable",
     "aliases": [],
     "permissions": "anyone",
@@ -5295,6 +5359,36 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "strat",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "BTD6 strategy memory — browse, submit, review.",
+    "description": "BTD6 strategy memory (browse / submit / review).",
+    "usage": "!strat",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
+      },
+      {
+        "status": "idea",
+        "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — a generated \"deterministic floor catalogue\" index"
+      }
+    ]
+  },
+  {
     "name": "strategies",
     "area": "games",
     "status": "in-progress",
@@ -5328,8 +5422,8 @@ const COMMANDS = [
     "name": "strategy",
     "area": "games",
     "status": "in-progress",
-    "summary": "Show one strategy in detail (PR-F).",
-    "description": "Show one strategy in detail (PR-F).",
+    "summary": "Show one strategy in detail.",
+    "description": "Show one strategy in detail.",
     "usage": "!strategy",
     "aliases": [],
     "permissions": "anyone",
@@ -5358,8 +5452,8 @@ const COMMANDS = [
     "name": "strategy-audit",
     "area": "games",
     "status": "in-progress",
-    "summary": "Show the per-strategy audit log (PR-F).",
-    "description": "Show the per-strategy audit log (PR-F).",
+    "summary": "Per-strategy audit log.",
+    "description": "Per-strategy audit log.",
     "usage": "!strategy-audit",
     "aliases": [],
     "permissions": "anyone",
@@ -5388,8 +5482,8 @@ const COMMANDS = [
     "name": "submit",
     "area": "games",
     "status": "in-progress",
-    "summary": "Open a strategy submission modal (slash-only on Discord).",
-    "description": "Open a strategy submission modal (slash-only on Discord).",
+    "summary": "Submit a BTD6 strategy.",
+    "description": "Submit a BTD6 strategy.",
     "usage": "!submit",
     "aliases": [],
     "permissions": "anyone",
@@ -5535,8 +5629,8 @@ const COMMANDS = [
     "name": "test-intent",
     "area": "games",
     "status": "in-progress",
-    "summary": "The test-intent command.",
-    "description": "The test-intent command.",
+    "summary": "Show what the resolver extracted from a message.",
+    "description": "Show what the resolver extracted from a message.",
     "usage": "!test-intent",
     "aliases": [],
     "permissions": "anyone",
@@ -5767,8 +5861,8 @@ const COMMANDS = [
     "name": "tower",
     "area": "games",
     "status": "in-progress",
-    "summary": "The tower command.",
-    "description": "The tower command.",
+    "summary": "Look up a tower.",
+    "description": "Look up a tower.",
     "usage": "!tower",
     "aliases": [],
     "permissions": "anyone",
@@ -6538,7 +6632,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "314e5e25",
+    "build": "beb1dd4",
     "title": "New public bot website",
     "changes": [
       {
@@ -6550,7 +6644,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "314e5e25",
+    "build": "beb1dd4",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6562,7 +6656,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "314e5e25",
+    "build": "beb1dd4",
     "title": "Command-alias suggestions",
     "changes": [
       {

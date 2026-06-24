@@ -2,21 +2,24 @@
 
 Owns the BTD6 subsystem identity (the ``btd6`` / ``btd6menu`` entry points,
 the ``BTD6PanelView`` main menu, and the schema + ingestion-supervisor
-lifecycle). The bulk of the command surface lives in sibling cogs to keep
-this file under the 800-LOC ceiling
-(``tests/unit/invariants/test_cog_size.py``):
+lifecycle), and **registers the unified command tree**.
 
-* :mod:`cogs.btd6_reference_cog` — ``!btd6ref`` tower/hero/round/relic/ct.
-* :mod:`cogs.btd6_events_cog` — ``!btd6events`` live events, leaderboards,
-  source diagnostics, grounding.
-* :mod:`cogs.btd6_strategy_cog` — ``!btd6strat`` strategy browse/submit/review
-  and ``why-no-response``.
-* :mod:`cogs.btd6_ops_cog` — ``!btd6ops`` ingestion operations.
+The whole BTD6 command surface lives under one ``/btd6`` (``!btd6``) tree
+(owner request, 2026-06-24): everyday lookups flat (``/btd6 income`` …) and the
+bigger buckets nested (``/btd6 strat`` / ``/btd6 ops`` / ``/btd6 events``). That
+tree is module-level in :mod:`cogs.btd6._unified` — discord.py can't share one
+``app_commands.Group`` across cogs, and one mega-cog would blow the 800-LOC
+ceiling (``tests/unit/invariants/test_cog_size.py``) — and this cog registers it
+in :func:`setup`. The old per-group cogs remain only as *hidden* prefix aliases
+so existing muscle-memory keeps working:
 
-This cog keeps the panel (bare ``!btd6`` / ``/btd6menu``), the core
-diagnostics (``status`` / ``diagnostics`` / ``ask`` / ``test-intent``), and
-``ctteam`` (a prefix-only admin utility — pasting a long bracket URL is the
-natural prefix surface, so it intentionally has no slash twin).
+* :mod:`cogs.btd6_reference_cog` — hidden ``!btd6ref`` alias (tower/hero/round/…).
+* :mod:`cogs.btd6_events_cog` — hidden ``!btd6events`` alias (live events, …).
+* :mod:`cogs.btd6_strategy_cog` — hidden ``!btd6strat`` alias (strategy memory).
+* :mod:`cogs.btd6_ops_cog` — hidden ``!btd6ops`` alias (ingestion operations).
+
+This cog itself keeps only the panel opener (``!btd6menu`` / ``/btd6menu``) and
+the lifecycle; the ``btd6`` group and every subcommand are the unified tree.
 
 Architecture:
 
@@ -39,19 +42,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from cogs.btd6 import _builders
-from cogs.btd6._embeds import (
-    build_diagnostics_embed,
-    build_status_embed,
-    build_test_intent_embed,
-)
-from cogs.btd6._embeds import response_to_embed as _response_to_embed
-from cogs.btd6._reply import reply_ephemeral
+from cogs.btd6 import _unified
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline, tasks
 from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import (
-    btd6_ai_service,
     btd6_data_service,
     btd6_ingestion_supervisor,
     btd6_version_announce,
@@ -109,7 +104,7 @@ class BTD6Cog(commands.Cog):
         # Auto-seed (Q-0077(b), 2026-06-19 owner decision): when the deployed
         # files carry a strictly NEWER game version than the postgres store
         # serves, re-seed the store from them so a version bump goes live on
-        # deploy with no manual `!btd6ops seed-data`. Never fires for the file
+        # deploy with no manual `!btd6 ops seed-data`. Never fires for the file
         # backend, an equal/newer store (never clobbers a deliberately-newer
         # one), or a same-version data edit (those still need manual seed-data).
         # Defensive: a failure logs and serves the existing store.
@@ -126,7 +121,7 @@ class BTD6Cog(commands.Cog):
             except Exception:
                 logger.warning(
                     "BTD6 auto-seed failed; serving the existing store. Run "
-                    "`!btd6ops seed-data` to update.",
+                    "`!btd6 ops seed-data` to update.",
                     exc_info=True,
                 )
 
@@ -140,7 +135,7 @@ class BTD6Cog(commands.Cog):
             served, bundled = drift
             logger.warning(
                 "BTD6 data drift: the deployed files carry %s but the active "
-                "store serves %s — run `!btd6ops seed-data` to update "
+                "store serves %s — run `!btd6 ops seed-data` to update "
                 "(applies immediately, no restart needed).",
                 bundled,
                 served,
@@ -153,7 +148,7 @@ class BTD6Cog(commands.Cog):
             if changed:
                 logger.warning(
                     "BTD6 data drift: %d committed data file(s) differ from the "
-                    "served store at the same version — run `!btd6ops seed-data` "
+                    "served store at the same version — run `!btd6 ops seed-data` "
                     "to apply (e.g. %s).",
                     len(changed),
                     ", ".join(changed[:3]) + ("…" if len(changed) > 3 else ""),
@@ -168,41 +163,10 @@ class BTD6Cog(commands.Cog):
         tasks.cancel_by_prefix("btd6_ingestion:")
 
     # ------------------------------------------------------------------
-    # Prefix commands
+    # Prefix command — the panel opener. The rest of the !btd6 surface
+    # (income/round/strat/ops/events/…) is the module-level unified tree
+    # in cogs.btd6._unified, registered in setup().
     # ------------------------------------------------------------------
-
-    @commands.group(name="btd6", invoke_without_command=True)
-    async def btd6_group(self, ctx: commands.Context) -> None:
-        """Open the BTD6 panel."""
-        await ctx.send(embed=await build_btd6_panel_embed(), view=BTD6PanelView())
-
-    @btd6_group.command(name="status")  # type: ignore[arg-type]
-    async def btd6_status(self, ctx: commands.Context) -> None:
-        await ctx.send(embed=await build_status_embed())
-
-    @btd6_group.command(name="diagnostics")  # type: ignore[arg-type]
-    async def btd6_diagnostics(self, ctx: commands.Context) -> None:
-        await ctx.send(embed=build_diagnostics_embed())
-
-    @btd6_group.command(name="ask")  # type: ignore[arg-type]
-    async def btd6_ask(self, ctx: commands.Context, *, question: str) -> None:
-        """Deterministic Q&A. Module 5 adds optional AI augmentation."""
-        response = await btd6_ai_service.answer_question(question)
-        await ctx.send(embed=_response_to_embed(response))
-
-    @btd6_group.command(name="test-intent")  # type: ignore[arg-type]
-    async def btd6_test_intent(self, ctx: commands.Context, *, text: str) -> None:
-        await ctx.send(embed=build_test_intent_embed(text))
-
-    @btd6_group.command(name="ctteam")  # type: ignore[arg-type]
-    async def btd6_ctteam(self, ctx: commands.Context, *, arg: str = "") -> None:
-        """View or set this server's CT team (paste the bracket group id / URL)."""
-        embed, view = await _builders.handle_ctteam(ctx, arg)
-        if view is None:
-            await ctx.send(embed=embed)
-            return
-        message = await ctx.send(embed=embed, view=view)
-        view.message = message  # disable-on-timeout edits the right message
 
     @commands.command(name="btd6menu")
     async def btd6menu(self, ctx: commands.Context) -> None:
@@ -210,58 +174,10 @@ class BTD6Cog(commands.Cog):
         await ctx.send(embed=await build_btd6_panel_embed(), view=BTD6PanelView())
 
     # ------------------------------------------------------------------
-    # App commands — mirror the prefix surface.
+    # App command — the panel opener. A slash group can't be invoked
+    # directly, so /btd6menu opens the panel; the /btd6 <action> tree
+    # lives in cogs.btd6._unified (registered in setup()).
     # ------------------------------------------------------------------
-
-    btd6_app_group = app_commands.Group(
-        name="btd6",
-        description="BTD6 Assistant — panel, status, ask, diagnostics.",
-    )
-
-    @btd6_app_group.command(name="status", description="BTD6 assistant status.")
-    async def btd6_status_slash(self, interaction: discord.Interaction) -> None:
-        await reply_ephemeral(interaction, build_status_embed())
-
-    @btd6_app_group.command(
-        name="diagnostics",
-        description="BTD6 dataset diagnostics.",
-    )
-    async def btd6_diagnostics_slash(self, interaction: discord.Interaction) -> None:
-        # Sync builder — safe to respond directly without defer.
-        await interaction.response.send_message(
-            embed=build_diagnostics_embed(),
-            ephemeral=True,
-        )
-
-    @btd6_app_group.command(name="ask", description="Ask a BTD6 question.")
-    async def btd6_ask_slash(
-        self,
-        interaction: discord.Interaction,
-        question: str,
-    ) -> None:
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        response = await btd6_ai_service.answer_question(question)
-        await safe_followup(
-            interaction,
-            embed=_response_to_embed(response),
-            ephemeral=True,
-        )
-
-    @btd6_app_group.command(
-        name="test-intent",
-        description="Show what the resolver extracted from a message.",
-    )
-    async def btd6_test_intent_slash(
-        self,
-        interaction: discord.Interaction,
-        text: str,
-    ) -> None:
-        # Sync resolver work — safe to respond directly without defer.
-        await interaction.response.send_message(
-            embed=build_test_intent_embed(text),
-            ephemeral=True,
-        )
 
     @app_commands.command(name="btd6menu", description="Open the BTD6 panel.")
     async def btd6menu_slash(self, interaction: discord.Interaction) -> None:
@@ -288,3 +204,11 @@ class BTD6Cog(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(BTD6Cog(bot))
+    # The unified /btd6 + !btd6 tree (income/round/strat/ops/events/…) is
+    # module-level — discord.py can't cleanly share one app_commands.Group
+    # across cogs — so the mother cog registers it once here.
+    _unified.register(bot)
+
+
+async def teardown(bot: commands.Bot) -> None:
+    _unified.teardown(bot)

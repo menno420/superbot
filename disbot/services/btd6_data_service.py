@@ -1012,7 +1012,7 @@ async def seed_postgres_from_files(root: Path | None = None) -> int:
     Reads the committed files via a ``FileRawProvider`` (independent of whichever
     backend is *active*) and writes each through ``utils.db.btd6_data``. Returns
     the number of blobs seeded. Requires the DB pool to be initialised — it is,
-    once the bot is running, so this powers the ``!btd6ops seed-data`` command as
+    once the bot is running, so this powers the ``!btd6 ops seed-data`` command as
     well as ``scripts/seed_btd6_data.py``.
 
     **Self-applying:** after seeding, the active provider is re-warmed and the
@@ -1121,7 +1121,7 @@ def bundled_newer_than_served() -> bool:
     ``False`` for the file backend, unknown versions, or an equal/newer store
     (so a deliberately-newer store — the refresh-workflow direction — is never
     clobbered). Same-``version`` content edits are NOT a trigger (b) — they still
-    need a manual ``!btd6ops seed-data``.
+    need a manual ``!btd6 ops seed-data``.
     """
     drift = served_data_drift()
     if drift is None:

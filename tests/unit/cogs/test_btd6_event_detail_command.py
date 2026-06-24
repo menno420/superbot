@@ -13,6 +13,7 @@ from unittest.mock import AsyncMock, MagicMock
 import discord
 import pytest
 
+from cogs.btd6 import _unified
 from cogs.btd6_events_cog import BTD6EventsCog
 
 
@@ -170,11 +171,10 @@ async def test_slash_event_command_defers_before_db_calls(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup)
 
-    cog = BTD6EventsCog(MagicMock())
     interaction = MagicMock()
     interaction.response.is_done = lambda: False
 
-    await cog.btd6_event_slash.callback(cog, interaction, "race", "X")
+    await _unified.events_event_slash.callback(interaction, "race", "X")
 
     # defer must come before any db call.
     assert call_order[0] == "defer"

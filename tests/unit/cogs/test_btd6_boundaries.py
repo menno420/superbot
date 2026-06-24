@@ -161,32 +161,23 @@ def _expected_parity_names() -> set[str]:
 
 
 def test_btd6_prefix_and_slash_commands_have_parity():
-    # The surface is split across the mother cog + sibling cogs; aggregate
-    # every cog's commands so the full expected set must still exist across
-    # the split (no command silently lost in the move).
-    from cogs.btd6_events_cog import BTD6EventsCog
-    from cogs.btd6_reference_cog import BTD6ReferenceCog
-    from cogs.btd6_strategy_cog import BTD6StrategyCog
+    # The surface is now unified under the module-level /btd6 tree
+    # (cogs.btd6._unified); every expected action must exist on BOTH the prefix
+    # and slash forms of that tree (no command silently lost in the move).
+    from discord.ext import commands
 
-    def _bot():
-        return type("Bot", (), {})()
+    from cogs.btd6 import _unified
 
-    cog_instances = [
-        BTD6Cog(bot=_bot()),
-        BTD6ReferenceCog(bot=_bot()),
-        BTD6EventsCog(bot=_bot()),
-        BTD6StrategyCog(bot=_bot()),
-    ]
-
-    prefix_names: set[str] = set()
-    slash_names: set[str] = set()
-    for cog in cog_instances:
-        prefix_names.update(c.name for c in cog.walk_commands())
-        slash_names.update(
-            c.name
-            for c in cog.walk_app_commands()
-            if isinstance(c, discord.app_commands.Command)
-        )
+    prefix_names = {
+        c.name
+        for c in _unified.btd6_prefix.walk_commands()
+        if not isinstance(c, commands.Group)
+    }
+    slash_names = {
+        c.name
+        for c in _unified.btd6_app.walk_commands()
+        if isinstance(c, discord.app_commands.Command)
+    }
 
     expected = _expected_parity_names()
     missing_prefix = expected - prefix_names

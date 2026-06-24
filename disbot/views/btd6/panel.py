@@ -414,7 +414,7 @@ class BTD6PanelView(PersistentView):
         _: discord.ui.Button,
     ) -> None:
         # Browse published community strategies — the same surface as
-        # `!btd6strat browse`, surfaced here so the strategy memory is
+        # `!btd6 strat browse`, surfaced here so the strategy memory is
         # reachable by clicking through the BTD6 hub (discoverability audit).
         from views.btd6 import strategy_browse
 

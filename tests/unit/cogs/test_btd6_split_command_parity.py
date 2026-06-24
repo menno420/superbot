@@ -1,11 +1,18 @@
-"""Per-cog leaf-set pins for the split BTD6 command surface.
+"""Backward-compat pins for the hidden BTD6 prefix-alias groups.
 
-Locks *which* commands live on each sibling cog carved out of ``btd6_cog``,
-so a command can't silently move to the wrong cog or disappear, and that each
-cog's prefix and slash leaves stay in parity. Mirrors
-``test_btd6_ops_command_parity.py`` for the reference / events / strategy
-cogs. The mother cog's residual surface + cross-cog twin/backbone parity are
-covered by ``test_btd6_cog.py`` and ``test_btd6_command_parity.py``.
+The BTD6 command surface was unified under one ``/btd6`` tree
+(:mod:`cogs.btd6._unified`, owner request 2026-06-24): the old per-cog SLASH
+groups were removed, but each sibling cog keeps its original PREFIX group as a
+*hidden* alias so existing ``!btd6ref …`` / ``!btd6events …`` / ``!btd6strat …``
+muscle-memory still works. This locks that:
+
+* each alias group still exposes its full leaf set (no command silently lost in
+  the move), and
+* the group is ``hidden`` (not advertised in ``!help`` — the canonical surface
+  is ``!btd6 <action>``).
+
+The unified surface's own prefix↔slash parity is covered by
+``test_btd6_command_parity.py``.
 """
 
 from __future__ import annotations
@@ -13,7 +20,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
-from discord import app_commands
 from discord.ext import commands
 
 from cogs.btd6_events_cog import BTD6EventsCog
@@ -44,30 +50,45 @@ _EXPECTED: dict[type[commands.Cog], set[str]] = {
     },
 }
 
+# The top-level (hidden) alias group each cog registers.
+_ALIAS_GROUP: dict[type[commands.Cog], str] = {
+    BTD6ReferenceCog: "btd6ref",
+    BTD6EventsCog: "btd6events",
+    BTD6StrategyCog: "btd6strat",
+}
+
 
 def _prefix_leaves(cog: commands.Cog) -> set[str]:
     return {c.name for c in cog.walk_commands() if not isinstance(c, commands.Group)}
 
 
-def _slash_leaves(cog: commands.Cog) -> set[str]:
-    return {
-        c.name
-        for c in cog.walk_app_commands()
-        if isinstance(c, app_commands.Command)
-    }
+def _top_group(cog: commands.Cog) -> commands.Group:
+    return next(
+        c
+        for c in cog.walk_commands()
+        if isinstance(c, commands.Group) and c.parent is None
+    )
 
 
 @pytest.mark.parametrize("cls", list(_EXPECTED))
-def test_prefix_leaves_match_expected(cls: type[commands.Cog]) -> None:
+def test_hidden_alias_prefix_leaves_match_expected(cls: type[commands.Cog]) -> None:
     assert _prefix_leaves(cls(bot=MagicMock())) == _EXPECTED[cls]
 
 
 @pytest.mark.parametrize("cls", list(_EXPECTED))
-def test_slash_leaves_match_expected(cls: type[commands.Cog]) -> None:
-    assert _slash_leaves(cls(bot=MagicMock())) == _EXPECTED[cls]
+def test_alias_group_is_hidden(cls: type[commands.Cog]) -> None:
+    group = _top_group(cls(bot=MagicMock()))
+    assert group.name == _ALIAS_GROUP[cls]
+    assert group.hidden is True
 
 
 @pytest.mark.parametrize("cls", list(_EXPECTED))
-def test_prefix_and_slash_in_parity(cls: type[commands.Cog]) -> None:
+def test_cog_declares_no_slash_commands(cls: type[commands.Cog]) -> None:
+    """The slash surface moved to the unified tree — the alias cogs are prefix-only."""
+    from discord import app_commands
+
     cog = cls(bot=MagicMock())
-    assert _prefix_leaves(cog) == _slash_leaves(cog)
+    slash = [
+        c for c in cog.walk_app_commands() if isinstance(c, app_commands.Command)
+    ]
+    assert slash == []

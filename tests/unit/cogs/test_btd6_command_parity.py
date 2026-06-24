@@ -1,16 +1,16 @@
 """Pin slash/prefix parity for the whole BTD6 command surface.
 
 Every prefix command must have a slash twin (and vice versa) across the
-mother cog + sibling cogs, except the documented ``SLASH_ONLY`` /
+unified ``/btd6`` (``!btd6``) tree, except the documented ``SLASH_ONLY`` /
 ``PREFIX_ONLY`` allowlists. Twins must share at least one ``build_*`` /
-``safe_*`` backbone call so the two forms can't drift apart.
+``safe_*`` / ops-helper backbone call so the two forms can't drift apart.
 
-Runtime-introspection based (the ``test_btd6_ops_command_parity`` pattern):
-the surface now spans four cog modules, so instead of AST-scanning a single
-file we instantiate the *registered* BTD6 cog classes and walk their command
-trees. The shared-backbone check reads each command callback's source via
-``inspect.getsource`` so it covers exactly the registered set, wherever a
-command physically lives.
+The BTD6 surface was unified under one ``/btd6`` tree (owner request,
+2026-06-24): the commands now live in the module-level
+:mod:`cogs.btd6._unified` tree rather than spread across sibling cogs, so we
+walk that tree directly. The shared-backbone check reads each command
+callback's source via ``inspect.getsource`` so it covers exactly the
+registered set.
 """
 
 from __future__ import annotations
@@ -18,24 +18,16 @@ from __future__ import annotations
 import ast
 import inspect
 import textwrap
-from unittest.mock import MagicMock
 
 import pytest
 from discord import app_commands
 from discord.ext import commands
 
-from cogs.btd6_cog import BTD6Cog
-from cogs.btd6_events_cog import BTD6EventsCog
-from cogs.btd6_reference_cog import BTD6ReferenceCog
-from cogs.btd6_strategy_cog import BTD6StrategyCog
+from cogs.btd6 import _unified
 
-# The cogs that together form the BTD6 command surface. The ops cog has its
-# own parity test (test_btd6_ops_command_parity.py) and is excluded here.
-_COG_CLASSES = (BTD6Cog, BTD6ReferenceCog, BTD6EventsCog, BTD6StrategyCog)
-
-# ``submit`` triggers a Discord modal (slash-only); its prefix form is a
-# redirect string that intentionally shares no builder, so it is exempt from
-# both the prefix-twin requirement and the backbone check.
+# ``submit`` triggers a Discord modal (slash-only behaviour); its prefix form is
+# a redirect string that intentionally shares no builder, so it is exempt from
+# the twin backbone check.
 SLASH_ONLY = frozenset({"submit"})
 
 # ``ctteam`` — admin utility to paste a CT bracket id / group URL. Prefix is
@@ -43,23 +35,18 @@ SLASH_ONLY = frozenset({"submit"})
 # command, so it intentionally has no slash twin.
 PREFIX_ONLY: frozenset[str] = frozenset({"ctteam"})
 
-# Prefix group parents (``!btd6`` / ``!btd6ref`` / …) are not leaves.
-_GROUP_PARENTS = frozenset({"btd6", "btd6ref", "btd6events", "btd6strat"})
-
 
 def _collect() -> tuple[dict[str, object], dict[str, object]]:
-    """Aggregate prefix + slash leaf commands across all BTD6 cogs."""
+    """Aggregate prefix + slash *leaf* commands across the unified BTD6 tree."""
     prefix: dict[str, object] = {}
     slash: dict[str, object] = {}
-    for cls in _COG_CLASSES:
-        cog = cls(bot=MagicMock())
-        for cmd in cog.walk_commands():
-            if isinstance(cmd, commands.Group):
-                continue
-            prefix[cmd.name] = cmd
-        for cmd in cog.walk_app_commands():
-            if isinstance(cmd, app_commands.Command):
-                slash[cmd.name] = cmd
+    for cmd in _unified.btd6_prefix.walk_commands():
+        if isinstance(cmd, commands.Group):
+            continue
+        prefix[cmd.name] = cmd
+    for cmd in _unified.btd6_app.walk_commands():
+        if isinstance(cmd, app_commands.Command):
+            slash[cmd.name] = cmd
     return prefix, slash
 
 
@@ -79,11 +66,7 @@ def test_every_slash_has_a_prefix_twin() -> None:
 
 def test_every_prefix_has_a_slash_twin() -> None:
     prefix, slash = _collect()
-    missing = {
-        n
-        for n in prefix
-        if n not in PREFIX_ONLY and n not in _GROUP_PARENTS and n not in slash
-    }
+    missing = {n for n in prefix if n not in PREFIX_ONLY and n not in slash}
     assert not missing, (
         f"Prefix commands without a slash twin: {sorted(missing)}. "
         f"Add them to PREFIX_ONLY if intentionally prefix-only."
@@ -96,8 +79,9 @@ def test_every_prefix_has_a_slash_twin() -> None:
 
 # Names that count as "shared backbone" — at least one must appear in BOTH the
 # prefix and slash forms of a twin. ``build_*`` covers the entire
-# ``_builders`` / ``_embeds`` / ``strategy_browse`` API; ``reply_ephemeral``
-# is the shared ephemeral slash backbone.
+# ``_builders`` / ``_embeds`` / ``_event_helpers`` / ``strategy_browse`` API;
+# ``reply_ephemeral`` / ``safe_*`` are the shared ephemeral slash backbone; the
+# ``_ops_helpers`` formatters are the shared backbone for the ops subcommands.
 _SHARED_BACKBONE_PREFIXES = ("build_",)
 _SHARED_BACKBONE_NAMES = frozenset(
     {
@@ -108,6 +92,12 @@ _SHARED_BACKBONE_NAMES = frozenset(
         "safe_defer",
         "safe_edit",
         "safe_followup",
+        # _ops_helpers — the shared formatters behind /btd6 ops twins.
+        "readiness_embed",
+        "runs_embed",
+        "seed_embed",
+        "set_announce_channel",
+        "toggle_source",
     },
 )
 
@@ -157,5 +147,5 @@ def test_twins_share_a_backbone_call(cmd: str) -> None:
         f"Prefix calls backbone: {sorted(prefix_calls)}; "
         f"slash calls backbone: {sorted(slash_calls)}. "
         f"Both forms should route through a shared build_* / reply_ephemeral "
-        f"/ safe_* helper to prevent drift."
+        f"/ safe_* / _ops_helpers helper to prevent drift."
     )
