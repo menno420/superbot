@@ -6,6 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from cogs.admin import _slash_sync
 from cogs.admin.cog_manager import (  # noqa: F401 — re-exported for back-compat (callers may import here)
     COGS_DIR,
     _all_cog_modules,
@@ -199,6 +200,7 @@ class AdminCog(commands.Cog):
         self,
         ctx: commands.Context,
         scope: str = "guild",
+        modifier: str = "",
     ) -> None:
         """Sync the app-command tree for slash commands (owner only).
 
@@ -211,14 +213,24 @@ class AdminCog(commands.Cog):
 
             !syncslash             # sync this guild (default — fast)
             !syncslash guild       # sync this guild (explicit)
-            !syncslash global      # sync globally — rate-limited;
-                                   #   propagation can take up to 1 h
+            !syncslash global      # sync globally IFF the tree changed —
+                                   #   previews the diff, skips when in sync
+            !syncslash global force  # sync globally unconditionally (cosmetic
+                                     #   param/description-only changes)
             !syncslash clear       # remove this guild's command COPIES
 
         ``guild`` scope is the right choice in almost every case:
         Discord rate-limits global sync, and per-guild sync makes
         new commands appear immediately. ``global`` is only needed
         if the bot deploys to a guild that hasn't seen the tree yet.
+
+        The ``global`` path now flows through the same diff-gated helper as the
+        startup auto-sync (``command_tree_sync.auto_sync_if_changed``): it fetches
+        the live global commands, compares command *paths* to the local tree, and
+        only calls ``tree.sync()`` when they differ — reporting the add/remove
+        diff or a clean "already in sync". The path-diff deliberately misses
+        parameter/description-only edits (Discord normalises option payloads), so
+        ``global force`` keeps the old unconditional sync for those cosmetic cases.
 
         **Do not run ``guild`` and ``global`` for the same environment.**
         A command synced *both* globally and into a guild renders **twice**
@@ -233,17 +245,11 @@ class AdminCog(commands.Cog):
             return
 
         if scope == "global":
-            try:
-                synced = await self.bot.tree.sync()
-            except discord.HTTPException as exc:
-                await ctx.send(
-                    f"⚠️ Global sync failed: `{type(exc).__name__}`: {exc}",
-                )
-                return
-            await ctx.send(
-                f"✅ Synced **{len(synced)}** slash commands globally. "
-                "Propagation may take up to an hour.",
+            message = await _slash_sync.run_global_sync(
+                self.bot,
+                force=modifier.lower() == "force",
             )
+            await ctx.send(message)
             return
 
         guild = ctx.guild

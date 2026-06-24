@@ -18,13 +18,14 @@ Pins:
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import discord
 import pytest
 from discord.ext import commands
 
 from cogs.admin_cog import AdminCog
+from services.command_tree_sync import SyncOutcome
 
 
 def _ctx(*, guild: bool = True) -> MagicMock:
@@ -47,6 +48,7 @@ def _admin_cog() -> AdminCog:
     bot.tree.copy_global_to = MagicMock()
     bot.tree.clear_commands = MagicMock()
     bot.tree.get_commands = MagicMock(return_value=[])
+    bot.tree.fetch_commands = AsyncMock(return_value=[])
     return AdminCog(bot=bot)
 
 
@@ -113,28 +115,123 @@ async def test_syncslash_explicit_guild_scope():
 
 
 # ---------------------------------------------------------------------------
-# !syncslash — global scope
+# !syncslash — global scope (now diff-gated through auto_sync_if_changed)
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_syncslash_global_scope_calls_sync_without_guild():
+async def test_syncslash_global_default_goes_through_gated_helper():
+    """Plain ``global`` routes through the diff-gated helper, not an
+    unconditional ``tree.sync()``."""
     cog = _admin_cog()
-    cog.bot.tree.sync.return_value = [_fake_command("help")]
     ctx = _ctx()
+    outcome = SyncOutcome(
+        synced=True,
+        reason="synced",
+        added=("btd6 round",),
+        removed=("oldcmd",),
+    )
 
-    await cog.sync_slash_commands.callback(cog, ctx, "global")
+    with patch(
+        "cogs.admin._slash_sync.command_tree_sync.auto_sync_if_changed",
+        AsyncMock(return_value=outcome),
+    ) as helper:
+        await cog.sync_slash_commands.callback(cog, ctx, "global")
 
-    cog.bot.tree.sync.assert_awaited_once_with()
+    helper.assert_awaited_once_with(cog.bot, enabled=True)
     cog.bot.tree.copy_global_to.assert_not_called()
     args, kwargs = ctx.send.call_args
     msg = args[0] if args else kwargs.get("content", "")
-    assert "globally" in msg
+    assert "Synced global" in msg
+    assert "+1 added" in msg and "-1 removed" in msg
+    assert "`btd6 round`" in msg
     assert "Propagation" in msg
 
 
 @pytest.mark.asyncio
-async def test_syncslash_global_handles_http_failure():
+async def test_syncslash_global_unchanged_skips_with_message():
+    cog = _admin_cog()
+    ctx = _ctx()
+    outcome = SyncOutcome(synced=False, reason="unchanged")
+
+    with patch(
+        "cogs.admin._slash_sync.command_tree_sync.auto_sync_if_changed",
+        AsyncMock(return_value=outcome),
+    ):
+        await cog.sync_slash_commands.callback(cog, ctx, "global")
+
+    args, kwargs = ctx.send.call_args
+    msg = args[0] if args else kwargs.get("content", "")
+    assert "already in sync" in msg
+    assert "force" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_syncslash_global_fetch_failed_surfaces_message():
+    cog = _admin_cog()
+    ctx = _ctx()
+    outcome = SyncOutcome(synced=False, reason="fetch_failed")
+
+    with patch(
+        "cogs.admin._slash_sync.command_tree_sync.auto_sync_if_changed",
+        AsyncMock(return_value=outcome),
+    ):
+        await cog.sync_slash_commands.callback(cog, ctx, "global")
+
+    args, kwargs = ctx.send.call_args
+    msg = args[0] if args else kwargs.get("content", "")
+    assert "Couldn't fetch" in msg
+    assert "force" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_syncslash_global_sync_failed_reports_diff_and_failure():
+    cog = _admin_cog()
+    ctx = _ctx()
+    outcome = SyncOutcome(
+        synced=False,
+        reason="sync_failed",
+        added=("new",),
+        removed=(),
+    )
+
+    with patch(
+        "cogs.admin._slash_sync.command_tree_sync.auto_sync_if_changed",
+        AsyncMock(return_value=outcome),
+    ):
+        await cog.sync_slash_commands.callback(cog, ctx, "global")
+
+    args, kwargs = ctx.send.call_args
+    msg = args[0] if args else kwargs.get("content", "")
+    assert "failed" in msg.lower()
+    assert "+1 added" in msg
+
+
+@pytest.mark.asyncio
+async def test_syncslash_global_force_does_unconditional_sync():
+    """``global force`` bypasses the diff gate and always calls tree.sync()."""
+    cog = _admin_cog()
+    cog.bot.tree.sync.return_value = [_fake_command("help")]
+    ctx = _ctx()
+
+    with patch(
+        "cogs.admin._slash_sync.command_tree_sync.auto_sync_if_changed",
+        AsyncMock(),
+    ) as helper:
+        await cog.sync_slash_commands.callback(cog, ctx, "global", "force")
+
+    helper.assert_not_awaited()
+    cog.bot.tree.sync.assert_awaited_once_with()
+    cog.bot.tree.copy_global_to.assert_not_called()
+    args, kwargs = ctx.send.call_args
+    msg = args[0] if args else kwargs.get("content", "")
+    assert "Force-synced" in msg
+    assert "**1**" in msg
+    assert "Propagation" in msg
+
+
+@pytest.mark.asyncio
+async def test_syncslash_global_force_handles_http_failure():
     cog = _admin_cog()
     cog.bot.tree.sync.side_effect = discord.HTTPException(
         response=MagicMock(),
@@ -142,7 +239,7 @@ async def test_syncslash_global_handles_http_failure():
     )
     ctx = _ctx()
 
-    await cog.sync_slash_commands.callback(cog, ctx, "global")
+    await cog.sync_slash_commands.callback(cog, ctx, "global", "force")
 
     args, kwargs = ctx.send.call_args
     msg = args[0] if args else kwargs.get("content", "")

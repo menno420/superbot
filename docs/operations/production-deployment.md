@@ -40,6 +40,15 @@
 - **Builder:** [railpack](https://railpack.com) (v0.27.x at write time). It detects
   Python + pip, creates `/app/.venv`, runs `pip install -r requirements.txt`, and
   starts the `worker` command from the **`Procfile`**: `python disbot/bot1.py`.
+- **Slash-command propagation is automatic (#1424).** On boot the bot diff-checks its
+  local app-command tree against Discord's live global commands and only calls
+  `tree.sync()` when the command *paths* changed — so a deploy that adds/removes/renames
+  a slash command propagates on its own, **with no manual `!syncslash`**. (Kill-switch:
+  `AUTO_SYNC_COMMANDS=0`.) The manual command stays the backstop: `!syncslash global`
+  previews the live-vs-local diff and syncs only if it changed, and `!syncslash global
+  force` resyncs unconditionally for parameter/description-only edits the conservative
+  path-diff deliberately misses (`!syncslash guild` is still the instant per-guild dev
+  refresh). So slash propagation is **not** a maintainer post-deploy step.
 
 ## Python version — pinned, and why
 
