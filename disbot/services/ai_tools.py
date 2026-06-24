@@ -5,19 +5,17 @@ read from other services. For a given request the gateway is handed the
 ``{name: handler}`` map; the matching :class:`AIToolSpec` objects travel
 on the request as pure data. Tools return a small, JSON-serialisable dict.
 
-**Almost every tool here is read-only.** The sole, deliberate exception is
-``open_support_ticket`` (the support-ticket subsystem): a write-capable
-*action* tool. Action tools are admitted only when they (a) flow through a
-deterministic, **audited** mutation service — never raw Discord/DB writes
-here — and (b) are bounded against abuse without a UI round-trip. For
-ticket opening the user's natural-language request *is* the explicit
-intent, and the per-user open cap + blacklist + "is this guild even set
-up?" gates bound it deterministically (see ``services.ticket_mutation`` /
-``services.ticket_service``). The historical rule was "tools here must stay
-read-only"; opening a ticket is the owner-directed carve-out (the feature
-was requested to "work through the AI with natural language"). Any *future*
-write tool must clear the same bar — audited seam + deterministic bound —
-or stay read-only (``docs/ai-config-ownership.md`` § "Mutation seam").
+**No tool here mutates state.** Every tool reads and returns a dict. The one
+tool that touches the outside world is ``open_support_ticket``, and even it
+does **not** open a ticket: it validates eligibility (read-only) and, when
+allowed, emits ``ticket.open_requested`` so ``cogs.ticket_cog`` posts a
+one-click **[Open ticket]/[Cancel]** confirmation. The actual write runs only
+when the user clicks, through the deterministic, **audited**
+``services.ticket_mutation.open_ticket`` seam — so the AI proposes and the
+human commits (Q-0201). This keeps the original contract intact: *mutations
+flow through the deterministic mutation services after explicit confirmation*
+(``docs/ai-config-ownership.md`` § "Mutation seam"). A genuinely write-capable
+tool is still out of scope — route it through a confirmation like this one.
 
 Scope gating: ``build_registry`` only includes a tool when the caller's
 :class:`AIScope` satisfies the tool's ``min_scope``. A tool above the
@@ -2417,30 +2415,34 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = ai_tool_catalogue.grounding_tool_nam
 )
 
 
-# --- open_support_ticket (the one ACTION tool) -------------------------
+# --- open_support_ticket (the one confirmation-REQUESTING tool) --------
 #
-# Unlike every other tool in this module (all read-only), this one WRITES: it
-# opens a support ticket through the deterministic, audited
-# ``services.ticket_mutation.open_ticket`` seam. That is exactly the mutation
-# path the module contract requires — the "explicit confirmation" is the user's
-# own natural-language request ("open a ticket, I need help with X"), and abuse
-# is bounded deterministically (the per-user open cap + blacklist + the
-# requirement that an admin has set tickets up). Owner-directed (the support-
-# ticket feature was requested to "work through the AI with natural language").
+# Every other tool here reads and returns a dict. This one does the same plus
+# one advisory side effect: it does NOT open a ticket itself. It validates the
+# asker's eligibility (the per-user open cap + blacklist + "is the guild set
+# up?") and, when eligible, emits ``ticket.open_requested`` so TicketCog posts a
+# one-click [Open ticket]/[Cancel] confirmation in the channel. The actual write
+# runs only when the user clicks, through the audited
+# ``ticket_mutation.open_ticket`` seam — so the mutation stays behind an explicit
+# human confirmation (the module's mutation contract), and the AI never opens a
+# channel on its own. Owner decision Q-0201 (the feature was requested to "work
+# through the AI with natural language", confirmed by a button click).
 
 _OPEN_SUPPORT_TICKET_SPEC = AIToolSpec(
     name="open_support_ticket",
     description=(
-        "Open a PRIVATE support ticket for the asking user in THIS server. Call "
-        "this when the user wants staff help, wants to report something "
-        "privately, or explicitly asks to open/create a ticket (e.g. 'open a "
-        "ticket, I need help with X', 'can I talk to a mod privately', 'I want to "
-        "report a user'). Pass a concise `subject` summarising their issue. This "
-        "ACTUALLY creates a private ticket channel with the staff team — it is "
-        "not a lookup. It is bounded by the server's per-user open-ticket limit "
-        "and blacklist and only works when an admin has set tickets up; the "
-        "result tells you whether it opened and which channel to point the user "
-        "to. Do NOT call it for general questions you can answer yourself."
+        "Offer to open a PRIVATE support ticket for the asking user in THIS "
+        "server. Call this when the user wants staff help, wants to report "
+        "something privately, or asks to open/create a ticket (e.g. 'open a "
+        "ticket, I need help with X', 'can I talk to a mod privately', 'I want "
+        "to report a user'). Pass a concise `subject` summarising their issue. "
+        "This does NOT open the ticket directly — it posts a one-click confirm "
+        "button the user taps to actually create it (so they stay in control). "
+        "It only works when an admin has set tickets up and the user is under "
+        "the open-ticket limit / not blacklisted; the result tells you whether "
+        "a confirmation was offered (`requested`) or why not (`reason`). When "
+        "`requested` is true, tell the user to click the button below. Do NOT "
+        "call it for general questions you can answer yourself."
     ),
     parameters={
         "type": "object",
@@ -2460,27 +2462,57 @@ _OPEN_SUPPORT_TICKET_SPEC = AIToolSpec(
 )
 
 
-def _make_open_support_ticket(guild: Any, member: Any) -> ToolHandler:
+def _make_open_support_ticket(guild: Any, member: Any, channel: Any) -> ToolHandler:
     async def handler(arguments: dict[str, Any]) -> dict[str, Any]:
         subject = str(arguments.get("subject") or "").strip()
         if not subject:
             return {
-                "opened": False,
+                "requested": False,
                 "reason": "missing_subject",
                 "note": "Ask the user what they need help with, then call again.",
             }
-        from services import ticket_mutation
-
-        result = await ticket_mutation.open_ticket(guild, member, subject, source="ai")
-        if result.success:
+        channel_id = getattr(channel, "id", None)
+        if channel_id is None:
             return {
-                "opened": True,
-                "ticket_id": result.ticket_id,
-                "channel_id": result.channel_id,
-                "channel_mention": f"<#{result.channel_id}>",
-                "note": result.message,
+                "requested": False,
+                "reason": "no_channel",
+                "note": "I can't post a confirmation here.",
             }
-        return {"opened": False, "reason": result.reason, "note": result.message}
+        from services import ticket_service
+
+        eligibility = await ticket_service.check_open_eligibility(guild.id, member.id)
+        if not eligibility.allowed:
+            return {
+                "requested": False,
+                "reason": eligibility.reason,
+                "note": eligibility.message,
+            }
+        # Eligible: ask TicketCog to post the [Open ticket]/[Cancel] confirm.
+        # No ticket is created here — the write waits for the user's click.
+        from core.events import bus
+
+        try:
+            await bus.emit(
+                "ticket.open_requested",
+                guild_id=guild.id,
+                channel_id=channel_id,
+                user_id=member.id,
+                subject=subject[:200],
+            )
+        except Exception:  # pragma: no cover — publish-accepted; never raises up
+            return {
+                "requested": False,
+                "reason": "post_failed",
+                "note": "I couldn't post the confirmation. Try `!ticket new`.",
+            }
+        return {
+            "requested": True,
+            "subject": subject[:200],
+            "note": (
+                "I've posted an 'Open ticket' button below — tell the user to "
+                "click it to create their private ticket."
+            ),
+        }
 
     return handler
 
@@ -2658,11 +2690,15 @@ def build_registry(
                 ],
             )
         if member is not None:
-            # The one *action* tool — needs the live guild + member to open a
-            # ticket. Self-gating: it only opens when the guild has tickets set
-            # up and the asker is under the open cap / not blacklisted.
+            # Needs the live guild + member + channel. It does not open a ticket
+            # itself — it validates eligibility (guild set up, under the open
+            # cap, not blacklisted) and emits ticket.open_requested so the cog
+            # posts a one-click confirm; the open waits for the user's click.
             catalog.append(
-                (_OPEN_SUPPORT_TICKET_SPEC, _make_open_support_ticket(guild, member)),
+                (
+                    _OPEN_SUPPORT_TICKET_SPEC,
+                    _make_open_support_ticket(guild, member, channel),
+                ),
             )
     decisions = {
         d.name: d
