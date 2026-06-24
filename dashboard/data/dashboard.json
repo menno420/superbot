@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T23:42:44Z",
+    "generated_at": "2026-06-24T23:49:30Z",
     "build": {
-      "commit": "b3e8c935",
-      "subject": "Merge pull request #1445 from menno420/claude/funny-franklin-fwh3dh-bj",
-      "committed_at": "2026-06-24T23:42:44Z"
+      "commit": "c7defcea",
+      "subject": "Merge pull request #1446 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-24T23:49:30Z"
     },
     "counts": {
       "functions": 42,
-      "ideas": 141,
+      "ideas": 143,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1132,6 +1132,14 @@
   ],
   "ideas": [
     {
+      "file": "askuserquestion-preview-for-design-forks-2026-06-24.md",
+      "title": "Use `AskUserQuestion`'s per-option `preview` to show design-fork mockups",
+      "status": "ideas",
+      "date": "2026-06-24",
+      "summary": "When an agent asks the maintainer to choose between design options with the `AskUserQuestion` tool, it",
+      "subsystems": []
+    },
+    {
       "file": "band-archetype-classifier-2026-06-24.md",
       "title": "Idea — band-archetype classifier in the reconciliation pass record",
       "status": "ideas",
@@ -1171,6 +1179,14 @@
       "status": "ideas",
       "date": "2026-06-24",
       "summary": "The band-#1410 reconciliation pass (2026-06-24) fired **~50 minutes** after the band-#1380 pass, on a",
+      "subsystems": []
+    },
+    {
+      "file": "settle-once-architecture-guard-2026-06-24.md",
+      "title": "A `check_architecture` rule: settling game paths must adopt `SettleOnceMixin`",
+      "status": "ideas",
+      "date": "2026-06-24",
+      "summary": "The double-settlement class is structural and recurring: a game view (or game state object) whose",
       "subsystems": []
     },
     {
@@ -2657,6 +2673,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-24-idea-grooming.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · idea grooming (settle-once run, slice 3)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-24-help-nav-seam-hardening.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Harden the help-nav attachment seam (forward-path regression pins)",
@@ -2948,14 +2972,6 @@
       "file": "2026-06-23-hub-child-button-consolidation.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — HubChildButton consolidation (discoverability fleet, first consolidation)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-help-discoverability-foundation.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Discoverability audit Session 1: help-findability foundation",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
