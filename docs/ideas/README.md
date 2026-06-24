@@ -31,6 +31,15 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`bot-migration-assistant-2026-06-24.md`](./bot-migration-assistant-2026-06-24.md) —
+  **owner-directed (2026-06-24, chat):** the bot recognizes the *other* bots in a server, maps what each
+  offers, suggests how to **replicate** it with SuperBot's subsystems, then offers to **retire** the
+  now-redundant bots once setup is done — the in-product engine for the consolidation wedge. Grounded in
+  the real seams (`member.bot` detection · `guild_snapshot` · `subsystem_registry` · setup advisor →
+  draft → Final Review · `moderation_service.kick`) **and** the one hard constraint — Discord has **no
+  API to introspect another bot's commands**, so discovery rests on a curated app-id-keyed catalog +
+  observable signals, never live command reads. The *live-in-server* counterpart to the V-14
+  hand-harvest teardown lane. Subsystem: setup.
 - [`help-nav-attachment-seam-2026-06-24.md`](./help-nav-attachment-seam-2026-06-24.md) —
   **session-idea (2026-06-24, Q-0089) from the `!xpmenu` H3 slice (#1413):** hub panels show their
   visual image card when opened by their direct command but a plain embed when reached through Help
