@@ -74,6 +74,10 @@ _UNREGISTERED_COG_ALLOWLIST = frozenset(
         # Temp-role expiry sweep + the !temprole grant command; backs the role
         # product but registers no subsystem of its own (reaction-roles PR 4).
         "RoleGrantsCog",
+        # Essential Setup front door (!quicksetup / /quicksetup) — a thin command
+        # surface over views.setup.essential_setup; like SetupCog it backs the
+        # setup/server_management surface but registers no subsystem of its own.
+        "QuickSetupCog",
         "SetupCog",
         # Starboard / Hall-of-Fame raw-reaction listener + the !starboard config
         # command (idea B1); registers no subsystem of its own.
