@@ -8,8 +8,13 @@
 > jargon, quick with buttons/dropdowns, each step is one complete action that actually completes a setup
 > step properly."* This plan answers that directly. Plan-first: greenlight before build.
 >
-> **▶ Build progress:** not started. PR 1 = the jargon-free essentials spine; PR 2 = extras + health
-> check; PR 3 = retire the dead/legacy sections.
+> **▶ Build progress:** **PR 1 (the jargon-free essentials spine) COMPLETE + polished.** Six live steps
+> (greet · moderators · block spam · choose a log channel · reward active members · help desk) + the
+> All-done summary, opened by `!quicksetup` / `/quicksetup`; shipped across #1425/#1427/#1429/#1432/#1434
+> and given a consistency + optional-typing polish pass (#1435, Q-0205). **Remaining:** step 0
+> (server-type starter preset — needs a direct-apply preset path; verify against source first), then
+> **PR 2** = extras menu + "Check my setup", **PR 3** = retire dead/legacy sections + rework the Advanced
+> editor (Q-E).
 >
 > **Sim:** [`tools/sim/setup_wizard_sim.py`](../../tools/sim/setup_wizard_sim.py) (runnable) —
 > models a non-technical owner walking the flow. Current standard-depth flow scores **~4% finish**
