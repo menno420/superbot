@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T13:29:40Z",
+    "generated_at": "2026-06-24T13:45:19Z",
     "build": {
-      "commit": "30331fd",
-      "subject": "Merge branch 'main' into claude/great-meitner-pnfp0g",
-      "committed_at": "2026-06-24T13:29:40Z"
+      "commit": "e02a66d",
+      "subject": "Merge branch 'main' into claude/serene-mccarthy-lv5z94",
+      "committed_at": "2026-06-24T13:45:19Z"
     },
     "counts": {
       "functions": 42,
@@ -14,8 +14,8 @@
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 39,
-      "cogs": 52,
-      "commands": 436,
+      "cogs": 53,
+      "commands": 438,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2521,6 +2521,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-24-setup-spine-build.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · build the essentials spine (PR 1)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-setup-jargon-sweep-guild.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · setup plain-language sweep 1 (guild→server)",
@@ -2943,14 +2951,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-cleanup-panel-ux.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Cleanup panel UX overhaul: readable whitelist, fixable warnings, custom levels",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -3039,7 +3039,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 169,
+          "line": 170,
           "layer": "config",
           "has_default": true
         },
@@ -3061,7 +3061,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 168,
+          "line": 169,
           "layer": "config",
           "has_default": true
         }
@@ -3094,7 +3094,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 152,
+          "line": 153,
           "layer": "config",
           "has_default": true
         },
@@ -3132,7 +3132,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 215,
+          "line": 216,
           "layer": "config",
           "has_default": true
         }
@@ -3180,7 +3180,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 207,
+          "line": 208,
           "layer": "config",
           "has_default": true
         }
@@ -3228,7 +3228,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 195,
+          "line": 196,
           "layer": "config",
           "has_default": true
         }
@@ -3244,7 +3244,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 198,
+          "line": 199,
           "layer": "config",
           "has_default": true
         }
@@ -3260,7 +3260,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 201,
+          "line": 202,
           "layer": "config",
           "has_default": true
         }
@@ -3420,7 +3420,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 114,
+          "line": 115,
           "layer": "config",
           "has_default": true
         }
@@ -3500,7 +3500,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 115,
+          "line": 116,
           "layer": "config",
           "has_default": true
         }
@@ -3518,7 +3518,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 151,
+          "line": 152,
           "layer": "config",
           "has_default": true
         },
@@ -3559,7 +3559,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 178,
+          "line": 179,
           "layer": "config",
           "has_default": true
         },
@@ -3582,7 +3582,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 182,
+          "line": 183,
           "layer": "config",
           "has_default": true
         },
@@ -3621,7 +3621,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 150,
+          "line": 151,
           "layer": "config",
           "has_default": true
         },
@@ -3645,7 +3645,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 149,
+          "line": 150,
           "layer": "config",
           "has_default": true
         },
@@ -8055,6 +8055,38 @@
           "parent": null,
           "aliases": [],
           "brief": "Grant timed access to #proof; auto-unlocks after duration minutes. Usage: timedprize @winner <minutes>",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
+      "cog": "QuickSetupCog",
+      "file": "disbot/cogs/quicksetup_cog.py",
+      "subsystem": "quick_setup",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "quicksetup",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "essentialsetup"
+          ],
+          "brief": "Open Essential Setup — a few simple steps, each saved instantly.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "quicksetup",
+          "type": "slash",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Quick guided setup — a few simple steps, no jargon.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
