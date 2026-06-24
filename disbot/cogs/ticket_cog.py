@@ -28,8 +28,10 @@ from core.events import bus
 from core.runtime import guild_resources
 from services import ticket_mutation, ticket_service
 from views.tickets import (
+    TicketConfirmView,
     TicketControlView,
     TicketLauncherView,
+    build_confirm_embed,
     build_control_view,
     build_welcome_embed,
     open_ticket_hub,
@@ -51,6 +53,7 @@ class TicketCog(commands.Cog):
         self.bot.add_view(TicketLauncherView())
         self.bot.add_view(TicketControlView())
         bus.on("ticket.opened", self._on_ticket_opened)
+        bus.on("ticket.open_requested", self._on_ticket_open_requested)
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         if ctx.guild is None:
@@ -88,6 +91,39 @@ class TicketCog(commands.Cog):
         except Exception:  # pragma: no cover — best-effort UI
             logger.exception(
                 "ticket.opened: control panel post failed for %s",
+                channel_id,
+            )
+
+    async def _on_ticket_open_requested(
+        self,
+        *,
+        guild_id: int,
+        channel_id: int,
+        user_id: int,
+        subject: str,
+    ) -> None:
+        """Post the one-click confirm panel after the AI proposes a ticket.
+
+        The AI tool ``open_support_ticket`` validated eligibility and emitted
+        ``ticket.open_requested``; here we post the [Open ticket]/[Cancel]
+        prompt so the user — not the AI — commits the actual open.
+        """
+        channel = self.bot.get_channel(channel_id)
+        if not isinstance(channel, discord.TextChannel):
+            return
+        guild = channel.guild
+        member = guild_resources.resolve_member(guild, user_id)
+        if member is None:
+            return
+        try:
+            await channel.send(
+                content=member.mention,
+                embed=build_confirm_embed(subject),
+                view=TicketConfirmView(member, subject),
+            )
+        except Exception:  # pragma: no cover — best-effort UI
+            logger.exception(
+                "ticket.open_requested: confirm post failed for %s",
                 channel_id,
             )
 

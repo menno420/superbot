@@ -7320,42 +7320,36 @@ earlier" instinct).
 
 ---
 
-### Q-0201 — ANSWERED (owner-directed, in-session): the AI may OPEN support tickets in natural language — the first audited *action* AI tool (2026-06-24)
+### Q-0201 — ANSWERED (owner decision): the AI may OPEN support tickets in natural language — via a one-click confirm, NOT autonomously (2026-06-24)
 
 **Context.** The owner requested a support-ticket subsystem that works *"by command as well as through the
-AI with natural language"* — i.e. a user can say *"open a ticket, I need help with X"* and the bot opens
-one. Every AI tool in `services/ai_tools.py` was, until now, **read-only** by a documented + test-pinned
-invariant (the module docstring + `tests/unit/services/test_ai_tools.py`), because **Q-0048** reserves AI
-*writes* for a per-exposure lift. Opening a ticket is a write (it creates a private channel + a DB row), so
-the feature needs that lift.
+AI with natural language"* — a user says *"open a ticket, I need help with X"* and the bot opens one. Every
+AI tool in `services/ai_tools.py` is **read-only** by a documented + test-pinned invariant (the module
+docstring + `tests/unit/services/test_ai_tools.py`); **Q-0048** reserves AI *writes* for a per-exposure
+lift. Opening a ticket is a write. Asked how the AI should create it, the owner chose, in-session, the
+**one-click confirm** option over having the AI create it directly.
 
-**The decision (the per-exposure write lift, granted).** `open_support_ticket` ships as the **first
-write-capable AI tool**. It is admitted because it clears the bar a future action tool must also clear:
-1. **Audited seam, never raw writes.** It opens *only* through the deterministic `services/ticket_mutation.py`
-   (one transaction, `emit_audit_action` companion, `ticket.opened` event) — identical to the command and
-   panel-button open paths. No Discord/DB writes live in the AI tool itself.
-2. **Deterministically bounded against abuse** — without a UI round-trip. The shared
-   `ticket_service.check_open_eligibility` gate enforces the per-user open-ticket cap + the blacklist +
-   "is this guild even set up?" (an admin must run `!ticketsetup` first). The user's natural-language
-   request *is* the explicit intent; the bound replaces the per-click confirmation Q-0199 used for the
-   broader, higher-blast-radius setup-apply exposure.
-3. **Reversible + contained.** A ticket is a private channel + a row; closing tears it down and a per-user
-   cap stops spam. Nothing destructive, no @everyone, no money.
+**The decision.** The AI **proposes**, the human **commits**. `open_support_ticket` stays effectively
+**read-only**: it validates eligibility (`ticket_service.check_open_eligibility` — per-user open cap +
+blacklist + "is the guild set up?") and, when allowed, emits a single advisory `ticket.open_requested`
+event; it does **not** create anything. `cogs.ticket_cog` posts a one-click **[Open ticket]/[Cancel]**
+confirmation (`views/tickets/confirm.py`, locked to the requesting user) into the channel, and the actual
+open runs **only on the user's click**, through the deterministic, audited `ticket_mutation.open_ticket`
+seam (one txn + `emit_audit_action` + `ticket.opened`). So the AI never opens a channel on its own, and the
+`ai_tools.py` "mutations flow through a deterministic service after explicit confirmation" contract is kept
+intact — no write-capable AI tool is introduced.
 
-**Scope / non-generalization.** This lift is for **ticket opening only**. The `ai_tools.py` rule changes
-from "every tool is read-only" to "read-only **or** an audited+deterministically-bounded action tool"; any
-*future* write tool must clear the same two-part bar (audited seam + deterministic bound) or stay read-only.
-Higher-blast-radius writes (guild config, money, external calls, anything that can't be deterministically
-bounded) still need their own per-exposure lift + likely a human confirmation (cf. Q-0199).
+**Scope / non-generalization.** This is the pattern for *any* AI-initiated mutation: **validate read-only →
+emit a request event → human confirms → audited service writes.** A genuinely autonomous (no-click) AI
+write still needs its own per-exposure lift (cf. Q-0199, the setup-apply path, which is also click-gated).
 
-**Applied this session (PR #1405).** New `ticket` subsystem (migration 098; `utils/db/tickets.py`;
-`services/ticket_service.py` read model + eligibility; `services/ticket_mutation.py` audited writes;
-`views/tickets/` launcher + control + hub panels; `cogs/ticket_cog.py` commands). The AI tool
-`open_support_ticket` (toolset `support_ticket`, `min_scope=USER`, offered only with a live guild+member)
-delegates to `ticket_mutation.open_ticket(..., source="ai")`. Covered by
-`tests/unit/services/test_ticket_ai_tool.py` (offering gate + delegation) and acknowledged in the eval
-surface (`tests/evals/test_eval_coverage.py` — an action tool, not a replayable read query).
+**Applied.** PR **#1405** shipped the full `ticket` subsystem (migration 098; `utils/db/tickets.py`;
+`ticket_service` read model + eligibility; `ticket_mutation` audited writes; `views/tickets/` launcher /
+control / hub; `cogs/ticket_cog.py` commands) — but with the AI tool opening **directly** (the first-pass
+design). The follow-up PR **#pending** implements the owner's confirm-button choice: the AI tool now emits
+`ticket.open_requested` and the cog posts the confirm view; the actual open is the user's click. Covered by
+`tests/unit/services/test_ticket_ai_tool.py` (offering gate + requests-confirmation-without-opening).
 
-**Home:** this Q-block (canonical) + `.sessions/2026-06-24-support-tickets.md` + the `ai_tools.py` module
-docstring. Related: **Q-0048** (the parent AI-exposure gate), **Q-0199** (the setup-apply write lift, with
-per-click confirmation), Q-0123 (auto-merge on green).
+**Home:** this Q-block (canonical) + `.sessions/2026-06-24-support-tickets.md` +
+`.sessions/2026-06-24-ticket-ai-confirm.md` + the `ai_tools.py` module docstring. Related: **Q-0048** (the
+parent AI-exposure gate), **Q-0199** (the setup-apply write lift, also click-gated), Q-0123 (auto-merge).
