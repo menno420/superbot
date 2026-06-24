@@ -51,8 +51,14 @@ class BTD6ReferenceCog(commands.Cog):
         await ctx.send(embed=await _builders.build_hero_embed(name))
 
     @btd6ref_group.command(name="round")  # type: ignore[arg-type]
-    async def btd6_round(self, ctx: commands.Context, number: int) -> None:
-        await ctx.send(embed=await _builders.build_round_embed(number))
+    async def btd6_round(
+        self,
+        ctx: commands.Context,
+        number: int,
+        end_round: int | None = None,
+    ) -> None:
+        """A single round's detail, or a values table across a round range."""
+        await ctx.send(embed=await _builders.build_round_embed(number, end_round))
 
     @btd6ref_group.command(name="income")  # type: ignore[arg-type]
     async def btd6_income(
@@ -112,13 +118,21 @@ class BTD6ReferenceCog(commands.Cog):
         embed = await _builders.build_hero_embed(name)
         await safe_followup(interaction, embed=embed, ephemeral=True)
 
-    @btd6ref_app_group.command(name="round", description="Look up a round.")
+    @btd6ref_app_group.command(
+        name="round",
+        description="Look up a round, or a values table across a range of rounds.",
+    )
+    @app_commands.describe(
+        number="The round (or first round of a range).",
+        end_round="Last round of an inclusive range (omit for a single round).",
+    )
     async def btd6_round_slash(
         self,
         interaction: discord.Interaction,
         number: int,
+        end_round: int | None = None,
     ) -> None:
-        embed = await _builders.build_round_embed(number)
+        embed = await _builders.build_round_embed(number, end_round)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @btd6ref_app_group.command(

@@ -137,13 +137,23 @@ async def build_hero_embed(name: str) -> discord.Embed:
     return append_context_footer(embed, f"btd6_hero:{hero.id}")
 
 
-async def build_round_embed(number: int) -> discord.Embed:
+async def build_round_embed(
+    number: int,
+    end_round: int | None = None,
+) -> discord.Embed:
     """Render the round lookup embed: danger / economy + bloon composition.
+
+    A single round (``end_round`` omitted / equal) gets the full detail card; a
+    range (``end_round`` given) gets a combined per-round values table via
+    :func:`build_round_range_embed`.
 
     The base economy line (RBE / cash / XP) comes from the round fact; this adds
     the spawn composition and, for freeplay rounds (81+), the effective MOAB-class
     scaled RBE next to the wiki base figure (see ``btd6_data_service.round_rbe``).
     """
+    if end_round is not None and end_round != number:
+        return await build_round_range_embed(number, end_round)
+
     from cogs.btd6._embeds import response_to_embed as _response_to_embed
     from services import btd6_data_service
     from services.btd6_knowledge_service import round_fact
@@ -174,6 +184,87 @@ async def build_round_embed(number: int) -> discord.Embed:
             value=_format_composition(round_entry.groups),
             inline=False,
         )
+    return embed
+
+
+async def build_round_range_embed(
+    round_start: int,
+    round_end: int,
+    roundset: str = "default",
+) -> discord.Embed:
+    """Combined per-round values table (RBE + cash + cumulative) over a range.
+
+    The "round values for a range" view — RBE (freeplay-scaled where it applies,
+    via ``round_rbe``) and cash (via ``round_cash``) side by side, so a single
+    command answers "what do rounds A-B look like?". Both totals come from the
+    full range even when the per-round breakdown is elided.
+    """
+    from services import btd6_data_service
+
+    lo, hi = (
+        (round_start, round_end)
+        if round_start <= round_end
+        else (round_end, round_start)
+    )
+    rbe = btd6_data_service.round_rbe(lo, hi, roundset)
+    if not rbe.get("found"):
+        return discord.Embed(
+            title="🐵 BTD6 rounds — no data",
+            description=rbe.get("note") or "No round data for that range.",
+            color=discord.Color.red(),
+        )
+    cash = btd6_data_service.round_cash(lo, hi, roundset)
+    rbe_by_round = {
+        r["round"]: (
+            r["effective_rbe"]
+            if r.get("effective_rbe") is not None
+            else r.get("base_rbe")
+        )
+        for r in rbe.get("per_round", [])
+    }
+    cash_by_round = {
+        r["round"]: r for r in (cash.get("per_round", []) if cash.get("found") else [])
+    }
+    rounds = sorted(rbe_by_round)
+    shown, elided = _elide(rounds)
+    body = []
+    for rn in shown:
+        rbe_v = rbe_by_round.get(rn)
+        crow = cash_by_round.get(rn, {})
+        rbe_s = f"{rbe_v:,}" if rbe_v is not None else "—"
+        cash_s = f"${crow['cash']:,.0f}" if crow.get("cash") is not None else "—"
+        cum_s = (
+            f"${crow['cumulative_cash']:,.0f}"
+            if crow.get("cumulative_cash") is not None
+            else "—"
+        )
+        body.append(f"{'r' + str(rn):>5} │ {rbe_s:>11} │ {cash_s:>9} │ {cum_s:>11}")
+    if elided:
+        body.insert(len(body) - 9, f"{'⋮':>5} │ {'⋮':>11} │ {'⋮':>9} │ {'⋮':>11}")
+    table = _code_table(
+        f"{'round':>5} │ {'RBE':>11} │ {'cash':>9} │ {'cumulative':>11}",
+        "──────┼─────────────┼───────────┼─────────────",
+        body,
+    )
+    base_total = rbe.get("base_rbe_total")
+    eff_total = rbe.get("effective_rbe_total")
+    rbe_total = (
+        eff_total if (rbe.get("scaled") and eff_total is not None) else base_total
+    )
+    head = f"**Rounds {lo}–{hi}** — total RBE **{rbe_total:,}**"
+    if cash.get("found") and cash.get("range_cash") is not None:
+        head += f", total cash **${cash['range_cash']:,.0f}**"
+    embed = discord.Embed(
+        title=f"🐵 BTD6 rounds {lo}–{hi}",
+        description=f"{head}\n{table}",
+        color=discord.Color.blurple(),
+    )
+    footer = ["Standard/Medium, no income towers"]
+    if rbe.get("scaled"):
+        footer.append("RBE freeplay-scaled (rounds 81+)")
+    if rbe.get("truncated") or (cash.get("found") and cash.get("truncated")):
+        footer.append("breakdown truncated; totals are the full range")
+    embed.set_footer(text=" · ".join(footer))
     return embed
 
 

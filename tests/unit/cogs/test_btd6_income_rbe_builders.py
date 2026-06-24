@@ -89,3 +89,43 @@ async def test_round_embed_below_freeplay_has_no_effective_rbe_field() -> None:
     # Composition is always shown; the effective-RBE field only when it scales.
     assert any("Bloons this round" in n for n in names)
     assert not any("Effective RBE" in n for n in names)
+
+
+# --- round RANGE (owner: "round values only single, not a range") ----------
+
+
+@pytest.mark.asyncio
+async def test_round_with_end_round_renders_a_values_table() -> None:
+    embed = await _builders.build_round_embed(30, 50)
+    assert "rounds 30" in embed.title and "50" in embed.title
+    # Totals consistent with the AI-tool path / floor (28,867 RBE, $30,364 cash).
+    assert "28,867" in embed.description
+    assert "$30,364" in embed.description
+    assert "```" in embed.description  # the table
+    assert "cumulative" in embed.description
+
+
+@pytest.mark.asyncio
+async def test_round_single_still_renders_detail_not_table() -> None:
+    embed = await _builders.build_round_embed(30)
+    # Single-round card has the Economy field, not the range table title.
+    assert "rounds 30" not in (embed.title or "").lower()
+    assert any(f.name == "Economy" for f in embed.fields)
+
+
+@pytest.mark.asyncio
+async def test_round_range_flags_freeplay_scaling() -> None:
+    embed = await _builders.build_round_embed(95, 105)
+    assert "freeplay-scaled" in (embed.footer.text or "")
+
+
+@pytest.mark.asyncio
+async def test_round_range_normalizes_reversed_endpoints() -> None:
+    embed = await _builders.build_round_embed(50, 30)
+    assert "30" in embed.title and "50" in embed.title
+
+
+@pytest.mark.asyncio
+async def test_round_range_out_of_range_is_red() -> None:
+    embed = await _builders.build_round_range_embed(200, 250)
+    assert embed.color == discord.Color.red()

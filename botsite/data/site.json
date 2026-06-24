@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T10:31:22Z",
+    "generated_at": "2026-06-24T08:54:26Z",
     "build": {
-      "commit": "bf27a35",
-      "subject": "Merge branch 'main' into claude/blissful-planck-sf5te4",
-      "committed_at": "2026-06-24T10:31:22Z"
+      "commit": "d792e56",
+      "subject": "btd6: open round-range command session (born-red card)",
+      "committed_at": "2026-06-24T08:54:26Z"
     }
   },
   "counts": {
@@ -6411,8 +6411,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "",
-      "description": null,
+      "usage": "A single round's detail, or a values table across a round range.",
+      "description": "A single round's detail, or a values table across a round range.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -6450,8 +6450,8 @@
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Look up a round.",
-      "description": null,
+      "usage": "Look up a round, or a values table across a range of rounds.",
+      "description": "A single round's detail, or a values table across a round range.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",

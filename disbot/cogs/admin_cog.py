@@ -213,15 +213,23 @@ class AdminCog(commands.Cog):
             !syncslash guild       # sync this guild (explicit)
             !syncslash global      # sync globally — rate-limited;
                                    #   propagation can take up to 1 h
+            !syncslash clear       # remove this guild's command COPIES
 
         ``guild`` scope is the right choice in almost every case:
         Discord rate-limits global sync, and per-guild sync makes
         new commands appear immediately. ``global`` is only needed
         if the bot deploys to a guild that hasn't seen the tree yet.
+
+        **Do not run ``guild`` and ``global`` for the same environment.**
+        A command synced *both* globally and into a guild renders **twice**
+        in that guild (once from the global set, once from the guild-local
+        copy ``copy_global_to`` makes). Pick one — ``global`` for production,
+        ``guild`` for instant dev — and use ``clear`` to drop the guild
+        copies if you end up with the duplicate listing.
         """
         scope = scope.lower()
-        if scope not in ("guild", "global"):
-            await ctx.send("❌ Invalid scope. Use `guild` or `global`.")
+        if scope not in ("guild", "global", "clear"):
+            await ctx.send("❌ Invalid scope. Use `guild`, `global`, or `clear`.")
             return
 
         if scope == "global":
@@ -240,8 +248,28 @@ class AdminCog(commands.Cog):
 
         guild = ctx.guild
         if guild is None:
-            await ctx.send("❌ `guild` scope requires a guild context.")
+            await ctx.send("❌ `guild` / `clear` scope requires a guild context.")
             return
+
+        if scope == "clear":
+            # Drop the guild-local command copies so each command renders once
+            # again (from the global set). The fix for the "every command shows
+            # twice" state you get from syncing both globally and to the guild.
+            try:
+                self.bot.tree.clear_commands(guild=guild)
+                await self.bot.tree.sync(guild=guild)
+            except discord.HTTPException as exc:
+                await ctx.send(
+                    f"⚠️ Clear failed: `{type(exc).__name__}`: {exc}",
+                )
+                return
+            await ctx.send(
+                f"✅ Cleared **{guild.name}**'s guild-local command copies. If the "
+                "commands were also synced globally, each now shows once "
+                "(global propagation can take up to an hour to settle).",
+            )
+            return
+
         try:
             self.bot.tree.copy_global_to(guild=guild)
             synced = await self.bot.tree.sync(guild=guild)
@@ -252,7 +280,9 @@ class AdminCog(commands.Cog):
             return
         await ctx.send(
             f"✅ Copied global slash commands and synced **{len(synced)}** commands "
-            f"to **{guild.name}**.",
+            f"to **{guild.name}**. ⚠️ If you also ran `!syncslash global`, this guild "
+            "now shows each command twice — run `!syncslash clear` to drop these "
+            "guild copies and keep the global set.",
         )
 
     @commands.command(name="slashes", aliases=["slashlist"])
