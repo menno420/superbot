@@ -1,0 +1,1 @@
+- `claude/great-meitner-pnfp0g` · BTD6 paragon elite-boss damage multiplier (×2, paragon-only, all degrees) — add to paragon_degrees + render + grounding · `disbot/utils/btd6/paragon_degrees.py`, `disbot/utils/btd6/stats_embed.py`, `disbot/services/btd6_context_service.py`, `tests/` · 2026-06-24
