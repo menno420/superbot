@@ -235,6 +235,47 @@ async def test_selecting_hub_category_opens_host_cog_panel(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_selecting_hub_forwards_help_nav_card(monkeypatch):
+    """Forward-path pin (help-nav attachment seam, H3): selecting a hub whose
+    panel carries a ``help_nav_card`` must forward it as ``attachments=[card]``
+    on the in-place edit, so a card-bearing hub (the XP hub) shows its image
+    card when opened from the Help category index — not just from its command."""
+    import io
+
+    interaction = _interaction()
+    interaction.data = {"values": ["games"]}
+
+    vis_result = MagicMock()
+    vis_result.visible_subsystems = {"games"}
+    vis_result.member_tier = "owner"
+    monkeypatch.setattr(
+        help_cog.governance_service,
+        "resolve_visibility",
+        AsyncMock(return_value=vis_result),
+    )
+    monkeypatch.setattr(
+        help_cog.GovernanceContext,
+        "from_interaction",
+        lambda i: MagicMock(),
+    )
+
+    panel_view = discord.ui.View()
+    card = discord.File(io.BytesIO(b"\x89PNG\r\n\x1a\nfake"), filename="rank.png")
+    panel_view.help_nav_card = card  # type: ignore[attr-defined]
+    fake_cog = MagicMock()
+    fake_cog.build_help_menu_view = AsyncMock(
+        return_value=(discord.Embed(title="XP Hub"), panel_view),
+    )
+
+    with patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog):
+        view = HelpCategoryView(member_tier="owner")
+        await view._on_select(interaction)
+
+    kwargs = interaction.response.edit_message.call_args.kwargs
+    assert kwargs["attachments"] == [card]
+
+
+@pytest.mark.asyncio
 async def test_selecting_unknown_hub_sends_ephemeral(monkeypatch):
     interaction = _interaction()
     interaction.data = {"values": ["not_a_real_hub"]}

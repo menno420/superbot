@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-7n1117b` · scope: harden the help-nav attachment seam — behavioral forward-path regression pins on the primary Help-nav paths (HubChildButton, Help category select) so the just-shipped #1430 seam can't silently regress · area: `tests/unit/views/test_hub_children.py`, `tests/unit/help/test_help_category_view.py` (tests only) · 2026-06-24
