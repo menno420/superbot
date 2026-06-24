@@ -106,8 +106,10 @@ The fix is not more sections — it is a **structure** built from four laws.
    (DM-on-action, require-reason). (`moderation` + governance mod role.)
 3. **Block spam and bad links** *(NEW)* — one screen of toggles with sensible pre-filled limits.
    (`automod` spam/invites/caps/mentions.)
-4. **Where should activity appear?** — pick **or auto-create** a tidy log channel pair.
-   (`logging` Balanced preset + `channels`.)
+4. **Where should activity appear?** — pick **or auto-create** a log channel.
+   (`logging` enable + the `mod_channel` binding.) **Shipped scoped to a single moderation/catch-all
+   channel** (owner decision 2026-06-24, `#1429`); the "pair" + member/message activity is a later
+   follow-on, not this step.
 5. **Reward active members** — turn on levels; optionally auto-grant a role as members stay & chat —
    **the bot creates the roles**. (`xp` + `roles` + `role_templates`, dead-end removed.)
 6. **Set up a help desk** — let members open private support; pick who answers; bot makes the rest.
@@ -173,9 +175,14 @@ decision with architectural weight → called out as open question Q-A below.
   Additive: the old wizard is untouched (retired in PR 3). Jargon-clean (guard: the new file adds 0
   findings). **Remaining steps are mechanical follow-ons on the exact same pattern — append a `_StepView`
   subclass to `EssentialFlow._steps` + a test; no new cog/command/artifact, so no registration fan-out:**
-  - **Choose a log channel** *(next)* — a binding write via `BindingMutationPipeline` (⚠ on the
-    no-top-level-import list — **lazy-import it** inside the step, like `_set` does for settings) + an
-    optional **auto-create** via `ChannelLifecycleService.create_channels`.
+  - **Choose a log channel** *(SHIPPED 2026-06-24, `#1429`)* — a binding write via
+    `BindingMutationPipeline` (⚠ on the no-top-level-import list — **lazy-imported** inside the step,
+    like `_set` does for settings) + an optional **auto-create** via
+    `ChannelLifecycleService.create_channels`. **Scope = moderation log only (owner decision,
+    2026-06-24):** one screen turns on `logging.enabled` and binds `logging.mod_channel` (the
+    catch-all slot every other route falls back to) to the picked-or-created channel; auto-create makes
+    a `#mod-log`. Member-activity / message-content logging stay OFF — they are a later follow-on, not
+    this step. (The earlier §5 "log channel pair" framing is superseded by this single-channel answer.)
   - **Reward activity** — the `xp` enable toggle is trivial via `_set`; the role-threshold sub-step
     **needs a small new direct-apply role-threshold service** (the one genuine gap — no direct-apply path
     exists today) + `RoleLifecycleService.create_role` for auto-create.
@@ -223,10 +230,13 @@ python3.10 scripts/check_docs.py --strict
   the existing ticket section + the canonical lane rule.)
 - **Q-B:** is the **6-step spine** (0–6 above) the right essentials set, or do you want a different
   cut — e.g. tickets as an extra rather than a spine step, or reaction-roles promoted into the spine?
-- **Q-C:** **starter sets** (step 0) — happy for "Community/Gaming/Support/Creator" to each switch on a
-  curated default bundle automatically, or should step 0 only *recommend* and let the operator confirm
-  each? (Plan auto-applies safe, reversible defaults.)
-- **Q-D:** **auto-create naming** — default channel names (`#welcome`, `#server-log`, `#mod-log`) and
-  role names ("Level 10", "Regular") — fine as-is, or do you want to pick the wording?
-- **Q-E:** keep the **Advanced** bulk editor (draft → Final Review) for power users, or retire it once the
-  spine + extras cover everything? (Plan keeps it — it's harmless and serves multi-setting edits.)
+- **Q-C — ANSWERED (owner, 2026-06-24): auto-apply safe defaults.** When someone picks a server type
+  (step 0), it instantly switches on a curated, **reversible** bundle of defaults — fastest, nothing
+  irreversible. (Not built this PR; settles the step-0 preset follow-on.)
+- **Q-D — ANSWERED (owner, 2026-06-24): plain-language names.** Auto-created channels/roles use the
+  short, friendly §4 wording (`#mod-log` / `#server-log`, "Level 10", "Regular") rather than the longer
+  `bot-`-prefixed `suggested_name` convention. (Log step `#1429` creates `#mod-log` accordingly.)
+- **Q-E — ANSWERED (owner, 2026-06-24): keep but REWORK.** Keep the Advanced bulk editor for power
+  users, but **rework it — "currently most of it does not do anything."** So PR 3 is not just "demote
+  cog_routing/cleanup under Advanced"; it must audit the draft → Final Review editor and either wire up
+  or strip its dead actions. (Was: "keep as-is"; the owner sharpened it to keep-and-fix.)

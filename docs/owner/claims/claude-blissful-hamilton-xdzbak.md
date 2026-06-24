@@ -1,1 +1,0 @@
-claude/blissful-hamilton-xdzbak · Essential Setup spine: "Choose a log channel" step (binding via BindingMutationPipeline + optional auto-create via ChannelLifecycleService) · disbot/views/setup/essential_setup.py + tests/unit/views/setup/test_essential_setup.py · 2026-06-24
