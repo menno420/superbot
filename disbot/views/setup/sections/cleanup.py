@@ -1,7 +1,7 @@
 """Cleanup inheritance section — drafts per-scope cleanup levels.
 
 Stages ``SetupOperation(kind="set_cleanup_policy", ...)`` drafts for
-the guild-default level plus optional category and channel overrides.
+the server-wide level plus optional category and channel overrides.
 The existing :mod:`governance.cleanup` resolver continues to be
 authoritative at read time (``thread > channel > category > guild >
 fallback``); the wizard only stages writes.
@@ -38,7 +38,7 @@ SLUG = "cleanup"
 
 SCOPE_OPTIONS: list[discord.SelectOption] = [
     discord.SelectOption(
-        label="Guild default",
+        label="Server default",
         value="guild",
         description="Cleanup level for every channel without an override.",
         emoji="🌐",
@@ -83,9 +83,9 @@ def build_cleanup_embed() -> discord.Embed:
         title="🧹 Cleanup inheritance",
         description=(
             "Configure cleanup behaviour at three scopes.  The resolver "
-            "walks **thread → channel → category → guild → default**, so "
+            "walks **thread → channel → category → server → default**, so "
             "channel overrides win over category overrides which win "
-            "over the guild default.  Each pick stages a "
+            "over the server default.  Each pick stages a "
             "`set_cleanup_policy` operation — Final review applies "
             "them all in order."
         ),
@@ -115,7 +115,7 @@ class _GuildLevelSelect(discord.ui.Select):
 
     def __init__(self) -> None:
         super().__init__(
-            placeholder="Pick the guild-default level…",
+            placeholder="Pick the server-wide level…",
             min_values=1,
             max_values=1,
             options=_level_options(),
@@ -203,7 +203,7 @@ class _ScopeSelect(discord.ui.Select):
             view = BaseView(interaction.user, public=False, timeout=120)
             view.add_item(_GuildLevelSelect())
             await interaction.response.send_message(
-                "Pick the guild-default cleanup level:",
+                "Pick the server-wide cleanup level:",
                 view=view,
                 ephemeral=True,
             )
@@ -305,7 +305,7 @@ class _ProfileSelect(discord.ui.Select):
         guild = interaction.guild
         if guild is None or interaction.guild_id is None:
             await interaction.response.send_message(
-                "Cleanup profiles require a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -418,7 +418,7 @@ async def _stage_cleanup_policy(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Cleanup edits require a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return
@@ -498,7 +498,7 @@ async def _customize_run(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Cleanup section requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return
@@ -538,7 +538,7 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     """Cleanup section entry — shows the section card."""
     from views.setup.section_card import show
 
-    detected = "Resolver walks thread → channel → category → guild → default."
+    detected = "Resolver walks thread → channel → category → server → default."
     # ``recommended_ops_builder`` is read from the registered
     # ``SetupSection`` field by ``section_card.show`` — no need to
     # pass it explicitly here.

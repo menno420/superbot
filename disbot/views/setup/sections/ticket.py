@@ -224,7 +224,7 @@ async def _open_panel(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "The tickets section requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return

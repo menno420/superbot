@@ -519,7 +519,7 @@ async def test_start_button_requires_guild_context():
 
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0]
-    assert "guild" in msg.lower()
+    assert "server" in msg.lower()
 
 
 @pytest.mark.asyncio

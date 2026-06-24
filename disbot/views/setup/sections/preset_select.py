@@ -227,7 +227,7 @@ async def _stage_preset(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Preset staging requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return
@@ -308,7 +308,7 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Preset section requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return

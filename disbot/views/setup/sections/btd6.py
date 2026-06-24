@@ -38,7 +38,7 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
             "BTD6 assistant is loaded and reachable via `!btd6` / `/btd6`. "
             "The assistant answers deterministic tower/round/hero/map/mode "
             "questions from the pinned game-data fixtures.\n\n"
-            "Per-guild settings (channel routing, mention behaviour, AI "
+            "Per-server settings (channel routing, mention behaviour, AI "
             "augmentation toggle) are not yet exposed in setup — they land "
             "with Module 6 of the AI/BTD6 plan."
         ),

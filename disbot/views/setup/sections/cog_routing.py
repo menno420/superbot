@@ -2,7 +2,7 @@
 
 Stages ``SetupOperation(kind="set_cog_routing", ...)`` drafts.  The
 runtime resolver :func:`services.command_routing.is_cog_enabled`
-walks ``channel → category → guild → default-true`` so a fresh guild
+walks ``channel → category → server → default-true`` so a fresh guild
 (no policy rows) gets every cog enabled — routing only restricts.
 
 UX mirrors the cleanup section: operator picks a scope (guild
@@ -37,7 +37,7 @@ SLUG = "cog_routing"
 
 SCOPE_OPTIONS: list[discord.SelectOption] = [
     discord.SelectOption(
-        label="Guild default",
+        label="Server default",
         value="guild",
         description="Enable / disable a cog server-wide.",
         emoji="🌐",
@@ -108,7 +108,7 @@ def build_cog_routing_embed() -> discord.Embed:
         title="🧭 Cog routing",
         description=(
             "Enable or disable cogs per scope.  The resolver walks "
-            "**channel → category → guild → default-true** — a fresh "
+            "**channel → category → server → default-true** — a fresh "
             "server has every cog enabled and routing only restricts.  "
             "Each pick stages a `set_cog_routing` operation; nothing "
             "applies until Final review."
@@ -296,7 +296,7 @@ class _ScopeSelect(discord.ui.Select):
                 scope_name="guild",
             )
             await interaction.response.send_message(
-                "Pick a cog to set the guild default for:",
+                "Pick a cog to set the server default for:",
                 view=view,
                 ephemeral=True,
             )
@@ -356,7 +356,7 @@ class _RoutingProfileSelect(discord.ui.Select):
         guild = interaction.guild
         if guild is None or interaction.guild_id is None:
             await interaction.response.send_message(
-                "Cog routing profiles require a guild context.",
+                "This can only be used in a server.",
                 ephemeral=True,
             )
             return
@@ -473,7 +473,7 @@ async def _stage_cog_routing(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Cog routing edits require a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return
@@ -555,7 +555,7 @@ async def _customize_run(
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
-            "Cog routing section requires a guild context.",
+            "This can only be used in a server.",
             ephemeral=True,
         )
         return
