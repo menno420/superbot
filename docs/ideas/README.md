@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`help-nav-attachment-seam-2026-06-24.md`](./help-nav-attachment-seam-2026-06-24.md) —
+  **session-idea (2026-06-24, Q-0089) from the `!xpmenu` H3 slice (#1413):** hub panels show their
+  visual image card when opened by their direct command but a plain embed when reached through Help
+  (`build_help_menu_view` is embed-only across the codebase). Proposes one help-nav attachment seam so
+  the card carries through Help too — closing the inconsistency at the root as the cards go universal.
+  Subsystem: none.
 - [`btd6-runtime-mechanics-from-game-2026-06-23.md`](./btd6-runtime-mechanics-from-game-2026-06-23.md) —
   **owner-raised (2026-06-23):** get the BTD6 *runtime/simulation* layer (freeplay health/speed ramp,
   superceramic swap, per-round RBE & cash) **straight from the game** — the dump only exports entity
