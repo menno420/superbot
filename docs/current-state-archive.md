@@ -86,6 +86,37 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1308 · #1317 · #1320 (2026-06-22, CI / ledger hygiene + tool-pin guard)** — fixed the #1279 ledger
+  under-marker drift + design-system CI-coverage paths + reverted a Dependabot **ruff pin drift** back to
+  three-places parity (#1308/#1317, with stale-claim GC), then **CI-enforced the tool-pin guard**
+  (`tool-pins.yml` + `check_tool_pins.py`) to close the #1315 three-places-drift class at the root (#1320).
+- **#1307 · #1309 · #1311 · #1312 · #1313 · #1314 · #1315 (2026-06-22, dependency bumps + dashboard refresh)** —
+  Dependabot bumps (fastapi #1309, python-json-logger #1311, aiohttp #1312, youtube-transcript-api #1313 with a
+  v1.x API fix, openai #1314, dev-deps group #1315) and a per-source-merge `dashboard-data-refresh` regen
+  (#1307, Q-0167).
+- **#1281 · #1282 · #1284 · #1286 · #1289 (2026-06-22, mining grid Mine + economy/energy rebalance)** — the
+  descent game became a **(x,y,z) seed-deterministic grid world** with 6-direction movement (hub-redesign PR 3,
+  #1281, migration 085), then **unified dig + move** so each directional dig moves you into the cell (#1282); a
+  stdlib **economy/balance simulator** (`tools/game_sim/mining_economy_sim.py`, #1284) drove the **sim-pinned
+  rebalance + energy system** (food/booster refill, #1286) and **cook + sell fish** energy refill via a campfire
+  (#1289). [plan](planning/mining-hub-redesign-2026-06-15.md).
+- **#1270 · #1265 · #1268 (2026-06-22, Starboard PR 2 + creature PvP + BTD6 buff-uptime)** — Starboard PR 2:
+  self-star exclusion + ignore-channels + the `BaseView` config panel (#1270, the planned B1 slice, builds on
+  #1259); creature PvP gained a ⌛ **challenge-expiry timeout notice** (#1265); BTD6 buff-uptime now models
+  **attack-speed buffs on the Alchemist** (`alch_speed`, #1268).
+- **#1275 · #1288 · #1280 (2026-06-22, CI / autonomous-loop reliability)** — root-fixed the **CI-strand** class:
+  `code-quality`'s `cancel-in-progress` was dropping the *head-commit* run (#1275), and a new
+  **`ci-rerun-watchdog`** re-kicks `code-quality` when GitHub drops the `synchronize` event (#1288,
+  `check_ci_coverage.py`); plus a **wrong-branch guard** hook institutionalizing the friction→guard reflex (#1280).
+- **#1283 · #1285 · #1271 (2026-06-22, Q-0195 coordination-file restructure + workflow tooling)** — the
+  **state-file restructure** — `active-work.md` → one-file-per-claim (kills the merge-conflict class) +
+  `current-state.md` → per-sector files under [`current-state/`](current-state/README.md) (#1283, justified by
+  `tools/sim/claim_layout_sim.py`); an **unattended-fit dimension** in the per-sector dispatch contract so
+  empty-fire runs stop stalling (#1285); and `band_pr_status.py --themes`, a grouped-entry skeleton drafter (#1271).
+- **#1267 · #1291 · #1272 (2026-06-22, bug fixes — dashboard determinism + command scanner)** — root-caused the
+  dashboard `generated_at` nondeterminism (deterministic timestamp + refresh self-heal, #1267) then a **hermetic
+  determinism test** killing the `-n auto` flake (**BUG-0024**, #1291); **BUG-0023** root fix — the command
+  scanner now discovers `app_commands.Group` attribute slash commands (#1272).
 - **#1276 · #1278 · #1274 · #1269 · #1273 · #1287 (2026-06-22, docs / chore / config + dashboard refresh)** —
   repo navigation cleanup + prune the stale claim ledger (#1276); deleted the disproven "synchronize doesn't
   re-fire CI" journal claim (#1278); allow read-only network probes (`curl`) in settings + prune a stale claim
