@@ -58,14 +58,14 @@ files, `disbot/services/btd6_*`, `disbot/views/btd6/`, `disbot/utils/db/btd6_*`,
   defensive, kill-switch `BTD6_AUTO_SEED=0`). So a **version bump** is zero-touch
   (merge → deploy → current). **A same-`version` data edit (e.g. a buff-stat fix
   with no version bump) is NOT auto-applied** — by the owner's strict-(b) choice
-  (2026-06-21) it still needs a one-time `!btd6ops seed-data`. Code deploys
+  (2026-06-21) it still needs a one-time `!btd6 ops seed-data`. Code deploys
   themselves are Railway auto-deploy-on-merge; `!restart` exits nonzero since
   PR #675 so the platform relaunches it.
 - **Same-version drift is now surfaced (PR #1258):** since strict (b) ignores
   same-`version` edits and `served_data_drift()` is version-only, a buff/stat fix
   with no version bump used to stay stale silently. `content_drift()` (sha over the
   canonical JSON, the seed digest) now flags those at boot **and** in `!btd6 status`
-  with a "run `!btd6ops seed-data`" reminder — warn-only, no auto-write.
+  with a "run `!btd6 ops seed-data`" reminder — warn-only, no auto-write.
 
 ## Plans / pending approval
 
