@@ -3749,6 +3749,21 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "quicksetup",
+    "area": "other",
+    "status": "finished",
+    "summary": "Open Essential Setup — a few simple steps, each saved instantly.",
+    "description": "Open Essential Setup — a few simple steps, each saved instantly.",
+    "usage": "!quicksetup",
+    "aliases": [
+      "essentialsetup"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "quote",
     "area": "utility",
     "status": "finished",
@@ -6632,7 +6647,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "30331fd",
+    "build": "e02a66d",
     "title": "New public bot website",
     "changes": [
       {
@@ -6644,7 +6659,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "30331fd",
+    "build": "e02a66d",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6656,7 +6671,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "30331fd",
+    "build": "e02a66d",
     "title": "Command-alias suggestions",
     "changes": [
       {

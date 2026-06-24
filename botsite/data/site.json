@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T13:29:40Z",
+    "generated_at": "2026-06-24T13:45:19Z",
     "build": {
-      "commit": "30331fd",
-      "subject": "Merge branch 'main' into claude/great-meitner-pnfp0g",
-      "committed_at": "2026-06-24T13:29:40Z"
+      "commit": "e02a66d",
+      "subject": "Merge branch 'main' into claude/serene-mccarthy-lv5z94",
+      "committed_at": "2026-06-24T13:45:19Z"
     }
   },
   "counts": {
-    "commands": 436,
+    "commands": 438,
     "features": 42,
     "games": 11
   },
@@ -10576,6 +10576,36 @@
       "permissions": "",
       "usage": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5).",
       "description": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "quicksetup",
+      "aliases": [
+        "essentialsetup"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Open Essential Setup — a few simple steps, each saved instantly.",
+      "description": "Open Essential Setup — a few simple steps, each saved instantly.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "quicksetup",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Quick guided setup — a few simple steps, no jargon.",
+      "description": "Open Essential Setup — a few simple steps, each saved instantly.",
       "use_cases": null,
       "examples": [],
       "status": "finished",

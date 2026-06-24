@@ -1043,6 +1043,7 @@ EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
     "moderation": None,
     "myprofile": None,
     "platform": None,
+    "quicksetup": None,  # Essential Setup front door (plain-language spine)
     "server-management": None,
     "settings": None,
     "setup": None,
