@@ -166,6 +166,25 @@ def dejavu_fonts(size_big: int, size_small: int):  # noqa: ANN201
     return load_font((_DEJAVU_BOLD,), size_big), load_font((_DEJAVU,), size_small)
 
 
+def mix(a: RGB, b: RGB, t: float) -> RGB:
+    """Linear blend of two RGB colours at fraction *t* (0 → *a*, 1 → *b*).
+
+    Pure colour math — the one home for the per-channel lerp that gradient
+    backgrounds need (``role_menu_render`` grew it privately as ``_mix``).  *t*
+    is clamped to ``[0, 1]`` so an out-of-range fraction can never produce an
+    invalid channel value.
+    """
+    if t < 0:
+        t = 0.0
+    elif t > 1:
+        t = 1.0
+    return (
+        round(a[0] + (b[0] - a[0]) * t),
+        round(a[1] + (b[1] - a[1]) * t),
+        round(a[2] + (b[2] - a[2]) * t),
+    )
+
+
 def initials(name: str) -> str:
     """First two alphanumerics of *name*, upper-cased (``?`` if none).
 
@@ -386,6 +405,7 @@ __all__ = [
     "get_theme",
     "load_font",
     "dejavu_fonts",
+    "mix",
     "initials",
     "CardCanvas",
     "new_canvas",

@@ -84,11 +84,14 @@ def test_render_returns_none_without_pillow(monkeypatch):
 
 
 def test_fit_truncates_to_width():
-    from PIL import Image, ImageDraw
+    """The migrated renderer clamps overflow via the shared engine's
+    ``CardCanvas.fit`` (the private ``_fit`` copy is gone)."""
+    from utils.card_render import get_theme, new_canvas
 
-    draw = ImageDraw.Draw(Image.new("RGB", (10, 10)))
-    big, _ = role_menu_render._fonts(58, 30)
-    fitted = role_menu_render._fit(draw, "Z" * 200, big, 400)
+    canvas = new_canvas(10, 10, get_theme("midnight"))
+    assert canvas is not None
+    font = canvas.font(58, bold=True)
+    fitted = canvas.fit("Z" * 200, font, 400)
     assert fitted.endswith("…")
-    assert draw.textlength(fitted, font=big) <= 400
-    assert role_menu_render._fit(draw, "Hi", big, 400) == "Hi"
+    assert canvas.draw.textlength(fitted, font=font) <= 400
+    assert canvas.fit("Hi", font, 400) == "Hi"

@@ -14,15 +14,7 @@ The preset *catalogue* (which styles exist + their labels) lives in
 
 from __future__ import annotations
 
-import io
-
-# Shared card palette (dark-theme friendly) — mirrors welcome_render so the two
-# card families read as one visual system.
-_BG = (24, 25, 31)
-_PANEL = (32, 34, 42)
-_TEXT = (235, 236, 240)
-_SUBTLE = (148, 155, 164)
-_DEFAULT_ACCENT = (88, 101, 242)  # blurple
+from utils.card_render import RGB, CardCanvas, get_theme, mix, new_canvas
 
 # Card geometry — a wide banner that sits above the menu embed.
 _WIDTH = 960
@@ -33,78 +25,37 @@ _HEIGHT = 240
 KNOWN_STYLES = ("banner", "gradient", "minimal", "spotlight")
 
 
-def _fonts(size_big: int, size_small: int):  # noqa: ANN202 — PIL lazy types
-    """Best-effort font pair; Pillow's default bitmap font as the fallback."""
-    from PIL import ImageFont  # lazy: optional at import time
+def _draw_background(canvas: CardCanvas, style: str, accent: RGB) -> None:
+    """Paint the card background for the chosen preset style (in place).
 
-    big: ImageFont.FreeTypeFont | ImageFont.ImageFont
-    small: ImageFont.FreeTypeFont | ImageFont.ImageFont
-    try:
-        big = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-            size_big,
-        )
-        small = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            size_small,
-        )
-    except Exception:  # noqa: BLE001 — font availability is environmental
-        big = ImageFont.load_default()
-        small = ImageFont.load_default()
-    return big, small
-
-
-def _fit(draw, text: str, font, max_width: int) -> str:  # noqa: ANN001
-    """Ellipsise ``text`` until it fits within ``max_width`` px (welcome_render rule)."""
-    if draw.textlength(text, font=font) <= max_width:
-        return text
-    ellipsis = "…"
-    while text and draw.textlength(text + ellipsis, font=font) > max_width:
-        text = text[:-1]
-    return (text + ellipsis) if text else ellipsis
-
-
-def _mix(
-    a: tuple[int, int, int],
-    b: tuple[int, int, int],
-    t: float,
-) -> tuple[int, int, int]:
-    """Linear blend of two RGB colours at fraction ``t`` (0 → a, 1 → b)."""
-    return (
-        round(a[0] + (b[0] - a[0]) * t),
-        round(a[1] + (b[1] - a[1]) * t),
-        round(a[2] + (b[2] - a[2]) * t),
-    )
-
-
-def _draw_background(
-    img,
-    draw,
-    style: str,
-    accent: tuple[int, int, int],
-) -> None:  # noqa: ANN001
-    """Paint the card background for the chosen preset style (in place)."""
+    Drawn through the engine's :class:`~utils.card_render.CardCanvas` (the
+    ``midnight`` skin = the dark-blurple palette this card always used) plus
+    the shared :func:`~utils.card_render.mix` blend, so the role-menu and
+    welcome cards read as one visual system off one code path.
+    """
+    draw = canvas.draw
+    t = canvas.theme
     if style == "gradient":
         # Vertical accent → dark gradient (one horizontal line per row).
-        top = _mix(accent, _BG, 0.35)
+        top = mix(accent, t.bg, 0.35)
         for y in range(_HEIGHT):
             draw.line(
                 ((0, y), (_WIDTH, y)),
-                fill=_mix(top, _BG, y / max(1, _HEIGHT - 1)),
+                fill=mix(top, t.bg, y / max(1, _HEIGHT - 1)),
             )
     elif style == "spotlight":
         # Dark panel with a bold accent block down the left third.
-        draw.rectangle((0, 0, _WIDTH, _HEIGHT), fill=_PANEL)
+        draw.rectangle((0, 0, _WIDTH, _HEIGHT), fill=t.panel)
         draw.rectangle((0, 0, 18, _HEIGHT), fill=accent)
         draw.rectangle(
             (_WIDTH - 280, 0, _WIDTH, _HEIGHT),
-            fill=_mix(accent, _PANEL, 0.78),
+            fill=mix(accent, t.panel, 0.78),
         )
     elif style == "minimal":
         # Flat channel-blending dark; the accent shows only as a thin underline.
-        draw.rectangle((0, 0, _WIDTH, _HEIGHT), fill=_BG)
+        draw.rectangle((0, 0, _WIDTH, _HEIGHT), fill=t.bg)
     else:  # "banner" (default) — dark panel + a left accent bar.
-        draw.rectangle((0, 0, _WIDTH, _HEIGHT), fill=_PANEL)
+        draw.rectangle((0, 0, _WIDTH, _HEIGHT), fill=t.panel)
         draw.rectangle((0, 0, 14, _HEIGHT), fill=accent)
 
 
@@ -113,7 +64,7 @@ def render_role_menu_card(
     style: str = "banner",
     title: str = "Pick your roles",
     overlay: str | None = None,
-    accent: tuple[int, int, int] | None = None,
+    accent: RGB | None = None,
 ) -> bytes | None:
     """Render a role-menu banner card → PNG bytes, or ``None`` without Pillow.
 
@@ -123,38 +74,37 @@ def render_role_menu_card(
     defaulting to blurple. Pure / no-network — callers fall back to embed-only when
     this returns ``None``.
     """
-    try:
-        from PIL import Image, ImageDraw  # lazy: degrade gracefully
-    except Exception:  # noqa: BLE001
+    canvas = new_canvas(_WIDTH, _HEIGHT, get_theme("midnight"))
+    if canvas is None:  # Pillow unavailable → caller keeps the embed fallback.
         return None
 
     style = style if style in KNOWN_STYLES else "banner"
-    rgb = accent or _DEFAULT_ACCENT
-    img = Image.new("RGB", (_WIDTH, _HEIGHT), _BG)
-    draw = ImageDraw.Draw(img)
-    _draw_background(img, draw, style, rgb)
+    rgb = accent or canvas.theme.accent
+    _draw_background(canvas, style, rgb)
 
-    big, small = _fonts(58, 30)
     # Text column: leave room for the left accent bar / block on the side styles.
     text_x = 60 if style in ("banner", "gradient") else 70
     text_max = _WIDTH - text_x - 80
-    heading = _fit(draw, title or "Pick your roles", big, text_max)
+    heading = title or "Pick your roles"
 
     if overlay:
-        sub = _fit(draw, overlay, small, text_max)
-        draw.text((text_x, 78), heading, font=big, fill=_TEXT)
-        draw.text((text_x + 2, 158), sub, font=small, fill=_SUBTLE)
+        canvas.text((text_x, 78), heading, size=58, bold=True, max_width=text_max)
+        canvas.text(
+            (text_x + 2, 158),
+            overlay,
+            size=30,
+            color=canvas.theme.subtle,
+            max_width=text_max,
+        )
     else:
         # Centre the single line vertically when there is no overlay.
-        draw.text((text_x, 96), heading, font=big, fill=_TEXT)
+        canvas.text((text_x, 96), heading, size=58, bold=True, max_width=text_max)
 
     if style == "minimal":
         # The accent is a thin underline beneath the heading rather than a panel.
-        draw.line((text_x, 170, _WIDTH - 80, 170), fill=rgb, width=4)
+        canvas.draw.line((text_x, 170, _WIDTH - 80, 170), fill=rgb, width=4)
 
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
+    return canvas.to_png()
 
 
 __all__ = ["KNOWN_STYLES", "render_role_menu_card"]

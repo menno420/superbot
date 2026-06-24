@@ -29,6 +29,19 @@ def test_initials_falls_back_to_question_mark():
     assert card_render.initials("") == "?"
 
 
+def test_mix_blends_and_clamps():
+    black, white = (0, 0, 0), (255, 255, 255)
+    # Endpoints are exact; the midpoint rounds per channel.
+    assert card_render.mix(black, white, 0.0) == black
+    assert card_render.mix(black, white, 1.0) == white
+    assert card_render.mix(black, white, 0.5) == (128, 128, 128)
+    # Out-of-range fractions clamp to [0, 1] — never an invalid channel value.
+    assert card_render.mix(black, white, -3.0) == black
+    assert card_render.mix(black, white, 9.0) == white
+    # Asymmetric channels blend independently.
+    assert card_render.mix((10, 20, 30), (30, 60, 90), 0.5) == (20, 40, 60)
+
+
 def test_get_theme_resolves_known_and_falls_back():
     assert card_render.get_theme("ember").name == "ember"
     # Unknown / None never raises — it returns the default skin.

@@ -14,29 +14,16 @@ fallback), pure inputs in / bytes out.
 
 from __future__ import annotations
 
-import io
+from utils.card_render import get_theme, new_canvas
 
 # The welcome card graduated to a real feature; re-export the production
 # renderer so the UX-lab gallery previews the exact card members receive.
 from utils.welcome_render import render_welcome_card
 
-# Shared sample palette (dark-theme friendly).
-_BG = (24, 25, 31)
-_PANEL = (32, 34, 42)
-_ACCENT = (88, 101, 242)  # blurple
-_TEXT = (235, 236, 240)
-_SUBTLE = (148, 155, 164)
-_GOLD = (240, 178, 50)
-
-
-def _fonts(size_big: int, size_small: int):  # noqa: ANN202 — PIL lazy types
-    """Best-effort (bold-big, regular-small) DejaVu pair.
-
-    Delegates to the shared card engine — one font loader, not three.
-    """
-    from utils.card_render import dejavu_fonts
-
-    return dejavu_fonts(size_big, size_small)
+# Both candidate cards draw on the shared engine's "midnight" skin — the
+# dark-blurple palette these prototypes always used — so they share the one
+# palette + font loader rather than re-declaring their own.
+_THEME = "midnight"
 
 
 def render_leaderboard_image(
@@ -49,28 +36,23 @@ def render_leaderboard_image(
     ),
 ) -> bytes | None:
     """Top-N horizontal bars — the image alternative to the embed board."""
-    try:
-        from PIL import Image, ImageDraw  # lazy: degrade gracefully
-    except Exception:  # noqa: BLE001
+    canvas = new_canvas(720, 96 + 64 * len(rows), get_theme(_THEME))
+    if canvas is None:  # Pillow unavailable → caller keeps the embed fallback.
         return None
-    img = Image.new("RGB", (720, 96 + 64 * len(rows)), _BG)
-    draw = ImageDraw.Draw(img)
-    big, small = _fonts(36, 24)
-    draw.text((32, 24), "🏆 Top members", font=big, fill=_GOLD)
+    t = canvas.theme
+    canvas.text((32, 24), "🏆 Top members", size=36, bold=True, color=t.gold)
     top = rows[0][1] if rows else 1
     for i, (name, score) in enumerate(rows):
         y = 96 + i * 64
         width = int(420 * score / top)
-        draw.rounded_rectangle(
+        canvas.draw.rounded_rectangle(
             (200, y, 200 + width, y + 40),
             radius=8,
-            fill=_ACCENT if i else _GOLD,
+            fill=t.accent if i else t.gold,
         )
-        draw.text((32, y + 6), f"{i + 1}. {name}", font=small, fill=_TEXT)
-        draw.text((210 + width, y + 6), f"{score:,}", font=small, fill=_SUBTLE)
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=85)
-    return buf.getvalue()
+        canvas.text((32, y + 6), f"{i + 1}. {name}", size=24)
+        canvas.text((210 + width, y + 6), f"{score:,}", size=24, color=t.subtle)
+    return canvas.to_jpeg(quality=85)
 
 
 def render_event_poster(
@@ -79,27 +61,19 @@ def render_event_poster(
     host: str = "AstroFox",
 ) -> bytes | None:
     """Event-poster candidate (the Q-0112 scheduler's visual upgrade)."""
-    try:
-        from PIL import Image, ImageDraw  # lazy: degrade gracefully
-    except Exception:  # noqa: BLE001
+    canvas = new_canvas(800, 420, get_theme(_THEME))
+    if canvas is None:  # Pillow unavailable → caller keeps the embed fallback.
         return None
-    img = Image.new("RGB", (800, 420), _PANEL)
-    draw = ImageDraw.Draw(img)
-    big, small = _fonts(52, 28)
-    draw.rectangle((0, 0, 800, 12), fill=_ACCENT)
-    draw.rectangle((0, 408, 800, 420), fill=_ACCENT)
-    draw.text((48, 96), title, font=big, fill=_TEXT)
-    draw.text((50, 190), when, font=small, fill=_GOLD)
-    draw.text((50, 240), f"Hosted by {host}", font=small, fill=_SUBTLE)
-    draw.text(
-        (50, 320),
-        "RSVP with the buttons below ✅ ❔ ❌",
-        font=small,
-        fill=_TEXT,
-    )
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=85)
-    return buf.getvalue()
+    t = canvas.theme
+    # Panel-fill body (not the theme bg) with accent rails top and bottom.
+    canvas.draw.rectangle((0, 0, 800, 420), fill=t.panel)
+    canvas.draw.rectangle((0, 0, 800, 12), fill=t.accent)
+    canvas.draw.rectangle((0, 408, 800, 420), fill=t.accent)
+    canvas.text((48, 96), title, size=52, bold=True)
+    canvas.text((50, 190), when, size=28, color=t.gold)
+    canvas.text((50, 240), f"Hosted by {host}", size=28, color=t.subtle)
+    canvas.text((50, 320), "RSVP with the buttons below ✅ ❔ ❌", size=28)
+    return canvas.to_jpeg(quality=85)
 
 
 __all__ = [
