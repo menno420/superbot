@@ -166,16 +166,21 @@ decision with architectural weight → called out as open question Q-A below.
   instantly" (direct lane), 2026-06-24.** Installment 1 SHIPPED: `disbot/views/setup/essential_setup.py`
   — a new **linear, plain-language, direct-apply** flow (`EssentialFlow` + per-step `BaseView`s with
   Save/Skip/Back + "Step X of N"), opened by a new **`!quicksetup` / `/quicksetup`** cog
-  (`cogs/quicksetup_cog.py`, admin-gated, server-only). Two highest-value steps live end-to-end —
-  **Greet new members** (welcome enabled/join/channel/entry-role) and **Set your moderators** (mod role +
-  DM-on-action) — each writing through the audited `SettingsMutationPipeline` immediately (no draft, no
-  Final Review), plus an **All-done summary**. Additive: the old wizard is untouched (retired in PR 3).
-  Jargon-clean (guard: new file adds 0 findings). **Remaining steps are mechanical follow-ons on this
-  exact pattern:** block spam (`automod` toggles) · choose log channel (binding + auto-create) · reward
-  activity (xp + role-threshold — needs a small direct-apply role-threshold service) · help desk (reuse
-  `ticket_mutation`) · server-type starter preset (needs a direct-apply preset path — currently
-  draft-only). Auto-create channels/roles (`ChannelLifecycleService`/`RoleLifecycleService`) folds into
-  the channel/reward steps.
+  (`cogs/quicksetup_cog.py`, admin-gated, server-only). **Four steps live end-to-end** (each writes
+  through its audited service immediately — no draft, no Final Review — plus an **All-done summary**):
+  **Greet new members** (welcome) `#1425` · **Set your moderators** (moderation) `#1425` · **Block spam
+  and bad links** (automod toggles) `#1427` · **Set up a help desk** (`ticket_mutation`) `#1427`.
+  Additive: the old wizard is untouched (retired in PR 3). Jargon-clean (guard: the new file adds 0
+  findings). **Remaining steps are mechanical follow-ons on the exact same pattern — append a `_StepView`
+  subclass to `EssentialFlow._steps` + a test; no new cog/command/artifact, so no registration fan-out:**
+  - **Choose a log channel** *(next)* — a binding write via `BindingMutationPipeline` (⚠ on the
+    no-top-level-import list — **lazy-import it** inside the step, like `_set` does for settings) + an
+    optional **auto-create** via `ChannelLifecycleService.create_channels`.
+  - **Reward activity** — the `xp` enable toggle is trivial via `_set`; the role-threshold sub-step
+    **needs a small new direct-apply role-threshold service** (the one genuine gap — no direct-apply path
+    exists today) + `RoleLifecycleService.create_role` for auto-create.
+  - **Server-type starter preset** (step 0) — **needs a direct-apply preset path** (presets are
+    draft-only today); design decision before building.
 - **PR 2 — extras + health check:** the **Extras menu** (each existing config surface as a one-action
   step: starboard, counters, security, image-mod, karma, AI, reaction roles, giveaways) + the single
   **"Check my setup"** health button (folds in scan/readiness/diagnostics/suggestions). Wires the
