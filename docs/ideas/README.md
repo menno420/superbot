@@ -46,6 +46,18 @@ Current broad captures:
   (`build_help_menu_view` is embed-only across the codebase). Proposes one help-nav attachment seam so
   the card carries through Help too — closing the inconsistency at the root as the cards go universal.
   Subsystem: none.
+- [`askuserquestion-preview-for-design-forks-2026-06-24.md`](./askuserquestion-preview-for-design-forks-2026-06-24.md) —
+  **grooming promotion (2026-06-24, from a session log):** use `AskUserQuestion`'s per-option `preview`
+  field to render a mockup of each option's resulting UX for **design/UX forks**, so the owner picks the
+  option that *looks* best, not the one that *reads* safest. Motivated by the same-day #1429→#1432 setup
+  rework (a scope-narrowing answer read as final). Rescued from `.sessions/` so grooming can find it.
+  Subsystem: none.
+- [`settle-once-architecture-guard-2026-06-24.md`](./settle-once-architecture-guard-2026-06-24.md) —
+  **session-idea (2026-06-24, Q-0089) from the settle-once dispatch run (#1444/#1445):** a
+  `check_architecture` rule that flags a game view / state object whose settlement path (posts a result
+  or calls `settle_pvp`/`refund_pvp`) is reachable from >1 trigger but doesn't adopt `SettleOnceMixin` —
+  the CI ratchet form of the by-hand double-settle hunt that run did across four views. Warn-first, after
+  the mixin earns more trust. Subsystem: none.
 - [`btd6-runtime-mechanics-from-game-2026-06-23.md`](./btd6-runtime-mechanics-from-game-2026-06-23.md) —
   **owner-raised (2026-06-23):** get the BTD6 *runtime/simulation* layer (freeplay health/speed ramp,
   superceramic swap, per-round RBE & cash) **straight from the game** — the dump only exports entity
