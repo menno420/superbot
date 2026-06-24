@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T22:10:51Z",
+    "generated_at": "2026-06-24T23:42:44Z",
     "build": {
-      "commit": "1f0e8d9c",
-      "subject": "Merge pull request #1441 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-24T22:10:51Z"
+      "commit": "b3e8c935",
+      "subject": "Merge pull request #1445 from menno420/claude/funny-franklin-fwh3dh-bj",
+      "committed_at": "2026-06-24T23:42:44Z"
     },
     "counts": {
       "functions": 42,
@@ -2601,6 +2601,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-24-reconcile-band1440.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · twenty-fifth Q-0107 reconciliation pass (band-#1440)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-reconcile-band1410.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · twenty-fourth Q-0107 reconciliation pass (band-#1410)",
@@ -2665,9 +2673,25 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-24-game-settle-once-guard.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · settle-once terminal guard for game-state views",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-24-essential-setup-steps-3-4.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · Essential Setup steps 3-4 (block spam · help desk)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-essential-setup-restart-revive.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · Essential Setup survives restart (revive in place)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2783,6 +2807,14 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-blackjack-settle-once.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · settle-once guard for blackjack PvP (slice 2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-23-wordfilter-deobfuscation.md",
@@ -2927,38 +2959,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-giveaway-system-plan.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Plan: native giveaway system (GiveawayBot teardown + beat-it plan)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-game-result-continuations.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Game-result continuation buttons (never-stranded follow-up)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-fishing-weather-forecast.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Fishing: daily weather forecast (slice 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-fishing-trophy-records.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Fishing trophy records (per-species biggest-caught)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
