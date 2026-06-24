@@ -9,29 +9,35 @@ new category means registering a provider, not touching this file.
 
 from __future__ import annotations
 
+import io
+
 import discord
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import safe_defer
 from services.rank_providers import (
     ALIASES,
+    RankEntry,
     RankProvider,
     get_provider,
     provider_names,
 )
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
+from utils.ux_patterns.image_builders import render_leaderboard_image
 from views.base import BaseView
 
 MEDALS = ["🥇", "🥈", "🥉"]
 
+# The image card the board attaches when a provider exposes structured rows.
+_CARD_FILENAME = "leaderboard.jpg"
 
-async def _build_provider_embed(
+
+def _embed_from_entries(
     provider: RankProvider,
-    guild: discord.Guild,
+    entries: list[RankEntry],
 ) -> discord.Embed:
-    """Render a leaderboard embed from a provider's top-N rows."""
+    """Build the leaderboard embed from already-fetched provider rows."""
     embed = discord.Embed(title=provider.display_title, color=ECONOMY_COLOR)
-    entries = await provider.top(guild)
     if not entries:
         embed.description = provider.empty_hint
         return embed
@@ -41,6 +47,61 @@ async def _build_provider_embed(
         lines.append(f"{icon} {entry.label}")
     embed.description = "\n".join(lines)
     return embed
+
+
+def _render_card(
+    provider: RankProvider,
+    entries: list[RankEntry],
+) -> discord.File | None:
+    """Render the top-N rows as an image card, or ``None`` for embed-only.
+
+    ``None`` (caller keeps the plain embed) when: Pillow is unavailable, the
+    board is empty, or any displayed entry lacks the structured
+    ``(name, score)`` projection the bars need — so a provider that hasn't
+    opted into the card degrades cleanly rather than rendering a broken board.
+    """
+    rows = [
+        (entry.name, entry.score)
+        for entry in entries
+        if entry.name is not None and entry.score is not None
+    ]
+    if not rows or len(rows) != len(entries):
+        return None
+    value_texts = tuple((entry.value_text or "") for entry in entries)
+    jpeg = render_leaderboard_image(
+        tuple(rows),
+        title=provider.display_title,
+        value_texts=value_texts,
+    )
+    if jpeg is None:  # Pillow unavailable → embed-only fallback.
+        return None
+    return discord.File(io.BytesIO(jpeg), filename=_CARD_FILENAME)
+
+
+async def _build_provider_embed(
+    provider: RankProvider,
+    guild: discord.Guild,
+) -> discord.Embed:
+    """Render a leaderboard embed from a provider's top-N rows."""
+    return _embed_from_entries(provider, await provider.top(guild))
+
+
+async def _build_provider_response(
+    provider: RankProvider,
+    guild: discord.Guild,
+) -> tuple[discord.Embed, discord.File | None]:
+    """Fetch once and return the embed plus an optional image card.
+
+    The card is the showpiece (Q-0023 visual card engine, H2); the embed
+    stays the source of truth and the fallback, so a card-less category or a
+    Pillow-less host renders exactly as before.
+    """
+    entries = await provider.top(guild)
+    embed = _embed_from_entries(provider, entries)
+    card = _render_card(provider, entries)
+    if card is not None:
+        embed.set_image(url=f"attachment://{_CARD_FILENAME}")
+    return embed, card
 
 
 def _build_overview_embed() -> discord.Embed:
@@ -113,8 +174,14 @@ class _CategorySelect(discord.ui.Select):
                 ephemeral=True,
             )
             return
-        embed = await _build_provider_embed(provider, view.guild)
-        await interaction.edit_original_response(embed=embed, view=view)
+        embed, card = await _build_provider_response(provider, view.guild)
+        # Pass attachments explicitly so switching categories replaces (or
+        # clears, with []) any card from the previously-selected category.
+        await interaction.edit_original_response(
+            embed=embed,
+            view=view,
+            attachments=[card] if card is not None else [],
+        )
 
 
 class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg]
@@ -159,12 +226,16 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
             provider = get_provider(category) if category else None
 
         view = LeaderboardView(ctx.guild, ctx.channel, ctx.author)  # type: ignore[arg-type]
+        card: discord.File | None = None
         if provider is not None:
-            embed = await _build_provider_embed(provider, ctx.guild)
+            embed, card = await _build_provider_response(provider, ctx.guild)
         else:
             embed = _build_overview_embed()
 
-        view.message = await ctx.send(embed=embed, view=view)
+        if card is not None:
+            view.message = await ctx.send(embed=embed, view=view, file=card)
+        else:
+            view.message = await ctx.send(embed=embed, view=view)
 
     async def build_help_menu_view(
         self,
