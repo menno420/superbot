@@ -86,6 +86,15 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1294 · #1297 (2026-06-22, help surface slimming + reachability guard)** — removed the redundant
+  "All Commands / Advanced" help surface (#1294) and added a **help-reachability CI guard** that fails the
+  build when a subsystem isn't homed in the help tree (#1297).
+- **#1295 · #1316 (2026-06-22, BTD6 answerability)** — a **P1-1 grounding-anchor eval guard** (asserted
+  numbers must be grounded, #1295, closes #704's eval-guard ask) and a **whole-catalog roster** answer for
+  "list all monkey knowledge" (#1316).
+- **#1305 (2026-06-22, botsite React-SPA migration PR 1 — foundation)** — a buildable, data-fed React app
+  foundation (Vite + `design-system/src/app/`, data layer + tests, `botsite/app.py` wiring) — the first slice
+  of migrating the live bot-site onto the design-system React stack.
 - **#1308 · #1317 · #1320 (2026-06-22, CI / ledger hygiene + tool-pin guard)** — fixed the #1279 ledger
   under-marker drift + design-system CI-coverage paths + reverted a Dependabot **ruff pin drift** back to
   three-places parity (#1308/#1317, with stale-claim GC), then **CI-enforced the tool-pin guard**

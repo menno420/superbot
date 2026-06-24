@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T08:54:26Z",
+    "generated_at": "2026-06-24T09:29:27Z",
     "build": {
-      "commit": "d792e56",
-      "subject": "btd6: open round-range command session (born-red card)",
-      "committed_at": "2026-06-24T08:54:26Z"
+      "commit": "314e5e25",
+      "subject": "docs: twenty-fourth Q-0107 reconciliation pass (band-#1410)",
+      "committed_at": "2026-06-24T09:29:27Z"
     },
     "counts": {
       "functions": 42,
-      "ideas": 137,
+      "ideas": 139,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
@@ -1132,12 +1132,28 @@
   ],
   "ideas": [
     {
+      "file": "help-nav-attachment-seam-2026-06-24.md",
+      "title": "Help-nav attachment seam — let hub panels carry their image card through Help",
+      "status": "ideas",
+      "date": "2026-06-24",
+      "summary": "The visual card engine (H3) is rolling showpiece **image cards** onto bot features:",
+      "subsystems": []
+    },
+    {
       "file": "planned-slice-hit-rate-tracker-2026-06-24.md",
       "title": "Idea — planned-slice hit-rate tracker (the reconciliation queue's accountability metric)",
       "status": "ideas",
       "date": "2026-06-24",
       "summary": "Every Q-0107 pass writes a §4 forward queue (slice → PR-lineage) and the *next* pass hand-counts how many",
       "subsystems": null
+    },
+    {
+      "file": "recon-cadence-boundary-jitter-2026-06-24.md",
+      "title": "Idea — reconciliation cadence-boundary jitter guard",
+      "status": "ideas",
+      "date": "2026-06-24",
+      "summary": "The band-#1410 reconciliation pass (2026-06-24) fired **~50 minutes** after the band-#1380 pass, on a",
+      "subsystems": []
     },
     {
       "file": "btd6-runtime-mechanics-from-game-2026-06-23.md",
@@ -2447,11 +2463,35 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-24-xpmenu-rank-card-h3.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — `!xpmenu` hub renders the rank image card (visual card-engine H3)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-24-ticket-ai-confirm.md",
+      "date": "2026-06-24",
+      "title": "2026-06-24 — Ticket AI open: one-click confirm (follow-up to #1405)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-support-tickets.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Support-ticket subsystem (command + AI natural language)",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-24-reconcile-band1410.md",
+      "date": "2026-06-24",
+      "title": "Session — 2026-06-24 · twenty-fourth Q-0107 reconciliation pass (band-#1410)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -2513,8 +2553,8 @@
     {
       "file": "2026-06-24-btd6-round-range-command.md",
       "date": "2026-06-24",
-      "title": "2026-06-24 — /btd6ref round accepts a round RANGE",
-      "status": "in-progress",
+      "title": "2026-06-24 — Fix duplicate slash-command sync + /btd6ref round range",
+      "status": "complete",
       "run_type": "manual",
       "self_initiated": false
     },
@@ -2901,30 +2941,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-audit-brief-verified-findings.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Consolidation audit: record three code-verified findings into the brief",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-ai-setup-wedge.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — AI natural-language setup wedge (`/setup-describe`)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-ai-setup-edit-rebind.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — AI-setup Edit: re-pick target for `bind` suggestions (self-initiated)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [

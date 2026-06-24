@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T08:54:26Z",
+    "generated_at": "2026-06-24T09:29:27Z",
     "build": {
-      "commit": "d792e56",
-      "subject": "btd6: open round-range command session (born-red card)",
-      "committed_at": "2026-06-24T08:54:26Z"
+      "commit": "314e5e25",
+      "subject": "docs: twenty-fourth Q-0107 reconciliation pass (band-#1410)",
+      "committed_at": "2026-06-24T09:29:27Z"
     }
   },
   "counts": {
