@@ -69,10 +69,15 @@
     `/myprofile` (H1) and now **`!rank`** both render real image cards (`utils/rank_render.py`, themed
     grid + level progress bar, re-rendered on the stat-toggle, embed fallback — 2026-06-24 dispatch
     run). The **`!xpmenu` hub panel** now renders the rank image card too (its direct surface +
-    stat-switch buttons, embed fallback — 2026-06-24 dispatch run, PR #1413); remaining H3 is the
-    rank/profile hub panels **reached via Help** (the `build_help_menu_view` seam is embed-only
-    across the codebase — a single help-nav attachment seam would carry the card there) + other
-    showpiece embeds — [vision](../ideas/visual-card-engine-vision-2026-06-23.md) · the
+    stat-switch buttons, embed fallback — 2026-06-24 dispatch run, PR #1413). The **help-nav
+    attachment seam** then shipped (PR #1430, 2026-06-24 dispatch run) — hubs reached *through Help /
+    hub navigation* now carry their image card too (`views.navigation.help_nav_card`, a non-viral
+    duck-typed `view.help_nav_card` the central render sites forward; XP hub is the first consumer),
+    closing the "card via the command, plain embed via Help" split at the root. Remaining H3 is
+    **incremental adoption** (other card-bearing hubs set `help_nav_card` in their hook — profile/rank
+    hubs are the next adopters) + other showpiece embeds —
+    [vision](../ideas/visual-card-engine-vision-2026-06-23.md) ·
+    [seam idea](../ideas/help-nav-attachment-seam-2026-06-24.md) · the
     `channel-deployed-component` roles primitive (idea, not yet built).
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔

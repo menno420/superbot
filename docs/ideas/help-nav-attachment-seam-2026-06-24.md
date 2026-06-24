@@ -1,7 +1,23 @@
 # Help-nav attachment seam — let hub panels carry their image card through Help
 
-> **Status:** `ideas`. Not a plan, not approval. Source code + binding contracts win.
+> **Status:** `historical` — **built** 2026-06-24 (dispatch run, PR #1430 — the seam + the XP hub as
+> the first consumer). The remaining work is **incremental adoption** (migrate the other card-bearing
+> hubs' hooks one at a time — see "Adoption tail" below). Source code + binding contracts win.
 > **Subsystem:** none
+
+> **Built (PR #1430):** the seam landed with a **non-viral, backward-compatible** shape that differs
+> from the `(embed, view, file)` triple sketched below — the **view object carries its own card** via
+> a duck-typed `help_nav_card` attribute (declared on `BaseView`, default `None` = embed-only), and the
+> central render sites forward it with the `file=`/`attachments=` support that already exists. No tuple
+> signature changed, so the ~47 hooks were untouched. Accessors: `views.navigation.help_nav_card` /
+> `help_nav_attachments` / `help_nav_send_kwargs`. Wired render sites: `help_cog` typed `!help` (prefix
+> + slash), `help/panels` category select, `navigation` back-button + hub-opener, `hub_children`
+> `HubChildButton`, `admin._open_via_help_hook`. First consumer: `XpCog.build_help_menu_view`.
+>
+> **Adoption tail (incremental, turn-key):** any other hub whose `build_help_menu_view` can render a
+> card just sets `view.help_nav_card = card` before returning — the render sites already forward it. The
+> leaderboard *overview* hook is genuinely embed-only (it's a category picker, not a card); profile/rank
+> hubs reached through Help are the next natural adopters.
 
 ## The inconsistency
 

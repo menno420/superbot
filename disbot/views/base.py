@@ -135,6 +135,12 @@ class BaseView(discord.ui.View):
         self._author = author
         self._public = public
         self.message: discord.Message | None = None
+        # Optional help-nav image card (visual card engine H3): a
+        # ``build_help_menu_view`` hook that renders a showpiece image card sets
+        # this so every help-nav render site forwards it (the same card the
+        # direct command shows). Default ``None`` = embed-only, the historical
+        # behaviour for every panel. See ``views.navigation.help_nav_card``.
+        self.help_nav_card: discord.File | None = None
         from views.navigation import attach_standard_nav
 
         attach_standard_nav(self)
