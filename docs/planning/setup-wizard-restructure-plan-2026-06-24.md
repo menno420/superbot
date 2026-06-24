@@ -112,8 +112,10 @@ The fix is not more sections — it is a **structure** built from four laws.
    (`#mod-log` / `#server-log`). **Shipped:** moderation-only first (`#1429`), then reworked to the
    two-channel multi-select (`#1432`, owner decision Q-0203 — "moderation only" was the first slice, not a
    cap). Full per-category routing stays in the advanced `!logging` UI.
-5. **Reward active members** — turn on levels; optionally auto-grant a role as members stay & chat —
-   **the bot creates the roles**. (`xp` + `roles` + `role_templates`, dead-end removed.)
+5. **Reward active members** *(SHIPPED 2026-06-24, `#1434`)* — pick an XP rate + optionally grant a role
+   at a level and/or after N days in the server (both/one/none); the bot creates the role (or reuses one
+   you pick). (`xp` settings + `role_automation` XP/time thresholds + `RoleLifecycleService` create;
+   dead-end removed.)
 6. **Set up a help desk** — let members open private support; pick who answers; bot makes the rest.
    (`ticket`, already direct-apply.)
 7. **All done** — plain summary of what's on + a one-tap menu of extras you skipped.
@@ -186,9 +188,13 @@ decision with architectural weight → called out as open question Q-A below.
     `logging.mod_channel`) and an **activity log** (→ `logging.events_channel`). On Save: `logging.enabled`,
     bind `mod_channel`, set the `*_enabled` flags per the multi-select, bind `events_channel` when any
     activity is on. **Leave a channel empty → auto-create** `#mod-log` / `#server-log` (one-tap defaults).
-  - **Reward activity** — the `xp` enable toggle is trivial via `_set`; the role-threshold sub-step
-    **needs a small new direct-apply role-threshold service** (the one genuine gap — no direct-apply path
-    exists today) + `RoleLifecycleService.create_role` for auto-create.
+  - **Reward activity** *(SHIPPED 2026-06-24, `#1434`)* — `RewardActivityStep`, a 2-screen step: an
+    XP-rate dropdown (sets `xp_min`/`xp_max`/`xp_cooldown`) + a reward-types multi-select (level-up /
+    time-in-server, both/one/none) → an extra screen to source the reward role (recommended auto-create
+    `@Regular` / create one you name / reuse an existing role). **Correction:** the assumed "small new
+    direct-apply role-threshold service (the one genuine gap)" was wrong — `role_automation.set_xp_threshold`
+    / `set_time_threshold` already ARE the audited direct-apply paths, and
+    `RoleLifecycleService.apply(operation="create")` does the role auto-create. No new service was needed.
   - **Server-type starter preset** (step 0) — **needs a direct-apply preset path** (presets are
     draft-only today); design decision before building.
 - **PR 2 — extras + health check:** the **Extras menu** (each existing config surface as a one-action

@@ -1,1 +1,0 @@
-claude/blissful-hamilton-xdzbak · Essential Setup spine: "Reward activity" step (XP rate + level/time role rewards, 2-screen with role-sourcing choice) · disbot/views/setup/essential_setup.py + tests/unit/views/setup/test_essential_setup.py · 2026-06-24

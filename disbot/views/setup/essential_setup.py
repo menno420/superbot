@@ -20,9 +20,9 @@ Design (plan ``docs/planning/setup-wizard-restructure-plan-2026-06-24.md`` §5):
 This module is **additive** — the existing wizard (``views/setup/wizard.py``)
 is untouched and remains the full/advanced path; Essential Setup is the new
 quick spine.  Live steps: greet new members · set your moderators · block spam
-and bad links · choose a log channel · set up a help desk (+ the closing
-summary).  Remaining follow-ons on this same pattern: reward activity (xp +
-auto-role) and the server-type starter preset.
+and bad links · choose a log channel · reward active members · set up a help
+desk (+ the closing summary).  Remaining follow-on on this same pattern: the
+server-type starter preset.
 """
 
 from __future__ import annotations
@@ -69,6 +69,7 @@ class EssentialFlow:
             ModeratorsStep,
             BlockSpamStep,
             LogChannelStep,
+            RewardActivityStep,
             HelpDeskStep,
         ]
 
@@ -815,7 +816,444 @@ class LogChannelStep(_StepView):
 
 
 # ---------------------------------------------------------------------------
-# Step 5 — Set up a help desk  (tickets)
+# Step 5 — Reward active members  (xp rate + level/time role rewards)
+# ---------------------------------------------------------------------------
+#
+# Two screens in one step (an internal ``phase``).  Screen 1: pick an XP rate
+# (or keep the current one) and which role rewards to switch on (level-up and/or
+# time-in-server — both/one/none).  Screen 2 (only when a reward is on): choose
+# the reward role — recommended (auto-create @Regular) / create one you name /
+# reuse an existing role.  On Save: set the XP rate scalars through the audited
+# Settings pipeline, then call ``role_automation.set_xp_threshold`` /
+# ``set_time_threshold`` (the existing direct-apply audited paths) on the role,
+# auto-creating it via ``RoleLifecycleService`` when asked.  Every service is
+# lazy-imported per the setup-view no-top-level-pipeline-import convention.  XP
+# itself is always on (no guild enable; per-user opt-out lives in participation),
+# so this step tunes the *reward experience* — it does not switch XP on.
+
+# XP rate presets: key -> (operator label, xp_min, xp_max, cooldown_seconds).
+# "standard" mirrors the schema defaults (15/25/60).
+_XP_RATES: dict[str, tuple[str, int, int, int]] = {
+    "relaxed": ("Relaxed — slower leveling", 10, 15, 120),
+    "standard": ("Standard — balanced", 15, 25, 60),
+    "active": ("Active — faster leveling", 20, 40, 30),
+}
+# Reward triggers: key -> operator label.
+_REWARD_TYPES: list[tuple[str, str]] = [
+    ("level", "When members reach a level"),
+    ("time", "When members stay a while"),
+]
+# How to source the reward role: key -> operator label.
+_ROLE_SOURCES: list[tuple[str, str]] = [
+    ("recommended", "Recommended — make a @Regular role"),
+    ("create", "Create a role I name"),
+    ("existing", "Use a role I already have"),
+]
+_SUGGESTED_ROLE_NAMES: tuple[str, ...] = (
+    "Regular",
+    "Member",
+    "Trusted",
+    "Veteran",
+    "Active",
+    "VIP",
+)
+_DEFAULT_ROLE_NAME = "Regular"
+_DEFAULT_LEVEL = 10
+_DEFAULT_DAYS = 30
+
+
+class _XpRateSelect(discord.ui.Select):  # type: ignore[type-arg]
+    def __init__(self, current: str) -> None:
+        options = [
+            discord.SelectOption(
+                label="Keep current XP rate",
+                value="keep",
+                default=current == "keep",
+            ),
+            *[
+                discord.SelectOption(label=spec[0], value=key, default=current == key)
+                for key, spec in _XP_RATES.items()
+            ],
+        ]
+        super().__init__(
+            placeholder="How fast should members earn XP?",
+            options=options,
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: RewardActivityStep = self.view  # type: ignore[assignment]
+        view.xp_rate = self.values[0]
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _RewardTypeSelect(discord.ui.Select):  # type: ignore[type-arg]
+    def __init__(self, selected: set[str]) -> None:
+        options = [
+            discord.SelectOption(label=label, value=key, default=key in selected)
+            for key, label in _REWARD_TYPES
+        ]
+        super().__init__(
+            placeholder="Give a role as a reward for… (optional)",
+            min_values=0,
+            max_values=len(options),
+            options=options,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: RewardActivityStep = self.view  # type: ignore[assignment]
+        view.rewards = set(self.values)
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _RewardNextButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self, has_rewards: bool) -> None:
+        super().__init__(
+            label="Next" if has_rewards else "Save",
+            emoji="🏅",
+            style=discord.ButtonStyle.success,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: RewardActivityStep = self.view  # type: ignore[assignment]
+        await view.on_next(interaction)
+
+
+class _RoleSourceSelect(discord.ui.Select):  # type: ignore[type-arg]
+    def __init__(self, current: str) -> None:
+        options = [
+            discord.SelectOption(label=label, value=key, default=key == current)
+            for key, label in _ROLE_SOURCES
+        ]
+        super().__init__(
+            placeholder="Where should the reward role come from?",
+            options=options,
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: RewardActivityStep = self.view  # type: ignore[assignment]
+        view.role_source = self.values[0]
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _RoleNameSelect(discord.ui.Select):  # type: ignore[type-arg]
+    def __init__(self, current: str | None) -> None:
+        options = [
+            discord.SelectOption(label=name, value=name, default=name == current)
+            for name in _SUGGESTED_ROLE_NAMES
+        ]
+        super().__init__(placeholder="Name for the new role…", options=options, row=1)
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: RewardActivityStep = self.view  # type: ignore[assignment]
+        view.new_role_name = self.values[0]
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _RewardRoleSelect(discord.ui.RoleSelect):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Pick the role to grant…",
+            min_values=0,
+            max_values=1,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: RewardActivityStep = self.view  # type: ignore[assignment]
+        if self.values:
+            view.existing_role_id = self.values[0].id
+            view.existing_role_name = self.values[0].name
+        else:
+            view.existing_role_id = None
+            view.existing_role_name = None
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _RewardSaveButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="Save rewards",
+            emoji="🏅",
+            style=discord.ButtonStyle.success,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: RewardActivityStep = self.view  # type: ignore[assignment]
+        await view.apply(interaction)
+
+
+class RewardActivityStep(_StepView):
+    title = "Reward active members"
+    skip_label = "Skip rewards"
+
+    def __init__(self, flow: EssentialFlow) -> None:
+        self.phase: str = "config"  # "config" | "roles"
+        self.xp_rate: str = "keep"
+        self.rewards: set[str] = set()
+        self.role_source: str = "recommended"
+        self.new_role_name: str | None = None
+        self.existing_role_id: int | None = None
+        self.existing_role_name: str | None = None
+        super().__init__(flow)
+
+    def build_items(self) -> None:
+        self.refresh_items()
+
+    def refresh_items(self) -> None:
+        """(Re)build the controls for the current phase (rows 0/1/2)."""
+        own = (
+            _XpRateSelect,
+            _RewardTypeSelect,
+            _RewardNextButton,
+            _RoleSourceSelect,
+            _RoleNameSelect,
+            _RewardRoleSelect,
+            _RewardSaveButton,
+        )
+        for child in list(self.children):
+            if isinstance(child, own):
+                self.remove_item(child)
+        if self.phase == "config":
+            self.add_item(_XpRateSelect(self.xp_rate))
+            self.add_item(_RewardTypeSelect(self.rewards))
+            self.add_item(_RewardNextButton(bool(self.rewards)))
+        else:
+            self.add_item(_RoleSourceSelect(self.role_source))
+            if self.role_source == "create":
+                self.add_item(_RoleNameSelect(self.new_role_name))
+            elif self.role_source == "existing":
+                self.add_item(_RewardRoleSelect())
+            self.add_item(_RewardSaveButton())
+
+    async def go_back(self, interaction: discord.Interaction) -> None:
+        # Screen 2 "Back" returns to screen 1; screen 1 "Back" leaves the step.
+        if self.phase == "roles":
+            self.phase = "config"
+            self.refresh_items()
+            await interaction.response.edit_message(embed=self.render(), view=self)
+        else:
+            await super().go_back(interaction)
+
+    def render(self) -> discord.Embed:
+        return self._render_config() if self.phase == "config" else self._render_roles()
+
+    def _render_config(self) -> discord.Embed:
+        embed = discord.Embed(
+            title=f"🏅 {self.title}",
+            description=(
+                "Members earn XP as they chat and level up. Choose how fast XP "
+                "comes in, and — if you like — give members a role when they "
+                "reach a level or stay a while.\n\n"
+                "Pick what you want, then press **Next**."
+            ),
+            color=discord.Color.blurple(),
+        )
+        rate = "Keep current" if self.xp_rate == "keep" else _XP_RATES[self.xp_rate][0]
+        embed.add_field(name="XP rate", value=rate, inline=False)
+        if self.rewards:
+            picked = ", ".join(
+                label for key, label in _REWARD_TYPES if key in self.rewards
+            )
+            embed.add_field(name="Give a reward role", value=picked, inline=False)
+        else:
+            embed.add_field(
+                name="Give a reward role",
+                value="_off — no role rewards_",
+                inline=False,
+            )
+        embed.set_footer(text=self.flow.step_counter())
+        return embed
+
+    def _render_roles(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="🏅 Choose the reward role",
+            description=(
+                "Which role should members earn?\n"
+                "• **Recommended** — we make a fresh **@Regular**\n"
+                "• **Create a role I name** — pick a name, we make it\n"
+                "• **Use a role I already have** — choose one below"
+            ),
+            color=discord.Color.blurple(),
+        )
+        if self.role_source == "existing":
+            role = (
+                f"<@&{self.existing_role_id}>"
+                if self.existing_role_id
+                else "_pick one below_"
+            )
+        elif self.role_source == "create":
+            role = f"a new **@{self.new_role_name or _DEFAULT_ROLE_NAME}**"
+        else:
+            role = f"a new **@{_DEFAULT_ROLE_NAME}**"
+        embed.add_field(name="Reward role", value=role, inline=False)
+        triggers = []
+        if "level" in self.rewards:
+            triggers.append(f"at level {_DEFAULT_LEVEL}")
+        if "time" in self.rewards:
+            triggers.append(f"after {_DEFAULT_DAYS} days")
+        embed.add_field(name="Granted", value=" and ".join(triggers), inline=False)
+        embed.set_footer(text=self.flow.step_counter())
+        return embed
+
+    async def on_next(self, interaction: discord.Interaction) -> None:
+        if not self.rewards:
+            # No role rewards — apply the XP rate (if changed) and finish.
+            await self._apply_and_complete(
+                interaction,
+                role_id=None,
+                role_name=None,
+                created=False,
+            )
+            return
+        self.phase = "roles"
+        self.refresh_items()
+        await interaction.response.edit_message(embed=self.render(), view=self)
+
+    async def apply(self, interaction: discord.Interaction) -> None:
+        # Screen 2 "Save" — resolve the reward role, then apply everything.
+        role_id, role_name, created = await self._resolve_role(interaction)
+        if role_id is None:
+            return  # error already surfaced
+        await self._apply_and_complete(
+            interaction,
+            role_id=role_id,
+            role_name=role_name,
+            created=created,
+        )
+
+    async def _apply_and_complete(
+        self,
+        interaction: discord.Interaction,
+        *,
+        role_id: int | None,
+        role_name: str | None,
+        created: bool,
+    ) -> None:
+        try:
+            if self.xp_rate != "keep":
+                _label, xp_min, xp_max, cooldown = _XP_RATES[self.xp_rate]
+                await self._set("xp", "xp_min", xp_min)
+                await self._set("xp", "xp_max", xp_max)
+                await self._set("xp", "xp_cooldown", cooldown)
+            if self.rewards and role_id is not None and role_name is not None:
+                await self._set_rewards(role_id, role_name)
+        except Exception:
+            logger.exception("essential setup: reward step apply failed")
+            await interaction.response.send_message(
+                "Something went wrong saving rewards — please try again.",
+                ephemeral=True,
+            )
+            return
+        await self.complete(interaction, self._summary(role_id, created))
+
+    async def _resolve_role(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[int | None, str | None, bool]:
+        """Resolve the reward role to (id, name, created?), or (None, …) on error."""
+        if self.role_source == "existing":
+            if self.existing_role_id is None:
+                await interaction.response.send_message(
+                    "Pick a role to grant, or switch to **Recommended** to make one.",
+                    ephemeral=True,
+                )
+                return None, None, False
+            return self.existing_role_id, self.existing_role_name, False
+        name = (
+            self.new_role_name
+            if self.role_source == "create" and self.new_role_name
+            else _DEFAULT_ROLE_NAME
+        )
+        created_id = await self._create_role(interaction, name)
+        if created_id is None:
+            return None, None, False
+        return created_id, name, True
+
+    async def _create_role(
+        self,
+        interaction: discord.Interaction,
+        name: str,
+    ) -> int | None:
+        """Create the reward role through the audited role-lifecycle creator."""
+        from services.role_lifecycle_service import (
+            RoleLifecycleRequest,
+            RoleLifecycleService,
+        )
+
+        result = await RoleLifecycleService().apply(
+            self.flow.guild,
+            RoleLifecycleRequest(operation="create", name=name),
+            self.flow.author,
+            confirmed=True,
+        )
+        if not result.applied:
+            logger.warning(
+                "essential setup: reward role create failed (guild=%s): %s",
+                self.flow.guild.id,
+                result.first_error,
+            )
+            await interaction.response.send_message(
+                "Couldn't make the role — please reuse an existing one instead.",
+                ephemeral=True,
+            )
+            return None
+        return result.applied[0].target_id
+
+    async def _set_rewards(self, role_id: int, role_name: str) -> None:
+        """Set the level / time role rewards through ``role_automation`` (the
+        existing direct-apply audited path).  Lazy-imported per the setup-view
+        convention.
+        """
+        from services import role_automation
+
+        if "level" in self.rewards:
+            await role_automation.set_xp_threshold(
+                guild_id=self.flow.guild.id,
+                role_id=role_id,
+                role_name=role_name,
+                level=_DEFAULT_LEVEL,
+                actor_id=self.flow.author.id,
+            )
+        if "time" in self.rewards:
+            await role_automation.set_time_threshold(
+                guild_id=self.flow.guild.id,
+                role_id=role_id,
+                role_name=role_name,
+                days=_DEFAULT_DAYS,
+                actor_id=self.flow.author.id,
+            )
+
+    def _summary(self, role_id: int | None, created: bool) -> str:
+        parts: list[str] = []
+        if self.xp_rate != "keep":
+            parts.append(
+                f"XP rate {_XP_RATES[self.xp_rate][0].split(' — ')[0].lower()}",
+            )
+        if self.rewards and role_id is not None:
+            triggers = []
+            if "level" in self.rewards:
+                triggers.append(f"level {_DEFAULT_LEVEL}")
+            if "time" in self.rewards:
+                triggers.append(f"{_DEFAULT_DAYS} days")
+            verb = "new role" if created else "role"
+            parts.append(f"{verb} <@&{role_id}> at {' / '.join(triggers)}")
+        if not parts:
+            return "Rewards: no changes"
+        return "Rewards on · " + " · ".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# Step 6 — Set up a help desk  (tickets)
 # ---------------------------------------------------------------------------
 
 

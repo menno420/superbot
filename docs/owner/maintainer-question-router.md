@@ -7424,3 +7424,33 @@ the setup-view invariant). Reworked tests cover defaults-create-both, picked-cha
 
 **Home:** this Q-block (canonical) + the plan §5 step 4 / §7 PR-1 note + Q-0202(1) (superseded) +
 `.sessions/2026-06-24-setup-log-channel-rework.md`. Related: **Q-0202**, **Q-A** (direct-apply per step).
+
+### Q-0204 — ANSWERED (owner decisions, in-session): the "Reward active members" step shape — toggleable rewards + selectable XP rate + an extra role-sourcing screen (2026-06-24)
+
+**Context.** Building the spine's "Reward active members" step (plan §5 step 5; PR **#1434**), the owner
+specified the shape over a short exchange: confirmed XP = the per-message earning system, then directed
+the step's controls.
+
+**The decisions.**
+1. **Role rewards are fully toggleable — both / just one / none.** The owner can switch on level-up roles
+   and/or time-in-server roles, or neither.
+2. **XP rate is selectable** (the per-message XP range + cooldown) — via a dropdown of presets (Keep
+   current / Relaxed / Standard / Active), not free-text.
+3. **An extra screen chooses the reward role**, with three sources: **preset** (auto-create a recommended
+   `@Regular`) / **create your own** (pick a name) / **reuse an existing role**.
+4. **Everything via buttons / dropdowns / multi-selects** — no "type an ID / value" anywhere.
+5. **Recommended depth = option 1** (one config screen + the extra role screen; sensible default
+   thresholds level 10 / 30 days, tunable later in the role panels) — chosen over cramming threshold
+   pickers in or a full multi-screen hub.
+
+**Scope / non-generalization.** Default thresholds (level 10 / 30 days) and the role-name suggestions are
+implementation defaults, tunable in the existing `!roles` panels — not owner decisions. **Build note (not
+a decision):** the step needed **no new service** — `role_automation.set_xp_threshold` /
+`set_time_threshold` are the existing audited direct-apply paths (an earlier "one genuine gap" assumption
+was wrong); role auto-create is `RoleLifecycleService.apply(operation="create")`.
+
+**Applied.** PR **#1434** ships `RewardActivityStep` (2-screen) implementing decisions 1–5.
+
+**Home:** this Q-block (canonical) + the plan §5 step 5 / §7 PR-1 note +
+`.sessions/2026-06-24-setup-reward-activity.md`. Related: **Q-A** (direct-apply per step), **Q-0202**/
+**Q-0203** (the analogous log-channel step decisions).
