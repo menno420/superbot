@@ -10,7 +10,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
-from services.xp_helpers import _build_rank_embed
+from services.xp_helpers import _build_rank_embed, build_rank_response
 from views.base import HubView
 
 
@@ -21,8 +21,13 @@ class _XpHubView(HubView):
         super().__init__(ctx.author)
         self.ctx = ctx
 
-    async def build_embed(self) -> discord.Embed:
-        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")  # type: ignore[arg-type]
+    def _decorate(self, embed: discord.Embed) -> None:
+        """Apply the hub's title / footer / admin-button state to ``embed``.
+
+        Shared by every render path (``build_embed`` for the help-nav hook,
+        ``build_response`` for the direct ``!xpmenu`` surface, and the three
+        stat-switch buttons) so the chrome stays in exactly one place.
+        """
         embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
         is_admin = self.ctx.author.guild_permissions.administrator  # type: ignore[union-attr]
         lines = ["Use the buttons below to switch stat views."]
@@ -33,25 +38,53 @@ class _XpHubView(HubView):
         for item in self.children:
             if hasattr(item, "_admin_only"):
                 item.disabled = not is_admin
+
+    async def build_response(
+        self,
+        stat: str = "both",
+    ) -> tuple[discord.Embed, discord.File | None]:
+        """The direct ``!xpmenu`` surface — the rank embed plus its image card.
+
+        Reuses the fetch-once :func:`build_rank_response` (the same embed + card
+        the ``!rank`` view renders, visual card engine H3); the card is ``None``
+        on a Pillow-less host, where the embed stays the source of truth.
+        """
+        embed, card = await build_rank_response(self.ctx.author, self.ctx.guild, stat)  # type: ignore[arg-type]
+        self._decorate(embed)
+        return embed, card
+
+    async def build_embed(self) -> discord.Embed:
+        # Embed-only path for the ``build_help_menu_view`` help-nav hook, which
+        # is embed-only by contract across the codebase (no attachment seam).
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")  # type: ignore[arg-type]
+        self._decorate(embed)
         return embed
+
+    async def _switch_stat(self, interaction: discord.Interaction, stat: str) -> None:
+        """Re-render the hub for ``stat`` in place, swapping the card attachment.
+
+        Mirrors ``views.xp.rank_view._RankSelect.callback`` (the H3 toggle
+        grammar): pass ``attachments`` explicitly so the new card replaces the
+        old one, or clears it (``[]``) on the embed-only fallback.
+        """
+        embed, card = await self.build_response(stat)
+        await interaction.response.edit_message(
+            embed=embed,
+            view=self,
+            attachments=[card] if card is not None else [],
+        )
 
     @discord.ui.button(label="📊 Both", style=discord.ButtonStyle.blurple, row=0)
     async def btn_both(self, interaction: discord.Interaction, _: discord.ui.Button):
-        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")  # type: ignore[arg-type]
-        embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
-        await interaction.response.edit_message(embed=embed, view=self)
+        await self._switch_stat(interaction, "both")
 
     @discord.ui.button(label="🏆 XP", style=discord.ButtonStyle.blurple, row=0)
     async def btn_xp(self, interaction: discord.Interaction, _: discord.ui.Button):
-        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "xp")  # type: ignore[arg-type]
-        embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
-        await interaction.response.edit_message(embed=embed, view=self)
+        await self._switch_stat(interaction, "xp")
 
     @discord.ui.button(label="🪙 Coins", style=discord.ButtonStyle.blurple, row=0)
     async def btn_coins(self, interaction: discord.Interaction, _: discord.ui.Button):
-        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "coins")  # type: ignore[arg-type]
-        embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
-        await interaction.response.edit_message(embed=embed, view=self)
+        await self._switch_stat(interaction, "coins")
 
     @discord.ui.button(label="⚙️ Configure", style=discord.ButtonStyle.grey, row=1)
     async def btn_config(self, interaction: discord.Interaction, _: discord.ui.Button):

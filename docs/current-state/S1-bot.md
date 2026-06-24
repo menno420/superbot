@@ -68,9 +68,12 @@
     `mining_render` rebase (owner visual decision). **H3 *embed-feature → image-card* is underway:**
     `/myprofile` (H1) and now **`!rank`** both render real image cards (`utils/rank_render.py`, themed
     grid + level progress bar, re-rendered on the stat-toggle, embed fallback — 2026-06-24 dispatch
-    run); remaining H3 is the rank/profile **hub panels** (`!xpmenu`) + other showpiece embeds —
-    [vision](../ideas/visual-card-engine-vision-2026-06-23.md) · the `channel-deployed-component` roles
-    primitive (idea, not yet built).
+    run). The **`!xpmenu` hub panel** now renders the rank image card too (its direct surface +
+    stat-switch buttons, embed fallback — 2026-06-24 dispatch run, PR #1413); remaining H3 is the
+    rank/profile hub panels **reached via Help** (the `build_help_menu_view` seam is embed-only
+    across the codebase — a single help-nav attachment seam would carry the card there) + other
+    showpiece embeds — [vision](../ideas/visual-card-engine-vision-2026-06-23.md) · the
+    `channel-deployed-component` roles primitive (idea, not yet built).
 - **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:

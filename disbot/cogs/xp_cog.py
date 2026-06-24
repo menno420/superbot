@@ -83,8 +83,8 @@ class XpCog(commands.Cog):
     async def xp_menu(self, ctx: commands.Context):
         """Open the XP panel showing your rank and quick admin actions."""
         view = _XpHubView(ctx)
-        embed = await view.build_embed()
-        await send_panel(ctx, embed=embed, view=view)
+        embed, card = await view.build_response()
+        await send_panel(ctx, embed=embed, view=view, file=card)
 
     async def build_help_menu_view(
         self,
