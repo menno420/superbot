@@ -784,6 +784,92 @@ def rule_select_option_truncation(
 
 
 # ---------------------------------------------------------------------------
+# Rule 5 — card-engine helper duplication
+# ---------------------------------------------------------------------------
+
+# The private helper names the shared ``utils/card_render.py`` engine already
+# provides (``dejavu_fonts``/``load_font``, ``CardCanvas.fit``, ``mix``,
+# ``initials``/``CardCanvas.initials_disc``).  An image renderer that re-declares
+# one of these is re-introducing the triplication the engine exists to remove.
+_ENGINE_HELPERS = frozenset({"_fonts", "_fit", "_mix", "_initials", "_initials_disc"})
+
+
+def _imports_pillow_or_engine(tree: ast.Module) -> bool:
+    """True if the module imports Pillow or the shared card engine.
+
+    Scopes the rule to *image-render* modules — a ``_fit``/``_mix`` in some
+    unrelated ``utils/`` math helper is not the engine-duplication class.  Walks
+    the whole tree so a lazy function-body ``from PIL import ...`` (the renderers'
+    graceful-degradation idiom) still counts.
+    """
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            if node.module.startswith("PIL") or "card_render" in node.module:
+                return True
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name.startswith("PIL") or "card_render" in alias.name:
+                    return True
+    return False
+
+
+def rule_card_engine_helper_duplication(
+    files: list[Path],
+    exceptions: dict,
+    roots: tuple[str, ...] = ("utils/",),
+) -> list[Finding]:
+    """Flag an image renderer that re-declares an engine-provided helper.
+
+    The shared ``utils/card_render.py`` engine owns the card primitives.  Before
+    the H2 migration (PR #1396) the dark-blurple palette + a ``_fonts``/``_fit``
+    copy lived in *three* renderers (``welcome_render`` / ``ux_patterns.
+    image_builders`` / ``role_menu_render``); the engine exists so there is one
+    home.  An image-render module (one importing Pillow or the engine) that
+    defines its own ``_fonts``/``_fit``/``_mix``/``_initials``/``_initials_disc``
+    is re-growing that drift class — import the engine instead.
+
+    Warn-only (Q-0105 — graduate once it has stayed clean across a few sessions).
+    ``card_render.py`` itself is exempt (it *is* the home; its primitives are the
+    public ``mix``/``initials``/``load_font``, not these private names anyway).  A
+    genuinely engine-independent helper can be allowlisted in
+    ``consistency_exceptions.yml``.
+    """
+    cfg = exceptions.get("card_engine_helper_duplication", {})
+    findings: list[Finding] = []
+
+    for filepath, rel, tree in _iter_parsed(files, roots):
+        if rel.replace("\\", "/").endswith("utils/card_render.py"):
+            continue  # the engine is the one legitimate home
+        if not _imports_pillow_or_engine(tree):
+            continue
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and node.name in _ENGINE_HELPERS
+                and not _is_allowlisted(rel, node.name, cfg)
+            ):
+                findings.append(
+                    Finding(
+                        file=filepath,
+                        line=node.lineno,
+                        rule="card_engine_helper_duplication",
+                        qualname=node.name,
+                        message=(
+                            f"`{node.name}` re-declares a card-engine primitive — "
+                            "import it from `utils.card_render` (`dejavu_fonts`/"
+                            "`load_font`, `CardCanvas.fit`, `mix`, `initials`/"
+                            "`CardCanvas.initials_disc`) instead of a private copy "
+                            "(the pre-#1396 triplication class), or allowlist a "
+                            "genuinely engine-independent helper in "
+                            "consistency_exceptions.yml"
+                        ),
+                    ),
+                )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
 # Rule registry — add a (name, fn) entry per future rule
 # ---------------------------------------------------------------------------
 
@@ -853,6 +939,19 @@ RULES: list[Rule] = [
         "select-building views that front-truncate a collection instead of paginating",
         severity="error",
         roots=("views/", "cogs/"),
+    ),
+    # Rule 5 scans ``utils/`` (where the image renderers live, not views/cogs).
+    # Warn-first (Q-0105): added 2026-06-24 alongside the H2 card-engine migration
+    # (PR #1396) that removed the third private palette + ``_fit`` copy — this rule
+    # institutionalizes that dedup so a renderer can't re-grow the triplication.
+    # It runs clean on the post-#1396 tree (0 findings); graduate to ``error``
+    # once it has stayed quiet across a few sessions (the edit_in_place pattern).
+    Rule(
+        "card_engine_helper_duplication",
+        rule_card_engine_helper_duplication,
+        "image renderers re-declaring an engine helper (_fonts/_fit/_mix/_initials)",
+        severity="warning",
+        roots=("utils/",),
     ),
 ]
 

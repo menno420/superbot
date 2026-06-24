@@ -188,9 +188,10 @@ def test_real_tree_produces_no_graduated_rule_errors(mod):
     """
     findings = mod.run_checks(mod._all_files(), mod._load_exceptions())
     errors = [f for f in findings if f.severity == "error"]
-    assert errors == [], (
-        "graduated consistency rule(s) flagged the live tree: "
-        + "; ".join(f.display(mod.REPO_ROOT) for f in errors)
+    assert (
+        errors == []
+    ), "graduated consistency rule(s) flagged the live tree: " + "; ".join(
+        f.display(mod.REPO_ROOT) for f in errors
     )
 
 
@@ -199,7 +200,12 @@ def test_graduated_rules_carry_error_severity(mod):
     ultracode consolidation fleet (#1375) cleared the edit_in_place backlog and
     graduated the last warn-only rule."""
     by_name = {r.name: r for r in mod.RULES}
-    for name in ("edit_in_place", "back_button", "panel_base_class", "select_option_truncation"):
+    for name in (
+        "edit_in_place",
+        "back_button",
+        "panel_base_class",
+        "select_option_truncation",
+    ):
         assert by_name[name].severity == "error", f"{name} should be graduated"
         # A graduated rule carries no leftover blocker note.
         assert by_name[name].graduation_blocker == ""
@@ -398,7 +404,9 @@ def test_back_subsystem_panel_with_auto_nav_is_clean(mod, tmp_path, monkeypatch)
     assert _back_findings(mod, tmp_path, monkeypatch, _HUB_SUBSYSTEM_AUTO_NAV) == []
 
 
-def test_back_flags_subsystem_panel_that_opts_out_of_auto_nav(mod, tmp_path, monkeypatch):
+def test_back_flags_subsystem_panel_that_opts_out_of_auto_nav(
+    mod, tmp_path, monkeypatch
+):
     """STANDARD_NAV = False opts out of auto-nav, so such a panel genuinely has
     no back affordance and must still be flagged.
     """
@@ -480,9 +488,7 @@ def test_base_arch_exempted_paths_are_allowlisted(mod, tmp_path, monkeypatch):
     # specialized-lifecycle path exemptions (canonical_helpers.yaml §
     # base_view.exemptions) — the consistency rule must not re-flag them (Q-0120).
     for rel in ("views/ai/policy/chooser.py", "views/games/deathmatch_panel.py"):
-        assert (
-            _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel=rel) == []
-        )
+        assert _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel=rel) == []
 
 
 def test_base_framework_home_is_allowlisted(mod, tmp_path, monkeypatch):
@@ -771,7 +777,9 @@ def test_panel_base_class_cog_scope_flags_direct_view(mod, tmp_path, monkeypatch
     assert findings[0].qualname == "PickerView"
 
 
-def test_select_option_truncation_cog_scope_flags_truncation(mod, tmp_path, monkeypatch):
+def test_select_option_truncation_cog_scope_flags_truncation(
+    mod, tmp_path, monkeypatch
+):
     """With ``cogs/`` in scope, a cog-layer ``[:25]`` select truncation IS flagged
     (the BUG-0017 / #1040 class living in the cog layer)."""
     _write(mod, tmp_path, monkeypatch, "cogs/widget_cog.py", _TRUNCATES)
@@ -785,7 +793,9 @@ def test_select_option_truncation_cog_scope_flags_truncation(mod, tmp_path, monk
 def test_select_option_truncation_default_scope_skips_cogs(mod, tmp_path, monkeypatch):
     """The default ``views/`` scope leaves a cog-layer truncation unflagged."""
     _write(mod, tmp_path, monkeypatch, "cogs/widget_cog.py", _TRUNCATES)
-    assert mod.rule_select_option_truncation([tmp_path / "cogs/widget_cog.py"], {}) == []
+    assert (
+        mod.rule_select_option_truncation([tmp_path / "cogs/widget_cog.py"], {}) == []
+    )
 
 
 def test_registry_scopes_rules_3_and_4_to_cogs(mod):
@@ -809,3 +819,97 @@ def test_all_files_includes_the_cog_layer(mod):
     rels = {str(f.relative_to(mod.DISBOT_ROOT)) for f in files}
     assert any(r.startswith("cogs/") for r in rels)
     assert any(r.startswith("views/") for r in rels)
+
+
+# ---------------------------------------------------------------------------
+# Rule 5 — card-engine helper duplication
+# ---------------------------------------------------------------------------
+
+# An image-render module (imports Pillow, lazy) that re-declares the engine's
+# private `_fonts` helper — the pre-#1396 triplication class the rule guards.
+_RENDER_DUP = """\
+from __future__ import annotations
+
+
+def _fonts(size_big, size_small):
+    from PIL import ImageFont
+
+    return ImageFont.load_default(), ImageFont.load_default()
+
+
+def render_thing():
+    return _fonts(40, 20)
+"""
+
+# Same renderer, migrated: imports the engine, no private helper (clean).
+_RENDER_CLEAN = """\
+from __future__ import annotations
+
+from utils.card_render import get_theme, new_canvas
+
+
+def render_thing():
+    canvas = new_canvas(100, 50, get_theme("midnight"))
+    return canvas.to_png() if canvas else None
+"""
+
+# A non-render utils module that happens to define `_fit` but imports neither
+# Pillow nor the engine — out of scope (not the duplication class).
+_NON_RENDER = """\
+from __future__ import annotations
+
+
+def _fit(model, data):
+    return model
+"""
+
+
+def _card_findings(mod, tmp_path, monkeypatch, src, *, rel="utils/thing_render.py"):
+    f = _write(mod, tmp_path, monkeypatch, rel, src)
+    return mod.rule_card_engine_helper_duplication([f], {}, ("utils/",))
+
+
+def test_flags_renderer_redeclaring_an_engine_helper(mod, tmp_path, monkeypatch):
+    findings = _card_findings(mod, tmp_path, monkeypatch, _RENDER_DUP)
+    assert len(findings) == 1
+    assert findings[0].rule == "card_engine_helper_duplication"
+    assert findings[0].qualname == "_fonts"
+    assert findings[0].severity == "warning"
+
+
+def test_migrated_renderer_using_the_engine_is_clean(mod, tmp_path, monkeypatch):
+    assert _card_findings(mod, tmp_path, monkeypatch, _RENDER_CLEAN) == []
+
+
+def test_non_render_utils_helper_is_out_of_scope(mod, tmp_path, monkeypatch):
+    # `_fit` in a module importing neither Pillow nor the engine is not the
+    # card-engine-duplication class — no false positive.
+    assert _card_findings(mod, tmp_path, monkeypatch, _NON_RENDER) == []
+
+
+def test_card_render_engine_itself_is_exempt(mod, tmp_path, monkeypatch):
+    # The engine is the one legitimate home; a private helper there is never flagged.
+    findings = _card_findings(
+        mod, tmp_path, monkeypatch, _RENDER_DUP, rel="utils/card_render.py"
+    )
+    assert findings == []
+
+
+def test_allowlist_suppresses_a_genuine_independent_helper(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "utils/thing_render.py", _RENDER_DUP)
+    cfg = {
+        "card_engine_helper_duplication": {
+            "exceptions": [
+                {"pattern": "utils/thing_render.py::_fonts", "reason": "bespoke"},
+            ],
+        },
+    }
+    assert mod.rule_card_engine_helper_duplication([f], cfg, ("utils/",)) == []
+
+
+def test_rule_5_is_registered_and_scoped_to_utils(mod):
+    by_name = {r.name: r for r in mod.RULES}
+    assert "card_engine_helper_duplication" in by_name
+    rule = by_name["card_engine_helper_duplication"]
+    assert rule.roots == ("utils/",)
+    assert rule.severity == "warning"  # warn-first (Q-0105)
