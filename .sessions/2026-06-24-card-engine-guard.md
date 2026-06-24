@@ -1,6 +1,7 @@
 # Session — 2026-06-24 · Card-engine consistency guard (Rule 5)
 
-> **Status:** `in-progress` — born-red card; flips to `complete` as the final step.
+> **Status:** `complete` — Rule 5 added, runs clean on the post-#1396 tree; full CI mirror green
+> (12262 passed, 48 skipped; black/isort/ruff/mypy + check_consistency/check_docs clean).
 
 **Run type:** `routine · dispatch`. **Branch:** `claude/card-engine-guard`.
 **Trigger:** continuation of this dispatch fire — second slice. The first slice (PR #1396) shipped
