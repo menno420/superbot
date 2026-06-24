@@ -98,7 +98,8 @@ role product, no subsystem row), `creature_battle_cog` (the creature PvP
 `!cbattle` command — part of the Creatures subsystem, surfaced via
 `creature_cog`'s hook, no subsystem row), `starboard_cog` (the Starboard /
 Hall-of-Fame raw-reaction listener + the `!starboard` config command — no
-subsystem row), `setup_cog` (the setup wizard surface), and the
+subsystem row), `setup_cog` (the setup wizard surface), `quicksetup_cog`
+(the Essential Setup front door `!quicksetup`, no subsystem row), and the
 five split BTD6 cogs (`btd6_reference_cog`, `btd6_events_cog`,
 `btd6_strategy_cog`, `paragon_cog`, `btd6_ops_cog`), which all surface under
 the single `btd6` subsystem. (Counts re-verified against source 2026-06-21;
