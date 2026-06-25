@@ -37,7 +37,9 @@
   offline grounding half now shipped, above) + absence-guard **Layer B** (the negative-existential
   gate, design-for-review; needs prod creds).
 - **Anchor-tooling follow-ons** (offline, self-mergeable) — *(the range-cash + projected-total figures
-  are now anchored, #1460 above)*: #1458's **eval-anchor coverage report** (inventory every numeric
+  AND the #855 MOAB-class bonuses +15/+30/+99 are now anchored, #1460 above — the BTD6 knowledge/
+  grounding cases are anchor-complete for every cleanly-derivable truth)*: #1458's **eval-anchor
+  coverage report** (inventory every numeric
   token in `cases.py` rubrics + fixtures; report which lack an Anchor/FixtureAnchor, allowlisting
   distractors + user-inputs so it isn't noisy) · a **distractor negative-anchor guard** (pin that each
   documented distractor — $71,315.20, $107,164.60 — stays *un*-derivable, so a data change can't make

@@ -151,6 +151,32 @@ def _projected_total(
     return derive
 
 
+_MOAB_SPECIAL_RE = re.compile(r"\+(\d+) vs MOAB-Class")
+
+
+def _moab_class_bonus(tower_id: str, code: str) -> Callable[[], float]:
+    """The ``+N vs MOAB-Class`` bonus for a tower tier, from its committed stats.
+
+    This is the #855 Layer A data the grounding case asserts. It reads the public
+    ``btd6_stats_service`` tier ``specials`` (a structured tuple, e.g.
+    ``('+15 vs MOAB-Class',)``) — the same source the grounding renders from — and
+    extracts the integer bonus."""
+
+    def derive() -> float:
+        tower = btd6_stats_service.get_tower_stats(tower_id)
+        assert tower is not None, f"{tower_id} stats missing"
+        stats = btd6_stats_service.normal_stats(tower.tier(code))
+        for special in stats.specials:
+            match = _MOAB_SPECIAL_RE.search(special)
+            if match:
+                return float(match.group(1))
+        raise AssertionError(
+            f"no '+N vs MOAB-Class' special for {tower_id}:{code}: {stats.specials!r}"
+        )
+
+    return derive
+
+
 # --------------------------------------------------------------------------- #
 # The anchor table — each BTD6 number the golden set asserts as truth, paired
 # with the deterministic source that must reproduce it.
@@ -267,6 +293,28 @@ ANCHORS: tuple[Anchor, ...] = (
         "ABR rounds 25-83 projected total ($5443 start)",
         119315.30,
         _projected_total(5443, 25, 83, "abr"),
+    ),
+    # --- #855 Layer A — Bomb Shooter middle-path MOAB-Class bonuses. The grounding
+    # case asserts the answer AFFIRMS +15 / +30 / +99 (MOAB Mauler / Assassin /
+    # Eliminator); pin each to the committed tier stats so a re-seed that changed a
+    # bonus fails CI instead of leaving the case testing a stale truth. ---
+    Anchor(
+        "grounding.btd6_bomb_middle_path_moab_855",
+        "MOAB Mauler (0-3-0) bonus vs MOAB-Class",
+        15.0,
+        _moab_class_bonus("bomb_shooter", "030"),
+    ),
+    Anchor(
+        "grounding.btd6_bomb_middle_path_moab_855",
+        "MOAB Assassin (0-4-0) bonus vs MOAB-Class",
+        30.0,
+        _moab_class_bonus("bomb_shooter", "040"),
+    ),
+    Anchor(
+        "grounding.btd6_bomb_middle_path_moab_855",
+        "MOAB Eliminator (0-5-0) bonus vs MOAB-Class",
+        99.0,
+        _moab_class_bonus("bomb_shooter", "050"),
     ),
 )
 
