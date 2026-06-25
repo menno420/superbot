@@ -77,7 +77,11 @@
     `HubChildButton` (#1371/#1373); `views/navigation.py` `attach_standard_nav` (#1382).
   - **▶ Remaining (optional polish tail, not blocking):** the setup-wizard **per-section walk** (fleet
     unit U10 — confirm every *manual* section yields a real op / honest link-only; the AI-describe side
-    is done) · the **visual card-engine migration** — engine **H2** *renderer-dedup* half **🟡 partially
+    is done) · **Essential Setup extras-menu live status badges** (follow-on to PR 2 #1449 — prefix each
+    extra with ✅/➖ using the same `setup_readiness.collect` snapshot `build_check_setup_embed` already
+    fetches; **blocked on running-bot verification** — reaction-roles has no dedicated readiness
+    subsystem, so the extra→subsystem mapping can't be confirmed offline; a bot-access session should
+    do it) · the **visual card-engine migration** — engine **H2** *renderer-dedup* half **🟡 partially
     shipped (welcome / UX-lab leaderboard+poster / role-menu rebased onto `CardCanvas`, 2026-06-24
     dispatch run)**; the **leaderboard card now ships as a real feature** (`!leaderboard` attaches a
     rendered top-N image with embed fallback, 2026-06-24 dispatch run) — remaining H2 is only the
