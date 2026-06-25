@@ -16,7 +16,7 @@ domain shape can ship without the fragile exact-number ingest:
 
 | File | Entity kind | Contents |
 |---|---|---|
-| `sinners.json` | `sinner` | the 12 fixed LCB Sinners |
+| `sinners.json` | `sinner` | the 12 fixed LCB Sinners (+ each one's `literary_origin`) |
 | `sins.json` | `sin` | the 7 Sin affinities (+ colour) |
 | `damage_types.json` | `damage_type` | Slash / Pierce / Blunt |
 | `ego_grades.json` | `ego_grade` | ZAYIN → ALEPH (ranked) |
@@ -31,5 +31,6 @@ Treat the `statuses.json` mechanic descriptions as **verify-at-ingest** summarie
 
 Each file is `{ data_version, game_version, source, entity_kind, entries: [...] }`.
 Every entry has `id` (stable slug), `canonical` (display name), `aliases` (lowercased
-match tokens), and `description`. Some kinds add fields (`sins.color`, `ego_grades.rank`).
+match tokens), and `description`. Some kinds add fields (`sins.color`, `ego_grades.rank`,
+`sinners.literary_origin` — the `{work, author}` each Sinner is drawn from).
 Loaded + validated by `disbot/services/projmoon_data_service.py`.

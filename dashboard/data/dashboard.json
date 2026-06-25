@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T11:26:32Z",
+    "generated_at": "2026-06-25T12:12:54Z",
     "build": {
-      "commit": "c45a6c19",
-      "subject": "Merge pull request #1454 from menno420/claude/funny-franklin-ry0ygk",
-      "committed_at": "2026-06-25T11:26:32Z"
+      "commit": "4bf2f55d",
+      "subject": "chore(session): open born-red card — Project Moon Limbus Sinner literary origins",
+      "committed_at": "2026-06-25T12:12:54Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 54,
-      "commands": 447,
+      "commands": 448,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2547,6 +2547,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-25-projmoon-sinner-literary-origins.md",
+      "date": "2026-06-25",
+      "title": "Session — 2026-06-25 · Project Moon — Limbus Sinner literary origins",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-25-projmoon-limbus-domain.md",
       "date": "2026-06-25",
       "title": "2026-06-25 — Project Moon (Limbus) knowledge domain — runtime PR 1",
@@ -2992,14 +3000,6 @@
       "title": "2026-06-23 — Docs reconciliation pass (band-#1350, Q-0107)",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-q0199-ai-setup-apply.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Record Q-0199 (AI-setup apply decision) in the router",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
@@ -8126,6 +8126,20 @@
             "what"
           ],
           "brief": "Resolve any Limbus name/term across every category.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "origins",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "pm",
+          "aliases": [
+            "origin",
+            "literary"
+          ],
+          "brief": "Show every Sinner ↔ the literary work it is drawn from.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

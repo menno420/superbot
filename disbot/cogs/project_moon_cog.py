@@ -36,6 +36,7 @@ from views.projmoon import (
     LimbusBrowseView,
     build_entry_embed,
     build_kind_embed,
+    build_origins_embed,
     build_overview_embed,
 )
 
@@ -128,6 +129,11 @@ class ProjectMoonCog(commands.Cog):
             )
             return
         await ctx.send(embed=build_entry_embed(entry))
+
+    @pm_group.command(name="origins", aliases=["origin", "literary"])  # type: ignore[arg-type]
+    async def pm_origins(self, ctx: commands.Context) -> None:
+        """Show every Sinner ↔ the literary work it is drawn from."""
+        await ctx.send(embed=build_origins_embed())
 
     @pm_group.command(name="sinner", aliases=["sinners"])  # type: ignore[arg-type]
     async def pm_sinner(self, ctx: commands.Context, *, name: str = "") -> None:

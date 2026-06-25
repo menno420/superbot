@@ -71,3 +71,34 @@ def test_extra_fields_preserved():
 def test_all_entries_spans_every_kind():
     everything = data.all_entries()
     assert len(everything) == sum(len(data.get_entries(k)) for k in data.entity_kinds())
+
+
+def test_every_sinner_has_a_literary_origin():
+    for sinner in data.get_entries("sinner"):
+        origin = sinner.extra.get("literary_origin")
+        assert isinstance(origin, dict), f"{sinner.canonical} missing literary_origin"
+        assert origin.get("work") and origin.get("author")
+
+
+def test_sinner_origins_accessor_covers_full_roster():
+    origins = data.sinner_origins()
+    assert len(origins) == 12
+    faust = next(o for o in origins if o.canonical == "Faust")
+    assert faust.author == "Johann Wolfgang von Goethe"
+    assert "Faust" in faust.work
+    # roster order is preserved (Yi Sang is Sinner No. 1).
+    assert origins[0].canonical == "Yi Sang"
+
+
+def test_malformed_literary_origin_is_rejected(tmp_path, monkeypatch):
+    bad = tmp_path / "sinners.json"
+    bad.write_text(
+        '{"data_version":"x","game_version":"x","source":"x",'
+        '"entity_kind":"sinner","entries":[{"id":"a","canonical":"A",'
+        '"description":"d","literary_origin":{"work":"W"}}]}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(data, "DATA_ROOT", tmp_path)
+    data.reset_cache()
+    with pytest.raises(data.LimbusDataValidationError, match="literary_origin"):
+        data.get_entries("sinner")

@@ -91,12 +91,35 @@ def build_entry_embed(entry: data.LimbusEntry) -> discord.Embed:
             value=f"{entry.extra['rank']} of 5",
             inline=True,
         )
+    origin = entry.extra.get("literary_origin")
+    if isinstance(origin, dict) and origin.get("work") and origin.get("author"):
+        embed.add_field(
+            name="Literary origin",
+            value=f"*{origin['work']}* — {origin['author']}",
+            inline=False,
+        )
     if entry.aliases:
         embed.add_field(
             name="Also known as",
             value=", ".join(entry.aliases),
             inline=False,
         )
+    embed.set_footer(text=_provenance())
+    return embed
+
+
+def build_origins_embed() -> discord.Embed:
+    """A cross-reference card: every Sinner ↔ the literary work it is drawn from."""
+    origins = data.sinner_origins()
+    lines = [f"**{o.canonical}** — *{o.work}*, {o.author}" for o in origins]
+    embed = discord.Embed(
+        title="🌑 Limbus — Sinner literary origins",
+        description=(
+            "Each of the 12 Sinners is drawn from a work of world literature.\n\n"
+            + "\n".join(lines)
+        ),
+        color=GAME_COLOR,
+    )
     embed.set_footer(text=_provenance())
     return embed
 
@@ -131,6 +154,21 @@ class _OverviewButton(discord.ui.Button):
         )
 
 
+class _OriginsButton(discord.ui.Button):
+    def __init__(self) -> None:
+        super().__init__(
+            label="Origins",
+            emoji="📖",
+            style=discord.ButtonStyle.secondary,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await interaction.response.edit_message(
+            embed=build_origins_embed(),
+            view=self.view,
+        )
+
+
 class LimbusBrowseView(BaseView):
     """Public browse panel: one button per entity kind + an overview reset."""
 
@@ -139,3 +177,4 @@ class LimbusBrowseView(BaseView):
         self.add_item(_OverviewButton())
         for kind in data.entity_kinds():
             self.add_item(_KindButton(kind))
+        self.add_item(_OriginsButton())

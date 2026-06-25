@@ -1,80 +1,92 @@
 {
-  "data_version": "2026-06-25",
+  "data_version": "2026-06-25b",
   "game_version": "Limbus Company (structural facts; roster stable)",
-  "source": "limbuscompany.wiki.gg (summarized; verify-at-ingest)",
+  "source": "limbuscompany.wiki.gg + the Sinners' source literature (summarized; verify-at-ingest)",
   "entity_kind": "sinner",
   "entries": [
     {
       "id": "yi_sang",
       "canonical": "Yi Sang",
       "aliases": ["yisang", "sang"],
-      "description": "LCB Sinner No. 1. The first of the twelve fixed roster members of Limbus Company."
+      "description": "LCB Sinner No. 1, drawn from the works of the Korean modernist poet Yi Sang.",
+      "literary_origin": {"work": "the poetry of Yi Sang (e.g. \"Crow's Eye View\")", "author": "Yi Sang"}
     },
     {
       "id": "faust",
       "canonical": "Faust",
       "aliases": [],
-      "description": "LCB Sinner No. 2. Limbus Company's knowledgeable strategist of the fixed roster."
+      "description": "LCB Sinner No. 2, Limbus Company's knowledgeable strategist, drawn from Goethe's Faust.",
+      "literary_origin": {"work": "Faust", "author": "Johann Wolfgang von Goethe"}
     },
     {
       "id": "don_quixote",
       "canonical": "Don Quixote",
       "aliases": ["don", "quixote", "donq"],
-      "description": "LCB Sinner No. 3. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 3, drawn from Cervantes' Don Quixote.",
+      "literary_origin": {"work": "Don Quixote", "author": "Miguel de Cervantes"}
     },
     {
       "id": "ryoshu",
       "canonical": "Ryōshū",
       "aliases": ["ryoshu", "ryshu"],
-      "description": "LCB Sinner No. 4. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 4, drawn from Akutagawa's Hell Screen (Jigokuhen).",
+      "literary_origin": {"work": "Hell Screen (Jigokuhen)", "author": "Ryūnosuke Akutagawa"}
     },
     {
       "id": "meursault",
       "canonical": "Meursault",
       "aliases": ["meur"],
-      "description": "LCB Sinner No. 5. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 5, drawn from Camus' The Stranger (L'Étranger).",
+      "literary_origin": {"work": "The Stranger (L'Étranger)", "author": "Albert Camus"}
     },
     {
       "id": "hong_lu",
       "canonical": "Hong Lu",
       "aliases": ["honglu", "hong"],
-      "description": "LCB Sinner No. 6. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 6, drawn from Cao Xueqin's Dream of the Red Chamber.",
+      "literary_origin": {"work": "Dream of the Red Chamber", "author": "Cao Xueqin"}
     },
     {
       "id": "heathcliff",
       "canonical": "Heathcliff",
       "aliases": ["heath", "cliff"],
-      "description": "LCB Sinner No. 7. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 7, drawn from Emily Brontë's Wuthering Heights.",
+      "literary_origin": {"work": "Wuthering Heights", "author": "Emily Brontë"}
     },
     {
       "id": "ishmael",
       "canonical": "Ishmael",
       "aliases": ["ish"],
-      "description": "LCB Sinner No. 8. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 8, drawn from Melville's Moby-Dick.",
+      "literary_origin": {"work": "Moby-Dick", "author": "Herman Melville"}
     },
     {
       "id": "rodion",
       "canonical": "Rodion",
       "aliases": ["rodya"],
-      "description": "LCB Sinner No. 9. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 9, drawn from Dostoevsky's Crime and Punishment.",
+      "literary_origin": {"work": "Crime and Punishment", "author": "Fyodor Dostoevsky"}
     },
     {
       "id": "sinclair",
       "canonical": "Sinclair",
       "aliases": ["sinc"],
-      "description": "LCB Sinner No. 10. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 10, drawn from Hermann Hesse's Demian.",
+      "literary_origin": {"work": "Demian", "author": "Hermann Hesse"}
     },
     {
       "id": "outis",
       "canonical": "Outis",
       "aliases": [],
-      "description": "LCB Sinner No. 11. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 11, drawn from Homer's Odyssey (\"Outis\" — \"Nobody\" — the name Odysseus gives the Cyclops).",
+      "literary_origin": {"work": "the Odyssey", "author": "Homer"}
     },
     {
       "id": "gregor",
       "canonical": "Gregor",
       "aliases": [],
-      "description": "LCB Sinner No. 12. One of the twelve fixed roster Sinners of Limbus Company."
+      "description": "LCB Sinner No. 12, drawn from Kafka's The Metamorphosis.",
+      "literary_origin": {"work": "The Metamorphosis", "author": "Franz Kafka"}
     }
   ]
 }
