@@ -1,0 +1,1 @@
+- `claude/funny-franklin-26cbe2` · BTD6 eval anchors — projected-total convention (S2 P1-1, continues #1458) · `tests/evals/test_btd6_grounding_anchors.py` · 2026-06-25
