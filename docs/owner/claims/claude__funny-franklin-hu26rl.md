@@ -1,0 +1,1 @@
+ - `claude/funny-franklin-hu26rl` · **fix profile hero-card attachment round-trip** — `manage`/`back_to_card` drop or strand the `/myprofile` image card · `disbot/views/profile/profile_view.py` `disbot/views/profile/editor.py` · 2026-06-25 · PR pending
