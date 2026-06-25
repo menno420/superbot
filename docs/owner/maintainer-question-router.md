@@ -7482,3 +7482,40 @@ presets, and suggested names are unchanged.
 
 **Home:** this Q-block (canonical) + `.sessions/2026-06-24-setup-spine-polish.md` + the plan §7 PR-1 note.
 Related: **Q-0202**/**Q-0203**/**Q-0204** (the per-step spine decisions), **Q-A** (direct-apply per step).
+
+### Q-0206 — DISCUSS: automate the claim-GC sweep so a skipped reconciliation step can't leave stale claims (2026-06-25)
+
+> **PROPOSED — surfaced by a dispatch run (2026-06-25).** Captured here, not applied: this is a
+> *workflow* change, which CLAUDE.md says an agent **proposes** (router DISCUSS), never self-applies.
+
+**The observation.** This dispatch run found a **stale claim file** left on `main`:
+`docs/owner/claims/claude-jolly-johnson-rqf8wt.md`, for a branch that merged via **#1407** (band-#1380,
+reconciliation pass 23). It survived **two** later reconciliation passes (24 and 25) before this run
+deleted it on sight (Q-0166 drift-on-sight).
+
+**Why it's not a tooling bug.** The guard already exists and works: `scripts/check_stale_claims.py`
+(built 2026-06-22, with `--prune` + 5 tests) correctly flags exactly this claim (re-verified this run —
+it reports the branch as `gone`). The reconciliation routine's saved prompt
+(`docs/operations/autonomous-routines.md` L162–163) **already mandates** running it with `--prune`.
+The claim lingered because the routine **skipped that step** — a forgettable manual sub-bullet. So the
+gap is **execution discipline**, and the durable fix is to make the sweep *not skippable*.
+
+**Options (owner's call — each is a different automation surface):**
+1. **A tiny scheduled / merge-triggered workflow** that runs `check_stale_claims.py --prune` and commits
+   the deletions. Most automatic; but an auto-commit-to-`main` workflow needs the recursion-guard care
+   the #778 class taught us, so it's the heaviest option.
+2. **A warn-only `code-quality` step** (`check_stale_claims.py`, advisory) so every PR run surfaces a
+   lingering stale claim in its log. Cheap + safe (never blocks merges; an *open* PR's own branch isn't
+   merged yet, so it's never falsely flagged), but it only *surfaces* — a human/agent still prunes.
+3. **Leave it manual but make the prompt step louder** — promote the GC line from a sub-bullet to a
+   first-class numbered step in the reconciliation procedure (lowest effort; relies on discipline,
+   which is exactly what failed here).
+4. **A Stop-hook advisory** (`scripts/claude_stop_check.py`) that flags a stale-claim count at session
+   close — but hooks are executable config an agent does not self-edit (Q-0106), so this is an
+   owner-only change.
+
+*Agent recommendation:* **option 2** (warn-only CI surfacing) as the cheap, safe, recursion-free
+default, optionally paired with **option 3**. Option 1 only if the owner wants it fully hands-off.
+
+**Home:** this Q-block (canonical) + `.sessions/2026-06-25-stale-claim-detector.md`. Related: **Q-0195**
+(one-file-per-claim), **Q-0166** (drift-on-sight), **Q-0105** (disposable-tool posture).
