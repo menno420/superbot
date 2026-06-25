@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T20:41:46Z",
+    "generated_at": "2026-06-25T23:32:44Z",
     "build": {
-      "commit": "67c83657",
-      "subject": "Merge pull request #1461 from menno420/claude/funny-franklin-moab-anchors",
-      "committed_at": "2026-06-25T20:41:46Z"
+      "commit": "4e662f5f",
+      "subject": "Merge pull request #1464 from menno420/claude/xp-config-card-strand-fix",
+      "committed_at": "2026-06-25T23:32:44Z"
     },
     "counts": {
       "functions": 43,
       "ideas": 143,
-      "bugs": 24,
+      "bugs": 25,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -2376,6 +2376,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0025",
+      "title": "hero-card image stranded/lost when navigating into an image-less sub-panel (profile + XP hub) — FIXED (root)",
+      "status": "unknown",
+      "summary": "Symptom (found 2026-06-25 by code inspection during the visual card-engine H3 adoption audit; not a live report, but a visible defect on the showpiece image cards): navigating from an image-card hub into an image-less sub-panel strands or drops the rendered hero card. Profile: o…"
+    },
+    {
       "id": "BUG-0024",
       "title": "test_generated_at_is_deterministic_not_wall_clock flaky under pytest -n auto (real-clock dependent) — FIXED (root)",
       "status": "unknown",
@@ -2523,6 +2529,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-25-xp-config-card-strand-fix.md",
+      "date": "2026-06-25",
+      "title": "2026-06-25 — XP hub: clear stranded rank card on Configure (BUG-0025 third instance)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-25-stale-claim-detector.md",
       "date": "2026-06-25",
       "title": "Session — 2026-06-25 · slice 2 — route claim-GC + badges findings",
@@ -2561,6 +2575,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-25-profile-card-attachment-fix.md",
+      "date": "2026-06-25",
+      "title": "2026-06-25 — Profile hero-card attachment round-trip fix",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
     },
     {
       "file": "2026-06-25-essential-setup-pr2-extras-health.md",
@@ -2982,22 +3004,6 @@
       "file": "2026-06-23-u2-roles-inplace-nav.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — U2 Roles & access panels: in-place nav + temproles reachability",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-u1-ai-inplace-nav.md",
-      "date": "2026-06-23",
-      "title": "Session — U1 AI panels → in-place navigation (Ultracode worker)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-setup-create-confirm.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Final Review create-count guard + #1351 ledger drift fix",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
