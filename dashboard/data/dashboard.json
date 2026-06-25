@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T23:49:30Z",
+    "generated_at": "2026-06-25T05:29:07Z",
     "build": {
-      "commit": "c7defcea",
-      "subject": "Merge pull request #1446 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-24T23:49:30Z"
+      "commit": "876d0bb6",
+      "subject": "Merge pull request #1451 from menno420/claude/funny-franklin-u6wav0",
+      "committed_at": "2026-06-25T05:29:07Z"
     },
     "counts": {
       "functions": 42,
@@ -2497,6 +2497,30 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-25-stale-claim-detector.md",
+      "date": "2026-06-25",
+      "title": "Session — 2026-06-25 · slice 2 — route claim-GC + badges findings",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-25-setup-wizard-pr3a-retire-dead-sections.md",
+      "date": "2026-06-25",
+      "title": "Session — 2026-06-25 · setup-wizard PR 3a — retire dead/legacy sections",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-25-essential-setup-pr2-extras-health.md",
+      "date": "2026-06-25",
+      "title": "Session — 2026-06-25 · Essential Setup PR 2 — extras menu + \"Check my setup\"",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-xpmenu-rank-card-h3.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — `!xpmenu` hub renders the rank image card (visual card-engine H3)",
@@ -2951,30 +2975,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-new-subsystem-checker-gaps.md",
-      "date": "2026-06-23",
-      "title": "Session — 2026-06-23 · Close the new-subsystem checker's blind spots",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-hub-rendering-plan.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Plan: hub child-rendering consistency + placement coherence",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-hub-child-button-consolidation.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — HubChildButton consolidation (discoverability fleet, first consolidation)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
