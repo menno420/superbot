@@ -180,12 +180,19 @@ class ProfileEditorHomeView(BaseView):
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
-        from views.profile.profile_view import ProfileHomeView, build_profile_embed
+        from views.profile.profile_view import ProfileHomeView, build_profile_card
 
         card = ProfileHomeView(self._author, self._guild_id)
+        # Re-render the full hero card and re-attach it, mirroring
+        # ``ProfileHomeView.refresh`` — going back to the card must restore its
+        # designed image, not return a plain embed (and never leave a stray
+        # attachment). ``build_profile_card`` returns ``file is None`` on a
+        # Pillow-less host, where ``attachments=[]`` keeps the embed-only state.
+        embed, file = await build_profile_card(self._author, self._guild_id)
         await interaction.response.edit_message(
-            embed=await build_profile_embed(self._author, self._guild_id),
+            embed=embed,
             view=card,
+            attachments=[file] if file is not None else [],
         )
 
 

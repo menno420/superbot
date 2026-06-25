@@ -308,7 +308,11 @@ class ProfileHomeView(BaseView):
         from views.profile.editor import ProfileEditorHomeView
 
         editor = ProfileEditorHomeView(self._author, self._guild_id)
+        # The editor has no hero image, so clear the card explicitly — otherwise
+        # Discord keeps the prior attachment and the profile card lingers as a
+        # stray image under the settings panel (same contract as ``refresh``).
         await interaction.response.edit_message(
             embed=editor.build_embed(),
             view=editor,
+            attachments=[],
         )
