@@ -1,0 +1,1 @@
+- `claude/funny-franklin-moab-anchors` · BTD6 eval anchors — #855 MOAB-class bonuses (S2 P1-1, follow-up to #1460) · `tests/evals/test_btd6_grounding_anchors.py` · 2026-06-25
