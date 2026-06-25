@@ -77,6 +77,14 @@ argument: generalising from a single example tends to produce the wrong abstract
 > hot-path change** (deliberate: the StaticData numbers + the `natural_language_stage` grounding wiring
 > are PR 2, which wants prod creds / a runtime walk). **▶ Next = Slice A item 2 (the grounding path).**
 
+> **▶ Progress (2026-06-25 dispatch run, PR #1456): Slice A lore-depth follow-on SHIPPED.** Each of the
+> 12 Sinners now carries a provenanced **`literary_origin`** (`{work, author}` — the canonical literary
+> source each Sinner is drawn from: Faust→Goethe, Outis→Homer's *Odyssey*, Gregor→Kafka, Rodion→
+> Dostoevsky, …), validated by `projmoon_data_service`, exposed via a typed `sinner_origins()` accessor,
+> and surfaced in the `!pm` detail card + a new **Origins** cross-reference embed (`!pm origins` + a
+> browse-panel button). Read-only/offline, no AI hot-path change. **PR 2 (the grounding path) is still
+> the next slice** (needs the Q-0086 runtime walk).
+
 **Slice A (next session, 2–3 PRs):**
 1. **Ingestion:** a `scripts/fetch_pm_limbus.py` that parses the **StaticData identity JSON** (clean,
    bounded — Identities + Sinners + E.G.O index) into committed JSON under

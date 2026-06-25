@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T06:11:34Z",
+    "generated_at": "2026-06-25T12:12:54Z",
     "build": {
-      "commit": "94657db6",
-      "subject": "chore(session): open born-red card — Project Moon Limbus knowledge domain PR 1",
-      "committed_at": "2026-06-25T06:11:34Z"
+      "commit": "4bf2f55d",
+      "subject": "chore(session): open born-red card — Project Moon Limbus Sinner literary origins",
+      "committed_at": "2026-06-25T12:12:54Z"
     }
   },
   "counts": {
-    "commands": 447,
+    "commands": 448,
     "features": 43,
     "games": 12
   },
@@ -6473,6 +6473,28 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "origins",
+      "aliases": [
+        "origin",
+        "literary"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show every Sinner ↔ the literary work it is drawn from.",
+      "description": "Show every Sinner ↔ the literary work it is drawn from.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
           "status": "ideas"
         }
       ],

@@ -53,6 +53,7 @@ KIND_LABELS: dict[str, str] = {
 
 # Non-core fields preserved per kind, surfaced as ``LimbusEntry.extra``.
 _EXTRA_FIELDS: dict[str, tuple[str, ...]] = {
+    "sinner": ("literary_origin",),
     "sin": ("color",),
     "ego_grade": ("rank",),
 }
@@ -143,6 +144,16 @@ def _load_file(filename: str, expected_kind: str) -> tuple[LimbusEntry, ...]:
             for key in _EXTRA_FIELDS.get(expected_kind, ())
             if key in item
         }
+        origin = extra.get("literary_origin")
+        if origin is not None and (
+            not isinstance(origin, dict)
+            or not origin.get("work")
+            or not origin.get("author")
+        ):
+            raise LimbusDataValidationError(
+                f"{filename}: entry {item['id']!r} literary_origin must be a "
+                "mapping with non-empty 'work' and 'author'",
+            )
         entries.append(
             LimbusEntry(
                 id=item["id"],
@@ -190,6 +201,35 @@ def all_entries() -> tuple[LimbusEntry, ...]:
     out: list[LimbusEntry] = []
     for kind in _FILES.values():
         out.extend(datasets[kind])
+    return tuple(out)
+
+
+@dataclass(frozen=True)
+class SinnerOrigin:
+    """A Sinner paired with the literary work it is drawn from."""
+
+    canonical: str
+    work: str
+    author: str
+
+
+def sinner_origins() -> tuple[SinnerOrigin, ...]:
+    """The 12 Sinners paired with their source work + author, roster order.
+
+    Sinners without a recorded ``literary_origin`` are skipped, so this is the
+    source of truth for the Origins cross-reference surface.
+    """
+    out: list[SinnerOrigin] = []
+    for entry in get_entries("sinner"):
+        origin = entry.extra.get("literary_origin")
+        if isinstance(origin, dict) and origin.get("work") and origin.get("author"):
+            out.append(
+                SinnerOrigin(
+                    canonical=entry.canonical,
+                    work=str(origin["work"]),
+                    author=str(origin["author"]),
+                ),
+            )
     return tuple(out)
 
 

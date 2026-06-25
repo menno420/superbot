@@ -120,7 +120,11 @@
   Sinners · 7 Sins · 3 damage types · 5 E.G.O grades · status keywords, provenance-tagged), a typed
   `services/projmoon_data_service.py` (loader + resolver), `utils/projmoon/keywords.py`
   (`has_limbus_context`), and a browsable `!pm` / `/pm` surface (`views/projmoon/`, its own top-level
-  **Project Moon** Help hub like BTD6). Read-only, no DB, **no AI hot-path change**. ▶ **Next: PR 2** —
+  **Project Moon** Help hub like BTD6). Read-only, no DB, **no AI hot-path change**. **Lore-depth
+  follow-on SHIPPED 2026-06-25** (dispatch run, PR #1456): each of the 12 Sinners now carries its
+  canonical **`literary_origin`** (the work + author it is drawn from — Faust→Goethe, Outis→Homer,
+  Gregor→Kafka, …), rendered in the `!pm` detail card + a new **Origins** cross-reference view
+  (`!pm origins` + a panel button). Still read-only/offline. ▶ **Next: PR 2** —
   wire `AITask.PROJMOON_ANSWER` + grounding into `core/runtime/ai/natural_language_stage.py` (reuse the
   tag/cap/provenance render + faithfulness guard), **flagged for a Q-0086 runtime walk** (touches the
   gated AI stage). Then Slice B = extract the shared `KnowledgeDomain` seam from BTD6 + Limbus + exact
