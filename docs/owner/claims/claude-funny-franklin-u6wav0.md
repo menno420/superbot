@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-u6wav0` · scope: setup-wizard PR 3a — retire dead/legacy sections (Advanced wizard) · area: `disbot/views/setup/sections/`, `tests/unit/views/setup/` · 2026-06-25
