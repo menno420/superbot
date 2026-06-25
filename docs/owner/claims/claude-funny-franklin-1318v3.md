@@ -1,0 +1,1 @@
+- `claude/funny-franklin-1318v3` · BTD6 grounding eval — fixture-drift anchor guard (S2 P1-1) · `tests/evals/test_btd6_grounding_anchors.py` + docs · 2026-06-25

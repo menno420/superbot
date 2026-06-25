@@ -1,1 +1,0 @@
-- `claude/funny-franklin-ry0ygk` · settle-once money-safety CI guard (check_consistency Rule 6) · `scripts/check_consistency.py` + tests + idea promotion · 2026-06-25
