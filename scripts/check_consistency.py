@@ -16,6 +16,15 @@ rules that no import graph can catch (owner directive Q-0170, 2026-06-17):
      collection (``options[:25]``, ``roles[:25]``) instead of paginating.  A Discord
      select caps at 25 options, so the slice silently drops every entry past the cap
      (the #1040 class).  Windowed pagination (``x[start:start+N]``) is not flagged.
+  5. **card-engine helper duplication** — an image renderer (``utils/``) that
+     re-declares a primitive the shared ``utils/card_render.py`` engine already owns.
+  6. **settle-once adoption** — a wager-settling site (a call to
+     ``game_wager_workflow.settle_pvp`` / ``refund_pvp``, which pay out / refund the
+     escrowed pot) whose path does not adopt the settle-once guard
+     (``utils/terminal_guard.SettleOnceMixin`` / ``claim_settlement()``).  A money
+     settlement reachable from more than one trigger (a finishing button *and*
+     ``on_timeout``, or two players' callbacks) double-settles the pot without one
+     atomic claim — the BUG-0013 class the mixin (PRs #1444/#1445) closed by hand.
 
 Scope is **per-rule** (each :class:`Rule` carries a ``roots`` tuple).  Rules 1-2
 scan only ``views/``; rules 3-4 also scan ``cogs/`` — cogs define inline
@@ -870,6 +879,167 @@ def rule_card_engine_helper_duplication(
 
 
 # ---------------------------------------------------------------------------
+# Rule 6 — settle-once adoption (money-safety)
+# ---------------------------------------------------------------------------
+
+# The escrow-paying wager helpers (``services/game_wager_workflow.py``).  A call
+# to either *moves the pot* — a payout or a refund — so running it twice
+# double-settles.  These are the precise, unambiguous money-safety sites; the
+# fuzzier "posts a terminal result" leg the idea also sketches
+# (``settle-once-architecture-guard-2026-06-24.md``) is deliberately NOT
+# implemented here — static "settles via a result message reachable from
+# ``on_timeout``" detection is false-positive-prone, and a warn-clean rule must
+# stay precise (the idea's own "be conservative, warn-first" caution).
+_WAGER_SETTLE_CALLS = frozenset({"settle_pvp", "refund_pvp"})
+
+# The settle-once guard primitive (``utils/terminal_guard.py``).
+_SETTLE_ONCE_MIXIN = "SettleOnceMixin"
+_SETTLE_ONCE_CLAIM = "claim_settlement"
+
+
+def _calls_name_within(node: ast.AST, names: frozenset[str]) -> bool:
+    """True if any ``Call`` under *node* targets a name/attr in *names*.
+
+    Matches both a bare call (``settle_pvp(...)``) and an attribute call
+    (``game_wager_workflow.settle_pvp(...)`` / ``state.claim_settlement()``) by
+    its trailing name — the same shape ``_call_name`` / ``_call_attr`` read.
+    """
+    for sub in ast.walk(node):
+        if isinstance(sub, ast.Call) and (
+            _call_name(sub) in names or _call_attr(sub) in names
+        ):
+            return True
+    return False
+
+
+def _wager_settle_sites_with_scope(
+    tree: ast.Module,
+) -> list[tuple[ast.Call, ast.ClassDef | None, ast.AST]]:
+    """Yield each wager-settle call with its enclosing class + function nodes.
+
+    Walks with class/function scope tracked (the ``_front_truncations_with_scope``
+    pattern).  Each result is ``(call, enclosing_class_or_None, enclosing_func)``
+    where ``enclosing_func`` is the innermost ``def``/``async def`` containing the
+    call (or the module node when a settle call somehow sits at module top level —
+    that has no ``claim_settlement`` guard scope and is flagged, which is correct).
+    """
+    results: list[tuple[ast.Call, ast.ClassDef | None, ast.AST]] = []
+
+    def visit(
+        node: ast.AST,
+        cls: ast.ClassDef | None,
+        func: ast.AST,
+    ) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, ast.ClassDef):
+                visit(child, child, func)
+                continue
+            if isinstance(child, (ast.AsyncFunctionDef, ast.FunctionDef)):
+                visit(child, cls, child)
+                continue
+            if isinstance(child, ast.Call) and _call_attr(child) in _WAGER_SETTLE_CALLS:
+                results.append((child, cls, func))
+            visit(child, cls, func)
+
+    visit(tree, None, tree)
+    return results
+
+
+def _settle_site_is_guarded(
+    enclosing_class: ast.ClassDef | None,
+    enclosing_func: ast.AST,
+) -> bool:
+    """True if a wager-settle site adopts the settle-once guard.
+
+    Guarded when **either**:
+
+    - the enclosing class mixes in ``SettleOnceMixin`` (the RPS PvP / deathmatch
+      bot-duel view shape), **or**
+    - ``claim_settlement()`` is called anywhere in the enclosing class body (the
+      claim may live in a sibling method — e.g. RPS claims in ``_resolve`` and
+      settles in another method), **or**
+    - ``claim_settlement()`` is called anywhere in the enclosing function (the
+      blackjack module-level ``_settle(state)`` shape — ``state.claim_settlement()``
+      before the ``settle_pvp`` call, no enclosing class).
+    """
+    if enclosing_class is not None:
+        if _SETTLE_ONCE_MIXIN in _class_bases(enclosing_class):
+            return True
+        if _calls_name_within(enclosing_class, frozenset({_SETTLE_ONCE_CLAIM})):
+            return True
+    return _calls_name_within(enclosing_func, frozenset({_SETTLE_ONCE_CLAIM}))
+
+
+def rule_settle_once_adoption(
+    files: list[Path],
+    exceptions: dict,
+    roots: tuple[str, ...] = ("views/", "services/"),
+) -> list[Finding]:
+    """Flag a wager-settle site that does not adopt the settle-once guard.
+
+    A call to ``game_wager_workflow.settle_pvp`` / ``refund_pvp`` pays out or
+    refunds the escrowed pot.  When that settlement path is reachable from more
+    than one trigger (a finishing button *and* ``on_timeout``, or two players'
+    finish callbacks) without one atomic claim, a racy second entry double-settles
+    — a redundant payout and a duplicate result post (BUG-0013 + the three more
+    sites the 2026-06-24 run found by hand).  ``utils/terminal_guard.SettleOnceMixin``
+    closes that with one ``claim_settlement()`` per terminal transition.
+
+    This makes the by-hand review mechanical: every wager-settle site must adopt
+    the guard — its enclosing class mixes in ``SettleOnceMixin`` / calls
+    ``claim_settlement()``, or its enclosing function calls ``claim_settlement()``.
+    Universal adoption is the safe money-safety stance: a genuinely single-trigger
+    settle taking the claim is harmless (it always wins the first claim), so the
+    rule never asks for a wrong change.
+
+    Warn-only (Q-0105 — the mixin is young; graduate to ``error`` once it stays
+    clean across a few sessions).  Runs clean today (both callers adopt).  Scopes
+    ``views/`` + ``services/`` (the RPS/blackjack views call it; a state object
+    like ``blackjack_state._PvPState`` lives in ``services/``).  ``game_wager_workflow``
+    itself only *defines* ``settle_pvp``/``refund_pvp`` (never calls them), so it is
+    not matched.  Allowlist a verified single-trigger exception in
+    ``consistency_exceptions.yml``.
+    """
+    cfg = exceptions.get("settle_once_adoption", {})
+    findings: list[Finding] = []
+
+    for filepath, rel, tree in _iter_parsed(files, roots):
+        for call, enclosing_class, enclosing_func in _wager_settle_sites_with_scope(
+            tree,
+        ):
+            if _settle_site_is_guarded(enclosing_class, enclosing_func):
+                continue
+            scope_parts = [
+                p.name
+                for p in (enclosing_class, enclosing_func)
+                if isinstance(p, (ast.ClassDef, ast.AsyncFunctionDef, ast.FunctionDef))
+            ]
+            qualname = ".".join(scope_parts)
+            if _is_allowlisted(rel, qualname, cfg):
+                continue
+            findings.append(
+                Finding(
+                    file=filepath,
+                    line=call.lineno,
+                    rule="settle_once_adoption",
+                    qualname=qualname,
+                    message=(
+                        f"`{_call_attr(call)}(...)` pays out / refunds the escrow pot "
+                        f"in `{qualname}` but its path takes no settle-once claim — a "
+                        "second trigger (a finishing button + `on_timeout`, or two "
+                        "players' callbacks) double-settles. Mix in "
+                        "`utils.terminal_guard.SettleOnceMixin` and take "
+                        "`claim_settlement()` at the top of the settling path (before "
+                        "any `await`), or allowlist a verified single-trigger site in "
+                        "consistency_exceptions.yml"
+                    ),
+                ),
+            )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
 # Rule registry — add a (name, fn) entry per future rule
 # ---------------------------------------------------------------------------
 
@@ -952,6 +1122,21 @@ RULES: list[Rule] = [
         "image renderers re-declaring an engine helper (_fonts/_fit/_mix/_initials)",
         severity="warning",
         roots=("utils/",),
+    ),
+    # Rule 6 scans ``views/`` + ``services/`` (the wager-settle callers + state
+    # objects live in both). Warn-first (Q-0105): added 2026-06-25, promoting the
+    # ``settle-once-architecture-guard-2026-06-24.md`` idea — it mechanizes the
+    # by-hand double-settlement review (BUG-0013 + the three sites the #1444/#1445
+    # run found) for a money-safety class. The target primitive
+    # (``SettleOnceMixin``) is young, so this stays warn-only; it runs clean on the
+    # current tree (both wager-settle callers adopt the guard). Graduate to ``error``
+    # once it has stayed quiet across a few sessions (the edit_in_place pattern).
+    Rule(
+        "settle_once_adoption",
+        rule_settle_once_adoption,
+        "wager-settle sites (settle_pvp/refund_pvp) not adopting the settle-once guard",
+        severity="warning",
+        roots=("views/", "services/"),
     ),
 ]
 

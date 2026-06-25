@@ -107,7 +107,8 @@
   #878** (`tests/evals/smoke.py`, CI-gated); **▶ Layer B** (the absence-guard negative-existential gate)
   is startable; the **⛔ live half** is creds-gated (owner-led P1-4); BUG-0009 open
   ([bug book](health/bug-book.md)). **The P0 integrity spine AND P1-2 are COMPLETE.** Product alternates
-  (owner-steered): **▶ games P0-1 wager money-safety** · **▶ mining structures/skill-tree**
+  (owner-steered): *(games **P0-1 wager money-safety ✅ #748**; the cross-game **settle-once** terminal
+  guard ✅ #1444/#1445 + its **CI adoption guard** ✅ #1454)* · **▶ mining structures/skill-tree**
   ([turn-key plan](planning/mining-structures-skill-tree-plan-2026-06-14.md) — Vault shipped #884;
   skill tree + cap + Forge/Home are startable; **⛔ V-16 phase 2** still owner PNG pack) ·
   **⛔ AI §7 workflow families** (post-prod-check).
