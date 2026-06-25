@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-adgv45` · scope: Project Moon (Limbus) knowledge domain — runtime PR 1 (committed structural/lore data + data service + resolver/keywords + browsable `/pm` lookup surface; no AI hot-path changes) · area: `disbot/data/projmoon/`, `disbot/services/projmoon_*`, `disbot/utils/projmoon/`, `disbot/cogs/projmoon_cog.py` · 2026-06-25
