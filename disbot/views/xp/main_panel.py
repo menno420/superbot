@@ -102,9 +102,14 @@ class _XpHubView(HubView):
 
         config_view = XpConfigView(self.ctx, parent=self)
         config_view.message = self.message
+        # The config panel has no hero image, so clear the rank card explicitly —
+        # otherwise Discord keeps the prior attachment and the rank card lingers
+        # as a stray image under the config panel (same contract as the stat
+        # toggles in ``_switch_stat``). See bug book BUG-0025.
         await interaction.response.edit_message(
             embed=await config_view.build_embed(),
             view=config_view,
+            attachments=[],
         )
 
     @discord.ui.button(label="🎁 Give XP", style=discord.ButtonStyle.grey, row=1)
