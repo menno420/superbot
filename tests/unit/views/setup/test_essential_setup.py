@@ -806,6 +806,133 @@ def test_summary_lists_applied_changes():
 
 
 # ---------------------------------------------------------------------------
+# Extras menu + Check my setup (PR 2)
+# ---------------------------------------------------------------------------
+
+
+def _find(view, button_cls):
+    """Return the first child of ``view`` that is an instance of ``button_cls``."""
+    return next(c for c in view.children if isinstance(c, button_cls))
+
+
+def test_summary_offers_extras_and_check_buttons():
+    flow = es.EssentialFlow(_member(), _guild())
+    view = es.EssentialSummaryView(flow)
+    assert any(isinstance(c, es._ExtrasMenuButton) for c in view.children)
+    assert any(isinstance(c, es._CheckSetupButton) for c in view.children)
+
+
+def test_extras_embed_lists_every_feature_with_its_command():
+    embed = es.build_extras_embed()
+    names = " ".join(f.name for f in embed.fields)
+    values = " ".join(f.value for f in embed.fields)
+    for extra in es._EXTRAS:
+        assert extra.label in names
+        assert extra.command in values
+
+
+def test_extras_menu_excludes_unbuilt_giveaways():
+    # Native giveaways aren't built yet — listing a command would mislead.
+    commands = {extra.command for extra in es._EXTRAS}
+    assert not any("giveaway" in cmd or cmd == "!gw" for cmd in commands)
+
+
+@pytest.mark.asyncio
+async def test_extras_button_opens_the_extras_menu():
+    flow = es.EssentialFlow(_member(), _guild())
+    summary = es.EssentialSummaryView(flow)
+    button = _find(summary, es._ExtrasMenuButton)
+    interaction = _interaction()
+
+    await button.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    new_view = interaction.response.edit_message.await_args.kwargs["view"]
+    assert isinstance(new_view, es.ExtrasMenuView)
+
+
+@pytest.mark.asyncio
+async def test_extras_back_returns_to_summary():
+    flow = es.EssentialFlow(_member(), _guild())
+    extras = es.ExtrasMenuView(flow)
+    button = _find(extras, es._BackToSummaryButton)
+    interaction = _interaction()
+
+    await button.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    new_view = interaction.response.edit_message.await_args.kwargs["view"]
+    assert isinstance(new_view, es.EssentialSummaryView)
+
+
+def _readiness_report(configured: set[str]):
+    """A ``ReadinessReport`` double: subsystems in ``configured`` read as set up."""
+    per = [
+        SimpleNamespace(
+            subsystem=key,
+            bindings_bound=1 if key in configured else 0,
+            settings_configured=0,
+        )
+        for key, _label in es._CHECK_ESSENTIALS
+    ]
+    return SimpleNamespace(per_subsystem=tuple(per))
+
+
+@pytest.mark.asyncio
+async def test_check_setup_embed_marks_configured_and_unconfigured():
+    report = _readiness_report({"welcome", "moderation"})
+    with patch("services.setup_readiness.collect", new=AsyncMock(return_value=report)):
+        embed = await es.build_check_setup_embed(_guild())
+
+    blob = (embed.description or "") + " ".join(f.value for f in embed.fields)
+    # Two of six essentials configured → the partial headline + per-line marks.
+    assert "2 of 6" in blob
+    assert "✅ Greeting new members" in blob
+    assert "➖ Help desk" in blob
+
+
+@pytest.mark.asyncio
+async def test_check_setup_embed_all_configured_celebrates():
+    report = _readiness_report({key for key, _ in es._CHECK_ESSENTIALS})
+    with patch("services.setup_readiness.collect", new=AsyncMock(return_value=report)):
+        embed = await es.build_check_setup_embed(_guild())
+    assert "Everything essential is set up" in (embed.description or "")
+    # Nothing left → no "want to finish the rest?" prompt.
+    assert not any("finish the rest" in f.name.lower() for f in embed.fields)
+
+
+@pytest.mark.asyncio
+async def test_check_setup_button_sends_ephemeral_health_embed():
+    flow = es.EssentialFlow(_member(), _guild())
+    summary = es.EssentialSummaryView(flow)
+    button = _find(summary, es._CheckSetupButton)
+    interaction = _interaction()
+    interaction.guild = _guild()
+    report = _readiness_report(set())
+
+    with patch("services.setup_readiness.collect", new=AsyncMock(return_value=report)):
+        await button.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    assert interaction.response.send_message.await_args.kwargs["ephemeral"] is True
+
+
+@pytest.mark.asyncio
+async def test_check_setup_button_requires_a_server():
+    flow = es.EssentialFlow(_member(), _guild())
+    summary = es.EssentialSummaryView(flow)
+    button = _find(summary, es._CheckSetupButton)
+    interaction = _interaction()
+    interaction.guild = None
+
+    await button.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "server" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
 # Restart revive (migration 099)
 # ---------------------------------------------------------------------------
 

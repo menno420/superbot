@@ -1764,6 +1764,222 @@ class HelpDeskStep(_StepView):
 
 
 # ---------------------------------------------------------------------------
+# Extras menu — optional features the spine doesn't cover
+# ---------------------------------------------------------------------------
+#
+# Plan §5 "off-spine": the spine handles the universal essentials; everything
+# else the bot can do is offered here as a one-tap menu of extras you skipped
+# (reachable from the "All done" summary).  Each extra is surfaced with what it
+# does and the exact command to open its full setup — the discoverability win
+# the consolidation audit asked for — rather than re-implementing every
+# feature's config inside the spine (a much larger per-feature effort that would
+# duplicate the existing panels).  Native giveaways are intentionally absent:
+# that feature isn't built yet, so listing a command would mislead.
+
+
+@dataclass(frozen=True)
+class _Extra:
+    """One optional feature shown in the extras menu."""
+
+    emoji: str
+    label: str
+    blurb: str  # one plain line of what it does
+    command: str  # the command that opens its full setup
+
+
+_EXTRAS: tuple[_Extra, ...] = (
+    _Extra(
+        "🏆",
+        "Hall of Fame",
+        "pin the messages your members love the most",
+        "!starboard",
+    ),
+    _Extra(
+        "🔢",
+        "Live member counts",
+        "show member and online counts right in your channel list",
+        "!counters",
+    ),
+    _Extra(
+        "🛡️",
+        "Raid & new-account protection",
+        "slow down raids and hold brand-new accounts for a look",
+        "!security",
+    ),
+    _Extra(
+        "🖼️",
+        "Image filtering",
+        "catch unwanted images automatically",
+        "!imagemod",
+    ),
+    _Extra(
+        "🙏",
+        "Thanks & Karma",
+        "let members thank each other and build up reputation",
+        "!karma",
+    ),
+    _Extra(
+        "🤖",
+        "AI helper",
+        "let members ask the bot questions in plain language",
+        "!aimenu",
+    ),
+    _Extra(
+        "🎭",
+        "Reaction roles",
+        "let members pick their own roles by reacting",
+        "!reactroles",
+    ),
+)
+
+
+def build_extras_embed() -> discord.Embed:
+    """Render the one-screen extras menu (kept here so its copy stays plain)."""
+    embed = discord.Embed(
+        title="✨ More you can set up",
+        description=(
+            "These are all optional — turn on any that fit your server. "
+            "Run the command shown under each one to set it up."
+        ),
+        color=discord.Color.blurple(),
+    )
+    for extra in _EXTRAS:
+        embed.add_field(
+            name=f"{extra.emoji} {extra.label}",
+            value=f"{extra.blurb}\nOpen with `{extra.command}`",
+            inline=False,
+        )
+    return embed
+
+
+# ---------------------------------------------------------------------------
+# Check my setup — a plain-language health check
+# ---------------------------------------------------------------------------
+#
+# Plan §3: the read-only scan / readiness / diagnostics steps move *out* of the
+# completion path into one optional "Check my setup" button.  It reads the same
+# data the advanced diagnostics use (``services.setup_readiness.collect``) but
+# renders it in outcome language — a "how set up are you" headline plus a
+# ✅ / ➖ list of the essentials — with none of the bindings/settings vocabulary
+# the raw diagnostics embed exposes.
+
+#: Essentials shown in the health check, mapped to plain operator-facing labels.
+_CHECK_ESSENTIALS: tuple[tuple[str, str], ...] = (
+    ("welcome", "Greeting new members"),
+    ("moderation", "Moderator tools"),
+    ("automod", "Spam & bad-link protection"),
+    ("logging", "Activity logging"),
+    ("xp", "Member rewards"),
+    ("ticket", "Help desk"),
+)
+
+
+async def build_check_setup_embed(guild: discord.Guild) -> discord.Embed:
+    """Render the "Check my setup" health embed (plain language, no jargon)."""
+    from services import setup_readiness
+
+    report = await setup_readiness.collect(guild.id, guild=guild)
+    by_name = {sr.subsystem: sr for sr in report.per_subsystem}
+
+    lines: list[str] = []
+    done = 0
+    for key, label in _CHECK_ESSENTIALS:
+        sr = by_name.get(key)
+        configured = sr is not None and (sr.bindings_bound + sr.settings_configured) > 0
+        if configured:
+            done += 1
+        lines.append(f"{'✅' if configured else '➖'} {label}")
+
+    total = len(_CHECK_ESSENTIALS)
+    if done == total:
+        headline = "🎉 Everything essential is set up — nice work!"
+        color = discord.Color.green()
+    elif done == 0:
+        headline = "Nothing essential is set up yet — run setup to get started."
+        color = discord.Color.orange()
+    else:
+        headline = f"You've set up **{done} of {total}** essentials so far."
+        color = discord.Color.blurple()
+
+    embed = discord.Embed(
+        title="🔎 How set up are you?",
+        description=headline,
+        color=color,
+    )
+    embed.add_field(name="Essentials", value="\n".join(lines), inline=False)
+    if done < total:
+        embed.add_field(
+            name="Want to finish the rest?",
+            value=(
+                "Run setup again any time — each step saves the moment you "
+                "press its button, so you only do what's left."
+            ),
+            inline=False,
+        )
+    return embed
+
+
+class _ExtrasMenuButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="More to set up",
+            emoji="✨",
+            style=discord.ButtonStyle.primary,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: EssentialSummaryView = self.view  # type: ignore[assignment]
+        extras = ExtrasMenuView(view.flow)
+        await interaction.response.edit_message(embed=extras.render(), view=extras)
+
+
+class _CheckSetupButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="Check my setup",
+            emoji="🔎",
+            style=discord.ButtonStyle.secondary,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(_NOT_IN_SERVER, ephemeral=True)
+            return
+        embed = await build_check_setup_embed(guild)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class _BackToSummaryButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="Back",
+            emoji="◀",
+            style=discord.ButtonStyle.secondary,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: ExtrasMenuView = self.view  # type: ignore[assignment]
+        summary = EssentialSummaryView(view.flow)
+        await interaction.response.edit_message(embed=summary.render(), view=summary)
+
+
+class ExtrasMenuView(BaseView):
+    """The optional-extras menu, opened from the "All done" summary."""
+
+    def __init__(self, flow: EssentialFlow) -> None:
+        super().__init__(flow.author, public=False, timeout=600)
+        self.flow = flow
+        self.add_item(_BackToSummaryButton())
+
+    def render(self) -> discord.Embed:
+        return build_extras_embed()
+
+
+# ---------------------------------------------------------------------------
 # Summary (after the last step)
 # ---------------------------------------------------------------------------
 
@@ -1791,6 +2007,8 @@ class EssentialSummaryView(BaseView):
         super().__init__(flow.author, public=False, timeout=600)
         self.flow = flow
         self.add_item(_FinishButton())
+        self.add_item(_ExtrasMenuButton())
+        self.add_item(_CheckSetupButton())
 
     def render(self) -> discord.Embed:
         embed = discord.Embed(
@@ -1815,6 +2033,15 @@ class EssentialSummaryView(BaseView):
                 value="\n".join(f"• {line}" for line in self.flow.skipped),
                 inline=False,
             )
+        embed.add_field(
+            name="What next?",
+            value=(
+                "✨ **More to set up** — optional extras like a Hall of Fame, "
+                "reaction roles, or an AI helper.\n"
+                "🔎 **Check my setup** — a quick look at what's on and what isn't."
+            ),
+            inline=False,
+        )
         return embed
 
 
