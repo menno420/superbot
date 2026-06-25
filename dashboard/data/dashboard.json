@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T12:12:54Z",
+    "generated_at": "2026-06-25T14:32:25Z",
     "build": {
-      "commit": "4bf2f55d",
-      "subject": "chore(session): open born-red card — Project Moon Limbus Sinner literary origins",
-      "committed_at": "2026-06-25T12:12:54Z"
+      "commit": "c8234431",
+      "subject": "Merge pull request #1456 from menno420/claude/funny-franklin-pkauhr",
+      "committed_at": "2026-06-25T14:32:25Z"
     },
     "counts": {
       "functions": 43,
@@ -2550,8 +2550,8 @@
       "file": "2026-06-25-projmoon-sinner-literary-origins.md",
       "date": "2026-06-25",
       "title": "Session — 2026-06-25 · Project Moon — Limbus Sinner literary origins",
-      "status": "in-progress",
-      "run_type": "",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
