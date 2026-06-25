@@ -51,8 +51,7 @@ SUBSYSTEM = "moderation"
 
 # Spec names (``SettingSpec.name``) — NOT the legacy settings_keys.  The
 # dispatcher resolves the spec via (subsystem, name); see
-# ``cogs/moderation/schemas.py`` and the canonical example in
-# ``views/setup/sections/identity.py``.
+# ``cogs/moderation/schemas.py``.
 SETTING_DM_ON_ACTION = "dm_on_action"
 SETTING_REQUIRE_REASON = "require_reason"
 SETTING_WARN_ESCALATION = "warn_escalation_action"

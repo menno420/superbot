@@ -59,7 +59,13 @@
   on-join launcher's **Start Setup** opens. **PR 2 (extras menu + "Check my setup") SHIPPED 2026-06-25**
   (dispatch run) — the "All done" summary now offers **More to set up** (a plain menu of the optional
   features the spine skips, each with its setup command) + **Check my setup** (a jargon-free readiness
-  health check). **▶ Next:** PR 3 (retire dead/legacy sections + rework the Advanced editor). Tracker:
+  health check). **PR 3a (retire dead/legacy sections) SHIPPED 2026-06-25** (dispatch run, PR #1451) — the
+  7 dead read-only/metadata/announcement/link-only sections (`purpose`/`identity`/`btd6`/`ai_setup`/
+  `readiness`/`diagnostics`/`suggestions`) deleted, `server_scan`'s button unregistered (cache module kept
+  for `channels`), `cleanup` demoted advanced-only; the Advanced (`!setupadvanced`) wizard now only shows
+  steps that do real config. **▶ Next:** **PR 3b** — rework the Advanced draft→Final-Review editor (Q-E,
+  "currently most of it does not do anything") + delete the now-dead service code; **heavier, needs
+  live-bot verification.** Tracker:
   [`planning/setup-wizard-restructure-plan-2026-06-24.md`](../planning/setup-wizard-restructure-plan-2026-06-24.md).
 - **✅ Consolidation / discoverability audit — COMPLETE (owner-directed, 2026-06-23).** All five goals
   shipped and CI-guarded where possible. Staging brief + per-cog rubric:
