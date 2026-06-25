@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T14:32:25Z",
+    "generated_at": "2026-06-25T17:32:47Z",
     "build": {
-      "commit": "c8234431",
-      "subject": "Merge pull request #1456 from menno420/claude/funny-franklin-pkauhr",
-      "committed_at": "2026-06-25T14:32:25Z"
+      "commit": "c89a17d3",
+      "subject": "Merge pull request #1458 from menno420/claude/funny-franklin-1318v3",
+      "committed_at": "2026-06-25T17:32:47Z"
     },
     "counts": {
       "functions": 43,
@@ -2571,6 +2571,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-25-btd6-fixture-anchor-guard.md",
+      "date": "2026-06-25",
+      "title": "2026-06-25 — BTD6 grounding eval: fixture-drift anchor guard (S2 P1-1)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-24-xpmenu-rank-card-h3.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — `!xpmenu` hub renders the rank image card (visual card-engine H3)",
@@ -2992,14 +3000,6 @@
       "title": "2026-06-23 — Promote loose session ideas into the docs/ideas backlog",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-reconcile.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Docs reconciliation pass (band-#1350, Q-0107)",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": false
     }
   ],
