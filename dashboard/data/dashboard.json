@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T17:32:47Z",
+    "generated_at": "2026-06-25T20:41:46Z",
     "build": {
-      "commit": "c89a17d3",
-      "subject": "Merge pull request #1458 from menno420/claude/funny-franklin-1318v3",
-      "committed_at": "2026-06-25T17:32:47Z"
+      "commit": "67c83657",
+      "subject": "Merge pull request #1461 from menno420/claude/funny-franklin-moab-anchors",
+      "committed_at": "2026-06-25T20:41:46Z"
     },
     "counts": {
       "functions": 43,
@@ -2571,6 +2571,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-25-btd6-projected-total-anchors.md",
+      "date": "2026-06-25",
+      "title": "2026-06-25 — BTD6 eval anchors: projected-total convention (S2 P1-1)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-25-btd6-moab-bonus-anchors.md",
+      "date": "2026-06-25",
+      "title": "2026-06-25 — BTD6 eval anchors: #855 MOAB-class bonuses (S2 P1-1, follow-up to #1460)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-25-btd6-fixture-anchor-guard.md",
       "date": "2026-06-25",
       "title": "2026-06-25 — BTD6 grounding eval: fixture-drift anchor guard (S2 P1-1)",
@@ -2982,22 +2998,6 @@
       "file": "2026-06-23-setup-create-confirm.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Final Review create-count guard + #1351 ledger drift fix",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-settings-centralization.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Settings centralization: a static settings-reachability guard",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-session-idea-capture.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Promote loose session ideas into the docs/ideas backlog",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
