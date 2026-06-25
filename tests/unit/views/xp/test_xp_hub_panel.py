@@ -121,6 +121,27 @@ async def test_stat_switch_clears_attachment_on_embed_only_fallback():
 
 
 @pytest.mark.asyncio
+async def test_config_button_clears_the_rank_card_attachment():
+    # Opening the (image-less) config panel must drop the rank card, not strand
+    # it under the panel — Discord keeps the prior attachment when ``attachments``
+    # is omitted on an edit. See bug book BUG-0025 (the profile-editor sibling).
+    view = _XpHubView(_ctx(admin=True))
+    interaction = MagicMock()
+    interaction.user.guild_permissions = MagicMock(administrator=True)
+    interaction.response.edit_message = AsyncMock()
+
+    with patch(
+        "views.xp.config_panel.XpConfigView.build_embed",
+        new=AsyncMock(return_value=discord.Embed(description="config")),
+    ):
+        await view.btn_config.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert kwargs["attachments"] == []
+
+
+@pytest.mark.asyncio
 async def test_build_embed_stays_embed_only():
     # ``build_embed`` is the config-panel back-navigation path (XpConfigView →
     # parent.build_embed()); it must not touch the image-card seam — that path
