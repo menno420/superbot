@@ -236,27 +236,19 @@ async def test_hub_section_button_accepts_delegated_admin():
     Pre-Phase-1 the hub's _gate_owner allowed only the server owner,
     blocking delegated admins even though hub entry accepted them.
     The replacement _gate_apply defers to can_apply_setup.
+
+    The gate is uniform across every section button (PR 3a retired the
+    read-only ``readiness`` section this used to exercise, so it now
+    drives the gate through the surviving ``final_review`` button).
     """
     delegated = _delegated_member(42)
     view = SetupHubView(delegated, session=_session_with_delegated((42,)))
     interaction = _interaction(delegated)
-    fake_embed = MagicMock()
-    with (
-        patch(
-            "cogs.diagnostic._platform_embeds.build_setup_readiness_embed",
-            new_callable=AsyncMock,
-            return_value=fake_embed,
-        ),
-        patch(
-            "services.setup_session.mark_in_progress",
-            new_callable=AsyncMock,
-        ),
-    ):
-        await _section_button(view, "readiness").callback(interaction)
-    # Section ran (readiness embed was sent) — not the access-denied embed.
+    await _section_button(view, "final_review").callback(interaction)
+    # Section ran (its view was sent) — not the access-denied message.
     interaction.response.send_message.assert_awaited_once()
-    sent_kwargs = interaction.response.send_message.await_args.kwargs
-    assert sent_kwargs.get("embed") is fake_embed
+    sent_view = interaction.response.send_message.await_args.kwargs.get("view")
+    assert isinstance(sent_view, FinalReviewView)
 
 
 @pytest.mark.asyncio
@@ -265,7 +257,7 @@ async def test_hub_section_button_rejects_non_delegated_admin():
     other = _other_member()  # admin=True, id=42, owner=99, no delegation
     view = SetupHubView(other, session=_session_with_delegated(()))
     interaction = _interaction(other)
-    await _section_button(view, "readiness").callback(interaction)
+    await _section_button(view, "final_review").callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0].lower()
     # Reject message now mentions delegation as the recovery path.
@@ -285,92 +277,16 @@ async def test_hub_section_button_rejects_member_without_delegation_when_session
     # Mutate the session to revoke delegation.
     view.session = _session_with_delegated(())
     interaction = _interaction(delegated)
-    await _section_button(view, "readiness").callback(interaction)
+    await _section_button(view, "final_review").callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0].lower()
     assert "delegate" in msg or "owner" in msg
 
 
-@pytest.mark.asyncio
-async def test_hub_readiness_button_owner_only():
-    view = SetupHubView(_other_member())
-    interaction = _interaction(_other_member())
-    await _section_button(view, "readiness").callback(interaction)
-    interaction.response.send_message.assert_awaited_once()
-    assert "owner" in interaction.response.send_message.await_args.args[0].lower()
-
-
-@pytest.mark.asyncio
-async def test_hub_readiness_button_owner_posts_embed_and_marks_progress():
-    view = SetupHubView(_owner_member())
-    interaction = _interaction(_owner_member())
-    fake_embed = MagicMock()
-    with (
-        patch(
-            "cogs.diagnostic._platform_embeds.build_setup_readiness_embed",
-            new_callable=AsyncMock,
-            return_value=fake_embed,
-        ),
-        patch(
-            "services.setup_session.mark_in_progress",
-            new_callable=AsyncMock,
-        ) as mark_mock,
-    ):
-        await _section_button(view, "readiness").callback(interaction)
-    interaction.response.send_message.assert_awaited_once()
-    mark_mock.assert_awaited_once_with(1, step="readiness")
-
-
-@pytest.mark.asyncio
-async def test_hub_suggestions_button_opens_ai_review_panel():
-    """The suggestions section opens the AIReviewPanelView (which carries
-    the Stage & open Final review button) rather than a read-only embed —
-    so Smart Suggestions routes through the shared draft, not a dead end.
-    """
-    import services.guild_snapshot  # noqa: F401
-    from services.setup_plan import SetupPlanDraft
-    from views.setup.ai_review.main_panel import AIReviewPanelView
-
-    view = SetupHubView(_owner_member())
-    interaction = _interaction(_owner_member())
-    fake_snapshot = MagicMock()
-    fake_draft = SetupPlanDraft(
-        recommendations=(
-            SetupRecommendation(
-                subsystem="logging",
-                binding_name="mod_channel",
-                target_kind="channel",
-                target_id=100,
-                target_name="mod-log",
-                confidence="high",
-                reason="x",
-            ),
-        ),
-        source="deterministic",
-    )
-    fake_advisor = MagicMock()
-    fake_advisor.suggest = AsyncMock(return_value=fake_draft)
-    with (
-        patch(
-            "services.guild_snapshot.collect",
-            new_callable=AsyncMock,
-            return_value=fake_snapshot,
-        ),
-        patch(
-            "services.setup_plan.DeterministicAdvisor",
-            return_value=fake_advisor,
-        ),
-        patch(
-            "services.setup_session.mark_in_progress",
-            new_callable=AsyncMock,
-        ),
-    ):
-        await _section_button(view, "suggestions").callback(interaction)
-    interaction.response.send_message.assert_awaited_once()
-    kwargs = interaction.response.send_message.await_args.kwargs
-    assert isinstance(kwargs["view"], AIReviewPanelView)
-    rendered = "\n".join(f.value or "" for f in kwargs["embed"].fields)
-    assert "mod_channel" in rendered
+# NOTE: the readiness-button and Smart-Suggestions tests were removed in
+# PR 3a — both sections were retired from the wizard (their function moved
+# into Essential Setup's step 0 + "Check my setup"). The uniform gate they
+# exercised is now pinned via the ``final_review`` button above.
 
 
 @pytest.mark.asyncio

@@ -18,7 +18,12 @@
 > `/setup-advanced`**; Essential Setup now opens in a separate **`#superbot-setup`** channel (not the
 > invoking channel) and is what the on-join launcher's **Start Setup** opens. **PR 2 (extras menu +
 > "Check my setup") SHIPPED 2026-06-25** (dispatch run — both reachable from the "All done" summary; §7).
-> **Remaining:** **PR 3** = retire dead/legacy sections + rework the Advanced editor (Q-E).
+> **PR 3 SPLIT:** **PR 3a — retire the dead/legacy sections — SHIPPED 2026-06-25** (dispatch run): the 7
+> dead read-only/metadata/announcement/link-only sections (`purpose`, `identity`, `btd6`, `ai_setup`,
+> `readiness`, `diagnostics`, `suggestions`) deleted + `server_scan`'s button unregistered (module kept as
+> a snapshot-cache seam for `channels`) + `cleanup` demoted advanced-only. **Remaining:** **PR 3b** = the
+> Q-E Advanced draft→Final-Review editor rework ("currently most of it does not do anything") + deleting
+> now-dead service code — **needs live-bot verification**.
 >
 > **Sim:** [`tools/sim/setup_wizard_sim.py`](../../tools/sim/setup_wizard_sim.py) (runnable) —
 > models a non-technical owner walking the flow. Current standard-depth flow scores **~4% finish**
@@ -235,11 +240,21 @@ decision with architectural weight → called out as open question Q-A below.
   - **Check my setup** — `build_check_setup_embed`: a plain-language health check over
     `services.setup_readiness.collect` — a "how set up are you" headline + a ✅/➖ list of the essentials
     in outcome language (no bindings/settings/subsystem vocabulary), shown ephemerally.
-- **PR 3 — retire the dead/legacy sections:** delete or demote `purpose`(old), `identity`, `btd6`,
-  `ai_setup`(link-only), `server_scan`/`readiness`/`diagnostics`/`suggestions` as *standalone spine
-  sections* (their function now lives in step 0 / Check-my-setup), and move `cog_routing` + `cleanup`
-  under **Advanced**. Keep the draft → Final Review engine for the Advanced bulk path. This is the
-  "strip the steps that do nothing" the owner asked for — done last so the new spine is proven first.
+- **PR 3a — retire the dead/legacy sections (SHIPPED 2026-06-25, dispatch run):** **deleted** the 7 fully
+  orphaned sections — `purpose`(old), `identity`, `btd6`, `ai_setup`(link-only), `readiness`,
+  `diagnostics` (the section view; the `setup_diagnostics` *service* stays), `suggestions` — whose
+  function now lives in step 0 / Check-my-setup; **unregistered** `server_scan`'s button (module kept as a
+  snapshot-cache seam — `channels` imports `get_cached_snapshot`); **demoted** `cleanup` to advanced-only
+  (`cog_routing` already was). The wizard hub is registry-driven, so removing the registrations removes the
+  buttons. Tests: `test_section_registration` pins the surviving set + a `_RETIRED_SLUGS`-not-registered
+  assertion + cleanup-is-advanced-only; the hub gate tests retargeted to the surviving `final_review`
+  button; obsolete per-section tests deleted; jargon ratchet lowered 154 → 133. This is the "strip the
+  steps that do nothing" half — done first because it is contained + offline-verifiable.
+- **PR 3b — rework the Advanced editor (Q-E) — REMAINING (needs live-bot verification):** audit the draft
+  → Final Review bulk editor and either wire up or strip its dead actions ("currently most of it does not
+  do anything"); move `cog_routing` + `cleanup` presentation fully under an **Advanced** entry; delete the
+  now-dead service code left behind by PR 3a (e.g. `channels` no longer needs its snapshot lookup, so the
+  `server_scan` cache seam can go). Done last so the new spine is proven first.
 
 ## 8. Arch & contracts checklist (binding)
 

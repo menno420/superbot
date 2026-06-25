@@ -31,7 +31,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCRIPT = _REPO_ROOT / "scripts" / "check_setup_copy.py"
 
 # Ratchet ceiling — lower this as the spine rewrite cleans copy; never raise it.
-_BASELINE_TOTAL = 154
+# PR 3a (2026-06-25) deleted the retired jargon-heavy sections (ai_setup, btd6,
+# diagnostics, identity, purpose), dropping the count 154 → 133.
+_BASELINE_TOTAL = 133
 
 # The setup files that carry jargon debt today. A finding in any file NOT in
 # this set is new jargon and fails — new sections must ship plain-language.
@@ -49,18 +51,13 @@ _BASELINE_FILES = frozenset(
         "disbot/views/setup/recovery.py",
         "disbot/views/setup/scan_panel.py",
         "disbot/views/setup/section_card.py",
-        "disbot/views/setup/sections/ai_setup.py",
-        "disbot/views/setup/sections/btd6.py",
         "disbot/views/setup/sections/channels.py",
         "disbot/views/setup/sections/cleanup.py",
         "disbot/views/setup/sections/cog_routing.py",
-        "disbot/views/setup/sections/diagnostics.py",
         "disbot/views/setup/sections/final_review.py",
-        "disbot/views/setup/sections/identity.py",
         "disbot/views/setup/sections/logging_presets.py",
         "disbot/views/setup/sections/moderation.py",
         "disbot/views/setup/sections/preset_select.py",
-        "disbot/views/setup/sections/purpose.py",
         "disbot/views/setup/sections/role_templates.py",
         "disbot/views/setup/sections/roles.py",
         "disbot/views/setup/summary.py",

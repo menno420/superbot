@@ -588,7 +588,9 @@ REGISTRY.register(
             "be aggressively deleted unless existing policies already say "
             "so. You can revisit cleanup later from `!settings`."
         ),
-        depths=frozenset({"standard", "advanced"}),
+        # PR 3a: per-channel cleanup scopes are an advanced concern, not a
+        # first-run essential — demoted to advanced-only (cog_routing already is).
+        depths=frozenset({"advanced"}),
         recommended_ops_builder=_recommended_cleanup_ops,
         customize=_customize_run,
         detail_embed_builder=_build_detail_embed,

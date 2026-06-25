@@ -159,13 +159,14 @@ def test_persistent_view_registered_under_btd6_subsystem():
     assert _PERSISTENT_VIEW_REGISTRY["btd6"] is BTD6PanelView
 
 
-def test_btd6_setup_section_registered():
-    assert "btd6" in SETUP_REGISTRY
-    section = SETUP_REGISTRY.get("btd6")
-    assert section is not None
-    assert section.label == "BTD6 Assistant"
-    # Module 4 declares no SetupOperation kinds — Module 6 fills these in.
-    assert section.op_kinds == frozenset()
+def test_btd6_setup_section_retired():
+    """PR 3a (2026-06-25) retired the BTD6 setup section.
+
+    It was an announcement-only step (no settings) and was removed from
+    the wizard along with the other dead/legacy sections; BTD6 remains
+    reachable via its own `/btd6` command group, not the setup wizard.
+    """
+    assert "btd6" not in SETUP_REGISTRY
 
 
 @pytest.mark.asyncio
