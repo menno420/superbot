@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T06:11:34Z",
+    "generated_at": "2026-06-25T11:26:32Z",
     "build": {
-      "commit": "94657db6",
-      "subject": "chore(session): open born-red card — Project Moon Limbus knowledge domain PR 1",
-      "committed_at": "2026-06-25T06:11:34Z"
+      "commit": "c45a6c19",
+      "subject": "Merge pull request #1454 from menno420/claude/funny-franklin-ry0ygk",
+      "committed_at": "2026-06-25T11:26:32Z"
     },
     "counts": {
       "functions": 43,
@@ -2539,12 +2539,20 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-25-settle-once-consistency-guard.md",
+      "date": "2026-06-25",
+      "title": "2026-06-25 — settle-once money-safety CI guard (check_consistency Rule 6)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-25-projmoon-limbus-domain.md",
       "date": "2026-06-25",
       "title": "2026-06-25 — Project Moon (Limbus) knowledge domain — runtime PR 1",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-06-25-essential-setup-pr2-extras-health.md",
@@ -2990,14 +2998,6 @@
       "file": "2026-06-23-q0199-ai-setup-apply.md",
       "date": "2026-06-23",
       "title": "2026-06-23 — Record Q-0199 (AI-setup apply decision) in the router",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-phase0-completion.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Phase-0 completion: hub-child primitive + settings-orphan guard + fleet plan",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
