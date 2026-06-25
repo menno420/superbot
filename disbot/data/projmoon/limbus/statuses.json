@@ -1,0 +1,56 @@
+{
+  "data_version": "2026-06-25",
+  "game_version": "Limbus Company (status keywords; conservative summaries — verify-at-ingest)",
+  "source": "limbuscompany.wiki.gg (summarized; verify-at-ingest)",
+  "entity_kind": "status",
+  "entries": [
+    {
+      "id": "burn",
+      "canonical": "Burn",
+      "aliases": ["burning"],
+      "description": "A damage-over-time status: the affected unit loses HP based on its Burn potency each turn, and the count is reduced over time."
+    },
+    {
+      "id": "bleed",
+      "canonical": "Bleed",
+      "aliases": ["bleeding"],
+      "description": "A damage-over-time status that triggers when the affected unit acts: it loses HP based on its Bleed potency when it uses a skill, and the count is reduced over time."
+    },
+    {
+      "id": "tremor",
+      "canonical": "Tremor",
+      "aliases": [],
+      "description": "A stagger-pressure status that builds up and can be 'burst' by certain skills to lower the target's stagger threshold or deal extra effects."
+    },
+    {
+      "id": "rupture",
+      "canonical": "Rupture",
+      "aliases": ["ruptured"],
+      "description": "A status that makes the affected unit take extra damage when it is hit; each triggered hit consumes a Rupture count."
+    },
+    {
+      "id": "sinking",
+      "canonical": "Sinking",
+      "aliases": ["sink"],
+      "description": "A damage-over-time status: the affected unit loses HP based on its Sinking potency on a recurring trigger, and the count is reduced over time."
+    },
+    {
+      "id": "poise",
+      "canonical": "Poise",
+      "aliases": [],
+      "description": "A stacking offensive buff that increases the unit's attack/coin power; certain skills consume Poise for additional effects."
+    },
+    {
+      "id": "charge",
+      "canonical": "Charge",
+      "aliases": [],
+      "description": "A resource that accumulates on certain Identities and is spent by their skills for bonus effects."
+    },
+    {
+      "id": "haste",
+      "canonical": "Haste",
+      "aliases": [],
+      "description": "A buff that increases a unit's Speed for the turn, letting it act earlier and win more clashes."
+    }
+  ]
+}

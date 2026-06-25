@@ -1043,6 +1043,7 @@ EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
     "moderation": None,
     "myprofile": None,
     "platform": None,
+    "pm": None,  # Project Moon (Limbus) browse panel — read-only knowledge surface
     "server-management": None,
     "settings": None,
     "setup": None,  # Essential Setup front door (plain-language spine; was /quicksetup)

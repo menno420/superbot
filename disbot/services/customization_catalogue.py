@@ -97,6 +97,7 @@ KNOWN_PANEL_COMMANDS: tuple[tuple[str, str], ...] = (
     ("logging", "logging"),
     ("mining", "minemenu"),
     ("moderation", "modmenu"),
+    ("project_moon", "pm"),
     ("proof_channel", "prizemenu"),
     ("role", "rolemenu"),
     ("server_management", "servermanagement"),

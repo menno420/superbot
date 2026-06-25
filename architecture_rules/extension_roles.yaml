@@ -158,6 +158,10 @@ extensions:
   btd6:
     role: product_subsystem
     note: BTD6 core data / answerability vertical.
+  project_moon:
+    role: product_subsystem
+    note: Project Moon (Limbus) knowledge domain — read-only structural/lore reference;
+      own data/identity (Q-0192). AI grounding path is a later PR.
   btd6_reference:
     role: specialized_surface
     backs: btd6

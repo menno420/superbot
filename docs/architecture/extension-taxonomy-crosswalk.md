@@ -5,7 +5,7 @@
 > `architecture_rules/extension_roles.yaml`. Sources: `disbot/config.py` (`INITIAL_EXTENSIONS`),
 > `disbot/utils/subsystem_registry.py` (`SUBSYSTEMS`), and that overlay. `--check` guards staleness.
 
-_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **56** extensions  ·  **42** registered subsystems  ·  **14** non-1:1 extensions.
+_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **57** extensions  ·  **43** registered subsystems  ·  **14** non-1:1 extensions.
 
 Every loaded extension classified by **role** (editorial — in `architecture_rules/extension_roles.yaml`) and joined to the registry. A ✓ in *Registered* means the extension is a 1:1 subsystem identity; the non-1:1 rows are surfaces/maintenance/adapters that **back** a subsystem or the platform.
 
@@ -18,7 +18,7 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | `lab` | 1 | A development / UX laboratory surface; not a production product surface. |
 | `maintenance` | 3 | A background-loop cog (scheduled work) with no subsystem identity; runtime/ops, not a product surface. |
 | `operational_adapter` | 1 | A bridge to a control plane or external operation (not an in-guild product feature). |
-| `product_subsystem` | 34 | A feature vertical with its own owner, views, and tests. |
+| `product_subsystem` | 35 | A feature vertical with its own owner, views, and tests. |
 | `shared_platform` | 6 | A broad cross-cutting capability with high blast radius (admin, settings, AI, diagnostics, help, utility). |
 | `specialized_surface` | 5 | One of several surfaces within a single domain vertical (e.g. the BTD6 sub-cogs) — backs a registered subsystem rather than being its own. |
 
@@ -63,25 +63,26 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | 35 | `btd6_events` | `specialized_surface` | — | `btd6` | BTD6 live-events surface. |
 | 36 | `btd6_strategy` | `specialized_surface` | — | `btd6` |  |
 | 37 | `paragon` | `specialized_surface` | — | `btd6` | BTD6 paragon grounding surface. |
-| 38 | `btd6_ops` | `specialized_surface` | — | `btd6` | BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical. |
-| 39 | `chain` | `product_subsystem` | ✓ |  | Command-chain subsystem. |
-| 40 | `general` | `product_subsystem` | ✓ |  | General-content commands. |
-| 41 | `four_twenty` | `product_subsystem` | ✓ |  | Novelty / community feature. |
-| 42 | `leaderboard` | `product_subsystem` | ✓ |  | Cross-subsystem leaderboards (reads XP/games). |
-| 43 | `settings` | `shared_platform` | ✓ |  | Settings hub; cross-cutting config surface. |
-| 44 | `logging` | `product_subsystem` | ✓ |  | Server-logging subsystem. |
-| 45 | `games` | `hub` | ✓ |  | Games hub (routes blackjack/deathmatch/counting/rps). |
-| 46 | `community` | `hub` | ✓ |  | Community hub. |
-| 47 | `community_spotlight` | `product_subsystem` | ✓ |  | Community Spotlight (community-hub child; registered subsystem). |
-| 48 | `welcome` | `product_subsystem` | ✓ |  | Welcome service (join embeds + optional PIL cards). |
-| 49 | `counters` | `product_subsystem` | ✓ |  | Dynamic server counters. |
-| 50 | `ticket` | `product_subsystem` | ✓ |  | Support tickets — private channels, claim/close/transcript; opens by command, panel, or AI. |
-| 51 | `security` | `product_subsystem` | ✓ |  | Security tiers 1+2 — raid detection + account-age filter (Q-0111). |
-| 52 | `setup` | `bootstrap` | — | `server_management` | Advanced setup wizard (!setupadvanced / /setup-advanced) + on-join launcher + /setup-* helpers; lifecycle-critical, load-order sensitive. |
-| 53 | `quicksetup` | `bootstrap` | — | `server_management` | Essential Setup — the primary setup front door (!setup / /setup); thin command surface over views.setup.essential_setup (the plain-language spine). |
-| 54 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
-| 55 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
-| 56 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
+| 38 | `project_moon` | `product_subsystem` | ✓ |  | Project Moon (Limbus) knowledge domain — read-only structural/lore reference; own data/identity (Q-0192). AI grounding path is a later PR. |
+| 39 | `btd6_ops` | `specialized_surface` | — | `btd6` | BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical. |
+| 40 | `chain` | `product_subsystem` | ✓ |  | Command-chain subsystem. |
+| 41 | `general` | `product_subsystem` | ✓ |  | General-content commands. |
+| 42 | `four_twenty` | `product_subsystem` | ✓ |  | Novelty / community feature. |
+| 43 | `leaderboard` | `product_subsystem` | ✓ |  | Cross-subsystem leaderboards (reads XP/games). |
+| 44 | `settings` | `shared_platform` | ✓ |  | Settings hub; cross-cutting config surface. |
+| 45 | `logging` | `product_subsystem` | ✓ |  | Server-logging subsystem. |
+| 46 | `games` | `hub` | ✓ |  | Games hub (routes blackjack/deathmatch/counting/rps). |
+| 47 | `community` | `hub` | ✓ |  | Community hub. |
+| 48 | `community_spotlight` | `product_subsystem` | ✓ |  | Community Spotlight (community-hub child; registered subsystem). |
+| 49 | `welcome` | `product_subsystem` | ✓ |  | Welcome service (join embeds + optional PIL cards). |
+| 50 | `counters` | `product_subsystem` | ✓ |  | Dynamic server counters. |
+| 51 | `ticket` | `product_subsystem` | ✓ |  | Support tickets — private channels, claim/close/transcript; opens by command, panel, or AI. |
+| 52 | `security` | `product_subsystem` | ✓ |  | Security tiers 1+2 — raid detection + account-age filter (Q-0111). |
+| 53 | `setup` | `bootstrap` | — | `server_management` | Advanced setup wizard (!setupadvanced / /setup-advanced) + on-join launcher + /setup-* helpers; lifecycle-critical, load-order sensitive. |
+| 54 | `quicksetup` | `bootstrap` | — | `server_management` | Essential Setup — the primary setup front door (!setup / /setup); thin command surface over views.setup.essential_setup (the plain-language spine). |
+| 55 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
+| 56 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
+| 57 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
 
 ## Non-1:1 extensions (no registry identity)
 

@@ -131,6 +131,18 @@ HUBS: tuple[HubEntry, ...] = (
         minimum_tier="user",
     ),
     HubEntry(
+        key="project_moon",
+        display_name="Project Moon",
+        emoji="🌑",
+        purpose=(
+            "Limbus Company knowledge — Sinners, Sins, status keywords, "
+            "damage types, and E.G.O grades."
+        ),
+        entry_command="!pm",
+        primary_children=(),
+        minimum_tier="user",
+    ),
+    HubEntry(
         key="economy",
         display_name="Economy",
         emoji="💰",

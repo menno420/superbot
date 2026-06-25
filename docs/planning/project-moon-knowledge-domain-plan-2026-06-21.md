@@ -68,6 +68,15 @@ argument: generalising from a single example tends to produce the wrong abstract
 > wiki **has no Cargo** (verified), so the source for *exact numbers* is the game's **StaticData dump**
 > (the true BTD6-dump analogue), not a wiki scrape. The wiki (standard no-Cargo API) is for *prose/lore*.
 
+> **▶ Progress (2026-06-25 dispatch run, PR #1453): Slice A PR 1 SHIPPED.** Built the standalone
+> Limbus domain *minus the fragile exact-number ingest* — committed **structural/lore** facts
+> (`disbot/data/projmoon/limbus/`: 12 Sinners · 7 Sins · 3 damage types · 5 E.G.O grades · status
+> keywords, provenance-tagged), a typed `services/projmoon_data_service.py` (loader + resolver),
+> `utils/projmoon/keywords.py` (`has_limbus_context`), and a browsable `!pm` / `/pm` surface
+> (`views/projmoon/`, its own top-level **Project Moon** Help hub like BTD6). Read-only; **no AI
+> hot-path change** (deliberate: the StaticData numbers + the `natural_language_stage` grounding wiring
+> are PR 2, which wants prod creds / a runtime walk). **▶ Next = Slice A item 2 (the grounding path).**
+
 **Slice A (next session, 2–3 PRs):**
 1. **Ingestion:** a `scripts/fetch_pm_limbus.py` that parses the **StaticData identity JSON** (clean,
    bounded — Identities + Sinners + E.G.O index) into committed JSON under

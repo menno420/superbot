@@ -1,25 +1,25 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T05:29:07Z",
+    "generated_at": "2026-06-25T06:11:34Z",
     "build": {
-      "commit": "876d0bb6",
-      "subject": "Merge pull request #1451 from menno420/claude/funny-franklin-u6wav0",
-      "committed_at": "2026-06-25T05:29:07Z"
+      "commit": "94657db6",
+      "subject": "chore(session): open born-red card — Project Moon Limbus knowledge domain PR 1",
+      "committed_at": "2026-06-25T06:11:34Z"
     },
     "counts": {
-      "functions": 42,
+      "functions": 43,
       "ideas": 143,
       "bugs": 24,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 39,
-      "cogs": 53,
-      "commands": 438,
+      "cogs": 54,
+      "commands": 447,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
-      "visible_subsystems": 42,
+      "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
     }
@@ -679,6 +679,32 @@
       ],
       "capabilities": [
         "games.hub.view"
+      ]
+    },
+    {
+      "key": "project_moon",
+      "display_name": "Project Moon",
+      "description": "Browsable Limbus Company knowledge — the 12 Sinners, the 7 Sins, status keywords, damage types, and E.G.O grades. Read-only, deterministic reference built on committed structural facts.",
+      "emoji": "🌑",
+      "visibility_tier": "user",
+      "visibility_mode": "normal",
+      "category": "games",
+      "tags": [
+        "games",
+        "project moon",
+        "limbus",
+        "reference"
+      ],
+      "entry_points": [
+        "pm",
+        "limbus"
+      ],
+      "related_subsystems": [
+        "ai",
+        "btd6"
+      ],
+      "capabilities": [
+        "project_moon.lookup.view"
       ]
     },
     {
@@ -2513,6 +2539,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-25-projmoon-limbus-domain.md",
+      "date": "2026-06-25",
+      "title": "2026-06-25 — Project Moon (Limbus) knowledge domain — runtime PR 1",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-25-essential-setup-pr2-extras-health.md",
       "date": "2026-06-25",
       "title": "Session — 2026-06-25 · Essential Setup PR 2 — extras menu + \"Check my setup\"",
@@ -2967,14 +3001,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-panel-back-nav-fix.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Universal panel nav: every panel is one click from Help + its hub",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3063,7 +3089,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 170,
+          "line": 171,
           "layer": "config",
           "has_default": true
         },
@@ -3085,7 +3111,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 169,
+          "line": 170,
           "layer": "config",
           "has_default": true
         }
@@ -3118,7 +3144,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 153,
+          "line": 154,
           "layer": "config",
           "has_default": true
         },
@@ -3156,7 +3182,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 216,
+          "line": 217,
           "layer": "config",
           "has_default": true
         }
@@ -3204,7 +3230,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 208,
+          "line": 209,
           "layer": "config",
           "has_default": true
         }
@@ -3252,7 +3278,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 196,
+          "line": 197,
           "layer": "config",
           "has_default": true
         }
@@ -3268,7 +3294,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 199,
+          "line": 200,
           "layer": "config",
           "has_default": true
         }
@@ -3284,7 +3310,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 202,
+          "line": 203,
           "layer": "config",
           "has_default": true
         }
@@ -3444,7 +3470,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 115,
+          "line": 116,
           "layer": "config",
           "has_default": true
         }
@@ -3524,7 +3550,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 116,
+          "line": 117,
           "layer": "config",
           "has_default": true
         }
@@ -3542,7 +3568,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 152,
+          "line": 153,
           "layer": "config",
           "has_default": true
         },
@@ -3583,7 +3609,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 179,
+          "line": 180,
           "layer": "config",
           "has_default": true
         },
@@ -3606,7 +3632,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 183,
+          "line": 184,
           "layer": "config",
           "has_default": true
         },
@@ -3645,7 +3671,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 151,
+          "line": 152,
           "layer": "config",
           "has_default": true
         },
@@ -3669,7 +3695,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 150,
+          "line": 151,
           "layer": "config",
           "has_default": true
         },
@@ -8023,6 +8049,131 @@
       ]
     },
     {
+      "cog": "ProjectMoonCog",
+      "file": "disbot/cogs/project_moon_cog.py",
+      "subsystem": "project_moon",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "pm",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [
+            "limbus",
+            "projectmoon"
+          ],
+          "brief": "Open the Project Moon (Limbus) browse panel.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "pm",
+          "type": "slash",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Browse Project Moon (Limbus) knowledge — Sinners, Sins, statuses, E.G.O.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "damage",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "pm",
+          "aliases": [
+            "damagetype"
+          ],
+          "brief": "Look up a damage type (Slash / Pierce / Blunt) (or list them all).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "ego",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "pm",
+          "aliases": [
+            "grade"
+          ],
+          "brief": "Look up an E.G.O grade (ZAYIN…ALEPH) (or list them all).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "list",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "pm",
+          "aliases": [],
+          "brief": "List a whole category (sinners / sins / damage / ego / statuses).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "lookup",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "pm",
+          "aliases": [
+            "search",
+            "what"
+          ],
+          "brief": "Resolve any Limbus name/term across every category.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "sin",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "pm",
+          "aliases": [
+            "sins",
+            "affinity"
+          ],
+          "brief": "Look up one of the 7 Sin affinities (or list them all).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "sinner",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "pm",
+          "aliases": [
+            "sinners"
+          ],
+          "brief": "Look up one of the 12 Sinners (or list them all).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "status",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "pm",
+          "aliases": [
+            "statuses",
+            "keyword"
+          ],
+          "brief": "Look up a status keyword like Burn / Bleed / Sinking (or list them all).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "ProofChannelCog",
       "file": "disbot/cogs/proof_channel_cog.py",
       "subsystem": "proof_channel",
@@ -10120,6 +10271,12 @@
             "emoji": "🎮"
           },
           {
+            "key": "project_moon",
+            "display_name": "Project Moon",
+            "category": "games",
+            "emoji": "🌑"
+          },
+          {
             "key": "rps_tournament",
             "display_name": "Rock Paper Scissors",
             "category": "games",
@@ -10306,7 +10463,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 42,
+    "total_visible": 43,
     "internal_count": 0
   },
   "synonyms": [

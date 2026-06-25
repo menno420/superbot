@@ -1714,6 +1714,26 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "damage",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Look up a damage type (Slash / Pierce / Blunt) (or list them all).",
+    "description": "Look up a damage type (Slash / Pierce / Blunt) (or list them all).",
+    "usage": "!damage",
+    "aliases": [
+      "damagetype"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)"
+      }
+    ]
+  },
+  {
     "name": "debugroles",
     "area": "management",
     "status": "in-progress",
@@ -1975,6 +1995,26 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Wager / money-flow map — generated trace of game coin paths"
+      }
+    ]
+  },
+  {
+    "name": "ego",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Look up an E.G.O grade (ZAYIN…ALEPH) (or list them all).",
+    "description": "Look up an E.G.O grade (ZAYIN…ALEPH) (or list them all).",
+    "usage": "!ego",
+    "aliases": [
+      "grade"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)"
       }
     ]
   },
@@ -3118,6 +3158,27 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "lookup",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Resolve any Limbus name/term across every category.",
+    "description": "Resolve any Limbus name/term across every category.",
+    "usage": "!lookup",
+    "aliases": [
+      "search",
+      "what"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)"
+      }
+    ]
+  },
+  {
     "name": "market",
     "area": "economy",
     "status": "in-progress",
@@ -3579,6 +3640,27 @@ const COMMANDS = [
       "!platform"
     ],
     "planned": []
+  },
+  {
+    "name": "pm",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Open the Project Moon (Limbus) browse panel.",
+    "description": "Open the Project Moon (Limbus) browse panel.",
+    "usage": "!pm",
+    "aliases": [
+      "limbus",
+      "projectmoon"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)"
+      }
+    ]
   },
   {
     "name": "poker",
@@ -5068,6 +5150,47 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Wager / money-flow map — generated trace of game coin paths"
+      }
+    ]
+  },
+  {
+    "name": "sin",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Look up one of the 7 Sin affinities (or list them all).",
+    "description": "Look up one of the 7 Sin affinities (or list them all).",
+    "usage": "!sin",
+    "aliases": [
+      "sins",
+      "affinity"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)"
+      }
+    ]
+  },
+  {
+    "name": "sinner",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Look up one of the 12 Sinners (or list them all).",
+    "description": "Look up one of the 12 Sinners (or list them all).",
+    "usage": "!sinner",
+    "aliases": [
+      "sinners"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)"
       }
     ]
   },
@@ -6631,10 +6754,25 @@ const GAMES = [
     "beta": true
   },
   {
+    "id": "project_moon",
+    "name": "Project Moon",
+    "icon": "gamepad",
+    "color": "var(--pink)",
+    "command": "games",
+    "tagline": "Browsable Limbus Company knowledge — the 12 Sinners, the 7 Sins, status keywords, damage…",
+    "description": "Browsable Limbus Company knowledge — the 12 Sinners, the 7 Sins, status keywords, damage types, and E.G.O grades. Read-only, deterministic reference built on committed structural facts.",
+    "howTo": [
+      "Run !games to get started.",
+      "Follow the prompts and buttons in the channel.",
+      "Wins and progress feed into XP and the leaderboards."
+    ],
+    "beta": true
+  },
+  {
     "id": "rps_tournament",
     "name": "Rock Paper Scissors",
     "icon": "gamepad",
-    "color": "var(--pink)",
+    "color": "var(--amber)",
     "command": "rps",
     "tagline": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
     "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
@@ -6649,7 +6787,7 @@ const GAMES = [
     "id": "chain",
     "name": "Word Chain",
     "icon": "gamepad",
-    "color": "var(--amber)",
+    "color": "var(--indigo)",
     "command": "chain",
     "tagline": "Word-chaining game",
     "description": "Word-chaining game",
@@ -6665,7 +6803,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "1f0e8d9c",
+    "build": "94657db6",
     "title": "New public bot website",
     "changes": [
       {
@@ -6677,7 +6815,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "1f0e8d9c",
+    "build": "94657db6",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6689,7 +6827,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "1f0e8d9c",
+    "build": "94657db6",
     "title": "Command-alias suggestions",
     "changes": [
       {

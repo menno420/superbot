@@ -23,7 +23,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 41 of the 56 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+- 42 of the 57 loaded extensions (`config.INITIAL_EXTENSIONS`) define
   `build_help_menu_view` — equivalently, 41 of the 42 subsystem-owning
   cogs expose it. The 15 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
@@ -73,7 +73,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 1. Mother hubs
 
-7 hubs in `disbot/utils/hub_registry.py`. Every hub key matches a
+8 hubs in `disbot/utils/hub_registry.py`. Every hub key matches a
 `SUBSYSTEMS` key so Help can resolve a hub entry to its host cog. The
 help-menu regrouping (PR #1290) consolidated the four former child-less
 admin hubs (Admin, Settings, Diagnostics/Platform, Server Management) into
@@ -95,8 +95,8 @@ so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 
 ## 2. Subsystem inventory
 
-42 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 56 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+43 registered subsystems in `utils/subsystem_registry.py` (one row
+each below); 57 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 15 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
@@ -134,6 +134,7 @@ falls back to the command-list embed when the hook is missing or raises.
 | `fishing` | `fishing_cog.py` | `fish`, `fishlog`/`fishdex`, `fishtop`/`topfishers` | — | `FishingCog` | `!help fishing` → static fishing overview (Help hook; no persistent panel yet) | hub-less; surfaced via the typed `!fish`/`!fishlog`/`!fishtop` commands (user tier) | hub-less for PR 1 (like `welcome`/`counters`); an actionable Games/Explore-hub panel is a later plan slice |
 | `creature` | `creature_cog.py` | `catch`/`hunt`, `dex`/`collection`/`creatures`, `dextop`/`topcatchers` | — | `CreatureCog` | `!help creature` → static creature overview (Help hook; no persistent panel yet) | hub-less; surfaced via the typed `!catch`/`!dex`/`!dextop` commands (user tier) | catch+collection v1 (like `fishing`); the level-normalized PvP battle + result-recording/leaderboard shipped (`creature_battle_cog`: `!cbattle`/`!cbattletop`/`!cbrecord`); an Explore-hub panel is a later plan slice |
 | `farm` | `farm_cog.py` | `farm`/`chickenfarm`/`coop` | — | `FarmCog` | `!help farm` → actionable Farm panel (Help hook → `FarmMenuView`: Collect · Shop · Refresh) | Games-hub child (`activities`, user tier); also reachable via `!farm` and the Explore world hub | the bot's first **idle** game — hens lay eggs over time (pure `settle()` accrual), collected for coins + game XP; coins buy hens / coop upgrades |
+| `project_moon` | `project_moon_cog.py` | `pm`/`limbus`/`projectmoon` (+ `pm sinner`/`sin`/`status`/`ego`/`damage`/`lookup`/`list` subcommands) | — | `LimbusBrowseView` | `!help project_moon` → Limbus browse panel (Help hook → `LimbusBrowseView`: one button per category) | its own **top-level Project Moon hub** (like BTD6 — a knowledge domain, not a Games activity); also reachable via `!pm` and `/pm` | read-only Limbus knowledge (Q-0192 Project Moon program, PR 1) — structural/lore facts; AI grounding path is a later PR |
 | `moderation` | `moderation_cog.py` | `modmenu`, `warn`, `timeout`, `kick`, `ban`, `unban`, `clearwarnings`, `modlogs` | — | `ModPanelView` | `!help moderation` → opens Moderation panel (shared resolver) | dropdown Moderation → panel | hub top-level |
 | `proof_channel` | `proof_channel_cog.py:113` | `prizestatus`, `prizemenu`, `timedprize` | — | `_PrizeManagerView` | `!help proof` → opens Proof Channel panel (shared resolver) | reached via Moderation; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
 | `role` | `role_cog.py:334` | `roles`, `rolesettings`, `rolemenu` (legacy alias) | 8+ legacy commands: `rolecreator`, `createrole`, `deleterole`, `setrole`, `unsetrole`, `assignroles`, `debugroles`, `refreshmembers`, plus react-role family | `RoleHubPanelView` | `!help roles` → opens Role panel (shared resolver) | reached via Community; `parent_hub="community"` since PR #3 | hub child (Community) — declared; legacy commands remain as hidden compatibility |

@@ -796,6 +796,36 @@ SUBSYSTEMS: dict[str, dict] = {
             "btd6.settings.configure",
         ],
     },
+    "project_moon": {
+        "display_name": "Project Moon",
+        "description": (
+            "Browsable Limbus Company knowledge — the 12 Sinners, the 7 Sins, "
+            "status keywords, damage types, and E.G.O grades. Read-only, "
+            "deterministic reference built on committed structural facts."
+        ),
+        "emoji": "🌑",
+        "color": GAME_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "games",
+        "tags": ["games", "project moon", "limbus", "reference"],
+        "entry_points": ["pm", "limbus"],
+        "default_channels": ["games", "bot-commands"],
+        "related_subsystems": ["ai", "btd6"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": True,
+        "has_cleanup_rules": False,
+        # Its own top-level Help hub (like BTD6) — a knowledge/reference domain,
+        # not a Games activity, so it is deliberately NOT a Games child (that
+        # would wrongly subject a read-only browse panel to the Games
+        # actionability contract). The hub-registry HubEntry is the
+        # presentation side. ui_priority sits in the top-level band near BTD6.
+        "ui_priority": 34,
+        "capabilities": [
+            "project_moon.lookup.view",
+        ],
+    },
     "deathmatch": {
         "display_name": "Deathmatch",
         "description": "1v1 duel battles",
