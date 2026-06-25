@@ -56,8 +56,10 @@
   (owner-directed, 2026-06-24):** Essential Setup is now the **primary `!setup` / `/setup`** (was
   `!quicksetup`); the old section-list wizard moved to **`!setupadvanced` / `/setup-advanced`**; Essential
   Setup now opens in a separate **`#superbot-setup`** channel (not the invoking channel) and is what the
-  on-join launcher's **Start Setup** opens. **▶ Next:** PR 2 (extras menu + "Check my setup") · PR 3
-  (retire dead/legacy sections + rework the Advanced editor). Tracker:
+  on-join launcher's **Start Setup** opens. **PR 2 (extras menu + "Check my setup") SHIPPED 2026-06-25**
+  (dispatch run) — the "All done" summary now offers **More to set up** (a plain menu of the optional
+  features the spine skips, each with its setup command) + **Check my setup** (a jargon-free readiness
+  health check). **▶ Next:** PR 3 (retire dead/legacy sections + rework the Advanced editor). Tracker:
   [`planning/setup-wizard-restructure-plan-2026-06-24.md`](../planning/setup-wizard-restructure-plan-2026-06-24.md).
 - **✅ Consolidation / discoverability audit — COMPLETE (owner-directed, 2026-06-23).** All five goals
   shipped and CI-guarded where possible. Staging brief + per-cog rubric:

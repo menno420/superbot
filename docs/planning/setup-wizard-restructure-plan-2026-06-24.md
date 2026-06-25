@@ -16,8 +16,9 @@
 > §5/§7 below). **Cutover (owner-directed, 2026-06-24):** Essential Setup is now the primary **`!setup` /
 > `/setup`** (was `!quicksetup`); the old section-list wizard moved to **`!setupadvanced` /
 > `/setup-advanced`**; Essential Setup now opens in a separate **`#superbot-setup`** channel (not the
-> invoking channel) and is what the on-join launcher's **Start Setup** opens. **Remaining:** **PR 2** =
-> extras menu + "Check my setup", **PR 3** = retire dead/legacy sections + rework the Advanced editor (Q-E).
+> invoking channel) and is what the on-join launcher's **Start Setup** opens. **PR 2 (extras menu +
+> "Check my setup") SHIPPED 2026-06-25** (dispatch run — both reachable from the "All done" summary; §7).
+> **Remaining:** **PR 3** = retire dead/legacy sections + rework the Advanced editor (Q-E).
 >
 > **Sim:** [`tools/sim/setup_wizard_sim.py`](../../tools/sim/setup_wizard_sim.py) (runnable) —
 > models a non-technical owner walking the flow. Current standard-depth flow scores **~4% finish**
@@ -219,10 +220,21 @@ decision with architectural weight → called out as open question Q-A below.
   primary button unified to **"Save & continue"** on a consistent row, the skip-recap summary bug fixed
   (`record_skipped` was never called), and an optional **"✏️ Type a name" modal** added wherever the bot
   auto-creates a named role/channel (typing always optional, defaults stay fully selectable).
-- **PR 2 — extras + health check:** the **Extras menu** (each existing config surface as a one-action
-  step: starboard, counters, security, image-mod, karma, AI, reaction roles, giveaways) + the single
-  **"Check my setup"** health button (folds in scan/readiness/diagnostics/suggestions). Wires the
-  bot-migration assistant in as the "Replace another bot" extra once that plan ships.
+- **PR 2 — extras + health check (SHIPPED 2026-06-25, dispatch run).** Both reachable from the "All
+  done" summary, both plain-language (the jargon guard covers `essential_setup.py`):
+  - **More to set up (Extras menu)** — `ExtrasMenuView` + `build_extras_embed`: a one-screen menu of the
+    optional features the spine doesn't cover (Hall of Fame `!starboard` · live member counts `!counters`
+    · raid/new-account protection `!security` · image filtering `!imagemod` · Thanks & Karma `!karma` ·
+    AI helper `!aimenu` · reaction roles `!reactroles`), each with what it does + the command to open its
+    full setup, and a Back button to the summary. **Deviation from the original spec:** each extra is
+    surfaced with its **setup command** (the discoverability win) rather than re-implementing every
+    feature's config inside the spine (a much larger per-feature effort duplicating the existing panels) —
+    full in-wizard config per extra is a later follow-on. **Native giveaways are intentionally absent**
+    (not built yet — listing a command would mislead; the bot-migration "Replace another bot" extra wires
+    in once [that plan](bot-migration-assistant-plan-2026-06-24.md) ships).
+  - **Check my setup** — `build_check_setup_embed`: a plain-language health check over
+    `services.setup_readiness.collect` — a "how set up are you" headline + a ✅/➖ list of the essentials
+    in outcome language (no bindings/settings/subsystem vocabulary), shown ephemerally.
 - **PR 3 — retire the dead/legacy sections:** delete or demote `purpose`(old), `identity`, `btd6`,
   `ai_setup`(link-only), `server_scan`/`readiness`/`diagnostics`/`suggestions` as *standalone spine
   sections* (their function now lives in step 0 / Check-my-setup), and move `cog_routing` + `cleanup`
