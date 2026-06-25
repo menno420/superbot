@@ -18,7 +18,13 @@
   numbers had no data-drift guard — now a `FixtureAnchor` table pins Navarch income ($3,200) + paragon
   cost ($550,000) to `btd6_stats_service` re-derivations and asserts they still appear in the case
   fixture (data-drift + fixture-drift), with the curation principle documented (only exactly-derivable
-  *truths* are anchored — not distractors or convention-dependent cumulative totals).
+  *truths* are anchored — not distractors). **Projected-total extension (2026-06-25 dispatch run, PR
+  #1460):** the starting-cash convention is nailed — `projected_total = stated_start + round_cash(start,
+  end).range_cash` (the stated start is the user-message constant, NOT cumulative-from-round-1; the
+  earlier "~$10 off" was a wrong-accessor probe) — so the four `knowledge.btd6_round_cash_*` / `_abr_*`
+  projected totals ($21,187.90, $39,840, $56,318.70, ABR $119,315.30) now carry both drift guards via
+  `_projected_total`. Only the **distractors** ($71,315.20, $107,164.60) and the bare user-supplied
+  starting figures stay deliberately unanchored.
 - **Buff-uptime upgrade-detail model** — `btd6_upgrade_detail_service` + AI tool + `parse_gamedata`
   extraction, multi-target uptime (#1235/#1249/#1251).
 - **Data-lifecycle hardening** — auto-seed BTD6 blob data on boot (#1255), content-drift surface
@@ -30,12 +36,12 @@
 - **P1-1 live `llm_judge` battery** (the model actually using the grounded facts — creds-gated; the
   offline grounding half now shipped, above) + absence-guard **Layer B** (the negative-existential
   gate, design-for-review; needs prod creds).
-- **Anchor the remaining range-cash convention figures** (offline, but needs the *exact* cumulative
-  convention first): the `knowledge.btd6_round_cash_*` / `_abr_*` rubrics assert cumulative totals
-  ($56,318.70, ABR $119,315.30, $5,443, …) that a naive `round_cash(1, N)` re-derives ~$10 off — so
-  they are deliberately **unanchored** (see the curation note in `test_btd6_grounding_anchors.py`).
-  A future slice that nails the cumulative/starting-cash convention can add these anchors safely;
-  until then, anchoring them would assert a wrong "truth".
+- **Anchor-tooling follow-ons** (offline, self-mergeable) — *(the range-cash + projected-total figures
+  are now anchored, #1460 above)*: #1458's **eval-anchor coverage report** (inventory every numeric
+  token in `cases.py` rubrics + fixtures; report which lack an Anchor/FixtureAnchor, allowlisting
+  distractors + user-inputs so it isn't noisy) · a **distractor negative-anchor guard** (pin that each
+  documented distractor — $71,315.20, $107,164.60 — stays *un*-derivable, so a data change can't make
+  the case silently stop guarding its confusion).
 
 **Gate:** the broad AI/BTD6 feature-expansion gate (stability + provider/provenance + caching + AI
 config) still applies — see [`../current-state.md`](../current-state.md) § Gates / blocked work.
