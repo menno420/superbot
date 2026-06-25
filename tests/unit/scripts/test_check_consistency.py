@@ -913,3 +913,187 @@ def test_rule_5_is_registered_and_scoped_to_utils(mod):
     rule = by_name["card_engine_helper_duplication"]
     assert rule.roots == ("utils/",)
     assert rule.severity == "warning"  # warn-first (Q-0105)
+
+
+# ---------------------------------------------------------------------------
+# Rule 6 — settle-once adoption (money-safety)
+# ---------------------------------------------------------------------------
+
+# A wager-settling view with NO settle-once guard (the double-settlement bug):
+# it pays out the escrow pot but takes no atomic claim, so a second trigger
+# (a finishing button + on_timeout) double-settles.
+_SETTLE_NO_GUARD = """\
+import discord
+
+from services import game_wager_workflow
+
+
+class _PvpView(discord.ui.View):
+    async def _resolve(self):
+        await game_wager_workflow.settle_pvp(self.match_id, winner=self.winner)
+
+    async def on_timeout(self):
+        await self._resolve()
+"""
+
+# The RPS PvP shape: the view mixes in SettleOnceMixin and claims in a sibling
+# method before settling — clean.
+_SETTLE_CLASS_MIXIN = """\
+import discord
+
+from services import game_wager_workflow
+from utils.terminal_guard import SettleOnceMixin
+
+
+class _PvpView(SettleOnceMixin, discord.ui.View):
+    async def _resolve(self):
+        if not self.claim_settlement():
+            return
+        await game_wager_workflow.settle_pvp(self.match_id, winner=self.winner)
+
+    async def on_timeout(self):
+        await self._resolve()
+"""
+
+# A class that does not inherit the mixin but calls self.claim_settlement() in a
+# sibling method — the guard is present in the class body, so it is clean.
+_SETTLE_CLASS_CLAIM = """\
+import discord
+
+from services import game_wager_workflow
+
+
+class _PvpView(discord.ui.View):
+    def _guard(self):
+        return self.claim_settlement()
+
+    async def _resolve(self):
+        if not self._guard():
+            return
+        await game_wager_workflow.refund_pvp(self.match_id)
+"""
+
+# The blackjack shape: a module-level settle function guarded by
+# state.claim_settlement() before the settle call (no enclosing class) — clean.
+_SETTLE_MODULE_FN = """\
+from services import game_wager_workflow
+
+
+async def _settle(state):
+    if not state.claim_settlement():
+        return
+    await game_wager_workflow.settle_pvp(state.match_id, winner=state.winner)
+"""
+
+# The workflow module itself only DEFINES settle_pvp/refund_pvp; it never calls
+# them, so the rule must not match a def (out of scope, not a double-settle site).
+_SETTLE_DEFINITION_ONLY = """\
+async def settle_pvp(match_id, winner):
+    return None
+
+
+async def refund_pvp(match_id):
+    return None
+"""
+
+
+def _settle_findings(mod, tmp_path, monkeypatch, src, *, rel="views/pvp.py"):
+    _write(mod, tmp_path, monkeypatch, rel, src)
+    return mod.rule_settle_once_adoption([tmp_path / rel], {})
+
+
+def test_settle_flags_unguarded_wager_settle(mod, tmp_path, monkeypatch):
+    findings = _settle_findings(mod, tmp_path, monkeypatch, _SETTLE_NO_GUARD)
+    assert len(findings) == 1
+    assert findings[0].rule == "settle_once_adoption"
+    assert findings[0].qualname == "_PvpView._resolve"
+    assert findings[0].severity == "warning"
+
+
+def test_settle_class_mixin_is_clean(mod, tmp_path, monkeypatch):
+    assert _settle_findings(mod, tmp_path, monkeypatch, _SETTLE_CLASS_MIXIN) == []
+
+
+def test_settle_class_claim_in_sibling_method_is_clean(mod, tmp_path, monkeypatch):
+    # The claim lives in a sibling method, not the settling one — the rule checks
+    # the whole enclosing class, so this is clean (the RPS resolve/settle split).
+    assert _settle_findings(mod, tmp_path, monkeypatch, _SETTLE_CLASS_CLAIM) == []
+
+
+def test_settle_module_level_function_with_claim_is_clean(mod, tmp_path, monkeypatch):
+    # The blackjack shape: a free function guarded by state.claim_settlement().
+    findings = _settle_findings(
+        mod, tmp_path, monkeypatch, _SETTLE_MODULE_FN, rel="services/bj_settle.py"
+    )
+    assert findings == []
+
+
+def test_settle_refund_pvp_is_also_a_settle_site(mod, tmp_path, monkeypatch):
+    # refund_pvp moves the pot too — an unguarded refund is the same class.
+    src = _SETTLE_NO_GUARD.replace("settle_pvp(self.match_id, winner=self.winner)",
+                                   "refund_pvp(self.match_id)")
+    findings = _settle_findings(mod, tmp_path, monkeypatch, src)
+    assert len(findings) == 1
+    assert "refund_pvp" in findings[0].message
+
+
+def test_settle_definition_only_module_is_out_of_scope(mod, tmp_path, monkeypatch):
+    # `def settle_pvp` is a definition, not a call — the workflow that owns the
+    # helpers must never be flagged.
+    findings = _settle_findings(
+        mod, tmp_path, monkeypatch, _SETTLE_DEFINITION_ONLY,
+        rel="services/game_wager_workflow.py",
+    )
+    assert findings == []
+
+
+def test_settle_rule_scans_services_layer(mod, tmp_path, monkeypatch):
+    # A state object in services/ that settles without a guard IS flagged (the
+    # rule scopes views/ + services/, so a service-layer state object is covered).
+    src = """\
+from services import game_wager_workflow
+
+
+class _PvPState:
+    async def resolve(self):
+        await game_wager_workflow.settle_pvp(self.match_id, winner=self.w)
+"""
+    findings = _settle_findings(
+        mod, tmp_path, monkeypatch, src, rel="services/bj_state.py"
+    )
+    assert len(findings) == 1
+    assert findings[0].qualname == "_PvPState.resolve"
+
+
+def test_settle_allowlist_suppresses_by_qualname(mod, tmp_path, monkeypatch):
+    _write(mod, tmp_path, monkeypatch, "views/pvp.py", _SETTLE_NO_GUARD)
+    cfg = {
+        "settle_once_adoption": {
+            "exceptions": [
+                {
+                    "pattern": "views/pvp.py::_PvpView._resolve",
+                    "reason": "verified single-trigger settle",
+                },
+            ],
+        },
+    }
+    assert mod.rule_settle_once_adoption([tmp_path / "views/pvp.py"], cfg) == []
+
+
+def test_rule_6_is_registered_and_scoped(mod):
+    by_name = {r.name: r for r in mod.RULES}
+    assert "settle_once_adoption" in by_name
+    rule = by_name["settle_once_adoption"]
+    assert rule.roots == ("views/", "services/")
+    assert rule.severity == "warning"  # warn-first (Q-0105)
+
+
+def test_settle_once_rule_runs_clean_on_the_live_tree(mod):
+    """The live tree's wager-settle callers all adopt the guard — the warn-first
+    prerequisite (0 findings) for a future graduation to error."""
+    findings = mod.rule_settle_once_adoption(
+        mod._all_files(), mod._load_exceptions(), ("views/", "services/")
+    )
+    assert findings == [], "settle_once_adoption flagged the live tree: " + "; ".join(
+        f.display(mod.REPO_ROOT) for f in findings
+    )

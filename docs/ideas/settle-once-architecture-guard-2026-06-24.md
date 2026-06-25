@@ -1,7 +1,20 @@
 # A `check_architecture` rule: settling game paths must adopt `SettleOnceMixin`
 
-> **Status:** `ideas`. Not a plan, not approval. Source code and the binding contracts win.
+> **Status:** `ideas` — **money leg BUILT** (2026-06-25 dispatch run, PR #1454). Not approval.
+> Source code and the binding contracts win.
 > **Subsystem:** none — an agent-tooling / CI-invariant idea (touches no bot subsystem at runtime).
+
+> **▶ Built (2026-06-25 dispatch run, PR #1454):** the **money leg** shipped as
+> `check_consistency.py` **Rule 6 (`settle_once_adoption`)** — a call to
+> `game_wager_workflow.settle_pvp` / `refund_pvp` must adopt the settle-once guard (enclosing
+> class mixes in `SettleOnceMixin` / calls `claim_settlement()`, or the enclosing function calls
+> `claim_settlement()` — the blackjack module-level-settle shape). **Warn-first** (the posture
+> §"Open / cautions" prescribed — the mixin is young), runs clean today (both callers adopt),
+> scopes `views/` + `services/`. The **broader leg** below ("…*or otherwise posts a terminal
+> result*" reachable from `on_timeout`/a second trigger) is **deliberately deferred** — static
+> "settles via a result message reachable from `on_timeout`" detection is false-positive-prone,
+> and a warn-clean rule must stay precise (the §"Open / cautions" conservatism). Revisit once the
+> money leg graduates to `error` and the mixin has more adopters to key the structural leg on.
 
 > **Provenance:** session idea (Q-0089) from the settle-once terminal-guard dispatch run
 > (2026-06-24, PRs #1444 + #1445). That run found the cross-game double-settlement class by **reading
