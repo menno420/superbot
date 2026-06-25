@@ -28,6 +28,17 @@ Two directions are closed:
    in the named eval case's rubric (so editing a rubric number fails here).
 
 The anchor table is the single bridge between the data and the golden set's prose.
+
+Curation principle (why not every rubric/fixture number is anchored): an anchor is
+only added for a value that is BOTH an asserted *truth* AND cleanly reproducible
+from a public ``btd6_*_service`` accessor. Several rubric numbers are deliberately
+NOT anchored — some are *distractors* the rubric tells the judge to REJECT (e.g.
+BUG-0004's "$71,315.20" cumulative mislabel, truth "$56,318.70"), and the
+cumulative/range figures use a per-round-cash convention a naive ``round_cash(1, N)``
+does not reproduce (verified: it lands ~$10 off the rubric totals). Anchoring those
+without the exact convention would assert a wrong "truth" and make the guard lie —
+the opposite of its purpose (CLAUDE.md Q-0120: a green check that contradicts the
+evidence is a bug in the check). Add an anchor only when you can derive it exactly.
 """
 
 from __future__ import annotations
@@ -39,7 +50,7 @@ from dataclasses import dataclass
 import pytest
 from tests.evals.cases import CASES
 
-from services import ai_introspection_service, btd6_data_service
+from services import ai_introspection_service, btd6_data_service, btd6_stats_service
 
 # --------------------------------------------------------------------------- #
 # Rubric introspection — pull the asserted numbers out of a case's grader(s).
@@ -239,6 +250,131 @@ def test_rubric_introspection_actually_reads_a_known_number():
     (so a silently-broken extractor can't make the checks above vacuous)."""
     case = _CASES_BY_ID["knowledge.btd6_despo_bulk_cost_bug_0003"]
     assert 12025.0 in _rubric_numbers(case.grader)
+
+
+# --------------------------------------------------------------------------- #
+# Fixture-drift anchors — the BTD6 *grounding* cases use ``contains(...)`` graders
+# with their truth baked into the ``tool_results`` FIXTURE (the canned tool reply),
+# not an ``llm_judge`` rubric. The rubric-number anchors above never see those, so
+# the fixture numbers had no data-drift guard at all: a re-seed that changed
+# Navarch's income or a paragon cost would leave the eval silently testing against
+# a stale fixture. These anchors close the same two directions for the fixture
+# cases — data drift (the number must come back from the dataset) and fixture drift
+# (the number must still appear in the named case's fixture).
+# --------------------------------------------------------------------------- #
+def _fixture_numbers(case: object, tool_name: str) -> set[float]:
+    """All numeric tokens in ``case``'s ``tool_results`` facts for ``tool_name``.
+
+    Mirrors :func:`_rubric_numbers` but reads the canned tool reply (the
+    ``facts`` list) instead of an ``llm_judge`` rubric, normalizing ``$`` and
+    thousands separators so "3,200" and "3200" compare equal."""
+    payload = getattr(case, "tool_results", {}).get(tool_name, {})
+    facts = payload.get("facts", ()) if isinstance(payload, dict) else ()
+    nums: set[float] = set()
+    for fact in facts:
+        for token in _NUMBER_RE.findall(str(fact)):
+            cleaned = token.replace("$", "").replace(",", "")
+            try:
+                nums.add(round(float(cleaned), 2))
+            except ValueError:  # pragma: no cover - regex guarantees a number
+                continue
+    return nums
+
+
+def _navarch_income() -> float:
+    stats = btd6_stats_service.get_paragon_stats("navarch_of_the_seas")
+    assert stats is not None, "navarch_of_the_seas paragon stats missing"
+    assert stats.income_per_round is not None, "navarch income_per_round missing"
+    return float(stats.income_per_round)
+
+
+def _navarch_cost() -> float:
+    stats = btd6_stats_service.get_paragon_stats("navarch_of_the_seas")
+    assert stats is not None, "navarch_of_the_seas paragon stats missing"
+    assert stats.cost is not None, "navarch paragon cost missing"
+    return float(stats.cost)
+
+
+@dataclass(frozen=True)
+class FixtureAnchor:
+    case_id: str
+    tool_name: str
+    label: str
+    expected: float  # the truth baked into the case fixture (the bridge value)
+    derive: Callable[[], float]  # re-derivation from btd6_stats_service
+
+
+FIXTURE_ANCHORS: tuple[FixtureAnchor, ...] = (
+    # The 2026-06-10 "no coins" Navarch miss (PR #662): the income fact that now
+    # grounds the answer is baked into the grounding-case fixtures via contains().
+    FixtureAnchor(
+        "grounding.btd6_navarch_income",
+        "btd6_lookup",
+        "Navarch income per round (navarch case fixture)",
+        3200.0,
+        _navarch_income,
+    ),
+    FixtureAnchor(
+        "grounding.btd6_navarch_income",
+        "btd6_lookup",
+        "Navarch paragon cost (navarch case fixture)",
+        550000.0,
+        _navarch_cost,
+    ),
+    # The pronoun-followup turn (PR #668) carries the same income fact forward.
+    FixtureAnchor(
+        "grounding.btd6_carryover_followup",
+        "btd6_lookup",
+        "Navarch income per round (carryover case fixture)",
+        3200.0,
+        _navarch_income,
+    ),
+)
+
+
+def test_fixture_anchor_table_references_only_real_cases():
+    """A stale fixture anchor (renamed/removed case) is itself drift — fail loudly."""
+    missing = sorted({a.case_id for a in FIXTURE_ANCHORS} - set(_CASES_BY_ID))
+    assert not missing, (
+        f"Fixture anchor(s) reference eval case id(s) that no longer exist: {missing}. "
+        "Update tests/evals/test_btd6_grounding_anchors.py to the current case ids."
+    )
+
+
+@pytest.mark.parametrize(
+    "anchor", FIXTURE_ANCHORS, ids=lambda a: f"{a.case_id}:{a.label}"
+)
+def test_fixture_number_is_reproduced_by_the_dataset(anchor: FixtureAnchor):
+    """Direction 1 — data drift: the fixture value must come back from the data."""
+    derived = round(anchor.derive(), 2)
+    assert derived == round(anchor.expected, 2), (
+        f"{anchor.label}: dataset now yields {derived}, but the grounding-case "
+        f"fixture bakes {anchor.expected}. The BTD6 data drifted from the eval "
+        f"fixture — re-sync the case fixture (and this anchor) to the data, or fix "
+        f"the data."
+    )
+
+
+@pytest.mark.parametrize(
+    "anchor", FIXTURE_ANCHORS, ids=lambda a: f"{a.case_id}:{a.label}"
+)
+def test_fixture_number_appears_in_the_case_fixture(anchor: FixtureAnchor):
+    """Direction 2 — fixture drift: the bridge value must be in the case fixture."""
+    case = _CASES_BY_ID[anchor.case_id]
+    baked = _fixture_numbers(case, anchor.tool_name)
+    assert round(anchor.expected, 2) in baked, (
+        f"{anchor.label}: {anchor.expected} is grounded in the data but not present "
+        f"in the {anchor.tool_name!r} fixture of {anchor.case_id!r}. The fixture was "
+        f"edited away from the grounded truth (fixture numbers: {sorted(baked)})."
+    )
+
+
+def test_fixture_introspection_actually_reads_a_known_number():
+    """Guard the guard: a fixture case whose canned facts assert a number must
+    surface it, so a silently-broken extractor can't make the checks above
+    vacuous."""
+    case = _CASES_BY_ID["grounding.btd6_navarch_income"]
+    assert 3200.0 in _fixture_numbers(case, "btd6_lookup")
 
 
 # --------------------------------------------------------------------------- #
