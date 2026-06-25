@@ -143,6 +143,57 @@ def test_home_empty_state_when_no_registrants():
 
 
 # ---------------------------------------------------------------------------
+# Back to card — re-render + re-attach the hero image (mirrors refresh)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_back_to_card_rerenders_and_reattaches_the_hero_card():
+    """Returning to the card must restore its designed image, not a plain embed.
+
+    ``back_to_card`` re-renders the full card via ``build_profile_card`` and
+    re-attaches the rendered file — the same contract as ``ProfileHomeView``'s
+    refresh — so the round-trip card → editor → card keeps the hero image.
+    """
+    view = ProfileEditorHomeView(_fake_user(), 99)
+    sentinel_embed = SimpleNamespace()
+    sentinel_file = SimpleNamespace()  # stand-in for a discord.File
+    interaction = _interaction()
+
+    with patch(
+        "views.profile.profile_view.build_profile_card",
+        new=AsyncMock(return_value=(sentinel_embed, sentinel_file)),
+    ):
+        await view.back_to_card.callback(interaction)
+
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert kwargs["embed"] is sentinel_embed
+    assert kwargs["attachments"] == [sentinel_file]
+
+
+@pytest.mark.asyncio
+async def test_back_to_card_clears_attachments_when_renderer_unavailable():
+    """On a Pillow-less host the card file is ``None`` → ``attachments=[]``.
+
+    This both keeps the embed-only state and clears any stray attachment, so
+    the fallback never leaves a dangling image.
+    """
+    view = ProfileEditorHomeView(_fake_user(), 99)
+    sentinel_embed = SimpleNamespace()
+    interaction = _interaction()
+
+    with patch(
+        "views.profile.profile_view.build_profile_card",
+        new=AsyncMock(return_value=(sentinel_embed, None)),
+    ):
+        await view.back_to_card.callback(interaction)
+
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert kwargs["embed"] is sentinel_embed
+    assert kwargs["attachments"] == []
+
+
+# ---------------------------------------------------------------------------
 # One pipeline call per action (mock-spy)
 # ---------------------------------------------------------------------------
 

@@ -219,6 +219,31 @@ async def test_view_is_owner_locked():
 
 
 # ---------------------------------------------------------------------------
+# Card ↔ editor navigation — hero-image attachment hygiene
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_manage_clears_the_hero_card_when_opening_the_editor():
+    """Opening the (image-less) editor must drop the card, not strand it.
+
+    Discord keeps the prior attachment when ``attachments`` is omitted on an
+    edit, so the profile hero image would linger as a stray image under the
+    settings panel. ``manage`` passes ``attachments=[]`` to clear it.
+    """
+    view = ProfileHomeView(_fake_user(user_id=1), guild_id=99)
+    interaction = SimpleNamespace(
+        user=SimpleNamespace(id=1),
+        response=SimpleNamespace(edit_message=AsyncMock()),
+    )
+
+    await view.manage.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    assert interaction.response.edit_message.await_args.kwargs["attachments"] == []
+
+
+# ---------------------------------------------------------------------------
 # Read-only invariant — no mutation pipeline import (AST pin)
 # ---------------------------------------------------------------------------
 

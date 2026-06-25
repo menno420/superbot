@@ -23,6 +23,33 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0025 — `/myprofile` hero-card image stranded/lost across the editor round-trip — FIXED (root)
+
+- **Symptom (found 2026-06-25 by code inspection during the visual card-engine H3 adoption audit;
+  not a live report, but a visible defect on the H1 showpiece card):** opening **⚙️ Manage settings**
+  from the `/myprofile` card and coming back via **◀ Back to card** mishandles the rendered hero-card
+  image. Going *in*, the profile card image lingers as a stray attachment under the (image-less)
+  settings editor; coming *back*, the returned panel shows a plain embed without its designed hero
+  card.
+- **Root cause:** two `interaction.response.edit_message(...)` calls in the profile views omitted the
+  `attachments` argument. Discord **retains** the prior message attachments when `attachments` is not
+  passed on an edit, so (1) `ProfileHomeView.manage` left the card image attached under an editor that
+  never references it, and (2) `editor.back_to_card` rebuilt the panel from `build_profile_embed` (a
+  plain embed, no `set_image`) without re-attaching the file — losing the hero card on the return leg.
+  Every other image-card hub (`ProfileHomeView.refresh`, mining `character_hub`/`gear_panel`,
+  `role_menu_view`) already passes `attachments` explicitly; the profile editor navigation was the one
+  place that forgot the canonical pattern.
+- **Fix (this PR):** both transitions now manage `attachments` explicitly — `manage` clears the card
+  (`attachments=[]`) when opening the image-less editor, and `back_to_card` re-renders the full card
+  via `build_profile_card` and re-attaches the file (`attachments=[file]`, or `[]` on a Pillow-less
+  host). The round-trip card → editor → card now preserves the hero image, with no stray attachment.
+- **Stays-fixed guard (same PR):** `tests/unit/views/test_profile_card.py::
+  test_manage_clears_the_hero_card_when_opening_the_editor` and `tests/unit/views/test_profile_editor.py::
+  test_back_to_card_rerenders_and_reattaches_the_hero_card` /
+  `test_back_to_card_clears_attachments_when_renderer_unavailable` assert the `attachments=` payload on
+  each transition; all three fail against the pre-fix behaviour.
+- **Status:** FIXED (root) 2026-06-25 (dispatch run).
+
 ## BUG-0024 — `test_generated_at_is_deterministic_not_wall_clock` flaky under `pytest -n auto` (real-clock dependent) — FIXED (root)
 
 - **Symptom (observed 2026-06-22, in a full `check_quality.py --full` run during the Q-0195
