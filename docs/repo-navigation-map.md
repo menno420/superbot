@@ -234,6 +234,7 @@ A condensed version of `docs/help-command-surface-map.md` and
 | logging | `cogs/logging_cog.py` (+ `cogs/logging/`) | — | `services/server_logging.py` | `utils/db/settings.py` |
 | mining | `cogs/mining_cog.py` (+ `cogs/mining/`) | `views/mining/` | direct CRUD | `utils/db/games/mining.py` |
 | fishing | `cogs/fishing_cog.py` | — | `services/fishing_workflow.py` | `utils/db/games/fishing.py` |
+| project_moon | `cogs/project_moon_cog.py` | `views/projmoon/` | `services/projmoon_data_service.py` | n/a (committed `data/projmoon/`; read-only) |
 | moderation | `cogs/moderation_cog.py` (+ `cogs/moderation/`) | `views/moderation/` | `services/moderation_service.py` | `utils/db/moderation.py` |
 | proof_channel | `cogs/proof_channel_cog.py` | — | `services/economy_service.py` (coins) | n/a |
 | role | `cogs/role_cog.py` | `views/roles/` | role create/edit/delete via `services/role_lifecycle_service.py`; thresholds/reaction-roles direct CRUD | `utils/db/roles.py` |

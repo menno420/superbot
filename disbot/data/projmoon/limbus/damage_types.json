@@ -1,0 +1,26 @@
+{
+  "data_version": "2026-06-25",
+  "game_version": "Limbus Company (structural facts; the 3 damage types are fixed)",
+  "source": "limbuscompany.wiki.gg (summarized; verify-at-ingest)",
+  "entity_kind": "damage_type",
+  "entries": [
+    {
+      "id": "slash",
+      "canonical": "Slash",
+      "aliases": ["slashing"],
+      "description": "One of the three attack damage types. Each unit has a separate resistance to Slash, Pierce, and Blunt, ranging from Fatal (most damage taken) through Weak, Normal, Endure, to Ineffective (least)."
+    },
+    {
+      "id": "pierce",
+      "canonical": "Pierce",
+      "aliases": ["piercing"],
+      "description": "One of the three attack damage types. Each unit has a separate resistance to Slash, Pierce, and Blunt, ranging from Fatal through Weak, Normal, Endure, to Ineffective."
+    },
+    {
+      "id": "blunt",
+      "canonical": "Blunt",
+      "aliases": ["bludgeon"],
+      "description": "One of the three attack damage types. Each unit has a separate resistance to Slash, Pierce, and Blunt, ranging from Fatal through Weak, Normal, Endure, to Ineffective."
+    }
+  ]
+}

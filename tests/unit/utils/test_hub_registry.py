@@ -52,6 +52,7 @@ def test_committed_hub_set_matches_promoted_hubs():
     assert {hub.key for hub in HUBS} == {
         "games",
         "btd6",
+        "project_moon",
         "economy",
         "moderation",
         "community",
@@ -306,6 +307,7 @@ def test_hubs_for_tier_administrator_sees_all():
     assert visible == {
         "games",
         "btd6",
+        "project_moon",
         "economy",
         "moderation",
         "community",
@@ -319,6 +321,7 @@ def test_hubs_for_tier_owner_sees_all():
     assert visible == {
         "games",
         "btd6",
+        "project_moon",
         "economy",
         "moderation",
         "community",

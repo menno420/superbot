@@ -1,0 +1,43 @@
+{
+  "data_version": "2026-06-25",
+  "game_version": "Limbus Company (structural facts; the 5 E.G.O grades are fixed)",
+  "source": "limbuscompany.wiki.gg (summarized; verify-at-ingest)",
+  "entity_kind": "ego_grade",
+  "entries": [
+    {
+      "id": "zayin",
+      "canonical": "ZAYIN",
+      "aliases": ["zayin grade"],
+      "rank": 1,
+      "description": "The lowest E.G.O grade, named after the Sephirah/risk-tier convention shared across Project Moon. E.G.O are equippable skills with a Sin-affinity resource cost and a corrosion threshold."
+    },
+    {
+      "id": "teth",
+      "canonical": "TETH",
+      "aliases": ["teth grade"],
+      "rank": 2,
+      "description": "The second E.G.O grade, above ZAYIN and below HE."
+    },
+    {
+      "id": "he",
+      "canonical": "HE",
+      "aliases": ["he grade"],
+      "rank": 3,
+      "description": "The middle E.G.O grade, above TETH and below WAW."
+    },
+    {
+      "id": "waw",
+      "canonical": "WAW",
+      "aliases": ["waw grade"],
+      "rank": 4,
+      "description": "The fourth E.G.O grade, above HE and below ALEPH."
+    },
+    {
+      "id": "aleph",
+      "canonical": "ALEPH",
+      "aliases": ["aleph grade"],
+      "rank": 5,
+      "description": "The highest E.G.O grade, above WAW."
+    }
+  ]
+}

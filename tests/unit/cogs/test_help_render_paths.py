@@ -139,15 +139,16 @@ def test_home_user_tier_sees_exactly_the_user_hubs_today():
     """Characterization: the current user-tier Home composition. A new hub
     or tier change must consciously update this pin."""
     visible = {h.key for h in hubs_for_tier("user")}
-    assert visible == {"games", "btd6", "economy", "community", "utility"}
+    assert visible == {"games", "btd6", "project_moon", "economy", "community", "utility"}
 
 
 def test_home_admin_tier_sees_every_registered_hub():
     visible = {h.key for h in hubs_for_tier("administrator")}
     assert visible == {h.key for h in HUBS}
     # Help-menu regrouping (PR #1290): 7 top-level sections (Settings,
-    # Diagnostics/Platform, Server Management consolidated under Server & Admin).
-    assert len(visible) == 7
+    # Diagnostics/Platform, Server Management consolidated under Server & Admin),
+    # plus the Project Moon knowledge hub (own top-level section, like BTD6) → 8.
+    assert len(visible) == 8
 
 
 def test_home_hub_rows_carry_purpose_and_entry_command():

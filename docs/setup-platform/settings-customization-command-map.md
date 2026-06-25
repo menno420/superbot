@@ -1601,6 +1601,37 @@ deliberately absent — no external calls, no PII stored.
 23. **priority**: `P3`.
 24. **recommended_PR_phase**: PR #420.
 
+### project_moon
+
+1. **cog_module**: `disbot/cogs/project_moon_cog.py`
+2. **subsystem**: `project_moon`
+3. **current_commands**: `!pm` (aliases `!limbus`, `!projectmoon`) with
+   subcommands `sinner`/`sin`/`status`/`ego`/`damage`/`lookup`/`list`; slash `/pm`.
+4. **current_command_groups**: `pm` (prefix group, `invoke_without_command` opens the panel).
+5. **current_command_panel_or_menu**: `pm`.
+6. **help_menu_discoverable**: Yes (its own top-level Project Moon hub, like BTD6; `build_help_menu_view`).
+7. **dedicated_panel_command**: `pm`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capability
+    `project_moon.lookup.view`. Read-only, deterministic — no writes, no DB, no
+    AI gateway (like `btd6_reference`).
+14. **hardcoded_or_env_only_behavior**: structural/lore facts loaded from
+    `data/projmoon/limbus/*.json` (committed, provenance-tagged).
+15. **missing_customization_commands**: none (read-only reference by design).
+16. **missing_settings_pages**: none planned.
+17. **missing_menu_buttons_selects_modals**: none.
+18. **setting_class_per_value**: none.
+19. **target_Settings_Manager_page**: none (no configurable surface by design).
+20. **target_mutation_path**: none (read-only; no state mutation).
+21. **target_help_or_menu_route**: top-level Project Moon hub; Help direct-nav.
+22. **provisionable_resources**: none.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: Project Moon knowledge domain PR 1 (Q-0192).
+
 ### help
 
 1. **cog_module**: `disbot/cogs/help_cog.py`

@@ -125,6 +125,7 @@ def test_view_has_one_select_with_visible_hubs():
     assert values == {
         "games",
         "btd6",
+        "project_moon",
         "economy",
         "moderation",
         "community",

@@ -88,6 +88,7 @@ INITIAL_EXTENSIONS = [
     "cogs.btd6_events_cog",
     "cogs.btd6_strategy_cog",
     "cogs.paragon_cog",
+    "cogs.project_moon_cog",
     "cogs.btd6_ops_cog",
     "cogs.chain_cog",
     "cogs.general_cog",

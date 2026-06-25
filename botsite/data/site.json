@@ -1,16 +1,16 @@
 {
   "meta": {
-    "generated_at": "2026-06-24T22:10:51Z",
+    "generated_at": "2026-06-25T06:11:34Z",
     "build": {
-      "commit": "1f0e8d9c",
-      "subject": "Merge pull request #1441 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-24T22:10:51Z"
+      "commit": "94657db6",
+      "subject": "chore(session): open born-red card — Project Moon Limbus knowledge domain PR 1",
+      "committed_at": "2026-06-25T06:11:34Z"
     }
   },
   "counts": {
-    "commands": 438,
-    "features": 42,
-    "games": 11
+    "commands": 447,
+    "features": 43,
+    "games": 12
   },
   "catalogue": [
     {
@@ -426,6 +426,23 @@
         "games",
         "hub",
         "activities"
+      ],
+      "badges": [
+        "games"
+      ],
+      "is_game": true
+    },
+    {
+      "key": "project_moon",
+      "display_name": "Project Moon",
+      "description": "Browsable Limbus Company knowledge — the 12 Sinners, the 7 Sins, status keywords, damage types, and E.G.O grades. Read-only, deterministic reference built on committed structural facts.",
+      "emoji": "🌑",
+      "category": "games",
+      "tags": [
+        "games",
+        "project moon",
+        "limbus",
+        "reference"
       ],
       "badges": [
         "games"
@@ -4907,6 +4924,27 @@
       "notes": null
     },
     {
+      "name": "damage",
+      "aliases": [
+        "damagetype"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Look up a damage type (Slash / Pierce / Blunt) (or list them all).",
+      "description": "Look up a damage type (Slash / Pierce / Blunt) (or list them all).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "delete",
       "aliases": [],
       "category": "games",
@@ -5083,6 +5121,27 @@
       "examples": [],
       "status": "finished",
       "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "ego",
+      "aliases": [
+        "grade"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Look up an E.G.O grade (ZAYIN…ALEPH) (or list them all).",
+      "description": "Look up an E.G.O grade (ZAYIN…ALEPH) (or list them all).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -6067,6 +6126,25 @@
       "notes": null
     },
     {
+      "name": "list",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "List a whole category (sinners / sins / damage / ego / statuses).",
+      "description": "List a whole category (sinners / sins / damage / ego / statuses).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "live",
       "aliases": [],
       "category": "games",
@@ -6178,6 +6256,28 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "lookup",
+      "aliases": [
+        "search",
+        "what"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Resolve any Limbus name/term across every category.",
+      "description": "Resolve any Limbus name/term across every category.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
           "status": "ideas"
         }
       ],
@@ -6490,6 +6590,47 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "pm",
+      "aliases": [
+        "limbus",
+        "projectmoon"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the Project Moon (Limbus) browse panel.",
+      "description": "Open the Project Moon (Limbus) browse panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "pm",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Browse Project Moon (Limbus) knowledge — Sinners, Sins, statuses, E.G.O.",
+      "description": "Open the Project Moon (Limbus) browse panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
           "status": "ideas"
         }
       ],
@@ -7578,6 +7719,49 @@
       "notes": null
     },
     {
+      "name": "sin",
+      "aliases": [
+        "sins",
+        "affinity"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Look up one of the 7 Sin affinities (or list them all).",
+      "description": "Look up one of the 7 Sin affinities (or list them all).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "sinner",
+      "aliases": [
+        "sinners"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Look up one of the 12 Sinners (or list them all).",
+      "description": "Look up one of the 12 Sinners (or list them all).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "source-health",
       "aliases": [],
       "category": "games",
@@ -8134,6 +8318,28 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "status",
+      "aliases": [
+        "statuses",
+        "keyword"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Look up a status keyword like Burn / Bleed / Sinking (or list them all).",
+      "description": "Look up a status keyword like Burn / Bleed / Sinking (or list them all).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
           "status": "ideas"
         }
       ],

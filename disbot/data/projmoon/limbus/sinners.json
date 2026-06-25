@@ -1,0 +1,80 @@
+{
+  "data_version": "2026-06-25",
+  "game_version": "Limbus Company (structural facts; roster stable)",
+  "source": "limbuscompany.wiki.gg (summarized; verify-at-ingest)",
+  "entity_kind": "sinner",
+  "entries": [
+    {
+      "id": "yi_sang",
+      "canonical": "Yi Sang",
+      "aliases": ["yisang", "sang"],
+      "description": "LCB Sinner No. 1. The first of the twelve fixed roster members of Limbus Company."
+    },
+    {
+      "id": "faust",
+      "canonical": "Faust",
+      "aliases": [],
+      "description": "LCB Sinner No. 2. Limbus Company's knowledgeable strategist of the fixed roster."
+    },
+    {
+      "id": "don_quixote",
+      "canonical": "Don Quixote",
+      "aliases": ["don", "quixote", "donq"],
+      "description": "LCB Sinner No. 3. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "ryoshu",
+      "canonical": "Ryōshū",
+      "aliases": ["ryoshu", "ryshu"],
+      "description": "LCB Sinner No. 4. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "meursault",
+      "canonical": "Meursault",
+      "aliases": ["meur"],
+      "description": "LCB Sinner No. 5. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "hong_lu",
+      "canonical": "Hong Lu",
+      "aliases": ["honglu", "hong"],
+      "description": "LCB Sinner No. 6. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "heathcliff",
+      "canonical": "Heathcliff",
+      "aliases": ["heath", "cliff"],
+      "description": "LCB Sinner No. 7. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "ishmael",
+      "canonical": "Ishmael",
+      "aliases": ["ish"],
+      "description": "LCB Sinner No. 8. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "rodion",
+      "canonical": "Rodion",
+      "aliases": ["rodya"],
+      "description": "LCB Sinner No. 9. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "sinclair",
+      "canonical": "Sinclair",
+      "aliases": ["sinc"],
+      "description": "LCB Sinner No. 10. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "outis",
+      "canonical": "Outis",
+      "aliases": [],
+      "description": "LCB Sinner No. 11. One of the twelve fixed roster Sinners of Limbus Company."
+    },
+    {
+      "id": "gregor",
+      "canonical": "Gregor",
+      "aliases": [],
+      "description": "LCB Sinner No. 12. One of the twelve fixed roster Sinners of Limbus Company."
+    }
+  ]
+}

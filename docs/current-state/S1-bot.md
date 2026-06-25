@@ -115,8 +115,16 @@
   **open-world expansion**
   ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2+: the
   boat-as-structure / travel-timer / destinations layer).
-- **Project Moon runtime PR 1** — the `KnowledgeDomain` seam + first ingest
-  ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
+- **Project Moon (Limbus) — runtime PR 1 SHIPPED 2026-06-25** (dispatch run, PR #1453): a standalone
+  **Limbus knowledge domain** — committed structural/lore facts (`disbot/data/projmoon/limbus/`: 12
+  Sinners · 7 Sins · 3 damage types · 5 E.G.O grades · status keywords, provenance-tagged), a typed
+  `services/projmoon_data_service.py` (loader + resolver), `utils/projmoon/keywords.py`
+  (`has_limbus_context`), and a browsable `!pm` / `/pm` surface (`views/projmoon/`, its own top-level
+  **Project Moon** Help hub like BTD6). Read-only, no DB, **no AI hot-path change**. ▶ **Next: PR 2** —
+  wire `AITask.PROJMOON_ANSWER` + grounding into `core/runtime/ai/natural_language_stage.py` (reuse the
+  tag/cap/provenance render + faithfulness guard), **flagged for a Q-0086 runtime walk** (touches the
+  gated AI stage). Then Slice B = extract the shared `KnowledgeDomain` seam from BTD6 + Limbus + exact
+  StaticData numbers ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
 - **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
   (PR 1 foundation shipped; [plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)).
 

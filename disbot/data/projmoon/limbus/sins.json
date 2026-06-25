@@ -1,0 +1,57 @@
+{
+  "data_version": "2026-06-25",
+  "game_version": "Limbus Company (structural facts; the 7 Sins are fixed)",
+  "source": "limbuscompany.wiki.gg (summarized; verify-at-ingest)",
+  "entity_kind": "sin",
+  "entries": [
+    {
+      "id": "wrath",
+      "canonical": "Wrath",
+      "aliases": [],
+      "color": "Red",
+      "description": "One of the seven Sin affinities. Skills, resistances, and E.G.O resource costs are colour-coded by Sin; Wrath is the red affinity."
+    },
+    {
+      "id": "lust",
+      "canonical": "Lust",
+      "aliases": [],
+      "color": "Orange",
+      "description": "One of the seven Sin affinities. Lust is the orange affinity."
+    },
+    {
+      "id": "sloth",
+      "canonical": "Sloth",
+      "aliases": [],
+      "color": "Yellow",
+      "description": "One of the seven Sin affinities. Sloth is the yellow affinity."
+    },
+    {
+      "id": "gluttony",
+      "canonical": "Gluttony",
+      "aliases": ["glut"],
+      "color": "Green",
+      "description": "One of the seven Sin affinities. Gluttony is the green affinity."
+    },
+    {
+      "id": "gloom",
+      "canonical": "Gloom",
+      "aliases": [],
+      "color": "Blue",
+      "description": "One of the seven Sin affinities. Gloom is the blue affinity."
+    },
+    {
+      "id": "pride",
+      "canonical": "Pride",
+      "aliases": [],
+      "color": "Indigo",
+      "description": "One of the seven Sin affinities. Pride is the indigo affinity."
+    },
+    {
+      "id": "envy",
+      "canonical": "Envy",
+      "aliases": [],
+      "color": "Purple",
+      "description": "One of the seven Sin affinities. Envy is the purple affinity."
+    }
+  ]
+}
