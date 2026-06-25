@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`html-artifacts-for-agent-output-review-2026-06-25.md`](./html-artifacts-for-agent-output-review-2026-06-25.md) —
+  **owner-shared (2026-06-25, chat):** Anthropic's HTML-vs-Markdown-for-agents argument (InfoQ) —
+  emit long agent deliverables (session logs, plans, review surfaces) as scannable single-file
+  **HTML artifacts** to keep the human engaged at decision points, instead of a 100+ line Markdown
+  wall that gets rubber-stamped. Lands hard for us because the owner designs/visualizes and reviews
+  a fleet's Markdown output; builds on the live developer dashboard + `.tsx` substrate (incremental,
+  not new). Slice 1 likely folds into the developer-dashboard plan. Subsystem: none.
 - [`bot-migration-assistant-2026-06-24.md`](./bot-migration-assistant-2026-06-24.md) —
   **owner-directed (2026-06-24, chat):** the bot recognizes the *other* bots in a server, maps what each
   offers, suggests how to **replicate** it with SuperBot's subsystems, then offers to **retire** the
