@@ -31,14 +31,21 @@ The anchor table is the single bridge between the data and the golden set's pros
 
 Curation principle (why not every rubric/fixture number is anchored): an anchor is
 only added for a value that is BOTH an asserted *truth* AND cleanly reproducible
-from a public ``btd6_*_service`` accessor. Several rubric numbers are deliberately
-NOT anchored — some are *distractors* the rubric tells the judge to REJECT (e.g.
-BUG-0004's "$71,315.20" cumulative mislabel, truth "$56,318.70"), and the
-cumulative/range figures use a per-round-cash convention a naive ``round_cash(1, N)``
-does not reproduce (verified: it lands ~$10 off the rubric totals). Anchoring those
-without the exact convention would assert a wrong "truth" and make the guard lie —
-the opposite of its purpose (CLAUDE.md Q-0120: a green check that contradicts the
-evidence is a bug in the check). Add an anchor only when you can derive it exactly.
+from a public ``btd6_*_service`` accessor. The range-cash figures anchor via
+``round_cash(start, end).range_cash`` and the projected running totals via
+``stated_start + range_cash`` — the stated start being the constant in each case's
+``user_message`` (the convention is *start + range*, NOT cumulative-from-round-1;
+a naive ``round_cash(1, N)`` lands ~$10+ off precisely because it is the wrong
+accessor — that was an earlier curation miss, now resolved). The numbers that stay
+deliberately NOT anchored are: (a) *distractors* the rubric tells the judge to
+REJECT (BUG-0004's "$71,315.20" cumulative mislabel, truth "$56,318.70"; BUG-0010's
+"$107,164.60" standard-set figure given as the ABR answer), and (b) the bare
+user-supplied starting figures (8094 / 20000 / 26932 / 5443) — those are inputs
+stated in the prompt, not data-derived truths, so a *data*-drift guard over them
+would be meaningless. Anchoring a distractor or a non-derivable value would assert a
+wrong "truth" and make the guard lie — the opposite of its purpose (CLAUDE.md Q-0120:
+a green check that contradicts the evidence is a bug in the check). Add an anchor only
+when you can derive it exactly from the dataset.
 """
 
 from __future__ import annotations
@@ -121,6 +128,25 @@ def _range_cash(start: int, end: int, roundset: str = "default") -> Callable[[],
         res = btd6_data_service.round_cash(start, end, roundset=roundset)
         assert res.get("found"), res
         return round(float(res["range_cash"]), 2)
+
+    return derive
+
+
+def _projected_total(
+    start_cash: float, start: int, end: int, roundset: str = "default"
+) -> Callable[[], float]:
+    """The running total a projection case asserts: stated start + range cash.
+
+    The convention is ``stated_starting_cash + round_cash(start, end).range_cash``
+    — the stated start is the constant in the case's ``user_message`` (e.g.
+    "i have 8094$ at round 60"), NOT a cumulative-from-round-1 figure. (A naive
+    ``round_cash(1, end)`` does not reproduce the total; that was the curation
+    gap #1458 flagged — it used the wrong accessor.)"""
+
+    def derive() -> float:
+        res = btd6_data_service.round_cash(start, end, roundset=roundset)
+        assert res.get("found"), res
+        return round(float(start_cash) + float(res["range_cash"]), 2)
 
     return derive
 
@@ -209,6 +235,38 @@ ANCHORS: tuple[Anchor, ...] = (
         "Standard rounds 54-70 cash earned",
         29386.70,
         _range_cash(54, 70),
+    ),
+    # --- Projected running totals (stated start + range cash). The convention is
+    # stated_start + range_cash, NOT cumulative-from-round-1; the stated start is
+    # the constant in each case's user_message. (#1458 left these unanchored after
+    # a naive round_cash(1, N) probe came up ~$10 short — the wrong accessor.) ---
+    # BUG-0001 — "8094$ at round 60" → total at round 68.
+    Anchor(
+        "knowledge.btd6_round_cash_balance_bug_0001",
+        "Standard rounds 60-68 projected total ($8094 start)",
+        21187.90,
+        _projected_total(8094, 60, 68),
+    ),
+    # By-round projection — "20K by round 50" → total by round 60.
+    Anchor(
+        "knowledge.btd6_round_cash_by_round_projection",
+        "Standard rounds 50-60 projected total ($20000 start)",
+        39840.0,
+        _projected_total(20000, 50, 60),
+    ),
+    # BUG-0004 — "26932 at the end of r53" → total at r70.
+    Anchor(
+        "knowledge.btd6_round_cash_r_shorthand_bug_0004",
+        "Standard rounds 54-70 projected total ($26932 start)",
+        56318.70,
+        _projected_total(26932, 54, 70),
+    ),
+    # BUG-0010 — "started with 5443" in ABR → total over ABR rounds 25-83.
+    Anchor(
+        "knowledge.btd6_abr_range_cash_bug_0010",
+        "ABR rounds 25-83 projected total ($5443 start)",
+        119315.30,
+        _projected_total(5443, 25, 83, "abr"),
     ),
 )
 
