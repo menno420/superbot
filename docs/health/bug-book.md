@@ -23,31 +23,38 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
-## BUG-0025 — `/myprofile` hero-card image stranded/lost across the editor round-trip — FIXED (root)
+## BUG-0025 — hero-card image stranded/lost when navigating into an image-less sub-panel (profile + XP hub) — FIXED (root)
 
 - **Symptom (found 2026-06-25 by code inspection during the visual card-engine H3 adoption audit;
-  not a live report, but a visible defect on the H1 showpiece card):** opening **⚙️ Manage settings**
-  from the `/myprofile` card and coming back via **◀ Back to card** mishandles the rendered hero-card
-  image. Going *in*, the profile card image lingers as a stray attachment under the (image-less)
-  settings editor; coming *back*, the returned panel shows a plain embed without its designed hero
-  card.
-- **Root cause:** two `interaction.response.edit_message(...)` calls in the profile views omitted the
-  `attachments` argument. Discord **retains** the prior message attachments when `attachments` is not
-  passed on an edit, so (1) `ProfileHomeView.manage` left the card image attached under an editor that
-  never references it, and (2) `editor.back_to_card` rebuilt the panel from `build_profile_embed` (a
-  plain embed, no `set_image`) without re-attaching the file — losing the hero card on the return leg.
-  Every other image-card hub (`ProfileHomeView.refresh`, mining `character_hub`/`gear_panel`,
-  `role_menu_view`) already passes `attachments` explicitly; the profile editor navigation was the one
-  place that forgot the canonical pattern.
-- **Fix (this PR):** both transitions now manage `attachments` explicitly — `manage` clears the card
-  (`attachments=[]`) when opening the image-less editor, and `back_to_card` re-renders the full card
-  via `build_profile_card` and re-attaches the file (`attachments=[file]`, or `[]` on a Pillow-less
-  host). The round-trip card → editor → card now preserves the hero image, with no stray attachment.
-- **Stays-fixed guard (same PR):** `tests/unit/views/test_profile_card.py::
-  test_manage_clears_the_hero_card_when_opening_the_editor` and `tests/unit/views/test_profile_editor.py::
-  test_back_to_card_rerenders_and_reattaches_the_hero_card` /
-  `test_back_to_card_clears_attachments_when_renderer_unavailable` assert the `attachments=` payload on
-  each transition; all three fail against the pre-fix behaviour.
+  not a live report, but a visible defect on the showpiece image cards):** navigating from an
+  image-card hub into an image-less sub-panel strands or drops the rendered hero card. **Profile:**
+  opening **⚙️ Manage settings** from the `/myprofile` card leaves the card image lingering as a stray
+  attachment under the (image-less) settings editor, and **◀ Back to card** returns a plain embed
+  without its designed hero card. **XP hub:** opening **⚙️ Configure** from the `!xpmenu` rank-card hub
+  leaves the rank card lingering as a stray image under the (image-less) config panel.
+- **Root cause:** `interaction.response.edit_message(...)` calls that navigate to an image-less panel
+  omitted the `attachments` argument. Discord **retains** the prior message attachments when
+  `attachments` is not passed on an edit, so the leaving hub's hero card stayed attached under a panel
+  that never references it. The profile `back_to_card` leg additionally rebuilt from
+  `build_profile_embed` (a plain embed, no `set_image`) without re-attaching the file — losing the card
+  on the way back. Every *same-file* image-card transition already passes `attachments` explicitly
+  (`ProfileHomeView.refresh`, the XP stat toggles in `_switch_stat`, mining `character_hub`/`gear_panel`,
+  `role_menu_view`); the bug was confined to the **cross-panel navigations** that open/return an
+  image-less sibling — the two places that forgot the canonical pattern.
+- **Three call sites fixed (this PR):**
+  1. `views/profile/profile_view.py` `ProfileHomeView.manage` → `attachments=[]` (clear on open).
+  2. `views/profile/editor.py` `back_to_card` → re-render via `build_profile_card` + re-attach
+     (`attachments=[file]`, or `[]` on a Pillow-less host).
+  3. `views/xp/main_panel.py` `_XpHubView.btn_config` → `attachments=[]` (clear on open).
+- **Sweep:** a repo-wide check of every view file that both renders an `attachment://` image card and
+  calls `edit_message` confirmed these were the only offenders; all other image-card hubs already pass
+  `attachments` explicitly.
+- **Stays-fixed guard (same PR):** four regression tests, each asserting the `attachments=` payload and
+  each failing against the pre-fix behaviour —
+  `tests/unit/views/test_profile_card.py::test_manage_clears_the_hero_card_when_opening_the_editor`,
+  `tests/unit/views/test_profile_editor.py::test_back_to_card_rerenders_and_reattaches_the_hero_card`
+  and `::test_back_to_card_clears_attachments_when_renderer_unavailable`,
+  `tests/unit/views/xp/test_xp_hub_panel.py::test_config_button_clears_the_rank_card_attachment`.
 - **Status:** FIXED (root) 2026-06-25 (dispatch run).
 
 ## BUG-0024 — `test_generated_at_is_deterministic_not_wall_clock` flaky under `pytest -n auto` (real-clock dependent) — FIXED (root)

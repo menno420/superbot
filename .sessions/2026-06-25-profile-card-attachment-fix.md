@@ -1,7 +1,7 @@
 # 2026-06-25 — Profile hero-card attachment round-trip fix
 
-> **Status:** `complete` — both transitions fixed, 3 regression tests green, full CI mirror green
-> (12528 passed) + arch 0. BUG-0025 recorded FIXED (root).
+> **Status:** `complete` — three call sites fixed (profile ×2 + XP hub ×1), 4 regression tests green,
+> full CI mirror green + arch 0. BUG-0025 recorded FIXED (root).
 
 > **Run type:** `routine · dispatch` — scheduled dispatch fire, no work order. Took the next
 > bugs-first slice spotted during orientation (Q-0166 drift/bug-on-sight).
@@ -22,16 +22,28 @@ editor round-trip mishandled the rendered image attachment:
   on the return leg. → now re-renders the full card via `build_profile_card` and re-attaches the file
   (`attachments=[file]`, or `[]` on a Pillow-less host), mirroring `ProfileHomeView.refresh`.
 
-**Root cause:** these were the only two `edit_message` calls in the profile views that omitted
-`attachments`. Every other image-card hub (`refresh`, mining `character_hub`/`gear_panel`,
-`role_menu_view`) already passes it explicitly — so the bug was isolated to the profile editor
-navigation; no wider sweep needed (I checked the other hubs, they're correct).
+**Bugs-first root sweep (CLAUDE.md §6 — "are there other instances of it?"):** after fixing the
+profile pair, I swept every view file that both renders an `attachment://` image card and calls
+`edit_message`. That surfaced a **third, identical instance** outside the profile views:
 
-**Stays-fixed guard (same PR):** 3 regression tests asserting the `attachments=` payload on each
-transition (all fail against pre-fix behaviour):
+- **`views/xp/main_panel.py` — `btn_config` ("⚙️ Configure")** opens the (image-less) `XpConfigView`
+  from the `!xpmenu` rank-card hub with no `attachments`, stranding the rank card under the config
+  panel. → now `attachments=[]`, matching the stat toggles in `_switch_stat`.
+
+Folding it into the same BUG-0025 PR makes the fix genuinely root-level (all instances), not a
+symptom patch. Every *same-file* image-card transition (`refresh`, `_switch_stat`, mining
+`character_hub`/`gear_panel`, `role_menu_view`) already passed `attachments` explicitly — the bug
+was confined to cross-panel navigations into an image-less sibling.
+
+**Three call sites fixed:** profile `manage` (clear), profile `back_to_card` (re-render + re-attach),
+XP `btn_config` (clear).
+
+**Stays-fixed guard (same PR):** 4 regression tests asserting the `attachments=` payload (all fail
+against pre-fix behaviour):
 - `test_profile_card.py::test_manage_clears_the_hero_card_when_opening_the_editor`
 - `test_profile_editor.py::test_back_to_card_rerenders_and_reattaches_the_hero_card`
 - `test_profile_editor.py::test_back_to_card_clears_attachments_when_renderer_unavailable`
+- `test_xp_hub_panel.py::test_config_button_clears_the_rank_card_attachment`
 
 Docs: BUG-0025 entry (FIXED root) in `docs/health/bug-book.md`.
 
