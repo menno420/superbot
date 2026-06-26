@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-nar20j` · scope: S2 BTD6 anchor-tooling follow-ons (offline, self-mergeable) — eval-anchor coverage report + distractor negative-anchor guard · area `tests/evals/test_btd6_grounding_anchors.py` · 2026-06-26

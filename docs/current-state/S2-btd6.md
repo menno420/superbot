@@ -38,12 +38,15 @@
   gate, design-for-review; needs prod creds).
 - **Anchor-tooling follow-ons** (offline, self-mergeable) — *(the range-cash + projected-total figures
   AND the #855 MOAB-class bonuses +15/+30/+99 are now anchored, #1460 above — the BTD6 knowledge/
-  grounding cases are anchor-complete for every cleanly-derivable truth)*: #1458's **eval-anchor
-  coverage report** (inventory every numeric
-  token in `cases.py` rubrics + fixtures; report which lack an Anchor/FixtureAnchor, allowlisting
-  distractors + user-inputs so it isn't noisy) · a **distractor negative-anchor guard** (pin that each
-  documented distractor — $71,315.20, $107,164.60 — stays *un*-derivable, so a data change can't make
-  the case silently stop guarding its confusion).
+  grounding cases are anchor-complete for every cleanly-derivable truth; **the eval-anchor coverage
+  report + distractor negative-anchor guard both shipped 2026-06-26, PR #1466**)*: the **coverage
+  guard** now inventories every significant (≥ $1,000) rubric/fixture number per BTD6 case and asserts
+  it is anchored or on a documented distractor/user-input allowlist (a new dollar/HP truth left
+  unanchored fails CI); the **distractor negative-anchor guard** pins each documented distractor
+  ($71,315.20, $107,164.60, the standard-Lych-as-elite HP) distinct from the truths its case asserts (a
+  re-seed can't silently collapse a case's discrimination), and pins the standard-set-range alias for
+  the one derivable distractor. ▶ remaining anchor-tooling tail: none cleanly offline — the live
+  `llm_judge` battery (below) is the next BTD6 correctness step.
 
 **Gate:** the broad AI/BTD6 feature-expansion gate (stability + provider/provenance + caching + AI
 config) still applies — see [`../current-state.md`](../current-state.md) § Gates / blocked work.
