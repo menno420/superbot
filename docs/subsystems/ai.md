@@ -35,6 +35,34 @@ scoped tools (including owner-gated diagnostics). Source:
   refactor the orchestration choke point). See `docs/ai/ai-guard-coverage-map.md` and
   `docs/btd6/btd6-derived-value-groundedness-finding.md`.
 
+### Adding a knowledge domain — detector curation recipe
+
+A knowledge domain (BTD6, Project Moon/Limbus, future LoR/LobCorp) routes through a
+curated `has_<domain>_context(text)` detector (`utils/<domain>/keywords.py`) that
+`services.ai_task_router.classify` checks in a fixed **priority order** (BTD6 first,
+then Limbus). Two disciplines keep this multi-domain router correct — both were
+re-derived from source twice before being written down here:
+
+- **Distinctive vs generic tokens.** A detector / name-index keyword list must carry
+  only *distinctive* proper-noun tokens. Ordinary English words a domain happens to use
+  — bloon colours (`red`/`blue`), the Limbus Sins (`pride`/`wrath`), damage types
+  (`slash`), statuses (`burn`) — are **excluded** as bare single tokens; they enter the
+  faithfulness name-index (`btd6_grounding_service._name_index` /
+  `projmoon_grounding_service._name_index`) only as **multi-word phrases** or via the
+  resolver. Routing or flooring on a generic word over-triggers on normal chat.
+- **Cross-domain disjointness.** The router relies on each domain's distinctive tokens
+  being **inert to every other domain's detector** — in both directions and across the
+  match-semantics gap (`has_btd6_context` is a substring scan; `has_limbus_context` is a
+  word-boundary regex). When two domains could both claim a phrase, the **earlier domain
+  in the priority order wins** (the documented tie-break).
+
+**Guard:** `tests/unit/runtime/ai/test_domain_routing_disjoint.py` is the registry-driven
+harness that pins all three properties (routing · token disjointness · priority order).
+**Adding a domain is a one-line `DOMAINS` registration there** (detector, expected task,
+distinctive tokens, sample questions) — do not re-derive the discipline; register and let
+the guard cover it. (Slice B of the Project Moon program folds the per-domain name-index
+builders into one shared `KnowledgeDomain` helper — until then this recipe is the contract.)
+
 ## Current state
 
 - **Production-readiness map (verified 2026-06-12):**

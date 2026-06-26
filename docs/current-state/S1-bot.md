@@ -134,7 +134,12 @@
   `PROJMOON_ANSWER` reply against the injected facts (the projmoon analogue of `validate_btd6_reply`,
   reusing `utils.btd6.name_guard` + the shared `GroundingResult`) — indexes the distinctive Sinner /
   E.G.O names, skips the common-English categories, reject → regenerate-once → deterministic Limbus
-  refusal; offline-unit-tested. ▶ **Next:** the live **Q-0086 runtime walk** (owner — confirm a real
+  refusal; offline-unit-tested. **Slice B *prep* — cross-domain over-route guard SHIPPED 2026-06-26**
+  (dispatch run, PR #1470): a registry-driven harness
+  (`tests/unit/runtime/ai/test_domain_routing_disjoint.py`) pins the previously-untested router invariant
+  *"BTD6 keywords never collide with the distinctive Limbus tokens"* (routing · token disjointness across
+  every domain pair · priority total-order) + a detector-curation recipe in the ai folio, so the next
+  domain (LoR / LobCorp) is a one-line registration. ▶ **Next:** the live **Q-0086 runtime walk** (owner — confirm a real
   Limbus Q&A grounds well on both providers) + Slice A item 1 (StaticData exact-number ingest); then
   **Slice B** = extract the shared `KnowledgeDomain` seam from BTD6 + Limbus
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
