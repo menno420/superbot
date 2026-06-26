@@ -1,1 +1,0 @@
-- branch `claude/franklin-sessionclose-freshness` · scope: wire check_sector_next_freshness into /session-close gate · area: .claude/skills/session-close/ · 2026-06-26
