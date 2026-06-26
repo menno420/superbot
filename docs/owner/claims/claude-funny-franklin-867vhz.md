@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-867vhz` · scope: S3 mechanism — sector ▶ Next freshness guard + fix S3 stale pointer · area: scripts/, docs/current-state/, tests/unit/scripts/ · 2026-06-26
