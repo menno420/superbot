@@ -117,6 +117,20 @@ argument: generalising from a single example tends to produce the wrong abstract
 > (a) the live **Q-0086 runtime walk** (owner); (c) Slice A item 1 — the StaticData exact-number ingest;
 > then **Slice B** — extract the shared `KnowledgeDomain` seam from BTD6 + Limbus.
 
+> **▶ Progress (2026-06-26 dispatch run, PR #1470): Slice B *prep* — the CROSS-DOMAIN OVER-ROUTE GUARD —
+> SHIPPED.** The over-route harness flagged by PR #1453 / #1469's session ideas. `ai_task_router.classify`
+> checks BTD6 then Limbus on the bare comment *"BTD6 keywords never collide with the distinctive Limbus
+> tokens"* — asserted, never tested, and the two detectors don't even share match semantics
+> (`has_btd6_context` is a substring scan; `has_limbus_context` is word-boundary). New
+> **`tests/unit/runtime/ai/test_domain_routing_disjoint.py`** is a registry-driven guard pinning three
+> properties (routing · token disjointness across every ordered domain pair · priority total-order) so the
+> next reference domain (LoR / LobCorp) is a one-line `DOMAINS` registration, not a re-derivation from
+> source. Paired with a durable **detector-curation recipe** in the [ai folio](../subsystems/ai.md)
+> § "Adding a knowledge domain" (the "distinctive vs generic token" + cross-domain disjointness discipline
+> that was re-derived from source twice). Offline, **no runtime behaviour change** — de-risks Slice B's
+> seam extraction without touching the gated BTD6 hot path. **▶ Next unchanged:** (a) the live
+> **Q-0086 runtime walk** (owner); (c) Slice A item 1 — StaticData numbers; then **Slice B** proper.
+
 **Slice A (next session, 2–3 PRs):**
 1. **Ingestion:** a `scripts/fetch_pm_limbus.py` that parses the **StaticData identity JSON** (clean,
    bounded — Identities + Sinners + E.G.O index) into committed JSON under
