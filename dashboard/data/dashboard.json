@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-26T14:31:49Z",
+    "generated_at": "2026-06-26T20:33:25Z",
     "build": {
-      "commit": "ce07a70d",
-      "subject": "Merge pull request #1474 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-26T14:31:49Z"
+      "commit": "751fc65c",
+      "subject": "Merge pull request #1477 from menno420/claude/franklin-sessionclose-freshness",
+      "committed_at": "2026-06-26T20:33:25Z"
     },
     "counts": {
       "functions": 43,
@@ -2537,6 +2537,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-26-sessionclose-freshness-wiring.md",
+      "date": "2026-06-26",
+      "title": "2026-06-26 — Wire ▶ Next freshness guard into /session-close",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-26-sector-next-freshness-guard.md",
+      "date": "2026-06-26",
+      "title": "2026-06-26 — Sector ▶ Next freshness guard (S3 mechanism)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-26-reconcile-band1470.md",
       "date": "2026-06-26",
       "title": "Session — 2026-06-26 · twenty-sixth Q-0107 reconciliation pass (band-#1470)",
@@ -2998,22 +3014,6 @@
       "title": "Session — 2026-06-24 · capture owner idea: bot-migration assistant",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-blackjack-settle-once.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · settle-once guard for blackjack PvP (slice 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-wordfilter-deobfuscation.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Obfuscation-resistant word filter (beat Sapphire's content filter)",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
