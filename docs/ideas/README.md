@@ -108,6 +108,14 @@ Current broad captures:
   `micro`) computed from named-slice hits vs. owner-directed merges, so a trivial grep yields the owner's
   real signal: *how much of the roadmap the autonomous fleet drives vs. how much he steers live* — the core
   "is the workflow self-driving?" metric. Reuses the planned-slice hit-rate tracker's parse. Subsystem: S4/S3 tooling.
+- [`reconcile-trigger-band-consistency-guard-2026-06-26.md`](./reconcile-trigger-band-consistency-guard-2026-06-26.md) —
+  **reconciliation idea (2026-06-26, band-#1470 Q-0089):** the `Last reconciliation pass: PR #N` marker is
+  hand-written and conflates the *reset target* (latest merged PR) with the *pass identity* (the PR the pass
+  shipped as) — the band-#1440 marker wrote `#1441` (a dashboard refresh) where the 25th pass was actually
+  #1443, costing the band-#1470 pass time to disentangle. A warn-first `check_reconcile_marker.py` that asserts
+  the marker is the latest merged PR, the `band-#M` label matches the cadence boundary the trigger issue
+  crossed, and the linked pass doc is the single `plan`-badged one — folds into the ledger-checker parse and
+  catches the conflation at the root. Joins the reconciliation-tooling cluster above. Subsystem: S4/S3 tooling.
 - [`subsystem-inventory-homed-guard-2026-06-23.md`](./subsystem-inventory-homed-guard-2026-06-23.md) —
   **workflow idea (2026-06-23, Q-0089, ultracode-map session):** four mapping agents verified the repo's own
   inventory docs lag source — `repo-navigation-map.md`'s cheat-sheet table omits **18 shipped cogs** (54 in

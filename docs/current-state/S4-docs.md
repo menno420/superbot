@@ -9,6 +9,12 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Twenty-sixth Q-0107 reconciliation pass** (band-#1470, issue #1471 —
+  [pass record](../planning/reconciliation-pass-2026-06-26-band1470.md)): reconciled the ledger
+  (band #1442–#1470 — six grouped entries, headlined by the **NEW Project Moon (Limbus) knowledge
+  domain** arc #1453…#1470), trimmed Recently-shipped to 20 (`trim_recently_shipped.py --apply`, floor
+  recomputed), **fixed S3 drift** (the retired `needs-hermes-review` label, Q-0197), carried the
+  band-#1440 forward queue (still deep, no THIN flag), reset the marker #1441 → #1470.
 - **Twenty-fifth Q-0107 reconciliation pass** (band-#1440, issue #1442 —
   [pass record](../planning/reconciliation-pass-2026-06-24-band1440.md)): reconciled the ledger
   (band #1413–#1441 — six grouped entries, headlined by the **Essential Setup wizard restructure** arc),
@@ -30,7 +36,7 @@
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
 
 **▶ Next:**
-- **Next reconciliation pass due once merged PRs cross #1470** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1500** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

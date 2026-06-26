@@ -1,1 +1,0 @@
-- branch `claude/jolly-johnson-3i4dp3` · scope: **26th Q-0107 docs reconciliation pass** (band-#1470, issue #1471) · files: `docs/current-state*.md`, `docs/current-state/S*.md`, `docs/planning/reconciliation-pass-2026-06-26-band1470.md`, `docs/ideas/*`, `dashboard/data/`, `.sessions/` · 2026-06-26

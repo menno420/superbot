@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-26T05:28:48Z",
+    "generated_at": "2026-06-26T09:31:18Z",
     "build": {
-      "commit": "5b9979ce",
-      "subject": "Merge pull request #1467 from menno420/claude/funny-franklin-1f76uv",
-      "committed_at": "2026-06-26T05:28:48Z"
+      "commit": "48cd5a08",
+      "subject": "reconcile band-#1470: born-red session card + claim",
+      "committed_at": "2026-06-26T09:31:18Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 143,
+      "ideas": 144,
       "bugs": 25,
       "reviews": 0,
       "reviews_open": 0,
@@ -1157,6 +1157,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "reconcile-trigger-band-consistency-guard-2026-06-26.md",
+      "title": "Idea — a `reconcile`-issue ↔ marker band-consistency guard",
+      "status": "ideas",
+      "date": "2026-06-26",
+      "summary": "The `Last reconciliation pass: PR #N` marker text in `current-state.md` is hand-written, and it",
+      "subsystems": null
+    },
     {
       "file": "askuserquestion-preview-for-design-forks-2026-06-24.md",
       "title": "Use `AskUserQuestion`'s per-option `preview` to show design-fork mockups",
@@ -2529,12 +2537,36 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-26-reconcile-band1470.md",
+      "date": "2026-06-26",
+      "title": "Session — 2026-06-26 · twenty-sixth Q-0107 reconciliation pass (band-#1470)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-26-projmoon-grounding-path.md",
       "date": "2026-06-26",
       "title": "2026-06-26 — Project Moon (Limbus) grounding path (PR 2)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-26-projmoon-faithfulness-guard.md",
+      "date": "2026-06-26",
+      "title": "2026-06-26 — Project Moon (Limbus) faithfulness guard (S1)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-26-cross-domain-routing-disjoint-guard.md",
+      "date": "2026-06-26",
+      "title": "2026-06-26 — Cross-domain AI-routing disjointness guard (S1 / Project Moon prep)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-26-btd6-eval-anchor-coverage.md",
@@ -2983,30 +3015,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-visual-card-engine.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Themeable card-render engine + profile card (out-visual Dank Memer, PR 1)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-ultracode-shared-dependency-map.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Ultracode shared-dependency / ownership map",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-ultracode-consolidation-coordinator.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — Ultracode consolidation fleet (coordinator)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [

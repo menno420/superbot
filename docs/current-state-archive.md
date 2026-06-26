@@ -86,6 +86,33 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1394 (2026-06-23, moderation)** — an **obfuscation-resistant word filter** (out-filters Sapphire's
+  content filter — leet/spacing/zero-width normalization).
+- **#1354 · #1362 · #1389 · #1391 · #1392 · #1393 (2026-06-23/24, docs / ideas / router / dashboard)** —
+  the **twenty-second Q-0107 reconciliation pass** (band-#1350, #1354); promote loose session ideas into the
+  backlog (#1362); router **Q-0199** (AI may apply setup changes after confirmation, #1389); BTD6
+  runtime-mechanics extraction (#1391) + BTD6 cash-model empirical-validation (#1393) ideas; a reconcile of
+  the consolidation-audit docs to shipped work (#1392); plus six per-source-merge **dashboard refreshes**
+  (#1358 · #1368 · #1380 · #1388 · #1395 · #1400, Q-0167).
+- **#1328 · #1331 · #1332 · #1333 · #1334 · #1344 (2026-06-23, NEW economy/game subsystems — farm · Karma · casino · treasury)** —
+  a burst of brand-new subsystems: an **idle egg/chicken farm** game (lazy-accrual idle loop, #1328) plus a
+  fresh-coop fix (no longer starts full + a "while you were away" idle summary, #1331); a **Karma**
+  thanks/upvote reputation subsystem (#1332, plan #1330); a **Casino** subsystem — a multiplayer card-game
+  **table framework + Texas Hold'em poker** (#1333); and a **Treasury** — a server-owned coin pool on the
+  economy↔governance seam (#1334) with a Treasury button wired into the Economy panel (panel-link fix, #1344).
+- **#1329 · #1337 · #1338 · #1340 · #1341 · #1342 · #1351 (2026-06-23, fishing minigame — economy knobs + venues + polish)** —
+  the fishing game gained its second pre-cast economy knob, **Bait** (coin sink + rarity bias, #1329), a **bait
+  speed knob** (faster bites, #1337) and **bait-crafting** (turn caught fish into bait — closes the catch→bait
+  loop, #1338); plus a **deepwater boat venue** (⛵ Set sail / Dock, #1340), a **daily weather forecast**
+  (date-seeded global bias, #1341), a test-helper consolidation of the duplicated `roll_catch` mock (#1342),
+  and **per-species trophy records** (your heaviest catch per species in the Fishdex, #1351).
+- **#1324 · #1325 · #1326 (2026-06-23, BTD6 round economy)** — surfaced **round XP** in the NL reply +
+  round-embed Economy field (#1324), then the **unified round-economy reply** (RBE + cash + XP in one answer,
+  #1326), backed by validated **XP-per-round data** (`round_xp.json`, #1318 — merged via #1325, which also
+  routed the mining-grid encounters idea to the owner, Q-0198).
+- **#1345 · #1350 (2026-06-23, cleanup channel surface)** — a **cleanup panel UX** pass (readable whitelist,
+  fixable warnings, custom per-channel levels, #1345) and then the root simplification — **removed the legacy
+  cleanup channel whitelist** entirely (#1350).
 - **#1349 (2026-06-23, themeable card-render engine — out-visual Dank Memer, PR 1)** — a reusable themeable
   **card-render engine** + the first profile card (the foundation for best-in-class visual cards;
   [vision](ideas/visual-card-engine-vision-2026-06-23.md)).
