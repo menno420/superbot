@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-26T09:31:18Z",
+    "generated_at": "2026-06-26T11:44:24Z",
     "build": {
-      "commit": "48cd5a08",
-      "subject": "reconcile band-#1470: born-red session card + claim",
-      "committed_at": "2026-06-26T09:31:18Z"
+      "commit": "0f6821a4",
+      "subject": "Merge pull request #1472 from menno420/claude/jolly-johnson-3i4dp3",
+      "committed_at": "2026-06-26T11:44:24Z"
     },
     "counts": {
       "functions": 43,
@@ -2540,8 +2540,8 @@
       "file": "2026-06-26-reconcile-band1470.md",
       "date": "2026-06-26",
       "title": "Session — 2026-06-26 · twenty-sixth Q-0107 reconciliation pass (band-#1470)",
-      "status": "in-progress",
-      "run_type": "",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
