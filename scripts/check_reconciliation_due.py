@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.10
 """Reconciliation-cadence guard — flag when a docs-only review/planning pass is due.
 
+[session-close-gate] Invoked from ``/session-close`` Step 4 (``check_session_close_gate.py`` enforces that this stays wired in).
+
 Owner directive Q-0107: PR numbers crossing a **multiple of 30** (#30, #60, #90, …) are
 reserved for a **docs-only repo review + planning-reconciliation** pass — review the state
 of the repo (ledger, active lanes, open Q-blocks, idea backlog, roadmap), prune stale docs,

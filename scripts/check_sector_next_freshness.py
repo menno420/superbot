@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.10
 """Flag per-sector ``▶ Next`` items that point at already-shipped plans.
 
+[session-close-gate] Invoked from ``/session-close`` Step 4 (``check_session_close_gate.py`` enforces that this stays wired in).
+
 Provenance / reliability header (per CLAUDE.md Q-0105 adopt-with-kill-switch):
 - Why: ``docs/current-state/S*.md`` are the *freshness* layer — the dispatch routine
   reads a sector's ``▶ Next startable`` to pick the next slice. When a ``▶ Next`` item

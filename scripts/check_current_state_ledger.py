@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.10
 """Ledger drift guard — flag merged PRs absent from ``current-state.md``.
 
+[session-close-gate] Invoked from ``/session-close`` Step 4 (``check_session_close_gate.py`` enforces that this stays wired in).
+
 `docs/current-state.md` § "Recently shipped" is the living ledger of merged work, and
 its recurring failure mode is **drift**: a session merges a PR and the ledger is never
 updated (or a PR number is mislabeled). This happened on 2026-06-12 — #730/#733 were

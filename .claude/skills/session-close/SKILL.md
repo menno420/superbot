@@ -104,6 +104,7 @@ python3.10 scripts/check_current_state_ledger.py --strict  # merged PRs are in t
 python3.10 scripts/check_plan_code_drift.py            # Q-0181: a plan-badged doc whose code already shipped? rebadge -> historical
 python3.10 scripts/check_sector_next_freshness.py     # a per-sector ▶ Next pointing at a SHIPPED (historical) plan? re-point it (Q-0166)
 python3.10 scripts/check_reconciliation_due.py        # Q-0107: is a 30th-PR docs/planning pass due? (cadence 30, Q-0134)
+python3.10 scripts/check_session_close_gate.py        # meta: every [session-close-gate] checker is still wired into this block
 python3.10 scripts/check_quality.py --check-only
 ```
 

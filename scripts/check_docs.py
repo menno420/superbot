@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Doc-hygiene checker for SuperBot ``docs/``.
 
+[session-close-gate] Invoked from ``/session-close`` Step 4 (``check_session_close_gate.py`` enforces that this stays wired in).
+
 Hard rules (CI gate — see ``--strict``):
 
   1. **badge**  — every ``docs/**/*.md`` carries a machine-readable
