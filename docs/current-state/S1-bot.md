@@ -129,10 +129,14 @@
   **`AITask.PROJMOON_ANSWER`** (`ai_task_router` → `has_limbus_context`, after BTD6 / before video) and a
   thin `services/projmoon_context_service.build()` injects provenanced Limbus grounding facts (named
   entities + bounded roster queries) into `natural_language_stage._gather_feature_facts` —
-  default-preserving (BTD6 path byte-identical), offline-unit-tested. ▶ **Next:** the live **Q-0086
-  runtime walk** (owner — confirm a real Limbus Q&A grounds well on both providers) + the projmoon
-  **faithfulness guard** follow-up + Slice A item 1 (StaticData exact-number ingest); then **Slice B** =
-  extract the shared `KnowledgeDomain` seam from BTD6 + Limbus
+  default-preserving (BTD6 path byte-identical), offline-unit-tested. **Faithfulness guard SHIPPED
+  2026-06-26** (dispatch run, PR #1469): `services/projmoon_grounding_service.py` post-verifies a
+  `PROJMOON_ANSWER` reply against the injected facts (the projmoon analogue of `validate_btd6_reply`,
+  reusing `utils.btd6.name_guard` + the shared `GroundingResult`) — indexes the distinctive Sinner /
+  E.G.O names, skips the common-English categories, reject → regenerate-once → deterministic Limbus
+  refusal; offline-unit-tested. ▶ **Next:** the live **Q-0086 runtime walk** (owner — confirm a real
+  Limbus Q&A grounds well on both providers) + Slice A item 1 (StaticData exact-number ingest); then
+  **Slice B** = extract the shared `KnowledgeDomain` seam from BTD6 + Limbus
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
 - **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
   (PR 1 foundation shipped; [plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)).
