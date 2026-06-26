@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-1f76uv` · scope: Project Moon (Limbus) knowledge-domain **PR 2 — the grounding path** · area: `disbot/services/projmoon_context_service.py` (new), `disbot/core/runtime/ai/{contracts.py,natural_language_stage.py}`, `disbot/services/ai_task_router.py`, tests · 2026-06-26
