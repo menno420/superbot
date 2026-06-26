@@ -52,11 +52,17 @@ Shipped:
   this run. No arch warning I could retire (all pre-existing `views/` lifecycle WARNs).
 
 ## 💡 Session idea (Q-0089)
-Pair this freshness guard with the existing `scripts/dispatch_menu.py`: when the resolver
-surfaces a sector's first ▶ startable item, it could call `check_sector_next_freshness`'s
-`plan_status()` to **suppress** any item linking a `historical` plan from the dispatch pick —
-turning the guard from a *detector* into an *active filter* so a stale ▶ Next can never be
-dispatched even before a human re-points it. (Captured here; small, on the dispatch seam.)
+Turn the freshness guard from a *detector* into an *active filter* on the dispatch seam — but
+note the real shape (verified this run, so the next session isn't misled): `dispatch_menu.py`
+resolves from **`roadmap.md` § By sector**, whose Now/Next bullets are short labels with **no
+plan links**, while this guard scans the **`current-state/S*.md` ▶ Next** links. They're
+different sources. So the clean version is *either* (a) wire the guard into `/session-close`
+so every session re-checks ▶ Next freshness on the way out (cheap, high-leverage — closes the
+"3 days unguarded" gap), *or* (b) have the roadmap Now/Next bullets carry the same plan link
+their current-state twin does, then a shared `plan_status()` can suppress a shipped lane from
+the dispatch pick. (a) is the smaller, surer win; (b) needs a roadmap-convention change first.
+A direct cross-script import is ruled out — `dispatch_menu.py`'s header pins the single-file
+standalone convention (factor a shared module only when a third consumer appears).
 
 ## ⟲ Previous-session review (Q-0102)
 The prior runs (projmoon grounding + faithfulness guard, #1467/#1469/#1470) were strong —
