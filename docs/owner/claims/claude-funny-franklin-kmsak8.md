@@ -1,0 +1,1 @@
+- `claude/funny-franklin-kmsak8` · S3 mechanism: meta-check that every "run-at-close" checker is wired into `/session-close` Step-4 · `scripts/check_session_close_gate.py` + test + sentinel retrofit on the Step-4 checkers + SKILL.md gate entry · 2026-06-26
