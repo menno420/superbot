@@ -765,6 +765,87 @@ class AINaturalLanguageStage:
                     ctx.metadata["handled_by"] = STAGE_NAME
                     return StageResult(short_circuit=True)
 
+        # ---- Project Moon (Limbus) faithfulness guard -----------------------
+        # A PROJMOON_ANSWER reply must not state distinctive Limbus proper names
+        # (the 12 Sinners, the E.G.O grades) absent from the grounded payload
+        # injected by ``projmoon_context_service``. Reject + regenerate once with
+        # a do-not-state constraint, then floor to a deterministic refusal.
+        # Names-only — Limbus exact numbers aren't ingested yet (Slice A item 1).
+        # Default-preserving: only PROJMOON_ANSWER replies (already Limbus-routed)
+        # enter here; the BTD6 / general paths above are untouched.
+        if routed.task is AITask.PROJMOON_ANSWER:
+            from services import projmoon_grounding_service
+
+            pm_verdict = projmoon_grounding_service.validate_projmoon_reply(
+                reply_text,
+                facts=tuple(feature.facts),
+            )
+            if not pm_verdict.grounded:
+                async with _maybe_typing(message.channel):
+                    response = await _invoke_gateway(
+                        stack,
+                        built,
+                        ctx,
+                        ledger=ledger,
+                        grounding_constraint=(
+                            projmoon_grounding_service.build_grounding_constraint(
+                                pm_verdict,
+                            )
+                        ),
+                    )
+                pm_retry_text = redact_text((response.text or "").strip()).value
+                pm_retry_verdict = (
+                    projmoon_grounding_service.validate_projmoon_reply(
+                        pm_retry_text,
+                        facts=tuple(feature.facts),
+                    )
+                    if pm_retry_text
+                    else None
+                )
+                if (
+                    pm_retry_text
+                    and pm_retry_verdict is not None
+                    and pm_retry_verdict.grounded
+                ):
+                    logger.info(
+                        "projmoon_faithfulness: retry_rescued route=%s",
+                        routed.route,
+                    )
+                    reply_text = pm_retry_text
+                else:
+                    logger.warning(
+                        "projmoon_faithfulness: blocked route=%s names=%s "
+                        "retry_attempted=True retry_rescued=False degraded=%s",
+                        routed.route,
+                        list(pm_verdict.offending_names),
+                        response.degraded,
+                    )
+                    await _send_projmoon_refusal(message)
+                    if response.degraded:
+                        pm_decision = "degraded"
+                        pm_reason = PolicyDenialReason.PROVIDER_UNAVAILABLE
+                    else:
+                        pm_decision = "denied"
+                        pm_reason = PolicyDenialReason.GROUNDING_FAILED
+                    await ai_decision_audit_service.record(
+                        guild_id=guild_id,
+                        channel_id=channel_id,
+                        category_id=category_id,
+                        user_id=user_id,
+                        message_id=message.id,
+                        task=routed.task.value,
+                        route=routed.route,
+                        decision=pm_decision,
+                        reason_code=pm_reason,
+                        policy_snapshot_hash=decision.policy_snapshot_hash,
+                        instruction_profile_ids=list(stack.instruction_profile_ids)
+                        or None,
+                        provider=response.provider or None,
+                        model=response.model or None,
+                    )
+                    ctx.metadata["handled_by"] = STAGE_NAME
+                    return StageResult(short_circuit=True)
+
         from core.runtime.ai import response_renderer_registry
 
         # A registered renderer may raise (bad render_context, embed
@@ -1118,6 +1199,24 @@ async def _send_btd6_refusal(message: discord.Message) -> None:
     except discord.HTTPException:
         logger.warning(
             "btd6_faithfulness: refusal send failed for message=%s",
+            getattr(message, "id", None),
+            exc_info=True,
+        )
+
+
+async def _send_projmoon_refusal(message: discord.Message) -> None:
+    """Send the deterministic Project Moon (Limbus) refusal as a reply."""
+    from services import projmoon_grounding_service
+
+    try:
+        await message.channel.send(
+            projmoon_grounding_service.no_data_refusal(),
+            allowed_mentions=discord.AllowedMentions.none(),
+            reference=message.to_reference(fail_if_not_exists=False),
+        )
+    except discord.HTTPException:
+        logger.warning(
+            "projmoon_faithfulness: refusal send failed for message=%s",
             getattr(message, "id", None),
             exc_info=True,
         )

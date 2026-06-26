@@ -100,6 +100,23 @@ argument: generalising from a single example tends to produce the wrong abstract
 > providers); (b) the projmoon **faithfulness guard** follow-up; (c) Slice A item 1 — the StaticData
 > exact-number ingest; then **Slice B** — extract the shared `KnowledgeDomain` seam from BTD6 + Limbus.
 
+> **▶ Progress (2026-06-26 dispatch run, PR #1469): Slice A follow-up (b) — the FAITHFULNESS GUARD —
+> SHIPPED.** Closes the §6 "hardest correctness risk" deferred by PR #1467. New
+> **`services/projmoon_grounding_service.py`** is the projmoon analogue of
+> `btd6_grounding_service.validate_btd6_reply`: it reuses the domain-agnostic `utils.btd6.name_guard`
+> matchers and the shared `GroundingResult` dataclass (so Slice B's seam folds them with no contract
+> change), indexes the **distinctive** Limbus proper names (the 12 Sinners + the ZAYIN/TETH/WAW/ALEPH
+> E.G.O grades) and **skips** the common-English categories (Sins / damage types / statuses) so ordinary
+> prose never false-positives — mirroring BTD6's hero/boss-vs-generic discipline. **Names-only** (Limbus
+> exact numbers aren't ingested yet — item c). Wired into `natural_language_stage` as a `PROJMOON_ANSWER`
+> block parallel to the BTD6 one (reject → regenerate-once with a do-not-state constraint → floor to a
+> deterministic, never-model-prose Limbus refusal). **Posture divergence from BTD6 (documented):** a
+> verifier *exception* fails **open** (projmoon faithfulness is additive hardening, not a hard numeric
+> safety floor); a genuine unsupported-name finding fails **closed**. Default-preserving (BTD6 / general
+> paths byte-identical); offline-unit-tested (12 service tests + 4 NL-stage wiring tests). **▶ Next:**
+> (a) the live **Q-0086 runtime walk** (owner); (c) Slice A item 1 — the StaticData exact-number ingest;
+> then **Slice B** — extract the shared `KnowledgeDomain` seam from BTD6 + Limbus.
+
 **Slice A (next session, 2–3 PRs):**
 1. **Ingestion:** a `scripts/fetch_pm_limbus.py` that parses the **StaticData identity JSON** (clean,
    bounded — Identities + Sinners + E.G.O index) into committed JSON under

@@ -103,6 +103,7 @@ PER_FILE_RESET_HOOKS: dict[str, str] = {
     "services.btd6_grounding_service": "grounding cache; wired in BTD6 grounding tests",
     "services.btd6_source_parser": "parser cache; wired in BTD6 parser tests",
     "services.btd6_version_announce": "bus subscriber; wired in announce tests",
+    "services.projmoon_grounding_service": "name-index cache; wired in projmoon grounding tests",
     "services.customization_catalogue": "catalogue cache; wired in customization tests",
     "services.diagnostics_service": "import-populated provider registry; wired in diagnostics tests",
     "services.paragon_service": "paragon cache; wired in paragon tests",

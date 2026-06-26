@@ -1876,6 +1876,126 @@ async def test_btd6_meta_question_serves_answerability_summary(
 
 
 # ---------------------------------------------------------------------------
+# Project Moon (Limbus) faithfulness guard (Slice A follow-up b)
+# ---------------------------------------------------------------------------
+
+
+def _route_projmoon(monkeypatch):
+    from core.runtime.ai import natural_language_stage as mod
+
+    monkeypatch.setattr(
+        mod.ai_task_router,
+        "classify",
+        lambda _t, **_kw: SimpleNamespace(
+            task=AITask.PROJMOON_ANSWER, route="projmoon.answer"
+        ),
+    )
+
+
+@pytest.mark.asyncio
+async def test_projmoon_grounded_answer_is_served(monkeypatch, stub_services):
+    """A Limbus reply that names only grounded Sinners is served unchanged."""
+    from services import ai_gateway
+
+    _route_projmoon(monkeypatch)
+    _stub_facts(monkeypatch, ("Faust: a steady, cerebral Sinner.",))
+
+    async def fake_execute(_request):
+        return _make_response(text="Faust is one of the twelve Sinners.")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> tell me about Faust in limbus"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert _sent_text(msg) == "Faust is one of the twelve Sinners."
+    assert stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_projmoon_unsupported_name_is_refused(monkeypatch, stub_services):
+    """A reply that drifts to an ungrounded Sinner is floored to the deterministic
+    Limbus refusal after the constrained retry still misses."""
+    from services import ai_gateway
+
+    _route_projmoon(monkeypatch)
+    _stub_facts(monkeypatch, ("Faust: a steady, cerebral Sinner.",))
+
+    # Both the first reply and the retry name Heathcliff (never grounded).
+    async def fake_execute(_request):
+        return _make_response(text="Actually Heathcliff is the strongest Sinner.")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> who is the best limbus sinner"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    sent = _sent_text(msg)
+    assert "Heathcliff" not in sent  # the ungrounded reply is NOT served
+    assert "Project Moon" in sent  # the deterministic refusal floor
+    assert stub_services[-1]["decision"] == "denied"
+    assert stub_services[-1]["reason_code"] is PolicyDenialReason.GROUNDING_FAILED
+
+
+@pytest.mark.asyncio
+async def test_projmoon_regenerate_once_rescues(monkeypatch, stub_services):
+    """First reply ungrounded, the constrained retry grounded → served."""
+    from services import ai_gateway
+
+    _route_projmoon(monkeypatch)
+    _stub_facts(monkeypatch, ("Faust: a steady, cerebral Sinner.",))
+
+    texts = iter(
+        ["Heathcliff is the answer.", "Faust is a cerebral, steady Sinner."]
+    )
+
+    async def fake_execute(_request):
+        return _make_response(text=next(texts))
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> tell me about Faust"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert _sent_text(msg) == "Faust is a cerebral, steady Sinner."
+    assert stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_projmoon_degraded_retry_stays_provider_unavailable(
+    monkeypatch, stub_services
+):
+    """An ungrounded first reply whose retry degrades stays PROVIDER_UNAVAILABLE —
+    a provider outage on retry must never be misclassified as a grounding miss."""
+    from services import ai_gateway
+
+    _route_projmoon(monkeypatch)
+    _stub_facts(monkeypatch, ("Faust: a steady, cerebral Sinner.",))
+
+    responses = iter(
+        [
+            _make_response(text="Heathcliff is the best.", degraded=False),
+            _make_response(text=None, degraded=True, model=""),
+        ]
+    )
+
+    async def fake_execute(_request):
+        return next(responses)
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> who is the best limbus sinner"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert stub_services[-1]["decision"] == "degraded"
+    assert stub_services[-1]["reason_code"] is PolicyDenialReason.PROVIDER_UNAVAILABLE
+
+
+# ---------------------------------------------------------------------------
 # BUG-0019 #2 — @everyone / @here must NOT read as a direct personal ping.
 #
 # discord.py's ``ClientUser.mentioned_in`` returns True on
