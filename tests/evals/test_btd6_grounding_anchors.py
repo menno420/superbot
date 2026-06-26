@@ -522,3 +522,282 @@ def test_modified_economy_is_advertised_as_a_guarded_gap():
     assert (
         "double cash" in note and "not applied" in note
     ), f"modified_economy must name the unsupported math as NOT applied; got: {note!r}"
+
+
+# --------------------------------------------------------------------------- #
+# Anchor-coverage report — every *significant* number a BTD6 case asserts must
+# be accounted for: either it is anchored (an Anchor/FixtureAnchor re-derives it)
+# or it is on the curated allowlist below (a distractor the rubric tells the judge
+# to REJECT, or a user-supplied input restated in the rubric). A rubric/fixture
+# edit that introduces a NEW dollar/HP *truth* without anchoring it then fails CI
+# here, instead of silently leaving an un-guarded "truth" the eval grades against.
+#
+# Why a significance threshold: a rubric is full of structural small integers —
+# round numbers (60, 68, 25, 83), boss tiers (1-5), crosspath digits (0/4/1), the
+# "6" in "BTD6", the "2" in "multiply by 2". None of those are data-derived truths,
+# and listing them would drown the real figures in noise (the #1458 "so it isn't
+# noisy" requirement). Every actual asserted truth/distractor/input in these
+# economy + HP cases is >= $1,000 (smallest real truth: Navarch's $3,200 income),
+# so the threshold cleanly separates the figures worth accounting for from the
+# structural noise. Sub-$1,000 asserted truths are rare in this domain and fall
+# outside this report by design (documented, tunable via _SIGNIFICANCE_THRESHOLD).
+# --------------------------------------------------------------------------- #
+_SIGNIFICANCE_THRESHOLD = 1000.0
+
+# Every BTD6 case id this coverage report governs (the knowledge.* / grounding.*
+# BTD6 cases). Derived from the case list so a new BTD6 case is automatically in
+# scope (and a structural rename is caught by the real-case guard below).
+_BTD6_CASE_IDS: tuple[str, ...] = tuple(
+    cid
+    for cid in _CASES_BY_ID
+    if cid.startswith("knowledge.btd6") or cid.startswith("grounding.btd6")
+)
+
+# Significant non-anchored numbers, per case, each with WHY it is not anchored.
+# Two allowed reasons (the #1458 spec): a *distractor* (the rubric rejects it) or
+# a *user-input* (a figure the prompt supplies, restated in the rubric — not a
+# data-derived truth, so a data-drift guard over it would be meaningless). A value
+# here that becomes a real derivable truth should move to ANCHORS instead.
+_UNANCHORED_ALLOWLIST: dict[str, dict[float, str]] = {
+    "knowledge.btd6_round_cash_by_round_projection": {
+        20000.0: "user-input: the stated starting cash ('20K by round 50')",
+    },
+    "knowledge.btd6_round_cash_r_shorthand_bug_0004": {
+        26932.0: "user-input: the stated cash held after r53",
+        71315.2: "distractor: BUG-0004 from-round-1 cumulative mislabel (truth $56,318.70)",
+    },
+    "knowledge.btd6_abr_range_cash_bug_0010": {
+        5443.0: "user-input: the stated starting cash ('started with 5443')",
+        107164.6: "distractor: BUG-0010 standard-set range given as the ABR answer",
+    },
+    "knowledge.btd6_elite_lych_hp_bug_0002": {
+        14000.0: "distractor: STANDARD Lych T1 HP presented as the elite value",
+        52500.0: "distractor: STANDARD Lych T2 HP presented as the elite value",
+        220000.0: "distractor: STANDARD Lych T3 HP presented as the elite value",
+        525000.0: "distractor: STANDARD Lych T4 HP presented as the elite value",
+        2100000.0: "distractor: STANDARD Lych T5 HP presented as the elite value",
+    },
+    "knowledge.btd6_despo_bulk_cost_bug_0003": {
+        10041.0: "distractor: '10 041' misread as the quantity 10,041 (truth: ten 0-4-1)",
+    },
+}
+
+
+def _case_numbers(case: object) -> set[float]:
+    """All numeric tokens a case asserts — rubric numbers plus every fixture
+    number across its ``tool_results`` (the two places a truth can be baked)."""
+    nums = set(_rubric_numbers(getattr(case, "grader", None)))
+    for tool_name in getattr(case, "tool_results", {}) or {}:
+        nums |= _fixture_numbers(case, tool_name)
+    return nums
+
+
+def _significant_numbers(case: object) -> set[float]:
+    """The case's asserted numbers worth accounting for (>= the threshold)."""
+    return {n for n in _case_numbers(case) if n >= _SIGNIFICANCE_THRESHOLD}
+
+
+def _anchored_numbers(case_id: str) -> set[float]:
+    """Every number anchored for ``case_id`` (Anchor + FixtureAnchor)."""
+    return {round(a.expected, 2) for a in ANCHORS if a.case_id == case_id} | {
+        round(a.expected, 2) for a in FIXTURE_ANCHORS if a.case_id == case_id
+    }
+
+
+def test_btd6_case_scope_is_non_empty():
+    """Guard the guard: the BTD6 case-id scope must actually match cases, so a
+    case-id convention change can't silently empty the whole coverage report."""
+    assert _BTD6_CASE_IDS, (
+        "no knowledge.btd6*/grounding.btd6* eval cases matched — the coverage "
+        "report would be vacuous; update _BTD6_CASE_IDS to the current convention."
+    )
+
+
+def test_anchor_coverage_allowlist_references_only_real_cases():
+    """A stale allowlist entry (renamed/removed case) is itself drift — fail loudly."""
+    missing = sorted(set(_UNANCHORED_ALLOWLIST) - set(_CASES_BY_ID))
+    assert not missing, (
+        f"Coverage allowlist references eval case id(s) that no longer exist: "
+        f"{missing}. Update _UNANCHORED_ALLOWLIST to the current case ids."
+    )
+
+
+@pytest.mark.parametrize("case_id", _BTD6_CASE_IDS)
+def test_every_significant_btd6_number_is_anchored_or_allowlisted(case_id: str):
+    """Coverage: every >= $1,000 figure a BTD6 case asserts is either anchored
+    (re-derived from the dataset) or an explicitly allowlisted distractor / input.
+
+    An un-accounted-for figure is the failure this exists to catch — a rubric or
+    fixture edit that introduced a new dollar/HP *truth* the golden set now grades
+    against with nothing re-deriving it. Resolve it by adding an Anchor (if it is a
+    derivable truth) or an _UNANCHORED_ALLOWLIST entry (a distractor / user-input)."""
+    case = _CASES_BY_ID[case_id]
+    significant = _significant_numbers(case)
+    accounted = _anchored_numbers(case_id) | set(_UNANCHORED_ALLOWLIST.get(case_id, {}))
+    unaccounted = sorted(significant - accounted)
+    assert not unaccounted, (
+        f"{case_id}: significant asserted number(s) {unaccounted} are neither "
+        f"anchored nor allowlisted. Add an Anchor (if derivable from the dataset) "
+        f"or an _UNANCHORED_ALLOWLIST entry (distractor / user-input). "
+        f"(significant={sorted(significant)}, anchored={sorted(_anchored_numbers(case_id))})"
+    )
+
+
+@pytest.mark.parametrize("case_id", sorted(_UNANCHORED_ALLOWLIST))
+def test_allowlisted_numbers_are_present_and_unanchored(case_id: str):
+    """No dead allowlist entries: each allowlisted number must still be asserted by
+    its case AND not already anchored (else it belongs in ANCHORS, not here). Stops
+    the allowlist from silently masking a number a later edit removed or anchored."""
+    significant = _significant_numbers(_CASES_BY_ID[case_id])
+    anchored = _anchored_numbers(case_id)
+    for value, reason in _UNANCHORED_ALLOWLIST[case_id].items():
+        assert value in significant, (
+            f"{case_id}: allowlisted {value} ({reason}) is no longer a significant "
+            f"asserted number — remove the stale allowlist entry. "
+            f"(significant={sorted(significant)})"
+        )
+        assert value not in anchored, (
+            f"{case_id}: allowlisted {value} ({reason}) is also anchored — drop the "
+            f"allowlist entry; the Anchor already accounts for it."
+        )
+
+
+# --------------------------------------------------------------------------- #
+# Distractor negative-anchors — the inverse of the truth anchors above. A BTD6
+# case earns its keep by REJECTING a specific wrong number; the case only stays
+# discriminating while that wrong number stays *wrong*. A data re-seed that made a
+# distractor coincide with the truth would silently gut the case (the wrong answer
+# becoming a right one) with nothing to notice. These pin that each documented
+# distractor stays distinct from the truth(s) the case asserts — and, where the
+# distractor is itself a derivable *wrong computation* (a right calculation on the
+# wrong roundset), that it keeps reproducing exactly, so the confusion the case
+# guards against stays a real, live confusion.
+# --------------------------------------------------------------------------- #
+@dataclass(frozen=True)
+class DistractorNegativeAnchor:
+    case_id: str
+    distractor: float  # the number the rubric tells the judge to REJECT
+    reason: str  # where the distractor comes from / why it tempts the model
+    must_differ_from: tuple[Callable[[], float], ...]  # truths it must NOT equal
+    derive_alias: Callable[[], float] | None = None  # the wrong computation it IS
+
+
+DISTRACTOR_NEGATIVE_ANCHORS: tuple[DistractorNegativeAnchor, ...] = (
+    # BUG-0004 — "$71,315.20" was the model's from-round-1 cumulative mislabel.
+    # It is NOT cleanly derivable (the actual cumulative rounds 1-70 is $70,665.20),
+    # so it has no alias; the guard pins that it stays distinct from BOTH truths the
+    # case asserts (the $29,386.70 range AND the $56,318.70 projected total).
+    DistractorNegativeAnchor(
+        "knowledge.btd6_round_cash_r_shorthand_bug_0004",
+        71315.2,
+        "BUG-0004 from-round-1 cumulative mislabel presented as the user's total",
+        (_range_cash(54, 70), _projected_total(26932, 54, 70)),
+    ),
+    # BUG-0010 — "$107,164.60" is the STANDARD-set range over rounds 25-83 given as
+    # the ABR answer. It IS a derivable wrong computation (right range, wrong
+    # roundset), so the alias pins it to the standard range, and must_differ_from
+    # pins it apart from the real ABR truth ($113,872.30).
+    DistractorNegativeAnchor(
+        "knowledge.btd6_abr_range_cash_bug_0010",
+        107164.6,
+        "BUG-0010 standard-set range over r25-83 given as the ABR answer",
+        (_range_cash(25, 83, "abr"),),
+        derive_alias=_range_cash(25, 83, "default"),
+    ),
+    # BUG-0002 — the STANDARD Lych per-tier HP presented as the ELITE values. Each
+    # standard tier must stay strictly below (i.e. distinct from) its elite tier, or
+    # the "standard given as elite" confusion the case rejects would evaporate.
+    DistractorNegativeAnchor(
+        "knowledge.btd6_elite_lych_hp_bug_0002",
+        14000.0,
+        "standard Lych T1 HP presented as the elite value",
+        (_elite_lych_tier(1),),
+    ),
+    DistractorNegativeAnchor(
+        "knowledge.btd6_elite_lych_hp_bug_0002",
+        52500.0,
+        "standard Lych T2 HP presented as the elite value",
+        (_elite_lych_tier(2),),
+    ),
+    DistractorNegativeAnchor(
+        "knowledge.btd6_elite_lych_hp_bug_0002",
+        220000.0,
+        "standard Lych T3 HP presented as the elite value",
+        (_elite_lych_tier(3),),
+    ),
+    DistractorNegativeAnchor(
+        "knowledge.btd6_elite_lych_hp_bug_0002",
+        525000.0,
+        "standard Lych T4 HP presented as the elite value",
+        (_elite_lych_tier(4),),
+    ),
+    DistractorNegativeAnchor(
+        "knowledge.btd6_elite_lych_hp_bug_0002",
+        2100000.0,
+        "standard Lych T5 HP presented as the elite value",
+        (_elite_lych_tier(5),),
+    ),
+)
+
+
+def test_distractor_negative_anchor_table_references_only_real_cases():
+    """A stale negative anchor (renamed/removed case) is itself drift — fail loudly."""
+    missing = sorted({a.case_id for a in DISTRACTOR_NEGATIVE_ANCHORS} - set(_CASES_BY_ID))
+    assert not missing, (
+        f"Distractor negative anchor(s) reference eval case id(s) that no longer "
+        f"exist: {missing}. Update DISTRACTOR_NEGATIVE_ANCHORS to the current ids."
+    )
+
+
+@pytest.mark.parametrize(
+    "anchor", DISTRACTOR_NEGATIVE_ANCHORS, ids=lambda a: f"{a.case_id}:{a.distractor}"
+)
+def test_distractor_stays_distinct_from_the_truth(anchor: DistractorNegativeAnchor):
+    """The core negative guard: the rejected number must not equal any truth the
+    case asserts. If a data re-seed collapses the gap, the case stops discriminating
+    and this fails — surfacing the silent loss instead of letting the eval pass a
+    now-correct 'wrong' answer."""
+    for derive in anchor.must_differ_from:
+        truth = round(derive(), 2)
+        assert round(anchor.distractor, 2) != truth, (
+            f"{anchor.case_id}: distractor {anchor.distractor} ({anchor.reason}) now "
+            f"equals a derived truth ({truth}). The data drifted so the case's "
+            f"'wrong' answer is now correct — the case no longer discriminates. "
+            f"Re-examine the case and the dataset."
+        )
+
+
+@pytest.mark.parametrize(
+    "anchor", DISTRACTOR_NEGATIVE_ANCHORS, ids=lambda a: f"{a.case_id}:{a.distractor}"
+)
+def test_distractor_is_still_rejected_by_the_rubric(anchor: DistractorNegativeAnchor):
+    """The distractor must still be named in the case's rubric — a rubric edit that
+    dropped the explicit rejection would leave the negative anchor guarding a
+    confusion the golden set no longer tests."""
+    asserted = _rubric_numbers(_CASES_BY_ID[anchor.case_id].grader)
+    assert round(anchor.distractor, 2) in asserted, (
+        f"{anchor.case_id}: distractor {anchor.distractor} ({anchor.reason}) is no "
+        f"longer present in the rubric — the case stopped rejecting it. Re-add the "
+        f"rejection or remove this negative anchor (rubric numbers: {sorted(asserted)})."
+    )
+
+
+@pytest.mark.parametrize(
+    "anchor",
+    [a for a in DISTRACTOR_NEGATIVE_ANCHORS if a.derive_alias is not None],
+    ids=lambda a: f"{a.case_id}:{a.distractor}",
+)
+def test_distractor_alias_reproduces_the_wrong_computation(
+    anchor: DistractorNegativeAnchor,
+):
+    """For a distractor that IS a derivable wrong computation (right calc, wrong
+    roundset), pin that it keeps reproducing — so the documented confusion stays a
+    live, exactly-reproducible one and a data change to the wrong-roundset figure is
+    noticed rather than silently making the distractor stop matching."""
+    assert anchor.derive_alias is not None  # narrowed by the parametrize filter
+    derived = round(anchor.derive_alias(), 2)
+    assert derived == round(anchor.distractor, 2), (
+        f"{anchor.case_id}: the wrong computation behind distractor "
+        f"{anchor.distractor} ({anchor.reason}) now yields {derived}. The distractor "
+        f"no longer reproduces from the dataset — re-derive it or update the case."
+    )
