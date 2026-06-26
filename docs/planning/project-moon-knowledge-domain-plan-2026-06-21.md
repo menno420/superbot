@@ -82,8 +82,23 @@ argument: generalising from a single example tends to produce the wrong abstract
 > source each Sinner is drawn from: Faust→Goethe, Outis→Homer's *Odyssey*, Gregor→Kafka, Rodion→
 > Dostoevsky, …), validated by `projmoon_data_service`, exposed via a typed `sinner_origins()` accessor,
 > and surfaced in the `!pm` detail card + a new **Origins** cross-reference embed (`!pm origins` + a
-> browse-panel button). Read-only/offline, no AI hot-path change. **PR 2 (the grounding path) is still
-> the next slice** (needs the Q-0086 runtime walk).
+> browse-panel button). Read-only/offline, no AI hot-path change.
+
+> **▶ Progress (2026-06-26 dispatch run, PR #1467): Slice A item 2 — the GROUNDING PATH — SHIPPED.**
+> A message that looks like a Limbus question now routes to the new **`AITask.PROJMOON_ANSWER`**
+> (`ai_task_router.classify` → `has_limbus_context`, checked after BTD6 / before video), and a thin
+> **`services/projmoon_context_service.build()`** resolves the named Limbus entities + bounded roster
+> queries into provenanced grounding fact lines that `natural_language_stage._gather_feature_facts`
+> injects as `retrieved_facts` — the BTD6 grounding seam, mirrored. **Default-preserving:** only
+> Limbus-detected messages change; the BTD6 path stays byte-identical (its faithfulness guard / refusal
+> floor are unchanged and never fire for projmoon). Offline-unit-tested (27 tests: router priority,
+> per-entity + roster grounding, ambiguous-bare-token exclusion, provenance survival, the fact cap, the
+> `_gather_feature_facts` seam). **Deliberately deferred (documented in-module):** the prose-faithfulness
+> *validation* guard (the §6 "hardest correctness risk") — this slice injects grounded facts but does
+> **not** yet post-verify the reply against them. **▶ Next:** (a) the live **Q-0086 runtime walk** (owner —
+> the gated AI stage now grounds Limbus; confirm a real Limbus Q&A grounds + reads well on both
+> providers); (b) the projmoon **faithfulness guard** follow-up; (c) Slice A item 1 — the StaticData
+> exact-number ingest; then **Slice B** — extract the shared `KnowledgeDomain` seam from BTD6 + Limbus.
 
 **Slice A (next session, 2–3 PRs):**
 1. **Ingestion:** a `scripts/fetch_pm_limbus.py` that parses the **StaticData identity JSON** (clean,

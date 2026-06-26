@@ -73,6 +73,13 @@ _ACK_UNCOVERED_TASKS = frozenset(
         "MODERATION_ASSIST",
         "PLATFORM_EXPLAIN_CONSISTENCY",
         "PLATFORM_EXPLAIN_STATUS",
+        # Project Moon (Limbus) grounding path (PR 2, 2026-06-26): the grounding
+        # FACT-building is covered by tests/unit/services/projmoon/ + the router /
+        # _gather_feature_facts unit pins. The live model-eval case is deferred to
+        # the Q-0086 runtime walk + the projmoon faithfulness-guard follow-up
+        # (the BTD6-style answer verification this slice does not yet add), so it
+        # is acknowledged here to keep the task surface exactly partitioned.
+        "PROJMOON_ANSWER",
         "SETTINGS_EXPLAIN",
         "SETTINGS_PROPOSE",
         "SETUP_EXPLAIN",

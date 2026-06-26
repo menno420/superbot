@@ -953,10 +953,19 @@ async def _gather_bot_knowledge_blocks(
 async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
     """Hand off to the feature owner for fact retrieval.
 
-    BTD6 routes through btd6_context_service; VIDEO tasks through
-    youtube_context_service (feature-flag gated).  Other tasks return
-    empty facts and the gateway answers from the instruction stack alone.
+    BTD6 routes through btd6_context_service; Project Moon (Limbus) through
+    projmoon_context_service; VIDEO tasks through youtube_context_service
+    (feature-flag gated).  Other tasks return empty facts and the gateway
+    answers from the instruction stack alone.
     """
+    if req.task is AITask.PROJMOON_ANSWER:
+        # Limbus grounding is read-only over committed fixtures (sync, no I/O);
+        # absence of a named entity is routine, so an empty context just lets the
+        # model answer from the instruction stack (same as the GENERAL path).
+        from services import projmoon_context_service
+
+        ctx_pm = projmoon_context_service.build(req.text)
+        return FeatureFactsResult(facts=tuple(ctx_pm.facts))
     if req.task is AITask.BTD6_ANSWER:
         from services import btd6_context_service
 
