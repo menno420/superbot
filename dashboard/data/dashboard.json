@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-25T23:32:44Z",
+    "generated_at": "2026-06-26T05:28:48Z",
     "build": {
-      "commit": "4e662f5f",
-      "subject": "Merge pull request #1464 from menno420/claude/xp-config-card-strand-fix",
-      "committed_at": "2026-06-25T23:32:44Z"
+      "commit": "5b9979ce",
+      "subject": "Merge pull request #1467 from menno420/claude/funny-franklin-1f76uv",
+      "committed_at": "2026-06-26T05:28:48Z"
     },
     "counts": {
       "functions": 43,
@@ -2529,6 +2529,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-26-projmoon-grounding-path.md",
+      "date": "2026-06-26",
+      "title": "2026-06-26 — Project Moon (Limbus) grounding path (PR 2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-26-btd6-eval-anchor-coverage.md",
+      "date": "2026-06-26",
+      "title": "Session — 2026-06-26 · BTD6 eval-anchor coverage + distractor negative-anchor guard",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-25-xp-config-card-strand-fix.md",
       "date": "2026-06-25",
       "title": "2026-06-25 — XP hub: clear stranded rank card on Configure (BUG-0025 third instance)",
@@ -2991,22 +3007,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-23-u3-games-hubchildbutton.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — U3 Games hub child-button migration onto shared `HubChildButton`",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-23-u2-roles-inplace-nav.md",
-      "date": "2026-06-23",
-      "title": "2026-06-23 — U2 Roles & access panels: in-place nav + temproles reachability",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
