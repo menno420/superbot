@@ -116,6 +116,13 @@ Current broad captures:
   the marker is the latest merged PR, the `band-#M` label matches the cadence boundary the trigger issue
   crossed, and the linked pass doc is the single `plan`-badged one — folds into the ledger-checker parse and
   catches the conflation at the root. Joins the reconciliation-tooling cluster above. Subsystem: S4/S3 tooling.
+- [`dispatch-menu-suppress-shipped-lanes-2026-06-26.md`](./dispatch-menu-suppress-shipped-lanes-2026-06-26.md) —
+  **dispatch-tooling idea (2026-06-26, groomed from the #1477 left-open note):** `check_sector_next_freshness`
+  catches a `▶ Next` linking a shipped (`historical`) plan at *session close*; `dispatch_menu.py` has no such
+  guard at the *pick*, so a roadmap `Now`/`Next` whose plan already shipped is still offered. A naive port
+  over-suppresses (roadmap bullets link multiple plans, some shipped-as-context), so it needs a `▶ [operative-plan]`
+  convention first; then dispatch_menu reads only the operative link's status and suppresses shipped lanes.
+  Pick-time + close-time double coverage of the same drift class. Subsystem: S3 dispatch tooling.
 - [`subsystem-inventory-homed-guard-2026-06-23.md`](./subsystem-inventory-homed-guard-2026-06-23.md) —
   **workflow idea (2026-06-23, Q-0089, ultracode-map session):** four mapping agents verified the repo's own
   inventory docs lag source — `repo-navigation-map.md`'s cheat-sheet table omits **18 shipped cogs** (54 in

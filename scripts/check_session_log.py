@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.10
 """Session-log completeness checker — the Q-0089 / Q-0102 session-enders, enforced.
 
+[session-close-gate] Invoked from ``/session-close`` Step 4 (``check_session_close_gate.py`` enforces that this stays wired in).
+
 The session workflow requires every session to end with a `.sessions/<date>-<slug>.md`
 log that carries:
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.10
 """Flag per-sector ``▶ Next`` items that point at already-shipped plans.
 
+[session-close-gate] Invoked from ``/session-close`` Step 4 (``check_session_close_gate.py`` enforces that this stays wired in).
+
 Provenance / reliability header (per CLAUDE.md Q-0105 adopt-with-kill-switch):
 - Why: ``docs/current-state/S*.md`` are the *freshness* layer — the dispatch routine
   reads a sector's ``▶ Next startable`` to pick the next slice. When a ``▶ Next`` item
@@ -14,7 +16,8 @@ Provenance / reliability header (per CLAUDE.md Q-0105 adopt-with-kill-switch):
   output against ground truth over a few sessions before trusting it. **Delete this script
   if it proves noisy/unreliable over multiple sessions**; it is a disposable convenience
   guard, not load-bearing. It is intentionally NOT wired into CI (ask-first per the
-  autonomy boundary) — run it by hand or from the docs-reconciliation routine.
+  autonomy boundary), but it IS run at session close — wired into ``/session-close`` Step 4
+  (#1477) — and from the docs-reconciliation routine.
 
 What it checks (read-only; exits 1 on any finding, 0 when clean):
 - For each ``docs/current-state/S*.md`` sector file, isolate the ``▶ Next`` section(s)

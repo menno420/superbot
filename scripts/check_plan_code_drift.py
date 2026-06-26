@@ -2,6 +2,8 @@
 """check_plan_code_drift.py — flag planning docs still badged ``plan`` whose
 implementation already exists in ``disbot/`` (the "shipped-but-not-rebadged" drift class).
 
+[session-close-gate] Invoked from ``/session-close`` Step 4 (``check_session_close_gate.py`` enforces that this stays wired in).
+
 PROVENANCE / RELIABILITY (owner-directed 2026-06-19, router Q-0181):
     Why: a ``plan``-badged doc whose code already shipped silently misleads the next
     agent into rebuilding it or mis-prioritising — the exact A3/A4 miss the 2026-06-19
