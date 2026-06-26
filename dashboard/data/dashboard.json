@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-26T20:33:25Z",
+    "generated_at": "2026-06-26T23:27:30Z",
     "build": {
-      "commit": "751fc65c",
-      "subject": "Merge pull request #1477 from menno420/claude/franklin-sessionclose-freshness",
-      "committed_at": "2026-06-26T20:33:25Z"
+      "commit": "00dee225",
+      "subject": "Merge pull request #1479 from menno420/claude/funny-franklin-kmsak8",
+      "committed_at": "2026-06-26T23:27:30Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 144,
+      "ideas": 145,
       "bugs": 25,
       "reviews": 0,
       "reviews_open": 0,
@@ -1157,6 +1157,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "dispatch-menu-suppress-shipped-lanes-2026-06-26.md",
+      "title": "Idea — let `dispatch_menu.py` suppress already-shipped lanes at the dispatch pick",
+      "status": "ideas",
+      "date": "2026-06-26",
+      "summary": "`scripts/check_sector_next_freshness.py` (#1476/#1477) catches a per-sector `▶ Next` in",
+      "subsystems": null
+    },
     {
       "file": "reconcile-trigger-band-consistency-guard-2026-06-26.md",
       "title": "Idea — a `reconcile`-issue ↔ marker band-consistency guard",
@@ -2545,6 +2553,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-26-session-close-gate-metacheck.md",
+      "date": "2026-06-26",
+      "title": "2026-06-26 — Meta-check: every \"run-at-close\" checker must be wired into /session-close",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-26-sector-next-freshness-guard.md",
       "date": "2026-06-26",
       "title": "2026-06-26 — Sector ▶ Next freshness guard (S3 mechanism)",
@@ -3004,14 +3020,6 @@
       "file": "2026-06-24-bot-migration-assistant-plan.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · bot-migration-assistant plan",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-bot-migration-assistant-idea.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · capture owner idea: bot-migration assistant",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
