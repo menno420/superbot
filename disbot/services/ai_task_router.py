@@ -18,6 +18,7 @@ from dataclasses import dataclass
 
 from core.runtime.ai.contracts import AITask
 from utils.btd6.keywords import BTD6_CONTEXT_KEYWORDS, degree_in_text
+from utils.projmoon.keywords import has_limbus_context
 
 _YOUTUBE_URL_RE = re.compile(
     r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
@@ -375,6 +376,17 @@ def classify(
             route="btd6.answer",
             confidence=0.6,
             via_conversation_cue=via_cue,
+        )
+    # Project Moon (Limbus) — checked AFTER BTD6 (BTD6 keywords never collide
+    # with the distinctive Limbus tokens) so a Limbus question reaches the
+    # projmoon grounding path. ``has_limbus_context`` is curated to avoid
+    # over-routing (no bare Sin/status words), so this is a low-false-positive
+    # route; standalone non-Limbus chatter stays general.
+    if has_limbus_context(message_text or ""):
+        return RoutedTask(
+            task=AITask.PROJMOON_ANSWER,
+            route="projmoon.answer",
+            confidence=0.6,
         )
     url_count = _count_youtube_urls(message_text or "")
     if url_count >= 2:

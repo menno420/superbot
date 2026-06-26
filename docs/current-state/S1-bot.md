@@ -124,11 +124,16 @@
   follow-on SHIPPED 2026-06-25** (dispatch run, PR #1456): each of the 12 Sinners now carries its
   canonical **`literary_origin`** (the work + author it is drawn from — Faust→Goethe, Outis→Homer,
   Gregor→Kafka, …), rendered in the `!pm` detail card + a new **Origins** cross-reference view
-  (`!pm origins` + a panel button). Still read-only/offline. ▶ **Next: PR 2** —
-  wire `AITask.PROJMOON_ANSWER` + grounding into `core/runtime/ai/natural_language_stage.py` (reuse the
-  tag/cap/provenance render + faithfulness guard), **flagged for a Q-0086 runtime walk** (touches the
-  gated AI stage). Then Slice B = extract the shared `KnowledgeDomain` seam from BTD6 + Limbus + exact
-  StaticData numbers ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
+  (`!pm origins` + a panel button). Still read-only/offline. **PR 2 — the GROUNDING PATH — SHIPPED
+  2026-06-26** (dispatch run, PR #1467): a Limbus-looking message now routes to the new
+  **`AITask.PROJMOON_ANSWER`** (`ai_task_router` → `has_limbus_context`, after BTD6 / before video) and a
+  thin `services/projmoon_context_service.build()` injects provenanced Limbus grounding facts (named
+  entities + bounded roster queries) into `natural_language_stage._gather_feature_facts` —
+  default-preserving (BTD6 path byte-identical), offline-unit-tested. ▶ **Next:** the live **Q-0086
+  runtime walk** (owner — confirm a real Limbus Q&A grounds well on both providers) + the projmoon
+  **faithfulness guard** follow-up + Slice A item 1 (StaticData exact-number ingest); then **Slice B** =
+  extract the shared `KnowledgeDomain` seam from BTD6 + Limbus
+  ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
 - **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
   (PR 1 foundation shipped; [plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)).
 

@@ -29,6 +29,10 @@ class AITask(str, Enum):
     # M2 — central natural-language orchestrator routes per task.
     BTD6_ANSWER = "btd6.answer"
     GENERAL_NL_ANSWER = "general.nl_answer"
+    # Project Moon (Limbus) knowledge domain — a message that looks like a
+    # Limbus question routes here so the projmoon grounding facts are injected
+    # (the BTD6_ANSWER analogue for KnowledgeDomain instance #1).
+    PROJMOON_ANSWER = "projmoon.answer"
     # M4 — strategy submission review (AI extracts + validates;
     # publishing requires staff confirmation).
     BTD6_STRATEGY_REVIEW = "btd6.strategy_review"
