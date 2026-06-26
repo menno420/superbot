@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-8za1rx` · scope: Project Moon (Limbus) faithfulness guard · area: `disbot/services/projmoon_grounding_service.py` (new) + `disbot/core/runtime/ai/natural_language_stage.py` + tests · 2026-06-26
