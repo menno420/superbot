@@ -82,6 +82,7 @@ INITIAL_EXTENSIONS = [
     "cogs.diagnostic_cog",
     "cogs.health_maintenance_cog",
     "cogs.ai_cog",
+    "cogs.ai_review_cog",
     "cogs.media_maintenance_cog",
     "cogs.btd6_cog",
     "cogs.btd6_reference_cog",

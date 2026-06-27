@@ -331,6 +331,19 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "aireview",
+    "area": "other",
+    "status": "finished",
+    "summary": "Show the AI review-log status (channel + unreviewed backlog).",
+    "description": "Show the AI review-log status (channel + unreviewed backlog).",
+    "usage": "!aireview",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "anchors",
     "area": "other",
     "status": "finished",
@@ -1132,6 +1145,21 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
+    "planned": []
+  },
+  {
+    "name": "channel",
+    "area": "other",
+    "status": "finished",
+    "summary": "Set the review channel: ``!aireview channel #chan``.",
+    "description": "Set the review channel: !aireview channel #chan.",
+    "usage": "!channel",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!aireview channel #chan"
+    ],
     "planned": []
   },
   {
@@ -3522,8 +3550,8 @@ const COMMANDS = [
     "name": "off",
     "area": "other",
     "status": "finished",
-    "summary": "Disable the starboard (config is preserved).",
-    "description": "Disable the starboard (config is preserved).",
+    "summary": "Clear the review channel (entries are still recorded + queryable).",
+    "description": "Clear the review channel (entries are still recorded + queryable).",
     "usage": "!off",
     "aliases": [],
     "permissions": "anyone",
@@ -4225,6 +4253,21 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
+    "planned": []
+  },
+  {
+    "name": "resolve",
+    "area": "other",
+    "status": "finished",
+    "summary": "Mark one review entry reviewed: ``!aireview resolve <id>``.",
+    "description": "Mark one review entry reviewed: !aireview resolve <id>.",
+    "usage": "!resolve",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!aireview resolve <id>"
+    ],
     "planned": []
   },
   {
@@ -6841,7 +6884,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "50165ff0",
+    "build": "30ef3cd",
     "title": "New public bot website",
     "changes": [
       {
@@ -6853,7 +6896,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "50165ff0",
+    "build": "30ef3cd",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6865,7 +6908,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "50165ff0",
+    "build": "30ef3cd",
     "title": "Command-alias suggestions",
     "changes": [
       {

@@ -42,6 +42,7 @@ from services import (
     ai_instruction_service,
     ai_natural_language_policy,
     ai_permission_service,
+    ai_review_log_service,
     ai_task_router,
 )
 from services.ai_natural_language_policy import MessageContext
@@ -605,6 +606,17 @@ class AINaturalLanguageStage:
                     list(stack.instruction_profile_ids) if "stack" in locals() else None
                 ),
             )
+            await ai_review_log_service.record_unknown(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                reason_code="errored",
+                question=raw_text,
+                answer=None,
+            )
             return StageResult()
 
         reply_text = (response.text or "").strip()
@@ -643,6 +655,19 @@ class AINaturalLanguageStage:
                 reason_code=audit_reason,
                 policy_snapshot_hash=decision.policy_snapshot_hash,
                 instruction_profile_ids=list(stack.instruction_profile_ids) or None,
+                provider=response.provider or None,
+                model=response.model or None,
+            )
+            await ai_review_log_service.record_unknown(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                reason_code=getattr(audit_reason, "value", str(audit_reason)),
+                question=raw_text,
+                answer=None,
                 provider=response.provider or None,
                 model=response.model or None,
             )
@@ -762,6 +787,19 @@ class AINaturalLanguageStage:
                         provider=response.provider or None,
                         model=response.model or None,
                     )
+                    await ai_review_log_service.record_unknown(
+                        guild_id=guild_id,
+                        channel_id=channel_id,
+                        user_id=user_id,
+                        message_id=message.id,
+                        task=routed.task.value,
+                        route=routed.route,
+                        reason_code=getattr(floor_reason, "value", str(floor_reason)),
+                        question=raw_text,
+                        answer=reply_text,
+                        provider=response.provider or None,
+                        model=response.model or None,
+                    )
                     ctx.metadata["handled_by"] = STAGE_NAME
                     return StageResult(short_circuit=True)
 
@@ -843,6 +881,19 @@ class AINaturalLanguageStage:
                         provider=response.provider or None,
                         model=response.model or None,
                     )
+                    await ai_review_log_service.record_unknown(
+                        guild_id=guild_id,
+                        channel_id=channel_id,
+                        user_id=user_id,
+                        message_id=message.id,
+                        task=routed.task.value,
+                        route=routed.route,
+                        reason_code=getattr(pm_reason, "value", str(pm_reason)),
+                        question=raw_text,
+                        answer=reply_text,
+                        provider=response.provider or None,
+                        model=response.model or None,
+                    )
                     ctx.metadata["handled_by"] = STAGE_NAME
                     return StageResult(short_circuit=True)
 
@@ -871,9 +922,10 @@ class AINaturalLanguageStage:
             )
             rendered = None
 
+        sent_message: discord.Message | None = None
         try:
             if rendered is not None:
-                await message.channel.send(
+                sent_message = await message.channel.send(
                     content=rendered.content,
                     embed=rendered.embed,
                     allowed_mentions=rendered.allowed_mentions
@@ -886,11 +938,14 @@ class AINaturalLanguageStage:
                 # send if the original was deleted mid-flight.
                 reference = message.to_reference(fail_if_not_exists=False)
                 for index, chunk in enumerate(_split_for_discord(reply_text)):
-                    await message.channel.send(
+                    sent = await message.channel.send(
                         chunk,
                         allowed_mentions=discord.AllowedMentions.none(),
                         reference=reference if index == 0 else None,
                     )
+                    # Remember the first chunk — the message users reply to.
+                    if index == 0:
+                        sent_message = sent
         except discord.HTTPException:
             logger.exception(
                 "ai_natural_language_stage: send failed for guild=%s "
@@ -956,6 +1011,24 @@ class AINaturalLanguageStage:
             provider=response.provider or None,
             model=response.model or None,
         )
+
+        # Remember this answer so a later 👎 / correction-reply on it can be
+        # recovered with its original question (cogs/ai_review_cog.py). Pure
+        # in-memory + fail-safe; never disturbs the reply path.
+        if sent_message is not None:
+            ai_review_log_service.remember_answer(
+                sent_message.id,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                message_id=message.id,
+                question=raw_text,
+                answer=reply_text,
+                task=routed.task.value,
+                route=routed.route,
+                provider=response.provider or None,
+                model=response.model or None,
+            )
 
         ctx.metadata["handled_by"] = STAGE_NAME
         return StageResult(short_circuit=True)

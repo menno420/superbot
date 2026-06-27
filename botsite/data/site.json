@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T03:11:26Z",
+    "generated_at": "2026-06-27T09:45:00Z",
     "build": {
-      "commit": "50165ff0",
-      "subject": "session: open born-red card — games-economy faucet/sink timeseries (+ inflation finding)",
-      "committed_at": "2026-06-27T03:11:26Z"
+      "commit": "30ef3cd",
+      "subject": "ai-review-log: capture AI didn't-know outcomes + user corrections",
+      "committed_at": "2026-06-27T09:45:00Z"
     }
   },
   "counts": {
-    "commands": 449,
+    "commands": 454,
     "features": 43,
     "games": 12
   },
@@ -10309,6 +10309,20 @@
       "notes": null
     },
     {
+      "name": "aireview",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Show the AI review-log status (channel + unreviewed backlog).",
+      "description": "Show the AI review-log status (channel + unreviewed backlog).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "anchors",
       "aliases": [],
       "category": "other",
@@ -10437,6 +10451,22 @@
       "description": "Show your (or another trainer's) creature PvP win/loss record.",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "channel",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Set the review channel: ``!aireview channel #chan``.",
+      "description": "Set the review channel: !aireview channel #chan.",
+      "use_cases": null,
+      "examples": [
+        "!aireview channel #chan"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
@@ -10701,6 +10731,22 @@
       "notes": null
     },
     {
+      "name": "list",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "List recent entries: ``!aireview list [unknown|correction] [n]``.",
+      "description": "List recent entries: !aireview list [unknown|correction] [n].",
+      "use_cases": null,
+      "examples": [
+        "!aireview list [unknown|correction] [n]"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "locks",
       "aliases": [],
       "category": "other",
@@ -10736,6 +10782,20 @@
       "permissions": "",
       "usage": "Platform migration checkpoints (Phase 2 PR-5) — status + summary.",
       "description": "Platform migration checkpoints (Phase 2 PR-5) — status + summary.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "off",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Clear the review channel (entries are still recorded + queryable).",
+      "description": "Clear the review channel (entries are still recorded + queryable).",
       "use_cases": null,
       "examples": [],
       "status": "finished",
@@ -10824,6 +10884,22 @@
       "description": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5).",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "resolve",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Mark one review entry reviewed: ``!aireview resolve <id>``.",
+      "description": "Mark one review entry reviewed: !aireview resolve <id>.",
+      "use_cases": null,
+      "examples": [
+        "!aireview resolve <id>"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null

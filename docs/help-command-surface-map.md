@@ -23,7 +23,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 42 of the 57 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+- 42 of the 58 loaded extensions (`config.INITIAL_EXTENSIONS`) define
   `build_help_menu_view` — equivalently, 41 of the 42 subsystem-owning
   cogs expose it. The 15 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
@@ -96,7 +96,7 @@ so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 ## 2. Subsystem inventory
 
 43 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 57 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+each below); 58 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 15 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route

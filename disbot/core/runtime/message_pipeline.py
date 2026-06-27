@@ -52,6 +52,7 @@ order       tier   stage (constant)                           short-circuits?
 30          rewards    xp         (``XP_STAGE_ORDER``)         no
 40          rewards    rps        (``RPS_STAGE_ORDER``)        no
 50          passive    four_twenty(``FOUR_TWENTY_STAGE_ORDER``) no
+55          passive    ai_correction(``AI_CORRECTION_STAGE_ORDER``) no
 70          conv.      ai_nl      (``ai…STAGE_ORDER``)         on bot mention
 80          conv.      btd6       (``btd6…STAGE_ORDER``)       on handle
 ==========  =====  =========================================  ============
