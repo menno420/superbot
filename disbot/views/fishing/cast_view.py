@@ -123,6 +123,10 @@ async def prepare_cast(
             f" · {start.bait_used.emoji} {start.bait_used.name} "
             f"({start.bait_charges_left} left)"
         )
+    if start.fishing_gear_bonus:
+        # Equipped fishing gear is biasing this cast (rarer catches + quicker
+        # bites) — its stats are already folded into the roll / bite speed.
+        footer += " · 🎣 fishing gear"
     embed.set_footer(text=footer)
     return embed, view
 

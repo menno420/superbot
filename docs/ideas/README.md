@@ -38,11 +38,11 @@ Current broad captures:
   named" — making the planning-vs-reality gap legible across bands. The manual precursor to E3 (the
   planned-slice hit-rate tracker). Subsystem: S4 docs-system.
 - [`fishing-gear-stats-2026-06-27.md`](./fishing-gear-stats-2026-06-27.md) —
-  **captured 2026-06-27 (dispatch run, alongside gear-loadout-presets #1499):** the loadout-swap half of
-  the unified-loadout vision (Q-0175) shipped, but matching gear has nothing to bias — `EffectiveStats`
-  models only mining + combat stats. Add a `fishing_power`/`bite_luck` stat + a few fishing gear items
-  and read it as a 4th cast knob (rod × bait × weather × gear), turning loadout presets from convenience
-  into a real optimisation. Reuses the cross-game `EffectiveStats` seam. Subsystem: games (mining/fishing).
+  **✅ BUILT 2026-06-27 (#1504, dispatch run):** the Q-0175 "matching gear → better fishing" half.
+  `EffectiveStats` gained `fishing_power`/`bite_luck`, a CHARM-slot fishing-charm ladder + gear-shop rows,
+  the pure converter `utils/fishing/gear.py`, and `begin_cast` now folds them in as the 4th cast knob
+  (rod × bait × weather × gear) — turning the loadout presets (#1499) from convenience into a real
+  optimisation, reusing the cross-game `EffectiveStats` seam. Subsystem: games (mining/fishing).
 - [`cog-routing-enforcement-gap-2026-06-27.md`](./cog-routing-enforcement-gap-2026-06-27.md) —
   **surfaced 2026-06-27 (PR #1496):** the per-feature, per-channel command toggle system (`cog_routing`)
   is configurable but **not wired to runtime enforcement** — `is_cog_enabled` is read only by the

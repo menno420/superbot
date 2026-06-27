@@ -28,6 +28,18 @@ _LURE = bait_mod.bait_by_key("lure")
 _SPINNER = bait_mod.bait_by_key("spinner")  # a pure speed bait (bite_speed < 1)
 
 
+@pytest.fixture(autouse=True)
+def _no_fishing_gear():
+    """Default the cast's gear reads (Q-0175 4th knob) to empty so the bait-layer
+    assertions stay rod×bait-only — fishing gear is exercised in
+    ``test_fishing_workflow.py``. Tests that need gear can re-patch these."""
+    with (
+        patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+    ):
+        yield
+
+
 # ---------------------------------------------------------------------------
 # get_active_bait — key → Bait resolution
 # ---------------------------------------------------------------------------

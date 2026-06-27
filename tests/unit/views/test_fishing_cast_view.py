@@ -509,6 +509,40 @@ async def test_prepare_cast_threads_effective_bite_speed_into_the_view():
     assert view._bite_speed == 0.36
 
 
+@pytest.mark.asyncio
+async def test_prepare_cast_shows_a_fishing_gear_footer_note_when_geared():
+    from views.fishing.cast_view import prepare_cast
+
+    start = fishing_workflow.CastStart(
+        ok=True,
+        cast=_ORDINARY,
+        rod=rods.STARTER,
+        energy_current=9,
+        fishing_gear_bonus=True,
+    )
+    with patch(
+        "views.fishing.cast_view.fishing_workflow.begin_cast",
+        AsyncMock(return_value=start),
+    ):
+        embed, _ = await prepare_cast(1, 99)
+    assert "fishing gear" in (embed.footer.text or "")
+
+
+@pytest.mark.asyncio
+async def test_prepare_cast_omits_the_gear_note_without_fishing_gear():
+    from views.fishing.cast_view import prepare_cast
+
+    start = fishing_workflow.CastStart(
+        ok=True, cast=_ORDINARY, rod=rods.STARTER, energy_current=9
+    )
+    with patch(
+        "views.fishing.cast_view.fishing_workflow.begin_cast",
+        AsyncMock(return_value=start),
+    ):
+        embed, _ = await prepare_cast(1, 99)
+    assert "fishing gear" not in (embed.footer.text or "")
+
+
 # ---------------------------------------------------------------------------
 # prepare_cast — the shared cast-launch helper
 # ---------------------------------------------------------------------------

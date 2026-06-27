@@ -1,7 +1,15 @@
 # Idea — Fishing-specific gear stats (make loadout presets a real optimisation)
 
-> **Status:** `ideas` · captured 2026-06-27 (dispatch run, alongside the gear-loadout-presets ship #1499).
+> **Status:** `historical` — **built** 2026-06-27 (dispatch run, PR #1504) · captured 2026-06-27
+> (dispatch run, alongside the gear-loadout-presets ship #1499).
 > **Lane:** S1 bot product · games/mining-fishing. **Size:** small–medium, offline-buildable.
+>
+> **Shipped 2026-06-27 (#1504):** `EffectiveStats` gained `fishing_power` + `bite_luck` (additive,
+> default-0), a CHARM-slot fishing-charm ladder (fishing/anglers/master-angler charm) in
+> `utils/equipment.py` + the gear shop, the pure converter `utils/fishing/gear.py`
+> (`fishing_pull_mult` / `fishing_bite_speed_mult`, bounded), and `fishing_workflow.begin_cast` now
+> folds them into the cast as the 4th knob (rod × bait × weather × **gear**). Numbers sim-pinned in
+> [`../planning/fishing-gear-numbers-2026-06-27.md`](../planning/fishing-gear-numbers-2026-06-27.md).
 
 ## The gap
 
