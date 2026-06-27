@@ -68,6 +68,11 @@ GLOBAL_RESET_HOOKS: tuple[tuple[str, str], ...] = (
     # No import-time registration — wiping to zero each test is baseline-safe
     # and prevents cross-file counter leakage under parallel runs.
     ("services.youtube_diagnostics", "_reset_for_tests"),
+    # AI review-log answer registry (reply_message_id → remembered Q&A for
+    # correction matching). Empty-at-import map, no import-time registration —
+    # wiping each test is baseline-safe and prevents a remembered answer in one
+    # test from matching a correction in another under parallel runs.
+    ("services.ai_review_log_service", "_reset_for_tests"),
 )
 
 # feature_flags is global too, but its _reset_for_tests() *wipes* an

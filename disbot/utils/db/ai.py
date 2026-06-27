@@ -632,7 +632,7 @@ async def query_decisions(
 async def delete_for_guild(guild_id: int) -> int:
     """Drop every AI-platform row for ``guild_id``.
 
-    Returns the total deleted row count across the six tables. The
+    Returns the total deleted row count across the seven tables. The
     ``ai_instruction_profile`` rows with ``guild_id IS NULL`` (built-in
     / global profiles) are preserved.
     """
@@ -640,6 +640,7 @@ async def delete_for_guild(guild_id: int) -> int:
     total = 0
     for sql in (
         "DELETE FROM ai_decision_audit WHERE guild_id = $1",
+        "DELETE FROM ai_review_log WHERE guild_id = $1",
         "DELETE FROM ai_role_policy WHERE guild_id = $1",
         "DELETE FROM ai_category_policy WHERE guild_id = $1",
         "DELETE FROM ai_channel_policy WHERE guild_id = $1",

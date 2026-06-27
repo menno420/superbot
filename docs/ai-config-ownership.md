@@ -97,6 +97,7 @@ projected scalar and upserts them into `ai_guild_policy` in a single
 |---|---|
 | `ai_memory_window_minutes` | Legitimately scalar — memory is in-process per-process state; no typed-table equivalent exists or is planned. `services.ai_memory_service.read_memory_settings` reads it directly. |
 | `ai_memory_channel_scan_enabled` | Same as above. |
+| `ai_review_channel` | Legitimately scalar — a per-guild channel pointer for the AI answer review log (set via `!aireview channel`). No typed-table equivalent; `services.ai_review_log_service.set_review_channel` is the sole writer and `core.runtime.guild_resources.resolve_settings_channel` reads it. |
 | `ai_guild_instruction_profile` | Stores a free-text instruction body. The typed-table editor in the Behavior chooser is the authoritative write path; the scalar is retained for backcompat reads only and is hidden from the primary settings panel. |
 
 The projection-drift indicator on the snapshot (`projection.drift`,

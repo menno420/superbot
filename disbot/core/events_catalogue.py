@@ -210,6 +210,16 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "ai.orchestration.guild_changed",
         "ai.orchestration.channel_changed",
         "ai.orchestration.category_changed",
+        # ── AI answer review log (services/ai_review_log_service.py) ──────
+        # Emitted after a review entry is recorded — a "didn't-know" outcome
+        # (the natural-language stage could not answer) or a user correction
+        # (👎 / correction-reply on a bot AI answer). cogs/ai_review_cog.py
+        # subscribes to post the entry to the guild's configured review
+        # channel. Payload: entry_id, guild_id, channel_id, user_id, kind,
+        # reason_code, task, route, question, answer, correction, corrected_by,
+        # provider, model — all text already redacted. Subscriber failure is
+        # logged + swallowed; the DB row is authoritative.
+        "ai.review_logged",
         # ── BTD6 (services/btd6_patch_service.py) ────────────────────────
         # Advisory. Emitted when patch-notes ingestion writes a BTD6
         # version strictly newer than the previously-stored latest (never

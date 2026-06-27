@@ -1,1 +1,0 @@
-- `claude/ai-answer-logging-lp1ehd` · **AI answer review-log** — log AI "didn't-know" outcomes + user corrections to a reviewable store (dedicated channel + queryable log) · `disbot/services/ai_review_log_service.py` `disbot/cogs/ai_review_cog.py` `disbot/migrations/100_ai_review_log.sql` `disbot/core/runtime/ai/natural_language_stage.py` · 2026-06-27 · PR pending
