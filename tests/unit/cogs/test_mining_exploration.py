@@ -186,3 +186,52 @@ def test_explore_from_state_default_biome_is_surface():
         equipped, {}, biome=exp.Biome.SURFACE, rng=random.Random(3)
     )
     assert default == explicit
+
+
+# --- luck → rare-find weighting (BUG-0026 wiring) --------------------------
+
+
+def test_luck_weighting_is_identity_at_zero():
+    # No luck gear → selection weights are byte-identical to the base weights
+    # (the additive safety property — a luckless player rolls exactly as before).
+    from utils.mining.exploration import _luck_weighted
+
+    cands = list(exp.CATALOG)
+    assert _luck_weighted(cands, 0) == [o.weight for o in cands]
+    assert _luck_weighted(cands, -2) == [o.weight for o in cands]
+
+
+def test_luck_boosts_by_rarity_common_flat_legendary_most():
+    # Per point of luck the weight multiplier rises with rarity; Common stays flat.
+    from utils.mining.exploration import _luck_weighted
+
+    by_rarity = {o.rarity: o for o in exp.CATALOG}
+    cands = [
+        by_rarity[exp.Rarity.COMMON],
+        by_rarity[exp.Rarity.UNCOMMON],
+        by_rarity[exp.Rarity.RARE],
+        by_rarity[exp.Rarity.LEGENDARY],
+    ]
+    base = [o.weight for o in cands]
+    ratios = [b / w for b, w in zip(_luck_weighted(cands, 1), base)]
+    assert ratios[0] == 1.0  # Common unchanged
+    assert 1.0 < ratios[1] < ratios[2] < ratios[3]  # rarer → bigger boost
+
+
+def test_luck_increases_rare_find_frequency_end_to_end():
+    # Through resolve(): luck makes the Cavern's rare diamond vein more frequent.
+    from utils.equipment import EffectiveStats
+
+    loadout = exp.Loadout(tools=frozenset({exp.TORCH, exp.PICKAXE}))
+
+    def diamond_hits(luck: int) -> int:
+        rng = random.Random(7)
+        return sum(
+            exp.resolve_to_legacy_tuple(
+                exp.Biome.CAVERN, loadout, stats=EffectiveStats(luck=luck), rng=rng
+            )[1]
+            == "diamond"
+            for _ in range(3000)
+        )
+
+    assert diamond_hits(3) > diamond_hits(0)

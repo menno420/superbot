@@ -22,13 +22,11 @@ from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
 from utils import db
 from utils.mining import energy, grid, world
+from utils.mining.character import character_stats
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("bot.views.mining.grid_mine_view")
-
-# Half-width of the rendered fog-of-war window (a (2·R+1)² grid around the player).
-_MAP_RADIUS = 2
 
 
 async def build_grid_embed(
@@ -43,17 +41,23 @@ async def build_grid_embed(
     depth = await db.get_depth(suid, guild_id)
     x, y = await db.get_position(suid, guild_id)
     seed = await db.get_world_seed(guild_id)
+    # A brighter equipped light widens the fog-of-war window (BUG-0026 wiring):
+    # the same radius feeds the discovered-cell query and the render so they
+    # stay in lock-step. light_radius 0-1 keeps the prior default of 2.
+    equipped = await db.get_equipment(suid, guild_id)
+    alloc = await db.get_skills(suid, guild_id)
+    radius = grid.reveal_radius(character_stats(equipped, alloc).light_radius)
     discovered = await db.get_discovered_window(
         suid,
         guild_id,
         depth,
-        x - _MAP_RADIUS,
-        x + _MAP_RADIUS,
-        y - _MAP_RADIUS,
-        y + _MAP_RADIUS,
+        x - radius,
+        x + radius,
+        y - radius,
+        y + radius,
     )
     cell = grid.cell_at(seed, x, y, depth)
-    body = grid.render_local_map(seed, x, y, depth, discovered, radius=_MAP_RADIUS)
+    body = grid.render_local_map(seed, x, y, depth, discovered, radius=radius)
 
     description = grid.describe_cell(cell)
     if note:

@@ -200,6 +200,26 @@ _FEATURE_LABEL: dict[CellFeature, str] = {
 }
 
 
+# Fog-of-war window sizing. The base half-width is what every player saw before
+# gear ``light_radius`` was wired in; a brighter light widens it so you literally
+# see more of the map at once (capped so the rendered grid stays embed-sized).
+_BASE_REVEAL_RADIUS = 2
+_MAX_REVEAL_RADIUS = 4
+
+
+def reveal_radius(light_radius: int) -> int:
+    """Half-width of the fog-of-war window for a player whose gear sums to
+    ``light_radius``.
+
+    **Non-regressive:** ``light_radius`` 0 or 1 → the base 2, so a player with no
+    light or a single torch sees exactly what they did before this stat was wired.
+    A lantern (2) → 3, a diamond lantern (3) → 4. Capped at
+    :data:`_MAX_REVEAL_RADIUS` so a future brighter light can't blow up the embed.
+    """
+    radius = _BASE_REVEAL_RADIUS + max(0, light_radius - 1)
+    return min(radius, _MAX_REVEAL_RADIUS)
+
+
 def render_local_map(
     seed: int,
     cx: int,
