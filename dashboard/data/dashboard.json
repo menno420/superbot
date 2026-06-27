@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T09:45:00Z",
+    "generated_at": "2026-06-27T12:02:08Z",
     "build": {
-      "commit": "30ef3cd",
-      "subject": "ai-review-log: capture AI didn't-know outcomes + user corrections",
-      "committed_at": "2026-06-27T09:45:00Z"
+      "commit": "b53aac6d",
+      "subject": "Merge pull request #1496 from menno420/claude/setup-wizard-coverage-8mvlyc",
+      "committed_at": "2026-06-27T12:02:08Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 146,
+      "ideas": 147,
       "bugs": 25,
       "reviews": 0,
       "reviews_open": 0,
@@ -1157,6 +1157,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "cog-routing-enforcement-gap-2026-06-27.md",
+      "title": "Wire `cog_routing` to runtime enforcement (per-feature, per-channel commands)",
+      "status": "ideas",
+      "date": "2026-06-27",
+      "summary": "The bot has a **per-feature, per-channel command toggle** system — `cog_routing` /",
+      "subsystems": null
+    },
     {
       "file": "reconcile-marker-generator-2026-06-27.md",
       "title": "Idea — generate the reconciliation marker instead of hand-writing it",
@@ -2577,6 +2585,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-27-setup-wizard-command-channels.md",
+      "date": "2026-06-27",
+      "title": "Session — 2026-06-27 · Setup wizard: \"Where can people use commands?\" (per-channel command access)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-27-reconcile-marker-band-consistency-guard.md",
       "date": "2026-06-27",
       "title": "Session — reconcile-marker band-consistency guard (+ marker conflation fix)",
@@ -3020,14 +3036,6 @@
       "file": "2026-06-24-essential-setup-restart-revive.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · Essential Setup survives restart (revive in place)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-essential-setup-logging-defer.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · Essential Setup logging step: defer before slow work",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
