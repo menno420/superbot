@@ -182,91 +182,13 @@ def towers_with_capability(
     return hits
 
 
-@dataclass(frozen=True)
-class CounterHit:
-    """One tower whose attack can damage a given bloon, and the earliest config."""
-
-    tower_id: str
-    canonical: str
-    crosspath: str  # "0-0-5"
-    damage_type: str
-
-
-def _primary_attack(tower_id: str, code: str) -> tuple[str | None, bool, float] | None:
-    """The (damage_type, sees_camo, damage) of a tier's PRIMARY projectile.
-
-    Reads ``attacks[0].projectiles[0]`` directly from the committed stats — the
-    main shot, NOT a sub-attack. (``normal_stats`` can select a secondary attack
-    for some towers — e.g. it reports the Ninja's caltrops as Normal while the
-    main shuriken is Sharp — so a "can it damage X" derivation must read the
-    primary projectile explicitly. Verified against the wiki on the subtle Sniper
-    case: Supply Drop/Elite Sniper 0-4-0+ main bullet IS Normal and pops Lead.)
-    """
-    from services import btd6_data_service
-
-    raw = btd6_data_service.read_blob(f"stats/{tower_id}.json")
-    tier = raw.get("tiers", {}).get(code) if raw else None
-    if not tier:
-        return None
-    attacks = tier.get("attacks") or []
-    if not attacks:
-        return None
-    projectiles = attacks[0].get("projectiles") or []
-    if not projectiles:
-        return None
-    proj = projectiles[0]
-    return (
-        proj.get("damage_type"),
-        not proj.get("filterInvisible", True),  # filterInvisible False → sees camo
-        float(proj.get("damage", 0) or 0),
-    )
-
-
-def towers_that_can_damage(bloon_id: str) -> list[CounterHit]:
-    """Towers whose PRIMARY attack can damage the bloon ``bloon_id``.
-
-    A tower qualifies when some single config's main shot (a) deals a damage type
-    the bloon does NOT resist (``bloon.immune_to``) and (b) detects camo if the
-    bloon is camo. Reports the earliest such config per tower. Purely derived
-    from the committed bloon ``immune_to`` (game-sourced) + the per-tier stats, so
-    it always matches the data — there is no curated list to drift. It answers
-    "which towers can damage a DDT?" (the hardest case: Lead + Black + Camo) so
-    the grounding can name verified towers instead of letting the model freelance.
-    """
-    from services import btd6_data_service
-
-    bloon = btd6_data_service.get_bloon(bloon_id)
-    if bloon is None:
-        return []
-    immune = set(bloon.immune_to or ())
-    needs_camo = "camo" in (bloon.properties or ())
-
-    hits: list[CounterHit] = []
-    for tower in btd6_data_service.get_dataset().towers:
-        stats = btd6_stats_service.get_tower_stats(tower.id)
-        if stats is None or not stats.has_combat_stats:
-            continue
-        for code in stats.tier_codes():
-            info = _primary_attack(tower.id, code)
-            if info is None:
-                continue
-            damage_type, sees_camo, damage = info
-            if (
-                damage > 0
-                and damage_type
-                and damage_type not in immune
-                and (sees_camo or not needs_camo)
-            ):
-                hits.append(
-                    CounterHit(
-                        tower_id=tower.id,
-                        canonical=tower.canonical,
-                        crosspath="-".join(code),
-                        damage_type=damage_type,
-                    ),
-                )
-                break
-    return hits
+# NOTE: an auto-derived "towers_that_can_damage(ddt)" lived here (PR #1492) but was
+# reverted — a DDT is MOAB-class and the committed stats do NOT encode MOAB-class
+# targeting (Ice 2-0-0 and 4-0-0 have byte-identical projectiles; only
+# Embrittlement's *description* says "Can hit MOAB-class"), nor config quality, so
+# the derivation recommended towers that can't actually hit a DDT (base Ice) and
+# weak configs. The correct MOAB-class subtlety is now curated prose in
+# damage_types.json instead. See docs/btd6/qa-accuracy-corpus-2026-06-27.md.
 
 
 __all__ = [
@@ -277,9 +199,7 @@ __all__ = [
     "PURPLE_POPPING",
     "WHITE_POPPING",
     "CapabilityHit",
-    "CounterHit",
     "ParagonCapabilityHit",
     "paragons_with_capability",
-    "towers_that_can_damage",
     "towers_with_capability",
 ]
