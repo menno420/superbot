@@ -274,6 +274,37 @@ def _scale_amount(outcome: ExploreOutcome, stats: equipment.EffectiveStats) -> i
     return amount
 
 
+# Per point of ``luck``, an outcome's selection weight is multiplied by
+# ``(1 + luck * boost)`` where the boost rises with rarity — luck favours
+# fortune, never junk (Common stays at base, so hazards/empty rolls fall in
+# *relative* likelihood as the rarer finds rise). Tuned small: one Lucky Charm
+# (luck 1) lifts a Rare by 40%, a Legendary by 60%; see
+# ``docs/planning/mining-luck-light-numbers-2026-06-27.md``.
+_LUCK_RARITY_BOOST: dict[Rarity, float] = {
+    Rarity.COMMON: 0.0,
+    Rarity.UNCOMMON: 0.15,
+    Rarity.RARE: 0.4,
+    Rarity.LEGENDARY: 0.6,
+}
+
+
+def _luck_weighted(
+    candidates: list[ExploreOutcome],
+    luck: int,
+) -> list[float]:
+    """Selection weights biased toward rarer finds by ``luck``.
+
+    **Byte-identical to the base weights when ``luck <= 0``** (the additive
+    safety property — a player with no luck gear rolls exactly as before).
+    """
+    if luck <= 0:
+        return [o.weight for o in candidates]
+    return [
+        o.weight * (1.0 + luck * _LUCK_RARITY_BOOST.get(o.rarity, 0.0))
+        for o in candidates
+    ]
+
+
 def resolve(
     biome: Biome,
     loadout: Loadout,
@@ -300,9 +331,8 @@ def resolve(
         )
         return ExploreResult(empty, biome, 0, empty.narration)
 
-    outcome = chooser.choices(candidates, weights=[o.weight for o in candidates], k=1)[
-        0
-    ]
+    weights = _luck_weighted(candidates, effective.luck)
+    outcome = chooser.choices(candidates, weights=weights, k=1)[0]
     final_amount = _scale_amount(outcome, effective)
     narration = outcome.narration.format(
         amount=abs(final_amount),
