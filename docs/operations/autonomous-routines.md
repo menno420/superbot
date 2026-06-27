@@ -210,7 +210,11 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     *cadence half* of the freshness loop — the dispatch routine carries the warn-only `--drift`
     reporter, this routine keeps the artifact fresh without burdening every session.
   - Reset the "Last reconciliation pass: PR #N" marker in current-state.md to the latest PR
-    (the trigger Action keys off it — do not skip).
+    (the trigger Action keys off it — do not skip). #N is the **latest merged PR** (the reset
+    target), NOT the pass's own PR number; keep the leading #N, the `band-#M` label
+    (M = (N // 30) * 30), and the "reset to the latest merged PR #N" parenthetical all the same
+    number. `python3.10 scripts/check_reconcile_marker.py` verifies this consistency (warn-only;
+    `--strict` to gate).
 
 STEP 3 — RUNTIME BUGS YOU NOTICED: do NOT fix them here. Append each to docs/health/bug-book.md
   as a new OPEN entry for the dispatch routine to fix. Stay docs-only.
