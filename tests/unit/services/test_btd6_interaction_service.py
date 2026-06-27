@@ -100,20 +100,16 @@ def test_ice_is_cold_blocked_by_lead():
     assert "cold snap" in blob
 
 
-def test_ddt_grounds_verified_counter_towers():
-    """'how do I deal with a DDT' must ground a VERIFIED tower list so the model
-    names real towers (and the faithfulness guard does not refuse the answer).
-    This is the over-refusal fix: the towers are derived from the dump, not
-    freelanced."""
+def test_ddt_note_states_moab_class_requirement():
+    """The DDT note must convey the MOAB-class subtlety (a DDT is MOAB-class, so
+    base Ice/Glue can't hit it without Embrittlement / MOAB Glue) — the curated
+    correction that replaced the reverted auto-counter list."""
     facts = btd6_interaction_service.interaction_facts("how do I deal with a DDT")
-    counter = [f for f in facts if "towers whose attack can damage a ddt" in f.lower()]
-    assert counter, "expected a grounded DDT counter-tower fact"
-    blob = counter[0].lower()
-    # Real, verified damage-dealers must be named.
-    assert "super monkey" in blob
-    assert "spike factory" in blob
-    # It must be framed as a capability list, not freelanced advice.
-    assert "verified from game data" in blob
+    blob = " ".join(facts).lower()
+    assert "moab-class" in blob
+    assert "embrittlement" in blob
+    # The reverted auto-list must NOT come back.
+    assert "towers whose attack can damage" not in blob
 
 
 def test_ddt_pop_guide_lists_correct_damage():
