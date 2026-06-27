@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T21:40:39Z",
+    "generated_at": "2026-06-27T22:02:38Z",
     "build": {
-      "commit": "010b8e08",
-      "subject": "Merge pull request #1512 from menno420/claude/mining-wire-light-luck",
-      "committed_at": "2026-06-27T21:40:39Z"
+      "commit": "7ba39fa6",
+      "subject": "Merge pull request #1513 from menno420/claude/bot-modularity-completion-zah7rj",
+      "committed_at": "2026-06-27T22:02:38Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 149,
+      "ideas": 150,
       "bugs": 26,
       "reviews": 0,
       "reviews_open": 0,
@@ -1171,6 +1171,14 @@
       "status": "ideas",
       "date": "2026-06-27",
       "summary": "The bot has a **per-feature, per-channel command toggle** system — `cog_routing` /",
+      "subsystems": null
+    },
+    {
+      "file": "completion-ledger-registry-parity-guard-2026-06-27.md",
+      "title": "Completion-ledger ↔ registry parity guard",
+      "status": "ideas",
+      "date": "2026-06-27",
+      "summary": "new [completion ledger](../planning/feature-completion/README.md) lists every S1 game / server-function",
       "subsystems": null
     },
     {
@@ -2671,6 +2679,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-27-feature-completion-framework.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Feature-completion certification framework (S1 bot units)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-27-effectivestats-knob-coverage.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — EffectiveStats knob-coverage guard + dead-stat finding (BUG-00xx)",
@@ -3050,14 +3066,6 @@
       "file": "2026-06-24-reconcile-band1410.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · twenty-fourth Q-0107 reconciliation pass (band-#1410)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-reconcile-band1380.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · docs reconciliation (band-#1380, Q-0107 pass 23)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
