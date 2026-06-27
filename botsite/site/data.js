@@ -1638,6 +1638,29 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "craftrod",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Craft the next rod up the ladder from caught fish — the non-coin path.",
+    "description": "Craft the next rod up the ladder from caught fish — the non-coin path.",
+    "usage": "!craftrod",
+    "aliases": [
+      "rodcraft"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!craftcharm",
+      "!rod"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "create",
     "area": "admin",
     "status": "in-progress",
@@ -6941,7 +6964,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "6f6e281f",
+    "build": "e1e12caf",
     "title": "New public bot website",
     "changes": [
       {
@@ -6953,7 +6976,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "6f6e281f",
+    "build": "e1e12caf",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6965,7 +6988,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "6f6e281f",
+    "build": "e1e12caf",
     "title": "Command-alias suggestions",
     "changes": [
       {

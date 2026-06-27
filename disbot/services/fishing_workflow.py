@@ -751,3 +751,76 @@ async def craft_charm(
         "equip it from the gear panel (`!gear`) to fish better.",
         charm=recipe.charm,
     )
+
+
+# Rod crafting — earn the next rod up the ladder from caught fish (the catch→rod
+# earn path, S1 acquisition-depth follow-up to the charm craft #1508). The
+# gameplay-native second source beside the coin shop (``buy_rod``): an
+# inventory→tier conversion, NOT a coin sink. Mirrors craft_charm exactly, and
+# like buy_rod it crafts the *next* rod up (requires owning the tier below).
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class RodCraftResult:
+    """The outcome of a ``craft_rod`` attempt — a flag + a player-facing message."""
+
+    success: bool
+    message: str
+    #: The rod tier owned *after* the attempt (unchanged on failure).
+    tier: int
+
+
+async def craft_rod(user_id: int, guild_id: int) -> RodCraftResult:
+    """Craft the next rod up the ladder from small caught fish.
+
+    Mirrors :func:`craft_charm`: an inventory-only conversion (no coins, no
+    external call) — debit the eligible fish (smallest-first) and raise the
+    owned rod tier by one in ONE ``db.transaction()`` (Q-0071). Like
+    :func:`buy_rod`, this advances the *next* tier from the one you own, so a
+    fisher works up the ladder by fishing. Coins remain the fast alternative via
+    ``buy_rod`` / the rod shop (``!rod``); the fish a rod consumes are worth far
+    less sold than the rod's coin price, so neither path is free arbitrage.
+    """
+    current_tier = await db.get_rod_tier(user_id, guild_id)
+    nxt = rods_mod.next_rod(current_tier)
+    if nxt is None:
+        top = rods_mod.rod_for_tier(current_tier)
+        return RodCraftResult(
+            False,
+            f"You already wield the **{top.name}** {top.emoji} — the finest rod there is!",
+            current_tier,
+        )
+
+    recipe = rods_mod.rod_recipe(nxt.tier)
+    if recipe is None:  # pragma: no cover — every non-starter tier has a recipe
+        return RodCraftResult(
+            False,
+            f"The **{nxt.name}** {nxt.emoji} can't be crafted from fish — "
+            "buy it with `!rod`.",
+            current_tier,
+        )
+
+    inventory = await db.get_mining_inventory(str(user_id), guild_id)
+    spend = _plan_fish_spend(inventory, recipe)
+    if spend is None:
+        return RodCraftResult(
+            False,
+            f"You need **{recipe.fish_count}** fish of size ≤ "
+            f"**{recipe.max_size_rank}** to craft the **{nxt.name}** {nxt.emoji} — "
+            "catch more fish with `!fish` (or buy it with `!rod`).",
+            current_tier,
+        )
+
+    deltas = {name: -qty for name, qty in spend.items()}
+    async with db.transaction() as conn:
+        await db.apply_inventory_deltas(str(user_id), guild_id, deltas, conn=conn)
+        await db.set_rod_tier(user_id, guild_id, nxt.tier, conn=conn)
+
+    used = ", ".join(f"{qty}× {name}" for name, qty in spend.items())
+    return RodCraftResult(
+        True,
+        f"Crafted the **{nxt.name}** {nxt.emoji} from **{used}** — "
+        "cast with `!fish` to feel the difference!",
+        nxt.tier,
+    )

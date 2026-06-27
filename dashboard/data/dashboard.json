@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T22:02:38Z",
+    "generated_at": "2026-06-27T23:24:25Z",
     "build": {
-      "commit": "7ba39fa6",
-      "subject": "Merge pull request #1513 from menno420/claude/bot-modularity-completion-zah7rj",
-      "committed_at": "2026-06-27T22:02:38Z"
+      "commit": "e1e12caf",
+      "subject": "Merge branch 'main' into claude/funny-franklin-qaiqdi",
+      "committed_at": "2026-06-27T23:24:25Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 456,
+      "commands": 457,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2663,6 +2663,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-27-fishing-rod-craft.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Fishing fish→rod craft path",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-27-fishing-gear-stats.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Fishing-specific gear stats (loadout presets become a real optimisation)",
@@ -3058,14 +3066,6 @@
       "file": "2026-06-24-reconcile-band1440.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · twenty-fifth Q-0107 reconciliation pass (band-#1440)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-reconcile-band1410.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · twenty-fourth Q-0107 reconciliation pass (band-#1410)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -6654,6 +6654,19 @@
             "charmcraft"
           ],
           "brief": "Craft a fishing charm from caught fish — the non-coin earn path.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "craftrod",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "rodcraft"
+          ],
+          "brief": "Craft the next rod up the ladder from caught fish — the non-coin path.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

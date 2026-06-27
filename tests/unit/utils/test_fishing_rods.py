@@ -60,3 +60,34 @@ def test_next_rod_walks_up_then_stops_at_the_top():
     assert rods.next_rod(3) is rods.ROD_LADDER[4]
     assert rods.next_rod(4) is None  # already diamond
     assert rods.next_rod(99) is None
+
+
+# ---------------------------------------------------------------------------
+# the fish → rod craft shelf (the non-coin earn path, follow-up to #1508)
+# ---------------------------------------------------------------------------
+
+
+def test_a_recipe_exists_for_every_non_starter_tier_and_none_for_the_starter():
+    # buy_rod / craft_rod craft the *next* tier up, so each rung 1..MAX needs a
+    # recipe; the starter (tier 0) is free and uncraftable.
+    assert rods.rod_recipe(0) is None
+    for tier in range(1, rods.MAX_TIER + 1):
+        recipe = rods.rod_recipe(tier)
+        assert recipe is not None
+        assert recipe.tier == tier
+    assert set(rods.ROD_RECIPES) == set(range(1, rods.MAX_TIER + 1))
+
+
+def test_craft_cost_climbs_monotonically_up_the_ladder():
+    recipes = [rods.ROD_RECIPES[t] for t in range(1, rods.MAX_TIER + 1)]
+    # more fish AND a more permissive size cap for each rung up
+    assert all(a.fish_count < b.fish_count for a, b in zip(recipes, recipes[1:]))
+    assert all(
+        a.max_size_rank <= b.max_size_rank for a, b in zip(recipes, recipes[1:])
+    )
+    # every cost is a positive number of fish
+    assert all(r.fish_count > 0 for r in recipes)
+
+
+def test_rod_recipe_text_reads_friendly():
+    assert rods.rod_recipe_text(rods.rod_recipe(1)) == "10 fish (size ≤ 6)"

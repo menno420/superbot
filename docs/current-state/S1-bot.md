@@ -74,10 +74,14 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   **Acquisition depth SHIPPED 2026-06-27 (PR #1508):** the three charms now have a **fish→charm craft
   path** (`!craftcharm`) mirroring the catch→bait loop — consume caught fish (smallest-first) → grant one
   charm into the mining inventory, so a dedicated fisher can earn the whole ladder by fishing; coins stay
-  the fast alternative ([craft numbers](../planning/fishing-charm-craft-numbers-2026-06-27.md)). ▶ **Next
-  offline successor:** a **fish-loot drop** (a small chance a cast yields charm/craft materials directly),
-  or extend the same craft pattern to the **rod ladder** (caught-fish craft for the higher rods). Pure +
-  sim-pinnable, self-mergeable.
+  the fast alternative ([craft numbers](../planning/fishing-charm-craft-numbers-2026-06-27.md)). **The
+  rod-ladder craft path SHIPPED 2026-06-27 (PR #1515):** `!craftrod` (+ a **🎣 Craft from fish** button in
+  the rod shop) crafts the next rod up from caught fish (smallest-first), mirroring the charm/bait loops —
+  `rods.ROD_RECIPES` + `fishing_workflow.craft_rod` (inventory-only, one transaction, no coins/audit);
+  coins stay the fast alternative via `buy_rod`
+  ([rod craft numbers](../planning/fishing-rod-craft-numbers-2026-06-27.md)). ▶ **Next offline successor:**
+  a **fish-loot drop** (a small chance a cast yields charm/craft materials directly). Pure + sim-pinnable,
+  self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·
