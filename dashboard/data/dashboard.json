@@ -1,21 +1,21 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T12:02:08Z",
+    "generated_at": "2026-06-27T12:30:24Z",
     "build": {
-      "commit": "b53aac6d",
-      "subject": "Merge pull request #1496 from menno420/claude/setup-wizard-coverage-8mvlyc",
-      "committed_at": "2026-06-27T12:02:08Z"
+      "commit": "a42fd02f",
+      "subject": "feat(mining): named gear loadout presets — save/swap equipped gear (V-14/Q-0175 Phase-1)",
+      "committed_at": "2026-06-27T12:30:24Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 147,
+      "ideas": 148,
       "bugs": 25,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 454,
+      "commands": 455,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -1163,6 +1163,14 @@
       "status": "ideas",
       "date": "2026-06-27",
       "summary": "The bot has a **per-feature, per-channel command toggle** system — `cog_routing` /",
+      "subsystems": null
+    },
+    {
+      "file": "fishing-gear-stats-2026-06-27.md",
+      "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
+      "status": "ideas",
+      "date": "2026-06-27",
+      "summary": "The unified-loadout vision (`fishing-open-world-expansion-plan-2026-06-18.md`, Q-0175 / V-14) has two",
       "subsystems": null
     },
     {
@@ -2601,6 +2609,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-27-mining-loadout-presets.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Mining/character gear loadout presets (V-14 / Q-0175 Phase-1 unified-loadout model)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-27-economy-flow-timeseries.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Games-economy observability: per-day faucet/sink trend view",
@@ -2612,6 +2628,14 @@
       "file": "2026-06-27-btd6-session-close-docs.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — BTD6 QA arc: session-close documentation (what shipped + live-test checklist)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-27-btd6-revert-counter-list.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — BTD6: revert the auto-derived DDT counter list (it grounded wrong towers)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3023,22 +3047,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-essential-setup-steps-3-4.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · Essential Setup steps 3-4 (block spam · help desk)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-essential-setup-restart-revive.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · Essential Setup survives restart (revive in place)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -7347,6 +7355,19 @@
           "classification": "panel_action",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "loadout",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "loadouts"
+          ],
+          "brief": "Save / swap named gear loadouts (e.g. mining, combat, fishing).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         },
         {
           "name": "market",

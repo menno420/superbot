@@ -17,6 +17,11 @@
 - **Creature game** — runtime catch/collection (#1208), level-normalized PvP engine + flow
   (#1213/#1230), leaderboard provider (#1244).
 - **Mining grid** — seed-deterministic (x,y,z) grid + dig-moves-you (#1281/#1282).
+- **Gear loadout presets** (#1499, V-14/Q-0175 Phase-1 unified-loadout) — save your equipped gear as a
+  named set (`mining`/`combat`/`fishing`, cap 10) and swap your whole loadout with one click (`💾 Loadouts`
+  gear-panel button + `!loadout`). `mining_loadout_presets` (migration 101, direct-lane like
+  `mining_equipment`) + `mining_workflow.{save,apply,list,delete}_loadout`; apply equips every still-owned
+  item, clears other slots, reports anything no longer owned; reversible + additive.
 - **Starboard / Hall-of-Fame** — plan #1254 → PR 1 #1259 → PR 2 #1270.
 - **Fishing minigame** — cast/reel loop + rod ladder + energy (#1296–#1304, incl. the generous
   sell-value rebalance 1–7 → 1–21 in #1304); **Bait layer** — coin-bought consumable with **both**
