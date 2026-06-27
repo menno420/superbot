@@ -1999,6 +1999,23 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "economytrend",
+    "area": "other",
+    "status": "finished",
+    "summary": "Per-day coin-flow trend (`!platform economytrend [days]`): the daily",
+    "description": "Per-day coin-flow trend (!platform economytrend [days]): the daily minted/drained/net series + a net sparkline + a rising/falling read, so you can see whether the economy is inflating *over time*, not just at one snapshot. Window N days or omit for all-time. Read-only, content-free.",
+    "usage": "!economytrend",
+    "aliases": [
+      "coinflowtrend"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!platform economytrend [days]"
+    ],
+    "planned": []
+  },
+  {
     "name": "ego",
     "area": "games",
     "status": "in-progress",
@@ -6824,7 +6841,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "48cd5a08",
+    "build": "50165ff0",
     "title": "New public bot website",
     "changes": [
       {
@@ -6836,7 +6853,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "48cd5a08",
+    "build": "50165ff0",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6848,7 +6865,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "48cd5a08",
+    "build": "50165ff0",
     "title": "Command-alias suggestions",
     "changes": [
       {

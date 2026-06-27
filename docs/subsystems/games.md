@@ -300,7 +300,13 @@ also reachable via `!farm` and the Explore world hub.
   transaction: move + loot + fog-mark + wear + the down-dig depth-record bonus); no separate move /
   "Mine here".
 - [games-economy-faucet-sink-diagnostic-plan](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md) —
-  read-only economy faucet/sink read model (turn-key).
+  read-only economy faucet/sink read model. **Shipped #1044** (`!platform economy [days]` — the
+  whole-window mint/drain/net/ratio + verdict aggregate) **+ the per-day trend view (2026-06-27):
+  `!platform economytrend [days]`** (`economy_flow_service.build_flow_timeseries` → a daily
+  minted/drained/net series + a net-flow sparkline + a rising/falling/steady read), so an operator can
+  watch inflation *over time*, not just at one snapshot. The §6 health-finding follow-up (a persistent
+  finding when a guild sustains the `inflating ⚠` verdict) stays **design-for-review** (per-guild verdict
+  vs. the guild-agnostic findings store — see the plan §6).
 - [mining-economy-balance-2026-06-22](../planning/mining-economy-balance-2026-06-22.md) — **sim-pinned
   rebalance numbers** for the live grid-Mine faucet (owner: "rewards too large & too frequent"). The
   simulator (`tools/game_sim/mining_economy_sim.py`) quantifies the live faucet at ~7–55× a `!daily`/hr

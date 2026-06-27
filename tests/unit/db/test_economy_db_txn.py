@@ -217,3 +217,64 @@ async def test_economy_flow_by_reason_windowed_filters_by_occurred_at():
     flat = " ".join(mock_fetch.await_args.args[0].split())
     assert "occurred_at >= $2" in flat
     assert mock_fetch.await_args.args[1] == (99, since)
+
+
+# ---------------------------------------------------------------------------
+# economy_flow_daily — per-day time-series aggregation (trend view)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_economy_flow_daily_all_time_groups_by_utc_day_no_since():
+    from datetime import date
+
+    with patch(
+        "utils.db.economy.pool.fetchall",
+        new_callable=AsyncMock,
+        return_value=[
+            {
+                "day": date(2026, 6, 1),
+                "minted": 5000,
+                "drained": 1800,
+                "net": 3200,
+                "n": 40,
+            },
+            {
+                "day": date(2026, 6, 2),
+                "minted": 1200,
+                "drained": 1500,
+                "net": -300,
+                "n": 22,
+            },
+        ],
+    ) as mock_fetch:
+        result = await economy.economy_flow_daily(7)
+
+    flat = " ".join(mock_fetch.await_args.args[0].split())
+    assert "FROM economy_audit_log" in flat
+    assert "GROUP BY day" in flat
+    assert "ORDER BY day ASC" in flat  # oldest-first, read left-to-right
+    assert "AT TIME ZONE 'UTC'" in flat  # deterministic day boundary
+    assert "occurred_at >=" not in flat  # all-time path has no time filter
+    assert mock_fetch.await_args.args[1] == (7,)
+    assert result == [
+        (date(2026, 6, 1), 5000, 1800, 3200, 40),
+        (date(2026, 6, 2), 1200, 1500, -300, 22),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_economy_flow_daily_windowed_filters_by_occurred_at():
+    from datetime import datetime, timezone
+
+    since = datetime(2026, 6, 1, tzinfo=timezone.utc)
+    with patch(
+        "utils.db.economy.pool.fetchall",
+        new_callable=AsyncMock,
+        return_value=[],
+    ) as mock_fetch:
+        await economy.economy_flow_daily(7, since=since)
+
+    flat = " ".join(mock_fetch.await_args.args[0].split())
+    assert "occurred_at >= $2" in flat
+    assert mock_fetch.await_args.args[1] == (7, since)

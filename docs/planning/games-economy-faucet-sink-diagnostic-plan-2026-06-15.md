@@ -117,9 +117,23 @@ read model aggregates away `user_id`).
 
 ## 6. Follow-ups (capture, don't build here)
 
-- A windowed/timeseries view (coin flow per day) if the audit table carries a timestamp — natural
-  once the all-time view exists.
-- A `diagnostics_health_snapshot`-style finding when the faucet:sink ratio crosses an inflation
-  threshold (ties into the P1-2 health-findings lifecycle, #843) — design-for-review.
+- **✅ A windowed/timeseries view (coin flow per day) — SHIPPED (2026-06-27 dispatch run).** The
+  audit table carries `occurred_at`, so this landed as the per-day **trend** sibling of the aggregate
+  view: `utils.db.economy.economy_flow_daily` (a pure `GROUP BY (occurred_at AT TIME ZONE 'UTC')::date`
+  read), the `economy_flow_service.build_flow_timeseries` → `EconomyFlowTimeseries` read model (per-day
+  `DayFlow` series + totals + a first-half-vs-second-half **rising/falling/steady** trend read), and
+  `!platform economytrend [days]` (a net-flow unicode sparkline + a recent-days table + the verdict).
+  Read-only, content-free, no migration, no new reason.
+- **A health-finding when the faucet:sink ratio sustains an inflation verdict (ties into the P1-2
+  health-findings lifecycle, #843) — STILL design-for-review.** The deliberate open design question
+  (why it wasn't built with the timeseries): the economy verdict is **per-guild**, but the
+  `operational_health_findings` store + `record_findings(HealthSnapshot)` seam is **guild-agnostic**
+  (the fingerprint excludes unbounded identifiers; the store has no `guild_id` column). A turn-key
+  next slice must decide: (a) carry the `guild_id` in the finding's fingerprint + message (so each
+  guild gets a distinct, dedupable finding) vs. a process-wide "some guild is inflating" roll-up; (b)
+  the **sustained** rule (don't fire on one noisy day — e.g. verdict `inflating ⚠` on ≥ N of the last
+  M days, computed off `build_flow_timeseries`); (c) which loop emits it (the daily
+  `HealthMaintenanceCog` is the precedent, but it would need to iterate guilds). Once decided it is a
+  small producer + a wiring into the daily loop; the read model already computes the verdict + trend.
 - Extend faucet coverage when game/daily reward reasons are folded in (the classifier already
   handles them by sign; this is just documentation of the taxonomy).

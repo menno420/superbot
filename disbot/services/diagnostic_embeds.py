@@ -1407,6 +1407,116 @@ def _format_flow_rows(rows, limit: int = 12) -> str:
     return "\n".join(lines)
 
 
+# Eight block glyphs for the dependency-free sparkline (low → high). A signed
+# series is mapped over its full min..max range so the zero line sits where the
+# data crosses it — no external charting lib, content-free.
+_SPARK_BLOCKS = "▁▂▃▄▅▆▇█"
+
+
+def _sparkline(values: list[int]) -> str:
+    """Render ``values`` as a unicode block sparkline (empty string if none).
+
+    Scaled across the series' own min..max so flat data renders as one mid
+    glyph rather than dividing by zero. Pure text — safe in an embed field.
+    """
+    if not values:
+        return ""
+    lo, hi = min(values), max(values)
+    span = hi - lo
+    if span == 0:
+        return _SPARK_BLOCKS[len(_SPARK_BLOCKS) // 2] * len(values)
+    last = len(_SPARK_BLOCKS) - 1
+    return "".join(_SPARK_BLOCKS[round((v - lo) / span * last)] for v in values)
+
+
+async def build_economy_trend_embed(
+    guild_id: int,
+    *,
+    days: int | None = None,
+) -> discord.Embed:
+    """Build the embed for ``!platform economytrend [days]`` — per-day flow trend.
+
+    The time-series companion to :func:`build_economy_flow_embed`: instead of one
+    window aggregate it shows the **daily** minted / drained / net series (a
+    net-flow sparkline + a recent per-day table) plus a rising/falling/steady
+    read, so an operator can see whether the economy is inflating *over time*,
+    not just at one snapshot.  Content-free — coin totals and counts only, no
+    per-user data (the read model aggregates ``user_id`` away).
+    """
+    from services import economy_flow_service
+
+    ts = await economy_flow_service.build_flow_timeseries(guild_id, days=days)
+
+    verdict_colors = {
+        "inflating ⚠": discord.Color.orange(),
+        "draining": discord.Color.blue(),
+        "balanced": discord.Color.green(),
+        "no activity": discord.Color.light_grey(),
+    }
+    embed = discord.Embed(
+        title="📈 Economy flow trend",
+        description=(
+            f"Per-day coin flow over **{ts.window_label}** "
+            "(aggregated from the economy audit ledger — counts and totals "
+            "only, no per-user data)."
+        ),
+        color=verdict_colors.get(ts.verdict, discord.Color.blurple()),
+    )
+
+    if not ts.days:
+        embed.add_field(
+            name="No activity",
+            value="*(no coin movements recorded for this window)*",
+            inline=False,
+        )
+        return embed
+
+    ratio_text = f"{ts.ratio:.2f}×" if ts.ratio is not None else "—"
+    net_sign = "+" if ts.net >= 0 else "−"
+    embed.add_field(
+        name="Summary",
+        value=(
+            f"minted **{ts.total_minted:,}** · "
+            f"drained **{ts.total_drained:,}**\n"
+            f"net **{net_sign}{abs(ts.net):,}** · "
+            f"mint:drain **{ratio_text}** · "
+            f"verdict **{ts.verdict}** · "
+            f"trend **{ts.trend}**"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name=f"Net per day ({len(ts.days)} day{'s' if len(ts.days) != 1 else ''})",
+        value=f"`{_sparkline([d.net for d in ts.days])}`",
+        inline=False,
+    )
+    embed.add_field(
+        name="Recent days",
+        value=_format_day_rows(ts.days),
+        inline=False,
+    )
+    embed.set_footer(
+        text="Trend = first-half vs second-half mean daily net flow.",
+    )
+    return embed
+
+
+def _format_day_rows(days, limit: int = 14) -> str:
+    """Render the most recent *limit* ``DayFlow`` rows, newest first."""
+    recent = days[-limit:]
+    lines = []
+    for d in reversed(recent):
+        net_sign = "+" if d.net >= 0 else "−"
+        lines.append(
+            f"`{d.day.isoformat()}` "
+            f"🟢 {d.minted:,} · 🔴 {d.drained:,} · "
+            f"net {net_sign}{abs(d.net):,} ({d.movements:,})",
+        )
+    if len(days) > limit:
+        lines.append(f"… and {len(days) - limit} earlier day(s)")
+    return "\n".join(lines)
+
+
 def build_locks_embed(prefix: str = "") -> discord.Embed:
     """Build the embed for ``!platform locks [prefix]``."""
     from services import diagnostics_service

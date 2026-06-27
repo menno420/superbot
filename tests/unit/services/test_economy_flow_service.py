@@ -92,9 +92,9 @@ def test_zero_net_reason_is_neither_faucet_nor_sink():
 
 def test_verdict_thresholds():
     # ratio >= 1.5 → inflating
-    assert _assemble(
-        [("f", 200, 1), ("s", -100, 1)], "all time"
-    ).verdict == "inflating ⚠"
+    assert (
+        _assemble([("f", 200, 1), ("s", -100, 1)], "all time").verdict == "inflating ⚠"
+    )
     # ratio <= 0.67 → draining
     assert _assemble([("f", 50, 1), ("s", -100, 1)], "all time").verdict == "draining"
     # in between → balanced
@@ -139,3 +139,88 @@ async def test_build_flow_report_singular_day_label():
     ):
         report = await flow.build_flow_report(42, days=1)
     assert report.window_label == "last 1 day"
+
+
+# ---------------------------------------------------------------------------
+# Time-series (per-day trend) read model
+# ---------------------------------------------------------------------------
+
+from datetime import date  # noqa: E402
+
+from services.economy_flow_service import (  # noqa: E402
+    DayFlow,
+    _assemble_timeseries,
+    _trend,
+)
+
+
+def test_assemble_timeseries_totals_and_verdict():
+    rows = [
+        (date(2026, 6, 1), 5000, 1000, 4000, 40),
+        (date(2026, 6, 2), 1000, 1500, -500, 22),
+    ]
+    ts = _assemble_timeseries(rows, "all time")
+    assert ts.days == [
+        DayFlow(date(2026, 6, 1), 5000, 1000, 4000, 40),
+        DayFlow(date(2026, 6, 2), 1000, 1500, -500, 22),
+    ]
+    assert ts.total_minted == 6000
+    assert ts.total_drained == 2500
+    assert ts.net == 3500
+    assert ts.ratio == pytest.approx(6000 / 2500)
+    assert ts.verdict == "inflating ⚠"  # reuses the aggregate classifier
+    assert ts.window_label == "all time"
+
+
+def test_assemble_timeseries_empty_is_no_activity():
+    ts = _assemble_timeseries([], "all time")
+    assert ts.days == []
+    assert ts.total_minted == 0
+    assert ts.total_drained == 0
+    assert ts.net == 0
+    assert ts.ratio is None
+    assert ts.verdict == "no activity"
+    assert ts.trend == "n/a"  # fewer than two days
+
+
+def test_trend_rising_falling_steady_and_na():
+    assert _trend([]) == "n/a"
+    assert _trend([100]) == "n/a"
+    # second half mean clearly above first half → rising
+    assert _trend([0, 0, 5000, 6000]) == "rising ⬆"
+    # second half mean clearly below first half → falling
+    assert _trend([6000, 5000, 0, 0]) == "falling ⬇"
+    # flat → steady (noise-tolerant)
+    assert _trend([100, 100, 100, 100]) == "steady ➡"
+
+
+def test_trend_small_change_is_steady_not_noise():
+    # A change under the _TREND_EPS fraction of magnitude must not read as a trend.
+    assert _trend([1000, 1000, 1000, 1010]) == "steady ➡"
+
+
+@pytest.mark.asyncio
+async def test_build_flow_timeseries_all_time_passes_no_since():
+    with patch.object(
+        flow.economy_db,
+        "economy_flow_daily",
+        new_callable=AsyncMock,
+        return_value=[(date(2026, 6, 1), 100, 0, 100, 2)],
+    ) as mock_db:
+        ts = await flow.build_flow_timeseries(7, days=None)
+    assert mock_db.await_args.kwargs["since"] is None
+    assert ts.window_label == "all time"
+    assert ts.days[0].day == date(2026, 6, 1)
+
+
+@pytest.mark.asyncio
+async def test_build_flow_timeseries_windowed_passes_since_and_labels():
+    with patch.object(
+        flow.economy_db,
+        "economy_flow_daily",
+        new_callable=AsyncMock,
+        return_value=[],
+    ) as mock_db:
+        ts = await flow.build_flow_timeseries(7, days=14)
+    assert mock_db.await_args.kwargs["since"] is not None
+    assert ts.window_label == "last 14 days"

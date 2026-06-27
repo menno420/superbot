@@ -30,6 +30,7 @@ from services.diagnostic_embeds import (  # noqa: F401
     build_counting_health_embed,
     build_customization_embed,
     build_economy_flow_embed,
+    build_economy_trend_embed,
     build_findings_embed,
     build_flags_embed,
     build_health_embed,
