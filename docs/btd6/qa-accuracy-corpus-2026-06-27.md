@@ -212,6 +212,27 @@ prose in `damage_types.json` — correct, but it deliberately does **not** name 
 **Open question for the owner:** how to do tower recommendations (a hand-curated, wiki-verified list vs.
 leaving the rules-based guidance).
 
+## Regression probes from prior fixed live misses (machine-checked)
+
+Beyond the damage-type interaction arc above, the machine-readable corpus
+(`tests/evals/btd6_corpus.py`) also pins the **answer-bearing grounding fact** for
+four earlier owner-reported misses, so a data/retrieval regression of any of those
+fixes is caught offline on every PR (`test_btd6_qa_corpus.py`, no creds). These
+probe a different axis than the interaction questions — paragon degree, paragon
+existence, entity-shorthand resolution, and boss HP:
+
+| Q | Verified answer (grounded) | Pins |
+|---|---|---|
+| "what is the damage of a d67 dart paragon" | `d67` = the paragon **Degree** (1-100); Apex Plasma Master at Degree 67 ≈ 48 dmg — NOT a `0-6-7` upgrade path. `[dump ✓]` | **BUG-0015** (degree misread as a path code) |
+| "does the monkey buccaneer have a paragon" | **Yes** — Navarch of the Seas (tier 6, $550,000 on Medium). `[dump ✓]` | absence-claim repro (guard design doc Update 2 — the false "no paragon") |
+| "how much is a despo on impoppable" | The **Desperado** (Primary tower, Impoppable base $360) — the `despo`/`despos` shorthand, not the Plasma Monkey Fan Club. `[dump ✓]` | **BUG-0003** (shorthand hallucinated as PMFC) |
+| "what is the health of an elite lych" | The **Elite** Lych table (T1 30,000 HP → T5 24,000,000 HP), not the Standard table (T1 14,000). `[dump ✓]` | **BUG-0002** (elite HP served from the Standard table) |
+
+These pin only that the bot **grounds** the right fact (the offline-provable half).
+Two of them (`btd6_elite_lych_hp`, `btd6_despo_bulk_cost`) also appear as live
+*over-refusal* items in the checklist below — so if a live answer is still wrong,
+the probe localizes it to the guard/model layer, not a data-retrieval gap.
+
 ## Live verification checklist — what still needs a real-key / prod test
 
 Everything above is offline-verified (1500+ tests, no creds). These need a real provider key or a live
