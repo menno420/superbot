@@ -16,15 +16,22 @@ the same order, so a result here is what a real Discord user would get:
    deterministic refusal. A hallucinated reply is rejected here exactly as live.
 
 The ONLY things not reproduced are Discord I/O and the decision audit (neither
-changes the answer text) and the pre-model deterministic list/roster floors
-(checked below for completeness). It reuses production internals on purpose —
-that is what keeps it from drifting away from live behaviour. Keep the order in
+changes the answer text). It reuses production internals on purpose — that is
+what keeps it from drifting away from live behaviour. Keep the order in
 :func:`run_live` in step with ``AINaturalLanguageStage.process``.
 
-Runs in CI with no DB (``_invoke_gateway`` degrades the DB-backed bits and, with
-no API key, returns a deterministic non-answer); with a real key + a configured
-provider it produces the genuine live reply. Opt-in/paid, via
-``scripts/run_evals.py --btd6``.
+Grading is semantic: each reply is judged by the same ``llm_judge`` the golden
+set uses, against the probe's ``rubric`` (the model paraphrases, so substring
+matching the grounded-fact wording gives false negatives). A refusal or a known
+wrong claim is a fail.
+
+**Known limitation — DB-backed workflow answers.** ``_invoke_gateway`` degrades
+the DB-backed bits when no DB is present, so questions whose live answer depends
+on the round-cash *workflow* (which only engages under a DB-resolved orchestration
+profile) can't be reproduced in a DB-less CI run — they will refuse. The corpus
+therefore covers interaction / immunity / damage-type questions (no DB workflow),
+not "cash on round N" questions. Run with a real key + ``AI_DEFAULT_PROVIDER``
+set; opt-in/paid via ``scripts/run_evals.py --btd6``.
 """
 
 from __future__ import annotations
@@ -174,19 +181,31 @@ class LiveOutcome:
     detail: str
 
 
-def _grade(probe: GroundingProbe, result: LiveResult) -> tuple[bool, str]:
+async def _grade(probe: GroundingProbe, result: LiveResult) -> tuple[bool, str]:
+    """Grade the LIVE reply: refusal/degrade → fail; a known wrong claim → fail;
+    otherwise judge correctness SEMANTICALLY (the model paraphrases, so a
+    substring match against the grounded-fact wording gives false negatives —
+    that was the original mis-grade). Uses the same LLM-as-judge the golden set
+    uses, against the probe's rubric.
+    """
     if result.degraded:
         return False, f"degraded ({result.provider})"
-    low = result.reply.lower()
     if result.handled_by == "refused":
         return False, "live bot REFUSED (guard rejected the model's answer)"
-    missing = [s for s in probe.expect if s.lower() not in low]
-    if missing:
-        return False, f"missing: {missing[0]!r}"
+    low = result.reply.lower()
     bad = [s for s in probe.forbid if s.lower() in low]
     if bad:
         return False, f"stated wrong claim: {bad[0]!r}"
-    return True, result.handled_by
+    if not probe.rubric:
+        # No rubric → fall back to the offline-style substring check.
+        missing = [s for s in probe.expect if s.lower() not in low]
+        return (not missing), (
+            result.handled_by if not missing else f"missing {missing[0]!r}"
+        )
+    from tests.evals.graders import llm_judge
+
+    grade = await llm_judge(probe.rubric)(SimpleNamespace(text=result.reply))
+    return grade.passed, (result.handled_by if grade.passed else grade.detail)
 
 
 async def run_btd6_live_suite() -> list[LiveOutcome]:
@@ -205,7 +224,7 @@ async def run_btd6_live_suite() -> list[LiveOutcome]:
                 None,
                 None,
             )
-        passed, detail = _grade(probe, result)
+        passed, detail = await _grade(probe, result)
         outcomes.append(LiveOutcome(probe, result, passed, detail))
     return outcomes
 

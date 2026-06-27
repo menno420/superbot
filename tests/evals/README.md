@@ -67,7 +67,12 @@ questions at once," because both layers key off the bot's REAL retrieval
   So a result here is **what a live Discord user would get** — not an
   approximation. The only things not reproduced are Discord I/O and the decision
   audit (neither changes the answer text). It tests the provider in
-  `AI_DEFAULT_PROVIDER`.
+  `AI_DEFAULT_PROVIDER`. Replies are graded **semantically** by `llm_judge`
+  against each probe's `rubric` (the model paraphrases, so substring-matching the
+  fact wording gives false negatives); a refusal or a known wrong claim is a fail.
+  **Limitation:** answers that depend on the DB-resolved round-cash *workflow*
+  can't be reproduced in a DB-less CI run, so the corpus covers
+  interaction/immunity/damage-type questions, not "cash on round N".
 
 Grow it by adding a `GroundingProbe` to `btd6_corpus.py` (it feeds both layers).
 The verified human-readable corpus is `docs/btd6/qa-accuracy-corpus-2026-06-27.md`.
