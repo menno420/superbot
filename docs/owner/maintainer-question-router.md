@@ -7583,3 +7583,37 @@ it), **Q-0105** (disposable-tool posture).
 **Home:** this Q-block (canonical) + the per-decision homes above. Related: **Q-0120** (cross-agent output
 is input-to-verify, not an order — the posture used to review the audit), **BUG-0026** (the dead-stats
 bug), **Q-0105** (disposable-tool posture).
+
+### Q-0209 — DECIDED: a feature-completion certification layer for S1 bot units (2026-06-27)
+
+> **ANSWERED (owner, in-session via AskUserQuestion, 2026-06-27).** The owner asked for a way to mark
+> parts of the bot **complete** — feature- and UX-complete ("all the functions, the right buttons in the
+> right places, works as intended, the most convenient version of itself") — and to *prove/show* it,
+> noting the bot is close to production-ready and that effort should focus on **finishing existing
+> functions before new ideas** (unless an idea deepens an existing one). Recorded per Q-0104.
+
+**Context — why it's a new axis.** This is **orthogonal** to the existing
+[`production-readiness`](../planning/production-readiness/README.md) maps, which grade *risk/hardening*
+(P0 integrity → P1 correctness → P2 drift). The new axis grades *feature + UX completeness* and ends in
+the owner's judgment. A unit is "done-done" only when high on **both**.
+
+**The three decisions (owner picks):**
+
+1. **Unit grain = per feature** — each game and each server function is one certifiable unit, keyed to
+   `subsystem_registry.py` (~36 S1 units). (Not per-family, not per-folio.)
+2. **Completion-first = soft default** — sessions default to completing/deepening existing units; a
+   brand-new unit is captured but **parked** behind a completion gate, greenlightable anytime. (Not a
+   hard freeze, not pure case-by-case.)
+3. **Certification = evidence + owner sign-off** — a unit reaches `✔ certified` only with a filled
+   rubric, green loop/edge tests, a recorded live walkthrough, **and** the owner's ✔. (Not
+   agent-self-certified, not owner-only-hands-on.)
+
+**Built this session (PR #1513):** the system + two Definition-of-Complete rubrics (games /
+server-functions) + a per-unit certificate model + a generated `completion_scoreboard.py` + a worked
+Blackjack pilot, homed at [`docs/planning/feature-completion/`](../planning/feature-completion/README.md).
+Wired the soft completion-first gate into [`docs/ideas/README.md`](../ideas/README.md).
+
+**Home:** this Q-block (canonical) + the system README. **Possible future promotion:** if the soft
+default proves itself, a one-line binding rule in `.claude/CLAUDE.md` (proposed via a DISCUSS Q, the
+graduate-when-proven pattern — Q-0105) would harden it; not done day-one. Related: **Q-0015** (backlog
+grooming / secondary task), **Q-0089** (idea generation), **production-readiness** maps (the risk axis).

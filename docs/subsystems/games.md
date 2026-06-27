@@ -133,6 +133,14 @@ also reachable via `!farm` and the Explore world hub.
 
 - Current verified map: [`docs/planning/production-readiness/games-production-readiness-map-2026-06-12.md`](../planning/production-readiness/games-production-readiness-map-2026-06-12.md).
 
+## Feature-completion certification
+
+- The *feature/UX-completeness* axis (orthogonal to the risk-axis readiness map above) is tracked per
+  game in [`docs/planning/feature-completion/`](../planning/feature-completion/README.md): each game is
+  a unit scored against [`rubric-game.md`](../planning/feature-completion/rubric-game.md) and certified
+  `✔` only on evidence + owner sign-off (Q-0209). Worked pilot:
+  [Blackjack](../planning/feature-completion/units/blackjack.md) (◐ assessed).
+
 ## Current state
 
 - `docs/archive/games-actionability-roadmap.md` is complete: hubs and the principal RPS,

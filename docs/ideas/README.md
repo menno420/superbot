@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`completion-ledger-registry-parity-guard-2026-06-27.md`](./completion-ledger-registry-parity-guard-2026-06-27.md) —
+  **session idea (2026-06-27, Q-0089, from building the feature-completion framework #1513):** a stdlib
+  `check_completion_ledger_parity.py` asserting every user-facing game/server-function registry key has a
+  row in the [completion ledger](../planning/feature-completion/README.md) (and vice-versa), so a newly
+  added game can't silently miss a completion certificate. The completeness-axis sibling of the
+  `subsystem-inventory-homed-guard`; reuses the `completion_scoreboard.py` table reader. Disposable
+  (Q-0105). Subsystem: none (S4/S3 tooling).
 - [`band-queue-execution-rate-2026-06-27.md`](./band-queue-execution-rate-2026-06-27.md) —
   **captured 2026-06-27 (band-#1500 reconciliation pass, Q-0089):** three of the last four bands executed
   **zero** named §4 forward-queue slices (the work was owner-directed BTD6 accuracy + autonomous
@@ -1158,6 +1165,24 @@ An idea may graduate to an implementation plan only after **all** of:
 > for an idea's position on *this* lifecycle plus the question-router question-lifecycle.
 > This README owns the `captured → ready-for-planning → shipped` gates; the workflow doc
 > references them — it does **not** define a parallel tracker.
+
+## Completion-first gate (soft default — Q-0209)
+
+The bot is close to production-ready, so the standing bias is **finish existing features before
+starting new ones**. When grooming or promoting an idea, sort it first:
+
+- **Deepens / completes an existing unit** (a missing action, a variant, a depth layer, a UX fix for
+  a game or server function already in the
+  [completion ledger](../planning/feature-completion/README.md)) → **in-scope and prioritized**.
+  This is *deepening*, not new — promote it normally.
+- **A brand-new unit** (a game/function the bot doesn't have yet) → still **captured here**, but
+  **parked behind the completion gate** by default. The owner can greenlight one anytime; without
+  that, prefer moving an "deepens-existing" idea instead.
+
+This is a **soft** default, not a freeze — it steers the backlog toward certifying what exists
+([`docs/planning/feature-completion/`](../planning/feature-completion/README.md)) without blocking
+the owner's explicit "build this new thing." Full policy + the unit ledger live in the
+feature-completion system.
 
 ## Backlog grooming (the standing secondary task)
 
