@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T12:49:53Z",
+    "generated_at": "2026-06-27T15:01:44Z",
     "build": {
-      "commit": "a903be68",
-      "subject": "session: open band-#1500 reconciliation pass (born-red)",
-      "committed_at": "2026-06-27T12:49:53Z"
+      "commit": "39746a77",
+      "subject": "Merge pull request #1502 from menno420/claude/reconcile-1500",
+      "committed_at": "2026-06-27T15:01:44Z"
     },
     "counts": {
       "functions": 43,
@@ -2628,7 +2628,7 @@
       "file": "2026-06-27-reconcile-band1500.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Twenty-seventh Q-0107 reconciliation pass (band-#1500)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
