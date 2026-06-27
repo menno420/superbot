@@ -1030,6 +1030,116 @@ async def unequip(user_id: int, guild_id: int, slot: str) -> TradeResult:
 
 
 # ---------------------------------------------------------------------------
+# Loadout presets — save / apply / list / delete (V-14, Q-0175 unified loadout)
+# ---------------------------------------------------------------------------
+#
+# A *preset* is a named snapshot of which item sits in which slot.  Saving
+# captures your current equipped gear; applying restores that exact loadout —
+# equipping every saved item you still own and clearing any other currently
+# filled slot, so a preset behaves like a gear set ("put on your fishing
+# gear").  Equip/unequip never consume the item (gear stays in your inventory),
+# so applying is fully reversible.  Same direct-lane seam as equip/unequip
+# (RC-8A); additive — a player with no preset sees byte-identical behaviour.
+
+#: A small, generous cap on saved presets — keeps storage bounded and the
+#: manage select inside Discord's 25-option limit.
+MAX_LOADOUT_PRESETS = 10
+#: Cap on a preset name's length (keeps embeds + selects tidy).
+MAX_LOADOUT_NAME_LEN = 24
+
+
+def _clean_loadout_name(name: str) -> str:
+    """Normalise a user-supplied preset name (lowercase, collapse whitespace)."""
+    return " ".join(name.strip().lower().split())[:MAX_LOADOUT_NAME_LEN]
+
+
+async def save_loadout(user_id: int, guild_id: int, name: str) -> TradeResult:
+    """Snapshot the player's current equipped gear as the preset *name*."""
+    name = _clean_loadout_name(name)
+    if not name:
+        return TradeResult(
+            False,
+            "Give the loadout a name, e.g. `!loadout save mining`.",
+        )
+    suid = str(user_id)
+    equipped = await db.get_equipment(suid, guild_id)
+    if not equipped:
+        return TradeResult(
+            False,
+            "You have no gear equipped to save — equip something first.",
+        )
+    existing = await db.list_loadouts(suid, guild_id)
+    if name not in existing and len(existing) >= MAX_LOADOUT_PRESETS:
+        return TradeResult(
+            False,
+            f"You already have {MAX_LOADOUT_PRESETS} loadouts — delete one "
+            "first with `!loadout delete <name>`.",
+        )
+    await db.save_loadout(suid, guild_id, name, equipped)
+    n = len(equipped)
+    return TradeResult(
+        True,
+        f"saved your current gear as the **{name}** loadout "
+        f"({n} slot{'s' if n != 1 else ''}).",
+    )
+
+
+async def apply_loadout(user_id: int, guild_id: int, name: str) -> TradeResult:
+    """Restore the saved preset *name*: equip every still-owned item, clear the rest."""
+    name = _clean_loadout_name(name)
+    suid = str(user_id)
+    preset = await db.get_loadout(suid, guild_id, name)
+    if not preset:
+        return TradeResult(
+            False,
+            f"No loadout named **{name}**. See your loadouts with `!loadout list`.",
+        )
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    to_equip = {
+        slot: item for slot, item in preset.items() if inventory.get(item, 0) >= 1
+    }
+    missing = sorted({i for i in preset.values() if inventory.get(i, 0) < 1})
+    if not to_equip:
+        msg = f"You no longer own any gear from the **{name}** loadout"
+        if missing:
+            msg += f" (missing: {', '.join(i.title() for i in missing)})"
+        return TradeResult(False, msg + ".")
+    current = await db.get_equipment(suid, guild_id)
+    cleared = 0
+    async with db.transaction() as conn:
+        for slot in equipment.SLOTS:
+            if slot in to_equip:
+                await db.equip_item(suid, guild_id, slot, to_equip[slot], conn=conn)
+            elif slot in current:
+                await db.unequip_slot(suid, guild_id, slot, conn=conn)
+                cleared += 1
+    n = len(to_equip)
+    parts = [f"equipped the **{name}** loadout ({n} slot{'s' if n != 1 else ''})"]
+    if cleared:
+        parts.append(f"cleared {cleared} other slot{'s' if cleared != 1 else ''}")
+    if missing:
+        parts.append(
+            f"skipped {len(missing)} you no longer own "
+            f"({', '.join(i.title() for i in missing)})",
+        )
+    return TradeResult(True, " — ".join(parts) + ".")
+
+
+async def list_loadouts(user_id: int, guild_id: int) -> list[str]:
+    """Return the player's saved preset names, alphabetically."""
+    return await db.list_loadouts(str(user_id), guild_id)
+
+
+async def delete_loadout(user_id: int, guild_id: int, name: str) -> TradeResult:
+    """Delete the saved preset *name*."""
+    name = _clean_loadout_name(name)
+    removed = await db.delete_loadout(str(user_id), guild_id, name)
+    if removed == 0:
+        return TradeResult(False, f"No loadout named **{name}** to delete.")
+    return TradeResult(True, f"deleted the **{name}** loadout.")
+
+
+# ---------------------------------------------------------------------------
 # Descent — depth moves (gating stays in utils.mining.world)
 # ---------------------------------------------------------------------------
 

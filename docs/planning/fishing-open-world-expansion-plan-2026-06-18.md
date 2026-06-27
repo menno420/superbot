@@ -26,7 +26,7 @@ cross-game character — the V-13 paper-doll that "later holds the fishing rod."
 - Leveling = a **fishing level / rod-tier ladder** — reuse the existing tier ladder (`bronze…diamond`)
   and/or the `game_xp` skill level; the planner picks the cleanest fit (don't invent a parallel system).
 
-**One character, swappable gear types (the unified-loadout model).**
+**One character, swappable gear types (the unified-loadout model). — ✅ SHIPPED 2026-06-27 (PR #1499).**
 - **One character** holds everything (the existing `utils/equipment.py` slots + the `character_render`
   doll). New concept: **named loadout presets per activity type** — mining · fishing · exploration · …
   — each with its own **deterministic saved slot**. *"Put on fishing gear"* swaps your equipped items to
@@ -34,6 +34,15 @@ cross-game character — the V-13 paper-doll that "later holds the fishing rod."
 - **Gear is never required.** Any activity works with whatever you're wearing; the **matching** gear just
   **increases the bonuses** (fishing gear → better fishing, etc.). Switching is an *optimization*, not a
   gate.
+- **Built (PR #1499, dispatch run):** `mining_loadout_presets` (migration 101, the same direct-lane
+  `mining_equipment` seam — RC-8A) + `utils/db/games/mining_loadout.py` CRUD +
+  `mining_workflow.{save,apply,list,delete}_loadout` (apply restores the exact set: equips every
+  still-owned saved item, clears any other filled slot, reports anything you no longer own) + a
+  `💾 Loadouts` gear-panel surface (apply/save-modal/delete) + the `!loadout` command. Presets are
+  player-named (`mining`/`combat`/`fishing`/…, cap 10); equip/unequip never consume the item so applying
+  is fully reversible; additive (no preset → behaviour byte-identical). The "fishing gear gives better
+  fishing" *bonus* half waits on fishing-specific gear stats (a later slice) — this ships the **swap**
+  mechanism the vision names.
 
 ## Phase 2+ — the boat + open world (LATER — captured, not for now)
 

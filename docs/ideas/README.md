@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`fishing-gear-stats-2026-06-27.md`](./fishing-gear-stats-2026-06-27.md) —
+  **captured 2026-06-27 (dispatch run, alongside gear-loadout-presets #1499):** the loadout-swap half of
+  the unified-loadout vision (Q-0175) shipped, but matching gear has nothing to bias — `EffectiveStats`
+  models only mining + combat stats. Add a `fishing_power`/`bite_luck` stat + a few fishing gear items
+  and read it as a 4th cast knob (rod × bait × weather × gear), turning loadout presets from convenience
+  into a real optimisation. Reuses the cross-game `EffectiveStats` seam. Subsystem: games (mining/fishing).
 - [`cog-routing-enforcement-gap-2026-06-27.md`](./cog-routing-enforcement-gap-2026-06-27.md) —
   **surfaced 2026-06-27 (PR #1496):** the per-feature, per-channel command toggle system (`cog_routing`)
   is configurable but **not wired to runtime enforcement** — `is_cog_enabled` is read only by the

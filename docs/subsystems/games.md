@@ -275,7 +275,9 @@ also reachable via `!farm` and the Explore world hub.
   it. Now that casting is finite, fish **sell for ≈ `size_rank` (1–21 coins)**, up from the old 1–7
   (`utils/mining/items.py` `_fish_value`). **Deferred to next PR:** boat/deepwater venue.
 - [fishing-open-world-expansion-plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) —
-  Phase 1 (fishing v1 + gear-switching) buildable; the loadout/minigame tail is owner-design-gated (Q-0175).
+  Phase 1 fishing v1 **shipped**; **gear loadout presets shipped #1499** (named save/swap sets:
+  `mining_loadout_presets` migration 101 + `mining_workflow.{save,apply,list,delete}_loadout` +
+  `💾 Loadouts` gear-panel surface + `!loadout`). Phase 2 (boat/open-world) stays owner-design-gated (Q-0175).
   **Fish *use* is now decided + shipped (#1289, owner 2026-06-22):** a caught fish enters the mining
   inventory (`fishing_workflow.fish` grants it; the catch-log stays the dex), is **sellable** for coins
   (modest, size-scaled `RESOURCE` value in `utils/mining/items.py`), and is **cookable** into a

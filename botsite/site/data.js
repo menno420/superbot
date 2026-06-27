@@ -538,6 +538,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -1610,6 +1614,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -2332,6 +2340,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -2350,6 +2362,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2372,6 +2388,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -2390,6 +2410,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2450,6 +2474,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -3144,6 +3172,40 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": []
+  },
+  {
+    "name": "loadout",
+    "area": "economy",
+    "status": "in-progress",
+    "summary": "Save / swap named gear loadouts (e.g. mining, combat, fishing).",
+    "description": "Save / swap named gear loadouts (e.g. mining, combat, fishing).",
+    "usage": "!loadout",
+    "aliases": [
+      "loadouts"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!loadout save <name>",
+      "!loadout <name>",
+      "!loadout apply <name>",
+      "!loadout list",
+      "!loadout delete <name>"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
+      },
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      },
+      {
+        "status": "idea",
+        "title": "Mining & Exploration — Brainstorm & Roadmap"
+      }
+    ]
   },
   {
     "name": "lock",
@@ -4328,6 +4390,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -4672,6 +4738,10 @@ const COMMANDS = [
       "!fish"
     ],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -6170,6 +6240,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -6884,7 +6958,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "30ef3cd",
+    "build": "a42fd02f",
     "title": "New public bot website",
     "changes": [
       {
@@ -6896,7 +6970,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "30ef3cd",
+    "build": "a42fd02f",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6908,7 +6982,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "30ef3cd",
+    "build": "a42fd02f",
     "title": "Command-alias suggestions",
     "changes": [
       {

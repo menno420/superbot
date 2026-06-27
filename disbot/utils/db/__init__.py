@@ -153,6 +153,12 @@ from utils.db.games.mining_grid import (
     set_position,
     set_world_seed,
 )
+from utils.db.games.mining_loadout import (
+    delete_loadout,
+    get_loadout,
+    list_loadouts,
+    save_loadout,
+)
 from utils.db.games.mining_player_state import (
     get_depth,
     get_energy,
@@ -442,6 +448,10 @@ __all__ = [
     "equip_item",
     "get_equipment",
     "unequip_slot",
+    "save_loadout",
+    "get_loadout",
+    "list_loadouts",
+    "delete_loadout",
     "get_depth",
     "set_depth",
     "get_energy",

@@ -336,80 +336,70 @@ class MiningCog(commands.Cog):
     @commands.command(hidden=True, extras={"classification": "hidden"})
     async def gear(self, ctx):
         """Show your equipped gear, its condition, and the stats it grants."""
-        user_id = str(ctx.author.id)
-        equipped = await db.get_equipment(user_id, ctx.guild.id)
-        wear = await db.get_gear_wear(user_id, ctx.guild.id)
-        stats = equipment.compute_stats(equipped)
-        embed = discord.Embed(
-            title=f"🧍 {ctx.author.name}'s Gear",
-            color=MINING_COLOR,
+        # Embed builder + paper-doll render live in the view layer (the cog
+        # stays under the decomposition threshold; output is unchanged).
+        from views.mining.gear_panel import (
+            build_gear_command_embed,
+            render_gear_doll,
         )
-        for slot in equipment.SLOTS:
-            held = equipped.get(slot)
-            value = "*(empty)*"
-            if held:
-                value = f"**{held.title()}**"
-                maximum = equipment.max_durability(held)
-                if maximum is not None:
-                    value += (
-                        f"\n{workshop.durability_bar(wear.get(held, maximum), maximum)}"
-                    )
-            embed.add_field(
-                name=slot.title(),
-                value=value,
-                inline=True,
-            )
-        bonuses = equipment.describe_stats(stats)
-        embed.add_field(
-            name="Stats",
-            value=(
-                "\n".join(f"{label}: +{value}" for label, value in bonuses)
-                if bonuses
-                else "No bonuses yet — equip some gear!"
-            ),
-            inline=False,
-        )
-        tier = equipment.active_set_tier(equipped)
-        progress = equipment.set_progress(equipped)
-        if tier is not None:
-            embed.add_field(
-                name="✨ Set bonus",
-                value=f"**{tier.title()} set complete** — bonus active!",
-                inline=False,
-            )
-        elif progress is not None:
-            embed.add_field(
-                name="🧩 Set progress",
-                value=(
-                    f"{progress[0].title()} set: **{progress[1]}/"
-                    f"{len(equipment.SET_SLOTS)}** pieces"
-                ),
-                inline=False,
-            )
-        embed.set_footer(
-            text="Tip: !minemenu → 🧰 Gear equips with clicks (and ✨ Equip Best).",
-        )
-        # V-16: the paper-doll render (placeholder sprites until the owner's
-        # pack lands in assets/gear/) — embed always kept.
-        import io
 
-        from utils.character_render import render_character_for
-        from utils.mining import structures
-
-        # Slice C: the player's built Home selects the card backdrop (0 = default).
-        built = await db.get_structures(ctx.author.id, ctx.guild.id)
-        png = render_character_for(
-            equipped,
-            home_level=built.get(structures.HOME, 0),
+        embed = await build_gear_command_embed(
+            ctx.author.id,
+            ctx.guild.id,
+            name=ctx.author.name,
         )
-        if png is not None:
-            embed.set_image(url="attachment://character_doll.png")
-            await ctx.send(
-                embed=embed,
-                file=discord.File(io.BytesIO(png), filename="character_doll.png"),
-            )
+        # V-16: the paper-doll (placeholder sprites until the owner's pack lands
+        # in assets/gear/) — embed always kept if Pillow is unavailable.
+        doll = await render_gear_doll(embed, ctx.author.id, ctx.guild.id)
+        if doll is not None:
+            await ctx.send(embed=embed, file=doll)
         else:
             await ctx.send(embed=embed)
+
+    @commands.command(aliases=["loadouts"])
+    async def loadout(self, ctx, action: str = None, *, name: str = None):
+        """Save / swap named gear loadouts (e.g. mining, combat, fishing).
+
+        `!loadout save <name>` snapshots your equipped gear · `!loadout <name>`
+        (or `!loadout apply <name>`) swaps to it · `!loadout list` shows yours ·
+        `!loadout delete <name>` removes one.
+        """
+        uid, gid = ctx.author.id, ctx.guild.id
+        verb = (action or "").strip().lower()
+
+        if verb in ("", "list", "ls"):
+            names = await mining_workflow.list_loadouts(uid, gid)
+            if not names:
+                return await ctx.send(
+                    "You have no saved loadouts yet. Equip some gear, then "
+                    "`!loadout save <name>` (e.g. `mining`).",
+                )
+            listed = ", ".join(f"**{n}**" for n in names)
+            return await ctx.send(
+                f"{ctx.author.mention} your loadouts: {listed}\n"
+                f"Swap with `!loadout <name>`.",
+            )
+
+        if verb == "save":
+            if not name:
+                return await ctx.send("Name it, e.g. `!loadout save mining`.")
+            result = await mining_workflow.save_loadout(uid, gid, name)
+        elif verb in ("delete", "del", "remove", "rm"):
+            if not name:
+                return await ctx.send("Which one? e.g. `!loadout delete mining`.")
+            result = await mining_workflow.delete_loadout(uid, gid, name)
+        elif verb == "apply":
+            if not name:
+                return await ctx.send("Which one? e.g. `!loadout apply mining`.")
+            result = await mining_workflow.apply_loadout(uid, gid, name)
+        else:
+            # Bare `!loadout <name>` is the common case: apply that loadout.
+            target = action if not name else f"{action} {name}"
+            result = await mining_workflow.apply_loadout(uid, gid, target)
+
+        if not result.ok:
+            return await ctx.send(result.message)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
 
     @commands.command(
         name="character",
