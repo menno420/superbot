@@ -198,7 +198,7 @@
       "id": "ddt",
       "needs": "camo detection PLUS a damage type that bypasses Lead+Black: Fire, Plasma, Normal, Acid, or Glacier (NOT Sharp, Shatter, Cold, Energy, or Explosion)",
       "blocked": "Sharp, Shatter, Cold, Energy, and Explosion are all blocked (Lead + Black); and without camo detection nothing targets it",
-      "note": "DDTs are fast with 400 HP. You need ONE tower (or a tower + support) that has camo detection AND deals a non-blocked damage type: Fire, Plasma, Normal, Acid, or Glacier. Glue/slow works only via MOAB Glue (0-0-3) + camo detection. No base tower handles a DDT alone — Sharp (most primaries), Cold (ice) and Explosion (bomb) are all blocked."
+      "note": "A DDT is fast (400 HP) and MOAB-class with Lead + Black + Camo, so a tower needs THREE things at once: (1) camo detection, (2) a damage type a DDT does not resist — Fire, Plasma, Normal, Acid, or Glacier (NOT Sharp, Shatter, Cold, Energy, or Explosion), AND (3) the ability to damage MOAB-class bloons. Most damage towers satisfy (3), but two important exceptions do NOT until upgraded: base Ice Monkey (its Cold/Glacier attack cannot damage MOAB-class until Embrittlement 4-x-x — so Cold Snap alone, which pops lead+camo, still cannot hit a DDT) and base Glue (needs MOAB Glue 0-0-3). So 'pops lead and sees camo' is necessary but NOT sufficient — the tower must also be able to hit MOAB-class. (The committed stats don't encode MOAB-class targeting, so the bot does not auto-list specific counter towers — recommend by these rules.)"
     }
   ]
 }

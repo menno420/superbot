@@ -197,16 +197,29 @@ keyed off the bot's REAL `btd6_context_service.build()` grounding:
 | **#1488** | Corpus wired into the evals: the offline grounding test (`test_btd6_qa_corpus.py`, free, every PR) + the live action suite picker. |
 | **#1490** | The faithful **"exactly live"** runner (`btd6_live_path.py`) — replays the real production answer path (router → grounding → instruction stack → gateway → faithfulness guard). |
 | **#1491** | Fixed the eval grader: live answers are graded **semantically** by `llm_judge` (the model paraphrases — substring-matching the fact wording gave false negatives). |
-| **#1492** | Verified **DDT counter-tower grounding** (`towers_that_can_damage`) so "how do I deal with a DDT" recommends real towers instead of refusing. |
+| **#1492** | Attempted an auto-derived **DDT counter-tower list** — **REVERTED** (see below): the derivation couldn't tell that base Ice/Glue can't hit MOAB-class, so it recommended towers that can't actually damage a DDT. Replaced with curated MOAB-class prose. |
+
+### ⚠ Lesson — the auto-derived counter list was wrong (reverted)
+
+The owner live-tested the #1492 list and found three errors: it recommended **Ice Monkey 2-0-0** (base
+ice can't damage MOAB-class — a DDT is MOAB-class — until Embrittlement 4-x-x), **Monkey Ace 0-2-5**
+(its explosions can't pop Black), and **Sniper 0-4-0** (a weak config — 2-4-0/2-5-0/4-2-0/5-2-0 are the
+real answers). Root cause: "can damage a DDT" needs (a) MOAB-class targeting and (b) config quality,
+and **the committed stats encode neither** (Ice 2-0-0 and 4-0-0 have byte-identical projectiles; the only
+"can hit MOAB-class" signal is Embrittlement's *description text*). So the derivation is unsound and was
+reverted. The damage-type **requirement** (camo + non-resisted type + must hit MOAB-class) is now curated
+prose in `damage_types.json` — correct, but it deliberately does **not** name specific counter towers.
+**Open question for the owner:** how to do tower recommendations (a hand-curated, wiki-verified list vs.
+leaving the rules-based guidance).
 
 ## Live verification checklist — what still needs a real-key / prod test
 
 Everything above is offline-verified (1500+ tests, no creds). These need a real provider key or a live
 bot to confirm, and are **not** done:
 
-- [ ] **Re-run *AI Evals → suite: btd6*** after deploy. Expect: the interaction questions PASS on the
-      semantic grader, and **`how do I deal with a DDT` now answers with towers instead of refusing**
-      (the #1492 fix — not yet re-run live).
+- [ ] **Re-run *AI Evals → suite: btd6*** after deploy. Expect the interaction questions PASS on the
+      semantic grader. Note: `how do I deal with a DDT` now answers by the *rules* (camo + non-resisted
+      damage + must hit MOAB-class), NOT a specific tower list (#1492 was reverted — see the lesson above).
 - [ ] **Live Discord spot-check** of the original screenshot questions (glue/avenger/DDT, "can ice slow
       DDTs") on the real bot — confirm the answers are now correct in production, not just in the eval.
 - [ ] **The golden-set over-refusals are NOT fixed** — `knowledge.btd6_round_cash_*`,
@@ -219,9 +232,10 @@ bot to confirm, and are **not** done:
 
 ## Open follow-ups (next sessions)
 
-- **Generalize the counter grounding** beyond DDT — `towers_that_can_damage` is already general; extend
-  the `_COUNTER_BLOON_FOR` map in `btd6_interaction_service` to camo-lead / the Camo bloon to close the
-  same over-refusal there.
+- **Tower recommendations for "how do I deal with X" (owner decision pending)** — the auto-derivation was
+  reverted (above). To recommend specific towers correctly we need MOAB-class targeting + config quality,
+  which aren't in the dump. Options: a hand-curated wiki-verified list (small, per-bloon), an owner-supplied
+  list, or leaving the rules-based guidance. The over-refusal on these questions returns until decided.
 - **Broaden the live corpus** with strategy/opinion questions graded by `llm_judge` rubrics.
 - **Newer-tower coverage** (Desperado, Mermonkey): the dump has them; spot-check their damage-type
   interaction questions ground correctly.
