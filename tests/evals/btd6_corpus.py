@@ -165,6 +165,58 @@ GROUNDING_PROBES: tuple[GroundingProbe, ...] = (
             "is a FAIL."
         ),
     ),
+    # --- regression probes for prior fixed live misses -----------------------
+    # Each pins the answer-bearing fact for a documented owner-reported bug so a
+    # data/retrieval regression of the fix is caught offline on every PR. Themes
+    # beyond damage-type interactions (paragon degree, paragon existence, entity
+    # shorthand, boss HP) — see docs/btd6/qa-accuracy-corpus-2026-06-27.md.
+    GroundingProbe(
+        question="what is the damage of a d67 dart paragon",
+        expect=("apex plasma master at degree 67", "not an upgrade-path code"),
+        rubric=(
+            "Must treat 'd67' as the paragon's DEGREE (1-100) and give the Apex "
+            "Plasma Master's Degree-67 stats (~48 dmg). FAIL if it reads 'd67' as "
+            "an upgrade path '0-6-7' or claims it can't exist because tiers cap at 5."
+        ),
+        forbid=("0-6-7",),
+        note="BUG-0015 — 'd67' is the paragon DEGREE, not a 0-6-7 upgrade-path code",
+    ),
+    GroundingProbe(
+        question="does the monkey buccaneer have a paragon",
+        expect=("navarch of the seas",),
+        rubric=(
+            "Must answer YES and name Navarch of the Seas as the Monkey "
+            "Buccaneer's paragon. FAIL if it claims the Monkey Buccaneer has no "
+            "paragon."
+        ),
+        forbid=("no paragon", "does not have a paragon", "doesn't have a paragon"),
+        note=(
+            "absence-claim repro (absence-guard design doc Update 2) — the false "
+            "'Monkey Buccaneer has no paragon' that the committed data grounds against"
+        ),
+    ),
+    GroundingProbe(
+        question="how much is a despo on impoppable",
+        expect=("desperado", "impoppable $360"),
+        rubric=(
+            "Must identify and price the Desperado (a Primary-category tower; "
+            "Impoppable base $360), resolving the 'despo' shorthand correctly. "
+            "FAIL if it answers about the Plasma Monkey Fan Club (PMFC) or any "
+            "other tower."
+        ),
+        forbid=("plasma monkey fan club", "pmfc"),
+        note="BUG-0003 — 'despo'/'despos' shorthand resolves to Desperado, not PMFC",
+    ),
+    GroundingProbe(
+        question="what is the health of an elite lych",
+        expect=("elite lych per-tier health", "30,000 hp"),
+        rubric=(
+            "Must give the ELITE Lych health from the Elite table (T1 30,000 HP "
+            "up to T5 24,000,000 HP), NOT the Standard table (T1 14,000 HP). FAIL "
+            "if it serves Standard HP as Elite."
+        ),
+        note="BUG-0002 — Elite boss HP comes from the Elite table, not the Standard one",
+    ),
 )
 
 

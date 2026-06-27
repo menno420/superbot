@@ -1,0 +1,1 @@
+- branch `claude/review-open-pr-5dvsd7` · scope: review codex audit PR #1509 + ship the best safe offline item (BTD6 regression-corpus expansion) · area: tests/evals/btd6_corpus.py + docs/btd6/qa-accuracy-corpus-2026-06-27.md · 2026-06-27
