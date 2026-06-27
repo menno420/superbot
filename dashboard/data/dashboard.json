@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T05:31:27Z",
+    "generated_at": "2026-06-27T07:08:21Z",
     "build": {
-      "commit": "e27eee49",
-      "subject": "Merge pull request #1483 from menno420/claude/funny-franklin-e8jbvj",
-      "committed_at": "2026-06-27T05:31:27Z"
+      "commit": "d7fbc3b2",
+      "subject": "BTD6 QA accuracy: damage-type/status-effect interaction grounding + verified Q&A corpus (#1487)",
+      "committed_at": "2026-06-27T07:08:21Z"
     },
     "counts": {
       "functions": 43,
@@ -2545,6 +2545,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-27-youtube-fetch-renderer-tests.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Media/YouTube focused test coverage (fetch service + renderers/embeds)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-27-youtube-cache-db-tests.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — YouTube cache DB-primitive test coverage (dispatch slice 2)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-27-startability-offline-fit-tags.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Per-sector offline-fit startability tags (workflow improvement)",
@@ -2559,6 +2575,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-27-btd6-qa-accuracy.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — BTD6 QA accuracy: damage-type/status-effect interaction grounding + verified Q&A corpus",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-26-sessionclose-freshness-wiring.md",
@@ -2998,30 +3022,6 @@
       "title": "2026-06-24 — BTD6: unify five command groups under one `/btd6`",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-btd6-round-range-command.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Fix duplicate slash-command sync + /btd6ref round range",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-btd6-per-round-economy-commands.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — BTD6 per-round economy slash commands (cash / RBE / bloons)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-btd6-paragon-elite-boss-damage.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — BTD6 paragon elite-boss damage multiplier",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
