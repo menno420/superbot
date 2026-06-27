@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-6rxu3n` · scope: Media/YouTube focused test coverage (close two readiness Not-Done rows) · area: `tests/unit/services/`, `tests/unit/views/` (no `disbot/` runtime change) · 2026-06-27
