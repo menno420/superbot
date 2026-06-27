@@ -1,0 +1,1 @@
+- branch: claude/btd6-qa-accuracy-1bmls7 · scope: BTD6 QA accuracy — build a large verified question corpus, fix data/grounding errors (esp. damage-type↔bloon-property interaction), add regression eval cases · area: disbot/data/btd6, disbot/services/btd6_*, tests/evals, tests/unit/services · date: 2026-06-27
