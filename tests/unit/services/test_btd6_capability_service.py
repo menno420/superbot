@@ -117,3 +117,29 @@ def test_paragon_camo_curation_keys_match_real_paragons():
 def test_paragons_with_capability_only_supports_camo():
     assert cap.paragons_with_capability(cap.LEAD_POPPING) == []
     assert cap.paragons_with_capability("nonsense") == []
+
+
+def test_towers_that_can_damage_ddt_is_verified_and_sane():
+    """Every DDT counter must, by the game-sourced data, deal a damage type a DDT
+    does NOT resist AND detect camo — the invariant the grounding relies on."""
+    from services import btd6_data_service
+
+    ddt = btd6_data_service.get_bloon("ddt")
+    immune = set(ddt.immune_to or ())  # Sharp, Shatter, Cold, Energy, Explosion
+
+    hits = cap.towers_that_can_damage("ddt")
+    assert hits, "expected a non-empty DDT counter list"
+    names = {h.canonical for h in hits}
+    # Canonical DDT damage-dealers must appear.
+    for expected in ("Super Monkey", "Spike Factory", "Dart Monkey", "Wizard Monkey"):
+        assert expected in names, f"{expected} should be able to damage a DDT"
+    # The invariant: no counter deals a type the DDT resists.
+    for h in hits:
+        assert h.damage_type not in immune, (
+            f"{h.canonical} ({h.crosspath}) deals {h.damage_type}, which a DDT "
+            f"resists — derivation is wrong"
+        )
+
+
+def test_towers_that_can_damage_unknown_bloon_is_empty():
+    assert cap.towers_that_can_damage("not_a_bloon") == []
