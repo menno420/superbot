@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-5tiaq6` · scope: fishing-gear acquisition depth — fish→charm craft path (S1 offline successor to #1504) · area: utils/fishing/gear.py, services/fishing_workflow.py, cogs/fishing_cog.py, views/fishing/, tests, planning/ · 2026-06-27

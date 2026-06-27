@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T18:09:06Z",
+    "generated_at": "2026-06-27T18:29:28Z",
     "build": {
-      "commit": "66ea5ca5",
-      "subject": "chore(session): born-red card — fishing fish→charm craft path",
-      "committed_at": "2026-06-27T18:09:06Z"
+      "commit": "6f6e281f",
+      "subject": "feat(fishing): fish→charm craft path — non-coin earn for fishing charms",
+      "committed_at": "2026-06-27T18:29:28Z"
     }
   },
   "counts": {

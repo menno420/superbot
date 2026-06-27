@@ -1,6 +1,6 @@
 # Fishing-charm craft numbers (S1 acquisition-depth follow-up to #1504)
 
-> **Status:** `sim-pinned` — the balance rationale for the fish→charm craft ladder.
+> **Status:** `reference` — the (sim-pinned) balance rationale for the fish→charm craft ladder.
 > Source of truth is the code (`utils/fishing/gear.py` `CHARM_RECIPES`,
 > `utils/mining/market.py` `GEAR_SHOP`); this doc records *why* the numbers are what
 > they are and is pinned by `tests/unit/utils/test_fishing_gear.py`.
