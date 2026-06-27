@@ -1,6 +1,6 @@
 # 2026-06-27 — Wire the two dead EffectiveStats (light_radius + luck) into mining (BUG-0026)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 **Run type:** owner-directed (in-session greenlight: *"Wire them into gameplay"* — AskUserQuestion answer
 on BUG-0026, recorded as router Q-0208)
