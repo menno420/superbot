@@ -9,13 +9,13 @@ cares about into its own math (``mining_power``/``light_radius``/``depth_access`
 into a consumer — so the "added the stat, summed it, labelled it, but forgot the
 knob" half-ship could ship silently.
 
-Building this guard surfaced a real latent bug: ``light_radius`` and ``luck`` are
-**dead stats** — defined, summed, and labelled, but no game reads them to change
-behaviour (the diamond pickaxe's ``luck=1``, the lucky charm's ``luck``, and every
-torch's ``light_radius`` currently do nothing). They are captured in
-``docs/health/bug-book.md`` (wire-it-or-remove-it, an owner gameplay decision) and
-allowlisted below; the second test keeps the allowlist honest, so the moment one is
-wired its allowlist entry must go (or this test fails).
+Building this guard surfaced a real latent bug: ``light_radius`` and ``luck`` *were*
+**dead stats** — defined, summed, and labelled, but read by no game. The owner chose
+to wire them (BUG-0026), so they are now consumed (``light_radius`` → the fog-of-war
+window in ``grid.reveal_radius``; ``luck`` → rare-find weighting in
+``exploration.resolve``) and the allowlist below is **empty**. The second test keeps
+the allowlist honest, so the moment a *new* dead stat ships its allowlist entry must
+go (or this test fails).
 
 AST-scoped to ``disbot/`` so it runs in well under a second and needs no live
 bot / DB.
@@ -41,10 +41,12 @@ _DISBOT = Path(__file__).resolve().parents[3] / "disbot"
 _DEFINITION = _DISBOT / "utils" / "equipment.py"
 
 # Stats that are defined on EffectiveStats but not yet read by any game's
-# consumption path — the dead-stat finding captured in docs/health/bug-book.md.
-# REMOVE a name here the moment a consumer reads it (the honesty test below
-# fails closed otherwise). Adding a NEW name here requires a bug-book entry.
-_UNWIRED_STATS: frozenset[str] = frozenset({"light_radius", "luck"})
+# consumption path. EMPTY now that light_radius + luck are wired (BUG-0026 FIXED,
+# 2026-06-27): light_radius → grid.reveal_radius (the fog-of-war window widens with
+# a brighter light), luck → exploration rare-find weighting. REMOVE a name here the
+# moment a consumer reads it (the honesty test below fails closed otherwise);
+# adding a NEW name requires a docs/health/bug-book.md entry.
+_UNWIRED_STATS: frozenset[str] = frozenset()
 
 
 def _stat_field_names() -> set[str]:

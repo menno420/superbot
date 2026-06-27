@@ -161,3 +161,24 @@ def test_describe_cell_mentions_ore_only_for_notable_cells():
     assert "gold" in grid.describe_cell(_cell(CellFeature.RICH, "gold"))
     # NORMAL cells don't name an ore (nothing notable underfoot).
     assert "(" not in grid.describe_cell(_cell(CellFeature.NORMAL))
+
+
+# ---------------------------------------------------------------------------
+# reveal_radius — light_radius → fog-of-war window (BUG-0026 wiring)
+# ---------------------------------------------------------------------------
+
+
+def test_reveal_radius_is_non_regressive_for_no_or_single_light():
+    # No light or a single torch keeps the historical default window of 2.
+    assert grid.reveal_radius(0) == 2
+    assert grid.reveal_radius(1) == 2
+
+
+def test_reveal_radius_widens_with_a_brighter_light():
+    assert grid.reveal_radius(2) == 3  # lantern
+    assert grid.reveal_radius(3) == 4  # diamond lantern
+
+
+def test_reveal_radius_is_capped_so_a_future_light_cannot_blow_up_the_embed():
+    assert grid.reveal_radius(10) == 4
+    assert grid.reveal_radius(99) == grid.reveal_radius(3)
