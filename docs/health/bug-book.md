@@ -23,6 +23,37 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0026 — `EffectiveStats.light_radius` and `.luck` are dead stats (gear grants them, no game reads them) — OPEN (gameplay decision, guard shipped)
+
+- **Symptom (found 2026-06-27 by code inspection while building the Q-0089 `EffectiveStats`
+  knob-coverage guard, PR #1505 — not a live report, but a real latent gap):** two fields on the
+  cross-game `utils/equipment.EffectiveStats` block are **defined, summed (`__add__`), and labelled
+  (`STAT_LABELS`/`STAT_GLYPHS`) but read by no game's consumption path**, so the gear that grants them
+  does nothing:
+  - **`light_radius`** — every torch/lantern grants it (`torch` 1, `lantern` 2, `diamond lantern` 3),
+    but mining descent gates only on `depth_access` (`utils/mining/world.py:descend`), never on
+    `light_radius`. The "Light" stat shown on the gear panel has zero mechanical effect.
+  - **`luck`** — the `diamond pickaxe` (`luck=1`) and the `lucky charm` (`luck=1, loot_bonus=1`) grant
+    it, but only `loot_bonus` is read (`utils/mining/exploration.py`). The `luck` half of the lucky
+    charm — and the diamond pickaxe's luck — do nothing.
+- **Root cause:** the stat fields were added to the shared block ahead of (or without) a consumer — the
+  "added the stat, summed it, labelled it, forgot the knob" half-ship class. Every *other* field is
+  wired: `mining_power`/`loot_bonus` (exploration yield), `depth_access` (descent gate), `damage`/
+  `defense`/`max_health` (the duel), `fishing_power`/`bite_luck` (the cast, #1504).
+- **Why it's OPEN, not auto-fixed:** wiring these is a **gameplay-design decision the owner should make**,
+  not a contained mechanical fix — *what should they do?* (e.g. `light_radius` → a wider reveal radius in
+  the mining grid or a fog/visibility mechanic; `luck` → a crit-find / rare-drop chance on dig). The
+  alternative is to **remove** them (and the gear bonuses + labels) if the design doesn't want them. Both
+  are owner calls; flagged here rather than guessed at.
+- **Stays-fixed guard (shipped this PR, #1505):**
+  `tests/unit/invariants/test_effective_stats_consumed.py` — asserts every `EffectiveStats` field is read
+  by a `disbot/` consumer or is on the documented `_UNWIRED_STATS` allowlist (`light_radius`, `luck`).
+  The allowlist is honesty-checked: the moment either gains a consumer, its allowlist entry must be
+  removed or the test fails — so fixing this bug is self-enforcing, and a *new* dead stat can't ship
+  silently. (Verified: with the allowlist emptied, the guard flags exactly these two.)
+- **Status:** OPEN — finding captured + guarded 2026-06-27 (dispatch run, slice 2). Resolution is a
+  gameplay decision (wire or remove); the guard prevents the class from growing meanwhile.
+
 ## BUG-0025 — hero-card image stranded/lost when navigating into an image-less sub-panel (profile + XP hub) — FIXED (root)
 
 - **Symptom (found 2026-06-25 by code inspection during the visual card-engine H3 adoption audit;
