@@ -1,0 +1,1 @@
+- branch `claude/franklin-s1-offline-handoff` · scope: add offline-startable item to S1 ▶ Next (handoff hygiene) · area: docs/current-state/S1-bot.md · 2026-06-27
