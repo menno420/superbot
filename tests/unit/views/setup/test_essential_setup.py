@@ -120,8 +120,8 @@ def role_service():
 
 def test_flow_counter_and_navigation():
     flow = es.EssentialFlow(_member(), _guild())
-    assert flow.total == 7
-    assert flow.step_counter() == "Step 1 of 7"
+    assert flow.total == 8
+    assert flow.step_counter() == "Step 1 of 8"
     expected = [
         es.ServerTypeStep,
         es.GreetMembersStep,
@@ -130,9 +130,10 @@ def test_flow_counter_and_navigation():
         es.LogChannelStep,
         es.RewardActivityStep,
         es.HelpDeskStep,
+        es.CommandChannelsStep,
     ]
     for i, cls in enumerate(expected):
-        assert flow.step_counter() == f"Step {i + 1} of 7"
+        assert flow.step_counter() == f"Step {i + 1} of 8"
         assert isinstance(flow.current_view(), cls)
         flow.advance()
 
@@ -140,7 +141,7 @@ def test_flow_counter_and_navigation():
     assert isinstance(flow.current_view(), es.EssentialSummaryView)
 
     flow.back()
-    assert isinstance(flow.current_view(), es.HelpDeskStep)
+    assert isinstance(flow.current_view(), es.CommandChannelsStep)
 
 
 def test_first_step_has_no_back_button():
@@ -788,6 +789,109 @@ async def test_help_desk_enables_tickets_and_advances():
     assert kwargs["staff_role_id"] == 321
     assert kwargs["log_channel_id"] == 654
     assert flow.index == 7
+
+
+# ---------------------------------------------------------------------------
+# Where can people use commands? (command access)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def cmd_access():
+    # command_access_service.set_policy is lazy-imported inside the step
+    # (no-top-level-pipeline-import invariant) — patch it at its source.
+    with patch(
+        "services.command_access_service.set_policy",
+        new=AsyncMock(),
+    ) as sp:
+        yield sp
+
+
+@pytest.mark.asyncio
+async def test_command_channels_default_applies_all_channels(cmd_access):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 7
+    step = es.CommandChannelsStep(flow)  # default mode = all_channels
+
+    await step.apply(_interaction())
+
+    cmd_access.assert_awaited_once()
+    kwargs = cmd_access.await_args.kwargs
+    assert kwargs["mode"] == "all_channels"
+    assert kwargs["channel_ids"] is None  # all/disabled leave the list untouched
+    assert kwargs["guild_id"] == 1
+    assert kwargs["actor_id"] == 99
+    assert flow.index == 8  # advanced past the last step → summary
+
+
+@pytest.mark.asyncio
+async def test_command_channels_selected_requires_a_channel(cmd_access):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 7
+    step = es.CommandChannelsStep(flow)
+    step.mode = "selected_channels"  # but no channels picked
+    interaction = _interaction()
+
+    await step.apply(interaction)
+
+    # Won't silently lock the bot to zero channels — refuses, writes nothing.
+    cmd_access.assert_not_awaited()
+    interaction.response.send_message.assert_awaited_once()
+    assert "channel" in interaction.response.send_message.await_args.args[0].lower()
+    assert flow.index == 7  # did not advance
+
+
+@pytest.mark.asyncio
+async def test_command_channels_selected_applies_allow_list(cmd_access):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 7
+    step = es.CommandChannelsStep(flow)
+    step.mode = "selected_channels"
+    step.channel_ids = [111, 222]
+
+    await step.apply(_interaction())
+
+    kwargs = cmd_access.await_args.kwargs
+    assert kwargs["mode"] == "selected_channels"
+    assert kwargs["channel_ids"] == [111, 222]
+    assert flow.index == 8
+    assert flow.applied and "2 channels" in flow.applied[0]
+
+
+@pytest.mark.asyncio
+async def test_command_channels_disabled_applies_mode_only(cmd_access):
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 7
+    step = es.CommandChannelsStep(flow)
+    step.mode = "disabled_except_bootstrap"
+
+    await step.apply(_interaction())
+
+    kwargs = cmd_access.await_args.kwargs
+    assert kwargs["mode"] == "disabled_except_bootstrap"
+    assert kwargs["channel_ids"] is None
+    assert flow.index == 8
+
+
+def test_command_channels_only_uses_known_modes():
+    # Every offered mode must be a real stored Command Access mode, or the
+    # service would reject it at runtime (mocked tests wouldn't catch that).
+    from utils.db.command_access import KNOWN_MODES
+
+    for mode, _label, _desc in es._CMD_ACCESS_CHOICES:
+        assert mode in KNOWN_MODES
+
+
+def test_command_channels_channel_picker_only_in_selected_mode():
+    flow = es.EssentialFlow(_member(), _guild())
+    flow.index = 7
+    step = es.CommandChannelsStep(flow)
+    # Default (all_channels): no channel picker shown.
+    assert not any(isinstance(c, es._CmdAccessChannelSelect) for c in step.children)
+    # Switching to "only chosen channels" reveals the allow-list picker.
+    step.mode = "selected_channels"
+    step.refresh_items()
+    assert any(isinstance(c, es._CmdAccessChannelSelect) for c in step.children)
 
 
 # ---------------------------------------------------------------------------

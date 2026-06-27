@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`cog-routing-enforcement-gap-2026-06-27.md`](./cog-routing-enforcement-gap-2026-06-27.md) —
+  **surfaced 2026-06-27 (PR #1496):** the per-feature, per-channel command toggle system (`cog_routing`)
+  is configurable but **not wired to runtime enforcement** — `is_cog_enabled` is read only by the
+  read-only access-projection + the setup preview, never by either live command gate (the planned
+  "central availability resolver" was never built). The literal "allowed commands per channel" the owner
+  asked for; the *enforced* coarse half (Command Access) shipped in #1496, this fine-grained half needs a
+  cached read model in the command hot-path → its own plan-first PR. Subsystem: none (command gate + setup).
 - [`bot-migration-assistant-2026-06-24.md`](./bot-migration-assistant-2026-06-24.md) —
   **owner-directed (2026-06-24, chat):** the bot recognizes the *other* bots in a server, maps what each
   offers, suggests how to **replicate** it with SuperBot's subsystems, then offers to **retire** the

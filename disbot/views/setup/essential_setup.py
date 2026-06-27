@@ -21,7 +21,8 @@ This module is **additive** — the existing wizard (``views/setup/wizard.py``)
 is untouched and remains the full/advanced path; Essential Setup is the new
 quick spine.  Live steps: what kind of server is this (starter set) · greet new
 members · set your moderators · block spam and bad links · choose a log channel
-· reward active members · set up a help desk (+ the closing summary).
+· reward active members · set up a help desk · where can people use commands
+(+ the closing summary).
 """
 
 from __future__ import annotations
@@ -74,6 +75,7 @@ class EssentialFlow:
             LogChannelStep,
             RewardActivityStep,
             HelpDeskStep,
+            CommandChannelsStep,
         ]
 
     @property
@@ -1761,6 +1763,194 @@ class HelpDeskStep(_StepView):
             interaction,
             f"Help desk on, answered by <@&{self.staff_role_id}>",
         )
+
+
+# ---------------------------------------------------------------------------
+# Step 7 — Where can people use commands?  (command-access scope)
+# ---------------------------------------------------------------------------
+#
+# The enforced "where does the bot listen" control, surfaced in plain language.
+# Backed by the audited Command Access seam (``services.command_access_service``)
+# — the same per-server policy ``!settings`` edits and the runtime command gate
+# reads — so a choice here takes effect immediately for *both* prefix and slash
+# commands.  Three plain outcomes map to the three stored modes:
+#   • "Anywhere on the server"        → ``all_channels`` (the default)
+#   • "Only in channels I choose"     → ``selected_channels`` (+ an allow-list)
+#   • "Off for members — admins only" → ``disabled_except_bootstrap``
+# Adding this step also makes the bot's own "enable them via ``!setup``" /
+# "update Command Access in ``!settings``" denial messages true — before it,
+# ``!setup`` had no command-access step at all.  ``command_access_service`` is
+# lazy-imported inside ``apply`` (setup views must not import mutation services
+# at module top level) and takes ``actor_type="admin"`` — the wizard entry is
+# already administrator-gated, and the service rejects a "user" actor here.
+
+# (stored mode, operator label, one-line plain description).
+_CMD_ACCESS_CHOICES: list[tuple[str, str, str]] = [
+    (
+        "all_channels",
+        "Anywhere on the server",
+        "Members can use commands in every channel.",
+    ),
+    (
+        "selected_channels",
+        "Only in channels I choose",
+        "Commands work only in the channels you pick below.",
+    ),
+    (
+        "disabled_except_bootstrap",
+        "Off for members — admins only",
+        "Members can't use commands; you keep admin access for setup.",
+    ),
+]
+_CMD_ACCESS_LABELS: dict[str, str] = {
+    mode: label for mode, label, _ in _CMD_ACCESS_CHOICES
+}
+
+
+class _CmdAccessModeSelect(discord.ui.Select):  # type: ignore[type-arg]
+    def __init__(self, current: str) -> None:
+        options = [
+            discord.SelectOption(
+                label=label,
+                value=mode,
+                description=desc,
+                default=mode == current,
+            )
+            for mode, label, desc in _CMD_ACCESS_CHOICES
+        ]
+        super().__init__(
+            placeholder="Where can people use commands?",
+            options=options,
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: CommandChannelsStep = self.view  # type: ignore[assignment]
+        view.mode = self.values[0]
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _CmdAccessChannelSelect(discord.ui.ChannelSelect):  # type: ignore[type-arg]
+    """Shown only in the "only in channels I choose" mode — the allow-list."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Pick the channels where commands should work…",
+            channel_types=[discord.ChannelType.text],
+            min_values=0,
+            max_values=25,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: CommandChannelsStep = self.view  # type: ignore[assignment]
+        view.channel_ids = [c.id for c in self.values]
+        view.refresh_items()
+        await interaction.response.edit_message(embed=view.render(), view=view)
+
+
+class _CmdAccessSaveButton(discord.ui.Button):  # type: ignore[type-arg]
+    def __init__(self) -> None:
+        super().__init__(
+            label="Save & continue",
+            emoji="🚪",
+            style=discord.ButtonStyle.success,
+            row=3,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: CommandChannelsStep = self.view  # type: ignore[assignment]
+        await view.apply(interaction)
+
+
+class CommandChannelsStep(_StepView):
+    title = "Where can people use commands?"
+    skip_label = "Skip — leave as is"
+
+    def __init__(self, flow: EssentialFlow) -> None:
+        self.mode: str = "all_channels"
+        self.channel_ids: list[int] = []
+        super().__init__(flow)
+
+    def build_items(self) -> None:
+        self.refresh_items()
+
+    def refresh_items(self) -> None:
+        """(Re)build the mode picker + (only when limiting) the channel picker."""
+        for child in list(self.children):
+            if isinstance(
+                child,
+                (_CmdAccessModeSelect, _CmdAccessChannelSelect, _CmdAccessSaveButton),
+            ):
+                self.remove_item(child)
+        self.add_item(_CmdAccessModeSelect(self.mode))
+        if self.mode == "selected_channels":
+            self.add_item(_CmdAccessChannelSelect())
+        self.add_item(_CmdAccessSaveButton())
+
+    def render(self) -> discord.Embed:
+        embed = discord.Embed(
+            title=f"🚪 {self.title}",
+            description=(
+                "Choose where members can use the bot's commands. By default "
+                "they work everywhere — you can keep that, limit them to a few "
+                "channels, or turn them off for everyone but admins.\n\n"
+                "Pick one below, then press **Save & continue**."
+            ),
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(
+            name="Setting",
+            value=_CMD_ACCESS_LABELS.get(self.mode, self.mode),
+            inline=False,
+        )
+        if self.mode == "selected_channels":
+            if self.channel_ids:
+                where = ", ".join(f"<#{cid}>" for cid in self.channel_ids)
+            else:
+                where = "_pick at least one channel above_"
+            embed.add_field(name="Allowed channels", value=where, inline=False)
+        embed.set_footer(text=self.flow.step_counter())
+        return embed
+
+    async def apply(self, interaction: discord.Interaction) -> None:
+        if self.mode == "selected_channels" and not self.channel_ids:
+            await interaction.response.send_message(
+                "Pick at least one channel where commands should work — or "
+                "choose **Anywhere on the server**.",
+                ephemeral=True,
+            )
+            return
+        try:
+            from services.command_access_service import set_policy
+
+            await set_policy(
+                guild_id=self.flow.guild.id,
+                mode=self.mode,
+                channel_ids=(
+                    self.channel_ids if self.mode == "selected_channels" else None
+                ),
+                actor_id=self.flow.author.id,
+            )
+        except Exception:
+            logger.exception("essential setup: command-channels step apply failed")
+            await interaction.response.send_message(
+                "Something went wrong saving where commands work — please try again.",
+                ephemeral=True,
+            )
+            return
+        await self.complete(interaction, self._summary())
+
+    def _summary(self) -> str:
+        if self.mode == "selected_channels":
+            count = len(self.channel_ids)
+            if count == 1:
+                return f"Commands limited to <#{self.channel_ids[0]}>"
+            return f"Commands limited to {count} channels"
+        if self.mode == "disabled_except_bootstrap":
+            return "Commands off for members (admins keep access)"
+        return "Commands available in every channel"
 
 
 # ---------------------------------------------------------------------------
