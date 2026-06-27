@@ -98,6 +98,9 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
 
     with (
         patch.object(wf, "roll_catch", fake_roll_catch()),
+        # Force no lucky-double-catch so the single-fish grant qty is deterministic
+        # (the bonus is its own seeded path, exercised in its own tests below).
+        patch.object(wf, "roll_bonus_catch", lambda *a, **k: False),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 5})),
         patch.object(wf.db, "transaction", _txn(sentinel_conn, events)),
         patch.object(wf.db, "record_catch", AsyncMock(side_effect=_record)),

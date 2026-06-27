@@ -42,6 +42,14 @@ The acquisition loops now all close on the same `_plan_fish_spend` planner:
   `fishing_workflow.py`); `check_architecture --mode strict` 0 errors; mypy clean; `check_docs` +
   `check_consistency` ✓.
 - Regenerated the dashboard artifacts (`+1` command → 457) so the freshness guards stay green.
+- **CI follow-up:** the first full-CI run red-flagged the *existing* test
+  `test_both_legs_on_one_conn_and_emit_after_commit` — its `_grant` mock asserts `qty == 1` inline, and
+  the new 10% double-catch bonus (non-seeded `fish()` path) fired in CI (`2 == 1`) where the local
+  `--full` run had hit the 90% case. **My pre-push audit grep for grant-qty assertions only matched
+  `assert …with(…)` call-arg forms and missed the inline `assert … qty == 1` inside a side-effect mock**
+  — that gap let a flaky test through. Root-fixed by forcing no-bonus in that one test
+  (`patch.object(wf, "roll_bonus_catch", lambda *a, **k: False)`, mirroring how the file already patches
+  `roll_catch`); the bonus keeps its own seeded tests. Verified deterministic (25/25 passes).
 
 ## 💡 Session idea (Q-0089)
 *A `!fishstats` / fishing-progress card* surfacing the three acquisition tracks in one place — rod tier
