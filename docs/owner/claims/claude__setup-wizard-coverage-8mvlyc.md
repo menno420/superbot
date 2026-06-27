@@ -1,0 +1,1 @@
+- `claude/setup-wizard-coverage-8mvlyc` · **setup-wizard per-channel command access** — add a plain-language "Where can people use commands?" spine step (whole-server / chosen-channels / admins-only, via the audited `command_access_service`) to Essential Setup · `disbot/views/setup/essential_setup.py` `tests/unit/views/setup/test_essential_setup.py` · 2026-06-27 · PR pending
