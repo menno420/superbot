@@ -147,6 +147,10 @@ extensions:
   ai:
     role: shared_platform
     note: AI orchestration / answerability; cross-cutting.
+  ai_review:
+    role: shared_platform
+    note: AI answer review log (didn't-know outcomes + user corrections); cross-cutting
+      observability surface, no subsystem identity.
   media_maintenance:
     role: maintenance
     note: Scheduled media/YouTube cache purge loop; no subsystem identity.

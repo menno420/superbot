@@ -24,6 +24,7 @@ from utils.settings_keys.ai import (
     AI_MEMORY_WINDOW_MINUTES,
     AI_MINIMUM_LEVEL_DEFAULT,
     AI_NATURAL_LANGUAGE_ENABLED,
+    AI_REVIEW_CHANNEL,
 )
 from utils.settings_keys.automod import (
     AUTOMOD_CAPS_ENABLED,
@@ -163,6 +164,7 @@ __all__ = [
     "AI_MEMORY_WINDOW_MINUTES",
     "AI_MINIMUM_LEVEL_DEFAULT",
     "AI_NATURAL_LANGUAGE_ENABLED",
+    "AI_REVIEW_CHANNEL",
     "AUTOMOD_CAPS_ENABLED",
     "AUTOMOD_CAPS_PERCENT",
     "AUTOMOD_ENABLED",

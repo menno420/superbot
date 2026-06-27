@@ -3,31 +3,38 @@ r"""Ledger-hygiene linter — surface duplicate claim branches / idea-file links
 
 Provenance / reliability header (per CLAUDE.md Q-0105 adopt-with-kill-switch)
 ---------------------------------------------------------------------------
-- Why: PR #1003 put git's ``merge=union`` driver on the two append-only
-  coordination ledgers (``docs/owner/active-work.md`` claim ledger,
-  ``docs/ideas/README.md`` idea index) so concurrent appends from parallel
-  sessions auto-merge instead of conflicting (the #995 livelock, hit 3x). Union's
-  one accepted downside: it never deletes and never dedups, so over time a
-  duplicate claim line or a twice-linked idea file can land and accumulate
-  silently — the convention already *permits* pruning these by hand, but nothing
-  *surfaces* them. This linter is the surface. It pairs with #1003: union keeps
-  the ledgers conflict-free, this keeps them clean. Idea:
+- Why: PR #1003 put git's ``merge=union`` driver on the append-only coordination
+  ledgers so concurrent appends from parallel sessions auto-merge instead of
+  conflicting (the #995 livelock, hit 3x). Union's one accepted downside: it never
+  deletes and never dedups, so over time a duplicate claim or a twice-linked idea
+  file can land and accumulate silently — the convention already *permits* pruning
+  these by hand, but nothing *surfaces* them. This linter is the surface. It pairs
+  with #1003: union keeps the ledgers conflict-free, this keeps them clean. Idea:
   ``docs/ideas/ledger-dedup-linter-2026-06-16.md`` (fleet unit B2).
-- Added: 2026-06-19. **Unverified** — confirm its output against ground truth a
-  few times across sessions before trusting it (the duplicate counts it reports
-  should match a hand grep of the two ledgers). **Delete this script + its test if
-  it proves unreliable / noisy over multiple sessions** — it is a disposable
-  convenience guard (Q-0105), not load-bearing. It is read-only: it never modifies
-  the ledgers it inspects.
+- Added: 2026-06-19. De-staled 2026-06-27 for the **Q-0195 per-claim-file
+  restructure**: the single shared ``docs/owner/active-work.md`` claim ledger was
+  retired (now a pointer stub) in favour of **one file per claim** under
+  ``docs/owner/claims/``, so the old "Active claims section" scan no-op'd against a
+  stub. The claim half now scans the per-file claim directory for a branch claimed
+  by more than one file (the per-file analogue of a duplicate claim line — e.g. a
+  hand-named claim file whose ``claude/<branch>`` collides with another's). The
+  idea-index half is unchanged. Per-file claim *staleness* (a claim left behind after
+  merge) is owned by ``check_stale_claims.py``; lane *overlap* by
+  ``check_lane_overlap.py`` — this stays narrowly the dedup surface.
+- **Unverified** — confirm its output against ground truth a few times across
+  sessions before trusting it (the duplicate counts should match a hand grep).
+  **Delete this script + its test if it proves unreliable / noisy over multiple
+  sessions** — it is a disposable convenience guard (Q-0105), not load-bearing. It
+  is read-only: it never modifies the ledgers it inspects.
 
 Behavior
 --------
-Read-only over two well-structured lists:
+Read-only over two well-structured sources:
 
-* **Active claims** (``active-work.md`` § "Active claims") — flags the same
-  ``\`claude/<branch>\``` appearing twice *within that section*. A branch may
-  legitimately appear once in Active claims and again under "Recently cleared",
-  so the scan is scoped to the Active-claims section only.
+* **Claims** (``docs/owner/claims/*.md``, excluding ``README.md``) — flags the same
+  ``\`claude/<branch>\``` appearing in more than one claim file. One file per claim
+  (Q-0195) makes a duplicate *filename* impossible, but a hand-authored claim file
+  can still name a branch another file already claims; that collision is the dupe.
 * **Idea index** (``ideas/README.md`` § "What lives here") — flags the same
   ``./<file>.md`` linked twice as a top-level **index entry** (a list item that
   opens ``- [\`...\`](./<file>.md)``). Inline cross-references to an idea from
@@ -56,7 +63,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-ACTIVE_WORK = REPO_ROOT / "docs" / "owner" / "active-work.md"
+CLAIMS_DIR = REPO_ROOT / "docs" / "owner" / "claims"
 IDEAS_README = REPO_ROOT / "docs" / "ideas" / "README.md"
 
 # A `claude/<slug>` branch token inside backticks. Slug is lowercase alnum + dashes.
@@ -70,35 +77,23 @@ _INDEX_ENTRY_RE = re.compile(r"^-\s+\[[^\]]*\]\((\./[A-Za-z0-9._-]+\.md)\)")
 _ANY_IDEA_LINK_RE = re.compile(r"\]\((\./[A-Za-z0-9._-]+\.md)\)")
 
 
-def section_body(text: str, heading: str) -> str:
-    """Return the body of the ``## <heading>`` section (up to the next ``## ``).
+def duplicate_claim_branches(claims_dir: Path) -> list[tuple[str, int]]:
+    """``(branch, count)`` for each ``claude/<branch>`` claimed by >1 file in ``claims_dir``.
 
-    Returns "" when the heading is absent. Matching is exact on the heading text
-    after the ``## `` marker (leading/trailing whitespace stripped), so
-    "Active claims" finds ``## Active claims`` but not ``## Recently cleared``.
+    Scans every ``*.md`` claim file (excluding ``README.md``) under the per-file claim
+    directory (Q-0195). A branch is counted **once per file** (a single claim file naming
+    its own branch repeatedly is not a duplicate), so the count is the number of *distinct
+    files* that claim the same branch — a genuine collision needing a manual prune. Sorted
+    by branch for deterministic output. Missing/empty directory → ``[]``.
     """
-    lines = text.splitlines()
-    out: list[str] = []
-    capturing = False
-    for line in lines:
-        if line.startswith("## "):
-            if capturing:
-                break  # reached the next section — stop
-            capturing = line[3:].strip() == heading
+    counts: Counter[str] = Counter()
+    if not claims_dir.is_dir():
+        return []
+    for path in sorted(claims_dir.glob("*.md")):
+        if path.name == "README.md":
             continue
-        if capturing:
-            out.append(line)
-    return "\n".join(out)
-
-
-def duplicate_active_claims(text: str) -> list[tuple[str, int]]:
-    """``(branch, count)`` for each branch appearing >1x in the Active-claims section.
-
-    Sorted by branch for deterministic output. Scans only the Active-claims
-    section so a branch that also appears under "Recently cleared" is not a dupe.
-    """
-    body = section_body(text, "Active claims")
-    counts = Counter(_BRANCH_RE.findall(body))
+        branches = set(_BRANCH_RE.findall(_read(path)))  # once per file
+        counts.update(branches)
     return sorted((b, n) for b, n in counts.items() if n > 1)
 
 
@@ -143,10 +138,10 @@ def main(argv: list[str] | None = None) -> int:
         help="exit 1 when a hard duplicate (claim branch / idea index entry) is found",
     )
     parser.add_argument(
-        "--active-work",
+        "--claims-dir",
         type=Path,
-        default=ACTIVE_WORK,
-        help="path to the claim ledger (default: docs/owner/active-work.md)",
+        default=CLAIMS_DIR,
+        help="path to the per-file claim directory (default: docs/owner/claims/)",
     )
     parser.add_argument(
         "--ideas-readme",
@@ -156,10 +151,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    active_text = _read(args.active_work)
     ideas_text = _read(args.ideas_readme)
 
-    dup_claims = duplicate_active_claims(active_text)
+    dup_claims = duplicate_claim_branches(args.claims_dir)
     dup_entries = duplicate_idea_entries(ideas_text)
     # Advisory-only set: cross-reference dupes that are NOT duplicate index entries.
     entry_links = {link for link, _ in dup_entries}
@@ -172,9 +166,11 @@ def main(argv: list[str] | None = None) -> int:
     hard = bool(dup_claims or dup_entries)
 
     if dup_claims:
-        print("Duplicate Active-claims branches (active-work.md § Active claims):")
+        print("Duplicate claim branches (docs/owner/claims/*.md):")
         for branch, n in dup_claims:
-            print(f"  - `{branch}` appears {n}x — prune the stale duplicate line.")
+            print(
+                f"  - `{branch}` claimed by {n} files — prune the stale duplicate claim.",
+            )
     if dup_entries:
         print("Duplicate idea index entries (ideas/README.md § What lives here):")
         for link, n in dup_entries:

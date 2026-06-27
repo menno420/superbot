@@ -116,13 +116,15 @@ Current broad captures:
   real signal: *how much of the roadmap the autonomous fleet drives vs. how much he steers live* — the core
   "is the workflow self-driving?" metric. Reuses the planned-slice hit-rate tracker's parse. Subsystem: S4/S3 tooling.
 - [`reconcile-trigger-band-consistency-guard-2026-06-26.md`](./reconcile-trigger-band-consistency-guard-2026-06-26.md) —
-  **reconciliation idea (2026-06-26, band-#1470 Q-0089):** the `Last reconciliation pass: PR #N` marker is
-  hand-written and conflates the *reset target* (latest merged PR) with the *pass identity* (the PR the pass
-  shipped as) — the band-#1440 marker wrote `#1441` (a dashboard refresh) where the 25th pass was actually
-  #1443, costing the band-#1470 pass time to disentangle. A warn-first `check_reconcile_marker.py` that asserts
-  the marker is the latest merged PR, the `band-#M` label matches the cadence boundary the trigger issue
-  crossed, and the linked pass doc is the single `plan`-badged one — folds into the ledger-checker parse and
-  catches the conflation at the root. Joins the reconciliation-tooling cluster above. Subsystem: S4/S3 tooling.
+  **✅ SHIPPED 2026-06-27** (`scripts/check_reconcile_marker.py`, dispatch run): the warn-first guard that
+  asserts the `Last reconciliation pass: PR #N` marker is internally consistent (leading `#N` == the stated
+  reset target · `band-#M` == `(N // 30) * 30` · the linked pass doc exists). Caught + fixed the live
+  band-#1470 drift (marker read `#1472`, the pass's own PR, vs the reset target `#1470`). Subsystem: S4/S3 tooling.
+- [`reconcile-marker-generator-2026-06-27.md`](./reconcile-marker-generator-2026-06-27.md) —
+  **reconciliation idea (2026-06-27, Q-0089):** the generate-don't-validate complement to the guard above — a
+  `scripts/set_reconcile_marker.py` that *emits* the canonical marker line from the latest-merged PR + band
+  math (so the agreeing numbers come from one source and can't be mistyped), turning the routine's "reset the
+  marker" step into *run this script*. The guard catches the drift; the generator prevents it. Subsystem: S4/S3 tooling.
 - [`dispatch-menu-suppress-shipped-lanes-2026-06-26.md`](./dispatch-menu-suppress-shipped-lanes-2026-06-26.md) —
   **dispatch-tooling idea (2026-06-26, groomed from the #1477 left-open note):** `check_sector_next_freshness`
   catches a `▶ Next` linking a shipped (`historical`) plan at *session close*; `dispatch_menu.py` has no such

@@ -87,7 +87,7 @@ without depending on bot startup or runtime registry population.
 The 50 extensions loaded at startup come from
 `disbot/config.py:INITIAL_EXTENSIONS`. The 37 subsystems live in
 `disbot/utils/subsystem_registry.py:SUBSYSTEMS`; each has exactly one owning
-cog. The 13 loaded extensions that are **not** one-to-one subsystems are
+cog. The 14 loaded extensions that are **not** one-to-one subsystems are
 `bootstrap_access_cog` (command-admission guard), `hermes_cog` (the
 Hermes→Claude dispatch bridge — admin-only slash commands with no subsystem
 row), `media_maintenance_cog` (the YouTube cache-retention task owner — no
@@ -98,7 +98,10 @@ role product, no subsystem row), `creature_battle_cog` (the creature PvP
 `!cbattle` command — part of the Creatures subsystem, surfaced via
 `creature_cog`'s hook, no subsystem row), `starboard_cog` (the Starboard /
 Hall-of-Fame raw-reaction listener + the `!starboard` config command — no
-subsystem row), `setup_cog` (the advanced setup wizard surface — `!setupadvanced` /
+subsystem row), `ai_review_cog` (the AI answer review log — a 👎 / correction-reply
+listener (the `ai_correction` message-pipeline stage) plus the `!aireview` staff
+command that sets the `AI_REVIEW_CHANNEL` channel pointer — no subsystem row),
+`setup_cog` (the advanced setup wizard surface — `!setupadvanced` /
 `/setup-advanced`), `quicksetup_cog`
 (the Essential Setup front door — the primary `!setup` / `/setup`, no
 subsystem row), and the

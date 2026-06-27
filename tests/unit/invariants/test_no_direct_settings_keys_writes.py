@@ -74,6 +74,12 @@ _ALLOWED_PATHS = {
     # rationale as btd6_ct_team_service: a runtime pointer with no SettingSpec,
     # written through its own typed service rather than the pipeline.
     _DISBOT / "services" / "btd6_version_announce.py",
+    # The ai_review_log_service owns the AI_REVIEW_CHANNEL pointer (the per-guild
+    # channel where AI "didn't-know" outcomes + user corrections are posted, set
+    # via ``!aireview channel``). Same rationale as btd6_version_announce: a
+    # runtime channel pointer with no SettingSpec, written through its own typed
+    # service (set_review_channel) rather than the SettingsMutationPipeline.
+    _DISBOT / "services" / "ai_review_log_service.py",
     # Pre-existing callers — migrate to SettingsMutationPipeline in S10.
     # Each entry below corresponds to a per-subsystem S10 sub-PR
     # ("settings/<subsystem>") that will route the call through the

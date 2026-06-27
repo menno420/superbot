@@ -10,6 +10,15 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **Reconcile-marker band-consistency guard** (`scripts/check_reconcile_marker.py`, warn-first,
+  dispatch run 2026-06-27) — asserts the `Last reconciliation pass` marker in `current-state.md` is
+  internally consistent (leading `PR #N` == the stated reset target · `band-#M` == `(N // 30) * 30` ·
+  the linked pass-record doc exists); caught + fixed the live band-#1470 drift (marker read `#1472`,
+  the pass's own PR, vs the reset target `#1470`). Idea `reconcile-trigger-band-consistency-guard`.
+- **`check_ledger_hygiene` de-staled for the Q-0195 per-claim-file layout** (dispatch run 2026-06-27) —
+  the retired shared `active-work.md` claim ledger left the linter's Active-claims scan no-op'ing
+  against a pointer stub; repointed to scan `docs/owner/claims/*.md` and flag a `claude/<branch>`
+  claimed by >1 file.
 - **Settle-once money-safety guard** (`check_consistency` **Rule 6**, warn-first, #1454) — pins the
   settle-once terminal pattern on game-state views (#1444) + blackjack PvP (#1445, shared mixin
   relocated to `utils/`) so a money-paying game can't double-settle without tripping a checker.

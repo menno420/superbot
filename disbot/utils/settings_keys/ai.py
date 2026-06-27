@@ -28,3 +28,8 @@ AI_MEMORY_WINDOW_MINUTES = "ai_memory_window_minutes"
 # channel's recent Discord history to backfill. When False the
 # memory is limited strictly to messages observed since process start.
 AI_MEMORY_CHANNEL_SCAN_ENABLED = "ai_memory_channel_scan_enabled"
+
+# The dedicated channel where AI "didn't-know" outcomes + user corrections are
+# posted for review (services/ai_review_log_service.py → cogs/ai_review_cog.py).
+# Unset = no channel feed; the queryable `!aireview` log still records everything.
+AI_REVIEW_CHANNEL = "ai_review_channel"

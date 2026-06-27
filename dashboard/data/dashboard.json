@@ -1,22 +1,22 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T07:08:21Z",
+    "generated_at": "2026-06-27T09:45:00Z",
     "build": {
-      "commit": "d7fbc3b2",
-      "subject": "BTD6 QA accuracy: damage-type/status-effect interaction grounding + verified Q&A corpus (#1487)",
-      "committed_at": "2026-06-27T07:08:21Z"
+      "commit": "30ef3cd",
+      "subject": "ai-review-log: capture AI didn't-know outcomes + user corrections",
+      "committed_at": "2026-06-27T09:45:00Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 145,
+      "ideas": 146,
       "bugs": 25,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 39,
-      "cogs": 54,
-      "commands": 449,
-      "setting_keys": 107,
+      "cogs": 55,
+      "commands": 454,
+      "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
       "visible_subsystems": 43,
@@ -1158,6 +1158,14 @@
   ],
   "ideas": [
     {
+      "file": "reconcile-marker-generator-2026-06-27.md",
+      "title": "Idea — generate the reconciliation marker instead of hand-writing it",
+      "status": "ideas",
+      "date": "2026-06-27",
+      "summary": "The `Last reconciliation pass:** PR #N (… band-#M … reset to the latest merged PR #R)` marker is",
+      "subsystems": null
+    },
+    {
       "file": "dispatch-menu-suppress-shipped-lanes-2026-06-26.md",
       "title": "Idea — let `dispatch_menu.py` suppress already-shipped lanes at the dispatch pick",
       "status": "ideas",
@@ -1828,7 +1836,7 @@
     {
       "file": "ledger-dedup-linter-2026-06-16.md",
       "title": "Ledger dedup linter (companion to the merge=union fix)",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-16",
       "summary": "PR #1003 marked the two append-only coordination ledgers — `docs/owner/active-work.md` (claim ledger)",
       "subsystems": null
@@ -2569,6 +2577,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-27-reconcile-marker-band-consistency-guard.md",
+      "date": "2026-06-27",
+      "title": "Session — reconcile-marker band-consistency guard (+ marker conflation fix)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-27-economy-flow-timeseries.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Games-economy observability: per-day faucet/sink trend view",
@@ -2577,9 +2593,57 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-27-btd6-session-close-docs.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — BTD6 QA arc: session-close documentation (what shipped + live-test checklist)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-27-btd6-qa-accuracy.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — BTD6 QA accuracy: damage-type/status-effect interaction grounding + verified Q&A corpus",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-27-btd6-eval-semantic-grader.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — BTD6 live eval: semantic grading (fix false-negatives) + honest limits",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-27-btd6-eval-live-path.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — BTD6 evals: faithful \"exactly live\" answer-path replay",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-27-btd6-eval-corpus-action.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — BTD6 QA corpus wired into the evals (offline grounding test + live action suite)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-27-btd6-ddt-counter-grounding.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — BTD6: ground VERIFIED DDT counter towers (fix the over-refusal)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-27-ai-answer-review-log.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — AI answer review-log (didn't-know + user corrections)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2967,62 +3031,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-essential-setup-cutover.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Essential Setup cutover (primary `!setup`, separate channel, on-join)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-doc-staleness-audit.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · Doc-staleness audit (Essential Setup spine)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-command-tree-auto-sync.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Startup command-tree auto-sync + post-unification docs cleanup",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-card-theme-conformance-guard.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Provider `card_theme` conformance guard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-card-engine-migration.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · Visual card-engine migration (H2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-card-engine-guard.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · Card-engine consistency guard (Rule 5)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-btd6-unified-command-tree.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — BTD6: unify five command groups under one `/btd6`",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3111,7 +3119,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 171,
+          "line": 172,
           "layer": "config",
           "has_default": true
         },
@@ -3133,7 +3141,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 170,
+          "line": 171,
           "layer": "config",
           "has_default": true
         }
@@ -3166,7 +3174,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 154,
+          "line": 155,
           "layer": "config",
           "has_default": true
         },
@@ -3204,7 +3212,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 217,
+          "line": 218,
           "layer": "config",
           "has_default": true
         }
@@ -3252,7 +3260,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 209,
+          "line": 210,
           "layer": "config",
           "has_default": true
         }
@@ -3300,7 +3308,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 197,
+          "line": 198,
           "layer": "config",
           "has_default": true
         }
@@ -3316,7 +3324,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 200,
+          "line": 201,
           "layer": "config",
           "has_default": true
         }
@@ -3332,7 +3340,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 203,
+          "line": 204,
           "layer": "config",
           "has_default": true
         }
@@ -3492,7 +3500,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 116,
+          "line": 117,
           "layer": "config",
           "has_default": true
         }
@@ -3572,7 +3580,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 117,
+          "line": 118,
           "layer": "config",
           "has_default": true
         }
@@ -3590,7 +3598,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 153,
+          "line": 154,
           "layer": "config",
           "has_default": true
         },
@@ -3631,7 +3639,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 180,
+          "line": 181,
           "layer": "config",
           "has_default": true
         },
@@ -3654,7 +3662,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 184,
+          "line": 185,
           "layer": "config",
           "has_default": true
         },
@@ -3693,7 +3701,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 152,
+          "line": 153,
           "layer": "config",
           "has_default": true
         },
@@ -3717,7 +3725,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 151,
+          "line": 152,
           "layer": "config",
           "has_default": true
         },
@@ -4860,6 +4868,69 @@
           "parent": "ai",
           "aliases": [],
           "brief": "Show the most recent denials / skips for this guild.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
+      "cog": "AIReviewCog",
+      "file": "disbot/cogs/ai_review_cog.py",
+      "subsystem": "ai_review",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "aireview",
+          "type": "prefix",
+          "is_group": true,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show the AI review-log status (channel + unreviewed backlog).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "channel",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "aireview",
+          "aliases": [],
+          "brief": "Set the review channel: ``!aireview channel #chan``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "list",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "aireview",
+          "aliases": [],
+          "brief": "List recent entries: ``!aireview list [unknown|correction] [n]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "off",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "aireview",
+          "aliases": [],
+          "brief": "Clear the review channel (entries are still recorded + queryable).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "resolve",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "aireview",
+          "aliases": [],
+          "brief": "Mark one review entry reviewed: ``!aireview resolve <id>``.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -9450,6 +9521,10 @@
           "hint": "When ON, the bot may scan recent channel history via Discord's API to backfill its memory cache when the in-process buffer holds fewer messages than the configured window requires. OFF means memory is limited to messages the bot observed since process start.",
           "allowed_values": [],
           "default": false
+        },
+        {
+          "constant": "AI_REVIEW_CHANNEL",
+          "key": "ai_review_channel"
         }
       ]
     },
