@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-6rxu3n` · scope: YouTube cache DB-primitive test coverage (slice 2, advances Media readiness Fetch/cache/DB row) · area: `tests/unit/utils/db/` (no `disbot/` runtime change) · 2026-06-27
