@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T21:28:32Z",
+    "generated_at": "2026-06-27T23:45:15Z",
     "build": {
-      "commit": "170a0368",
-      "subject": "fishing: add fish→rod craft path (!craftrod + rod-shop button)",
-      "committed_at": "2026-06-27T21:28:32Z"
+      "commit": "ba6b9c30",
+      "subject": "Merge pull request #1515 from menno420/claude/funny-franklin-qaiqdi",
+      "committed_at": "2026-06-27T23:45:15Z"
     },
     "counts": {
       "functions": 43,
