@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T03:11:26Z",
+    "generated_at": "2026-06-27T05:31:27Z",
     "build": {
-      "commit": "50165ff0",
-      "subject": "session: open born-red card — games-economy faucet/sink timeseries (+ inflation finding)",
-      "committed_at": "2026-06-27T03:11:26Z"
+      "commit": "e27eee49",
+      "subject": "Merge pull request #1483 from menno420/claude/funny-franklin-e8jbvj",
+      "committed_at": "2026-06-27T05:31:27Z"
     },
     "counts": {
       "functions": 43,
@@ -2555,10 +2555,10 @@
     {
       "file": "2026-06-27-economy-flow-timeseries.md",
       "date": "2026-06-27",
-      "title": "2026-06-27 — Games-economy observability: faucet/sink timeseries (+ inflation finding)",
-      "status": "in-progress",
+      "title": "2026-06-27 — Games-economy observability: per-day faucet/sink trend view",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-06-26-sessionclose-freshness-wiring.md",
