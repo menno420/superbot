@@ -83,10 +83,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--btd6",
         action="store_true",
-        help="also run the BTD6 QA-accuracy corpus (tests/evals/btd6_corpus.py), "
-        "grounded with the REAL btd6_context_service.build() facts — so it tests "
-        "the bot's own retrieval, not hand-fed context. Combine with "
-        "--category btd6_grounding to run ONLY the BTD6 corpus.",
+        help="also run the BTD6 QA-accuracy corpus through the REAL production "
+        "answer path (router → grounding → instruction assembly → gateway → "
+        "faithfulness guard), so a result is what a live Discord user would get. "
+        "Uses the configured default provider (set AI_DEFAULT_PROVIDER).",
+    )
+    parser.add_argument(
+        "--btd6-only",
+        action="store_true",
+        help="run ONLY the BTD6 live corpus (skip the capability golden set).",
     )
     parser.add_argument(
         "--smoke",
@@ -109,45 +114,70 @@ def main(argv: list[str] | None = None) -> int:
     os.environ.setdefault("AI_ENABLED", "1")
     os.environ.setdefault("AI_TOOLS_ENABLED", "1")
 
-    providers = _build_providers(args.provider)
-    if not providers:
-        print(
-            "No usable providers — set OPENAI_API_KEY and/or ANTHROPIC_API_KEY "
-            "for the providers you selected.",
+    run_btd6 = args.btd6 or args.btd6_only
+    overall_ok = True
+
+    # --- BTD6 live corpus — the REAL production answer path -----------------
+    # Replays each corpus question through router → grounding → instruction
+    # assembly → gateway → faithfulness guard, against the configured default
+    # provider (AI_DEFAULT_PROVIDER), so a result is the live answer.
+    if run_btd6:
+        from tests.evals.btd6_live_path import (
+            live_suite_available,
+            render_live_report,
+            run_btd6_live_suite,
         )
-        return 2
 
-    from tests.evals.cases import CASES, GOLDEN_SET_VERSION
-    from tests.evals.harness import run_suite
-    from tests.evals.smoke import SMOKE_MATRIX_VERSION
+        if not live_suite_available():
+            print(
+                "BTD6 live corpus needs a provider key (OPENAI_API_KEY / "
+                "ANTHROPIC_API_KEY) and AI_DEFAULT_PROVIDER set to that provider.",
+            )
+            return 2
+        outcomes = asyncio.run(run_btd6_live_suite())
+        print(render_live_report(outcomes))
+        passed = sum(1 for o in outcomes if o.passed)
+        rate = passed / len(outcomes) if outcomes else 0.0
+        btd6_ok = rate >= args.threshold
+        overall_ok = overall_ok and btd6_ok
+        print(
+            f"\n{'PASS' if btd6_ok else 'FAIL'} — BTD6 live {rate:.0%} "
+            f"(threshold {args.threshold:.0%})",
+        )
 
-    all_cases = list(CASES)
-    if args.btd6:
-        # Build BTD6 cases from the REAL grounding pipeline (one build() per
-        # question), so the live model sees exactly what production retrieves.
-        from tests.evals.btd6_corpus import live_cases
+    # --- capability golden set — per-provider A/B ---------------------------
+    if not args.btd6_only:
+        providers = _build_providers(args.provider)
+        if not providers:
+            print(
+                "No usable providers — set OPENAI_API_KEY and/or ANTHROPIC_API_KEY "
+                "for the providers you selected.",
+            )
+            return 2
 
-        all_cases += asyncio.run(live_cases())
+        from tests.evals.cases import CASES, GOLDEN_SET_VERSION
+        from tests.evals.harness import run_suite
+        from tests.evals.smoke import SMOKE_MATRIX_VERSION
 
-    cases = [c for c in all_cases if args.category in (None, c.category)]
-    if not cases:
-        print(f"No cases match category {args.category!r}.")
-        return 2
+        cases = [c for c in CASES if args.category in (None, c.category)]
+        if not cases:
+            print(f"No cases match category {args.category!r}.")
+            return 2
 
-    btd6_note = " · BTD6 corpus grounded via real build()" if args.btd6 else ""
-    print(
-        f"Eval record — golden set v{GOLDEN_SET_VERSION} "
-        f"(live) · smoke matrix v{SMOKE_MATRIX_VERSION} (offline, run --smoke)"
-        f"{btd6_note}",
-    )
-    card = asyncio.run(run_suite(cases, providers=providers))
-    print(card.render())
-    ok = card.pass_rate >= args.threshold
-    print(
-        f"\n{'PASS' if ok else 'FAIL'} — overall {card.pass_rate:.0%} "
-        f"(threshold {args.threshold:.0%})",
-    )
-    return 0 if ok else 1
+        print(
+            f"Eval record — golden set v{GOLDEN_SET_VERSION} "
+            f"(live) · smoke matrix v{SMOKE_MATRIX_VERSION} (offline, run --smoke)",
+        )
+        card = asyncio.run(run_suite(cases, providers=providers))
+        print(card.render())
+        golden_ok = card.pass_rate >= args.threshold
+        overall_ok = overall_ok and golden_ok
+        print(
+            f"\n{'PASS' if golden_ok else 'FAIL'} — golden {card.pass_rate:.0%} "
+            f"(threshold {args.threshold:.0%})",
+        )
+
+    return 0 if overall_ok else 1
 
 
 if __name__ == "__main__":

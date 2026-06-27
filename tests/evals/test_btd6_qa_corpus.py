@@ -39,3 +39,22 @@ def test_corpus_is_nontrivial():
     assert len(GROUNDING_PROBES) >= 10
     # Every probe names at least one expected fact.
     assert all(p.expect for p in GROUNDING_PROBES)
+
+
+async def test_live_path_wiring_runs_offline():
+    """The faithful live path (router → grounding → assemble → gateway → guard)
+    must run end-to-end without raising even with no DB and no API key — it just
+    degrades. This guards the wiring on every PR; the paid run needs real keys.
+    """
+    from tests.evals.btd6_live_path import run_live
+
+    result = await run_live("can glue strike deal with DDTs")
+    # No API key in CI → a degraded, non-crashing result through the real path.
+    assert result.question
+    assert result.task  # the real router classified it
+    assert result.handled_by in {
+        "model",
+        "model_regenerated",
+        "refused",
+        "degraded",
+    } or result.handled_by.startswith("floor:")

@@ -59,11 +59,17 @@ questions at once," because both layers key off the bot's REAL retrieval
   grounded (and the known wrong claim is not). This proves the stored data is
   accessible and correct per question, with no API keys and no model variance.
 - **Live, paid, opt-in** — `run_evals.py --btd6` (or the **suite: btd6** dropdown
-  in the *AI Evals* Action) builds one `EvalCase` per question whose system
-  prompt is the question's **real `build()` facts**, then grades the model's
-  phrased answer. Because the grounding is the bot's own, a pass means "with the
-  facts our bot actually retrieves, the model answers correctly" — not "the model
-  can answer from perfect hand-fed context."
+  in the *AI Evals* Action) replays each question through the **REAL production
+  answer path** (`btd6_live_path.run_live`): the real router, the real
+  `btd6_context_service.build` grounding, the real `ai_instruction_service.assemble`
+  instruction stack, the real `natural_language_stage._invoke_gateway` call, and
+  the real `validate_btd6_reply` faithfulness guard + regenerate-once + refusal.
+  So a result here is **what a live Discord user would get** — not an
+  approximation. The only things not reproduced are Discord I/O and the decision
+  audit (neither changes the answer text). It tests the provider in
+  `AI_DEFAULT_PROVIDER`.
 
 Grow it by adding a `GroundingProbe` to `btd6_corpus.py` (it feeds both layers).
 The verified human-readable corpus is `docs/btd6/qa-accuracy-corpus-2026-06-27.md`.
+`btd6_live_path.py` reuses production internals on purpose — keep `run_live` in
+step with `AINaturalLanguageStage.process`.

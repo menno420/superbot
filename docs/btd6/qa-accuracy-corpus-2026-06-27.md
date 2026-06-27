@@ -183,15 +183,17 @@ keyed off the bot's REAL `btd6_context_service.build()` grounding:
   each question grounds its answer-bearing fact. This is the trustworthy "all at once" check; it
   proves the stored data is accessible + correct per question with no model variance.
 - **Live, paid, opt-in** — the *AI Evals* GitHub Action (**suite: btd6**), or
-  `RUN_EVALS=1 … python3.10 scripts/run_evals.py --btd6 --category btd6_grounding`. Each case's
-  prompt is the question's real grounded facts, so it grades the model's *phrasing given the bot's
-  own retrieval* — not hand-fed context.
+  `RUN_EVALS=1 … python3.10 scripts/run_evals.py --btd6-only`. This replays each question through the
+  **REAL production answer path** (`tests/evals/btd6_live_path.py`): real router → real grounding → real
+  instruction stack → real gateway call → real faithfulness guard + regenerate-once + refusal. The
+  result is **what a live Discord user would get** (only Discord I/O + the audit log are skipped). It
+  tests the provider set in `AI_DEFAULT_PROVIDER`.
 
 ## Open follow-ups (next sessions)
 
-- **Broaden the live `llm_judge` battery** (creds-gated): the `--btd6` corpus now confirms the model
-  answers from the real grounding; extend it with `llm_judge` rubric cases for strategy/opinion
-  questions the offline layer can't assert.
+- **Broaden the live corpus** with strategy/opinion questions graded by `llm_judge` rubrics (the
+  exact-fact `expect`/`forbid` grading suits the interaction/data class; open-ended advice needs a
+  rubric judge).
 - **Newer-tower coverage** (Desperado, Mermonkey): the dump has them; spot-check that
   interaction questions about their damage types ground correctly.
 - **Hero costs** are absent from `heroes.json` — wiki-only for now; a future data pass
