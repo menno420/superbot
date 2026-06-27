@@ -99,3 +99,48 @@ def test_knobs_are_monotonic():
 def test_has_fishing_bonus_detects_either_stat():
     assert gear.has_fishing_bonus(_stats(fishing_power=1)) is True
     assert gear.has_fishing_bonus(_stats(bite_luck=1)) is True
+
+
+# --- charm craft ladder (fish → charm) ---------------------------------------
+# Pins docs/planning/fishing-charm-craft-numbers-2026-06-27.md.
+
+
+def test_every_charm_recipe_targets_a_real_shop_charm():
+    """Each craftable charm is a real CHARM-slot item that the coin shop also
+    sells — crafting is the *alternative* source, never an orphan item."""
+    from utils import equipment as eq
+    from utils.mining import market
+
+    for name, recipe in gear.CHARM_RECIPES.items():
+        assert recipe.charm == name  # the key is the produced item name
+        assert eq.slot_for(name) == eq.CHARM  # a real equippable charm
+        assert market.buy_price(name) is not None  # also buyable for coins
+
+
+def test_charm_recipe_resolves_by_name_case_insensitively():
+    assert gear.charm_recipe("Fishing Charm") is gear.CHARM_RECIPES["fishing charm"]
+    assert gear.craftable_charm_for("  MASTER ANGLER CHARM ") == "master angler charm"
+    assert gear.charm_recipe("lucky charm") is None  # a charm, but no fish recipe
+    assert gear.craftable_charm_for("") is None
+    assert gear.craftable_charm_for(None) is None
+
+
+def test_charm_craft_cost_is_monotonic_up_the_ladder():
+    """A pricier charm must cost strictly more fish AND accept larger fish — so
+    the ladder never inverts (a stronger charm cheaper to craft)."""
+    from utils.mining import market
+
+    rungs = [
+        (market.buy_price(name), gear.CHARM_RECIPES[name])
+        for name in gear.CRAFTABLE_CHARM_NAMES
+    ]
+    rungs.sort(key=lambda r: r[0])  # by coin price (the canonical ladder order)
+    counts = [r.fish_count for _, r in rungs]
+    caps = [r.max_size_rank for _, r in rungs]
+    assert counts == sorted(counts) and len(set(counts)) == len(counts)  # strictly up
+    assert caps == sorted(caps)  # eligible-size cap is non-decreasing
+
+
+def test_charm_recipe_text_is_human_readable():
+    recipe = gear.CHARM_RECIPES["fishing charm"]
+    assert gear.charm_recipe_text(recipe) == "8 fish (size ≤ 8)"

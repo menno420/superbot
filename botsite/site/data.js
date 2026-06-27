@@ -538,10 +538,6 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
-      {
-        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -1614,8 +1610,27 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
+    "name": "craftcharm",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Craft a fishing charm from caught fish — the non-coin earn path.",
+    "description": "Craft a fishing charm from caught fish — the non-coin earn path.",
+    "usage": "!craftcharm",
+    "aliases": [
+      "charmcraft"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!craftcharm fishing charm",
+      "!gear"
+    ],
+    "planned": [
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2340,10 +2355,6 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
-      {
-        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -2362,10 +2373,6 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
-      {
-        "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2388,10 +2395,6 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
-      {
-        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -2410,10 +2413,6 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
-      {
-        "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -2474,10 +2473,6 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
-      {
-        "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -4390,10 +4385,6 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
-      {
-        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -4738,10 +4729,6 @@ const COMMANDS = [
       "!fish"
     ],
     "planned": [
-      {
-        "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -6240,10 +6227,6 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
-        "title": "Idea — Fishing-specific gear stats (make loadout presets a real…"
-      },
-      {
-        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
@@ -6958,7 +6941,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "a903be68",
+    "build": "6f6e281f",
     "title": "New public bot website",
     "changes": [
       {
@@ -6970,7 +6953,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "a903be68",
+    "build": "6f6e281f",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6982,7 +6965,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "a903be68",
+    "build": "6f6e281f",
     "title": "Command-alias suggestions",
     "changes": [
       {

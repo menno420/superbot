@@ -30,6 +30,7 @@ from core.runtime import guild_resources as resources
 from services import fishing_workflow, game_xp_service
 from utils import db
 from utils.fishing import bait as bait_mod
+from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
 from utils.fishing import weather as weather_mod
 from utils.fishing.fish import SPECIES, species_by_name
@@ -226,6 +227,32 @@ class FishingCog(commands.Cog):
             )
             return
         result = await fishing_workflow.craft_bait(ctx.author.id, ctx.guild.id, key)
+        await ctx.send(result.message)
+
+    @commands.command(name="craftcharm", aliases=["charmcraft"])
+    async def craftcharm(self, ctx, *, charm: str = ""):
+        """Craft a fishing charm from caught fish — the non-coin earn path.
+
+        With a charm name (e.g. ``!craftcharm fishing charm``) crafts it directly
+        from your small caught fish; with no argument, lists the craftable charms
+        and their fish cost. Charms also sell for coins in the gear shop
+        (``!gear``) — crafting is the slower, gameplay-native alternative.
+        """
+        name = fishing_gear.craftable_charm_for(charm)
+        if not charm or name is None:
+            lines = [
+                f"🎣 **{r.charm.title()}** — {fishing_gear.charm_recipe_text(r)}"
+                for r in fishing_gear.CHARM_RECIPES.values()
+            ]
+            prefix = (
+                f"You can't craft **{charm}** from fish.\n"
+                if charm
+                else "Craft a fishing charm from caught fish "
+                "(or buy one with `!gear`):\n"
+            )
+            await ctx.send(prefix + "\n".join(lines))
+            return
+        result = await fishing_workflow.craft_charm(ctx.author.id, ctx.guild.id, name)
         await ctx.send(result.message)
 
     # ------------------------------------------------------------------ help hook

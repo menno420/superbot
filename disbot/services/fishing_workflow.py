@@ -19,6 +19,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
+from typing import Protocol
 
 from core.events import bus
 from services import economy_service, game_xp_service
@@ -595,9 +596,16 @@ class BaitCraftResult:
     charges: int = 0
 
 
+class _FishRecipe(Protocol):
+    """The shape ``_plan_fish_spend`` needs — shared by bait and charm recipes."""
+
+    fish_count: int
+    max_size_rank: int
+
+
 def _plan_fish_spend(
     inventory: dict[str, int],
-    recipe: bait_mod.BaitRecipe,
+    recipe: _FishRecipe,
 ) -> dict[str, int] | None:
     """Choose which eligible fish to consume for *recipe* (smallest-first).
 
@@ -679,4 +687,67 @@ async def craft_bait(
         f"**{used}** — **{new_charges}** casts ready.",
         bait=bait,
         charges=new_charges,
+    )
+
+
+# Charm crafting — turn small caught fish into the CHARM-slot fishing charms
+# (the catch→charm earn path, S1 acquisition-depth follow-up to #1504). The
+# gameplay-native second source beside the mining gear shop's coin price: an
+# inventory→gear conversion, NOT a coin sink. Mirrors craft_bait exactly.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CharmCraftResult:
+    """The outcome of a ``craft_charm`` attempt — a flag + a player-facing message."""
+
+    success: bool
+    message: str
+    #: The charm item name crafted (``None`` on failure).
+    charm: str | None = None
+
+
+async def craft_charm(
+    user_id: int,
+    guild_id: int,
+    charm_name: str,
+) -> CharmCraftResult:
+    """Craft one *charm_name* fishing charm from small caught fish.
+
+    Mirrors :func:`craft_bait`: an inventory-only conversion (no coins, no
+    external call) — debit the eligible fish (smallest-first) and grant one
+    charm into the mining inventory in ONE ``db.transaction()`` (Q-0071). The
+    charm then equips through the normal mining gear panel (CHARM slot). Only the
+    three fishing charms have a recipe; coins remain the fast alternative via the
+    gear shop (``!gear``). The fish a charm consumes are worth far less sold than
+    the charm's shop price, so neither path is free arbitrage.
+    """
+    recipe = fishing_gear.charm_recipe(charm_name)
+    if recipe is None:
+        return CharmCraftResult(
+            False,
+            "That charm can't be crafted from fish — buy it with `!gear`.",
+        )
+
+    inventory = await db.get_mining_inventory(str(user_id), guild_id)
+    spend = _plan_fish_spend(inventory, recipe)
+    if spend is None:
+        return CharmCraftResult(
+            False,
+            f"You need **{recipe.fish_count}** fish of size ≤ "
+            f"**{recipe.max_size_rank}** to craft a **{recipe.charm}** — "
+            "catch more fish with `!fish`.",
+        )
+
+    deltas: dict[str, int] = {name: -qty for name, qty in spend.items()}
+    deltas[recipe.charm] = deltas.get(recipe.charm, 0) + 1
+    async with db.transaction() as conn:
+        await db.apply_inventory_deltas(str(user_id), guild_id, deltas, conn=conn)
+
+    used = ", ".join(f"{qty}× {name}" for name, qty in spend.items())
+    return CharmCraftResult(
+        True,
+        f"Crafted a **{recipe.charm}** from **{used}** — "
+        "equip it from the gear panel (`!gear`) to fish better.",
+        charm=recipe.charm,
     )
