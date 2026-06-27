@@ -1,0 +1,1 @@
+- `claude/funny-franklin-galrnj` · reconcile-marker band-consistency guard (`scripts/check_reconcile_marker.py`) + fix the #1472→#1470 marker conflation drift · scope: `scripts/`, `tests/unit/scripts/`, `docs/current-state.md` (marker line), `docs/ideas/`, `docs/operations/` · 2026-06-27
