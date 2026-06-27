@@ -1,0 +1,1 @@
+- `claude/bot-modularity-completion-zah7rj` · **feature-completion framework** — completion-certification system for S1 bot units (per-feature rubrics + ledger + scoreboard + Blackjack pilot) · `docs/planning/feature-completion/` `scripts/completion_scoreboard.py` · 2026-06-27 · PR pending
