@@ -1,1 +1,0 @@
-- branch: claude/funny-franklin-iv2rzi · scope: EffectiveStats knob-coverage guard + dead-stat bug-book finding · files: tests/unit/invariants/test_effective_stats_consumed.py, docs/health/bug-book.md · 2026-06-27
