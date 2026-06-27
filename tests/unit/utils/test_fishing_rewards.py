@@ -5,7 +5,11 @@ from __future__ import annotations
 import random
 
 from utils.fishing import fish
-from utils.fishing.rewards import roll_catch
+from utils.fishing.rewards import (
+    BONUS_CATCH_CHANCE,
+    roll_bonus_catch,
+    roll_catch,
+)
 
 
 def test_roll_is_deterministic_for_a_fixed_seed():
@@ -118,3 +122,25 @@ def test_shore_and_deepwater_rolls_draw_from_disjoint_pools():
     shore = {roll_catch(fish.MAX_LEVEL, rng, venue="shore").species.name for _ in range(400)}
     deep = {roll_catch(fish.MAX_LEVEL, rng, venue="deepwater").species.name for _ in range(400)}
     assert shore.isdisjoint(deep)
+
+
+# ---------------------------------------------------------------------------
+# the lucky-double-catch bonus (extra craft fodder, with PR #1515)
+# ---------------------------------------------------------------------------
+
+
+def test_bonus_catch_chance_stays_a_treat_not_the_norm():
+    # The bonus must feel lucky, never a baseline doubling of fishing output.
+    assert 0.0 < BONUS_CATCH_CHANCE <= 0.25
+
+
+def test_roll_bonus_catch_is_deterministic_for_a_fixed_seed():
+    assert roll_bonus_catch(random.Random(7)) == roll_bonus_catch(random.Random(7))
+
+
+def test_roll_bonus_catch_fires_at_about_the_configured_rate():
+    rng = random.Random(123)
+    hits = sum(roll_bonus_catch(rng) for _ in range(20_000))
+    rate = hits / 20_000
+    # within a generous band of the configured chance (seeded, so stable)
+    assert abs(rate - BONUS_CATCH_CHANCE) < 0.02

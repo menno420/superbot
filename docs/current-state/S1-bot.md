@@ -79,9 +79,15 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   the rod shop) crafts the next rod up from caught fish (smallest-first), mirroring the charm/bait loops —
   `rods.ROD_RECIPES` + `fishing_workflow.craft_rod` (inventory-only, one transaction, no coins/audit);
   coins stay the fast alternative via `buy_rod`
-  ([rod craft numbers](../planning/fishing-rod-craft-numbers-2026-06-27.md)). ▶ **Next offline successor:**
-  a **fish-loot drop** (a small chance a cast yields charm/craft materials directly). Pure + sim-pinnable,
-  self-mergeable.
+  ([rod craft numbers](../planning/fishing-rod-craft-numbers-2026-06-27.md)). **The fish-loot-drop
+  successor ALSO SHIPPED 2026-06-27 (PR #1515):** a **🍀 lucky double catch** — `BONUS_CATCH_CHANCE`
+  (0.10) that a successful reel lands a *second* copy of the same fish (extra craft fodder straight into
+  the bait/charm/rod craft loops), rolled in `commit_catch` via pure `rewards.roll_bonus_catch`,
+  byte-identical when it doesn't fire, never a second dex/trophy row
+  ([bonus-catch numbers](../planning/fishing-bonus-catch-numbers-2026-06-27.md)). ▶ **Next offline
+  successor:** extend the same caught-fish craft pattern to the **rod-ladder via a recipe browser** /
+  or a **fish-loot rare-material drop** (a dedicated craft material, not just a double fish). Pure +
+  sim-pinnable, self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

@@ -413,6 +413,11 @@ class FishingCastView(discord.ui.View):
             desc += f"\n⚖️ It weighs **{result.weight:g} kg**."
             if result.new_personal_best:
                 desc += " 🏅 **New personal best!**"
+        if result.bonus_catch:
+            desc += (
+                f"\n🍀 **Lucky double catch!** A second {species.emoji} "
+                f"**{species.name.title()}** for the craft bin."
+            )
         if result.unlocked_bigger:
             cap = max_size_rank_for_level(result.fishing_level, species.venue)
             desc += (

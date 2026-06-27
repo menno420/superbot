@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T23:24:25Z",
+    "generated_at": "2026-06-27T21:28:32Z",
     "build": {
-      "commit": "e1e12caf",
-      "subject": "Merge branch 'main' into claude/funny-franklin-qaiqdi",
-      "committed_at": "2026-06-27T23:24:25Z"
+      "commit": "170a0368",
+      "subject": "fishing: add fish→rod craft path (!craftrod + rod-shop button)",
+      "committed_at": "2026-06-27T21:28:32Z"
     },
     "counts": {
       "functions": 43,
@@ -2665,8 +2665,8 @@
     {
       "file": "2026-06-27-fishing-rod-craft.md",
       "date": "2026-06-27",
-      "title": "2026-06-27 — Fishing fish→rod craft path",
-      "status": "in-progress",
+      "title": "2026-06-27 — Fishing acquisition depth: fish→rod craft + lucky double catch",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
