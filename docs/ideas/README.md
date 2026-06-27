@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`band-queue-execution-rate-2026-06-27.md`](./band-queue-execution-rate-2026-06-27.md) —
+  **captured 2026-06-27 (band-#1500 reconciliation pass, Q-0089):** three of the last four bands executed
+  **zero** named §4 forward-queue slices (the work was owner-directed BTD6 accuracy + autonomous
+  hardening instead). Add one computed line per pass record — "queue slices executed this band: X of N
+  named" — making the planning-vs-reality gap legible across bands. The manual precursor to E3 (the
+  planned-slice hit-rate tracker). Subsystem: S4 docs-system.
 - [`fishing-gear-stats-2026-06-27.md`](./fishing-gear-stats-2026-06-27.md) —
   **captured 2026-06-27 (dispatch run, alongside gear-loadout-presets #1499):** the loadout-swap half of
   the unified-loadout vision (Q-0175) shipped, but matching gear has nothing to bias — `EffectiveStats`
