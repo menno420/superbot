@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T18:29:28Z",
+    "generated_at": "2026-06-27T21:40:39Z",
     "build": {
-      "commit": "6f6e281f",
-      "subject": "feat(fishing): fish→charm craft path — non-coin earn for fishing charms",
-      "committed_at": "2026-06-27T18:29:28Z"
+      "commit": "010b8e08",
+      "subject": "Merge pull request #1512 from menno420/claude/mining-wire-light-luck",
+      "committed_at": "2026-06-27T21:40:39Z"
     },
     "counts": {
       "functions": 43,
@@ -2425,7 +2425,7 @@
   "bugs": [
     {
       "id": "BUG-0026",
-      "title": "EffectiveStats.light_radius and .luck are dead stats (gear grants them, no game reads them) — OPEN (gameplay decision, guard shipped)",
+      "title": "EffectiveStats.light_radius and .luck are dead stats (gear grants them, no game reads them) — FIXED (wired — owner decision Q-0208)",
       "status": "unknown",
       "summary": "Symptom (found 2026-06-27 by code inspection while building the Q-0089 EffectiveStats knob-coverage guard, PR #1505 — not a live report, but a real latent gap): two fields on the cross-game utils/equipment.EffectiveStats block are defined, summed (__add__), and labelled (STAT_LA…"
     },
@@ -2639,6 +2639,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-27-mining-wire-light-luck.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Wire the two dead EffectiveStats (light_radius + luck) into mining (BUG-0026)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-27-mining-loadout-presets.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Mining/character gear loadout presets (V-14 / Q-0175 Phase-1 unified-loadout model)",
@@ -2730,6 +2738,22 @@
       "file": "2026-06-27-btd6-ddt-counter-grounding.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — BTD6: ground VERIFIED DDT counter towers (fix the over-refusal)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-27-btd6-absence-guard-layer-b.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — BTD6 absence-guard Layer B (grounded-contradiction slice)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-27-audit-review-btd6-corpus.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Reviewed the codex unfinished-work audit (PR #1509); shipped a BTD6 regression-corpus expansion",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3034,30 +3058,6 @@
       "file": "2026-06-24-reconcile-band1380.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · docs reconciliation (band-#1380, Q-0107 pass 23)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-readiness-grades-tickets.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Setup readiness scan grades tickets",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-rank-card-image.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Rank card as a themed image (card-engine H3, first feature card)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-leaderboard-image-card.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Leaderboard image card: ship the H2 card-engine tail as a real feature",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
