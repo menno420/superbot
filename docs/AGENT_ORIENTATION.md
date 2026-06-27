@@ -144,6 +144,16 @@ read **`docs/helper-policy.md`** first.
 2. `docs/decisions/002-game-state-not-restart-safe.md` — binding restart-safety decision.
 3. `docs/archive/games-actionability-roadmap.md` — shipped actionability baseline and deferred context.
 
+### Marking a feature "complete" (completion certification)
+
+1. `docs/planning/feature-completion/README.md` — the system: the *feature-completeness* axis (distinct
+   from the `production-readiness` *risk* axis), the per-feature unit model, the `▢ → ◐ → ✔` state
+   machine, the soft completion-first policy, and the completion ledger of every S1 unit (Q-0209).
+2. `docs/planning/feature-completion/rubric-game.md` / `rubric-server-function.md` — the two
+   Definition-of-Complete checklists to score a unit against.
+3. `docs/planning/feature-completion/units/blackjack.md` — the worked pilot certificate.
+4. `python3.10 scripts/completion_scoreboard.py` — the generated certified-% scoreboard.
+
 ### Touching media / YouTube
 
 1. `docs/subsystems/media-youtube.md` — canonical area entry point and verification/risk gates.

@@ -8,6 +8,13 @@
 > [games](../subsystems/games.md) ·
 > [settings-bindings-provisioning](../subsystems/settings-bindings-provisioning.md).
 
+> **Posture — completion-first (Q-0209, 2026-06-27):** the bot is close to production-ready, so S1's
+> standing bias is **finish/certify existing features before starting new ones** (a new idea that
+> *deepens* an existing game/function counts as deepening, not new). Each game + server function is a
+> per-feature unit scored `▢ → ◐ → ✔` in
+> [`../planning/feature-completion/`](../planning/feature-completion/README.md); certified only on
+> evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
+
 **Recently shipped (this sector):**
 - **Reaction-roles arc — Carl-bot-mature** (#1234/#1237/#1242/#1243/#1245/#1246/#1248/#1250):
   multi-emote-per-message, channel/message pickers, role + gradient presets, free temp-roles

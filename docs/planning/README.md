@@ -130,6 +130,17 @@ operating decisions + §6 rejection ledger are binding** "do-not-propose" — re
 *The other five per-subsystem readiness maps (ai · games · health-diagnostics · media-youtube ·
 server-management) are **superseded** — their blockers shipped; they are rebadged `historical` (see below).*
 
+### Feature-completion (the completeness tier — [index](feature-completion/README.md))
+
+The *feature/UX-completeness* axis (orthogonal to the risk-ranked tier above — Q-0209): per-feature
+units scored `▢ → ◐ → ✔`, certified only on evidence + owner sign-off.
+
+| Doc | Status |
+|---|---|
+| [feature-completion/README](feature-completion/README.md) | the system + the completion ledger of every S1 unit + the generated certified-% scoreboard |
+| [rubric-game](feature-completion/rubric-game.md) · [rubric-server-function](feature-completion/rubric-server-function.md) | the two Definition-of-Complete checklists |
+| [units/blackjack](feature-completion/units/blackjack.md) | the worked pilot certificate (◐ assessed) |
+
 ---
 
 ## Historical / superseded — kept for provenance, **do not act on these**
