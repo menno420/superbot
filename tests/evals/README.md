@@ -45,3 +45,25 @@ rubric).
 Append an `EvalCase` to `CASES` in `cases.py`. Grow the set from real failures —
 when someone reports a bad answer, add it here so it becomes a permanent
 regression probe.
+
+## BTD6 QA-accuracy corpus (grounded with the REAL pipeline)
+
+`cases.py` probes the model with **hand-canned** `tool_results` — it tests the
+model in isolation, NOT the bot's BTD6 data pipeline. The BTD6 corpus
+(`btd6_corpus.py`) is different and is the trustworthy way to "test all the BTD6
+questions at once," because both layers key off the bot's REAL retrieval
+(`btd6_context_service.build()`):
+
+- **Offline, deterministic, free, every PR** — `test_btd6_qa_corpus.py` runs each
+  corpus question through `build()` and asserts the answer-bearing fact is
+  grounded (and the known wrong claim is not). This proves the stored data is
+  accessible and correct per question, with no API keys and no model variance.
+- **Live, paid, opt-in** — `run_evals.py --btd6` (or the **suite: btd6** dropdown
+  in the *AI Evals* Action) builds one `EvalCase` per question whose system
+  prompt is the question's **real `build()` facts**, then grades the model's
+  phrased answer. Because the grounding is the bot's own, a pass means "with the
+  facts our bot actually retrieves, the model answers correctly" — not "the model
+  can answer from perfect hand-fed context."
+
+Grow it by adding a `GroundingProbe` to `btd6_corpus.py` (it feeds both layers).
+The verified human-readable corpus is `docs/btd6/qa-accuracy-corpus-2026-06-27.md`.

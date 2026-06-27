@@ -174,10 +174,24 @@ gap — add a trigger token / alias to `btd6_interaction_service` or a row to
 `damage_types.json` (and a cross-check stays green because the table is validated against
 the game-sourced `immune_to` data).
 
+## Testing the whole corpus at once
+
+This corpus is wired into the eval system as `tests/evals/btd6_corpus.py` (the machine half),
+keyed off the bot's REAL `btd6_context_service.build()` grounding:
+
+- **Offline, free, every PR** — `python3.10 -m pytest tests/evals/test_btd6_qa_corpus.py` asserts
+  each question grounds its answer-bearing fact. This is the trustworthy "all at once" check; it
+  proves the stored data is accessible + correct per question with no model variance.
+- **Live, paid, opt-in** — the *AI Evals* GitHub Action (**suite: btd6**), or
+  `RUN_EVALS=1 … python3.10 scripts/run_evals.py --btd6 --category btd6_grounding`. Each case's
+  prompt is the question's real grounded facts, so it grades the model's *phrasing given the bot's
+  own retrieval* — not hand-fed context.
+
 ## Open follow-ups (next sessions)
 
-- **Live `llm_judge` battery** (creds-gated): confirm the model actually *uses* these
-  grounded interaction facts in its replies (the offline grounding half is what shipped here).
+- **Broaden the live `llm_judge` battery** (creds-gated): the `--btd6` corpus now confirms the model
+  answers from the real grounding; extend it with `llm_judge` rubric cases for strategy/opinion
+  questions the offline layer can't assert.
 - **Newer-tower coverage** (Desperado, Mermonkey): the dump has them; spot-check that
   interaction questions about their damage types ground correctly.
 - **Hero costs** are absent from `heroes.json` — wiki-only for now; a future data pass

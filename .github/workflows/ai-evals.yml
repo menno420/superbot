@@ -23,6 +23,14 @@ on:
           - openai
           - anthropic
         default: both
+      suite:
+        description: Which cases to run
+        type: choice
+        options:
+          - golden          # the standard capability golden set
+          - btd6            # ONLY the BTD6 QA-accuracy corpus (real grounding)
+          - golden+btd6     # both
+        default: golden+btd6
       threshold:
         description: Pass-rate threshold (0-1), informational only
         type: string
@@ -52,12 +60,22 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PROVIDER: ${{ inputs.provider }}
+          SUITE: ${{ inputs.suite }}
           THRESHOLD: ${{ inputs.threshold }}
         run: |
+          # Translate the suite picker into run_evals flags. The BTD6 corpus is
+          # grounded with the bot's REAL btd6_context_service.build() facts, so a
+          # pass means the bot's own retrieval answers the question.
+          SUITE_FLAGS=""
+          case "$SUITE" in
+            btd6)        SUITE_FLAGS="--btd6 --category btd6_grounding" ;;
+            golden+btd6) SUITE_FLAGS="--btd6" ;;
+            *)           SUITE_FLAGS="" ;;   # golden only
+          esac
           {
-            echo '### AI eval scorecard'
+            echo "### AI eval scorecard (suite: ${SUITE})"
             echo ''
             echo '```text'
-            python scripts/run_evals.py --provider "$PROVIDER" --threshold "$THRESHOLD" || true
+            python scripts/run_evals.py --provider "$PROVIDER" --threshold "$THRESHOLD" $SUITE_FLAGS || true
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"

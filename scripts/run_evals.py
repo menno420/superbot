@@ -78,7 +78,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--category",
         default=None,
-        help="run only one category (e.g. tool_use)",
+        help="run only one category (e.g. tool_use, btd6_grounding)",
+    )
+    parser.add_argument(
+        "--btd6",
+        action="store_true",
+        help="also run the BTD6 QA-accuracy corpus (tests/evals/btd6_corpus.py), "
+        "grounded with the REAL btd6_context_service.build() facts — so it tests "
+        "the bot's own retrieval, not hand-fed context. Combine with "
+        "--category btd6_grounding to run ONLY the BTD6 corpus.",
     )
     parser.add_argument(
         "--smoke",
@@ -113,14 +121,24 @@ def main(argv: list[str] | None = None) -> int:
     from tests.evals.harness import run_suite
     from tests.evals.smoke import SMOKE_MATRIX_VERSION
 
-    cases = [c for c in CASES if args.category in (None, c.category)]
+    all_cases = list(CASES)
+    if args.btd6:
+        # Build BTD6 cases from the REAL grounding pipeline (one build() per
+        # question), so the live model sees exactly what production retrieves.
+        from tests.evals.btd6_corpus import live_cases
+
+        all_cases += asyncio.run(live_cases())
+
+    cases = [c for c in all_cases if args.category in (None, c.category)]
     if not cases:
         print(f"No cases match category {args.category!r}.")
         return 2
 
+    btd6_note = " · BTD6 corpus grounded via real build()" if args.btd6 else ""
     print(
         f"Eval record — golden set v{GOLDEN_SET_VERSION} "
-        f"(live) · smoke matrix v{SMOKE_MATRIX_VERSION} (offline, run --smoke)",
+        f"(live) · smoke matrix v{SMOKE_MATRIX_VERSION} (offline, run --smoke)"
+        f"{btd6_note}",
     )
     card = asyncio.run(run_suite(cases, providers=providers))
     print(card.render())
