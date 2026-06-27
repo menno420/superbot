@@ -137,6 +137,37 @@ def _pop_guide_fact(entry: dict[str, Any]) -> str:
     )
 
 
+# pop_guide ids whose answer is really "which tower?" — for these we ground a
+# VERIFIED tower list (derived from the dump) so the model names real towers
+# instead of freelancing (which the faithfulness guard then refuses). Keyed to a
+# bloon id the capability derivation understands.
+_COUNTER_BLOON_FOR: dict[str, str] = {"ddt": "ddt"}
+
+
+def _counter_fact(pop_guide_id: str, label: str) -> str | None:
+    """A grounded "towers that can damage <bloon>" fact, or ``None``.
+
+    Derived at runtime from ``btd6_capability_service.towers_that_can_damage`` so
+    it always matches the committed data. Each named tower's primary attack
+    detects camo AND deals a damage type the bloon does not resist.
+    """
+    bloon_id = _COUNTER_BLOON_FOR.get(pop_guide_id)
+    if bloon_id is None:
+        return None
+    from services import btd6_capability_service
+
+    hits = btd6_capability_service.towers_that_can_damage(bloon_id)
+    if not hits:
+        return None
+    listed = ", ".join(f"{h.canonical} ({h.crosspath}, {h.damage_type})" for h in hits)
+    return (
+        f"[btd6_interaction] Towers whose attack can damage a {label} — verified "
+        f"from game data, each detects camo AND deals a damage type a {label} does "
+        f"not resist (the crosspath shown is the earliest config that works; it is "
+        f"a capability list, not a power ranking): {listed}. (source: {_SOURCE})"
+    )
+
+
 def interaction_facts(message_text: str) -> list[str]:
     """Grounding facts for a damage-type / status-effect / property question.
 
@@ -172,6 +203,9 @@ def interaction_facts(message_text: str) -> list[str]:
         facts.append(_status_fact(status))
     for prop in matched_props:
         facts.append(_pop_guide_fact(prop))
+        counter = _counter_fact(str(prop.get("id", "")), prop.get("property", ""))
+        if counter is not None:
+            facts.append(counter)
     for damage in matched_damage:
         facts.append(_damage_type_fact(damage))
 

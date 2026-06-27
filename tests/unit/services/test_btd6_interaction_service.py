@@ -100,6 +100,22 @@ def test_ice_is_cold_blocked_by_lead():
     assert "cold snap" in blob
 
 
+def test_ddt_grounds_verified_counter_towers():
+    """'how do I deal with a DDT' must ground a VERIFIED tower list so the model
+    names real towers (and the faithfulness guard does not refuse the answer).
+    This is the over-refusal fix: the towers are derived from the dump, not
+    freelanced."""
+    facts = btd6_interaction_service.interaction_facts("how do I deal with a DDT")
+    counter = [f for f in facts if "towers whose attack can damage a ddt" in f.lower()]
+    assert counter, "expected a grounded DDT counter-tower fact"
+    blob = counter[0].lower()
+    # Real, verified damage-dealers must be named.
+    assert "super monkey" in blob
+    assert "spike factory" in blob
+    # It must be framed as a capability list, not freelanced advice.
+    assert "verified from game data" in blob
+
+
 def test_ddt_pop_guide_lists_correct_damage():
     facts = btd6_interaction_service.interaction_facts(
         "how do I deal with a DDT",
