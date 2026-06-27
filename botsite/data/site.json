@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T12:30:24Z",
+    "generated_at": "2026-06-27T12:49:53Z",
     "build": {
-      "commit": "a42fd02f",
-      "subject": "feat(mining): named gear loadout presets — save/swap equipped gear (V-14/Q-0175 Phase-1)",
-      "committed_at": "2026-06-27T12:30:24Z"
+      "commit": "a903be68",
+      "subject": "session: open band-#1500 reconciliation pass (born-red)",
+      "committed_at": "2026-06-27T12:49:53Z"
     }
   },
   "counts": {

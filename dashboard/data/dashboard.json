@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T12:30:24Z",
+    "generated_at": "2026-06-27T12:49:53Z",
     "build": {
-      "commit": "a42fd02f",
-      "subject": "feat(mining): named gear loadout presets — save/swap equipped gear (V-14/Q-0175 Phase-1)",
-      "committed_at": "2026-06-27T12:30:24Z"
+      "commit": "a903be68",
+      "subject": "session: open band-#1500 reconciliation pass (born-red)",
+      "committed_at": "2026-06-27T12:49:53Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 148,
+      "ideas": 149,
       "bugs": 25,
       "reviews": 0,
       "reviews_open": 0,
@@ -1157,6 +1157,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "band-queue-execution-rate-2026-06-27.md",
+      "title": "Idea — a per-band \"queue-execution rate\" line in each reconciliation pass record",
+      "status": "ideas",
+      "date": "2026-06-27",
+      "summary": "Three of the last four reconciliation bands (#1410, #1470, #1500) executed **zero** named §4",
+      "subsystems": null
+    },
     {
       "file": "cog-routing-enforcement-gap-2026-06-27.md",
       "title": "Wire `cog_routing` to runtime enforcement (per-feature, per-channel commands)",
@@ -2601,12 +2609,28 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-27-s1-offline-handoff.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Sharpen S1 ▶ Next with an offline-startable item (handoff hygiene)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-27-reconcile-marker-band-consistency-guard.md",
       "date": "2026-06-27",
       "title": "Session — reconcile-marker band-consistency guard (+ marker conflation fix)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-27-reconcile-band1500.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Twenty-seventh Q-0107 reconciliation pass (band-#1500)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
     },
     {
       "file": "2026-06-27-mining-loadout-presets.md",
@@ -3028,22 +3052,6 @@
       "file": "2026-06-24-help-nav-seam-hardening.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Harden the help-nav attachment seam (forward-path regression pins)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-help-nav-attachment-seam.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Help-nav attachment seam (visual card-engine H3)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-game-settle-once-guard.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · settle-once terminal guard for game-state views",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true

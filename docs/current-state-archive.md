@@ -86,6 +86,34 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1359 · #1360 · #1361 · #1363 · #1366 · #1367 · #1369 · #1370 · #1371 · #1372 · #1373 · #1374 · #1375 · #1376 · #1377 · #1378 · #1382 · #1383 · #1385 (2026-06-23/24, consolidation & discoverability audit — execution arc)** —
+  the audit brief executed as a multi-session **ultracode fleet**: Session 1 help-findability foundation + a
+  per-command reachability guard (#1370), Phase-0 shared hub-child primitive + settings-orphan guard + the
+  fleet plan (#1371), the extracted shared **`HubChildButton`** (#1373) with a shared-dependency/ownership
+  map (#1374) and the fleet coordinator (#1375); in-place navigation for AI (#1376) / roles (#1377) /
+  games (#1378); `!btd6strat` surfaced via a BTD6 Strategy panel button (U4, #1372); **universal Help +
+  Back-to-hub on every leaf panel** (#1382) and **game-result continuation buttons** (#1383) — the
+  never-stranded pair; a **static settings-reachability guard** (#1385); cleanup-policy panel tips
+  (#1360/#1363), a delete-blocked-commands surface (#1359), and a Final-Review create-count guard (#1361);
+  plus the audit/findings briefs (#1366/#1367/#1369).
+- **#1355 · #1357 · #1386 · #1390 (2026-06-23/24, AI natural-language setup wedge — Q-0048 write-lift / Q-0199)** —
+  the first AI surface that *applies* setup changes after confirmation: `/setup-describe` natural-language
+  setup wedge (#1355) → propose resource **creation** from a description (create+bind, #1357) → the
+  **AI-setup advisor (Accept · Deny · Edit)** finalizing the Q-0048 write lift (#1386, recorded as router
+  Q-0199) with an edit-rebind follow-up (#1390).
+- **#1364 · #1396 · #1397 · #1398 · #1399 · #1401 · #1403 (2026-06-23/24, themeable card-render engine — H2/H3 rollout)** —
+  the visual card engine rolled onto real features: render-structure ("golden") tests (#1364), image
+  renderers rebased onto **`CardCanvas`** (H2, #1396) behind a card-engine guard (#1397) and a
+  theme-conformance guard (#1403); the **leaderboard image card** shipped as a real feature (#1398) with
+  per-category themes (#1399), and the **rank card** as a themed image (#1401, first feature card / H3).
+  Executes the band-#1350 C1 slice.
+- **#1384 · #1387 · #1402 · #1404 (2026-06-23/24, BTD6 mechanics + round-economy depth)** — round-scaled
+  bloon health (late-game/freeplay MOAB-class HP ramp, #1384), a freeplay health-curve fix + ground-truth
+  round-scaled RBE (#1387), the **paragon elite-boss damage multiplier** (×2, all degrees, #1402), and
+  **per-round economy slash commands** (cash / RBE / bloons, #1404).
+- **#1351 · #1356 · #1365 (2026-06-23, fishing minigame follow-ups)** — per-species **trophy records**
+  (biggest-caught, #1351), a soft-fail clue + heaviest-catch leaderboard (#1356), and the
+  **`premature_grace` rod knob** (the design's 5th knob, #1365). Executes the band-#1350 D2 slice.
 - **#1394 (2026-06-23, moderation)** — an **obfuscation-resistant word filter** (out-filters Sapphire's
   content filter — leet/spacing/zero-width normalization).
 - **#1354 · #1362 · #1389 · #1391 · #1392 · #1393 (2026-06-23/24, docs / ideas / router / dashboard)** —
