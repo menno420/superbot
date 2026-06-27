@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-26T23:46:05Z",
+    "generated_at": "2026-06-27T03:11:26Z",
     "build": {
-      "commit": "6aa548c9",
-      "subject": "Merge pull request #1480 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-26T23:46:05Z"
+      "commit": "50165ff0",
+      "subject": "session: open born-red card — games-economy faucet/sink timeseries (+ inflation finding)",
+      "committed_at": "2026-06-27T03:11:26Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 54,
-      "commands": 448,
+      "commands": 449,
       "setting_keys": 107,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2545,6 +2545,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-27-startability-offline-fit-tags.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Per-sector offline-fit startability tags (workflow improvement)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-27-economy-flow-timeseries.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Games-economy observability: faucet/sink timeseries (+ inflation finding)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-26-sessionclose-freshness-wiring.md",
       "date": "2026-06-26",
       "title": "2026-06-26 — Wire ▶ Next freshness guard into /session-close",
@@ -3006,22 +3022,6 @@
       "title": "2026-06-24 — BTD6 paragon elite-boss damage multiplier",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-btd6-ai-floor-coverage-fixes.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — BTD6 AI floor coverage: range RBE + paragon elite-boss multiplier",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-bot-migration-assistant-plan.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · bot-migration-assistant plan",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
@@ -7786,6 +7786,19 @@
             "coinflow"
           ],
           "brief": "Faucet/sink coin-economy view (`!platform economy [days]`): minted",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "economytrend",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "platform",
+          "aliases": [
+            "coinflowtrend"
+          ],
+          "brief": "Per-day coin-flow trend (`!platform economytrend [days]`): the daily",
           "classification": "",
           "has_panel": false,
           "button_backed": false

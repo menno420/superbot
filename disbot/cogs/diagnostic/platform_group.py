@@ -322,6 +322,18 @@ class PlatformCommandsMixin(_MixinBase):
 
         await ctx.send(embed=await build_economy_flow_embed(ctx.guild.id, days=days))
 
+    @platform_grp.command(name="economytrend", aliases=["coinflowtrend"])  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_economy_trend(self, ctx, days: int | None = None):
+        """Per-day coin-flow trend (`!platform economytrend [days]`): the daily
+        minted/drained/net series + a net sparkline + a rising/falling read, so
+        you can see whether the economy is inflating *over time*, not just at one
+        snapshot. Window N days or omit for all-time. Read-only, content-free.
+        """
+        from cogs.diagnostic._platform_embeds import build_economy_trend_embed
+
+        await ctx.send(embed=await build_economy_trend_embed(ctx.guild.id, days=days))
+
     @platform_grp.command(name="locks")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_locks(self, ctx, prefix: str = ""):

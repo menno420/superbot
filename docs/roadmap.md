@@ -490,10 +490,11 @@ provenance schema is implemented.
 Folio: [games](subsystems/games.md) · **Boundary:** ADR-002 (game state not restart-safe —
 accepted, not a target).
 
-- **Now (next implementation session, owner-picked 2026-06-12)** — **P0-1 wager
-  money-safety**: [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md)
-  — one audited `game_wager_workflow` composing the existing `economy_service` atomic
-  primitives (escrow→settle/refund, idempotent payouts), failure-injection tests, AST fence.
+- **✅ P0-1 wager money-safety — SHIPPED #748 (2026-06-12, owner-picked).** The audited
+  `services/game_wager_workflow.py` (escrow-at-accept, idempotent settle/payout, all four RPS +
+  blackjack PvP/tournament call-sites migrated, AST fence + failure-injection tests) — plan is
+  `historical`: [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md).
+  *(Money-safety lineage continued in the settle-once guards #1444/#1445/#1454.)*
 - **Now (active lane)** — the **mining character platform** (from the
   [mining brainstorm](ideas/mining_exploration_brainstorm.md) §7 vision). Wave-1 chain
   shipped #606–#610 + #624 (explore wiring + equipment seam, persistent Descent, combat

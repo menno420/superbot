@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from utils.db import pool
 
 if TYPE_CHECKING:
-    from datetime import datetime
+    from datetime import date, datetime
 
     import asyncpg
 
@@ -145,6 +145,56 @@ async def economy_flow_by_reason(
             conn=conn,
         )
     return [(r["reason"], int(r["net"]), int(r["n"])) for r in rows]
+
+
+async def economy_flow_daily(
+    guild_id: int,
+    *,
+    since: datetime | None = None,
+    conn: asyncpg.Connection | None = None,
+) -> list[tuple[date, int, int, int, int]]:
+    """Per-UTC-day ``(day, minted, drained, net, movements)`` over the audit log.
+
+    Pure read — the time-series sibling of :func:`economy_flow_by_reason`.
+    Aggregates ``economy_audit_log`` for one guild into one row per calendar day
+    (UTC, so a day boundary is deterministic regardless of the server timezone):
+    coins minted (sum of positive deltas), coins drained (sum of negative deltas
+    as a positive magnitude), net (signed), and the movement count. ``since``
+    filters by ``occurred_at``; omit for all recorded days. Rows are ordered
+    **oldest-first** so the caller reads them left-to-right as a trend.
+    """
+    if since is None:
+        rows = await pool.fetchall(
+            """SELECT (occurred_at AT TIME ZONE 'UTC')::date              AS day,
+                      COALESCE(SUM(delta) FILTER (WHERE delta > 0), 0)::bigint  AS minted,
+                      COALESCE(SUM(-delta) FILTER (WHERE delta < 0), 0)::bigint AS drained,
+                      SUM(delta)::bigint                                  AS net,
+                      COUNT(*)::bigint                                    AS n
+               FROM economy_audit_log
+               WHERE guild_id=$1
+               GROUP BY day
+               ORDER BY day ASC""",
+            (guild_id,),
+            conn=conn,
+        )
+    else:
+        rows = await pool.fetchall(
+            """SELECT (occurred_at AT TIME ZONE 'UTC')::date              AS day,
+                      COALESCE(SUM(delta) FILTER (WHERE delta > 0), 0)::bigint  AS minted,
+                      COALESCE(SUM(-delta) FILTER (WHERE delta < 0), 0)::bigint AS drained,
+                      SUM(delta)::bigint                                  AS net,
+                      COUNT(*)::bigint                                    AS n
+               FROM economy_audit_log
+               WHERE guild_id=$1 AND occurred_at >= $2
+               GROUP BY day
+               ORDER BY day ASC""",
+            (guild_id, since),
+            conn=conn,
+        )
+    return [
+        (r["day"], int(r["minted"]), int(r["drained"]), int(r["net"]), int(r["n"]))
+        for r in rows
+    ]
 
 
 async def add_coins(user_id: int, guild_id: int, amount: int) -> int:

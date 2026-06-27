@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-26T09:31:18Z",
+    "generated_at": "2026-06-27T03:11:26Z",
     "build": {
-      "commit": "48cd5a08",
-      "subject": "reconcile band-#1470: born-red session card + claim",
-      "committed_at": "2026-06-26T09:31:18Z"
+      "commit": "50165ff0",
+      "subject": "session: open born-red card — games-economy faucet/sink timeseries (+ inflation finding)",
+      "committed_at": "2026-06-27T03:11:26Z"
     }
   },
   "counts": {
-    "commands": 448,
+    "commands": 449,
     "features": 43,
     "games": 12
   },
@@ -10547,6 +10547,24 @@
       "use_cases": null,
       "examples": [
         "!platform economy [days]"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "economytrend",
+      "aliases": [
+        "coinflowtrend"
+      ],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Per-day coin-flow trend (`!platform economytrend [days]`): the daily",
+      "description": "Per-day coin-flow trend (!platform economytrend [days]): the daily minted/drained/net series + a net sparkline + a rising/falling read, so you can see whether the economy is inflating *over time*, not just at one snapshot. Window N days or omit for all-time. Read-only, content-free.",
+      "use_cases": null,
+      "examples": [
+        "!platform economytrend [days]"
       ],
       "status": "finished",
       "linked_ideas": [],
