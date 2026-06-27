@@ -17,6 +17,7 @@ post-commit events.
 from __future__ import annotations
 
 import logging
+import random
 import time
 from dataclasses import dataclass
 from typing import Protocol
@@ -30,7 +31,7 @@ from utils.fishing import energy as fish_energy
 from utils.fishing import fish as fish_mod
 from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
-from utils.fishing import roll_catch
+from utils.fishing import roll_bonus_catch, roll_catch
 from utils.fishing import venue as venue_mod
 from utils.fishing import weather as weather_mod
 from utils.mining import character
@@ -72,6 +73,10 @@ class FishResult:
     #: True when this catch beat the player's previous heaviest of the species
     #: (a new trophy record) — drives the "🏆 New personal best!" celebration.
     new_personal_best: bool = False
+    #: True when the lucky-double-catch bonus fired — the reel landed a **second**
+    #: copy of the same fish (extra craft fodder). Inventory-only; never a second
+    #: dex/trophy row. Byte-identical economics when ``False``.
+    bonus_catch: bool = False
 
 
 @dataclass(frozen=True)
@@ -125,19 +130,33 @@ async def roll_cast(
     return Cast(catch=catch, level_before=level_before, venue=venue)
 
 
-async def commit_catch(user_id: int, guild_id: int, cast: Cast) -> FishResult:
+async def commit_catch(
+    user_id: int,
+    guild_id: int,
+    cast: Cast,
+    *,
+    rng: random.Random | None = None,
+) -> FishResult:
     """Commit a successfully-reeled cast: log it + grant the item + award xp.
 
     The audited write boundary (RS02 / Q-0071): the catch-log write, the
     inventory grant, and the xp award all run on ONE workflow-owned
     ``db.transaction()`` connection; the xp event emits only after commit. A
     ``cast`` with no ``catch`` (empty catalog) writes nothing.
+
+    Rolls the **lucky-double-catch** bonus (``utils.fishing.roll_bonus_catch``) at
+    commit time — only a *landed* catch can double — so on a lucky reel the
+    inventory grant is **2** of the species instead of 1 (extra craft fodder).
+    The dex/leaderboard row is unaffected (still the single heaviest weight);
+    *rng* is injectable for seed-determinism in tests.
     """
     catch = cast.catch
     level_before = cast.level_before
     if catch is None:
         return FishResult(catch=None, fishing_level=level_before)
 
+    bonus = roll_bonus_catch(rng)
+    grant = 2 if bonus else 1
     async with db.transaction() as conn:
         prev_best = await db.record_catch(
             user_id,
@@ -150,12 +169,12 @@ async def commit_catch(user_id: int, guild_id: int, cast: Cast) -> FishResult:
         # 2026-06-22): sellable for coins via the market, and cookable into food
         # at a campfire (mining_workflow.cook). The catch-log row above stays the
         # dex/leaderboard record; this grant makes the fish usable — same atomic
-        # catch transaction, conn-composed (RS02).
+        # catch transaction, conn-composed (RS02). A lucky double-catch grants 2.
         await db.update_mining_item(
             str(user_id),
             guild_id,
             catch.species.name,
-            1,
+            grant,
             conn=conn,
         )
         award = await game_xp_service.award(
@@ -178,6 +197,7 @@ async def commit_catch(user_id: int, guild_id: int, cast: Cast) -> FishResult:
         xp_note=award.note if award is not None and award.leveled_up else None,
         weight=catch.weight,
         new_personal_best=new_best,
+        bonus_catch=bonus,
     )
 
 
@@ -750,4 +770,77 @@ async def craft_charm(
         f"Crafted a **{recipe.charm}** from **{used}** — "
         "equip it from the gear panel (`!gear`) to fish better.",
         charm=recipe.charm,
+    )
+
+
+# Rod crafting — earn the next rod up the ladder from caught fish (the catch→rod
+# earn path, S1 acquisition-depth follow-up to the charm craft #1508). The
+# gameplay-native second source beside the coin shop (``buy_rod``): an
+# inventory→tier conversion, NOT a coin sink. Mirrors craft_charm exactly, and
+# like buy_rod it crafts the *next* rod up (requires owning the tier below).
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class RodCraftResult:
+    """The outcome of a ``craft_rod`` attempt — a flag + a player-facing message."""
+
+    success: bool
+    message: str
+    #: The rod tier owned *after* the attempt (unchanged on failure).
+    tier: int
+
+
+async def craft_rod(user_id: int, guild_id: int) -> RodCraftResult:
+    """Craft the next rod up the ladder from small caught fish.
+
+    Mirrors :func:`craft_charm`: an inventory-only conversion (no coins, no
+    external call) — debit the eligible fish (smallest-first) and raise the
+    owned rod tier by one in ONE ``db.transaction()`` (Q-0071). Like
+    :func:`buy_rod`, this advances the *next* tier from the one you own, so a
+    fisher works up the ladder by fishing. Coins remain the fast alternative via
+    ``buy_rod`` / the rod shop (``!rod``); the fish a rod consumes are worth far
+    less sold than the rod's coin price, so neither path is free arbitrage.
+    """
+    current_tier = await db.get_rod_tier(user_id, guild_id)
+    nxt = rods_mod.next_rod(current_tier)
+    if nxt is None:
+        top = rods_mod.rod_for_tier(current_tier)
+        return RodCraftResult(
+            False,
+            f"You already wield the **{top.name}** {top.emoji} — the finest rod there is!",
+            current_tier,
+        )
+
+    recipe = rods_mod.rod_recipe(nxt.tier)
+    if recipe is None:  # pragma: no cover — every non-starter tier has a recipe
+        return RodCraftResult(
+            False,
+            f"The **{nxt.name}** {nxt.emoji} can't be crafted from fish — "
+            "buy it with `!rod`.",
+            current_tier,
+        )
+
+    inventory = await db.get_mining_inventory(str(user_id), guild_id)
+    spend = _plan_fish_spend(inventory, recipe)
+    if spend is None:
+        return RodCraftResult(
+            False,
+            f"You need **{recipe.fish_count}** fish of size ≤ "
+            f"**{recipe.max_size_rank}** to craft the **{nxt.name}** {nxt.emoji} — "
+            "catch more fish with `!fish` (or buy it with `!rod`).",
+            current_tier,
+        )
+
+    deltas = {name: -qty for name, qty in spend.items()}
+    async with db.transaction() as conn:
+        await db.apply_inventory_deltas(str(user_id), guild_id, deltas, conn=conn)
+        await db.set_rod_tier(user_id, guild_id, nxt.tier, conn=conn)
+
+    used = ", ".join(f"{qty}× {name}" for name, qty in spend.items())
+    return RodCraftResult(
+        True,
+        f"Crafted the **{nxt.name}** {nxt.emoji} from **{used}** — "
+        "cast with `!fish` to feel the difference!",
+        nxt.tier,
     )

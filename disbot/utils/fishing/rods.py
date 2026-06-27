@@ -125,3 +125,59 @@ def next_rod(tier: int) -> Rod | None:
     if tier >= MAX_TIER:
         return None
     return ROD_LADDER[tier + 1]
+
+
+# ---------------------------------------------------------------------------
+# Fish → rod craft path (S1 acquisition-depth follow-up to the charm craft #1508)
+#
+# Rods are bought with coins (``buy_rod``).  Coins-only left the ladder with a
+# single source; this gives a dedicated fisher a way to **earn** the next rod by
+# fishing — exactly as the fishing charms (``utils/fishing/gear.CHARM_RECIPES``)
+# and starter mining gear are both buyable AND craftable.  A recipe consumes
+# ``fish_count`` caught fish whose ``size_rank`` is ``≤ max_size_rank``
+# (smallest-first, reusing the bait/charm spend planner) and raises the owned
+# rod tier by one.
+#
+# The fish path is deliberately the *slow* path — a rod wants many more fish than
+# a charm, and the cost climbs steeply up the ladder — so the coin shop stays the
+# fast alternative and neither path is free arbitrage (the fish a rod consumes are
+# worth far less sold than the rod's coin price).  Numbers pinned in
+# ``docs/planning/fishing-rod-craft-numbers-2026-06-27.md``.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class RodRecipe:
+    """A fish → rod recipe: consume *fish_count* eligible fish, gain one tier.
+
+    Only fish whose ``size_rank`` is ``≤ max_size_rank`` count as ingredients
+    (the smallest are spent first), so crafting drains the common catches a
+    fisher accumulates rather than the trophies.  *tier* is the rod tier this
+    recipe crafts **into** (it requires owning the tier below, like ``buy_rod``).
+    """
+
+    tier: int  # the rod tier crafted into (1…MAX_TIER)
+    fish_count: int  # number of eligible fish consumed per craft
+    max_size_rank: int  # only fish with size_rank ≤ this are eligible ingredients
+
+
+#: The rod craft shelf, keyed by the tier it crafts into.  Costs climb up the
+#: ladder and the better rods accept larger fish (so a deep haul can feed the
+#: next rod).  Far pricier in fish than a charm — a rod is the marquee
+#: progression axis.  The starter (tier 0) has no recipe.
+ROD_RECIPES: dict[int, RodRecipe] = {
+    1: RodRecipe(1, fish_count=10, max_size_rank=6),
+    2: RodRecipe(2, fish_count=16, max_size_rank=12),
+    3: RodRecipe(3, fish_count=26, max_size_rank=18),
+    4: RodRecipe(4, fish_count=40, max_size_rank=21),
+}
+
+
+def rod_recipe(tier: int) -> RodRecipe | None:
+    """The :class:`RodRecipe` to craft *into* ``tier``, or ``None`` if none exists."""
+    return ROD_RECIPES.get(tier)
+
+
+def rod_recipe_text(recipe: RodRecipe) -> str:
+    """A short human label of a recipe's cost, e.g. ``10 fish (size ≤ 6)``."""
+    return f"{recipe.fish_count} fish (size ≤ {recipe.max_size_rank})"

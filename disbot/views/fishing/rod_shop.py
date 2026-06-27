@@ -66,9 +66,18 @@ def build_rod_embed(
             inline=False,
         )
     else:
+        recipe = rods_mod.rod_recipe(nxt.tier)
+        craft_line = (
+            f"\n🎣 _or craft from {rods_mod.rod_recipe_text(recipe)}_"
+            if recipe is not None
+            else ""
+        )
         embed.add_field(
             name=f"Next: {nxt.emoji} {nxt.name} — {nxt.price} 🪙",
-            value=f"_{_knob_summary(nxt)}_\nYour balance: **{balance}** 🪙",
+            value=(
+                f"_{_knob_summary(nxt)}_\n"
+                f"Your balance: **{balance}** 🪙{craft_line}"
+            ),
             inline=False,
         )
     if note:
@@ -89,6 +98,22 @@ class RodShopView(BaseView):
         super().__init__(author, timeout=120)
         self.guild_id = guild_id
         self.upgrade_btn.disabled = at_max
+        self.craft_btn.disabled = at_max
+
+    async def _rerender(
+        self,
+        interaction: discord.Interaction,
+        tier: int,
+        note: str,
+    ) -> None:
+        """Re-render the panel after a buy/craft attempt and re-gate the buttons."""
+        current = rods_mod.rod_for_tier(tier)
+        nxt = rods_mod.next_rod(tier)
+        balance = await db.get_coins(self._author.id, self.guild_id)
+        self.upgrade_btn.disabled = nxt is None
+        self.craft_btn.disabled = nxt is None
+        embed = build_rod_embed(current, nxt, balance, note=note)
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(label="⬆️ Upgrade rod", style=discord.ButtonStyle.success)
     async def upgrade_btn(
@@ -99,9 +124,15 @@ class RodShopView(BaseView):
         if not await safe_defer(interaction):
             return
         result = await fishing_workflow.buy_rod(self._author.id, self.guild_id)
-        current = rods_mod.rod_for_tier(result.tier)
-        nxt = rods_mod.next_rod(result.tier)
-        balance = await db.get_coins(self._author.id, self.guild_id)
-        button.disabled = nxt is None
-        embed = build_rod_embed(current, nxt, balance, note=result.message)
-        await safe_edit(interaction, embed=embed, view=self)
+        await self._rerender(interaction, result.tier, result.message)
+
+    @discord.ui.button(label="🎣 Craft from fish", style=discord.ButtonStyle.primary)
+    async def craft_btn(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction):
+            return
+        result = await fishing_workflow.craft_rod(self._author.id, self.guild_id)
+        await self._rerender(interaction, result.tier, result.message)

@@ -27,7 +27,7 @@ from utils.fishing.fish import (
     unlocked_species,
     venue_size_cap,
 )
-from utils.fishing.rewards import roll_catch
+from utils.fishing.rewards import BONUS_CATCH_CHANCE, roll_bonus_catch, roll_catch
 from utils.fishing.venue import (
     DEEPWATER,
     SHORE,
@@ -44,6 +44,7 @@ from utils.fishing.weather import (
 from utils.fishing.weight import nominal_weight, roll_weight
 
 __all__ = [
+    "BONUS_CATCH_CHANCE",
     "CONDITIONS",
     "DEEPWATER",
     "FISH_PER_LEVEL",
@@ -59,6 +60,7 @@ __all__ = [
     "max_size_rank_for_level",
     "nominal_weight",
     "profile_for",
+    "roll_bonus_catch",
     "roll_catch",
     "roll_weight",
     "species_by_name",

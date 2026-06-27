@@ -98,6 +98,9 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
 
     with (
         patch.object(wf, "roll_catch", fake_roll_catch()),
+        # Force no lucky-double-catch so the single-fish grant qty is deterministic
+        # (the bonus is its own seeded path, exercised in its own tests below).
+        patch.object(wf, "roll_bonus_catch", lambda *a, **k: False),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 5})),
         patch.object(wf.db, "transaction", _txn(sentinel_conn, events)),
         patch.object(wf.db, "record_catch", AsyncMock(side_effect=_record)),
@@ -333,6 +336,60 @@ async def test_commit_catch_on_empty_cast_writes_nothing():
     assert result.catch is None
     assert result.fishing_level == 2
     record.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# commit_catch — the lucky-double-catch bonus (extra craft fodder, PR #1515)
+# ---------------------------------------------------------------------------
+
+
+async def _commit_with_grant(rng):
+    """Commit a fixed cast under a forced *rng* and return (result, grant mock)."""
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    cast = wf.Cast(catch=_CATCH, level_before=1)
+    with (
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "record_catch", AsyncMock(return_value=None)),
+        patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
+        patch.object(
+            wf.game_xp_service,
+            "award",
+            AsyncMock(return_value=_award(game_total=10)),
+        ),
+        patch.object(wf.game_xp_service, "emit_award_events", AsyncMock()),
+    ):
+        result = await wf.commit_catch(99, 1, cast, rng=rng)
+    return result, grant
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_grants_two_and_flags_the_bonus_on_a_lucky_reel():
+    # rng.random() == 0.0 < BONUS_CATCH_CHANCE → the bonus fires.
+    forced = MagicMock()
+    forced.random.return_value = 0.0
+    result, grant = await _commit_with_grant(forced)
+
+    assert result.bonus_catch is True
+    # the inventory grant is 2 of the species; the dex row is still written once.
+    args, kwargs = grant.await_args
+    assert args[3] == 2
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_grants_one_and_no_bonus_on_an_unlucky_reel():
+    # rng.random() == 0.99 ≥ BONUS_CATCH_CHANCE → no bonus, byte-identical path.
+    forced = MagicMock()
+    forced.random.return_value = 0.99
+    result, grant = await _commit_with_grant(forced)
+
+    assert result.bonus_catch is False
+    args, _ = grant.await_args
+    assert args[3] == 1
 
 
 # ---------------------------------------------------------------------------

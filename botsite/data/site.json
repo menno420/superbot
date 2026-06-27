@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T18:29:28Z",
+    "generated_at": "2026-06-27T21:28:32Z",
     "build": {
-      "commit": "6f6e281f",
-      "subject": "feat(fishing): fish→charm craft path — non-coin earn for fishing charms",
-      "committed_at": "2026-06-27T18:29:28Z"
+      "commit": "170a0368",
+      "subject": "fishing: add fish→rod craft path (!craftrod + rod-shop button)",
+      "committed_at": "2026-06-27T21:28:32Z"
     }
   },
   "counts": {
-    "commands": 456,
+    "commands": 457,
     "features": 43,
     "games": 12
   },
@@ -4800,6 +4800,30 @@
       "examples": [
         "!craftcharm fishing charm",
         "!gear"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "craftrod",
+      "aliases": [
+        "rodcraft"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Craft the next rod up the ladder from caught fish — the non-coin path.",
+      "description": "Craft the next rod up the ladder from caught fish — the non-coin path.",
+      "use_cases": null,
+      "examples": [
+        "!craftcharm",
+        "!rod"
       ],
       "status": "in-progress",
       "linked_ideas": [

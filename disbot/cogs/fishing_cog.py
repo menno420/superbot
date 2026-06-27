@@ -255,6 +255,17 @@ class FishingCog(commands.Cog):
         result = await fishing_workflow.craft_charm(ctx.author.id, ctx.guild.id, name)
         await ctx.send(result.message)
 
+    @commands.command(name="craftrod", aliases=["rodcraft"])
+    async def craftrod(self, ctx):
+        """Craft the next rod up the ladder from caught fish — the non-coin path.
+
+        Crafts the next rod tier from your small caught fish (smallest-first),
+        exactly like ``!craftcharm``. Rods also sell for coins in the rod shop
+        (``!rod``) — crafting is the slower, gameplay-native alternative.
+        """
+        result = await fishing_workflow.craft_rod(ctx.author.id, ctx.guild.id)
+        await ctx.send(result.message)
+
     # ------------------------------------------------------------------ help hook
 
     async def build_help_menu_view(
