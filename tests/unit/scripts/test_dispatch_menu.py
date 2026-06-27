@@ -190,3 +190,45 @@ def test_unattended_summary_falls_back_when_no_auto_lane():
     joined = "\n".join(lines)
     assert "🟢 auto: none" in joined
     assert "promote an idea" in joined
+
+
+# --- per-item offline-fit picks (read from the per-sector live-state files) -----------
+
+
+def test_offline_item_label_strips_markup_and_links():
+    line = "- `[offline]` **Fishing follow-ups** (turn-key) — remaining: x"
+    assert dm._offline_item_label(line) == "Fishing follow-ups"
+    line2 = "- `[offline]` **[botsite PR 2](../planning/x.md)** — serve the app"
+    assert "botsite PR 2" in dm._offline_item_label(line2)
+
+
+def test_sector_offline_pick_reads_live_files():
+    """The real S1/S2/S3 sector files each surface a concrete [offline] item; S5 has none."""
+    assert dm.sector_offline_pick("S1") is not None
+    assert dm.sector_offline_pick("S2") is not None
+    assert dm.sector_offline_pick("S3") is not None
+    # S5 is the executor outlier — its ▶ Next items are all [owner], so no offline pick.
+    assert dm.sector_offline_pick("S5") is None
+
+
+def test_sector_offline_pick_none_for_unknown_sector():
+    assert dm.sector_offline_pick("S9") is None
+
+
+def test_next_block_stops_at_next_bold_heading():
+    text = (
+        "**▶ Next startable:**\n"
+        "- `[offline]` an item.\n\n"
+        "**In flight:**\n"
+        "- `[offline]` an unrelated item.\n"
+    )
+    block = dm._next_block(text)
+    assert "an item." in block and "unrelated" not in block
+
+
+def test_unattended_summary_lists_concrete_offline_items():
+    text = (_REPO / "docs" / "roadmap.md").read_text(encoding="utf-8")
+    joined = "\n".join(dm.build_unattended_summary(text))
+    assert "Concrete [offline] items" in joined
+    # At least one real sector pick is surfaced.
+    assert "S1:" in joined or "S2:" in joined or "S3:" in joined

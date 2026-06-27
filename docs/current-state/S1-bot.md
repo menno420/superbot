@@ -45,7 +45,10 @@
   broadcast table. [design](../planning/casino-poker-design-2026-06-22.md).
 
 **▶ Next startable (one of):**
-- **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
+*(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
+creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
+§ "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
+- `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·
   reward active members · help desk + summary). Each step applies immediately (direct lane) through an
@@ -67,7 +70,7 @@
   "currently most of it does not do anything") + delete the now-dead service code; **heavier, needs
   live-bot verification.** Tracker:
   [`planning/setup-wizard-restructure-plan-2026-06-24.md`](../planning/setup-wizard-restructure-plan-2026-06-24.md).
-- **✅ Consolidation / discoverability audit — COMPLETE (owner-directed, 2026-06-23).** All five goals
+- `[needs-live-bot]` **✅ Consolidation / discoverability audit — COMPLETE (owner-directed, 2026-06-23).** All five goals
   shipped and CI-guarded where possible. Staging brief + per-cog rubric:
   [`planning/consolidation-discoverability-audit-brief-2026-06-23.md`](../planning/consolidation-discoverability-audit-brief-2026-06-23.md).
   - **Every command findable + buttonized** — per-command reachability guard (#1370); gap cogs closed
@@ -105,7 +108,7 @@
     [vision](../ideas/visual-card-engine-vision-2026-06-23.md) ·
     [seam idea](../ideas/help-nav-attachment-seam-2026-06-24.md) · the
     `channel-deployed-component` roles primitive (idea, not yet built).
-- **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
+- `[offline]` **Fishing follow-ups** (turn-key, on the bait/venue seam) — *(bait speed knob ✅ #1337, sell-value
   re-tune ✅ #1304, bait-crafting ✅ #1338, and the **⛵ boat/deepwater venue** ✅ PR #1340 — shore↔
   deepwater toggle + boat-only species + tougher deep minigame — are all done)* — remaining:
   the literal §5 **shore-cap-at-12 rebalance** (owner balance call, flagged in #1340) ·
@@ -115,7 +118,7 @@
   **open-world expansion**
   ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2+: the
   boat-as-structure / travel-timer / destinations layer).
-- **Project Moon (Limbus) — runtime PR 1 SHIPPED 2026-06-25** (dispatch run, PR #1453): a standalone
+- `[offline]` **Project Moon (Limbus) — runtime PR 1 SHIPPED 2026-06-25** (dispatch run, PR #1453): a standalone
   **Limbus knowledge domain** — committed structural/lore facts (`disbot/data/projmoon/limbus/`: 12
   Sinners · 7 Sins · 3 damage types · 5 E.G.O grades · status keywords, provenance-tagged), a typed
   `services/projmoon_data_service.py` (loader + resolver), `utils/projmoon/keywords.py`
@@ -143,8 +146,9 @@
   Limbus Q&A grounds well on both providers) + Slice A item 1 (StaticData exact-number ingest); then
   **Slice B** = extract the shared `KnowledgeDomain` seam from BTD6 + Limbus
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
-- **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
-  (PR 1 foundation shipped; [plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)).
+- `[offline]` **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
+  (PR 1 foundation shipped; [plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)). *(The
+  build/serve code is offline + self-mergeable like PR 1; the domain cutover itself is `[owner]`.)*
 
 **In flight (don't duplicate):** Starboard PR 2 (#1270) config polish · botsite React-SPA
 migration **PR 1** (#1305 — runnable data-fed React app + `/site-data.json`; foundation).

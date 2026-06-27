@@ -26,9 +26,14 @@
   ([plan, now historical](../planning/ai-panel-inplace-navigation-plan-2026-06-19.md)).
 
 **▶ Next startable:**
-- **procedures→skills Batch 2**
+*(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
+creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
+§ "the offline-fit startability tag".)*
+- `[offline]` **procedures→skills Batch 2**
   ([plan](../planning/procedures-to-skills-conversion-plan-2026-06-17.md)).
-- The **bot self-test walker** eval harness (pairs with S1 P1-1) · the **Hermes bug-triage** write.
+- `[offline]` The **bot self-test walker** eval harness (pairs with S1 P1-1) — the harness scaffold is
+  offline-buildable; `[owner]` the **Hermes bug-triage** write side stays gated on the VPS write scope
+  (Q-0121).
 
 **Note:** S3 runtime depth is self-initiated mechanism work; the old `needs-hermes-review` review gate
 is **retired** (Q-0197) — every PR now auto-merges on green CI. A fresh idea may be promoted

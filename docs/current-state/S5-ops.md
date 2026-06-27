@@ -23,10 +23,13 @@
   elsewhere).
 
 **▶ Next (owner / Hermes-executed):**
-- **Website two-site split rollout** — v1 is code-complete + reviewed; what remains is the
+*(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
+creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
+§ "the offline-fit startability tag". S5 is the executor outlier — most items are owner/Hermes-run.)*
+- `[owner]` **Website two-site split rollout** — v1 is code-complete + reviewed; what remains is the
   owner-paced rollout (provision `botsite/` + submissions DB, domain cutover)
   ([handoff](../operations/website-split-next-steps-2026-06-19.md)).
-- Two **security-review-gated** slices: control-panel migration · live status aggregator.
+- `[owner]` Two **security-review-gated** slices: control-panel migration · live status aggregator.
 
 **Control-plane truth:** see [`../current-state.md`](../current-state.md) § Gates / blocked work —
 that section is a pure pointer to the canonical control-plane table (copying its verdict drifted

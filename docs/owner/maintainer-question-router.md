@@ -7519,3 +7519,40 @@ default, optionally paired with **option 3**. Option 1 only if the owner wants i
 
 **Home:** this Q-block (canonical) + `.sessions/2026-06-25-stale-claim-detector.md`. Related: **Q-0195**
 (one-file-per-claim), **Q-0166** (drift-on-sight), **Q-0105** (disposable-tool posture).
+
+---
+
+### Q-0207 — DISCUSS: make the per-item offline-fit startability tag a standing convention (2026-06-27)
+
+> **PROPOSED — surfaced (and partially built) this session, after a twice-flagged self-audit.** The
+> *implementation* (the tags on the sector files + a disposable checker + the map doc) is docs/tooling I
+> have free rein on (Q-0105) and shipped this run; **this Q-block is only the rule-level question** —
+> should the convention be codified/blessed, or left as a disposable guard? It routes here rather than
+> self-editing CLAUDE.md (the binding-rule channel). Owner is the live reviewer when present; else it waits.
+
+**Context:** two consecutive empty-fire dispatch runs' Q-0102 reviews (the 2026-06-25 and 2026-06-26
+session logs) flagged the same friction: only **S2**'s per-sector live-state file tagged its `▶ Next`
+startable items with an offline-fit phrase, and that worked as a fast dispatch signal — but S1/S3/S5
+didn't, so each autonomous run burned orient-time rediscovering which startables are offline-verifiable
+vs. needs-live-bot vs. owner-gated. The 2026-06-26 review explicitly noted "second occurrence → meets the
+router-DISCUSS bar." This run is the third, and confirmed it firsthand (I again spelunked S1's arc bullets
+to find the offline lanes).
+
+**What this run already built (reversible docs/tooling, no rule change):** a per-item tag vocabulary —
+`[offline]` / `[needs-live-bot]` / `[owner]` — applied to every `▶ Next` item in S1/S2/S3/S5 (S4 exempt:
+docs/reconciliation sector); `scripts/check_startability_tags.py` (Q-0105 disposable, **not** CI-wired)
+asserting each non-exempt sector's `▶ Next` block carries ≥1 recognized tag; and the convention documented
+in `repo-sector-map.md` § "the offline-fit startability tag", next to the existing unattended-fit tag.
+
+**Open question for the owner:** (a) **bless it** as a standing convention (keep the tags + guard, maybe
+graduate the checker to a Stop-hook advisory or a warn-only CI step later); (b) **leave it disposable** —
+keep it only while it proves useful, delete on the Q-0105 kill-switch if it drifts; or (c) **fold it into
+`dispatch_menu.py`** so the empty-fire pick reads the per-item tag directly instead of a human/agent
+reading the sector file (the 2026-06-26 review's suggestion). *Agent recommendation:* **(a) + (c)** — the
+signal is cheap, already paid for, and directly cuts every future dispatch run's orient cost; wiring it
+into `dispatch_menu --unattended` is the natural next slice.
+
+**Home:** this Q-block (canonical) + `.sessions/2026-06-27-startability-offline-fit-tags.md` +
+`repo-sector-map.md` (durable home of the convention). Related: **Q-0143** (startability tag), **#1285 /
+Q-0172** (unattended-fit tag — the sector-level sibling), **Q-0102** (the self-audit loop that surfaced
+it), **Q-0105** (disposable-tool posture).
