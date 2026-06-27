@@ -32,11 +32,14 @@
   to run `seed-data`" manual step.**
 
 **▶ Next startable:**
-- Decode-status ⭐ item 3 (buff/zone tail, demand-driven) + item 4 (maintainer live spot-check).
-- **P1-1 live `llm_judge` battery** (the model actually using the grounded facts — creds-gated; the
+*(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
+creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
+§ "the offline-fit startability tag".)*
+- `[owner]` Decode-status ⭐ item 3 (buff/zone tail, demand-driven) + item 4 (maintainer live spot-check).
+- `[needs-live-bot]` **P1-1 live `llm_judge` battery** (the model actually using the grounded facts — creds-gated; the
   offline grounding half now shipped, above) + absence-guard **Layer B** (the negative-existential
   gate, design-for-review; needs prod creds).
-- **Anchor-tooling follow-ons** (offline, self-mergeable) — *(the range-cash + projected-total figures
+- `[offline]` **Anchor-tooling follow-ons** (offline, self-mergeable) — *(the range-cash + projected-total figures
   AND the #855 MOAB-class bonuses +15/+30/+99 are now anchored, #1460 above — the BTD6 knowledge/
   grounding cases are anchor-complete for every cleanly-derivable truth; **the eval-anchor coverage
   report + distractor negative-anchor guard both shipped 2026-06-26, PR #1466**)*: the **coverage

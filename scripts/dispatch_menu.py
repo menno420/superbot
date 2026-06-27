@@ -34,6 +34,18 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ROADMAP = REPO_ROOT / "docs" / "roadmap.md"
+STATE_DIR = REPO_ROOT / "docs" / "current-state"
+
+# The per-item offline-fit tag the per-sector live-state files carry on each ▶ Next item
+# (convention: repo-sector-map.md § "the offline-fit startability tag"; guarded by
+# scripts/check_startability_tags.py). ``[offline]`` = offline-verifiable + self-mergeable —
+# the concrete item an empty-fire run should build. Surfacing it here closes the loop the
+# roadmap's sector-level unattended-fit tag left open: a run gets the actual item to build
+# without opening the sector file by hand (the 2026-06-26 Q-0102 review's friction).
+_OFFLINE_TAG = "[offline]"
+_NEXT_HEADING = re.compile(r"^\*\*▶ Next\b")
+_BOLD_HEADING = re.compile(r"^\*\*[^*].*:\*\*")
+_SECTOR_STEM = re.compile(r"^(S\d)\b")
 
 _SECTOR_HEADING = re.compile(r"^###\s+(S\d)\s+—\s+(.+?)\s+·")
 _BULLET_HEAD = re.compile(r"^- \*\*([^:*]+):\*\*")
@@ -236,6 +248,60 @@ def build_menu(text: str, only: str | None = None) -> list[str]:
     return lines
 
 
+def _sector_file(sid: str) -> Path | None:
+    """Return the per-sector live-state file for ``sid`` (``S2`` → ``S2-btd6.md``)."""
+    matches = sorted(
+        p
+        for p in STATE_DIR.glob(f"{sid}-*.md")
+        if _SECTOR_STEM.match(p.stem) and _SECTOR_STEM.match(p.stem).group(1) == sid
+    )
+    return matches[0] if matches else None
+
+
+def _next_block(text: str) -> str:
+    """Return the ``▶ Next`` block of a sector live-state file (heading → next bold heading)."""
+    lines = text.splitlines()
+    start = next(
+        (i for i, line in enumerate(lines) if _NEXT_HEADING.match(line)),
+        None,
+    )
+    if start is None:
+        return ""
+    out = [lines[start]]
+    for line in lines[start + 1 :]:
+        if _BOLD_HEADING.match(line):
+            break
+        out.append(line)
+    return "\n".join(out)
+
+
+def _offline_item_label(line: str) -> str:
+    """Short label for an ``[offline]``-tagged ▶ item bullet line."""
+    after = line.split(_OFFLINE_TAG, 1)[1]
+    after = re.sub(r"\]\([^)]*\)", "]", after)  # drop link targets
+    after = after.replace("**", "").replace("[", "").replace("]", "")
+    after = _ITEM_SEP.split(after, maxsplit=1)[0]
+    return after.strip(" *:-—`")[:60].strip()
+
+
+def sector_offline_pick(sid: str) -> str | None:
+    """Return the first ``[offline]`` startable item in a sector's live-state file, or ``None``.
+
+    The concrete answer to "what offline thing do I build in this sector?" — read straight from
+    the per-item offline-fit tag so an empty-fire run skips the by-hand sector-file spelunk.
+    """
+    path = _sector_file(sid)
+    if path is None:
+        return None
+    block = _next_block(_read(path))
+    for line in block.splitlines():
+        if line.lstrip().startswith("-") and _OFFLINE_TAG in line:
+            label = _offline_item_label(line)
+            if label:
+                return label
+    return None
+
+
 def build_unattended_summary(text: str) -> list[str]:
     """Answer one question for a *scheduled empty-fire* run: can I complete-and-merge a lane now?
 
@@ -283,6 +349,18 @@ def build_unattended_summary(text: str) -> list[str]:
     if untagged:
         out.append("?  untagged (roadmap drift — run check_sector_map.py):")
         out.extend(f"   {_fmt(r)}" for r in untagged)
+
+    # Bridge sector → concrete item: read the first [offline]-tagged ▶ item from each buildable
+    # sector's live-state file, so the run gets the actual thing to build, not just the sector.
+    offline_picks = [
+        (rec["sector"], pick)
+        for rec in buildable
+        if (pick := sector_offline_pick(str(rec["sector"]))) is not None
+    ]
+    if offline_picks:
+        out.append("-" * 72)
+        out.append("Concrete [offline] items (from the per-sector live-state files):")
+        out.extend(f"   {sid}: {pick}" for sid, pick in offline_picks)
 
     out.append("-" * 72)
     if by_fit["auto"]:

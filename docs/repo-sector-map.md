@@ -179,6 +179,28 @@ layers) are 🟢 `auto`, while the **headline** lanes the empty-fire runs anchor
 tag stops a run from missing the auto-buildable per-sector work. Provenance: #1285 (Q-0172, promoting
 #1274's surfaced fix).*
 
+### Which *item* is offline — the offline-fit startability tag
+The unattended-fit tag above lives on the roadmap and tags one lane **per sector**. But a dispatch run
+that picks a sector then opens that sector's **live-state file**
+([`current-state/S<n>.md`](current-state/README.md)), which lists *several* `▶ Next` startable items —
+and those items differ in what verifying them costs. Two consecutive empty-fire runs' Q-0102 reviews
+(the 2026-06-25 / 2026-06-26 session logs) found that **S2** already annotated its items with an
+offline-fit phrase and it worked as a fast signal, while S1/S3/S5 didn't — so each run re-discovered, by
+hand, which item was offline. So every `▶ Next` item in a sector live-state file carries one **offline-fit
+tag** — the per-item analogue of the sector-level unattended-fit tag:
+
+- **`[offline]`** — offline-verifiable **and** self-mergeable by a Claude-in-repo run (the ideal
+  empty-fire pick — maps to 🟢 `auto`).
+- **`[needs-live-bot]`** — needs a running bot / runtime creds to *verify* (maps to 🔵 `live`).
+- **`[owner]`** — needs an owner decision or action (a balance call, a rollout, a security review,
+  externally-sourced data).
+
+A tag reflects an arc's **next actionable step** (an arc whose code is shipped but whose next move is a
+live walk is `[needs-live-bot]`). `scripts/check_startability_tags.py` (Q-0105 disposable guard, not
+CI-wired) requires at least one recognized tag in each non-exempt sector's `▶ Next` block, so the
+convention can't silently drift back out; **S4** (the docs/reconciliation sector — its `▶ Next` is a
+cadence-gated pass, not a buildable menu) is exempt.
+
 **What this map does *not* do:** it does not wire Hermes. Turning a phone message into a `/fire`
 dispatch — and moving the night executor off GitHub cron onto the always-on Hermes VPS — is **Q-0137
 Thread 1** (owner-undecided). The actions above map onto the existing routine fleet documented in
