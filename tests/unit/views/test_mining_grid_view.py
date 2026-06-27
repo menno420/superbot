@@ -80,6 +80,8 @@ async def test_build_grid_embed_shows_position_depth_seed_and_map():
         get_world_seed=AsyncMock(return_value=4242),
         get_discovered_window=AsyncMock(return_value=set()),
         get_energy=AsyncMock(return_value=(60, 0)),
+        get_equipment=AsyncMock(return_value={}),
+        get_skills=AsyncMock(return_value={}),
     ):
         embed = await build_grid_embed(1, 2)
     field_names = [f.name for f in embed.fields]
@@ -90,6 +92,31 @@ async def test_build_grid_embed_shows_position_depth_seed_and_map():
     assert "4242" in seed_field.value
     map_field = next(f for f in embed.fields if "Map" in f.name)
     assert grid.PLAYER_GLYPH in map_field.value
+
+
+@pytest.mark.asyncio
+async def test_build_grid_embed_widens_window_with_a_brighter_light():
+    # A diamond-lantern-grade light (light_radius 3 → reveal radius 4, BUG-0026)
+    # widens the discovered-cell query beyond the base 2 — proving the stat is wired.
+    from utils.equipment import EffectiveStats
+
+    window = AsyncMock(return_value=set())
+    with patch.multiple(
+        "views.mining.grid_mine_view.db",
+        get_depth=AsyncMock(return_value=0),
+        get_position=AsyncMock(return_value=(0, 0)),
+        get_world_seed=AsyncMock(return_value=4242),
+        get_discovered_window=window,
+        get_energy=AsyncMock(return_value=(60, 0)),
+        get_equipment=AsyncMock(return_value={"light": "diamond lantern"}),
+        get_skills=AsyncMock(return_value={}),
+    ), patch(
+        "views.mining.grid_mine_view.character_stats",
+        return_value=EffectiveStats(light_radius=3),
+    ):
+        await build_grid_embed(1, 2)
+    # get_discovered_window(suid, guild, depth, x-R, x+R, y-R, y+R) — R must be 4.
+    assert window.await_args.args[3:7] == (-4, 4, -4, 4)
 
 
 # ---------------------------------------------------------------------------

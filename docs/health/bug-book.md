@@ -23,7 +23,7 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
-## BUG-0026 — `EffectiveStats.light_radius` and `.luck` are dead stats (gear grants them, no game reads them) — OPEN (gameplay decision, guard shipped)
+## BUG-0026 — `EffectiveStats.light_radius` and `.luck` are dead stats (gear grants them, no game reads them) — FIXED (wired — owner decision Q-0208)
 
 - **Symptom (found 2026-06-27 by code inspection while building the Q-0089 `EffectiveStats`
   knob-coverage guard, PR #1505 — not a live report, but a real latent gap):** two fields on the
@@ -40,19 +40,27 @@
   "added the stat, summed it, labelled it, forgot the knob" half-ship class. Every *other* field is
   wired: `mining_power`/`loot_bonus` (exploration yield), `depth_access` (descent gate), `damage`/
   `defense`/`max_health` (the duel), `fishing_power`/`bite_luck` (the cast, #1504).
-- **Why it's OPEN, not auto-fixed:** wiring these is a **gameplay-design decision the owner should make**,
-  not a contained mechanical fix — *what should they do?* (e.g. `light_radius` → a wider reveal radius in
-  the mining grid or a fog/visibility mechanic; `luck` → a crit-find / rare-drop chance on dig). The
-  alternative is to **remove** them (and the gear bonuses + labels) if the design doesn't want them. Both
-  are owner calls; flagged here rather than guessed at.
-- **Stays-fixed guard (shipped this PR, #1505):**
-  `tests/unit/invariants/test_effective_stats_consumed.py` — asserts every `EffectiveStats` field is read
-  by a `disbot/` consumer or is on the documented `_UNWIRED_STATS` allowlist (`light_radius`, `luck`).
-  The allowlist is honesty-checked: the moment either gains a consumer, its allowlist entry must be
-  removed or the test fails — so fixing this bug is self-enforcing, and a *new* dead stat can't ship
-  silently. (Verified: with the allowlist emptied, the guard flags exactly these two.)
-- **Status:** OPEN — finding captured + guarded 2026-06-27 (dispatch run, slice 2). Resolution is a
-  gameplay decision (wire or remove); the guard prevents the class from growing meanwhile.
+- **Owner decision (Q-0208, 2026-06-27): WIRE them** (not remove). The owner chose to give the gear that
+  grants these stats a real effect, with the mechanics the agent proposed (reversible + sim-pinned).
+- **Fix — both wired, byte-identical when the stat is 0:**
+  - **`light_radius` → the fog-of-war window.** `utils/mining/grid.reveal_radius(light_radius)` maps the
+    summed light to the navigator's reveal half-width; `views/mining/grid_mine_view.build_grid_embed` now
+    computes it from the player's `character_stats(...).light_radius` and feeds it to **both** the
+    discovered-cell query and the render. **Non-regressive:** light 0–1 → the prior default 2; a lantern
+    (2) → 3, a diamond lantern (3) → 4 (capped at 4). A brighter light literally lets you see more of the
+    map at once.
+  - **`luck` → rare-find weighting.** `utils/mining/exploration.resolve` now biases the weighted outcome
+    pick toward rarer finds by `luck` (`_luck_weighted`: Common stays flat, Uncommon ×1.15, Rare ×1.4,
+    Legendary ×1.6 per luck point), so the diamond pickaxe's and lucky charm's `luck` makes fortunate
+    finds more frequent. **Byte-identical when `luck <= 0`.** Numbers pinned in
+    [`docs/planning/mining-luck-light-numbers-2026-06-27.md`](../planning/mining-luck-light-numbers-2026-06-27.md).
+- **Stays-fixed guard:** `tests/unit/invariants/test_effective_stats_consumed.py` — its `_UNWIRED_STATS`
+  allowlist is now **empty**, so the invariant (every `EffectiveStats` field is read by a `disbot/`
+  consumer) *requires* `light_radius` + `luck` to stay wired; the moment a reader is removed the test
+  fails. Plus the wiring tests: `test_mining_grid.py::test_reveal_radius_*`,
+  `test_mining_exploration.py::test_luck_*`, and
+  `test_mining_grid_view.py::test_build_grid_embed_widens_window_with_a_brighter_light`.
+- **Status:** FIXED 2026-06-27 (owner-greenlit Q-0208). Live on the next auto-deploy; no data step needed.
 
 ## BUG-0025 — hero-card image stranded/lost when navigating into an image-less sub-panel (profile + XP hub) — FIXED (root)
 
