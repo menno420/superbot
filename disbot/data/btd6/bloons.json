@@ -252,7 +252,7 @@
         "leads",
         "lead bloon"
       ],
-      "description": "Immune to Sharp damage, so most basic dart/projectile attacks cannot pop it unupgraded. Needs Explosion, Fire, Plasma, Glacier, Acid, or Normal damage.",
+      "description": "Immune to Sharp, Shatter, Cold, and Energy damage, so basic darts/projectiles, ice, and lasers cannot pop it unupgraded. Popped by Explosion, Fire, Plasma, Glacier, Acid, or Normal damage. Glue and other status effects still work on Lead (they ignore damage-type immunity).",
       "popped_by": "Explosion, Fire, Plasma, Glacier, Acid, or Normal damage"
     },
     {
@@ -638,7 +638,7 @@
         "ddts",
         "dark dirigible titan"
       ],
-      "description": "Dark Dirigible Titan. Has Camo, Lead, and Black properties, so it needs camo detection and is immune to Sharp and Explosion damage. Very fast; 400 HP. Pops into four camo Ceramics."
+      "description": "Dark Dirigible Titan. Has Camo, Lead, and Black properties, so it needs camo detection and is immune to Sharp, Shatter, Cold, Energy, and Explosion damage. Pop it with Fire, Plasma, Normal, Acid, or Glacier damage plus camo detection; glue/slow only via MOAB Glue (0-0-3). Very fast; 400 HP. Pops into four camo regrow Ceramics."
     },
     {
       "id": "bfb",

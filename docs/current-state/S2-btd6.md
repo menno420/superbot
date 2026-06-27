@@ -8,6 +8,14 @@
 > [btd6-gamedata-decode-status](../btd6/btd6-gamedata-decode-status.md).
 
 **Recently shipped (this sector):**
+- **Damage-type / status-effect interaction grounding** (PR #1487, owner-directed from live DDT/glue
+  screenshots) — a new `[btd6_interaction]` grounding pass (`btd6_interaction_service` +
+  `data/btd6/damage_types.json`) fixes the "can tower X deal with bloon Y?" error class at the root: the
+  model was handed bloon immunities + tower descriptions separately and invented the rule (it said *"Lead
+  resists glue"* — false). The curated damage→property table is **cross-checked against the game-sourced
+  `immune_to` data** (a curated typo or re-seed fails CI). Plus a verified
+  [QA-accuracy corpus](../btd6/qa-accuracy-corpus-2026-06-27.md) (the "big list of questions") and bloon
+  prose completion. Caught + excluded a wrong research claim (Sniper is Sharp/no-lead at base, not Normal).
 - **P1-1 BTD6 grounding-anchor eval guard** (the #704 finding, offline half) — every number the
   golden set asserts (Despo $12,025 / ×10 $120,250 on Impoppable, Elite Lych HP per tier, ABR/round
   cash ranges) is now pinned to a deterministic `btd6_data_service` re-derivation **and** the case
