@@ -1,6 +1,6 @@
 # 2026-06-27 — BTD6 absence-guard Layer B (grounded-contradiction slice)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 **Run type:** owner-directed (in-session greenlight: *"Build it now (offline + unit tests)"* —
 AskUserQuestion answer to the absence-guard Layer B question, after the codex-audit review)
