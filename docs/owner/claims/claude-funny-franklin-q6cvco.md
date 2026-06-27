@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-q6cvco` · scope: per-sector offline-fit startability tagging · area: docs/current-state/S*.md + scripts/check_startability_tags.py + tests · 2026-06-27
