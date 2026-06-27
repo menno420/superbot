@@ -73,10 +73,15 @@ class EffectiveStats:
     depth_access: int = 0
     luck: int = 0
     loot_bonus: int = 0
-    # Reserved for combat gear (deathmatch / PvP); zero until it exists.
+    # Combat gear (deathmatch / PvP).
     damage: int = 0
     defense: int = 0
     max_health: int = 0
+    # Fishing gear (Q-0175 / V-14 "matching gear → better fishing").  ``utils.
+    # fishing.gear`` reads these into the cast's 4th how-well knob; zero until a
+    # fishing item is equipped, so every existing read stays byte-identical.
+    fishing_power: int = 0  # biases the catch toward the big end of the band
+    bite_luck: int = 0  # quickens the bite wait
 
     def __add__(self, other: EffectiveStats) -> EffectiveStats:
         return EffectiveStats(
@@ -88,6 +93,8 @@ class EffectiveStats:
             damage=self.damage + other.damage,
             defense=self.defense + other.defense,
             max_health=self.max_health + other.max_health,
+            fishing_power=self.fishing_power + other.fishing_power,
+            bite_luck=self.bite_luck + other.bite_luck,
         )
 
 
@@ -102,6 +109,8 @@ STAT_LABELS: dict[str, str] = {
     "damage": "Damage",
     "defense": "Defense",
     "max_health": "Max health",
+    "fishing_power": "Fishing power",
+    "bite_luck": "Bite luck",
 }
 
 # Compact glyphs for tight surfaces (shop rows, recipe pickers), damage/defence
@@ -115,6 +124,8 @@ STAT_GLYPHS: dict[str, str] = {
     "depth_access": "🔽",
     "luck": "🍀",
     "loot_bonus": "💰",
+    "fishing_power": "🎣",
+    "bite_luck": "🐟",
 }
 
 
@@ -138,6 +149,16 @@ _GEAR: dict[str, tuple[str, EffectiveStats]] = {
     "lantern": (LIGHT, EffectiveStats(light_radius=2, depth_access=2)),
     "diamond lantern": (LIGHT, EffectiveStats(light_radius=3, depth_access=3)),
     "lucky charm": (CHARM, EffectiveStats(luck=1, loot_bonus=1)),
+    # Fishing gear (Q-0175 / V-14) — a CHARM-slot ladder, deliberately off the
+    # combat SET_SLOTS so the duel-balance sim is untouched.  They contribute
+    # only fishing stats, which utils.fishing.gear reads as the cast's 4th
+    # how-well knob (rod × bait × weather × gear).  A "fishing loadout" equips
+    # one of these instead of the lucky charm — an optimisation, never a gate
+    # (the starter still fishes fine; numbers in
+    # docs/planning/fishing-gear-numbers-2026-06-27.md).
+    "fishing charm": (CHARM, EffectiveStats(fishing_power=2, bite_luck=1)),
+    "anglers charm": (CHARM, EffectiveStats(fishing_power=4, bite_luck=2)),
+    "master angler charm": (CHARM, EffectiveStats(fishing_power=6, bite_luck=3)),
     # Starter combat gear — pre-metal entry pieces, strictly below bronze.
     "sword": (WEAPON, EffectiveStats(damage=3)),
     "shield": (SHIELD, EffectiveStats(defense=2, max_health=10)),
@@ -210,6 +231,10 @@ MAX_DURABILITY: dict[str, int] = {
     "lantern": 100,
     "diamond lantern": 180,
     "lucky charm": 80,
+    # Fishing charms — wear like the lucky charm (a coin sink), generous.
+    "fishing charm": 80,
+    "anglers charm": 140,
+    "master angler charm": 220,
     # Starters.
     "sword": 60,
     "shield": 90,

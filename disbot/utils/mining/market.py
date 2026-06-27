@@ -38,6 +38,11 @@ GEAR_SHOP: dict[str, int] = {
     "lantern": 40,
     "iron pickaxe": 60,
     "lucky charm": 80,
+    # Fishing charms (Q-0175 / V-14) — the CHARM-slot fishing ladder; coins
+    # only (no recipe), priced above the lucky charm and monotonic up the ladder.
+    "fishing charm": 90,
+    "anglers charm": 220,
+    "master angler charm": 420,
     # Food / boosters — refill mining energy (utils/mining/energy.py). A coin
     # sink that lets an active player dig past the passive regen rate; priced
     # well above their flavour value so they stay a convenience, not arbitrage.

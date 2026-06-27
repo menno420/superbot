@@ -197,3 +197,44 @@ def test_describe_stats_empty():
 def test_stat_labels_match_dataclass_fields():
     field_names = {f.name for f in fields(eq.EffectiveStats)}
     assert set(eq.STAT_LABELS) == field_names
+
+
+# --- fishing gear (Q-0175 / V-14) -------------------------------------------
+
+_FISHING_CHARMS = ("fishing charm", "anglers charm", "master angler charm")
+
+
+def test_fishing_charms_are_charm_slot_off_the_combat_sets():
+    """Fishing charms equip into CHARM (not a combat SET_SLOT, so the duel-
+    balance sim is untouched) and carry only fishing stats."""
+    for name in _FISHING_CHARMS:
+        assert eq.slot_for(name) == eq.CHARM
+        assert eq.CHARM not in eq.SET_SLOTS
+        assert eq.gear_tier(name) is None  # not a tiered combat-set piece
+        stats = eq.item_stats(name)
+        assert stats.fishing_power > 0 and stats.bite_luck > 0
+        # No combat/mining contribution — purely a fishing item.
+        assert stats.damage == 0 and stats.defense == 0 and stats.mining_power == 0
+
+
+def test_fishing_charm_ladder_is_monotonic():
+    powers = [eq.item_stats(n).fishing_power for n in _FISHING_CHARMS]
+    lucks = [eq.item_stats(n).bite_luck for n in _FISHING_CHARMS]
+    assert powers == sorted(powers) and len(set(powers)) == len(powers)
+    assert lucks == sorted(lucks) and len(set(lucks)) == len(lucks)
+
+
+def test_fishing_charms_wear_and_are_buyable():
+    """Every fishing charm wears (a coin sink) and is reacquirable in the shop —
+    the durability-loop invariant (also enforced repo-wide by the alignment lint)."""
+    from utils.mining.market import GEAR_SHOP
+
+    for name in _FISHING_CHARMS:
+        assert eq.max_durability(name) is not None
+        assert name in GEAR_SHOP
+
+
+def test_compute_stats_sums_fishing_gear():
+    """The fishing stats flow through the generic compute_stats path."""
+    stats = eq.compute_stats({eq.CHARM: "master angler charm"})
+    assert stats.fishing_power == 6 and stats.bite_luck == 3

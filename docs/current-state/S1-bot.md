@@ -22,6 +22,14 @@
   gear-panel button + `!loadout`). `mining_loadout_presets` (migration 101, direct-lane like
   `mining_equipment`) + `mining_workflow.{save,apply,list,delete}_loadout`; apply equips every still-owned
   item, clears other slots, reports anything no longer owned; reversible + additive.
+- **Fishing-specific gear stats** (#1504, V-14/Q-0175 "matching gear → better fishing" half) — makes a
+  fishing loadout a **real optimisation**, not just convenience. `EffectiveStats` gained `fishing_power` +
+  `bite_luck` (additive, default-0 → existing reads byte-identical), a CHARM-slot **fishing-charm ladder**
+  (fishing/anglers/master-angler charm, off the combat SET_SLOTS so duel balance is untouched) in
+  `utils/equipment.py` + the gear shop, the pure converter `utils/fishing/gear.py`, and
+  `fishing_workflow.begin_cast` now folds them in as the **4th** cast knob (rod × bait × weather ×
+  **gear**). Coins-only (no recipe), sim-pinned
+  ([numbers](../planning/fishing-gear-numbers-2026-06-27.md)); self-merged on green.
 - **Starboard / Hall-of-Fame** — plan #1254 → PR 1 #1259 → PR 2 #1270.
 - **Fishing minigame** — cast/reel loop + rod ladder + energy (#1296–#1304, incl. the generous
   sell-value rebalance 1–7 → 1–21 in #1304); **Bait layer** — coin-bought consumable with **both**
@@ -53,14 +61,12 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
-- `[offline]` **Fishing-specific gear stats** ([idea](../ideas/fishing-gear-stats-2026-06-27.md)) — the
-  offline successor to the gear loadout presets (#1499): the loadout-*swap* shipped, but matching gear
-  has nothing to bias because `utils/equipment.EffectiveStats` models only mining + combat stats. Add a
-  `fishing_power`/`bite_luck` stat + a few fishing gear items (existing slots/tier ladder) and read it as
-  a 4th cast knob (rod × bait × weather × gear) in `fishing_workflow.begin_cast` — completing the Q-0175
-  "matching gear → better fishing" half. Pure + sim-pinnable (mirror `planning/gear-set-numbers-2026-06-11.md`);
-  self-mergeable. *(Listed first so an empty-fire dispatch has a clearly-offline S1 lane — the rest below
-  need a live bot or an owner decision.)*
+- `[offline]` **Fishing-specific gear stats — SHIPPED 2026-06-27 (#1504)** (see Recently shipped above):
+  the Q-0175 "matching gear → better fishing" half is done — `fishing_power`/`bite_luck` on
+  `EffectiveStats`, a CHARM-slot fishing-charm ladder, and the cast's 4th knob in `begin_cast`. ▶ **Next
+  offline successor:** **fishing-gear acquisition depth** — the charms are coins-only for now; a craft
+  path (turn caught-fish/bait materials into charms via the bait-craft seam) or a fish-loot drop would
+  give them a non-coin earn, mirroring the rod/bait ladders. Pure + sim-pinnable, self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

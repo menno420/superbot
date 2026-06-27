@@ -27,10 +27,12 @@ from utils.fishing import MAX_LEVEL, Catch
 from utils.fishing import bait as bait_mod
 from utils.fishing import energy as fish_energy
 from utils.fishing import fish as fish_mod
+from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
 from utils.fishing import roll_catch
 from utils.fishing import venue as venue_mod
 from utils.fishing import weather as weather_mod
+from utils.mining import character
 
 logger = logging.getLogger("bot.fishing_workflow")
 
@@ -218,6 +220,11 @@ class CastStart:
     #: The day's weather, already compounded into ``effective_bite_speed`` /
     #: the roll's rarity pull — carried for the cast-panel forecast note.
     weather: weather_mod.Weather = weather_mod.CONDITIONS[0]
+    #: Whether the player's equipped gear contributed a fishing bonus (its
+    #: ``fishing_power``/``bite_luck`` are already folded into the roll pull /
+    #: ``effective_bite_speed``) — for the 🎣 cast-panel note. ``False`` when no
+    #: fishing gear is equipped, in which case the cast is byte-identical.
+    fishing_gear_bonus: bool = False
 
 
 def _fmt_wait(seconds: int) -> str:
@@ -278,16 +285,32 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     profile = venue_mod.profile_for(venue)
     weather = weather_mod.current_weather()
     bait, bait_charges = await get_active_bait(user_id, guild_id)
-    # Three "how-well" knobs compound: rod × bait × the day's weather. rarity_pull
+    # The 4th "how-well" knob: equipped fishing gear (Q-0175 / V-14). Read the
+    # character's gear+skill stats and fold fishing_power → rarity pull and
+    # bite_luck → bite speed. No fishing gear ⇒ both multipliers are 1.0 ⇒ the
+    # cast is byte-identical to the pre-gear behaviour (additive safety property).
+    gear_stats = character.character_stats(
+        await db.get_equipment(str(user_id), guild_id),
+        await db.get_skills(user_id, guild_id),
+    )
+    gear_pull = fishing_gear.fishing_pull_mult(gear_stats)
+    gear_bite_speed = fishing_gear.fishing_bite_speed_mult(gear_stats)
+    # Four "how-well" knobs compound: rod × bait × weather × gear. rarity_pull
     # (all ≥ 1) pulls the catch toward the big end of the SAME unlocked band (never
-    # a new band — that stays the fishing-level axis); bite_speed (rod/bait ≤ 1,
+    # a new band — that stays the fishing-level axis); bite_speed (rod/bait/gear ≤ 1,
     # weather either way) scales the bite wait. Weather is the transient, shared,
     # free knob (a storm makes a rarer catch likelier but the wait longer).
     effective_pull = (
-        rod.rarity_pull * (bait.rarity_pull if bait else 1.0) * weather.rarity_mult
+        rod.rarity_pull
+        * (bait.rarity_pull if bait else 1.0)
+        * weather.rarity_mult
+        * gear_pull
     )
     effective_bite_speed = (
-        rod.bite_speed * (bait.bite_speed if bait else 1.0) * weather.bite_speed_mult
+        rod.bite_speed
+        * (bait.bite_speed if bait else 1.0)
+        * weather.bite_speed_mult
+        * gear_bite_speed
     )
     cast = await roll_cast(
         user_id,
@@ -330,6 +353,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         bait_charges_left=charges_left,
         venue_profile=profile,
         weather=weather,
+        fishing_gear_bonus=fishing_gear.has_fishing_bonus(gear_stats),
     )
 
 

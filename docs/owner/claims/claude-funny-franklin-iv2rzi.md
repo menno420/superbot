@@ -1,1 +1,0 @@
-- branch: claude/funny-franklin-iv2rzi · scope: fishing-specific gear stats (EffectiveStats fishing_power/bite_luck + cast knob) · files: utils/equipment.py, utils/fishing/gear.py, services/fishing_workflow.py, views/fishing/cast_view.py, tests · 2026-06-27
