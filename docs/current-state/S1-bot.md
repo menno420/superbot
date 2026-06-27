@@ -63,10 +63,14 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
 - `[offline]` **Fishing-specific gear stats — SHIPPED 2026-06-27 (#1504)** (see Recently shipped above):
   the Q-0175 "matching gear → better fishing" half is done — `fishing_power`/`bite_luck` on
-  `EffectiveStats`, a CHARM-slot fishing-charm ladder, and the cast's 4th knob in `begin_cast`. ▶ **Next
-  offline successor:** **fishing-gear acquisition depth** — the charms are coins-only for now; a craft
-  path (turn caught-fish/bait materials into charms via the bait-craft seam) or a fish-loot drop would
-  give them a non-coin earn, mirroring the rod/bait ladders. Pure + sim-pinnable, self-mergeable.
+  `EffectiveStats`, a CHARM-slot fishing-charm ladder, and the cast's 4th knob in `begin_cast`.
+  **Acquisition depth SHIPPED 2026-06-27 (PR #1508):** the three charms now have a **fish→charm craft
+  path** (`!craftcharm`) mirroring the catch→bait loop — consume caught fish (smallest-first) → grant one
+  charm into the mining inventory, so a dedicated fisher can earn the whole ladder by fishing; coins stay
+  the fast alternative ([craft numbers](../planning/fishing-charm-craft-numbers-2026-06-27.md)). ▶ **Next
+  offline successor:** a **fish-loot drop** (a small chance a cast yields charm/craft materials directly),
+  or extend the same craft pattern to the **rod ladder** (caught-fish craft for the higher rods). Pure +
+  sim-pinnable, self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

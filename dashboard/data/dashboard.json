@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T17:44:03Z",
+    "generated_at": "2026-06-27T18:09:06Z",
     "build": {
-      "commit": "1e711ec5",
-      "subject": "Merge pull request #1506 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-27T17:44:03Z"
+      "commit": "66ea5ca5",
+      "subject": "chore(session): born-red card — fishing fish→charm craft path",
+      "committed_at": "2026-06-27T18:09:06Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 455,
+      "commands": 456,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2655,6 +2655,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-27-fishing-charm-craft.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — Fishing-gear acquisition depth: fish→charm craft path",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-27-effectivestats-knob-coverage.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — EffectiveStats knob-coverage guard + dead-stat finding (BUG-00xx)",
@@ -3053,14 +3061,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-leaderboard-card-themes.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Per-category leaderboard card themes (card-engine H2 polish)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -6633,6 +6633,19 @@
             "baitcraft"
           ],
           "brief": "Craft bait from small caught fish — closes the catch→bait loop.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "craftcharm",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "charmcraft"
+          ],
+          "brief": "Craft a fishing charm from caught fish — the non-coin earn path.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

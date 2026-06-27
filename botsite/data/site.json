@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T12:49:53Z",
+    "generated_at": "2026-06-27T18:09:06Z",
     "build": {
-      "commit": "a903be68",
-      "subject": "session: open band-#1500 reconciliation pass (born-red)",
-      "committed_at": "2026-06-27T12:49:53Z"
+      "commit": "66ea5ca5",
+      "subject": "chore(session): born-red card — fishing fish→charm craft path",
+      "committed_at": "2026-06-27T18:09:06Z"
     }
   },
   "counts": {
-    "commands": 455,
+    "commands": 456,
     "features": 43,
     "games": 12
   },
@@ -4141,10 +4141,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -4784,9 +4780,29 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
-        },
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "craftcharm",
+      "aliases": [
+        "charmcraft"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Craft a fishing charm from caught fish — the non-coin earn path.",
+      "description": "Craft a fishing charm from caught fish — the non-coin earn path.",
+      "use_cases": null,
+      "examples": [
+        "!craftcharm fishing charm",
+        "!gear"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -5430,10 +5446,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -5454,10 +5466,6 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
-        {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -5480,10 +5488,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -5504,10 +5508,6 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
-        {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -5530,10 +5530,6 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
-        {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -7253,10 +7249,6 @@
       "status": "in-progress",
       "linked_ideas": [
         {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
-        {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
@@ -7651,10 +7643,6 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
-        {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
@@ -9226,10 +9214,6 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
-        {
-          "title": "Idea — Fishing-specific gear stats (make loadout presets a real optimisation)",
-          "status": "ideas"
-        },
         {
           "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
