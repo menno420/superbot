@@ -232,10 +232,12 @@ bot to confirm, and are **not** done:
 
 ## Open follow-ups (next sessions)
 
-- **Tower recommendations for "how do I deal with X" (owner decision pending)** — the auto-derivation was
-  reverted (above). To recommend specific towers correctly we need MOAB-class targeting + config quality,
-  which aren't in the dump. Options: a hand-curated wiki-verified list (small, per-bloon), an owner-supplied
-  list, or leaving the rules-based guidance. The over-refusal on these questions returns until decided.
+- **Tower recommendations for "how do I deal with X" — DEFERRED (owner decision 2026-06-27).** The
+  auto-derivation was reverted (above); the owner chose to leave the **rules-based** guidance (camo +
+  non-resisted damage + must hit MOAB-class) for now and revisit specific tower recommendations later as
+  its own focused task. To do it correctly later we need MOAB-class targeting + config quality, which
+  aren't in the dump — so it will be a hand-curated, wiki-verified (or owner-supplied) list, not an
+  auto-derivation. (The over-refusal on a bare "which tower?" ask may return until then; that's accepted.)
 - **Broaden the live corpus** with strategy/opinion questions graded by `llm_judge` rubrics.
 - **Newer-tower coverage** (Desperado, Mermonkey): the dump has them; spot-check their damage-type
   interaction questions ground correctly.
