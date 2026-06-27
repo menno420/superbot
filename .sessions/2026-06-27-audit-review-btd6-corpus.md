@@ -1,6 +1,6 @@
 # 2026-06-27 — Reviewed the codex unfinished-work audit (PR #1509); shipped a BTD6 regression-corpus expansion
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 **Run type:** owner-directed (*"I asked codex to review the current state of the bot and find some
 unfinished work, please review the open PR and see what you can execute"*)
