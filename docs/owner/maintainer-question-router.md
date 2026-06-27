@@ -7556,3 +7556,30 @@ into `dispatch_menu --unattended` is the natural next slice.
 `repo-sector-map.md` (durable home of the convention). Related: **Q-0143** (startability tag), **#1285 /
 Q-0172** (unattended-fit tag — the sector-level sibling), **Q-0102** (the self-audit loop that surfaced
 it), **Q-0105** (disposable-tool posture).
+
+---
+
+### Q-0208 — DECIDED: three audit-unblock decisions (wire dead stats · build absence-guard Layer B · hold Setup PR 3b) (2026-06-27)
+
+> **ANSWERED (owner, in-session via AskUserQuestion, 2026-06-27).** After an agent reviewed the codex
+> unfinished-work audit (PR #1509) and surfaced the genuinely owner-gated items, the owner made three
+> decisions in one round. Recorded here so the answers are preserved (Q-0104 "route durable conclusions").
+
+**The three decisions:**
+
+1. **BUG-0026 (`EffectiveStats.light_radius` / `luck` dead stats) → WIRE them into gameplay** (not remove,
+   not defer). The gear that grants them should *do* something: `light_radius` → a reveal/visibility effect
+   in the mining grid; `luck` → a rare-find/crit chance on dig. *Actioned in its own follow-on PR; the
+   BUG-0026 entry is updated there.* The agent brings the specific mechanic + sim-pinned numbers (reversible).
+
+2. **Absence-guard Layer B → BUILD now (offline + unit tests).** Greenlit the design doc's review gate. The
+   agent shipped the **grounded-contradiction slice** (§4.2 step 3 — the safe, no-false-floor core) this
+   session; the §4.3 unresolved-subject half stays design-only pending a live false-positive-rate check.
+   *Home: `btd6-absence-claim-guard-design.md` Update 7 + `.sessions/2026-06-27-btd6-absence-guard-layer-b.md`.*
+
+3. **Advanced Setup PR 3b → HOLD for a live-bot session.** The editor rework ("most of it does nothing")
+   genuinely needs a running bot to verify; not done offline. Stays the S1 `▶ Next` `[needs-live-bot]` item.
+
+**Home:** this Q-block (canonical) + the per-decision homes above. Related: **Q-0120** (cross-agent output
+is input-to-verify, not an order — the posture used to review the audit), **BUG-0026** (the dead-stats
+bug), **Q-0105** (disposable-tool posture).

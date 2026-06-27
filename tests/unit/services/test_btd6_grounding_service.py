@@ -254,3 +254,56 @@ def test_enumeration_roster_is_subset_of_accepted_names():
             paragon.name, matchers
         )
         assert present, f"paragon {paragon.name!r} is not in the accepted index"
+
+
+# ---------------------------------------------------------------------------
+# Layer B — the absence-claim contradiction guard (grounded-contradiction slice)
+# ---------------------------------------------------------------------------
+
+_BUCC_PARAGON_FACT = (
+    "Monkey Buccaneer's Paragon (tier 6) is Navarch of the Seas, costing 550000"
+)
+
+
+def test_btd6_reply_blocks_contradicted_absence_claim():
+    # The canonical repro: the grounding AFFIRMS the paragon, the reply denies it.
+    v = btd6_grounding_service.validate_btd6_reply(
+        "The Monkey Buccaneer does not have a paragon.",
+        facts=(_BUCC_PARAGON_FACT,),
+        task=AITask.BTD6_ANSWER,
+    )
+    assert v.grounded is False
+    assert "absence_claim_contradicted" in v.notes
+    assert v.offending_absence_claims  # the offending sentence captured
+
+
+def test_btd6_reply_allows_true_absence_when_grounding_silent():
+    # Grounding never affirms a paragon → "no paragon" is a true negative, allowed
+    # (the gate only fires on a grounding-contradicted "no" — no false floor).
+    v = btd6_grounding_service.validate_btd6_reply(
+        "The Spike Factory does not have a paragon.",
+        facts=("Spike Factory base cost: 1000",),
+        task=AITask.BTD6_ANSWER,
+    )
+    assert v.grounded is True
+
+
+def test_btd6_reply_absence_claim_matches_the_affirmed_subject():
+    # Grounding affirms the Buccaneer's paragon; a true "no paragon" about a
+    # DIFFERENT tower must not be blocked by it (subject-matched, not blanket).
+    v = btd6_grounding_service.validate_btd6_reply(
+        "The Spike Factory does not have a paragon.",
+        facts=(_BUCC_PARAGON_FACT, "Spike Factory base cost: 1000"),
+        task=AITask.BTD6_ANSWER,
+    )
+    assert v.grounded is True
+
+
+def test_btd6_reply_allows_grounded_paragon_answer():
+    # The correct positive answer passes cleanly.
+    v = btd6_grounding_service.validate_btd6_reply(
+        "The Monkey Buccaneer's paragon is Navarch of the Seas.",
+        facts=(_BUCC_PARAGON_FACT,),
+        task=AITask.BTD6_ANSWER,
+    )
+    assert v.grounded is True

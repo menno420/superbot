@@ -1252,13 +1252,24 @@ def _build_grounding_constraint(verdict: btd6_grounding_service.GroundingResult)
         bits.append("names not in the data: " + ", ".join(verdict.offending_names))
     if verdict.offending_numbers:
         bits.append("numbers not in the data: " + ", ".join(verdict.offending_numbers))
+    if verdict.offending_absence_claims:
+        bits.append(
+            "false 'does not have' claims the data refutes: "
+            + " | ".join(verdict.offending_absence_claims),
+        )
     detail = "; ".join(bits) if bits else "unsupported BTD6 claims"
-    return (
+    correction = (
         "GROUNDING CORRECTION: your previous reply contained "
         f"{detail}. Do NOT state these. Use only BTD6 names and numbers present "
         "in the provided data and tool results. If the data does not support an "
         "answer, say you don't have that information."
     )
+    if verdict.offending_absence_claims:
+        correction += (
+            " The provided data DOES list the thing you said is missing — state "
+            "what the data shows instead of claiming it does not exist."
+        )
+    return correction
 
 
 async def _send_btd6_refusal(message: discord.Message) -> None:

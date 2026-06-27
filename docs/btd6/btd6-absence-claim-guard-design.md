@@ -1,11 +1,13 @@
 # BTD6 absence-claim guard — design proposal
 
-> **Status:** `reference` — DESIGN PROPOSAL. **Layer A (retrieval) is now SHIPPED**
-> (path/line-aware resolution, PR #855, 2026-06-14 — see Update 6); **Layer B (the
-> negative-existential gate) remains design-only, *not* implemented**, pending review
-> per the v55 hand-off ("Task 1: DESIGN FIRST, do NOT implement blind"). Written for
-> independent review (ChatGPT / Analysis side) before any *guard* code is merged.
-> The companion status ledger is `btd6-gamedata-decode-status.md`.
+> **Status:** `reference` — DESIGN PROPOSAL. **Layer A (retrieval) is SHIPPED**
+> (path/line-aware resolution, PR #855, 2026-06-14 — see Update 6). **Layer B's
+> *grounded-contradiction* slice is now SHIPPED** (the §4.2-step-3 in-context record
+> check — reject a "no" the grounded payload refutes, 2026-06-27, owner-greenlit — see
+> Update 7); **the §4.3 *unresolved-subject* half remains design-only**, needing the
+> live false-positive-rate check. Written for independent review (ChatGPT / Analysis
+> side) before that half is merged. The companion status ledger is
+> `btd6-gamedata-decode-status.md`.
 >
 > **One-line ask of the reviewer:** does the layered design below (a cheap
 > retrieval fix + an absence-claim *gate* that never lets an *unresolved* empty
@@ -233,6 +235,42 @@ MOAB grounding, and the `build()` integration).
 map that its record-check consumes. Those need the review this doc asks for, plus the
 prod-creds live half. Layer A shrinks sub-mode A (never-resolved) so the eventual gate
 fires rarely, exactly as §4.1 intended.
+
+## Update 7 (2026-06-27) — Layer B grounded-contradiction slice SHIPPED (owner-greenlit)
+
+The owner greenlit building Layer B offline. Rather than the full §4.3 gate (whose
+risk is *false floors* on true negatives — see §5 — and which needs a live
+false-positive-rate check), this ships the **safe, high-precision core**: the §4.2
+**step-3 record check against the in-context grounding**. The gate rejects an absence
+claim **only when the grounded payload affirms the very thing the reply denies**, so by
+construction it can never block a *true* negative (a true "X has no paragon" has no
+contradicting positive in the haystack — nothing fires).
+
+**What shipped (a real guard, fail-precise):**
+
+- `utils/btd6/absence_guard.contradicted_absence_claims(answer, haystack)` — pure,
+  stdlib-only. An `_ExistenceAttribute` table (the extension point) seeded with
+  **paragon** (the canonical Update-2 repro): it reads the subjects the haystack
+  *affirms* have a paragon (`<Tower>'s Paragon`), then flags any reply *sentence* that
+  both names an affirmed subject **and** denies its paragon (tight negation patterns +
+  a "no *second* paragon" qualifier exclusion).
+- `btd6_grounding_service.validate_btd6_reply` runs it on the `facts ∪ tool_results`
+  haystack and returns `grounded=False` + note `absence_claim_contradicted` +
+  `offending_absence_claims`, so the **existing regenerate-once → deterministic
+  refusal** machinery handles the downgrade for free; the retry constraint
+  (`_build_grounding_constraint`) tells the model the data *does* list the thing and to
+  state it.
+
+Verified against the **real** pipeline: `build("does the monkey buccaneer have a
+paragon")` grounds Navarch, and a reply saying "Monkey Buccaneer does not have a
+paragon" is now blocked (`absence_claim_contradicted`) while the correct "has a
+paragon, Navarch" passes. Pinned by `tests/unit/utils/btd6/test_absence_guard.py`
+(15 cases) + the Layer B cases in `tests/unit/services/test_btd6_grounding_service.py`.
+
+**Still design-only:** the §4.3 **unresolved-subject** half (downgrading a "no" about a
+subject that never resolved — the part with false-floor risk that needs the live FPR
+check) and the §4.4 attribute-synonym map. Adding another existence-attribute to the
+table (ability, camo, etc.) wants the same live verification before it is trusted.
 
 ---
 
