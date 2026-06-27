@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T17:28:44Z",
+    "generated_at": "2026-06-27T17:44:03Z",
     "build": {
-      "commit": "2aa5360b",
-      "subject": "Merge pull request #1504 from menno420/claude/funny-franklin-iv2rzi",
-      "committed_at": "2026-06-27T17:28:44Z"
+      "commit": "1e711ec5",
+      "subject": "Merge pull request #1506 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-06-27T17:44:03Z"
     },
     "counts": {
       "functions": 43,
       "ideas": 149,
-      "bugs": 25,
+      "bugs": 26,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -2424,6 +2424,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0026",
+      "title": "EffectiveStats.light_radius and .luck are dead stats (gear grants them, no game reads them) — OPEN (gameplay decision, guard shipped)",
+      "status": "unknown",
+      "summary": "Symptom (found 2026-06-27 by code inspection while building the Q-0089 EffectiveStats knob-coverage guard, PR #1505 — not a live report, but a real latent gap): two fields on the cross-game utils/equipment.EffectiveStats block are defined, summed (__add__), and labelled (STAT_LA…"
+    },
+    {
       "id": "BUG-0025",
       "title": "hero-card image stranded/lost when navigating into an image-less sub-panel (profile + XP hub) — FIXED (root)",
       "status": "unknown",
@@ -2644,6 +2650,14 @@
       "file": "2026-06-27-fishing-gear-stats.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Fishing-specific gear stats (loadout presets become a real optimisation)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-27-effectivestats-knob-coverage.md",
+      "date": "2026-06-27",
+      "title": "2026-06-27 — EffectiveStats knob-coverage guard + dead-stat finding (BUG-00xx)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -3044,14 +3058,6 @@
       "file": "2026-06-24-leaderboard-card-themes.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Per-category leaderboard card themes (card-engine H2 polish)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-idea-grooming.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · idea grooming (settle-once run, slice 3)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
