@@ -1,35 +1,27 @@
 """BTD6 QA accuracy corpus — the machine-readable half of
 ``docs/btd6/qa-accuracy-corpus-2026-06-27.md``.
 
-Two layers, both keyed off the SAME real grounding the production AI path uses
-(``services.btd6_context_service.build``), so a pass means the *bot's own*
-retrieved facts answer the question — not that a model can answer from perfect
-hand-fed context:
+One shared table (:data:`GROUNDING_PROBES`) feeds two layers, both keyed off the
+bot's REAL retrieval so a pass means the *bot's own* facts answer the question —
+not that a model can answer from perfect hand-fed context:
 
-* :data:`GROUNDING_PROBES` + ``test_btd6_qa_corpus.py`` — the **offline**,
-  deterministic, creds-free layer. For each question it asserts the answer-bearing
-  fact is actually grounded (``expect``) and the known wrong claim never is
+* ``test_btd6_qa_corpus.py`` — the **offline**, deterministic, creds-free layer.
+  For each question it asserts the answer-bearing fact is actually grounded by
+  ``btd6_context_service.build`` (``expect``) and the known wrong claim is not
   (``forbid``). This is the trustworthy "test all these questions at once" check:
-  it runs the real retrieval pipeline, needs no API keys, and runs on every PR.
+  real retrieval pipeline, no API keys, runs on every PR.
 
-* :func:`live_cases` — the **live** layer for ``scripts/run_evals.py --btd6``
-  (paid, opt-in). It injects each question's real ``build()`` facts into the
-  model prompt (mirroring production, where facts enter the instruction stack)
-  and grades the phrased answer. Same facts as the offline layer, so the only
-  extra thing it tests is whether the model *phrases* a faithful answer.
+* ``btd6_live_path.run_btd6_live_suite`` (via ``scripts/run_evals.py --btd6``) —
+  the **live** layer. It replays each question through the REAL production answer
+  path (router → grounding → instruction assembly → gateway → faithfulness guard)
+  and grades the reply, so a result is what a live Discord user would get.
 
-Grow both from real misses: when a BTD6 answer is reported wrong, add a probe
-here so it becomes a permanent regression.
+Grow both from real misses: when a BTD6 answer is reported wrong, add a probe.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-
-from tests.evals.graders import all_of, contains, not_contains
-from tests.evals.harness import EvalCase
-
-from core.runtime.ai.contracts import AITask
 
 
 @dataclass(frozen=True)
@@ -113,55 +105,4 @@ GROUNDING_PROBES: tuple[GroundingProbe, ...] = (
 )
 
 
-# --- live-eval grading rubrics (one per probe id, keyed by question) ---------
-# The live model must state the same correct fact in prose. Kept lenient
-# (contains/not_contains on the key token) so model phrasing variance doesn't
-# cause false fails — the strict assertion is the offline grounding layer.
-_LIVE_FORBID_GLOBAL = ("lead resists glue", "lead is immune to glue")
-
-
-def _grounding_block(facts: list[str]) -> str:
-    """Wrap real grounded facts the way the production instruction stack frames
-    them: an untrusted-data block the model must answer FROM, not from memory.
-    """
-    body = "\n".join(facts) if facts else "(no grounded facts retrieved)"
-    return (
-        "You are SuperBot answering a Bloons TD 6 question. Answer ONLY from the "
-        "grounded BTD6 facts below — do not add facts from memory, and if the "
-        "facts do not cover it, say so. Keep it short.\n\n"
-        "<grounded_btd6_facts>\n"
-        f"{body}\n"
-        "</grounded_btd6_facts>"
-    )
-
-
-async def live_cases() -> list[EvalCase]:
-    """Build live EvalCases whose grounding is the REAL ``build()`` output.
-
-    Async because it calls the production grounding pipeline once per probe.
-    Each case grades the model's phrased answer with lenient contains/not_contains
-    over the same expect/forbid the offline layer asserts — so the live layer
-    tests *phrasing faithfulness given the real facts*, nothing hand-fed.
-    """
-    from services import btd6_context_service
-
-    cases: list[EvalCase] = []
-    for i, probe in enumerate(GROUNDING_PROBES):
-        ctx = await btd6_context_service.build(probe.question)
-        graders = [contains(s) for s in probe.expect[:1]]  # at least the headline fact
-        graders += [not_contains(s) for s in (*probe.forbid, *_LIVE_FORBID_GLOBAL)]
-        cases.append(
-            EvalCase(
-                id=f"btd6_corpus.{i:02d}",
-                category="btd6_grounding",
-                user_message=probe.question,
-                task=AITask.GENERAL_NL_ANSWER,
-                system_prompt=_grounding_block(list(ctx.facts)),
-                grader=all_of(*graders),
-                max_output_tokens=400,
-            ),
-        )
-    return cases
-
-
-__all__ = ["GROUNDING_PROBES", "GroundingProbe", "live_cases"]
+__all__ = ["GROUNDING_PROBES", "GroundingProbe"]

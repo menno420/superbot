@@ -54,26 +54,31 @@ jobs:
       - name: Run evals
         env:
           RUN_EVALS: "1"
-          # The LLM-as-judge uses the default-routed provider; pin it to
-          # Claude so grading is consistent across both candidate providers.
-          AI_DEFAULT_PROVIDER: anthropic
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PROVIDER: ${{ inputs.provider }}
           SUITE: ${{ inputs.suite }}
           THRESHOLD: ${{ inputs.threshold }}
         run: |
-          # Translate the suite picker into run_evals flags. The BTD6 corpus is
-          # grounded with the bot's REAL btd6_context_service.build() facts, so a
-          # pass means the bot's own retrieval answers the question.
+          # Map the suite picker → run_evals flags. The BTD6 corpus replays the
+          # REAL production answer path (router → grounding → instruction stack →
+          # gateway → faithfulness guard), so its result is the live answer. It
+          # tests the provider in AI_DEFAULT_PROVIDER; the golden set's LLM judge
+          # also keys off it, so default it to Claude for grading consistency and
+          # only switch it when running the BTD6 suite alone against one provider.
           SUITE_FLAGS=""
+          DEFAULT_PROVIDER="anthropic"
           case "$SUITE" in
-            btd6)        SUITE_FLAGS="--btd6 --category btd6_grounding" ;;
+            btd6)
+              SUITE_FLAGS="--btd6-only"
+              [ "$PROVIDER" != "both" ] && DEFAULT_PROVIDER="$PROVIDER"
+              ;;
             golden+btd6) SUITE_FLAGS="--btd6" ;;
             *)           SUITE_FLAGS="" ;;   # golden only
           esac
+          export AI_DEFAULT_PROVIDER="$DEFAULT_PROVIDER"
           {
-            echo "### AI eval scorecard (suite: ${SUITE})"
+            echo "### AI eval scorecard (suite: ${SUITE}; BTD6 live provider: ${DEFAULT_PROVIDER})"
             echo ''
             echo '```text'
             python scripts/run_evals.py --provider "$PROVIDER" --threshold "$THRESHOLD" $SUITE_FLAGS || true
