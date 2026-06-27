@@ -22,7 +22,7 @@ from typing import Any
 from core.runtime.ai.contracts import AITask, PolicyDenialReason
 from core.runtime.ai.safety import claims_are_grounded
 from services import btd6_knowledge_api
-from utils.btd6 import name_guard
+from utils.btd6 import absence_guard, name_guard
 from utils.btd6.keywords import has_btd6_context
 from utils.btd6.paragon_math import PARAGONS
 
@@ -40,6 +40,10 @@ class GroundingResult:
     # constraint and the structured block-reply log.
     offending_names: tuple[str, ...] = ()
     offending_numbers: tuple[str, ...] = ()
+    # Set when a reply makes a *false absence* claim the grounding contradicts
+    # ("<tower> has no paragon" when the grounded facts affirm it has one) —
+    # the absence-claim guard, Layer B's grounded-contradiction slice.
+    offending_absence_claims: tuple[str, ...] = ()
 
 
 async def validate_answer(
@@ -311,7 +315,16 @@ def validate_btd6_reply(
         if task is AITask.BTD6_ANSWER:
             offending_numbers = name_guard.offending_numbers(answer_text, haystack)
 
-        if not offending_names and not offending_numbers:
+        # Layer B (grounded-contradiction slice): a reply may not assert an
+        # absence the grounded payload refutes ("<tower> has no paragon" when the
+        # facts affirm one). Only fires on a contradicted "no", so a true negative
+        # is never blocked. See docs/btd6/btd6-absence-claim-guard-design.md §4.2.
+        offending_absence = absence_guard.contradicted_absence_claims(
+            answer_text,
+            haystack,
+        )
+
+        if not offending_names and not offending_numbers and not offending_absence:
             return GroundingResult(
                 grounded=True,
                 reason_code=PolicyDenialReason.NONE.value,
@@ -323,6 +336,8 @@ def validate_btd6_reply(
             notes.append("entity_name_unsupported")
         if offending_numbers:
             notes.append("numeric_claim_unsupported")
+        if offending_absence:
+            notes.append("absence_claim_contradicted")
         return GroundingResult(
             grounded=False,
             reason_code=PolicyDenialReason.GROUNDING_FAILED.value,
@@ -330,6 +345,7 @@ def validate_btd6_reply(
             notes=tuple(notes),
             offending_names=offending_names,
             offending_numbers=offending_numbers,
+            offending_absence_claims=offending_absence,
         )
     except Exception:
         logger.warning(
