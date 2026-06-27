@@ -51,6 +51,9 @@ is one folder behind the folio instead of ~14 files scattered at the root.
   absence-claim guards (don't assert a fact is absent without evidence) in grounded context.
 - [`btd6-derived-value-groundedness-finding.md`](./btd6-derived-value-groundedness-finding.md)
   — finding on keeping derived values distinguishable from sourced facts.
+- [`qa-accuracy-corpus-2026-06-27.md`](./qa-accuracy-corpus-2026-06-27.md) — verified
+  question/answer corpus for bot accuracy (damage-type ↔ bloon-property interactions, bloons,
+  economy, paragons), with the damage-type interaction-grounding layer it backs.
 
 ## Checklists
 

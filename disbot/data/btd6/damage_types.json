@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "data_version": "1.0",
+  "game_version": "55.1",
+  "source": "Bloons Wiki (bloons.fandom.com): Damage Types / Bloon Properties / Status Effects — cross-checked against the game-sourced immune_to fields in bloons.json, verified 2026-06-27",
+  "note": "Curated damage-type + status-effect INTERACTION layer. The per-bloon immune_to lists in bloons.json are game-data-sourced and authoritative; this file adds the conceptual rules the model needs to reason about 'can tower X deal with bloon Y'. Each damage type's blocked_by_properties (excluding the status-only 'Frozen') is cross-checked against bloons.json by tests/unit/services/test_btd6_interaction_service.py, so a curated error or a future data drift fails CI. Crosspath examples are quoted from the game's own upgrade descriptions in stats/*.json.",
+  "damage_types": [
+    {
+      "id": "normal",
+      "name": "Normal",
+      "aliases": ["normal"],
+      "blocked_by_properties": [],
+      "summary": "The catch-all damage type with NO bloon-property immunity — it pops Lead, Black, White, Purple, and Zebra alike (camo still needs detection). Many tier-5 attacks convert to Normal so they answer everything.",
+      "pops": "every bloon type (no damage-type immunity blocks it)"
+    },
+    {
+      "id": "sharp",
+      "name": "Sharp",
+      "aliases": ["sharp", "spike", "blade", "dart", "shuriken", "piercing"],
+      "blocked_by_properties": ["Lead", "Frozen"],
+      "summary": "Standard projectile/blade damage — the default for most Primary monkeys (Dart, Boomerang, Tack, basic Ninja, Sniper). Cannot pop Lead or Frozen bloons without an upgrade that changes the damage type or adds lead-popping.",
+      "pops": "every bloon EXCEPT Lead and Frozen (Black, White, Purple, Zebra all take Sharp fine)"
+    },
+    {
+      "id": "shatter",
+      "name": "Shatter",
+      "aliases": ["shatter", "shattering"],
+      "blocked_by_properties": ["Lead"],
+      "summary": "A close cousin of Sharp used by some shrapnel/glaive effects (e.g. the Desperado's Avenger slug shrapnel). Like Sharp it is blocked by Lead, so on its own it cannot pop Lead bloons or the lead-bearing DDT.",
+      "pops": "every bloon EXCEPT Lead (and the lead-bearing DDT)"
+    },
+    {
+      "id": "explosion",
+      "name": "Explosion",
+      "aliases": ["explosion", "explosive", "bomb", "blast", "explosions"],
+      "blocked_by_properties": ["Black"],
+      "summary": "Blast damage from Bomb Shooter, Mortar, Cannon, etc. Blocked ONLY by the Black property, so it cannot pop Black or Zebra bloons, nor the black-bearing DDT. It pops Lead bloons fine.",
+      "pops": "every bloon EXCEPT Black and Zebra (and the black-bearing DDT). Note: it DOES pop Lead."
+    },
+    {
+      "id": "cold",
+      "name": "Cold",
+      "aliases": ["cold", "ice", "freeze", "freezing", "arctic"],
+      "blocked_by_properties": ["White", "Lead"],
+      "summary": "Ice Monkey's damage/freeze. Blocked by both White and Lead, so base Ice Monkey cannot pop or freeze White, Zebra, Lead, or DDT bloons. The Cold Snap crosspath (Ice 2-0-0) adds 'Can freeze and pop Lead and Camo Bloons'; Embrittlement (Ice 4-0-0) lets it hit MOAB-class and strips Lead immunity.",
+      "pops": "non-White, non-Lead bloons (so NOT White, Zebra, Lead, or DDT without the Cold Snap / Embrittlement crosspath)"
+    },
+    {
+      "id": "glacier",
+      "name": "Glacier",
+      "aliases": ["glacier"],
+      "blocked_by_properties": ["White"],
+      "summary": "A stronger cold variant that, unlike plain Cold, is NOT blocked by Lead — it can pop Lead bloons. It is still blocked by the White property.",
+      "pops": "every bloon EXCEPT White and Zebra. Unlike Cold, Glacier DOES pop Lead."
+    },
+    {
+      "id": "frigid",
+      "name": "Frigid",
+      "aliases": ["frigid"],
+      "blocked_by_properties": ["White", "Purple"],
+      "summary": "A niche cold sub-type blocked by both White and Purple (so also Zebra).",
+      "pops": "every bloon EXCEPT White, Purple, and Zebra"
+    },
+    {
+      "id": "energy",
+      "name": "Energy",
+      "aliases": ["energy", "laser", "beam"],
+      "blocked_by_properties": ["Lead", "Purple"],
+      "summary": "Laser/beam damage from some Dartling, Sub, and Super Monkey upgrades. Blocked by Lead AND Purple, so it cannot pop Lead, Purple, or DDT bloons.",
+      "pops": "every bloon EXCEPT Lead and Purple (and the lead-bearing DDT)"
+    },
+    {
+      "id": "plasma",
+      "name": "Plasma",
+      "aliases": ["plasma"],
+      "blocked_by_properties": ["Purple"],
+      "summary": "Plasma damage (Super Monkey Plasma Blasts, Plasma Monkey Fan Club, etc.). Blocked only by Purple. It pops Lead, Black, White, and Zebra fine.",
+      "pops": "every bloon EXCEPT Purple. Note: it DOES pop Lead."
+    },
+    {
+      "id": "fire",
+      "name": "Fire",
+      "aliases": ["fire", "flame", "burn", "burning", "heat"],
+      "blocked_by_properties": ["Purple"],
+      "summary": "Fire damage (e.g. Tack Shooter Ring of Fire, Wizard, Druid, Phoenix). Blocked only by Purple. It pops Lead and Black fine — a popular DDT answer.",
+      "pops": "every bloon EXCEPT Purple. Note: it DOES pop Lead and Black."
+    },
+    {
+      "id": "acid",
+      "name": "Acid",
+      "aliases": ["acid", "corrosive"],
+      "blocked_by_properties": [],
+      "summary": "Acid/corrosive damage (Alchemist, Bloon Dissolver glue, Acidic Mixture Dip). No standard bloon property blocks it, so it pops Lead, Black, White, Purple, and Zebra.",
+      "pops": "every standard bloon (Lead, Black, White, Purple, Zebra); only the DLC Glass bloon resists Acid"
+    }
+  ],
+  "status_effects": [
+    {
+      "id": "glue",
+      "name": "Glue (slow)",
+      "aliases": ["glue", "glued", "glue strike", "glue gunner", "corrosive glue", "moab glue", "super glue"],
+      "is_damage": false,
+      "summary": "Glue is a STATUS EFFECT, not a damage type, so it IGNORES damage-type immunity — it slows Lead, Black, Purple, and Zebra bloons alike. Lead does NOT resist glue. The only gate is MOAB-class: base glue cannot stick to MOAB-class blimps (MOAB/BFB/ZOMG/DDT/BAD) — you need MOAB Glue (Glue Gunner 0-0-3) to target and slow them. Glue Strike (Glue Gunner 0-4-0) does not pop bloons; it debuffs them to take more damage from all sources, so it needs another tower to deal the damage.",
+      "lead": "works fine — Lead resists damage types, not glue",
+      "moab_class": "needs MOAB Glue (Glue Gunner 0-0-3) to stick to MOAB-class; DDTs are gluable with MOAB Glue + camo detection",
+      "bad": "the BAD is immune to all slow/glue effects"
+    },
+    {
+      "id": "slow_freeze",
+      "name": "Slow / Freeze (Ice)",
+      "aliases": ["slow", "freeze", "frozen", "ice monkey", "arctic wind", "snowstorm", "absolute zero", "stall"],
+      "is_damage": false,
+      "summary": "Ice Monkey's freeze/slow is COLD-based, so unlike glue it IS blocked by the Lead and White properties — base Ice Monkey cannot freeze or slow Lead, White, Zebra, or DDT bloons. Crosspaths fix this: Cold Snap (Ice 2-0-0) 'Can freeze and pop Lead and Camo Bloons'; Embrittlement (Ice 4-0-0) hits MOAB-class and strips Lead immunity; the Arctic Wind (Ice 0-3-0) slow aura is cold, so it does NOT slow Lead/DDT.",
+      "lead": "base ice does NOT affect Lead (cold is blocked by lead) — needs Cold Snap (2-0-0) or Embrittlement (4-0-0)",
+      "moab_class": "base ice cannot freeze MOAB-class; Embrittlement (4-0-0), Snowstorm (0-4-0), and Absolute Zero (0-5-0) are the upgrades that affect them",
+      "bad": "the BAD is immune to all freeze/slow effects"
+    },
+    {
+      "id": "knockback",
+      "name": "Knockback / Blowback",
+      "aliases": ["knockback", "blowback", "pushback", "moab shove", "moab press"],
+      "is_damage": false,
+      "summary": "Knockback pushes bloons backward; it is a status effect, not damage. Non-MOAB bloons are knocked back by many towers, but MOAB-class blimps need a dedicated MOAB-knockback upgrade — e.g. Heli Pilot MOAB Shove (0-0-3) — to be moved.",
+      "lead": "works on Lead (status, not damage)",
+      "moab_class": "needs a MOAB-targeting knockback upgrade such as Heli Pilot MOAB Shove (0-0-3)",
+      "bad": "the BAD is immune to all knockback"
+    },
+    {
+      "id": "stun",
+      "name": "Stun",
+      "aliases": ["stun", "stunned", "stunning"],
+      "is_damage": false,
+      "summary": "Stun freezes a bloon in place briefly; it is a status effect, not damage. Most MOAB-class bloons resist base stuns; the BAD is immune to all stuns except a handful of named abilities (e.g. Time Stop).",
+      "lead": "works on Lead (status, not damage)",
+      "moab_class": "many base stuns do not affect MOAB-class; dedicated MOAB-stun upgrades exist",
+      "bad": "the BAD is immune to all stuns except a few named abilities (Time Stop, etc.)"
+    }
+  ],
+  "pop_guide": [
+    {
+      "property": "Lead",
+      "id": "lead",
+      "needs": "Explosion, Fire, Plasma, Glacier, Acid, or Normal damage",
+      "blocked": "Sharp, Shatter, Cold, and Energy damage cannot pop Lead",
+      "note": "Towers that pop Lead at base (verified from the game data) include Bomb Shooter and Mortar (explosion) and Alchemist (acid). A Sharp tower needs a damage-type-changing upgrade (e.g. Sniper's Full Metal Jacket 1-0-0 makes its shots Normal) or a lead-popping buff such as Monkey Intelligence Bureau (Village 0-3-0) or Alchemist's Acidic Mixture Dip."
+    },
+    {
+      "property": "Black",
+      "id": "black",
+      "needs": "any NON-Explosion damage (Sharp, Fire, Plasma, Cold, Energy, Acid, Normal)",
+      "blocked": "Explosion damage cannot pop Black (or Zebra) bloons",
+      "note": "Pure Bomb/Mortar players add a non-explosive backup; some fire crosspaths bypass black."
+    },
+    {
+      "property": "White",
+      "id": "white",
+      "needs": "any NON-Cold damage (Sharp, Explosion, Fire, Plasma, Energy, Acid, Normal)",
+      "blocked": "Cold, Glacier, and Frigid damage cannot pop White (or Zebra) bloons",
+      "note": "Ice Monkey alone cannot pop White or Zebra."
+    },
+    {
+      "property": "Purple",
+      "id": "purple",
+      "needs": "Sharp, Explosion, Cold, Shatter, Acid, or Normal damage",
+      "blocked": "Energy, Plasma, Fire, and Frigid damage cannot pop Purple bloons",
+      "note": "Super Monkey (plasma/energy) and Wizard (fire) struggle into Purple without support; sharp/explosion handle them."
+    },
+    {
+      "property": "Zebra",
+      "id": "zebra",
+      "needs": "Sharp, Fire, Plasma, Energy, Acid, or Normal damage",
+      "blocked": "both Explosion AND Cold are blocked (Zebra has Black + White properties)",
+      "note": "Neither pure bomb nor pure ice works; Sharp or Fire/Plasma does."
+    },
+    {
+      "property": "Camo",
+      "id": "camo",
+      "needs": "any tower with CAMO DETECTION (the damage type is irrelevant to detection)",
+      "blocked": "towers without camo detection cannot target camo bloons at all",
+      "note": "Towers with innate camo detection (verified from the game data) are Ninja Monkey, Spike Factory, and Desperado; most others need a crosspath (e.g. Sniper's Night Vision Goggles 0-1-0), Monkey Village Radar Scanner (0-2-0), Alchemist support, or Etienne. Camo is a MODIFIER that can apply to any bloon, not a bloon type."
+    },
+    {
+      "property": "Frozen",
+      "id": "frozen",
+      "needs": "any NON-Sharp damage (Explosion, Fire, Plasma, Normal)",
+      "blocked": "Sharp damage cannot pop a Frozen bloon",
+      "note": "Frozen is a temporary status applied by Ice Monkey, not a permanent property."
+    },
+    {
+      "property": "MOAB-class",
+      "id": "moab_class",
+      "needs": "any damage type — MOAB-class blimps (MOAB/BFB/ZOMG/BAD) have NO damage-type immunity, only large health",
+      "blocked": "the DDT is the exception: it carries Lead + Black + Camo, so it resists Sharp/Shatter/Cold/Energy/Explosion and needs camo detection",
+      "note": "To SLOW/glue/knockback MOAB-class you need MOAB-targeting status upgrades; to DAMAGE a non-DDT blimp any raw damage works. Bonus-vs-MOAB upgrades (e.g. Dartling M.A.D +450 vs MOAB-class) shred them."
+    },
+    {
+      "property": "DDT",
+      "id": "ddt",
+      "needs": "camo detection PLUS a damage type that bypasses Lead+Black: Fire, Plasma, Normal, Acid, or Glacier (NOT Sharp, Shatter, Cold, Energy, or Explosion)",
+      "blocked": "Sharp, Shatter, Cold, Energy, and Explosion are all blocked (Lead + Black); and without camo detection nothing targets it",
+      "note": "DDTs are fast with 400 HP. You need ONE tower (or a tower + support) that has camo detection AND deals a non-blocked damage type: Fire, Plasma, Normal, Acid, or Glacier. Glue/slow works only via MOAB Glue (0-0-3) + camo detection. No base tower handles a DDT alone — Sharp (most primaries), Cold (ice) and Explosion (bomb) are all blocked."
+    }
+  ]
+}

@@ -5458,6 +5458,26 @@ async def build(
                 exc,
             )
 
+        # Pass 3g: damage-type / status-effect INTERACTION grounding. The
+        # "can tower X deal with bloon Y?" class is the model's single biggest
+        # BTD6 error source — the bloon immunities and the tower descriptions
+        # are grounded separately, so the model invents the interaction rule (a
+        # live screenshot had it claim "Lead resists glue" — false: glue is a
+        # status effect that ignores damage-type immunity). This pass grounds
+        # the explicit, wiki-verified rule from damage_types.json whenever a
+        # damage type / status effect / bloon property is named with an
+        # interaction cue. Message-keyed (not intent-keyed) and isolated like
+        # its siblings.
+        try:
+            from services import btd6_interaction_service
+
+            facts.extend(btd6_interaction_service.interaction_facts(message_text))
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: interaction grounding unavailable (%s)",
+                exc,
+            )
+
         # Pass 4: coverage + freshness signals (raw lines; the instruction
         # stack wraps the whole bundle as untrusted data). Paired with the
         # _TASK_CONTRACT live-event directive.
