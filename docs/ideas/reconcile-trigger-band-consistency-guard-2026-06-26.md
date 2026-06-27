@@ -1,6 +1,15 @@
 # Idea — a `reconcile`-issue ↔ marker band-consistency guard
 
-> **Status:** `ideas` — raised by the band-#1470 Q-0107 reconciliation pass (2026-06-26, Q-0089).
+> **Status:** `ideas` — **SHIPPED 2026-06-27** (dispatch run, self-initiated Q-0172):
+> `scripts/check_reconcile_marker.py` + `tests/unit/scripts/test_check_reconcile_marker.py`. The
+> shipped guard implements the conflation check (assertion 1 below) + the band-boundary check
+> (assertion 2) + the linked-pass-record existence check (assertion 3); it also caught + fixed a live
+> drift (the band-#1470 marker read `PR #1472` — the pass's own PR — instead of the reset target
+> `#1470`). *Not folded into `check_current_state_ledger.py` — kept a standalone disposable (Q-0105)
+> sibling instead, simpler to delete if it proves noisy.* Assertion 1's "latest open/closed reconcile
+> issue" cross-check (below) was **not** built — the marker is self-consistent without a network call,
+> so the guard stays pure-stdlib/offline.
+> Raised by the band-#1470 Q-0107 reconciliation pass (2026-06-26, Q-0089).
 > Lane: S4 (docs system) / S3 (the engine's tooling). Size: small (one stdlib checker + test).
 
 ## The problem

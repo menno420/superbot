@@ -1,7 +1,11 @@
 # Ledger dedup linter (companion to the merge=union fix)
 
-> **Status:** `ideas` — captured 2026-06-16 (session idea, Q-0089, from the merge=union fix #1003).
-> Source + merged PRs win.
+> **Status:** `historical` — **SHIPPED** `scripts/check_ledger_hygiene.py` (2026-06-19) and
+> **de-staled 2026-06-27** for the Q-0195 per-claim-file restructure: the claim half no longer scans
+> the retired shared `active-work.md` "Active claims" section (now a pointer stub) — it scans the
+> per-file `docs/owner/claims/*.md` directory and flags a `claude/<branch>` claimed by more than one
+> file. The idea-index dedup half is unchanged. Captured 2026-06-16 (session idea, Q-0089, from the
+> merge=union fix #1003). Source + merged PRs win.
 
 ## The gap
 
