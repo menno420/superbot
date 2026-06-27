@@ -189,12 +189,41 @@ keyed off the bot's REAL `btd6_context_service.build()` grounding:
   result is **what a live Discord user would get** (only Discord I/O + the audit log are skipped). It
   tests the provider set in `AI_DEFAULT_PROVIDER`.
 
+## Session arc — what shipped (2026-06-27, all merged)
+
+| PR | What it did |
+|---|---|
+| **#1487** | The root fix: `damage_types.json` + `btd6_interaction_service` ground damage-type ↔ bloon-property INTERACTION facts (the "Lead resists glue" class), cross-checked against the game-sourced `immune_to` data. Plus this corpus + bloon-prose completion. |
+| **#1488** | Corpus wired into the evals: the offline grounding test (`test_btd6_qa_corpus.py`, free, every PR) + the live action suite picker. |
+| **#1490** | The faithful **"exactly live"** runner (`btd6_live_path.py`) — replays the real production answer path (router → grounding → instruction stack → gateway → faithfulness guard). |
+| **#1491** | Fixed the eval grader: live answers are graded **semantically** by `llm_judge` (the model paraphrases — substring-matching the fact wording gave false negatives). |
+| **#1492** | Verified **DDT counter-tower grounding** (`towers_that_can_damage`) so "how do I deal with a DDT" recommends real towers instead of refusing. |
+
+## Live verification checklist — what still needs a real-key / prod test
+
+Everything above is offline-verified (1500+ tests, no creds). These need a real provider key or a live
+bot to confirm, and are **not** done:
+
+- [ ] **Re-run *AI Evals → suite: btd6*** after deploy. Expect: the interaction questions PASS on the
+      semantic grader, and **`how do I deal with a DDT` now answers with towers instead of refusing**
+      (the #1492 fix — not yet re-run live).
+- [ ] **Live Discord spot-check** of the original screenshot questions (glue/avenger/DDT, "can ice slow
+      DDTs") on the real bot — confirm the answers are now correct in production, not just in the eval.
+- [ ] **The golden-set over-refusals are NOT fixed** — `knowledge.btd6_round_cash_*`,
+      `btd6_elite_lych_hp`, `btd6_despo_bulk_cost`, `bomb_middle_path_moab`. Two parts: (a) the
+      round-cash ones partly reflect a **harness limitation** — those answers need a DB-resolved
+      orchestration profile that can't run in a keyless/DB-less eval; (b) the rest may be a real
+      guard-strictness/grounding issue worth its own look. Separate from this session's scope.
+- [ ] **A couple of golden rubrics look stale** (e.g. `knowledge.btd6_lead` expects "Sharp Shots lets
+      Dart pop Lead" — it's +pierce, not lead-popping). Verify + fix the rubrics, not the bot.
+
 ## Open follow-ups (next sessions)
 
-- **Broaden the live corpus** with strategy/opinion questions graded by `llm_judge` rubrics (the
-  exact-fact `expect`/`forbid` grading suits the interaction/data class; open-ended advice needs a
-  rubric judge).
-- **Newer-tower coverage** (Desperado, Mermonkey): the dump has them; spot-check that
-  interaction questions about their damage types ground correctly.
-- **Hero costs** are absent from `heroes.json` — wiki-only for now; a future data pass
-  could add them so cost questions are dump-verified like tower costs.
+- **Generalize the counter grounding** beyond DDT — `towers_that_can_damage` is already general; extend
+  the `_COUNTER_BLOON_FOR` map in `btd6_interaction_service` to camo-lead / the Camo bloon to close the
+  same over-refusal there.
+- **Broaden the live corpus** with strategy/opinion questions graded by `llm_judge` rubrics.
+- **Newer-tower coverage** (Desperado, Mermonkey): the dump has them; spot-check their damage-type
+  interaction questions ground correctly.
+- **Hero costs** are absent from `heroes.json` — wiki-only for now; a future data pass could add them so
+  cost questions are dump-verified like tower costs.
