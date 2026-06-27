@@ -25,6 +25,21 @@
 > Q-E Advanced draft→Final-Review editor rework ("currently most of it does not do anything") + deleting
 > now-dead service code — **needs live-bot verification**.
 >
+> **▶ Coverage follow-on (owner-flagged 2026-06-27, PR #1496):** the owner flagged that **"allowed
+> commands per channel"** was missing from the spine. Investigation found *two* distinct mechanisms,
+> both absent from the new wizard — and that the literal one isn't even enforced yet:
+> 1. **Command Access** (whole-server / chosen-channels / off-except-admins) — *is* enforced + cached
+>    today (`command_access_service` ← runtime gate `core.runtime.command_access`), but lived only in
+>    `!settings`. **PR #1496 surfaces it as new spine step 8 "Where can people use commands?"** (§5 spine
+>    extended 7→8; direct-apply, jargon-clean). This also makes the bot's own "enable via `!setup`" denial
+>    copy true.
+> 2. **Per-feature `cog_routing`** (the literal "this command in this channel") — advanced-only **and not
+>    wired to runtime enforcement**: `command_routing.is_cog_enabled` is read only by the read-only
+>    access-projection + the setup preview, never by either live command gate (the planned "central
+>    availability resolver", access-projection axis 5, was never built). **Deferred** to its own focused PR
+>    (needs a cached read model in the command hot-path) — captured in
+>    [`docs/ideas/cog-routing-enforcement-gap-2026-06-27.md`](../ideas/cog-routing-enforcement-gap-2026-06-27.md).
+>
 > **Sim:** [`tools/sim/setup_wizard_sim.py`](../../tools/sim/setup_wizard_sim.py) (runnable) —
 > models a non-technical owner walking the flow. Current standard-depth flow scores **~4% finish**
 > (17 screens · 6 dead steps · 2 dead-ends · 44 jargon hits); the proposed essentials spine scores
