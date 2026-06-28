@@ -16,6 +16,13 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Completion-first PvP dead-end fixes** (#1527, Q-0209) — closed the recurring **trapped-view** bug
+  class in both competitive PvP games. **Deathmatch:** PvP `_DuelView`/`_ChallengeView` now swap to
+  `_PvpDuelResultView` (Help/Games nav + 🔁 Rematch) on every terminal, and the latent panel-PvP
+  `ctx=None` resolve crash was root-fixed (BUG-0028, explicit `guild_id` thread). **RPS:** the PvP
+  match result now carries ◀ Back to RPS (`_RpsPvpResultView`) + a rules "Timeouts & forfeits" field.
+  Both completion certs advanced toward ✔ (Deathmatch is now a ✔-ready candidate pending owner
+  walkthrough). 11 new tests.
 - **Reaction-roles arc — Carl-bot-mature** (#1234/#1237/#1242/#1243/#1245/#1246/#1248/#1250):
   multi-emote-per-message, channel/message pickers, role + gradient presets, free temp-roles
   member view, dead-binding self-heal. **PR 6 (PIL banner cards) shipped (#1279);** only the gated web
@@ -74,14 +81,14 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   startable, offline:** (1) **assess more units** — the remaining unassessed games (Mining [big read],
   Casino, Creatures) then server-fns, one cert each under
   [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from the rubric;
-  (2) **a turn-key contained fix surfaced by the assessments:** **Deathmatch PvP trapped views** — the
-  PvP `_DuelView`/`_ChallengeView` (`disbot/cogs/deathmatch_cog.py:94,252`) are plain `discord.ui.View`s
-  that dead-end after a duel (no back nav), while the bot-duel path already swaps to a
-  `HubView` result view; mirror that pattern (a `HubView` result view with `SUBSYSTEM="deathmatch"` +
-  a 🔁 Rematch button) to close the dead-end **and** the missing PvP rematch in one slice
-  ([cert headline](../planning/feature-completion/units/deathmatch.md)). RPS help-text drift was fixed
-  in #1524. **▶ Owner decisions waiting:** Word Chain re-classify, Counting XP/coin reward, Deathmatch
-  optional coin-staking, plus every assessed unit's `◐ → ✔` live-walkthrough sign-off
+  (2) **build the "no-dead-end" arch guard** ([idea](../ideas/no-dead-end-terminal-view-guard-2026-06-28.md))
+  so the trapped-view bug class is caught automatically instead of per-assessment. **✅ DONE
+  2026-06-28 (#1527):** the Deathmatch PvP trapped views (+ the panel-PvP `ctx=None` crash, BUG-0028)
+  **and** the RPS PvP-result dead-end were both fixed — `_PvpDuelResultView` / `_RpsPvpResultView` with
+  standard nav + rematch/back; both certs advanced toward ✔. The next turn-key gap is **Blackjack
+  punch-list #1** (split/insurance/surrender — bigger engine work, owner-paced). **▶ Owner decisions
+  waiting:** Word Chain re-classify, Counting XP/coin reward, Deathmatch optional coin-staking, plus
+  every assessed unit's `◐ → ✔` live-walkthrough sign-off
   (`[needs-live-bot]`/`[owner]`).
 - `[offline]` **Fishing-specific gear stats — SHIPPED 2026-06-27 (#1504)** (see Recently shipped above):
   the Q-0175 "matching gear → better fishing" half is done — `fishing_power`/`bite_luck` on

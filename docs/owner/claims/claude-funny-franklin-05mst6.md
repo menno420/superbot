@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-05mst6` · scope: completion-first — fix trapped PvP terminal views (dead-end gap) in Deathmatch (+RPS if time), add rematch + PvP loop tests; root-fix the panel-PvP ctx=None crash · area: disbot/cogs/deathmatch_cog.py, disbot/views/games/deathmatch_panel.py, tests, docs/planning/feature-completion/units/ · 2026-06-28
