@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T15:31:47Z",
+    "generated_at": "2026-06-28T17:44:39Z",
     "build": {
-      "commit": "36043e19",
-      "subject": "docs: open 28th Q-0107 reconciliation pass (band-#1530) — born-red card + claim",
-      "committed_at": "2026-06-28T15:31:47Z"
+      "commit": "3230b59e",
+      "subject": "Merge pull request #1532 from menno420/claude/jolly-johnson-uknja2",
+      "committed_at": "2026-06-28T17:44:39Z"
     },
     "counts": {
       "functions": 43,
@@ -1170,7 +1170,7 @@
     {
       "file": "queue-slice-staleness-age-2026-06-28.md",
       "title": "Idea — a \"queue-staleness age\" tag per §4 forward-queue slice",
-      "status": "idea",
+      "status": "ideas",
       "date": "2026-06-28",
       "summary": "Each Q-0107 pass carries the §4 forward-queue (slices A1, A2, B0, B1, C1…) forward, band after band.",
       "subsystems": null
@@ -2632,8 +2632,8 @@
       "file": "2026-06-28-reconcile.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — twenty-eighth Q-0107 reconciliation pass (band-#1530)",
-      "status": "in-progress",
-      "run_type": "",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
