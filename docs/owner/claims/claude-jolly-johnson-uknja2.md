@@ -1,0 +1,1 @@
+- branch `claude/jolly-johnson-uknja2` · scope: 28th Q-0107 docs reconciliation pass (band-#1530) · area: docs/current-state*, docs/planning/reconciliation-pass-*, docs/ideas, .sessions · 2026-06-28
