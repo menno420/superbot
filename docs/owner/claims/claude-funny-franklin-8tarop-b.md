@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-8tarop-b` · scope: feature-completion assessments for server-functions (Settings, Leaderboards, Tickets, Karma — `▢ → ◐`) · area: docs/planning/feature-completion/units/ + ledger/scoreboard · 2026-06-28
