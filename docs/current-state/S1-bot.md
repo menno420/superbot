@@ -84,10 +84,18 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   (0.10) that a successful reel lands a *second* copy of the same fish (extra craft fodder straight into
   the bait/charm/rod craft loops), rolled in `commit_catch` via pure `rewards.roll_bonus_catch`,
   byte-identical when it doesn't fire, never a second dex/trophy row
-  ([bonus-catch numbers](../planning/fishing-bonus-catch-numbers-2026-06-27.md)). ▶ **Next offline
-  successor:** extend the same caught-fish craft pattern to the **rod-ladder via a recipe browser** /
-  or a **fish-loot rare-material drop** (a dedicated craft material, not just a double fish). Pure +
-  sim-pinnable, self-mergeable.
+  ([bonus-catch numbers](../planning/fishing-bonus-catch-numbers-2026-06-27.md)). **The fish-loot
+  rare-material drop ALSO SHIPPED 2026-06-28 (PR #1518):** the **pearl** 🦪 — a dedicated rare
+  crafting material a successful reel can also yield (size-scaled chance: bigger fish → better odds,
+  `utils/fishing/rewards.roll_pearl_drop`, byte-identical when it doesn't fire). Its **repeatable**
+  sink is a **pearl-only craft path** for the premium **Royal Feast** bait (the one bait left with no
+  fish recipe — a pure coin sink today): `!craftpearl` + a bait-shop "Craft from pearls" select spend
+  `bait.PEARL_BAIT_RECIPES` pearls via `fishing_workflow.craft_pearl_bait`; coins stay the fast
+  alternative. No DB migration (pearls reuse the generic `mining_inventory` store), sim-pinned
+  ([pearl numbers](../planning/fishing-pearl-numbers-2026-06-28.md)). ▶ **Next offline successor:**
+  a **fish-loot rare *material*-drop variant** (a dedicated craft material that feeds a *new* craft
+  target rather than the premium bait — e.g. a "kelp"/"driftwood" that crafts a cosmetic or a
+  structure) **or** the **rod-ladder recipe browser** UI. Pure + sim-pinnable, self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

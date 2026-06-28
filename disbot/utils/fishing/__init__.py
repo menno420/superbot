@@ -27,7 +27,14 @@ from utils.fishing.fish import (
     unlocked_species,
     venue_size_cap,
 )
-from utils.fishing.rewards import BONUS_CATCH_CHANCE, roll_bonus_catch, roll_catch
+from utils.fishing.rewards import (
+    BONUS_CATCH_CHANCE,
+    PEARL_ITEM,
+    pearl_drop_chance,
+    roll_bonus_catch,
+    roll_catch,
+    roll_pearl_drop,
+)
 from utils.fishing.venue import (
     DEEPWATER,
     SHORE,
@@ -49,6 +56,7 @@ __all__ = [
     "DEEPWATER",
     "FISH_PER_LEVEL",
     "MAX_LEVEL",
+    "PEARL_ITEM",
     "SHORE",
     "SHORE_VENUE",
     "SPECIES",
@@ -59,9 +67,11 @@ __all__ = [
     "current_weather",
     "max_size_rank_for_level",
     "nominal_weight",
+    "pearl_drop_chance",
     "profile_for",
     "roll_bonus_catch",
     "roll_catch",
+    "roll_pearl_drop",
     "roll_weight",
     "species_by_name",
     "species_for_venue",

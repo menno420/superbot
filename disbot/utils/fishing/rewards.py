@@ -66,3 +66,46 @@ def roll_bonus_catch(rng: random.Random | None = None) -> bool:
     """
     r = rng or random.Random()
     return r.random() < BONUS_CATCH_CHANCE
+
+
+#: The dedicated **rare crafting material** a successful reel can also yield — a
+#: "pearl".  Unlike the lucky double-catch (which drops a second *fish*), a pearl
+#: is its own inventory item: it is **never** a catch-log / dex / trophy row,
+#: just a tangible material stored in the shared ``mining_inventory``.  Its sole
+#: sink is the pearl-only craft path for the premium **Royal Feast** bait (the one
+#: bait deliberately left with no fish recipe — a pure coin sink today), so pearls
+#: have a *repeatable* home: a lucky fisher can earn the top bait by fishing while
+#: coins stay the fast alternative.  Byte-identical economics when no pearl drops.
+#: Numbers sim-pinned in ``docs/planning/fishing-pearl-numbers-2026-06-28.md``.
+PEARL_ITEM = "pearl"
+
+#: Per-reel pearl-drop chance for the *smallest* fish (size_rank 1).
+PEARL_DROP_BASE_CHANCE = 0.02
+#: Additive per-size-rank bonus, so a trophy haul is markedly likelier to yield a
+#: pearl than a minnow (bigger fish, better odds — the design's framing).
+PEARL_DROP_PER_SIZE_RANK = 0.004
+#: Hard ceiling so even the largest fish can never make pearls common.
+PEARL_DROP_MAX_CHANCE = 0.15
+
+
+def pearl_drop_chance(size_rank: int) -> float:
+    """The pearl-drop probability for a fish of *size_rank* (clamped, bounded).
+
+    Rises ``PEARL_DROP_PER_SIZE_RANK`` per rank above the smallest, from
+    :data:`PEARL_DROP_BASE_CHANCE` up to :data:`PEARL_DROP_MAX_CHANCE`.
+    """
+    rank = max(1, size_rank)
+    chance = PEARL_DROP_BASE_CHANCE + PEARL_DROP_PER_SIZE_RANK * (rank - 1)
+    return min(chance, PEARL_DROP_MAX_CHANCE)
+
+
+def roll_pearl_drop(size_rank: int, rng: random.Random | None = None) -> bool:
+    """Roll a pearl drop for a landed fish of *size_rank* — ``True`` ≈ its chance.
+
+    Rolled at commit time (only a *landed* catch can drop a pearl), separate from
+    both the species roll and the bonus-catch roll so the material is a clean,
+    independently-tunable knob.  State-in (an explicit ``random.Random`` for
+    seed-determinism in tests), return-out.
+    """
+    r = rng or random.Random()
+    return r.random() < pearl_drop_chance(size_rank)

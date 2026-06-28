@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T21:28:32Z",
+    "generated_at": "2026-06-28T00:11:47Z",
     "build": {
-      "commit": "170a0368",
-      "subject": "fishing: add fish→rod craft path (!craftrod + rod-shop button)",
-      "committed_at": "2026-06-27T21:28:32Z"
+      "commit": "e2d135ab",
+      "subject": "Open born-red session card: fishing pearl rare-material drop",
+      "committed_at": "2026-06-28T00:11:47Z"
     }
   },
   "counts": {
-    "commands": 457,
+    "commands": 458,
     "features": 43,
     "games": 12
   },
@@ -4800,6 +4800,30 @@
       "examples": [
         "!craftcharm fishing charm",
         "!gear"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "craftpearl",
+      "aliases": [
+        "pearlcraft"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Spend pearls to craft the premium bait — the rare-material sink.",
+      "description": "Spend pearls to craft the premium bait — the rare-material sink.",
+      "use_cases": null,
+      "examples": [
+        "!craftpearl feast",
+        "!bait"
       ],
       "status": "in-progress",
       "linked_ideas": [

@@ -19,6 +19,7 @@ import discord
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import fishing_workflow
 from utils import db
+from utils.fishing import PEARL_ITEM
 from utils.fishing import bait as bait_mod
 from utils.ui_constants import ECONOMY_COLOR
 from views.base import BaseView
@@ -29,6 +30,7 @@ def build_bait_embed(
     charges: int,
     balance: int,
     *,
+    pearls: int = 0,
     note: str | None = None,
 ) -> discord.Embed:
     """The bait-shop panel embed: what's loaded, the shelf, and your balance."""
@@ -67,6 +69,24 @@ def build_bait_embed(
             name="Craft from fish",
             value="\n".join(craftable)
             + "\n*Turn small catches into bait — no coins needed.*",
+            inline=False,
+        )
+
+    pearl_craftable = []
+    for key in bait_mod.PEARL_CRAFTABLE_KEYS:
+        bait = bait_mod.bait_by_key(key)
+        pearl_cost = bait_mod.pearl_recipe(key)
+        if bait is None or pearl_cost is None:
+            continue
+        pearl_craftable.append(
+            f"{bait.emoji} **{bait.name}** — {bait_mod.pearl_recipe_text(pearl_cost)}",
+        )
+    if pearl_craftable:
+        embed.add_field(
+            name=f"Craft from pearls (you have {pearls} 🦪)",
+            value="\n".join(pearl_craftable)
+            + "\n*Pearls drop rarely when you reel in a fish — bigger fish, "
+            "better odds.*",
             inline=False,
         )
 
@@ -109,13 +129,7 @@ class _BaitSelect(discord.ui.Select):
             view.guild_id,
             self.values[0],
         )
-        active, charges = await fishing_workflow.get_active_bait(
-            view._author.id,
-            view.guild_id,
-        )
-        balance = await db.get_coins(view._author.id, view.guild_id)
-        embed = build_bait_embed(active, charges, balance, note=result.message)
-        await safe_edit(interaction, embed=embed, view=view)
+        await view.rerender(interaction, note=result.message)
 
 
 class _BaitCraftSelect(discord.ui.Select):
@@ -152,17 +166,48 @@ class _BaitCraftSelect(discord.ui.Select):
             view.guild_id,
             self.values[0],
         )
-        active, charges = await fishing_workflow.get_active_bait(
+        await view.rerender(interaction, note=result.message)
+
+
+class _PearlCraftSelect(discord.ui.Select):
+    """Pick a pearl-craftable bait — spend the rare reel-drop material (no coins)."""
+
+    def __init__(self) -> None:
+        options = []
+        for key in bait_mod.PEARL_CRAFTABLE_KEYS:
+            bait = bait_mod.bait_by_key(key)
+            pearl_cost = bait_mod.pearl_recipe(key)
+            if bait is None or pearl_cost is None:
+                continue
+            options.append(
+                discord.SelectOption(
+                    label=f"{bait.name} — {bait_mod.pearl_recipe_text(pearl_cost)}",
+                    value=bait.key,
+                    emoji="🦪",
+                    description=f"×{bait.charges} casts · {bait_mod.effect_text(bait)}",
+                ),
+            )
+        super().__init__(
+            placeholder="Craft a pack from pearls…",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction):
+            return
+        view: BaitShopView = self.view  # type: ignore[assignment]
+        result = await fishing_workflow.craft_pearl_bait(
             view._author.id,
             view.guild_id,
+            self.values[0],
         )
-        balance = await db.get_coins(view._author.id, view.guild_id)
-        embed = build_bait_embed(active, charges, balance, note=result.message)
-        await safe_edit(interaction, embed=embed, view=view)
+        await view.rerender(interaction, note=result.message)
 
 
 class BaitShopView(BaseView):
-    """Author-restricted bait-shop panel: buy with coins or craft from fish."""
+    """Bait-shop panel: buy with coins, craft from fish, or craft from pearls."""
 
     def __init__(
         self,
@@ -173,3 +218,21 @@ class BaitShopView(BaseView):
         self.guild_id = guild_id
         self.add_item(_BaitSelect())
         self.add_item(_BaitCraftSelect())
+        self.add_item(_PearlCraftSelect())
+
+    async def rerender(
+        self,
+        interaction: discord.Interaction,
+        *,
+        note: str | None = None,
+    ) -> None:
+        """Re-read the player's bait / balance / pearls and redraw the panel."""
+        active, charges = await fishing_workflow.get_active_bait(
+            self._author.id,
+            self.guild_id,
+        )
+        balance = await db.get_coins(self._author.id, self.guild_id)
+        inventory = await db.get_mining_inventory(str(self._author.id), self.guild_id)
+        pearls = inventory.get(PEARL_ITEM, 0)
+        embed = build_bait_embed(active, charges, balance, pearls=pearls, note=note)
+        await safe_edit(interaction, embed=embed, view=self)

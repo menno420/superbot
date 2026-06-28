@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-27T23:45:15Z",
+    "generated_at": "2026-06-28T00:11:47Z",
     "build": {
-      "commit": "ba6b9c30",
-      "subject": "Merge pull request #1515 from menno420/claude/funny-franklin-qaiqdi",
-      "committed_at": "2026-06-27T23:45:15Z"
+      "commit": "e2d135ab",
+      "subject": "Open born-red session card: fishing pearl rare-material drop",
+      "committed_at": "2026-06-28T00:11:47Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 457,
+      "commands": 458,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2591,6 +2591,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-28-fishing-pearl-rare-material.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — Fishing: the \"pearl\" rare-material drop + a premium-bait pearl craft",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-27-youtube-fetch-renderer-tests.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Media/YouTube focused test coverage (fetch service + renderers/embeds)",
@@ -3060,14 +3068,6 @@
       "title": "Session — 2026-06-24 · setup-copy jargon guard (PR 1a)",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-reconcile-band1440.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · twenty-fifth Q-0107 reconciliation pass (band-#1440)",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": false
     }
   ],
@@ -6654,6 +6654,19 @@
             "charmcraft"
           ],
           "brief": "Craft a fishing charm from caught fish — the non-coin earn path.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "craftpearl",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "pearlcraft"
+          ],
+          "brief": "Spend pearls to craft the premium bait — the rare-material sink.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

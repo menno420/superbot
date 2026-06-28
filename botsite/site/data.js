@@ -1638,6 +1638,29 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "craftpearl",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Spend pearls to craft the premium bait — the rare-material sink.",
+    "description": "Spend pearls to craft the premium bait — the rare-material sink.",
+    "usage": "!craftpearl",
+    "aliases": [
+      "pearlcraft"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!craftpearl feast",
+      "!bait"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "craftrod",
     "area": "games",
     "status": "in-progress",
@@ -6964,7 +6987,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "170a0368",
+    "build": "e2d135ab",
     "title": "New public bot website",
     "changes": [
       {
@@ -6976,7 +6999,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "170a0368",
+    "build": "e2d135ab",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -6988,7 +7011,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "170a0368",
+    "build": "e2d135ab",
     "title": "Command-alias suggestions",
     "changes": [
       {

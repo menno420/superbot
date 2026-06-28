@@ -195,3 +195,61 @@ def craftable_key_for(text: str | None) -> str | None:
         if needle in (key.lower(), bait.name.lower()):
             return key
     return None
+
+
+# ---------------------------------------------------------------------------
+# Pearl crafting — the rare-material earn path for the premium bait
+# ---------------------------------------------------------------------------
+#
+# The premium combo bait ("feast" — Royal Feast) is deliberately ABSENT from the
+# fish-craft shelf above: it stays a top-end coin sink so spending coins keeps a
+# reason to exist beside fishing.  The **pearl** (``utils.fishing.rewards.PEARL_ITEM``)
+# is the rare reel drop (size-scaled), and this shelf is its sink: spending
+# ``PEARL_BAIT_RECIPES[key]`` pearls crafts one pack of that otherwise-uncraftable
+# bait.  Because bait is *consumable*, pearls have a perpetual home — a lucky
+# fisher can earn the Royal Feast by fishing, while coins stay the fast
+# alternative.  Numbers sim-pinned in
+# ``docs/planning/fishing-pearl-numbers-2026-06-28.md``.
+
+#: Pearl-only recipes, keyed by bait key → pearls consumed per craft.  Only baits
+#: with **no** fish recipe belong here (the premium combo), so the two earn paths
+#: never overlap.
+PEARL_BAIT_RECIPES: dict[str, int] = {
+    "feast": 4,  # 4 pearls → one Royal Feast pack
+}
+
+#: Pearl-craftable bait keys, in shelf order.
+PEARL_CRAFTABLE_KEYS: tuple[str, ...] = tuple(
+    b.key for b in BAIT_CATALOG if b.key in PEARL_BAIT_RECIPES
+)
+
+
+def pearl_recipe(key: str | None) -> int | None:
+    """Pearls needed to craft *key*, or ``None`` if it has no pearl recipe."""
+    if not key:
+        return None
+    return PEARL_BAIT_RECIPES.get(key)
+
+
+def pearl_recipe_text(pearl_cost: int) -> str:
+    """A short human label of a pearl recipe's cost, e.g. ``4 🦪 pearls``."""
+    return f"{pearl_cost} 🦪 pearls"
+
+
+def pearl_craftable_key_for(text: str | None) -> str | None:
+    """Resolve typed *text* (a key or a bait name) to a **pearl-craftable** key.
+
+    Case-insensitive; matches either the stable key (``feast``) or the display
+    name (``Royal Feast``).  Returns ``None`` for empty input or a bait with no
+    pearl recipe.
+    """
+    if not text:
+        return None
+    needle = text.strip().lower()
+    for key in PEARL_CRAFTABLE_KEYS:
+        bait = _BY_KEY.get(key)
+        if bait is None:
+            continue
+        if needle in (key.lower(), bait.name.lower()):
+            return key
+    return None

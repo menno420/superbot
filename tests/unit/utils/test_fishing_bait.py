@@ -150,3 +150,38 @@ def test_craftable_key_for_matches_key_or_name_case_insensitively():
     assert bait_mod.craftable_key_for("nope") is None
     assert bait_mod.craftable_key_for("") is None
     assert bait_mod.craftable_key_for(None) is None
+
+
+# ---------------------------------------------------------------------------
+# pearl crafting — the rare-material earn path for the premium bait
+# ---------------------------------------------------------------------------
+
+
+def test_pearl_recipe_resolves_the_premium_bait_only():
+    assert bait_mod.pearl_recipe("feast") == bait_mod.PEARL_BAIT_RECIPES["feast"]
+    # baits with a fish recipe are NOT pearl-craftable (no overlap)
+    assert bait_mod.pearl_recipe("worm") is None
+    assert bait_mod.pearl_recipe("nope") is None
+    assert bait_mod.pearl_recipe("") is None
+    assert bait_mod.pearl_recipe(None) is None
+
+
+def test_pearl_and_fish_recipes_never_overlap():
+    # the two earn paths are disjoint: a bait is craftable from fish OR pearls,
+    # never both (the design invariant — pearls only cover the no-fish-recipe bait).
+    assert set(bait_mod.PEARL_CRAFTABLE_KEYS).isdisjoint(bait_mod.CRAFTABLE_KEYS)
+
+
+def test_pearl_recipe_text_reads_human():
+    assert bait_mod.pearl_recipe_text(4) == "4 🦪 pearls"
+
+
+def test_pearl_craftable_key_for_matches_key_or_name_case_insensitively():
+    assert bait_mod.pearl_craftable_key_for("feast") == "feast"
+    assert bait_mod.pearl_craftable_key_for("  FEAST ") == "feast"
+    assert bait_mod.pearl_craftable_key_for("Royal Feast") == "feast"
+    # a fish-craftable / unknown / empty bait → None
+    assert bait_mod.pearl_craftable_key_for("worm") is None
+    assert bait_mod.pearl_craftable_key_for("nope") is None
+    assert bait_mod.pearl_craftable_key_for("") is None
+    assert bait_mod.pearl_craftable_key_for(None) is None
