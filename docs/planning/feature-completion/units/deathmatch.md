@@ -25,8 +25,9 @@
       (`deathmatch/actions.py:40`), crit, armor floor.
 - [x] **Loop runs start→finish** — challenge→accept→turn loop→resolve→leaderboard (PvP,
       `deathmatch_cog.py:214`); gear-load→duel→result view (bot, `deathmatch_panel.py:216`).
-- [ ] **No dead-end controls** — ❌ **the PvP `_DuelView` and `_ChallengeView` are trapped** (see B,
-      punch-list #1). The bot-duel path is clean (swaps to `_BotDuelResultView`).
+- [x] **No dead-end controls** — ✅ **fixed (punch-list #1, this PR).** The PvP `_DuelView` /
+      `_ChallengeView` now swap to `_PvpDuelResultView` (Help + Games nav + 🔁 Rematch) on
+      finish/timeout/decline/expire, mirroring the bot path's `_BotDuelResultView`.
 - [x] **Rewards wired** — leaderboard W/L via `db.update_deathmatch`; gear wear ticked once per PvP duel
       via `mining_workflow.wear_tick` (`deathmatch_cog.py:68`). Free game (no coins/XP by design).
 
@@ -36,22 +37,20 @@
 - [x] **Every action has a control** — Fight Bot / Challenge / Rules on the panel; Attack/Defend in the
       duel; opponent picker on Challenge.
 - [x] **Rules affordance** — 📖 Rules on the panel (`deathmatch_panel.py:67`).
-- [ ] **Return navigation everywhere** — ❌ **headline gap.** `_BotDuelResultView` declares
-      `SUBSYSTEM = "deathmatch"` so `attach_standard_nav` gives it 📚 Help + ↩ Games (correct). But the
-      **PvP** `_DuelView` (in-game) and `_ChallengeView` (accept prompt) are plain `discord.ui.View`
-      subclasses (`deathmatch_cog.py:94,252`): on finish / timeout / decline they disable their buttons
-      and **stop with no back affordance** → the player is stranded on a dead embed. The 2026-06-23
-      "finished duel is never a dead-end" directive was applied to the bot path and **missed for PvP**.
-      → punch-list #1.
+- [x] **Return navigation everywhere** — ✅ **fixed (punch-list #1, headline, this PR).** Both the
+      PvP `_DuelView` (finish/timeout) and `_ChallengeView` (decline/expire) now swap to
+      `_PvpDuelResultView` — a `HubView` with `SUBSYSTEM = "deathmatch"` so `attach_standard_nav`
+      gives it 📚 Help + ↩ Games — instead of leaving a dead embed, closing the 2026-06-23
+      "never a dead-end" gap for the PvP path (it was applied only to the bot `_BotDuelResultView`).
 - [x] **Terminal state correct** — controls disable on terminal in every branch (bot path additionally
       swaps to the result view); `SettleOnceMixin` on the bot duel.
 - [x] **Consistent copy/embeds** — house-style; no debug/placeholder strings found.
 
 ### C. Convenience — "the most convenient way"
 - [x] **No needless clicks** — Challenge opens the opponent picker directly; Fight Bot launches at once.
-- [ ] **Replay without retyping** — ✅ 🔁 Play again on the **bot** result view (`deathmatch_panel.py:354`);
-      ❌ **no PvP rematch** — after a PvP duel the player must re-issue `!deathmatch @opponent`. → folded
-      into punch-list #1 (the PvP result view should carry a rematch).
+- [x] **Replay without retyping** — ✅ 🔁 Play again on the **bot** result view (`deathmatch_panel.py:354`);
+      ✅ **PvP rematch fixed (this PR)** — `_PvpDuelResultView` carries a 🔁 Rematch that re-issues the
+      challenge to the other fighter (re-confirmed via the normal Accept/Decline prompt).
 - [x] **Sensible defaults** — turn timeout is per-guild configurable (`schemas.py`).
 - [x] **Reachable the natural way** — `!deathmatch`/`!dm` + Games hub + Help.
 
@@ -81,40 +80,46 @@
 - [x] **Loop tests (bot path)** — bot AI, combat stats, gear wear, guild scope, settle-once
       (`test_deathmatch_bot_duel.py`, `test_deathmatch_combat_stats.py`, `test_deathmatch_gear_wear.py`,
       `test_deathmatch_guild_scope.py`).
-- [ ] **Edge tests (PvP path)** — the PvP `_DuelView` finish/timeout/settle is untested (only the bot
-      path is). → punch-list #3.
+- [x] **Edge tests (PvP path)** — ✅ **added (punch-list #3, this PR):**
+      `tests/unit/cogs/test_deathmatch_pvp_deadend.py` pins finish/timeout swap-to-result-view,
+      decline/expire nav, rematch re-challenge, the explicit `guild_id` thread, and the
+      both-duelists/bystander authority on the result view.
 - [x] **Money tests** — n/a (free game).
 - [ ] **Live walkthrough recorded** — pending. → punch-list #4.
 - [ ] **Owner ✔** — pending. → punch-list #5/#6.
 
 ## Punch-list (clear these to certify)
 
-1. **PvP terminal views are dead-ends (headline).** `_DuelView` and `_ChallengeView`
-   (`deathmatch_cog.py:94,252`) are plain `discord.ui.View`s; on finish/timeout/decline the player has
-   no back affordance. **Fix (turn-key, mirrors the bot path):** swap each to a small
-   `HubView`-derived result view (`SUBSYSTEM = "deathmatch"`, so `attach_standard_nav` adds 📚 Help +
-   ↩ Games) on terminal, carrying a **🔁 Rematch** button — closing both the dead-end (rubric B) **and**
-   the missing-PvP-rematch convenience (rubric C) in one change. Owner directive precedent: the
-   2026-06-23 "never a dead-end" rule (already applied to `_BotDuelResultView`).
+1. ~~**PvP terminal views are dead-ends (headline).**~~ ✅ **FIXED (this PR).** `_DuelView` and
+   `_ChallengeView` now swap to `_PvpDuelResultView` — a `HubView` (`SUBSYSTEM = "deathmatch"` →
+   `attach_standard_nav` adds 📚 Help + ↩ Games) carrying a **🔁 Rematch** button — on every PvP
+   terminal (finish/timeout/decline/expire), closing both the dead-end (rubric B) **and** the
+   missing-PvP-rematch convenience (rubric C). Bugs-first: the panel-PvP path's `ctx=None` →
+   `self.ctx.guild.id` crash on resolve was root-fixed by threading an explicit `guild_id` through
+   `_ChallengeView.btn_accept` → `_DuelView` (see BUG-0028).
 2. **Uniformity (optional):** move the PvP `_resolved`/`is_over` guard onto `SettleOnceMixin` so PvP and
    bot paths share one settle-once primitive.
-3. **PvP loop tests** — add finish/timeout/settle-once pins for the PvP duel (mirror the bot-duel tests),
-   including correct `guild_id` on a timeout-recorded result.
-4. **Live walkthrough** — `/verify-bot` boot + scripted click-through (challenge → accept → duel →
-   finish → rematch; Fight Bot → result → play again), with screenshots.
+3. ~~**PvP loop tests**~~ ✅ **FIXED (this PR)** — `tests/unit/cogs/test_deathmatch_pvp_deadend.py`
+   pins finish/timeout swap-to-result, decline/expire nav, rematch re-challenge, the `guild_id` thread,
+   and result-view authority (7 tests).
+4. **Live walkthrough** *(owner / live-bot)* — `/verify-bot` boot + scripted click-through (challenge →
+   accept → duel → finish → rematch; Fight Bot → result → play again), with screenshots.
 5. **Coin-staking** *(owner)* — decide whether PvP gains optional wagering via `game_wager_workflow`
    (Blackjack/RPS have it) or stays a free game.
 6. **Owner sign-off** — maintainer plays it and confirms "nothing left to add or move."
 
 ## Evidence
 - **Tests:** `tests/unit/.../test_deathmatch_bot_duel.py` · `test_deathmatch_challenge_timeout.py` ·
-  `test_deathmatch_combat_stats.py` · `test_deathmatch_gear_wear.py` · `test_deathmatch_guild_scope.py`
+  `test_deathmatch_combat_stats.py` · `test_deathmatch_gear_wear.py` · `test_deathmatch_guild_scope.py` ·
+  **`test_deathmatch_pvp_deadend.py` (PvP dead-end / rematch / guild_id — this PR)**
 - **Walkthrough:** pending (punch-list #4)
 - **Owner sign-off:** pending (punch-list #6)
 
 ## Verdict
-Deathmatch is **feature-rich and money-safe** (no stakes), with gear integration, two modes, and a
-well-tested, dead-end-free **bot** path. It is **not yet `✔ certified`**: the **PvP** path has a real
-trapped-view dead-end (#1, the headline) that also carries the missing PvP rematch, plus PvP loop tests
-(#3) and the owner walkthrough/sign-off (#4/#6). #1 is a contained, turn-key fix that mirrors the
-already-shipped bot-duel result view — a strong next slice for a focused follow-up.
+Deathmatch is **feature-rich and money-safe** (no stakes), with gear integration, two modes, and now
+a dead-end-free **bot *and* PvP** path. The headline trapped-view gap (#1) and PvP loop tests (#3)
+are **cleared this PR**, and the latent panel-PvP `ctx=None` crash was root-fixed (BUG-0028). It is
+**not yet `✔ certified`**: what remains is owner-paced / live-bot only — the live walkthrough (#4),
+the optional coin-staking decision (#5), and the owner sign-off (#6); the optional settle-once
+uniformity (#2) is a nice-to-have. The code-side completion bar is essentially met — this unit is now
+a strong **✔-ready candidate** pending the owner walkthrough.

@@ -23,6 +23,35 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0028 — panel-initiated PvP deathmatch crashes on resolve (`ctx=None` → `self.ctx.guild.id` AttributeError) — FIXED (root)
+
+- **Symptom (found 2026-06-28 by a dispatch run via code inspection during the Deathmatch
+  completion-cert dead-end fix — not a live report, but a real latent crash):** a PvP duel started
+  from the **panel** (`👤 Challenge Player` → opponent select, not the `!deathmatch @user` command)
+  would raise `AttributeError: 'NoneType' object has no attribute 'guild'` the moment the duel
+  **resolved** (a finishing blow or a turn timeout) — i.e. the whole panel-PvP path was broken at the
+  finish line.
+- **Root cause:** `views/games/deathmatch_panel.py::_DeathmatchOpponentSelect.callback` builds
+  `_ChallengeView(cog, challenger, opponent, duel_key, None)` — `ctx=None`, since the panel only has
+  an `interaction`. On accept that `None` ctx is forwarded into `_DuelView`, whose `_resolve` /
+  `on_timeout` computed the originating guild as `self.ctx.guild.id if self.ctx.guild else 0` —
+  `None.guild` raises. (The `!deathmatch` command path was unaffected: it passes a real ctx.) It also
+  meant the panel path would have recorded results under the wrong guild even if it hadn't crashed.
+- **Fix (root, PR #1527):** thread an **explicit `guild_id`** through the duel instead of reaching
+  into `ctx`. `_ChallengeView.btn_accept` already had `gid = interaction.guild_id or 0` (for gear); it
+  now passes `guild_id=gid` into `_DuelView`, which stores `self.guild_id` (falling back to
+  `ctx.guild.id` only when no `guild_id` is given, preserving the command path + existing tests) and
+  uses `self.guild_id` for the leaderboard + gear-wear writes. The panel/rematch path can now pass
+  `ctx=None` safely.
+- **Stays-fixed guard:** `tests/unit/cogs/test_deathmatch_pvp_deadend.py::`
+  `test_pvp_duel_timeout_swaps_to_result_view_and_uses_guild_id` builds a `_DuelView` with `ctx=None`
+  and `guild_id=777`, runs `on_timeout`, and asserts the write is recorded under `777` with **no
+  crash** (fails against the pre-fix `self.ctx.guild.id`); `test_duelview_guild_id_falls_back_to_ctx`
+  pins the backward-compatible ctx fallback (and that `ctx=None`+no-guild_id degrades to `0`, never
+  raises).
+- **Status:** FIXED (root) 2026-06-28. Fixed alongside the PvP trapped-view dead-end gap (Deathmatch
+  completion cert punch-list #1); live on the next auto-deploy.
+
 ## BUG-0027 — born-red merge-gate silently fails open on a session-card slug collision (a partial PR auto-merged and clobbered a prior session log) — FIXED (root)
 
 - **Symptom (found 2026-06-28 by a dispatch run, from its own behavior — not a live user report):**
