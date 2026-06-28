@@ -86,6 +86,33 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1419 · #1424 · #1426 (2026-06-24, BTD6 unification + slash-sync runtime)** — the five BTD6 command
+  groups **unified under one `/btd6`** (flattest layout, #1419); a **diff-gated startup command-tree
+  auto-sync** (+ post-unification docs cleanup, #1424) with `!syncslash global` gated through the same
+  diff-aware helper (+ a force escape, #1426).
+- **#1415 · #1416 (2026-06-24, idea → plan — bot-migration assistant)** — captured the owner idea (#1415)
+  and structured the plan (#1416): detect → map → replicate → retire other bots.
+- **#1412 · #1414 · #1428 · #1433 · #1441 (2026-06-24, docs — 24th Q-0107 pass + dashboard refreshes)** —
+  the **twenty-fourth Q-0107 reconciliation pass** (band-#1410,
+  [pass record](planning/reconciliation-pass-2026-06-24-band1410.md), #1412); plus four per-source-merge
+  **dashboard-data refreshes** (#1414 · #1428 · #1433 · #1441, Q-0167).
+- **#1405 · #1410 (2026-06-24, NEW support-ticket subsystem — command + AI natural language)** — a complete
+  new `ticket` subsystem (migration 098 `ticket_config`/`tickets`/`ticket_blacklist`, audited
+  `ticket_mutation` seam, anchor-free persistent launcher + in-channel control panel + staff hub + describe
+  modal, `!ticket`/`!ticketpanel`/`!ticketsetup`/`!ticketblacklist`) modeled on the best ticket bots —
+  clickable panels, categories, per-ticket private channels, claim/add/remove, transcripts, per-user limits +
+  blacklist (#1405). It also introduces the **first write-capable AI *action* tool**, `open_support_ticket`,
+  through the deterministic audited mutation service; the follow-up (#1410) re-postured it so **the AI opens
+  a ticket via a one-click confirm, not autonomously** (router **Q-0201**, superseding #1405's direct-open
+  draft).
+- **#1408 · #1409 (2026-06-24, BTD6 AI floor coverage + admin slash-command fix)** — range RBE answers + the
+  paragon **elite-boss damage multiplier** in the AI floor set (#1408, extends the #1402/#1404 round-economy +
+  elite-boss lineage); plus two owner-reported Discord-thread fixes (#1409) — a **`!syncslash clear`** scope
+  that drops duplicate guild-local slash copies (the global+guild double-render), and a **`/btd6ref round`
+  range** (combined per-round RBE/cash/cumulative table).
+- **#1407 (2026-06-24, docs — twenty-third Q-0107 reconciliation pass, band-#1380)** —
+  the previous docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-06-24-band1380.md)).
 - **#1359 · #1360 · #1361 · #1363 · #1366 · #1367 · #1369 · #1370 · #1371 · #1372 · #1373 · #1374 · #1375 · #1376 · #1377 · #1378 · #1382 · #1383 · #1385 (2026-06-23/24, consolidation & discoverability audit — execution arc)** —
   the audit brief executed as a multi-session **ultracode fleet**: Session 1 help-findability foundation + a
   per-command reachability guard (#1370), Phase-0 shared hub-child primitive + settings-orphan guard + the

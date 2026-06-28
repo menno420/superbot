@@ -50,6 +50,11 @@ Current broad captures:
   added game can't silently miss a completion certificate. The completeness-axis sibling of the
   `subsystem-inventory-homed-guard`; reuses the `completion_scoreboard.py` table reader. Disposable
   (Q-0105). Subsystem: none (S4/S3 tooling).
+- [`queue-slice-staleness-age-2026-06-28.md`](./queue-slice-staleness-age-2026-06-28.md) —
+  **captured 2026-06-28 (band-#1530 reconciliation pass, Q-0089):** tag each §4 forward-queue slice with a
+  one-token `carried since band-#N` age, so a slice carried un-executed across many bands becomes a legible
+  signal (move to gated, or owner re-prioritise) instead of an identical-looking row. Converts the
+  execution-rate *count* into a per-slice *history*; the manual precursor to E3. Subsystem: S4 docs-system.
 - [`band-queue-execution-rate-2026-06-27.md`](./band-queue-execution-rate-2026-06-27.md) —
   **captured 2026-06-27 (band-#1500 reconciliation pass, Q-0089):** three of the last four bands executed
   **zero** named §4 forward-queue slices (the work was owner-directed BTD6 accuracy + autonomous
