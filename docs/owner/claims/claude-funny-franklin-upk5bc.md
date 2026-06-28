@@ -1,0 +1,1 @@
+- `claude/funny-franklin-upk5bc` · S1 feature-completion punch-list clears (Fishing #1/#2 trapped-shop nav + rules button; Counting #3 player entry point) · `disbot/views/fishing/*` · `disbot/utils/subsystem_registry.py` · `docs/planning/feature-completion/units/*` · 2026-06-28
