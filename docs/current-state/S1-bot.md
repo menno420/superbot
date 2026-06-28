@@ -80,22 +80,21 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
-- `[offline]` **Feature-completion assessments — IN PROGRESS (15/36 assessed; ALL 10 games done + 5
-  server-fns).** The completion-first arc (Q-0209). #1519 added Fishing/Counting/Word Chain to the #1513
-  Blackjack pilot; PR #1524 added **RPS, Deathmatch, Chicken farm**; **#1530 added Casino (poker)**; **PR
-  #1534 assessed the last two games — Mining (✔-ready candidate) + Creatures (hub-less v1) — AND the
-  first server-fn, Welcome**; **the 2026-06-28 dispatch run (PR #1536) assessed four more server-fns —
-  Moderation · Economy · Roles · XP & levels — and fixed a real audit gap surfaced during the XP
-  assessment at the root (BUG-0029: XP level-up role grants now route through the audited
-  `role_automation.apply` seam, +`test_no_direct_xp_role_mutations` invariant).** All four server-fns are
-  structurally strong (audited mutation seams, panels, Help, Setup); the open gaps are best-in-class
-  breadth (turn-key: Economy's missing public `give`/`pay` + admin balance panel; Moderation
-  tempban/case-system; Roles gated web builder). **▶ Next startable, offline:** **assess the remaining
-  server-fns** — the unassessed set is now Settings · Karma · Leaderboards · Counters · Tickets ·
+- `[offline]` **Feature-completion assessments — IN PROGRESS (19/36 assessed; ALL 10 games done + 9
+  server-fns).** The completion-first arc (Q-0209). Games done #1513…#1534; **server-fns: Welcome (#1534)
+  · Moderation/Economy/Roles/XP (#1536, with BUG-0029 root fix — XP role grants now through the audited
+  `role_automation.apply` seam) · Settings/Leaderboards/Tickets/Karma (#1538, this batch).** All
+  structurally strong (audited mutation seams, Help, Setup). **Findings worth a follow-up:** (a)
+  **Leaderboards is missing providers for several existing games** — notably **Fishing** (its own
+  `!trophies` board exists but no unified-panel provider), plus Blackjack/Casino/Word-Chain/Farm — each
+  is one `RankProvider` class + a `utils/db` top-N read (the headline turn-key *deepening* win now); (b)
+  Economy's missing public `give`/`pay` (the `transfer()` primitive exists) + admin balance panel. **▶
+  Next startable, offline:** **assess the remaining server-fns** — the unassessed set is now Counters ·
   Spotlight · Channels · Setup wizard · AI · Logging · Diagnostics · Help · Admin · Inventory · Treasury ·
   Cleanup · Automod · Image-moderation · Security · Proof-channel · Utility, one cert each under
   [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from
-  `rubric-server-function.md` (Economy's public `give`/`pay` is the lowest-effort *deepening* win).
+  `rubric-server-function.md`; or take a *deepening* win (a Fishing leaderboard provider; Economy
+  `give`/`pay`).
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
   `architecture_rules/canonical_helpers.yaml`, +7 tests) flags a game-view terminal handler that
