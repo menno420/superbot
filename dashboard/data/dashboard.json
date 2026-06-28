@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T17:44:39Z",
+    "generated_at": "2026-06-28T20:19:08Z",
     "build": {
-      "commit": "3230b59e",
-      "subject": "Merge pull request #1532 from menno420/claude/jolly-johnson-uknja2",
-      "committed_at": "2026-06-28T17:44:39Z"
+      "commit": "897adb70",
+      "subject": "Merge pull request #1534 from menno420/claude/funny-franklin-gezt1n",
+      "committed_at": "2026-06-28T20:19:08Z"
     },
     "counts": {
       "functions": 43,
@@ -2653,6 +2653,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-28-mining-creatures-completion-assessments.md",
+      "date": "2026-06-28",
+      "title": "Session — feature-completion assessments: Mining + Creatures + Welcome (Q-0209)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-28-fishing-pearl-rare-material.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Fishing: the \"pearl\" rare-material drop + a premium-bait pearl craft",
@@ -3098,14 +3106,6 @@
       "title": "2026-06-24 — Support-ticket subsystem (command + AI natural language)",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-setup-wizard-restructure-plan.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · setup-wizard restructure plan",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
