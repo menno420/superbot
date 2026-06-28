@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T05:30:21Z",
+    "generated_at": "2026-06-28T11:09:03Z",
     "build": {
-      "commit": "d901330a",
-      "subject": "Merge pull request #1519 from menno420/claude/funny-franklin-lye7pc",
-      "committed_at": "2026-06-28T05:30:21Z"
+      "commit": "a1bca4b9",
+      "subject": "Merge pull request #1523 from menno420/claude/funny-franklin-ca1e1q",
+      "committed_at": "2026-06-28T11:09:03Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 150,
+      "ideas": 151,
       "bugs": 26,
       "reviews": 0,
       "reviews_open": 0,
@@ -567,6 +567,8 @@
         "community"
       ],
       "entry_points": [
+        "count_info",
+        "counttop",
         "countingmenu"
       ],
       "related_subsystems": [],
@@ -1157,6 +1159,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "router-q-index-generator-2026-06-28.md",
+      "title": "Idea: a generated router Q-index (resolve a Q-number without loading 490 KB)",
+      "status": "ideas",
+      "date": "2026-06-28",
+      "summary": "`docs/owner/maintainer-question-router.md` is **~490 KB / 215 Q-blocks** and now **exceeds the",
+      "subsystems": null
+    },
     {
       "file": "band-queue-execution-rate-2026-06-27.md",
       "title": "Idea — a per-band \"queue-execution rate\" line in each reconciliation pass record",
@@ -2591,6 +2601,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-28-question-router-answer-documentation.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — Document owner answers + decide the router-vs-durable-home convention",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-28-fishing-pearl-rare-material.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Fishing: the \"pearl\" rare-material drop + a premium-bait pearl craft",
@@ -2599,12 +2617,20 @@
       "self_initiated": true
     },
     {
-      "file": "2026-06-28-feature-completion-assessments.md",
+      "file": "2026-06-28-fishing-counting-completion-punchlist.md",
       "date": "2026-06-28",
-      "title": "2026-06-28 — Feature-completion unit assessments + counting leaderboard",
+      "title": "2026-06-28 — Fishing + Counting feature-completion punch-list clears",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": true
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-28-feature-completion-assessments.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — Feature-completion assessments (more S1 game units)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
     },
     {
       "file": "2026-06-27-youtube-fetch-renderer-tests.md",
@@ -3050,22 +3076,6 @@
       "file": "2026-06-24-setup-log-channel-step.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · Essential Setup step \"Choose a log channel\"",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-setup-log-channel-rework.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · \"Choose a log channel\" rework (two-channel + multi-select)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-setup-jargon-sweep-guild.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · setup plain-language sweep 1 (guild→server)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
