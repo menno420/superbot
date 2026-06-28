@@ -9,6 +9,13 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Twenty-eighth Q-0107 reconciliation pass** (band-#1530, issue #1531 —
+  [pass record](../planning/reconciliation-pass-2026-06-28-band1530.md)): reconciled the ledger
+  (band #1502–#1530 — six grouped entries, headlined by the **fishing acquisition-depth + gear arc**
+  #1504…#1521 and the **S1 feature-completion certification framework** #1513/#1519/#1523/#1530), trimmed
+  Recently-shipped to 20 (`trim_recently_shipped.py --apply`, floor recomputed), carried the band-#1500
+  forward queue intact (no §4 queue slice executed this band → `mixed` archetype; still deep, no THIN
+  flag), reset the marker #1500 → #1530.
 - **Twenty-seventh Q-0107 reconciliation pass** (band-#1500, issue #1501 —
   [pass record](../planning/reconciliation-pass-2026-06-27-band1500.md)): reconciled the ledger
   (band #1472–#1500 — five grouped entries, headlined by the owner-directed **BTD6 QA-accuracy arc**
@@ -27,18 +34,12 @@
   (band #1413–#1441 — six grouped entries, headlined by the **Essential Setup wizard restructure** arc),
   trimmed Recently-shipped to 20 (`trim_recently_shipped.py --apply`, floor recomputed), carried the
   band-#1410 forward queue (still deep, no THIN flag), reset the marker #1410 → #1441.
-- **Twenty-fourth Q-0107 reconciliation pass** (band-#1410, issue #1411 —
-  [pass record](../planning/reconciliation-pass-2026-06-24-band1410.md)): reconciled the ledger
-  (band #1405–#1410 — three grouped entries: ticket subsystem #1405/#1410 · BTD6 floor coverage #1408 ·
-  prev recon #1407), trimmed Recently-shipped to 20 (`trim_recently_shipped.py --apply`, floor
-  #1320 … #535), affirmed the band-#1380 forward queue (still deep, no THIN flag), reset the marker
-  #1404 → #1410.
 - **Help-reachability CI guard (#1297)** — `check_docs`/the help tree now fails CI when a subsystem
   isn't homed, and a **tool-pin CI guard (#1320)** closes the three-places-pin-drift class at the root.
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
 
 **▶ Next:**
-- **Next reconciliation pass due once merged PRs cross #1530** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1560** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

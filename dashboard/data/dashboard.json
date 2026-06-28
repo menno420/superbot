@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T14:35:03Z",
+    "generated_at": "2026-06-28T15:31:47Z",
     "build": {
-      "commit": "c51c9cc9",
-      "subject": "Merge pull request #1527 from menno420/claude/funny-franklin-05mst6",
-      "committed_at": "2026-06-28T14:35:03Z"
+      "commit": "36043e19",
+      "subject": "docs: open 28th Q-0107 reconciliation pass (band-#1530) — born-red card + claim",
+      "committed_at": "2026-06-28T15:31:47Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 152,
+      "ideas": 153,
       "bugs": 28,
       "reviews": 0,
       "reviews_open": 0,
@@ -1162,9 +1162,17 @@
     {
       "file": "no-dead-end-terminal-view-guard-2026-06-28.md",
       "title": "Idea — a \"no dead-end\" arch guard for game terminal views",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-28",
       "summary": "The 2026-06-23 owner directive is \"a finished game/duel is **never** a dead-end\" — a terminal view",
+      "subsystems": null
+    },
+    {
+      "file": "queue-slice-staleness-age-2026-06-28.md",
+      "title": "Idea — a \"queue-staleness age\" tag per §4 forward-queue slice",
+      "status": "idea",
+      "date": "2026-06-28",
+      "summary": "Each Q-0107 pass carries the §4 forward-queue (slices A1, A2, B0, B1, C1…) forward, band after band.",
       "subsystems": null
     },
     {
@@ -2621,12 +2629,28 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-28-reconcile.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — twenty-eighth Q-0107 reconciliation pass (band-#1530)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-28-question-router-answer-documentation.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Document owner answers + decide the router-vs-durable-home convention",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-28-no-dead-end-view-guard.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — No-dead-end terminal-view arch guard (friction→guard)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-28-fishing-pearl-rare-material.md",
@@ -2664,6 +2688,14 @@
       "file": "2026-06-28-deathmatch-pvp-deadend.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Deathmatch + RPS PvP trapped-view dead-end fixes (completion-first)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-28-casino-completion-cert.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — Casino (poker) feature-completion certificate (Q-0209)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -3072,30 +3104,6 @@
       "file": "2026-06-24-setup-wizard-restructure-plan.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · setup-wizard restructure plan",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-setup-step0-server-type-preset.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Essential Setup step 0: server-type starter preset (direct-apply)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-setup-spine-polish.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · Essential Setup spine polish + optional custom naming",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-setup-spine-build.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · build the essentials spine (PR 1)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
