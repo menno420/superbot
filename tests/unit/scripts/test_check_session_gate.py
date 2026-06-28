@@ -72,7 +72,7 @@ def test_missing_badge_is_held(tmp_path):
 
 
 def test_main_no_cards_passes(monkeypatch, capsys):
-    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [])
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [])
     assert gate.main(["--base", "a", "--head", "b"]) == 0
     assert "not gated" in capsys.readouterr().out
 
@@ -80,6 +80,7 @@ def test_main_no_cards_passes(monkeypatch, capsys):
 def test_main_held_card_fails(monkeypatch, capsys, tmp_path):
     card = tmp_path / "2026-06-14-x.md"
     card.write_text("# x\n\n> **Status:** `in-progress`\n", encoding="utf-8")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
     monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
     assert gate.main([]) == 1
     out = capsys.readouterr().out
@@ -89,7 +90,47 @@ def test_main_held_card_fails(monkeypatch, capsys, tmp_path):
 def test_main_ready_card_passes(monkeypatch, capsys, tmp_path):
     card = tmp_path / "2026-06-14-x.md"
     card.write_text("# x\n\n> **Status:** `complete`\n", encoding="utf-8")
-    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    assert gate.main([]) == 0
+    assert "merge unblocked" in capsys.readouterr().out
+
+
+# --- BUG-0027: collision (modified-not-added) + terminal-OK re-badge --------
+
+
+def test_merge_blocking_terminal_ok_not_held(tmp_path):
+    """A re-badged old log (historical) must NOT hold the merge — reconciliation PRs."""
+    card = tmp_path / "2026-06-14-x.md"
+    card.write_text("# x\n\n> **Status:** `historical` — old\n", encoding="utf-8")
+    assert gate.merge_blocking_cards([card]) == []
+
+
+def test_merge_blocking_in_progress_held(tmp_path):
+    card = tmp_path / "2026-06-14-x.md"
+    card.write_text("# x\n\n> **Status:** `in-progress`\n", encoding="utf-8")
+    assert gate.merge_blocking_cards([card]) == [(card, "in-progress")]
+
+
+def test_main_modified_card_collision_held_with_hint(monkeypatch, capsys, tmp_path):
+    """The #1523 regression: a born-red card that collided with an existing slug lands
+    as a MODIFICATION (gate_session_cards sees it, added_session_cards does not). The
+    merge gate must hold it AND print the rename hint."""
+    card = tmp_path / "2026-06-28-collision.md"
+    card.write_text("# x\n\n> **Status:** `in-progress`\n", encoding="utf-8")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [])
+    assert gate.main([]) == 1
+    out = capsys.readouterr().out
+    assert "MERGE HELD" in out
+    assert "MODIFIED, not added" in out and "rename your card" in out
+
+
+def test_main_reconciliation_rebadge_not_held(monkeypatch, capsys, tmp_path):
+    """A reconciliation PR that MODIFIES an old log to `historical` must merge freely."""
+    card = tmp_path / "2026-06-01-old.md"
+    card.write_text("# old\n\n> **Status:** `historical`\n", encoding="utf-8")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [])
     assert gate.main([]) == 0
     assert "merge unblocked" in capsys.readouterr().out
 

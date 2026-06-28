@@ -1,0 +1,1 @@
+- branch: claude/born-red-gate-collision-fix · scope: BUG-0027 born-red gate collision fix + restore clobbered log + feature-completion certs (RPS/Deathmatch/Chicken farm) · area: scripts/check_session_gate.py, docs/health/bug-book.md, docs/planning/feature-completion/ · date: 2026-06-28
