@@ -26,6 +26,8 @@ _CATCH = CATCH  # the shared sentinel the helpers return (identity asserts)
 _WORM = bait_mod.bait_by_key("worm")
 _LURE = bait_mod.bait_by_key("lure")
 _SPINNER = bait_mod.bait_by_key("spinner")  # a pure speed bait (bite_speed < 1)
+_FEAST = bait_mod.bait_by_key("feast")  # the premium combo — pearl-craft only
+_FEAST_PEARLS = bait_mod.pearl_recipe("feast")  # pearls per Royal Feast pack
 
 
 @pytest.fixture(autouse=True)
@@ -449,3 +451,98 @@ async def test_craft_bait_rejects_an_uncraftable_or_unknown_bait():
     assert feast.success is False and nope.success is False
     inv.assert_not_awaited()  # bails before reading inventory
     deltas.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# craft_pearl_bait — the rare-material → premium-bait conversion (pearl sink)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_craft_pearl_bait_debits_pearls_and_loads_the_premium_pack():
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    with (
+        patch.object(
+            wf.db,
+            "get_mining_inventory",
+            AsyncMock(return_value={wf.PEARL_ITEM: _FEAST_PEARLS + 1}),
+        ),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "update_mining_item", AsyncMock()) as spend,
+        patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
+        patch.object(wf.economy_service, "debit_in_txn", AsyncMock()) as debit,
+    ):
+        result = await wf.craft_pearl_bait(99, 1, "feast")
+
+    assert result.success is True
+    assert result.bait is _FEAST
+    assert result.charges == _FEAST.charges
+    # exactly the recipe's pearls were debited, no coins ever touched
+    spend.assert_awaited_once_with(
+        "99", 1, wf.PEARL_ITEM, -_FEAST_PEARLS, conn=sentinel_conn
+    )
+    set_bait.assert_awaited_once_with(99, 1, "feast", _FEAST.charges, conn=sentinel_conn)
+    debit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_craft_pearl_bait_stacks_charges_for_the_same_bait():
+    @asynccontextmanager
+    async def _ctx():
+        yield MagicMock()
+
+    with (
+        patch.object(
+            wf.db,
+            "get_mining_inventory",
+            AsyncMock(return_value={wf.PEARL_ITEM: 10}),
+        ),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("feast", 3))),
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "update_mining_item", AsyncMock()),
+        patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
+    ):
+        result = await wf.craft_pearl_bait(99, 1, "feast")
+
+    assert result.charges == 3 + _FEAST.charges  # stacked onto the loaded feast
+    _, _, key, charges = set_bait.await_args.args
+    assert (key, charges) == ("feast", 3 + _FEAST.charges)
+
+
+@pytest.mark.asyncio
+async def test_craft_pearl_bait_without_enough_pearls_writes_nothing():
+    with (
+        patch.object(
+            wf.db,
+            "get_mining_inventory",
+            AsyncMock(return_value={wf.PEARL_ITEM: _FEAST_PEARLS - 1}),
+        ),
+        patch.object(wf.db, "update_mining_item", AsyncMock()) as spend,
+        patch.object(wf.db, "set_active_bait", AsyncMock()) as set_bait,
+    ):
+        result = await wf.craft_pearl_bait(99, 1, "feast")
+
+    assert result.success is False
+    spend.assert_not_awaited()
+    set_bait.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_craft_pearl_bait_rejects_a_non_pearl_or_unknown_bait():
+    with (
+        patch.object(wf.db, "get_mining_inventory", AsyncMock()) as inv,
+        patch.object(wf.db, "update_mining_item", AsyncMock()) as spend,
+    ):
+        # a fish-craftable bait has no pearl recipe; neither does a phantom bait
+        worm = await wf.craft_pearl_bait(99, 1, "worm")
+        nope = await wf.craft_pearl_bait(99, 1, "nonexistent")
+
+    assert worm.success is False and nope.success is False
+    inv.assert_not_awaited()  # bails before reading inventory
+    spend.assert_not_awaited()

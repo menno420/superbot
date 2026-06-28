@@ -7,8 +7,13 @@ import random
 from utils.fishing import fish
 from utils.fishing.rewards import (
     BONUS_CATCH_CHANCE,
+    PEARL_DROP_BASE_CHANCE,
+    PEARL_DROP_MAX_CHANCE,
+    PEARL_DROP_PER_SIZE_RANK,
+    pearl_drop_chance,
     roll_bonus_catch,
     roll_catch,
+    roll_pearl_drop,
 )
 
 
@@ -144,3 +149,58 @@ def test_roll_bonus_catch_fires_at_about_the_configured_rate():
     rate = hits / 20_000
     # within a generous band of the configured chance (seeded, so stable)
     assert abs(rate - BONUS_CATCH_CHANCE) < 0.02
+
+
+# ---------------------------------------------------------------------------
+# the pearl rare-material drop (size-scaled, with this PR)
+# ---------------------------------------------------------------------------
+
+
+def test_pearl_drop_chance_is_the_base_for_the_smallest_fish():
+    assert pearl_drop_chance(1) == PEARL_DROP_BASE_CHANCE
+    # ranks below 1 clamp to the base, never below it
+    assert pearl_drop_chance(0) == PEARL_DROP_BASE_CHANCE
+    assert pearl_drop_chance(-5) == PEARL_DROP_BASE_CHANCE
+
+
+def test_pearl_drop_chance_rises_with_size_rank():
+    assert pearl_drop_chance(2) == PEARL_DROP_BASE_CHANCE + PEARL_DROP_PER_SIZE_RANK
+    # monotonic non-decreasing across the whole used band
+    prev = -1.0
+    for rank in range(1, 60):
+        chance = pearl_drop_chance(rank)
+        assert chance >= prev
+        prev = chance
+
+
+def test_pearl_drop_chance_is_capped():
+    # a very large rank is clamped at the ceiling, never above it
+    assert pearl_drop_chance(10_000) == PEARL_DROP_MAX_CHANCE
+    for rank in range(1, 200):
+        assert pearl_drop_chance(rank) <= PEARL_DROP_MAX_CHANCE
+
+
+def test_pearl_drop_stays_rare_not_the_norm():
+    # even a trophy-tier fish only occasionally yields a pearl
+    assert 0.0 < PEARL_DROP_BASE_CHANCE < PEARL_DROP_MAX_CHANCE <= 0.25
+    assert pearl_drop_chance(21) <= 0.12  # trophy tier ~10%
+
+
+def test_roll_pearl_drop_is_deterministic_for_a_fixed_seed():
+    assert roll_pearl_drop(10, random.Random(7)) == roll_pearl_drop(10, random.Random(7))
+
+
+def test_roll_pearl_drop_fires_about_at_the_size_scaled_rate():
+    rank = 21
+    rng = random.Random(123)
+    hits = sum(roll_pearl_drop(rank, rng) for _ in range(20_000))
+    rate = hits / 20_000
+    assert abs(rate - pearl_drop_chance(rank)) < 0.02
+
+
+def test_bigger_fish_drop_pearls_more_often():
+    def rate(rank):
+        rng = random.Random(99)
+        return sum(roll_pearl_drop(rank, rng) for _ in range(20_000)) / 20_000
+
+    assert rate(21) > rate(1)

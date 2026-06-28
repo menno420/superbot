@@ -101,6 +101,9 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
         # Force no lucky-double-catch so the single-fish grant qty is deterministic
         # (the bonus is its own seeded path, exercised in its own tests below).
         patch.object(wf, "roll_bonus_catch", lambda *a, **k: False),
+        # Force no pearl drop so the only grant is the single fish (the pearl drop
+        # is its own seeded path, exercised in its own tests below).
+        patch.object(wf, "roll_pearl_drop", lambda *a, **k: False),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 5})),
         patch.object(wf.db, "transaction", _txn(sentinel_conn, events)),
         patch.object(wf.db, "record_catch", AsyncMock(side_effect=_record)),
@@ -224,6 +227,7 @@ async def test_commit_catch_writes_the_held_cast():
     cast = wf.Cast(catch=_CATCH, level_before=1)
     with (
         patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf, "roll_pearl_drop", lambda *a, **k: False),
         patch.object(wf.db, "record_catch", AsyncMock()) as record,
         patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
         patch.object(
@@ -354,6 +358,9 @@ async def _commit_with_grant(rng):
     cast = wf.Cast(catch=_CATCH, level_before=1)
     with (
         patch.object(wf.db, "transaction", _ctx),
+        # Isolate the bonus path from the pearl drop — the fish grant stays the
+        # last update_mining_item call this helper inspects (args[3]).
+        patch.object(wf, "roll_pearl_drop", lambda *a, **k: False),
         patch.object(wf.db, "record_catch", AsyncMock(return_value=None)),
         patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
         patch.object(
@@ -390,6 +397,62 @@ async def test_commit_catch_grants_one_and_no_bonus_on_an_unlucky_reel():
     assert result.bonus_catch is False
     args, _ = grant.await_args
     assert args[3] == 1
+
+
+# ---------------------------------------------------------------------------
+# commit_catch — the pearl rare-material drop (with this PR)
+# ---------------------------------------------------------------------------
+
+
+async def _commit_collecting_grants(rng):
+    """Commit a fixed cast under a forced *rng*, returning (result, grant calls)."""
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    cast = wf.Cast(catch=_CATCH, level_before=1)
+    with (
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "record_catch", AsyncMock(return_value=None)),
+        patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
+        patch.object(
+            wf.game_xp_service,
+            "award",
+            AsyncMock(return_value=_award(game_total=10)),
+        ),
+        patch.object(wf.game_xp_service, "emit_award_events", AsyncMock()),
+    ):
+        result = await wf.commit_catch(99, 1, cast, rng=rng)
+    return result, grant
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_grants_a_pearl_on_a_lucky_reel():
+    # random()==0.0: bonus roll fires (drawn first), then the pearl roll fires.
+    forced = MagicMock()
+    forced.random.return_value = 0.0
+    result, grant = await _commit_collecting_grants(forced)
+
+    assert result.pearl_found is True
+    items = [call.args[2] for call in grant.await_args_list]
+    # one pearl grant + the fish grant; the fish grant stays the LAST call.
+    assert wf.PEARL_ITEM in items
+    assert grant.await_args_list[-1].args[2] == _CATCH.species.name
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_no_pearl_on_an_unlucky_reel_is_byte_identical():
+    # random()==0.99 ≥ every chance → no bonus, no pearl; only the fish grant.
+    forced = MagicMock()
+    forced.random.return_value = 0.99
+    result, grant = await _commit_collecting_grants(forced)
+
+    assert result.pearl_found is False
+    items = [call.args[2] for call in grant.await_args_list]
+    assert wf.PEARL_ITEM not in items
+    assert items == [_CATCH.species.name]  # the single fish grant, nothing else
 
 
 # ---------------------------------------------------------------------------

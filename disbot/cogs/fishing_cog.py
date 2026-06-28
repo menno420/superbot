@@ -29,6 +29,7 @@ from discord.ext import commands
 from core.runtime import guild_resources as resources
 from services import fishing_workflow, game_xp_service
 from utils import db
+from utils.fishing import PEARL_ITEM
 from utils.fishing import bait as bait_mod
 from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
@@ -201,7 +202,9 @@ class FishingCog(commands.Cog):
             ctx.guild.id,
         )
         balance = await db.get_coins(ctx.author.id, ctx.guild.id)
-        embed = build_bait_embed(active, charges, balance)
+        inventory = await db.get_mining_inventory(str(ctx.author.id), ctx.guild.id)
+        pearls = inventory.get(PEARL_ITEM, 0)
+        embed = build_bait_embed(active, charges, balance, pearls=pearls)
         view = BaitShopView(ctx.author, ctx.guild.id)
         view.message = await ctx.send(embed=embed, view=view)
 
@@ -264,6 +267,36 @@ class FishingCog(commands.Cog):
         (``!rod``) — crafting is the slower, gameplay-native alternative.
         """
         result = await fishing_workflow.craft_rod(ctx.author.id, ctx.guild.id)
+        await ctx.send(result.message)
+
+    @commands.command(name="craftpearl", aliases=["pearlcraft"])
+    async def craftpearl(self, ctx, *, bait: str = ""):
+        """Spend pearls to craft the premium bait — the rare-material sink.
+
+        Pearls drop rarely when you reel in a fish (bigger fish, better odds).
+        With a bait name (e.g. ``!craftpearl feast``) crafts it directly; with no
+        argument, crafts the only pearl recipe — the premium **Royal Feast** bait
+        (the one bait you can't craft from fish). Coins stay the fast alternative
+        via ``!bait``.
+        """
+        key = bait_mod.pearl_craftable_key_for(bait)
+        if not bait and len(bait_mod.PEARL_CRAFTABLE_KEYS) == 1:
+            key = bait_mod.PEARL_CRAFTABLE_KEYS[0]
+        if key is None:
+            craftable = ", ".join(
+                bait_mod.bait_by_key(k).name  # type: ignore[union-attr]
+                for k in bait_mod.PEARL_CRAFTABLE_KEYS
+            )
+            await ctx.send(
+                f"You can't craft **{bait}** from pearls. Pearl-craftable: "
+                f"{craftable}.",
+            )
+            return
+        result = await fishing_workflow.craft_pearl_bait(
+            ctx.author.id,
+            ctx.guild.id,
+            key,
+        )
         await ctx.send(result.message)
 
     # ------------------------------------------------------------------ help hook

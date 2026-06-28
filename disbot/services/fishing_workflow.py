@@ -25,13 +25,13 @@ from typing import Protocol
 from core.events import bus
 from services import economy_service, game_xp_service
 from utils import db
-from utils.fishing import MAX_LEVEL, Catch
+from utils.fishing import MAX_LEVEL, PEARL_ITEM, Catch
 from utils.fishing import bait as bait_mod
 from utils.fishing import energy as fish_energy
 from utils.fishing import fish as fish_mod
 from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
-from utils.fishing import roll_bonus_catch, roll_catch
+from utils.fishing import roll_bonus_catch, roll_catch, roll_pearl_drop
 from utils.fishing import venue as venue_mod
 from utils.fishing import weather as weather_mod
 from utils.mining import character
@@ -77,6 +77,11 @@ class FishResult:
     #: copy of the same fish (extra craft fodder). Inventory-only; never a second
     #: dex/trophy row. Byte-identical economics when ``False``.
     bonus_catch: bool = False
+    #: True when this reel also yielded a **pearl** — the rare crafting material
+    #: (``utils.fishing.PEARL_ITEM``) that crafts the premium Royal Feast bait.
+    #: Granted into the inventory; never a dex/trophy row. Byte-identical when
+    #: ``False``. Bigger fish drop pearls more often (size-scaled roll).
+    pearl_found: bool = False
 
 
 @dataclass(frozen=True)
@@ -147,8 +152,11 @@ async def commit_catch(
     Rolls the **lucky-double-catch** bonus (``utils.fishing.roll_bonus_catch``) at
     commit time — only a *landed* catch can double — so on a lucky reel the
     inventory grant is **2** of the species instead of 1 (extra craft fodder).
-    The dex/leaderboard row is unaffected (still the single heaviest weight);
-    *rng* is injectable for seed-determinism in tests.
+    Also rolls a **pearl drop** (``utils.fishing.roll_pearl_drop``, size-scaled):
+    a rare crafting material granted alongside the fish, on the same transaction.
+    The dex/leaderboard row is unaffected by either (still the single heaviest
+    weight); *rng* is injectable for seed-determinism in tests — the bonus roll
+    is drawn first, then the pearl roll.
     """
     catch = cast.catch
     level_before = cast.level_before
@@ -157,6 +165,7 @@ async def commit_catch(
 
     bonus = roll_bonus_catch(rng)
     grant = 2 if bonus else 1
+    pearl = roll_pearl_drop(catch.species.size_rank, rng)
     async with db.transaction() as conn:
         prev_best = await db.record_catch(
             user_id,
@@ -165,6 +174,18 @@ async def commit_catch(
             catch.weight,
             conn=conn,
         )
+        # A pearl drop (the rare crafting material) is granted before the fish so
+        # the fish grant stays the last write — a stable seam for callers/tests
+        # that read the species-grant call. Inventory-only, same atomic catch
+        # transaction (RS02); never a dex/trophy row.
+        if pearl:
+            await db.update_mining_item(
+                str(user_id),
+                guild_id,
+                PEARL_ITEM,
+                1,
+                conn=conn,
+            )
         # The caught fish is now a tangible inventory item (owner decision
         # 2026-06-22): sellable for coins via the market, and cookable into food
         # at a campfire (mining_workflow.cook). The catch-log row above stays the
@@ -198,6 +219,7 @@ async def commit_catch(
         weight=catch.weight,
         new_personal_best=new_best,
         bonus_catch=bonus,
+        pearl_found=pearl,
     )
 
 
@@ -705,6 +727,69 @@ async def craft_bait(
         True,
         f"{verb} **{bait.name}** {bait.emoji} ({bait_mod.effect_text(bait)}) from "
         f"**{used}** — **{new_charges}** casts ready.",
+        bait=bait,
+        charges=new_charges,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Pearl crafting — turn the rare reel-drop material into the premium bait (the
+# one bait with no fish recipe). The pearl's sole sink — a repeatable home for
+# the rare drop. Mirrors craft_bait, but spends PEARLS instead of fish.
+# ---------------------------------------------------------------------------
+
+
+async def craft_pearl_bait(
+    user_id: int,
+    guild_id: int,
+    bait_key: str,
+) -> BaitCraftResult:
+    """Craft one pack of *bait_key* from **pearls** — the rare-material sink.
+
+    The premium combo bait is deliberately absent from the fish-craft shelf (a
+    pure coin sink); this gives it a gameplay-native earn path via the pearl, the
+    rare drop :func:`commit_catch` grants. An inventory-only conversion (no coins,
+    no external call): debit the pearls and load/stack the bait in ONE
+    ``db.transaction()`` (Q-0071). Like :func:`buy_bait`, crafting the same bait
+    stacks charges. Only baits with a pearl recipe are craftable this way.
+    """
+    bait = bait_mod.bait_by_key(bait_key)
+    pearl_cost = bait_mod.pearl_recipe(bait_key)
+    if bait is None or pearl_cost is None:
+        return BaitCraftResult(
+            False,
+            "That bait isn't crafted from pearls — buy it with `!bait`.",
+        )
+
+    inventory = await db.get_mining_inventory(str(user_id), guild_id)
+    have = inventory.get(PEARL_ITEM, 0)
+    if have < pearl_cost:
+        return BaitCraftResult(
+            False,
+            f"You need **{pearl_cost}** 🦪 pearls to craft **{bait.name}** "
+            f"{bait.emoji} — you have **{have}**. Pearls drop rarely when you "
+            "reel in a fish (bigger fish, better odds).",
+        )
+
+    cur_key, cur_charges = await db.get_active_bait(user_id, guild_id)
+    stacking = cur_key == bait.key and cur_charges > 0
+    new_charges = (cur_charges if stacking else 0) + bait.charges
+
+    async with db.transaction() as conn:
+        await db.update_mining_item(
+            str(user_id),
+            guild_id,
+            PEARL_ITEM,
+            -pearl_cost,
+            conn=conn,
+        )
+        await db.set_active_bait(user_id, guild_id, bait.key, new_charges, conn=conn)
+
+    verb = "Topped up" if stacking else "Crafted"
+    return BaitCraftResult(
+        True,
+        f"{verb} **{bait.name}** {bait.emoji} ({bait_mod.effect_text(bait)}) from "
+        f"**{pearl_cost}** 🦪 pearls — **{new_charges}** casts ready.",
         bait=bait,
         charges=new_charges,
     )
