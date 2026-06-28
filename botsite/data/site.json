@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T00:11:47Z",
+    "generated_at": "2026-06-28T03:14:38Z",
     "build": {
-      "commit": "e2d135ab",
-      "subject": "Open born-red session card: fishing pearl rare-material drop",
-      "committed_at": "2026-06-28T00:11:47Z"
+      "commit": "1b1170b6",
+      "subject": "feat(docs): assess Fishing, Counting, Word Chain against the completion rubric",
+      "committed_at": "2026-06-28T03:14:38Z"
     }
   },
   "counts": {
-    "commands": 458,
+    "commands": 459,
     "features": 43,
     "games": 12
   },
@@ -4757,6 +4757,23 @@
       "permissions": "user",
       "usage": "Open the interactive counting game management panel.",
       "description": "Open the interactive counting game management panel.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "counttop",
+      "aliases": [
+        "ct",
+        "counting_top"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the counting leaderboard — who has landed the most correct counts.",
+      "description": "Show the counting leaderboard — who has landed the most correct counts.",
       "use_cases": null,
       "examples": [],
       "status": "finished",

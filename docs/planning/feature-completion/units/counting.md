@@ -25,18 +25,20 @@
       (`counting_cog.py:689-731`). Wrong-count handling + optional reset-on-wrong.
 - [x] **No dead-end controls** — the admin `_CountingHubView` buttons drive real channel management.
 - [ ] **Rewards/XP wired** — ❌ counting awards **no game_xp and no coins**; the only "reward" is a
-      per-channel `leaderboard` tally (`handler.py:167-169`) — and that tally is never displayed
-      (see B). → punch-list #1 (decision) + #2.
+      per-channel `leaderboard` tally (`handler.py:167-169`). The tally is now **displayed** (✅ #2
+      fixed this run), but whether counting should grant XP/coins remains an owner call. → punch-list
+      #1 (decision).
 - [x] **Taking-turns + reset-on-wrong** options exist (`counting_cog.py:486-514,648-683`).
 
 ### B. UI & buttons — "right buttons in the right places"
 - [~] **Panel exists** — an **admin** hub (`_CountingHubView`, `!countingmenu`/`!cm`) for channel
       setup; counting is *played by posting numbers in a channel*, so a player "game panel" is less
       essential — but discovery/rules for players is thin (see F).
-- [ ] **Leaderboard is invisible** — `handler.py` increments a per-user `leaderboard` on every correct
-      count, but **no command or panel ever displays it** (`count_info` shows mode/count/flags but
-      omits the leaderboard; there is no `!counttop`). A tracked-but-unsurfaced scoreboard is the
-      headline completeness gap. → **punch-list #2.**
+- [x] **Leaderboard is now visible (✅ fixed this run, punch-list #2)** — `handler.py` increments a
+      per-user `leaderboard` on every correct count; a new **`!counttop`** command (alias `!ct`) shows
+      the full standings and **`!count_info`** now carries a top-3 field. Rendering lives in
+      `cogs/counting/leaderboard.py` over the pure `game_logic.top_counters`; previously the tally was
+      dead state (incremented but never displayed).
 - [x] **Rules affordance** — `!count_rules` (`counting_cog.py:566-595`).
 - [x] **Info affordance** — `!count_info` shows current count, mode, turns, reset flag, range/step.
 - [x] **Consistent copy/embeds** — clean embeds; transient `delete_after` admin replies keep channels
@@ -77,20 +79,20 @@
       `test_counting_handler.py`, `test_counting_parsing.py`.
 - [x] **Edge/permission tests** — `test_counting_permissions.py` (BUG-0012 guard),
       `test_counting_channel_select.py`.
-- [ ] **Leaderboard test** — n/a until the leaderboard is surfaced (#2).
+- [x] **Leaderboard test** — `tests/unit/cogs/test_counting_leaderboard.py` (ranking math + the
+      `!counttop`/`count_info` embeds), shipped with the #2 fix this run.
 - [ ] **Live walkthrough recorded** — pending. → punch-list #4.
 - [ ] **Owner ✔** — pending. → punch-list #5.
 
 ## Punch-list (clear these to certify)
 
-1. **Decision: should counting reward XP/coins?** Today it rewards nothing players can see. Either
-   wire correct counts into `game_xp` (the activity-game pattern) **or** the owner waives it (counting
-   is a collaborative streak, reward-free by design). Needs an owner call.
-2. **Surface the leaderboard (headline).** Add a `!counttop` (or a leaderboard field on `count_info` /
-   a panel button) that reads the already-tracked per-channel `leaderboard`. Offline/contained — the
-   data exists, it's purely a display path. Without this the scoreboard is dead state.
-3. **Player-facing discovery** — add a player entry point (e.g. surface `count_info`/`count_rules` as
-   the unit's player entry, or a read-only player view) so counting isn't admin-only in the registry.
+1. **Decision: should counting reward XP/coins?** Today it rewards a visible leaderboard but no
+   game_xp/coins. Either wire correct counts into `game_xp` (the activity-game pattern) **or** the
+   owner waives it (counting is a collaborative streak, reward-free by design). Needs an owner call.
+2. ✅ **DONE this run — leaderboard surfaced.** `!counttop` + a `count_info` top-3 field
+   (`cogs/counting/leaderboard.py`, tested). The previously-dead tally is now player-visible.
+3. **Player-facing discovery** — add a player entry point (e.g. surface `count_info`/`count_rules`/the
+   new `counttop` as the unit's player entry) so counting isn't admin-only in the registry.
 4. **Live walkthrough** — `/verify-bot` boot + a scripted play-through of a couple of modes (normal +
    one exotic, e.g. prime/random) showing validate/reset/turns, with screenshots, attached here.
 5. **Owner sign-off** — maintainer plays it and confirms "nothing left to add or move," resolving #1.
@@ -98,15 +100,17 @@
 ## Evidence
 
 - **Tests:** `tests/unit/cogs/test_counting_modes.py` · `test_counting_handler.py` ·
-  `test_counting_parsing.py` · `test_counting_permissions.py` · `test_counting_channel_select.py`
+  `test_counting_parsing.py` · `test_counting_permissions.py` · `test_counting_channel_select.py` ·
+  `test_counting_leaderboard.py` (new, #2 fix)
 - **Walkthrough:** pending (punch-list #4)
 - **Owner sign-off:** pending (punch-list #5)
 
 ## Verdict
 
 Counting is **deep and well-engineered** — 11 modes, math-expression parsing, DB-persisted
-restart-safe state, scope-locked concurrency, and a real security hardening (BUG-0012). It is **not
-yet `✔ certified`** because of two genuine player-facing completeness gaps: the **invisible
-leaderboard** (#2, a contained offline fix — the data is already tracked) and **admin-only discovery**
-(#3), plus the **reward decision** (#1). #2 is an easy win that a future completion-first run can
-clear; #1/#3/#5 want an owner call.
+restart-safe state, scope-locked concurrency, and a real security hardening (BUG-0012). The
+**invisible-leaderboard** gap (#2) was **closed this run** — the standings are now player-visible via
+`!counttop` + `count_info`. It is **not yet `✔ certified`**: what remains is **admin-only discovery**
+(#3) and the **reward decision** (#1), then the walkthrough (#4) + owner sign-off (#5). The assess →
+close loop the framework exists for is demonstrated here: assess surfaced the dead-state leaderboard,
+the same PR shipped the fix.

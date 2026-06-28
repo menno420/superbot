@@ -1593,6 +1593,22 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "counttop",
+    "area": "games",
+    "status": "finished",
+    "summary": "Show the counting leaderboard — who has landed the most correct counts.",
+    "description": "Show the counting leaderboard — who has landed the most correct counts.",
+    "usage": "!counttop",
+    "aliases": [
+      "ct",
+      "counting_top"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "craftbait",
     "area": "games",
     "status": "in-progress",
@@ -6987,7 +7003,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "e2d135ab",
+    "build": "1b1170b6",
     "title": "New public bot website",
     "changes": [
       {
@@ -6999,7 +7015,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "e2d135ab",
+    "build": "1b1170b6",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7011,7 +7027,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "e2d135ab",
+    "build": "1b1170b6",
     "title": "Command-alias suggestions",
     "changes": [
       {

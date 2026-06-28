@@ -139,7 +139,11 @@ also reachable via `!farm` and the Explore world hub.
   game in [`docs/planning/feature-completion/`](../planning/feature-completion/README.md): each game is
   a unit scored against [`rubric-game.md`](../planning/feature-completion/rubric-game.md) and certified
   `✔` only on evidence + owner sign-off (Q-0209). Worked pilot:
-  [Blackjack](../planning/feature-completion/units/blackjack.md) (◐ assessed).
+  [Blackjack](../planning/feature-completion/units/blackjack.md). Also `◐ assessed`:
+  [Fishing](../planning/feature-completion/units/fishing.md) (gap: trapped Rod/Bait shop views),
+  [Counting](../planning/feature-completion/units/counting.md) (leaderboard now surfaced — `!counttop`),
+  and [Word Chain](../planning/feature-completion/units/chain.md) (mis-classified as a game — needs an
+  owner re-classify decision). See the ledger for the live scoreboard.
 
 ## Current state
 

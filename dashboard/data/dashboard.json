@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T00:11:47Z",
+    "generated_at": "2026-06-28T03:14:38Z",
     "build": {
-      "commit": "e2d135ab",
-      "subject": "Open born-red session card: fishing pearl rare-material drop",
-      "committed_at": "2026-06-28T00:11:47Z"
+      "commit": "1b1170b6",
+      "subject": "feat(docs): assess Fishing, Counting, Word Chain against the completion rubric",
+      "committed_at": "2026-06-28T03:14:38Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 458,
+      "commands": 459,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2594,6 +2594,14 @@
       "file": "2026-06-28-fishing-pearl-rare-material.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Fishing: the \"pearl\" rare-material drop + a premium-bait pearl craft",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-28-feature-completion-assessments.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — Feature-completion unit assessments (Q-0209 framework)",
       "status": "in-progress",
       "run_type": "routine",
       "self_initiated": false
@@ -3058,14 +3066,6 @@
       "file": "2026-06-24-setup-jargon-sweep-guild.md",
       "date": "2026-06-24",
       "title": "Session — 2026-06-24 · setup plain-language sweep 1 (guild→server)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-setup-copy-jargon-guard.md",
-      "date": "2026-06-24",
-      "title": "Session — 2026-06-24 · setup-copy jargon guard (PR 1a)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -6101,6 +6101,20 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "counttop",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "ct",
+            "counting_top"
+          ],
+          "brief": "Show the counting leaderboard — who has landed the most correct counts.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         },
         {
           "name": "end_match",
