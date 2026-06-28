@@ -180,6 +180,12 @@ tag stops a run from missing the auto-buildable per-sector work. Provenance: #12
 #1274's surfaced fix).*
 
 ### Which *item* is offline — the offline-fit startability tag
+
+> **✅ BLESSED standing convention (owner, Q-0207, 2026-06-28, question panel).** Keep the per-item
+> tags + the checker as a standing convention, and `dispatch_menu.py --unattended` reads them directly
+> (shipped #1482). The checker may later graduate to a warn-only CI step / Stop-hook advisory
+> (Q-0105 graduate-when-proven). Not left disposable, not dropped.
+
 The unattended-fit tag above lives on the roadmap and tags one lane **per sector**. But a dispatch run
 that picks a sector then opens that sector's **live-state file**
 ([`current-state/S<n>.md`](current-state/README.md)), which lists *several* `▶ Next` startable items —

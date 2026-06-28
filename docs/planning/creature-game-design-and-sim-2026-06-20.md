@@ -1,5 +1,11 @@
 # Creature game — v1 design + playability sim (2026-06-20)
 
+> **✅ OWNER DECISIONS (Q-0187, 2026-06-28, question panel):** creatures = **original** (no Pokémon
+> names/dex — publish-safe) · PvP = **normalize to a flat level** (raw levels stay PvE/collection
+> prestige; avoids the P2W the sim found) · roster = **tiered — sim-core 12 → ~30–40 at launch →
+> growth in waves** (data-driven JSON catalog) · art = emoji/text v1 → original sprite pack later.
+> Canonical: router Q-0187.
+
 > **Status:** `plan` — design + a runnable balance simulator. **Not implementation approval.**
 > Source, binding contracts, and owner decisions win. **Subsystem:** games.
 >

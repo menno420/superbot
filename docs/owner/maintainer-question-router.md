@@ -10,6 +10,11 @@
 > **Not a roadmap:** unanswered questions are not approval. Answered questions that
 > affect code, architecture, priorities, or product behavior still need the normal
 > decision/planning/promotion path before implementation.
+>
+> **Archive:** old, fully answered + routed `Q-0NNN` blocks move to
+> [`maintainer-question-router-archive.md`](./maintainer-question-router-archive.md) on the
+> reconciliation cadence (convention **Q-0210**) — numbers are never moved/renumbered, so every
+> `Q-0XXX` reference stays grep-resolvable wherever the block lives.
 
 ## 1. What this file is for
 
@@ -6713,6 +6718,12 @@ Q-block. Related: Q-0104 (session-close doc audit), Q-0120 (verify bot output vs
 > Routed for live owner review per the owner's #1140-fire directive ("surface the open questions
 > … into the question router (DISCUSS lane)"). The spine those answers do NOT gate is already
 > planned ([explore-hub plan](../planning/explore-hub-federated-world-plan-2026-06-19.md), Q-0172).
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — Routed → explore-hub plan.** Q1 (what the hub *is*):
+> **flat Discord `HubView` router first; the map/biome/location layer stays a deferred layer** (the plan's
+> existing sequencing — build the flat router, treat the map as later). Q2–Q4 (survival-overlay attach ·
+> subsystem docking · cross-game-identity richness) were **not** put to the panel — they gate only the
+> deferred layers and ride on the plan's defaults until that layer is greenlit.
 
 **Context:** the owner wants one world where each subsystem (mining/fishing/pets/survival) is both
 part of a shared world *and* its own complete game. The progression model (three XP tracks: message
@@ -6777,6 +6788,12 @@ gate), Q-0121 (Hermes triage write scope), Q-0082 (spend), the website-split red
 > **PROPOSED — surfaced by the band-#1140 reconciliation pass** from
 > [`ideas/honcho-memory-evaluation-2026-06-16.md`](../ideas/honcho-memory-evaluation-2026-06-16.md).
 > Routed for live owner review per the #1140-fire directive.
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — Routed → honcho-memory idea doc.** The owner chose
+> **user-chosen global-vs-per-guild scope** (each user picks whether memory follows them across servers
+> or stays this-server-only) — *not* per-guild-only-by-default, *not* global-by-default. Memory still
+> stays light / opt-in / bounded under the Q-0082 spend ceiling; this also fixes the per-user config
+> surface the hybrid-gear auto-equip toggle (Q-0182) shares.
 
 **Context:** the memory idea currently proposes **user-chosen scope** — each user picks **global**
 (memory follows them across servers) or **per-guild** (this server only), as the *user's* choice,
@@ -6798,6 +6815,11 @@ per-user config surface**. **Home:** the honcho-memory idea doc + this Q-block. 
 > ("…and the public bot-site's one-line pitch"). The website split is built/in-flight
 > ([website-two-site-split plan](../planning/website-two-site-split-plan-2026-06-19.md), Q-0178/Q-0179);
 > the marketing pages need a headline.
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — Routed → website-split plan "Layout & UX guidance".**
+> The public bot-site one-line pitch is **"Everything your server needs — free, forever."** (leads with
+> the free-for-everyone North Star, Q-0190, + all-in-one breadth). Picked over the "actually free" wedge
+> and the feature-list variants.
 
 **The question:** what is the **one-line pitch** for the public bot site — the single sentence a
 visitor reads first that says what SuperBot *is*? The repo description is *"The best bot ever made"*;
@@ -6817,6 +6839,13 @@ audience should drive the wording — agents should **not** invent the public-fa
 > decisions for when a future session executes. The mapping already settled the gated/rejected
 > items (marketplace = its own roadmap gate; premium currency = rejected Q-0039; music = Q-0041
 > arch-review pack).
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — Routed → the feature-mapping plan.** Build order (Q1):
+> **Lane A (Wild Encounters) first** (the agent rec — highest engagement leverage, ungated, feeds B/C/D).
+> Q2 (spawn defaults) + Q3 (guardrails) were not separately polled — they ride the plan's documented
+> defaults (config-driven threshold/debounce, off by default; earned-only / no-buyable-power per Q-0039;
+> per-channel opt-in + rate-limit + no auto-catch; stranger-grade claims per Q-0080), refined when Lane A's
+> runtime session builds.
 
 **Context:** most Pokétwo mechanics already have lanes here (catching = fishing/mining/pets;
 trading = the economy-marketplace roadmap; "one world" = the federated Explore hub). The mapping
@@ -6850,6 +6879,14 @@ bounded menus), Q-0080 (stranger-grade), Q-0071 (atomic workflow).
 > (*"PvP battles with the Pokémon would be great"*). A v1 ruleset + a playability simulator are
 > built ([creature-game-design-and-sim](../planning/creature-game-design-and-sim-2026-06-20.md),
 > `tools/game_sim/creature_battle_sim.py`). These are the design calls before a build session.
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — Routed → the design+sim plan.** (a) Creature IP =
+> **original creatures** (no Pokémon names/dex — publish-safe, the agent's strong rec). (b) PvP =
+> **normalize to a flat level** (types/team-building/ordering decide; raw levels stay PvE/collection
+> prestige — avoids the Q-0039 P2W trap the sim found). (d) Roster = **tiered: sim-core 12 → v1 launch
+> ~30–40 → growth in waves**, data-driven JSON catalog, text/emoji-first art. (c) Art bar was not
+> separately polled — it rides the agent default (emoji/text v1 → an original sprite pack later, the gear
+> paper-doll path).
 
 **(a) Creature IP — original vs Pokémon names.** **Agent answer + strong recommendation: make our
 own.** Game *mechanics* (catch/types/turn-based battle/stats) are **not** copyrightable — we can
@@ -7121,6 +7158,13 @@ pipe / confirm `git branch --show-current` after a checkout) to `.session-journa
 CLAUDE.md content is propose-first (Q-0035) and the reflex is already operative via the session enders;
 the owner can promote it if he wants it binding rather than guidebook-level.
 
+> **ANSWERED 2026-06-28 (owner, question panel) — PROMOTE.** The owner chose to elevate the
+> **friction → guard** reflex to a binding one-line principle in the `.claude/CLAUDE.md` Working
+> agreement (over keeping it journal/README-level). Applied this session under the Q-0106 live-owner
+> exception (the owner directed it via the panel; behaviour is unchanged — the reflex was already
+> operative — this raises its authority/visibility). **Home:** `.claude/CLAUDE.md` Working agreement +
+> this Q-block.
+
 **Home:** this Q-block (canonical) + `scripts/check_branch_freshness.py` header (the hook) +
 `.sessions/README.md` Q7 + `.session-journal.md` END step 4b & Rules (the operative reflex).
 
@@ -7220,6 +7264,13 @@ is now unreferenced and harmless). PR for this change: branch `claude/jolly-saga
 > later session."* The [idea](../ideas/mining-grid-encounters-2026-06-22.md) itself says **"route to a
 > router Q before building, don't decide unprompted"** — so this poses the decisions, with defaults,
 > rather than building. Q-0172 "build freely" yields here to the owner's explicit design reservation.
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — Routed → mining-hub-redesign plan + the grid-encounters
+> idea.** **Build the encounters, loot/flavour-only first** (Q2 = loot/flavour v1; combat is a fast-follow
+> that reuses the creature/deathmatch engine, never a third bespoke combat model). Q1 (depth/chance/
+> cooldown), Q3 (live roll — not per-cell-deterministic) and Q4 (extra buttons on the navigator) were not
+> separately polled — they ride the agent recommendations in this block, sim-tunable when the runtime
+> session builds it.
 
 **Context:** layer **sparse, depth-gated random encounters** onto the shipped grid navigator — a
 low-probability event on a `move` / `Mine here` action once deep enough, resolved through the audited
@@ -7293,6 +7344,11 @@ write lift — the parent rule), Q-0123 (auto-merge on green).
 > **PROPOSED — surfaced by a real collision this session** (`.sessions/2026-06-24-btd6-per-round-economy-commands.md`).
 > This proposes a rule addition, so it routes here rather than self-editing CLAUDE.md / `helper-policy.md`
 > (the binding-rule channel). The owner is the live reviewer when present; otherwise it waits.
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — Routed → `docs/helper-policy.md` (+ CLAUDE.md helper
+> rules mirror).** **Adopt** the one-line dedup guard: before defining a new `services/`-or-`utils/`
+> function, grep `def <exact_name>` in the target module + its sibling modules (plus the 1–2 nearest
+> concept synonyms). A checklist line, not a CI gate (Q-0105 disposable).
 
 **Context:** building the per-round economy commands (PR #1404), I added a new `round_composition` to
 `btd6_data_service` **without noticing one already existed** (the range/AI variant). Python took my later
@@ -7487,6 +7543,12 @@ Related: **Q-0202**/**Q-0203**/**Q-0204** (the per-step spine decisions), **Q-A*
 
 > **PROPOSED — surfaced by a dispatch run (2026-06-25).** Captured here, not applied: this is a
 > *workflow* change, which CLAUDE.md says an agent **proposes** (router DISCUSS), never self-applies.
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — option 2.** Make the claim-GC sweep non-skippable via a
+> **warn-only `code-quality` step** (`check_stale_claims.py`, advisory — never blocks merges, recursion-free).
+> Cheapest safe surfacing; an agent/human still prunes on sight (Q-0166). Chosen over the auto-prune
+> workflow (heaviest, #778 recursion class) and the Stop-hook (owner-config, Q-0106). Implemented this
+> session.
 
 **The observation.** This dispatch run found a **stale claim file** left on `main`:
 `docs/owner/claims/claude-jolly-johnson-rqf8wt.md`, for a branch that merged via **#1407** (band-#1380,
@@ -7529,6 +7591,12 @@ default, optionally paired with **option 3**. Option 1 only if the owner wants i
 > have free rein on (Q-0105) and shipped this run; **this Q-block is only the rule-level question** —
 > should the convention be codified/blessed, or left as a disposable guard? It routes here rather than
 > self-editing CLAUDE.md (the binding-rule channel). Owner is the live reviewer when present; else it waits.
+>
+> **ANSWERED 2026-06-28 (owner, question panel) — options (a)+(c).** **Bless** the per-item offline-fit
+> startability tag as a standing convention **and fold it into `dispatch_menu.py`** — the fold already
+> shipped in #1482 (`dispatch_menu --unattended` surfaces the per-sector `[offline]` pick). So this is now
+> a blessed standing convention (homed in `repo-sector-map.md`); the checker may later graduate to a
+> warn-only CI step / Stop-hook advisory (Q-0105 graduate-when-proven). Not left disposable, not dropped.
 
 **Context:** two consecutive empty-fire dispatch runs' Q-0102 reviews (the 2026-06-25 and 2026-06-26
 session logs) flagged the same friction: only **S2**'s per-sector live-state file tagged its `▶ Next`
@@ -7617,3 +7685,57 @@ Wired the soft completion-first gate into [`docs/ideas/README.md`](../ideas/READ
 default proves itself, a one-line binding rule in `.claude/CLAUDE.md` (proposed via a DISCUSS Q, the
 graduate-when-proven pattern — Q-0105) would harden it; not done day-one. Related: **Q-0015** (backlog
 grooming / secondary task), **Q-0089** (idea generation), **production-readiness** maps (the risk axis).
+
+### Q-0210 — DECIDED: where answers live — router stays the canonical append-only ledger; conclusions route to homes; old blocks archive (never re-home) (2026-06-28)
+
+> **ANSWERED (owner, in-chat, 2026-06-28).** Closing the open-question sweep, the owner asked whether
+> some answers should get "a more durable home in the repo," noting the worry that *"a lot of things are
+> referred to by question number, so [moving them] might confuse future agents,"* and asked the agent to
+> find the best option — leave everything in the router, or slowly start re-routing some answers
+> elsewhere. The agent investigated and the decision below records the answer + its evidence.
+
+**Area:** Workflow / docs system · **Type:** Workflow convention · **Status:** Answered — Routed →
+`docs/owner/ai-project-workflow.md` §9 + this Q-block.
+
+**The evidence (measured this session).**
+- The router is **~491 KB / 7,600+ lines / 215 Q-blocks** and now exceeds the file-read size limit — a
+  real, recurring friction (this very session had to read it in slices).
+- **9,084 `Q-0XXX` references span 1,307 files.** The Q-number is the repo's stable cross-reference key;
+  CLAUDE.md, plans, ideas, session logs, and reconciliation passes all cite decisions *by number*.
+- **Exactly ONE anchor-style link exists repo-wide** (`maintainer-question-router.md#q-0017`). Every
+  other reference is **plain `Q-0XXX` text** — so a Q-block resolves by `grep`, independent of which file
+  it physically lives in.
+
+**The decision (the "best option").** A three-part convention, not the binary the question posed:
+
+1. **The router stays the single canonical, append-only Q-block ledger.** Every decision keeps its
+   `Q-0NNN` block here; numbers are **never moved or renumbered** (router §9 / Q-0060). This is what keeps
+   the 9,084 references resolvable — the owner's worry is correct, and it is exactly why we do **not**
+   physically re-home answers to scattered new docs.
+2. **Durable conclusions keep routing to their real homes** via the existing **`Home:` line** (router §7).
+   This already happens — the plan / folio / `CLAUDE.md` is where an agent *reads* the decision; the
+   Q-block is the *provenance*. So "give answers a more durable home" is already satisfied **by linking,
+   not by moving**.
+3. **Size is managed by archiving, not re-homing.** When the router grows unwieldy, **old, fully
+   answered + routed Q-blocks** move to a new **`docs/owner/maintainer-question-router-archive.md`**
+   (newest-kept-here, oldest-archived), with the main file keeping a pointer — exactly mirroring the
+   proven **`current-state.md` → `current-state-archive.md`** split. Because references are plain text,
+   the archived `Q-0XXX` stays grep-resolvable; the lone `#q-0017` anchor link is the only thing to fix
+   if/when Q-0017 is archived. **Archiving is a reconciliation-pass (Q-0107) responsibility**, the same
+   pass that already trims `current-state` — so the bulk move happens under an established, careful
+   cadence rather than ad hoc.
+
+**Why not the two options as posed.** *"Leave it all in the router"* ignores the real size friction.
+*"Slowly re-route answers elsewhere"* (move the canonical record out) would orphan the Q-number anchor
+1,307 files depend on — the owner's exact concern. The synthesis keeps provenance stable **and** gives
+conclusions durable homes **and** controls size.
+
+**Applied this session (docs-only):** recorded the convention in `ai-project-workflow.md` §9 (the
+router-convention home) + added the archive step to the reconciliation routine. The actual first bulk
+archive is left to the next reconciliation pass (it is not due — band marker #1500, next at #1530), so
+this session changes the *rule*, not 200 blocks of content.
+
+**Home:** this Q-block (canonical) + `docs/owner/ai-project-workflow.md` §9 (the convention) +
+`docs/operations/autonomous-routines.md` (the reconciliation archive step). Related: **Q-0060**
+(append-only / accept-and-reconcile), **Q-0107** (reconciliation pass owns ledger trimming), **Q-0104**
+(route durable conclusions), **Q-0166** (fix drift on sight), the `current-state-archive.md` precedent.

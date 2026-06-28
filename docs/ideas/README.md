@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`router-q-index-generator-2026-06-28.md`](./router-q-index-generator-2026-06-28.md) —
+  **session idea (2026-06-28, Q-0089, from documenting the open-question sweep + deciding Q-0210):** a
+  stdlib `build_q_index.py` → a one-line-per-Q index (number · title · status · Home · file) over the
+  router + its archive, so an agent resolves a `Q-0NNN` reference (~9k repo-wide) by grepping ~215 lines
+  instead of loading the 490 KB router. The *findability* half of Q-0210's *size* fix; regenerate in the
+  reconciliation pass. Disposable (Q-0105). Subsystem: none (S4/S3 tooling).
 - [`completion-ledger-registry-parity-guard-2026-06-27.md`](./completion-ledger-registry-parity-guard-2026-06-27.md) —
   **session idea (2026-06-27, Q-0089, from building the feature-completion framework #1513):** a stdlib
   `check_completion_ledger_parity.py` asserting every user-facing game/server-function registry key has a

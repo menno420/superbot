@@ -87,6 +87,14 @@ The short version that governs how you work:
   readout, not a block). The maintainer thinks associatively on purpose; classify, route, **then
   build freely**. Pipeline + idea states: `docs/owner/ai-project-workflow.md`; working style:
   `docs/owner/maintainer-working-profile.md`.
+- **Friction → guard (owner directive Q-0194, 2026-06-22; promoted to binding Q-0194-rider,
+  2026-06-28).** Anytime something interrupts a session's workflow — a wrong-branch slip, a stale
+  file, a checker that lied, a footgun — **convert it into the cheapest *enforcing* prevention before
+  the session ends**, in order: **checker / CI / test → hook → journal Rule** ("enforce, don't
+  exhort", Q-0132) — don't merely note it. The point is that the system catches its own mistakes next
+  time instead of relying on the maintainer to spot them. Ownership split: docs / journal / test /
+  checker guards are **free to ship now**; a hook / `.claude/settings.json` / binding-`CLAUDE.md` rule
+  is **owner-gated** (build if owner-directed in-session, else propose a router DISCUSS Q).
 
 ## Read first — agent orientation
 
@@ -424,6 +432,7 @@ Any new import from `views/` in a `services/` file is an immediate ERROR.
 - Before adding a utility function anywhere, read `docs/helper-policy.md`.
 - **Never** define a utility function in `views/` or `cogs/` that other layers need. Move it to `utils/` or `services/`.
 - If a function is needed by both `services/` and `views/`, it belongs in `utils/` — not in either layer.
+- **Exact-name guard (Q-0200):** before defining a new `services/`-or-`utils/` function, `grep "def <exact_name>"` in the target module + its siblings (plus the 1–2 nearest concept synonyms) — a later same-name `def` silently shadows the earlier one (the `round_composition` collision, caught only at CI). Checklist line, not a CI gate; full rationale in `docs/helper-policy.md` §2.
 
 ### Pre-commit verification
 

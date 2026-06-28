@@ -100,6 +100,8 @@ this **replaces** the old linear Descend/Ascend.
    on top of the grid (the owner's shape — "after a certain depth you can get random
    encounters, but not too many"). Captured in
    [`../ideas/mining-grid-encounters-2026-06-22.md`](../ideas/mining-grid-encounters-2026-06-22.md).
+   **✅ Design decided (owner, Q-0198, 2026-06-28):** build **loot/flavour-only first**; combat is a
+   fast-follow reusing the creature/deathmatch engine. The runtime session is now startable.
 5. **Later — open-world Explore**: fishing / quests / roam — own design pass (the main-hub
    🗺️ Explore now forwards to the federated world hub).
 

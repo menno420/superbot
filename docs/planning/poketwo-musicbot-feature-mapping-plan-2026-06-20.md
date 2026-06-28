@@ -1,5 +1,9 @@
 # Pokétwo + MusicBot research report → feature-mapping plan (2026-06-20)
 
+> **✅ OWNER DECISION (Q-0186, 2026-06-28, question panel):** build order = **Lane A (Wild Encounters)
+> first** (then B Collection / C Quests / D Shiny). Spawn defaults + guardrails ride this doc's
+> documented defaults until Lane A's runtime session refines them. Canonical: router Q-0186.
+
 > **Status:** `plan` — routing/mapping plan. **Not implementation approval.** Source code,
 > the binding contracts, owner decisions (router `Q-####`), and `docs/current-state.md` win
 > over this doc. **Subsystem:** games, ai, media.

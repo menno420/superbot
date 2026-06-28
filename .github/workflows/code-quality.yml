@@ -80,6 +80,16 @@ jobs:
       - name: Run doc hygiene (check_docs)
         run: python3 scripts/check_docs.py --strict
 
+      # Stale-claim surfacing (owner decision Q-0206, option 2). WARN-ONLY:
+      # surfaces any orphan claim file in docs/owner/claims/ (a session that
+      # forgot to delete its own claim at close) so it doesn't linger across
+      # reconciliation passes. continue-on-error => never blocks a merge; the
+      # reconciliation pass (Q-0195) is still the actuator that --prunes.
+      # UNVERIFIED (Q-0105) — delete this step if it proves noisy.
+      - name: Surface stale claim files (advisory)
+        continue-on-error: true
+        run: python3 scripts/check_stale_claims.py --strict
+
       # Born-red session merge-gate (owner directive Q-0133). On a PR, if this
       # session ADDED a `.sessions/` card, the merge is HELD until that card's
       # `> **Status:**` badge is a ready token (`complete`). The card is created

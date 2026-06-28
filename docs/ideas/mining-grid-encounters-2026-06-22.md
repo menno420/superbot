@@ -1,5 +1,10 @@
 # Mining grid encounters — depth-gated sparse events (2026-06-22)
 
+> **✅ OWNER DECISION (Q-0198, 2026-06-28, question panel):** **build the encounters, loot/flavour-only
+> first** — combat is a fast-follow that reuses the creature/deathmatch engine (never a third bespoke
+> combat model). Depth/chance/cooldown, a live roll (not per-cell-deterministic), and navigator-button
+> resolution ride this doc's recommended defaults, sim-tunable at build time. Canonical: router Q-0198.
+
 > **Status:** `ideas`. **Not a plan, not approval.** Capture doc. Source + binding contracts +
 > `docs/current-state.md` win. **Subsystem:** games, mining.
 >
