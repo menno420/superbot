@@ -723,14 +723,14 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
     async def rps_help(self, ctx):
         """Displays help information for RPS tournament commands."""
         help_text = (
-            "**Rock Paper Scissors Tournament Commands:**\n"
-            "`!rps_register [@role]` - Starts registration. Optionally mention a role to notify.\n"
-            "`!rps_start [mode] [best_of]` - Start the tournament (Admin only). Modes: classic, lizard_spock, chess, elemental.\n"
-            "`!rps_bot [mode] [best_of] [@members/@roles]` - Play against the bot.\n"
-            "`!rps_leaderboard` - Show the current leaderboard.\n"
-            "`!rps_settings [setting] [value]` - Update bot settings (Admin only).\n"
-            "`!rps_help` - Show this help message.\n"
-            "During matches, simply type your move in the match channel without any prefix.\n"
+            "**Rock Paper Scissors Commands:**\n"
+            "`!rps` - Open the RPS panel (quick play, bet match, challenge a player, tournament, rules).\n"
+            "`!rpsregister [@role]` - Start tournament registration. Optionally mention a role to notify.\n"
+            "`!rpsstart [mode] [best_of]` - Start the tournament (Admin only). Modes: classic, lizard_spock, chess, elemental.\n"
+            "`!rpsbot [mode] [best_of] [@members/@roles]` - Play against the bot.\n"
+            "`!rpssettings [setting] [value]` - Update RPS settings (Admin only).\n"
+            "`!rpshelp` - Show this help message.\n"
+            "During tournament/bot matches, type your move in the match channel without any prefix.\n"
             "Valid moves depend on the game mode selected."
         )
         await ctx.send(help_text)
