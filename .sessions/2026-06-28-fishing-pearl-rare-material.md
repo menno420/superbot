@@ -46,8 +46,9 @@ The **pearl** 🦪 — a fish-loot rare-material drop with a real, repeatable si
   (with your pearl count) + a `_PearlCraftSelect`, and `!craftpearl` (aliases `pearlcraft`).
 - **Numbers** sim-pinned in [`../planning/fishing-pearl-numbers-2026-06-28.md`](../planning/fishing-pearl-numbers-2026-06-28.md);
   no DB migration (pearls reuse the generic `mining_inventory` store).
-- **Tests** — +24 (rewards drop math/rate/monotonicity; commit-catch grant ordering byte-identical
-  when no pearl; `craft_pearl_bait` debit/stack/reject; bait recipe helpers + disjointness).
+- **Tests** — +29 (rewards drop math/rate/monotonicity; commit-catch grant ordering byte-identical
+  when no pearl; `craft_pearl_bait` debit/stack/reject; bait recipe helpers + disjointness; and a
+  new `test_fishing_bait_shop.py` pinning the embed's pearl field/count + the three wired selects).
 - Regenerated the dashboard/site artifacts (`dashboard/data/dashboard.json`, `botsite/data/site.json`,
   `botsite/site/data.js`) — the new command bumped the committed counts (Q-0167 freshness guard).
 
