@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-8tarop` · scope: feature-completion assessments for server-functions (Moderation, Economy, Roles, XP & levels — `▢ → ◐`) · area: docs/planning/feature-completion/units/ + ledger/scoreboard · 2026-06-28

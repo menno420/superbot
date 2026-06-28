@@ -23,6 +23,36 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0029 — XP level-up role grants bypass the audited role seam (no `audit.action_recorded`, no shared hierarchy preflight) — FIXED (root)
+
+- **Symptom (found 2026-06-28 by a dispatch run during the XP feature-completion assessment — code
+  inspection, not a live report, but a real audit gap):** when a member levels up and earns an
+  XP-threshold role, the grant/removal was performed by a **direct `member.add_roles()` /
+  `member.remove_roles()`** call in `disbot/cogs/xp/listener.py::_apply_xp_threshold_roles` — so the
+  role change fired **no `audit.action_recorded` event** and did **not** appear on the audit/server-log
+  surface, unlike every *other* role mutation in the bot. It also ran its own bare
+  `discord.Forbidden`/`HTTPException` catch instead of the shared manage-roles + hierarchy preflight.
+- **Root cause:** the XP listener was written against the raw discord.py member API rather than the
+  canonical `services.role_automation.apply` seam. The seam is what Welcome's entry-role grant, the
+  role cog, and the time-threshold automation all use (it emits `audit.action_recorded` per change via
+  `_apply_single` and preempts predictable blockers once per batch). The `test_no_direct_role_mutations`
+  invariant deliberately scopes only the role cog/views and its own docstring *assumes* "the automation
+  apply path in `services.role_automation` is already audited" — so nothing caught the XP listener doing
+  its own thing. Classic "added the feature against the low-level API, skipped the audited seam" gap.
+- **Fix (root, this PR):** `_apply_xp_threshold_roles` now builds `role_automation.Assignment` rows
+  (one promote-assignment per newly-earned role in stacking mode; one promote+demote assignment in
+  single-role mode) and calls `role_automation.apply(guild, assignments, actor_type="system")`. Every
+  XP role change now fires `audit.action_recorded` (subsystem `role_automation`, `assign_role` /
+  `remove_role`) and reuses the shared preflight. Behaviour is otherwise identical (same roles added /
+  removed for stacking vs. single-role mode; exempt members still get nothing).
+- **Stays-fixed guard:** `tests/unit/invariants/test_no_direct_xp_role_mutations.py` — an AST invariant
+  that `cogs/xp/listener.py` contains **no** direct `member.add_roles` / `remove_roles` call (fails
+  against the pre-fix direct-call behaviour). Plus the updated behaviour tests in
+  `tests/unit/cogs/test_xp_listener_roles.py` (stacking + single-role now assert the audited
+  `role_automation.apply` is awaited with the right `Assignment`s and `actor_type="system"`; the exempt
+  case asserts the seam is **not** hit).
+- **Status:** FIXED (root) 2026-06-28 (dispatch run). Live on the next auto-deploy; no data step needed.
+
 ## BUG-0028 — panel-initiated PvP deathmatch crashes on resolve (`ctx=None` → `self.ctx.guild.id` AttributeError) — FIXED (root)
 
 - **Symptom (found 2026-06-28 by a dispatch run via code inspection during the Deathmatch

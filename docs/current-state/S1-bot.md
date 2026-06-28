@@ -80,18 +80,22 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
-- `[offline]` **Feature-completion assessments — IN PROGRESS (11/36 assessed; ALL 10 games done).** The
-  completion-first arc (Q-0209). #1519 added Fishing/Counting/Word Chain to the #1513 Blackjack pilot; the
-  born-red-gate-fix dispatch run (2026-06-28, PR #1524) added **RPS, Deathmatch, Chicken farm**; **#1530
-  added Casino (poker)**; **the 2026-06-28 dispatch run (PR #1534) assessed the last two games — Mining
-  (✔-ready candidate: 13 wired systems, 41 test files, no trapped views) + Creatures (hub-less v1 — no
-  game panel / dex browser is the headline gap) — AND the first server-fn, Welcome** (fail-safe + audited;
-  gaps = no bespoke command panel + best-in-class options). **▶ Next startable, offline:** (1) **assess
-  more server-fns** — every game is now ◐; the unassessed set is all server-functions (Moderation,
-  Economy, Roles, Settings, XP, Karma, Leaderboards, Counters, Tickets, Spotlight, Channels, Setup
-  wizard, AI, Logging, Diagnostics, Help, Admin, …), one cert each under
+- `[offline]` **Feature-completion assessments — IN PROGRESS (15/36 assessed; ALL 10 games done + 5
+  server-fns).** The completion-first arc (Q-0209). #1519 added Fishing/Counting/Word Chain to the #1513
+  Blackjack pilot; PR #1524 added **RPS, Deathmatch, Chicken farm**; **#1530 added Casino (poker)**; **PR
+  #1534 assessed the last two games — Mining (✔-ready candidate) + Creatures (hub-less v1) — AND the
+  first server-fn, Welcome**; **the 2026-06-28 dispatch run (PR #1536) assessed four more server-fns —
+  Moderation · Economy · Roles · XP & levels — and fixed a real audit gap surfaced during the XP
+  assessment at the root (BUG-0029: XP level-up role grants now route through the audited
+  `role_automation.apply` seam, +`test_no_direct_xp_role_mutations` invariant).** All four server-fns are
+  structurally strong (audited mutation seams, panels, Help, Setup); the open gaps are best-in-class
+  breadth (turn-key: Economy's missing public `give`/`pay` + admin balance panel; Moderation
+  tempban/case-system; Roles gated web builder). **▶ Next startable, offline:** **assess the remaining
+  server-fns** — the unassessed set is now Settings · Karma · Leaderboards · Counters · Tickets ·
+  Spotlight · Channels · Setup wizard · AI · Logging · Diagnostics · Help · Admin · Inventory · Treasury ·
+  Cleanup · Automod · Image-moderation · Security · Proof-channel · Utility, one cert each under
   [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from
-  `rubric-server-function.md`.
+  `rubric-server-function.md` (Economy's public `give`/`pay` is the lowest-effort *deepening* win).
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
   `architecture_rules/canonical_helpers.yaml`, +7 tests) flags a game-view terminal handler that
