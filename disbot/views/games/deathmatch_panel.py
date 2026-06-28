@@ -164,6 +164,26 @@ def build_deathmatch_challenge_picker_embed() -> discord.Embed:
     )
 
 
+def build_deathmatch_challenge_embed(
+    challenger: discord.Member | discord.User,
+    opponent: discord.Member | discord.User,
+) -> discord.Embed:
+    """The Accept/Decline challenge prompt — one builder for every entry
+    point (panel opponent-select + the PvP-result rematch), so the copy
+    can't drift between them.
+    """
+    embed = discord.Embed(
+        title="⚔️ Deathmatch Challenge",
+        description=(
+            f"{challenger.mention} has challenged {opponent.mention} to a "
+            "duel!\n\nPress **Accept** or **Decline** below."
+        ),
+        color=discord.Color.red(),
+    )
+    embed.set_footer(text="You have 30 seconds to respond.")
+    return embed
+
+
 # ---------------------------------------------------------------------------
 # Bot-duel view
 # ---------------------------------------------------------------------------
@@ -368,6 +388,103 @@ class _BotDuelResultView(HubView):
         view.message = interaction.message
 
 
+class _PvpDuelResultView(HubView):
+    """Terminal screen after a human-vs-human duel / resolved challenge —
+    never a dead-end.
+
+    A ``HubView`` with ``SUBSYSTEM = "deathmatch"`` so
+    :func:`views.navigation.attach_standard_nav` auto-attaches **📚 Help** and
+    **↩ Games** (row 4) — neither fighter is ever stranded on a dead embed
+    (owner directive 2026-06-23, previously applied only to the bot path via
+    :class:`_BotDuelResultView`). The **🔁 Rematch** button re-challenges: the
+    clicker challenges the *other* fighter, who re-confirms via the normal
+    Accept/Decline prompt (consent preserved). Used by the PvP duel-finish /
+    timeout / decline / expire paths in ``cogs.deathmatch_cog``.
+
+    Both duelists may interact (``interaction_check`` allows either id) — a
+    duel has two owners, unlike the single-player bot result view.
+    """
+
+    SUBSYSTEM = "deathmatch"
+
+    def __init__(
+        self,
+        cog: Deathmatch,
+        player1: discord.Member | discord.User,
+        player2: discord.Member | discord.User,
+    ) -> None:
+        # ``player1`` is the nominal author (BaseView needs one); the override
+        # below widens access to both fighters.
+        super().__init__(player1)
+        self.cog = cog
+        self.player1 = player1
+        self.player2 = player2
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id in (self.player1.id, self.player2.id):
+            return True
+        await interaction.response.send_message(
+            "Only the two duelists can use this.",
+            ephemeral=True,
+        )
+        return False
+
+    @discord.ui.button(
+        label="🔁 Rematch",
+        style=discord.ButtonStyle.success,
+        custom_id="deathmatch_pvp_result:rematch",
+        row=0,
+    )
+    async def btn_rematch(
+        self,
+        interaction: discord.Interaction,
+        _button: discord.ui.Button,
+    ) -> None:
+        # Lazy imports — the rematch reuses the cog's ``_ChallengeView`` and the
+        # ``actions`` duel-key/guard helpers; keeping them function-body keeps
+        # the panel free of a module-level ``views → cogs`` edge.
+        from cogs.deathmatch.actions import has_existing_duel, make_duel_key
+        from cogs.deathmatch_cog import _ChallengeView
+
+        # The clicker becomes the new challenger; the other fighter is the
+        # opponent (re-confirms via Accept/Decline).
+        if interaction.user.id == self.player1.id:
+            challenger, opponent = self.player1, self.player2
+        else:
+            challenger, opponent = self.player2, self.player1
+        if not isinstance(challenger, discord.Member) or not isinstance(
+            opponent,
+            discord.Member,
+        ):
+            await interaction.response.send_message(
+                "A rematch needs both players to be server members.",
+                ephemeral=True,
+            )
+            return
+        cog = self.cog
+        conflict = has_existing_duel(cog, challenger.id, opponent.id)
+        if conflict:
+            await interaction.response.send_message(conflict, ephemeral=True)
+            return
+        duel_key = make_duel_key(challenger.id, opponent.id)
+        # ``_ChallengeView`` only reads ``ctx`` to forward into ``_DuelView``,
+        # which now takes its ``guild_id`` from the accept interaction — so the
+        # panel/rematch path safely passes ctx=None (no longer crashes on
+        # resolve; see the deathmatch_cog guild_id thread).
+        challenge_view = _ChallengeView(
+            cog,
+            challenger,
+            opponent,
+            duel_key,
+            None,  # type: ignore[arg-type]
+        )
+        await interaction.response.edit_message(
+            embed=build_deathmatch_challenge_embed(challenger, opponent),
+            view=challenge_view,
+        )
+        challenge_view.message = interaction.message
+
+
 # ---------------------------------------------------------------------------
 # Challenge-picker sub-view
 # ---------------------------------------------------------------------------
@@ -443,16 +560,10 @@ class _DeathmatchOpponentSelect(discord.ui.UserSelect):
             duel_key,
             None,  # type: ignore[arg-type]
         )
-        embed = discord.Embed(
-            title="⚔️ Deathmatch Challenge",
-            description=(
-                f"{challenger.mention} has challenged {opponent.mention} "
-                "to a duel!\n\nPress **Accept** or **Decline** below."
-            ),
-            color=discord.Color.red(),
+        await interaction.response.edit_message(
+            embed=build_deathmatch_challenge_embed(challenger, opponent),
+            view=challenge_view,
         )
-        embed.set_footer(text="You have 30 seconds to respond.")
-        await interaction.response.edit_message(embed=embed, view=challenge_view)
         challenge_view.message = interaction.message
 
 
@@ -565,6 +676,7 @@ class DeathmatchPanelView(HubView):
 
 __all__ = [
     "DeathmatchPanelView",
+    "build_deathmatch_challenge_embed",
     "build_deathmatch_overview_embed",
     "build_deathmatch_rules_embed",
 ]

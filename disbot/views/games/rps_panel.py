@@ -179,6 +179,16 @@ def build_rps_rules_embed() -> discord.Embed:
         ),
         inline=False,
     )
+    embed.add_field(
+        name="Timeouts & forfeits",
+        value=(
+            "You have a short window to lock in your move. Run out of "
+            "time and you **forfeit** the round — in a stakes match the "
+            "pot goes to your opponent. If **neither** player picks, it's "
+            "a draw and stakes are refunded."
+        ),
+        inline=False,
+    )
     return embed
 
 

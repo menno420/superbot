@@ -27,7 +27,8 @@
 - [x] **Loop runs start→finish** — solo `_play`→resolve→result view; PvP escrow-at-accept→both-pick→
       atomic resolve; tournament seed→match channels→resolve+advance→idempotent payout.
 - [x] **No dead-end/placeholder controls** — solo + bet + challenge-select + tournament sub-views all
-      swap to terminal/result states; one PvP-play result is a channel embed (see B / punch-list #2).
+      swap to terminal/result states; the PvP-play result now carries ◀ Back to RPS too (fixed this PR,
+      punch-list #2).
 - [x] **Rewards wired** — solo win via `economy_service`; PvP/tournament via `game_wager_workflow`
       (`pvp_challenge.py:77`, `pvp_play.py:177`, `rps_tournament_cog.py:673`); stats via `rps_players`.
 
@@ -37,11 +38,11 @@
 - [x] **Every action has a control** — quick play / bet / challenge / tournament on the panel; presets
       on the bet sub-view; move picker ephemeral. PvP is reachable from the panel (not command-only).
 - [x] **Rules affordance** — 📖 Rules on the panel (`build_rps_rules_embed`, `rps_panel.py:157`).
-      *Minor:* the rules embed omits timeout/forfeit semantics (punch-list #3).
-- [ ] **Return navigation everywhere** — ✅ for panel-spawned sub-views (solo result, bet preset,
-      challenge select, tournament sub-view all carry **◀ Back to RPS**). ❌ the **PvP play** result is
-      posted as a bare channel embed with no view (`pvp_play.py:197`), so a panel-spawned PvP challenge
-      has no return affordance after it resolves. → punch-list #2.
+      ✅ **fixed (punch-list #3, this PR):** the rules embed now carries a "Timeouts & forfeits" field.
+- [x] **Return navigation everywhere** — ✅ for panel-spawned sub-views (solo result, bet preset,
+      challenge select, tournament sub-view all carry **◀ Back to RPS**). ✅ **fixed (punch-list #2,
+      this PR):** the **PvP play** result is now posted with `_RpsPvpResultView` carrying ◀ Back to RPS
+      (`pvp_play.py`), so a resolved PvP match is no longer a bare dead-end embed.
 - [x] **Terminal state correct** — solo/challenge/tournament views disable controls on terminal;
       `SettleOnceMixin` guards PvP resolution.
 - [x] **Consistent copy/embeds** — house-style; no debug/placeholder strings.
@@ -83,8 +84,10 @@
 - [x] **Loop tests** — persistence/recovery, solo replay, panel actionability, naming/Help routing
       (`test_rps_tournament_persistence.py`, `test_rps_solo_replay.py`, `test_rps_naming.py`,
       `test_help_actionability_contract.py`).
-- [ ] **Edge tests** — PvP `_RpsPvpPlayView` finish/timeout and bot-batch matches lack dedicated unit
-      pins (covered only indirectly). → punch-list #4.
+- [~] **Edge tests** — ✅ **partly closed (punch-list #4, this PR):**
+      `tests/unit/cogs/test_rps_pvp_deadend.py` pins the PvP `_resolve` posting the nav-bearing result
+      view, the result-view authority, and a `!rpshelp` output drift-guard. Still open: a dedicated
+      bot-batch match test.
 - [x] **Money tests** — escrow/settle/refund via the persistence suites.
 - [ ] **Live walkthrough recorded** — pending. → punch-list #6.
 - [ ] **Owner ✔** — pending. → punch-list #7.
@@ -96,14 +99,14 @@
    `!rps_bot`, `!rps_settings`, `!rps_help`) plus a **`!rps_leaderboard` command that was never
    implemented**. Rewritten to the real no-underscore names (`!rpsregister`/`!rpsstart`/`!rpsbot`/
    `!rpssettings`/`!rpshelp`) led by `!rps` (the panel), with the bogus leaderboard line removed.
-2. **PvP play result has no back affordance** (`pvp_play.py:197`) — a panel-spawned PvP challenge
-   resolves to a bare channel embed; add a small result view with **◀ Back to RPS** (the pattern the
-   solo/bet/challenge views already use), or document PvP as a deliberate one-off. *(Acceptable as-is
-   for tournament matches, which live in ephemeral channels.)*
-3. **Rules embed completeness** — add timeout/forfeit semantics (forfeit on no-pick; 55 s picker) to
-   `build_rps_rules_embed`.
-4. **Edge tests** — add PvP-play finish/timeout/settle-once pins + a bot-batch match test, and a
-   `!rpshelp` output test to catch future command-help drift.
+2. ~~**PvP play result has no back affordance.**~~ ✅ **FIXED (this PR).** `_resolve` now posts the
+   result with `_RpsPvpResultView` carrying **◀ Back to RPS** (the shared `_make_rps_back_button`
+   pattern the solo/bet/challenge views use); either participant may use it.
+3. ~~**Rules embed completeness.**~~ ✅ **FIXED (this PR)** — `build_rps_rules_embed` gained a
+   "Timeouts & forfeits" field (forfeit on no-pick → opponent takes the pot; both no-pick → refund).
+4. **Edge tests** — ✅ **partly closed (this PR):** PvP `_resolve` result-view + authority pins and a
+   `!rpshelp` output drift-guard (`test_rps_pvp_deadend.py`). Still open: a dedicated bot-batch match
+   test.
 5. **PvP rematch affordance** *(owner)* — a 🔁 Rematch button on the PvP result (mirrors the solo
    result), if one-off PvP isn't the intended design.
 6. **Live walkthrough** — `/verify-bot` boot + scripted click-through (quick play → bet → challenge →
@@ -113,13 +116,15 @@
 ## Evidence
 - **Tests:** `tests/unit/.../test_rps_tournament_persistence.py` · `test_rps_pvp_pending_persistence.py` ·
   `test_rps_solo_replay.py` · `test_rps_naming.py` · `test_rps_guild_scope.py` ·
-  `test_help_actionability_contract.py`
+  `test_help_actionability_contract.py` · **`test_rps_pvp_deadend.py` (PvP result back-affordance +
+  rpshelp drift-guard — this PR)**
 - **Walkthrough:** pending (punch-list #6)
 - **Owner sign-off:** pending (punch-list #7)
 
 ## Verdict
 RPS is **substantially complete and money-safe** — the most mode-rich game in the bot (four rule sets,
-four flows), with atomic escrow, full persistence/recovery, and good panel UX. The one offline drift
-(misnamed `!rpshelp` commands) is **fixed in this PR**. It is **not yet `✔ certified`**: the remaining
-items are a PvP-play back affordance (#2), rules-copy + edge tests (#3/#4), an owner PvP-rematch call
-(#5), and the recorded walkthrough + sign-off (#6/#7).
+four flows), with atomic escrow, full persistence/recovery, and good panel UX. The offline gaps are now
+cleared: the `!rpshelp` drift (#1), the PvP-play back affordance (#2), the rules copy (#3), and most of
+the edge tests (#4) are **fixed across this PR + the prior one**. It is **not yet `✔ certified`**: what
+remains is owner-paced / live-bot — an owner PvP-rematch call (#5), a bot-batch match test (tail of #4),
+and the recorded walkthrough + sign-off (#6/#7). Code-side, this unit is now close to ✔-ready.

@@ -27,6 +27,48 @@ from views.rps._helpers import (
 logger = logging.getLogger("bot.rps.pvp_play")
 
 
+class _RpsPvpResultView(discord.ui.View):
+    """Terminal screen after a PvP match resolves — never a dead-end.
+
+    The PvP result used to be posted as a bare channel embed with no
+    controls (completion cert punch-list #2), stranding both players. This
+    view carries the shared **◀ Back to RPS** affordance every other RPS
+    sub-view already uses (`_make_rps_back_button`), so either player is one
+    click from the RPS hub. Either match participant may use it; the back
+    panel opens for whoever clicks (its author is read off the interaction).
+    """
+
+    def __init__(self, p1: discord.Member, p2: discord.Member) -> None:
+        super().__init__(timeout=180)
+        self.p1 = p1
+        self.p2 = p2
+        self.message: discord.Message | None = None
+        # Late import: rps_panel imports this module's siblings, so a
+        # module-level import would create a cycle (mirrors solo_play).
+        from views.games.rps_panel import _make_rps_back_button
+
+        self.add_item(_make_rps_back_button())
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id not in (self.p1.id, self.p2.id):
+            await interaction.response.send_message(
+                "You're not part of this match.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        if self.message is None:
+            return
+        for item in self.children:
+            item.disabled = True  # type: ignore[attr-defined]
+        try:
+            await self.message.edit(view=self)
+        except Exception as exc:
+            logger.debug("rps_pvp result on_timeout: message.edit failed: %s", exc)
+
+
 class _RpsPvpPlayView(SettleOnceMixin, discord.ui.View):
     """Visible to the channel; each player clicks for their ephemeral picker."""
 
@@ -194,7 +236,11 @@ class _RpsPvpPlayView(SettleOnceMixin, discord.ui.View):
             ),
             color=SUCCESS_COLOR if winner_id else GAME_COLOR,
         )
-        await self.channel.send(embed=embed)
+        # Not a dead-end (cert punch-list #2): post the result with a
+        # ◀ Back to RPS affordance so neither player is stranded on a bare
+        # channel embed.
+        result_view = _RpsPvpResultView(self.p1, self.p2)
+        result_view.message = await self.channel.send(embed=embed, view=result_view)
 
         # PR G1 — match resolved naturally; drop the persisted state.
         try:

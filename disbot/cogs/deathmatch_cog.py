@@ -100,6 +100,7 @@ class _DuelView(discord.ui.View):
         ctx: commands.Context,
         *,
         timeout: float = 60.0,
+        guild_id: int | None = None,
     ):
         # PR 8 — ``timeout`` is now a keyword arg; defaults to the
         # historical 60s value when called without the setting-aware
@@ -110,6 +111,15 @@ class _DuelView(discord.ui.View):
         self.duel = duel
         self.duel_key = duel_key
         self.ctx = ctx
+        # The originating guild for the leaderboard / gear-wear writes. The
+        # panel-initiated PvP path constructs this view with ``ctx=None`` (it
+        # only has an interaction), so reading ``ctx.guild.id`` on resolve used
+        # to raise ``AttributeError`` mid-duel — callers now pass ``guild_id``
+        # explicitly. The ctx fallback preserves the command path + existing
+        # tests that build a ``_DuelView`` with a real ``ctx`` and no guild_id.
+        if guild_id is None:
+            guild_id = ctx.guild.id if ctx and getattr(ctx, "guild", None) else 0
+        self.guild_id = guild_id
         self.message: discord.Message | None = None
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -148,15 +158,13 @@ class _DuelView(discord.ui.View):
         await self.cog.update_leaderboard(
             winner_id=opponent.id,
             loser_id=duel.turn.id,
-            guild_id=self.ctx.guild.id if self.ctx.guild else 0,
+            guild_id=self.guild_id,
         )
         wear_notes = await _tick_duel_gear_wear(
-            self.ctx.guild.id if self.ctx.guild else 0,
+            self.guild_id,
             duel.player1,
             duel.player2,
         )
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
         description = (
             f"{duel.turn.mention} took too long to respond.\n"
             f"🏆 {opponent.mention} wins by default!"
@@ -170,7 +178,15 @@ class _DuelView(discord.ui.View):
         )
         if self.message:
             try:
-                await self.message.edit(embed=embed, view=self)
+                # Swap to the terminal result view (Help + Games nav + Rematch)
+                # so a timed-out PvP duel is never a dead-end (owner directive
+                # 2026-06-23, previously applied only to the bot path).
+                from views.games.deathmatch_panel import _PvpDuelResultView
+
+                await self.message.edit(
+                    embed=embed,
+                    view=_PvpDuelResultView(self.cog, duel.player1, duel.player2),
+                )
             except Exception:
                 pass
 
@@ -217,15 +233,13 @@ class _DuelView(discord.ui.View):
             await self.cog.update_leaderboard(
                 winner_id=winner.id,
                 loser_id=loser.id,
-                guild_id=self.ctx.guild.id if self.ctx.guild else 0,
+                guild_id=self.guild_id,
             )
             wear_notes = await _tick_duel_gear_wear(
-                self.ctx.guild.id if self.ctx.guild else 0,
+                self.guild_id,
                 duel.player1,
                 duel.player2,
             )
-            for item in self.children:
-                item.disabled = True  # type: ignore[attr-defined]
             description = (
                 f"{action_text}\n\n"
                 f"**{duel.player1.display_name}** — "
@@ -241,7 +255,15 @@ class _DuelView(discord.ui.View):
                 description=description,
                 color=discord.Color.gold(),
             )
-            await interaction.response.edit_message(embed=embed, view=self)
+            # Swap to the terminal result view (Help + Games nav + Rematch) so a
+            # finished PvP duel is never a dead-end (owner directive 2026-06-23,
+            # previously applied only to the bot path via _BotDuelResultView).
+            from views.games.deathmatch_panel import _PvpDuelResultView
+
+            await interaction.response.edit_message(
+                embed=embed,
+                view=_PvpDuelResultView(self.cog, duel.player1, duel.player2),
+            )
         else:
             await interaction.response.edit_message(
                 embed=self.build_embed(action_text),
@@ -286,8 +308,6 @@ class _ChallengeView(discord.ui.View):
         # message, so the expired-challenge notice must not clobber it.
         if self._resolved:
             return
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
             title="⚔️ Challenge Expired",
             description=f"{self.opponent.mention} did not respond in time.",
@@ -295,7 +315,14 @@ class _ChallengeView(discord.ui.View):
         )
         if self.message:
             try:
-                await self.message.edit(embed=embed, view=self)
+                # Not a dead-end — offer Help + Games nav and a 🔁 Rematch
+                # (re-challenge) instead of a dead embed.
+                from views.games.deathmatch_panel import _PvpDuelResultView
+
+                await self.message.edit(
+                    embed=embed,
+                    view=_PvpDuelResultView(self.cog, self.challenger, self.opponent),
+                )
             except Exception:
                 pass
 
@@ -338,6 +365,11 @@ class _ChallengeView(discord.ui.View):
             self.duel_key,
             self.ctx,
             timeout=turn_timeout,
+            # Thread the originating guild explicitly: the panel-initiated PvP
+            # path builds this challenge with ctx=None, so the duel must take
+            # its guild from the accept interaction rather than ``ctx.guild``
+            # (which would AttributeError on resolve).
+            guild_id=gid,
         )
         await interaction.response.edit_message(
             embed=duel_view.build_embed(),
@@ -353,14 +385,19 @@ class _ChallengeView(discord.ui.View):
     @discord.ui.button(label="❌ Decline", style=discord.ButtonStyle.danger)
     async def btn_decline(self, interaction: discord.Interaction, _: discord.ui.Button):
         self._resolved = True
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
             title="⚔️ Challenge Declined",
             description=f"{self.opponent.mention} declined the duel.",
             color=discord.Color.greyple(),
         )
-        await interaction.response.edit_message(embed=embed, view=self)
+        # Not a dead-end — swap to the result view (Help + Games nav + a
+        # 🔁 Rematch the challenger can use to re-issue the challenge).
+        from views.games.deathmatch_panel import _PvpDuelResultView
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=_PvpDuelResultView(self.cog, self.challenger, self.opponent),
+        )
         # Challenge resolved — stop the view so its timeout can't later fire and
         # replace this "Declined" notice with an "Expired" one.
         self.stop()

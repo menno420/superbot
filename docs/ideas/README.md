@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`no-dead-end-terminal-view-guard-2026-06-28.md`](./no-dead-end-terminal-view-guard-2026-06-28.md) —
+  **session idea (2026-06-28, Q-0089, from fixing the Deathmatch + RPS PvP dead-ends #1527):** an arch
+  lint flagging any game terminal view that disables/`stop()`s without swapping to a nav-bearing result
+  view (or posts a terminal message with no `view=`). Turns a recurring manual catch (fishing, deathmatch,
+  rps, chain/farm) into an enforced guard — the "friction → guard" pattern (Q-0194). Warn-tier first,
+  disposable (Q-0105). Subsystem: S1 games / S3 tooling.
 - [`router-q-index-generator-2026-06-28.md`](./router-q-index-generator-2026-06-28.md) —
   **session idea (2026-06-28, Q-0089, from documenting the open-question sweep + deciding Q-0210):** a
   stdlib `build_q_index.py` → a one-line-per-Q index (number · title · status · Home · file) over the
