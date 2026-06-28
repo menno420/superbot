@@ -10,6 +10,11 @@ import pytest
 from cogs.xp import listener
 from services.role_exemption_service import ExemptRoleIds
 
+
+def _apply_result(succeeded: int = 1, failed: int = 0) -> SimpleNamespace:
+    return SimpleNamespace(succeeded=succeeded, failed=failed, failures=())
+
+
 _XP_ROWS = [
     {"role_name": "Lvl5", "level_required": 5},
     {"role_name": "Lvl10", "level_required": 10},
@@ -40,7 +45,7 @@ async def test_exempt_xp_member_gets_no_level_roles():
         patch(
             "services.role_exemption_service.get_exempt_role_ids",
             new=AsyncMock(
-                return_value=ExemptRoleIds(xp=frozenset({99}), time=frozenset())
+                return_value=ExemptRoleIds(xp=frozenset({99}), time=frozenset()),
             ),
         ),
         patch(
@@ -52,10 +57,16 @@ async def test_exempt_xp_member_gets_no_level_roles():
             new=AsyncMock(return_value=_XP_ROWS),
         ),
         patch("cogs.xp.listener.resources") as res_mock,
+        patch(
+            "services.role_automation.apply",
+            new=AsyncMock(return_value=_apply_result()),
+        ) as apply_mock,
     ):
         res_mock.resolve_role.return_value = _role(5, "Lvl5")
         await listener._apply_xp_threshold_roles(msg, 10)
 
+    # Exempt member: nothing applied — not even through the audited seam.
+    apply_mock.assert_not_awaited()
     member.add_roles.assert_not_awaited()
     member.remove_roles.assert_not_awaited()
 
@@ -79,15 +90,24 @@ async def test_xp_roles_stack_adds_all_qualifying():
             new=AsyncMock(return_value=_XP_ROWS),
         ),
         patch("cogs.xp.listener.resources") as res_mock,
+        patch(
+            "services.role_automation.apply",
+            new=AsyncMock(return_value=_apply_result(succeeded=2)),
+        ) as apply_mock,
     ):
         res_mock.resolve_role.side_effect = (
             lambda guild, *, role_id=None, name=None: roles_by_name.get(name)
         )
         await listener._apply_xp_threshold_roles(msg, 10)
 
-    member.add_roles.assert_awaited_once()
-    assert {r.id for r in member.add_roles.await_args.args} == {5, 10}
-    member.remove_roles.assert_not_awaited()
+    # Routed through the audited seam, not a direct member.add_roles.
+    member.add_roles.assert_not_awaited()
+    apply_mock.assert_awaited_once()
+    assignments = apply_mock.await_args.args[1]
+    # Stacking mode: one promote assignment per newly-earned role, no removals.
+    assert {a.add_role_id for a in assignments} == {5, 10}
+    assert all(a.remove_role_ids == () for a in assignments)
+    assert apply_mock.await_args.kwargs["actor_type"] == "system"
 
 
 @pytest.mark.asyncio
@@ -109,13 +129,23 @@ async def test_xp_roles_single_mode_keeps_highest_removes_lower():
             new=AsyncMock(return_value=_XP_ROWS),
         ),
         patch("cogs.xp.listener.resources") as res_mock,
+        patch(
+            "services.role_automation.apply",
+            new=AsyncMock(return_value=_apply_result()),
+        ) as apply_mock,
     ):
         res_mock.resolve_role.side_effect = (
             lambda guild, *, role_id=None, name=None: roles_by_name.get(name)
         )
         await listener._apply_xp_threshold_roles(msg, 10)
 
-    member.add_roles.assert_awaited_once()
-    assert {r.id for r in member.add_roles.await_args.args} == {10}
-    member.remove_roles.assert_awaited_once()
-    assert {r.id for r in member.remove_roles.await_args.args} == {5}
+    # Single-role mode: one audited assignment promotes the highest earned role
+    # and demotes the lower one — no direct member.add_roles/remove_roles.
+    member.add_roles.assert_not_awaited()
+    member.remove_roles.assert_not_awaited()
+    apply_mock.assert_awaited_once()
+    assignments = apply_mock.await_args.args[1]
+    assert len(assignments) == 1
+    assert assignments[0].add_role_id == 10
+    assert assignments[0].remove_role_ids == (5,)
+    assert apply_mock.await_args.kwargs["actor_type"] == "system"

@@ -191,7 +191,8 @@ async def _apply_xp_threshold_roles(
     is at most one DB read per (TTL × guild) instead of per-level-up.
     """
     try:
-        from services import role_exemption_service
+        from services import role_automation, role_exemption_service
+        from services.role_automation import Assignment, summarize_failures
 
         guild = message.guild
         member = message.author
@@ -221,7 +222,8 @@ async def _apply_xp_threshold_roles(
             return
 
         member_roles = member.roles  # type: ignore[union-attr]
-        if await role_exemption_service.xp_roles_stack(guild.id):
+        stack = await role_exemption_service.xp_roles_stack(guild.id)
+        if stack:
             to_add = [r for r in qualifying if r not in member_roles]
             to_remove: list = []
         else:
@@ -231,41 +233,65 @@ async def _apply_xp_threshold_roles(
             to_add = [] if target in member_roles else [target]
             to_remove = [r for r in configured if r != target and r in member_roles]
 
-        if to_add:
-            try:
-                await member.add_roles(  # type: ignore[union-attr]
-                    *to_add,
-                    reason=f"XP level-up: reached level {new_level}",
+        # Route the grant through the audited role_automation seam (one source of
+        # truth for member-role mutation) rather than calling member.add_roles
+        # directly — this fires `audit.action_recorded` and reuses the shared
+        # manage-roles / hierarchy preflight, matching every other role grant in
+        # the bot (Welcome's entry-role, the role cog). A direct add/remove here
+        # was the one XP-side audit gap.
+        member_display = getattr(member, "display_name", str(member.id))
+        reason = f"XP level-up: reached level {new_level}"
+        assignments: list[Assignment] = []
+        if stack:
+            # Stacking mode: one promote assignment per newly-earned role.
+            for r in to_add:
+                assignments.append(
+                    Assignment(
+                        member_id=member.id,
+                        member_display=member_display,
+                        add_role_id=r.id,
+                        add_role_name=r.name,
+                        remove_role_ids=(),
+                        remove_role_names=(),
+                        reason=reason,
+                        days_in_guild=0,
+                    ),
                 )
-                logger.info(
-                    "XP roles assigned: %s → %s (level %d)",
-                    member.display_name,
-                    [r.name for r in to_add],
-                    new_level,
+        else:
+            # Single-role mode: one assignment carries the promote + demotions.
+            target = to_add[0] if to_add else None
+            if target is not None or to_remove:
+                assignments.append(
+                    Assignment(
+                        member_id=member.id,
+                        member_display=member_display,
+                        add_role_id=target.id if target is not None else None,
+                        add_role_name=target.name if target is not None else None,
+                        remove_role_ids=tuple(r.id for r in to_remove),
+                        remove_role_names=tuple(r.name for r in to_remove),
+                        reason=reason,
+                        days_in_guild=0,
+                    ),
                 )
-            except (discord.Forbidden, discord.HTTPException) as role_err:
-                logger.warning(
-                    "Could not assign XP roles to %s: %s",
-                    member.display_name,
-                    role_err,
-                )
-        if to_remove:
-            try:
-                await member.remove_roles(  # type: ignore[union-attr]
-                    *to_remove,
-                    reason=f"XP single-role mode: level {new_level}",
-                )
-                logger.info(
-                    "XP roles removed (single-role mode): %s → %s",
-                    member.display_name,
-                    [r.name for r in to_remove],
-                )
-            except (discord.Forbidden, discord.HTTPException) as role_err:
-                logger.warning(
-                    "Could not remove XP roles from %s: %s",
-                    member.display_name,
-                    role_err,
-                )
+
+        if not assignments:
+            return
+
+        result = await role_automation.apply(guild, assignments, actor_type="system")
+        if result.succeeded:
+            logger.info(
+                "XP roles applied for %s (level %d): %d change(s)",
+                member_display,
+                new_level,
+                result.succeeded,
+            )
+        if result.failed:
+            logger.warning(
+                "XP role application had %d failure(s) for %s: %s",
+                result.failed,
+                member_display,
+                summarize_failures(result),
+            )
     except Exception:
         logger.error(
             "XP role assignment check failed for guild %d",
