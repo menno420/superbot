@@ -80,13 +80,18 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
-- `[offline]` **Feature-completion assessments — IN PROGRESS (8/36 assessed).** The completion-first arc
-  (Q-0209). #1519 added Fishing/Counting/Word Chain to the #1513 Blackjack pilot; the
+- `[offline]` **Feature-completion assessments — IN PROGRESS (11/36 assessed; ALL 10 games done).** The
+  completion-first arc (Q-0209). #1519 added Fishing/Counting/Word Chain to the #1513 Blackjack pilot; the
   born-red-gate-fix dispatch run (2026-06-28, PR #1524) added **RPS, Deathmatch, Chicken farm**; **#1530
-  added Casino (poker) — ◐ assessed, play-chips-only/money-safe, punch-list = one terminal-nav gap +
-  v1 depth**. **▶ Next startable, offline:** (1) **assess more units** — the remaining unassessed games
-  (Mining [big read], Creatures) then server-fns, one cert each under
-  [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from the rubric.
+  added Casino (poker)**; **the 2026-06-28 dispatch run (PR #1534) assessed the last two games — Mining
+  (✔-ready candidate: 13 wired systems, 41 test files, no trapped views) + Creatures (hub-less v1 — no
+  game panel / dex browser is the headline gap) — AND the first server-fn, Welcome** (fail-safe + audited;
+  gaps = no bespoke command panel + best-in-class options). **▶ Next startable, offline:** (1) **assess
+  more server-fns** — every game is now ◐; the unassessed set is all server-functions (Moderation,
+  Economy, Roles, Settings, XP, Karma, Leaderboards, Counters, Tickets, Spotlight, Channels, Setup
+  wizard, AI, Logging, Diagnostics, Help, Admin, …), one cert each under
+  [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from
+  `rubric-server-function.md`.
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
   `architecture_rules/canonical_helpers.yaml`, +7 tests) flags a game-view terminal handler that

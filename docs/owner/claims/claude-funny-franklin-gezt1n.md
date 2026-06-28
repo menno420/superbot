@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-gezt1n` · scope: feature-completion assessments for the remaining unassessed games (Mining, Creatures) — Q-0209 completion-first arc · area: docs/planning/feature-completion/units/ + ledger + scoreboard · 2026-06-28
