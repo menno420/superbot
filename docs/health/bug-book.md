@@ -23,6 +23,46 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0027 — born-red merge-gate silently fails open on a session-card slug collision (a partial PR auto-merged and clobbered a prior session log) — FIXED (root)
+
+- **Symptom (found 2026-06-28 by a dispatch run, from its own behavior — not a live user report):**
+  an empty-fire dispatch session opened its born-red PR (#1523) with an `in-progress` session card,
+  per the Q-0133 flow — and GitHub **auto-merged it immediately**, while the card still said
+  `in-progress` and before any real work landed. The born-red gate (`check_session_gate.py`, the
+  whole point of which is to hold a partial PR red until the card flips to `complete`) did **not**
+  engage. CI proof: `code-quality` went green in 8 s, logging `check_session_gate: no new session
+  card in this PR — not gated. ✓`, even though the same job's docs-detector had just printed the
+  card in its changed-files list.
+- **Root cause (two stacked faults, one root):** the session card filename
+  `.sessions/2026-06-28-feature-completion-assessments.md` **already existed in `main`** — a *prior*
+  dispatch run that day (the Blackjack/Counting completion-assessment run) had used the same slug. So
+  this run's `cat > … <<EOF` (and `git add -A`) **clobbered** that prior `complete` log with its own
+  `in-progress` content, and git recorded the change as a **modification (`M`)**, not an addition
+  (`A`). The gate's discovery used `git diff --diff-filter=A` (added-only) — so a *modified* card was
+  invisible to it, the gate found "no new card", failed open, and auto-merge fired on the partial PR.
+  The collision also caused **silent data loss**: the prior session's log was overwritten in `main`.
+- **Fix (root, PR #1524):**
+  1. **Gate now inspects added *or modified* cards** — the merge-gate path uses
+     `git diff --diff-filter=AM` (`gate_session_cards`), so a collision-modified born-red card is
+     held. A re-badged *old* log (a reconciliation pass flipping a card to `historical`/`archived`)
+     is carved out via `_TERMINAL_OK_STATUSES` so reconciliation PRs are never wrongly held. The
+     Codex `--require-ready-card` trigger keeps its added-only semantics (it asks a different
+     question — "did this PR *add* a card that just went ready?").
+  2. **Collision hint** — when the gate holds a card that was modified (not added), it prints
+     "this card was MODIFIED, not added — if you reused an existing session slug, rename your card
+     to a unique slug", so the next agent fixes the real cause (the slug) rather than the symptom.
+  3. **Restored the clobbered prior log** — `.sessions/2026-06-28-feature-completion-assessments.md`
+     is restored from git history (commit `a182ac30`); this run's card uses a unique slug
+     (`…-games-and-gate-fix.md`).
+- **Stays-fixed guard:** `tests/unit/scripts/test_check_session_gate.py` —
+  `test_main_modified_card_collision_held_with_hint` reproduces the exact #1523 scenario (a card seen
+  by `gate_session_cards` but **not** by `added_session_cards`, status `in-progress`) and asserts the
+  gate exits 1 with the rename hint; `test_main_reconciliation_rebadge_not_held` pins the
+  reconciliation carve-out (a modified `historical` card merges freely). Both fail against the pre-fix
+  added-only gate. Verified directly against the real #1523 SHAs: with the head card content in the
+  tree the gate now prints `MERGE HELD` (rc=1).
+- **Status:** FIXED (root) 2026-06-28. Checker-only change (no `disbot/` runtime code).
+
 ## BUG-0026 — `EffectiveStats.light_radius` and `.luck` are dead stats (gear grants them, no game reads them) — FIXED (wired — owner decision Q-0208)
 
 - **Symptom (found 2026-06-27 by code inspection while building the Q-0089 `EffectiveStats`
