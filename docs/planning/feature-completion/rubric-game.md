@@ -34,6 +34,10 @@ item; the unit cannot be `✔ certified` until the punch-list is empty and the o
       selection on the panel; nothing buried or misplaced.
 - [ ] **A "Rules / how to play" affordance** is reachable.
 - [ ] **Return navigation everywhere** — back to the game panel and to Help; no trapped views.
+      *Watch the common trap:* a hub/menu that `self.stop()`s when it opens a sub-panel, where the
+      sub-panel is a plain `BaseView` with no back affordance → the player is stranded (the Fishing
+      Rod/Bait shops, fixed in #1521). Check every sub-panel a menu hands off to: does it carry a
+      `↩ <menu>` button (or `SUBSYSTEM` so `attach_standard_nav` adds Help + ↩ hub)?
 - [ ] **Terminal state is visually correct** — finished hands/rounds disable or swap their controls;
       no stale clickable buttons after the game ends.
 - [ ] **Embeds/copy are consistent** — titles, emojis, result text follow the house style; no

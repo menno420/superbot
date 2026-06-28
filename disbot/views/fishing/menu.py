@@ -177,8 +177,39 @@ async def _fishdex_embed(
     return build_fishlog_embed(display_name, log, level, records)
 
 
+def _rules_embed() -> discord.Embed:
+    """The "how to fish" quick-reference — the menu's 📖 rules affordance."""
+    return discord.Embed(
+        title="📖 How to fish",
+        description=(
+            "**The loop**\n"
+            "1. **🎣 Cast** — drop a line, then *wait* for the bite.\n"
+            "2. **Bite!** — when the float dips, hit **Reel** before the fish "
+            "spits the hook (reel too early and it spooks).\n"
+            "3. **Fight** the big ones — keep reeling to land a trophy.\n\n"
+            "**Get better catches**\n"
+            "• **🎒 Rod** — upgrade your rod for a wider reel window, faster "
+            "bites, and less escape.\n"
+            "• **🪱 Bait** — load a lure for rarer fish (a consumable knob on "
+            "top of your rod).\n"
+            "• **⛵ Set sail** — head to deepwater for the rare boat-only fish.\n"
+            "• **📖 Fishdex** — track your collection and personal-best weights."
+        ),
+        color=GAME_COLOR,
+    )
+
+
 class FishingMenuView(HubView):
-    """The author-restricted fishing hub panel (Cast · Rod · Fishdex)."""
+    """The author-restricted fishing hub panel (Cast · Rod · Fishdex).
+
+    Declares ``SUBSYSTEM = "fishing"`` so
+    :func:`views.navigation.attach_standard_nav` auto-attaches **📚 Help** +
+    **↩ Games** — a panel reached by ``!fishing`` / the Help hook stays one click
+    from Help and its mother hub (the 2026-06-23 never-stranded directive;
+    mirrors ``_FishingDoneView``).
+    """
+
+    SUBSYSTEM = "fishing"
 
     def __init__(self, author: discord.Member | discord.User, guild_id: int) -> None:
         super().__init__(author)
@@ -265,3 +296,40 @@ class FishingMenuView(HubView):
         )
         # Keep the menu so the player can Cast / open the Rod shop after browsing.
         await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(
+        label="How to fish",
+        emoji="📖",
+        style=discord.ButtonStyle.secondary,
+    )
+    async def rules_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # An ephemeral how-to-play card (mirrors the blackjack panel's rules
+        # affordance) — the menu embed describes the loop, this spells it out.
+        await interaction.response.send_message(embed=_rules_embed(), ephemeral=True)
+
+
+async def open_fishing_menu(
+    interaction: discord.Interaction,
+    author: discord.Member | discord.User,
+    guild_id: int,
+) -> None:
+    """Rebuild the fishing menu in place — the Rod/Bait shops' ↩ back target.
+
+    The menu ``self.stop()``s when it opens a shop, so the shops can't simply
+    re-show the old menu instance; they call this to mint a fresh, fully-
+    navigable :class:`FishingMenuView` (Cast · Sail · Rod · Bait · Fishdex +
+    Help/↩ Games) and edit it back onto the panel message. Lazy-imported by the
+    shops to respect the menu→shop import direction.
+    """
+    energy = await fishing_workflow.get_energy(author.id, guild_id)
+    profile = await fishing_workflow.get_venue(author.id, guild_id)
+    view = FishingMenuView(author, guild_id)
+    await interaction.response.edit_message(
+        embed=build_menu_embed(energy, profile),
+        view=view,
+    )
+    view.message = interaction.message

@@ -194,3 +194,46 @@ async def test_fishdex_button_renders_the_collection_and_keeps_the_menu():
     interaction.response.edit_message.assert_awaited_once()
     _, kwargs = interaction.response.edit_message.await_args
     assert kwargs["view"] is view  # the menu stays so you can act again
+
+
+def test_menu_declares_the_fishing_subsystem_for_standard_nav():
+    # SUBSYSTEM = "fishing" makes attach_standard_nav add 📚 Help + ↩ Games so the
+    # menu is never a dead-end (the 2026-06-23 never-stranded directive).
+    assert FishingMenuView.SUBSYSTEM == "fishing"
+    view = _menu()
+    labels = [getattr(c, "label", "") or "" for c in view.children]
+    assert any("Help" in lbl for lbl in labels)
+    assert any("Games" in lbl for lbl in labels)
+
+
+@pytest.mark.asyncio
+async def test_rules_button_sends_an_ephemeral_how_to_card():
+    view = _menu()
+    interaction = _interaction()
+    await _click(view, "rules_btn", interaction)
+    interaction.response.send_message.assert_awaited_once()
+    _, kwargs = interaction.response.send_message.await_args
+    assert kwargs.get("ephemeral") is True
+    assert "How to fish" in kwargs["embed"].title
+
+
+@pytest.mark.asyncio
+async def test_open_fishing_menu_rebuilds_a_navigable_menu():
+    from views.fishing.menu import open_fishing_menu
+
+    interaction = _interaction()
+    with (
+        patch(
+            "views.fishing.menu.fishing_workflow.get_energy",
+            AsyncMock(return_value=9),
+        ),
+        patch(
+            "views.fishing.menu.fishing_workflow.get_venue",
+            AsyncMock(return_value=None),
+        ),
+    ):
+        await open_fishing_menu(interaction, _author(), guild_id=99)
+
+    interaction.response.edit_message.assert_awaited_once()
+    _, kwargs = interaction.response.edit_message.await_args
+    assert isinstance(kwargs["view"], FishingMenuView)

@@ -106,6 +106,8 @@ edit_in_place:
       reason: "Terminal apply-outcome report after installing the template (the config view's job is done)."
     - pattern: views/setup/template_picker.py::TemplateConfigView._cancel
       reason: "Terminal 'cancelled — not installed' confirmation toast."
+    - pattern: views/fishing/menu.py::FishingMenuView.rules_btn
+      reason: "Read-only ephemeral 'how to fish' help card (mirrors the blackjack rules button); the menu panel is unchanged by viewing it — a genuine new message, not a panel re-render."
     - pattern: views/tickets/hub.py::TicketHubView.list_btn
       reason: "Read-only ephemeral list of the caller's own open tickets; the hub panel is unchanged by viewing it (a genuine new message, not a panel re-render)."
     - pattern: views/tickets/hub.py::TicketHubView.post_panel_btn

@@ -66,10 +66,10 @@
 ### E. Money-safety integration — N/A (no economy surface; no wagering).
 
 ### F. Wiring & discoverability
-- [⚠] **Registry entry_points are admin-only** — `entry_points: ["countingmenu"]`
-      (`subsystem_registry.py`), which is `@staff_or_owner`. There is **no player-facing entry point**;
-      a player discovers counting only by being in a counting channel. `count_info`/`count_rules` are
-      public commands but aren't registered entry points. → punch-list #3.
+- [x] **Registry has a player entry point** — ✅ fixed (punch-list #3, PR #1521):
+      `entry_points: ["count_info", "counttop", "countingmenu"]` (`subsystem_registry.py`) — the
+      player-facing `count_info`/`counttop` lead so counting has a public discovery surface; the
+      staff-only `countingmenu` config hub stays registered too.
 - [x] **Help + Games hub** — registered `parent_hub: games`, `hub_group: activities`; Help hook returns
       the (admin) hub.
 - [x] **Configurable** — turns, reset-on-wrong, skip-step are per-channel admin toggles.
@@ -91,8 +91,9 @@
    owner waives it (counting is a collaborative streak, reward-free by design). Needs an owner call.
 2. ✅ **DONE this run — leaderboard surfaced.** `!counttop` + a `count_info` top-3 field
    (`cogs/counting/leaderboard.py`, tested). The previously-dead tally is now player-visible.
-3. **Player-facing discovery** — add a player entry point (e.g. surface `count_info`/`count_rules`/the
-   new `counttop` as the unit's player entry) so counting isn't admin-only in the registry.
+3. ~~**Player-facing discovery**~~ ✅ **FIXED 2026-06-28 (PR #1521).** `entry_points` now leads with the
+   player-facing `count_info`/`counttop` (then `countingmenu`), so counting is no longer admin-only in
+   the registry.
 4. **Live walkthrough** — `/verify-bot` boot + a scripted play-through of a couple of modes (normal +
    one exotic, e.g. prime/random) showing validate/reset/turns, with screenshots, attached here.
 5. **Owner sign-off** — maintainer plays it and confirms "nothing left to add or move," resolving #1.
@@ -110,7 +111,8 @@
 Counting is **deep and well-engineered** — 11 modes, math-expression parsing, DB-persisted
 restart-safe state, scope-locked concurrency, and a real security hardening (BUG-0012). The
 **invisible-leaderboard** gap (#2) was **closed this run** — the standings are now player-visible via
-`!counttop` + `count_info`. It is **not yet `✔ certified`**: what remains is **admin-only discovery**
-(#3) and the **reward decision** (#1), then the walkthrough (#4) + owner sign-off (#5). The assess →
+`!counttop` + `count_info`, and the **admin-only discovery** gap (#3) was **closed (PR #1521)** —
+`entry_points` now leads with player commands. It is **not yet `✔ certified`**: what remains is the
+**reward decision** (#1, owner call), then the walkthrough (#4) + owner sign-off (#5). The assess →
 close loop the framework exists for is demonstrated here: assess surfaced the dead-state leaderboard,
 the same PR shipped the fix.

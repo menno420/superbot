@@ -38,13 +38,15 @@
       Fishdex), reached from `!fishing` and the Help hook (`menu.py:180-268`).
 - [x] **Every action has a control in the right place** — cast/sail/rod/bait/dex on the menu;
       reel on the cast view.
-- [~] **Rules affordance** — the menu embed *describes* the loop inline (`menu.py:56-65`); there is no
-      dedicated "📖 Rules / how to play" button as the blackjack panel has. → punch-list #2 (minor).
-- [ ] **Return navigation everywhere** — the **cast** flow has full nav (Cast again + Help + Games via
-      `_FishingDoneView`). But the **Rod shop** and **Bait shop** are `BaseView` panels with **no back
-      button** (`rod_shop.py:88`, `bait_shop.py:209`), and `FishingMenuView` **`self.stop()`s** when it
-      opens them (`menu.py:236,253`) — so a player who opens Rod/Bait is **trapped** with no way back
-      to the menu, Games hub, or Help. → **punch-list #1 (headline gap).**
+- [x] **Rules affordance** — ✅ fixed (punch-list #2): a dedicated **📖 How to fish** button on the
+      menu sends an ephemeral how-to-play card (`menu.py` `rules_btn`/`_rules_embed`), mirroring the
+      blackjack panel; the menu embed still describes the loop inline as well.
+- [x] **Return navigation everywhere** — ✅ fixed (punch-list #1, headline). The **cast** flow already
+      had full nav (`_FishingDoneView`); now the **Rod shop** and **Bait shop** each carry a
+      **↩ Fishing menu** button that rebuilds the menu in place (`rod_shop.py`/`bait_shop.py`
+      `back_btn` → `menu.open_fishing_menu`, lazy-imported for the menu→shop cycle), and
+      `FishingMenuView` declares `SUBSYSTEM = "fishing"` so `attach_standard_nav` adds **📚 Help** +
+      **↩ Games** — so back-from-shop lands on a fully-navigable menu (the 2026-06-23 directive).
 - [x] **Terminal state correct** — disable-on-terminal + handoff to the Done view; the cast button
       label/style track the phase (`cast_view.py:445-447,182-192`).
 - [x] **Consistent copy/embeds** — house-style embeds, shared colours (`GAME_COLOR`/`SUCCESS`/`ERROR`).
@@ -98,13 +100,13 @@
 
 ## Punch-list (clear these to certify)
 
-1. **Trapped shop views (headline).** Give `RodShopView` and `BaitShopView` return navigation — a
-   "↩ Fishing menu" button (or convert them to `HubView` with `SUBSYSTEM = "fishing"` so
-   `attach_standard_nav` adds 📚 Help + ↩ Games, the pattern `_FishingDoneView` already uses). Today
-   opening Rod/Bait from the menu strands the player (the menu `self.stop()`s and the shops have no way
-   back). Offline/contained; mind the menu↔shop import cycle (lazy-import or the HubView route).
-2. **Rules affordance + minor UX** — a dedicated "📖 How to fish" button on the menu (the loop is only
-   described in the embed body today); optionally a quick-rebet equivalent.
+1. ~~**Trapped shop views (headline).**~~ ✅ **FIXED 2026-06-28 (PR #1521).** `RodShopView` and
+   `BaitShopView` each got a **↩ Fishing menu** `back_btn` that rebuilds the menu in place via
+   `menu.open_fishing_menu` (lazy-imported for the menu→shop cycle), and `FishingMenuView` now declares
+   `SUBSYSTEM = "fishing"` so `attach_standard_nav` adds 📚 Help + ↩ Games — back-from-shop lands on a
+   fully-navigable menu.
+2. ~~**Rules affordance + minor UX**~~ ✅ **FIXED 2026-06-28 (PR #1521).** A dedicated **📖 How to fish**
+   button on the menu (`rules_btn` → ephemeral `_rules_embed`) mirrors the blackjack panel.
 3. *(none — test coverage is strong; A/D/E/G loop+edge+money items are all green.)*
 4. **Live walkthrough** — `/verify-bot` boot + scripted click-through (cast → trophy fight → got-away →
    menu → rod → bait → dex → sail), with screenshots, attached here.
@@ -123,7 +125,7 @@
 
 Fishing is **substantially complete and feature-rich** — a genuine skill-moment cast loop with trophy
 fights, two venues, daily weather, four craft paths, leaderboards, and a dex, all on an audited write
-seam with strong tests. It is **not yet `✔ certified`**: the one real UX-completeness gap is the
-**trapped Rod/Bait shop views** (#1) — fix that and the menu is a fully-navigable place. Add a Rules
-button (#2), record the walkthrough (#4), and get the owner's coins/sign-off call (#5). #1 and #2 are
-a focused offline session; #4/#5 are owner-paced.
+seam with strong tests. The two offline UX gaps are **cleared (PR #1521):** the Rod/Bait shops are
+no longer trapped (#1) and the menu has a 📖 How-to-fish button (#2). It is **not yet `✔ certified`**:
+what remains is owner-paced — record the walkthrough (#4) and get the owner's coins/sign-off call (#5,
+resolving the deferred fish-value/coins question Q-0175).

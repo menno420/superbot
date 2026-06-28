@@ -69,3 +69,29 @@ async def test_craft_button_calls_craft_rod_and_rerenders():
     # crafting into tier 1 (not the top) leaves both buttons live
     assert view.craft_btn.disabled is False
     assert view.upgrade_btn.disabled is False
+
+
+@pytest.mark.asyncio
+async def test_back_button_returns_to_the_fishing_menu():
+    # The menu self.stop()s when it opens the shop, so the back button must mint
+    # a fresh, fully-navigable FishingMenuView (punch-list #1, the trapped-view fix).
+    from views.fishing.menu import FishingMenuView
+
+    view = RodShopView(_author(7), 99, at_max=False)
+    interaction = _interaction(7)
+    with (
+        patch(
+            "views.fishing.menu.fishing_workflow.get_energy",
+            AsyncMock(return_value=5),
+        ),
+        patch(
+            "views.fishing.menu.fishing_workflow.get_venue",
+            AsyncMock(return_value=None),
+        ),
+    ):
+        await type(view).back_btn(view, interaction, MagicMock())
+
+    interaction.response.edit_message.assert_awaited_once()
+    _, kwargs = interaction.response.edit_message.await_args
+    assert isinstance(kwargs["view"], FishingMenuView)
+    assert view.is_finished()  # the shop view stopped so it can't fight for the message
