@@ -1,5 +1,11 @@
 # Wild Encounters — activity-based spawning (2026-06-20)
 
+> **✅ OWNER DECISION (Q-0186, 2026-06-28, question panel):** this is the Pokétwo **Lane A** the owner
+> chose to **build first** (highest engagement leverage; feeds the Collection / Quest / Shiny lanes).
+> Spawn defaults + anti-spam guardrails (per-channel opt-in, rate-limit, no auto-catch, earned-only per
+> Q-0039, stranger-grade per Q-0080) ride this doc's defaults; a runtime session builds it in small PRs.
+> Canonical: router Q-0186.
+
 > **Status:** `ideas`. **Not a plan, not approval.** Capture doc. Source + binding contracts +
 > `docs/current-state.md` win. **Subsystem:** games.
 >

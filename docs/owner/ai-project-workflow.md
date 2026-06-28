@@ -175,6 +175,18 @@ conflict:
 | `.sessions/` | **Per-file.** One `YYYY-MM-DD-<slug>.md` per session — no shared anchor, so no structural conflict. |
 | `.session-journal.md` (guidebook) · `docs/current-state.md` | Edit the **smallest** relevant block; on conflict resolve by **UNION** (keep both additions — it's docs, no CI risk). |
 
+**Where answers live (Q-0210, 2026-06-28).** The router is the **single canonical, append-only Q-block
+ledger** — a decision keeps its `Q-0NNN` block here forever; numbers are never moved. That is what keeps
+the **~9,000 plain-text `Q-0XXX` references across the repo** resolvable, so we do **not** physically
+re-home answers to scattered docs (that would orphan the anchor). Instead: (1) the **`Home:` line** (§7)
+routes each durable *conclusion* to its real home — the plan / folio / `CLAUDE.md` is where agents *read*
+the decision, the Q-block is the *provenance*; and (2) **size** is managed by **archiving** old, fully
+answered + routed Q-blocks to **`docs/owner/maintainer-question-router-archive.md`** (newest kept here,
+oldest archived, with a pointer) — mirroring the proven `current-state.md` → `current-state-archive.md`
+split. Because references are plain text, an archived `Q-0XXX` stays grep-resolvable (the lone
+`#q-0017` anchor link is the only thing to fix if Q-0017 is ever archived). **Archiving is a
+reconciliation-pass (Q-0107) job**, not ad hoc — the same pass that already trims `current-state`.
+
 Practical rules when several chats are live:
 
 - **Expect `main` to move.** Re-fetch before you push; prefer additive, section-scoped edits

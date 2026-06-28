@@ -62,6 +62,14 @@ logic or reuse what exists.
   The duplication rate in `utils/helpers.py`, `utils/embeds.py`, and
   the back-button factories is high enough that "I will check later"
   reliably becomes "I will not check".
+  **Exact-name guard (Q-0200):** before defining a new function in
+  `services/` or `utils/`, `grep "def <exact_name>"` in the target
+  module **and** its sibling modules, plus the 1–2 nearest concept
+  synonyms. A later same-name `def` silently *shadows* the earlier one
+  (Python keeps the last) — the `round_composition` collision in
+  `btd6_data_service` broke its AI-tool + ABR tests and was caught only
+  at the full CI mirror, not pre-write. A five-second grep, not a CI
+  gate.
 - **Bypasses a registry, pipeline, or owner.** If a helper writes
   directly to a governed table, the helper is illegal regardless of
   how convenient it is. Re-read `docs/ownership.md` § "Direct DB

@@ -117,6 +117,11 @@ not *whether a change is user-relevant* — every `.sessions/` log is dev/repo c
 that **every function any Discord bot offers is present here, and better.** The hero one-liner is the
 owner's: **"Add SuperBot and you can remove every other bot from your server."**
 
+> **✅ OWNER DECISION (Q-0185, 2026-06-28, question panel) — the one-line pitch:** **"Everything your
+> server needs — free, forever."** Leads with the free-for-everyone North Star (Q-0190) + the all-in-one
+> breadth. Pairs with the hero one-liner above (replace-the-stack); exact placement/wording stays the
+> owner's to refine. Canonical: router Q-0185.
+
 **Feel.** Fun **but** professional. Simple, self-explanatory, **easily browsable** — a visitor finds what
 they need in seconds, never hunts. Clear explanations over cleverness.
 

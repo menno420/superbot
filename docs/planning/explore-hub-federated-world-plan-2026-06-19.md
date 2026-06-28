@@ -1,5 +1,11 @@
 # Federated Explore hub — the open-world spine plan (2026-06-19)
 
+> **✅ OWNER DECISION (Q-0182, 2026-06-28, question panel):** the hub starts as a **flat `HubView`
+> router** into each game; the **map/biome/location layer stays deferred** (this plan's existing
+> sequencing). The other Q-0182 deferred-layer questions (survival-overlay attach · subsystem docking ·
+> cross-game-identity richness) were not separately polled — they ride this plan's defaults until that
+> layer is greenlit. Canonical: router Q-0182.
+
 > **Status:** `plan` — promoted from [`ideas/explore-hub-federated-world-2026-06-19.md`](../ideas/explore-hub-federated-world-2026-06-19.md)
 > by the band-#1140 reconciliation pass under the **idea→plan gate (Q-0172)** and the owner's
 > #1140-fire directive ("promote the federated Explore-hub spine first — it homes

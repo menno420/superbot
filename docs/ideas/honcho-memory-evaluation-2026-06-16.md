@@ -1,5 +1,11 @@
 # Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations
 
+> **✅ OWNER DECISION (Q-0184, 2026-06-28, question panel):** memory scope = **user-chosen
+> global-vs-per-guild** — each user picks whether memory follows them across servers or stays
+> this-server-only (not per-guild-only-default, not global-default). Still light / opt-in / bounded
+> under the Q-0082 spend ceiling; shares the per-user config surface with the gear auto-equip toggle
+> (Q-0182). Canonical: router Q-0184.
+
 > **Status:** `ideas` — **bot / AI-lane idea** (owner-flagged "would be cool to have for our bot",
 > 2026-06-16; wants to look into it **soon**). It first surfaced while evaluating Honcho for the
 > *Hermes* control plane — not a fit there (footnote below) — but it **is** the right shape for the

@@ -151,6 +151,15 @@ STEP 2 — RECONCILE (the Q-0107 pass):
       **recomputes the "Older merges (#HIGH … #LOW)" floor pointer** from the true archive span, so
       the prose pointer can't drift. Re-run `check_current_state_ledger.py --strict` afterward as
       the real guard (the actuator never deletes a bullet).
+  - ARCHIVE OLD ROUTER Q-BLOCKS (Q-0210): when `docs/owner/maintainer-question-router.md` grows
+    unwieldy (it exceeds the file-read limit at ~490 KB), move the **oldest fully answered + routed**
+    Q-blocks into `docs/owner/maintainer-question-router-archive.md` (newest kept in the live router,
+    oldest archived), leaving a pointer in the live file — exactly like the `current-state.md` →
+    `current-state-archive.md` trim above. References are plain `Q-0XXX` text, so an archived block
+    stays grep-resolvable; only the lone `#q-0017` *anchor* link needs a fix if Q-0017 is archived.
+    **Never renumber, never re-home a decision's canonical record out to a scattered doc** — only
+    physically relocate the block to the archive file. Skip in a pass where the router is comfortably
+    sized.
   - Docs: run `python3.10 scripts/check_docs.py --strict`; fix every reachability/badge/
     staleness issue + stale links, wrong PR numbers, broken references.
   - Prune/relabel clearly stale docs; restate current priorities in current-state ▶ Next action.
