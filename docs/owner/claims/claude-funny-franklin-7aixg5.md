@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-7aixg5` · scope: no-dead-end terminal-view arch guard (warn-tier checker + tests) · area: `scripts/check_architecture.py`, `architecture_rules/`, `tests/unit/scripts/` · 2026-06-28
