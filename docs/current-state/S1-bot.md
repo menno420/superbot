@@ -68,6 +68,17 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
+- `[offline]` **Feature-completion assessments — IN PROGRESS (4/36 assessed; #1519 added Fishing,
+  Counting, Word Chain to the #1513 Blackjack pilot).** The completion-first arc (Q-0209). **▶ Next
+  startable, offline:** (1) **assess more units** — the unassessed games (Mining [big read], Casino,
+  Deathmatch, RPS, Creatures, Chicken Farm) then server-fns, one cert each under
+  [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from the rubric;
+  (2) **close the contained punch-list gaps this run surfaced** — **Fishing #1** (the Rod/Bait shops are
+  *trapped views*: give them back-nav / `attach_standard_nav`; mind the menu↔shop import cycle) and
+  **Counting #3** (no player-facing registry entry point). *(Counting #2 — the dead-state leaderboard —
+  was already closed in #1519: `!counttop` + a `count_info` field.)* **▶ Owner decisions waiting:**
+  Word Chain re-classify (game vs. moderation tool), Counting XP/coin reward, plus every unit's final
+  `◐ → ✔` sign-off (needs a live walkthrough — `[needs-live-bot]`/`[owner]`).
 - `[offline]` **Fishing-specific gear stats — SHIPPED 2026-06-27 (#1504)** (see Recently shipped above):
   the Q-0175 "matching gear → better fishing" half is done — `fishing_power`/`bite_luck` on
   `EffectiveStats`, a CHARM-slot fishing-charm ladder, and the cast's 4th knob in `begin_cast`.

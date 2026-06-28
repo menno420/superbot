@@ -25,6 +25,7 @@ import discord
 from discord.ext import commands
 
 from cogs.counting import game_logic, handler
+from cogs.counting import leaderboard as counting_leaderboard
 from cogs.counting._stage import COUNTING_STAGE_NAME, CountingStage
 from core.runtime import resources, scope_locks, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
@@ -538,6 +539,7 @@ class CountingCog(commands.Cog):
             mode = channel_data.get("mode", "normal").capitalize()
             step = channel_data.get("step", 1)
             reset_on_wrong_count = channel_data.get("reset_on_wrong_count", False)
+            leaderboard = dict(channel_data.get("leaderboard", {}))
 
         embed = discord.Embed(title="Counting Info", color=discord.Color.blue())
         embed.add_field(name="Mode", value=mode, inline=False)
@@ -561,6 +563,42 @@ class CountingCog(commands.Cog):
         else:
             embed.add_field(name="Step", value=str(step), inline=False)
 
+        top_value = counting_leaderboard.top_field_value(ctx.guild, leaderboard)
+        if top_value:
+            embed.add_field(name="Top counters", value=top_value, inline=False)
+
+        await ctx.send(embed=embed)
+
+    @commands.command(name="counttop", aliases=["ct", "counting_top"])
+    async def count_top(self, ctx, channel: discord.TextChannel = None):
+        """Show the counting leaderboard — who has landed the most correct counts.
+
+        Reads the per-channel tally the game records on every accepted count, so
+        the standings everyone has been building are finally visible.
+        """
+        if not channel:
+            channel = ctx.channel
+
+        guild_id = str(ctx.guild.id)
+        channel_id = str(channel.id)
+
+        async with self.lock:
+            channel_data = (
+                self.count_data.get(guild_id, {}).get("channels", {}).get(channel_id)
+            )
+            if channel_data is None:
+                await ctx.send(
+                    "Counting game is not set up for this channel.",
+                    delete_after=10,
+                )
+                return
+            leaderboard = dict(channel_data.get("leaderboard", {}))
+
+        embed = counting_leaderboard.build_leaderboard_embed(
+            ctx.guild,
+            channel,
+            leaderboard,
+        )
         await ctx.send(embed=embed)
 
     @commands.command(name="count_rules", aliases=["cr"])
