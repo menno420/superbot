@@ -1,6 +1,9 @@
 # Idea — a "no dead-end" arch guard for game terminal views
 
-> **Status:** `ideas` · captured 2026-06-28 (dispatch run, Q-0089 session idea).
+> **Status:** `historical` — SHIPPED 2026-06-28 (PR #1529) — built as the `no_dead_end` warn-tier rule in
+> `scripts/check_architecture.py` (config + allowlist in `architecture_rules/canonical_helpers.yaml`),
+> +7 tests, wired into the completion rubric's "No dead-end controls" line. Captured 2026-06-28
+> (dispatch run, Q-0089 session idea).
 > Route-in: the completion rubric's "No dead-end controls" line
 > ([`../planning/feature-completion/rubric-game.md`](../planning/feature-completion/rubric-game.md))
 > + the architecture checker (`scripts/check_architecture.py`).

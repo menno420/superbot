@@ -16,6 +16,11 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **No-dead-end terminal-view arch guard** (#1529, Q-0194 friction→guard) — a warn-tier `no_dead_end`
+  rule in `scripts/check_architecture.py` flags any game-view terminal handler (calls `self.stop()`)
+  that renders a message without swapping to a nav-carrying view; allowlist for genuine pre-game
+  invite decline/timeout. Turns the recurring trapped-view catch (#1521/#1527) from a manual
+  per-assessment check into an enforced one. +7 tests; clean on the current fleet.
 - **Completion-first PvP dead-end fixes** (#1527, Q-0209) — closed the recurring **trapped-view** bug
   class in both competitive PvP games. **Deathmatch:** PvP `_DuelView`/`_ChallengeView` now swap to
   `_PvpDuelResultView` (Help/Games nav + 🔁 Rematch) on every terminal, and the latent panel-PvP
@@ -80,9 +85,13 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   born-red-gate-fix dispatch run (2026-06-28, PR #1524) added **RPS, Deathmatch, Chicken farm**. **▶ Next
   startable, offline:** (1) **assess more units** — the remaining unassessed games (Mining [big read],
   Casino, Creatures) then server-fns, one cert each under
-  [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from the rubric;
-  (2) **build the "no-dead-end" arch guard** ([idea](../ideas/no-dead-end-terminal-view-guard-2026-06-28.md))
-  so the trapped-view bug class is caught automatically instead of per-assessment. **✅ DONE
+  [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from the rubric.
+  **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
+  `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
+  `architecture_rules/canonical_helpers.yaml`, +7 tests) flags a game-view terminal handler that
+  `self.stop()`s + renders a message without swapping to a nav-carrying view, so the trapped-view bug
+  class is caught automatically instead of per-assessment ([idea](../ideas/no-dead-end-terminal-view-guard-2026-06-28.md),
+  now `historical`). **✅ DONE
   2026-06-28 (#1527):** the Deathmatch PvP trapped views (+ the panel-PvP `ctx=None` crash, BUG-0028)
   **and** the RPS PvP-result dead-end were both fixed — `_PvpDuelResultView` / `_RpsPvpResultView` with
   standard nav + rematch/back; both certs advanced toward ✔. The next turn-key gap is **Blackjack

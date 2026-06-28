@@ -153,3 +153,95 @@ def test_counts_by_check(mod):
         ),
     ]
     assert mod._counts_by_check(vs) == {"layer_boundary": 2, "lazy_layer_boundary": 1}
+
+
+# ---------------------------------------------------------------------------
+# No-dead-end terminal views (friction->guard, Q-0194)
+# ---------------------------------------------------------------------------
+
+_NO_DEAD_END_RULES = {
+    "no_dead_end": {
+        "severity": "warning",
+        "game_dirs": ["views/games/", "views/rps/"],
+        "exemptions": [
+            {"view": "_ChallengeView", "method": "decline", "reason": "invite"},
+        ],
+    },
+}
+
+# A terminal handler that stop()s + renders the now-disabled self, never swapping
+# to a nav-carrying view — the dead-end bug class this guard exists to catch.
+_DEAD_END = (
+    "import discord\n"
+    "class GameOverView(discord.ui.View):\n"
+    "    async def finish(self, interaction):\n"
+    "        for item in self.children:\n"
+    "            item.disabled = True\n"
+    "        await interaction.response.edit_message(view=self)\n"
+    "        self.stop()\n"
+)
+
+# The correct shape — swaps to a freshly-constructed result view that carries nav.
+_SWAPS = (
+    "import discord\n"
+    "class GameView(discord.ui.View):\n"
+    "    async def finish(self, interaction):\n"
+    "        result = _ResultView()\n"
+    "        await interaction.response.edit_message(view=result)\n"
+    "        self.stop()\n"
+)
+
+# Delegates the swap to another coroutine (e.g. _start_pvp deals the next hand) —
+# not a dead-end, must not be flagged.
+_DELEGATES = (
+    "import discord\n"
+    "class GameView(discord.ui.View):\n"
+    "    async def accept(self, interaction):\n"
+    "        await interaction.response.edit_message(content='dealing', view=self)\n"
+    "        self.stop()\n"
+    "        await _start_next_round(interaction)\n"
+)
+
+
+def test_no_dead_end_flags_trapped_terminal_handler(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "views/games/over.py", _DEAD_END)
+    vs = mod.check_no_dead_end_terminal_views([f], _NO_DEAD_END_RULES)
+    assert len(vs) == 1
+    assert vs[0].check == "no_dead_end"
+    assert vs[0].severity == "warning"
+    assert "GameOverView.finish" in vs[0].message
+
+
+def test_no_dead_end_allows_view_swap(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "views/games/g.py", _SWAPS)
+    assert mod.check_no_dead_end_terminal_views([f], _NO_DEAD_END_RULES) == []
+
+
+def test_no_dead_end_allows_coroutine_delegation(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "views/games/g.py", _DELEGATES)
+    assert mod.check_no_dead_end_terminal_views([f], _NO_DEAD_END_RULES) == []
+
+
+def test_no_dead_end_respects_classmethod_allowlist(mod, tmp_path, monkeypatch):
+    src = _DEAD_END.replace("GameOverView", "_ChallengeView").replace(
+        "finish", "decline"
+    )
+    f = _write(mod, tmp_path, monkeypatch, "views/games/c.py", src)
+    assert mod.check_no_dead_end_terminal_views([f], _NO_DEAD_END_RULES) == []
+
+
+def test_no_dead_end_ignores_non_game_dirs(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "views/settings/s.py", _DEAD_END)
+    assert mod.check_no_dead_end_terminal_views([f], _NO_DEAD_END_RULES) == []
+
+
+def test_no_dead_end_ignores_handler_without_stop(mod, tmp_path, monkeypatch):
+    # Renders the disabled self but never stop()s -> not a terminal handler.
+    src = _DEAD_END.replace("        self.stop()\n", "")
+    f = _write(mod, tmp_path, monkeypatch, "views/games/n.py", src)
+    assert mod.check_no_dead_end_terminal_views([f], _NO_DEAD_END_RULES) == []
+
+
+def test_no_dead_end_disabled_when_unconfigured(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "views/games/over.py", _DEAD_END)
+    assert mod.check_no_dead_end_terminal_views([f], {}) == []

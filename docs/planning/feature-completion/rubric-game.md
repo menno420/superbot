@@ -23,6 +23,9 @@ item; the unit cannot be `✔ certified` until the punch-list is empty and the o
       clear terminal result.
 - [ ] **No dead-end or placeholder controls** — no "coming soon", no disabled-with-no-explanation,
       no button that errors or no-ops (`command-integration-standard` § "no dead-end views").
+      *Partly enforced:* `scripts/check_architecture.py` (`no_dead_end` rule, warn-tier) flags a game-view
+      terminal handler that `self.stop()`s + renders a message without swapping to a nav-carrying view —
+      a heuristic backstop, not a substitute for the live walkthrough.
 - [ ] **Rewards/XP are wired** through the correct service (game-XP / economy), not duplicated.
 
 ## B. UI & buttons — "the right buttons in the right places"

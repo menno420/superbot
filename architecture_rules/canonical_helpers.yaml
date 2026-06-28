@@ -57,3 +57,41 @@ audit_events:
   severity: warning
   # Not yet automatically checked — tracked here for documentation.
   auto_checked: false
+
+no_dead_end:
+  # Friction->guard (Q-0194) for the recurring "trapped-view" bug class — a finished
+  # game/duel that leaves disabled buttons and stop()s without swapping to a nav-carrying
+  # result view (Fishing #1521, Deathmatch + RPS PvP #1527 / BUG-0028). Heuristic AST lint,
+  # so it ships warning-tier with an allowlist (same shape as base_view above) and is
+  # disposable per the adopt-freely-with-a-kill-switch rule (Q-0105) — if the heuristic
+  # proves noisy across a few sessions, delete this block + check_no_dead_end_terminal_views.
+  description: >
+    A game-view terminal handler (a method that calls self.stop()) which renders a terminal
+    message should swap to a view that carries standard navigation (a result view / a Back
+    button) rather than re-render the now-disabled self or post a bare embed with no view.
+    The checker flags a handler that stop()s and renders a message but neither constructs a
+    *View nor delegates to another coroutine (which may render the swap elsewhere).
+  severity: warning
+  # Only game-view directories are scoped (these own gameplay terminal lifecycles).
+  game_dirs:
+    - views/rps/
+    - views/blackjack/
+    - views/casino/
+    - views/fishing/
+    - views/games/
+  # Accepted terminal handlers — keyed by ClassName.method. Pre-game challenge *invites*
+  # that were declined / timed out never became a game, so there is no result to navigate;
+  # closing with terminal copy + disabled buttons is correct, not a dead-end.
+  exemptions:
+    - view: _ChallengeView
+      method: decline
+      reason: pre-game blackjack PvP invite declined — no game result to navigate
+    - view: _ChallengeView
+      method: on_timeout
+      reason: pre-game blackjack PvP invite expired — no game result to navigate
+    - view: _RpsPvpChallengeView
+      method: decline
+      reason: pre-game RPS PvP invite declined — no game result to navigate
+    - view: _RpsPvpChallengeView
+      method: on_timeout
+      reason: pre-game RPS PvP invite expired — no game result to navigate
