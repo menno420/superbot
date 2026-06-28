@@ -1,0 +1,1 @@
+- branch `claude/question-router-docs-prhcr9` · scope: document owner answers (Q-0182/0184/0185/0186/0187/0194/0198/0200/0206/0207) into the question router + route conclusions to homes; decide & document the router-vs-durable-home convention (archive vs re-route) · area: docs/owner/, docs/planning/, docs/ideas/, docs/helper-policy.md, .claude/CLAUDE.md · 2026-06-28
