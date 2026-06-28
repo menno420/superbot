@@ -22,5 +22,18 @@ nav/ownership tables) and `readiness_scoreboard` (the risk axis).
 unit the ledger never knew about is a hole in that guarantee. Cheap to build once the
 `completion_scoreboard.py` parser exists (reuse its table reader).
 
+**Extension — also check the *type* (2026-06-28, Q-0089, from assessing units in PR #1519):** the
+parity check above is membership-only (is each unit present?). Assessing real units surfaced a
+**second, higher-value dimension: type drift.** `chain` ("Word Chain") is registered as a **game**
+(`category: games`, `parent_hub: games`, caps `chain.game.*`) but is actually a **channel
+word-restriction moderation tool** — so it was assessed against the wrong rubric and can't be
+certified until re-classified (see [`units/chain.md`](../planning/feature-completion/units/chain.md)).
+A membership-only guard would have passed it green. So the guard should *also* assert that each
+`units/<key>.md` cert's declared **Type** (game vs server-fn) matches the registry's
+`category`/`parent_hub` family — turning "registered as X, assessed as Y" into a mechanical CI signal
+instead of something a human has to happen to notice. This is the part worth building first: the
+Word Chain case is live proof it catches a real defect.
+
 → relates `scripts/completion_scoreboard.py` · `docs/planning/feature-completion/README.md` ·
-`disbot/utils/subsystem_registry.py` · the `subsystem-inventory-homed-guard` idea.
+`disbot/utils/subsystem_registry.py` · the `subsystem-inventory-homed-guard` idea ·
+`units/chain.md` (the type-drift case).
