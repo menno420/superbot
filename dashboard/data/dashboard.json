@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T21:49:44Z",
+    "generated_at": "2026-06-28T23:46:03Z",
     "build": {
-      "commit": "f0d95296",
-      "subject": "Merge pull request #1535 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-28T21:49:44Z"
+      "commit": "ae4fa85e",
+      "subject": "Merge pull request #1538 from menno420/claude/funny-franklin-8tarop-b",
+      "committed_at": "2026-06-28T23:46:03Z"
     },
     "counts": {
       "functions": 43,
       "ideas": 153,
-      "bugs": 28,
+      "bugs": 29,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -2458,6 +2458,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0029",
+      "title": "XP level-up role grants bypass the audited role seam (no audit.action_recorded, no shared hierarchy preflight) — FIXED (root)",
+      "status": "unknown",
+      "summary": "Symptom (found 2026-06-28 by a dispatch run during the XP feature-completion assessment — code inspection, not a live report, but a real audit gap): when a member levels up and earns an XP-threshold role, the grant/removal was performed by a direct member.add_roles() / member.re…"
+    },
+    {
       "id": "BUG-0028",
       "title": "panel-initiated PvP deathmatch crashes on resolve (ctx=None → self.ctx.guild.id AttributeError) — FIXED (root)",
       "status": "unknown",
@@ -2628,6 +2634,22 @@
   ],
   "reviews": [],
   "updates": [
+    {
+      "file": "2026-06-28-server-function-completion-assessments.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — Server-function completion assessments (Q-0209)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-28-server-fn-assessments-batch2.md",
+      "date": "2026-06-28",
+      "title": "2026-06-28 — Server-function completion assessments, batch 2 (Q-0209)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
     {
       "file": "2026-06-28-reconcile.md",
       "date": "2026-06-28",
@@ -3088,22 +3110,6 @@
       "file": "2026-06-24-ticket-ai-confirm.md",
       "date": "2026-06-24",
       "title": "2026-06-24 — Ticket AI open: one-click confirm (follow-up to #1405)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-syncslash-gated-unification.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Route `!syncslash global` through the diff-gated auto-sync helper",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-support-tickets.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Support-ticket subsystem (command + AI natural language)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
