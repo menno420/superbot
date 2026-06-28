@@ -1,1 +1,0 @@
-- branch `claude/casino-completion-cert` · scope: Casino poker feature-completion certificate (◐ assessed) · area: `docs/planning/feature-completion/` · 2026-06-28

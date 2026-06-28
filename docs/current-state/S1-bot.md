@@ -80,11 +80,12 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
-- `[offline]` **Feature-completion assessments — IN PROGRESS (7/36 assessed).** The completion-first arc
+- `[offline]` **Feature-completion assessments — IN PROGRESS (8/36 assessed).** The completion-first arc
   (Q-0209). #1519 added Fishing/Counting/Word Chain to the #1513 Blackjack pilot; the
-  born-red-gate-fix dispatch run (2026-06-28, PR #1524) added **RPS, Deathmatch, Chicken farm**. **▶ Next
-  startable, offline:** (1) **assess more units** — the remaining unassessed games (Mining [big read],
-  Casino, Creatures) then server-fns, one cert each under
+  born-red-gate-fix dispatch run (2026-06-28, PR #1524) added **RPS, Deathmatch, Chicken farm**; **#1530
+  added Casino (poker) — ◐ assessed, play-chips-only/money-safe, punch-list = one terminal-nav gap +
+  v1 depth**. **▶ Next startable, offline:** (1) **assess more units** — the remaining unassessed games
+  (Mining [big read], Creatures) then server-fns, one cert each under
   [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from the rubric.
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
