@@ -73,10 +73,11 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   startable, offline:** (1) **assess more units** — the unassessed games (Mining [big read], Casino,
   Deathmatch, RPS, Creatures, Chicken Farm) then server-fns, one cert each under
   [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from the rubric;
-  (2) **close the contained punch-list gaps this run surfaced** — **Fishing #1** (the Rod/Bait shops are
-  *trapped views*: give them back-nav / `attach_standard_nav`; mind the menu↔shop import cycle) and
-  **Counting #3** (no player-facing registry entry point). *(Counting #2 — the dead-state leaderboard —
-  was already closed in #1519: `!counttop` + a `count_info` field.)* **▶ Owner decisions waiting:**
+  (2) the contained offline punch-list gaps are now **cleared (#1521):** **Fishing #1** (Rod/Bait shops
+  un-trapped — ↩ Fishing-menu back button + the menu carries Help/↩ Games nav) + **#2** (📖 How-to-fish
+  button), and **Counting #3** (player-facing `count_info`/`counttop` lead the registry `entry_points`).
+  *(Counting #2 — the dead-state leaderboard — was closed in #1519: `!counttop` + a `count_info` field.)*
+  Each unit's remaining items are now owner-paced (live walkthrough + `◐ → ✔` sign-off). **▶ Owner decisions waiting:**
   Word Chain re-classify (game vs. moderation tool), Counting XP/coin reward, plus every unit's final
   `◐ → ✔` sign-off (needs a live walkthrough — `[needs-live-bot]`/`[owner]`).
 - `[offline]` **Fishing-specific gear stats — SHIPPED 2026-06-27 (#1504)** (see Recently shipped above):

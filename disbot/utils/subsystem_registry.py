@@ -883,7 +883,10 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "games",
         "tags": ["games", "counting", "community"],
-        "entry_points": ["countingmenu"],
+        # Player-facing entry points lead (count_info shows live state + top
+        # counters; counttop the leaderboard) so counting has a public discovery
+        # surface — countingmenu stays for the staff config hub.
+        "entry_points": ["count_info", "counttop", "countingmenu"],
         "default_channels": ["counting", "games"],
         "related_subsystems": [],
         "dependencies": [],

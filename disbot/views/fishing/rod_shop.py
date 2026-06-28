@@ -136,3 +136,21 @@ class RodShopView(BaseView):
             return
         result = await fishing_workflow.craft_rod(self._author.id, self.guild_id)
         await self._rerender(interaction, result.tier, result.message)
+
+    @discord.ui.button(
+        label="↩ Fishing menu",
+        style=discord.ButtonStyle.secondary,
+        row=1,
+    )
+    async def back_btn(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        # The menu self.stop()s when it opens this shop, so a player would be
+        # stranded here — rebuild the fully-navigable menu in place. Lazy import
+        # to respect the menu→shop import direction.
+        from views.fishing.menu import open_fishing_menu
+
+        self.stop()
+        await open_fishing_menu(interaction, self._author, self.guild_id)
