@@ -417,6 +417,116 @@ def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation
 
 
 # ---------------------------------------------------------------------------
+# No-dead-end terminal views (friction->guard, Q-0194)
+# ---------------------------------------------------------------------------
+
+_VIEW_BASES = {"discord.ui.View", "View", "BaseView", "HubView", "PersistentView"}
+# Message-producing calls — rendering a terminal message to the user.
+_MSG_CALLS = {"edit", "send", "edit_message", "safe_edit", "respond", "send_message"}
+
+
+def _call_name(call: ast.Call) -> str | None:
+    func = call.func
+    if isinstance(func, ast.Name):
+        return func.id
+    if isinstance(func, ast.Attribute):
+        return func.attr
+    return None
+
+
+def _analyze_terminal_handler(
+    fn: ast.FunctionDef | ast.AsyncFunctionDef,
+) -> tuple[bool, bool, bool]:
+    """Return (stops, renders_message, swaps_or_delegates) for one method body.
+
+    - stops: calls ``self.stop()`` (marks it a terminal handler)
+    - renders_message: awaits/calls a message-producing call (edit/send/...)
+    - swaps_or_delegates: constructs a ``*View`` (a swap) OR awaits a non-message
+      coroutine (delegation that may render the swap elsewhere, e.g. ``_start_pvp``)
+    """
+    stops = renders = swaps = False
+    for node in ast.walk(fn):
+        if isinstance(node, ast.Call):
+            name = _call_name(node)
+            if (
+                name == "stop"
+                and isinstance(node.func, ast.Attribute)
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == "self"
+            ):
+                stops = True
+            if name and name.endswith("View") and name != "super":
+                swaps = True  # constructs a (result) view -> a swap
+        if isinstance(node, ast.Await) and isinstance(node.value, ast.Call):
+            name = _call_name(node.value)
+            if name in _MSG_CALLS:
+                renders = True
+            elif name and name.endswith("View"):
+                swaps = True
+            elif name not in (None, "stop"):
+                swaps = True  # delegates to another coroutine
+    return stops, renders, swaps
+
+
+def check_no_dead_end_terminal_views(files: list[Path], rules: dict) -> list[Violation]:
+    cfg = rules.get("no_dead_end", {})
+    if not cfg:
+        return []
+    game_dirs = tuple(cfg.get("game_dirs", []))
+    exemptions = {
+        (e["view"], e["method"]) for e in cfg.get("exemptions", []) if "method" in e
+    }
+    severity = cfg.get("severity", "warning")
+    violations: list[Violation] = []
+
+    for filepath in files:
+        rel = str(filepath.relative_to(DISBOT_ROOT))
+        if not rel.startswith(game_dirs):
+            continue
+        if "test" in rel.lower():
+            continue
+        try:
+            tree = ast.parse(
+                filepath.read_text(encoding="utf-8", errors="replace"),
+                filename=str(filepath),
+            )
+        except (SyntaxError, OSError):
+            continue
+
+        for cls in ast.walk(tree):
+            if not isinstance(cls, ast.ClassDef):
+                continue
+            if not (set(_class_bases(cls)) & _VIEW_BASES):
+                continue
+            for fn in cls.body:
+                if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                if (cls.name, fn.name) in exemptions:
+                    continue
+                stops, renders, swaps = _analyze_terminal_handler(fn)
+                if stops and renders and not swaps:
+                    violations.append(
+                        Violation(
+                            file=filepath,
+                            line=fn.lineno,
+                            check="no_dead_end",
+                            message=(
+                                f"`{cls.name}.{fn.name}` is a terminal handler "
+                                "(calls self.stop()) that renders a message but "
+                                "does not swap to a nav-carrying view — a finished "
+                                "game/duel must never be a dead-end (Q-0194). Swap to "
+                                "a result view with standard nav, or allowlist it in "
+                                "architecture_rules/canonical_helpers.yaml (no_dead_end) "
+                                "if it is genuinely terminal (e.g. a declined invite)."
+                            ),
+                            severity=severity,
+                        ),
+                    )
+
+    return violations
+
+
+# ---------------------------------------------------------------------------
 # File collection
 # ---------------------------------------------------------------------------
 
@@ -527,6 +637,7 @@ def main() -> int:
     all_violations += check_raw_sql(files, mutation_rules)
     all_violations += check_settings_key_literals(files, helpers_rules)
     all_violations += check_baseview_inheritance(files, helpers_rules)
+    all_violations += check_no_dead_end_terminal_views(files, helpers_rules)
 
     errors = [v for v in all_violations if v.severity == "error"]
     warnings = [v for v in all_violations if v.severity == "warning"]
