@@ -1,0 +1,1 @@
+- `claude/railway-deployment-failure-v9h4co` · **PROD HOTFIX: bot offline** — `give` command-name collision (economy vs mining) crashes `mining_cog` load → STRICT identity-contract aborts boot · files: `disbot/cogs/mining_cog.py`, `disbot/services/mining_workflow.py`, `tests/unit/invariants/test_extension_integrity.py` · 2026-06-29
