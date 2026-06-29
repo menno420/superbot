@@ -16,6 +16,15 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Operator command gaps — `!slowmode` · `!topic` · `!roleinfo`** (#1561, completion-first deepening) —
+  the assessment punch-list's named *"best-in-class command gaps (channel slowmode/topic, utility
+  roleinfo)"*. `!slowmode <ch> <secs>` (alias `!slow`) + `!topic <ch> <text>` (alias `!settopic`) are
+  channel *mutations* so they ship through the audited `ChannelLifecycleService` seam (two REVERSIBLE ops
+  `set_slowmode`/`set_topic`, clamped to Discord's 6h/1024-char caps) — each fires the audit companion +
+  `channel.lifecycle_changed` event like `!rename`. `!roleinfo <@role|name|id>` (alias `!ri`) is a
+  read-only role detail card (colour/members/position/flags/notable permissions) rendered in
+  `views/roles/role_info.py` (extracted to keep `role_cog` under the 800-LOC decomposition threshold).
+  +44 tests; no migration; self-merged on green.
 - **Farm leaderboard provider** (#1542, completion-first deepening win) — the idle chicken farm now
   appears in the unified `!leaderboard` hub + select menu (`FarmProvider`, ranked by **flock size**,
   coop level as the tie-break), reusing a new `db.top_farmers` primitive. Mirrors `FishingProvider`;
@@ -135,8 +144,10 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   the arc is now `◐ → ✔` certification work, which is **`[owner]`/`[needs-live-bot]`** by definition (each
   unit needs a `/verify-bot` live walkthrough + owner sign-off). **Offline deepening picks** from the
   punch-lists: Inventory item-grant audit + capability cleanup · Proof-channel lock/unlock audit + modal
-  re-check · logging ignored-lists/channel+voice events · the AI BUG-0019 #1 owner decision · best-in-class
-  command gaps (channel slowmode/topic, utility roleinfo/channelinfo). The Blackjack/Casino/Word-Chain
+  re-check · logging ignored-lists/channel+voice events · the AI BUG-0019 #1 owner decision · ~~best-in-class
+  command gaps (channel slowmode/topic, utility roleinfo)~~ **✅ DONE 2026-06-29 (#1561): `!slowmode` +
+  `!topic` (audited ChannelLifecycleService seam) + `!roleinfo` (read-only)** — `channelinfo`/`userinfo`
+  already existed; these closed the remaining named gaps. The Blackjack/Casino/Word-Chain
   leaderboards still need persisted per-player tracking first (a feature, not a provider).
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in

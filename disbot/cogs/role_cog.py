@@ -367,6 +367,43 @@ class RoleCog(commands.Cog):
         """Open the role management hub (alias for !roles)."""
         await ctx.invoke(self.roles_hub)
 
+    @commands.command(
+        name="roleinfo",
+        aliases=["ri"],
+        help="Show a role's details. Usage: !roleinfo <@role|name|id>",
+    )
+    @commands.guild_only()
+    async def roleinfo(self, ctx: commands.Context, *, role: discord.Role) -> None:
+        """Read-only role detail card — the role sibling of !channelinfo / !info user.
+
+        Member-tier and read-only (no mutation, so no audited seam): anyone can
+        look up a role's colour, member count, position, flags, and notable
+        permissions. Closes the assessment punch-list's "utility roleinfo" gap.
+        The rendering lives in ``views.roles.role_info`` (the cog stays a thin
+        resolve → render → send wrapper).
+        """
+        from views.roles.role_info import build_role_info_embed
+
+        embed = build_role_info_embed(role, requested_by=ctx.author)
+        await ctx.send(embed=embed)
+
+    @roleinfo.error
+    async def roleinfo_error(self, ctx: commands.Context, error: Exception) -> None:
+        """Friendly message when the role argument is missing or unresolved."""
+        if isinstance(
+            error,
+            (
+                commands.RoleNotFound,
+                commands.MissingRequiredArgument,
+                commands.BadArgument,
+            ),
+        ):
+            await ctx.send(
+                "Usage: `!roleinfo <@role|name|id>` — I couldn't find that role.",
+            )
+            return
+        raise error
+
     # ------------------------------------------------------------------ compatibility aliases (hidden)
 
     @commands.command(

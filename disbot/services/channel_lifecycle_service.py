@@ -4,7 +4,8 @@ The canonical owner of the channel *change* operations that
 :class:`services.resource_provisioning.ResourceProvisioningPipeline` does not
 own — **rename**, **move** (to/from a category), **reorder**, **delete**
 (single or batch), **set_overwrite** (permission overwrites: lock/unlock/grant/
-deny), and **clone**.  Cogs and views authorise and render; every Discord
+deny), **clone**, **set_slowmode** (per-user delay), and **set_topic**.  Cogs
+and views authorise and render; every Discord
 mutation flows through here, returning a typed
 :class:`services.lifecycle.LifecycleResult` with per-channel
 :class:`services.lifecycle.StepResult` and a best-effort audit companion +
@@ -55,7 +56,16 @@ logger = logging.getLogger("bot.services.channel_lifecycle")
 DOMAIN = "channel"
 EVT_CHANNEL_LIFECYCLE = "channel.lifecycle_changed"
 
-_OPERATIONS = ("rename", "move", "delete", "reorder", "set_overwrite", "clone")
+_OPERATIONS = (
+    "rename",
+    "move",
+    "delete",
+    "reorder",
+    "set_overwrite",
+    "clone",
+    "set_slowmode",
+    "set_topic",
+)
 _REVERSIBILITY = {
     "rename": lc.REVERSIBLE,
     "move": lc.COMPENSATABLE,
@@ -66,16 +76,23 @@ _REVERSIBILITY = {
     # (preserving the existing lock/unlock/clone command UX).
     "set_overwrite": lc.REVERSIBLE,
     "clone": lc.COMPENSATABLE,
+    # Slowmode and topic are plain scalar channel edits — fully reversible by
+    # setting the old value back (the operator's typed command is the change).
+    "set_slowmode": lc.REVERSIBLE,
+    "set_topic": lc.REVERSIBLE,
 }
+
+# Discord's hard cap on a text channel's per-user slowmode delay (6 hours).
+MAX_SLOWMODE_SECONDS = 21600
+# Discord's hard cap on a channel topic.
+MAX_TOPIC_LENGTH = 1024
 
 
 @dataclass(frozen=True)
 class ChannelLifecycleRequest:
     """Typed request — one operation over one or more channels."""
 
-    operation: (
-        str  # "rename" | "move" | "delete" | "reorder" | "set_overwrite" | "clone"
-    )
+    operation: str  # one of _OPERATIONS
     channel_ids: tuple[int, ...]
     new_name: str | None = None  # rename
     category_id: int | None = None  # move (None = remove from category)
@@ -87,6 +104,10 @@ class ChannelLifecycleRequest:
     overwrites: dict[str, bool | None] | None = None  # permission name → allow/deny
     # clone: the new channel's name.
     clone_name: str | None = None
+    # set_slowmode: per-user delay in seconds (0 disables).
+    slowmode_seconds: int | None = None
+    # set_topic: the new topic text (None / "" clears it).
+    topic: str | None = None
 
 
 class ChannelLifecycleService:
@@ -406,6 +427,14 @@ class ChannelLifecycleService:
             )
         elif operation == "clone":
             await channel.clone(name=request.clone_name, reason=reason)  # type: ignore[attr-defined]
+        elif operation == "set_slowmode":
+            # .edit's slowmode_delay lives on text/forum channels, not the abc.
+            seconds = max(0, min(request.slowmode_seconds or 0, MAX_SLOWMODE_SECONDS))
+            await channel.edit(slowmode_delay=seconds, reason=reason)  # type: ignore[attr-defined]
+        elif operation == "set_topic":
+            # An empty string / None clears the topic; cap at Discord's limit.
+            topic = (request.topic or "")[:MAX_TOPIC_LENGTH]
+            await channel.edit(topic=topic or None, reason=reason)  # type: ignore[attr-defined]
 
     async def _resolve_create_category(
         self,
@@ -530,6 +559,18 @@ class ChannelLifecycleService:
         if request.operation == "clone":
             name = getattr(channels[0], "name", "?") if channels else "?"
             return f"clone channel {name!r} → {request.clone_name!r}{suffix}"
+        if request.operation == "set_slowmode":
+            seconds = max(0, min(request.slowmode_seconds or 0, MAX_SLOWMODE_SECONDS))
+            name = getattr(channels[0], "name", "?") if channels else "?"
+            return f"set slowmode {seconds}s on channel {name!r}{suffix}"
+        if request.operation == "set_topic":
+            name = getattr(channels[0], "name", "?") if channels else "?"
+            verb = (
+                "clear topic of"
+                if not (request.topic or "").strip()
+                else "set topic of"
+            )
+            return f"{verb} channel {name!r}{suffix}"
         return f"delete {n} channel(s){suffix}"
 
     def _terminal(
@@ -587,6 +628,8 @@ class ChannelLifecycleService:
 
 __all__ = [
     "EVT_CHANNEL_LIFECYCLE",
+    "MAX_SLOWMODE_SECONDS",
+    "MAX_TOPIC_LENGTH",
     "ChannelLifecycleRequest",
     "ChannelLifecycleService",
 ]

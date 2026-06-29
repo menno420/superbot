@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T14:38:55Z",
+    "generated_at": "2026-06-29T21:07:36Z",
     "build": {
-      "commit": "6b110fa",
-      "subject": "projmoon: open born-red session — Limbus combat-mechanics layer",
-      "committed_at": "2026-06-29T14:38:55Z"
+      "commit": "8624d7ea",
+      "subject": "chore(session): born-red card — operator command gaps (slowmode/topic/roleinfo)",
+      "committed_at": "2026-06-29T21:07:36Z"
     }
   },
   "counts": {
-    "commands": 460,
+    "commands": 463,
     "features": 43,
     "games": 12
   },
@@ -9832,6 +9832,27 @@
       "notes": null
     },
     {
+      "name": "roleinfo",
+      "aliases": [
+        "ri"
+      ],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show a role's details. Usage: !roleinfo <@role|name|id>",
+      "description": "Read-only role detail card — the role sibling of !channelinfo / !info user.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "rolemenu",
       "aliases": [],
       "category": "management",
@@ -9919,6 +9940,38 @@
           "status": "ideas"
         }
       ],
+      "notes": null
+    },
+    {
+      "name": "slowmode",
+      "aliases": [
+        "slow"
+      ],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "topic",
+      "aliases": [
+        "settopic"
+      ],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
