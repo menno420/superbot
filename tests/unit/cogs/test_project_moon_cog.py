@@ -126,3 +126,27 @@ async def test_pm_origins_command_sends_cross_reference():
     embed: discord.Embed = ctx.sent[0]["embed"]
     assert "literary origins" in embed.title.lower()
     assert "Dostoevsky" in embed.description
+
+
+@pytest.mark.asyncio
+async def test_pm_mechanic_lookup_shows_group():
+    cog, ctx = _cog(), _FakeCtx()
+    await cog.pm_mechanic.callback(cog, ctx, name="clash")
+    embed: discord.Embed = ctx.sent[0]["embed"]
+    assert "Clash" in embed.title
+    assert any(f.name == "Group" for f in embed.fields)
+
+
+@pytest.mark.asyncio
+async def test_pm_mechanic_empty_lists_every_mechanic():
+    cog, ctx = _cog(), _FakeCtx()
+    await cog.pm_mechanic.callback(cog, ctx, name="")
+    embed: discord.Embed = ctx.sent[0]["embed"]
+    assert len(embed.fields) == len(data.get_entries("mechanic"))
+
+
+def test_mechanic_entry_embed_lists_in_category_order():
+    # The kind list renders each mechanic with its category suffix.
+    embed = build_kind_embed("mechanic")
+    field_names = " ".join(f.name for f in embed.fields)
+    assert "Clash — Clash system" in field_names

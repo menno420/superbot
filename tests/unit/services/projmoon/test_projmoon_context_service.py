@@ -98,3 +98,32 @@ def test_facts_are_deterministic_for_a_fixed_message() -> None:
     assert svc.build("faust and heathcliff").facts == svc.build(
         "faust and heathcliff",
     ).facts
+
+
+# --- combat mechanics (the new layer) ----------------------------------------
+
+
+def test_named_mechanic_is_grounded_with_its_group() -> None:
+    facts = svc.build("how does clashing work in limbus").facts
+    assert any(f.startswith("Clash (combat mechanic") for f in facts)
+    assert "Clash system" in "\n".join(facts)
+
+
+def test_ids_and_passives_ground_the_concepts() -> None:
+    # The Project Moon player's exact phrasing — "ids and passives".
+    joined = "\n".join(svc.build("what are ids and passives in limbus").facts)
+    assert "Identity (combat mechanic" in joined
+    assert "Passive (combat mechanic" in joined
+
+
+def test_combat_mechanics_roster_query_expands() -> None:
+    facts = svc.build("explain the combat mechanics in limbus").facts
+    joined = "\n".join(facts)
+    for name in ("Clash", "Speed", "Sanity", "Identity", "Stagger"):
+        assert f"{name} (combat mechanic" in joined
+
+
+def test_mechanic_grounding_does_not_disturb_sinner_roster() -> None:
+    # A pure sinner roster query still grounds exactly the 12 Sinners — adding the
+    # mechanic kind must not leak mechanic facts into an unrelated roster.
+    assert len(svc.build("list every sinner in limbus").facts) == 12

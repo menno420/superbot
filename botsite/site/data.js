@@ -3367,6 +3367,27 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "mechanic",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Look up a combat mechanic (Clash / Speed / Sanity / …) (or list them all).",
+    "description": "Look up a combat mechanic (Clash / Speed / Sanity / …) (or list them all).",
+    "usage": "!mechanic",
+    "aliases": [
+      "mechanics",
+      "combat"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)"
+      }
+    ]
+  },
+  {
     "name": "media",
     "area": "other",
     "status": "finished",
@@ -7001,7 +7022,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "9903d06d",
+    "build": "6b110fa",
     "title": "New public bot website",
     "changes": [
       {
@@ -7013,7 +7034,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "9903d06d",
+    "build": "6b110fa",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7025,7 +7046,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "9903d06d",
+    "build": "6b110fa",
     "title": "Command-alias suggestions",
     "changes": [
       {

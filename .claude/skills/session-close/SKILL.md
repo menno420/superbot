@@ -109,6 +109,21 @@ python3.10 scripts/check_session_close_gate.py        # meta: every [session-clo
 python3.10 scripts/check_quality.py --check-only
 ```
 
+**Regenerate the web export when the scanned surface changed (recurring drift — 2026-06-29).**
+If this session changed the **command surface** (a new/renamed command or alias), a setting, a cog,
+or any source the dashboard scans, the committed `dashboard/data/dashboard.json` /
+`botsite/data/site.json` / `botsite/site/data.js` go stale and the **generated-artifact freshness
+pytest fails in CI** (`test_check_generated_artifacts_fresh` / `test_committed_site_json_matches_a_fresh_build`).
+`check_quality.py --check-only` above **does not** run that pytest, so it surfaces only in CI unless
+you regenerate now:
+
+```bash
+python3.10 scripts/export_dashboard_data.py     # rewrites dashboard.json + site.json + data.js
+```
+
+Two consecutive sessions (#1542 farm-leaderboard alias, #1549 `!pm mechanic`) hit this; regenerate
+as part of the final commit so the freshness gate is green on the first CI run.
+
 If `check_reconciliation_due` reports **DUE**, the next session should be a docs-only review +
 planning-reconciliation pass (Q-0107: reconcile repo state + plan the next **full band** — depth ≥ the
 30-PR cadence, Q-0164; raise ⚠️ PLAN BACKLOG THIN if the idea backlog can't fill it); after that pass,

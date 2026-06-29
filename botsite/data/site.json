@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T09:09:06Z",
+    "generated_at": "2026-06-29T14:38:55Z",
     "build": {
-      "commit": "9903d06d",
-      "subject": "Creatures completion: born-red session card + claim (panel + dex browser)",
-      "committed_at": "2026-06-29T09:09:06Z"
+      "commit": "6b110fa",
+      "subject": "projmoon: open born-red session — Limbus combat-mechanics layer",
+      "committed_at": "2026-06-29T14:38:55Z"
     }
   },
   "counts": {
-    "commands": 459,
+    "commands": 460,
     "features": 43,
     "games": 12
   },
@@ -6394,6 +6394,28 @@
       "permissions": "user",
       "usage": "Resolve any Limbus name/term across every category.",
       "description": "Resolve any Limbus name/term across every category.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Project Moon wiki as a bot knowledge domain — feasibility (2026-06-21)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "mechanic",
+      "aliases": [
+        "mechanics",
+        "combat"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Look up a combat mechanic (Clash / Speed / Sanity / …) (or list them all).",
+      "description": "Look up a combat mechanic (Clash / Speed / Sanity / …) (or list them all).",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
