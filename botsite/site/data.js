@@ -2661,26 +2661,6 @@ const COMMANDS = [
     "planned": []
   },
   {
-    "name": "give",
-    "area": "economy",
-    "status": "in-progress",
-    "summary": "Give some of your coins to another member. !give @user <amount>",
-    "description": "Give some of your coins to another member. !give @user <amount>",
-    "usage": "!give",
-    "aliases": [
-      "pay"
-    ],
-    "permissions": "anyone",
-    "cooldown": null,
-    "examples": [],
-    "planned": [
-      {
-        "status": "idea",
-        "title": "Wager / money-flow map — generated trace of game coin paths"
-      }
-    ]
-  },
-  {
     "name": "givexp",
     "area": "progression",
     "status": "finished",
@@ -6997,7 +6977,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "fe4b312c",
+    "build": "ca2b4dc4",
     "title": "New public bot website",
     "changes": [
       {
@@ -7009,7 +6989,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "fe4b312c",
+    "build": "ca2b4dc4",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7021,7 +7001,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "fe4b312c",
+    "build": "ca2b4dc4",
     "title": "Command-alias suggestions",
     "changes": [
       {

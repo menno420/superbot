@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T03:07:21Z",
+    "generated_at": "2026-06-29T05:09:29Z",
     "build": {
-      "commit": "fe4b312c",
-      "subject": "Open born-red session card: Farm leaderboard provider",
-      "committed_at": "2026-06-29T03:07:21Z"
+      "commit": "ca2b4dc4",
+      "subject": "fix(cogs): retire `give` command surface-wide — unblock boot (bot was offline)",
+      "committed_at": "2026-06-29T05:09:29Z"
     }
   },
   "counts": {
-    "commands": 460,
+    "commands": 458,
     "features": 43,
     "games": 12
   },
@@ -3106,54 +3106,6 @@
       "permissions": "user",
       "usage": "Show your equipped gear, its condition, and the stats it grants.",
       "description": "Show your equipped gear, its condition, and the stats it grants.",
-      "use_cases": null,
-      "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)",
-          "status": "ideas"
-        },
-        {
-          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
-          "status": "ideas"
-        },
-        {
-          "title": "Mining & Exploration — Brainstorm & Roadmap",
-          "status": "ideas"
-        }
-      ],
-      "notes": null
-    },
-    {
-      "name": "give",
-      "aliases": [
-        "pay"
-      ],
-      "category": "economy",
-      "cooldown": null,
-      "permissions": "user",
-      "usage": "Give some of your coins to another member. !give @user <amount>",
-      "description": "Give some of your coins to another member.  !give @user <amount>",
-      "use_cases": null,
-      "examples": [],
-      "status": "in-progress",
-      "linked_ideas": [
-        {
-          "title": "Wager / money-flow map — generated trace of game coin paths",
-          "status": "ideas"
-        }
-      ],
-      "notes": null
-    },
-    {
-      "name": "give",
-      "aliases": [],
-      "category": "economy",
-      "cooldown": null,
-      "permissions": "user",
-      "usage": "Admin-only: give resources to a user.",
-      "description": "Admin-only: give resources to a user.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",
@@ -11518,18 +11470,16 @@
       "notes": null
     },
     {
-      "name": "give",
-      "aliases": [
-        "add"
-      ],
+      "name": "add",
+      "aliases": [],
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Give a karma point: ``!karma give @user [reason]``.",
-      "description": "Give a karma point: !karma give @user [reason].",
+      "usage": "Give a karma point: ``!karma add @user [reason]``.",
+      "description": "Give a karma point: !karma add @user [reason].",
       "use_cases": null,
       "examples": [
-        "!karma give @user [reason]"
+        "!karma add @user [reason]"
       ],
       "status": "in-progress",
       "linked_ideas": [

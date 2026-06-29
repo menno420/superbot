@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T05:26:34Z",
+    "generated_at": "2026-06-29T05:09:29Z",
     "build": {
-      "commit": "98a692d9",
-      "subject": "Merge pull request #1542 from menno420/claude/funny-franklin-kybm74",
-      "committed_at": "2026-06-29T05:26:34Z"
+      "commit": "ca2b4dc4",
+      "subject": "fix(cogs): retire `give` command surface-wide — unblock boot (bot was offline)",
+      "committed_at": "2026-06-29T05:09:29Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 460,
+      "commands": 458,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2635,6 +2635,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-29-railway-give-collision-crash.md",
+      "date": "2026-06-29",
+      "title": "2026-06-29 — PROD hotfix: `give` command collision crashed boot (bot offline)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-29-fishing-leaderboard-provider.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — Fishing leaderboard provider (S1 deepening win)",
@@ -3105,14 +3113,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-xpmenu-rank-card-h3.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — `!xpmenu` hub renders the rank image card (visual card-engine H3)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -6601,19 +6601,6 @@
           "button_backed": true
         },
         {
-          "name": "give",
-          "type": "prefix",
-          "is_group": false,
-          "parent": null,
-          "aliases": [
-            "pay"
-          ],
-          "brief": "Give some of your coins to another member. !give @user <amount>",
-          "classification": "",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
           "name": "joblist",
           "type": "prefix",
           "is_group": false,
@@ -7184,14 +7171,12 @@
           "button_backed": false
         },
         {
-          "name": "give",
+          "name": "add",
           "type": "prefix",
           "is_group": false,
           "parent": "karma",
-          "aliases": [
-            "add"
-          ],
-          "brief": "Give a karma point: ``!karma give @user [reason]``.",
+          "aliases": [],
+          "brief": "Give a karma point: ``!karma add @user [reason]``.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -7465,17 +7450,6 @@
           "aliases": [],
           "brief": "Show your equipped gear, its condition, and the stats it grants.",
           "classification": "hidden",
-          "has_panel": false,
-          "button_backed": false
-        },
-        {
-          "name": "give",
-          "type": "prefix",
-          "is_group": false,
-          "parent": null,
-          "aliases": [],
-          "brief": "Admin-only: give resources to a user.",
-          "classification": "",
           "has_panel": false,
           "button_backed": false
         },
