@@ -111,7 +111,15 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   within games the **Blackjack split/insurance/surrender** engine work remains; server-fn deepening picks
   are listed in the assessments bullet below. **✅ DONE 2026-06-29 (#1550): Proof Channel** punch #1 + #2 —
   the lock/unlock now audit (`prize_access_grant`/`revoke`) and every mutation callback re-checks
-  `manage_channels` authority; cert advanced (only the binding-write UI + owner walkthrough remain). (Creatures' `◐ → ✔` still needs the owner live walkthrough +
+  `manage_channels` authority; cert advanced (only the binding-write UI + owner walkthrough remain).
+  **✅ DONE 2026-06-29 (PR #1553): Inventory punch #5 (sort + filter) CLOSED** — the category detail view
+  gained a `🔀 Sort:` cycle (Rarity / Quantity / Name, pure `_sort_items`) **and** a `Filter by type…`
+  select (shown only when a category mixes >1 type; `_apply` recomputes the shown slice + pages,
+  page-clamped); +15 tests. Inventory's remaining gaps are now the **owner-gated** ones (#1 item actions ·
+  #2 item-grant audit — *needs an owner call on audit-trail granularity, see note below* · #3 capability
+  cleanup) + live walkthrough. **Also shipped this PR: the registry↔completion-ledger parity guard**
+  (`scripts/check_completion_ledger_parity.py`, the Q-0089 follow-up the README flagged) — every
+  certifiable registry subsystem has exactly one ledger row + cert, enforced by a pytest regression. (Creatures' `◐ → ✔` still needs the owner live walkthrough +
   sign-off, punch-list #6/#7.)
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn

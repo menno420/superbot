@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-fv5s7p` · scope: proof_channel completion-deepening (audit + authority re-check) · files: disbot/cogs/proof_channel_cog.py, tests/unit/cogs/test_proof_channel_*.py, docs/planning/feature-completion/units/proof_channel.md · 2026-06-29

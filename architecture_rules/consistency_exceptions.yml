@@ -186,6 +186,8 @@ select_option_truncation:
       reason: "render_pattern_preview(...)[:8] is a preview-embed slice, not a select."
     - pattern: views/ux_lab/layout_v2.py::LayoutWingView._build_gallery
       reason: "_AVATARS[:4] is a fixed demo avatar gallery (UX lab)."
+    - pattern: cogs/inventory_cog.py::UnifiedInventoryView.build_hub_embed
+      reason: "items[:3] is the hub embed's per-category top-3 preview (with an explicit '+N more' overflow note), not a select; the file is flagged only because _CategoryView now also builds a type-filter select."
     # --- Bounded fixed-catalog selects: the option source is an in-repo catalog
     #     that cannot realistically exceed 25; the [:25] slice is defensive. ---
     - pattern: views/btd6/paragon_view.py::_ParagonSelect

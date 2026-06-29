@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-fv5s7p-inv` · scope: inventory completion-cert punch #7 (display-logic tests) · files: tests/unit/cogs/test_inventory_display_logic.py, docs/planning/feature-completion/units/inventory.md · 2026-06-29
