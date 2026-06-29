@@ -68,9 +68,12 @@
 - [x] **Discoverable in Help** — `build_help_menu_view` hook; surfaced as an Economy child.
 
 ### G. Tests & evidence (required for ✔)
-- [ ] **Behavior tests** — ⚠ only the navigation lifecycle is tested
-      (`test_economy_inventory_edit.py`); `_build_combined_inventory`/`_CategoryView.build_embed`/rarity
-      sort/pagination boundaries are **untested**. → punch #7.
+- [x] **Behavior tests** — ✅ **display logic now covered (punch #7, 2026-06-29).**
+      `test_inventory_display_logic.py` pins `_build_combined_inventory` (two-table merge + summed
+      overlapping keys · category grouping · rarest-first sort · unknown→Other · zero/negative drop ·
+      empty→`{}`) and `_CategoryView` pagination (round-up, single-page nav suppression, empty-page
+      render, footer position, prev/next boundary clamp). The navigation lifecycle stays covered by
+      `test_economy_inventory_edit.py`.
 - [x] **Authority tests** — view ownership via `BaseView` (inherited; no inventory-specific test).
 - [N/A] **Mutation-seam tests** — no mutations in this unit (upstream workflows tested separately).
 - [ ] **Live walkthrough recorded** — pending → punch #8.
@@ -87,13 +90,15 @@
 5. **Sort / filter UI** *(offline, deepening)* — sort by qty/name/rarity, filter by type.
 6. **Server configuration** *(owner, minor)* — decide whether items should be per-guild configurable; if
    so, add a SubsystemSchema.
-7. **Display-logic tests** *(offline, minor)* — cover the merge/sort/pagination/empty paths.
+7. ~~**Display-logic tests**~~ ✅ **DONE 2026-06-29 (dispatch run)** — `test_inventory_display_logic.py`
+   covers the merge/sum/sort/group/unknown/zero-drop/empty + pagination-boundary paths (10 cases).
 8. **Live walkthrough** *(owner / live-bot)* — `/verify-bot` boot + click-through (hub → category → page →
    back), with screenshots.
 9. **Owner sign-off** — maintainer confirms "it does its job the most convenient way."
 
 ## Evidence
 - **Tests:** `tests/unit/views/test_economy_inventory_edit.py` (navigation lifecycle) ·
+  `tests/unit/cogs/test_inventory_display_logic.py` (display logic — 10 cases, punch #7) ·
   `tests/unit/invariants/test_no_view_level_purchase_writes.py`
 - **Walkthrough:** pending (punch #8)
 - **Owner sign-off:** pending (punch #9)
@@ -102,6 +107,7 @@
 Inventory is a **correct, well-routed read-only item browser** (unified mining+economy view, paginated,
 rarity-sorted, reachable via command/hub/Help). It is **the least mature** server-fn assessed so far on
 the *ceiling* axis: it deliberately ships no item actions, item grants are unaudited upstream, the
-declared mutation capabilities are unenforced placeholders, there is no server config, and only the
-navigation lifecycle is tested. None of this is a safety hazard (it's read-only), but a `◐ → ✔` path
-needs an owner decision on item actions + audit + capability cleanup (#1–#3) before it is "done-done."
+declared mutation capabilities are unenforced placeholders, and there is no server config. The
+display-logic test gap is now closed (punch #7, 2026-06-29). None of this is a safety hazard (it's
+read-only), but a `◐ → ✔` path needs an owner decision on item actions + audit + capability cleanup
+(#1–#3) before it is "done-done."
