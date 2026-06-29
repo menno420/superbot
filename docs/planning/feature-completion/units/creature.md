@@ -5,6 +5,10 @@
 
 > **Unit:** `creature` · **Type:** game · **Family:** activity
 > **State:** ◐ assessed · **Assessed:** 2026-06-28 · **Certified:** —
+> **Deepened:** 2026-06-29 — punch-list #1 (game panel), #2 (interactive dex browser), #3
+> (`entry_points`), #5 (battle settle-once) **shipped** (PR #1546); #4 was a no-op (the accept
+> path already responds before the slow resolve). Remaining to certify: #6 live walkthrough + #7
+> owner sign-off (both `[owner]`).
 > Source: `disbot/cogs/creature_cog.py` (catch/dex) · `disbot/cogs/creature_battle_cog.py` (PvP) ·
 > `disbot/views/creature_battle/` (challenge · rematch · render) ·
 > `disbot/services/creature_workflow.py` · `disbot/services/creature_battle_service.py` ·
@@ -115,20 +119,23 @@
 
 ## Punch-list (clear these to certify)
 
-1. **Build the game panel (headline).** Creatures has no interactive `HubView` — add a Games-hub
-   `creature` panel (catch · view dex · challenge · ladder · how-to · back-to-Games/Help via
-   `SUBSYSTEM = "creature"` + `attach_standard_nav`), so the Games-hub → Creatures path lands on a
-   playable surface instead of a static embed. *(The registry already anticipates this "later slice".)*
-2. **Interactive dex browser** *(offline, deepening)* — `!dex` is a static embed; an interactive
-   collection browser (paginate / filter by element / sort by rarity, with the panel's nav) is the
-   convenience bar the other activity games meet.
-3. **Registry `entry_points` gap** *(offline, minor)* — add `cbattle` / `cbrecord` / `cbattletop` to
-   the `creature` entry's `entry_points` so the registry fully declares the unit's command surface
-   (Help already lists them; this aligns the registry with the per-command reachability convention).
-4. **Defer on the battle-resolve path** *(offline, minor)* — `safe_defer` the accept callback before
-   `resolve_and_record_pvp` so a slow resolve can't miss the interaction window.
-5. **Battle settle-once guard** *(offline, low-risk)* — a per-pair active-battle / battle-id guard so
-   two simultaneously-accepted challenges can't double-resolve (mirror the deathmatch duel-key idea).
+1. ✅ **Build the game panel (headline).** **Shipped (PR #1546).** `views/creature/menu.py` —
+   `CreatureMenuView` (`HubView`, `SUBSYSTEM = "creature"`): 🐾 Catch (in place) · 📖 Dex (browser) ·
+   ⚔️ Challenge (UserSelect → the existing challenge flow) · 🏆 Ladder · 📖 How to play · auto
+   📚 Help / ↩ Games nav. Reached via `!creatures` / `!creaturemenu` and the live Help hook (both
+   the catch cog and the PvP cog return it). The Games-hub → Creatures path now lands on a playable
+   surface.
+2. ✅ **Interactive dex browser.** **Shipped (PR #1546).** `CreatureDexView` — an element-filter
+   `Select` over the collection + ◀ Back to the menu + standard nav.
+3. ✅ **Registry `entry_points` gap.** **Shipped (PR #1546).** The `creature` entry now declares
+   `creatures` / `catch` / `dex` / `cbattle` / `cbrecord` / `cbattletop`.
+4. ~~**Defer on the battle-resolve path.**~~ **No-op** — the accept callback already calls
+   `interaction.response.edit_message` (the response) *before* `resolve_and_record_pvp`, so the slow
+   resolve runs after the interaction is acknowledged; the follow-up uses the 15-min `followup` window.
+5. ✅ **Battle settle-once guard.** **Shipped (PR #1546).** `CreatureBattleChallengeView` now mixes in
+   `SettleOnceMixin` and claims the transition at the top of accept/decline, so a double-click can't
+   resolve + record the battle twice. *(Cross-view simultaneous-challenge dedup — a per-pair active
+   registry — remains a possible deepening, but is lower-risk than the double-click it now guards.)*
 6. **Live walkthrough** *(owner / live-bot)* — `/verify-bot` boot + scripted click-through (catch →
    dex → challenge → accept → battle → rematch; check the ladder), with screenshots.
 7. **Owner sign-off** — maintainer plays it and confirms "nothing left to add or move."

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T05:09:29Z",
+    "generated_at": "2026-06-29T09:09:06Z",
     "build": {
-      "commit": "ca2b4dc4",
-      "subject": "fix(cogs): retire `give` command surface-wide — unblock boot (bot was offline)",
-      "committed_at": "2026-06-29T05:09:29Z"
+      "commit": "9903d06d",
+      "subject": "Creatures completion: born-red session card + claim (panel + dex browser)",
+      "committed_at": "2026-06-29T09:09:06Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 458,
+      "commands": 459,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -591,8 +591,12 @@
         "activities"
       ],
       "entry_points": [
+        "creatures",
         "catch",
-        "dex"
+        "dex",
+        "cbattle",
+        "cbrecord",
+        "cbattletop"
       ],
       "related_subsystems": [
         "fishing",
@@ -2635,6 +2639,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-29-server-fn-completion-assessments.md",
+      "date": "2026-06-29",
+      "title": "2026-06-29 — Server-function feature-completion assessments (Q-0209)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-29-railway-give-collision-crash.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — PROD hotfix: `give` command collision crashed boot (bot offline)",
@@ -2665,6 +2677,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-06-29-creatures-game-panel.md",
+      "date": "2026-06-29",
+      "title": "Session — Creatures completion: game panel + interactive dex browser (Q-0209 deepening)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
     },
     {
       "file": "2026-06-28-server-function-completion-assessments.md",
@@ -3094,22 +3114,6 @@
       "file": "2026-06-25-btd6-projected-total-anchors.md",
       "date": "2026-06-25",
       "title": "2026-06-25 — BTD6 eval anchors: projected-total convention (S2 P1-1)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-btd6-moab-bonus-anchors.md",
-      "date": "2026-06-25",
-      "title": "2026-06-25 — BTD6 eval anchors: #855 MOAB-class bonuses (S2 P1-1, follow-up to #1460)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-btd6-fixture-anchor-guard.md",
-      "date": "2026-06-25",
-      "title": "2026-06-25 — BTD6 grounding eval: fixture-drift anchor guard (S2 P1-1)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -6308,13 +6312,26 @@
           "button_backed": false
         },
         {
+          "name": "creatures",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "creaturemenu",
+            "pets"
+          ],
+          "brief": "Open the interactive Creatures panel — catch, browse your dex, battle.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
           "name": "dex",
           "type": "prefix",
           "is_group": false,
           "parent": null,
           "aliases": [
-            "collection",
-            "creatures"
+            "collection"
           ],
           "brief": "Show your creature collection — every creature you've caught.",
           "classification": "",

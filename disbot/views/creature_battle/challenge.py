@@ -15,6 +15,7 @@ import logging
 import discord
 
 from services import creature_battle_service
+from utils.terminal_guard import SettleOnceMixin
 from views.base import BaseView
 from views.creature_battle.rematch import CreatureRematchView
 from views.creature_battle.render import build_result_embed
@@ -26,8 +27,14 @@ _NO_TEAM_MSG = (
 )
 
 
-class CreatureBattleChallengeView(BaseView):
-    """Accept/decline a creature PvP challenge (interactable only by the opponent)."""
+class CreatureBattleChallengeView(SettleOnceMixin, BaseView):
+    """Accept/decline a creature PvP challenge (interactable only by the opponent).
+
+    The accept/decline buttons settle the challenge (resolve + record a battle, or
+    close it). :class:`SettleOnceMixin` gives that transition one atomic claim so a
+    double-click on Accept — or an Accept racing a Decline — can't resolve and record
+    the battle twice (completion cert #5; the deathmatch settle-once lineage).
+    """
 
     def __init__(
         self,
@@ -51,6 +58,10 @@ class CreatureBattleChallengeView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
+        # Claim the settling transition before any await so a double-click (or an
+        # Accept racing a Decline) can't resolve + record the battle twice.
+        if not self.claim_settlement():
+            return
         self._resolved = True
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
@@ -93,6 +104,8 @@ class CreatureBattleChallengeView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
+        if not self.claim_settlement():
+            return
         self._resolved = True
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]

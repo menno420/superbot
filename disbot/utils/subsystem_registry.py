@@ -316,9 +316,11 @@ SUBSYSTEMS: dict[str, dict] = {
     },
     # Creature catch/collection game v1 (Q-0186/Q-0187,
     # docs/planning/creature-game-design-and-sim-2026-06-20.md). Homed under the
-    # Games hub by the help-menu regrouping (PR #1290) so it is reachable in the
-    # Games section rather than only the Advanced browser; an actionable in-panel
-    # surface (beyond the Help hook + typed `!catch`/`!dex`) is a later slice.
+    # Games hub by the help-menu regrouping (PR #1290). The actionable in-panel
+    # surface (the `!creatures` CreatureMenuView — catch / dex-browser / challenge /
+    # ladder) shipped in the completion-first deepening run (Q-0209), closing the
+    # certificate's hub-less rubric-B gap; `entry_points` now declares the full
+    # command surface incl. the PvP commands (sibling creature_battle_cog).
     "creature": {
         "display_name": "Creatures",
         "description": "Catch original creatures and build your collection dex",
@@ -328,7 +330,14 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "games",
         "tags": ["creatures", "minigame", "activities"],
-        "entry_points": ["catch", "dex"],
+        "entry_points": [
+            "creatures",
+            "catch",
+            "dex",
+            "cbattle",
+            "cbrecord",
+            "cbattletop",
+        ],
         "default_channels": ["games", "bot-commands"],
         "related_subsystems": ["fishing", "mining"],
         # No hard dependency: catching writes only the collection log + game_xp
