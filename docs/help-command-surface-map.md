@@ -23,9 +23,9 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 42 of the 58 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+- 43 of the 58 loaded extensions (`config.INITIAL_EXTENSIONS`) define
   `build_help_menu_view` — equivalently, 41 of the 42 subsystem-owning
-  cogs expose it. The 15 extensions without the hook: the bootstrap
+  cogs expose it. The 14 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
   `btd6_events` / `btd6_strategy` / `paragon` / `btd6_ops` — their
@@ -41,9 +41,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   `health_maintenance_cog` (the health-findings retention task owner —
   no commands, no subsystem row), `role_grants_cog` (free temp-role
   grants — a sweep task-loop plus `!temprole`, no subsystem row), and
-  `creature_battle_cog` (creature PvP `!cbattle` / `!cbattletop` /
-  `!cbrecord` — part of the Creatures subsystem, surfaced via
-  `creature_cog`'s hook, no subsystem row of its own), and `starboard_cog`
+  `starboard_cog`
   (the Starboard / Hall-of-Fame raw-reaction listener plus the `!starboard`
   config command — no subsystem row of its own). "Loaded
   extension", "subsystem", and "Help category" are different concepts —
@@ -132,7 +130,7 @@ falls back to the command-list embed when the hook is missing or raises.
 | `logging` | `logging_cog.py:88` | `logging` | — | `LoggingPanelView` | `!help logging` → opens Logging panel (shared resolver) | reached via Moderation / Admin; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
 | `mining` | `mining_cog.py:65` | `mineinv`/`mineinventory`, `minestats` | mining game flow commands (start/dig/etc.) | `MiningHubView` | `!help mining` → opens Mining panel (shared resolver) | reached via Games (primary, `parent_hub="games"`); Economy hub declares Mining as a `cross_link_children` since PR #3 | hub child (Games); Economy cross-link |
 | `fishing` | `fishing_cog.py` | `fish`, `fishlog`/`fishdex`, `fishtop`/`topfishers` | — | `FishingCog` | `!help fishing` → static fishing overview (Help hook; no persistent panel yet) | hub-less; surfaced via the typed `!fish`/`!fishlog`/`!fishtop` commands (user tier) | hub-less for PR 1 (like `welcome`/`counters`); an actionable Games/Explore-hub panel is a later plan slice |
-| `creature` | `creature_cog.py` | `catch`/`hunt`, `dex`/`collection`/`creatures`, `dextop`/`topcatchers` | — | `CreatureCog` | `!help creature` → static creature overview (Help hook; no persistent panel yet) | hub-less; surfaced via the typed `!catch`/`!dex`/`!dextop` commands (user tier) | catch+collection v1 (like `fishing`); the level-normalized PvP battle + result-recording/leaderboard shipped (`creature_battle_cog`: `!cbattle`/`!cbattletop`/`!cbrecord`); an Explore-hub panel is a later plan slice |
+| `creature` | `creature_cog.py` (+ `creature_battle_cog.py`) | `creatures`/`creaturemenu`/`pets`, `catch`/`hunt`, `dex`/`collection`, `dextop`/`topcatchers` | — | `CreatureMenuView` (both cogs' Help hooks) | `!help creature` → interactive `CreatureMenuView` panel (Help hook) | Games-hub child → the `CreatureMenuView` panel (catch · dex browser · challenge · ladder · how-to) | catch+collection + level-normalized PvP (`creature_battle_cog`: `!cbattle`/`!cbattletop`/`!cbrecord`); the interactive game panel + dex browser shipped 2026-06-29 (#1546, completion cert #1/#2) |
 | `farm` | `farm_cog.py` | `farm`/`chickenfarm`/`coop` | — | `FarmCog` | `!help farm` → actionable Farm panel (Help hook → `FarmMenuView`: Collect · Shop · Refresh) | Games-hub child (`activities`, user tier); also reachable via `!farm` and the Explore world hub | the bot's first **idle** game — hens lay eggs over time (pure `settle()` accrual), collected for coins + game XP; coins buy hens / coop upgrades |
 | `project_moon` | `project_moon_cog.py` | `pm`/`limbus`/`projectmoon` (+ `pm sinner`/`sin`/`status`/`ego`/`damage`/`lookup`/`list` subcommands) | — | `LimbusBrowseView` | `!help project_moon` → Limbus browse panel (Help hook → `LimbusBrowseView`: one button per category) | its own **top-level Project Moon hub** (like BTD6 — a knowledge domain, not a Games activity); also reachable via `!pm` and `/pm` | read-only Limbus knowledge (Q-0192 Project Moon program, PR 1) — structural/lore facts; AI grounding path is a later PR |
 | `moderation` | `moderation_cog.py` | `modmenu`, `warn`, `timeout`, `kick`, `ban`, `unban`, `clearwarnings`, `modlogs` | — | `ModPanelView` | `!help moderation` → opens Moderation panel (shared resolver) | dropdown Moderation → panel | hub top-level |
