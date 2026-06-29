@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T00:27:05Z",
+    "generated_at": "2026-06-29T05:26:34Z",
     "build": {
-      "commit": "47f5f1dc",
-      "subject": "wip(economy): born-red card — give/pay command",
-      "committed_at": "2026-06-29T00:27:05Z"
+      "commit": "98a692d9",
+      "subject": "Merge pull request #1542 from menno420/claude/funny-franklin-kybm74",
+      "committed_at": "2026-06-29T05:26:34Z"
     },
     "counts": {
       "functions": 43,
@@ -2643,12 +2643,20 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-29-farm-leaderboard-provider.md",
+      "date": "2026-06-29",
+      "title": "2026-06-29 — Farm leaderboard provider (completion-first deepening)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-29-economy-give-pay.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — Economy give/pay (S1 deepening win, slice 2)",
-      "status": "in-progress",
-      "run_type": "",
-      "self_initiated": false
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-28-server-function-completion-assessments.md",
@@ -3105,14 +3113,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-ticket-setup-discoverability.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Tickets: setup-wizard discoverability",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -7218,10 +7218,11 @@
             "dm_leaderboard",
             "dm_lb",
             "rpslb",
+            "farmlb",
             "countlb",
             "counting_leaderboard"
           ],
-          "brief": "Show a leaderboard. !leaderboard [xp|coins|mining|fishing|deathmatch|rps|counting]",
+          "brief": "Show a leaderboard. !leaderboard [xp|coins|mining|fishing|farm|deathmatch|rps|counting]",
           "classification": "legacy_duplicate",
           "has_panel": true,
           "button_backed": true
