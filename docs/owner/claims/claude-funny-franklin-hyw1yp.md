@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-hyw1yp` · scope: S1 deepening win — Fishing leaderboard provider (unified `!leaderboard` hub) · area: `services/rank_providers.py`, `cogs/leaderboard_cog.py`, `utils/fishing/`, `utils/card_render.py`, tests · 2026-06-29
