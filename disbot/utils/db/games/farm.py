@@ -72,6 +72,28 @@ async def get_chicken_farm(
     )
 
 
+async def top_farmers(
+    guild_id: int,
+    *,
+    limit: int = 10,
+) -> list[tuple[int, int, int]]:
+    """``[(user_id, chickens, coop_level)]`` for *guild_id*, biggest flock first.
+
+    Ranks by stored flock size (``chickens``), tie-broken by coop level so a
+    bigger coop edges out an equal flock. The stored ``eggs`` balance is the
+    momentary unsettled faucet, not a durable achievement, so flock size is the
+    rankable "biggest farm" statistic (the ``creatures``/``fishing`` pattern: a
+    persisted per-player total, not a live balance).
+    """
+    rows = await pool.fetchall(
+        "SELECT user_id, chickens, coop_level FROM chicken_farm "
+        "WHERE guild_id=$1 AND chickens > 0 "
+        "ORDER BY chickens DESC, coop_level DESC LIMIT $2",
+        (guild_id, limit),
+    )
+    return [(r["user_id"], r["chickens"], r["coop_level"]) for r in rows]
+
+
 async def set_chicken_farm(
     user_id: int,
     guild_id: int,

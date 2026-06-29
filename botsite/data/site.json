@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T00:27:05Z",
+    "generated_at": "2026-06-29T03:07:21Z",
     "build": {
-      "commit": "47f5f1dc",
-      "subject": "wip(economy): born-red card — give/pay command",
-      "committed_at": "2026-06-29T00:27:05Z"
+      "commit": "fe4b312c",
+      "subject": "Open born-red session card: Farm leaderboard provider",
+      "committed_at": "2026-06-29T03:07:21Z"
     }
   },
   "counts": {
@@ -11607,19 +11607,21 @@
         "dm_leaderboard",
         "dm_lb",
         "rpslb",
+        "farmlb",
         "countlb",
         "counting_leaderboard"
       ],
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show a leaderboard. !leaderboard [xp|coins|mining|fishing|deathmatch|rps|counting]",
-      "description": "Show a leaderboard.  !leaderboard [xp|coins|mining|fishing|deathmatch|rps|counting]",
+      "usage": "Show a leaderboard. !leaderboard [xp|coins|mining|fishing|farm|deathmatch|rps|counting]",
+      "description": "Show a leaderboard.  !leaderboard [xp|coins|mining|fishing|farm|deathmatch|rps|counting]",
       "use_cases": null,
       "examples": [
         "!minelb",
         "!dm_lb",
         "!rpslb",
+        "!farmlb",
         "!countlb"
       ],
       "status": "finished",

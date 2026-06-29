@@ -6997,7 +6997,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "47f5f1dc",
+    "build": "fe4b312c",
     "title": "New public bot website",
     "changes": [
       {
@@ -7009,7 +7009,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "47f5f1dc",
+    "build": "fe4b312c",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7021,7 +7021,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "47f5f1dc",
+    "build": "fe4b312c",
     "title": "Command-alias suggestions",
     "changes": [
       {

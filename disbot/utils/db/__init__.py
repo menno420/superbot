@@ -95,6 +95,7 @@ from utils.db.games.deathmatch import (
 from utils.db.games.farm import (
     get_chicken_farm,
     set_chicken_farm,
+    top_farmers,
 )
 from utils.db.games.fishing import (
     get_fishing_log,
@@ -481,6 +482,7 @@ __all__ = [
     "set_fishing_venue",
     "get_chicken_farm",
     "set_chicken_farm",
+    "top_farmers",
     "get_active_bait",
     "set_active_bait",
     "clear_active_bait",

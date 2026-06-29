@@ -318,6 +318,56 @@ class FishingProvider(RankProvider):
         return None, None
 
 
+class FarmProvider(RankProvider):
+    """The chicken farm — ranked by flock size (number of hens).
+
+    Surfaces the idle chicken farm in the unified ``!leaderboard`` hub (it had
+    no leaderboard before). Reads :func:`db.top_farmers` (flock size, coop level
+    as the tie-break). Flock size is the durable "biggest farm" statistic — the
+    stored ``eggs`` is the momentary unsettled balance, not an achievement, so it
+    is deliberately not ranked (the ``creatures``/``fishing`` precedent: a
+    persisted per-player total, not a live balance).
+    """
+
+    name = "farm"
+    display_title = "🐔 Chicken Farm Leaderboard"
+    select_label = "Farm"
+    select_emoji = "🐔"
+    empty_hint = "No farms yet. Use `!farm` to start your coop."
+    card_theme = "harvest"  # the sunlit-field / harvest skin
+
+    @staticmethod
+    def _render(chickens: int, coop_level: int) -> str:
+        hens = "hen" if chickens == 1 else "hens"
+        return f"{chickens} {hens} (coop Lv {coop_level})"
+
+    async def top(self, guild: discord.Guild) -> list[RankEntry]:
+        rows = await db.top_farmers(guild.id)
+        entries: list[RankEntry] = []
+        for user_id, chickens, coop_level in rows[:10]:
+            name = resources.member_display(guild, user_id)
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {self._render(chickens, coop_level)}",
+                    name=name,
+                    score=float(chickens),
+                    value_text=f"{chickens:,} 🐔",
+                ),
+            )
+        return entries
+
+    async def member_rank(
+        self,
+        guild: discord.Guild,
+        user_id: int,
+    ) -> tuple[int | None, str | None]:
+        rows = await db.top_farmers(guild.id, limit=500)
+        for i, (uid, chickens, coop_level) in enumerate(rows):
+            if uid == user_id:
+                return i + 1, self._render(chickens, coop_level)
+        return None, None
+
+
 class GameXpProvider(RankProvider):
     """The shared cross-game progression track (game_xp_service)."""
 
@@ -582,6 +632,7 @@ _PROVIDERS: dict[str, RankProvider] = {
         MiningProvider(),
         CreaturesProvider(),
         FishingProvider(),
+        FarmProvider(),
         GameXpProvider(),
         CraftingProvider(),
         DeathmatchProvider(),
@@ -603,6 +654,9 @@ ALIASES: dict[str, str] = {
     "fishlb": "fishing",
     "fishingleaderboard": "fishing",
     "anglerlb": "fishing",
+    "farmlb": "farm",
+    "farming": "farm",
+    "chickenlb": "farm",
     "gxp": "gamexp",
     "gamelevel": "gamexp",
     "game_xp": "gamexp",
@@ -642,6 +696,7 @@ __all__ = [
     "CountingProvider",
     "CreaturesProvider",
     "DeathmatchProvider",
+    "FarmProvider",
     "FishingProvider",
     "MiningProvider",
     "RankEntry",

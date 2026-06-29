@@ -16,6 +16,15 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Farm leaderboard provider** (#1542, completion-first deepening win) — the idle chicken farm now
+  appears in the unified `!leaderboard` hub + select menu (`FarmProvider`, ranked by **flock size**,
+  coop level as the tie-break), reusing a new `db.top_farmers` primitive. Mirrors `FishingProvider`;
+  its own `harvest` card skin. **Honest scope note from the same investigation:** of the four games the
+  Leaderboards assessment named, only Farm has a persisted per-player rankable stat — **Blackjack**
+  (in-memory game state; coins via the economy audit only), **Casino/poker** (ephemeral play-chips, no
+  persistence) and **Word-Chain** (per-channel `chain_count`, no per-user tracking) would each need a
+  migration + a write-path before a leaderboard is possible (**not** turn-key). +6 provider tests + a db
+  SQL-shape pin; no migration; self-merged on green.
 - **Economy `!give` / `!pay`** (#1541, completion-first deepening win) — a peer coin-transfer command
   surfacing the already-audited `economy_service.transfer()` seam (atomic debit+credit, `economy_audit_log`,
   `EVT_BALANCE_CHANGED`), closing the assessment's finding (b). Guard-railed (rejects bot target /
@@ -96,18 +105,22 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   · Moderation/Economy/Roles/XP (#1536, with BUG-0029 root fix — XP role grants now through the audited
   `role_automation.apply` seam) · Settings/Leaderboards/Tickets/Karma (#1538, this batch).** All
   structurally strong (audited mutation seams, Help, Setup). **Findings worth a follow-up:** (a)
-  **Leaderboards is missing providers for several existing games** — **Fishing now SHIPPED (#1540, this
-  run)** as a `FishingProvider` in the unified `!leaderboard` hub (top anglers by total caught, reusing
-  `db.top_fishers`); **remaining gaps: Blackjack/Casino/Word-Chain/Farm** — each is still one
-  `RankProvider` class + a `utils/db` top-N read (the next turn-key *deepening* wins); (b)
+  **Leaderboards was missing providers for several existing games** — **Fishing SHIPPED (#1540)** and
+  **Farm SHIPPED (#1542)** as `FishingProvider`/`FarmProvider` in the unified `!leaderboard` hub. The
+  remaining named games **Blackjack/Casino/Word-Chain do NOT have a persisted per-player rankable stat**
+  (Blackjack = in-memory game state + economy-audit coins only; Casino/poker = ephemeral play-chips;
+  Word-Chain = per-channel `chain_count`, no per-user tracking) — each needs a **migration + a
+  write-path** first, so they are *not* turn-key leaderboard adds; treat them as a deepening *feature*
+  (add tracking → board), not a quick provider. (b)
   Economy's public **`give`/`pay` now SHIPPED (#1541, this run)** — a peer coin-transfer command over
   the existing audited `economy_service.transfer()` seam; remaining: an admin balance-adjust panel. **▶
   Next startable, offline:** **assess the remaining server-fns** — the unassessed set is now Counters ·
   Spotlight · Channels · Setup wizard · AI · Logging · Diagnostics · Help · Admin · Inventory · Treasury ·
   Cleanup · Automod · Image-moderation · Security · Proof-channel · Utility, one cert each under
   [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from
-  `rubric-server-function.md`; or take a *deepening* win (a Blackjack/Casino/Word-Chain/Farm leaderboard
-  provider — the Fishing one is the worked example; Economy `give`/`pay`).
+  `rubric-server-function.md`; or take a *deepening* win (the turn-key leaderboard providers are now
+  exhausted — Fishing #1540 + Farm #1542; the Blackjack/Casino/Word-Chain boards need persisted
+  per-player tracking first, a feature not a provider).
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
   `architecture_rules/canonical_helpers.yaml`, +7 tests) flags a game-view terminal handler that
