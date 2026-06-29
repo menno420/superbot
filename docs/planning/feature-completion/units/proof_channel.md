@@ -51,13 +51,16 @@
       tabulates the overwrites.
 
 ### D. Authority & safety
-- [ ] **Authority re-checked at callback** — ⚠ **partial.** Prefix commands carry
-      `@has_permissions(manage_channels=True)`; the **modal-submit paths re-resolve the channel but do
-      not re-check the actor's permission**. → punch #1.
-- [ ] **All mutations through the audited seam** — ❌ **gap.** `_lock_for_winner`/`_unlock` call
-      `proof_channel.edit(overwrites=...)` directly (cog L83/L94) with **no `emit_audit_action`** — a
-      prize session leaves no audit trail. (It is an ephemeral access grant, not a persisted DB mutation,
-      so the risk is low — but other access surfaces audit.) → punch #2.
+- [x] **Authority re-checked at callback** — ✅ **fixed (punch #1, 2026-06-29).** Prefix commands carry
+      `@has_permissions(manage_channels=True)`; the modal-submit + panel mutation callbacks now re-verify
+      the actor holds `manage_channels` via `_reject_without_manage_channels(interaction)` before acting
+      (grant / timed / End Session + both modal `on_submit`s), so opening the panel no longer authorizes a
+      later callback. Defensive (missing perms → deny, never raises).
+- [x] **All mutations through the audited seam** — ✅ **fixed (punch #2, 2026-06-29).**
+      `_lock_for_winner`/`_unlock` now emit `audit.action_recorded` (subsystem `proof_channel`,
+      `prize_access_grant`/`prize_access_revoke`, `target=channel:<id>`, actor threaded from the invoker;
+      timer auto-unlock is `actor_type="system"`) via `_emit_prize_audit` after the overwrite change. The
+      audit is best-effort (a bus failure never blocks the access change).
 - [x] **Resource binding via the binding pipeline (read)** — channel read binding-first
       (`get_binding(guild.id, "proof_channel", "proof_channel")`) with safe fallback; the BindingSpec +
       optional ResourceRequirement are declared. The binding **write** UI is pending → punch #3.
@@ -82,17 +85,22 @@
 ### G. Tests & evidence (required for ✔)
 - [x] **Behavior tests** — `test_proof_channel_schema.py` (schema declaration, idempotent register,
       binding-first read precedence + 4 fallback/degrade cases, settings actionability) — 8 cases.
-- [ ] **Authority tests** — ❌ none for `manage_channels` enforcement / modal re-check → punch #1.
-- [ ] **Mutation-seam tests** — ❌ none asserting the overwrite changes / audit emission → punch #2.
+- [x] **Authority tests** — ✅ `test_proof_channel_authority_audit.py` pins that a non-`manage_channels`
+      actor is denied at every mutation callback (both modals + grant/end buttons) and the mutation is
+      not performed (punch #1).
+- [x] **Mutation-seam tests** — ✅ same file asserts lock/unlock emit the `prize_access_grant`/
+      `prize_access_revoke` audit events (with the right target/actor/scope), the timer unlock is a
+      `system` actor, and a bus failure never blocks the access change (punch #2).
 - [ ] **Live walkthrough recorded** — pending → punch #4.
 - [ ] **Owner ✔** — pending → punch #5.
 
 ## Punch-list (clear these to certify)
-1. **Modal authority re-check + tests** *(offline, minor)* — re-verify the actor holds `manage_channels`
-   in the modal-submit paths before `_lock_for_winner`; add command-authority tests.
-2. **Audit the lock/unlock** *(offline/owner, deepening)* — route the permission change through (or
-   alongside) `emit_audit_action` so prize sessions leave a trail; add a mutation test mocking
-   `channel.edit`. (Low risk — ephemeral access grant, not a DB mutation.)
+1. ~~**Modal authority re-check + tests**~~ ✅ **DONE 2026-06-29 (dispatch run, PR #1550)** — every
+   mutation callback (both modals + grant/end buttons) re-verifies `manage_channels` via
+   `_reject_without_manage_channels`; `test_proof_channel_authority_audit.py` pins it.
+2. ~~**Audit the lock/unlock**~~ ✅ **DONE 2026-06-29 (dispatch run, PR #1550)** — lock/unlock emit
+   `prize_access_grant`/`prize_access_revoke` via `_emit_prize_audit` (subsystem `proof_channel`); the
+   timer auto-unlock is a `system` actor; best-effort so a bus failure never blocks access. Tested.
 3. **Binding-write UI** *(offline, deepening)* — wire the Settings Phase-3 binding widget so the proof
    channel can be bound from the settings hub (today: provisioning catalogue + name fallback).
 4. **Live walkthrough** *(owner / live-bot)* — `/verify-bot` boot, run `+prize`/`timedprize`/`-prize`,
@@ -101,6 +109,7 @@
 
 ## Evidence
 - **Tests:** `tests/unit/cogs/test_proof_channel_schema.py` (8 cases) ·
+  `tests/unit/cogs/test_proof_channel_authority_audit.py` (9 cases — authority re-check + audit emission) ·
   `tests/unit/services/test_resource_provisioning_*` (provisioning catalogue exercises the proof resource)
 - **Walkthrough:** pending (punch #4)
 - **Owner sign-off:** pending (punch #5)
@@ -108,8 +117,7 @@
 ## Verdict
 Proof Channel **delivers its core promise** — exclusive, optionally-timed prize sessions with a binding-
 first channel read that degrades safely — and is well wired (command/panel/Help/registry) with thorough
-binding tests. It is **not yet `✔ certified`**, and unlike the other moderation units it carries two real
-maturation gaps: the lock/unlock mutates channel permissions **directly without an audit event** (#2) and
-the **modal paths don't re-check actor authority** (#1, low risk since prefix commands are gated), plus a
-missing binding-write UI (#3) and the live walkthrough/sign-off (#4/#5). No dead-ends; risk is low (an
-ephemeral access grant, not money/DB), but the audit + authority gaps should close before wider use.
+binding tests. The two real maturation gaps it carried are **now closed (2026-06-29, PR #1550):** the
+lock/unlock emit an audit event (#2) and every mutation callback re-checks actor authority (#1), both
+test-pinned. It is **not yet `✔ certified`** only on the deferred items: a missing binding-write UI (#3,
+deepening) and the owner-paced live walkthrough + sign-off (#4/#5). No dead-ends; no money/DB risk.

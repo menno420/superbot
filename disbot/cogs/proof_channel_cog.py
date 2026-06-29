@@ -72,6 +72,8 @@ class ProofChannelCog(commands.Cog):
         self,
         proof_channel: discord.TextChannel,
         winner: discord.Member,
+        *,
+        actor_id: int | None,
     ) -> None:
         overwrites = {
             proof_channel.guild.default_role: discord.PermissionOverwrite(
@@ -82,8 +84,20 @@ class ProofChannelCog(commands.Cog):
         }
         await proof_channel.edit(overwrites=overwrites)  # type: ignore[type-var]
         logger.info("Proof channel locked for winner: %s", winner.display_name)
+        await _emit_prize_audit(
+            proof_channel,
+            mutation_type="prize_access_grant",
+            new_value=f"winner:{winner.id}",
+            actor_id=actor_id,
+        )
 
-    async def _unlock(self, proof_channel: discord.TextChannel) -> None:
+    async def _unlock(
+        self,
+        proof_channel: discord.TextChannel,
+        *,
+        actor_id: int | None,
+        actor_type: str = "admin",
+    ) -> None:
         overwrites = {
             proof_channel.guild.default_role: discord.PermissionOverwrite(
                 view_channel=True,
@@ -93,6 +107,13 @@ class ProofChannelCog(commands.Cog):
         }
         await proof_channel.edit(overwrites=overwrites)  # type: ignore[type-var]
         logger.info("Proof channel unlocked (read-only).")
+        await _emit_prize_audit(
+            proof_channel,
+            mutation_type="prize_access_revoke",
+            new_value="read_only",
+            actor_id=actor_id,
+            actor_type=actor_type,
+        )
 
     @commands.command(name="+prize")
     @commands.has_permissions(manage_channels=True)
@@ -105,7 +126,7 @@ class ProofChannelCog(commands.Cog):
                 delete_after=10,
             )
             return
-        await self._lock_for_winner(ch, winner)
+        await self._lock_for_winner(ch, winner, actor_id=ctx.author.id)
         await ctx.send(
             f"{winner.mention} has been granted access to {ch.mention}!",
             delete_after=10,
@@ -122,7 +143,7 @@ class ProofChannelCog(commands.Cog):
         # Cancel any pending timed task for this guild
         if task := self._timed_tasks.pop(ctx.guild.id, None):
             task.cancel()
-        await self._unlock(ch)
+        await self._unlock(ch, actor_id=ctx.author.id)
         await ctx.send(f"{ch.mention} is now read-only for everyone.", delete_after=10)
 
     @commands.command(name="prizestatus")
@@ -170,7 +191,7 @@ class ProofChannelCog(commands.Cog):
         if old_task := self._timed_tasks.pop(ctx.guild.id, None):
             old_task.cancel()
 
-        await self._lock_for_winner(ch, winner)
+        await self._lock_for_winner(ch, winner, actor_id=ctx.author.id)
         await ctx.send(
             f"{winner.mention} has been granted access to {ch.mention} for **{duration}** minute(s)!",
             delete_after=10,
@@ -179,7 +200,8 @@ class ProofChannelCog(commands.Cog):
         async def _auto_unlock():
             await asyncio.sleep(duration * 60)
             try:
-                await self._unlock(ch)
+                # Timer-driven unlock — system actor (no human at the callback).
+                await self._unlock(ch, actor_id=None, actor_type="system")
                 await ctx.send(
                     f"Time is up! {ch.mention} is now read-only again.",
                     delete_after=10,
@@ -205,6 +227,8 @@ class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: 
         self.timed = timed
 
     async def on_submit(self, interaction: discord.Interaction):
+        if not await _reject_without_manage_channels(interaction):
+            return
         member = _parse_member(interaction.guild, self.winner_input.value)
         if not member:
             await interaction.response.send_message(
@@ -222,7 +246,7 @@ class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: 
         if self.timed:
             await interaction.response.send_modal(_TimedPrizeModal(self.cog, member))
         else:
-            await self.cog._lock_for_winner(ch, member)
+            await self.cog._lock_for_winner(ch, member, actor_id=interaction.user.id)
             await interaction.response.send_message(
                 f"✅ {member.mention} has been granted access to {ch.mention}!",
                 ephemeral=True,
@@ -242,6 +266,8 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
         self.winner = winner
 
     async def on_submit(self, interaction: discord.Interaction):
+        if not await _reject_without_manage_channels(interaction):
+            return
         if not self.duration_input.value.isdigit():
             await interaction.response.send_message(
                 "❌ Duration must be a whole number of minutes.",
@@ -260,12 +286,13 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
         if old_task := self.cog._timed_tasks.pop(interaction.guild_id, None):
             old_task.cancel()
 
-        await self.cog._lock_for_winner(ch, self.winner)
+        await self.cog._lock_for_winner(ch, self.winner, actor_id=interaction.user.id)
 
         async def _auto_unlock():
             await asyncio.sleep(duration * 60)
             try:
-                await self.cog._unlock(ch)
+                # Timer-driven unlock — system actor (no human at the callback).
+                await self.cog._unlock(ch, actor_id=None, actor_type="system")
             except Exception:
                 pass
             finally:
@@ -310,6 +337,8 @@ class _PrizeManagerView(HubView):
 
     @discord.ui.button(label="🏆 Grant Access", style=discord.ButtonStyle.green, row=0)
     async def btn_grant(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await _reject_without_manage_channels(interaction):
+            return
         await interaction.response.send_modal(_PrizeWinnerModal(self.cog, timed=False))
 
     @discord.ui.button(
@@ -318,10 +347,14 @@ class _PrizeManagerView(HubView):
         row=0,
     )
     async def btn_timed(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await _reject_without_manage_channels(interaction):
+            return
         await interaction.response.send_modal(_PrizeWinnerModal(self.cog, timed=True))
 
     @discord.ui.button(label="🔒 End Session", style=discord.ButtonStyle.danger, row=0)
     async def btn_end(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await _reject_without_manage_channels(interaction):
+            return
         ch = await self.cog.get_proof_channel(interaction.guild)
         if not ch:
             await interaction.response.send_message(
@@ -331,7 +364,7 @@ class _PrizeManagerView(HubView):
             return
         if task := self.cog._timed_tasks.pop(interaction.guild_id, None):
             task.cancel()
-        await self.cog._unlock(ch)
+        await self.cog._unlock(ch, actor_id=interaction.user.id)
         embed = await self.build_embed()
         embed.description = f"✅ {ch.mention} is now read-only for everyone."
         await interaction.response.edit_message(embed=embed, view=self)
@@ -345,6 +378,76 @@ class _PrizeManagerView(HubView):
         await interaction.response.edit_message(
             embed=await self.build_embed(),
             view=self,
+        )
+
+
+def _actor_has_manage_channels(interaction: discord.Interaction) -> bool:
+    """True when the interacting member holds Manage Channels.
+
+    Defensive: a missing member / permissions object degrades to ``False``
+    (deny), never raises.
+    """
+    perms = getattr(getattr(interaction, "user", None), "guild_permissions", None)
+    return bool(getattr(perms, "manage_channels", False))
+
+
+async def _reject_without_manage_channels(interaction: discord.Interaction) -> bool:
+    """Re-check authority at the callback; ``False`` (already replied) if denied.
+
+    Opening the prize panel does not authorize later button/modal callbacks
+    (discord-views rule), so every mutation entry point re-verifies the actor
+    still holds ``manage_channels`` before acting.
+    """
+    if _actor_has_manage_channels(interaction):
+        return True
+    await interaction.response.send_message(
+        "❌ You need **Manage Channels** permission to manage prize access.",
+        ephemeral=True,
+    )
+    return False
+
+
+async def _emit_prize_audit(
+    proof_channel: discord.TextChannel,
+    *,
+    mutation_type: str,
+    new_value: str | None,
+    actor_id: int | None,
+    actor_type: str = "admin",
+) -> None:
+    """Audit a prize-access permission change (Q-0209 proof-channel punch #2).
+
+    The lock/unlock is an ephemeral permission-overwrite change rather than a
+    DB mutation, so it has no ``*_mutation.py`` seam — but other access
+    surfaces audit, so a prize session must leave a trail too. Best-effort:
+    an audit-bus failure never blocks the access change.
+    """
+    from datetime import datetime, timezone
+    from uuid import uuid4
+
+    from services.audit_events import emit_audit_action
+
+    guild = proof_channel.guild
+    try:
+        await emit_audit_action(
+            mutation_id=str(uuid4()),
+            subsystem="proof_channel",
+            mutation_type=mutation_type,
+            target=f"channel:{proof_channel.id}",
+            scope="guild",
+            guild_id=guild.id if guild else None,
+            prev_value=None,
+            new_value=new_value,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=datetime.now(tz=timezone.utc),
+        )
+    except Exception:  # noqa: BLE001 — audit is best-effort; never block access
+        logger.exception(
+            "proof channel: audit emit failed for %s (channel %s); "
+            "the permission change is authoritative either way.",
+            mutation_type,
+            proof_channel.id,
         )
 
 
