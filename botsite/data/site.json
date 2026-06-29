@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T05:09:29Z",
+    "generated_at": "2026-06-29T09:09:06Z",
     "build": {
-      "commit": "ca2b4dc4",
-      "subject": "fix(cogs): retire `give` command surface-wide — unblock boot (bot was offline)",
-      "committed_at": "2026-06-29T05:09:29Z"
+      "commit": "9903d06d",
+      "subject": "Creatures completion: born-red session card + claim (panel + dex browser)",
+      "committed_at": "2026-06-29T09:09:06Z"
     }
   },
   "counts": {
-    "commands": 458,
+    "commands": 459,
     "features": 43,
     "games": 12
   },
@@ -4865,6 +4865,32 @@
       "notes": null
     },
     {
+      "name": "creatures",
+      "aliases": [
+        "creaturemenu",
+        "pets"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Open the interactive Creatures panel — catch, browse your dex, battle.",
+      "description": "Open the interactive Creatures panel — catch, browse your dex, battle.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Creature PvP — rematch button on the outcome embed",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a parity guard tying the creature sim to the runtime battle engine",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "ct",
       "aliases": [],
       "category": "games",
@@ -5060,8 +5086,7 @@
     {
       "name": "dex",
       "aliases": [
-        "collection",
-        "creatures"
+        "collection"
       ],
       "category": "games",
       "cooldown": null,

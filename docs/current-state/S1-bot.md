@@ -100,6 +100,17 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
+- `[offline]` **Completion deepening — clear the assessed certs' punch-lists (the standing offline
+  ▶ Next).** Each `◐ assessed` cert ends in a concrete buildable punch-list; ship them to move units
+  toward ✔. **✅ DONE 2026-06-29 (#1546): Creatures** — the headline rubric-B gap is closed: the
+  interactive **game panel** (`CreatureMenuView`: catch · dex-browser · challenge · ladder · how-to)
+  reached via `!creatures` + both cogs' Help hooks, the **interactive dex browser** (element filter),
+  the `entry_points` fix, and a **battle settle-once** guard — cert #1/#2/#3/#5 cleared (#4 was a
+  no-op). **▶ Next turn-key picks:** **Creatures game panel for Welcome's missing command panel** is a
+  separate unit; within games the **Mining how-to button** (the ✔-ready candidate's last build gap) and
+  the **Blackjack split/insurance/surrender** engine work remain; server-fn deepening picks are listed
+  in the assessments bullet below. (Creatures' `◐ → ✔` still needs the owner live walkthrough +
+  sign-off, punch-list #6/#7.)
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
   now has a rubric-filled, source-grounded certificate under

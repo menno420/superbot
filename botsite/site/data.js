@@ -1736,6 +1736,31 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "creatures",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Open the interactive Creatures panel — catch, browse your dex, battle.",
+    "description": "Open the interactive Creatures panel — catch, browse your dex, battle.",
+    "usage": "!creatures",
+    "aliases": [
+      "creaturemenu",
+      "pets"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Creature PvP — rematch button on the outcome embed"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — a parity guard tying the creature sim to the runtime battle…"
+      }
+    ]
+  },
+  {
     "name": "ct",
     "area": "games",
     "status": "in-progress",
@@ -1944,8 +1969,7 @@ const COMMANDS = [
     "description": "Show your creature collection — every creature you've caught.",
     "usage": "!dex",
     "aliases": [
-      "collection",
-      "creatures"
+      "collection"
     ],
     "permissions": "anyone",
     "cooldown": null,
@@ -6977,7 +7001,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "ca2b4dc4",
+    "build": "9903d06d",
     "title": "New public bot website",
     "changes": [
       {
@@ -6989,7 +7013,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "ca2b4dc4",
+    "build": "9903d06d",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7001,7 +7025,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "ca2b4dc4",
+    "build": "9903d06d",
     "title": "Command-alias suggestions",
     "changes": [
       {

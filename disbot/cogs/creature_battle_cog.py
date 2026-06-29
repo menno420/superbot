@@ -28,19 +28,16 @@ from discord.ext import commands
 
 from core.runtime import guild_resources as resources
 from utils import db
+from views.creature import (
+    CreatureMenuView,
+    build_battletop_embed,
+    build_menu_embed,
+    build_record_embed,
+)
+from views.creature.menu import load_progress
 from views.creature_battle import CreatureBattleChallengeView
 
 logger = logging.getLogger("bot.cogs.creature_battle")
-
-_BATTLE_COLOR = discord.Color.red()
-
-
-def _winrate(wins: int, losses: int) -> str:
-    """A ``NN%`` win-rate string from a W/L tally (``—`` with no battles)."""
-    total = wins + losses
-    if total == 0:
-        return "—"
-    return f"{round(100 * wins / total)}%"
 
 
 class CreatureBattleCog(commands.Cog):
@@ -51,6 +48,26 @@ class CreatureBattleCog(commands.Cog):
         if ctx.guild is None:
             raise commands.NoPrivateMessage()
         return True
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu hook — the shared Creatures panel.
+
+        ``cbattle`` / ``cbrecord`` / ``cbattletop`` are part of the **creature**
+        subsystem (this is its PvP cog), so the help dropdown can route here; it
+        lands on the same :class:`CreatureMenuView` the catch cog returns, so the
+        whole game is one coherent panel (the Challenge button opens the PvP flow).
+        """
+        caught_unique, level, _ = await load_progress(
+            interaction.user.id,
+            interaction.guild.id,
+        )
+        return build_menu_embed(caught_unique, level), CreatureMenuView(
+            interaction.user,
+            interaction.guild.id,
+        )
 
     @commands.command(name="cbattle", aliases=["creaturebattle"])
     async def cbattle(self, ctx, opponent: discord.Member):
@@ -74,40 +91,18 @@ class CreatureBattleCog(commands.Cog):
         """Show your (or another trainer's) creature PvP win/loss record."""
         target = member or ctx.author
         wins, losses = await db.get_battle_record(target.id, ctx.guild.id)
-        embed = discord.Embed(
-            title=f"⚔️ {target.display_name}'s Battle Record",
-            description=(
-                f"**{wins}** wins · **{losses}** losses · "
-                f"win rate **{_winrate(wins, losses)}**"
-            ),
-            color=_BATTLE_COLOR,
-        )
-        embed.set_footer(text="!cbattle @member to fight · !cbattletop for the ladder")
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_record_embed(target.display_name, wins, losses))
 
     @commands.command(name="cbattletop", aliases=["pvptop", "battletop"])
     async def cbattletop(self, ctx):
         """Show this server's top creature-PvP trainers by wins."""
         rows = await db.top_battlers(ctx.guild.id)
-        embed = discord.Embed(title="⚔️ Top Trainers", color=_BATTLE_COLOR)
-        if not rows:
-            embed.description = (
-                "No battles won yet — challenge someone with `!cbattle @member`!"
-            )
-            await ctx.send(embed=embed)
-            return
-        medals = ["🥇", "🥈", "🥉"]
-        lines = []
-        for rank, (user_id, wins, losses) in enumerate(rows):
-            prefix = medals[rank] if rank < len(medals) else f"**{rank + 1}.**"
+
+        def _name(user_id: int) -> str:
             member = resources.resolve_member(ctx.guild, user_id)
-            name = member.display_name if member else f"User {user_id}"
-            lines.append(
-                f"{prefix} {name} — **{wins}**W · {losses}L "
-                f"({_winrate(wins, losses)})",
-            )
-        embed.description = "\n".join(lines)
-        await ctx.send(embed=embed)
+            return member.display_name if member else f"User {user_id}"
+
+        await ctx.send(embed=build_battletop_embed(rows, _name))
 
 
 async def setup(bot):
