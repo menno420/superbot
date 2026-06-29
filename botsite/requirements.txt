@@ -9,7 +9,7 @@ jinja2>=3.1.6,<4.0
 # submissions DB (botsite/submissions_db.py). Pinned floor matches the bot's so the
 # driver behaves identically. The form parses with stdlib urllib (no python-multipart)
 # and the app holds NO other secret than the INSERT-only submissions DSN (plan §4.4).
-asyncpg>=0.29.0,<1.0
+asyncpg>=0.31.0,<1.0
 # NOTE: deliberately NO httpx / itsdangerous / OAuth deps here. This is the public,
 # secret-free marketing surface — the gated "manage my server" manager is a SEPARATE
 # service (plan §4.4) and carries those deps in its own requirements, never this one.
