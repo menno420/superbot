@@ -52,6 +52,9 @@ _KIND_ALIASES: dict[str, str] = {
     "damagetype": "damage_type",
     "ego": "ego_grade",
     "grade": "ego_grade",
+    "mechanic": "mechanic",
+    "mechanics": "mechanic",
+    "combat": "mechanic",
     "status": "status",
     "statuses": "status",
     "keyword": "status",
@@ -159,6 +162,11 @@ class ProjectMoonCog(commands.Cog):
     async def pm_damage(self, ctx: commands.Context, *, name: str = "") -> None:
         """Look up a damage type (Slash / Pierce / Blunt) (or list them all)."""
         await self._category_lookup(ctx, "damage_type", name)
+
+    @pm_group.command(name="mechanic", aliases=["mechanics", "combat"])  # type: ignore[arg-type]
+    async def pm_mechanic(self, ctx: commands.Context, *, name: str = "") -> None:
+        """Look up a combat mechanic (Clash / Speed / Sanity / …) (or list them all)."""
+        await self._category_lookup(ctx, "mechanic", name)
 
     # ------------------------------------------------------------------
     # Slash front door — /pm (ephemeral browse panel)

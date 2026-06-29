@@ -28,8 +28,8 @@ def build_overview_embed() -> discord.Embed:
         title="🌑 Project Moon — Limbus knowledge",
         description=(
             "A browsable reference for *Limbus Company*. Pick a category below, "
-            "or use `!pm <category> <name>` (e.g. `!pm status sinking`) or "
-            "`!pm lookup <anything>`."
+            "or use `!pm <category> <name>` (e.g. `!pm mechanic clash`, "
+            "`!pm status sinking`) or `!pm lookup <anything>`."
         ),
         color=GAME_COLOR,
     )
@@ -48,7 +48,12 @@ def build_overview_embed() -> discord.Embed:
 
 
 def build_kind_embed(kind: str) -> discord.Embed:
-    """List every entry of one entity kind."""
+    """List every entry of one entity kind.
+
+    The canonical fixture order is meaningful (Mechanics are ordered by
+    ``category``), so entries render in file order and a ``category`` / ``color``
+    extra is shown as a suffix — generic across every kind.
+    """
     entries = data.get_entries(kind)
     embed = discord.Embed(
         title=f"🌑 Limbus — {data.KIND_LABELS[kind]}",
@@ -58,6 +63,8 @@ def build_kind_embed(kind: str) -> discord.Embed:
         suffix = ""
         if "color" in entry.extra:
             suffix = f" — {entry.extra['color']}"
+        elif "category" in entry.extra:
+            suffix = f" — {entry.extra['category']}"
         embed.add_field(
             name=f"{entry.canonical}{suffix}",
             value=entry.description,
@@ -79,6 +86,12 @@ def build_entry_embed(entry: data.LimbusEntry) -> discord.Embed:
         value=data.KIND_LABELS[entry.entity_kind],
         inline=True,
     )
+    if "category" in entry.extra:
+        embed.add_field(
+            name="Group",
+            value=str(entry.extra["category"]),
+            inline=True,
+        )
     if "color" in entry.extra:
         embed.add_field(
             name="Affinity colour",

@@ -131,6 +131,27 @@ argument: generalising from a single example tends to produce the wrong abstract
 > seam extraction without touching the gated BTD6 hot path. **▶ Next unchanged:** (a) the live
 > **Q-0086 runtime walk** (owner); (c) Slice A item 1 — StaticData numbers; then **Slice B** proper.
 
+> **▶ Progress (2026-06-29 manual session, PR #1549): Slice A item 1 — the COMBAT-MECHANICS
+> *rules* half — SHIPPED.** Owner-directed ("check how Project Moon is going and continue it"); a
+> Project Moon community member's screenshot named the missing "majority" as **clashing · IDs and
+> passives · speed · enemy stats and passives**. This ships the *stable, hand-authorable, correct*
+> half: a new **`mechanic`** entity kind (`disbot/data/projmoon/limbus/mechanics.json`, 13 entries
+> with a `category` group) covering the core combat **rules** — Clash · Coin (heads/Sanity) · Speed ·
+> Sanity · Stagger · damage-resistance levels · Resonance · Skills & replacement · Defensive skills ·
+> Identity (rarity 0/00/000) · Passives & support passives · E.G.O/Corrosion. Browsable
+> (`!pm mechanic <name>` + a Mechanics button), and **grounded through the already-wired
+> `projmoon_context_service.build()` seam** (per-entity match + a "combat mechanics" roster trigger +
+> a `(combat mechanic — <group>)` body enrichment) — so a Limbus-routed question grounds the
+> mechanic. **No change** to the router, the NL-stage wiring, the faithfulness guard (mechanics are
+> common-word names, never indexed → no false refusals), or the BTD6 path. Routing keyword list
+> **unchanged** on purpose: mechanic words ("clash"/"speed"/"sanity") are ordinary English, so — like
+> the Sins — they ground via co-occurrence with a distinctive token, not by routing bare (the same
+> over-route discipline). **Deliberately deferred (the numeric tail of item 1):** exact per-Identity /
+> per-enemy **stat numbers** (HP, speed *values*, coin power) — those need the **StaticData** ingest
+> lane; hand-committing them would risk ungrounded numbers (ADR-006). Offline-unit-tested (data,
+> context, cog, grounding). **▶ Next:** (a) the live **Q-0086 runtime walk** (owner); (c-numbers) the
+> StaticData exact-number ingest; then **Slice B** — extract the shared `KnowledgeDomain` seam.
+
 **Slice A (next session, 2–3 PRs):**
 1. **Ingestion:** a `scripts/fetch_pm_limbus.py` that parses the **StaticData identity JSON** (clean,
    bounded — Identities + Sinners + E.G.O index) into committed JSON under

@@ -263,9 +263,19 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   (`tests/unit/runtime/ai/test_domain_routing_disjoint.py`) pins the previously-untested router invariant
   *"BTD6 keywords never collide with the distinctive Limbus tokens"* (routing · token disjointness across
   every domain pair · priority total-order) + a detector-curation recipe in the ai folio, so the next
-  domain (LoR / LobCorp) is a one-line registration. ▶ **Next:** the live **Q-0086 runtime walk** (owner — confirm a real
-  Limbus Q&A grounds well on both providers) + Slice A item 1 (StaticData exact-number ingest); then
-  **Slice B** = extract the shared `KnowledgeDomain` seam from BTD6 + Limbus
+  domain (LoR / LobCorp) is a one-line registration. **Combat-mechanics layer — Slice A item 1
+  (rules half) — SHIPPED 2026-06-29** (manual session, PR #1549): a new **`mechanic`** entity kind
+  (`mechanics.json`, 13 entries grouped by `category`) covering the core combat **rules** a Project
+  Moon community member flagged as the missing "majority" — Clash · Coin (heads/Sanity) · Speed ·
+  Sanity · Stagger · damage-resistance levels · Resonance · Skills · Defensive skills · Identity
+  (rarity 0/00/000) · Passives · E.G.O/Corrosion. Browsable (`!pm mechanic <name>` + a Mechanics
+  button) and grounded through the existing `projmoon_context_service.build()` seam (per-entity +
+  a "combat mechanics" roster trigger); router / NL-stage / faithfulness-guard / BTD6 path all
+  unchanged. Read-only, offline-unit-tested. ▶ **Next:** the live **Q-0086 runtime walk** (owner —
+  confirm a real Limbus Q&A grounds well on both providers) + the **numeric tail of Slice A item 1**
+  (the StaticData exact per-Identity / per-enemy **stat numbers** — HP, speed values, coin power — via
+  the ingest lane, *not* hand-committed, ADR-006); then **Slice B** = extract the shared
+  `KnowledgeDomain` seam from BTD6 + Limbus
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
 - `[offline]` **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
   (PR 1 foundation shipped; [plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)). *(The

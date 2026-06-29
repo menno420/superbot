@@ -1,1 +1,0 @@
-- `claude/project-moon-status-smaxm3` · Project Moon (Limbus) combat-mechanics knowledge layer (clashing / speed / IDs+passives / enemy-stat concepts) · `disbot/data/projmoon/limbus/mechanics.json` + `services/projmoon_data_service.py` + `services/projmoon_context_service.py` + `views/projmoon/browse.py` + `cogs/project_moon_cog.py` + tests + projmoon docs · 2026-06-29
