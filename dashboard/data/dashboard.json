@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T14:38:55Z",
+    "generated_at": "2026-06-29T17:32:50Z",
     "build": {
-      "commit": "6b110fa",
-      "subject": "projmoon: open born-red session — Limbus combat-mechanics layer",
-      "committed_at": "2026-06-29T14:38:55Z"
+      "commit": "9d0db600",
+      "subject": "Merge pull request #1551 from menno420/claude/funny-franklin-fv5s7p-inv",
+      "committed_at": "2026-06-29T17:32:50Z"
     },
     "counts": {
       "functions": 43,
@@ -1166,7 +1166,7 @@
     {
       "file": "knowledge-domain-conversation-carryover-2026-06-29.md",
       "title": "Idea — conversational domain-context carryover for knowledge domains",
-      "status": "captured",
+      "status": "ideas",
       "date": "2026-06-29",
       "summary": "Knowledge-domain routing keys on **distinctive tokens** on purpose: `has_limbus_context` /",
       "subsystems": null
@@ -2671,11 +2671,27 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-29-proof-channel-completion-deepening.md",
+      "date": "2026-06-29",
+      "title": "Session — Proof Channel completion-deepening (audit trail + modal authority re-check)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-29-projmoon-combat-mechanics.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — Project Moon (Limbus) combat-mechanics knowledge layer",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-29-inventory-display-logic-tests.md",
+      "date": "2026-06-29",
+      "title": "Session — Inventory display-logic coverage (Q-0209 completion-cert punch #7)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -3106,22 +3122,6 @@
       "file": "2026-06-25-projmoon-sinner-literary-origins.md",
       "date": "2026-06-25",
       "title": "Session — 2026-06-25 · Project Moon — Limbus Sinner literary origins",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-projmoon-limbus-domain.md",
-      "date": "2026-06-25",
-      "title": "2026-06-25 — Project Moon (Limbus) knowledge domain — runtime PR 1",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-25-profile-card-attachment-fix.md",
-      "date": "2026-06-25",
-      "title": "2026-06-25 — Profile hero-card attachment round-trip fix",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
