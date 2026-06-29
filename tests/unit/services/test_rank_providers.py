@@ -48,6 +48,7 @@ def test_registry_exposes_canonical_categories():
         "coins",
         "mining",
         "creatures",
+        "fishing",
         "gamexp",
         "crafting",
         "deathmatch",
@@ -327,6 +328,98 @@ async def test_creatures_member_rank_on_and_off_board():
 async def test_creatures_alias_resolves():
     assert (get_provider("creaturelb") or MagicMock()).name == "creatures"
     assert (get_provider("creature") or MagicMock()).name == "creatures"
+
+
+# ---------------------------------------------------------------------------
+# Fishing provider (mirrors creatures — top_fishers → caught/species)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_fishing_top_renders_caught_and_species():
+    provider = get_provider("fishing")
+    # top_fishers → [(user_id, total_caught, unique_species)]
+    rows = [(1, 30, 9), (42, 7, 4)]
+    with patch(
+        "services.rank_providers.db.top_fishers",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ), patch(
+        "services.rank_providers.fish_names",
+        return_value=["a", "b"],
+    ), patch(
+        "services.rank_providers.resources.member_display",
+        side_effect=lambda g, uid: f"U{uid}",
+    ):
+        entries = await provider.top(_guild())
+    assert len(entries) == 2
+    assert isinstance(entries[0], RankEntry)
+    assert "U1" in entries[0].label
+    assert "30 caught" in entries[0].label
+    assert "9 species" in entries[0].label
+    # structured projection drives the image card.
+    assert entries[0].name == "U1"
+    assert entries[0].score == 30.0
+    assert entries[0].value_text == "30 caught"
+
+
+@pytest.mark.asyncio
+async def test_fishing_top_caps_at_ten():
+    provider = get_provider("fishing")
+    rows = [(uid, uid * 2, uid) for uid in range(1, 20)]
+    with patch(
+        "services.rank_providers.db.top_fishers",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ), patch(
+        "services.rank_providers.fish_names",
+        return_value=["a"],
+    ), patch(
+        "services.rank_providers.resources.member_display",
+        side_effect=lambda g, uid: f"U{uid}",
+    ):
+        entries = await provider.top(_guild())
+    assert len(entries) == 10
+
+
+@pytest.mark.asyncio
+async def test_fishing_member_rank_on_and_off_board():
+    provider = get_provider("fishing")
+    rows = [(1, 30, 9), (42, 7, 4)]
+    with patch(
+        "services.rank_providers.db.top_fishers",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ), patch(
+        "services.rank_providers.fish_names",
+        return_value=["a"],
+    ):
+        rank_pos, value = await provider.member_rank(_guild(), 42)
+        assert rank_pos == 2
+        assert value == "7 caught (4 species)"
+
+        missing_pos, missing_value = await provider.member_rank(_guild(), 999)
+        assert missing_pos is None and missing_value is None
+
+
+@pytest.mark.asyncio
+async def test_fishing_member_rank_reads_deep_list():
+    """member_rank must query a deep list (limit=500), not the top-10 default,
+    so a player ranked past 10th still resolves a rank."""
+    provider = get_provider("fishing")
+    mock_top = AsyncMock(return_value=[])
+    with patch("services.rank_providers.db.top_fishers", mock_top), patch(
+        "services.rank_providers.fish_names",
+        return_value=["a"],
+    ):
+        await provider.member_rank(_guild(), 7)
+    assert mock_top.await_args.kwargs.get("limit") == 500
+
+
+@pytest.mark.asyncio
+async def test_fishing_aliases_resolve():
+    for alias in ("fishlb", "fishingleaderboard", "anglerlb"):
+        assert (get_provider(alias) or MagicMock()).name == "fishing"
 
 
 @pytest.mark.asyncio

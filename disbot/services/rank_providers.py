@@ -32,6 +32,7 @@ import discord
 from core.runtime import resources
 from utils import db
 from utils.creatures import creature_names
+from utils.fishing import fish_names
 
 
 @dataclass(frozen=True)
@@ -263,6 +264,54 @@ class CreaturesProvider(RankProvider):
         user_id: int,
     ) -> tuple[int | None, str | None]:
         rows = await db.top_collectors(guild.id, creature_names(), limit=500)
+        for i, (uid, caught, species) in enumerate(rows):
+            if uid == user_id:
+                return i + 1, self._render(caught, species)
+        return None, None
+
+
+class FishingProvider(RankProvider):
+    """The fishing game — ranked by total fish caught.
+
+    Mirrors the standalone ``!fishtop`` command but as a registered category so
+    fishing appears in the unified ``!leaderboard`` hub alongside every other
+    game (it previously had only its own ``!fishtop`` / ``!trophies`` boards).
+    Reads the catalog-scoped ``top_fishers`` (only current-roster species count,
+    so a superseded catalog never inflates totals — the ``creatures`` pattern).
+    """
+
+    name = "fishing"
+    display_title = "🎣 Fishing Leaderboard"
+    select_label = "Fishing"
+    select_emoji = "🎣"
+    empty_hint = "No one has cast a line yet. Use `!fish` to start fishing."
+    card_theme = "tidal"  # the ocean / surf skin
+
+    @staticmethod
+    def _render(caught: int, species: int) -> str:
+        return f"{caught} caught ({species} species)"
+
+    async def top(self, guild: discord.Guild) -> list[RankEntry]:
+        rows = await db.top_fishers(guild.id, fish_names())
+        entries: list[RankEntry] = []
+        for user_id, caught, species in rows[:10]:
+            name = resources.member_display(guild, user_id)
+            entries.append(
+                RankEntry(
+                    label=f"**{name}** — {self._render(caught, species)}",
+                    name=name,
+                    score=float(caught),
+                    value_text=f"{caught:,} caught",
+                ),
+            )
+        return entries
+
+    async def member_rank(
+        self,
+        guild: discord.Guild,
+        user_id: int,
+    ) -> tuple[int | None, str | None]:
+        rows = await db.top_fishers(guild.id, fish_names(), limit=500)
         for i, (uid, caught, species) in enumerate(rows):
             if uid == user_id:
                 return i + 1, self._render(caught, species)
@@ -532,6 +581,7 @@ _PROVIDERS: dict[str, RankProvider] = {
         CoinsProvider(),
         MiningProvider(),
         CreaturesProvider(),
+        FishingProvider(),
         GameXpProvider(),
         CraftingProvider(),
         DeathmatchProvider(),
@@ -550,6 +600,9 @@ ALIASES: dict[str, str] = {
     "miningleaderboard": "mining",
     "creature": "creatures",
     "creaturelb": "creatures",
+    "fishlb": "fishing",
+    "fishingleaderboard": "fishing",
+    "anglerlb": "fishing",
     "gxp": "gamexp",
     "gamelevel": "gamexp",
     "game_xp": "gamexp",
@@ -589,6 +642,7 @@ __all__ = [
     "CountingProvider",
     "CreaturesProvider",
     "DeathmatchProvider",
+    "FishingProvider",
     "MiningProvider",
     "RankEntry",
     "RankProvider",

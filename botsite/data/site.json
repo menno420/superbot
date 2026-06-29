@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T15:31:47Z",
+    "generated_at": "2026-06-29T00:09:35Z",
     "build": {
-      "commit": "36043e19",
-      "subject": "docs: open 28th Q-0107 reconciliation pass (band-#1530) — born-red card + claim",
-      "committed_at": "2026-06-28T15:31:47Z"
+      "commit": "f0d7b714",
+      "subject": "wip(leaderboard): born-red card — Fishing leaderboard provider",
+      "committed_at": "2026-06-29T00:09:35Z"
     }
   },
   "counts": {
@@ -11582,6 +11582,7 @@
         "rankings",
         "minelb",
         "miningleaderboard",
+        "fishlb",
         "dm_leaderboard",
         "dm_lb",
         "rpslb",
@@ -11591,8 +11592,8 @@
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Show a leaderboard. !leaderboard [xp|coins|mining|deathmatch|rps|counting]",
-      "description": "Show a leaderboard.  !leaderboard [xp|coins|mining|deathmatch|rps|counting]",
+      "usage": "Show a leaderboard. !leaderboard [xp|coins|mining|fishing|deathmatch|rps|counting]",
+      "description": "Show a leaderboard.  !leaderboard [xp|coins|mining|fishing|deathmatch|rps|counting]",
       "use_cases": null,
       "examples": [
         "!minelb",

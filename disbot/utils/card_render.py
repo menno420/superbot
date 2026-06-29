@@ -116,6 +116,19 @@ THEMES: dict[str, Theme] = {
         gold=(228, 196, 110),
         outline=(9, 13, 20),
     ),
+    # The ocean / surf skin — a brighter teal-aqua than "abyss"'s deep-cave
+    # blue, so the fishing board reads as sea-level water at a glance.
+    "tidal": Theme(
+        name="tidal",
+        bg=(14, 28, 32),
+        panel=(20, 40, 46),
+        accent=(48, 178, 176),
+        accent_alt=(126, 230, 214),
+        text=(226, 244, 244),
+        subtle=(128, 168, 170),
+        gold=(232, 204, 112),
+        outline=(8, 16, 18),
+    ),
 }
 
 DEFAULT_THEME = "midnight"

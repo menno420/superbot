@@ -102,6 +102,16 @@ def species_by_name(name: str) -> FishSpecies | None:
     return _BY_NAME.get(name.strip().lower())
 
 
+def fish_names() -> list[str]:
+    """Every canonical species name in the current catalog (for allow-lists).
+
+    Mirrors :func:`utils.creatures.creature_names`. The catalog-scoped
+    ``known_species`` allow-list the fishing leaderboard reads (``db.top_fishers``
+    / ``db.top_trophies``) so a superseded catalog never inflates the totals.
+    """
+    return [s.name for s in SPECIES]
+
+
 def species_for_venue(venue: str = SHORE_VENUE) -> list[FishSpecies]:
     """Every catalog species whose ``venue`` matches *venue* (sorted by size)."""
     key = venue.strip().lower()
