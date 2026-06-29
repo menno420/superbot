@@ -95,6 +95,17 @@ run's *registry↔ledger parity* idea — that checks the unit *set* stays hones
   (#1546 + the dashboard refreshes are newer than marker #1530; the next reconciliation pass records
   them — not drift). No fact stranded in chat.
 
+## ⚙️ Post-push CI catch (honest record)
+The first push's CI caught one test my local run missed: `test_help_surface_map_doc::
+test_preamble_counts_match_live_registries` (hook-defining extensions 42 → 43). **Root cause of the
+local miss:** I ran the full CI mirror *before* adding `build_help_menu_view` to `CreatureBattleCog`
+(that came later, to satisfy `test_help_direct_navigation`), then only ran targeted tests — so I missed
+that the new hook bumped the surface-map count. Fixed in a follow-up commit (preamble 42 → 43, dropped
+`creature_battle_cog` from the "without the hook" list, de-staled the §2 creature row to the shipped
+`CreatureMenuView`). **Lesson (worth a guard):** after a late non-trivial change, re-run the *full*
+mirror, not targeted tests — the cheap enforcement would be a Stop-hook nudge when `disbot/` or
+`entry_points`/help-hook surface changed after the last `check_quality --full`.
+
 ## 📤 Run report footer
 - **Run type:** routine · dispatch
 - **What shipped:** Creatures interactive game panel + dex browser + `entry_points` + battle
