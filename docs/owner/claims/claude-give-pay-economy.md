@@ -1,1 +1,0 @@
-- branch `claude/give-pay-economy` · scope: S1 deepening win — Economy give/pay command (peer coin transfer via existing audited `transfer()`) · area: `cogs/economy_cog.py`, tests, generated artifacts · 2026-06-29

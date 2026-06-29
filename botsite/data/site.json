@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T00:09:35Z",
+    "generated_at": "2026-06-29T00:27:05Z",
     "build": {
-      "commit": "f0d7b714",
-      "subject": "wip(leaderboard): born-red card — Fishing leaderboard provider",
-      "committed_at": "2026-06-29T00:09:35Z"
+      "commit": "47f5f1dc",
+      "subject": "wip(economy): born-red card — give/pay command",
+      "committed_at": "2026-06-29T00:27:05Z"
     }
   },
   "counts": {
-    "commands": 459,
+    "commands": 460,
     "features": 43,
     "games": 12
   },
@@ -3120,6 +3120,27 @@
         },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "give",
+      "aliases": [
+        "pay"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Give some of your coins to another member. !give @user <amount>",
+      "description": "Give some of your coins to another member.  !give @user <amount>",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Wager / money-flow map — generated trace of game coin paths",
           "status": "ideas"
         }
       ],

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T00:09:35Z",
+    "generated_at": "2026-06-29T00:27:05Z",
     "build": {
-      "commit": "f0d7b714",
-      "subject": "wip(leaderboard): born-red card — Fishing leaderboard provider",
-      "committed_at": "2026-06-29T00:09:35Z"
+      "commit": "47f5f1dc",
+      "subject": "wip(economy): born-red card — give/pay command",
+      "committed_at": "2026-06-29T00:27:05Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 459,
+      "commands": 460,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2638,6 +2638,14 @@
       "file": "2026-06-29-fishing-leaderboard-provider.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — Fishing leaderboard provider (S1 deepening win)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-29-economy-give-pay.md",
+      "date": "2026-06-29",
+      "title": "2026-06-29 — Economy give/pay (S1 deepening win, slice 2)",
       "status": "in-progress",
       "run_type": "",
       "self_initiated": false
@@ -3105,14 +3113,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-24-ticket-setup-buttons.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Ticket setup: all buttons & dropdowns + auto-create",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -6599,6 +6599,19 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "give",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "pay"
+          ],
+          "brief": "Give some of your coins to another member. !give @user <amount>",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         },
         {
           "name": "joblist",
