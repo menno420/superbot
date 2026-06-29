@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-kybm74` · scope: S1 completion-first deepening — Farm leaderboard provider (rank by flock size) + harvest card theme · area: `disbot/services/rank_providers.py`, `disbot/utils/db/games/farm.py`, `disbot/cogs/leaderboard_cog.py`, `disbot/utils/card_render.py` · 2026-06-29

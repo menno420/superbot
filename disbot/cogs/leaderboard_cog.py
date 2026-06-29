@@ -1,4 +1,4 @@
-"""Centralised leaderboards for XP, coins, mining, deathmatch, RPS, and counting.
+"""Centralised leaderboards for XP, coins, mining, deathmatch, RPS, farm, and counting.
 
 PR G refactored the per-category branches that previously lived in a
 single ``_build_embed`` function into a provider registry under
@@ -186,7 +186,7 @@ class _CategorySelect(discord.ui.Select):
 
 
 class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg]
-    """Centralised leaderboards for XP, coins, mining, deathmatch, RPS, and counting."""
+    """Centralised leaderboards for XP, coins, mining, deathmatch, RPS, farm, and counting."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -203,6 +203,7 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
             "dm_leaderboard",
             "dm_lb",
             "rpslb",
+            "farmlb",
             "countlb",
             "counting_leaderboard",
         ],
@@ -213,9 +214,9 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
         extras={"alias_classification": "legacy_duplicate"},
     )
     async def leaderboard(self, ctx: commands.Context, category: str = ""):
-        """Show a leaderboard.  !leaderboard [xp|coins|mining|fishing|deathmatch|rps|counting]
+        """Show a leaderboard.  !leaderboard [xp|coins|mining|fishing|farm|deathmatch|rps|counting]
 
-        Aliases (``!minelb``, ``!dm_lb``, ``!rpslb``, ``!countlb``, etc.)
+        Aliases (``!minelb``, ``!dm_lb``, ``!rpslb``, ``!farmlb``, ``!countlb``, etc.)
         resolve to the same provider via the registry's alias map.
         """
         # Prefer the alias (``ctx.invoked_with``) only when it is itself

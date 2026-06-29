@@ -49,6 +49,7 @@ def test_registry_exposes_canonical_categories():
         "mining",
         "creatures",
         "fishing",
+        "farm",
         "gamexp",
         "crafting",
         "deathmatch",
@@ -420,6 +421,88 @@ async def test_fishing_member_rank_reads_deep_list():
 async def test_fishing_aliases_resolve():
     for alias in ("fishlb", "fishingleaderboard", "anglerlb"):
         assert (get_provider(alias) or MagicMock()).name == "fishing"
+
+
+# ---------------------------------------------------------------------------
+# Farm provider (top_farmers → chickens/coop_level, ranked by flock size)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_farm_top_renders_flock_and_coop():
+    provider = get_provider("farm")
+    # top_farmers → [(user_id, chickens, coop_level)]
+    rows = [(1, 12, 3), (42, 1, 0)]
+    with patch(
+        "services.rank_providers.db.top_farmers",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ), patch(
+        "services.rank_providers.resources.member_display",
+        side_effect=lambda g, uid: f"U{uid}",
+    ):
+        entries = await provider.top(_guild())
+    assert len(entries) == 2
+    assert isinstance(entries[0], RankEntry)
+    assert "U1" in entries[0].label
+    assert "12 hens" in entries[0].label
+    assert "coop Lv 3" in entries[0].label
+    # singular "hen" for a one-hen starter flock.
+    assert "1 hen (coop Lv 0)" in entries[1].label
+    # structured projection drives the image card (score = flock size).
+    assert entries[0].name == "U1"
+    assert entries[0].score == 12.0
+    assert entries[0].value_text == "12 🐔"
+
+
+@pytest.mark.asyncio
+async def test_farm_top_caps_at_ten():
+    provider = get_provider("farm")
+    rows = [(uid, uid * 2, uid) for uid in range(1, 20)]
+    with patch(
+        "services.rank_providers.db.top_farmers",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ), patch(
+        "services.rank_providers.resources.member_display",
+        side_effect=lambda g, uid: f"U{uid}",
+    ):
+        entries = await provider.top(_guild())
+    assert len(entries) == 10
+
+
+@pytest.mark.asyncio
+async def test_farm_member_rank_on_and_off_board():
+    provider = get_provider("farm")
+    rows = [(1, 12, 3), (42, 7, 1)]
+    with patch(
+        "services.rank_providers.db.top_farmers",
+        new_callable=AsyncMock,
+        return_value=rows,
+    ):
+        rank_pos, value = await provider.member_rank(_guild(), 42)
+        assert rank_pos == 2
+        assert value == "7 hens (coop Lv 1)"
+
+        missing_pos, missing_value = await provider.member_rank(_guild(), 999)
+        assert missing_pos is None and missing_value is None
+
+
+@pytest.mark.asyncio
+async def test_farm_member_rank_reads_deep_list():
+    """member_rank must query a deep list (limit=500), not the top-10 default,
+    so a player ranked past 10th still resolves a rank."""
+    provider = get_provider("farm")
+    mock_top = AsyncMock(return_value=[])
+    with patch("services.rank_providers.db.top_farmers", mock_top):
+        await provider.member_rank(_guild(), 7)
+    assert mock_top.await_args.kwargs.get("limit") == 500
+
+
+@pytest.mark.asyncio
+async def test_farm_aliases_resolve():
+    for alias in ("farmlb", "farming", "chickenlb"):
+        assert (get_provider(alias) or MagicMock()).name == "farm"
 
 
 @pytest.mark.asyncio

@@ -129,6 +129,20 @@ THEMES: dict[str, Theme] = {
         gold=(232, 204, 112),
         outline=(8, 16, 18),
     ),
+    # The sunlit-field / harvest skin — warm wheat-gold over a soft green so the
+    # farm board reads as a sunny coop at a glance (distinct from "verdant"'s
+    # forest-green collection skin).
+    "harvest": Theme(
+        name="harvest",
+        bg=(30, 26, 16),
+        panel=(44, 38, 22),
+        accent=(214, 168, 56),
+        accent_alt=(244, 212, 104),
+        text=(244, 238, 220),
+        subtle=(176, 160, 122),
+        gold=(248, 214, 96),
+        outline=(18, 15, 9),
+    ),
 }
 
 DEFAULT_THEME = "midnight"
