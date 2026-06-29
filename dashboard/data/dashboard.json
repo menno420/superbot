@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T04:45:43Z",
+    "generated_at": "2026-06-29T05:09:29Z",
     "build": {
-      "commit": "31595f7b",
-      "subject": "wip(hotfix): born-red card — give command collision crashed boot",
-      "committed_at": "2026-06-29T04:45:43Z"
+      "commit": "ca2b4dc4",
+      "subject": "fix(cogs): retire `give` command surface-wide — unblock boot (bot was offline)",
+      "committed_at": "2026-06-29T05:09:29Z"
     },
     "counts": {
       "functions": 43,
@@ -2638,9 +2638,9 @@
       "file": "2026-06-29-railway-give-collision-crash.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — PROD hotfix: `give` command collision crashed boot (bot offline)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-06-29-fishing-leaderboard-provider.md",
