@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`command-collision-checker-2026-06-29.md`](./command-collision-checker-2026-06-29.md) —
+  **captured 2026-06-29 (band-#1560 reconciliation pass, Q-0089):** a `check_command_collisions.py` (offline,
+  stdlib AST, CI-wired) that fails when two cogs register the same top-level command name/alias — turning the
+  band's `give`-collision **prod boot-crash** (#1541/#1544, statically detectable yet it reached production)
+  into a red PR. The cheapest-tier (CI) half of the Q-0194 friction→guard escalation; pairs with #1544's
+  runtime boot guard. Subsystem: none (agent-workflow / build hygiene).
 - [`knowledge-domain-conversation-carryover-2026-06-29.md`](./knowledge-domain-conversation-carryover-2026-06-29.md) —
   **session idea (2026-06-29, Q-0089, from building the Project Moon combat-mechanics layer #1549):** a
   short-lived per-(channel, author) domain-context memory so a bare follow-up ("how does clashing work?")

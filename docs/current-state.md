@@ -16,7 +16,7 @@
 > | **S1 Bot product** | [`current-state/S1-bot.md`](current-state/S1-bot.md) | reaction-roles arc Carl-bot-mature; creature game + mining grid live; Essential Setup wizard cut over to primary + follow-ons (PR 2 / 3a, #1449/#1451); **NEW Project Moon (Limbus) knowledge domain shipped through grounding + faithfulness guard (#1453…#1470), then the combat-mechanics rules layer (clash/speed/IDs+passives, #1549)**; ▶ next: Project Moon Q-0086 live walk / StaticData exact-number ingest / botsite React migration |
 > | **S2 BTD6** | [`current-state/S2-btd6.md`](current-state/S2-btd6.md) | buff-uptime + data auto-seed/drift shipped; eval anchor-complete; **NEW QA-accuracy arc — interaction grounding + honest semantic-grading eval harness, DDT auto-counter list reverted at root (#1487…#1498)**; ▶ live re-test (owner) / curated counter lists / decode items 3–4 |
 > | **S3 AI-Memory** | [`current-state/S3-ai-memory.md`](current-state/S3-ai-memory.md) | settle-once money-safety guard (#1454) + cross-domain routing-disjointness guard (#1470); **self-improving-workflow guards #1476/#1477/#1479/#1482/#1495**; ▶ consistency-linter AI-nav PR 1 / procedures→skills Batch 2 |
-> | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 28th Q-0107 pass done (band-#1530); next recon at #1560; **no PLAN-BACKLOG-THIN flag** |
+> | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 29th Q-0107 pass done (band-#1560); next recon at #1590; **no PLAN-BACKLOG-THIN flag** |
 > | **S5 Operations** | [`current-state/S5-ops.md`](current-state/S5-ops.md) | merge=deploy clarity (Q-0193); loop self-fires; ▶ website rollout (owner/Hermes) |
 >
 > **Honest caveat (cross-sector, carried):** much buildable depth is substantial runtime work — but
@@ -38,8 +38,8 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-28 — **twenty-eighth Q-0107 reconciliation pass (band-#1530, issue #1531
-> — [pass record](planning/reconciliation-pass-2026-06-28-band1530.md));** the live state is the
+> **Last updated:** 2026-06-29 — **twenty-ninth Q-0107 reconciliation pass (band-#1560, issue #1563
+> — [pass record](planning/reconciliation-pass-2026-06-29-band1560.md));** the live state is the
 > **▶ Next action** line above + the Recently-shipped list. *(The dated narrative below is historical —
 > passes 10–25 record their state in the ▶ Next action callout + their per-band pass records, not here.)*
 > Earlier: 2026-06-15, **ninth Q-0107 reconciliation pass (the band-#930 cadence fire,
@@ -217,15 +217,46 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 >
-> **Last reconciliation pass:** PR #1530 (2026-06-28, twenty-eighth Q-0107 cadence pass, band-#1530 —
-> [the pass record + next-band queue](planning/reconciliation-pass-2026-06-28-band1530.md); marker reset
-> to the latest merged PR **#1530**). The next
-> **docs-only review + planning reconciliation** is due once merged PRs cross #1560 (every
+> **Last reconciliation pass:** PR #1560 (2026-06-29, twenty-ninth Q-0107 cadence pass, band-#1560 —
+> [the pass record + next-band queue](planning/reconciliation-pass-2026-06-29-band1560.md); marker reset
+> to the latest merged PR **#1560**). The next
+> **docs-only review + planning reconciliation** is due once merged PRs cross #1590 (every
 > multiple of **30** — Q-0107 cadence raised 10→20 on 2026-06-12, then 20→30 on 2026-06-14 per
 > Q-0134; `check_reconciliation_due.py` flags it, and `.github/workflows/reconciliation-trigger.yml`
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1561 · #1550 · #1551 (2026-06-29, operator command gaps + proof-channel audit — S1 best-in-class)** —
+  `!slowmode` · `!topic` (through the audited mutation seam) + `!roleinfo` — the operator commands
+  that close best-in-class gaps vs. mature management bots (#1561); plus a proof-channel
+  completion-deepening that **audits** prize lock/unlock and **re-checks `manage_channels`** at the
+  modal/panel callbacks (authority re-check at execution time, not panel-open, #1550/#1551).
+- **#1546 · #1548 · #1553 (2026-06-29, S1 game depth + workflow guards)** — the Creatures **interactive
+  game panel** + dex browser + `entry_points` + settle-once terminal guard (#1546); a
+  **session-slug-uniqueness guard** (hardens the born-red merge gate, BUG-0027 class) + a Mining how-to
+  button (#1548); and a **registry↔ledger completion-parity guard** plus inventory sort-cycle / type-filter
+  + display-logic tests on the category view (#1553).
+- **#1540 · #1542 (2026-06-29, unified-hub leaderboard providers — completion-first deepening)** —
+  **Fishing** (#1540) and **Farm** (#1542) leaderboard providers registered in the unified leaderboard hub.
+- **#1549 (2026-06-29, Project Moon (Limbus) — combat-mechanics knowledge layer)** — the clash / speed /
+  IDs+passives rules layer on the Limbus knowledge stack (extends the #1453…#1470 grounding arc).
+- **#1541 · #1544 (2026-06-29, PROD hotfix — `give`-collision boot crash, Q-0211)** — #1541 added a
+  `!give` / `!pay` peer coin-transfer command, which **collided** with mining's admin `give` (dormant
+  since the initial commit, never PR'd) → the STRICT identity-contract aborted startup → **bot offline in
+  a crash loop**. #1544 **retired `give` surface-wide** (removed economy `!give`/`!pay` + mining's admin
+  `give` + its orphaned `admin_grant` caller) and added a **cross-cog duplicate-command boot guard** so the
+  whole collision class can't recur (owner-directed root-cause prevention beyond the literal ask).
+- **#1534 · #1536 · #1538 · #1545 (2026-06-29, S1 feature-completion certification arc — Q-0209)** —
+  assessed every S1 bot unit against the #1513 certification framework to **100% assessed**: Mining /
+  Creatures (◐) + Welcome (#1534), Moderation / Economy / Roles / XP **+ root-fix BUG-0029** (XP level-up
+  role grants bypassed the audited role seam — no `audit.action_recorded`, no shared hierarchy preflight)
+  (#1536), Settings / Leaderboards / Tickets / Karma (#1538), and the **final 17 server-fn units →
+  completion ledger 100% assessed** + a fix-on-sight cleanup of 6 stale claim files for already-merged
+  branches (#1545, Q-0166).
+- **#1532 + 8 dashboard refreshes (2026-06-28/29, docs — twenty-eighth Q-0107 pass + dashboard)** — the
+  **twenty-eighth Q-0107 reconciliation pass** (band-#1530,
+  [pass record](planning/reconciliation-pass-2026-06-28-band1530.md), #1532); plus eight per-source-merge
+  **dashboard-data refreshes** (#1533 · #1535 · #1537 · #1539 · #1543 · #1547 · #1552 · #1554, Q-0167).
 - **#1504 · #1505 · #1508 · #1515 · #1518 · #1521 (2026-06-27/28, fishing acquisition-depth + gear arc — S1 game depth)** —
   fishing-specific gear stats that make the loadout presets a real optimisation (#1504); an
   `EffectiveStats` knob-coverage guard that surfaced two dead stats — `light_radius`/`luck` —
@@ -305,42 +336,7 @@ Source code and merged PRs win over anything written here.
   and the **eval-anchor coverage report + distractor negative-anchor guard** — every cleanly-derivable
   dollar/HP truth must be anchored or on a documented distractor/user-input allowlist (#1466). The BTD6
   grounding cases are now anchor-complete for every cleanly-derivable truth.
-- **#1444 · #1445 · #1454 (2026-06-24/25, settle-once money-safety for game-state views)** — a settle-once
-  terminal guard for game-state views (#1444), the blackjack-PvP settle-once guard + the shared mixin
-  relocated to `utils/` (#1445), and a `check_consistency` **Rule 6** warn-first adoption guard so the
-  settle-once money-safety pattern can't silently regress (#1454).
-- **#1449 · #1450 · #1451 (2026-06-25, Essential Setup wizard follow-ons)** — **PR 2**: the "All done"
-  **extras menu** (a plain menu of the optional features the spine skips) + a jargon-free **"Check my
-  setup"** readiness health check (#1449); **claim-GC automation** (Q-0206) + an Essential Setup
-  status-badges follow-on (#1450); **PR 3a**: retire the 7 dead read-only/metadata wizard sections +
-  demote cleanup to advanced-only (#1451).
-- **#1463 · #1464 (2026-06-25, BUG-0025 image-card navigation fix)** — the `/myprofile` hero-card image is
-  now preserved across editor navigation (#1463) and the stranded rank card is cleared when opening the XP
-  **Configure** panel (#1464); together they close **BUG-0025** (the cross-panel image-card transitions
-  that omitted `attachments=`).
-- **#1443 · #1447 + dashboard refreshes (2026-06-24/26, docs / grooming / dashboard)** — the **twenty-fifth
-  Q-0107 reconciliation pass** (band-#1440, [pass record](planning/reconciliation-pass-2026-06-24-band1440.md),
-  #1443); grooming to promote two ideas into the backlog (#1447); plus nine per-source-merge **dashboard
-  refreshes** (#1446 · #1448 · #1452 · #1455 · #1457 · #1459 · #1462 · #1465 · #1468, Q-0167).
-- **#1418 · #1420 · #1422 · #1425 · #1427 · #1429 · #1432 · #1434 · #1435 · #1436 · #1437 · #1438 · #1439 (2026-06-24, Essential Setup wizard restructure — one action per step, zero jargon)** —
-  the marquee S1 arc: a plan + simulator (#1418) and a **banned-jargon CI guard** (measured baseline 207
-  strings, #1420) drove a **plain-language sweep** (guild → server, jargon 207 → 154, #1422); then the
-  **Essential Setup spine** itself (#1425) — a linear, **direct-apply**, plain-language wizard, one action
-  per step — fleshed out step by step: steps 3–4 block-spam · help-desk (#1427), a "Choose a log channel"
-  step that binds + auto-creates (#1429) and grew into a **two-channel** mod + activity multi-select (#1432),
-  a "Reward active members" step (XP rate + level/time role rewards, #1434), spine polish + optional custom
-  naming (#1435), a **step-0 server-type starter preset** (#1437), and a logging-step defer fix before slow
-  channel-creation work (#1439). It was **cut over to the primary `!setup` / `/setup`** (#1438); the
-  setup-wizard plan + S1 state were reconciled to the shipped spine (#1436). Owner decisions Q-0202–Q-0205.
-- **#1417 · #1421 · #1423 (2026-06-24, support tickets — discoverability + full button setup)** — the
-  #1405 ticket subsystem was **wired into the `!setup` wizard + bot-join welcome** (#1417), the setup
-  **readiness scan now grades tickets** as a discoverability nudge (#1421), and ticket setup became a
-  **fully button/dropdown** flow that auto-creates the log channel (#1423).
-- **#1413 · #1430 · #1431 (2026-06-24, visual card-engine H3 — image cards through Help)** — the
-  `xpmenu` hub renders the **rank image card** (#1413); the **help-nav attachment seam** carries hub image
-  cards through Help (#1430), hardened with forward-path regression pins (#1431). Extends the card-engine
-  H2/H3 rollout (#1396…#1403).
-- **Older merges (#1441 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
+- **Older merges (#1464 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
