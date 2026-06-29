@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T21:07:36Z",
+    "generated_at": "2026-06-29T23:48:08Z",
     "build": {
-      "commit": "8624d7ea",
-      "subject": "chore(session): born-red card — operator command gaps (slowmode/topic/roleinfo)",
-      "committed_at": "2026-06-29T21:07:36Z"
+      "commit": "47a44e61",
+      "subject": "Merge pull request #1561 from menno420/claude/funny-franklin-j3598t",
+      "committed_at": "2026-06-29T23:48:08Z"
     }
   },
   "counts": {

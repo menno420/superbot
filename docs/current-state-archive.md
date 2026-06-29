@@ -86,6 +86,41 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1444 · #1445 · #1454 (2026-06-24/25, settle-once money-safety for game-state views)** — a settle-once
+  terminal guard for game-state views (#1444), the blackjack-PvP settle-once guard + the shared mixin
+  relocated to `utils/` (#1445), and a `check_consistency` **Rule 6** warn-first adoption guard so the
+  settle-once money-safety pattern can't silently regress (#1454).
+- **#1449 · #1450 · #1451 (2026-06-25, Essential Setup wizard follow-ons)** — **PR 2**: the "All done"
+  **extras menu** (a plain menu of the optional features the spine skips) + a jargon-free **"Check my
+  setup"** readiness health check (#1449); **claim-GC automation** (Q-0206) + an Essential Setup
+  status-badges follow-on (#1450); **PR 3a**: retire the 7 dead read-only/metadata wizard sections +
+  demote cleanup to advanced-only (#1451).
+- **#1463 · #1464 (2026-06-25, BUG-0025 image-card navigation fix)** — the `/myprofile` hero-card image is
+  now preserved across editor navigation (#1463) and the stranded rank card is cleared when opening the XP
+  **Configure** panel (#1464); together they close **BUG-0025** (the cross-panel image-card transitions
+  that omitted `attachments=`).
+- **#1443 · #1447 + dashboard refreshes (2026-06-24/26, docs / grooming / dashboard)** — the **twenty-fifth
+  Q-0107 reconciliation pass** (band-#1440, [pass record](planning/reconciliation-pass-2026-06-24-band1440.md),
+  #1443); grooming to promote two ideas into the backlog (#1447); plus nine per-source-merge **dashboard
+  refreshes** (#1446 · #1448 · #1452 · #1455 · #1457 · #1459 · #1462 · #1465 · #1468, Q-0167).
+- **#1418 · #1420 · #1422 · #1425 · #1427 · #1429 · #1432 · #1434 · #1435 · #1436 · #1437 · #1438 · #1439 (2026-06-24, Essential Setup wizard restructure — one action per step, zero jargon)** —
+  the marquee S1 arc: a plan + simulator (#1418) and a **banned-jargon CI guard** (measured baseline 207
+  strings, #1420) drove a **plain-language sweep** (guild → server, jargon 207 → 154, #1422); then the
+  **Essential Setup spine** itself (#1425) — a linear, **direct-apply**, plain-language wizard, one action
+  per step — fleshed out step by step: steps 3–4 block-spam · help-desk (#1427), a "Choose a log channel"
+  step that binds + auto-creates (#1429) and grew into a **two-channel** mod + activity multi-select (#1432),
+  a "Reward active members" step (XP rate + level/time role rewards, #1434), spine polish + optional custom
+  naming (#1435), a **step-0 server-type starter preset** (#1437), and a logging-step defer fix before slow
+  channel-creation work (#1439). It was **cut over to the primary `!setup` / `/setup`** (#1438); the
+  setup-wizard plan + S1 state were reconciled to the shipped spine (#1436). Owner decisions Q-0202–Q-0205.
+- **#1417 · #1421 · #1423 (2026-06-24, support tickets — discoverability + full button setup)** — the
+  #1405 ticket subsystem was **wired into the `!setup` wizard + bot-join welcome** (#1417), the setup
+  **readiness scan now grades tickets** as a discoverability nudge (#1421), and ticket setup became a
+  **fully button/dropdown** flow that auto-creates the log channel (#1423).
+- **#1413 · #1430 · #1431 (2026-06-24, visual card-engine H3 — image cards through Help)** — the
+  `xpmenu` hub renders the **rank image card** (#1413); the **help-nav attachment seam** carries hub image
+  cards through Help (#1430), hardened with forward-path regression pins (#1431). Extends the card-engine
+  H2/H3 rollout (#1396…#1403).
 - **#1419 · #1424 · #1426 (2026-06-24, BTD6 unification + slash-sync runtime)** — the five BTD6 command
   groups **unified under one `/btd6`** (flattest layout, #1419); a **diff-gated startup command-tree
   auto-sync** (+ post-unification docs cleanup, #1424) with `!syncslash global` gated through the same

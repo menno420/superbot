@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T21:07:36Z",
+    "generated_at": "2026-06-29T23:48:08Z",
     "build": {
-      "commit": "8624d7ea",
-      "subject": "chore(session): born-red card — operator command gaps (slowmode/topic/roleinfo)",
-      "committed_at": "2026-06-29T21:07:36Z"
+      "commit": "47a44e61",
+      "subject": "Merge pull request #1561 from menno420/claude/funny-franklin-j3598t",
+      "committed_at": "2026-06-29T23:48:08Z"
     },
     "counts": {
       "functions": 43,
@@ -2690,9 +2690,9 @@
       "file": "2026-06-29-operator-command-gaps.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — Best-in-class operator command gaps (slowmode · topic · roleinfo)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-06-29-inventory-display-logic-tests.md",
