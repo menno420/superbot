@@ -40,7 +40,9 @@
 
 ### C. Convenience
 - [x] **Pagination** — 8 items/page with boundary-disabled nav; hub previews first 3 + count per category.
-- [ ] **Sort/filter** — ❌ no name/qty/rarity sort or type filter; fixed order only. → punch #5.
+- [~] **Sort/filter** — ⚠ **sort shipped (2026-06-29):** the category detail view has a
+      `🔀 Sort:` cycle (Rarity / Quantity / Name, footer shows the active mode); **type filter still
+      missing.** → punch #5 (filter half remains).
 - [x] **Clear feedback** — empty state + page footer; ⚠ item-detail line is dense (emoji·name·qty·rarity·
       type on one line) — readability degrades for large inventories. → punch #4.
 
@@ -87,7 +89,9 @@
 3. **Capability enforcement** *(owner, minor)* — either enforce the declared `inventory.*` capabilities or
    remove the aspirational ones from the registry until their features exist.
 4. **Item-detail density** *(offline, minor)* — multi-line / dedicated fields for large inventories.
-5. **Sort / filter UI** *(offline, deepening)* — sort by qty/name/rarity, filter by type.
+5. **Sort / filter UI** *(offline, deepening)* — ⚠ **sort DONE 2026-06-29 (dispatch run)** —
+   `🔀 Sort:` cycle (Rarity / Quantity / Name) on the category view, pure `_sort_items` + 9 tests.
+   **Remaining:** the **type filter** (show only one item type within a category).
 6. **Server configuration** *(owner, minor)* — decide whether items should be per-guild configurable; if
    so, add a SubsystemSchema.
 7. ~~**Display-logic tests**~~ ✅ **DONE 2026-06-29 (dispatch run)** — `test_inventory_display_logic.py`
@@ -98,8 +102,8 @@
 
 ## Evidence
 - **Tests:** `tests/unit/views/test_economy_inventory_edit.py` (navigation lifecycle) ·
-  `tests/unit/cogs/test_inventory_display_logic.py` (display logic — 10 cases, punch #7) ·
-  `tests/unit/invariants/test_no_view_level_purchase_writes.py`
+  `tests/unit/cogs/test_inventory_display_logic.py` (display logic — 19 cases: punch #7 merge/sort/
+  group/pagination + punch #5 sort cycle) · `tests/unit/invariants/test_no_view_level_purchase_writes.py`
 - **Walkthrough:** pending (punch #8)
 - **Owner sign-off:** pending (punch #9)
 

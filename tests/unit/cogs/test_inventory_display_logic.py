@@ -16,9 +16,11 @@ import discord
 import pytest
 
 from cogs.inventory_cog import (
+    _SORT_MODES,
     UnifiedInventoryView,
     _build_combined_inventory,
     _CategoryView,
+    _sort_items,
 )
 
 
@@ -155,3 +157,86 @@ async def test_next_and_prev_clamp_at_the_boundaries():
     await view._next_page(interaction)
     await view._next_page(interaction)  # one past the end
     assert view._page == view._total_pages - 1 == 2
+
+
+# ---------------------------------------------------------------------------
+# _sort_items + _CategoryView sort cycle (completion-cert punch #5)
+# ---------------------------------------------------------------------------
+
+
+def _mixed() -> list[tuple[str, int, dict]]:
+    # Deliberately unordered; distinct rarities, quantities, and names.
+    return [
+        ("stone", 5, {"rarity": "Common"}),
+        ("diamond", 1, {"rarity": "Epic"}),
+        ("iron", 9, {"rarity": "Uncommon"}),
+        ("gold", 3, {"rarity": "Rare"}),
+    ]
+
+
+def test_sort_by_rarity_is_rarest_first():
+    keys = [k for k, _, _ in _sort_items(_mixed(), "rarity")]
+    assert keys == ["diamond", "gold", "iron", "stone"]
+
+
+def test_sort_by_quantity_is_highest_first():
+    keys = [k for k, _, _ in _sort_items(_mixed(), "quantity")]
+    assert keys == ["iron", "stone", "gold", "diamond"]
+
+
+def test_sort_by_name_is_alphabetical():
+    keys = [k for k, _, _ in _sort_items(_mixed(), "name")]
+    assert keys == ["diamond", "gold", "iron", "stone"]
+
+
+def test_sort_breaks_ties_deterministically_by_key():
+    # Two Commons with equal quantity must order by key, not input order.
+    items = [("zeta", 2, {"rarity": "Common"}), ("alpha", 2, {"rarity": "Common"})]
+    assert [k for k, _, _ in _sort_items(items, "rarity")] == ["alpha", "zeta"]
+    assert [k for k, _, _ in _sort_items(items, "quantity")] == ["alpha", "zeta"]
+
+
+def test_unknown_rarity_sorts_last():
+    items = [("mystery", 1, {}), ("gold", 1, {"rarity": "Rare"})]
+    assert [k for k, _, _ in _sort_items(items, "rarity")] == ["gold", "mystery"]
+
+
+def test_category_view_defaults_to_rarity_sort():
+    view = _CategoryView(_member(), "Mining Materials", _mixed(), hub=_hub())
+    assert view._sort == "rarity"
+    assert [k for k, _, _ in view._items] == ["diamond", "gold", "iron", "stone"]
+
+
+def test_sort_button_present_with_multiple_items_absent_with_one():
+    many = _CategoryView(_member(), "Tools", _mixed(), hub=_hub())
+    assert any("Sort:" in getattr(c, "label", "") for c in many.children)
+    one = _CategoryView(_member(), "Tools", _mixed()[:1], hub=_hub())
+    assert not any("Sort:" in getattr(c, "label", "") for c in one.children)
+
+
+@pytest.mark.asyncio
+async def test_cycle_sort_advances_mode_resets_page_and_reorders():
+    view = _CategoryView(_member(), "Mining Materials", _mixed(), hub=_hub())
+    interaction = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+
+    view._page = 0
+    await view._cycle_sort(interaction)
+    # rarity → quantity (the next mode in the cycle).
+    assert view._sort == _SORT_MODES[1] == "quantity"
+    assert [k for k, _, _ in view._items] == ["iron", "stone", "gold", "diamond"]
+    assert view._page == 0
+    assert "Sorted by Quantity" in view.build_embed().footer.text
+    interaction.response.edit_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_cycle_sort_wraps_back_to_rarity():
+    view = _CategoryView(_member(), "Mining Materials", _mixed(), hub=_hub())
+    interaction = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+    for _ in range(len(_SORT_MODES)):
+        await view._cycle_sort(interaction)
+    assert view._sort == "rarity"  # full cycle returns to the default

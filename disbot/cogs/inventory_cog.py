@@ -122,6 +122,36 @@ _RARITY_ORDER: dict[str, int] = {
     "Common": 3,
 }
 
+# Sort modes for the category detail view (punch #5). "rarity" is the default and
+# matches the rarest-first grouping order; the others let a large inventory be
+# re-ordered by quantity or name. Each is a stable total order (name tiebreak).
+_SORT_MODES: tuple[str, ...] = ("rarity", "quantity", "name")
+_SORT_LABEL: dict[str, str] = {
+    "rarity": "Rarity",
+    "quantity": "Quantity",
+    "name": "Name",
+}
+
+
+def _sort_items(
+    items: list[tuple[str, int, dict]],
+    mode: str,
+) -> list[tuple[str, int, dict]]:
+    """Return *items* ordered by *mode* — a pure, total order (item key breaks ties).
+
+    * ``rarity``   — rarest-first (the grouping default), key alpha within a tier.
+    * ``quantity`` — highest quantity first, key alpha within a quantity.
+    * ``name``     — item key alphabetical.
+    """
+    if mode == "quantity":
+        return sorted(items, key=lambda x: (-x[1], x[0]))
+    if mode == "name":
+        return sorted(items, key=lambda x: x[0])
+    return sorted(
+        items,
+        key=lambda x: (_RARITY_ORDER.get(x[2].get("rarity", ""), 99), x[0]),
+    )
+
 
 # ---------------------------------------------------------------------------
 # Shared async helper — used by both the cog command and economy_cog panel
@@ -176,7 +206,8 @@ class _CategoryView(BaseView):
     ) -> None:
         super().__init__(author, timeout=180)
         self._category = category
-        self._items = items
+        self._sort = _SORT_MODES[0]
+        self._items = _sort_items(items, self._sort)
         self._hub = hub
         self._page = 0
         self._total_pages = max(1, (len(items) + self._PER_PAGE - 1) // self._PER_PAGE)
@@ -202,6 +233,16 @@ class _CategoryView(BaseView):
             )
             next_btn.callback = self._next_page  # type: ignore[method-assign]
             self.add_item(next_btn)
+
+        # Sort cycle — only worth offering when there is more than one item to order.
+        if len(self._items) > 1:
+            sort_btn = discord.ui.Button(  # type: ignore[var-annotated]
+                label=f"🔀 Sort: {_SORT_LABEL[self._sort]}",
+                style=discord.ButtonStyle.primary,
+                row=1,
+            )
+            sort_btn.callback = self._cycle_sort  # type: ignore[method-assign]
+            self.add_item(sort_btn)
 
         back_btn = discord.ui.Button(  # type: ignore[var-annotated]
             label="↩ Back",
@@ -238,9 +279,20 @@ class _CategoryView(BaseView):
 
         embed.description = "\n".join(lines) if lines else "Nothing here."
         embed.set_footer(
-            text=f"Page {self._page + 1}/{self._total_pages}  •  Click ↩ Back to return.",
+            text=(
+                f"Page {self._page + 1}/{self._total_pages}  •  "
+                f"Sorted by {_SORT_LABEL[self._sort]}  •  Click ↩ Back to return."
+            ),
         )
         return embed
+
+    async def _cycle_sort(self, interaction: discord.Interaction) -> None:
+        idx = (_SORT_MODES.index(self._sort) + 1) % len(_SORT_MODES)
+        self._sort = _SORT_MODES[idx]
+        self._items = _sort_items(self._items, self._sort)
+        self._page = 0
+        self._rebuild_buttons()
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
     async def _prev_page(self, interaction: discord.Interaction) -> None:
         self._page = max(0, self._page - 1)
