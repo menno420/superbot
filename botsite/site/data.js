@@ -2664,25 +2664,19 @@ const COMMANDS = [
     "name": "give",
     "area": "economy",
     "status": "in-progress",
-    "summary": "Admin-only: give resources to a user.",
-    "description": "Admin-only: give resources to a user.",
+    "summary": "Give some of your coins to another member. !give @user <amount>",
+    "description": "Give some of your coins to another member. !give @user <amount>",
     "usage": "!give",
-    "aliases": [],
+    "aliases": [
+      "pay"
+    ],
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
     "planned": [
       {
         "status": "idea",
-        "title": "Mining grid encounters — depth-gated sparse events (2026-06-22)"
-      },
-      {
-        "status": "idea",
-        "title": "The Explore hub — a federated open world (one world, each subsystem…"
-      },
-      {
-        "status": "idea",
-        "title": "Mining & Exploration — Brainstorm & Roadmap"
+        "title": "Wager / money-flow map — generated trace of game coin paths"
       }
     ]
   },
@@ -7003,7 +6997,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "f0d7b714",
+    "build": "47f5f1dc",
     "title": "New public bot website",
     "changes": [
       {
@@ -7015,7 +7009,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "f0d7b714",
+    "build": "47f5f1dc",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7027,7 +7021,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "f0d7b714",
+    "build": "47f5f1dc",
     "title": "Command-alias suggestions",
     "changes": [
       {

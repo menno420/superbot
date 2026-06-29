@@ -16,6 +16,11 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Economy `!give` / `!pay`** (#1541, completion-first deepening win) — a peer coin-transfer command
+  surfacing the already-audited `economy_service.transfer()` seam (atomic debit+credit, `economy_audit_log`,
+  `EVT_BALANCE_CHANGED`), closing the assessment's finding (b). Guard-railed (rejects bot target /
+  self / non-positive; friendly insufficient-funds message). Member-tier in the homed Economy cog
+  (reachable, 0 new gaps). +7 tests; no migration; self-merged on green.
 - **Fishing leaderboard provider** (#1540, completion-first deepening win) — fishing now appears in the
   unified `!leaderboard` hub + select menu (`FishingProvider`, top anglers by total fish caught, reusing
   the existing `db.top_fishers`), closing the "Fishing has its own `!fishtop`/`!trophies` boards but no
@@ -95,7 +100,8 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   run)** as a `FishingProvider` in the unified `!leaderboard` hub (top anglers by total caught, reusing
   `db.top_fishers`); **remaining gaps: Blackjack/Casino/Word-Chain/Farm** — each is still one
   `RankProvider` class + a `utils/db` top-N read (the next turn-key *deepening* wins); (b)
-  Economy's missing public `give`/`pay` (the `transfer()` primitive exists) + admin balance panel. **▶
+  Economy's public **`give`/`pay` now SHIPPED (#1541, this run)** — a peer coin-transfer command over
+  the existing audited `economy_service.transfer()` seam; remaining: an admin balance-adjust panel. **▶
   Next startable, offline:** **assess the remaining server-fns** — the unassessed set is now Counters ·
   Spotlight · Channels · Setup wizard · AI · Logging · Diagnostics · Help · Admin · Inventory · Treasury ·
   Cleanup · Automod · Image-moderation · Security · Proof-channel · Utility, one cert each under
