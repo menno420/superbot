@@ -1,1 +1,0 @@
-- branch `claude/mining-wire-light-luck` · scope: wire the two dead EffectiveStats (light_radius → grid reveal window, luck → rare-find weighting) — BUG-0026, owner decision Q-0208 · area: utils/mining/{grid,exploration}.py + views/mining/grid_mine_view.py · 2026-06-27

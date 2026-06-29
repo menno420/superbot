@@ -100,27 +100,23 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". A tag reflects the arc's *next actionable* step.)*
-- `[offline]` **Feature-completion assessments — IN PROGRESS (19/36 assessed; ALL 10 games done + 9
-  server-fns).** The completion-first arc (Q-0209). Games done #1513…#1534; **server-fns: Welcome (#1534)
-  · Moderation/Economy/Roles/XP (#1536, with BUG-0029 root fix — XP role grants now through the audited
-  `role_automation.apply` seam) · Settings/Leaderboards/Tickets/Karma (#1538, this batch).** All
-  structurally strong (audited mutation seams, Help, Setup). **Findings worth a follow-up:** (a)
-  **Leaderboards was missing providers for several existing games** — **Fishing SHIPPED (#1540)** and
-  **Farm SHIPPED (#1542)** as `FishingProvider`/`FarmProvider` in the unified `!leaderboard` hub. The
-  remaining named games **Blackjack/Casino/Word-Chain do NOT have a persisted per-player rankable stat**
-  (Blackjack = in-memory game state + economy-audit coins only; Casino/poker = ephemeral play-chips;
-  Word-Chain = per-channel `chain_count`, no per-user tracking) — each needs a **migration + a
-  write-path** first, so they are *not* turn-key leaderboard adds; treat them as a deepening *feature*
-  (add tracking → board), not a quick provider. (b)
-  Economy's public **`give`/`pay` now SHIPPED (#1541, this run)** — a peer coin-transfer command over
-  the existing audited `economy_service.transfer()` seam; remaining: an admin balance-adjust panel. **▶
-  Next startable, offline:** **assess the remaining server-fns** — the unassessed set is now Counters ·
-  Spotlight · Channels · Setup wizard · AI · Logging · Diagnostics · Help · Admin · Inventory · Treasury ·
-  Cleanup · Automod · Image-moderation · Security · Proof-channel · Utility, one cert each under
-  [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from
-  `rubric-server-function.md`; or take a *deepening* win (the turn-key leaderboard providers are now
-  exhausted — Fishing #1540 + Farm #1542; the Blackjack/Casino/Word-Chain boards need persisted
-  per-player tracking first, a feature not a provider).
+- `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
+  completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
+  now has a rubric-filled, source-grounded certificate under
+  [`../planning/feature-completion/units/`](../planning/feature-completion/README.md). The **final
+  server-fn batch (PR #1545, this run)** assessed the last 17 unassessed units in one sweep: moderation
+  (Cleanup · Automod · Image-moderation · Security · Proof-channel) · economy (Inventory · Treasury) ·
+  community (Community-spotlight · Counters) · management (Channels · Setup-wizard) · platform (AI ·
+  Logging · Diagnostics · Utility · Help · Admin). **Most are structurally strong** (audited mutation
+  seams, Help, tests); the honest weak spots surfaced: **Inventory** (read-only browser, unenforced
+  capabilities, unaudited item grants) · **Proof-channel** (lock/unlock mutates channel perms with no
+  audit event + no modal authority re-check) · **AI** (carries OPEN **BUG-0019 #1**). **▶ Next startable:**
+  the arc is now `◐ → ✔` certification work, which is **`[owner]`/`[needs-live-bot]`** by definition (each
+  unit needs a `/verify-bot` live walkthrough + owner sign-off). **Offline deepening picks** from the
+  punch-lists: Inventory item-grant audit + capability cleanup · Proof-channel lock/unlock audit + modal
+  re-check · logging ignored-lists/channel+voice events · the AI BUG-0019 #1 owner decision · best-in-class
+  command gaps (channel slowmode/topic, utility roleinfo/channelinfo). The Blackjack/Casino/Word-Chain
+  leaderboards still need persisted per-player tracking first (a feature, not a provider).
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
   `architecture_rules/canonical_helpers.yaml`, +7 tests) flags a game-view terminal handler that

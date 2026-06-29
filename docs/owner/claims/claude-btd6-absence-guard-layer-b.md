@@ -1,1 +1,0 @@
-- branch `claude/btd6-absence-guard-layer-b` · scope: BTD6 absence-guard Layer B (grounded-contradiction slice — reject a false "no" the grounding refutes) · area: utils/btd6/absence_guard.py + services/btd6_grounding_service.py + core/runtime/ai/natural_language_stage.py · 2026-06-27

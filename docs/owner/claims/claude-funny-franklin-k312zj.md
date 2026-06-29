@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-k312zj` · scope: mining gear loadout presets (V-14/Q-0175 Phase-1) · area: disbot/utils/db/games/, services/mining_workflow.py, views/mining/, migrations/, tests · 2026-06-27
