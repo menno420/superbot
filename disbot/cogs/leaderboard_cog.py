@@ -199,6 +199,7 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
             "rankings",
             "minelb",
             "miningleaderboard",
+            "fishlb",
             "dm_leaderboard",
             "dm_lb",
             "rpslb",
@@ -212,7 +213,7 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
         extras={"alias_classification": "legacy_duplicate"},
     )
     async def leaderboard(self, ctx: commands.Context, category: str = ""):
-        """Show a leaderboard.  !leaderboard [xp|coins|mining|deathmatch|rps|counting]
+        """Show a leaderboard.  !leaderboard [xp|coins|mining|fishing|deathmatch|rps|counting]
 
         Aliases (``!minelb``, ``!dm_lb``, ``!rpslb``, ``!countlb``, etc.)
         resolve to the same provider via the registry's alias map.

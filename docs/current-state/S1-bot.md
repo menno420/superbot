@@ -16,6 +16,12 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Fishing leaderboard provider** (#1540, completion-first deepening win) — fishing now appears in the
+  unified `!leaderboard` hub + select menu (`FishingProvider`, top anglers by total fish caught, reusing
+  the existing `db.top_fishers`), closing the "Fishing has its own `!fishtop`/`!trophies` boards but no
+  unified-panel provider" gap surfaced by the Leaderboards completion assessment. Mirrors
+  `CreaturesProvider`; new `fish_names()` catalog helper (dedups the `[s.name for s in SPECIES]` call
+  sites); a new `tidal` ocean card-skin. +6 tests; self-merged on green.
 - **No-dead-end terminal-view arch guard** (#1529, Q-0194 friction→guard) — a warn-tier `no_dead_end`
   rule in `scripts/check_architecture.py` flags any game-view terminal handler (calls `self.stop()`)
   that renders a message without swapping to a nav-carrying view; allowlist for genuine pre-game
@@ -85,16 +91,17 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   · Moderation/Economy/Roles/XP (#1536, with BUG-0029 root fix — XP role grants now through the audited
   `role_automation.apply` seam) · Settings/Leaderboards/Tickets/Karma (#1538, this batch).** All
   structurally strong (audited mutation seams, Help, Setup). **Findings worth a follow-up:** (a)
-  **Leaderboards is missing providers for several existing games** — notably **Fishing** (its own
-  `!trophies` board exists but no unified-panel provider), plus Blackjack/Casino/Word-Chain/Farm — each
-  is one `RankProvider` class + a `utils/db` top-N read (the headline turn-key *deepening* win now); (b)
+  **Leaderboards is missing providers for several existing games** — **Fishing now SHIPPED (#1540, this
+  run)** as a `FishingProvider` in the unified `!leaderboard` hub (top anglers by total caught, reusing
+  `db.top_fishers`); **remaining gaps: Blackjack/Casino/Word-Chain/Farm** — each is still one
+  `RankProvider` class + a `utils/db` top-N read (the next turn-key *deepening* wins); (b)
   Economy's missing public `give`/`pay` (the `transfer()` primitive exists) + admin balance panel. **▶
   Next startable, offline:** **assess the remaining server-fns** — the unassessed set is now Counters ·
   Spotlight · Channels · Setup wizard · AI · Logging · Diagnostics · Help · Admin · Inventory · Treasury ·
   Cleanup · Automod · Image-moderation · Security · Proof-channel · Utility, one cert each under
   [`../planning/feature-completion/units/`](../planning/feature-completion/README.md) from
-  `rubric-server-function.md`; or take a *deepening* win (a Fishing leaderboard provider; Economy
-  `give`/`pay`).
+  `rubric-server-function.md`; or take a *deepening* win (a Blackjack/Casino/Word-Chain/Farm leaderboard
+  provider — the Fishing one is the worked example; Economy `give`/`pay`).
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
   `architecture_rules/canonical_helpers.yaml`, +7 tests) flags a game-view terminal handler that

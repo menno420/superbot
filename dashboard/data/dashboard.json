@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-28T23:46:03Z",
+    "generated_at": "2026-06-29T00:09:35Z",
     "build": {
-      "commit": "ae4fa85e",
-      "subject": "Merge pull request #1538 from menno420/claude/funny-franklin-8tarop-b",
-      "committed_at": "2026-06-28T23:46:03Z"
+      "commit": "f0d7b714",
+      "subject": "wip(leaderboard): born-red card — Fishing leaderboard provider",
+      "committed_at": "2026-06-29T00:09:35Z"
     },
     "counts": {
       "functions": 43,
@@ -2635,6 +2635,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-29-fishing-leaderboard-provider.md",
+      "date": "2026-06-29",
+      "title": "2026-06-29 — Fishing leaderboard provider (S1 deepening win)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-28-server-function-completion-assessments.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Server-function completion assessments (Q-0209)",
@@ -3105,14 +3113,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-24-ticket-ai-confirm.md",
-      "date": "2026-06-24",
-      "title": "2026-06-24 — Ticket AI open: one-click confirm (follow-up to #1405)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -7201,13 +7201,14 @@
             "rankings",
             "minelb",
             "miningleaderboard",
+            "fishlb",
             "dm_leaderboard",
             "dm_lb",
             "rpslb",
             "countlb",
             "counting_leaderboard"
           ],
-          "brief": "Show a leaderboard. !leaderboard [xp|coins|mining|deathmatch|rps|counting]",
+          "brief": "Show a leaderboard. !leaderboard [xp|coins|mining|fishing|deathmatch|rps|counting]",
           "classification": "legacy_duplicate",
           "has_panel": true,
           "button_backed": true

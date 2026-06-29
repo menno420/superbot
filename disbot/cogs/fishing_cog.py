@@ -34,7 +34,7 @@ from utils.fishing import bait as bait_mod
 from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
 from utils.fishing import weather as weather_mod
-from utils.fishing.fish import SPECIES, species_by_name
+from utils.fishing.fish import SPECIES, fish_names, species_by_name
 from views.fishing import (
     BaitShopView,
     FishingMenuView,
@@ -134,7 +134,7 @@ class FishingCog(commands.Cog):
     )
     async def fishtop(self, ctx):
         """Show this server's top anglers by total fish caught."""
-        rows = await db.top_fishers(ctx.guild.id, [s.name for s in SPECIES])
+        rows = await db.top_fishers(ctx.guild.id, fish_names())
         embed = discord.Embed(title="🎣 Top Anglers", color=_FISHING_COLOR)
         if not rows:
             embed.description = (
@@ -161,7 +161,7 @@ class FishingCog(commands.Cog):
     )
     async def trophies(self, ctx):
         """Show this server's heaviest catches — the biggest-fish hall of fame."""
-        rows = await db.top_trophies(ctx.guild.id, [s.name for s in SPECIES])
+        rows = await db.top_trophies(ctx.guild.id, fish_names())
         embed = discord.Embed(title="🏅 Biggest Catches", color=_FISHING_COLOR)
         if not rows:
             embed.description = (

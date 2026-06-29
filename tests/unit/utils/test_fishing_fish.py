@@ -114,3 +114,12 @@ def test_unknown_venue_yields_an_empty_pool_and_zero_cap():
     assert fish.venue_size_cap("lava") == 0
     assert fish.max_size_rank_for_level(7, "lava") == 0
     assert fish.unlocked_species(7, "lava") == []
+
+
+def test_fish_names_returns_every_catalog_species_name():
+    names = fish.fish_names()
+    # One entry per catalog species, matching SPECIES exactly (the allow-list
+    # the leaderboard reads), and all canonical lowercase.
+    assert names == [s.name for s in fish.SPECIES]
+    assert len(names) == len(fish.SPECIES)
+    assert all(n == n.lower() for n in names)
