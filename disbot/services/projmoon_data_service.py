@@ -38,6 +38,7 @@ _FILES: dict[str, str] = {
     "sinners.json": "sinner",
     "sins.json": "sin",
     "damage_types.json": "damage_type",
+    "mechanics.json": "mechanic",
     "ego_grades.json": "ego_grade",
     "statuses.json": "status",
 }
@@ -47,6 +48,7 @@ KIND_LABELS: dict[str, str] = {
     "sinner": "Sinners",
     "sin": "Sins",
     "damage_type": "Damage types",
+    "mechanic": "Mechanics",
     "ego_grade": "E.G.O grades",
     "status": "Statuses",
 }
@@ -56,6 +58,7 @@ _EXTRA_FIELDS: dict[str, tuple[str, ...]] = {
     "sinner": ("literary_origin",),
     "sin": ("color",),
     "ego_grade": ("rank",),
+    "mechanic": ("category",),
 }
 
 

@@ -16,7 +16,7 @@ def _fresh_cache():
 
 def test_all_kinds_load_and_validate():
     kinds = data.entity_kinds()
-    assert kinds == ("sinner", "sin", "damage_type", "ego_grade", "status")
+    assert kinds == ("sinner", "sin", "damage_type", "mechanic", "ego_grade", "status")
     for kind in kinds:
         entries = data.get_entries(kind)
         assert entries, f"no entries for {kind}"
@@ -66,6 +66,39 @@ def test_extra_fields_preserved():
     assert wrath.extra.get("color") == "Red"
     aleph = data.resolve("ALEPH", kind="ego_grade")
     assert aleph.extra.get("rank") == 5
+
+
+def test_every_mechanic_has_a_category():
+    mechs = data.get_entries("mechanic")
+    assert len(mechs) >= 12  # the core combat layer
+    for m in mechs:
+        assert m.extra.get("category"), f"{m.canonical} missing a category"
+
+
+def test_core_combat_mechanics_are_present():
+    # The mechanics a Project Moon player asked for: clashing, speed, IDs +
+    # passives, enemy-stat concepts (stagger / resistance). All must be modeled.
+    ids = {m.id for m in data.get_entries("mechanic")}
+    for required in (
+        "clash",
+        "coin",
+        "speed",
+        "sanity",
+        "stagger",
+        "damage_resistance",
+        "identity",
+        "passive",
+    ):
+        assert required in ids, f"missing core mechanic {required!r}"
+
+
+def test_mechanics_resolve_by_player_terms():
+    # The terms players actually type resolve to the right mechanic.
+    assert data.resolve("clashing", kind="mechanic").id == "clash"
+    assert data.resolve("ids", kind="mechanic").id == "identity"
+    assert data.resolve("support passive", kind="mechanic").id == "passive"
+    # cross-kind resolution finds a mechanic too (no other kind owns "stagger").
+    assert data.resolve("stagger").id == "stagger"
 
 
 def test_all_entries_spans_every_kind():

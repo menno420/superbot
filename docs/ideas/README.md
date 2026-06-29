@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`knowledge-domain-conversation-carryover-2026-06-29.md`](./knowledge-domain-conversation-carryover-2026-06-29.md) —
+  **session idea (2026-06-29, Q-0089, from building the Project Moon combat-mechanics layer #1549):** a
+  short-lived per-(channel, author) domain-context memory so a bare follow-up ("how does clashing work?")
+  inherits the last-routed knowledge domain (BTD6 / Limbus) and grounds — entity-resolution-gated +
+  fast-decaying so it never re-introduces over-routing. Promotes the BTD6 single-turn carryover (#668)
+  into a domain-agnostic router capability; folds into the Slice B `KnowledgeDomain` seam. Subsystem: ai.
 - [`no-dead-end-terminal-view-guard-2026-06-28.md`](./no-dead-end-terminal-view-guard-2026-06-28.md) —
   **session idea (2026-06-28, Q-0089, from fixing the Deathmatch + RPS PvP dead-ends #1527):** an arch
   lint flagging any game terminal view that disables/`stop()`s without swapping to a nav-bearing result

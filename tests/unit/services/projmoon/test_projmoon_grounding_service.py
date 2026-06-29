@@ -110,6 +110,18 @@ def test_distinctive_ego_letter_is_caught() -> None:
     assert "aleph" in verdict.offending_names
 
 
+def test_combat_mechanic_words_are_not_offending() -> None:
+    # Mechanics (Clash / Speed / Sanity / Stagger / Identity …) are common-word
+    # names, NOT distinctive proper names — a reply explaining how combat works
+    # must never be refused for them (they are not in the name index).
+    verdict = svc.validate_projmoon_reply(
+        "In a clash the higher speed acts first, and low sanity makes a coin land "
+        "tails; staggering an identity opens it up.",
+        facts=(),
+    )
+    assert verdict.grounded, verdict.offending_names
+
+
 # --- robustness --------------------------------------------------------------
 
 
