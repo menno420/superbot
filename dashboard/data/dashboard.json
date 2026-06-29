@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T09:09:06Z",
+    "generated_at": "2026-06-29T11:55:44Z",
     "build": {
-      "commit": "9903d06d",
-      "subject": "Creatures completion: born-red session card + claim (panel + dex browser)",
-      "committed_at": "2026-06-29T09:09:06Z"
+      "commit": "e29e83d1",
+      "subject": "Merge pull request #1546 from menno420/claude/funny-franklin-6iegwm",
+      "committed_at": "2026-06-29T11:55:44Z"
     },
     "counts": {
       "functions": 43,
@@ -2682,7 +2682,7 @@
       "file": "2026-06-29-creatures-game-panel.md",
       "date": "2026-06-29",
       "title": "Session — Creatures completion: game panel + interactive dex browser (Q-0209 deepening)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
