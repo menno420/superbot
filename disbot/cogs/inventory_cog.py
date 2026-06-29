@@ -207,14 +207,61 @@ class _CategoryView(BaseView):
         super().__init__(author, timeout=180)
         self._category = category
         self._sort = _SORT_MODES[0]
-        self._items = _sort_items(items, self._sort)
+        # ``_all`` is every item in the category (sorted by the active mode); ``_shown``
+        # is the slice actually paged after the type filter is applied.
+        self._all = _sort_items(items, self._sort)
+        self._type_filter: str | None = None
         self._hub = hub
         self._page = 0
-        self._total_pages = max(1, (len(items) + self._PER_PAGE - 1) // self._PER_PAGE)
+        self._apply()
         self._rebuild_buttons()
+
+    @property
+    def _types(self) -> list[str]:
+        """Distinct item types present in this category (stable, alpha)."""
+        return sorted({meta.get("type", "Item") for _, _, meta in self._all})
+
+    def _apply(self) -> None:
+        """Recompute the shown slice + page count from the current sort + type filter."""
+        if self._type_filter is None:
+            self._shown = list(self._all)
+        else:
+            self._shown = [
+                i for i in self._all if i[2].get("type", "Item") == self._type_filter
+            ]
+        self._total_pages = max(
+            1,
+            (len(self._shown) + self._PER_PAGE - 1) // self._PER_PAGE,
+        )
+        self._page = min(self._page, self._total_pages - 1)
 
     def _rebuild_buttons(self) -> None:
         self.clear_items()
+        # Type filter — only when the category mixes more than one item type.
+        if len(self._types) > 1:
+            options = [
+                discord.SelectOption(
+                    label="All types",
+                    value="*",
+                    default=self._type_filter is None,
+                ),
+            ]
+            options += [
+                discord.SelectOption(
+                    label=t,
+                    value=t,
+                    default=self._type_filter == t,
+                )
+                for t in self._types
+            ]
+            type_select = discord.ui.Select(  # type: ignore[var-annotated]
+                placeholder="Filter by type…",
+                options=options,
+                row=0,
+            )
+            type_select.callback = self._on_filter  # type: ignore[method-assign]
+            self.add_item(type_select)
+
         if self._total_pages > 1:
             prev_btn = discord.ui.Button(  # type: ignore[var-annotated]
                 label="◀ Prev",
@@ -235,7 +282,7 @@ class _CategoryView(BaseView):
             self.add_item(next_btn)
 
         # Sort cycle — only worth offering when there is more than one item to order.
-        if len(self._items) > 1:
+        if len(self._all) > 1:
             sort_btn = discord.ui.Button(  # type: ignore[var-annotated]
                 label=f"🔀 Sort: {_SORT_LABEL[self._sort]}",
                 style=discord.ButtonStyle.primary,
@@ -267,7 +314,7 @@ class _CategoryView(BaseView):
         )
 
         start = self._page * self._PER_PAGE
-        page_items = self._items[start : start + self._PER_PAGE]
+        page_items = self._shown[start : start + self._PER_PAGE]
 
         lines = []
         for item_key, qty, meta in page_items:
@@ -278,10 +325,13 @@ class _CategoryView(BaseView):
             lines.append(f"{emoji} **{display_name}** × {qty}  `{rarity}` · {itype}")
 
         embed.description = "\n".join(lines) if lines else "Nothing here."
+        filter_note = (
+            "" if self._type_filter is None else f"{self._type_filter} only  •  "
+        )
         embed.set_footer(
             text=(
                 f"Page {self._page + 1}/{self._total_pages}  •  "
-                f"Sorted by {_SORT_LABEL[self._sort]}  •  Click ↩ Back to return."
+                f"Sorted by {_SORT_LABEL[self._sort]}  •  {filter_note}Click ↩ Back to return."
             ),
         )
         return embed
@@ -289,8 +339,17 @@ class _CategoryView(BaseView):
     async def _cycle_sort(self, interaction: discord.Interaction) -> None:
         idx = (_SORT_MODES.index(self._sort) + 1) % len(_SORT_MODES)
         self._sort = _SORT_MODES[idx]
-        self._items = _sort_items(self._items, self._sort)
+        self._all = _sort_items(self._all, self._sort)
         self._page = 0
+        self._apply()
+        self._rebuild_buttons()
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+    async def _on_filter(self, interaction: discord.Interaction) -> None:
+        choice = interaction.data["values"][0]  # type: ignore[index,typeddict-item]
+        self._type_filter = None if choice == "*" else choice
+        self._page = 0
+        self._apply()
         self._rebuild_buttons()
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
