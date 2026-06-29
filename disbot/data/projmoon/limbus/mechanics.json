@@ -1,0 +1,99 @@
+{
+  "data_version": "2026-06-29",
+  "game_version": "Limbus Company (core combat mechanics; rules patch-stable — conservative summaries, verify-at-ingest)",
+  "source": "limbuscompany.wiki.gg + general game-mechanics knowledge (summarized; verify-at-ingest)",
+  "entity_kind": "mechanic",
+  "entries": [
+    {
+      "id": "clash",
+      "canonical": "Clash",
+      "aliases": ["clashing", "clashes", "clash win", "clash power", "winning clashes"],
+      "category": "Clash system",
+      "description": "When an attacking skill meets a defending one, the two clash: both flip their coins and the higher final skill value wins. The loser's coin breaks (or its skill is cancelled) and the winner's hit lands — winning clashes is the heart of Limbus combat."
+    },
+    {
+      "id": "coin",
+      "canonical": "Coin",
+      "aliases": ["coins", "coin power", "heads", "tails", "base power"],
+      "category": "Clash system",
+      "description": "Each offensive skill has one or more coins. A skill's value is its base power plus the coin power of every coin that lands on heads (tails add nothing). The chance of heads scales with Sanity — roughly 95% at maximum Sanity down to roughly 5% at minimum."
+    },
+    {
+      "id": "speed",
+      "canonical": "Speed",
+      "aliases": ["speed range", "turn order", "speed value"],
+      "category": "Clash system",
+      "description": "At the start of each turn every unit rolls a Speed value inside its Identity's speed range. Higher Speed acts earlier and gets to pick which slower enemy to attack or clash with, so Speed sets both turn order and matchups. Haste raises it for a turn."
+    },
+    {
+      "id": "sanity",
+      "canonical": "Sanity",
+      "aliases": ["sp", "sanity points"],
+      "category": "Stats & survival",
+      "description": "Sanity (SP) runs from -45 to +45 and sets how often a unit's coins land on heads. It rises from winning clashes and landing good hits, falls from losing clashes or allies dying, and at the bottom risks a Mental Break."
+    },
+    {
+      "id": "stagger",
+      "canonical": "Stagger",
+      "aliases": ["staggered", "stagger threshold", "stagger thresholds"],
+      "category": "Stats & survival",
+      "description": "Units have stagger thresholds at fractions of their max HP. Crossing one leaves the unit Staggered on its next turn: it loses its actions, can't clash, and takes extra damage — the main window to burst an enemy down. Tremor can force or deepen it."
+    },
+    {
+      "id": "damage_resistance",
+      "canonical": "Damage Resistance",
+      "aliases": ["resistance", "resistances", "fatal", "ineffective", "endure", "endured", "weakness", "defense level", "defence"],
+      "category": "Stats & survival",
+      "description": "Every unit has a separate resistance to each damage type (Slash / Pierce / Blunt), shown as Fatal (takes the most damage), Weak, Normal, Endure(d), or Ineffective (takes the least). Hitting Fatal types and avoiding Ineffective ones drives team-building."
+    },
+    {
+      "id": "mental_break",
+      "canonical": "Mental Break",
+      "aliases": ["panic", "breaking", "mentally broken"],
+      "category": "Stats & survival",
+      "description": "When a unit's Sanity bottoms out (around -45) it can suffer a Mental Break and Panic, losing control for a turn or more (the exact effect varies by Identity). Keeping Sanity up by winning clashes avoids it."
+    },
+    {
+      "id": "resonance",
+      "canonical": "Resonance",
+      "aliases": ["resonate", "resonates", "resonances", "sin resonance"],
+      "category": "Skills & resonance",
+      "description": "When several skills queued in a turn share the same Sin affinity, they Resonate, adding bonus coin power that scales with how many of that Sin are present. Building a team around a couple of Sins keeps Resonance high."
+    },
+    {
+      "id": "skill",
+      "canonical": "Skills",
+      "aliases": ["skill", "skill slot", "skill slots", "skill replacement", "skill rotation", "skill queue"],
+      "category": "Skills & resonance",
+      "description": "Each Identity brings a few offensive skills plus a defensive one. Each turn you are dealt skills semi-randomly; pairing three identical skills replaces them with a stronger version, so managing the skill queue is part of the strategy."
+    },
+    {
+      "id": "defense_skill",
+      "canonical": "Defensive Skill",
+      "aliases": ["guard", "evade", "counter", "block", "defense skill", "defensive skills"],
+      "category": "Skills & resonance",
+      "description": "When attacked and not clashing, a unit can use its defensive skill: Guard cuts incoming damage (often with a bonus effect), Evade clashes to dodge entirely and may grant an extra action, and Counter clashes back and strikes if it wins."
+    },
+    {
+      "id": "identity",
+      "canonical": "Identity",
+      "aliases": ["identities", "id", "ids", "rarity"],
+      "category": "Identities",
+      "description": "An Identity is a specific playable version of one of the 12 Sinners — its own stats (HP, speed range, defenses), skills, and passives. Identities come in three rarities: 0 (1-star), 00 (2-star), and 000 (3-star). One Sinner can have many Identities."
+    },
+    {
+      "id": "passive",
+      "canonical": "Passive",
+      "aliases": ["passives", "support passive", "support passives", "passive ability"],
+      "category": "Identities",
+      "description": "Passives are always-on or conditional effects an Identity grants; many switch on only once you own a minimum amount of a Sin's resources. A Support Passive instead applies while the Identity sits in the support slot, off the active team."
+    },
+    {
+      "id": "ego",
+      "canonical": "E.G.O",
+      "aliases": ["ego", "egos", "corrosion", "corrode", "corroded"],
+      "category": "Identities",
+      "description": "E.G.O are powerful equippable skills that spend Sin resources and come in grades from ZAYIN up to ALEPH. Using E.G.O while Sanity is low risks Corrosion — the unit loses control and attacks wildly — so it is a high-risk, high-reward option."
+    }
+  ]
+}

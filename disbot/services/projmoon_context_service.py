@@ -93,6 +93,15 @@ _ROSTER_TRIGGERS: dict[str, tuple[str, ...]] = {
         "all statuses",
         "status keywords",
     ),
+    "mechanic": (
+        "combat mechanics",
+        "game mechanics",
+        "combat system",
+        "how does combat work",
+        "how combat works",
+        "all mechanics",
+        "list of mechanics",
+    ),
 }
 
 
@@ -173,6 +182,12 @@ def _body(entry: projmoon_data_service.LimbusEntry) -> str:
         if rank:
             base = (
                 f"{entry.canonical} (E.G.O grade, rank {rank}/5): {entry.description}"
+            )
+    elif entry.entity_kind == "mechanic":
+        category = entry.extra.get("category")
+        if category:
+            base = (
+                f"{entry.canonical} (combat mechanic — {category}): {entry.description}"
             )
     return base
 
