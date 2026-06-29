@@ -1,1 +1,0 @@
-- branch: claude/funny-franklin-dt7i3j · scope: session-slug-uniqueness guard (check_session_slug_unique.py + /session-close wiring) + Mining how-to button · area: scripts/ + .claude/skills/session-close/ + disbot/views/mining/ · date: 2026-06-29

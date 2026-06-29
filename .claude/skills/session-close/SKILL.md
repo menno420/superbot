@@ -100,6 +100,7 @@ Run these in order and fix any failures before proceeding:
 ```bash
 python3.10 scripts/check_docs.py --strict
 python3.10 scripts/check_session_log.py --strict      # Q-0089 idea + Q-0102 review present
+python3.10 scripts/check_session_slug_unique.py       # BUG-0027: a session card slug reused from origin/main (silent-clobber)? rename it
 python3.10 scripts/check_current_state_ledger.py --strict  # merged PRs are in the ledger
 python3.10 scripts/check_plan_code_drift.py            # Q-0181: a plan-badged doc whose code already shipped? rebadge -> historical
 python3.10 scripts/check_sector_next_freshness.py     # a per-sector ▶ Next pointing at a SHIPPED (historical) plan? re-point it (Q-0166)
