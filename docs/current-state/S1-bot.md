@@ -107,9 +107,11 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   reached via `!creatures` + both cogs' Help hooks, the **interactive dex browser** (element filter),
   the `entry_points` fix, and a **battle settle-once** guard — cert #1/#2/#3/#5 cleared (#4 was a
   no-op). **▶ Next turn-key picks:** **Creatures game panel for Welcome's missing command panel** is a
-  separate unit; within games the **Mining how-to button** (the ✔-ready candidate's last build gap) and
-  the **Blackjack split/insurance/surrender** engine work remain; server-fn deepening picks are listed
-  in the assessments bullet below. (Creatures' `◐ → ✔` still needs the owner live walkthrough +
+  separate unit; the Mining how-to button (the ✔-ready candidate's last build gap) **shipped #1548**, so
+  within games the **Blackjack split/insurance/surrender** engine work remains; server-fn deepening picks
+  are listed in the assessments bullet below. **✅ DONE 2026-06-29 (#1550): Proof Channel** punch #1 + #2 —
+  the lock/unlock now audit (`prize_access_grant`/`revoke`) and every mutation callback re-checks
+  `manage_channels` authority; cert advanced (only the binding-write UI + owner walkthrough remain). (Creatures' `◐ → ✔` still needs the owner live walkthrough +
   sign-off, punch-list #6/#7.)
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
