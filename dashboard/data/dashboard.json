@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T23:48:08Z",
+    "generated_at": "2026-06-30T00:03:18Z",
     "build": {
-      "commit": "47a44e61",
-      "subject": "Merge pull request #1561 from menno420/claude/funny-franklin-j3598t",
-      "committed_at": "2026-06-29T23:48:08Z"
+      "commit": "e6c6dca9",
+      "subject": "Merge pull request #1564 from menno420/claude/jolly-johnson-e3kk7q",
+      "committed_at": "2026-06-30T00:03:18Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 154,
+      "ideas": 155,
       "bugs": 29,
       "reviews": 0,
       "reviews_open": 0,
@@ -1163,6 +1163,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "command-collision-checker-2026-06-29.md",
+      "title": "Idea — `check_command_collisions.py`: static guard against duplicate command names",
+      "status": "ideas",
+      "date": "2026-06-29",
+      "summary": "PR #1541 added a `!give`/`!pay` economy command. It **collided** with mining's admin `give` — a command",
+      "subsystems": null
+    },
     {
       "file": "knowledge-domain-conversation-carryover-2026-06-29.md",
       "title": "Idea — conversational domain-context carryover for knowledge domains",
@@ -2663,6 +2671,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-29-reconcile-band1560.md",
+      "date": "2026-06-29",
+      "title": "2026-06-29 — Twenty-ninth Q-0107 reconciliation pass (band-#1560)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-29-railway-give-collision-crash.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — PROD hotfix: `give` command collision crashed boot (bot offline)",
@@ -3114,14 +3130,6 @@
       "file": "2026-06-25-stale-claim-detector.md",
       "date": "2026-06-25",
       "title": "Session — 2026-06-25 · slice 2 — route claim-GC + badges findings",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-setup-wizard-pr3a-retire-dead-sections.md",
-      "date": "2026-06-25",
-      "title": "Session — 2026-06-25 · setup-wizard PR 3a — retire dead/legacy sections",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
