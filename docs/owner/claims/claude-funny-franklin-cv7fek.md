@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-cv7fek` · scope: feature-completion assessments (`▢ → ◐`) for the unassessed server-fn units (moderation/economy/community/management/platform families) — Q-0209 completion-first arc · area: docs/planning/feature-completion/units/*, ledger + scoreboard, docs/current-state/S1-bot.md · 2026-06-29
