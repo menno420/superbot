@@ -50,7 +50,8 @@ _ACTIONS_GUIDE = (
     "**🗺️ Explore** — the open-world explorer (fishing, roam, quests — early)\n"
     "**🧍 Character** — you: overview · inventory · stats · skills · vault · home\n"
     "**🧰 Gear** — equip your best tools, lights, and combat gear\n"
-    "**🔨 Workshop** — craft & build · repair · 🔥 forge · 🛒 market (all here)"
+    "**🔨 Workshop** — craft & build · repair · 🔥 forge · 🛒 market (all here)\n"
+    "**📖 How-to** — new here? the whole mining loop on one screen"
 )
 
 
@@ -363,6 +364,31 @@ class MiningHubView(PersistentView):
 
         embed = build_workshop_hub_embed()
         view = MiningWorkshopHubView(interaction.user, interaction.guild_id)
+        await _edit_in_place(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
+        label="📖 How-to",
+        style=discord.ButtonStyle.grey,
+        custom_id="mining:how_to",
+        row=2,
+    )
+    async def how_to_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Completion-cert punch-list #1: a dedicated one-screen how-mining-works
+        # guide (the bar Fishing/Blackjack meet). Renders in place; returns via
+        # the panel's own "↩ Mining Hub" back button.
+        from views.mining.how_to_panel import MiningHowToView, build_how_to_embed
+
+        embed = build_how_to_embed()
+        view = MiningHowToView(interaction.user, interaction.guild_id)
         await _edit_in_place(interaction, embed=embed, view=view)
 
 

@@ -1,1 +1,0 @@
-- branch: claude/funny-franklin-ca1e1q · scope: feature-completion assessments (unassessed games: RPS, Deathmatch, Chicken farm + contained UX gap fixes) · area: docs/planning/feature-completion/units/ + disbot/views/<game> if trapped-view fixes · date: 2026-06-28

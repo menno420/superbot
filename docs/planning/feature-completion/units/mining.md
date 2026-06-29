@@ -46,10 +46,12 @@
 - [x] **Every action has a control** — primary actions on the hub; sub-actions on the Character-hub,
       Workshop-hub, Gear, Market, Vault, Skills, Forge, Home, Titles sub-panels; modals
       (vault move / save-loadout / build) submit → refresh parent in place.
-- [ ] **Rules / how-to affordance** — **partial:** the hub embed carries an inline `_ACTIONS_GUIDE`
-      routing guide and per-panel "how to use" blurbs, and the Recipe browser is `📖 Recipes`, but
-      there is no single dedicated 📖 How-to button at the hub (the bar Fishing/Blackjack meet). →
-      punch-list #1 (minor).
+- [x] **Rules / how-to affordance** — ✅ **shipped (punch-list #1, 2026-06-29).** A dedicated
+      **📖 How-to** button at the hub (`mining:how_to`, `main_panel.py`) opens a one-screen
+      "how mining works" onboarding guide (`views/mining/how_to_panel.py`, `MiningHowToView`),
+      returning via the established "↩ Mining Hub" back button — the bar Fishing/Blackjack meet.
+      The inline `_ACTIONS_GUIDE` routing guide and per-panel blurbs remain. Tests:
+      `test_mining_how_to.py`.
 - [x] **Return navigation everywhere** — ✅ **no trapped views.** Every panel is a `HubView` with
       `SUBSYSTEM = "mining"` so `attach_standard_nav` adds 📚 Help + ↩ Games (12 views verified); the
       action-loop `MineGridView` is a `BaseView` (120 s, intentional) but carries explicit
@@ -113,9 +115,9 @@
 
 ## Punch-list (clear these to certify)
 
-1. **How-to affordance** *(offline, minor)* — add a dedicated 📖 How-to button at the Mining hub (or
-   a one-screen "how mining works" panel), mirroring Fishing/Blackjack. The inline `_ACTIONS_GUIDE`
-   covers routing but a first-time player has no single rules surface.
+1. ~~**How-to affordance**~~ ✅ **DONE 2026-06-29** (dispatch run, PR #1548) — a dedicated 📖 How-to
+   button at the Mining hub opens a one-screen "how mining works" panel (`MiningHowToView`),
+   mirroring Fishing/Blackjack. The only remaining punch-list items are the owner-paced #2/#3.
 2. **Live walkthrough** *(owner / live-bot)* — `/verify-bot` boot + scripted click-through (mine the
    grid → descend → harvest → craft → market sell/buy → gear/loadout → workshop repair → vault
    deposit → skills → forge → titles → back to hub), with screenshots.

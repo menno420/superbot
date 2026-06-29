@@ -49,10 +49,13 @@ def test_mining_hub_view_action_buttons_still_present():
         assert expected_id in ids, f"Missing action button {expected_id!r}; got {ids}"
 
 
-def test_mining_hub_view_is_exactly_the_six_option_a_actions():
-    """The Option A declutter (PR2, 2026-06-19): the main hub is exactly six
-    buttons. Everything else moved into the Character / Explore / Workshop
-    sub-hubs or the Mine action. Pinned so the panel can't quietly re-bloat.
+def test_mining_hub_view_is_exactly_the_six_actions_plus_how_to():
+    """The Option A declutter (PR2, 2026-06-19): six game-action buttons —
+    everything else moved into the Character / Explore / Workshop sub-hubs or the
+    Mine action. The mining completion cert (Q-0209) then added one **help/onboarding**
+    control, the dedicated 📖 How-to button (punch-list #1 — the bar Fishing/Blackjack
+    meet), which is distinct from the six game actions. Pinned so the panel can't quietly
+    re-bloat *beyond* that sanctioned set.
     """
     view = MiningHubView()
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
@@ -71,8 +74,9 @@ def test_mining_hub_view_is_exactly_the_six_option_a_actions():
         "mining:character",
         "mining:gear",
         "mining:workshop",
+        "mining:how_to",
     }
-    assert len(ids) == 6
+    assert len(ids) == 7
     # The moved/folded actions are gone from the persistent main panel.
     for gone in (
         "mining:inventory",
