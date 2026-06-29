@@ -4489,6 +4489,26 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "roleinfo",
+    "area": "management",
+    "status": "in-progress",
+    "summary": "Show a role's details. Usage: !roleinfo <@role|name|id>",
+    "description": "Read-only role detail card — the role sibling of !channelinfo / !info user.",
+    "usage": "!roleinfo",
+    "aliases": [
+      "ri"
+    ],
+    "permissions": "Administrator",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
+  },
+  {
     "name": "rolemenu",
     "area": "management",
     "status": "in-progress",
@@ -5496,6 +5516,21 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "slowmode",
+    "area": "management",
+    "status": "finished",
+    "summary": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
+    "description": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
+    "usage": "!slowmode",
+    "aliases": [
+      "slow"
+    ],
+    "permissions": "Administrator",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "source-health",
     "area": "games",
     "status": "in-progress",
@@ -6228,6 +6263,21 @@ const COMMANDS = [
       "tt"
     ],
     "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "topic",
+    "area": "management",
+    "status": "finished",
+    "summary": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+    "description": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+    "usage": "!topic",
+    "aliases": [
+      "settopic"
+    ],
+    "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
     "planned": []
@@ -7022,7 +7072,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "6b110fa",
+    "build": "8624d7ea",
     "title": "New public bot website",
     "changes": [
       {
@@ -7034,7 +7084,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "6b110fa",
+    "build": "8624d7ea",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7046,7 +7096,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "6b110fa",
+    "build": "8624d7ea",
     "title": "Command-alias suggestions",
     "changes": [
       {

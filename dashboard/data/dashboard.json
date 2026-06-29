@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T18:14:43Z",
+    "generated_at": "2026-06-29T21:07:36Z",
     "build": {
-      "commit": "e7602df6",
-      "subject": "Merge pull request #1552 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-29T18:14:43Z"
+      "commit": "8624d7ea",
+      "subject": "chore(session): born-red card — operator command gaps (slowmode/topic/roleinfo)",
+      "committed_at": "2026-06-29T21:07:36Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 460,
+      "commands": 463,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2687,6 +2687,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-29-operator-command-gaps.md",
+      "date": "2026-06-29",
+      "title": "2026-06-29 — Best-in-class operator command gaps (slowmode · topic · roleinfo)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-29-inventory-display-logic-tests.md",
       "date": "2026-06-29",
       "title": "Session — Inventory display-logic coverage (Q-0209 completion-cert punch #7)",
@@ -2725,6 +2733,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-29-completion-ledger-parity-guard.md",
+      "date": "2026-06-29",
+      "title": "2026-06-29 — Registry↔completion-ledger parity guard + inventory sort/filter",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-28-server-function-completion-assessments.md",
@@ -3106,22 +3122,6 @@
       "file": "2026-06-25-setup-wizard-pr3a-retire-dead-sections.md",
       "date": "2026-06-25",
       "title": "Session — 2026-06-25 · setup-wizard PR 3a — retire dead/legacy sections",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-settle-once-consistency-guard.md",
-      "date": "2026-06-25",
-      "title": "2026-06-25 — settle-once money-safety CI guard (check_consistency Rule 6)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-25-projmoon-sinner-literary-origins.md",
-      "date": "2026-06-25",
-      "title": "Session — 2026-06-25 · Project Moon — Limbus Sinner literary origins",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -5946,6 +5946,32 @@
           "button_backed": false
         },
         {
+          "name": "slowmode",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "slow"
+          ],
+          "brief": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "topic",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "settopic"
+          ],
+          "brief": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "unlock",
           "type": "prefix",
           "is_group": false,
@@ -8758,6 +8784,19 @@
           "aliases": [],
           "brief": "Open the role hub (use !roles instead).",
           "classification": "legacy_duplicate",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "roleinfo",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "ri"
+          ],
+          "brief": "Show a role's details. Usage: !roleinfo <@role|name|id>",
+          "classification": "",
           "has_panel": false,
           "button_backed": false
         },

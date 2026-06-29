@@ -16,6 +16,15 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Operator command gaps — `!slowmode` · `!topic` · `!roleinfo`** (#1561, completion-first deepening) —
+  the assessment punch-list's named *"best-in-class command gaps (channel slowmode/topic, utility
+  roleinfo)"*. `!slowmode <ch> <secs>` (alias `!slow`) + `!topic <ch> <text>` (alias `!settopic`) are
+  channel *mutations* so they ship through the audited `ChannelLifecycleService` seam (two REVERSIBLE ops
+  `set_slowmode`/`set_topic`, clamped to Discord's 6h/1024-char caps) — each fires the audit companion +
+  `channel.lifecycle_changed` event like `!rename`. `!roleinfo <@role|name|id>` (alias `!ri`) is a
+  read-only role detail card (colour/members/position/flags/notable permissions) rendered in
+  `views/roles/role_info.py` (extracted to keep `role_cog` under the 800-LOC decomposition threshold).
+  +44 tests; no migration; self-merged on green.
 - **Farm leaderboard provider** (#1542, completion-first deepening win) — the idle chicken farm now
   appears in the unified `!leaderboard` hub + select menu (`FarmProvider`, ranked by **flock size**,
   coop level as the tie-break), reusing a new `db.top_farmers` primitive. Mirrors `FishingProvider`;
