@@ -84,8 +84,15 @@
 ## Punch-list (clear these to certify)
 1. **Item actions** *(owner, deepening)* — decide + build use / sell / trade / gift / equip (today the
    browser is read-only). Biggest completeness gap.
-2. **Audit item grants** *(offline/owner, deepening)* — have `add_item` / mining `apply_inventory_deltas`
-   emit an item-grant audit event so the item trail matches the coin trail.
+2. **Audit item grants** *(owner-decision-first, deepening)* — the item-grant primitives
+   (`utils/db/inventory.add_item` / mining `apply_inventory_deltas`) emit no audit event. ⚠ **Needs an
+   owner granularity call before building** (flagged 2026-06-29, dispatch run): the *coin* trail is the
+   high-frequency `EVT_BALANCE_CHANGED` economy log, **not** the admin `audit.action_recorded` bus — so
+   "match the coin trail" must NOT mean firing `audit.action_recorded` on every ore dug / fish caught
+   (that would flood the server-log audit channel). The real question is *which* trail + *what*
+   granularity (a dedicated item-event analogous to the balance-change log? only admin/operator grants?).
+   Deferred rather than barreled into a hot-path change with the wrong shape. (Contrast BUG-0029: XP
+   *role* grants legitimately belong on the audited role seam — they are operator-visible, low-frequency.)
 3. **Capability enforcement** *(owner, minor)* — either enforce the declared `inventory.*` capabilities or
    remove the aspirational ones from the registry until their features exist.
 4. **Item-detail density** *(offline, minor)* — multi-line / dedicated fields for large inventories.
