@@ -1380,26 +1380,6 @@ async def reseed_world(guild_id: int, seed: int) -> int:
 # ---------------------------------------------------------------------------
 
 
-async def admin_grant(
-    user_id: int,
-    guild_id: int,
-    item: str,
-    amount: int,
-    *,
-    actor_id: int,
-) -> None:
-    """Admin grant of *amount*× *item* (logged for traceability)."""
-    logger.info(
-        "mining admin_grant: actor=%s -> user=%s guild=%s %sx %s",
-        actor_id,
-        user_id,
-        guild_id,
-        amount,
-        item,
-    )
-    await db.update_mining_item(str(user_id), guild_id, item.lower(), amount)
-
-
 async def admin_reset(user_id: int, guild_id: int, *, actor_id: int) -> None:
     """Admin reset of a user's mining inventory in ONE guild (logged)."""
     logger.info(
@@ -1439,6 +1419,5 @@ __all__ = [
     "ascend",
     "dig",
     "reseed_world",
-    "admin_grant",
     "admin_reset",
 ]

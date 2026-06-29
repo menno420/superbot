@@ -7739,3 +7739,45 @@ this session changes the *rule*, not 200 blocks of content.
 `docs/operations/autonomous-routines.md` (the reconciliation archive step). Related: **Q-0060**
 (append-only / accept-and-reconcile), **Q-0107** (reconciliation pass owns ledger trimming), **Q-0104**
 (route durable conclusions), **Q-0166** (fix drift on sight), the `current-state-archive.md` precedent.
+
+### Q-0211 — DECIDED: `give` retired surface-wide — remove every give command, ban it from ever returning (2026-06-29)
+
+> **Context.** Railway emailed repeated "Deploy Crashed for worker" overnight; the bot was offline.
+> Root cause: a top-level **command-name collision**. `mining_cog` carried an admin-only `give` since the
+> repo's initial commit (2025-08-10); **PR #1541** then added a second global `give` (economy peer
+> coin-transfer `!give`/`!pay`). At boot the second `add_cog` raised `CommandRegistrationError`, so
+> `mining_cog` failed to load, its declared entry points (`mine`, `minemenu`) vanished, and the STRICT
+> identity-contract check **aborted startup** — a crash loop that never reached the gateway. The owner was
+> asked how to resolve it and gave two escalating in-session directives.
+
+**Area:** Bot product / command surface · **Type:** Owner directive (durable policy) · **Status:**
+Answered (live, in-session) — Routed → enforcing test + this Q-block.
+
+**The decision (two answers, in order).**
+1. *Mining `give`:* **remove it entirely** (not rename) — it was a never-reachable-by-players admin tool
+   squatting the most natural global verb; its only caller `mining_workflow.admin_grant` was removed too.
+2. *Scope:* **"remove every give command and make sure none of that is ever added again."** → Delete
+   **all three** commands named `give`: mining's admin grant, economy's `!give`/`!pay` peer transfer
+   (**including the feature** — owner chose "delete it all, incl. feature"), and karma's `!karma give`
+   subcommand (kept as **`!karma add`**). `give` is now **banned surface-wide** — no command may use it as
+   a primary name *or* alias, at any nesting depth.
+
+**Scope boundary (agent judgment, recorded for review).** The ban is on **commands**, not internal
+service methods. Kept: `economy_service.transfer` (the audited balance-move primitive — predates the
+feature, referenced as the canonical pattern precedent in 6+ files; no user can invoke it now) and
+`karma_service.give` (internal grant logic behind `!karma add` / `!thanks`). `givexp` (xp_cog) is a
+distinct command, untouched.
+
+**Enforcement (enforce, don't exhort — Q-0132/Q-0194).** A CI guard in
+`tests/unit/invariants/test_extension_integrity.py`:
+- `test_no_banned_command_tokens_anywhere` — fails the build if any command/alias named `give` is ever
+  re-added (`BANNED_COMMAND_TOKENS = {"give"}`; recurses into group subcommands).
+- `test_no_duplicate_top_level_command_names_across_cogs` — the broader root-cause guard: catches **any**
+  duplicate top-level command name/alias across cogs at CI time. The runtime `command_surface_ledger`
+  only sees duplicates *after* every cog loads — which a collision prevents — so it could never catch
+  this class; the static check can.
+
+**Home:** this Q-block (canonical) + `tests/unit/invariants/test_extension_integrity.py` (enforcement) +
+`.claude/CLAUDE.md` § Helpers "Exact-name guard (Q-0200)" (the sibling same-module guard this extends
+cross-cog). Related: **Q-0200** (exact-name collision guard), **Q-0194** (friction → guard), **Q-0132**
+(enforce, don't exhort).

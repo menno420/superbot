@@ -766,22 +766,6 @@ class MiningCog(commands.Cog):
         )
         await ctx.send(f"{member.name}'s inventory has been reset.")
 
-    @commands.command()
-    async def give(self, ctx, member: discord.Member, item: str, amount: int):
-        """Admin-only: give resources to a user."""
-        if not ctx.author.guild_permissions.administrator:
-            return await ctx.send("You don't have permission to do that.")
-
-        item = item.lower()
-        await mining_workflow.admin_grant(
-            member.id,
-            ctx.guild.id,
-            item,
-            amount,
-            actor_id=ctx.author.id,
-        )
-        await ctx.send(f"Gave {amount}x **{item}** to {member.name}.")
-
 
 async def setup(bot):
     await bot.add_cog(MiningCog(bot))

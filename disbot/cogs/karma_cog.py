@@ -3,7 +3,7 @@
 Thin dispatcher over :mod:`services.karma_service` (the audited write seam)
 and :mod:`services.karma_config` (the operator policy). Commands:
 
-  - ``!thanks @user [reason]`` / ``!karma give @user [reason]`` — grant karma
+  - ``!thanks @user [reason]`` / ``!karma add @user [reason]`` — grant karma
   - ``!karma [member]``                                        — show a karma card
   - ``/karma [member]``                                        — ephemeral karma card
 
@@ -97,7 +97,7 @@ class KarmaCog(commands.Cog):
         recipient: discord.Member,
         reason: str | None,
     ) -> None:
-        """Shared grant path for ``!thanks`` and ``!karma give``."""
+        """Shared grant path for ``!thanks`` and ``!karma add``."""
         if recipient.bot:
             await ctx.send(
                 embed=em.error("You can't give karma to a bot."),
@@ -172,15 +172,15 @@ class KarmaCog(commands.Cog):
         record = await karma_service.get_record(ctx.guild.id, target.id)
         await ctx.send(embed=_karma_card(ctx.guild, target, record))
 
-    @karma.command(name="give", aliases=["add"])  # type: ignore[arg-type]
-    async def karma_give(
+    @karma.command(name="add")  # type: ignore[arg-type]
+    async def karma_add(
         self,
         ctx: commands.Context,
         member: discord.Member,
         *,
         reason: str | None = None,
     ) -> None:
-        """Give a karma point: ``!karma give @user [reason]``."""
+        """Give a karma point: ``!karma add @user [reason]``."""
         await self._do_thanks(ctx, member, reason)
 
     # ------------------------------------------------------------------ slash
