@@ -42,6 +42,7 @@ from views.fishing import (
     build_bait_embed,
     build_fishlog_embed,
     build_menu_embed,
+    build_recipe_panel,
     build_rod_embed,
     prepare_cast,
 )
@@ -268,6 +269,12 @@ class FishingCog(commands.Cog):
         """
         result = await fishing_workflow.craft_rod(ctx.author.id, ctx.guild.id)
         await ctx.send(result.message)
+
+    @commands.command(name="rodrecipes", aliases=["rodrecipe", "rrecipes"])
+    async def rodrecipes(self, ctx):
+        """Browse every fish→rod recipe and your live progress toward each tier."""
+        embed, view = await build_recipe_panel(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="craftpearl", aliases=["pearlcraft"])
     async def craftpearl(self, ctx, *, bait: str = ""):

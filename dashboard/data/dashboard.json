@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T18:18:29Z",
+    "generated_at": "2026-06-30T19:09:17Z",
     "build": {
-      "commit": "67e7dd84",
-      "subject": "Merge pull request #1582 from menno420/claude/bot-owner-permissions-override-eo7wn6",
-      "committed_at": "2026-06-30T18:18:29Z"
+      "commit": "8252a5d",
+      "subject": "Add fishing rod-recipe browser with live craft progress",
+      "committed_at": "2026-06-30T19:09:17Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 473,
+      "commands": 474,
       "setting_keys": 112,
       "setting_domains": 16,
       "typed_settings": 92,
@@ -2708,11 +2708,27 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-30-fishing-rod-recipe-browser.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Fishing rod-recipe browser (live progress toward each tier)",
+      "status": "in-progress",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-ephemeral-panel-ownership-failclose.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Fix: ephemeral persistent-panel ownership fail-close (\"can no longer be verified\")",
       "status": "complete",
       "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-30-diagnostics-pagination-metrics.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Diagnostics completion deepening (pagination + metrics reconcile)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": true
     },
     {
@@ -3138,22 +3154,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-eval-semantic-grader.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 live eval: semantic grading (fix false-negatives) + honest limits",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-eval-live-path.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 evals: faithful \"exactly live\" answer-path replay",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3219,7 +3219,7 @@
       "usages": [
         {
           "file": "disbot/services/diagnostic_embeds.py",
-          "line": 1269,
+          "line": 1418,
           "layer": "services",
           "has_default": false
         },
@@ -3639,7 +3639,7 @@
       "usages": [
         {
           "file": "disbot/services/health_snapshot_service.py",
-          "line": 267,
+          "line": 268,
           "layer": "services",
           "has_default": true
         }
@@ -7006,6 +7006,20 @@
             "buyrod"
           ],
           "brief": "View your fishing rod and upgrade it for coins.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "rodrecipes",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "rodrecipe",
+            "rrecipes"
+          ],
+          "brief": "Browse every fish→rod recipe and your live progress toward each tier.",
           "classification": "",
           "has_panel": true,
           "button_backed": true
