@@ -156,7 +156,13 @@ def _is_admin(member: discord.abc.User | discord.Member) -> bool:
     """Return True iff the invoker has Administrator or Manage Guild.
 
     Defence-in-depth — the ``!settings`` group is already admin-gated.
+    The configured platform owner (config.BOT_OWNER_USER_ID) always qualifies
+    so the bot owner can configure command channels in any guild.
     """
+    from config import is_platform_owner
+
+    if is_platform_owner(getattr(member, "id", None)):
+        return True
     perms = getattr(member, "guild_permissions", None)
     if perms is None:
         return False

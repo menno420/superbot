@@ -198,8 +198,10 @@ class ToolsPreviewChannelSelectView(discord.ui.View):
         self.add_item(_ToolsPreviewChannelSelect())
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        perms = getattr(interaction.user, "guild_permissions", None)
-        if perms is None or not getattr(perms, "administrator", False):
+        # Canonical admin gate — honours the platform owner (config.BOT_OWNER_USER_ID).
+        from views.base import interaction_is_admin
+
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Administrator permission required.",
                 ephemeral=True,

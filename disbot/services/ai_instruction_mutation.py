@@ -51,12 +51,19 @@ class AIInstructionMutationResult:
 def _check_admin(actor: Any) -> int | None:
     if actor is None:
         raise UnauthorizedAIInstructionMutationError("actor is required")
+    # Platform-owner override: the configured bot owner configures the AI in any
+    # guild, even without Discord admin there (single source: config).
+    from config import is_platform_owner
+
+    actor_id = getattr(actor, "id", None)
+    if is_platform_owner(actor_id):
+        return actor_id
     perms = getattr(actor, "guild_permissions", None)
     if perms is None or not getattr(perms, "administrator", False):
         raise UnauthorizedAIInstructionMutationError(
             "ai instruction mutations require administrator permission",
         )
-    return getattr(actor, "id", None)
+    return actor_id
 
 
 async def upsert_profile(

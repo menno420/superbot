@@ -482,10 +482,10 @@ class SettingsMutationPipeline:
         """
         if actor_type in ("system", "backfill"):
             return
-        from config import BOT_OWNER_USER_ID
+        from config import is_platform_owner
 
         actor_id = getattr(actor, "id", None) if actor is not None else None
-        if BOT_OWNER_USER_ID is None or actor_id != BOT_OWNER_USER_ID:
+        if not is_platform_owner(actor_id):
             raise UnauthorizedSettingsMutationError(
                 "global settings scope is owner-only "
                 f"(actor_id={actor_id}, requires BOT_OWNER_USER_ID)",

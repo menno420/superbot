@@ -5,6 +5,8 @@ import logging
 import discord
 from discord.ext import commands
 
+from config import is_platform_owner
+
 logger = logging.getLogger("bot.views")
 
 # Canonical interaction lifecycle doctrine:
@@ -92,15 +94,37 @@ async def handle_view_error(
 
 
 def interaction_is_admin(interaction: discord.Interaction) -> bool:
-    """Return ``True`` when the interacting user holds Discord administrator.
+    """Return ``True`` when the interacting user holds Discord administrator
+    (or is the configured platform owner).
 
     Matches the ``@has_permissions(administrator=True)`` bar used by the typed
     admin commands.  Use it as a panel-callback authority re-check: a panel's
     entry point may not be admin-gated (e.g. opened via the Help menu), and
     :class:`BaseView` only locks a panel to its invoker, not to an authority.
+
+    The configured **platform owner** (``config.BOT_OWNER_USER_ID``) always
+    passes, so the bot owner can use admin config panels (AI, command access,
+    setup) in any guild even without Discord permissions there.
     """
+    if is_platform_owner(getattr(interaction.user, "id", None)):
+        return True
     perms = getattr(interaction.user, "guild_permissions", None)
     return bool(perms is not None and perms.administrator)
+
+
+def member_is_admin(member: object) -> bool:
+    """Return ``True`` when ``member`` holds Discord administrator (or is the
+    configured platform owner).
+
+    The member-object counterpart of :func:`interaction_is_admin`, for view
+    helpers that hold a ``discord.Member`` / ``discord.User`` rather than an
+    ``Interaction``.  Both share the same single-source platform-owner check so
+    the bot owner passes every admin config gate regardless of guild role.
+    """
+    if is_platform_owner(getattr(member, "id", None)):
+        return True
+    perms = getattr(member, "guild_permissions", None)
+    return bool(perms is not None and getattr(perms, "administrator", False))
 
 
 class BaseView(discord.ui.View):
