@@ -162,6 +162,26 @@ def run_check_consistency() -> int:
     )
 
 
+def run_check_artifacts_fresh() -> int:
+    """Verify the committed generated artifacts (dashboard.json / site.json / …)
+    match a fresh build.
+
+    Fast (a fresh export is ~1-2s) so it runs on every invocation — a new
+    command / cog / settings key that drifts the dashboard or bot-site data is
+    then caught in the pre-push pass instead of only in the 3-min full pytest
+    suite (where ``test_committed_artifacts_are_currently_fresh`` is the CI gate).
+    Re-run ``scripts/export_dashboard_data.py`` to refresh on a hit.
+    """
+    return _run(
+        "check_artifacts_fresh",
+        [
+            _PY,
+            str(REPO_ROOT / "scripts" / "check_generated_artifacts_fresh.py"),
+            "--strict",
+        ],
+    )
+
+
 def run_check_tool_pins() -> int:
     """Verify the lint/format/type tool versions match between CI and the dev install.
 
@@ -212,6 +232,8 @@ def main() -> int:
             failed.append("check_docs")
         if run_check_consistency() != 0:
             failed.append("check_consistency")
+        if run_check_artifacts_fresh() != 0:
+            failed.append("check_artifacts_fresh")
         if args.full:
             if run_mypy() != 0:
                 failed.append("mypy")
