@@ -16,6 +16,18 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Welcome — random greeting messages + opt-in DM greeting** (PR #1579, completion-first deepening,
+  Welcome cert punch-list #2) — two best-in-class options in one batch (Carl-bot / MEE6 / Dyno parity).
+  **(1) Multiple/random messages:** an operator stores several greeting / farewell / DM variants in one
+  message setting separated by a `---` line; the bot picks one **at random** per greeting (pure
+  `welcome_config.split_message_variants` / `pick_message`, seeded-rng-testable; embed builders select a
+  variant; validator caps per-variant length + ≤10 variants; `!welcome` preview shows "1 of N random
+  variants"). **(2) DM greeting:** opt-in `dm_enabled` + dedicated `dm_message` also DMs the joiner the
+  greeting — independent of the channel greeting, **fail-safe on closed DMs** (`discord.Forbidden`
+  swallowed). **Migration-free** (welcome settings are scalar KV) and **byte-identical** for every
+  existing config (single message = one variant; DM off by default). +51 welcome tests; regenerated
+  dashboard/site artifacts + command-map doc for the new keys; self-merge on green. Welcome cert #2
+  narrowed (remaining: join-delay age-gating · ping-then-delete).
 - **Reaction-roles RSVP roster ("Who's in?")** (PR #1571, owner-directed follow-on to #1570) — counted
   menus gain a persistent **👥 Who's in?** button that posts an **ephemeral** roster listing the members
   who currently hold each option (`build_roster_embed` in `role_menu_counter`; member names truncated to
@@ -184,6 +196,16 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   (punch #2 — apply `_PaginatorView` to long findings/consistency output) + #5 (health-metrics
   reconcile) · Cleanup #4 (spam-window setting *with* a Settings widget). *(Counters punch
   #1/#2/#4/#5 ✅ #1568; #3 ✅ #1575.)*
+  **✅ DONE 2026-06-30 (#1579): Welcome punch #2 (best-in-class options) — 2 of 4 CLOSED.**
+  **Multiple/random messages** (`---`-separated variants on the join/leave/DM message, one picked at
+  random per greeting — pure `welcome_config.split_message_variants`/`pick_message`; validator caps
+  per-variant length + ≤10 variants; `!welcome` preview shows "1 of N random variants") **+ opt-in DM
+  greeting** (`dm_enabled`/`dm_message`, fail-safe on closed DMs, independent of the channel greeting).
+  Migration-free, default-off, byte-identical for existing configs; +51 welcome tests. **▶ Next
+  turn-key picks (Welcome #2 remainder):** **join-delay age-gating** (skip greeting/role for accounts
+  younger than a configurable threshold — anti-raid, additive, default 0 = off) + **ping-then-delete**
+  (post then auto-delete after N seconds). Each its own PR on the same policy model. (Welcome #1
+  bespoke panel + #3 binding-seam + #4 cog-tests + #5/#6 owner walkthrough still open.)
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
   now has a rubric-filled, source-grounded certificate under

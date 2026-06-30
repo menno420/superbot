@@ -47,6 +47,8 @@ _EXPECTED_DEFAULTS = {
     "leave_message": welcome_config.DEFAULT_LEAVE_MESSAGE,
     "entry_role": welcome_config.DEFAULT_ENTRY_ROLE,
     "card_enabled": welcome_config.DEFAULT_CARD_ENABLED,
+    "dm_enabled": welcome_config.DEFAULT_DM_ENABLED,
+    "dm_message": welcome_config.DEFAULT_DM_MESSAGE,
 }
 
 
@@ -101,6 +103,39 @@ def test_message_validator_rejects_empty_and_overlong():
         validator("   ")  # empty after strip
     with pytest.raises(ValueError):
         validator("x" * (welcome_config.MAX_MESSAGE_LENGTH + 1))
+
+
+def test_message_validator_accepts_multiple_variants():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    validator = {s.name: s for s in WELCOME_SETTINGS}["join_message"].validator
+    # Several "---"-separated variants are valid (random-greeting feature).
+    validator("Hi {user}\n---\nWelcome {user}\n---\nHey {user}")
+
+
+def test_message_validator_caps_variant_count():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    validator = {s.name: s for s in WELCOME_SETTINGS}["join_message"].validator
+    too_many = "\n---\n".join(
+        f"msg {i}" for i in range(welcome_config.MAX_MESSAGE_VARIANTS + 1)
+    )
+    with pytest.raises(ValueError):
+        validator(too_many)
+
+
+def test_message_validator_caps_each_variant_length():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    validator = {s.name: s for s in WELCOME_SETTINGS}["join_message"].validator
+    # The combined value is long, but each variant is within the per-variant
+    # cap → accepted (the cap is per variant, since only one renders at a time).
+    ok = "\n---\n".join(["x" * welcome_config.MAX_MESSAGE_LENGTH] * 3)
+    validator(ok)
+    # One over-long variant is still rejected.
+    bad = "fine\n---\n" + "x" * (welcome_config.MAX_MESSAGE_LENGTH + 1)
+    with pytest.raises(ValueError):
+        validator(bad)
 
 
 def test_bool_validator_guards_non_bool():
