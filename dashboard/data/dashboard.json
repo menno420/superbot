@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T08:46:10Z",
+    "generated_at": "2026-06-30T11:29:23Z",
     "build": {
-      "commit": "097949e",
-      "subject": "PR1: BTD6 boss-fight estimator core (deterministic DPS/cost/kill-time)",
-      "committed_at": "2026-06-30T08:46:10Z"
+      "commit": "09fe4236",
+      "subject": "Merge pull request #1575 from menno420/claude/funny-franklin-d1m4wk",
+      "committed_at": "2026-06-30T11:29:23Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 156,
+      "ideas": 157,
       "bugs": 29,
       "reviews": 0,
       "reviews_open": 0,
@@ -1163,6 +1163,17 @@
     }
   ],
   "ideas": [
+    {
+      "file": "compute-dont-refuse-capability-sweep-2026-06-30.md",
+      "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+      "status": "ideas",
+      "date": "2026-06-30",
+      "summary": "The boss-fight estimator fixed one instance of a general failure: **the bot refuses (or",
+      "subsystems": [
+        "ai",
+        "btd6"
+      ]
+    },
     {
       "file": "review-log-frequency-preset-suggestions-2026-06-30.md",
       "title": "Frequency-driven preset suggestions from the review log",
@@ -2673,6 +2684,22 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-30-reaction-roles-rsvp-roster.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Reaction-roles RSVP roster (\"Who's in?\")",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-30-diagnostics-counters-deepening.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Diagnostics + Counters completion-deepening",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-counters-completion-deepening.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Counters completion-cert deepening (Q-0209)",
@@ -2692,9 +2719,17 @@
       "file": "2026-06-30-btd6-boss-fight-estimator.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — BTD6 boss-fight estimator (estimate, don't refuse)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-30-bot-owner-permissions-override.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Bot-owner platform-admin override (full config authority in any guild)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
     },
     {
       "file": "2026-06-30-blackjack-punchlist-2-3.md",
@@ -3119,30 +3154,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-26-sessionclose-freshness-wiring.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Wire ▶ Next freshness guard into /session-close",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-26-session-close-gate-metacheck.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Meta-check: every \"run-at-close\" checker must be wired into /session-close",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-26-sector-next-freshness-guard.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Sector ▶ Next freshness guard (S3 mechanism)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -3231,7 +3242,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 172,
+          "line": 203,
           "layer": "config",
           "has_default": true
         },
@@ -3253,7 +3264,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 171,
+          "line": 202,
           "layer": "config",
           "has_default": true
         }
@@ -3286,7 +3297,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 155,
+          "line": 186,
           "layer": "config",
           "has_default": true
         },
@@ -3324,7 +3335,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 218,
+          "line": 249,
           "layer": "config",
           "has_default": true
         }
@@ -3372,7 +3383,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 210,
+          "line": 241,
           "layer": "config",
           "has_default": true
         }
@@ -3420,7 +3431,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 198,
+          "line": 229,
           "layer": "config",
           "has_default": true
         }
@@ -3436,7 +3447,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 201,
+          "line": 232,
           "layer": "config",
           "has_default": true
         }
@@ -3452,7 +3463,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 204,
+          "line": 235,
           "layer": "config",
           "has_default": true
         }
@@ -3612,7 +3623,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 117,
+          "line": 148,
           "layer": "config",
           "has_default": true
         }
@@ -3692,7 +3703,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 118,
+          "line": 149,
           "layer": "config",
           "has_default": true
         }
@@ -3710,7 +3721,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 154,
+          "line": 185,
           "layer": "config",
           "has_default": true
         },
@@ -3751,7 +3762,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 181,
+          "line": 212,
           "layer": "config",
           "has_default": true
         },
@@ -3774,7 +3785,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 185,
+          "line": 216,
           "layer": "config",
           "has_default": true
         },
@@ -3813,7 +3824,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 153,
+          "line": 184,
           "layer": "config",
           "has_default": true
         },
@@ -3837,7 +3848,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 152,
+          "line": 183,
           "layer": "config",
           "has_default": true
         },
