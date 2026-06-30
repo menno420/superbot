@@ -43,6 +43,12 @@ Current broad captures:
   archive status, the historical-docs-value audit, the portable-kit's real ~60%-built state, zero
   code-coupling between `substrate-kit/` and `disbot/`, concrete evidence for code-level debt) — read
   the doc for the reconciled position, not just the proposal.
+- [`orientation-doc-linecap-guard-2026-06-30.md`](./orientation-doc-linecap-guard-2026-06-30.md) —
+  **reconciliation idea (2026-06-30, Q-0089, band-#1590 pass, from the fresh-rebuild-vision audit):**
+  enforce each read-path doc's **own stated line/char budget** (`AGENT_ORIENTATION.md` is 2× its declared
+  ~250-line cap, unenforced) with a warn-first `check_docs` extension that reads the cap from the doc
+  itself — makes the #1586 orientation-cost cut **durable** instead of a one-time win that silently
+  regrows. Friction→guard (Q-0194). Subsystem: docs-system (S3/S4).
 - [`compute-dont-refuse-capability-sweep-2026-06-30.md`](./compute-dont-refuse-capability-sweep-2026-06-30.md) —
   **session idea (2026-06-30, Q-0089, from building the BTD6 boss-fight estimator #1574):** mine the
   `ai_review_log` for refusals that are actually **computable** (the bot has the grounded data, it just
