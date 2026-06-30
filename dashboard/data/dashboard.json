@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T00:03:18Z",
+    "generated_at": "2026-06-30T05:33:23Z",
     "build": {
-      "commit": "e6c6dca9",
-      "subject": "Merge pull request #1564 from menno420/claude/jolly-johnson-e3kk7q",
-      "committed_at": "2026-06-30T00:03:18Z"
+      "commit": "2d738a90",
+      "subject": "Merge pull request #1566 from menno420/claude/funny-franklin-zqttq0",
+      "committed_at": "2026-06-30T05:33:23Z"
     },
     "counts": {
       "functions": 43,
@@ -2655,6 +2655,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-30-cleanup-history-filters.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Cleanup history filters + age gate (completion-first deepening)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-30-blackjack-punchlist-2-3.md",
+      "date": "2026-06-30",
+      "title": "Session — Blackjack completion-cert punch-list #2 + #3",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-29-session-slug-unique-guard.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — Session-slug-uniqueness guard (close BUG-0027's residual clobber risk) + Mining how-to button",
@@ -3114,22 +3130,6 @@
       "file": "2026-06-26-btd6-eval-anchor-coverage.md",
       "date": "2026-06-26",
       "title": "Session — 2026-06-26 · BTD6 eval-anchor coverage + distractor negative-anchor guard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-xp-config-card-strand-fix.md",
-      "date": "2026-06-25",
-      "title": "2026-06-25 — XP hub: clear stranded rank card on Configure (BUG-0025 third instance)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-stale-claim-detector.md",
-      "date": "2026-06-25",
-      "title": "Session — 2026-06-25 · slice 2 — route claim-GC + badges findings",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -6015,7 +6015,7 @@
           "is_group": false,
           "parent": null,
           "aliases": [],
-          "brief": "Clean matching channel history by keyword, commands, or prohibited words.",
+          "brief": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
