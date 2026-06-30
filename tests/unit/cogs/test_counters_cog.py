@@ -147,3 +147,55 @@ async def test_counters_slash_outside_guild_is_graceful():
     await cog.counters_slash.callback(cog, interaction)
     msg = interaction.response.send_message.await_args.args[0]
     assert "only available in a server" in msg
+
+
+# ---------------------------------------------------------------------------
+# _counter_sync_loop — per-guild backoff wiring (completion cert punch #3)
+# ---------------------------------------------------------------------------
+
+
+def _loop_cog(guild_ids: list[int]) -> CountersCog:
+    from services import counter_service
+
+    cog = CountersCog.__new__(CountersCog)
+    cog.bot = MagicMock()
+    cog.bot.guilds = [MagicMock(id=gid) for gid in guild_ids]
+    cog._backoff = counter_service.GuildSyncBackoff()
+    return cog
+
+
+@pytest.mark.asyncio
+async def test_loop_skips_a_failing_guild_on_the_next_tick(monkeypatch):
+    from services import counter_service
+
+    cog = _loop_cog([1])
+    sync = AsyncMock(side_effect=RuntimeError("boom"))
+    monkeypatch.setattr(counter_service, "sync_guild", sync)
+
+    # Tick 1: attempted (raises) → records a failure → cooldown 1 tick.
+    await cog._counter_sync_loop.coro(cog)
+    assert sync.await_count == 1
+    assert cog._backoff.fail_streak(1) == 1
+
+    # Tick 2: skipped (backed off) — sync_guild not called again.
+    await cog._counter_sync_loop.coro(cog)
+    assert sync.await_count == 1
+
+    # Tick 3: eligible again, retried.
+    await cog._counter_sync_loop.coro(cog)
+    assert sync.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_loop_success_keeps_a_healthy_guild_attempted_every_tick(monkeypatch):
+    from services import counter_service
+
+    cog = _loop_cog([1])
+    sync = AsyncMock(return_value=0)
+    monkeypatch.setattr(counter_service, "sync_guild", sync)
+
+    await cog._counter_sync_loop.coro(cog)
+    await cog._counter_sync_loop.coro(cog)
+    # A clean sync never backs off → attempted on every tick.
+    assert sync.await_count == 2
+    assert cog._backoff.fail_streak(1) == 0

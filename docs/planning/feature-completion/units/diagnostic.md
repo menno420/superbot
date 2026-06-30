@@ -83,9 +83,12 @@
 - [ ] **Owner ✔** — pending → punch #4.
 
 ## Punch-list (clear these to certify)
-1. **Platform-hub completeness claim** *(offline, minor)* — `startup`/`findings` are typed-only by design;
-   either add them to the hub category selects or correct the panel docstring + the smoke checklist's
-   stale `!platform diagnostics` reference.
+1. ✅ **Platform-hub completeness claim** — DONE 2026-06-30 (PR #1575). `startup` + `findings` (both
+   read-only health reports) are now grouped into the `!platform` hub's **Runtime/status** category
+   select (audience-preserving `_dispatch` branches; `findings` shows the default `open` status, the
+   typed `!platform findings <status>` keeps the status filter). The panel docstring + the lockstep
+   hub-view test were updated together; the `finding` *lifecycle mutation* stays excluded from the
+   read-only Selects (the segregated Mutations row is the only write surface).
 2. **Pagination for dense subviews** *(owner, minor/deepening)* — apply the existing `_PaginatorView` to
    long findings/consistency output.
 3. **Maintainer live health walk** *(needs-live-bot / owner)* — boot, `!platform health` as admin vs owner

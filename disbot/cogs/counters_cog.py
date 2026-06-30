@@ -37,6 +37,9 @@ class CountersCog(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        # Per-guild exponential backoff so a persistently-failing guild isn't
+        # re-attempted every tick forever (counters completion cert punch #3).
+        self._backoff = counter_service.GuildSyncBackoff()
 
     async def cog_load(self) -> None:
         from cogs.counters.schemas import register_schemas
@@ -51,15 +54,31 @@ class CountersCog(commands.Cog):
 
     @tasks.loop(minutes=_COUNTER_LOOP_MINUTES)
     async def _counter_sync_loop(self) -> None:
-        """Sync every guild's bound counter channels (fail-safe per guild)."""
+        """Sync every guild's bound counter channels (fail-safe + backed-off).
+
+        Each guild is fail-safe (one guild's fault never stops the loop) and
+        rate-limited by per-guild exponential backoff: a guild that keeps
+        failing is skipped for a growing number of ticks (capped, so it is
+        never dropped forever), and one clean sync resets it.
+        """
         for guild in list(self.bot.guilds):
+            guild_id = getattr(guild, "id", 0)
+            if not self._backoff.should_attempt(guild_id):
+                continue
             try:
                 await counter_service.sync_guild(guild)
             except Exception:  # noqa: BLE001 — one guild's fault must not stop the loop
-                logger.exception(
-                    "counters: sync_guild failed for guild=%s",
-                    getattr(guild, "id", "?"),
+                skip = self._backoff.record_failure(guild_id)
+                logger.warning(
+                    "counters: sync_guild failed for guild=%s (failure #%d) — "
+                    "backing off %d loop tick(s)",
+                    guild_id,
+                    self._backoff.fail_streak(guild_id),
+                    skip,
+                    exc_info=True,
                 )
+            else:
+                self._backoff.record_success(guild_id)
 
     @_counter_sync_loop.before_loop
     async def _before_counter_sync_loop(self) -> None:

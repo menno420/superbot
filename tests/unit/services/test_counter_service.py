@@ -208,3 +208,63 @@ async def test_sync_skips_non_guild_channel(monkeypatch):
     renamed = await counter_service.sync_guild(guild)
     assert renamed == 0
     dm.edit.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# GuildSyncBackoff — per-guild exponential backoff (completion cert punch #3)
+# ---------------------------------------------------------------------------
+
+
+def test_backoff_attempts_a_fresh_guild():
+    bo = counter_service.GuildSyncBackoff()
+    assert bo.should_attempt(1) is True
+    assert bo.fail_streak(1) == 0
+
+
+def test_backoff_grows_exponentially_and_caps():
+    bo = counter_service.GuildSyncBackoff(max_ticks=6)
+    # 1, 2, 4, then capped at 6 (would be 8, 16, …).
+    assert bo.record_failure(1) == 1
+    assert bo.record_failure(1) == 2
+    assert bo.record_failure(1) == 4
+    assert bo.record_failure(1) == 6
+    assert bo.record_failure(1) == 6
+    assert bo.fail_streak(1) == 5
+
+
+def test_backoff_skips_then_re_attempts_after_cooldown():
+    bo = counter_service.GuildSyncBackoff(max_ticks=6)
+    bo.record_failure(1)  # cooldown = 1 tick
+    # The next tick is skipped (cooldown decrements to 0)...
+    assert bo.should_attempt(1) is False
+    # ...and the tick after that is eligible again.
+    assert bo.should_attempt(1) is True
+
+
+def test_backoff_never_drops_a_guild_forever():
+    """Even at max streak the guild is retried within ``max_ticks`` ticks."""
+    bo = counter_service.GuildSyncBackoff(max_ticks=3)
+    for _ in range(10):
+        bo.record_failure(1)
+    skips = 0
+    while not bo.should_attempt(1):
+        skips += 1
+        assert skips <= 3, "backoff exceeded its cap — guild dropped forever"
+    assert skips == 3  # capped exactly at max_ticks
+
+
+def test_backoff_success_resets_state():
+    bo = counter_service.GuildSyncBackoff()
+    bo.record_failure(1)
+    bo.record_failure(1)
+    bo.record_success(1)
+    assert bo.fail_streak(1) == 0
+    assert bo.should_attempt(1) is True
+
+
+def test_backoff_is_per_guild():
+    bo = counter_service.GuildSyncBackoff()
+    bo.record_failure(1)
+    # A failure on guild 1 must not back off guild 2.
+    assert bo.should_attempt(2) is True
+    assert bo.fail_streak(2) == 0
