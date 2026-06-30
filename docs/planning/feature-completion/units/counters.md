@@ -88,8 +88,12 @@
 1. ✅ **Preset templates** — DONE 2026-06-30. `TEMPLATE_PRESETS` catalog + `!counterpreset [name]`
    (list / apply-all-three via the audited `SettingsMutationPipeline`).
 2. ✅ **Slash surface** — DONE 2026-06-30. `/counters` ephemeral status (reuses `_policy_embed`).
-3. **Loop backoff** *(offline, deepening)* — per-guild cooldown / backoff so a persistently-failing guild
-   isn't silently skipped forever. *(Still open — stateful, assessed separately from the 2026-06-30 batch.)*
+3. ✅ **Loop backoff** — DONE 2026-06-30 (PR #1575). `services.counter_service.GuildSyncBackoff` (pure,
+   discord-free, tick-based exponential backoff: skip 1 → 2 → 4 … capped at 6 ticks) wired into
+   `CountersCog._counter_sync_loop`: a guild whose `sync_guild` keeps raising is skipped for a growing
+   number of loop ticks (never dropped forever — the cap guarantees an ≥hourly retry at the 10-min
+   cadence), and one clean sync resets it. Per-process/ephemeral state (ADR-002). +8 tests (6 pure +
+   2 loop-wiring).
 4. ✅ **Channel-type handling** — DONE 2026-06-30. `sync_guild` renames any bound `GuildChannel`
    (voice/text/category all tested); a non-guild target (DM) is skipped — pinned by parametrized tests.
 5. ✅ **Integration test** — DONE 2026-06-30. `test_counter_integration.py` drives the **real**

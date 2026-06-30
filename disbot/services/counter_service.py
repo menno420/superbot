@@ -130,3 +130,66 @@ async def _emit_updated(guild: discord.Guild, renamed: int) -> None:
         await bus.emit(EVT_COUNTERS_UPDATED, guild_id=guild.id, renamed=renamed)
     except Exception:  # noqa: BLE001 — advisory event; never fail the loop
         logger.exception("counters: updated emit failed")
+
+
+# -- per-guild failure backoff (counters completion cert punch #3) ----------
+#
+# The rename loop attempts every guild every tick.  Without backoff a guild
+# whose ``sync_guild`` keeps raising (a permission/cache fault, a deleted bound
+# channel) is re-attempted every loop forever — log spam + wasted API calls,
+# and during a Discord rename rate-limit it would keep re-hammering the cap.
+# ``GuildSyncBackoff`` makes a repeatedly-failing guild skip a growing number of
+# loop ticks (1, 2, 4, … capped), so a broken guild is retried at most once per
+# cap window and **never dropped forever** (the cap guarantees an eventual
+# retry, and one clean sync resets it).  State is per-process and ephemeral
+# (ADR-002): a restart simply re-attempts every guild once.
+
+_BACKOFF_MAX_TICKS = 6  # cap: at a 10-min loop, a broken guild retries ≥hourly.
+
+
+class GuildSyncBackoff:
+    """Tick-based exponential backoff for per-guild sync failures.
+
+    Pure and discord-free so the loop's skip/retry policy is unit-testable in
+    isolation.  One instance per cog; ``should_attempt`` is called once per
+    guild per loop tick, with ``record_success``/``record_failure`` reporting
+    the outcome.
+    """
+
+    def __init__(self, max_ticks: int = _BACKOFF_MAX_TICKS) -> None:
+        self._max_ticks = max(1, max_ticks)
+        self._fail_streak: dict[int, int] = {}
+        self._cooldown: dict[int, int] = {}
+
+    def should_attempt(self, guild_id: int) -> bool:
+        """Return ``True`` if this guild is eligible to sync on this tick.
+
+        A guild in cooldown skips the tick (its remaining count is decremented
+        toward eligibility); a guild with no cooldown is attempted.
+        """
+        remaining = self._cooldown.get(guild_id, 0)
+        if remaining > 0:
+            self._cooldown[guild_id] = remaining - 1
+            return False
+        return True
+
+    def record_success(self, guild_id: int) -> None:
+        """Clear all failure state for a guild that synced cleanly."""
+        self._fail_streak.pop(guild_id, None)
+        self._cooldown.pop(guild_id, None)
+
+    def record_failure(self, guild_id: int) -> int:
+        """Record a failed sync; return the number of ticks it will now skip.
+
+        The skip count grows exponentially with the consecutive-failure streak
+        (1, 2, 4, 8, …) capped at ``max_ticks`` so retries never stop entirely.
+        """
+        streak = self._fail_streak.get(guild_id, 0) + 1
+        self._fail_streak[guild_id] = streak
+        skip = min(self._max_ticks, 2 ** (streak - 1))
+        self._cooldown[guild_id] = skip
+        return skip
+
+    def fail_streak(self, guild_id: int) -> int:
+        """Current consecutive-failure count for a guild (0 when healthy)."""
+        return self._fail_streak.get(guild_id, 0)

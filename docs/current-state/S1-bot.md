@@ -175,9 +175,15 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   cutoff in the pure `services/history_cleanup.py`; +12 tests). Punch #1 (panel authority re-check)
   found **already covered** (stale cert note corrected). Cleanup's remaining gaps: #4 spam-window
   setting (needs a config-input widget — deferred) + the owner walkthrough/sign-off (#5/#6).
-  **▶ Next turn-key picks:** **Counters** loop backoff (punch #3) · **Diagnostics** list pagination
-  (punch #2) · Cleanup #4 (spam-window setting *with* a Settings widget). *(Counters punch #1/#2/#4/#5
-  ✅ #1568.)*
+  **✅ DONE 2026-06-30 (#1575): Diagnostics punch #1 + Counters punch #3.** Diagnostics #1 (hub
+  completeness) — `startup` + `findings` (read-only health reports) grouped into the `!platform` hub's
+  Runtime/status select (audience-preserving `_dispatch`; the `finding` mutation stays out of the
+  read-only Selects). Counters #3 (loop backoff) — `GuildSyncBackoff` (pure tick-based exponential
+  backoff, capped) wired into the rename loop so a persistently-failing guild is skipped for a growing
+  number of ticks but never dropped forever. **▶ Next turn-key picks:** **Diagnostics** list pagination
+  (punch #2 — apply `_PaginatorView` to long findings/consistency output) + #5 (health-metrics
+  reconcile) · Cleanup #4 (spam-window setting *with* a Settings widget). *(Counters punch
+  #1/#2/#4/#5 ✅ #1568; #3 ✅ #1575.)*
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
   now has a rubric-filled, source-grounded certificate under
