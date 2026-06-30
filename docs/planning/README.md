@@ -72,6 +72,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 | Plan | Status / gate | Related ideas |
 |---|---|---|
 | [procedures-to-skills-conversion](procedures-to-skills-conversion-plan-2026-06-17.md) | relocate ~25% of always-loaded `CLAUDE.md` into on-demand skills; **batch 1 shipped (#1029/#1093), batches 2–4 next** | `agent-tooling-automation-shortlist` |
+| [orientation-cost-reduction](orientation-cost-reduction-plan-2026-06-30.md) | owner-directed (in-chat, 2026-06-30); compresses CLAUDE.md's "Working agreement" narrative density (the section procedures-to-skills' safety list protects from relocation) **and** executes the overdue Q-0210 router-archive mechanism (130/217 router blocks unclassified; archive unused 2 reconciliation passes after being decided) | — |
 | [repo-structure-improvement](repo-structure-improvement-plan-2026-06-19.md) | governance baseline shipped (#1064/#1082); remaining items buildable | `governance-files-presence-guard` |
 | [extension-taxonomy-crosswalk](extension-taxonomy-crosswalk-plan-2026-06-16.md) | crosswalk PR1 **shipped #958**; the thin-atlas **PR2** is the live remainder | `architecture-atlas-and-structure-review` |
 | [ultracode-fleet](ultracode-fleet-plan-2026-06-19.md) | parallel-build fleet coordination brief; Wave A shipped, Wave B in-flight (near-consumed) | — |
