@@ -220,4 +220,7 @@ def test_track_data_integrity() -> None:
         assert t["map_id"] in map_ids, f"unknown map_id {t['map_id']!r}"
         assert 1.0 < t["rbs"] < 120.0, f"implausible RBS for {t['map_id']}: {t['rbs']}"
     # provenance is recorded (Q-0105 — sourced data must say where it came from).
-    assert "bloons.fandom.com" in blob["source"]
+    # NB: assert a non-host prefix, not a host substring, so CodeQL's
+    # "incomplete URL substring sanitization" rule doesn't false-positive on a
+    # provenance check (this is a data-source label, not an access-control gate).
+    assert blob["source"].startswith("Bloons Wiki")
