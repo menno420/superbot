@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`compute-dont-refuse-capability-sweep-2026-06-30.md`](./compute-dont-refuse-capability-sweep-2026-06-30.md) —
+  **session idea (2026-06-30, Q-0089, from building the BTD6 boss-fight estimator #1574):** mine the
+  `ai_review_log` for refusals that are actually **computable** (the bot has the grounded data, it just
+  refused or confabulated — boss fights, economy projections, XP-to-level, …) and build a deterministic
+  compute tool per recurring class. Generalizes `deterministic_btd6_list_reply` / the round-cash workflow /
+  the new estimator. Adds a `computable` triage disposition. Subsystem: ai, btd6.
 - [`review-log-frequency-preset-suggestions-2026-06-30.md`](./review-log-frequency-preset-suggestions-2026-06-30.md) —
   **session idea (2026-06-30, Q-0089, from building the AI review-log answer loop #1569):** when the *same
   normalized question* recurs as an `unknown` N times in a window, push a one-line "author a preset?" nudge

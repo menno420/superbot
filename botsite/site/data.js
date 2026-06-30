@@ -282,6 +282,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -291,10 +295,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -314,6 +314,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -323,10 +327,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -2062,6 +2062,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -2071,10 +2075,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -2249,6 +2249,36 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "Mining & Exploration — Brainstorm & Roadmap"
+      }
+    ]
+  },
+  {
+    "name": "estimate",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+    "description": "Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+    "usage": "!estimate",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
+      },
+      {
+        "status": "idea",
+        "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2646,6 +2676,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -2655,10 +2689,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -3951,6 +3981,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -3960,10 +3994,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -4033,6 +4063,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -4042,10 +4076,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -4199,6 +4229,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -4208,10 +4242,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -4693,6 +4723,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -4702,10 +4736,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -5220,6 +5250,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -5229,10 +5263,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -5821,6 +5851,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -5830,10 +5864,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -6001,6 +6031,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -6010,10 +6044,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -6795,6 +6825,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
@@ -6804,10 +6838,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -7141,7 +7171,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "3f2a356",
+    "build": "097949e",
     "title": "New public bot website",
     "changes": [
       {
@@ -7153,7 +7183,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "3f2a356",
+    "build": "097949e",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7165,7 +7195,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "3f2a356",
+    "build": "097949e",
     "title": "Command-alias suggestions",
     "changes": [
       {

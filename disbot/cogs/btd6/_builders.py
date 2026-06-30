@@ -487,6 +487,55 @@ async def build_tower_embed(name: str) -> discord.Embed:
 
 
 # ---------------------------------------------------------------------------
+# estimate (deterministic boss-fight estimator)
+# ---------------------------------------------------------------------------
+
+
+async def build_estimate_embed(query: str) -> discord.Embed:
+    """Render the boss-fight estimate embed (deterministic HP/DPS/cost).
+
+    ``<tower> vs <boss> [tier]`` → a single estimate; ``[counters] <boss> [tier]``
+    → the most cost-efficient towers. All arithmetic is done deterministically by
+    ``services.btd6_estimator_service`` so the surface estimates instead of guessing.
+    """
+    from services import btd6_estimator_service as est
+
+    title = "🎯 BTD6 boss-fight estimate"
+    text = (query or "").strip()
+    if not text:
+        body = (
+            "Estimate a boss fight from grounded HP/DPS/cost:\n"
+            "• `<tower> vs <boss> [tier]` — e.g. `super monkey 0-4-0 vs bloonarius t5`\n"
+            "• `counters <boss> [tier]` — the most cost-efficient towers"
+        )
+        return discord.Embed(
+            title=title, description=body, color=discord.Color.blurple(),
+        )
+
+    req = est.parse_request(text)
+    if req.mode == "single":
+        estimate = est.resolve_and_estimate(req.tower_query, req.boss_query, req.tier)
+        if estimate is not None:
+            body = est.format_estimate_text(estimate)
+        else:
+            body = (
+                "I couldn't resolve that — try `<tower> vs <boss> [tier]`. "
+                f"(Read tower=`{req.tower_query}`, boss=`{req.boss_query}`, tier {req.tier}.)"
+            )
+    else:
+        boss = est.find_boss(req.boss_query)
+        if boss is None:
+            body = (
+                f"I don't have a boss matching `{req.boss_query}`. "
+                "Bosses: Bloonarius, Lych, Vortex, Dreadbloon, Blastapopoulos, Phayze, Diamondback."
+            )
+        else:
+            rows = est.cheapest_counters(boss.id, req.tier, limit=5)
+            body = est.format_counters_text(rows, boss.canonical or boss.id, req.tier)
+    return discord.Embed(title=title, description=body, color=discord.Color.blurple())
+
+
+# ---------------------------------------------------------------------------
 # sources
 # ---------------------------------------------------------------------------
 

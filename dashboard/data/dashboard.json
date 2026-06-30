@@ -1,21 +1,21 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T07:00:34Z",
+    "generated_at": "2026-06-30T08:46:10Z",
     "build": {
-      "commit": "3f2a356",
-      "subject": "PR1: !aireview export + triage bridge + backlog runbook",
-      "committed_at": "2026-06-30T07:00:34Z"
+      "commit": "097949e",
+      "subject": "PR1: BTD6 boss-fight estimator core (deterministic DPS/cost/kill-time)",
+      "committed_at": "2026-06-30T08:46:10Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 155,
+      "ideas": 156,
       "bugs": 29,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 471,
+      "commands": 473,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -1163,6 +1163,16 @@
     }
   ],
   "ideas": [
+    {
+      "file": "review-log-frequency-preset-suggestions-2026-06-30.md",
+      "title": "Frequency-driven preset suggestions from the review log",
+      "status": "ideas",
+      "date": "2026-06-30",
+      "summary": "The answer loop shipped this session is **operator-pull**: a human runs `!aireview export`,",
+      "subsystems": [
+        "ai"
+      ]
+    },
     {
       "file": "command-collision-checker-2026-06-29.md",
       "title": "Idea — `check_command_collisions.py`: static guard against duplicate command names",
@@ -2655,6 +2665,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-30-reaction-roles-signup-counter.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Reaction-roles live sign-up counter (S1 deepening)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-30-counters-completion-deepening.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Counters completion-cert deepening (Q-0209)",
@@ -2671,6 +2689,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-30-btd6-boss-fight-estimator.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — BTD6 boss-fight estimator (estimate, don't refuse)",
+      "status": "in-progress",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-blackjack-punchlist-2-3.md",
       "date": "2026-06-30",
       "title": "Session — Blackjack completion-cert punch-list #2 + #3",
@@ -2679,11 +2705,19 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-30-ai-review-backlog-triage-r1.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — AI review-log backlog triage, round 1 (DDT confabulation)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-ai-review-backlog-loop.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — AI review-log answer loop (export → triage → presets)",
-      "status": "in-progress",
-      "run_type": "",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -3109,30 +3143,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-26-reconcile-band1470.md",
-      "date": "2026-06-26",
-      "title": "Session — 2026-06-26 · twenty-sixth Q-0107 reconciliation pass (band-#1470)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-26-projmoon-grounding-path.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Project Moon (Limbus) grounding path (PR 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-26-projmoon-faithfulness-guard.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Project Moon (Limbus) faithfulness guard (S1)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3964,6 +3974,28 @@
           "parent": "btd6",
           "aliases": [],
           "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "estimate",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "estimate",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Estimate a boss fight: `<tower> vs <boss> [tier]`, or `counters <boss>`.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
