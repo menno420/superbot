@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-6qy9ny` · scope: Diagnostics completion deepening — punch #2 (pagination) + #5 (metrics reconcile) · area: `disbot/services/diagnostic_embeds.py`, `disbot/cogs/diagnostic/platform_group.py`, `disbot/services/health_snapshot_service.py`, `disbot/services/metrics.py` · 2026-06-30
