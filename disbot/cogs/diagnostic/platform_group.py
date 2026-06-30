@@ -29,9 +29,9 @@ from cogs.diagnostic._platform_embeds import (
     build_anchors_embed,
     build_bindings_embed,
     build_caches_embed,
-    build_consistency_embed,
+    build_consistency_pages,
     build_customization_embed,
-    build_findings_embed,
+    build_findings_pages,
     build_flags_embed,
     build_health_embed,
     build_identity_embed,
@@ -56,6 +56,28 @@ from cogs.diagnostic._platform_embeds import (
 from core.runtime.permission_checks import admin_or_owner
 from views.base import send_panel
 from views.diagnostic import _PlatformHubView, build_platform_hub_embed
+
+
+async def _send_paginated(ctx, pages: list[discord.Embed]) -> None:
+    """Send a list of embed pages, attaching the prev/next paginator when >1.
+
+    A single page is sent as a plain embed (no view) so the common case is
+    byte-identical to the pre-pagination behaviour; multi-page output gets a
+    ``_PaginatorView`` so dense findings/consistency reports stay fully
+    reachable (diagnostic cert punch #2).
+    """
+    if not pages:  # defensive — builders always return at least one page
+        return
+    if len(pages) == 1:
+        await ctx.send(embed=pages[0])
+        return
+    # Local import: keep the module-load import surface lean and mirror the
+    # diagnostic-cog paginator-send pattern.
+    from views.diagnostic.paginator import _PaginatorView
+
+    view = _PaginatorView(pages, ctx.author)
+    view.message = await ctx.send(embed=pages[0], view=view)
+
 
 if TYPE_CHECKING:
     # Under type-checking the mixin is a ``Cog`` so the ``@commands.group`` /
@@ -227,11 +249,12 @@ class PlatformCommandsMixin(_MixinBase):
         is_owner = audience is HealthAudience.PLATFORM_OWNER
         rows = await health_findings_service.list_by_status(
             None if wanted == "all" else wanted,
-            limit=15,
+            limit=60,
         )
         counts = await health_findings_service.count_by_status()
-        await ctx.send(
-            embed=build_findings_embed(
+        await _send_paginated(
+            ctx,
+            build_findings_pages(
                 rows,
                 status=wanted,
                 counts=counts,
@@ -492,7 +515,7 @@ class PlatformCommandsMixin(_MixinBase):
         from services.platform_consistency import collect_report
 
         report = await collect_report(bot=self.bot, guild=ctx.guild)
-        await ctx.send(embed=build_consistency_embed(report))
+        await _send_paginated(ctx, build_consistency_pages(report))
 
     @platform_grp.command(name="backfill")  # type: ignore[arg-type]
     @admin_or_owner()

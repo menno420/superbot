@@ -38,12 +38,13 @@ import asyncio
 import datetime
 import logging
 import os
+import time
 import uuid
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import replace
 from typing import Any
 
-from services import health_observations
+from services import health_observations, metrics
 from services.health_contracts import (
     FindingSeverity,
     HealthAudience,
@@ -663,6 +664,7 @@ def _safe(
         return builder()
     except Exception as exc:  # noqa: BLE001 — one source must not break the rest
         logger.warning("health adapter %r failed: %s", name, exc, exc_info=True)
+        metrics.health_snapshot_source_failure_total.labels(source=name).inc()
         return SubsystemHealth(
             name=name,
             status=failure_status,
@@ -692,6 +694,7 @@ async def _safe_async(
         return sub, False
     except (asyncio.TimeoutError, Exception) as exc:  # noqa: BLE001
         logger.warning("health async adapter %r failed: %s", name, exc, exc_info=True)
+        metrics.health_snapshot_source_failure_total.labels(source=name).inc()
         return (
             SubsystemHealth(
                 name=name,
@@ -789,6 +792,7 @@ def project_for_audience(
       and scrubbed messages.
     * ``PUBLIC`` — only subsystem name + status; no findings, no facts.
     """
+    metrics.health_snapshot_redaction_total.labels(audience=audience.value).inc()
     subs = tuple(_project_subsystem(s, audience) for s in snapshot.subsystems)
     if audience is HealthAudience.PUBLIC:
         top: tuple[OperationalHealthFinding, ...] = ()
@@ -979,9 +983,14 @@ def collect_cached_snapshot(
     bot: Any = None,
 ) -> HealthSnapshot:
     """Sync, process-local snapshot. Safe from any sync render path."""
+    started = time.monotonic()
     subs = _sync_subsystems(replace(request, include_fresh_consistency=False), bot)
     snap = _finalize(subs, purpose=request.purpose, partial=False)
-    return project_for_audience(snap, request.audience)
+    projected = project_for_audience(snap, request.audience)
+    metrics.health_snapshot_collection_seconds.labels(lane="sync").observe(
+        time.monotonic() - started,
+    )
+    return projected
 
 
 async def collect_snapshot(
@@ -990,6 +999,7 @@ async def collect_snapshot(
     bot: Any = None,
 ) -> HealthSnapshot:
     """Async snapshot: the sync lane plus bounded, isolated async checks."""
+    started = time.monotonic()
     subs = _sync_subsystems(request, bot)
     partial = False
 
@@ -1043,4 +1053,8 @@ async def collect_snapshot(
         partial = partial or degraded
 
     snap = _finalize(subs, purpose=request.purpose, partial=partial)
-    return project_for_audience(snap, request.audience)
+    projected = project_for_audience(snap, request.audience)
+    metrics.health_snapshot_collection_seconds.labels(lane="async").observe(
+        time.monotonic() - started,
+    )
+    return projected

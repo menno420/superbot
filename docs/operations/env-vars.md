@@ -21,7 +21,7 @@ only — never a value**; the values live in Railway service variables
 |---|---|---|
 | `DATABASE_URL` | utils | `disbot/utils/db/pool.py:41` |
 | `DISCORD_BOT_TOKEN_PRODUCTION` | config | `disbot/config.py:19` |
-| `YOUTUBE_API_KEY` | services | `disbot/services/diagnostic_embeds.py:1269`<br>`disbot/services/youtube_fetch_service.py:22` |
+| `YOUTUBE_API_KEY` | services | `disbot/services/diagnostic_embeds.py:1418`<br>`disbot/services/youtube_fetch_service.py:22` |
 
 ## Optional (a default is always supplied)
 
@@ -51,7 +51,7 @@ only — never a value**; the values live in Railway service variables
 | `CLAUDE_ROUTINE_VERSION` | cogs | `disbot/cogs/hermes_cog.py:53` *(default)* |
 | `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:111` *(default)* |
 | `DISCORD_WEBHOOK_URL` | config | `disbot/config.py:148` *(default)* |
-| `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:267` *(default)* |
+| `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:268` *(default)* |
 | `HEALTH_HOST` | healthserver | `disbot/healthserver.py:70` *(default)* |
 | `HEALTH_PORT` | healthserver | `disbot/healthserver.py:64` *(default)* |
 | `IDENTITY_CONTRACT_STRICT` | bot1 | `disbot/bot1.py:175` *(default)* |

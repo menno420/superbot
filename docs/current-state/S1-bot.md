@@ -16,6 +16,17 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Diagnostics completion deepening — pagination + metrics reconcile** (PR #1584, completion-first
+  deepening, Diagnostics cert punch #2 + #5 — both offline punch items CLOSED) — `!platform consistency`
+  and `!platform findings` now render through `build_consistency_pages` / `build_findings_pages` and
+  attach the existing `_PaginatorView` when there is more than one page, so the **full** report is
+  reachable (◀ Prev / Next ▶) instead of `build_consistency_embed` *dropping* trailing sections /
+  `build_findings_embed` capping rows (single-page output byte-identical; findings fetch raised 15 → 60).
+  Plus the bot-awareness §3.6 **collection-observability metrics** (`health_snapshot_collection_seconds`
+  Histogram + `health_snapshot_source_failure_total` / `health_snapshot_redaction_total` Counters) wired
+  at the snapshot seams — the production-readiness map's last "Not Done" health-metrics row. Diagnostics'
+  offline punch-list is now closed; only the owner live walk + sign-off (#3/#4) remain. +21 tests; no
+  migration; self-merge on green.
 - **Welcome — join-delay age-gating + ping-then-delete** (PR #1581, completion-first deepening,
   Welcome cert punch-list #2 remainder — **#2 now CLOSED**) — the last two best-in-class options vs
   Carl-bot/MEE6/Dyno. **Join-delay age gate:** a `min_account_age_days` setting (default 0 = off) — a
@@ -202,9 +213,10 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   Runtime/status select (audience-preserving `_dispatch`; the `finding` mutation stays out of the
   read-only Selects). Counters #3 (loop backoff) — `GuildSyncBackoff` (pure tick-based exponential
   backoff, capped) wired into the rename loop so a persistently-failing guild is skipped for a growing
-  number of ticks but never dropped forever. **▶ Next turn-key picks:** **Diagnostics** list pagination
-  (punch #2 — apply `_PaginatorView` to long findings/consistency output) + #5 (health-metrics
-  reconcile) · Cleanup #4 (spam-window setting *with* a Settings widget). *(Counters punch
+  number of ticks but never dropped forever. **▶ Next turn-key picks:** ~~Diagnostics list pagination
+  (punch #2) + #5 (health-metrics reconcile)~~ **✅ DONE 2026-06-30 (#1584)** — Diagnostics' offline
+  punch-list is now closed (only the owner live walk #3/#4 remains) · Cleanup #4 (spam-window setting
+  *with* a Settings widget). *(Counters punch
   #1/#2/#4/#5 ✅ #1568; #3 ✅ #1575.)*
   **✅ DONE 2026-06-30 (#1579 + #1581): Welcome punch #2 (best-in-class options) — ALL 4 CLOSED.**
   **Multiple/random messages** + **opt-in DM greeting** (#1579), then **join-delay age-gating**

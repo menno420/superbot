@@ -147,6 +147,30 @@ health_finding_retention_pruned_total = Counter(
     "Resolved/ignored health-finding rows pruned by the retention sweep.",
 )
 
+# Bot-awareness §3.6: the health-collection observability metrics promised by
+# the plan (collection duration, source-failure counts, redaction outcomes).
+# Labels are deliberately low-cardinality (a fixed lane / source-name set / the
+# three HealthAudience values) — never an unbounded value.
+health_snapshot_collection_seconds = Histogram(
+    "health_snapshot_collection_seconds",
+    "Wall-clock time to collect a health snapshot, by collection lane.",
+    ["lane"],  # sync | async
+    buckets=(0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0),
+)
+
+health_snapshot_source_failure_total = Counter(
+    "health_snapshot_source_failure_total",
+    "Health-adapter sources that errored or timed out during collection "
+    "(per-source isolation kept the rest of the snapshot intact).",
+    ["source"],
+)
+
+health_snapshot_redaction_total = Counter(
+    "health_snapshot_redaction_total",
+    "Health snapshots projected for a viewer audience (redaction outcomes).",
+    ["audience"],  # public | guild_admin | platform_owner
+)
+
 # LP-4: rolling-deploy handoff for the runtime lock. ``acquired_immediate``
 # is the happy path (no peer held the lock); ``acquired_after_wait`` means
 # the old replica drained and we took over; ``timeout`` means the boot
