@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T12:22:28Z",
+    "generated_at": "2026-06-30T12:42:33Z",
     "build": {
-      "commit": "3b19ec12",
-      "subject": "Welcome: multiple/random greeting messages (completion punch-list #2)",
-      "committed_at": "2026-06-30T12:22:28Z"
+      "commit": "40656d9e",
+      "subject": "Welcome deepening: close-out — cert #2 narrowed, S1 ledger, session log complete",
+      "committed_at": "2026-06-30T12:42:33Z"
     },
     "counts": {
       "functions": 43,
@@ -2678,10 +2678,10 @@
     {
       "file": "2026-06-30-welcome-random-messages.md",
       "date": "2026-06-30",
-      "title": "2026-06-30 — Welcome multiple/random greeting messages (S1 completion deepening)",
-      "status": "in-progress",
-      "run_type": "",
-      "self_initiated": false
+      "title": "2026-06-30 — Welcome random messages + opt-in DM greeting (S1 completion deepening)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-06-30-reaction-roles-signup-counter.md",
