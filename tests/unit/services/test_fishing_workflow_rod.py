@@ -33,6 +33,38 @@ def test_plan_fish_spend_accepts_a_rod_recipe():
 
 
 # ---------------------------------------------------------------------------
+# eligible_fish_total — the live-progress readout (rod recipe browser)
+# ---------------------------------------------------------------------------
+
+
+def test_eligible_fish_total_counts_only_eligible_species():
+    recipe = rods_mod.rod_recipe(1)  # 10 fish, size ≤ 6
+    inv = {"minnow": 4, "trout": 50}  # minnow rank 1 (≤ 6), trout rank 8 (> 6)
+    assert wf.eligible_fish_total(inv, recipe) == 4  # trout never counts
+
+
+def test_eligible_fish_total_sums_multiple_eligible_species():
+    recipe = rods_mod.rod_recipe(1)
+    inv = {"minnow": 4, "perch": 3}  # both rank ≤ 6
+    assert wf.eligible_fish_total(inv, recipe) == 7
+
+
+def test_eligible_fish_total_never_gates_on_the_requirement():
+    # Unlike _plan_fish_spend (which returns None when short), the progress
+    # readout reports the partial total even when it's below recipe.fish_count.
+    recipe = rods_mod.rod_recipe(1)  # needs 10
+    inv = {"minnow": 3}
+    assert wf.eligible_fish_total(inv, recipe) == 3
+    assert wf._plan_fish_spend(inv, recipe) is None
+
+
+def test_eligible_fish_total_ignores_zero_and_unknown_entries():
+    recipe = rods_mod.rod_recipe(1)
+    inv = {"minnow": 0, "not-a-real-fish": 99}
+    assert wf.eligible_fish_total(inv, recipe) == 0
+
+
+# ---------------------------------------------------------------------------
 # craft_rod — the inventory→tier conversion (catch→rod loop)
 # ---------------------------------------------------------------------------
 

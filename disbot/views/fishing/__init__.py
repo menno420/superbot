@@ -15,17 +15,20 @@ from views.fishing.menu import (
     build_fishlog_embed,
     build_menu_embed,
 )
+from views.fishing.rod_recipe_browser import RodRecipeBrowserView, build_recipe_panel
 from views.fishing.rod_shop import RodShopView, build_rod_embed
 
 __all__ = [
     "BaitShopView",
     "FishingCastView",
     "FishingMenuView",
+    "RodRecipeBrowserView",
     "RodShopView",
     "active_casts",
     "build_bait_embed",
     "build_fishlog_embed",
     "build_menu_embed",
+    "build_recipe_panel",
     "build_rod_embed",
     "prepare_cast",
 ]

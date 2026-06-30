@@ -645,16 +645,16 @@ class _FishRecipe(Protocol):
     max_size_rank: int
 
 
-def _plan_fish_spend(
+def _eligible_fish(
     inventory: dict[str, int],
     recipe: _FishRecipe,
-) -> dict[str, int] | None:
-    """Choose which eligible fish to consume for *recipe* (smallest-first).
+) -> list[tuple[int, str, int]]:
+    """The player's fish eligible toward *recipe*, as ``(size_rank, name, have)``.
 
     Eligible = a known fish species whose ``size_rank`` is ``≤ recipe.max_size_rank``.
-    Consumes the smallest ranks first (ties broken by name) so the player keeps
-    their bigger catches. Returns a ``{fish_name: count}`` spend map, or ``None``
-    when the player lacks ``recipe.fish_count`` eligible fish.
+    Shared by :func:`_plan_fish_spend` (which fish to debit) and
+    :func:`eligible_fish_total` (live progress display) so both read the exact
+    same eligibility rule.
     """
     eligible: list[tuple[int, str, int]] = []  # (size_rank, name, have)
     for name, have in inventory.items():
@@ -664,7 +664,30 @@ def _plan_fish_spend(
         if species is None or species.size_rank > recipe.max_size_rank:
             continue
         eligible.append((species.size_rank, name, have))
+    return eligible
 
+
+def eligible_fish_total(inventory: dict[str, int], recipe: _FishRecipe) -> int:
+    """Total fish in *inventory* eligible toward *recipe* (size_rank ≤ cap).
+
+    A pure progress readout — unlike :func:`_plan_fish_spend` it never gates on
+    ``recipe.fish_count`` being met, so a caller can show "7/10 eligible fish"
+    before the player has enough to craft.
+    """
+    return sum(have for _, _, have in _eligible_fish(inventory, recipe))
+
+
+def _plan_fish_spend(
+    inventory: dict[str, int],
+    recipe: _FishRecipe,
+) -> dict[str, int] | None:
+    """Choose which eligible fish to consume for *recipe* (smallest-first).
+
+    Consumes the smallest ranks first (ties broken by name) so the player keeps
+    their bigger catches. Returns a ``{fish_name: count}`` spend map, or ``None``
+    when the player lacks ``recipe.fish_count`` eligible fish.
+    """
+    eligible = _eligible_fish(inventory, recipe)
     if sum(have for _, _, have in eligible) < recipe.fish_count:
         return None
 
