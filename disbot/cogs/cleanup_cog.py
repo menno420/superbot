@@ -32,7 +32,6 @@ CLEANUP_STAGE_NAME = "cleanup"
 # stage-order table in core/runtime/message_pipeline.py.
 CLEANUP_STAGE_ORDER = 10
 MAX_CLEANUP_HISTORY_LIMIT = 1000
-SPAM_DUPLICATE_WINDOW_SECONDS = 15
 HELPER_DELETE_DELAY_SECONDS = 3
 # How long the "commands aren't allowed here" notice stays before self-deleting.
 _BLOCKED_COMMAND_NOTICE_SECONDS = 8
@@ -74,6 +73,25 @@ def _parse_duration_seconds(raw: str) -> int | None:
     if value <= 0:
         return None
     return value * unit_seconds
+
+
+async def _resolve_spam_window(guild_id: int) -> int:
+    """Resolve the per-guild ``!cleanuphistory`` spam-duplicate window (seconds).
+
+    Reads the ``cleanup_spam_window_seconds`` scalar setting via the canonical
+    :func:`services.settings_resolution.resolve_value`, which falls back to the
+    declared :class:`SettingSpec` default (15s) when unset or malformed — so a
+    fresh guild behaves byte-identically to the old hardcoded constant.
+    """
+    from cogs.cleanup.schemas import DEFAULT_SPAM_WINDOW_SECONDS
+    from services.settings_resolution import resolve_value
+
+    return await resolve_value(
+        guild_id,
+        "cleanup",
+        "spam_window_seconds",
+        DEFAULT_SPAM_WINDOW_SECONDS,
+    )
 
 
 class CleanupStage:
@@ -375,6 +393,7 @@ class Cleanup(commands.Cog):
             return
 
         prohibited_words = await db.get_prohibited_words(ctx.guild.id)
+        spam_window = await _resolve_spam_window(ctx.guild.id)
         plan = await build_history_cleanup_plan(
             ctx.channel,
             limit=effective_limit,
@@ -383,7 +402,7 @@ class Cleanup(commands.Cog):
             command_prefixes=self.command_prefixes,
             prohibited_words=prohibited_words,
             exclude_message_ids={ctx.message.id},
-            spam_duplicate_window_seconds=SPAM_DUPLICATE_WINDOW_SECONDS,
+            spam_duplicate_window_seconds=spam_window,
             older_than=older_than,
         )
         final_msg = None

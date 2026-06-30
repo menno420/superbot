@@ -135,11 +135,12 @@ def test_groups_include_bindings_only_subsystem():
 
 
 def test_groups_include_declared_domain_config_subsystem():
-    """Cleanup has no scalar/binding/resource declarations — it appears via
-    its schema's ``domain_panels`` declaration (Settings Phase 2; audit §4:
-    domain group linked to its canonical panel, never an empty scalar page).
-    Registers the REAL cleanup schema so the test pins the shipped
-    declaration, not a synthetic one.
+    """Cleanup appears via its schema's ``domain_panels`` declaration (Settings
+    Phase 2; audit §4: domain group linked to its canonical panel).  Since the
+    completion-cert punch #4 it *also* declares one scalar ``SettingSpec`` (the
+    ``!cleanuphistory`` spam-duplicate window) with a config-input widget, so it
+    surfaces **both** a scalar settings page and the domain panel.  Registers
+    the REAL cleanup schema so the test pins the shipped declaration.
     """
     from cogs.cleanup.schemas import CLEANUP_CONFIG_SCHEMA
 
@@ -148,7 +149,8 @@ def test_groups_include_declared_domain_config_subsystem():
     groups = {g.subsystem: g for g in actionable_settings_groups()}
     assert "cleanup" in groups
     assert groups["cleanup"].has_domain_panel is True
-    assert groups["cleanup"].surfaces == ("panel",)
+    assert groups["cleanup"].editable_setting_count == 1
+    assert groups["cleanup"].surfaces == ("settings", "panel")
 
 
 def test_groups_exclude_internal_subsystems(monkeypatch):
@@ -387,8 +389,9 @@ def test_hub_inventory_reflects_registered_settings_and_groups():
     settings_registry.build_registry()
     embed = SettingsHubView.build_embed()
     inventory = next(f.value for f in embed.fields if f.name == "Inventory")
-    assert "`settings`: 2" in inventory
-    # xp (scalar) + cleanup (declared domain group) are the actionable groups.
+    # xp's 2 scalars + cleanup's 1 scalar (spam-window, punch #4) = 3.
+    assert "`settings`: 3" in inventory
+    # xp (scalar) + cleanup (scalar + declared domain group) are the actionable groups.
     assert "`groups`: 2" in inventory
 
 

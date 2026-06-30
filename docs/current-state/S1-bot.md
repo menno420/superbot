@@ -16,6 +16,14 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Cleanup — spam-duplicate window → real per-guild setting** (PR #1588, completion-first deepening,
+  Cleanup cert punch #4 — **Cleanup's offline punch-list now CLOSED**) — the hardcoded
+  `SPAM_DUPLICATE_WINDOW_SECONDS = 15` constant (used by the `!cleanuphistory` spam sweep) became the
+  `cleanup.spam_window_seconds` scalar `SettingSpec` (settings key `CLEANUP_SPAM_WINDOW_SECONDS`, no
+  migration) with a `numeric_presets` config-input widget (presets 10/15/30, bounds 1..300, capability
+  `cleanup.policy.configure`). `!cleanuphistory` resolves it per-guild via
+  `settings_resolution.resolve_value`, falling back to the declared default — **byte-identical** for
+  every existing guild. +13 tests; cleanup is now a scalar+panel Settings group. Self-merge on green.
 - **Fishing — rod-recipe browser with live craft progress** (PR #1585, the named "next offline
   successor" on the fish→rod craft seam) — the rod shop already advertised a recipe's bare
   requirement ("10 fish, size ≤ 6") but never showed how close the player already was. A new
@@ -214,8 +222,8 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   content-type sweep modes (`embeds`/`links`/`attachments`, Carl-bot/MEE6/Dyno parity) + an
   `older:<duration>` age gate composable with every mode (`HISTORY_CLEANUP_MODES` + `older_than`
   cutoff in the pure `services/history_cleanup.py`; +12 tests). Punch #1 (panel authority re-check)
-  found **already covered** (stale cert note corrected). Cleanup's remaining gaps: #4 spam-window
-  setting (needs a config-input widget — deferred) + the owner walkthrough/sign-off (#5/#6).
+  found **already covered** (stale cert note corrected). Cleanup #4 (spam-window setting) **✅ DONE
+  2026-06-30 (#1588)** — see below; Cleanup's only remaining gaps are now the owner walkthrough/sign-off (#5/#6).
   **✅ DONE 2026-06-30 (#1575): Diagnostics punch #1 + Counters punch #3.** Diagnostics #1 (hub
   completeness) — `startup` + `findings` (read-only health reports) grouped into the `!platform` hub's
   Runtime/status select (audience-preserving `_dispatch`; the `finding` mutation stays out of the
@@ -223,8 +231,9 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   backoff, capped) wired into the rename loop so a persistently-failing guild is skipped for a growing
   number of ticks but never dropped forever. **▶ Next turn-key picks:** ~~Diagnostics list pagination
   (punch #2) + #5 (health-metrics reconcile)~~ **✅ DONE 2026-06-30 (#1584)** — Diagnostics' offline
-  punch-list is now closed (only the owner live walk #3/#4 remains) · Cleanup #4 (spam-window setting
-  *with* a Settings widget). *(Counters punch
+  punch-list is now closed (only the owner live walk #3/#4 remains) · ~~Cleanup #4 (spam-window setting
+  *with* a Settings widget)~~ **✅ DONE 2026-06-30 (#1588)** — `cleanup.spam_window_seconds` scalar with
+  a `numeric_presets` config-input widget; **Cleanup's offline punch-list is now CLOSED**. *(Counters punch
   #1/#2/#4/#5 ✅ #1568; #3 ✅ #1575.)*
   **✅ DONE 2026-06-30 (#1579 + #1581): Welcome punch #2 (best-in-class options) — ALL 4 CLOSED.**
   **Multiple/random messages** + **opt-in DM greeting** (#1579), then **join-delay age-gating**
@@ -235,9 +244,10 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   settings (`numeric_presets` hints), migration-free, byte-identical for existing configs; +18 tests.
   **Welcome punch-list #2 is now CLOSED** — every named best-in-class option exists. Remaining Welcome
   gaps: #1 bespoke panel (or owner waiver) · #3 binding-seam · #4 cog-tests · #5/#6 owner walkthrough.
-  **▶ Next turn-key picks (other units):** Diagnostics list pagination (punch #2 — apply `_PaginatorView`
-  to long findings/consistency output) + #5 (health-metrics reconcile) · Cleanup #4 (spam-window
-  setting *with* a Settings widget).
+  **▶ Next turn-key picks (other units):** ~~Diagnostics list pagination (#2) + #5 (health-metrics
+  reconcile)~~ **✅ #1584** · ~~Cleanup #4 (spam-window setting *with* a Settings widget)~~ **✅ #1588**.
+  Both units' offline punch-lists are now CLOSED. Next offline deepening: Inventory item-grant audit +
+  capability cleanup · Proof-channel lock/unlock audit + modal authority re-check (the named weak spots).
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
   now has a rubric-filled, source-grounded certificate under

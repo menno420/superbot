@@ -868,12 +868,17 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: none yet (governance owns
-    cleanup_policies; cleanup-level scalars are roadmap work in S8 v2/v3).
-10. **existing_settings_keys**: none — the legacy
-    `CLEANUP_WHITELIST_CHANNELS` env list was removed (channel exemption is
-    now a per-channel cleanup policy set to `Off`); only the ignored-channel
-    CSV in legacy KV remains to be migrated.
+9. **existing_SettingSpec_declarations**: `spam_window_seconds` — the
+    `!cleanuphistory` spam-duplicate detection window, a scalar with a
+    `numeric_presets` config-input widget (completion-cert punch #4,
+    `disbot/cogs/cleanup/schemas.py`; default 15s, bounds 1..300, capability
+    `cleanup.policy.configure`). Governance still owns cleanup_policies; the
+    deeper cleanup-level scalars stay roadmap work in S8 v2/v3.
+10. **existing_settings_keys**: `CLEANUP_SPAM_WINDOW_SECONDS`
+    (`disbot/utils/settings_keys/cleanup.py`) — a scalar guild setting, **no
+    migration**. The legacy `CLEANUP_WHITELIST_CHANNELS` env list was removed
+    (channel exemption is now a per-channel cleanup policy set to `Off`); only
+    the ignored-channel CSV in legacy KV remains to be migrated.
 11. **existing_BindingSpec_entries**: none. **Cleanup must not own a
     duplicate `cleanup_log_channel` binding** — the logging subsystem owns
     `cleanup_channel`; cleanup deep-links to it.
