@@ -1261,10 +1261,10 @@ def _derive_scope(message: discord.Message) -> AIScope:
     # owner-gated diagnostics_health_snapshot tool reachable (D1). Mirrors the
     # id-gated owner seams in ai_tools.get_user_standing / bot_knowledge_service;
     # the deterministic !platform health surface uses bot.is_owner separately.
-    from config import BOT_OWNER_USER_ID
+    from config import is_platform_owner
 
     author_id = getattr(author, "id", None)
-    if BOT_OWNER_USER_ID is not None and author_id == BOT_OWNER_USER_ID:
+    if is_platform_owner(author_id):
         return AIScope.PLATFORM_OWNER
     if (
         guild is not None

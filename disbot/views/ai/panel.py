@@ -102,10 +102,10 @@ class AIPanelView(PersistentView):
     SUBSYSTEM = "ai"
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        member = interaction.user
-        if not getattr(member, "guild_permissions", None) or not (
-            member.guild_permissions.administrator  # type: ignore[union-attr]
-        ):
+        # Canonical admin gate — honours the platform owner (config.BOT_OWNER_USER_ID).
+        from views.base import interaction_is_admin
+
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ You need the Administrator permission to use the AI panel.",
                 ephemeral=True,
@@ -340,10 +340,10 @@ async def handle_ai_interaction(
     if interaction.response.is_done():
         return
 
-    member = interaction.user
-    if not getattr(member, "guild_permissions", None) or not (
-        member.guild_permissions.administrator  # type: ignore[union-attr]
-    ):
+    # Canonical admin gate — honours the platform owner (config.BOT_OWNER_USER_ID).
+    from views.base import interaction_is_admin
+
+    if not interaction_is_admin(interaction):
         try:
             await interaction.response.send_message(
                 "❌ You need the Administrator permission to use the AI panel.",

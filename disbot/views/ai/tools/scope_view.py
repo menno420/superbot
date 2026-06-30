@@ -238,9 +238,13 @@ class CategoryToolsSelectView(discord.ui.View):
 
 
 async def _require_admin(interaction: discord.Interaction) -> bool:
-    """Shared admin gate for every transient Tools & Workflows view."""
-    perms = getattr(interaction.user, "guild_permissions", None)
-    if perms is None or not getattr(perms, "administrator", False):
+    """Shared admin gate for every transient Tools & Workflows view.
+
+    Honours the configured platform owner (config.BOT_OWNER_USER_ID).
+    """
+    from views.base import interaction_is_admin
+
+    if not interaction_is_admin(interaction):
         await interaction.response.send_message(
             "❌ Administrator permission required.",
             ephemeral=True,

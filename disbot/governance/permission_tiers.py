@@ -41,7 +41,14 @@ class PermissionTier(Enum):
     feature-flag mutations, environment-tier assignments, and cross-
     guild template publishing (Phase 2d / Phase 8).  Holders are NOT
     discoverable via Discord permissions; the platform owner is
-    declared at deploy time via an env-var-allowlist.
+    declared at deploy time via an env-var-allowlist —
+    :data:`config.BOT_OWNER_USER_ID`, tested by the single-source
+    helper :func:`config.is_platform_owner`.  That helper also grants
+    the platform owner **full bot-configuration authority in any guild
+    they are a member of** (every authority seam — governance capability/
+    visibility, the service mutation gates, setup access, and the view
+    admin gates — routes its owner check through it), so the bot owner
+    can always set the bot up correctly regardless of their server role.
     """
 
     USER = "user"

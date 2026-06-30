@@ -77,15 +77,22 @@ class HelpOverlayMutationResult:
 
 
 def _check_admin(actor: Any) -> int | None:
-    """Return ``actor.id`` if administrator-tier; raise otherwise."""
+    """Return ``actor.id`` if administrator-tier (or platform owner); raise otherwise."""
     if actor is None:
         raise UnauthorizedHelpOverlayMutationError("actor is required")
+    # Platform-owner override: the configured bot owner administers config in any
+    # guild, even without Discord admin there (single source: config).
+    from config import is_platform_owner
+
+    actor_id = getattr(actor, "id", None)
+    if is_platform_owner(actor_id):
+        return actor_id
     perms = getattr(actor, "guild_permissions", None)
     if perms is None or not getattr(perms, "administrator", False):
         raise UnauthorizedHelpOverlayMutationError(
             "help overlay mutations require administrator permission",
         )
-    return getattr(actor, "id", None)
+    return actor_id
 
 
 def _check_entity(entity_kind: str, entity_key: str) -> None:
