@@ -118,6 +118,8 @@ def test_select_values_cover_every_platform_subcommand():
     expected = {
         # Runtime / status
         "health",
+        "startup",
+        "findings",
         "status",
         "runtime",
         "lifecycle",
@@ -150,16 +152,15 @@ def test_select_values_cover_every_platform_subcommand():
     assert seen == expected, seen.symmetric_difference(expected)
 
 
-def test_typed_only_platform_commands_are_intentionally_excluded():
-    """``startup``/``findings`` (read-only) and ``finding`` (a mutation) are
-    deliberately NOT grouped into the read-only hub — they remain typed-only.
+def test_finding_mutation_is_excluded_from_readonly_hub():
+    """The ``finding`` *lifecycle mutation* must never appear in the read-only
+    category Selects — the only write surface is the segregated Mutations row.
 
-    Pinning the exclusion keeps the platform_panel docstring honest (health
-    readiness map P1-2 / P2 sweep): the four category Selects are read-only, so
-    the ``finding`` lifecycle mutation must never appear there, and the verbose
-    ``startup``/``findings`` reports stay power-user text paths. If a future
-    session deliberately groups one of these, update both this test and the
-    module docstring together.
+    ``startup``/``findings`` (both read-only reports) were grouped into
+    Runtime/status on 2026-06-30 (diagnostic completion cert punch #1), so they
+    are no longer excluded; this test now pins only the mutation exclusion. If a
+    future session changes what is grouped, update both this test and the module
+    docstring together.
     """
     view = _PlatformHubView(_author())
     grouped = {
@@ -168,10 +169,12 @@ def test_typed_only_platform_commands_are_intentionally_excluded():
         if isinstance(child, discord.ui.Select)
         for opt in child.options
     }
-    assert {"startup", "findings", "finding"}.isdisjoint(grouped), (
-        "typed-only platform commands leaked into the read-only hub: "
-        f"{{'startup', 'findings', 'finding'}} & {grouped}"
+    assert "finding" not in grouped, (
+        "the `finding` lifecycle mutation leaked into the read-only hub: "
+        f"{grouped}"
     )
+    # The read-only health reports are now intentionally reachable.
+    assert {"startup", "findings"} <= grouped
 
 
 def test_overview_button_is_on_last_row_and_secondary_style():
@@ -385,6 +388,83 @@ async def test_dispatch_consistency_uses_collect_report():
     collector.assert_awaited_once_with(bot=interaction.client, guild=interaction.guild)
     builder.assert_called_once_with(fake_report)
     assert embed.title == "consistency"
+
+
+@pytest.mark.asyncio
+async def test_dispatch_startup_prefers_stored_snapshot_projected_to_audience():
+    """The hub mirrors `!platform startup`: a stored settled snapshot is
+    re-projected to the caller's audience (no fresh collection)."""
+    guild = MagicMock()
+    guild.id = 7
+    interaction = _fake_interaction(bot=MagicMock(spec=commands.Bot), guild=guild)
+    interaction.user = MagicMock()
+    stored = MagicMock()
+    projected = MagicMock()
+    with (
+        patch(
+            "services.health_snapshot_service.resolve_audience",
+            new_callable=AsyncMock,
+            return_value="admin",
+        ),
+        patch(
+            "services.health_snapshot_service.get_last_startup_snapshot",
+            return_value=stored,
+        ),
+        patch(
+            "services.health_snapshot_service.project_for_audience",
+            return_value=projected,
+        ) as projector,
+        patch(
+            "services.health_snapshot_service.collect_snapshot",
+            new_callable=AsyncMock,
+        ) as collector,
+        patch(
+            "views.diagnostic.platform_panel.build_startup_health_embed",
+            return_value=discord.Embed(title="🚀 Startup health"),
+        ) as builder,
+    ):
+        embed = await _dispatch("startup", interaction)
+    projector.assert_called_once_with(stored, "admin")
+    collector.assert_not_awaited()  # stored snapshot → no fresh collection
+    builder.assert_called_once_with(projected)
+    assert "Startup health" in (embed.title or "")
+
+
+@pytest.mark.asyncio
+async def test_dispatch_findings_lists_open_with_audience_redaction():
+    """The hub mirrors `!platform findings` defaulting to the open status;
+    owner detail is gated on the resolved audience."""
+    from services.health_contracts import HealthAudience
+
+    guild = MagicMock()
+    interaction = _fake_interaction(bot=MagicMock(spec=commands.Bot), guild=guild)
+    interaction.user = MagicMock()
+    rows = [{"category": "db", "message": "x", "status": "open"}]
+    with (
+        patch(
+            "services.health_snapshot_service.resolve_audience",
+            new_callable=AsyncMock,
+            return_value=HealthAudience.GUILD_ADMIN,
+        ),
+        patch(
+            "services.health_findings_service.list_by_status",
+            new_callable=AsyncMock,
+            return_value=rows,
+        ) as lister,
+        patch(
+            "services.health_findings_service.count_by_status",
+            new_callable=AsyncMock,
+            return_value={"open": 1},
+        ),
+        patch(
+            "views.diagnostic.platform_panel.build_findings_embed",
+            return_value=discord.Embed(title="🩺 Health findings — open"),
+        ) as builder,
+    ):
+        embed = await _dispatch("findings", interaction)
+    lister.assert_awaited_once_with("open", limit=15)
+    builder.assert_called_once_with(rows, status="open", counts={"open": 1}, is_owner=False)
+    assert "Health findings" in (embed.title or "")
 
 
 @pytest.mark.asyncio
