@@ -1,0 +1,311 @@
+{
+ "schema": "map_track_lengths",
+ "version": 1,
+ "source": "Bloons Wiki \u2014 Red Bloon Seconds (https://bloons.fandom.com/wiki/Red_Bloon_Seconds), via api.php?action=parse",
+ "fetched": "2026-06-30",
+ "definition": "rbs = Red Bloon Seconds: seconds for one Red Bloon (the speed-1.0 baseline) to traverse the map main track on Medium difficulty. The canonical, resolution-independent BTD6 track-length unit (~27.5 range units per RBS).",
+ "note": "Main track per map; multi-path maps use the main path. Maps absent from disbot/data/btd6/maps.json are omitted: Blons.",
+ "count": 60,
+ "tracks": [
+  {
+   "map_id": "ouch",
+   "map": "#Ouch",
+   "rbs": 4.52
+  },
+  {
+   "map_id": "adoras_temple",
+   "map": "Adora's Temple",
+   "rbs": 34.27
+  },
+  {
+   "map_id": "alpine_run",
+   "map": "Alpine Run",
+   "rbs": 36.55
+  },
+  {
+   "map_id": "another_brick",
+   "map": "Another Brick",
+   "rbs": 22.305
+  },
+  {
+   "map_id": "balance",
+   "map": "Balance",
+   "rbs": 28.34
+  },
+  {
+   "map_id": "bazaar",
+   "map": "Bazaar",
+   "rbs": 23.18
+  },
+  {
+   "map_id": "bloody_puddles",
+   "map": "Bloody Puddles",
+   "rbs": 10.17
+  },
+  {
+   "map_id": "bloonarius_prime",
+   "map": "Bloonarius Prime",
+   "rbs": 24.24
+  },
+  {
+   "map_id": "candy_falls",
+   "map": "Candy Falls",
+   "rbs": 47.915
+  },
+  {
+   "map_id": "cargo",
+   "map": "Cargo",
+   "rbs": 15.86
+  },
+  {
+   "map_id": "carved",
+   "map": "Carved",
+   "rbs": 44.67
+  },
+  {
+   "map_id": "chutes",
+   "map": "Chutes",
+   "rbs": 18.249
+  },
+  {
+   "map_id": "cornfield",
+   "map": "Cornfield",
+   "rbs": 27.385
+  },
+  {
+   "map_id": "cracked",
+   "map": "Cracked",
+   "rbs": 37.765
+  },
+  {
+   "map_id": "cubism",
+   "map": "Cubism",
+   "rbs": 49.215
+  },
+  {
+   "map_id": "dark_castle",
+   "map": "Dark Castle",
+   "rbs": 11.555
+  },
+  {
+   "map_id": "downstream",
+   "map": "Downstream",
+   "rbs": 29.97
+  },
+  {
+   "map_id": "encrypted",
+   "map": "Encrypted",
+   "rbs": 32.765
+  },
+  {
+   "map_id": "end_of_the_road",
+   "map": "End of the Road",
+   "rbs": 30.045
+  },
+  {
+   "map_id": "firing_range",
+   "map": "Firing Range",
+   "rbs": 33.8
+  },
+  {
+   "map_id": "flooded_valley",
+   "map": "Flooded Valley",
+   "rbs": 10.12
+  },
+  {
+   "map_id": "four_circles",
+   "map": "Four Circles",
+   "rbs": 41.415
+  },
+  {
+   "map_id": "frozen_over",
+   "map": "Frozen Over",
+   "rbs": 40.37
+  },
+  {
+   "map_id": "geared",
+   "map": "Geared",
+   "rbs": 15.79
+  },
+  {
+   "map_id": "haunted",
+   "map": "Haunted",
+   "rbs": 21.14
+  },
+  {
+   "map_id": "hedge",
+   "map": "Hedge",
+   "rbs": 43.775
+  },
+  {
+   "map_id": "high_finance",
+   "map": "High Finance",
+   "rbs": 31.19
+  },
+  {
+   "map_id": "in_the_loop",
+   "map": "In the Loop",
+   "rbs": 44.39
+  },
+  {
+   "map_id": "infernal",
+   "map": "Infernal",
+   "rbs": 21.975
+  },
+  {
+   "map_id": "karts_ndarts",
+   "map": "Karts N' Darts",
+   "rbs": 37.135
+  },
+  {
+   "map_id": "logs",
+   "map": "Logs",
+   "rbs": 60.33
+  },
+  {
+   "map_id": "lotus_island",
+   "map": "Lotus Island",
+   "rbs": 37.195
+  },
+  {
+   "map_id": "mesa",
+   "map": "Mesa",
+   "rbs": 16.405
+  },
+  {
+   "map_id": "tutorial",
+   "map": "Monkey Meadow",
+   "rbs": 32.745
+  },
+  {
+   "map_id": "moon_landing",
+   "map": "Moon Landing",
+   "rbs": 40.37
+  },
+  {
+   "map_id": "muddy_puddles",
+   "map": "Muddy Puddles",
+   "rbs": 10.89
+  },
+  {
+   "map_id": "off_the_coast",
+   "map": "Off The Coast",
+   "rbs": 21.965
+  },
+  {
+   "map_id": "park_path",
+   "map": "Park Path",
+   "rbs": 40.215
+  },
+  {
+   "map_id": "pats_pond",
+   "map": "Pat's Pond",
+   "rbs": 15.6
+  },
+  {
+   "map_id": "peninsula",
+   "map": "Peninsula",
+   "rbs": 16.155
+  },
+  {
+   "map_id": "quad",
+   "map": "Quad",
+   "rbs": 12.68
+  },
+  {
+   "map_id": "rake",
+   "map": "Rake",
+   "rbs": 17.745
+  },
+  {
+   "map_id": "ravine",
+   "map": "Ravine",
+   "rbs": 13.76
+  },
+  {
+   "map_id": "resort",
+   "map": "Resort",
+   "rbs": 54.33
+  },
+  {
+   "map_id": "sanctuary",
+   "map": "Sanctuary",
+   "rbs": 12.435
+  },
+  {
+   "map_id": "scrapyard",
+   "map": "Scrapyard",
+   "rbs": 60.73
+  },
+  {
+   "map_id": "skates",
+   "map": "Skates",
+   "rbs": 42.98
+  },
+  {
+   "map_id": "spa_pits",
+   "map": "Spa Pits",
+   "rbs": 57.14
+  },
+  {
+   "map_id": "spice_islands",
+   "map": "Spice Islands",
+   "rbs": 27.095
+  },
+  {
+   "map_id": "spillway",
+   "map": "Spillway",
+   "rbs": 25.295
+  },
+  {
+   "map_id": "spring_spring",
+   "map": "Spring Spring",
+   "rbs": 28.105
+  },
+  {
+   "map_id": "streambed",
+   "map": "Streambed",
+   "rbs": 30.795
+  },
+  {
+   "map_id": "the_cabin",
+   "map": "The Cabin",
+   "rbs": 34.645
+  },
+  {
+   "map_id": "three_mines_around",
+   "map": "Three Mines 'Round",
+   "rbs": 48.0
+  },
+  {
+   "map_id": "town_centre",
+   "map": "Town Center",
+   "rbs": 34.65
+  },
+  {
+   "map_id": "tree_stump",
+   "map": "Tree Stump",
+   "rbs": 44.265
+  },
+  {
+   "map_id": "underground",
+   "map": "Underground",
+   "rbs": 15.09
+  },
+  {
+   "map_id": "winter_park",
+   "map": "Winter Park",
+   "rbs": 41.05
+  },
+  {
+   "map_id": "workshop",
+   "map": "Workshop",
+   "rbs": 7.72
+  },
+  {
+   "map_id": "xfactor",
+   "map": "X-Factor",
+   "rbs": 23.825
+  }
+ ]
+}
