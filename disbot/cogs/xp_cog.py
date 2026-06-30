@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim
+from core.runtime.permission_checks import admin_or_owner
 from services import xp_service
 from services.rank_providers import get_provider
 from services.xp_helpers import _STAT_TYPES, RANK_CARD_FILENAME, build_rank_response
@@ -166,7 +167,7 @@ class XpCog(commands.Cog):
             view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="givexp")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def givexp(self, ctx: commands.Context, member: discord.Member, amount: int):
         """Give XP to a user (admin only)."""
         if amount <= 0:
@@ -184,7 +185,7 @@ class XpCog(commands.Cog):
         )
 
     @commands.command(name="resetxp")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def resetxp(self, ctx: commands.Context, member: discord.Member):
         """Reset a user's XP to zero (admin only)."""
         await xp_service.reset(
@@ -197,7 +198,7 @@ class XpCog(commands.Cog):
         await ctx.send(f"✅ Reset XP for {member.mention}.")
 
     @commands.command(name="xpconfig")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def xpconfig(self, ctx: commands.Context):
         """Open the XP configuration panel (admin only)."""
         view = XpConfigView(ctx)

@@ -37,6 +37,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from core.runtime.permission_checks import admin_or_owner, app_admin_or_owner
 from views.base import send_panel
 
 logger = logging.getLogger("bot")
@@ -122,7 +123,7 @@ class SettingsCog(commands.Cog):
         help="Open the Settings Manager hub (browse + edit/reset scalars).",
         invoke_without_command=True,
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def settings_root(self, ctx: commands.Context) -> None:
         """Entry-point command for the Settings Manager subsystem.
 
@@ -195,7 +196,7 @@ class SettingsCog(commands.Cog):
         description="Open the Settings Manager hub (administrator only).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def settings_slash(self, interaction: discord.Interaction) -> None:
         """Slash front door for Settings Manager — ephemeral, admin-only.
 

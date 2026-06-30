@@ -658,8 +658,9 @@ class BlackjackPanelView(HubView):
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
-        guild_perms = getattr(interaction.user, "guild_permissions", None)
-        is_admin = bool(guild_perms and guild_perms.administrator)
+        from views.base import member_is_admin
+
+        is_admin = member_is_admin(interaction.user)
         guild_id = interaction.guild_id or 0
         has_active = get_active_tournament(guild_id) is not None
         back_target: BackTarget | None = getattr(self, "_back_target", None)

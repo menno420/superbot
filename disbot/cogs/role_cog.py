@@ -7,6 +7,7 @@ from discord.ext import commands, tasks
 
 from core.runtime import panel_manager, resources
 from core.runtime.component_registry import stats_block
+from core.runtime.permission_checks import admin_or_owner
 from core.runtime.persistent_views import PersistentView, register
 from services import reaction_role_service, role_automation
 from services.lifecycle import SUCCESS
@@ -362,7 +363,7 @@ class RoleCog(commands.Cog):
         return _build_role_hub_embed(), RoleHubPanelView()
 
     @commands.command(name="rolesettings")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def rolesettings(self, ctx: commands.Context) -> None:
         """Open the role management hub (alias for !roles)."""
         await ctx.invoke(self.roles_hub)
@@ -430,7 +431,7 @@ class RoleCog(commands.Cog):
         hidden=True,
         extras={"classification": "panel_action"},
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def assign_roles_cmd(self, ctx: commands.Context) -> None:
         """Manually run time-based role assignment for all members."""
         await ctx.send("🔄 Running role assignment…")
@@ -501,7 +502,7 @@ class RoleCog(commands.Cog):
         hidden=True,
         extras={"classification": "panel_action"},
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def setrole(
         self,
         ctx: commands.Context,
@@ -534,7 +535,7 @@ class RoleCog(commands.Cog):
         hidden=True,
         extras={"classification": "panel_action"},
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def unsetrole(self, ctx: commands.Context, *, role_name: str) -> None:
         """Remove a role from time-based assignment."""
         thresholds = await db.get_role_thresholds(ctx.guild.id)
@@ -564,7 +565,7 @@ class RoleCog(commands.Cog):
         hidden=True,
         extras={"classification": "internal_admin"},
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def debug_roles(self, ctx: commands.Context) -> None:
         """Print all role names for verification."""
         names = [r.name for r in ctx.guild.roles]
@@ -575,7 +576,7 @@ class RoleCog(commands.Cog):
         hidden=True,
         extras={"classification": "internal_admin"},
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def refresh_members(self, ctx: commands.Context) -> None:
         """Force-fetch all members from Discord."""
         await ctx.guild.chunk()

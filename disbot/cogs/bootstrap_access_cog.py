@@ -134,7 +134,7 @@ class BootstrapAccessCog(commands.Cog):
 
     async def _channel_guard(self, ctx: commands.Context) -> bool:
         # !force is the explicit admin channel-restriction bypass.
-        # Per-command ``@commands.has_permissions(administrator=True)``
+        # Per-command ``@admin_or_owner()``
         # on the ``force`` definition is what makes it admin-only; here
         # we only short-circuit the policy check so admins can use the
         # override under ``selected_channels`` / ``disabled`` modes.

@@ -13,6 +13,7 @@ from core.runtime.message_pipeline import (
     MessagePipelineContext,
     StageResult,
 )
+from core.runtime.permission_checks import admin_or_owner
 from services import governance_service, moderation_service
 from services.governance_service import GovernanceContext
 from services.history_cleanup import (
@@ -464,7 +465,7 @@ class Cleanup(commands.Cog):
                 self.logger.warning("cleanuphistory helper delete failed: %s", exc)
 
     @commands.group(name="word", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_cmd(self, ctx):
         """Manage prohibited words. Subcommands: add, remove, list."""
         guild_id = ctx.guild.id
@@ -478,7 +479,7 @@ class Cleanup(commands.Cog):
             await ctx.send("No prohibited words are currently set.", delete_after=10)
 
     @word_cmd.command(name="add")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_add(self, ctx, *, word: str):
         """Adds a word to the prohibited words list."""
         word = word.lower()
@@ -497,7 +498,7 @@ class Cleanup(commands.Cog):
             )
 
     @word_cmd.command(name="remove")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_remove(self, ctx, *, word: str):
         """Removes a word from the prohibited words list."""
         word = word.lower()
@@ -516,7 +517,7 @@ class Cleanup(commands.Cog):
             )
 
     @word_cmd.command(name="list")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_list(self, ctx):
         """Shows all prohibited words."""
         guild_id = ctx.guild.id
@@ -530,7 +531,7 @@ class Cleanup(commands.Cog):
             await ctx.send("No prohibited words are currently set.", delete_after=10)
 
     @commands.command(name="wordmenu")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_menu(self, ctx):
         """Open the interactive prohibited words management panel."""
         if ctx.guild.id not in self._word_cache:
@@ -539,7 +540,7 @@ class Cleanup(commands.Cog):
         await send_panel(ctx, embed=view.build_embed(), view=view)
 
     @commands.command(name="cleanup")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def cleanup_menu(self, ctx):
         """Open the Cleanup hub panel — overview + routing to subviews."""
         from cogs.cleanup.panel import CleanupPanelView

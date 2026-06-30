@@ -64,6 +64,7 @@ from cogs.rps_tournament.rules import (
     normalize_move,
 )
 from core.runtime import tasks
+from core.runtime.permission_checks import admin_or_owner
 from services import (  # noqa: F401 — game_state_service kept for back-compat patch sites
     economy_service,
     game_state_service,
@@ -364,7 +365,7 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
     # ------------------------------------------------------------------
 
     @commands.command(name="rpsstart", aliases=["rpsbegin"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def rps_start(self, ctx, mode=None, best_of: int = None):
         """Starts the RPS tournament. Usage: !rps_start [mode] [best_of]"""
         if self.tournament_active:
@@ -419,7 +420,7 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
         )
 
     @commands.command(name="rpsmatchup")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def rps_matchup(self, ctx, player1: discord.Member, player2: discord.Member):
         """Manually creates a match between two specific members."""
         if not self.tournament_active:
@@ -736,7 +737,7 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
         await ctx.send(help_text)
 
     @commands.command(name="rpssettings")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def rps_settings(self, ctx, setting: str, value):
         """Updates bot settings."""
         if setting not in self.settings:

@@ -44,6 +44,7 @@ import views.setup.sections  # noqa: F401
 from cogs.setup._helpers import build_status_embed as _build_status_embed
 from cogs.setup._helpers import resolve_hub_entry as _resolve_hub_entry
 from cogs.setup._helpers import toggle_delegate as _toggle_delegate
+from core.runtime.permission_checks import admin_or_owner, app_admin_or_owner
 from services import setup_access, setup_session
 from views.setup.essential_setup import EssentialSetupResumeView, revive_essential_flows
 from views.setup.launcher import (
@@ -110,7 +111,7 @@ class SetupCog(commands.Cog):
         "/setup is the quick one).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setupadvanced_slash(self, interaction: discord.Interaction) -> None:
         """Ephemeral slash front door for the advanced (linear) setup wizard.
@@ -125,7 +126,7 @@ class SetupCog(commands.Cog):
 
     @commands.command(name="setupdescribe", aliases=["describesetup"])
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def setup_describe_cmd(
         self,
         ctx: commands.Context,
@@ -151,7 +152,7 @@ class SetupCog(commands.Cog):
         description="What your server is for and how it's organised.",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_describe_slash(
         self,
@@ -169,7 +170,7 @@ class SetupCog(commands.Cog):
         extras={"classification": "legacy_duplicate"},
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_hub_slash(self, interaction: discord.Interaction) -> None:
         """Legacy section-list hub.
@@ -237,7 +238,7 @@ class SetupCog(commands.Cog):
         ],
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_depth_slash(
         self,
@@ -316,7 +317,7 @@ class SetupCog(commands.Cog):
         section="Section slug (e.g. cleanup, channels, cog_routing).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_skip_slash(
         self,
@@ -339,7 +340,7 @@ class SetupCog(commands.Cog):
         section="Section slug (e.g. cleanup, channels, cog_routing).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_unskip_slash(
         self,
@@ -415,7 +416,7 @@ class SetupCog(commands.Cog):
         description="Clear all staged setup operations (owner/delegated admin only).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_reset_slash(self, interaction: discord.Interaction) -> None:
         """Clear the per-guild setup draft without dismissing the session.
@@ -489,7 +490,7 @@ class SetupCog(commands.Cog):
         member="Member to grant delegated setup-admin authority.",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_delegate_slash(
         self,
@@ -518,7 +519,7 @@ class SetupCog(commands.Cog):
         member="Member to revoke delegated setup-admin authority from.",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_undelegate_slash(
         self,
@@ -542,7 +543,7 @@ class SetupCog(commands.Cog):
         description="Quick at-a-glance setup state (read-only).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_status_slash(self, interaction: discord.Interaction) -> None:
         """Ephemeral read-only status view.

@@ -16,6 +16,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime.permission_checks import admin_or_owner
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR
 
 
@@ -214,7 +215,7 @@ class LoggingCog(commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.group(name="logging", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_grp(self, ctx: commands.Context) -> None:
         """Open the logging admin panel (S7d).
 
@@ -230,13 +231,13 @@ class LoggingCog(commands.Cog):
         await send_panel(ctx, embed=embed, view=view)
 
     @logging_grp.command(name="status")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_status(self, ctx: commands.Context) -> None:
         """Show this guild's server-logging configuration + counters."""
         await ctx.send(embed=await build_logging_status_embed(ctx.guild))
 
     @logging_grp.command(name="set")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_set(self, ctx: commands.Context, kind: str = "") -> None:
         """Open the channel-select view for ``mod`` or ``cleanup`` binding."""
         from cogs.logging.select_view import LogChannelSelectView
@@ -273,7 +274,7 @@ class LoggingCog(commands.Cog):
         )
 
     @logging_grp.command(name="create")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_create(self, ctx: commands.Context, kind: str = "") -> None:
         """Preview + create a new log channel for any registered route."""
         from cogs.logging.provision_view import (
@@ -302,7 +303,7 @@ class LoggingCog(commands.Cog):
         await ctx.send(embed=preview_embed, view=view)
 
     @logging_grp.command(name="routes")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_routes(self, ctx: commands.Context) -> None:
         """Open the Phase 9b Routes subpage directly.
 
@@ -322,7 +323,7 @@ class LoggingCog(commands.Cog):
         await send_panel(ctx, embed=embed, view=view)
 
     @logging_grp.command(name="test")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_test(self, ctx: commands.Context) -> None:
         """Send a synthetic warn embed to the configured log channel."""
         from services import server_logging
