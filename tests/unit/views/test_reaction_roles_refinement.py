@@ -124,6 +124,59 @@ def test_from_menu_edit_keeps_id() -> None:
     assert builder.title == "Game Roles"
 
 
+def _counter_builder(show_counts: bool = False) -> RoleMenuBuilder:
+    guild = SimpleNamespace(id=1, features=[])
+    builder = RoleMenuBuilder(SimpleNamespace(id=42), guild, None)
+    builder.show_counts = show_counts
+    return builder
+
+
+def test_builder_preview_shows_signup_counts_state() -> None:
+    off = _counter_builder(False).build_embed()
+    settings = next(f for f in off.fields if f.name == "Settings")
+    assert "Sign-up counts: **off**" in settings.value
+
+    on = _counter_builder(True).build_embed()
+    settings = next(f for f in on.fields if f.name == "Settings")
+    assert "Sign-up counts: **on**" in settings.value
+
+
+def test_from_menu_loads_show_counts() -> None:
+    guild = SimpleNamespace(id=1)
+    menu = {
+        "menu_id": 5,
+        "channel_id": 9,
+        "title": "RSVP",
+        "description": None,
+        "style": "button",
+        "mode": "unique",
+        "max_roles": 0,
+        "theme": "announcement",
+        "show_counts": True,
+    }
+    builder = RoleMenuBuilder.from_menu(
+        SimpleNamespace(id=42),
+        guild,
+        menu,
+        [SimpleNamespace(role_id=10)],
+        channel=SimpleNamespace(id=9),
+    )
+    assert builder.show_counts is True
+
+
+@pytest.mark.asyncio
+async def test_apply_template_sets_mode_and_counts_from_template() -> None:
+    """The Event RSVP template pre-picks button + unique + the live counter."""
+    builder = _counter_builder()
+    interaction = SimpleNamespace(
+        response=SimpleNamespace(edit_message=AsyncMock()),
+    )
+    await builder._apply_template(interaction, ["event_rsvp"])
+    assert builder.style == "button"
+    assert builder.mode == "unique"
+    assert builder.show_counts is True
+
+
 def test_builder_keeps_every_action_row_within_discords_five_button_cap() -> None:
     """No builder row may exceed Discord's 5-components-per-row limit.
 

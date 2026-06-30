@@ -368,6 +368,90 @@ async def test_update_menu_threads_card_fields_to_db():
 
 
 @pytest.mark.asyncio
+async def test_create_menu_threads_show_counts_to_db():
+    """The sign-up-counter flag passes through create → db (default False)."""
+    with (
+        patch.object(
+            svc.menus_db,
+            "create_menu",
+            new=AsyncMock(return_value=8),
+        ) as create,
+        patch.object(svc.menus_db, "replace_options", new=AsyncMock()),
+        patch(
+            "services.audit_events.emit_audit_action",
+            new=AsyncMock(return_value=True),
+        ) as audit,
+    ):
+        await svc.create_menu(
+            guild_id=1,
+            channel_id=2,
+            title="RSVP",
+            description=None,
+            style="button",
+            mode="unique",
+            max_roles=0,
+            options=[svc.RoleOption(10)],
+            show_counts=True,
+            actor_id=99,
+        )
+        await svc.create_menu(
+            guild_id=1,
+            channel_id=2,
+            title="Plain",
+            description=None,
+            style="dropdown",
+            mode="normal",
+            max_roles=0,
+            options=[svc.RoleOption(10)],
+            actor_id=99,
+        )
+    assert create.await_args_list[0].kwargs["show_counts"] is True
+    assert create.await_args_list[1].kwargs["show_counts"] is False
+    # The audit summary records that counts are on for the first menu.
+    assert "counts" in audit.await_args_list[0].kwargs["new_value"]
+    assert "counts" not in audit.await_args_list[1].kwargs["new_value"]
+
+
+@pytest.mark.asyncio
+async def test_update_menu_threads_show_counts_to_db():
+    with (
+        patch.object(
+            svc.menus_db,
+            "get_menu",
+            new=AsyncMock(
+                return_value={
+                    "title": "T",
+                    "style": "dropdown",
+                    "mode": "normal",
+                    "max_roles": 0,
+                    "show_counts": False,
+                },
+            ),
+        ),
+        patch.object(svc.menus_db, "get_options", new=AsyncMock(return_value=[])),
+        patch.object(svc.menus_db, "update_menu", new=AsyncMock()) as update,
+        patch.object(svc.menus_db, "replace_options", new=AsyncMock()),
+        patch(
+            "services.audit_events.emit_audit_action",
+            new=AsyncMock(return_value=True),
+        ),
+    ):
+        await svc.update_menu(
+            menu_id=5,
+            guild_id=1,
+            title="RSVP",
+            description=None,
+            style="button",
+            mode="unique",
+            max_roles=0,
+            options=[svc.RoleOption(10)],
+            show_counts=True,
+            actor_id=99,
+        )
+    assert update.await_args.kwargs["show_counts"] is True
+
+
+@pytest.mark.asyncio
 async def test_delete_menu_emits_audit():
     with (
         patch.object(

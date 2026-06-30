@@ -29,6 +29,7 @@ from core.runtime.persistent_views import PersistentView
 from utils import role_menu_presentation as presentation
 from utils import role_menu_render
 from views.base import handle_view_error
+from views.roles import role_menu_counter
 
 logger = logging.getLogger("bot.views.role_menu")
 
@@ -54,6 +55,17 @@ def build_menu_embed(
         color=theme.color,
     )
 
+    # Live sign-up counter (opt-in, migration 102): current holders per role +
+    # the distinct total, computed in one pass and rendered inline + in the footer.
+    show_counts = bool(menu.get("show_counts"))
+    counts: dict[int, int] = {}
+    total = 0
+    if show_counts:
+        counts, total = role_menu_counter.collect_counts(
+            guild,
+            [int(opt["role_id"]) for opt in options],
+        )
+
     lines: list[str] = []
     for opt in options:
         role = resources.resolve_role(guild, role_id=int(opt["role_id"]))
@@ -62,13 +74,14 @@ def build_menu_embed(
         emoji = opt.get("emoji")
         prefix = f"{emoji} " if emoji else ""
         label = opt.get("label") or role.name
-        lines.append(
-            (
-                f"{prefix}{role.mention} — {label}"
-                if opt.get("label")
-                else f"{prefix}{role.mention}"
-            ),
+        line = (
+            f"{prefix}{role.mention} — {label}"
+            if opt.get("label")
+            else f"{prefix}{role.mention}"
         )
+        if show_counts:
+            line += f" · {role_menu_counter.format_count(counts.get(int(opt['role_id']), 0))}"
+        lines.append(line)
     if lines:
         embed.add_field(name="Roles", value="\n".join(lines), inline=False)
 
@@ -80,7 +93,10 @@ def build_menu_embed(
     }.get(mode)
     if not hint and max_roles:
         hint = f"You can hold up to {max_roles} of these roles."
-    embed.set_footer(text=hint or theme.footer or "Pick the roles you want.")
+    footer = hint or theme.footer or "Pick the roles you want."
+    if show_counts:
+        footer = f"{footer}  ·  {role_menu_counter.format_total(total)}"
+    embed.set_footer(text=footer)
     return embed
 
 
@@ -154,7 +170,12 @@ class _RoleButton(discord.ui.Button):
         self._role_id = role_id
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        await _handle_toggle(interaction, self._menu_id, self._role_id)
+        await _handle_toggle(
+            interaction,
+            self._menu_id,
+            self._role_id,
+            show_counts=_view_shows_counts(self.view),
+        )
 
 
 class _RoleSelect(discord.ui.Select):
@@ -180,7 +201,12 @@ class _RoleSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         selected = [int(v) for v in self.values if v != "0"]
-        await _handle_selection(interaction, self._menu_id, selected)
+        await _handle_selection(
+            interaction,
+            self._menu_id,
+            selected,
+            show_counts=_view_shows_counts(self.view),
+        )
 
 
 class RoleMenuView(PersistentView):
@@ -275,10 +301,18 @@ class RoleMenuView(PersistentView):
 # ---------------------------------------------------------------------------
 
 
+def _view_shows_counts(view: discord.ui.View | None) -> bool:
+    """Whether the menu behind a component has the live counter on (cheap read)."""
+    menu = getattr(view, "menu", None)
+    return bool(menu and menu.get("show_counts"))
+
+
 async def _handle_toggle(
     interaction: discord.Interaction,
     menu_id: int,
     role_id: int,
+    *,
+    show_counts: bool = False,
 ) -> None:
     from services import reaction_role_service
 
@@ -295,12 +329,16 @@ async def _handle_toggle(
         _format_outcome(guild, outcome),
         ephemeral=True,
     )
+    if show_counts and outcome.changed:
+        role_menu_counter.schedule_count_refresh(interaction.message, menu_id)
 
 
 async def _handle_selection(
     interaction: discord.Interaction,
     menu_id: int,
     selected_ids: list[int],
+    *,
+    show_counts: bool = False,
 ) -> None:
     from services import reaction_role_service
 
@@ -317,6 +355,8 @@ async def _handle_selection(
         _format_outcome(guild, outcome),
         ephemeral=True,
     )
+    if show_counts and outcome.changed:
+        role_menu_counter.schedule_count_refresh(interaction.message, menu_id)
 
 
 def _require_member(

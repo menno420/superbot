@@ -89,6 +89,44 @@ def test_build_menu_embed_uses_theme_colour():
     assert "<@&10>" in roles_field.value
 
 
+class _MemberWithRoles:
+    def __init__(self, *role_ids: int) -> None:
+        self.roles = [FakeRole(r) for r in role_ids]
+
+
+class _GuildWithMembers(FakeGuild):
+    def __init__(self, roles: list[FakeRole], members: list[_MemberWithRoles]) -> None:
+        super().__init__(roles)
+        self.members = members
+
+
+def test_build_menu_embed_without_show_counts_has_no_counter():
+    guild = FakeGuild([FakeRole(10, "Gamer"), FakeRole(20, "Artist")])
+    embed = rmv.build_menu_embed(_menu(), _opts(), guild)
+    roles_field = next(f for f in embed.fields if f.name == "Roles")
+    assert "👥" not in roles_field.value
+    assert "signed up" not in (embed.footer.text or "")
+
+
+def test_build_menu_embed_with_show_counts_renders_per_role_and_total():
+    guild = _GuildWithMembers(
+        [FakeRole(10, "Going"), FakeRole(20, "Maybe")],
+        # role 10 held by 2 members (one of them also holds 20); role 20 by 1.
+        # Distinct members holding any menu role = 2 (never double-counted).
+        [_MemberWithRoles(10), _MemberWithRoles(10, 20)],
+    )
+    menu = _menu()
+    menu["show_counts"] = True
+    embed = rmv.build_menu_embed(menu, _opts(), guild)
+    roles_field = next(f for f in embed.fields if f.name == "Roles")
+    lines = roles_field.value.splitlines()
+    # Each option line carries its own live holder count …
+    assert lines[0].endswith("👥 2")  # role 10 → 2 holders
+    assert lines[1].endswith("👥 1")  # role 20 → 1 holder
+    # … and the footer shows the distinct-member total (no double count).
+    assert "👥 2 people signed up" in embed.footer.text
+
+
 def test_build_menu_message_without_card_has_no_files_or_image():
     guild = FakeGuild([FakeRole(10, "Gamer")])
     embed, files = rmv.build_menu_message(_menu(), _opts(), guild)

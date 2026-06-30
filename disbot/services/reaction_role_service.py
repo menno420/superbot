@@ -368,6 +368,7 @@ async def create_menu(
     theme: str = "default",
     card_template: str | None = None,
     card_text: str | None = None,
+    show_counts: bool = False,
     actor_id: int | None,
 ) -> int:
     """Create a role menu (+ its options) and return ``menu_id`` (audited)."""
@@ -386,6 +387,7 @@ async def create_menu(
         theme=theme or "default",
         card_template=card_template or None,
         card_text=card_text or None,
+        show_counts=bool(show_counts),
     )
     await menus_db.replace_options(menu_id, _options_to_rows(options))
     await _emit_menu_audit(
@@ -394,7 +396,7 @@ async def create_menu(
         guild_id=guild_id,
         actor_id=actor_id,
         prev_value=None,
-        new_value=_summarize(title, style, mode, max_roles, options),
+        new_value=_summarize(title, style, mode, max_roles, options, show_counts),
     )
     return menu_id
 
@@ -412,6 +414,7 @@ async def update_menu(
     theme: str = "default",
     card_template: str | None = None,
     card_text: str | None = None,
+    show_counts: bool = False,
     actor_id: int | None,
 ) -> None:
     """Overwrite a menu's fields + options in place (edit-in-place, audited)."""
@@ -432,6 +435,7 @@ async def update_menu(
         theme=theme or "default",
         card_template=card_template or None,
         card_text=card_text or None,
+        show_counts=bool(show_counts),
     )
     await menus_db.replace_options(menu_id, _options_to_rows(options))
     await _emit_menu_audit(
@@ -446,11 +450,12 @@ async def update_menu(
                 prev["mode"],
                 prev["max_roles"],
                 [RoleOption(int(o["role_id"])) for o in prev_opts],
+                bool(prev.get("show_counts")),
             )
             if prev
             else None
         ),
-        new_value=_summarize(title, style, mode, max_roles, options),
+        new_value=_summarize(title, style, mode, max_roles, options, show_counts),
     )
 
 
@@ -839,9 +844,11 @@ def _summarize(
     mode: str,
     max_roles: int,
     options: list[RoleOption],
+    show_counts: bool = False,
 ) -> str:
     limit = "∞" if not max_roles else str(max_roles)
-    return f"{title!r} [{style}/{mode}, limit={limit}, {len(options)} role(s)]"
+    counts = ", counts" if show_counts else ""
+    return f"{title!r} [{style}/{mode}, limit={limit}, {len(options)} role(s){counts}]"
 
 
 async def _emit_menu_audit(

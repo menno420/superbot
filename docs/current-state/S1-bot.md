@@ -16,6 +16,17 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Reaction-roles live sign-up counter** (PR #1570, owner-directed deepening) — the event-RSVP
+  counter from the Discord screenshots: an **opt-in `📊 Counts`** per-menu flag (migration 102
+  `role_menus.show_counts`, default off) that renders a **live participant headcount** beside each
+  role on the public menu embed + a distinct-member footer total. Counts **current holders**
+  (`guild.members` ∩ roles — self-correcting, drops on un-sign/leave; distinct from the operator-only
+  cumulative `role_menu_pickup_stats`), refreshed by a **debounced** message edit (≤1 per ~2.5 s
+  window → rate-limit-safe). New `views/roles/role_menu_counter.py` (one-pass `collect_counts` +
+  `schedule_count_refresh`); a **📣 Event RSVP** starter template (button + `unique` + counts) and
+  matching role pack make the multi-option "Going / Maybe / Can't make it" live poll two taps away.
+  Threaded through the audited `create_menu`/`update_menu` seam; +35 tests; no new commands; self-merge
+  on green ([plan](../planning/reaction-roles-overhaul-plan-2026-06-21.md)).
 - **Counters completion deepening** (PR #1568, completion-first deepening) — closed the Counters
   completion cert's offline punch-list #1/#2/#4/#5. Added a curated `{count}` **template preset** catalog
   (`TEMPLATE_PRESETS`: default/minimal/brackets/bullet) + `!counterpreset [name]` (lists them, or applies
