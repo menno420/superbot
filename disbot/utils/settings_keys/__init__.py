@@ -49,6 +49,9 @@ from utils.settings_keys.btd6_cache import (
     BTD6_CACHE_DEFAULT_INTERVAL_SECONDS,
     BTD6_CACHE_FRESHNESS_WARNING_HOURS,
 )
+from utils.settings_keys.cleanup import (
+    CLEANUP_SPAM_WINDOW_SECONDS,
+)
 from utils.settings_keys.counters import (
     COUNTERS_BOTS_CHANNEL,
     COUNTERS_BOTS_TEMPLATE,
@@ -187,6 +190,7 @@ __all__ = [
     "BTD6_CT_GROUP_ID",
     "BTD6_STRATEGY_SUBMISSION_CHANNEL",
     "BTD6_VERSION_ANNOUNCEMENT_CHANNEL",
+    "CLEANUP_SPAM_WINDOW_SECONDS",
     "COUNTERS_BOTS_CHANNEL",
     "COUNTERS_BOTS_TEMPLATE",
     "COUNTERS_ENABLED",

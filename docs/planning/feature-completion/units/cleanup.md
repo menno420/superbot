@@ -19,8 +19,9 @@
 > per-scope cleanup-level hierarchy (Off/Light/Standard/Strict + custom) resolved guild→category→channel.
 > Every write routes through the audited `GovernanceMutationPipeline`
 > (DB + `governance_audit_log` + `audit.action_recorded` in one transaction) and every auto-delete
-> through `moderation_service.auto_delete`. The remaining honest gaps are a hardcoded spam window
-> (needs a config-input widget to be a real setting) and the live walkthrough/owner ✔.
+> through `moderation_service.auto_delete`. The offline punch-list is now CLOSED (the spam-duplicate
+> window became a real per-guild setting with a config-input widget); the only remaining gaps are the
+> live walkthrough/owner ✔.
 
 ## Rubric (server function)
 
@@ -72,10 +73,11 @@
 - [x] **Pipeline contract** — no scalar settings; configuration is **domain config** (the
       `cleanup_policies` governance table) written only through the audited pipeline; no raw DB writes.
 - [x] **config-input widgets** — scope + level + custom-tuning selects (delete-after 0–300s, bool flags);
-      no free-text that could break parsing.
+      the `!cleanuphistory` spam-duplicate window is a scalar `SettingSpec` with a `numeric_presets`
+      config-input widget (✅ #4 this run); no free-text that could break parsing.
 - [x] **Everything configurable that should be** — words add/remove/list, anti-evasion toggle, per-scope
-      levels + custom, history filters (content-type + age); intentionally fixed: pipeline order; the
-      spam window stays a constant pending a config-input widget (→ punch #4).
+      levels + custom, history filters (content-type + age), and the **spam-duplicate window** (✅ #4 —
+      a real per-guild setting now); intentionally fixed: pipeline order.
 
 ### F. Wiring & discoverability
 - [x] **Registry** — key `cleanup`, `category: moderation`, `visibility_tier: administrator`,
@@ -104,10 +106,13 @@
    modes added to `build_history_cleanup_plan` + `!cleanuphistory` (Carl-bot/MEE6/Dyno parity).
 3. ✅ **DONE this run — history age filter.** An `older:<duration>` token (e.g. `older:7d`) sets an
    `older_than` cutoff composable with every mode (bounded by Discord's newest-first pagination).
-4. **Configurable spam window** *(offline, minor — deferred)* — surfacing
-   `SPAM_DUPLICATE_WINDOW_SECONDS` as a *real* per-guild setting needs a config-input widget (a
-   constant rename alone is not "configurable" in the rubric sense), so it is left for a follow-up
-   rather than half-shipped.
+4. ✅ **DONE this run — configurable spam window.** The hardcoded
+   `SPAM_DUPLICATE_WINDOW_SECONDS = 15` constant became the `cleanup.spam_window_seconds` scalar
+   `SettingSpec` (settings key `CLEANUP_SPAM_WINDOW_SECONDS`, no migration) with a `numeric_presets`
+   config-input widget (presets 10/15/30, bounds 1..300, capability `cleanup.policy.configure`).
+   `!cleanuphistory` reads it per-guild via `settings_resolution.resolve_value`, falling back to the
+   declared default — **byte-identical** for every existing guild. A real per-guild setting now, not a
+   constant.
 5. **Live walkthrough** *(owner / live-bot)* — `/verify-bot` boot + scripted click-through (panel → word
    add/remove → a per-scope level set → `!cleanuphistory` confirm), with screenshots.
 6. **Owner sign-off** — maintainer confirms "it does its job the most convenient way."
@@ -119,7 +124,10 @@
   raise, age gate incl. spam-mode composition) · `…/test_cleanup_levels.py` · `…/test_cleanup_profiles.py` ·
   `…/test_cleanup_diagnostics.py` · `tests/unit/runtime/test_successful_command_cleanup.py` ·
   `tests/unit/governance/test_cleanup_resolution_behavior.py` ·
-  `tests/unit/views/cleanup/test_policy_panel.py::test_apply_button_requires_admin` (panel authority, #1)
+  `tests/unit/views/cleanup/test_policy_panel.py::test_apply_button_requires_admin` (panel authority, #1) ·
+  `tests/unit/cogs/test_cleanup_schemas.py` (spam-window spec shape / default / bounds / capability, #4) ·
+  `tests/unit/cogs/test_cleanup_spam_window.py` (per-guild resolution + default/malformed/out-of-range
+  fallback, #4) · `tests/unit/views/test_settings_hub_view.py` (cleanup now surfaces `settings`+`panel`)
 - **Walkthrough:** pending (punch #5)
 - **Owner sign-off:** pending (punch #6)
 
@@ -127,7 +135,8 @@
 Cleanup is a **structurally strong, fully-audited** moderation unit — prohibited-word + command-access
 filtering, a **seven-mode** bulk history sweep with an age gate, and a per-scope cleanup-level hierarchy,
 all written through the audited governance pipeline and discoverable via command/hub/Help/Setup. The
-best-in-class history-filter gaps (#2/#3) were **closed this run** (embeds/links/attachments modes +
-`older:<duration>`), the panel-authority test (#1) was found **already present** (stale note corrected),
-so the remaining gaps are the **configurable spam window** (#4 — needs a config-input widget, deferred)
-and the owner walkthrough/sign-off (#5/#6). No safety/audit/dead-end issues found.
+best-in-class history-filter gaps (#2/#3) were closed, the panel-authority test (#1) was found already
+present, and the **configurable spam window (#4) is now DONE** — a real per-guild scalar setting with a
+`numeric_presets` config-input widget. The **entire offline punch-list is now CLOSED**; the only
+remaining gaps are the owner-led live walkthrough + sign-off (#5/#6, `[owner]`/`[live-bot]`). No
+safety/audit/dead-end issues found.

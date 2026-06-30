@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T22:10:17Z",
+    "generated_at": "2026-06-30T21:11:58Z",
     "build": {
-      "commit": "73b272b4",
-      "subject": "Merge pull request #1586 from menno420/claude/claude-md-conciseness-plan",
-      "committed_at": "2026-06-30T22:10:17Z"
+      "commit": "d9f571b1",
+      "subject": "chore: born-red session card — cleanup spam-window setting (punch #4)",
+      "committed_at": "2026-06-30T21:11:58Z"
     },
     "counts": {
       "functions": 43,
@@ -16,9 +16,9 @@
       "env_vars": 39,
       "cogs": 55,
       "commands": 474,
-      "setting_keys": 112,
-      "setting_domains": 16,
-      "typed_settings": 92,
+      "setting_keys": 113,
+      "setting_domains": 17,
+      "typed_settings": 93,
       "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
@@ -2748,6 +2748,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-30-cleanup-spam-window-setting.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Cleanup spam-window per-guild setting (completion-first deepening)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-cleanup-history-filters.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Cleanup history filters + age gate (completion-first deepening)",
@@ -3143,14 +3151,6 @@
       "file": "2026-06-27-btd6-revert-counter-list.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — BTD6: revert the auto-derived DDT counter list (it grounded wrong towers)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-qa-accuracy.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 QA accuracy: damage-type/status-effect interaction grounding + verified Q&A corpus",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -10023,6 +10023,20 @@
         {
           "constant": "BTD6_CACHE_FRESHNESS_WARNING_HOURS",
           "key": "btd6_cache_freshness_warning_hours"
+        }
+      ]
+    },
+    {
+      "domain": "cleanup",
+      "purpose": "Settings keys owned by the Cleanup subsystem (cogs.cleanup_cog).",
+      "keys": [
+        {
+          "constant": "CLEANUP_SPAM_WINDOW_SECONDS",
+          "key": "cleanup_spam_window_seconds",
+          "type": "int",
+          "hint": "Window (seconds) the `!cleanuphistory` spam sweep treats two near-identical messages from one author as duplicates.",
+          "allowed_values": [],
+          "default": 15
         }
       ]
     },
