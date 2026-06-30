@@ -185,6 +185,26 @@ async def tower_prefix(ctx: commands.Context, *, name: str) -> None:
     await ctx.send(embed=await _builders.build_tower_embed(name))
 
 
+# --- estimate --------------------------------------------------------------
+
+
+@btd6_app.command(
+    name="estimate",
+    description="Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+)
+@app_commands.describe(
+    query="e.g. 'super monkey 0-4-0 vs bloonarius t5' or 'counters bloonarius'",
+)
+async def estimate_slash(interaction: discord.Interaction, query: str) -> None:
+    await reply_ephemeral(interaction, _builders.build_estimate_embed(query))
+
+
+@btd6_prefix.command(name="estimate")  # type: ignore[arg-type]
+async def estimate_prefix(ctx: commands.Context, *, query: str = "") -> None:
+    """Estimate a boss fight: `<tower> vs <boss> [tier]`, or `counters <boss>`."""
+    await ctx.send(embed=await _builders.build_estimate_embed(query))
+
+
 # --- hero ------------------------------------------------------------------
 
 

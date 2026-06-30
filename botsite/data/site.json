@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T07:00:34Z",
+    "generated_at": "2026-06-30T08:46:10Z",
     "build": {
-      "commit": "3f2a356",
-      "subject": "PR1: !aireview export + triage bridge + backlog runbook",
-      "committed_at": "2026-06-30T07:00:34Z"
+      "commit": "097949e",
+      "subject": "PR1: BTD6 boss-fight estimator core (deterministic DPS/cost/kill-time)",
+      "committed_at": "2026-06-30T08:46:10Z"
     }
   },
   "counts": {
-    "commands": 471,
+    "commands": 473,
     "features": 43,
     "games": 12
   },
@@ -796,6 +796,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -838,6 +842,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -884,6 +892,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -928,6 +940,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1057,6 +1073,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1099,6 +1119,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1175,6 +1199,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1217,6 +1245,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1376,6 +1408,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1418,6 +1454,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1462,6 +1502,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1504,6 +1548,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1564,6 +1612,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1606,6 +1658,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1701,6 +1757,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1743,6 +1803,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1851,6 +1915,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1893,6 +1961,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1997,6 +2069,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -2039,6 +2115,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -2102,6 +2182,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -2144,6 +2228,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -2324,6 +2412,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -5328,6 +5420,84 @@
       "examples": [],
       "status": "finished",
       "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "estimate",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "estimate",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Estimate a boss fight: `<tower> vs <boss> [tier]`, or `counters <boss>`.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
