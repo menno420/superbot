@@ -151,3 +151,76 @@ def test_find_boss_by_name() -> None:
     boss = est.find_boss("how do I beat bloonarius")
     assert boss is not None and boss.id == "bloonarius"
     assert est.find_boss("nonsense xyz") is None
+
+
+# ------------------------------------------------------- track length (RBS)
+
+
+def test_find_map_track_resolves_and_misses() -> None:
+    track = est.find_map_track("how long to beat bloonarius on monkey meadow")
+    assert track is not None
+    name, rbs = track
+    assert name == "Monkey Meadow" and 30 < rbs < 35  # 32.745 from the wiki
+    assert est.find_map_track("no known map here") is None
+
+
+def test_parse_request_extracts_map() -> None:
+    req = est.parse_request("super monkey 0-4-0 vs bloonarius t5 on monkey meadow")
+    assert req.map_query == "Monkey Meadow"
+    # the map text is stripped out of the boss query.
+    assert "meadow" not in req.boss_query.lower()
+    assert "bloonarius" in req.boss_query.lower()
+
+
+def test_estimate_with_map_fills_escape_margin() -> None:
+    e = est.estimate("dartling_gunner", "520", "bloonarius", 5, map_query="monkey meadow")
+    assert e is not None
+    assert e.map_canonical == "Monkey Meadow"
+    assert e.track_rbs is not None and 30 < e.track_rbs < 35
+    # boss crosses in ~rbs / boss_speed.
+    assert e.boss_cross_s == round(e.track_rbs / e.boss_speed, 1)
+    # kills_before_exit reflects ttk vs boss_cross_s.
+    if e.time_to_kill_s is not None:
+        assert e.kills_before_exit == (e.time_to_kill_s <= e.boss_cross_s)
+
+
+def test_estimate_without_map_has_no_track_fields() -> None:
+    e = est.estimate("super_monkey", "000", "bloonarius", 5)
+    assert e is not None
+    assert e.map_canonical is None and e.track_rbs is None
+    assert e.boss_cross_s is None and e.kills_before_exit is None
+
+
+def test_format_estimate_includes_track_line() -> None:
+    e = est.estimate("super_monkey", "040", "bloonarius", 5, map_query="monkey meadow")
+    text = est.format_estimate_text(e)
+    assert "Monkey Meadow" in text and "red bloon" in text
+    assert "~~" not in text  # no double-tilde
+
+
+def test_track_data_integrity() -> None:
+    """Every committed RBS track maps to a real map id, with a sane value."""
+    import sys
+    from pathlib import Path
+
+    disbot = Path(__file__).parents[3] / "disbot"
+    if str(disbot) not in sys.path:
+        sys.path.insert(0, str(disbot))
+    import json
+
+    from services import btd6_data_service
+
+    blob = json.loads(
+        (disbot / "data" / "btd6" / "map_track_lengths.json").read_text(encoding="utf-8"),
+    )
+    map_ids = {m.id for m in btd6_data_service.get_dataset().maps}
+    tracks = blob["tracks"]
+    assert len(tracks) >= 50, "expected the full wiki RBS set"
+    for t in tracks:
+        assert t["map_id"] in map_ids, f"unknown map_id {t['map_id']!r}"
+        assert 1.0 < t["rbs"] < 120.0, f"implausible RBS for {t['map_id']}: {t['rbs']}"
+    # provenance is recorded (Q-0105 — sourced data must say where it came from).
+    # NB: assert a non-host prefix, not a host substring, so CodeQL's
+    # "incomplete URL substring sanitization" rule doesn't false-positive on a
+    # provenance check (this is a data-source label, not an access-control gate).
+    assert blob["source"].startswith("Bloons Wiki")

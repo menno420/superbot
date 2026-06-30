@@ -509,12 +509,19 @@ async def build_estimate_embed(query: str) -> discord.Embed:
             "• `counters <boss> [tier]` — the most cost-efficient towers"
         )
         return discord.Embed(
-            title=title, description=body, color=discord.Color.blurple(),
+            title=title,
+            description=body,
+            color=discord.Color.blurple(),
         )
 
     req = est.parse_request(text)
     if req.mode == "single":
-        estimate = est.resolve_and_estimate(req.tower_query, req.boss_query, req.tier)
+        estimate = est.resolve_and_estimate(
+            req.tower_query,
+            req.boss_query,
+            req.tier,
+            req.map_query,
+        )
         if estimate is not None:
             body = est.format_estimate_text(estimate)
         else:

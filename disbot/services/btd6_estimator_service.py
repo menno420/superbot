@@ -49,6 +49,11 @@ class KillEstimate:
     time_to_kill_s: float | None  # None when dps is 0 / immunity-blocked
     blocked_by_immunity: bool
     boss_immune_to: tuple[str, ...]
+    # Track context (populated only when a known map is named):
+    map_canonical: str | None = None
+    track_rbs: float | None = None  # red-bloon seconds to cross the main track
+    boss_cross_s: float | None = None  # est. seconds for THIS boss to cross
+    kills_before_exit: bool | None = None  # ttk < boss_cross_s (one unobstructed pass)
     assumptions: tuple[str, ...] = _ASSUMPTIONS
 
 
@@ -60,6 +65,7 @@ class EstimateRequest:
     tower_query: str
     boss_query: str
     tier: int
+    map_query: str = ""
 
 
 @dataclass(frozen=True)
@@ -171,6 +177,53 @@ def _boss_tier_row(boss, tier: int) -> dict | None:
 
 
 # ---------------------------------------------------------------------------
+# Track length (Red Bloon Seconds) — map_track_lengths.json
+# ---------------------------------------------------------------------------
+
+# (map_id, canonical, rbs), longest-canonical-first for greedy substring match.
+_TRACK_INDEX: tuple[tuple[str, str, float], ...] | None = None
+
+
+def _track_index() -> tuple[tuple[str, str, float], ...]:
+    """Load + cache the wiki-sourced Red Bloon Seconds per map (longest name first)."""
+    global _TRACK_INDEX
+    if _TRACK_INDEX is None:
+        from services import btd6_data_service
+
+        blob = btd6_data_service.read_blob("map_track_lengths.json") or {}
+        rows: list[tuple[str, str, float]] = []
+        for t in blob.get("tracks", ()):
+            map_id, name, rbs = t.get("map_id"), t.get("map"), t.get("rbs")
+            if map_id and name and isinstance(rbs, (int, float)):
+                rows.append((str(map_id), str(name), float(rbs)))
+        rows.sort(key=lambda r: len(r[1]), reverse=True)
+        _TRACK_INDEX = tuple(rows)
+    return _TRACK_INDEX
+
+
+def find_map_track(query: str) -> tuple[str, float] | None:
+    """Resolve a map named in ``query`` to ``(canonical, rbs)`` — longest match wins.
+
+    Greedy substring match on the map's display name so "monkey meadow" resolves
+    even inside a longer sentence; None when no known map is named. ``rbs`` is the
+    Red Bloon Seconds (red bloon, the speed-1.0 baseline) to cross the main track.
+    """
+    low = (query or "").lower()
+    if not low:
+        return None
+    for _map_id, name, rbs in _track_index():
+        if name.lower() in low:
+            return name, rbs
+    return None
+
+
+def reset_cache_for_tests() -> None:
+    """Drop the cached track index (test seam)."""
+    global _TRACK_INDEX
+    _TRACK_INDEX = None
+
+
+# ---------------------------------------------------------------------------
 # Estimate
 # ---------------------------------------------------------------------------
 
@@ -180,12 +233,14 @@ def estimate(
     code: str,
     boss_id: str,
     tier: int,
+    map_query: str = "",
 ) -> KillEstimate | None:
     """Estimate one tower (at crosspath ``code``) vs one boss tier.
 
     None when the tower has no stats, the code has no DPS, or the boss/tier is
     unknown. ``time_to_kill_s`` is None when the boss is immune to the tower's
-    damage type (or DPS is 0).
+    damage type (or DPS is 0). When ``map_query`` names a known map, the track
+    fields (red-bloon RBS, est. boss-crossing time, escape verdict) are filled.
     """
     from services import btd6_data_service
 
@@ -211,6 +266,23 @@ def estimate(
     hp = int(row.get("health") or 0)
     blocked = bool(normal.damage_type and normal.damage_type in boss.immune_to)
     time_to_kill = (hp / dps) if (dps > 0 and not blocked) else None
+    boss_speed = float(row.get("speed") or 0.0)
+
+    # Track context (only when a known map is named). A red bloon crosses in
+    # `rbs` s; the boss moves at `boss_speed`× the base bloon speed, so it crosses
+    # in ~`rbs / boss_speed` s (one unobstructed pass — an estimate, since boss
+    # fights actually pause at skull phases).
+    map_canonical: str | None = None
+    track_rbs: float | None = None
+    boss_cross_s: float | None = None
+    kills_before_exit: bool | None = None
+    track = find_map_track(map_query) if map_query else None
+    if track is not None:
+        map_canonical, track_rbs = track
+        if boss_speed > 0:
+            boss_cross_s = round(track_rbs / boss_speed, 1)
+            if time_to_kill is not None:
+                kills_before_exit = time_to_kill <= boss_cross_s
 
     return KillEstimate(
         tower_id=tower_id,
@@ -224,10 +296,14 @@ def estimate(
         boss_canonical=boss.canonical or boss.id,
         boss_tier=tier,
         boss_hp=hp,
-        boss_speed=float(row.get("speed") or 0.0),
+        boss_speed=boss_speed,
         time_to_kill_s=round(time_to_kill, 1) if time_to_kill is not None else None,
         blocked_by_immunity=blocked,
         boss_immune_to=tuple(boss.immune_to),
+        map_canonical=map_canonical,
+        track_rbs=track_rbs,
+        boss_cross_s=boss_cross_s,
+        kills_before_exit=kills_before_exit,
     )
 
 
@@ -266,6 +342,7 @@ def resolve_and_estimate(
     tower_query: str,
     boss_query: str,
     tier: int,
+    map_query: str = "",
 ) -> KillEstimate | None:
     """Resolve free-form tower + boss names and estimate the fight."""
     resolved = resolve_tower(tower_query)
@@ -273,7 +350,7 @@ def resolve_and_estimate(
     if resolved is None or boss is None:
         return None
     tower_id, code = resolved
-    return estimate(tower_id, code, boss.id, tier)
+    return estimate(tower_id, code, boss.id, tier, map_query)
 
 
 # ---------------------------------------------------------------------------
@@ -296,6 +373,21 @@ def parse_request(text: str) -> EstimateRequest:
     if m:
         tier = int(m.group(1))
         raw = (raw[: m.start()] + " " + raw[m.end() :]).strip()
+
+    # Pull a known map name out of the text ("… on monkey meadow") so it doesn't
+    # pollute boss resolution; record it for the track / escape-margin estimate.
+    map_query = ""
+    track = find_map_track(raw)
+    if track is not None:
+        map_query = track[0]
+        raw = re.sub(
+            rf"\s*\bon\b\s*{re.escape(map_query)}|\s*{re.escape(map_query)}",
+            " ",
+            raw,
+            count=1,
+            flags=re.IGNORECASE,
+        ).strip()
+
     low = raw.lower()
     for sep in (" vs ", " versus "):
         if sep in low:
@@ -305,6 +397,7 @@ def parse_request(text: str) -> EstimateRequest:
                 tower_query=raw[:idx].strip(),
                 boss_query=raw[idx + len(sep) :].strip(),
                 tier=tier,
+                map_query=map_query,
             )
     boss_q = re.sub(
         r"^(counters?|cheapest|best)\s+(for\s+|to\s+|vs\s+)?",
@@ -317,6 +410,7 @@ def parse_request(text: str) -> EstimateRequest:
         tower_query="",
         boss_query=boss_q,
         tier=tier,
+        map_query=map_query,
     )
 
 
@@ -417,6 +511,24 @@ def format_estimate_text(est: KillEstimate) -> str:
             f"• Estimated solo kill time: **{_fmt_duration(est.time_to_kill_s)}** "
             f"({est.boss_hp:,} HP ÷ {est.dps:,.0f} DPS)",
         )
+    if est.map_canonical and est.track_rbs is not None:
+        track_line = (
+            f"• **{est.map_canonical}** track: ~{est.track_rbs:.0f}s for a red bloon"
+        )
+        if est.boss_cross_s is not None:
+            track_line += f"; this boss crosses in ~{est.boss_cross_s:.0f}s"
+        lines.append(track_line)
+        if est.kills_before_exit is True:
+            lines.append(
+                f"• ✅ Kills it in {_fmt_duration(est.time_to_kill_s)} — **before** one "
+                f"unobstructed pass (~{est.boss_cross_s:.0f}s).",
+            )
+        elif est.kills_before_exit is False:
+            lines.append(
+                f"• ⚠️ Solo kill ({_fmt_duration(est.time_to_kill_s)}) is **slower** than "
+                f"one pass (~{est.boss_cross_s:.0f}s) — you'd need more DPS or stalling "
+                "(bosses do pause at skull phases, so you usually get longer).",
+            )
     lines.append("_Estimate — " + "; ".join(est.assumptions) + "._")
     return "\n".join(lines)
 
@@ -453,6 +565,7 @@ __all__ = [
     "dps_for_code",
     "estimate",
     "find_boss",
+    "find_map_track",
     "resolve_and_estimate",
     "resolve_tower",
 ]
