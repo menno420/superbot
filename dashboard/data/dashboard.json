@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T15:11:38Z",
+    "generated_at": "2026-06-30T18:18:29Z",
     "build": {
-      "commit": "1a32363b",
-      "subject": "Welcome age-gating + ping-then-delete: born-red session card + claim",
-      "committed_at": "2026-06-30T15:11:38Z"
+      "commit": "67e7dd84",
+      "subject": "Merge pull request #1582 from menno420/claude/bot-owner-permissions-override-eo7wn6",
+      "committed_at": "2026-06-30T18:18:29Z"
     },
     "counts": {
       "functions": 43,
@@ -2687,7 +2687,7 @@
       "file": "2026-06-30-welcome-age-gate-delete-after.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Welcome age-gating + ping-then-delete (completion-first deepening)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
@@ -2705,6 +2705,14 @@
       "title": "2026-06-30 — Reaction-roles RSVP roster (\"Who's in?\")",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-30-ephemeral-panel-ownership-failclose.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Fix: ephemeral persistent-panel ownership fail-close (\"can no longer be verified\")",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": true
     },
     {
@@ -3143,14 +3151,6 @@
       "file": "2026-06-27-btd6-eval-live-path.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — BTD6 evals: faithful \"exactly live\" answer-path replay",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-eval-corpus-action.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 QA corpus wired into the evals (offline grounding test + live action suite)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
