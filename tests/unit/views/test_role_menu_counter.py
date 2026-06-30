@@ -20,8 +20,10 @@ from views.roles import role_menu_counter as counter
 
 
 class FakeRole:
-    def __init__(self, rid: int) -> None:
+    def __init__(self, rid: int, name: str = "Role", members: list | None = None) -> None:
         self.id = rid
+        self.name = name
+        self.members = members or []
 
 
 class FakeMember:
@@ -32,6 +34,24 @@ class FakeMember:
 class FakeGuild:
     def __init__(self, members: list[FakeMember]) -> None:
         self.members = members
+
+
+class _RosterMember:
+    def __init__(self, uid: int, display_name: str) -> None:
+        self.id = uid
+        self.display_name = display_name
+
+    @property
+    def mention(self) -> str:
+        return f"<@{self.id}>"
+
+
+class _RosterGuild:
+    def __init__(self, roles: list[FakeRole]) -> None:
+        self._roles = {r.id: r for r in roles}
+
+    def get_role(self, rid: int) -> FakeRole | None:
+        return self._roles.get(rid)
 
 
 # ---------------------------------------------------------------------------
@@ -93,6 +113,60 @@ def test_format_total_pluralises():
     assert counter.format_total(1) == "👥 1 person signed up"
     assert counter.format_total(0) == "👥 0 people signed up"
     assert counter.format_total(5) == "👥 5 people signed up"
+
+
+# ---------------------------------------------------------------------------
+# build_roster_embed — "who's in" per option
+# ---------------------------------------------------------------------------
+
+
+def _roster_menu() -> dict:
+    return {"menu_id": 1, "title": "Event RSVP", "theme": "announcement"}
+
+
+def test_roster_lists_each_option_with_its_holders():
+    going = FakeRole(10, "Going", [_RosterMember(1, "Alice"), _RosterMember(2, "Bob")])
+    maybe = FakeRole(20, "Maybe", [])
+    guild = _RosterGuild([going, maybe])
+    options = [
+        {"role_id": 10, "label": "Going", "emoji": None},
+        {"role_id": 20, "label": "Maybe", "emoji": None},
+    ]
+    embed = counter.build_roster_embed(_roster_menu(), options, guild)
+    assert embed.title == "👥 Who's in — Event RSVP"
+    going_field = next(f for f in embed.fields if f.name.startswith("Going"))
+    assert going_field.name == "Going · 2"
+    assert "<@1>" in going_field.value and "<@2>" in going_field.value
+    maybe_field = next(f for f in embed.fields if f.name.startswith("Maybe"))
+    assert maybe_field.name == "Maybe · 0"
+    assert maybe_field.value == "—"
+
+
+def test_roster_skips_deleted_roles():
+    going = FakeRole(10, "Going", [_RosterMember(1, "Alice")])
+    guild = _RosterGuild([going])  # role 20 was deleted (not resolvable)
+    options = [{"role_id": 10, "label": "Going"}, {"role_id": 20, "label": "Gone"}]
+    embed = counter.build_roster_embed(_roster_menu(), options, guild)
+    assert [f.name for f in embed.fields] == ["Going · 1"]
+
+
+def test_roster_with_no_live_roles_has_a_description():
+    guild = _RosterGuild([])
+    embed = counter.build_roster_embed(_roster_menu(), [{"role_id": 99}], guild)
+    assert not embed.fields
+    assert embed.description
+
+
+def test_join_members_truncates_with_tail():
+    # 200 members of ~6-char mentions blow past the 1024 field cap → truncated.
+    members = [_RosterMember(i, f"U{i}") for i in range(200)]
+    text = counter._join_members(members)
+    assert len(text) <= counter._ROSTER_FIELD_CAP
+    assert "more" in text  # the elided-count tail is present
+
+
+def test_join_members_empty_is_dash():
+    assert counter._join_members([]) == "—"
 
 
 # ---------------------------------------------------------------------------

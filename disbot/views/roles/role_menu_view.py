@@ -209,6 +209,26 @@ class _RoleSelect(discord.ui.Select):
         )
 
 
+class _RosterButton(discord.ui.Button):
+    """An ephemeral "who picked each option" roster (counted menus only).
+
+    Read-only: it lists current holders (``role.members``), the same opt-in public
+    membership the counter already surfaces — so it adds no privacy surface over
+    what Discord's member list already shows.
+    """
+
+    def __init__(self, menu_id: int) -> None:
+        super().__init__(
+            label="Who's in?",
+            emoji="👥",
+            style=discord.ButtonStyle.primary,
+            custom_id=f"role_menu:{menu_id}:roster",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await _handle_roster(interaction, self.view)
+
+
 class RoleMenuView(PersistentView):
     """A restart-durable self-role menu rendered from a ``role_menus`` row.
 
@@ -246,6 +266,11 @@ class RoleMenuView(PersistentView):
             self._build_buttons(menu_id)
         else:
             self._build_select(menu_id)
+        # The "Who's in?" roster rides the same opt-in as the counter, and only
+        # when there's component room (Discord caps a view at 25 components — a
+        # full 25-role button menu has none; RSVPs are small, so this never bites).
+        if menu.get("show_counts") and len(self.children) < 25:
+            self.add_item(_RosterButton(menu_id))
 
     def _build_buttons(self, menu_id: int) -> None:
         for opt in self.options[:MAX_MENU_ROLES]:
@@ -357,6 +382,23 @@ async def _handle_selection(
     )
     if show_counts and outcome.changed:
         role_menu_counter.schedule_count_refresh(interaction.message, menu_id)
+
+
+async def _handle_roster(
+    interaction: discord.Interaction,
+    view: discord.ui.View | None,
+) -> None:
+    """Post the ephemeral "who's in" roster for the menu behind the button.
+
+    Reads the menu's immutable config (title + options) off the view and the live
+    holders off the guild — no DB round-trip, no per-user storage.
+    """
+    if interaction.guild is None:
+        return
+    menu = getattr(view, "menu", None)
+    options = getattr(view, "options", None) or []
+    embed = role_menu_counter.build_roster_embed(menu, options, interaction.guild)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 def _require_member(

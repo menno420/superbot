@@ -16,6 +16,12 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Reaction-roles RSVP roster ("Who's in?")** (PR #1571, owner-directed follow-on to #1570) — counted
+  menus gain a persistent **👥 Who's in?** button that posts an **ephemeral** roster listing the members
+  who currently hold each option (`build_roster_embed` in `role_menu_counter`; member names truncated to
+  the field cap with a "…and N more" tail). Gated on the same opt-in `show_counts` + a component-budget
+  check; read-only `role.members` (no storage, exposes nothing beyond Discord's member list). No
+  migration, no new commands; +12 tests.
 - **Reaction-roles live sign-up counter** (PR #1570, owner-directed deepening) — the event-RSVP
   counter from the Discord screenshots: an **opt-in `📊 Counts`** per-menu flag (migration 103
   `role_menus.show_counts`, default off) that renders a **live participant headcount** beside each
