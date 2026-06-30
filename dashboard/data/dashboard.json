@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T06:09:49Z",
+    "generated_at": "2026-06-30T07:00:34Z",
     "build": {
-      "commit": "5ace5209",
-      "subject": "Counters completion deepening: open born-red session card + claim",
-      "committed_at": "2026-06-30T06:09:49Z"
+      "commit": "3f2a356",
+      "subject": "PR1: !aireview export + triage bridge + backlog runbook",
+      "committed_at": "2026-06-30T07:00:34Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 465,
+      "commands": 471,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2658,7 +2658,7 @@
       "file": "2026-06-30-counters-completion-deepening.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Counters completion-cert deepening (Q-0209)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
@@ -2676,6 +2676,14 @@
       "title": "Session — Blackjack completion-cert punch-list #2 + #3",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-30-ai-review-backlog-loop.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — AI review-log answer loop (export → triage → presets)",
+      "status": "in-progress",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3125,14 +3133,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-26-cross-domain-routing-disjoint-guard.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Cross-domain AI-routing disjointness guard (S1 / Project Moon prep)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -5005,6 +5005,17 @@
           "button_backed": false
         },
         {
+          "name": "export",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "aireview",
+          "aliases": [],
+          "brief": "Dump the backlog as a JSON file for triage.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "list",
           "type": "prefix",
           "is_group": false,
@@ -5027,12 +5038,67 @@
           "button_backed": false
         },
         {
+          "name": "preset",
+          "type": "prefix",
+          "is_group": true,
+          "parent": "aireview",
+          "aliases": [],
+          "brief": "Manage vetted answer presets (served with zero model call).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "resolve",
           "type": "prefix",
           "is_group": false,
           "parent": "aireview",
           "aliases": [],
           "brief": "Mark one review entry reviewed: ``!aireview resolve <id>``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "add",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "preset",
+          "aliases": [],
+          "brief": "Author a preset: ``!aireview preset add \"<question>\" <answer>``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "from",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "preset",
+          "aliases": [],
+          "brief": "Author a preset from a logged question: ``!aireview preset from <id> <answer>``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "list",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "preset",
+          "aliases": [],
+          "brief": "List stored presets: ``!aireview preset list [n]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "remove",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "preset",
+          "aliases": [],
+          "brief": "Delete a preset: ``!aireview preset remove <id>``.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

@@ -283,6 +283,66 @@ async def test_replied_audit_carries_provider_and_model(
 
 
 @pytest.mark.asyncio
+async def test_preset_short_circuits_before_gateway(monkeypatch, stub_services):
+    """An operator-authored vetted preset is served verbatim with NO model call.
+
+    The whole point of the preset layer: an exact normalized-question match
+    short-circuits before feature-facts + the gateway, so the provider is never
+    invoked and the reply is the operator's exact text.
+    """
+    from services import ai_gateway, ai_preset_service
+
+    async def _preset(_guild_id, _question):
+        return "The vetted answer."
+
+    monkeypatch.setattr(ai_preset_service, "lookup", _preset)
+    execute = AsyncMock()
+    monkeypatch.setattr(ai_gateway, "execute", execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    result = await stage.process(_make_ctx(msg))
+
+    # The gateway/provider was never called — zero-API answer.
+    execute.assert_not_called()
+    # The exact vetted text was sent.
+    msg.channel.send.assert_awaited_once()
+    call_args, _ = msg.channel.send.call_args
+    assert call_args == ("The vetted answer.",)
+    # Audited as a normal reply, and the pipeline short-circuited.
+    assert len(stub_services) == 1
+    assert stub_services[0]["decision"] == "replied"
+    assert result.short_circuit is True
+
+
+@pytest.mark.asyncio
+async def test_no_preset_runs_the_normal_model_path(monkeypatch, stub_services):
+    """With no matching preset (lookup → None) the gateway path runs unchanged —
+    the preset layer is byte-identical when the table is empty."""
+    from services import ai_gateway, ai_preset_service
+
+    async def _no_preset(_guild_id, _question):
+        return None
+
+    monkeypatch.setattr(ai_preset_service, "lookup", _no_preset)
+
+    async def fake_execute(_request):
+        return _make_response(text="model reply", provider="openai", model="gpt-4o-mini")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    await stage.process(_make_ctx(msg))
+
+    msg.channel.send.assert_awaited_once()
+    call_args, _ = msg.channel.send.call_args
+    assert call_args == ("model reply",)
+    assert stub_services[0]["decision"] == "replied"
+    assert stub_services[0]["provider"] == "openai"
+
+
+@pytest.mark.asyncio
 async def test_degraded_response_audits_as_degraded(monkeypatch, stub_services):
     """A degraded response (gateway/provider failure) must audit as
     ``decision='degraded'``, NOT the misleading ``skipped /

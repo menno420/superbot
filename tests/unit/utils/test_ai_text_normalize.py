@@ -49,3 +49,18 @@ def test_different_questions_keep_distinct_keys() -> None:
 def test_unicode_fold_is_stable() -> None:
     # NFKC fold: a full-width digit and its ASCII form collapse.
     assert normalize_question("round １０") == normalize_question("round 10")
+
+
+def test_discord_mentions_are_stripped_for_key_consistency() -> None:
+    # The stored review-log question keeps the bot mention; the runtime sees it
+    # stripped. Both must produce the same preset key.
+    with_mention = normalize_question("<@123456789> how much cash on round 10")
+    stripped = normalize_question("how much cash on round 10")
+    assert with_mention == stripped == "how much cash on round 10"
+
+
+def test_role_channel_and_emoji_tokens_stripped() -> None:
+    assert (
+        normalize_question("<@!42> <#99> <:smile:1> who wins <@&7>")
+        == "who wins"
+    )

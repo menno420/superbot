@@ -30,6 +30,7 @@ from core.events import bus
 from core.runtime import message_pipeline
 from core.runtime.guild_resources import resolve_settings_channel
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
+from services import ai_preset_service as presets
 from services import ai_review_log_service as review
 from utils.settings_keys import ai as ai_keys
 
@@ -341,6 +342,158 @@ class AIReviewCog(commands.Cog):
                 f"✅ Entry #{entry_id} marked reviewed."
                 if ok
                 else f"⚠️ No entry `#{entry_id}` in this server."
+            ),
+        )
+
+    # ------------------------------------------------------- preset subgroup
+
+    @aireview_group.group(  # type: ignore[arg-type]
+        name="preset",
+        invoke_without_command=True,
+    )
+    @commands.has_permissions(manage_guild=True)
+    async def aireview_preset(self, ctx: commands.Context) -> None:
+        """Manage vetted answer presets (served with zero model call)."""
+        await ctx.send(
+            "Vetted answer presets — the bot serves these verbatim, no AI call:\n"
+            '`!aireview preset add "<question>" <answer>` · '
+            "`!aireview preset from <entry_id> <answer>` · "
+            "`!aireview preset list` · `!aireview preset remove <id>`",
+        )
+
+    @aireview_preset.command(name="add")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def aireview_preset_add(
+        self,
+        ctx: commands.Context,
+        question: str,
+        *,
+        answer: str,
+    ) -> None:
+        """Author a preset: ``!aireview preset add "<question>" <answer>``."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        await self._store_preset(ctx, guild.id, question, answer, source="operator")
+
+    @aireview_preset.command(name="from")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def aireview_preset_from(
+        self,
+        ctx: commands.Context,
+        entry_id: int,
+        *,
+        answer: str,
+    ) -> None:
+        """Author a preset from a logged question: ``!aireview preset from <id> <answer>``."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        entry = await review.get_entry(guild.id, entry_id)
+        if entry is None:
+            await ctx.send(f"⚠️ No review entry `#{entry_id}` in this server.")
+            return
+        question = (entry.get("question") or "").strip()
+        if not question:
+            await ctx.send(
+                f"⚠️ Entry `#{entry_id}` has no captured question text to key a preset on.",
+            )
+            return
+        await self._store_preset(
+            ctx,
+            guild.id,
+            question,
+            answer,
+            task=entry.get("task"),
+            source=f"review:{entry_id}",
+        )
+
+    async def _store_preset(
+        self,
+        ctx: commands.Context,
+        guild_id: int,
+        question: str,
+        answer: str,
+        *,
+        task: str | None = None,
+        source: str | None = None,
+    ) -> None:
+        """Shared add/from path — validate, store, confirm."""
+        try:
+            preset_id = await presets.set_preset(
+                guild_id,
+                question,
+                answer,
+                task=task,
+                source=source,
+                actor_id=ctx.author.id,
+            )
+        except ValueError as exc:
+            await ctx.send(f"⚠️ Couldn't store that preset: {exc}.")
+            return
+        await ctx.send(
+            f"✅ Preset `#{preset_id}` stored — the bot will answer "
+            f"“{_clip(question, 120)}” with your vetted text (no AI call). "
+            f"Remove it with `!aireview preset remove {preset_id}`.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @aireview_preset.command(name="list")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def aireview_preset_list(
+        self,
+        ctx: commands.Context,
+        limit: int = 10,
+    ) -> None:
+        """List stored presets: ``!aireview preset list [n]``."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        rows = await presets.list_presets(guild.id, limit=max(1, min(25, limit)))
+        if not rows:
+            await ctx.send(
+                "No vetted presets yet. Add one with "
+                '`!aireview preset add "<question>" <answer>`.',
+            )
+            return
+        embed = discord.Embed(
+            title="🧠 Vetted answer presets",
+            color=discord.Color.green(),
+        )
+        for row in rows[:10]:
+            mark = "" if row.get("enabled", True) else " *(disabled)*"
+            embed.add_field(
+                name=f"#{row.get('id')}{mark}",
+                value=(
+                    f"**Q:** {_clip(row.get('question'), 200)}\n"
+                    f"**A:** {_clip(row.get('answer'), 300)}"
+                ),
+                inline=False,
+            )
+        embed.set_footer(text="Remove one with !aireview preset remove <id>")
+        await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+
+    @aireview_preset.command(name="remove")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def aireview_preset_remove(
+        self,
+        ctx: commands.Context,
+        preset_id: int,
+    ) -> None:
+        """Delete a preset: ``!aireview preset remove <id>``."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        ok = await presets.remove_preset(guild.id, preset_id, actor_id=ctx.author.id)
+        await ctx.send(
+            (
+                f"✅ Preset `#{preset_id}` removed."
+                if ok
+                else f"⚠️ No preset `#{preset_id}` in this server."
             ),
         )
 

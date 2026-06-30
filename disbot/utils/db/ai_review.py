@@ -95,6 +95,18 @@ async def query_review_entries(
     return [dict(r) for r in rows]
 
 
+async def get_review_entry(guild_id: int, entry_id: int) -> dict[str, Any] | None:
+    """Return one review entry by id (scoped to ``guild_id``), or None."""
+    row = await pool.get().fetchrow(
+        "SELECT id, guild_id, kind, reason_code, task, route, question, answer,"
+        " correction, reviewed, created_at "
+        "FROM ai_review_log WHERE guild_id = $1 AND id = $2",
+        guild_id,
+        entry_id,
+    )
+    return dict(row) if row is not None else None
+
+
 async def export_review_entries(
     guild_id: int,
     *,

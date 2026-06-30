@@ -21,6 +21,11 @@ from __future__ import annotations
 import re
 import unicodedata
 
+# Discord entity tokens — user/role/channel mentions and custom emoji. Stripped
+# because they are noise for *question identity*: the stored review-log question
+# keeps the raw bot mention (`<@123> how much cash`) while the runtime sees the
+# mention-stripped text, and a preset must key the same either way.
+_DISCORD_TOKEN = re.compile(r"<a?:\w+:\d+>|<[@#][!&]?\d+>")
 # Collapsible whitespace runs.
 _WS = re.compile(r"\s+")
 # Surrounding punctuation / symbols to trim (keep inner punctuation intact so
@@ -31,13 +36,15 @@ _EDGE = re.compile(r"^[^0-9a-z]+|[^0-9a-z]+$")
 def normalize_question(text: str | None) -> str:
     """Return a stable, case-folded key for *text* (``""`` if empty).
 
-    Steps: Unicode NFKC fold → casefold → collapse whitespace → strip leading /
-    trailing punctuation & symbols. Deterministic and dependency-free so the
-    triage script and the runtime preset lookup derive byte-identical keys.
+    Steps: strip Discord mention/emoji tokens → Unicode NFKC fold → casefold →
+    collapse whitespace → strip leading / trailing punctuation & symbols.
+    Deterministic and dependency-free so the triage script and the runtime preset
+    lookup derive byte-identical keys whether or not the message was a mention.
     """
     if not text:
         return ""
-    folded = unicodedata.normalize("NFKC", text).casefold()
+    without_tokens = _DISCORD_TOKEN.sub(" ", text)
+    folded = unicodedata.normalize("NFKC", without_tokens).casefold()
     collapsed = _WS.sub(" ", folded).strip()
     if not collapsed:
         return ""

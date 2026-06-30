@@ -2352,6 +2352,23 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "export",
+    "area": "other",
+    "status": "finished",
+    "summary": "Dump the backlog as a JSON file for triage.",
+    "description": "Dump the backlog as a JSON file for triage.",
+    "usage": "!export",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!aireview export",
+      "!aireview export unknown",
+      "!aireview export all"
+    ],
+    "planned": []
+  },
+  {
     "name": "fact",
     "area": "utility",
     "status": "finished",
@@ -2644,6 +2661,21 @@ const COMMANDS = [
         "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
+  },
+  {
+    "name": "from",
+    "area": "other",
+    "status": "finished",
+    "summary": "Author a preset from a logged question: ``!aireview preset from <id> <answer>``.",
+    "description": "Author a preset from a logged question: !aireview preset from <id> <answer>.",
+    "usage": "!from",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!aireview preset from <id> <answer>"
+    ],
+    "planned": []
   },
   {
     "name": "games",
@@ -3942,6 +3974,19 @@ const COMMANDS = [
     "summary": "Create a simple reaction poll.",
     "description": "Create a simple reaction poll.",
     "usage": "!poll",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "preset",
+    "area": "other",
+    "status": "finished",
+    "summary": "Manage vetted answer presets (served with zero model call).",
+    "description": "Manage vetted answer presets (served with zero model call).",
+    "usage": "!preset",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
@@ -7096,7 +7141,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "5ace5209",
+    "build": "3f2a356",
     "title": "New public bot website",
     "changes": [
       {
@@ -7108,7 +7153,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "5ace5209",
+    "build": "3f2a356",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7120,7 +7165,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "5ace5209",
+    "build": "3f2a356",
     "title": "Command-alias suggestions",
     "changes": [
       {

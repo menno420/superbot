@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T06:09:49Z",
+    "generated_at": "2026-06-30T07:00:34Z",
     "build": {
-      "commit": "5ace5209",
-      "subject": "Counters completion deepening: open born-red session card + claim",
-      "committed_at": "2026-06-30T06:09:49Z"
+      "commit": "3f2a356",
+      "subject": "PR1: !aireview export + triage bridge + backlog runbook",
+      "committed_at": "2026-06-30T07:00:34Z"
     }
   },
   "counts": {
-    "commands": 465,
+    "commands": 471,
     "features": 43,
     "games": 12
   },
@@ -10554,6 +10554,22 @@
       "notes": null
     },
     {
+      "name": "add",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Author a preset: ``!aireview preset add \"<question>\" <answer>``.",
+      "description": "Author a preset: !aireview preset add \"<question>\" <answer>.",
+      "use_cases": null,
+      "examples": [
+        "!aireview preset add \"<question>\" <answer>"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "aireview",
       "aliases": [],
       "category": "other",
@@ -10846,6 +10862,24 @@
       "notes": null
     },
     {
+      "name": "export",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Dump the backlog as a JSON file for triage.",
+      "description": "Dump the backlog as a JSON file for triage.",
+      "use_cases": null,
+      "examples": [
+        "!aireview export",
+        "!aireview export unknown",
+        "!aireview export all"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "finding",
       "aliases": [],
       "category": "other",
@@ -10920,6 +10954,22 @@
       "notes": null
     },
     {
+      "name": "from",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Author a preset from a logged question: ``!aireview preset from <id> <answer>``.",
+      "description": "Author a preset from a logged question: !aireview preset from <id> <answer>.",
+      "use_cases": null,
+      "examples": [
+        "!aireview preset from <id> <answer>"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "health",
       "aliases": [],
       "category": "other",
@@ -10982,6 +11032,22 @@
       "cooldown": null,
       "permissions": "",
       "usage": "List recent entries: ``!aireview list [unknown|correction] [n]``.",
+      "description": "List recent entries: !aireview list [unknown|correction] [n].",
+      "use_cases": null,
+      "examples": [
+        "!aireview list [unknown|correction] [n]"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "list",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "List stored presets: ``!aireview preset list [n]``.",
       "description": "List recent entries: !aireview list [unknown|correction] [n].",
       "use_cases": null,
       "examples": [
@@ -11120,6 +11186,20 @@
       "notes": null
     },
     {
+      "name": "preset",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Manage vetted answer presets (served with zero model call).",
+      "description": "Manage vetted answer presets (served with zero model call).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "provisioning",
       "aliases": [],
       "category": "other",
@@ -11129,6 +11209,22 @@
       "description": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5).",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "remove",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Delete a preset: ``!aireview preset remove <id>``.",
+      "description": "Delete a preset: !aireview preset remove <id>.",
+      "use_cases": null,
+      "examples": [
+        "!aireview preset remove <id>"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null

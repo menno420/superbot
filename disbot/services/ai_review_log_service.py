@@ -342,6 +342,17 @@ async def query(
     )
 
 
+async def get_entry(guild_id: int, entry_id: int) -> dict[str, Any] | None:
+    """Return one review entry by id (read-only), or None. Fail-safe."""
+    try:
+        from utils.db import ai_review as ai_review_db
+
+        return await ai_review_db.get_review_entry(guild_id, entry_id)
+    except Exception:  # noqa: BLE001
+        logger.warning("ai_review_log: get_entry failed", exc_info=True)
+        return None
+
+
 async def export(
     guild_id: int,
     *,
@@ -434,6 +445,7 @@ __all__ = [
     "already_flagged",
     "count_unreviewed",
     "export",
+    "get_entry",
     "lookup_answer",
     "mark_reviewed",
     "query",
