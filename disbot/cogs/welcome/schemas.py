@@ -26,6 +26,7 @@ from core.runtime.subsystem_schema import (
 from services.welcome_config import (
     DEFAULT_CARD_ENABLED,
     DEFAULT_CHANNEL,
+    DEFAULT_DELETE_AFTER_SECONDS,
     DEFAULT_DM_ENABLED,
     DEFAULT_DM_MESSAGE,
     DEFAULT_ENABLED,
@@ -34,13 +35,19 @@ from services.welcome_config import (
     DEFAULT_JOIN_MESSAGE,
     DEFAULT_LEAVE_ENABLED,
     DEFAULT_LEAVE_MESSAGE,
+    DEFAULT_MIN_ACCOUNT_AGE_DAYS,
+    MAX_DELETE_AFTER_SECONDS,
     MAX_MESSAGE_LENGTH,
     MAX_MESSAGE_VARIANTS,
+    MAX_MIN_ACCOUNT_AGE_DAYS,
+    MIN_DELETE_AFTER_SECONDS,
+    MIN_MIN_ACCOUNT_AGE_DAYS,
     split_message_variants,
 )
 from utils.settings_keys import (
     WELCOME_CARD_ENABLED,
     WELCOME_CHANNEL,
+    WELCOME_DELETE_AFTER_SECONDS,
     WELCOME_DM_ENABLED,
     WELCOME_DM_MESSAGE,
     WELCOME_ENABLED,
@@ -49,6 +56,7 @@ from utils.settings_keys import (
     WELCOME_JOIN_MESSAGE,
     WELCOME_LEAVE_ENABLED,
     WELCOME_LEAVE_MESSAGE,
+    WELCOME_MIN_ACCOUNT_AGE_DAYS,
 )
 
 _WELCOME_CAPABILITY = "welcome.settings.configure"
@@ -76,6 +84,22 @@ def _validate_id(value: object) -> None:
         int(token)
     except ValueError:
         raise ValueError(f"'{token}' is not a numeric id") from None
+
+
+def _bounded_int(value: object, lo: int, hi: int) -> None:
+    # ``isinstance(True, int)`` is True, so guard the bool type explicitly.
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"expected int, got {value!r}")
+    if not (lo <= value <= hi):
+        raise ValueError(f"must be between {lo} and {hi}")
+
+
+def _validate_min_account_age_days(value: object) -> None:
+    _bounded_int(value, MIN_MIN_ACCOUNT_AGE_DAYS, MAX_MIN_ACCOUNT_AGE_DAYS)
+
+
+def _validate_delete_after_seconds(value: object) -> None:
+    _bounded_int(value, MIN_DELETE_AFTER_SECONDS, MAX_DELETE_AFTER_SECONDS)
 
 
 def _validate_message(value: object) -> None:
@@ -228,6 +252,36 @@ WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
             "separated by a '---' line to DM a random one each time."
         ),
         validator=_validate_message,
+    ),
+    SettingSpec(
+        name="min_account_age_days",
+        value_type=int,
+        default=DEFAULT_MIN_ACCOUNT_AGE_DAYS,
+        settings_key=WELCOME_MIN_ACCOUNT_AGE_DAYS,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Anti-raid: skip the greeting, DM, and entry role for a joining "
+            "member whose Discord account is younger than this many days.  "
+            "0 disables it (every account is greeted)."
+        ),
+        validator=_validate_min_account_age_days,
+        input_hint="numeric_presets",
+        presets=(0, 1, 7),
+    ),
+    SettingSpec(
+        name="delete_after_seconds",
+        value_type=int,
+        default=DEFAULT_DELETE_AFTER_SECONDS,
+        settings_key=WELCOME_DELETE_AFTER_SECONDS,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Ping-then-delete: auto-delete the channel greeting/farewell this "
+            "many seconds after it posts, to keep a busy channel tidy.  "
+            "0 keeps the message.  The DM greeting is never deleted."
+        ),
+        validator=_validate_delete_after_seconds,
+        input_hint="numeric_presets",
+        presets=(0, 30, 60),
     ),
 )
 

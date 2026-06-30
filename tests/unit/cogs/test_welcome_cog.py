@@ -86,3 +86,23 @@ def test_policy_embed_leave_variant_note_when_leave_enabled():
     field = _field_by_name_prefix(embed, "Leave message preview")
     assert field.name == "Leave message preview (1 of 2 random variants)"
     assert field.value == "Bye NewMember"
+
+
+def test_policy_embed_shows_age_gate_when_set():
+    policy = WelcomePolicy(enabled=True, min_account_age_days=7)
+    embed = WelcomeCog._policy_embed(_guild(), policy)
+    assert "Min account age" in embed.description
+    assert "7d" in embed.description
+    # …and is absent when the gate is off.
+    off = WelcomeCog._policy_embed(_guild(), WelcomePolicy(enabled=True))
+    assert "Min account age" not in off.description
+
+
+def test_policy_embed_shows_auto_delete_when_set():
+    policy = WelcomePolicy(enabled=True, delete_after_seconds=30)
+    embed = WelcomeCog._policy_embed(_guild(), policy)
+    assert "Auto-delete greeting after" in embed.description
+    assert "30s" in embed.description
+    # …and is absent when off.
+    off = WelcomeCog._policy_embed(_guild(), WelcomePolicy(enabled=True))
+    assert "Auto-delete greeting after" not in off.description

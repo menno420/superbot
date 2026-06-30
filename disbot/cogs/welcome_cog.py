@@ -94,6 +94,16 @@ class WelcomeCog(commands.Cog):
             f"📢 **Channel:** {channel_str}",
             f"🎟️ **Entry role:** {role_str}",
         ]
+        if policy.age_gate_enabled:
+            lines.append(
+                "🛡️ **Min account age:** "
+                f"{policy.min_account_age_days}d "
+                "(younger accounts skipped — anti-raid)",
+            )
+        if policy.greeting_delete_after is not None:
+            lines.append(
+                f"🧹 **Auto-delete greeting after:** {policy.delete_after_seconds}s",
+            )
         embed = discord.Embed(
             title="👋 Welcome",
             description="\n".join(lines),

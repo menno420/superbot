@@ -165,13 +165,21 @@ async def _post(
     channel: discord.abc.Messageable,
     embed: discord.Embed,
     file: discord.File | None = None,
+    *,
+    delete_after: float | None = None,
 ) -> bool:
-    """Send ``embed`` (plus optional ``file``) — fail-safe (logs, never raises)."""
+    """Send ``embed`` (plus optional ``file``) — fail-safe (logs, never raises).
+
+    ``delete_after`` (ping-then-delete) is forwarded to discord.py's native
+    ``send`` so the message self-deletes after that many seconds; ``None`` keeps
+    it.  Only ``None`` is passed to ``send`` when unset so the call shape is
+    unchanged for every existing config.
+    """
     try:
         if file is not None:
-            await channel.send(embed=embed, file=file)
+            await channel.send(embed=embed, file=file, delete_after=delete_after)
         else:
-            await channel.send(embed=embed)
+            await channel.send(embed=embed, delete_after=delete_after)
     except discord.Forbidden:
         logger.warning("welcome: missing send permission in greeting channel")
         return False
@@ -285,6 +293,19 @@ async def handle_member_join(member: discord.Member) -> None:
     if not policy.any_action_enabled:
         return
 
+    # Join-delay age-gating (anti-raid): a member whose account is younger than
+    # the configured threshold gets NO greeting, NO DM, and NO entry role.
+    # Off (skipped) when the gate is unset, so existing configs are unchanged.
+    if policy.age_gate_enabled and _account_too_young(member, policy):
+        logger.info(
+            "welcome: member %s account too young (< %d days) — skipping "
+            "greeting/DM/entry-role in guild %s",
+            member.id,
+            policy.min_account_age_days,
+            guild.id,
+        )
+        return
+
     if policy.assigns_entry_role and policy.entry_role_id is not None:
         await _grant_entry_role(member, policy.entry_role_id)
 
@@ -301,7 +322,12 @@ async def handle_member_join(member: discord.Member) -> None:
                 file = render_join_card(member, count)
                 if file is not None:
                     embed.set_image(url=f"attachment://{_WELCOME_CARD_FILENAME}")
-            if await _post(channel, embed, file):
+            if await _post(
+                channel,
+                embed,
+                file,
+                delete_after=policy.greeting_delete_after,
+            ):
                 await _emit_greeted(member)
 
     if policy.dm_on_join:
@@ -328,7 +354,23 @@ async def handle_member_leave(member: discord.Member) -> None:
     channel = _resolve_text_channel(guild, policy.channel_id)
     if channel is not None:
         embed = format_leave_embed(member, policy, _member_count(guild))
-        await _post(channel, embed)
+        await _post(channel, embed, delete_after=policy.greeting_delete_after)
+
+
+def _account_too_young(
+    member: discord.Member,
+    policy: welcome_config.WelcomePolicy,
+) -> bool:
+    """True when ``member``'s account is below the policy's age gate.
+
+    Thin wrapper over the pure :func:`welcome_config.account_is_too_young` that
+    supplies the current time; fail-open (greets) on a missing ``created_at``.
+    """
+    return welcome_config.account_is_too_young(
+        getattr(member, "created_at", None),
+        min_age_days=policy.min_account_age_days,
+        now=discord.utils.utcnow(),
+    )
 
 
 def _member_count(guild: Any) -> int:
