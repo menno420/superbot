@@ -215,6 +215,21 @@ _PACKS: tuple[RolePack, ...] = (
         ),
     ),
     RolePack(
+        "event_rsvp",
+        "📣 Event RSVP",
+        "Sign-up options for an event — pair with the 📣 Event RSVP menu template.",
+        roles=(
+            PackRole("Going", "#2ecc71", emoji="✅", description="Count me in."),
+            PackRole("Maybe", "#f1c40f", emoji="🤔", description="Might make it."),
+            PackRole(
+                "Can't make it",
+                "#e74c3c",
+                emoji="❌",
+                description="Not this time.",
+            ),
+        ),
+    ),
+    RolePack(
         "notifications",
         "🔔 Notifications",
         "Opt-in ping roles for announcements and events.",

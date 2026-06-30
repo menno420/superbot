@@ -43,6 +43,14 @@ def test_expected_core_packs_present(key: str):
     assert role_packs.get_pack(key) is not None
 
 
+def test_event_rsvp_pack_offers_the_signup_options():
+    """The one-tap RSVP role set that pairs with the Event RSVP menu template."""
+    pack = role_packs.get_pack("event_rsvp")
+    assert pack is not None
+    names = {r.name for r in pack.roles}
+    assert names == {"Going", "Maybe", "Can't make it"}
+
+
 def test_role_presets_are_derived_from_the_essentials_pack():
     """The single-create dropdown (`ROLE_PRESETS`) and the multi-select Essentials
     pack share one data source, so they never drift apart.

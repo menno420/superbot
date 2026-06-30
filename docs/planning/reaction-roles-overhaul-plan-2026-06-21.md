@@ -102,6 +102,22 @@
 > safe because discord.py fully caches roles (a `None` resolve = genuinely deleted). The manual 🧹 button
 > still covers bindings on messages that never get reacted on.
 >
+> **▶ Refinement (2026-06-30, owner-directed — PR #1570):** **live sign-up counter on role menus**
+> (the event-RSVP ask from the Discord screenshots — "a counter that keeps track of how many people
+> pressed the button"). An **opt-in** per-menu flag (migration **103** `role_menus.show_counts`,
+> default off → existing menus byte-identical) renders a **live participant headcount** beside each
+> role on the public menu embed + a distinct-member footer total. Semantics = **current holders**
+> (`guild.members` ∩ the menu's roles), not a cumulative tally — so it drops when someone un-signs or
+> leaves and never drifts (deliberately distinct from the operator-only cumulative
+> `role_menu_pickup_stats`, §10). New `views/roles/role_menu_counter.py` owns the one-pass count
+> (`collect_counts` — per-role + distinct total, no double-count) and a **debounced**
+> `schedule_count_refresh` (trailing-edge ~2.5 s → ≤1 message edit per window, so a click-storm can't
+> rate-limit). The owner clarified it should support **multiple options** (Going / Maybe / Can't make
+> it) — the menu already renders one button per role, so a **📣 Event RSVP** starter template (button
+> + `unique` + counts on) and a matching **📣 Event RSVP** role pack (`utils/role_packs`) make the
+> multi-option live poll two taps away. Builder gains a **📊 Counts** toggle; threaded through the
+> audited `create_menu`/`update_menu` seam. No new commands.
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,

@@ -458,6 +458,7 @@ class RoleMenuBuilder(BaseView):
         self.template: str | None = None
         self.card_template: str | None = None
         self.card_text: str | None = None
+        self.show_counts = False
         self.role_ids: list[int] = []
 
         if parent is not None:
@@ -513,6 +514,7 @@ class RoleMenuBuilder(BaseView):
         builder.template = menu.get("template")
         builder.card_template = menu.get("card_template")
         builder.card_text = menu.get("card_text")
+        builder.show_counts = bool(menu.get("show_counts"))
         builder.role_ids = [o.role_id for o in options]
         return builder
 
@@ -551,13 +553,15 @@ class RoleMenuBuilder(BaseView):
         )
         card = presentation.get_card_template(self.card_template)
         card_str = card.label if card else "none"
+        counts_str = "on" if self.show_counts else "off"
         embed.add_field(
             name="Settings",
             value=(
                 f"Style: **{_STYLE_LABEL.get(self.style, self.style)}**\n"
                 f"Mode: **{_MODE_LABEL.get(self.mode, self.mode)}**\n"
                 f"Limit: **{limit}** · Theme: **{theme.label}**\n"
-                f"Card: **{card_str}** · Channel: {channel_str}{gradient_note}"
+                f"Card: **{card_str}** · Sign-up counts: **{counts_str}**\n"
+                f"Channel: {channel_str}{gradient_note}"
             ),
             inline=False,
         )
@@ -695,6 +699,18 @@ class RoleMenuBuilder(BaseView):
             ephemeral=True,
         )
 
+    @discord.ui.button(label="📊 Counts", style=discord.ButtonStyle.grey, row=2)
+    async def counts_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Toggle the live sign-up counter (current holders shown on the menu)."""
+        self.show_counts = not self.show_counts
+        if not await safe_defer(interaction):
+            return
+        await self._rerender()
+
     @discord.ui.button(label="🎭 Theme", style=discord.ButtonStyle.grey, row=1)
     async def theme_btn(
         self,
@@ -811,11 +827,9 @@ class RoleMenuBuilder(BaseView):
             self.description = tpl.description
             self.theme = tpl.theme
             self.style = tpl.style
+            self.mode = tpl.mode
+            self.show_counts = tpl.show_counts
             self.template = tpl.key
-            if tpl.key == "colour_roles":
-                self.mode = "unique"
-            elif tpl.key == "verify":
-                self.mode = "verify"
         await interaction.response.edit_message(
             content="✓ Template applied.",
             view=None,
@@ -883,6 +897,7 @@ class RoleMenuBuilder(BaseView):
             theme=self.theme,
             card_template=self.card_template,
             card_text=self.card_text,
+            show_counts=self.show_counts,
             actor_id=interaction.user.id,
         )
         menu = await service.get_menu(menu_id)
@@ -924,6 +939,7 @@ class RoleMenuBuilder(BaseView):
             theme=self.theme,
             card_template=self.card_template,
             card_text=self.card_text,
+            show_counts=self.show_counts,
             actor_id=interaction.user.id,
         )
         menu = await service.get_menu(self.menu_id)
