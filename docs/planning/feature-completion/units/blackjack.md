@@ -26,8 +26,9 @@
 ### B. UI & buttons — "right buttons in the right places"
 - [x] **Game panel exists** — Solo Free Play · Solo Bet · Challenge Player · Tournament · Status ·
       📖 Rules (`views/games/blackjack_panel.py:454-571`).
-- [ ] **Every action has a control in the right place** — yes for implemented actions; **PvP bet is
-      command-only** (`!bj @player [bet]`); the panel's "Challenge Player" has no bet selector. → punch-list #2.
+- [x] **Every action has a control in the right place** — yes for implemented actions; **PvP bet
+      selector added to the panel** (PR #1565): "Challenge Player" → opponent select → a Free/preset/Custom
+      stake picker (`_BlackjackChallengeBetView`, `blackjack_panel.py`), no longer command-only. → punch-list #2 ✅.
 - [x] **Rules affordance** — 📖 Rules on the panel.
 - [x] **Return navigation** — "◀ Back to Blackjack" on the result view (`solo_view.py:286-302`).
 - [x] **Terminal state correct** — disabled shells + result-view swap + `SettleOnceMixin` (PvP).
@@ -36,7 +37,8 @@
 ### C. Convenience — "the most convenient way"
 - [x] **No needless clicks** — bet presets 10/25/50/100/Custom (`blackjack_panel.py:173-214`).
 - [x] **Replay without retyping** — "🔁 Play again" reuses the same bet (`solo_view.py:286`).
-- [ ] **Quick re-bet** — "Play again" can't adjust the bet without going back to the picker. → minor (folded into #2).
+- [ ] **Quick re-bet** — "Play again" can't adjust the bet without going back to the picker. → minor
+      (solo-replay polish; PR #1565 shipped the PvP stake picker, not solo rebet — left as a small follow-up).
 - [x] **Reachable the natural way** — `!blackjack`/`!bj` + Games hub + Help.
 
 ### D. Edge cases & lifecycle — "works as intended"
@@ -62,34 +64,41 @@
 
 ### G. Tests & evidence (required for ✔)
 - [x] **Loop tests** — engine + solo/PvP/tournament persistence + replay (`tests/unit/.../test_blackjack_*`).
-- [ ] **Edge tests** — settle-once ✅; **tournament-timeout forfeit, guild-removal cleanup, and
-      natural-blackjack auto-payout are untested** (code paths exist). → punch-list #3.
+- [x] **Edge tests** — settle-once ✅; **tournament-timeout forfeit, guild-removal cleanup, and
+      natural-blackjack auto-payout now covered** (PR #1565 — `tests/unit/cogs/test_blackjack_edge_cases.py`,
+      7 cases). → punch-list #3 ✅.
 - [x] **Money tests** — escrow/settle covered via persistence + settle-once suites.
 - [ ] **Live walkthrough recorded** — pending. → punch-list #4.
 - [ ] **Owner ✔** — pending. → punch-list #5.
 
 ## Punch-list (clear these to certify)
 
-1. **Product decision: split / insurance / surrender.** Implement the three standard actions, **or**
-   the owner **waives** them as out-of-scope for SuperBot's blackjack (some bots deliberately omit
-   them). This is the one item that needs an owner call before it can be ticked or waived.
-2. **PvP bet selector in the panel** — add a bet picker to "Challenge Player" so PvP isn't
-   command-only; carries the quick-rebet convenience too.
-3. **Edge tests** — tournament-timeout forfeit, guild-removal cleanup, natural-blackjack payout.
+1. **Product decision: split / insurance / surrender.** ⏳ **owner call** — implement the three
+   standard actions, **or** the owner **waives** them as out-of-scope for SuperBot's blackjack (some
+   bots deliberately omit them). This is the one item that needs an owner call before it can be ticked
+   or waived.
+2. ✅ **PvP bet selector in the panel** (PR #1565) — "Challenge Player" now routes opponent select → a
+   Free/preset/Custom stake picker before building the challenge; PvP is no longer command-only.
+   (The quick-rebet solo-replay polish is left as a small follow-up — see the C. "Quick re-bet" row.)
+3. ✅ **Edge tests** (PR #1565) — tournament-timeout forfeit, guild-removal cleanup, natural-blackjack
+   payout, in `tests/unit/cogs/test_blackjack_edge_cases.py` (7 cases).
 4. **Live walkthrough** — `/verify-bot` boot + scripted click-through of solo / PvP / tournament,
-   with screenshots, attached here.
-5. **Owner sign-off** — maintainer plays it and confirms "nothing left to add or move."
+   with screenshots, attached here. ⏳ needs-live-bot.
+5. **Owner sign-off** — maintainer plays it and confirms "nothing left to add or move." ⏳ owner.
 
 ## Evidence
 
 - **Tests:** `tests/unit/services/test_blackjack_engine.py` · `tests/unit/cogs/test_blackjack_{solo,pvp,tournament}_persistence.py` ·
-  `tests/unit/views/test_blackjack_solo_replay.py` · `tests/unit/views/test_blackjack_pvp_settle_once.py`
+  `tests/unit/views/test_blackjack_solo_replay.py` · `tests/unit/views/test_blackjack_pvp_settle_once.py` ·
+  **`tests/unit/cogs/test_blackjack_edge_cases.py`** (timeout-forfeit / guild-remove / natural payout) ·
+  **`tests/unit/views/test_blackjack_panel_pvp_bet.py`** (PvP panel stake picker) — PR #1565
 - **Walkthrough:** pending (punch-list #4)
 - **Owner sign-off:** pending (punch-list #5)
 
 ## Verdict
 
 Blackjack is **substantially complete and production-safe** — all three modes, full money-safety,
-strong lifecycle handling, good test coverage. It is **not yet `✔ certified`**: it needs the owner's
-split/insurance/surrender call (#1), the PvP-panel bet selector (#2), three edge tests (#3), and the
-recorded walkthrough + sign-off (#4, #5). A focused session clears #2–#4; #1 and #5 are owner calls.
+strong lifecycle handling, good test coverage. **PR #1565 cleared the two offline-buildable punch-list
+items — #2 (PvP-panel bet selector) and #3 (edge tests).** It is **not yet `✔ certified`**: the
+remaining items all need the owner / a live bot — the split/insurance/surrender product call (#1), the
+recorded walkthrough (#4), and the owner sign-off (#5).

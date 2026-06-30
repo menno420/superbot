@@ -116,9 +116,13 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   reached via `!creatures` + both cogs' Help hooks, the **interactive dex browser** (element filter),
   the `entry_points` fix, and a **battle settle-once** guard — cert #1/#2/#3/#5 cleared (#4 was a
   no-op). **▶ Next turn-key picks:** **Creatures game panel for Welcome's missing command panel** is a
-  separate unit; the Mining how-to button (the ✔-ready candidate's last build gap) **shipped #1548**, so
-  within games the **Blackjack split/insurance/surrender** engine work remains; server-fn deepening picks
-  are listed in the assessments bullet below. **✅ DONE 2026-06-29 (#1550): Proof Channel** punch #1 + #2 —
+  separate unit; the Mining how-to button (the ✔-ready candidate's last build gap) **shipped #1548**.
+  **✅ DONE 2026-06-30 (#1565): Blackjack** punch #2 + #3 — the panel's PvP path now has a Free/preset/Custom
+  **stake picker** (was command-only / hardcoded bet=0) and the three named **edge paths are tested**
+  (tournament-timeout forfeit · guild-removal cleanup · natural-blackjack auto-payout); only the owner /
+  live-bot items remain (#1 split/insurance/surrender product call, #4 walkthrough, #5 sign-off).
+  server-fn deepening picks are listed in the assessments bullet below.
+  **✅ DONE 2026-06-29 (#1550): Proof Channel** punch #1 + #2 —
   the lock/unlock now audit (`prize_access_grant`/`revoke`) and every mutation callback re-checks
   `manage_channels` authority; cert advanced (only the binding-write UI + owner walkthrough remain).
   **✅ DONE 2026-06-29 (PR #1553): Inventory punch #5 (sort + filter) CLOSED** — the category detail view
@@ -157,8 +161,9 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   now `historical`). **✅ DONE
   2026-06-28 (#1527):** the Deathmatch PvP trapped views (+ the panel-PvP `ctx=None` crash, BUG-0028)
   **and** the RPS PvP-result dead-end were both fixed — `_PvpDuelResultView` / `_RpsPvpResultView` with
-  standard nav + rematch/back; both certs advanced toward ✔. The next turn-key gap is **Blackjack
-  punch-list #1** (split/insurance/surrender — bigger engine work, owner-paced). **▶ Owner decisions
+  standard nav + rematch/back; both certs advanced toward ✔. Blackjack's offline punch-list (#2 stake
+  picker + #3 edge tests) **shipped #1565**; its remaining **#1** (split/insurance/surrender — bigger
+  engine work) is **owner-paced** (the product call to implement-or-waive). **▶ Owner decisions
   waiting:** Word Chain re-classify, Counting XP/coin reward, Deathmatch optional coin-staking, plus
   every assessed unit's `◐ → ✔` live-walkthrough sign-off
   (`[needs-live-bot]`/`[owner]`).
