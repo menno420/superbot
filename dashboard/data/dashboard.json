@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T19:09:17Z",
+    "generated_at": "2026-06-30T22:10:17Z",
     "build": {
-      "commit": "8252a5d",
-      "subject": "Add fishing rod-recipe browser with live craft progress",
-      "committed_at": "2026-06-30T19:09:17Z"
+      "commit": "73b272b4",
+      "subject": "Merge pull request #1586 from menno420/claude/claude-md-conciseness-plan",
+      "committed_at": "2026-06-30T22:10:17Z"
     },
     "counts": {
       "functions": 43,
@@ -2711,9 +2711,9 @@
       "file": "2026-06-30-fishing-rod-recipe-browser.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Fishing rod-recipe browser (live progress toward each tier)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-06-30-ephemeral-panel-ownership-failclose.md",
