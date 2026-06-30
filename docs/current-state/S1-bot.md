@@ -16,6 +16,15 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Counters completion deepening** (PR #1568, completion-first deepening) — closed the Counters
+  completion cert's offline punch-list #1/#2/#4/#5. Added a curated `{count}` **template preset** catalog
+  (`TEMPLATE_PRESETS`: default/minimal/brackets/bullet) + `!counterpreset [name]` (lists them, or applies
+  all three templates at once **through the audited `SettingsMutationPipeline`** — re-checks
+  `counters.settings.configure`); a `/counters` **slash status** parity surface (ephemeral,
+  manage-guild-gated, reuses `_policy_embed`); **channel-type coverage** (voice/text/category all rename,
+  DM skipped — parametrized tests); and a **real end-to-end integration test** (stored settings →
+  `load_policy` → `sync_guild` → `counters.updated`). Pure additions, no migration; +18 tests
+  (~35 total on the unit). Remaining: #3 loop backoff (stateful) + owner walkthrough/sign-off.
 - **Cleanup history filters — content-type modes + age gate** (#1566, completion-first deepening) —
   closed the Cleanup completion cert's buildable punch-list (#2/#3). `!cleanuphistory` gained three
   content-type sweep modes (`embeds` / `links` / `attachments`, Carl-bot/MEE6/Dyno parity) and an
@@ -149,8 +158,9 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   cutoff in the pure `services/history_cleanup.py`; +12 tests). Punch #1 (panel authority re-check)
   found **already covered** (stale cert note corrected). Cleanup's remaining gaps: #4 spam-window
   setting (needs a config-input widget — deferred) + the owner walkthrough/sign-off (#5/#6).
-  **▶ Next turn-key picks:** **Counters** preset bundles (punch #1) · **Diagnostics** list pagination
-  (punch #2) · Cleanup #4 (spam-window setting *with* a Settings widget).
+  **▶ Next turn-key picks:** **Counters** loop backoff (punch #3) · **Diagnostics** list pagination
+  (punch #2) · Cleanup #4 (spam-window setting *with* a Settings widget). *(Counters punch #1/#2/#4/#5
+  ✅ #1568.)*
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
   now has a rubric-filled, source-grounded certificate under

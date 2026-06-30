@@ -107,6 +107,107 @@ class CounterPolicy:
         return bool(self.active)
 
 
+# ---------------------------------------------------------------------------
+# Curated template presets (counters completion punch #1).
+#
+# A small catalog of ready-made ``{count}`` template sets so an operator can
+# adopt a coherent look in one step instead of hand-typing three templates.
+# Pure data: the apply path (``cogs.counters_cog``) writes each kind's template
+# through the audited ``SettingsMutationPipeline``, exactly as the per-template
+# ``!settings`` widget does — so no validation or audit is bypassed.  The
+# ``default`` preset is byte-identical to the canonical defaults above.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CounterPreset:
+    """One curated set of ``{count}`` templates (one per counter kind)."""
+
+    key: str
+    label: str
+    templates: dict[str, str]  # kind -> template
+
+    def template_for(self, kind: str) -> str:
+        """Template for ``kind``, falling back to the canonical default."""
+        return self.templates.get(kind, _DEFAULT_TEMPLATE_BY_KIND[kind])
+
+
+_DEFAULT_TEMPLATE_BY_KIND: dict[str, str] = {
+    KIND_TOTAL: DEFAULT_TOTAL_TEMPLATE,
+    KIND_HUMANS: DEFAULT_HUMANS_TEMPLATE,
+    KIND_BOTS: DEFAULT_BOTS_TEMPLATE,
+}
+
+TEMPLATE_PRESETS: tuple[CounterPreset, ...] = (
+    CounterPreset(
+        key="default",
+        label="Default — emoji + label",
+        templates={
+            KIND_TOTAL: DEFAULT_TOTAL_TEMPLATE,
+            KIND_HUMANS: DEFAULT_HUMANS_TEMPLATE,
+            KIND_BOTS: DEFAULT_BOTS_TEMPLATE,
+        },
+    ),
+    CounterPreset(
+        key="minimal",
+        label="Minimal — label only, no emoji",
+        templates={
+            KIND_TOTAL: "Members: {count}",
+            KIND_HUMANS: "Humans: {count}",
+            KIND_BOTS: "Bots: {count}",
+        },
+    ),
+    CounterPreset(
+        key="brackets",
+        label="Brackets — compact count in brackets",
+        templates={
+            KIND_TOTAL: "Members [{count}]",
+            KIND_HUMANS: "Humans [{count}]",
+            KIND_BOTS: "Bots [{count}]",
+        },
+    ),
+    CounterPreset(
+        key="bullet",
+        label="Bullet — separator dot",
+        templates={
+            KIND_TOTAL: "👥 Members • {count}",
+            KIND_HUMANS: "🧑 Humans • {count}",
+            KIND_BOTS: "🤖 Bots • {count}",
+        },
+    ),
+)
+
+# Lookup keyed by preset key — built once (the catalog is immutable).
+_PRESETS_BY_KEY: dict[str, CounterPreset] = {p.key: p for p in TEMPLATE_PRESETS}
+
+
+def get_preset(key: str) -> CounterPreset | None:
+    """Return the :class:`CounterPreset` for ``key`` (case-insensitive), or None."""
+    return _PRESETS_BY_KEY.get(key.strip().lower())
+
+
+# The ``SettingSpec.name`` (in ``cogs/counters/schemas.py``) that stores each
+# kind's template — the apply path writes through these via the pipeline.
+TEMPLATE_SETTING_BY_KIND: dict[str, str] = {
+    KIND_TOTAL: "total_template",
+    KIND_HUMANS: "humans_template",
+    KIND_BOTS: "bots_template",
+}
+
+
+def preset_setting_writes(preset: CounterPreset) -> tuple[tuple[str, str], ...]:
+    """Return the ``(setting_name, template)`` writes that apply ``preset``.
+
+    Pure: maps the preset's per-kind templates onto the three template
+    ``SettingSpec`` names in kind order.  The cog feeds each pair to
+    :class:`services.settings_mutation.SettingsMutationPipeline` so coercion,
+    validation, audit, and the capability check all run unchanged.
+    """
+    return tuple(
+        (TEMPLATE_SETTING_BY_KIND[kind], preset.template_for(kind)) for kind in KINDS
+    )
+
+
 def parse_id(raw: object) -> int | None:
     """Parse a single id setting (channel) into an int, or None.
 
@@ -205,7 +306,13 @@ __all__ = [
     "KIND_TOTAL",
     "MAX_CHANNEL_NAME_LENGTH",
     "MAX_TEMPLATE_LENGTH",
+    "SUBSYSTEM",
+    "TEMPLATE_PRESETS",
+    "TEMPLATE_SETTING_BY_KIND",
     "CounterPolicy",
+    "CounterPreset",
+    "get_preset",
+    "preset_setting_writes",
     "load_policy",
     "parse_id",
     "render_counter_name",

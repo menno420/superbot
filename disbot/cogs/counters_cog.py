@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 
 from core.runtime import resources
@@ -107,6 +108,27 @@ class CountersCog(commands.Cog):
         )
         return embed
 
+    @staticmethod
+    def _presets_embed() -> discord.Embed:
+        """List the curated template presets + how to apply one."""
+        lines = []
+        for preset in counter_config.TEMPLATE_PRESETS:
+            sample = counter_config.render_counter_name(
+                preset.template_for(counter_config.KIND_TOTAL),
+                1234,
+            )
+            lines.append(f"**`{preset.key}`** — {preset.label}\n-# e.g. `{sample}`")
+        embed = discord.Embed(
+            title="🎨 Counter name presets",
+            description="\n".join(lines),
+            color=discord.Color.blurple(),
+        )
+        embed.set_footer(
+            text="Apply one with !counterpreset <name> "
+            "(sets all three name templates; admin only).",
+        )
+        return embed
+
     @commands.command(
         name="counters",
         help="Show the current server-counter channels for this server.",
@@ -118,6 +140,83 @@ class CountersCog(commands.Cog):
         """Render the effective counter policy (admin/manage-guild only)."""
         policy = await counter_config.load_policy(ctx.guild.id)
         await ctx.send(embed=self._policy_embed(ctx.guild, policy))
+
+    @commands.command(
+        name="counterpreset",
+        help=(
+            "Apply a curated counter name-template preset (sets all three "
+            "templates at once). Run without a name to list the presets."
+        ),
+    )
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    async def counter_preset(
+        self,
+        ctx: commands.Context,
+        name: str | None = None,
+    ) -> None:
+        """Apply one of the curated template presets through the audited seam.
+
+        With no ``name`` (or an unknown one) it lists the presets.  Applying a
+        preset writes each kind's template through
+        :class:`services.settings_mutation.SettingsMutationPipeline` — exactly
+        as the per-template ``!settings`` widget does — so coercion, validation,
+        audit, and the ``counters.settings.configure`` capability check all run.
+        """
+        if name is None:
+            await ctx.send(embed=self._presets_embed())
+            return
+
+        preset = counter_config.get_preset(name)
+        if preset is None:
+            keys = ", ".join(f"`{p.key}`" for p in counter_config.TEMPLATE_PRESETS)
+            await ctx.send(f"❌ Unknown preset `{name}`. Try one of: {keys}.")
+            return
+
+        from services.settings_mutation import (
+            SettingsMutationError,
+            SettingsMutationPipeline,
+        )
+
+        pipeline = SettingsMutationPipeline()
+        try:
+            for setting_name, template in counter_config.preset_setting_writes(preset):
+                await pipeline.set_value(
+                    ctx.guild,
+                    counter_config.SUBSYSTEM,
+                    setting_name,
+                    template,
+                    ctx.author,
+                )
+        except SettingsMutationError as exc:
+            await ctx.send(f"❌ Could not apply preset: {type(exc).__name__}: {exc}")
+            return
+
+        await ctx.send(
+            f"✅ Applied the **{preset.label}** preset to all three counter "
+            "name templates. Bound channels refresh on the next sync "
+            f"(~{_COUNTER_LOOP_MINUTES} min).",
+        )
+
+    @app_commands.command(
+        name="counters",
+        description="Show this server's live counter channels (members / humans / bots).",
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_guild=True)
+    async def counters_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the counter status — ephemeral, manage-guild gated."""
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "Counters are only available in a server.",
+                ephemeral=True,
+            )
+            return
+        policy = await counter_config.load_policy(interaction.guild.id)
+        await interaction.response.send_message(
+            embed=self._policy_embed(interaction.guild, policy),
+            ephemeral=True,
+        )
 
     async def build_help_menu_view(
         self,

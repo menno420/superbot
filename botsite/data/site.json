@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T03:07:59Z",
+    "generated_at": "2026-06-30T06:09:49Z",
     "build": {
-      "commit": "89f86281",
-      "subject": "Open born-red session card: cleanup history filters",
-      "committed_at": "2026-06-30T03:07:59Z"
+      "commit": "5ace5209",
+      "subject": "Counters completion deepening: open born-red session card + claim",
+      "committed_at": "2026-06-30T06:09:49Z"
     }
   },
   "counts": {
-    "commands": 463,
+    "commands": 465,
     "features": 43,
     "games": 12
   },
@@ -2458,12 +2458,60 @@
       "notes": null
     },
     {
+      "name": "counterpreset",
+      "aliases": [],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Apply a curated counter name-template preset (sets all three templates at once). Run without a name to list the presets.",
+      "description": "Apply one of the curated template presets through the audited seam.",
+      "use_cases": null,
+      "examples": [
+        "!settings"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Safety & Community — one operator landing",
+          "status": "ideas"
+        },
+        {
+          "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "counters",
       "aliases": [],
       "category": "community",
       "cooldown": null,
       "permissions": "administrator",
       "usage": "Show the current server-counter channels for this server.",
+      "description": "Render the effective counter policy (admin/manage-guild only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Safety & Community — one operator landing",
+          "status": "ideas"
+        },
+        {
+          "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "counters",
+      "aliases": [],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show this server's live counter channels (members / humans / bots).",
       "description": "Render the effective counter policy (admin/manage-guild only).",
       "use_cases": null,
       "examples": [],
