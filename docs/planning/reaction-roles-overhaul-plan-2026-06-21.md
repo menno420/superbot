@@ -118,6 +118,16 @@
 > multi-option live poll two taps away. Builder gains a **📊 Counts** toggle; threaded through the
 > audited `create_menu`/`update_menu` seam. No new commands.
 >
+> **▶ Refinement (2026-06-30, owner-directed — PR #1571):** **RSVP roster — "Who's in?"** The follow-on
+> to the counter (the idea flagged in #1570's session log, owner-approved). Counted menus gain a
+> persistent **👥 Who's in?** button (`role_menu:{menu_id}:roster`) whose callback posts an **ephemeral**
+> roster — one field per option listing the members who currently hold it (`build_roster_embed` in
+> `role_menu_counter`, member names truncated to fit the field cap with a "…and N more" tail). Gated on
+> the same opt-in `show_counts` and added only when the view has component room (a full 25-role button
+> menu has none). Read-only (`role.members`, no storage) — exposes nothing beyond Discord's own member
+> list, deliberately distinct from the per-user pickup history kept private in §9. No migration, no new
+> commands.
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,
