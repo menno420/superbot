@@ -73,6 +73,62 @@ def test_button_menu_builds_one_button_per_role():
     }
 
 
+def _roster_ids(view) -> list[str]:
+    return [
+        c.custom_id
+        for c in view.children
+        if getattr(c, "custom_id", "") == "role_menu:1:roster"
+    ]
+
+
+def test_no_roster_button_without_show_counts():
+    assert _roster_ids(rmv.RoleMenuView(_menu("dropdown"), _opts())) == []
+
+
+def test_dropdown_with_counts_adds_roster_button():
+    menu = _menu("dropdown")
+    menu["show_counts"] = True
+    assert _roster_ids(rmv.RoleMenuView(menu, _opts())) == ["role_menu:1:roster"]
+
+
+def test_button_menu_with_counts_adds_roster_button():
+    menu = _menu("button")
+    menu["show_counts"] = True
+    assert _roster_ids(rmv.RoleMenuView(menu, _opts())) == ["role_menu:1:roster"]
+
+
+def test_full_button_menu_skips_roster_for_component_budget():
+    menu = _menu("button")
+    menu["show_counts"] = True
+    opts = [{"role_id": 100 + i, "label": f"R{i}", "emoji": None} for i in range(25)]
+    view = rmv.RoleMenuView(menu, opts)
+    # 25 role buttons exhaust Discord's 25-component cap → roster is omitted.
+    assert len(view.children) == 25
+    assert _roster_ids(view) == []
+
+
+@pytest.mark.asyncio
+async def test_handle_roster_sends_ephemeral_embed():
+    menu = _menu("dropdown")
+    menu["show_counts"] = True
+    view = rmv.RoleMenuView(menu, _opts())
+    sentinel = discord.Embed(title="roster")
+    interaction = MagicMock()
+    interaction.guild = MagicMock()
+    interaction.response.send_message = AsyncMock()
+    with patch.object(
+        rmv.role_menu_counter,
+        "build_roster_embed",
+        return_value=sentinel,
+    ) as build:
+        await rmv._handle_roster(interaction, view)
+    build.assert_called_once()
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs["embed"] is sentinel
+    assert kwargs["ephemeral"] is True
+
+
 def test_select_bounds_honour_mode():
     assert rmv._select_bounds("unique", 0, 5) == (0, 1)
     assert rmv._select_bounds("normal", 3, 10) == (0, 3)
