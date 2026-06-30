@@ -45,10 +45,10 @@ only — never a value**; the values live in Railway service variables
 | `BTD6_INGESTION_ENABLED` | services | `disbot/services/btd6_ingestion_supervisor.py:32` *(default)* |
 | `BTD6_INGESTION_STARTUP_DELAY_S` | services | `disbot/services/btd6_ingestion_supervisor.py:34` *(default)* |
 | `BTD6_PASSIVE_CHANNELS` | cogs | `disbot/cogs/btd6/stage.py:80` *(default)* |
-| `CLAUDE_ROUTINE_BETA` | cogs | `disbot/cogs/hermes_cog.py:51` *(default)* |
-| `CLAUDE_ROUTINE_FIRE_URL` | cogs | `disbot/cogs/hermes_cog.py:49` *(default)* |
-| `CLAUDE_ROUTINE_TOKEN` | cogs | `disbot/cogs/hermes_cog.py:50` *(default)* |
-| `CLAUDE_ROUTINE_VERSION` | cogs | `disbot/cogs/hermes_cog.py:52` *(default)* |
+| `CLAUDE_ROUTINE_BETA` | cogs | `disbot/cogs/hermes_cog.py:52` *(default)* |
+| `CLAUDE_ROUTINE_FIRE_URL` | cogs | `disbot/cogs/hermes_cog.py:50` *(default)* |
+| `CLAUDE_ROUTINE_TOKEN` | cogs | `disbot/cogs/hermes_cog.py:51` *(default)* |
+| `CLAUDE_ROUTINE_VERSION` | cogs | `disbot/cogs/hermes_cog.py:53` *(default)* |
 | `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:111` *(default)* |
 | `DISCORD_WEBHOOK_URL` | config | `disbot/config.py:148` *(default)* |
 | `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:267` *(default)* |
