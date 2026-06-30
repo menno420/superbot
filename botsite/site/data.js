@@ -1541,6 +1541,30 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "counterpreset",
+    "area": "community",
+    "status": "in-progress",
+    "summary": "Apply a curated counter name-template preset (sets all three templates at once). Run without a name to list the presets.",
+    "description": "Apply one of the curated template presets through the audited seam.",
+    "usage": "!counterpreset",
+    "aliases": [],
+    "permissions": "Administrator",
+    "cooldown": null,
+    "examples": [
+      "!settings"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Safety & Community — one operator landing"
+      },
+      {
+        "status": "idea",
+        "title": "Community platform features — welcome, feeds, events, counters…"
+      }
+    ]
+  },
+  {
     "name": "counters",
     "area": "community",
     "status": "in-progress",
@@ -7072,7 +7096,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "89f86281",
+    "build": "5ace5209",
     "title": "New public bot website",
     "changes": [
       {
@@ -7084,7 +7108,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "89f86281",
+    "build": "5ace5209",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7096,7 +7120,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "89f86281",
+    "build": "5ace5209",
     "title": "Command-alias suggestions",
     "changes": [
       {

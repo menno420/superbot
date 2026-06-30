@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T05:33:23Z",
+    "generated_at": "2026-06-30T06:09:49Z",
     "build": {
-      "commit": "2d738a90",
-      "subject": "Merge pull request #1566 from menno420/claude/funny-franklin-zqttq0",
-      "committed_at": "2026-06-30T05:33:23Z"
+      "commit": "5ace5209",
+      "subject": "Counters completion deepening: open born-red session card + claim",
+      "committed_at": "2026-06-30T06:09:49Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 463,
+      "commands": 465,
       "setting_keys": 108,
       "setting_domains": 16,
       "typed_settings": 88,
@@ -2655,6 +2655,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-30-counters-completion-deepening.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Counters completion-cert deepening (Q-0209)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-cleanup-history-filters.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Cleanup history filters + age gate (completion-first deepening)",
@@ -3125,14 +3133,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-26-btd6-eval-anchor-coverage.md",
-      "date": "2026-06-26",
-      "title": "Session — 2026-06-26 · BTD6 eval-anchor coverage + distractor negative-anchor guard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -6135,6 +6135,17 @@
       "is_cog": true,
       "commands": [
         {
+          "name": "counterpreset",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Apply a curated counter name-template preset (sets all three templates at once). Run without a name to list the presets.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "counters",
           "type": "prefix",
           "is_group": false,
@@ -6142,6 +6153,17 @@
           "aliases": [],
           "brief": "Show the current server-counter channels for this server.",
           "classification": "primary_entrypoint",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "counters",
+          "type": "slash",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show this server's live counter channels (members / humans / bots).",
+          "classification": "",
           "has_panel": false,
           "button_backed": false
         }

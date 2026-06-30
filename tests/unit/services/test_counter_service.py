@@ -150,3 +150,61 @@ async def test_sync_load_policy_fault_fails_open(monkeypatch):
     )
     renamed = await counter_service.sync_guild(guild)  # no raise
     assert renamed == 0
+
+
+# ---------------------------------------------------------------------------
+# Channel-type handling (completion punch #4)
+#
+# Counters renames any bound *guild* channel — voice (the preferred kind per the
+# code comment), text, and category all qualify because each is a
+# ``discord.abc.GuildChannel``.  A non-guild target (e.g. a DM channel) is
+# rejected by ``_resolve_guild_channel`` and silently skipped.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "spec",
+    [discord.VoiceChannel, discord.TextChannel, discord.CategoryChannel],
+)
+@pytest.mark.asyncio
+async def test_sync_renames_every_guild_channel_type(monkeypatch, spec):
+    channel = MagicMock(spec=spec)
+    channel.name = "old"
+    channel.edit = AsyncMock()
+    guild = _guild(member_count=1235)
+    guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        counter_service.counter_config,
+        "load_policy",
+        AsyncMock(
+            return_value=CounterPolicy(
+                enabled=True,
+                total_channel_id=100,
+                total_template="👥 Members: {count}",
+            ),
+        ),
+    )
+    monkeypatch.setattr(counter_service, "_emit_updated", AsyncMock())
+
+    renamed = await counter_service.sync_guild(guild)
+    assert renamed == 1
+    channel.edit.assert_awaited_once()
+    assert channel.edit.await_args.kwargs["name"] == "👥 Members: 1,235"
+
+
+@pytest.mark.asyncio
+async def test_sync_skips_non_guild_channel(monkeypatch):
+    # A resolved target that is not a GuildChannel (e.g. a DM) is skipped, not
+    # renamed — _resolve_guild_channel returns None for it.
+    dm = MagicMock(spec=discord.DMChannel)
+    dm.edit = AsyncMock()
+    guild = _guild()
+    guild.get_channel.return_value = dm
+    monkeypatch.setattr(
+        counter_service.counter_config,
+        "load_policy",
+        AsyncMock(return_value=CounterPolicy(enabled=True, total_channel_id=100)),
+    )
+    renamed = await counter_service.sync_guild(guild)
+    assert renamed == 0
+    dm.edit.assert_not_called()

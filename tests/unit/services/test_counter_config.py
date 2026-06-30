@@ -74,3 +74,59 @@ async def test_load_policy_composes_typed_values(monkeypatch):
         counter_config.KIND_TOTAL,
         counter_config.KIND_BOTS,
     }
+
+
+# ---------------------------------------------------------------------------
+# Template presets (completion punch #1)
+# ---------------------------------------------------------------------------
+
+
+def test_default_preset_is_byte_identical_to_canonical_defaults():
+    default = counter_config.get_preset("default")
+    assert default is not None
+    assert default.template_for(counter_config.KIND_TOTAL) == (
+        counter_config.DEFAULT_TOTAL_TEMPLATE
+    )
+    assert default.template_for(counter_config.KIND_HUMANS) == (
+        counter_config.DEFAULT_HUMANS_TEMPLATE
+    )
+    assert default.template_for(counter_config.KIND_BOTS) == (
+        counter_config.DEFAULT_BOTS_TEMPLATE
+    )
+
+
+def test_get_preset_is_case_insensitive_and_tolerant():
+    assert counter_config.get_preset("MINIMAL") is counter_config.get_preset("minimal")
+    assert counter_config.get_preset("  brackets  ") is not None
+    assert counter_config.get_preset("does-not-exist") is None
+
+
+def test_every_preset_covers_every_kind_within_caps():
+    keys = {p.key for p in counter_config.TEMPLATE_PRESETS}
+    # Keys are unique and there is at least the curated set.
+    assert len(keys) == len(counter_config.TEMPLATE_PRESETS) >= 4
+    for preset in counter_config.TEMPLATE_PRESETS:
+        for kind in counter_config.KINDS:
+            template = preset.template_for(kind)
+            assert "{count}" in template
+            assert 0 < len(template) <= counter_config.MAX_TEMPLATE_LENGTH
+            # Rendered name stays within Discord's channel-name limit.
+            rendered = counter_config.render_counter_name(template, 123_456)
+            assert len(rendered) <= counter_config.MAX_CHANNEL_NAME_LENGTH
+
+
+def test_preset_setting_writes_maps_kinds_to_template_settings():
+    preset = counter_config.get_preset("minimal")
+    assert preset is not None
+    writes = dict(counter_config.preset_setting_writes(preset))
+    # One write per template SettingSpec, mapped from the kind's template.
+    assert writes == {
+        "total_template": preset.template_for(counter_config.KIND_TOTAL),
+        "humans_template": preset.template_for(counter_config.KIND_HUMANS),
+        "bots_template": preset.template_for(counter_config.KIND_BOTS),
+    }
+    # The setting names match the declared template SettingSpecs.
+    from cogs.counters.schemas import COUNTERS_SETTINGS
+
+    declared = {s.name for s in COUNTERS_SETTINGS}
+    assert set(writes) <= declared

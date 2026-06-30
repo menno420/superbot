@@ -1035,6 +1035,7 @@ EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
     "btd6menu": None,
     "bugreport": None,
     "community": None,
+    "counters": None,
     "dispatch": None,
     "economy": None,
     "games": None,
