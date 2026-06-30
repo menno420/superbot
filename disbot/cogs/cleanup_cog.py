@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import datetime as dt
 import logging
 import re
 
@@ -15,6 +16,7 @@ from core.runtime.message_pipeline import (
 from services import governance_service, moderation_service
 from services.governance_service import GovernanceContext
 from services.history_cleanup import (
+    HISTORY_CLEANUP_MODES,
     apply_history_cleanup_plan,
     build_history_cleanup_plan,
 )
@@ -46,6 +48,31 @@ def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
             )
             return rest.lower() if rest else None
     return None
+
+
+_DURATION_UNIT_SECONDS = {"s": 1, "m": 60, "h": 3600, "d": 86400}
+
+
+def _parse_duration_seconds(raw: str) -> int | None:
+    """Parse a short duration like ``7d`` / ``12h`` / ``30m`` / ``45s`` / ``90``.
+
+    Returns the duration in seconds, or ``None`` if *raw* is not a positive
+    duration. A bare integer is read as seconds. Used by the ``!cleanuphistory``
+    ``older:<duration>`` age gate.
+    """
+    raw = raw.strip().lower()
+    if not raw:
+        return None
+    unit_seconds = 1
+    if raw[-1] in _DURATION_UNIT_SECONDS:
+        unit_seconds = _DURATION_UNIT_SECONDS[raw[-1]]
+        raw = raw[:-1]
+    if not raw.isdigit():
+        return None
+    value = int(raw)
+    if value <= 0:
+        return None
+    return value * unit_seconds
 
 
 class CleanupStage:
@@ -277,7 +304,12 @@ class Cleanup(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     @commands.cooldown(1, 10, commands.BucketType.channel)
     async def cleanup_history(self, ctx, limit: int = 100, *, keyword: str = None):
-        """Clean matching channel history by keyword, commands, or prohibited words."""
+        """Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.
+
+        Modes: `keyword <text>` · `commands` · `prohibited` (default) · `spam` ·
+        `embeds` · `links` · `attachments`. Add `older:<duration>` (e.g.
+        `older:7d`, `older:12h`) to restrict the sweep to messages at least that old.
+        """
         if limit <= 0:
             await ctx.send(
                 "Please provide a positive number of messages to scan.",
@@ -295,15 +327,35 @@ class Cleanup(commands.Cog):
             )
 
         raw_filter = (keyword or "").strip()
-        parts = raw_filter.split(maxsplit=1) if raw_filter else []
+        tokens = raw_filter.split() if raw_filter else []
+
+        # Pull out an optional `older:<duration>` age gate (e.g. `older:7d`),
+        # composable with any mode. It is removed from the tokens before the
+        # mode/keyword are resolved so it never leaks into a keyword search.
+        older_than: dt.datetime | None = None
+        kept_tokens: list[str] = []
+        for token in tokens:
+            if token.lower().startswith("older:"):
+                seconds = _parse_duration_seconds(token.split(":", 1)[1])
+                if seconds is None:
+                    await ctx.send(
+                        "Usage: `older:<duration>` like `older:7d`, `older:12h`, "
+                        "`older:30m` (units d/h/m/s, or plain seconds).",
+                        delete_after=7,
+                    )
+                    return
+                older_than = discord.utils.utcnow() - dt.timedelta(seconds=seconds)
+            else:
+                kept_tokens.append(token)
+
         mode = "prohibited"
         query: str | None = None
-        if parts and parts[0].lower() in {"keyword", "commands", "prohibited", "spam"}:
-            mode = parts[0].lower()
-            query = parts[1] if len(parts) > 1 else None
-        elif raw_filter:
+        if kept_tokens and kept_tokens[0].lower() in HISTORY_CLEANUP_MODES:
+            mode = kept_tokens[0].lower()
+            query = " ".join(kept_tokens[1:]) or None
+        elif kept_tokens:
             mode = "keyword"
-            query = raw_filter
+            query = " ".join(kept_tokens)
 
         if mode == "keyword" and not query:
             await ctx.send(
@@ -331,6 +383,7 @@ class Cleanup(commands.Cog):
             prohibited_words=prohibited_words,
             exclude_message_ids={ctx.message.id},
             spam_duplicate_window_seconds=SPAM_DUPLICATE_WINDOW_SECONDS,
+            older_than=older_than,
         )
         final_msg = None
         confirmation_msg = None

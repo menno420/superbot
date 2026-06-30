@@ -10,6 +10,22 @@ import discord
 
 logger = logging.getLogger("bot.history_cleanup")
 
+# A URL in the message body — used by the ``links`` content-type sweep mode.
+_LINK_RE = re.compile(r"https?://\S+", re.IGNORECASE)
+
+# Every supported ``!cleanuphistory`` mode. ``keyword``/``commands``/``prohibited``/
+# ``spam`` match by content; ``embeds``/``links``/``attachments`` match by what a
+# message *carries* (Carl-bot/MEE6/Dyno parity).
+HISTORY_CLEANUP_MODES = (
+    "keyword",
+    "commands",
+    "prohibited",
+    "spam",
+    "embeds",
+    "links",
+    "attachments",
+)
+
 
 def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
     for prefix in prefixes:
@@ -33,14 +49,23 @@ async def build_history_cleanup_plan(
     channel,
     *,
     limit: int,
-    mode: Literal["keyword", "commands", "prohibited", "spam"],
+    mode: Literal[
+        "keyword",
+        "commands",
+        "prohibited",
+        "spam",
+        "embeds",
+        "links",
+        "attachments",
+    ],
     keyword: str | None = None,
     command_prefixes: list[str] | None = None,
     prohibited_words: list[str] | None = None,
     exclude_message_ids: set[int] | None = None,
     spam_duplicate_window_seconds: int = 15,
+    older_than: dt.datetime | None = None,
 ) -> HistoryCleanupPlan:
-    if mode not in {"keyword", "commands", "prohibited", "spam"}:
+    if mode not in HISTORY_CLEANUP_MODES:
         raise ValueError(f"Unsupported cleanuphistory mode: {mode}")
 
     scanned = 0
@@ -54,6 +79,13 @@ async def build_history_cleanup_plan(
     ]
     keyword_norm = keyword.lower() if keyword else None
     spam_last_seen: dict[str, dt.datetime] = {}
+
+    def _older_enough(message) -> bool:
+        # The age gate composes with every mode: when set, only messages created
+        # at or before the cutoff match. ``created_at`` is tz-aware UTC.
+        if older_than is None:
+            return True
+        return message.created_at <= older_than
 
     async for message in channel.history(limit=limit):
         scanned += 1
@@ -78,10 +110,16 @@ async def build_history_cleanup_plan(
             include = any(
                 pattern.search(message.content or "") for pattern in prohibited_patterns
             )
+        elif mode == "embeds":
+            include = bool(message.embeds)
+        elif mode == "links":
+            include = bool(_LINK_RE.search(message.content or ""))
+        elif mode == "attachments":
+            include = bool(message.attachments)
         elif mode == "spam":
             # processed in a second pass oldest→newest (history API is newest→oldest)
             continue
-        if include:
+        if include and _older_enough(message):
             matched.append(message)
     if mode == "spam":
         for message in reversed(scanned_messages):
@@ -97,7 +135,8 @@ async def build_history_cleanup_plan(
                 continue
             delta = (created_at - previous).total_seconds()
             if delta <= spam_duplicate_window_seconds:
-                matched.append(message)
+                if _older_enough(message):
+                    matched.append(message)
             else:
                 spam_last_seen[normalized] = created_at
     return HistoryCleanupPlan(scanned=scanned, matched=matched)

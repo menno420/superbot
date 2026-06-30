@@ -16,6 +16,15 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Cleanup history filters — content-type modes + age gate** (#1566, completion-first deepening) —
+  closed the Cleanup completion cert's buildable punch-list (#2/#3). `!cleanuphistory` gained three
+  content-type sweep modes (`embeds` / `links` / `attachments`, Carl-bot/MEE6/Dyno parity) and an
+  `older:<duration>` age gate (e.g. `older:7d`) composable with every mode — both in the pure
+  `services/history_cleanup.py` (`HISTORY_CLEANUP_MODES`, `older_than` cutoff) with cog-side
+  `older:`-token parsing + a `_parse_duration_seconds` helper. Found punch-list #1 (panel
+  authority-recheck) **already covered** by `test_apply_button_requires_admin` — corrected the stale
+  cert note. #4 (configurable spam window) honestly deferred (needs a config-input widget, not a
+  constant rename). +12 tests; no migration; self-merged on green.
 - **Operator command gaps — `!slowmode` · `!topic` · `!roleinfo`** (#1561, completion-first deepening) —
   the assessment punch-list's named *"best-in-class command gaps (channel slowmode/topic, utility
   roleinfo)"*. `!slowmode <ch> <secs>` (alias `!slow`) + `!topic <ch> <text>` (alias `!settopic`) are
@@ -134,6 +143,14 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   (`scripts/check_completion_ledger_parity.py`, the Q-0089 follow-up the README flagged) — every
   certifiable registry subsystem has exactly one ledger row + cert, enforced by a pytest regression. (Creatures' `◐ → ✔` still needs the owner live walkthrough +
   sign-off, punch-list #6/#7.)
+  **✅ DONE 2026-06-30 (#1566): Cleanup punch #2 + #3 CLOSED** — `!cleanuphistory` gained three
+  content-type sweep modes (`embeds`/`links`/`attachments`, Carl-bot/MEE6/Dyno parity) + an
+  `older:<duration>` age gate composable with every mode (`HISTORY_CLEANUP_MODES` + `older_than`
+  cutoff in the pure `services/history_cleanup.py`; +12 tests). Punch #1 (panel authority re-check)
+  found **already covered** (stale cert note corrected). Cleanup's remaining gaps: #4 spam-window
+  setting (needs a config-input widget — deferred) + the owner walkthrough/sign-off (#5/#6).
+  **▶ Next turn-key picks:** **Counters** preset bundles (punch #1) · **Diagnostics** list pagination
+  (punch #2) · Cleanup #4 (spam-window setting *with* a Settings widget).
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
   now has a rubric-filled, source-grounded certificate under
