@@ -7781,3 +7781,55 @@ distinct command, untouched.
 `.claude/CLAUDE.md` § Helpers "Exact-name guard (Q-0200)" (the sibling same-module guard this extends
 cross-cog). Related: **Q-0200** (exact-name collision guard), **Q-0194** (friction → guard), **Q-0132**
 (enforce, don't exhort).
+
+### Q-0212 — DECIDED: bot owner has full bot-config authority in any guild they're in (2026-06-30)
+
+> **Context.** Owner request: *"as bot owner I always have full bot permissions in any server that I'm
+> in, even if I don't actually have permissions there — not to alter the server, but to make sure the
+> bot is properly set up and has the right settings enabled, like the AI and which channels it can do
+> certain things in."* Research found the bot already treats the configured owner
+> (`config.BOT_OWNER_USER_ID`, the `PermissionTier.PLATFORM_OWNER` allowlist) specially for **AI scope**
+> (`_derive_scope` → `AIScope.PLATFORM_OWNER`), **global settings** (owner-only), and a
+> **bootstrap-command channel bypass** — but there was **no** override for *per-guild configuration
+> authority*: a bot owner who is a plain member of a guild resolved to `tier="user"` and was denied by
+> every guild-config seam, so they could *open* `!settings`/`!setup` but not actually apply AI / channel
+> / setup changes.
+
+**Area:** Governance / authority · **Type:** Owner directive (durable policy) · **Status:** Answered
+(live, in-session) — applied + routed to a single-source helper + tests + `capability-authority.md`.
+
+**The decision.** The configured bot owner holds **full bot-*configuration* authority in any guild they
+are a member of**, even without Discord permissions there (set the bot up, AI policy, command channels,
+settings, governance writes). This is *configuration* authority, not "moderate/alter the server" — it
+exists so the owner can always make the bot work correctly.
+
+**Implementation — one source of truth, wired into every authority seam.** A single helper
+`config.is_platform_owner(user_id)` (config is a layer-free leaf importable everywhere) is the only
+thing each seam keys on:
+- **Governance:** `capability.actor_holds_capability` (step 3, after target-guild membership, before the
+  revoke overlay — see `capability-authority.md` §1), `resolver._resolve_member_tier` (elevates to the
+  `owner` visibility tier → feeds `resolve_visibility` / `resolve_execution` / `can_execute`),
+  `writes._validate_authority` (governance writes = per-channel subsystem visibility).
+- **Services:** the five duplicated `_check_admin` gates (`ai_policy` / `ai_instruction` /
+  `ai_orchestration` / `btd6_source` / `help_overlay`) + `setup_access` (`is_setup_admin` /
+  `can_apply_setup` / `can_apply_setup_by_id`).
+- **Views:** the canonical `base.interaction_is_admin` + new `base.member_is_admin`, with the inline raw
+  `guild_permissions` config gates (AI panel/behavior/tools, settings command-access, essential_setup)
+  routed through them — so the owner can *see & use* the config UI, not just pass the mutation check.
+- Consolidated the pre-existing inline `== BOT_OWNER_USER_ID` checks (settings global scope, `ai_tools`,
+  `bot_knowledge_service`, `_derive_scope`) onto the same helper.
+
+**Scope boundary / safety (agent judgment, recorded for review).** Purely **additive** — only ever
+*grants* the one configured owner id; one-user blast radius; no existing user loses access. The
+governance override sits **after** the "actor must be a member of the target guild" check, so it does
+**not** weaken the cross-guild invariant ("authority bound to the write target"). It deliberately does
+**not** broaden command-access beyond the existing bootstrap bypass, and does **not** touch
+feature/game-admin moderation gates (e.g. starboard/tickets/moderation/game panels) — the directive is
+*bot configuration*, not "run everything everywhere." If the owner ever wants this off, unset
+`BOT_OWNER_USER_ID` (the same switch that governs every other owner power).
+
+**Home:** `disbot/config.py` (`is_platform_owner`, single source) + `docs/capability-authority.md` §1
+step 3 (canonical authority contract) + `disbot/governance/permission_tiers.py` PLATFORM_OWNER docstring
++ `tests/unit/test_platform_owner_override.py` (every seam). Related: **Q-0098** (setup-delegate apply
+authority — the sibling below-floor grant), **Q-0048** (read-only AI tool posture), **Q-0200** (exact-name
+helper guard — `is_platform_owner` is the canonical owner-check that supersedes the inline duplicates).

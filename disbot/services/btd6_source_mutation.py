@@ -48,12 +48,19 @@ _VALID_TIERS = frozenset({1, 2})
 def _check_admin(actor: Any) -> int | None:
     if actor is None:
         raise UnauthorizedSourceMutationError("actor is required")
+    # Platform-owner override: the configured bot owner administers config in any
+    # guild, even without Discord admin there (single source: config).
+    from config import is_platform_owner
+
+    actor_id = getattr(actor, "id", None)
+    if is_platform_owner(actor_id):
+        return actor_id
     perms = getattr(actor, "guild_permissions", None)
     if perms is None or not getattr(perms, "administrator", False):
         raise UnauthorizedSourceMutationError(
             "btd6 source mutations require administrator permission",
         )
-    return getattr(actor, "id", None)
+    return actor_id
 
 
 async def upsert_source(

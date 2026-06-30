@@ -42,6 +42,37 @@ try:
 except ValueError:
     BOT_OWNER_USER_ID = None
 
+
+def is_platform_owner(user_id: int | None) -> bool:
+    """True iff ``user_id`` is the deploy-declared bot/platform owner.
+
+    The single source of truth for "is this the bot owner?".  The platform
+    owner is :data:`BOT_OWNER_USER_ID` — the ``PermissionTier.PLATFORM_OWNER``
+    deploy-time allowlist (see :mod:`governance.permission_tiers`).  Identity
+    is the authoritative Discord user id (``message.author.id`` /
+    ``interaction.user.id``), never message text, so it cannot be spoofed.
+
+    The configured owner holds **full bot-configuration authority in every
+    guild they are a member of**, even without Discord permissions there — so
+    they can always set the bot up correctly (AI policy, command channels,
+    setup, settings) regardless of their server role.  Every authority seam
+    (governance capability/visibility, the service mutation gates, setup
+    access, and the view admin gates) routes its owner check through here so
+    the rule lives in exactly one place.  ``config`` is a layer-free leaf
+    module importable from every layer, so callers in ``governance`` /
+    ``services`` / ``views`` all share this one definition.
+
+    Returns ``False`` for ``None`` and when no owner is configured
+    (``BOT_OWNER_USER_ID is None``) so an unconfigured deployment grants no
+    one elevated authority by accident.
+    """
+    return (
+        user_id is not None
+        and BOT_OWNER_USER_ID is not None
+        and user_id == BOT_OWNER_USER_ID
+    )
+
+
 # ==========================
 # Initial Cogs (Extensions)
 # ==========================

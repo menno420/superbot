@@ -11,6 +11,7 @@ import logging
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+from config import is_platform_owner
 from governance.cache import (
     _CACHE_LOCK,
     _FAILED_SUBSYSTEMS,
@@ -210,6 +211,17 @@ async def _resolve_member_tier(ctx: GovernanceContext) -> str:
 
     if ctx.member is None:
         return "user"
+
+    # Platform-owner override: the configured bot owner
+    # (config.BOT_OWNER_USER_ID / PermissionTier.PLATFORM_OWNER) is treated as
+    # the top visibility tier in any guild they are a member of, so they see
+    # every subsystem and pass execution gates (resolve_execution / can_execute)
+    # — letting them set the bot up correctly even without Discord perms there.
+    # "owner" is the maximum tier in VISIBILITY_TIERS; returning it here (after
+    # the declared-tier simulation path above) keeps audience-simulation
+    # previews honest while elevating the real owner.
+    if is_platform_owner(ctx.member.id):
+        return "owner"
 
     tier = get_member_visibility_tier(
         ctx.member,

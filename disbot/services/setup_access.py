@@ -32,6 +32,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from config import is_platform_owner
+
 if TYPE_CHECKING:
     import discord
 
@@ -65,7 +67,13 @@ def is_setup_admin(
     A ``None`` session means no row exists yet (e.g. the bot was
     only just invited); we still grant access to owners and
     administrators since they would be the ones to start the session.
+
+    The configured **platform owner** (``config.BOT_OWNER_USER_ID``) always
+    qualifies, so the bot owner can run setup in any guild even without
+    Discord permissions there.
     """
+    if is_platform_owner(getattr(member, "id", None)):
+        return True
     if is_server_owner(member):
         return True
     if is_administrator(member):
@@ -105,7 +113,12 @@ def can_apply_setup(
     access — they can still run the readiness scan but the wizard
     refuses to write on their behalf so the owner stays in control
     of capability-significant changes.
+
+    The configured **platform owner** (``config.BOT_OWNER_USER_ID``) always
+    qualifies, so the bot owner can apply setup in any guild.
     """
+    if is_platform_owner(getattr(member, "id", None)):
+        return True
     if is_server_owner(member):
         return True
     return bool(session is not None and member.id in session.delegated_admins)
@@ -129,9 +142,11 @@ def can_apply_setup_by_id(
 
     Used by :mod:`services.readiness_repair` (Track 2 PR 6) which
     accepts an ``actor_id`` without resolving the Member object. The
-    semantics match :func:`can_apply_setup` exactly: owner OR
-    delegated admin.
+    semantics match :func:`can_apply_setup` exactly: platform owner OR
+    server owner OR delegated admin.
     """
+    if is_platform_owner(user_id):
+        return True
     if user_id == guild_owner_id:
         return True
     return user_id in delegated_admins
