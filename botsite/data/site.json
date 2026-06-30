@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T23:48:08Z",
+    "generated_at": "2026-06-30T03:07:59Z",
     "build": {
-      "commit": "47a44e61",
-      "subject": "Merge pull request #1561 from menno420/claude/funny-franklin-j3598t",
-      "committed_at": "2026-06-29T23:48:08Z"
+      "commit": "89f86281",
+      "subject": "Open born-red session card: cleanup history filters",
+      "committed_at": "2026-06-30T03:07:59Z"
     }
   },
   "counts": {
@@ -10119,8 +10119,8 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Clean matching channel history by keyword, commands, or prohibited words.",
-      "description": "Clean matching channel history by keyword, commands, or prohibited words.",
+      "usage": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
+      "description": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
       "use_cases": null,
       "examples": [],
       "status": "finished",

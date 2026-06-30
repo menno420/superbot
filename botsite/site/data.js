@@ -1304,8 +1304,8 @@ const COMMANDS = [
     "name": "cleanuphistory",
     "area": "moderation",
     "status": "finished",
-    "summary": "Clean matching channel history by keyword, commands, or prohibited words.",
-    "description": "Clean matching channel history by keyword, commands, or prohibited words.",
+    "summary": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
+    "description": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
     "usage": "!cleanuphistory",
     "aliases": [],
     "permissions": "Administrator",
@@ -7072,7 +7072,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "47a44e61",
+    "build": "89f86281",
     "title": "New public bot website",
     "changes": [
       {
@@ -7084,7 +7084,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "47a44e61",
+    "build": "89f86281",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7096,7 +7096,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "47a44e61",
+    "build": "89f86281",
     "title": "Command-alias suggestions",
     "changes": [
       {
