@@ -1,0 +1,1 @@
+- `claude/funny-franklin-d1m4wk` · diagnostics + counters completion-deepening · `disbot/views/diagnostic/`, `disbot/cogs/diagnostic/`, `disbot/cogs/counter*`, `disbot/services/counter*` + tests · 2026-06-30
