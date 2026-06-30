@@ -1,0 +1,1 @@
+ - `claude/reaction-roles-counter-bgxnyd` · **reaction-roles RSVP roster** — "Who's in?" button on counted menus (ephemeral list of who picked each option) · `disbot/views/roles/role_menu_view.py` `disbot/views/roles/role_menu_counter.py` · 2026-06-30 · in-progress
