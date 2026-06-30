@@ -190,7 +190,7 @@ class AIReviewCog(commands.Cog):
         embed.set_footer(
             text=(
                 "!aireview channel #chan · !aireview list [unknown|correction] · "
-                "!aireview resolve <id> · !aireview off"
+                "!aireview export · !aireview resolve <id> · !aireview off"
             ),
         )
         await ctx.send(embed=embed)
@@ -270,6 +270,63 @@ class AIReviewCog(commands.Cog):
         embed.set_footer(text="Mark one done with !aireview resolve <id>")
         await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
 
+    @aireview_group.command(name="export")  # type: ignore[arg-type]
+    @commands.has_permissions(manage_guild=True)
+    async def aireview_export(
+        self,
+        ctx: commands.Context,
+        *flags: str,
+    ) -> None:
+        """Dump the backlog as a JSON file for triage.
+
+        ``!aireview export`` — all unreviewed entries (both kinds).
+        ``!aireview export unknown`` / ``correction`` — filter by kind.
+        ``!aireview export all`` — include already-resolved entries too.
+
+        The text is already redacted at write time, so the dump carries no
+        un-scrubbed content. Feed it to ``scripts/ai_review_triage.py``.
+        """
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        filter_kind, include_reviewed = _parse_export_flags(flags)
+        entries = await review.export(
+            guild.id,
+            kind=filter_kind,
+            include_reviewed=include_reviewed,
+        )
+        if not entries:
+            scope = "any" if include_reviewed else "unreviewed"
+            await ctx.send(f"No {scope} AI review entries to export.")
+            return
+        import io
+        import json
+
+        payload = {
+            "schema": "ai_review_export",
+            "version": 1,
+            "guild_id": guild.id,
+            "kind": filter_kind or "all",
+            "include_reviewed": include_reviewed,
+            "count": len(entries),
+            "entries": entries,
+        }
+        blob = json.dumps(payload, indent=2, ensure_ascii=False)
+        data = io.BytesIO(blob.encode("utf-8"))
+        await ctx.send(
+            content=(
+                f"📤 Exported **{len(entries)}** AI review "
+                f"{'entry' if len(entries) == 1 else 'entries'} "
+                f"({'all' if include_reviewed else 'unreviewed'}"
+                f"{', ' + filter_kind if filter_kind else ''}). "
+                "Paste this file's contents back to work the backlog, or run "
+                "`scripts/ai_review_triage.py` on it."
+            ),
+            file=discord.File(data, filename=f"ai_review_export_{guild.id}.json"),
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @aireview_group.command(name="resolve")  # type: ignore[arg-type]
     @commands.has_permissions(manage_guild=True)
     async def aireview_resolve(self, ctx: commands.Context, entry_id: int) -> None:
@@ -291,6 +348,22 @@ class AIReviewCog(commands.Cog):
 # ---------------------------------------------------------------------------
 # Embed / text helpers
 # ---------------------------------------------------------------------------
+
+
+def _parse_export_flags(flags: tuple[str, ...]) -> tuple[str | None, bool]:
+    """Parse ``!aireview export`` flags → ``(kind_filter, include_reviewed)``.
+
+    ``all`` → include resolved entries; ``unknown``/``correction`` (or ``u``/``c``)
+    → filter by kind. Pure + order-independent so it is unit-testable.
+    """
+    lowered = {f.lower() for f in flags}
+    include_reviewed = "all" in lowered
+    filter_kind: str | None = None
+    if {"unknown", "u", "unknowns"} & lowered:
+        filter_kind = review.KIND_UNKNOWN
+    elif {"correction", "corrections", "c"} & lowered:
+        filter_kind = review.KIND_CORRECTION
+    return filter_kind, include_reviewed
 
 
 def _clip(text: object, cap: int = 1000) -> str:

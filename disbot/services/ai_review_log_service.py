@@ -342,6 +342,38 @@ async def query(
     )
 
 
+async def export(
+    guild_id: int,
+    *,
+    kind: str | None = None,
+    include_reviewed: bool = True,
+    limit: int = 1000,
+) -> list[dict[str, Any]]:
+    """Triage-ready export of a guild's review entries (read-only).
+
+    Returns plain JSON-serializable dicts (``created_at`` as an ISO string) for
+    the operator ``!aireview export`` dump → ``scripts/ai_review_triage.py``.
+    Text is already redacted at write time, so the export carries no un-scrubbed
+    content. Newest handling first happens downstream; rows arrive oldest-first.
+    """
+    from utils.db import ai_review as ai_review_db
+
+    rows = await ai_review_db.export_review_entries(
+        guild_id,
+        kind=kind,
+        include_reviewed=include_reviewed,
+        limit=max(1, min(5000, int(limit))),
+    )
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        item = dict(row)
+        created = item.get("created_at")
+        if isinstance(created, datetime):
+            item["created_at"] = created.isoformat()
+        out.append(item)
+    return out
+
+
 async def mark_reviewed(guild_id: int, entry_id: int) -> bool:
     """Mark one entry reviewed; True if a row matched. Fail-safe."""
     try:
@@ -401,6 +433,7 @@ __all__ = [
     "AnswerContext",
     "already_flagged",
     "count_unreviewed",
+    "export",
     "lookup_answer",
     "mark_reviewed",
     "query",

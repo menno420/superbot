@@ -42,11 +42,15 @@ def _stub(monkeypatch):
     async def _count_unreviewed(guild_id, *, kind=None):
         return len(rows)
 
+    async def _export_review_entries(guild_id, *, kind=None, include_reviewed=True, limit=1000):
+        return [r for r in rows if r.get("guild_id") == guild_id]
+
     async def _emit(event, **payload):
         emitted.append({"event": event, **payload})
 
     monkeypatch.setattr(ai_review_db, "record_review_entry", _record_review_entry)
     monkeypatch.setattr(ai_review_db, "query_review_entries", _query_review_entries)
+    monkeypatch.setattr(ai_review_db, "export_review_entries", _export_review_entries)
     monkeypatch.setattr(ai_review_db, "mark_reviewed", _mark_reviewed)
     monkeypatch.setattr(ai_review_db, "count_unreviewed", _count_unreviewed)
     monkeypatch.setattr(events_mod.bus, "emit", _emit)
@@ -169,6 +173,27 @@ def test_registry_remember_lookup_and_miss(_stub) -> None:
     ctx = svc.lookup_answer(10)
     assert ctx is not None and ctx.guild_id == 1 and ctx.question == "q"
     assert svc.lookup_answer(11) is None
+
+
+async def test_export_normalizes_datetime_to_iso(_stub) -> None:
+    from datetime import datetime, timezone
+
+    _stub.rows.append(
+        {
+            "guild_id": 7,
+            "id": 1,
+            "kind": svc.KIND_UNKNOWN,
+            "question": "q",
+            "created_at": datetime(2026, 6, 30, 12, 0, tzinfo=timezone.utc),
+        },
+    )
+    out = await svc.export(7)
+    assert len(out) == 1
+    # created_at is JSON-serializable (ISO string, not a datetime).
+    assert out[0]["created_at"] == "2026-06-30T12:00:00+00:00"
+    import json
+
+    json.dumps(out)  # must not raise
 
 
 async def test_query_and_mark_reviewed_passthrough(_stub) -> None:
