@@ -32,7 +32,14 @@ from collections.abc import Sequence
 
 import discord
 
+from core.runtime import resources
+from utils import role_menu_presentation as presentation
+
 logger = logging.getLogger("bot.views.role_menu_counter")
+
+# Discord's embed-field value cap; a roster option's member list is truncated to
+# fit, with an "…and N more" tail naming how many were elided.
+_ROSTER_FIELD_CAP = 1024
 
 # Coalesce a click-burst into one message edit per window per message. In-memory
 # only: a refresh lost to a restart is harmless — the next click re-renders and
@@ -77,6 +84,68 @@ def format_total(total: int) -> str:
     """Render the distinct-member total as the footer headcount line."""
     noun = "person" if total == 1 else "people"
     return f"👥 {total} {noun} signed up"
+
+
+def _join_members(members: Sequence[discord.Member]) -> str:
+    """Join member mentions, truncated to one embed field with an "…and N more" tail.
+
+    Mentions render as clickable names and never ping inside an embed. A busy
+    option (hundreds of holders) is cut to fit Discord's 1024-char field cap;
+    the tail names how many were elided so the count still reads honestly.
+    """
+    mentions = [m.mention for m in members]
+    if not mentions:
+        return "—"
+    shown: list[str] = []
+    used = 0
+    for mention in mentions:
+        sep = 1 if shown else 0
+        # Reserve room for a possible "…and N more" tail.
+        if used + sep + len(mention) > _ROSTER_FIELD_CAP - 20 and shown:
+            break
+        shown.append(mention)
+        used += sep + len(mention)
+    text = " ".join(shown)
+    hidden = len(mentions) - len(shown)
+    if hidden:
+        text += f"\n…and {hidden} more"
+    return text
+
+
+def build_roster_embed(
+    menu: dict | None,
+    options: Sequence[dict],
+    guild: discord.Guild,
+) -> discord.Embed:
+    """Render "who's in" for a counted menu — one field per option + its holders.
+
+    The roster reads **current holders** live (``role.members``) — the same
+    primitive as the counter — so it never needs stored per-user history. Options
+    whose role was deleted are skipped; an option with no holders reads "—". The
+    member list per option is truncated to fit the embed (see :func:`_join_members`).
+    """
+    theme = presentation.get_theme((menu or {}).get("theme"))
+    title = (menu or {}).get("title") or "Pick your roles"
+    embed = discord.Embed(title=f"👥 Who's in — {title}", color=theme.color)
+    any_option = False
+    for opt in options:
+        role = resources.resolve_role(guild, role_id=int(opt["role_id"]))
+        if role is None:
+            continue
+        any_option = True
+        label = opt.get("label") or role.name
+        members = sorted(
+            getattr(role, "members", []),
+            key=lambda m: (m.display_name or "").lower(),
+        )
+        embed.add_field(
+            name=f"{label} · {len(members)}",
+            value=_join_members(members),
+            inline=False,
+        )
+    if not any_option:
+        embed.description = "This menu has no live roles right now."
+    return embed
 
 
 def schedule_count_refresh(
@@ -143,6 +212,7 @@ async def _run_refresh(message: discord.Message, menu_id: int) -> None:
 
 
 __all__ = [
+    "build_roster_embed",
     "collect_counts",
     "format_count",
     "format_total",
