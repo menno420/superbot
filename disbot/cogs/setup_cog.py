@@ -34,12 +34,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-# Imported for its registration side effect: section modules register
-# themselves into services.setup_sections.REGISTRY at import time. The
-# wizard / launcher entry paths read that registry but do not import the
-# sections package, so without this the registry is empty at startup and
-# the wizard renders "No setup sections available for this depth" until
-# the hub (historically the only other importer) is opened.
+# Imported for its registration side effect: section modules register into
+# services.setup_sections.REGISTRY at import time. Without this the registry is
+# empty at startup and the wizard renders "No setup sections available for this
+# depth" until the hub (the only other importer) is opened.
 import views.setup.sections  # noqa: F401
 from cogs.setup._helpers import build_status_embed as _build_status_embed
 from cogs.setup._helpers import resolve_hub_entry as _resolve_hub_entry
