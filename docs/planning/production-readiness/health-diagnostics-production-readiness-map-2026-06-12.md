@@ -78,7 +78,7 @@
 | Audience projection/redaction | `health_snapshot_service.py::project_for_audience`, `_project_*` | security boundary | **Done** | Pure owner/admin/public downscope is implemented and omission-tested. | `health_snapshot_service.py:779-837`; `test_health_redaction.py` |
 | Bounded AI payload | `health_snapshot_service.py::snapshot_to_payload` | integration path | **Done** | Serializes only projected, allowlisted, bounded content. | `health_snapshot_service.py:839-909` |
 | Startup snapshot cache and boot recording | `health_snapshot_service.py::record_startup_snapshot`; `disbot/bot1.py::_report_startup_health` | snapshot path | **Partial** | One-shot, managed, best-effort path exists; canonical docs still require a maintainer reconnect/startup live walk. | `health_snapshot_service.py:936-950`; `bot1.py:190-239`; folio live-test debt |
-| Health collection/source/redaction metrics promised by plan | no implementation found | observability | **Not Done** | Findings record/prune counters exist, but no collection-duration, source-failure, or redaction-outcome metrics were found. | `docs/health/bot-awareness-implementation-plan.md:216`; `disbot/services/metrics.py:139-149` |
+| Health collection/source/redaction metrics promised by plan | `metrics.py::health_snapshot_collection_seconds`, `health_snapshot_source_failure_total`, `health_snapshot_redaction_total` | observability | **Done** (2026-06-30, PR #1584) | The §3.6 collection-duration / source-failure / redaction-outcome metrics are implemented and wired at the snapshot seams (`collect_snapshot`/`collect_cached_snapshot` duration, `_safe`/`_safe_async` source-failure, `project_for_audience` redaction). | `docs/health/bot-awareness-implementation-plan.md:216`; `metrics.py`; `test_health_snapshot_metrics.py` |
 
 ### Diagnostics provider registry — every registered provider found in source
 
@@ -237,9 +237,10 @@ That corrected contract shipped in PR #650.
 - **Tasks health is shallow.** The health adapter always marks the task subsystem healthy
   from active count alone; it cannot report the “recent task terminal failure” behavior
   described by the implementation plan.
-- **Promised general health metrics are absent.** Only finding-record and prune counters
-  exist; collection duration, source-failure count, and redaction outcomes were not
-  found.
+- ~~**Promised general health metrics are absent.**~~ **RESOLVED 2026-06-30 (PR #1584):**
+  collection-duration (`health_snapshot_collection_seconds`), source-failure count
+  (`health_snapshot_source_failure_total`), and redaction-outcome
+  (`health_snapshot_redaction_total`) metrics are now implemented and wired at the snapshot seams.
 
 ### Operational risks, not necessarily implementation bugs
 
