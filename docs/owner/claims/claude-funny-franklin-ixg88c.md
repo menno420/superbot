@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-ixg88c` · scope: Blackjack completion-cert punch-list #2 (PvP panel bet selector) + #3 (edge tests) · files: `disbot/views/games/blackjack_panel.py`, `tests/unit/cogs/test_blackjack_*`, `tests/unit/views/test_blackjack_*`, the blackjack cert + S1-bot.md · 2026-06-30
