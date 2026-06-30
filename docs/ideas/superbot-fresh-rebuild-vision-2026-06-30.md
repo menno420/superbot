@@ -1,12 +1,13 @@
 # SuperBot fresh-rebuild vision — captured discussion (2026-06-30)
 
-> **Status:** `ideas` — maintainer vision, captured verbatim + Claude's verified counter-research.
-> **Not approved for execution.** The maintainer is explicit: this needs thorough multi-agent
-> planning/review/documentation, his own detailed keep/change specification, and is gated on
-> Fable 5 availability (see § Fable 5 research — turns out to be already GA, see below) before any
-> work starts. This document exists so the reasoning from a long live conversation isn't lost —
-> mirrors the precedent set by `portable-agent-memory-package-2026-06-12.md` and
-> `autonomous-improvement-loop-vision-2026-06-12.md`.
+> **Status:** `ideas` — maintainer vision, captured verbatim + Claude's verified counter-research
+> (with two post-merge corrections from the maintainer folded in — see finding 9 and the Fable 5
+> section). **Not approved for execution.** The maintainer is explicit: this needs thorough
+> multi-agent planning/review/documentation, his own detailed keep/change specification, and is
+> gated on Fable 5 availability — **confirmed still gated** (withdrawn 2026-06-12, not yet
+> reintroduced) — before any work starts. This document exists so the reasoning from a long live
+> conversation isn't lost — mirrors the precedent set by `portable-agent-memory-package-2026-06-12.md`
+> and `autonomous-improvement-loop-vision-2026-06-12.md`.
 
 ## Why this document exists
 
@@ -37,15 +38,16 @@ Restated faithfully from the conversation:
   memory system's *design process* has only ever happened *while* simultaneously building the bot
   (every session working on AI-memory also touched the bot), which is good for grounding it in real
   use cases but means it's never been proven to work efficiently from a true cold start — something
-  structurally untestable in a 10-month-old repo. The maintainer was explicit this is a secondary
-  factor, not a main reason.
+  structurally untestable this far into the repo's life. The maintainer was explicit this is a
+  secondary factor, not a main reason.
 - **A cleaner, deliberately-designed question router** — "I really like things to be logical,
   structured, in the correct order, right now the questions don't follow any order or logic, many
   wouldn't even remain as questions but would get a logical place in its own doc, without
   duplication."
 - **Code built "from knowledge instead of trial and error"** — designed once, as one complete
-  picture, using everything learned across ~10 months / 1500+ PRs, instead of accumulated
-  incrementally. Named root causes: the bot was "made by an accumulation of older bots, multiple
+  picture, using everything learned across ~2 months / 1500+ PRs of meaningful (Claude-driven) work
+  — see the correction in finding 9 below — instead of accumulated incrementally. Named root causes:
+  the bot was "made by an accumulation of older bots, multiple
   agents, a lot of different ideas and workflows, contradicting files, misunderstood ideas, code that
   exists because of certain things that happened, fixes implemented because an agent worked in a
   different way than expected." Expected outcome: code that can be changed or left out entirely,
@@ -143,6 +145,32 @@ than implied as a "noise" source). CodeGraph complexity: average cognitive compl
 index of 9.9 (real pockets of debt, not a pervasively bad codebase) — average MI 65.1, the "moderate"
 band, room to improve but not alarming.
 
+### 9. Correction (maintainer, post-merge): the repo's age is not the same as its meaningful-work age
+Claude's original framing throughout this conversation treated the repo as **~10 months old**
+(inferred from a 2025-08-10 initial-commit reference) and used that figure as part of the case against
+a rewrite ("~10 months of continuous, production-tested development"). The maintainer corrected this
+directly: *"this repo is not 10 months old (or maybe it actually is) but the actual work I've been
+doing on this with claude is about 2 months now, before that it basically was just some loose edits
+made by chat gpt, which I don't consider to be really counting — all meaningful work on this repo has
+been done in less than 2 months."* Two things follow:
+
+- **The velocity is far higher than the original framing implied.** ~1,500+ PRs in ~2 months of
+  meaningful work is roughly 5× denser than the same PR count spread across 10 months — only possible
+  with a continuous multi-agent autonomous pipeline, not a human-paced team. This is genuinely
+  encouraging evidence *for* the rewrite's feasibility, not against it: if a comparably-resourced
+  rewrite can sustain a similar pace, it could plausibly reach feature-parity in a timeframe closer to
+  the original ~2 months than to a 10-month estimate — the volume-of-code risk (point 8 above, 956
+  files / 27MB of `disbot/`) is unchanged, but the *time cost* to reproduce it is much lower than
+  Claude's original framing suggested.
+- **The pre-Claude "loose ChatGPT edits" period may itself be a named source of the debt the
+  maintainer described** — "accumulation of older bots, multiple agents... contradicting files,
+  misunderstood ideas" reads as plausibly including that earlier, explicitly-not-counted layer, not
+  just variance across Claude sessions. If so, it's a concrete, identifiable contributor to the
+  inconsistency claim in finding 6, not just a general impression.
+
+This is a real revision to Claude's risk assessment, not a cosmetic date fix — flagged here so a
+future reader doesn't inherit the original (wrong) framing from the rest of this document.
+
 ## Where Claude and the maintainer landed
 
 - **Agreed, no dispute:** shifting focus to the AI-memory project now (bot near-production-ready) is
@@ -165,29 +193,38 @@ band, room to improve but not alarming.
   rejected by the maintainer).
 - **Timeline, maintainer's own words:** not imminent. Gated on (1) finishing the portable kit, (2) a
   large multi-agent planning/review/documentation sequence, (3) the maintainer's own detailed
-  keep/change specification, (4) waiting for Fable 5 — **see correction below, it's already
-  available**.
+  keep/change specification, (4) waiting for Fable 5 — **confirmed correct, see below: it is currently
+  unavailable, not the GA status Claude's documentation research initially (and wrongly) reported.**
 
-## Fable 5 research (2026-06-30, verified against live docs)
+## Fable 5 research (2026-06-30, verified against live docs — then corrected against live product evidence)
 
 The maintainer's stated plan explicitly waits for Fable 5 "to be available again," expecting it to
-help fix current errors/architectural debt and produce a better-sorted question router. Researched via
-the live `platform.claude.com` documentation (not training-data assumptions, per this repo's own
-"never answer LLM/model questions from memory" convention):
+help fix current errors/architectural debt and produce a better-sorted question router.
 
+**Initial research (via `platform.claude.com` documentation) reported Fable 5 as already generally
+available.** That research was wrong in practice, and the correction is itself a useful lesson, not
+just a fact fix:
+
+- **What the docs said:** *"Claude Fable 5 and Claude Mythos 5 both become available on June 9, 2026
+  … Claude Fable 5 is generally available on the Claude API, Claude Platform on AWS, Amazon Bedrock,
+  Google Cloud, and Microsoft Foundry."* No mention of any subsequent change in status.
+- **What's actually true (maintainer, live product screenshot, 2026-06-30):** Fable 5 launched June 9
+  but **was removed from public availability on June 12 — three days later — and has not been
+  reintroduced as of 2026-06-30.** The live Claude model picker shows it greyed out, labeled "Currently
+  unavailable." Claude has no visibility into *why* it was withdrawn (an incident, a safety-classifier
+  issue, a capacity decision — anything would be speculation) and does not claim to know.
+- **The methodology lesson, worth keeping for next time:** documentation describes the *designed*
+  state of a launch, not necessarily its *current operational* status — an incident-driven rollback a
+  few days after a GA announcement may never get reflected in the docs page at all, since the docs
+  describe what the feature is supposed to do once available, not a live status board. A screenshot of
+  the actual product surface the user is looking at is strictly more authoritative than a docs page for
+  "is X available right now" — Claude should have led with that caveat instead of stating availability
+  as settled fact from a single doc fetch.
+- **Net effect on the plan:** the maintainer's original premise was correct. The "wait for Fable 5"
+  gate has **not** cleared — it's exactly as open as the maintainer believed before this research
+  started. Re-check the live model picker (not docs) when reassessing this gate in the future.
 - **Model ID:** `claude-fable-5`. Anthropic's most capable widely released model, built for the most
-  demanding reasoning and long-horizon agentic work.
-- **Availability — correction to the maintainer's premise:** *"Claude Fable 5 and Claude Mythos 5
-  both become available on June 9, 2026 … Claude Fable 5 is generally available on the Claude API,
-  Claude Platform on AWS, Amazon Bedrock, Google Cloud, and Microsoft Foundry."* As of this
-  conversation (2026-06-30), **Fable 5 has been generally available via the API for about three
-  weeks — it is not currently gated.** Only its sibling **Claude Mythos 5** (same capabilities, no
-  safety classifiers) is limited-access, via Project Glasswing. If the maintainer's "waiting for it to
-  be available again" referred to API/raw-model availability, that wait is already over. **Genuine gap
-  in this research:** whether `claude-fable-5` is currently selectable as a model option *inside
-  Claude Code specifically* (vs. raw API access) was not confirmed either way — that's a different,
-  narrower question than general availability, and should be checked directly (e.g. trying to select
-  it) rather than assumed from this research.
+  demanding reasoning and long-horizon agentic work — once it's actually selectable again.
 - **Context window / output:** 1M token context window (the default, also the maximum), up to 128K
   output tokens per request.
 - **Pricing:** $10 / million input tokens, $50 / million output tokens — well above Opus 4.8
@@ -211,8 +248,9 @@ the live `platform.claude.com` documentation (not training-data assumptions, per
 - The maintainer's own detailed keep/change specification — not started.
 - Extracting `substrate-kit/` into its own repo — available to start now (zero code coupling found),
   independent of the bigger rebuild decision.
-- Confirm whether `claude-fable-5` is currently available as a selectable model in Claude Code
-  specifically (the one gap left in the Fable 5 research above).
+- Re-check the live Claude model picker periodically for Fable 5's actual availability (withdrawn
+  since 2026-06-12, not yet reintroduced as of 2026-06-30) — this is a real, currently-open gate on
+  the maintainer's stated timeline, not a cleared one.
 - The 7 confirmed-safe-to-delete docs from the historical-docs audit (this session) — awaiting the
   maintainer's go-ahead, not yet executed.
 - The 45 condense-candidate docs from the same audit — not yet scoped into a follow-up pass.
