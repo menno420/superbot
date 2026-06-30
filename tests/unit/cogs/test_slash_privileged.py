@@ -123,16 +123,16 @@ def test_platform_slash_default_permissions_administrator():
 
 
 def _has_runtime_permission_check(cmd) -> bool:
-    """Return True if ``cmd.checks`` contains a runtime
-    ``has_permissions`` check from ``app_commands``.
+    """Return True if ``cmd.checks`` contains a runtime admin check.
 
-    discord.py's ``has_permissions`` registers itself on
-    ``Command.checks``; iterate looking for the signature.
+    Either discord.py's ``has_permissions`` (moderation still uses it) or the
+    owner-aware ``app_admin_or_owner`` that replaced
+    ``has_permissions(administrator=True)`` bot-wide (Q-0212) — both register a
+    predicate on ``Command.checks``; match on the qualified name.
     """
     for check in cmd.checks:
-        # has_permissions wraps a predicate closure with the
-        # permission kwargs captured. Check the qualified name.
-        if "has_permissions" in getattr(check, "__qualname__", ""):
+        qn = getattr(check, "__qualname__", "")
+        if "has_permissions" in qn or "admin_or_owner" in qn:
             return True
     return False
 

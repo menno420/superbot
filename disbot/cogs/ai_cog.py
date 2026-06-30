@@ -7,8 +7,9 @@ logic; all source-of-truth lives under :mod:`core.runtime.ai` and
 state without ever invoking a provider.
 
 The cog matches the standard SuperBot admin-tier shape: a prefix
-``@commands.command`` family gated by ``has_permissions(administrator=True)``
-and a parallel ``app_commands`` family with the same gating. The
+``@commands.command`` family gated by ``admin_or_owner()`` (administrator
+**or** the platform owner, Q-0212) and a parallel ``app_commands`` family
+with the same gating via ``app_admin_or_owner()``. The
 ``aimenu`` entry point opens the persistent panel (see
 :mod:`views.ai.panel`).
 """
@@ -25,6 +26,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from core.runtime.ai.contracts import AITask
+from core.runtime.permission_checks import admin_or_owner, app_admin_or_owner
 from services import ai_diagnostics_service
 from views.ai.panel import AIPanelView, build_ai_panel_embed
 
@@ -361,13 +363,13 @@ class AICog(commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.group(name="ai", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_group(self, ctx: commands.Context) -> None:
         """Open the AI Platform panel."""
         await ctx.send(embed=build_ai_panel_embed(), view=AIPanelView())
 
     @ai_group.command(name="status")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_status(self, ctx: commands.Context) -> None:
         embed = build_status_embed()
         if ctx.guild is not None:
@@ -375,7 +377,7 @@ class AICog(commands.Cog):
         await ctx.send(embed=embed)
 
     @ai_group.command(name="readiness")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_readiness(
         self,
         ctx: commands.Context,
@@ -405,7 +407,7 @@ class AICog(commands.Cog):
         await ctx.send(embed=build_readiness_embed(report))
 
     @ai_group.command(name="settings")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_settings(self, ctx: commands.Context) -> None:
         """Open the AI Platform settings panel directly."""
         guild_id = ctx.guild.id if ctx.guild else None
@@ -413,7 +415,7 @@ class AICog(commands.Cog):
         await ctx.send(embed=embed, view=view)
 
     @ai_group.command(name="why-no-response")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_why_no_response(
         self,
         ctx: commands.Context,
@@ -456,7 +458,7 @@ class AICog(commands.Cog):
         await ctx.send(embed=embed)
 
     @ai_group.command(name="policy")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_policy(
         self,
         ctx: commands.Context,
@@ -494,17 +496,17 @@ class AICog(commands.Cog):
         await ctx.send(embed=embed)
 
     @ai_group.command(name="diagnostics")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_diagnostics(self, ctx: commands.Context) -> None:
         await ctx.send(embed=build_diagnostics_embed())
 
     @ai_group.command(name="providers")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_providers(self, ctx: commands.Context) -> None:
         await ctx.send(embed=build_providers_embed())
 
     @ai_group.command(name="routing")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_routing(
         self,
         ctx: commands.Context,
@@ -513,13 +515,13 @@ class AICog(commands.Cog):
         await ctx.send(embed=build_routing_embed(task))
 
     @commands.command(name="aimenu")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def aimenu(self, ctx: commands.Context) -> None:
         """Open the AI Platform panel (alias for ``!ai``)."""
         await ctx.send(embed=build_ai_panel_embed(), view=AIPanelView())
 
     @ai_group.command(name="forget")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_forget(self, ctx: commands.Context) -> None:
         """Flush the chat-memory cache for THIS channel.
 
@@ -547,7 +549,7 @@ class AICog(commands.Cog):
             await ctx.send(f"No chat memory cached for <#{channel_id}>.")
 
     @ai_group.command(name="support-report")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def ai_support_report(self, ctx: commands.Context) -> None:
         """Render a copy-pasteable support report from recent audit (PR-H).
 
@@ -577,7 +579,7 @@ class AICog(commands.Cog):
     )
 
     @ai_app_group.command(name="status", description="AI gateway status summary.")
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_status_slash(self, interaction: discord.Interaction) -> None:
         embed = build_status_embed()
         if interaction.guild is not None:
@@ -591,7 +593,7 @@ class AICog(commands.Cog):
     @app_commands.describe(
         channel="Channel to dry-run the resolver against (defaults to here).",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_readiness_slash(
         self,
         interaction: discord.Interaction,
@@ -622,7 +624,7 @@ class AICog(commands.Cog):
         name="diagnostics",
         description="Full AI gateway diagnostics snapshot.",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_diagnostics_slash(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
             embed=build_diagnostics_embed(),
@@ -633,7 +635,7 @@ class AICog(commands.Cog):
         name="providers",
         description="List configured AI providers.",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_providers_slash(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
             embed=build_providers_embed(),
@@ -644,7 +646,7 @@ class AICog(commands.Cog):
         name="routing",
         description="Show the routing table for AI tasks.",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_routing_slash(
         self,
         interaction: discord.Interaction,
@@ -659,7 +661,7 @@ class AICog(commands.Cog):
         name="forget",
         description="Flush the chat-memory cache for this channel.",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_forget_slash(self, interaction: discord.Interaction) -> None:
         if interaction.guild is None or interaction.channel is None:
             await interaction.response.send_message(
@@ -688,7 +690,7 @@ class AICog(commands.Cog):
         name="support-report",
         description="Render a copy-paste AI support report (no delivery).",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_support_report_slash(
         self,
         interaction: discord.Interaction,
@@ -715,7 +717,7 @@ class AICog(commands.Cog):
     @app_commands.describe(
         channel="Channel to dry-run against (defaults to here).",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_policy_slash(
         self,
         interaction: discord.Interaction,
@@ -754,7 +756,7 @@ class AICog(commands.Cog):
         name="settings",
         description="Open the AI Platform settings panel.",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def ai_settings_slash(self, interaction: discord.Interaction) -> None:
         embed, view = await _build_ai_settings_panel(
             interaction.user,
@@ -771,7 +773,7 @@ class AICog(commands.Cog):
         description="Open the AI Platform panel (administrator only).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def aimenu_slash(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
             embed=build_ai_panel_embed(),

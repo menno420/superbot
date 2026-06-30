@@ -18,6 +18,7 @@ from cogs.admin.cog_manager import (  # noqa: F401 — re-exported for back-comp
 )
 from core.runtime import lifecycle, resources
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edit
+from core.runtime.permission_checks import admin_or_owner, app_admin_or_owner
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR  # noqa: F401
 from views.base import HubView, send_panel
 from views.navigation import attach_back_button, help_nav_attachments
@@ -33,7 +34,7 @@ class AdminCog(commands.Cog):
 
     @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(name="adminmenu")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def admin_menu(self, ctx):
         """Open the interactive admin control panel."""
         view = _AdminPanelView(ctx, self)
@@ -52,7 +53,7 @@ class AdminCog(commands.Cog):
         description="Open the Admin control panel (administrator only).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def admin_slash(self, interaction: discord.Interaction) -> None:
         """Slash front door for the Admin hub — ephemeral, admin-only.
 
@@ -72,7 +73,7 @@ class AdminCog(commands.Cog):
     # Server Statistics
     # ------------------------------------------------------------------
     @commands.command(name="serverstats")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def server_stats(self, ctx):
         """Display server statistics."""
         guild = ctx.guild
@@ -177,7 +178,7 @@ class AdminCog(commands.Cog):
         # both !cogs and !coglist) — visible by contract, not compat shims.
         extras={"alias_classification": "power_user_shortcut"},
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def coglist_command(self, ctx):
         """Open the interactive cog manager — the panel's 📋 Cog List button.
 
@@ -292,7 +293,7 @@ class AdminCog(commands.Cog):
         )
 
     @commands.command(name="slashes", aliases=["slashlist"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def list_slash_commands(
         self,
         ctx: commands.Context,
@@ -390,7 +391,7 @@ class AdminCog(commands.Cog):
     # Webhook log level
     # ------------------------------------------------------------------
     @commands.command(name="loglevel")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def set_log_level(self, ctx, level: str):
         """Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)."""
         level_int = getattr(logging, level.upper(), None)

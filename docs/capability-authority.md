@@ -80,6 +80,16 @@ cycle-avoidance pattern.
 > tier matrix (capability → required tier) can replace the constant without
 > touching the pipelines. That is the documented next step (see §5).
 
+> **Platform-owner override spans more than this resolver (Q-0212).** Step 3 covers the
+> *capability resolver* (settings / binding / provisioning mutations). The same
+> `config.is_platform_owner` check also gates the **command decorators**
+> (`core.runtime.permission_checks.admin_or_owner` / `app_admin_or_owner`, replacing
+> `has_permissions(administrator=True)` bot-wide) and the **view** authority gates
+> (`views.base.interaction_is_admin` / `member_is_admin`), so the bot owner passes every
+> `administrator`-tier gate in any guild they are a member of. Two CI guards
+> (`tests/unit/invariants/test_owner_override_guards.py`) keep a raw admin gate from
+> re-locking the owner out (the #1573 → #1577 miss-class). Full record: router Q-0212.
+
 ---
 
 ## 2. Who consumes it

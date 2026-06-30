@@ -22,6 +22,7 @@ from discord.ext import commands
 
 from core.runtime import panel_manager, resources
 from core.runtime.interaction_helpers import safe_defer, safe_followup
+from core.runtime.permission_checks import admin_or_owner
 from services import economy_service
 from services.economy_helpers import (
     _DAILY_COOLDOWN,
@@ -348,7 +349,7 @@ class EconomyCog(commands.Cog):
     # ------------------------------------------------------------------ !setlogchannel
 
     @commands.command(name="setlogchannel")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def setlogchannel(self, ctx: commands.Context, channel: discord.TextChannel):
         """Set the economy log channel. Usage: !setlogchannel #channel"""
         await self._record_log_channel(

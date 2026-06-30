@@ -10,6 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import safe_defer
+from core.runtime.permission_checks import app_admin_or_owner
 from utils.ui_constants import ERROR_COLOR, INFO_COLOR, SUCCESS_COLOR
 
 logger = logging.getLogger("bot")
@@ -97,7 +98,7 @@ class HermesCog(commands.Cog):
         description="Report a bug — Hermes dispatches a Claude Code session to fix it automatically.",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.describe(
         title="Short one-line description of the bug",
         description="What happens, what should happen, and where (file/command/feature if known)",
@@ -159,7 +160,7 @@ class HermesCog(commands.Cog):
         description="Send a raw Hermes work order to the Claude Code Routine (owner only).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.describe(
         work_order=(
             "The full work order text. Include TASK/CONTEXT/ACCEPTANCE/CLASS/NOTES fields, "

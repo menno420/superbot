@@ -24,6 +24,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from core.runtime import panel_manager
+from core.runtime.permission_checks import admin_or_owner, app_admin_or_owner
 from views.server_management.hub import build_server_management_hub
 
 logger = logging.getLogger("bot")
@@ -40,7 +41,7 @@ class ServerManagementCog(commands.Cog):
         aliases=["servermenu", "guildmenu"],
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def servermanagement(self, ctx: commands.Context) -> None:
         """Open the unified Server Management hub."""
         embed, view = await build_server_management_hub(ctx.guild)
@@ -74,7 +75,7 @@ class ServerManagementCog(commands.Cog):
         description="Open the Server Management hub (moderation, channels, roles, cleanup, setup).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def server_management_slash(
         self,

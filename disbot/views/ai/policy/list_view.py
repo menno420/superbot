@@ -181,8 +181,10 @@ class PolicyListView(discord.ui.View):
         self.next_btn.disabled = self.page >= total_pages
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        perms = getattr(interaction.user, "guild_permissions", None)
-        if perms is None or not getattr(perms, "administrator", False):
+        # Canonical admin gate — honours the platform owner (Q-0212).
+        from views.base import interaction_is_admin
+
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Administrator permission required.",
                 ephemeral=True,

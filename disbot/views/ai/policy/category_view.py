@@ -178,8 +178,10 @@ class CategoryPolicySelectView(discord.ui.View):
         self.add_item(_CategoryPickSelect())
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        perms = getattr(interaction.user, "guild_permissions", None)
-        if perms is None or not getattr(perms, "administrator", False):
+        # Canonical admin gate — honours the platform owner (Q-0212).
+        from views.base import interaction_is_admin
+
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Administrator permission required.",
                 ephemeral=True,

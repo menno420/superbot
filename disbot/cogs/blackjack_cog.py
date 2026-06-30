@@ -66,6 +66,7 @@ from cogs.blackjack._state import (  # noqa: F401 — re-exported
     _TournPlayerState,
 )
 from core.runtime import resources, tasks
+from core.runtime.permission_checks import admin_or_owner
 from services import (
     economy_service,
     game_state_service,
@@ -513,7 +514,7 @@ class BlackjackCog(commands.Cog):
         await _save_game_state(game)
 
     @commands.command(name="bjtournament", aliases=["bjtourn"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def bjtournament(
         self,
         ctx: commands.Context,
@@ -574,7 +575,7 @@ class BlackjackCog(commands.Cog):
         )
 
     @commands.command(name="bjstart")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def bjstart(self, ctx: commands.Context):
         """Manually start a pending Blackjack tournament early."""
         tourn = _tournaments.get(ctx.guild.id)

@@ -87,9 +87,10 @@ class PolicyChooserView(discord.ui.View):
         add_back_button(self, label="↩ AI home", builder=ai_home_page)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        member = interaction.user
-        perms = getattr(member, "guild_permissions", None)
-        if perms is None or not getattr(perms, "administrator", False):
+        # Canonical admin gate — honours the platform owner (Q-0212).
+        from views.base import interaction_is_admin
+
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Administrator permission required.",
                 ephemeral=True,

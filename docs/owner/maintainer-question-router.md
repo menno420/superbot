@@ -7833,3 +7833,22 @@ step 3 (canonical authority contract) + `disbot/governance/permission_tiers.py` 
 + `tests/unit/test_platform_owner_override.py` (every seam). Related: **Q-0098** (setup-delegate apply
 authority — the sibling below-floor grant), **Q-0048** (read-only AI tool posture), **Q-0200** (exact-name
 helper guard — `is_platform_owner` is the canonical owner-check that supersedes the inline duplicates).
+
+**Completeness follow-up — #1577 (2026-06-30).** #1573's view sweep was **incomplete** (a grep
+truncated at 50 results), so the owner *still* hit "❌ Administrator permission required." on the AI
+policy/routing panels (owner-reported, with screenshot). Two whole gate classes were missed and are now
+fixed: **(1)** the `views/ai/policy/*` + `views/ai/routing/matrix.py` + `views/{xp,roles}/main_panel.py`
+`interaction_check`s (now routed through `views.base.interaction_is_admin` / `member_is_admin`), and
+**(2)** the cog command **decorators** — `@commands.has_permissions(administrator=True)` (101) +
+`@app_commands.checks.has_permissions(administrator=True)` (28), which gate `!ai`, `/setup`, etc. *before*
+the body runs. A new seam, **`core/runtime/permission_checks.py`** (`admin_or_owner` / `app_admin_or_owner`
+— administrator OR `is_platform_owner`, raising the same `MissingPermissions` for non-owners), replaced
+**every** `administrator=True` decorator bot-wide. The feature-admin **view** gates the #1573 note said it
+left alone (starboard / tickets / btd6 event flow / blackjack admin toggle) were **also** made owner-aware
+this pass — so the refined scope boundary is: the owner now passes **every `administrator`-tier gate**
+(commands + views) and the moderation panel (via `can_execute` → owner tier); still **untouched** are
+`manage_roles` gates (server-*role* mutation = "altering the server", outside the directive) and the bot's
+own-capability checks (`me.guild_permissions`). **Enforce, don't exhort (Q-0194):** two CI guards now fail
+the build on a re-introduction —
+`tests/unit/invariants/test_owner_override_guards.py::{test_no_raw_admin_in_view_interaction_check,
+test_no_admin_only_command_decorator}` — the exact miss-class #1573 shipped.
