@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T00:26:18Z",
+    "generated_at": "2026-07-01T00:41:25Z",
     "build": {
-      "commit": "e98fd31d",
-      "subject": "Merge pull request #1590 from menno420/claude/fresh-rebuild-vision-correction",
-      "committed_at": "2026-07-01T00:26:18Z"
+      "commit": "cb5fc6de",
+      "subject": "Merge pull request #1592 from menno420/claude/jolly-johnson-t742p4",
+      "committed_at": "2026-07-01T00:41:25Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 158,
+      "ideas": 159,
       "bugs": 29,
       "reviews": 0,
       "reviews_open": 0,
@@ -1173,6 +1173,14 @@
         "ai",
         "btd6"
       ]
+    },
+    {
+      "file": "orientation-doc-linecap-guard-2026-06-30.md",
+      "title": "Idea — enforce the read-path docs' own stated line caps (orientation-cost regrowth guard)",
+      "status": "ideas",
+      "date": "2026-06-30",
+      "summary": "The session-start \"any task\" reading order measured **~25,593 words** before a session reaches its",
+      "subsystems": null
     },
     {
       "file": "review-log-frequency-preset-suggestions-2026-06-30.md",
@@ -2700,6 +2708,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-30-reconcile-band1590.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Thirtieth Q-0107 reconciliation pass (band-#1590)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-reaction-roles-signup-counter.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Reaction-roles live sign-up counter (S1 deepening)",
@@ -3151,14 +3167,6 @@
       "file": "2026-06-27-btd6-session-close-docs.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — BTD6 QA arc: session-close documentation (what shipped + live-test checklist)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-revert-counter-list.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6: revert the auto-derived DDT counter list (it grounded wrong towers)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
