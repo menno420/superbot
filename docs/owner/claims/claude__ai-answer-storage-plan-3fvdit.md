@@ -1,1 +1,1 @@
-- `claude/ai-answer-storage-plan-3fvdit` · **AI review-log backlog triage (round 1)** — capture the prod DDT-confabulation finding + the vetted rules-based answer in the BTD6 corpus · `docs/btd6/qa-accuracy-corpus-2026-06-27.md` · 2026-06-30 · in progress
+- `claude/ai-answer-storage-plan-3fvdit` · **BTD6 boss-fight estimator** — deterministic DPS/cost/time-to-kill estimator + cheapest-counter ranking (so the bot estimates instead of refusing) · `disbot/services/btd6_estimator_service.py` `disbot/utils/btd6/` `disbot/cogs/btd6*` · 2026-06-30 · in progress
