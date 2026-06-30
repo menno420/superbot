@@ -57,6 +57,14 @@ DEFAULT_LEAVE_MESSAGE = "👋 **{user}** has left {server}. We're now {count} me
 # until an operator opts the card in.
 DEFAULT_CARD_ENABLED = False
 
+# DM greeting (completion punch-list #2): also send the joining member the
+# greeting as a direct message.  Off by default — needs no channel; supports
+# the same placeholders + "---" random variants as the channel greeting.
+DEFAULT_DM_ENABLED = False
+DEFAULT_DM_MESSAGE = (
+    "👋 Welcome to **{server}**, {user}! Glad to have you — you're member #{count}."
+)
+
 # Template length cap — keeps an embed description well within Discord's limit
 # even after placeholder expansion.  Applied **per variant** (see below): with
 # multiple random variants only one renders at a time, so each is capped, not
@@ -121,6 +129,8 @@ class WelcomePolicy:
     join_message: str = DEFAULT_JOIN_MESSAGE
     leave_message: str = DEFAULT_LEAVE_MESSAGE
     card_enabled: bool = DEFAULT_CARD_ENABLED
+    dm_enabled: bool = DEFAULT_DM_ENABLED
+    dm_message: str = DEFAULT_DM_MESSAGE
 
     @property
     def greet_on_join(self) -> bool:
@@ -143,9 +153,19 @@ class WelcomePolicy:
         return self.enabled and self.entry_role_id is not None
 
     @property
+    def dm_on_join(self) -> bool:
+        """True when a join should DM the member the greeting (no channel needed)."""
+        return self.enabled and self.dm_enabled
+
+    @property
     def any_action_enabled(self) -> bool:
         """True when at least one welcome action could fire (gated by enabled)."""
-        return self.greet_on_join or self.greet_on_leave or self.assigns_entry_role
+        return (
+            self.greet_on_join
+            or self.greet_on_leave
+            or self.assigns_entry_role
+            or self.dm_on_join
+        )
 
 
 def parse_id(raw: object) -> int | None:
@@ -234,6 +254,18 @@ async def load_policy(guild_id: int) -> WelcomePolicy:
         "card_enabled",
         DEFAULT_CARD_ENABLED,
     )
+    dm_enabled = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "dm_enabled",
+        DEFAULT_DM_ENABLED,
+    )
+    dm_message = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "dm_message",
+        DEFAULT_DM_MESSAGE,
+    )
 
     return WelcomePolicy(
         enabled=enabled,
@@ -244,12 +276,16 @@ async def load_policy(guild_id: int) -> WelcomePolicy:
         join_message=join_message,
         leave_message=leave_message,
         card_enabled=card_enabled,
+        dm_enabled=dm_enabled,
+        dm_message=dm_message,
     )
 
 
 __all__ = [
     "DEFAULT_CARD_ENABLED",
     "DEFAULT_CHANNEL",
+    "DEFAULT_DM_ENABLED",
+    "DEFAULT_DM_MESSAGE",
     "DEFAULT_ENABLED",
     "DEFAULT_ENTRY_ROLE",
     "DEFAULT_JOIN_ENABLED",

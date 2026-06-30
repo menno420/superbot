@@ -57,6 +57,25 @@ def test_policy_embed_multi_variant_shows_count_and_first_variant():
     assert "---" not in field.value
 
 
+def test_policy_embed_shows_dm_preview_when_dm_enabled():
+    policy = WelcomePolicy(
+        enabled=True,
+        dm_enabled=True,
+        dm_message="DM hi {user}",
+    )
+    embed = WelcomeCog._policy_embed(_guild(), policy)
+    field = _field_by_name_prefix(embed, "DM message preview")
+    assert field.value == "DM hi @NewMember"
+    # DM on/off is surfaced in the status body.
+    assert "DM on join" in embed.description
+
+
+def test_policy_embed_no_dm_preview_when_dm_disabled():
+    policy = WelcomePolicy(enabled=True, dm_enabled=False)
+    embed = WelcomeCog._policy_embed(_guild(), policy)
+    assert not any(f.name.startswith("DM message preview") for f in embed.fields)
+
+
 def test_policy_embed_leave_variant_note_when_leave_enabled():
     policy = WelcomePolicy(
         enabled=True,

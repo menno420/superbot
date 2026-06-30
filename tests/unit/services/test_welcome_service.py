@@ -96,6 +96,14 @@ def test_leave_embed_picks_a_random_variant():
     assert len(rendered) > 1
 
 
+def test_dm_embed_renders_dm_message_with_mention():
+    member = _member()
+    policy = WelcomePolicy(dm_message="Welcome {user} to {server} (#{count})")
+    embed = welcome_service.format_dm_embed(member, policy, 7)
+    assert embed.description == "Welcome <@200> to Demo (#7)"
+    assert embed.color == discord.Color.green()
+
+
 # ---------------------------------------------------------------------------
 # handle_member_join
 # ---------------------------------------------------------------------------
@@ -145,6 +153,80 @@ async def test_join_posts_greeting_and_emits(monkeypatch):
     emit.assert_awaited_once()
     assert emit.await_args.args[0] == welcome_service.EVT_WELCOME_MEMBER_GREETED
     assert emit.await_args.kwargs["user_id"] == 200
+
+
+@pytest.mark.asyncio
+async def test_join_sends_dm_greeting(monkeypatch):
+    member = _member()
+    member.send = AsyncMock()
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=False,  # no channel greeting
+                dm_enabled=True,
+                dm_message="Hey {user}!",
+            ),
+        ),
+    )
+
+    await welcome_service.handle_member_join(member)
+
+    member.send.assert_awaited_once()
+    embed = member.send.await_args.kwargs["embed"]
+    assert embed.description == "Hey <@200>!"
+    # No channel was configured → no channel post attempted.
+    member.guild.get_channel.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_join_dm_closed_is_swallowed(monkeypatch):
+    member = _member()
+    member.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "closed"))
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True, join_enabled=False, dm_enabled=True
+            ),
+        ),
+    )
+
+    # A member with DMs closed must not raise — the join dispatch completes.
+    await welcome_service.handle_member_join(member)
+    member.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_join_channel_greeting_and_dm_are_independent(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.send = AsyncMock()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                dm_enabled=True,
+            ),
+        ),
+    )
+    import core.events
+
+    monkeypatch.setattr(core.events.bus, "emit", AsyncMock())
+
+    await welcome_service.handle_member_join(member)
+
+    # Both the channel greeting and the DM fire.
+    channel.send.assert_awaited_once()
+    member.send.assert_awaited_once()
 
 
 @pytest.mark.asyncio

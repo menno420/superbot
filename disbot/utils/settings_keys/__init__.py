@@ -138,6 +138,8 @@ from utils.settings_keys.security import (
 from utils.settings_keys.welcome import (
     WELCOME_CARD_ENABLED,
     WELCOME_CHANNEL,
+    WELCOME_DM_ENABLED,
+    WELCOME_DM_MESSAGE,
     WELCOME_ENABLED,
     WELCOME_ENTRY_ROLE,
     WELCOME_JOIN_ENABLED,
@@ -251,6 +253,8 @@ __all__ = [
     "WARN_TIMEOUT_MINS",
     "WELCOME_CARD_ENABLED",
     "WELCOME_CHANNEL",
+    "WELCOME_DM_ENABLED",
+    "WELCOME_DM_MESSAGE",
     "WELCOME_ENABLED",
     "WELCOME_ENTRY_ROLE",
     "WELCOME_JOIN_ENABLED",

@@ -16,6 +16,18 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Welcome — random greeting messages + opt-in DM greeting** (PR #1579, completion-first deepening,
+  Welcome cert punch-list #2) — two best-in-class options in one batch (Carl-bot / MEE6 / Dyno parity).
+  **(1) Multiple/random messages:** an operator stores several greeting / farewell / DM variants in one
+  message setting separated by a `---` line; the bot picks one **at random** per greeting (pure
+  `welcome_config.split_message_variants` / `pick_message`, seeded-rng-testable; embed builders select a
+  variant; validator caps per-variant length + ≤10 variants; `!welcome` preview shows "1 of N random
+  variants"). **(2) DM greeting:** opt-in `dm_enabled` + dedicated `dm_message` also DMs the joiner the
+  greeting — independent of the channel greeting, **fail-safe on closed DMs** (`discord.Forbidden`
+  swallowed). **Migration-free** (welcome settings are scalar KV) and **byte-identical** for every
+  existing config (single message = one variant; DM off by default). +51 welcome tests; regenerated
+  dashboard/site artifacts + command-map doc for the new keys; self-merge on green. Welcome cert #2
+  narrowed (remaining: join-delay age-gating · ping-then-delete).
 - **Reaction-roles RSVP roster ("Who's in?")** (PR #1571, owner-directed follow-on to #1570) — counted
   menus gain a persistent **👥 Who's in?** button that posts an **ephemeral** roster listing the members
   who currently hold each option (`build_roster_embed` in `role_menu_counter`; member names truncated to

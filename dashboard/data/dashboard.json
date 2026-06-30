@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T11:29:23Z",
+    "generated_at": "2026-06-30T12:22:28Z",
     "build": {
-      "commit": "09fe4236",
-      "subject": "Merge pull request #1575 from menno420/claude/funny-franklin-d1m4wk",
-      "committed_at": "2026-06-30T11:29:23Z"
+      "commit": "3b19ec12",
+      "subject": "Welcome: multiple/random greeting messages (completion punch-list #2)",
+      "committed_at": "2026-06-30T12:22:28Z"
     },
     "counts": {
       "functions": 43,
@@ -16,9 +16,9 @@
       "env_vars": 39,
       "cogs": 55,
       "commands": 473,
-      "setting_keys": 108,
+      "setting_keys": 110,
       "setting_domains": 16,
-      "typed_settings": 88,
+      "typed_settings": 90,
       "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
@@ -2676,6 +2676,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-06-30-welcome-random-messages.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Welcome multiple/random greeting messages (S1 completion deepening)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-reaction-roles-signup-counter.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Reaction-roles live sign-up counter (S1 deepening)",
@@ -2716,6 +2724,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-30-btd6-track-lengths-rbs.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — BTD6 track lengths (Red Bloon Seconds) + estimator escape-margin",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-btd6-boss-fight-estimator.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — BTD6 boss-fight estimator (estimate, don't refuse)",
@@ -2727,6 +2743,14 @@
       "file": "2026-06-30-bot-owner-permissions-override.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Bot-owner platform-admin override (full config authority in any guild)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-30-bot-owner-override-completeness.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Bot-owner override: completeness follow-up (view gates + command decorators)",
       "status": "complete",
       "run_type": "",
       "self_initiated": true
@@ -3130,30 +3154,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-absence-guard-layer-b.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 absence-guard Layer B (grounded-contradiction slice)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-audit-review-btd6-corpus.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Reviewed the codex unfinished-work audit (PR #1509); shipped a BTD6 regression-corpus expansion",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-ai-answer-review-log.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — AI answer review-log (didn't-know + user corrections)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3543,7 +3543,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 51,
+          "line": 52,
           "layer": "cogs",
           "has_default": true
         }
@@ -3559,7 +3559,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 49,
+          "line": 50,
           "layer": "cogs",
           "has_default": true
         }
@@ -3575,7 +3575,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 50,
+          "line": 51,
           "layer": "cogs",
           "has_default": true
         }
@@ -3591,7 +3591,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 52,
+          "line": 53,
           "layer": "cogs",
           "has_default": true
         }
@@ -10581,7 +10581,7 @@
           "constant": "WELCOME_JOIN_MESSAGE",
           "key": "welcome_join_message",
           "type": "str",
-          "hint": "Greeting template.  Placeholders: {user} (mention), {server} (name), {count} (member number).",
+          "hint": "Greeting template.  Placeholders: {user} (mention), {server} (name), {count} (member number).  Add several variants separated by a '---' line to greet joiners with a random one each time.",
           "allowed_values": [],
           "default": "👋 Welcome {user} to **{server}**! You're member #{count}."
         },
@@ -10589,7 +10589,7 @@
           "constant": "WELCOME_LEAVE_MESSAGE",
           "key": "welcome_leave_message",
           "type": "str",
-          "hint": "Farewell template.  Placeholders: {user} (name), {server} (name), {count} (remaining members).",
+          "hint": "Farewell template.  Placeholders: {user} (name), {server} (name), {count} (remaining members).  Add several variants separated by a '---' line to post a random one each time.",
           "allowed_values": [],
           "default": "👋 **{user}** has left {server}. We're now {count} members."
         },
@@ -10600,6 +10600,22 @@
           "hint": "Role granted the moment a member joins (e.g. a base Member role).  Leave unset for none.  Granted through moderation's audited role path.",
           "allowed_values": [],
           "default": ""
+        },
+        {
+          "constant": "WELCOME_DM_ENABLED",
+          "key": "welcome_dm_enabled",
+          "type": "bool",
+          "hint": "Also send the joining member a direct-message greeting (in addition to the channel greeting).  Off by default; needs no channel.  Silently skipped for members with DMs closed.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "WELCOME_DM_MESSAGE",
+          "key": "welcome_dm_message",
+          "type": "str",
+          "hint": "Direct-message greeting template.  Placeholders: {user} (mention), {server} (name), {count} (member number).  Add several variants separated by a '---' line to DM a random one each time.",
+          "allowed_values": [],
+          "default": "👋 Welcome to **{server}**, {user}! Glad to have you — you're member #{count}."
         },
         {
           "constant": "WELCOME_CARD_ENABLED",

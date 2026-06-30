@@ -26,6 +26,8 @@ from core.runtime.subsystem_schema import (
 from services.welcome_config import (
     DEFAULT_CARD_ENABLED,
     DEFAULT_CHANNEL,
+    DEFAULT_DM_ENABLED,
+    DEFAULT_DM_MESSAGE,
     DEFAULT_ENABLED,
     DEFAULT_ENTRY_ROLE,
     DEFAULT_JOIN_ENABLED,
@@ -39,6 +41,8 @@ from services.welcome_config import (
 from utils.settings_keys import (
     WELCOME_CARD_ENABLED,
     WELCOME_CHANNEL,
+    WELCOME_DM_ENABLED,
+    WELCOME_DM_MESSAGE,
     WELCOME_ENABLED,
     WELCOME_ENTRY_ROLE,
     WELCOME_JOIN_ENABLED,
@@ -198,6 +202,32 @@ WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
             "greeting when image rendering is unavailable."
         ),
         validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="dm_enabled",
+        value_type=bool,
+        default=DEFAULT_DM_ENABLED,
+        settings_key=WELCOME_DM_ENABLED,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Also send the joining member a direct-message greeting (in "
+            "addition to the channel greeting).  Off by default; needs no "
+            "channel.  Silently skipped for members with DMs closed."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="dm_message",
+        value_type=str,
+        default=DEFAULT_DM_MESSAGE,
+        settings_key=WELCOME_DM_MESSAGE,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Direct-message greeting template.  Placeholders: {user} (mention), "
+            "{server} (name), {count} (member number).  Add several variants "
+            "separated by a '---' line to DM a random one each time."
+        ),
+        validator=_validate_message,
     ),
 )
 

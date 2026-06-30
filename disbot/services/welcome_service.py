@@ -71,6 +71,28 @@ def format_join_embed(
     return embed
 
 
+def format_dm_embed(
+    member: discord.Member,
+    policy: welcome_config.WelcomePolicy,
+    member_count: int,
+    *,
+    rng: random.Random | None = None,
+) -> discord.Embed:
+    """Build the direct-message greeting embed for a joining ``member``.
+
+    Mirrors :func:`format_join_embed` but renders the dedicated ``dm_message``
+    template (which supports the same ``---`` random variants).  No avatar
+    thumbnail — a DM already shows the recipient who they are.
+    """
+    description = welcome_config.render_template(
+        welcome_config.pick_message(policy.dm_message, rng=rng),
+        member_name=member.mention,
+        guild_name=member.guild.name,
+        member_count=member_count,
+    )
+    return discord.Embed(description=description, color=_JOIN_COLOR)
+
+
 def format_leave_embed(
     member: discord.Member,
     policy: welcome_config.WelcomePolicy,
@@ -162,6 +184,26 @@ async def _post(
     return True
 
 
+async def _send_dm(member: discord.Member, embed: discord.Embed) -> None:
+    """DM the joining ``member`` the greeting — fail-safe (logs, never raises).
+
+    A closed-DM member raises :class:`discord.Forbidden`; that (and any other
+    send fault) is swallowed so a DM that can't be delivered never affects the
+    channel greeting, the entry-role grant, or the join dispatch.
+    """
+    try:
+        await member.send(embed=embed)
+    except discord.Forbidden:
+        logger.info(
+            "welcome: member %s has DMs closed — skipping DM greeting",
+            member.id,
+        )
+    except discord.HTTPException as exc:
+        logger.warning("welcome: HTTP error sending DM greeting: %s", exc)
+    except Exception:  # noqa: BLE001 — fail-safe wrapper
+        logger.exception("welcome: unexpected error sending DM greeting")
+
+
 async def _grant_entry_role(member: discord.Member, role_id: int) -> None:
     """Grant the entry role through the audited role-automation seam.
 
@@ -226,10 +268,10 @@ async def _emit_greeted(member: discord.Member) -> None:
 async def handle_member_join(member: discord.Member) -> None:
     """Greet a joining member + grant the entry role, per the guild policy.
 
-    Fully fail-safe: a fault loading the policy, granting the role, or posting
-    the greeting is logged and swallowed so the join dispatch always completes.
-    The two actions are independent — a role-grant failure does not skip the
-    greeting and vice versa.
+    Fully fail-safe: a fault loading the policy, granting the role, posting the
+    channel greeting, or sending the optional DM greeting is logged and
+    swallowed so the join dispatch always completes.  The actions are
+    independent — any one failing does not skip the others.
     """
     guild = getattr(member, "guild", None)
     if guild is None:
@@ -246,10 +288,13 @@ async def handle_member_join(member: discord.Member) -> None:
     if policy.assigns_entry_role and policy.entry_role_id is not None:
         await _grant_entry_role(member, policy.entry_role_id)
 
+    # The channel greeting and the optional DM greeting are independent — a
+    # member with closed DMs still gets the channel greeting and vice versa.
+    count = _member_count(guild)
+
     if policy.greet_on_join:
         channel = _resolve_text_channel(guild, policy.channel_id)
         if channel is not None:
-            count = _member_count(guild)
             embed = format_join_embed(member, policy, count)
             file: discord.File | None = None
             if policy.show_join_card:
@@ -258,6 +303,9 @@ async def handle_member_join(member: discord.Member) -> None:
                     embed.set_image(url=f"attachment://{_WELCOME_CARD_FILENAME}")
             if await _post(channel, embed, file):
                 await _emit_greeted(member)
+
+    if policy.dm_on_join:
+        await _send_dm(member, format_dm_embed(member, policy, count))
 
 
 async def handle_member_leave(member: discord.Member) -> None:

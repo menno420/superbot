@@ -47,6 +47,8 @@ _EXPECTED_DEFAULTS = {
     "leave_message": welcome_config.DEFAULT_LEAVE_MESSAGE,
     "entry_role": welcome_config.DEFAULT_ENTRY_ROLE,
     "card_enabled": welcome_config.DEFAULT_CARD_ENABLED,
+    "dm_enabled": welcome_config.DEFAULT_DM_ENABLED,
+    "dm_message": welcome_config.DEFAULT_DM_MESSAGE,
 }
 
 

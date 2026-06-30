@@ -28,10 +28,11 @@
       `_grant_entry_role`). Bots filtered at the listener (`welcome_cog.py:48`).
 - [ ] **Every best-in-class sub-option exists** — ◐ **partial (narrowing).** Has: channel greeting,
       farewell, autorole, custom template (3 placeholders `{user}/{server}/{count}`), embed, image card
-      (phase 2), **multiple/random welcome+farewell messages** (`---`-separated variants, one picked at
-      random per greeting — `welcome_config.split_message_variants`/`pick_message`, 2026-06-30).
-      **Still missing vs Carl-bot/MEE6/Dyno:** DM greeting variant · ping-then-delete · join-delay
-      age-gating. → punch-list #2 (remainder).
+      (phase 2), **multiple/random welcome+farewell+DM messages** (`---`-separated variants, one picked
+      at random per greeting — `welcome_config.split_message_variants`/`pick_message`, 2026-06-30), and
+      an **opt-in DM greeting** (`dm_enabled`/`dm_message`, fail-safe on closed DMs — 2026-06-30).
+      **Still missing vs Carl-bot/MEE6/Dyno:** ping-then-delete · join-delay age-gating. → punch-list
+      #2 (remainder).
 - [x] **Failure modes honest / fail-safe** — no channel → suppress greeting (entry-role still
       proceeds); send `Forbidden`/`HTTPException` classified + logged, never raised; policy-load fault
       caught + swallowed; unknown placeholders render literally (injection-safe `str.replace`,
@@ -117,9 +118,11 @@
    relying on the generic settings group. *(Or the owner waives this — the settings group + setup step
    may be deemed sufficient for an admin-tier config function.)*
 2. **Best-in-class options (rubric A)** *(owner-paced, deepening)* — ~~multiple / random welcome
-   messages~~ ✅ **shipped 2026-06-30** (PR #1579 — `---`-separated variants on both the join and leave
-   message, one chosen at random per greeting; migration-free, single-message configs byte-identical).
-   **Remaining:** DM greeting variant · join-delay age-gating · ping-then-delete. Each is a discrete
+   messages~~ ✅ **shipped 2026-06-30** (PR #1579 — `---`-separated variants on the join, leave **and**
+   DM message, one chosen at random per greeting; migration-free, single-message configs
+   byte-identical) · ~~DM greeting~~ ✅ **shipped 2026-06-30** (PR #1579 — opt-in `dm_enabled` +
+   dedicated `dm_message`; DMs the joiner the greeting, fail-safe on closed DMs, independent of the
+   channel greeting). **Remaining:** join-delay age-gating · ping-then-delete. Each is a discrete
    additive slice on the existing policy model.
 3. **Channel/role via the binding pipeline** *(offline, consistency)* — consider routing the channel +
    entry-role pointers through `BindingMutationPipeline` (the canonical resource-pointer seam) rather

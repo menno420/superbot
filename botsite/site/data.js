@@ -282,6 +282,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -291,10 +295,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -314,6 +314,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -323,10 +327,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -370,6 +370,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -379,10 +383,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -426,6 +426,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -435,10 +439,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -672,6 +672,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -681,10 +685,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -702,6 +702,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -711,10 +715,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -734,6 +734,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -743,10 +747,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -766,6 +766,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -775,10 +779,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -798,6 +798,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -807,10 +811,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -830,6 +830,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -839,10 +843,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -862,6 +862,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -871,10 +875,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -1798,6 +1798,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -1807,10 +1811,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -1828,6 +1828,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -1837,10 +1841,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2062,6 +2062,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -2071,10 +2075,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -2266,6 +2266,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2275,10 +2279,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2296,6 +2296,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2305,10 +2309,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2326,6 +2326,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2335,10 +2339,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2676,6 +2676,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -2685,10 +2689,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -2826,6 +2826,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2835,10 +2839,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2884,6 +2884,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2893,10 +2897,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2988,6 +2988,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2997,10 +3001,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3158,6 +3158,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3167,10 +3171,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3188,6 +3188,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3197,10 +3201,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3285,6 +3285,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3294,10 +3298,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3797,6 +3797,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3806,10 +3810,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3887,6 +3887,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3896,10 +3900,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3981,6 +3981,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -3990,10 +3994,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -4063,6 +4063,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -4072,10 +4076,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -4179,6 +4179,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4188,10 +4192,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4229,6 +4229,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -4238,10 +4242,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -4274,6 +4274,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4283,10 +4287,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4322,6 +4322,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4331,10 +4335,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4675,6 +4675,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4684,10 +4688,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4723,6 +4723,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -4732,10 +4736,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -4883,6 +4883,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4892,10 +4896,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4984,6 +4984,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4993,10 +4997,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5250,6 +5250,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -5259,10 +5263,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -5643,6 +5643,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5652,10 +5656,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5673,6 +5673,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5682,10 +5686,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5703,6 +5703,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5712,10 +5716,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5733,6 +5733,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5742,10 +5746,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5851,6 +5851,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -5860,10 +5864,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -5881,6 +5881,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5890,10 +5894,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5911,6 +5911,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5920,10 +5924,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5941,6 +5941,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5950,10 +5954,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5971,6 +5971,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5980,10 +5984,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -6001,6 +6001,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -6010,10 +6014,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -6031,6 +6031,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -6040,10 +6044,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -6148,6 +6148,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -6157,10 +6161,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -6395,6 +6395,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -6404,10 +6408,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -6825,6 +6825,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "Frequency-driven preset suggestions from the review log"
       },
       {
@@ -6834,10 +6838,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
       }
     ]
   },
@@ -7171,7 +7171,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "097949e",
+    "build": "3b19ec12",
     "title": "New public bot website",
     "changes": [
       {
@@ -7183,7 +7183,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "097949e",
+    "build": "3b19ec12",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7195,7 +7195,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "097949e",
+    "build": "3b19ec12",
     "title": "Command-alias suggestions",
     "changes": [
       {

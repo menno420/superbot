@@ -90,6 +90,7 @@ class WelcomeCog(commands.Cog):
             "",
             f"👋 **Greet on join** — {_flag(policy.join_enabled)}",
             f"🚪 **Farewell on leave** — {_flag(policy.leave_enabled)}",
+            f"✉️ **DM on join** — {_flag(policy.dm_enabled)}",
             f"📢 **Channel:** {channel_str}",
             f"🎟️ **Entry role:** {role_str}",
         ]
@@ -128,6 +129,13 @@ class WelcomeCog(commands.Cog):
             embed.add_field(
                 name=f"Leave message preview{leave_suffix}",
                 value=leave_preview,
+                inline=False,
+            )
+        if policy.dm_enabled:
+            dm_preview, dm_suffix = _preview(policy.dm_message, "@NewMember")
+            embed.add_field(
+                name=f"DM message preview{dm_suffix}",
+                value=dm_preview,
                 inline=False,
             )
         embed.set_footer(text="Configure in !settings → Welcome.")

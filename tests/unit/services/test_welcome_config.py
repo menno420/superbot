@@ -65,6 +65,17 @@ def test_action_predicates_require_master_and_resource():
     assert role_only.any_action_enabled
     assert not role_only.greet_on_join
 
+    # DM greeting needs only the master + dm flag (no channel) and counts as an
+    # action on its own.
+    dm_only = WelcomePolicy(enabled=True, join_enabled=False, dm_enabled=True)
+    assert dm_only.dm_on_join
+    assert dm_only.any_action_enabled
+    assert not dm_only.greet_on_join
+    # Master off → DM suppressed like every other action.
+    assert not WelcomePolicy(enabled=False, dm_enabled=True).dm_on_join
+    # DM defaults off.
+    assert not WelcomePolicy(enabled=True).dm_on_join
+
 
 def test_defaults_master_off_join_on():
     pol = WelcomePolicy()
