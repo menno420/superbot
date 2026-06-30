@@ -95,6 +95,50 @@ async def query_review_entries(
     return [dict(r) for r in rows]
 
 
+async def get_review_entry(guild_id: int, entry_id: int) -> dict[str, Any] | None:
+    """Return one review entry by id (scoped to ``guild_id``), or None."""
+    row = await pool.get().fetchrow(
+        "SELECT id, guild_id, kind, reason_code, task, route, question, answer,"
+        " correction, reviewed, created_at "
+        "FROM ai_review_log WHERE guild_id = $1 AND id = $2",
+        guild_id,
+        entry_id,
+    )
+    return dict(row) if row is not None else None
+
+
+async def export_review_entries(
+    guild_id: int,
+    *,
+    kind: str | None = None,
+    include_reviewed: bool = True,
+    limit: int = 1000,
+) -> list[dict[str, Any]]:
+    """Return review entries for ``guild_id`` for an operator export.
+
+    Only the triage-relevant columns (no raw channel/message ids) so the dump
+    the operator pastes back is lean and focused on the question/answer text +
+    the fields a fix needs (``kind`` / ``reason_code`` / ``task`` / ``route``).
+    Ordered oldest-first so the export reads chronologically. ``id`` is included
+    so an entry can be ``!aireview resolve``d after it is handled.
+    """
+    sql = (
+        "SELECT id, created_at, kind, reason_code, task, route,"
+        " question, answer, correction, provider, model, reviewed "
+        "FROM ai_review_log WHERE guild_id = $1"
+    )
+    args: list[Any] = [guild_id]
+    if kind is not None:
+        args.append(kind)
+        sql += f" AND kind = ${len(args)}"
+    if not include_reviewed:
+        sql += " AND reviewed = FALSE"
+    args.append(int(limit))
+    sql += f" ORDER BY created_at ASC LIMIT ${len(args)}"
+    rows = await pool.get().fetch(sql, *args)
+    return [dict(r) for r in rows]
+
+
 async def mark_reviewed(guild_id: int, entry_id: int) -> bool:
     """Flip ``reviewed`` true for one entry; return whether a row matched."""
     result = await pool.get().execute(

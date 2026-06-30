@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`review-log-frequency-preset-suggestions-2026-06-30.md`](./review-log-frequency-preset-suggestions-2026-06-30.md) —
+  **session idea (2026-06-30, Q-0089, from building the AI review-log answer loop #1569):** when the *same
+  normalized question* recurs as an `unknown` N times in a window, push a one-line "author a preset?" nudge
+  to the review channel — turning the review log into a **demand-ranked** worklist (vs. the chronological
+  `!aireview list`). Reads existing redacted rows + the shared `normalize_question` key; no new table; pairs
+  with a preset hit-counter. Completes the operator-pull loop with a bot-push direction. Subsystem: ai.
 - [`command-collision-checker-2026-06-29.md`](./command-collision-checker-2026-06-29.md) —
   **captured 2026-06-29 (band-#1560 reconciliation pass, Q-0089):** a `check_command_collisions.py` (offline,
   stdlib AST, CI-wired) that fails when two cogs register the same top-level command name/alias — turning the
