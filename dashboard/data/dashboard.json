@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T11:29:23Z",
+    "generated_at": "2026-06-30T11:01:46Z",
     "build": {
-      "commit": "09fe4236",
-      "subject": "Merge pull request #1575 from menno420/claude/funny-franklin-d1m4wk",
-      "committed_at": "2026-06-30T11:29:23Z"
+      "commit": "33215477",
+      "subject": "BTD6 track lengths (Red Bloon Seconds) + estimator escape-margin (#1578)",
+      "committed_at": "2026-06-30T11:01:46Z"
     },
     "counts": {
       "functions": 43,
@@ -2716,6 +2716,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-30-btd6-track-lengths-rbs.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — BTD6 track lengths (Red Bloon Seconds) + estimator escape-margin",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-btd6-boss-fight-estimator.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — BTD6 boss-fight estimator (estimate, don't refuse)",
@@ -2727,6 +2735,14 @@
       "file": "2026-06-30-bot-owner-permissions-override.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Bot-owner platform-admin override (full config authority in any guild)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-30-bot-owner-override-completeness.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Bot-owner override: completeness follow-up (view gates + command decorators)",
       "status": "complete",
       "run_type": "",
       "self_initiated": true
@@ -3138,22 +3154,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-audit-review-btd6-corpus.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Reviewed the codex unfinished-work audit (PR #1509); shipped a BTD6 regression-corpus expansion",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-ai-answer-review-log.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — AI answer review-log (didn't-know + user corrections)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3543,7 +3543,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 51,
+          "line": 52,
           "layer": "cogs",
           "has_default": true
         }
@@ -3559,7 +3559,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 49,
+          "line": 50,
           "layer": "cogs",
           "has_default": true
         }
@@ -3575,7 +3575,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 50,
+          "line": 51,
           "layer": "cogs",
           "has_default": true
         }
@@ -3591,7 +3591,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 52,
+          "line": 53,
           "layer": "cogs",
           "has_default": true
         }
