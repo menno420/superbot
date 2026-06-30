@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-3055jf` · scope: Welcome completion cert punch-list #2 remainder (join-delay age-gating + ping-then-delete) · area: disbot/services/welcome_config.py, disbot/services/welcome_service.py, disbot/cogs/welcome/schemas.py, disbot/cogs/welcome_cog.py, disbot/utils/settings_keys/welcome.py · 2026-06-30
