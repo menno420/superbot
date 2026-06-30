@@ -195,3 +195,78 @@ def test_pick_message_fails_open_on_empty_template():
     # Degenerate value (no real variants) → returns the raw template, never
     # raises, so the render path stays fail-open.
     assert welcome_config.pick_message("---", rng=random.Random(0)) == "---"
+
+
+# ---------------------------------------------------------------------------
+# Join-delay age-gating helper (account_is_too_young)
+# ---------------------------------------------------------------------------
+
+
+def test_account_is_too_young_gate_off_is_always_false():
+    import datetime as dt
+
+    now = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+    created = now - dt.timedelta(days=0)  # created right now
+    # min_age_days=0 disables the gate entirely.
+    assert (
+        welcome_config.account_is_too_young(created, min_age_days=0, now=now) is False
+    )
+
+
+def test_account_is_too_young_below_threshold_is_true():
+    import datetime as dt
+
+    now = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+    created = now - dt.timedelta(days=2)  # 2 days old
+    assert welcome_config.account_is_too_young(created, min_age_days=7, now=now) is True
+
+
+def test_account_is_too_young_at_or_above_threshold_is_false():
+    import datetime as dt
+
+    now = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+    created = now - dt.timedelta(days=10)  # 10 days old, gate is 7
+    assert (
+        welcome_config.account_is_too_young(created, min_age_days=7, now=now) is False
+    )
+
+
+def test_account_is_too_young_unknown_age_fails_open():
+    import datetime as dt
+
+    now = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+    # None created_at → treated as old enough (greet), never raises.
+    assert welcome_config.account_is_too_young(None, min_age_days=7, now=now) is False
+
+
+def test_account_is_too_young_mixed_awareness_does_not_raise():
+    import datetime as dt
+
+    now = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+    naive = dt.datetime(2026, 1, 1)  # naive — comparison would TypeError
+    # Tolerated: returns False rather than raising.
+    assert welcome_config.account_is_too_young(naive, min_age_days=7, now=now) is False
+
+
+# ---------------------------------------------------------------------------
+# Policy convenience properties (age gate + delete-after)
+# ---------------------------------------------------------------------------
+
+
+def test_age_gate_enabled_property():
+    assert WelcomePolicy(min_account_age_days=0).age_gate_enabled is False
+    assert WelcomePolicy(min_account_age_days=7).age_gate_enabled is True
+
+
+def test_greeting_delete_after_property():
+    assert WelcomePolicy(delete_after_seconds=0).greeting_delete_after is None
+    assert WelcomePolicy(delete_after_seconds=30).greeting_delete_after == 30.0
+
+
+def test_policy_defaults_keep_new_options_off():
+    # A fresh policy is byte-identical to v1: no gate, no auto-delete.
+    p = WelcomePolicy()
+    assert p.min_account_age_days == welcome_config.DEFAULT_MIN_ACCOUNT_AGE_DAYS == 0
+    assert p.delete_after_seconds == welcome_config.DEFAULT_DELETE_AFTER_SECONDS == 0
+    assert p.age_gate_enabled is False
+    assert p.greeting_delete_after is None

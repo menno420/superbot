@@ -42,3 +42,12 @@ WELCOME_DM_MESSAGE = "welcome_dm_message"
 # Welcome phase 2 (Q-0110): attach a rendered PIL greeting card to the join
 # embed.  Off by default; degrades to embed-only when Pillow is unavailable.
 WELCOME_CARD_ENABLED = "welcome_card_enabled"
+
+# Join-delay age-gating (completion punch-list #2): skip greeting/DM/entry-role
+# for a joining member whose account is younger than this many days (anti-raid).
+# 0 disables it (every account greeted).
+WELCOME_MIN_ACCOUNT_AGE_DAYS = "welcome_min_account_age_days"
+
+# Ping-then-delete (completion punch-list #2): auto-delete the channel
+# greeting/farewell message this many seconds after it posts.  0 keeps it.
+WELCOME_DELETE_AFTER_SECONDS = "welcome_delete_after_seconds"

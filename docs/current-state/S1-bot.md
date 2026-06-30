@@ -16,6 +16,16 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Welcome — join-delay age-gating + ping-then-delete** (PR #1581, completion-first deepening,
+  Welcome cert punch-list #2 remainder — **#2 now CLOSED**) — the last two best-in-class options vs
+  Carl-bot/MEE6/Dyno. **Join-delay age gate:** a `min_account_age_days` setting (default 0 = off) — a
+  joining member whose Discord account is younger than the threshold gets **no greeting, no DM, no
+  entry role** (anti-raid; pure `welcome_config.account_is_too_young`, fail-open on unknown age).
+  **Ping-then-delete:** a `delete_after_seconds` setting (default 0 = keep) — the channel
+  greeting/farewell auto-deletes after N seconds via discord.py's native `delete_after` (the DM is
+  never deleted). Both are additive default-off `int` settings (`numeric_presets` hints) on the
+  existing scalar welcome policy model — **no migration**, byte-identical for existing configs; +18
+  tests; self-merged on green.
 - **Welcome — random greeting messages + opt-in DM greeting** (PR #1579, completion-first deepening,
   Welcome cert punch-list #2) — two best-in-class options in one batch (Carl-bot / MEE6 / Dyno parity).
   **(1) Multiple/random messages:** an operator stores several greeting / farewell / DM variants in one
@@ -196,16 +206,18 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   (punch #2 — apply `_PaginatorView` to long findings/consistency output) + #5 (health-metrics
   reconcile) · Cleanup #4 (spam-window setting *with* a Settings widget). *(Counters punch
   #1/#2/#4/#5 ✅ #1568; #3 ✅ #1575.)*
-  **✅ DONE 2026-06-30 (#1579): Welcome punch #2 (best-in-class options) — 2 of 4 CLOSED.**
-  **Multiple/random messages** (`---`-separated variants on the join/leave/DM message, one picked at
-  random per greeting — pure `welcome_config.split_message_variants`/`pick_message`; validator caps
-  per-variant length + ≤10 variants; `!welcome` preview shows "1 of N random variants") **+ opt-in DM
-  greeting** (`dm_enabled`/`dm_message`, fail-safe on closed DMs, independent of the channel greeting).
-  Migration-free, default-off, byte-identical for existing configs; +51 welcome tests. **▶ Next
-  turn-key picks (Welcome #2 remainder):** **join-delay age-gating** (skip greeting/role for accounts
-  younger than a configurable threshold — anti-raid, additive, default 0 = off) + **ping-then-delete**
-  (post then auto-delete after N seconds). Each its own PR on the same policy model. (Welcome #1
-  bespoke panel + #3 binding-seam + #4 cog-tests + #5/#6 owner walkthrough still open.)
+  **✅ DONE 2026-06-30 (#1579 + #1581): Welcome punch #2 (best-in-class options) — ALL 4 CLOSED.**
+  **Multiple/random messages** + **opt-in DM greeting** (#1579), then **join-delay age-gating**
+  (`min_account_age_days` — skip greeting/DM/entry-role for accounts younger than N days, anti-raid;
+  pure `welcome_config.account_is_too_young`, fail-open on unknown age) **+ ping-then-delete**
+  (`delete_after_seconds` — auto-delete the channel greeting/farewell after N seconds via discord.py's
+  native `delete_after`; DM never deleted) (#1581). Both 2026-06-30 additions are default-off `int`
+  settings (`numeric_presets` hints), migration-free, byte-identical for existing configs; +18 tests.
+  **Welcome punch-list #2 is now CLOSED** — every named best-in-class option exists. Remaining Welcome
+  gaps: #1 bespoke panel (or owner waiver) · #3 binding-seam · #4 cog-tests · #5/#6 owner walkthrough.
+  **▶ Next turn-key picks (other units):** Diagnostics list pagination (punch #2 — apply `_PaginatorView`
+  to long findings/consistency output) + #5 (health-metrics reconcile) · Cleanup #4 (spam-window
+  setting *with* a Settings widget).
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
   now has a rubric-filled, source-grounded certificate under

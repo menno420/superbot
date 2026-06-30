@@ -26,6 +26,7 @@ imports are stdlib only.
 
 from __future__ import annotations
 
+import datetime as dt
 import random
 import re
 from dataclasses import dataclass
@@ -64,6 +65,26 @@ DEFAULT_DM_ENABLED = False
 DEFAULT_DM_MESSAGE = (
     "👋 Welcome to **{server}**, {user}! Glad to have you — you're member #{count}."
 )
+
+# Join-delay age-gating (completion punch-list #2 remainder): skip the whole
+# welcome action (channel greeting, DM greeting, AND the entry-role grant) for a
+# joining member whose Discord account is younger than this many days.  An
+# anti-raid guard — fresh throwaway accounts in a raid don't get auto-greeted or
+# auto-roled into the server.  ``0`` disables it (every account greeted), so a
+# fresh guild behaves byte-identically.  Capped at one year (well past any sane
+# verification window) so a typo can't lock the server out of greetings forever.
+DEFAULT_MIN_ACCOUNT_AGE_DAYS = 0
+MIN_MIN_ACCOUNT_AGE_DAYS = 0
+MAX_MIN_ACCOUNT_AGE_DAYS = 365
+
+# Ping-then-delete (completion punch-list #2 remainder): auto-delete the
+# **channel** greeting/farewell message this many seconds after it posts (via
+# discord.py's native ``delete_after``), so a high-traffic join/leave channel
+# stays uncluttered.  ``0`` keeps the message forever (the v1 behaviour).  The
+# DM greeting is never affected.  Capped at one hour.
+DEFAULT_DELETE_AFTER_SECONDS = 0
+MIN_DELETE_AFTER_SECONDS = 0
+MAX_DELETE_AFTER_SECONDS = 3600
 
 # Template length cap — keeps an embed description well within Discord's limit
 # even after placeholder expansion.  Applied **per variant** (see below): with
@@ -112,6 +133,32 @@ def pick_message(template: str, *, rng: random.Random | None = None) -> str:
     return chooser.choice(variants)
 
 
+def account_is_too_young(
+    created_at: dt.datetime | None,
+    *,
+    min_age_days: int,
+    now: dt.datetime,
+) -> bool:
+    """True when an account created at ``created_at`` is below the age gate.
+
+    ``min_age_days <= 0`` disables the gate (always ``False``).  A ``None``
+    ``created_at`` (unknown age) is treated as **old enough** — fail-open to a
+    greeting, matching the read model's posture everywhere else (better to greet
+    a legit member whose creation date we couldn't read than to silently drop
+    them).  Both datetimes are expected tz-aware UTC (Discord's ``created_at``
+    and :func:`discord.utils.utcnow` both are); a naive ``created_at`` is also
+    tolerated by comparing only when both share awareness.
+    """
+    if min_age_days <= 0 or created_at is None:
+        return False
+    try:
+        age = now - created_at
+    except TypeError:
+        # Mixed naive/aware comparison — don't gate on a malformed timestamp.
+        return False
+    return age < dt.timedelta(days=min_age_days)
+
+
 @dataclass(frozen=True)
 class WelcomePolicy:
     """Resolved welcome behaviour for one guild.
@@ -131,6 +178,24 @@ class WelcomePolicy:
     card_enabled: bool = DEFAULT_CARD_ENABLED
     dm_enabled: bool = DEFAULT_DM_ENABLED
     dm_message: str = DEFAULT_DM_MESSAGE
+    min_account_age_days: int = DEFAULT_MIN_ACCOUNT_AGE_DAYS
+    delete_after_seconds: int = DEFAULT_DELETE_AFTER_SECONDS
+
+    @property
+    def age_gate_enabled(self) -> bool:
+        """True when the join-delay account-age gate is active."""
+        return self.min_account_age_days > 0
+
+    @property
+    def greeting_delete_after(self) -> float | None:
+        """Seconds after which a channel greeting/farewell self-deletes, or None.
+
+        Returns ``None`` (keep forever — the v1 behaviour) when the setting is
+        ``0``, else the value as a float for discord.py's ``delete_after``.
+        """
+        return (
+            float(self.delete_after_seconds) if self.delete_after_seconds > 0 else None
+        )
 
     @property
     def greet_on_join(self) -> bool:
@@ -266,6 +331,18 @@ async def load_policy(guild_id: int) -> WelcomePolicy:
         "dm_message",
         DEFAULT_DM_MESSAGE,
     )
+    min_account_age_days = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "min_account_age_days",
+        DEFAULT_MIN_ACCOUNT_AGE_DAYS,
+    )
+    delete_after_seconds = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "delete_after_seconds",
+        DEFAULT_DELETE_AFTER_SECONDS,
+    )
 
     return WelcomePolicy(
         enabled=enabled,
@@ -278,12 +355,15 @@ async def load_policy(guild_id: int) -> WelcomePolicy:
         card_enabled=card_enabled,
         dm_enabled=dm_enabled,
         dm_message=dm_message,
+        min_account_age_days=min_account_age_days,
+        delete_after_seconds=delete_after_seconds,
     )
 
 
 __all__ = [
     "DEFAULT_CARD_ENABLED",
     "DEFAULT_CHANNEL",
+    "DEFAULT_DELETE_AFTER_SECONDS",
     "DEFAULT_DM_ENABLED",
     "DEFAULT_DM_MESSAGE",
     "DEFAULT_ENABLED",
@@ -292,9 +372,15 @@ __all__ = [
     "DEFAULT_JOIN_MESSAGE",
     "DEFAULT_LEAVE_ENABLED",
     "DEFAULT_LEAVE_MESSAGE",
+    "DEFAULT_MIN_ACCOUNT_AGE_DAYS",
+    "MAX_DELETE_AFTER_SECONDS",
     "MAX_MESSAGE_LENGTH",
     "MAX_MESSAGE_VARIANTS",
+    "MAX_MIN_ACCOUNT_AGE_DAYS",
+    "MIN_DELETE_AFTER_SECONDS",
+    "MIN_MIN_ACCOUNT_AGE_DAYS",
     "WelcomePolicy",
+    "account_is_too_young",
     "load_policy",
     "parse_id",
     "pick_message",

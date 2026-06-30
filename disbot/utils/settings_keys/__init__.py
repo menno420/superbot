@@ -138,6 +138,7 @@ from utils.settings_keys.security import (
 from utils.settings_keys.welcome import (
     WELCOME_CARD_ENABLED,
     WELCOME_CHANNEL,
+    WELCOME_DELETE_AFTER_SECONDS,
     WELCOME_DM_ENABLED,
     WELCOME_DM_MESSAGE,
     WELCOME_ENABLED,
@@ -146,6 +147,7 @@ from utils.settings_keys.welcome import (
     WELCOME_JOIN_MESSAGE,
     WELCOME_LEAVE_ENABLED,
     WELCOME_LEAVE_MESSAGE,
+    WELCOME_MIN_ACCOUNT_AGE_DAYS,
 )
 from utils.settings_keys.xp import (
     XP_ANNOUNCE_CHANNEL,
@@ -253,6 +255,7 @@ __all__ = [
     "WARN_TIMEOUT_MINS",
     "WELCOME_CARD_ENABLED",
     "WELCOME_CHANNEL",
+    "WELCOME_DELETE_AFTER_SECONDS",
     "WELCOME_DM_ENABLED",
     "WELCOME_DM_MESSAGE",
     "WELCOME_ENABLED",
@@ -261,6 +264,7 @@ __all__ = [
     "WELCOME_JOIN_MESSAGE",
     "WELCOME_LEAVE_ENABLED",
     "WELCOME_LEAVE_MESSAGE",
+    "WELCOME_MIN_ACCOUNT_AGE_DAYS",
     "XP_ANNOUNCE_CHANNEL",
     "XP_COOLDOWN",
     "XP_MAX",
