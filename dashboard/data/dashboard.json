@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T21:11:58Z",
+    "generated_at": "2026-07-01T00:26:18Z",
     "build": {
-      "commit": "d9f571b1",
-      "subject": "chore: born-red session card — cleanup spam-window setting (punch #4)",
-      "committed_at": "2026-06-30T21:11:58Z"
+      "commit": "e98fd31d",
+      "subject": "Merge pull request #1590 from menno420/claude/fresh-rebuild-vision-correction",
+      "committed_at": "2026-07-01T00:26:18Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 157,
+      "ideas": 158,
       "bugs": 29,
       "reviews": 0,
       "reviews_open": 0,
@@ -1183,6 +1183,14 @@
       "subsystems": [
         "ai"
       ]
+    },
+    {
+      "file": "superbot-fresh-rebuild-vision-2026-06-30.md",
+      "title": "SuperBot fresh-rebuild vision — captured discussion (2026-06-30)",
+      "status": "ideas",
+      "date": "2026-06-30",
+      "summary": "A long in-chat conversation (2026-06-30, Claude Sonnet 5) covered: a session-start orientation-cost",
+      "subsystems": null
     },
     {
       "file": "command-collision-checker-2026-06-29.md",
@@ -2751,7 +2759,7 @@
       "file": "2026-06-30-cleanup-spam-window-setting.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Cleanup spam-window per-guild setting (completion-first deepening)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },

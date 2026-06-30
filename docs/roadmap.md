@@ -147,8 +147,11 @@
 ### S3 — AI-Memory system  ·  *the mechanism — the self-improving-agent engine (shippable on its own)*
 - **Now:** **▶** the owner's **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)**
   OSS arc — resume at the **PR-2 remainder** (modes + contract-doc templates + trigger/drift detection
-  → PR 3). The **autonomous-loop mechanism** is live (#742/#753–#761; operating layer hardened
-  #863/#865/#868/#869/#870) — its *operation* is S5, its *design* is here.
+  → PR 3). **Owner re-elevated this to top focus 2026-06-30** (fresh-rebuild vision #1589/#1590: "bot is
+  mostly production ready, focus on the AI-memory project now") — this **supersedes any earlier "demoted
+  after fourth band-carry" language** in the cross-horizon snapshot below. The **autonomous-loop
+  mechanism** is live (#742/#753–#761; operating layer hardened #863/#865/#868/#869/#870) — its
+  *operation* is S5, its *design* is here.
 - **Next:** the **bot self-test walker** eval harness (pairs with S1 P1-1) · the **Hermes bug-triage
   flow** mechanism (gated Q-0121). *(Shipped this lane: **`scripts/check_sector_map.py`** + **`dispatch_menu.py`**
   — the sector-partition guards (folio homing / executor / startability) + the live dispatch-menu

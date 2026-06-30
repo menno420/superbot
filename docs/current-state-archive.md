@@ -86,6 +86,58 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1487 · #1488 · #1490 · #1491 · #1492 · #1493 · #1494 · #1498 (2026-06-27, BTD6 QA-accuracy arc — grounding + an honest eval harness, live-test driven)** —
+  the band's marquee, owner-directed from live Discord screenshots: damage-type/status-effect **interaction
+  grounding** + a VERIFIED Q&A corpus (#1487); the corpus **wired into the eval system** as an offline
+  grounding test + a live action suite (#1488); a **faithful "exactly live" answer-path replay**
+  (`tests/evals/btd6_live_path.py`, #1490) graded **semantically** by the same `llm_judge` to kill grader
+  false-negatives (a 2/12 scorecard was the grader, not the bot — #1491); plus an **AI answer review-log**
+  capturing didn't-know + user corrections (#1494). The DDT-counter sub-thread is the band's honesty story:
+  #1492 grounded a VERIFIED DDT counter-tower list to fix over-refusal, the owner live-tested it and found
+  3 wrong recommendations, so #1498 **reverted the auto-derived list at the root** (the committed stats
+  encode neither MOAB-class targeting nor config quality, so grounding it = grounding misinformation) and
+  replaced it with correct curated pop-guide prose — grounding the *rules*, not specific towers. #1493
+  consolidated the arc + a live-verification checklist. Eval-only / data-only; `disbot/` answer path
+  unchanged where noted. Live re-test + the still-open golden-set over-refusals stay owner-paced.
+- **#1476 · #1477 · #1479 · #1482 · #1495 · #1500 (2026-06-26/27, self-improving-workflow guards — the loop closing its own drift classes)** —
+  the S3/S4 mechanism lane, several slices *executing prior passes' own ideas*: a **▶ Next freshness guard**
+  (#1476) wired into `/session-close` (#1477); a **session-close-gate meta-check** asserting every checker
+  declaring the `[session-close-gate]` sentinel is actually referenced in `/session-close` Step-4 (#1479,
+  builds #1477's Q-0089 idea); **per-sector offline-fit startability tags** so the dispatch menu can pick an
+  offline-runnable item (#1482, owner decision Q-0207 DISCUSS); the **reconcile-marker band-consistency
+  guard** `check_reconcile_marker.py` + the live `#1472`→`#1470` marker-conflation fix (#1495, executes the
+  band-#1470 pass's own Q-0089 idea); and an **offline-startable S1 ▶ Next** handoff-hygiene sharpening
+  (#1500). All read-only / stdlib / offline.
+- **#1483 · #1496 · #1499 (2026-06-27, S1 feature depth — economy observability · setup · mining)** — a
+  games-economy **per-day faucet/sink trend view** (economy observability, #1483); a new Essential Setup
+  spine step **"Where can people use commands?"** surfacing the enforced per-channel Command Access control
+  (#1496); and **mining gear loadout presets** (V-14 / Q-0175 Phase-1 unified-loadout model, migration 101 —
+  applies automatically on next boot/auto-deploy, #1499).
+- **#1485 · #1486 (2026-06-27, autonomous test coverage — Media/YouTube)** — focused YouTube **fetch service +
+  renderer/embed tests** (#1485) and **YouTube cache DB-primitive tests** (#1486); empty-fire dispatch slices
+  that hardened a previously thin-covered subsystem.
+- **#1472 + 9 dashboard refreshes (2026-06-26/27, docs — twenty-sixth Q-0107 pass + dashboard)** — the
+  **twenty-sixth Q-0107 reconciliation pass** (band-#1470,
+  [pass record](planning/reconciliation-pass-2026-06-26-band1470.md), #1472); plus nine per-source-merge
+  **dashboard-data refreshes** (#1473 · #1474 · #1475 · #1478 · #1480 · #1481 · #1484 · #1489 · #1497, Q-0167).
+- **#1453 · #1456 · #1467 · #1469 · #1470 (2026-06-25/26, NEW Project Moon (Limbus) knowledge domain — data → grounding → faithfulness guard)** —
+  a standalone Limbus knowledge domain modeled on the BTD6 stack: committed structural/lore facts
+  (`disbot/data/projmoon/limbus/`: 12 Sinners · 7 Sins · damage types · E.G.O grades, provenance-tagged) +
+  a typed `services/projmoon_data_service.py` + a browsable `!pm` / `/pm` surface with its own top-level
+  **Project Moon** Help hub (PR 1, #1453); each Sinner's canonical `literary_origin` + an **Origins**
+  cross-reference view (lore-depth Slice A, #1456); the **AI grounding path** — `AITask.PROJMOON_ANSWER`
+  routing + provenanced fact injection into `_gather_feature_facts`, BTD6 path byte-identical (PR 2, #1467);
+  a **faithfulness guard** (`projmoon_grounding_service`, the projmoon analogue of `validate_btd6_reply` —
+  reject → regenerate-once → deterministic refusal, #1469); and a **cross-domain over-route guard** pinning
+  BTD6↔Limbus token disjointness + a detector-curation recipe so the next domain (LoR / LobCorp) is a
+  one-line registration (Slice B prep, #1470). Read-only, offline-unit-tested; the live Q-0086 runtime walk
+  stays owner-paced.
+- **#1458 · #1460 · #1461 · #1466 (2026-06-25/26, BTD6 eval-anchor hardening — S2 P1-1)** — a fixture-drift
+  anchor guard for the contains-grader grounding cases (#1458); projected-total eval figures anchored,
+  nailing the starting-cash convention (#1460); the #855 MOAB-class bonuses +15/+30/+99 anchored (#1461);
+  and the **eval-anchor coverage report + distractor negative-anchor guard** — every cleanly-derivable
+  dollar/HP truth must be anchored or on a documented distractor/user-input allowlist (#1466). The BTD6
+  grounding cases are now anchor-complete for every cleanly-derivable truth.
 - **#1444 · #1445 · #1454 (2026-06-24/25, settle-once money-safety for game-state views)** — a settle-once
   terminal guard for game-state views (#1444), the blackjack-PvP settle-once guard + the shared mixin
   relocated to `utils/` (#1445), and a `check_consistency` **Rule 6** warn-first adoption guard so the

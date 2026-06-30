@@ -9,6 +9,19 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirtieth Q-0107 reconciliation pass** (band-#1590, issue #1591 —
+  [pass record](../planning/reconciliation-pass-2026-06-30-band1590.md)): reconciled the ledger
+  (band #1561–#1590 — seven grouped entries, headlined by the **bot-owner platform-admin override**
+  #1573/#1577/#1582, the **S1 certification deepening** #1565/#1566/#1568/#1575/#1588, and the
+  **owner fresh-rebuild vision capture** #1589/#1590), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed), reflected the **owner re-elevation of the
+  AI-memory substrate-kit** to top focus (S3), confirmed **ROUTINE_PAT set / loop self-fires** (issue
+  #1591 authored by `menno420`), carried the forward queue intact (still deep, no THIN flag), reset
+  the marker #1560 → #1590.
+- **Twenty-ninth Q-0107 reconciliation pass** (band-#1560, issue #1563 —
+  [pass record](../planning/reconciliation-pass-2026-06-29-band1560.md)): reconciled the ledger
+  (band #1531–#1560), trimmed Recently-shipped to 20, carried the forward queue intact, reset the
+  marker #1530 → #1560.
 - **Twenty-eighth Q-0107 reconciliation pass** (band-#1530, issue #1531 —
   [pass record](../planning/reconciliation-pass-2026-06-28-band1530.md)): reconciled the ledger
   (band #1502–#1530 — six grouped entries, headlined by the **fishing acquisition-depth + gear arc**
@@ -39,10 +52,13 @@
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
 
 **▶ Next:**
-- **Next reconciliation pass due once merged PRs cross #1560** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1620** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).
+- **Owner steer (2026-06-30):** the fresh-rebuild vision re-elevates the **AI-memory substrate-kit**
+  to top focus — S3's forward queue leads with PR 2 remainder + PR 3; the full rebuild stays
+  idea-stage (gated on Fable 5 + owner keep/change spec).
 
 **Cadence note:** a manually-started session does **not** run the reconciliation pass; pursue the
 work it was started for. The recon marker + Recently-shipped ledger live in

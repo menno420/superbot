@@ -38,6 +38,15 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag".)*
+- `[offline]` **AI-memory portable substrate-kit — PR 2 remainder + PR 3** — **owner-re-elevated to top
+  focus** by the 2026-06-30 fresh-rebuild vision (#1589/#1590): "bot is mostly production ready, focus on
+  the AI-memory project now." This reverses the band-#870 §6 demotion (dropped from the plannable queue
+  after a fourth band-carry, "returns when the owner re-steers it" — now re-steered). Agent-buildable:
+  PR 2's defined remainder (integration-mode behaviors, drift triggers, contract-template set) + all of
+  PR 3 (self-maintenance loop, review seam, distribution polish);
+  [plan](../planning/portable-substrate-kit-extraction-2026-06-13.md). `[owner]` the final *extract to a
+  standalone repo* step (zero code-coupling confirmed) + the full SuperBot rebuild (idea-stage, gated on
+  Fable 5 + owner keep/change spec) stay owner-driven.
 - `[offline]` **procedures→skills Batch 2**
   ([plan](../planning/procedures-to-skills-conversion-plan-2026-06-17.md)).
 - `[offline]` The **bot self-test walker** eval harness (pairs with S1 P1-1) — the harness scaffold is

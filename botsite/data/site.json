@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T21:11:58Z",
+    "generated_at": "2026-07-01T00:26:18Z",
     "build": {
-      "commit": "d9f571b1",
-      "subject": "chore: born-red session card — cleanup spam-window setting (punch #4)",
-      "committed_at": "2026-06-30T21:11:58Z"
+      "commit": "e98fd31d",
+      "subject": "Merge pull request #1590 from menno420/claude/fresh-rebuild-vision-correction",
+      "committed_at": "2026-07-01T00:26:18Z"
     }
   },
   "counts": {
