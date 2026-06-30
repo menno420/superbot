@@ -62,6 +62,40 @@ def test_leave_embed_uses_plain_name():
     assert embed.description == "Astro left Demo"
 
 
+def test_join_embed_picks_a_random_variant():
+    import random
+
+    member = _member()
+    policy = WelcomePolicy(
+        join_message="Hi {user}\n---\nWelcome {user}\n---\nHey {user}"
+    )
+    # Every render is one of the variants, placeholders expanded…
+    rendered = {
+        welcome_service.format_join_embed(
+            member, policy, 1, rng=random.Random(s)
+        ).description
+        for s in range(20)
+    }
+    assert rendered <= {"Hi <@200>", "Welcome <@200>", "Hey <@200>"}
+    # …and it genuinely varies across seeds.
+    assert len(rendered) > 1
+
+
+def test_leave_embed_picks_a_random_variant():
+    import random
+
+    member = _member()
+    policy = WelcomePolicy(leave_message="Bye {user}\n---\nFarewell {user}")
+    rendered = {
+        welcome_service.format_leave_embed(
+            member, policy, 1, rng=random.Random(s)
+        ).description
+        for s in range(20)
+    }
+    assert rendered <= {"Bye Astro", "Farewell Astro"}
+    assert len(rendered) > 1
+
+
 # ---------------------------------------------------------------------------
 # handle_member_join
 # ---------------------------------------------------------------------------
@@ -124,7 +158,9 @@ async def test_join_grants_entry_role(monkeypatch):
         welcome_service.welcome_config,
         "load_policy",
         AsyncMock(
-            return_value=WelcomePolicy(enabled=True, join_enabled=False, entry_role_id=777),
+            return_value=WelcomePolicy(
+                enabled=True, join_enabled=False, entry_role_id=777
+            ),
         ),
     )
     apply = AsyncMock()

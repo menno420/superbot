@@ -1,0 +1,69 @@
+"""Unit tests for the welcome cog status surface (cogs.welcome_cog).
+
+Focused on ``_policy_embed`` — the read-only status preview rendered by
+``!welcome`` and the Help hook — and specifically the multiple/random-message
+preview (completion punch-list #2): the preview shows the **first** variant with
+a "1 of N random variants" note instead of dumping the raw separator-laden value.
+"""
+
+from __future__ import annotations
+
+from unittest.mock import MagicMock
+
+import discord
+
+from cogs.welcome_cog import WelcomeCog
+from services.welcome_config import WelcomePolicy
+
+
+def _guild() -> MagicMock:
+    g = MagicMock(spec=discord.Guild)
+    g.id = 1
+    g.name = "Demo"
+    g.member_count = 1235
+    g.get_channel.return_value = None
+    g.get_role.return_value = None
+    return g
+
+
+def _field_by_name_prefix(
+    embed: discord.Embed, prefix: str
+) -> discord.embeds.EmbedProxy:
+    for field in embed.fields:
+        if field.name.startswith(prefix):
+            return field
+    raise AssertionError(f"no field starting with {prefix!r}")
+
+
+def test_policy_embed_single_message_has_no_variant_note():
+    policy = WelcomePolicy(enabled=True, join_message="Welcome {user}!")
+    embed = WelcomeCog._policy_embed(_guild(), policy)
+    field = _field_by_name_prefix(embed, "Join message preview")
+    # A single message: no "random variants" suffix, placeholders expanded.
+    assert field.name == "Join message preview"
+    assert field.value == "Welcome @NewMember!"
+
+
+def test_policy_embed_multi_variant_shows_count_and_first_variant():
+    policy = WelcomePolicy(
+        enabled=True,
+        join_message="First {user}\n---\nSecond {user}\n---\nThird {user}",
+    )
+    embed = WelcomeCog._policy_embed(_guild(), policy)
+    field = _field_by_name_prefix(embed, "Join message preview")
+    assert field.name == "Join message preview (1 of 3 random variants)"
+    # Shows the FIRST variant rendered — never the raw "---" separators.
+    assert field.value == "First @NewMember"
+    assert "---" not in field.value
+
+
+def test_policy_embed_leave_variant_note_when_leave_enabled():
+    policy = WelcomePolicy(
+        enabled=True,
+        leave_enabled=True,
+        leave_message="Bye {user}\n---\nFarewell {user}",
+    )
+    embed = WelcomeCog._policy_embed(_guild(), policy)
+    field = _field_by_name_prefix(embed, "Leave message preview")
+    assert field.name == "Leave message preview (1 of 2 random variants)"
+    assert field.value == "Bye NewMember"

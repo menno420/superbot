@@ -26,6 +26,8 @@ imports are stdlib only.
 
 from __future__ import annotations
 
+import random
+import re
 from dataclasses import dataclass
 
 SUBSYSTEM = "welcome"
@@ -56,8 +58,50 @@ DEFAULT_LEAVE_MESSAGE = "👋 **{user}** has left {server}. We're now {count} me
 DEFAULT_CARD_ENABLED = False
 
 # Template length cap — keeps an embed description well within Discord's limit
-# even after placeholder expansion.
+# even after placeholder expansion.  Applied **per variant** (see below): with
+# multiple random variants only one renders at a time, so each is capped, not
+# the combined stored value.
 MAX_MESSAGE_LENGTH = 500
+
+# Multiple / random messages (completion punch-list #2): an operator may store
+# several greeting/farewell variants in one message setting, separated by a
+# line of three-or-more dashes (a markdown horizontal rule).  One variant is
+# chosen at random per join/leave, so a server can rotate its greeting.  A
+# single-variant value (the default, and every existing config) behaves
+# byte-identically — the lone variant is always the chosen one.
+MAX_MESSAGE_VARIANTS = 10
+
+# A separator line is solely three-or-more dashes (after stripping surrounding
+# whitespace), e.g. ``---``.  ``re.MULTILINE`` so ``^``/``$`` anchor each line.
+_VARIANT_SEPARATOR_RE = re.compile(r"^\s*-{3,}\s*$", re.MULTILINE)
+
+
+def split_message_variants(template: str) -> list[str]:
+    """Split a message setting into its non-empty, stripped variants.
+
+    Variants are separated by a ``---`` line (see :data:`_VARIANT_SEPARATOR_RE`).
+    Returns the real variants in order; an empty list when the value holds no
+    non-empty variant (only whitespace / bare separators) — the *write*-time
+    validator rejects that case, and :func:`pick_message` falls back to the raw
+    template so the render path stays fail-open.  A value with no separator
+    yields a single-element list, so existing single-message configs are
+    unchanged.
+    """
+    return [
+        part.strip() for part in _VARIANT_SEPARATOR_RE.split(template) if part.strip()
+    ]
+
+
+def pick_message(template: str, *, rng: random.Random | None = None) -> str:
+    """Choose one message variant at random (fail-open to the raw template).
+
+    With a single variant the choice is deterministic (that variant), so an
+    unchanged single-message config renders identically.  ``rng`` is injectable
+    for deterministic tests; production uses the module-global ``random``.
+    """
+    variants = split_message_variants(template) or [template]
+    chooser = rng if rng is not None else random
+    return chooser.choice(variants)
 
 
 @dataclass(frozen=True)
@@ -213,8 +257,11 @@ __all__ = [
     "DEFAULT_LEAVE_ENABLED",
     "DEFAULT_LEAVE_MESSAGE",
     "MAX_MESSAGE_LENGTH",
+    "MAX_MESSAGE_VARIANTS",
     "WelcomePolicy",
     "load_policy",
     "parse_id",
+    "pick_message",
     "render_template",
+    "split_message_variants",
 ]

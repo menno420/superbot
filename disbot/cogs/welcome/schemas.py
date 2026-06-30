@@ -33,6 +33,8 @@ from services.welcome_config import (
     DEFAULT_LEAVE_ENABLED,
     DEFAULT_LEAVE_MESSAGE,
     MAX_MESSAGE_LENGTH,
+    MAX_MESSAGE_VARIANTS,
+    split_message_variants,
 )
 from utils.settings_keys import (
     WELCOME_CARD_ENABLED,
@@ -73,18 +75,30 @@ def _validate_id(value: object) -> None:
 
 
 def _validate_message(value: object) -> None:
-    """A non-empty template within the length cap.
+    """One or more non-empty variants, each within the per-variant length cap.
 
     Placeholders (``{user}``/``{server}``/``{count}``) are substituted at
     render time by ``welcome_config.render_template`` (injection-safe), so any
-    text is accepted here — only emptiness and length are gated.
+    text is accepted here — only emptiness, variant count, and per-variant
+    length are gated.  Multiple ``---``-separated variants are picked from at
+    random on each greeting; a single message (no separator) validates exactly
+    as before (one variant, capped at ``MAX_MESSAGE_LENGTH``).
     """
     if not isinstance(value, str):
         raise ValueError(f"expected a message template string, got {value!r}")
-    if not value.strip():
+    variants = split_message_variants(value)
+    if not variants:
         raise ValueError("message template cannot be empty")
-    if len(value) > MAX_MESSAGE_LENGTH:
-        raise ValueError(f"message template must be <= {MAX_MESSAGE_LENGTH} characters")
+    if len(variants) > MAX_MESSAGE_VARIANTS:
+        raise ValueError(
+            f"at most {MAX_MESSAGE_VARIANTS} message variants "
+            f"(separate them with a '---' line), got {len(variants)}",
+        )
+    for variant in variants:
+        if len(variant) > MAX_MESSAGE_LENGTH:
+            raise ValueError(
+                f"each message variant must be <= {MAX_MESSAGE_LENGTH} characters",
+            )
 
 
 WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
@@ -140,7 +154,8 @@ WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
         capability_required=_WELCOME_CAPABILITY,
         hint=(
             "Greeting template.  Placeholders: {user} (mention), {server} "
-            "(name), {count} (member number)."
+            "(name), {count} (member number).  Add several variants separated "
+            "by a '---' line to greet joiners with a random one each time."
         ),
         validator=_validate_message,
     ),
@@ -152,7 +167,8 @@ WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
         capability_required=_WELCOME_CAPABILITY,
         hint=(
             "Farewell template.  Placeholders: {user} (name), {server} "
-            "(name), {count} (remaining members)."
+            "(name), {count} (remaining members).  Add several variants "
+            "separated by a '---' line to post a random one each time."
         ),
         validator=_validate_message,
     ),

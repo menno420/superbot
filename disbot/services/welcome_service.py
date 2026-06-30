@@ -23,6 +23,7 @@ The cog (:mod:`cogs.welcome_cog`) is glue: it filters bots and delegates to
 from __future__ import annotations
 
 import logging
+import random
 from typing import Any
 
 import discord
@@ -48,10 +49,17 @@ def format_join_embed(
     member: discord.Member,
     policy: welcome_config.WelcomePolicy,
     member_count: int,
+    *,
+    rng: random.Random | None = None,
 ) -> discord.Embed:
-    """Build the greeting embed for a joining ``member``."""
+    """Build the greeting embed for a joining ``member``.
+
+    When the join message holds multiple ``---``-separated variants, one is
+    chosen at random (``rng`` injectable for deterministic tests); a
+    single-variant message renders identically.
+    """
     description = welcome_config.render_template(
-        policy.join_message,
+        welcome_config.pick_message(policy.join_message, rng=rng),
         member_name=member.mention,
         guild_name=member.guild.name,
         member_count=member_count,
@@ -67,14 +75,18 @@ def format_leave_embed(
     member: discord.Member,
     policy: welcome_config.WelcomePolicy,
     member_count: int,
+    *,
+    rng: random.Random | None = None,
 ) -> discord.Embed:
     """Build the farewell embed for a departing ``member``.
 
     Uses the plain name (not a mention) — the member has left, so a mention
     would render as a raw id for anyone who never shared a mutual server.
+    Multiple ``---``-separated farewell variants pick one at random (``rng``
+    injectable for tests); a single-variant message renders identically.
     """
     description = welcome_config.render_template(
-        policy.leave_message,
+        welcome_config.pick_message(policy.leave_message, rng=rng),
         member_name=member.display_name,
         guild_name=member.guild.name,
         member_count=member_count,
