@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-30T15:11:38Z",
+    "generated_at": "2026-06-30T19:09:17Z",
     "build": {
-      "commit": "1a32363b",
-      "subject": "Welcome age-gating + ping-then-delete: born-red session card + claim",
-      "committed_at": "2026-06-30T15:11:38Z"
+      "commit": "8252a5d",
+      "subject": "Add fishing rod-recipe browser with live craft progress",
+      "committed_at": "2026-06-30T19:09:17Z"
     }
   },
   "counts": {
-    "commands": 473,
+    "commands": 474,
     "features": 43,
     "games": 12
   },
@@ -7907,6 +7907,28 @@
       "permissions": "user",
       "usage": "View your fishing rod and upgrade it for coins.",
       "description": "View your fishing rod and upgrade it for coins.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "rodrecipes",
+      "aliases": [
+        "rodrecipe",
+        "rrecipes"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Browse every fish→rod recipe and your live progress toward each tier.",
+      "description": "Browse every fish→rod recipe and your live progress toward each tier.",
       "use_cases": null,
       "examples": [],
       "status": "in-progress",

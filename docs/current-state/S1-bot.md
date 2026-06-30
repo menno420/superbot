@@ -16,6 +16,14 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Fishing — rod-recipe browser with live craft progress** (PR #1585, the named "next offline
+  successor" on the fish→rod craft seam) — the rod shop already advertised a recipe's bare
+  requirement ("10 fish, size ≤ 6") but never showed how close the player already was. A new
+  **📋 Recipes** panel (a button off the rod shop + standalone `!rodrecipes`) lists every craftable
+  tier with the player's **live eligible-fish count** against the requirement, owned/next/locked
+  status, and a Craft button for the immediate next tier. `services/fishing_workflow.py` gained a
+  public `eligible_fish_total()` (extracted from the existing `_plan_fish_spend` planner,
+  behavior-preserving) for the progress readout. +18 tests; no migration; self-merge on green.
 - **Diagnostics completion deepening — pagination + metrics reconcile** (PR #1584, completion-first
   deepening, Diagnostics cert punch #2 + #5 — both offline punch items CLOSED) — `!platform consistency`
   and `!platform findings` now render through `build_consistency_pages` / `build_findings_pages` and
@@ -287,10 +295,12 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   fish recipe — a pure coin sink today): `!craftpearl` + a bait-shop "Craft from pearls" select spend
   `bait.PEARL_BAIT_RECIPES` pearls via `fishing_workflow.craft_pearl_bait`; coins stay the fast
   alternative. No DB migration (pearls reuse the generic `mining_inventory` store), sim-pinned
-  ([pearl numbers](../planning/fishing-pearl-numbers-2026-06-28.md)). ▶ **Next offline successor:**
-  a **fish-loot rare *material*-drop variant** (a dedicated craft material that feeds a *new* craft
-  target rather than the premium bait — e.g. a "kelp"/"driftwood" that crafts a cosmetic or a
-  structure) **or** the **rod-ladder recipe browser** UI. Pure + sim-pinnable, self-mergeable.
+  ([pearl numbers](../planning/fishing-pearl-numbers-2026-06-28.md)). **The rod-ladder recipe browser
+  UI SHIPPED 2026-06-30 (PR #1585):** a 📋 Recipes panel (rod shop button + `!rodrecipes`) shows every
+  craftable tier with the player's live eligible-fish progress, not just the bare requirement — see
+  Recently shipped above. ▶ **Next offline successor:** the remaining **fish-loot rare *material*-drop
+  variant** (a dedicated craft material that feeds a *new* craft target rather than the premium bait —
+  e.g. a "kelp"/"driftwood" that crafts a cosmetic or a structure). Pure + sim-pinnable, self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

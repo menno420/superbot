@@ -4570,6 +4570,27 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "rodrecipes",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Browse every fish→rod recipe and your live progress toward each tier.",
+    "description": "Browse every fish→rod recipe and your live progress toward each tier.",
+    "usage": "!rodrecipes",
+    "aliases": [
+      "rodrecipe",
+      "rrecipes"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "rolecreator",
     "area": "management",
     "status": "in-progress",
@@ -7171,7 +7192,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "1a32363b",
+    "build": "8252a5d",
     "title": "New public bot website",
     "changes": [
       {
@@ -7183,7 +7204,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "1a32363b",
+    "build": "8252a5d",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7195,7 +7216,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "1a32363b",
+    "build": "8252a5d",
     "title": "Command-alias suggestions",
     "changes": [
       {
