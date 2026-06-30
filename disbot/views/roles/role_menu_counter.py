@@ -1,6 +1,6 @@
 """Live sign-up counter for role menus — the member-facing headcount.
 
-When a role menu has ``show_counts`` on (migration 102), its public embed shows a
+When a role menu has ``show_counts`` on (migration 103), its public embed shows a
 **live participant count** beside each role plus a distinct-member total — the
 event-RSVP counter the owner asked for ("how many people pressed the button").
 

@@ -55,7 +55,7 @@ def build_menu_embed(
         color=theme.color,
     )
 
-    # Live sign-up counter (opt-in, migration 102): current holders per role +
+    # Live sign-up counter (opt-in, migration 103): current holders per role +
     # the distinct total, computed in one pass and rendered inline + in the footer.
     show_counts = bool(menu.get("show_counts"))
     counts: dict[int, int] = {}

@@ -17,7 +17,7 @@
 
 **Recently shipped (this sector):**
 - **Reaction-roles live sign-up counter** (PR #1570, owner-directed deepening) — the event-RSVP
-  counter from the Discord screenshots: an **opt-in `📊 Counts`** per-menu flag (migration 102
+  counter from the Discord screenshots: an **opt-in `📊 Counts`** per-menu flag (migration 103
   `role_menus.show_counts`, default off) that renders a **live participant headcount** beside each
   role on the public menu embed + a distinct-member footer total. Counts **current holders**
   (`guild.members` ∩ roles — self-correcting, drops on un-sign/leave; distinct from the operator-only

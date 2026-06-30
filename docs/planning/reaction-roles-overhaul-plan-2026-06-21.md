@@ -104,7 +104,7 @@
 >
 > **▶ Refinement (2026-06-30, owner-directed — PR #1570):** **live sign-up counter on role menus**
 > (the event-RSVP ask from the Discord screenshots — "a counter that keeps track of how many people
-> pressed the button"). An **opt-in** per-menu flag (migration **102** `role_menus.show_counts`,
+> pressed the button"). An **opt-in** per-menu flag (migration **103** `role_menus.show_counts`,
 > default off → existing menus byte-identical) renders a **live participant headcount** beside each
 > role on the public menu embed + a distinct-member footer total. Semantics = **current holders**
 > (`guild.members` ∩ the menu's roles), not a cumulative tally — so it drops when someone un-signs or

@@ -41,7 +41,7 @@ async def create_menu(
     ``message_id`` is left NULL until the menu message is posted — the caller
     sends the message, then calls :func:`set_menu_message`. ``card_template`` /
     ``card_text`` (migration 089) are NULL unless the menu carries a banner card.
-    ``show_counts`` (migration 102) toggles the member-facing live sign-up counter.
+    ``show_counts`` (migration 103) toggles the member-facing live sign-up counter.
     """
     row = await pool.fetchone(
         """INSERT INTO role_menus
@@ -107,7 +107,7 @@ async def update_menu(
     The caller re-renders and edits the existing message afterward, so the
     posted menu and the row stay in step without a repost. ``card_template`` /
     ``card_text`` are overwritten too (``None`` clears the banner card).
-    ``show_counts`` toggles the live sign-up counter (migration 102).
+    ``show_counts`` toggles the live sign-up counter (migration 103).
     """
     await pool.execute(
         """UPDATE role_menus

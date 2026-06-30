@@ -19,7 +19,7 @@ participate a little) — i.e. a multi-button RSVP poll, each option counted.
 
 An **opt-in live sign-up counter** on role menus, plus a two-tap path to the multi-option RSVP poll:
 
-1. **migration 102** — `role_menus.show_counts BOOLEAN NOT NULL DEFAULT FALSE` (additive; existing
+1. **migration 103** — `role_menus.show_counts BOOLEAN NOT NULL DEFAULT FALSE` (additive; existing
    menus byte-identical).
 2. **`utils/db/role_menus.py`** — `show_counts` threaded through `create_menu` / `update_menu`.
 3. **`services/reaction_role_service.py`** — `show_counts` threaded through the audited create/update;
@@ -107,7 +107,7 @@ takeaway; not built this session to keep scope on the owner's feature.)
 - **Run type:** `manual · owner-directed`
 - **Class:** feature/deepening (additive, opt-in, reversible, audited-seam, test-covered)
 - **⚑ Owner decisions needed:** none
-- **⚑ Owner manual steps:** none — merge auto-deploys (migration 102 applies on next boot; no data
+- **⚑ Owner manual steps:** none — merge auto-deploys (migration 103 applies on next boot; no data
   backfill, the column defaults off)
 - **⚑ Self-initiated:** no — owner-directed (the Discord request + mid-session multi-option
   clarification). The Event RSVP template + role pack are the path to the stated goal (Q-0014: approving
