@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-7y6goi` · scope: Welcome completion-first deepening (multiple/random greeting messages, punch-list #2) · area: `disbot/services/welcome_*`, `disbot/cogs/welcome*`, tests · 2026-06-30
