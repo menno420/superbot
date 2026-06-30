@@ -31,6 +31,18 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`superbot-fresh-rebuild-vision-2026-06-30.md`](./superbot-fresh-rebuild-vision-2026-06-30.md) —
+  **maintainer vision (2026-06-30, in-chat, captured verbatim + Claude's verified counter-research):**
+  a full rebuild of SuperBot as a fresh repo — keep all working code, port it incrementally against the
+  current repo as a frozen reference, separate the bot from the AI-memory project, design the question
+  router and architecture once from accumulated knowledge instead of incrementally. **Not approved for
+  execution** — explicitly gated on finishing the portable substrate-kit, a large multi-agent
+  planning/review pass, the maintainer's own keep/change spec, and (per the maintainer) Fable 5
+  availability — **research finding: Fable 5 has been generally available via the API since
+  2026-06-09**, so that gate may already be clear. Carries Claude's full verification trail (router
+  archive status, the historical-docs-value audit, the portable-kit's real ~60%-built state, zero
+  code-coupling between `substrate-kit/` and `disbot/`, concrete evidence for code-level debt) — read
+  the doc for the reconciled position, not just the proposal.
 - [`compute-dont-refuse-capability-sweep-2026-06-30.md`](./compute-dont-refuse-capability-sweep-2026-06-30.md) —
   **session idea (2026-06-30, Q-0089, from building the BTD6 boss-fight estimator #1574):** mine the
   `ai_review_log` for refusals that are actually **computable** (the bot has the grounded data, it just
