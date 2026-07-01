@@ -18,6 +18,7 @@ from views.fishing import (
     StructuresView,
     build_structures_embed,
 )
+from views.fishing.boathouse import BoathouseView
 from views.fishing.dock import DockView
 from views.fishing.structures_hub import open_structures_hub
 from views.fishing.tide_pool import TidePoolView
@@ -96,10 +97,23 @@ async def test_structures_embed_shows_both_structures_at_a_glance():
     field_names = [f.name for f in embed.fields]
     assert any("Tide Pool" in n for n in field_names)
     assert any("Dock" in n for n in field_names)
-    # A built Tide Pool shows its live bonus; an unbuilt Dock reads "not built yet".
+    assert any("Boathouse" in n for n in field_names)
+    # A built Tide Pool shows its live bonus; an unbuilt Dock/Boathouse read
+    # "not built yet".
     body = "\n".join(f.value for f in embed.fields)
     assert "pull toward rarer fish" in body
     assert "not built yet" in body
+
+
+@pytest.mark.asyncio
+async def test_structures_embed_shows_the_boathouse_regen_bonus_when_built():
+    with patch(
+        "views.fishing.structures_hub.db.get_structures",
+        AsyncMock(return_value={struct.BOATHOUSE: 2}),
+    ):
+        embed = await build_structures_embed(1, 99)
+    body = "\n".join(f.value for f in embed.fields)
+    assert "faster energy regen" in body
 
 
 @pytest.mark.asyncio
@@ -130,6 +144,21 @@ async def test_sub_hub_dock_button_opens_the_dock_panel():
     interaction.response.edit_message.assert_awaited_once()
     _, kwargs = interaction.response.edit_message.await_args
     assert isinstance(kwargs["view"], DockView)
+
+
+@pytest.mark.asyncio
+async def test_sub_hub_boathouse_button_opens_the_boathouse_panel():
+    view = _hub()
+    interaction = _interaction()
+    with patch(
+        "views.fishing.boathouse.db.get_structures",
+        AsyncMock(return_value={}),
+    ):
+        await _click(view, "boathouse_btn", interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    _, kwargs = interaction.response.edit_message.await_args
+    assert isinstance(kwargs["view"], BoathouseView)
 
 
 @pytest.mark.asyncio
@@ -186,6 +215,21 @@ async def test_tide_pool_back_button_returns_to_the_structures_sub_hub():
 @pytest.mark.asyncio
 async def test_dock_back_button_returns_to_the_structures_sub_hub():
     view = DockView(_author(), guild_id=99)
+    interaction = _interaction()
+    with patch(
+        "views.fishing.structures_hub.db.get_structures",
+        AsyncMock(return_value={}),
+    ):
+        await _click(view, "back_btn", interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    _, kwargs = interaction.response.edit_message.await_args
+    assert isinstance(kwargs["view"], StructuresView)
+
+
+@pytest.mark.asyncio
+async def test_boathouse_back_button_returns_to_the_structures_sub_hub():
+    view = BoathouseView(_author(), guild_id=99)
     interaction = _interaction()
     with patch(
         "views.fishing.structures_hub.db.get_structures",

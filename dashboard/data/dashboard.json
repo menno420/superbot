@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T11:36:11Z",
+    "generated_at": "2026-07-01T12:13:32Z",
     "build": {
-      "commit": "4f1d4ce8",
-      "subject": "Merge pull request #1603 from menno420/claude/funny-franklin-td09cd",
-      "committed_at": "2026-07-01T11:36:11Z"
+      "commit": "48a226f6",
+      "subject": "chore(session): born-red card — third fishing structure (Boathouse)",
+      "committed_at": "2026-07-01T12:13:32Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 478,
+      "commands": 479,
       "setting_keys": 115,
       "setting_domains": 17,
       "typed_settings": 95,
@@ -2762,6 +2762,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-01-fishing-boathouse-structure.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-boot-smoke-test-guard.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Boot smoke-test guard (never ship a cog that won't load)",
@@ -3168,14 +3176,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-reconcile-band1500.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Twenty-seventh Q-0107 reconciliation pass (band-#1500)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -6898,6 +6898,20 @@
             "buybait"
           ],
           "brief": "Load fishing bait — a consumable that pulls catches toward bigger fish.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "boathouse",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "moorings",
+            "boat"
+          ],
+          "brief": "Build a Boathouse — the coral+wood structure that refills energy faster.",
           "classification": "",
           "has_panel": true,
           "button_backed": true

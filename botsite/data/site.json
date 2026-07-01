@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T08:58:08Z",
+    "generated_at": "2026-07-01T12:13:32Z",
     "build": {
-      "commit": "07c881a",
-      "subject": "Merge pull request #1599 from menno420/claude/funny-franklin-4n38rf",
-      "committed_at": "2026-07-01T08:58:08Z"
+      "commit": "48a226f6",
+      "subject": "chore(session): born-red card — third fishing structure (Boathouse)",
+      "committed_at": "2026-07-01T12:13:32Z"
     }
   },
   "counts": {
-    "commands": 478,
+    "commands": 479,
     "features": 43,
     "games": 12
   },
@@ -4430,6 +4430,32 @@
       "examples": [],
       "status": "finished",
       "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "boathouse",
+      "aliases": [
+        "moorings",
+        "boat"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Build a Boathouse — the coral+wood structure that refills energy faster.",
+      "description": "Build a Boathouse — the coral+wood structure that refills energy faster.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!tidepool",
+        "!dock"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
