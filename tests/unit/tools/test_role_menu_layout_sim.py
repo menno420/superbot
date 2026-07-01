@@ -80,9 +80,20 @@ def test_cost_model_rewards_hot_buttons_top_left(mod):
 
 def test_lean_advanced_variant_folds_the_rare_knobs(mod):
     lean = next(v for v in mod.VARIANTS if v.name == "lean_advanced")
-    # The six rarely-tapped knobs are hidden behind one grid button.
-    for folded in ("theme", "card", "counts", "style", "mode", "limit"):
+    # The rarely-tapped knobs are hidden behind one grid button …
+    for folded in ("theme", "card", "counts", "mode", "limit"):
         assert lean.grid_key(folded) == "advanced"
-    # …and the hot content buttons stay top-level.
+    # … but Style is pinned first-screen (owner directive) — never folded …
+    assert lean.grid_key("style") == "style"
+    # … and the hot content buttons stay top-level too.
     for hot in ("template", "packs", "roles", "post"):
         assert lean.grid_key(hot) == hot
+
+
+def test_pinned_style_stays_on_the_first_screen(mod):
+    """Every optimised variant must place Style on row 0 (owner directive)."""
+    assert "style" in mod.PINNED_FIRST_SCREEN
+    for v in mod.VARIANTS:
+        layout, _cost = mod.optimise(v, seed=1, iters=1500)
+        pos = mod.positions(layout)
+        assert pos["style"][0] == 0, f"{v.name}: Style not on row 0 ({pos['style']})"

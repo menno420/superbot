@@ -37,24 +37,27 @@ Stdlib only. Read-only. Deterministic (seeded).
 
 FINDINGS (seed 1, stable across seeds 1/2/7; re-run to confirm)
 ---------------------------------------------------------------
-The CURRENT 14-button / 3-row builder scores ~34.1. It leads with rarely-tapped
-knobs (Theme/Mode/Style/Limit on the top two rows) and scatters the hot content
+The CURRENT 14-button / 3-row builder scores ~40. It leads with rarely-tapped
+knobs (Theme/Mode/Limit on the top two rows) and scatters the hot content
 buttons, so the common RSVP/self-role tasks pay for buttons they never press.
 
-Two improvements, both re-order the hot content buttons (Template/Packs/Roles/
-Text/Colours) onto row 0 and drop Post to the bottom-right (submit convention):
+Style is PINNED first-screen (owner directive, 2026-07-01: dropdown-vs-buttons is
+a primary choice), so every recommendation keeps it visible on row 0.
 
-  * LOW-RISK — keep all 14 buttons, only re-order:               ~ -45% cost.
-  * BEST — "lean_advanced": fold the six rarely-tapped knobs
-    (Theme/Card/Counts/Style/Mode/Limit) behind one ⚙️ Advanced
-    button → a 9-button / 2-row builder:                          ~ -55% cost.
-        row 0: [🧩 Template] [📦 Packs] [🏷️ Roles] [📝 Text] [🎨 Colours]
-        row 1: [↩ Back] [📍 Channel] [⚙️ Advanced] [🚀 Post]
+Two improvements, both re-order the hot content buttons onto row 0 with Style, and
+drop Post to the bottom-right (submit convention):
 
-The lean layout is a product call (it hides six functions behind Advanced — the
-RSVP template already sets Style/Counts/Mode, so the common path never needs
-them); the re-order is a safe, mechanical win. Adopting either is a follow-up —
-this file only *finds* the layout; it doesn't change the builder.
+  * LOW-RISK — keep all 14 buttons, only re-order:               ~ -42% cost.
+  * BEST — "lean_advanced": fold the five rarely-tapped knobs
+    (Theme/Card/Counts/Mode/Limit) behind one ⚙️ Advanced button
+    (Style stays visible) → a 10-button / 2-row builder:          ~ -52% cost.
+        row 0: [🧩 Template] [📦 Packs] [🏷️ Roles] [🎚️ Style] [📝 Text]
+        row 1: [↩ Back] [🎨 Colours] [📍 Channel] [⚙️ Advanced] [🚀 Post]
+
+The lean layout is a product call (it hides five functions behind Advanced — the
+RSVP template already sets Counts/Mode, so the common path never needs them); the
+re-order is a safe, mechanical win. Adopting either is a follow-up — this file
+only *finds* the layout; it doesn't change the builder.
 
 Provenance: added 2026-07-01 for the owner-directed builder-layout question
 (follow-on to the reaction-roles counter/roster/preview-fix arc, #1570/#1571/#1608).
@@ -85,6 +88,7 @@ COL_W = 1.0
 OPEN_COST = 6.0  # opening a grouping submenu ~ crossing 6 index units of friction
 LAMBDA_GROUP = 0.6  # keep a function group's buttons contiguous
 LAMBDA_CONV = 1.6  # Post -> bottom-right (submit), Back -> bottom-left (convention)
+LAMBDA_PIN = 3.0  # a first-screen-pinned button (Style) belongs on row 0
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +124,12 @@ BUTTONS: list[Button] = [
 ]
 BY_KEY = {b.key: b for b in BUTTONS}
 
+# Buttons the owner wants VISIBLE ON THE FIRST SCREEN — never folded behind a
+# grouping button, and pulled to row 0. Style (dropdown vs buttons) is a primary,
+# up-front choice about the menu's whole shape, so it stays first-screen even
+# though the RSVP template pre-sets it (owner directive, 2026-07-01).
+PINNED_FIRST_SCREEN: set[str] = {"style"}
+
 # The CURRENT live layout (row-by-row, mirrors the decorators' row= values).
 CURRENT_LAYOUT: list[list[str]] = [
     ["text", "roles", "colours", "packs", "template"],  # row 0
@@ -143,8 +153,10 @@ JOURNEYS: list[Journey] = [
     # style=buttons, mode=unique, counts=on, so those are NOT tapped here.
     Journey("rsvp_event", 0.24, ("template", "packs", "channel", "post")),
     Journey("rsvp_quick", 0.06, ("template", "packs", "post")),
-    Journey("colour_roles", 0.15, ("template", "colours", "post")),
-    Journey("game_roles", 0.14, ("template", "roles", "text", "post")),
+    # Non-RSVP self-role menus: dropdown-vs-buttons is a real up-front choice, so
+    # Style IS tapped here (owner: Style belongs on the first screen, 2026-07-01).
+    Journey("colour_roles", 0.15, ("template", "colours", "style", "post")),
+    Journey("game_roles", 0.14, ("template", "roles", "style", "text", "post")),
     Journey("notification_roles", 0.12, ("template", "packs", "post")),
     Journey("verify_gate", 0.06, ("template", "roles", "post")),
     # The rare power-user path that actually touches every knob.
@@ -200,6 +212,8 @@ def _folded_variant(name: str, folds: dict[str, tuple[str, str, list[str]]]) -> 
     for new_key, (label, _group, members) in folds.items():
         labels[new_key] = label
         for m in members:
+            if m in PINNED_FIRST_SCREEN:
+                continue  # a first-screen-pinned button is never folded
             fold_map[m] = new_key
             folded_members.add(m)
     top = [b.key for b in BUTTONS if b.key not in folded_members]
@@ -227,8 +241,9 @@ VARIANTS: list[Variant] = [
             "rules": ("⚙️ Rules", "behaviour", ["mode", "limit"]),
         },
     ),
-    # Aggressive: one "Advanced" button hides every rarely-tapped knob
-    # (theme/card/counts/style/mode/limit) so the top level is the hot path only.
+    # Aggressive: one "Advanced" button hides the rarely-tapped knobs so the top
+    # level is the hot path only. Style is PINNED first-screen, so it is NOT folded
+    # here even though it is listed (the fold-builder skips pinned members).
     _folded_variant(
         "lean_advanced",
         {
@@ -318,6 +333,11 @@ def group_penalty(variant: Variant, pos: dict[str, tuple[int, int]]) -> float:
     return pen
 
 
+def pin_penalty(pos: dict[str, tuple[int, int]]) -> float:
+    """First-screen-pinned buttons (Style) belong on row 0 (owner directive)."""
+    return float(sum(pos[k][0] for k in PINNED_FIRST_SCREEN if k in pos))
+
+
 def convention_penalty(
     variant: Variant,
     layout: list[list[str]],
@@ -340,6 +360,7 @@ def total_cost(variant: Variant, layout: list[list[str]]) -> float:
     cost = sum(j.weight * journey_cost(j, variant, pos) for j in JOURNEYS)
     cost += LAMBDA_GROUP * group_penalty(variant, pos)
     cost += LAMBDA_CONV * convention_penalty(variant, layout, pos)
+    cost += LAMBDA_PIN * pin_penalty(pos)
     return cost
 
 

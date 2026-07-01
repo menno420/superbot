@@ -1,1 +1,0 @@
- - `claude/reaction-roles-counter-bgxnyd` · **layout sim — pin Style first-screen** — owner correction: Style must stay visible (never folded); re-optimise · `tools/sim/role_menu_layout_sim.py` `tests/unit/tools/test_role_menu_layout_sim.py` · 2026-07-01 · in-progress

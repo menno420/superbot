@@ -1,6 +1,7 @@
 # 2026-07-01 — Layout sim: pin Style first-screen (owner correction)
 
-> **Status:** `in-progress` — born-red card (Q-0133). Run type: manual · owner-directed.
+> **Status:** `complete` — ready to merge (Q-0133). Run type: manual · owner-directed.
+> Full CI mirror green (**13576 passed**; lint clean; arch 0 new). PR #1613.
 
 **Branch:** `claude/reaction-roles-counter-bgxnyd` (restarted from `main` @ #1612 — the sim merged).
 
