@@ -349,6 +349,26 @@ def for_reference_facts(facts: tuple[str, ...]) -> BTD6Response:
     )
 
 
+def for_list_reply(reply: str) -> BTD6Response:
+    """Wrap a deterministic list-floor string as a :class:`BTD6Response`.
+
+    The BUG-0009 / round-range list floors (``btd6_context_service`` —
+    e.g. "list all the bloons from r29 till r63") return a self-contained
+    markdown answer the conversational stage sends verbatim. The Ask modal /
+    ``!btd6 ask`` render a :class:`BTD6Response` instead, so this carries the
+    floor string through unchanged as the embed body — the two surfaces serve
+    the one authoritative answer rather than the Ask path re-deriving a weaker
+    one from the endpoint-only intent. High confidence: the floor is
+    code-built, not model-authored.
+    """
+    return BTD6Response(
+        title="BTD6",
+        short_answer=reply,
+        confidence="high",
+        sources=(_source_label(),),
+    )
+
+
 # The one string the unresolved path is recognised by (``answer_question``
 # upgrades an unresolved response to ``for_reference_facts`` when grounding
 # found facts anyway) — never compare against a literal copy of the title.

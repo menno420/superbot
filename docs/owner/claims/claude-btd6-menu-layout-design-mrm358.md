@@ -1,0 +1,1 @@
+- `claude/btd6-menu-layout-design-mrm358` · BTD6 menu layout design + round-range NL bug · disbot/views/btd6/panel.py, disbot/services/btd6_context_service.py, docs/btd6/, tools/btd6/ · 2026-07-01
