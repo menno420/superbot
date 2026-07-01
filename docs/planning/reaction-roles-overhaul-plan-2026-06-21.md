@@ -128,6 +128,17 @@
 > list, deliberately distinct from the per-user pickup history kept private in §9. No migration, no new
 > commands.
 >
+> **▶ Bug fix (2026-06-30, owner bug report from a live recording — PR #1608):** **the builder preview
+> never re-rendered.** The reaction-roles hub is **ephemeral**, and `RoleMenuBuilder._rerender()` used
+> `self.message.edit()` — which silently no-ops on an ephemeral message (only the interaction/webhook
+> token can edit one). So every draft mutation (style/roles/channel/counts) applied and posted correctly,
+> but the *preview* froze on its first render, making the builder look broken. Fix: store
+> `_panel_interaction` and route `_rerender()` + `_show_parent()` through the shipped
+> `interaction_helpers.safe_edit`, refreshing the token at each panel-open + direct interaction (the
+> sub-flow pickers already funnel through `_rerender`, so they're fixed at the choke point); the sibling
+> `RoleMenuListView._rerender` got the same one-liner (stale list after delete/repost). Lesson for any
+> ephemeral multi-step panel: **never refresh via `Message.edit()` — use the interaction token.**
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,

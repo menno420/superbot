@@ -165,6 +165,48 @@ def test_from_menu_loads_show_counts() -> None:
 
 
 @pytest.mark.asyncio
+async def test_rerender_routes_through_panel_interaction() -> None:
+    """The live preview refreshes via the interaction token (works on ephemeral),
+    not Message.edit (which silently no-ops on an ephemeral hub message).
+    """
+    builder = _counter_builder()
+    builder._panel_interaction = SimpleNamespace()  # sentinel token holder
+    builder.message = SimpleNamespace(edit=AsyncMock())  # must NOT be used
+    with patch(
+        "views.roles.role_menu_builder.safe_edit",
+        new=AsyncMock(return_value=True),
+    ) as se:
+        await builder._rerender()
+    se.assert_awaited_once()
+    assert se.await_args.kwargs["view"] is builder
+    assert se.await_args.kwargs["embed"] is not None
+    builder.message.edit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_rerender_falls_back_to_message_edit_without_interaction() -> None:
+    builder = _counter_builder()
+    builder._panel_interaction = None
+    builder.message = SimpleNamespace(edit=AsyncMock())
+    await builder._rerender()
+    builder.message.edit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_rerender_falls_back_when_safe_edit_fails() -> None:
+    """If the token edit fails (e.g. expired), fall back to Message.edit."""
+    builder = _counter_builder()
+    builder._panel_interaction = SimpleNamespace()
+    builder.message = SimpleNamespace(edit=AsyncMock())
+    with patch(
+        "views.roles.role_menu_builder.safe_edit",
+        new=AsyncMock(return_value=False),
+    ):
+        await builder._rerender()
+    builder.message.edit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_apply_template_sets_mode_and_counts_from_template() -> None:
     """The Event RSVP template pre-picks button + unique + the live counter."""
     builder = _counter_builder()

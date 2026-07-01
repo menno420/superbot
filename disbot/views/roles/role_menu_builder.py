@@ -18,7 +18,7 @@ import logging
 import discord
 
 from core.runtime import resources
-from core.runtime.interaction_helpers import safe_defer
+from core.runtime.interaction_helpers import safe_defer, safe_edit
 from core.runtime.permission_checks import member_has_perms_or_owner
 from utils import role_feasibility
 from utils import role_menu_presentation as presentation
@@ -105,6 +105,9 @@ class RoleMenuListView(BaseView):
         self.guild = guild
         self.channel = channel
         self.parent = parent
+        # See RoleMenuBuilder._panel_interaction — the manager list is on the same
+        # ephemeral message, so its refresh must route through the interaction too.
+        self._panel_interaction: discord.Interaction | None = None
         if parent is not None:
 
             async def _build_parent(
@@ -148,7 +151,13 @@ class RoleMenuListView(BaseView):
         return embed
 
     async def _rerender(self) -> None:
-        if self.message:
+        if self._panel_interaction is not None and await safe_edit(
+            self._panel_interaction,
+            embed=await self.build_embed(),
+            view=self,
+        ):
+            return
+        if self.message is not None:
             await self.message.edit(embed=await self.build_embed(), view=self)
 
     @discord.ui.button(label="➕ New Menu", style=discord.ButtonStyle.green, row=0)
@@ -178,6 +187,7 @@ class RoleMenuListView(BaseView):
             view=builder,
         )
         builder.message = interaction.message
+        builder._panel_interaction = interaction
 
     @discord.ui.button(label="✏️ Edit", style=discord.ButtonStyle.blurple, row=0)
     async def edit_btn(
@@ -283,10 +293,12 @@ class RoleMenuListView(BaseView):
             opts,
             parent=self,
         )
-        await interaction.response.edit_message(content="Opening editor…", view=None)
-        if self.message:
-            await self.message.edit(embed=builder.build_embed(), view=builder)
-            builder.message = self.message
+        builder._panel_interaction = interaction
+        await interaction.response.edit_message(
+            embed=builder.build_embed(),
+            view=builder,
+        )
+        builder.message = interaction.message
 
     async def _delete_menu(
         self,
@@ -406,10 +418,12 @@ class RoleMenuListView(BaseView):
             as_copy=True,
             channel=_as_messageable(self.channel),
         )
-        await interaction.response.edit_message(content="Opening a copy…", view=None)
-        if self.message:
-            await self.message.edit(embed=builder.build_embed(), view=builder)
-            builder.message = self.message
+        builder._panel_interaction = interaction
+        await interaction.response.edit_message(
+            embed=builder.build_embed(),
+            view=builder,
+        )
+        builder.message = interaction.message
 
     async def _delete_old_message(self, menu: dict) -> None:
         """Best-effort: remove a menu's previous posted message before a repost."""
@@ -449,6 +463,12 @@ class RoleMenuBuilder(BaseView):
         self.channel = channel
         self.parent = parent
         self.menu_id = menu_id
+        # The interaction that owns the (ephemeral) panel message. Ephemeral
+        # messages can't be edited via Message.edit() — only through the
+        # interaction/webhook token — so every live preview refresh routes
+        # through this via safe_edit(). Set at open + refreshed by each direct
+        # panel interaction (toggles/modals); sub-flows reuse the stored token.
+        self._panel_interaction: discord.Interaction | None = None
         # Draft state (dropdown default per owner decision §9 #2).
         self.title = "Pick your roles"
         self.description: str | None = None
@@ -572,8 +592,40 @@ class RoleMenuBuilder(BaseView):
         return embed
 
     async def _rerender(self) -> None:
-        if self.message:
+        """Refresh the live preview panel in place.
+
+        Routes through the stored panel interaction (``safe_edit`` picks
+        ``response.edit_message`` / ``followup.edit_message`` as appropriate) so
+        the edit lands on the **ephemeral** hub message — a plain
+        ``Message.edit()`` silently no-ops there, which is why the preview used
+        to freeze while the underlying draft state changed. Falls back to
+        ``Message.edit`` for any non-ephemeral caller.
+        """
+        if self._panel_interaction is not None and await safe_edit(
+            self._panel_interaction,
+            embed=self.build_embed(),
+            view=self,
+        ):
+            return
+        if self.message is not None:
             await self.message.edit(embed=self.build_embed(), view=self)
+
+    async def _show_parent(self) -> None:
+        """Return the panel to its parent manager (after Post / Save)."""
+        if self.parent is None:
+            return
+        # Hand the live token to the parent so its own list refreshes work too.
+        if hasattr(self.parent, "_panel_interaction"):
+            self.parent._panel_interaction = self._panel_interaction  # type: ignore[attr-defined]
+        embed = await self.parent.build_embed()  # type: ignore[attr-defined]
+        if self._panel_interaction is not None and await safe_edit(
+            self._panel_interaction,
+            embed=embed,
+            view=self.parent,
+        ):
+            return
+        if self.message is not None:
+            await self.message.edit(embed=embed, view=self.parent)
 
     # -- field editors ------------------------------------------------------
 
@@ -708,9 +760,8 @@ class RoleMenuBuilder(BaseView):
     ) -> None:
         """Toggle the live sign-up counter (current holders shown on the menu)."""
         self.show_counts = not self.show_counts
-        if not await safe_defer(interaction):
-            return
-        await self._rerender()
+        self._panel_interaction = interaction
+        await safe_edit(interaction, embed=self.build_embed(), view=self)
 
     @discord.ui.button(label="🎭 Theme", style=discord.ButtonStyle.grey, row=1)
     async def theme_btn(
@@ -765,9 +816,8 @@ class RoleMenuBuilder(BaseView):
         _: discord.ui.Button,
     ) -> None:
         self.style = "button" if self.style == "dropdown" else "dropdown"
-        if not await safe_defer(interaction):
-            return
-        await self._rerender()
+        self._panel_interaction = interaction
+        await safe_edit(interaction, embed=self.build_embed(), view=self)
 
     @discord.ui.button(label="🔢 Limit", style=discord.ButtonStyle.grey, row=1)
     async def limit_btn(
@@ -919,11 +969,7 @@ class RoleMenuBuilder(BaseView):
             f"🚀 Posted **{self.title}** to {channel.mention}.",
             ephemeral=True,
         )
-        if self.parent is not None and self.message:
-            await self.message.edit(
-                embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
-                view=self.parent,
-            )
+        await self._show_parent()
 
     async def _save_edit(self, interaction, service, options) -> None:  # type: ignore[no-untyped-def]
         if self.menu_id is None:  # pragma: no cover - guarded by _commit
@@ -969,11 +1015,7 @@ class RoleMenuBuilder(BaseView):
             else "💾 Saved. (The posted message couldn't be edited; re-post if needed.)"
         )
         await interaction.followup.send(result_text, ephemeral=True)
-        if self.parent is not None and self.message:
-            await self.message.edit(
-                embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
-                view=self.parent,
-            )
+        await self._show_parent()
 
 
 # ---------------------------------------------------------------------------
@@ -1032,9 +1074,8 @@ class _TextModal(discord.ui.Modal, title="Menu text"):  # type: ignore[call-arg]
     async def on_submit(self, interaction: discord.Interaction) -> None:
         self.builder.title = self.title_in.value.strip() or "Pick your roles"
         self.builder.description = self.desc_in.value.strip() or None
-        if not await safe_defer(interaction):
-            return
-        await self.builder._rerender()
+        self.builder._panel_interaction = interaction
+        await safe_edit(interaction, embed=self.builder.build_embed(), view=self.builder)
 
 
 class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[call-arg]
@@ -1061,9 +1102,8 @@ class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[c
             )
             return
         self.builder.max_roles = value
-        if not await safe_defer(interaction):
-            return
-        await self.builder._rerender()
+        self.builder._panel_interaction = interaction
+        await safe_edit(interaction, embed=self.builder.build_embed(), view=self.builder)
 
 
 class _CardPickView(BaseView):

@@ -307,6 +307,7 @@ class ReactionRolesPanel(BaseView):
             view=view,
         )
         view.message = interaction.message
+        view._panel_interaction = interaction
 
     @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.grey, row=1)
     async def refresh_btn(
