@@ -86,6 +86,37 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1532 + 8 dashboard refreshes (2026-06-28/29, docs — twenty-eighth Q-0107 pass + dashboard)** — the
+  **twenty-eighth Q-0107 reconciliation pass** (band-#1530,
+  [pass record](planning/reconciliation-pass-2026-06-28-band1530.md), #1532); plus eight per-source-merge
+  **dashboard-data refreshes** (#1533 · #1535 · #1537 · #1539 · #1543 · #1547 · #1552 · #1554, Q-0167).
+- **#1504 · #1505 · #1508 · #1515 · #1518 · #1521 (2026-06-27/28, fishing acquisition-depth + gear arc — S1 game depth)** —
+  fishing-specific gear stats that make the loadout presets a real optimisation (#1504); an
+  `EffectiveStats` knob-coverage guard that surfaced two dead stats — `light_radius`/`luck` —
+  before they were wired (#1505); a **fish → charm craft** path (#1508); a **fish → rod craft** path
+  plus the 🍀 lucky-double-catch chance (#1515); a **"pearl"** rare-material drop + premium-bait pearl
+  craft (#1518); and a fishing + counting **completion punch-list** (un-trap shops, fix menu nav/rules,
+  add the player entry point, #1521).
+- **#1513 · #1519 · #1523 · #1530 (2026-06-27/28, S1 feature-completion certification framework)** —
+  a reusable **feature-completion certification framework** for the S1 bot units (#1513), then the first
+  assessments against it: Fishing / Counting / Word Chain + surfacing the counting leaderboard (#1519);
+  RPS / Deathmatch / Chicken-farm (#1523); and **Casino (poker) → ◐ assessed** (#1530, Q-0209).
+- **#1512 · #1524 · #1527 · #1529 (2026-06-27/28, game-view robustness + arch guards)** —
+  wired `light_radius` + `luck` into mining gameplay (**BUG-0026**, #1512); fixed the **born-red gate
+  slug-collision hole** (**BUG-0027**) + restored a clobbered session log + game completion certs (#1524);
+  made deathmatch **PvP terminal views** no longer dead-ends + root-fixed a panel-PvP context crash (#1527);
+  and added an **arch guard flagging no-swap terminal handlers** in game views (#1529, friction→guard Q-0194).
+- **#1510 · #1511 (2026-06-27, BTD6 grounding — corpus + absence-guard Layer B)** — expanded the BTD6
+  regression corpus with 4 fixed-live-miss probes (reviewing the codex audit #1509, #1510); and shipped the
+  **absence-guard Layer B** — the grounded-contradiction gate (#1511, the design half left open by #855's
+  Layer A).
+- **#1522 (2026-06-27, router — owner answers + a durable-home convention)** — documented owner answers
+  **Q-0182…Q-0207** and decided the **router-vs-durable-home convention** (when a Q-block stays in the
+  router vs. graduates to a binding doc).
+- **#1502 + 10 dashboard refreshes (2026-06-27/28, docs — twenty-seventh Q-0107 pass + dashboard)** — the
+  **twenty-seventh Q-0107 reconciliation pass** (band-#1500,
+  [pass record](planning/reconciliation-pass-2026-06-27-band1500.md), #1502); plus ten per-source-merge
+  **dashboard-data refreshes** (#1503 · #1506 · #1507 · #1514 · #1516 · #1517 · #1520 · #1525 · #1526 · #1528, Q-0167).
 - **#1487 · #1488 · #1490 · #1491 · #1492 · #1493 · #1494 · #1498 (2026-06-27, BTD6 QA-accuracy arc — grounding + an honest eval harness, live-test driven)** —
   the band's marquee, owner-directed from live Discord screenshots: damage-type/status-effect **interaction
   grounding** + a VERIFIED Q&A corpus (#1487); the corpus **wired into the eval system** as an offline
