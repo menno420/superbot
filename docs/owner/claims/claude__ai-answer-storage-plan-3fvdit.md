@@ -1,1 +1,0 @@
-- `claude/ai-answer-storage-plan-3fvdit` · **BTD6 track lengths (RBS) + estimator escape-margin** — committed wiki-sourced Red Bloon Seconds per map + wired into the boss-fight estimator · `disbot/data/btd6/map_track_lengths.json` `disbot/services/btd6_estimator_service.py` `disbot/services/btd6_data_service.py` · 2026-06-30 · in progress

@@ -51,6 +51,15 @@ LOGGING_ROLES_ENABLED = "logging_roles_enabled"
 # exhibit renders both modes.
 LOGGING_EVENT_ROUTING = "logging_event_routing"
 
+# Exclusion lists (Logging completion cert punch #1) — comma-separated id
+# CSV.  A passive event whose *channel* id is in ``LOGGING_IGNORED_CHANNELS``
+# or whose *subject* (author/member) id is in ``LOGGING_IGNORED_USERS`` is
+# never logged, for every category.  Both default empty (no exclusion), so a
+# fresh guild — and every existing guild — behaves exactly as before.  The
+# parse is tolerant (bad tokens dropped); the write-time validator is loud.
+LOGGING_IGNORED_CHANNELS = "logging_ignored_channels"
+LOGGING_IGNORED_USERS = "logging_ignored_users"
+
 # Default channel names used by ``ensure_log_channel`` for the new event
 # routes when auto-creation is enabled.
 DEFAULT_EVENTS_CHANNEL_NAME = "bot-event-log"

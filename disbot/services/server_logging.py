@@ -82,6 +82,9 @@ _COUNTERS: dict[str, int] = {
     # existing permission_error / send_error buckets for delivery failures.
     "event_sent": 0,
     "event_skipped_disabled": 0,
+    # Completion cert punch #1 — event suppressed because its channel or
+    # subject id is on the guild's ignore list.
+    "event_skipped_ignored": 0,
     "event_missing_channel": 0,
 }
 
@@ -1145,12 +1148,18 @@ async def _log_event_if_enabled(
     guild: discord.Guild | None,
     category: str,
     embed_factory: Any,
+    *,
+    channel_id: int | None = None,
+    user_id: int | None = None,
 ) -> bool:
     """Shared gate for every passive handler.
 
-    Loads the policy, applies the master+category gate, and posts the embed
+    Loads the policy, applies the master+category gate **and** the ignore
+    lists (completion cert punch #1: skip events whose ``channel_id`` or
+    subject ``user_id`` is excluded for this guild), then posts the embed
     built by ``embed_factory`` (a zero-arg callable, evaluated only once the
-    gate passes so a disabled category does no embed work). Fully fail-safe.
+    gates pass so a disabled/ignored event does no embed work). Fully
+    fail-safe.
     """
     if guild is None:
         return False
@@ -1160,6 +1169,9 @@ async def _log_event_if_enabled(
         policy = await _cfg.load_policy(guild.id)
         if not policy.should_log(category):
             _bump("event_skipped_disabled")
+            return False
+        if policy.is_ignored(channel_id=channel_id, user_id=user_id):
+            _bump("event_skipped_ignored")
             return False
         return await _post_event_embed(
             guild,
@@ -1185,6 +1197,8 @@ async def log_message_delete(message: discord.Message) -> bool:
         message.guild,
         CATEGORY_MESSAGES,
         lambda: format_message_delete_embed(message),
+        channel_id=getattr(message.channel, "id", None),
+        user_id=getattr(message.author, "id", None),
     )
 
 
@@ -1199,6 +1213,8 @@ async def log_message_edit(
         after.guild,
         CATEGORY_MESSAGES,
         lambda: format_message_edit_embed(before, after),
+        channel_id=getattr(after.channel, "id", None),
+        user_id=getattr(after.author, "id", None),
     )
 
 
@@ -1210,6 +1226,7 @@ async def log_member_join(member: discord.Member) -> bool:
         member.guild,
         CATEGORY_MEMBERS,
         lambda: format_member_join_embed(member),
+        user_id=getattr(member, "id", None),
     )
 
 
@@ -1221,6 +1238,7 @@ async def log_member_leave(member: discord.Member) -> bool:
         member.guild,
         CATEGORY_MEMBERS,
         lambda: format_member_leave_embed(member),
+        user_id=getattr(member, "id", None),
     )
 
 
@@ -1238,6 +1256,7 @@ async def log_role_change(
         member.guild,
         CATEGORY_ROLES,
         lambda: format_role_change_embed(member, added, removed),
+        user_id=getattr(member, "id", None),
     )
 
 
