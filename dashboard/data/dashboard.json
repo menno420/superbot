@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T20:31:17Z",
+    "generated_at": "2026-07-01T18:54:13Z",
     "build": {
-      "commit": "d1efa404",
-      "subject": "Merge pull request #1620 from menno420/claude/funny-franklin-jqv6ne",
-      "committed_at": "2026-07-01T20:31:17Z"
+      "commit": "89b7fe8b",
+      "subject": "docs: thirty-first Q-0107 reconciliation pass (band-#1620) (#1623)",
+      "committed_at": "2026-07-01T18:54:13Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 160,
+      "ideas": 161,
       "bugs": 30,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "band-themes-show-pr-subject-2026-07-01.md",
+      "title": "Idea — `band_pr_status.py --themes` should print each PR's subject line",
+      "status": "ideas",
+      "date": "2026-07-01",
+      "summary": "`band_pr_status.py --themes` drafts a grouped-entry skeleton for the Recently-shipped ledger, but it",
+      "subsystems": null
+    },
     {
       "file": "leaderboard-row-avatars-2026-07-01.md",
       "title": "Idea: leaderboard row avatars (the Arcane-defining visual)",
@@ -2787,6 +2795,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-01-reconcile.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — thirty-first Q-0107 reconciliation pass (band-#1620)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-01-owner-bypass-all-permission-gates.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Owner bypasses ALL permission gates (not just administrator)",
@@ -2864,6 +2880,14 @@
       "title": "2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-btd6-menu-panel-hub.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — BTD6 panel: Layout-B category hub (owner picked B)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": true
     },
     {
@@ -3169,22 +3193,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-question-router-answer-documentation.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Document owner answers + decide the router-vs-durable-home convention",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-no-dead-end-view-guard.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — No-dead-end terminal-view arch guard (friction→guard)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
