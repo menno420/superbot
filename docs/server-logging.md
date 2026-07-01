@@ -253,7 +253,15 @@ activity is deliberately out of v1 scope.
   (`log_message_delete` / `log_message_edit` / `log_member_join` /
   `log_member_leave` / `log_role_change`, plus the matching
   `format_*_embed` builders). Each handler loads the policy, gates,
-  resolves the routed channel, and posts — fully fail-safe.
+  resolves the routed channel, and posts — fully fail-safe. Each
+  `format_*_embed` also puts the event **subject's** avatar + display name
+  in the embed **author slot** (`_set_subject_author`) — a face per entry
+  for at-a-glance scanning. Purely additive (the structured fields are
+  unchanged) and network-free (the embed just references the avatar's CDN
+  url, so there is nothing to fetch and no failure path). The
+  moderation/audit embeds (`format_log_embed` / `format_audit_embed`)
+  carry only ids, so their avatar is a follow-up (resolve the member from
+  the guild at send time).
 * **Config read model** — `services/server_logging_config.py`
   (`EventLoggingPolicy` + `load_policy`), mirroring `automod_config`.
 

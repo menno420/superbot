@@ -74,6 +74,9 @@ def _message(*, content: str = "hi", bot: bool = False) -> MagicMock:
     author = MagicMock()
     author.id = 7
     author.bot = bot
+    author.display_name = "AuthorName"
+    author.display_avatar = MagicMock()
+    author.display_avatar.url = "https://cdn.example/author.png"
     msg.author = author
     msg.content = content
     channel = MagicMock(spec=discord.TextChannel)
@@ -92,6 +95,9 @@ def _member(*, bot: bool = False, roles: list | None = None) -> MagicMock:
     member.created_at = datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
     member.joined_at = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
     member.roles = roles if roles is not None else [_role(1, "@everyone", default=True)]
+    member.display_name = "MemberName"
+    member.display_avatar = MagicMock()
+    member.display_avatar.url = "https://cdn.example/member.png"
     member.__str__ = lambda self: "TestUser"  # type: ignore[assignment]
     return member
 
@@ -247,6 +253,43 @@ def test_role_change_embed_shows_added_and_removed():
     names = {f.name for f in embed.fields}
     assert "➕ Added" in names
     assert "➖ Removed" in names
+
+
+# ---------------------------------------------------------------------------
+# Subject avatar in the embed author slot (a face per log entry)
+# ---------------------------------------------------------------------------
+
+
+def test_message_embeds_set_subject_avatar_in_author_slot():
+    # The message author's avatar + name ride the embed author slot (the "who"
+    # at a glance), while the structured fields are unchanged.
+    deleted = server_logging.format_message_delete_embed(_message(content="x"))
+    assert deleted.author.name == "AuthorName"
+    assert deleted.author.icon_url == "https://cdn.example/author.png"
+    edited = server_logging.format_message_edit_embed(_message(), _message())
+    assert edited.author.name == "AuthorName"
+    assert edited.author.icon_url == "https://cdn.example/author.png"
+
+
+def test_member_and_role_embeds_set_subject_avatar_in_author_slot():
+    for embed in (
+        server_logging.format_member_join_embed(_member()),
+        server_logging.format_member_leave_embed(_member()),
+        server_logging.format_role_change_embed(_member(), [_role(3, "Added")], []),
+    ):
+        assert embed.author.name == "MemberName"
+        assert embed.author.icon_url == "https://cdn.example/member.png"
+
+
+def test_set_subject_author_is_defensive_on_partial_object():
+    # A subject with no display_name / name → no author line, never a raise
+    # (keeps the fail-safe handler honest for a partial/odd object).
+    class _Bare:
+        pass
+
+    embed = discord.Embed()
+    server_logging._set_subject_author(embed, _Bare())
+    assert embed.author.name is None
 
 
 # ---------------------------------------------------------------------------

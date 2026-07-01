@@ -1,1 +1,0 @@
-- `claude/visual-comparison-other-bots-89vna4` · server-log embeds gain the subject's avatar + name in the embed author slot (Dyno-style "who" at a glance; purely additive) · `disbot/services/server_logging.py` · `tests/unit/services/test_server_logging_events.py` · 2026-07-01

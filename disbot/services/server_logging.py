@@ -928,6 +928,28 @@ def _relative_ts(when: datetime.datetime | None) -> str | None:
     return f"<t:{int(when.timestamp())}:R>"
 
 
+def _set_subject_author(embed: discord.Embed, user: Any) -> None:
+    """Put the event *subject*'s avatar + name in the embed's author slot.
+
+    Discord renders the author slot as a small round avatar beside a name at the
+    top of the embed, so every log entry gets a face — the "who" of the event at
+    a glance while scanning the channel (what mature log bots show).  Purely
+    additive: the structured fields below (the mention + copyable id, channel,
+    content…) are untouched, and there is **no network on our side** — the embed
+    just references the avatar's CDN url, so nothing is fetched and there is no
+    failure path to guard.  Defensive so a partial object (a bare id, an odd
+    fake) yields no author line rather than raising into the fail-safe handler;
+    ``display_name`` / ``display_avatar`` exist on both ``discord.User`` and
+    ``discord.Member``.
+    """
+    name = getattr(user, "display_name", None) or getattr(user, "name", None)
+    if not name:
+        return
+    avatar = getattr(user, "display_avatar", None)
+    icon_url = getattr(avatar, "url", None)
+    embed.set_author(name=str(name)[:256], icon_url=icon_url)
+
+
 def format_message_delete_embed(message: discord.Message) -> discord.Embed:
     """Render a deleted message as a log embed (author · channel · content)."""
     embed = discord.Embed(
@@ -936,6 +958,7 @@ def format_message_delete_embed(message: discord.Message) -> discord.Embed:
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
     author = message.author
+    _set_subject_author(embed, author)
     embed.add_field(
         name="Author",
         value=f"<@{author.id}> (`{author.id}`)",
@@ -969,6 +992,7 @@ def format_message_edit_embed(
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
     author = after.author
+    _set_subject_author(embed, author)
     embed.add_field(
         name="Author",
         value=f"<@{author.id}> (`{author.id}`)",
@@ -1002,6 +1026,7 @@ def format_member_join_embed(member: discord.Member) -> discord.Embed:
         color=discord.Color.green(),
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    _set_subject_author(embed, member)
     embed.add_field(
         name="Member",
         value=f"<@{member.id}> (`{member.id}`)",
@@ -1023,6 +1048,7 @@ def format_member_leave_embed(member: discord.Member) -> discord.Embed:
         color=discord.Color.dark_orange(),
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    _set_subject_author(embed, member)
     # Show the username too — a mention of a departed member often won't
     # resolve to a name in the client.
     embed.add_field(
@@ -1054,6 +1080,7 @@ def format_role_change_embed(
         color=discord.Color.blurple(),
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    _set_subject_author(embed, member)
     embed.add_field(
         name="Member",
         value=f"<@{member.id}> (`{member.id}`)",
