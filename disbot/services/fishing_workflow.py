@@ -305,6 +305,10 @@ class CastStart:
     #: cast-panel note. ``False`` when the Tide Pool is unbuilt (level 0), in which
     #: case that knob is ×1.0 and the cast is byte-identical.
     tide_pool_bonus: bool = False
+    #: Whether a built **Dock** structure sped up this cast's bite (its bite-speed
+    #: multiplier is already folded into ``effective_bite_speed``) — for the ⚓
+    #: cast-panel note. ``False`` when the Dock is unbuilt (level 0).
+    dock_bonus: bool = False
 
 
 def _fmt_wait(seconds: int) -> str:
@@ -375,18 +379,21 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     )
     gear_pull = fishing_gear.fishing_pull_mult(gear_stats)
     gear_bite_speed = fishing_gear.fishing_bite_speed_mult(gear_stats)
-    # The 5th knob: a built **Tide Pool** structure (coral's functional sink). Its
-    # rarity-pull bonus is another ≥ 1.0 multiplier; unbuilt (level 0) ⇒ ×1.0 ⇒
-    # byte-identical, exactly like the gear knob's additive-safety property.
+    # The structure knobs: the built **Tide Pool** (rarity-pull, coral's functional
+    # sink) and its sibling the **Dock** (bite-speed). Both default to their neutral
+    # multiplier when unbuilt (level 0) ⇒ ×1.0 ⇒ byte-identical, exactly like the
+    # gear knob's additive-safety property. One structures read serves both.
     built = await db.get_structures(user_id, guild_id)
     tide_pool_level = built.get(structures_mod.TIDE_POOL, 0)
     tide_pool_pull = structures_mod.tide_pool_pull_mult(tide_pool_level)
-    # Five "how-well" knobs compound: rod × bait × weather × gear × tide pool.
-    # rarity_pull (all ≥ 1) pulls the catch toward the big end of the SAME unlocked
-    # band (never a new band — that stays the fishing-level axis); bite_speed
-    # (rod/bait/gear ≤ 1, weather either way) scales the bite wait. Weather is the
-    # transient, shared, free knob (a storm makes a rarer catch likelier but the
-    # wait longer).
+    dock_level = built.get(structures_mod.DOCK, 0)
+    dock_bite_speed = structures_mod.dock_bite_speed_mult(dock_level)
+    # The "how-well" knobs compound: rod × bait × weather × gear × tide pool (pull),
+    # and rod × bait × weather × gear × dock (bite speed). rarity_pull (all ≥ 1)
+    # pulls the catch toward the big end of the SAME unlocked band (never a new band
+    # — that stays the fishing-level axis); bite_speed (rod/bait/gear/dock ≤ 1,
+    # weather either way) scales the bite wait. Weather is the transient, shared,
+    # free knob (a storm makes a rarer catch likelier but the wait longer).
     effective_pull = (
         rod.rarity_pull
         * (bait.rarity_pull if bait else 1.0)
@@ -399,6 +406,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         * (bait.bite_speed if bait else 1.0)
         * weather.bite_speed_mult
         * gear_bite_speed
+        * dock_bite_speed
     )
     cast = await roll_cast(
         user_id,
@@ -443,6 +451,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         weather=weather,
         fishing_gear_bonus=fishing_gear.has_fishing_bonus(gear_stats),
         tide_pool_bonus=tide_pool_level > 0,
+        dock_bonus=dock_level > 0,
     )
 
 

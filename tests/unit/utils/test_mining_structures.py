@@ -115,6 +115,8 @@ def test_is_structure() -> None:
     assert structures.is_structure("  Home ") is True
     assert structures.is_structure("tide_pool") is True  # 2026-07-01 Tide Pool
     assert structures.is_structure("  Tide_Pool ") is True
+    assert structures.is_structure("dock") is True  # 2026-07-01 Dock
+    assert structures.is_structure("  Dock ") is True
     assert structures.is_structure("castle") is False
     assert structures.is_structure("") is False
 
@@ -243,3 +245,71 @@ def test_tide_pool_pull_mult_ladder_and_additive_safety() -> None:
 def test_tide_pool_does_not_gate_crafting() -> None:
     """The Tide Pool is a fishing bonus — never a gear-craft forge gate."""
     assert structures.forge_level_required("tide_pool") == 0
+
+
+# --------------------------------------------------------------------------- #
+# Dock (2026-07-01) — the Tide Pool's bite-speed sibling; the entry coral sink.
+# Numbers pinned to docs/planning/fishing-dock-numbers-2026-07-01.md.
+# --------------------------------------------------------------------------- #
+
+
+def test_dock_registered_and_named() -> None:
+    assert structures.DOCK in structures.STRUCTURES
+    assert structures.display_name(structures.DOCK) == "Dock"
+    assert structures.max_level(structures.DOCK) == structures.MAX_DOCK_LEVEL == 2
+
+
+def test_dock_level_names() -> None:
+    assert structures.level_name(structures.DOCK, 0) == "(not built)"
+    assert structures.level_name(structures.DOCK, 1) == "Fishing Dock"
+    assert structures.level_name(structures.DOCK, 2) == "Deepwater Pier"
+    # Clamped above the ladder.
+    assert structures.level_name(structures.DOCK, 99) == "Deepwater Pier"
+
+
+def test_dock_build_cost_ladder_is_a_rising_coral_and_wood_sink() -> None:
+    costs = [structures.build_cost(structures.DOCK, lvl) for lvl in range(2)]
+    assert [c.coins for c in costs] == [1_200, 3_500]
+    assert [c.materials["coral"] for c in costs] == [2, 5]
+    assert [c.materials["wood"] for c in costs] == [15, 30]
+    # Strictly rising coin + material sink.
+    assert costs[0].coins < costs[1].coins
+    assert costs[0].materials["coral"] < costs[1].materials["coral"]
+
+
+def test_dock_build_cost_maxed_returns_none() -> None:
+    assert structures.build_cost(structures.DOCK, structures.MAX_DOCK_LEVEL) is None
+    assert structures.build_cost(structures.DOCK, -1) is None
+
+
+def test_dock_bite_speed_mult_ladder_and_additive_safety() -> None:
+    # Unbuilt ⇒ exactly 1.0 (byte-identical cast — the additive-safety property).
+    assert structures.dock_bite_speed_mult(0) == 1.0
+    assert structures.dock_bite_speed_mult(1) == 0.94
+    assert structures.dock_bite_speed_mult(2) == 0.88
+    # Clamped: an out-of-range level can never over-reward (nor go negative).
+    assert structures.dock_bite_speed_mult(99) == 0.88
+    assert structures.dock_bite_speed_mult(-5) == 1.0
+    # Strictly falling (faster) across the ladder, always positive.
+    mults = [structures.dock_bite_speed_mult(lvl) for lvl in range(3)]
+    assert mults == sorted(mults, reverse=True)
+    assert mults[-1] > 0
+
+
+def test_dock_is_cheaper_on_coral_than_the_tide_pool() -> None:
+    """The Dock is the *entry* coral structure — a smaller total-coral commitment
+    than the full Tide Pool, so a player can afford faster fishing before rarer."""
+    dock_coral = sum(
+        structures.build_cost(structures.DOCK, lvl).materials["coral"]
+        for lvl in range(structures.MAX_DOCK_LEVEL)
+    )
+    pool_coral = sum(
+        structures.build_cost(structures.TIDE_POOL, lvl).materials["coral"]
+        for lvl in range(structures.MAX_TIDE_POOL_LEVEL)
+    )
+    assert dock_coral < pool_coral
+
+
+def test_dock_does_not_gate_crafting() -> None:
+    """The Dock is a fishing bonus — never a gear-craft forge gate."""
+    assert structures.forge_level_required("dock") == 0

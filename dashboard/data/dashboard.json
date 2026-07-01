@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T06:13:15Z",
+    "generated_at": "2026-07-01T06:42:29Z",
     "build": {
-      "commit": "a1d868c8",
-      "subject": "chore(session): open born-red card — fishing Tide Pool coral structure sink",
-      "committed_at": "2026-07-01T06:13:15Z"
+      "commit": "8f679dba",
+      "subject": "chore(session): open born-red card — fishing Dock bite-speed structure",
+      "committed_at": "2026-07-01T06:42:29Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 477,
+      "commands": 478,
       "setting_keys": 115,
       "setting_domains": 17,
       "typed_settings": 95,
@@ -2711,6 +2711,14 @@
       "file": "2026-07-01-fishing-tide-pool-structure.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing Tide Pool structure (coral structure-target sink)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-fishing-dock-structure.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Fishing Dock structure (bite-speed coral sink, Tide Pool sibling)",
       "status": "in-progress",
       "run_type": "routine",
       "self_initiated": false
@@ -3162,14 +3170,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-fishing-charm-craft.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Fishing-gear acquisition depth: fish→charm craft path",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -6975,6 +6975,20 @@
           "classification": "",
           "has_panel": false,
           "button_backed": false
+        },
+        {
+          "name": "dock",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "pier",
+            "fishingdock"
+          ],
+          "brief": "Build a Dock — the cheap coral+wood structure that makes fish bite faster.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
         },
         {
           "name": "fish",

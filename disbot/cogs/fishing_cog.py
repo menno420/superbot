@@ -38,10 +38,12 @@ from utils.fishing import weather as weather_mod
 from utils.fishing.fish import SPECIES, fish_names, species_by_name
 from views.fishing import (
     BaitShopView,
+    DockView,
     FishingMenuView,
     RodShopView,
     TidePoolView,
     build_bait_embed,
+    build_dock_embed,
     build_fishlog_embed,
     build_menu_embed,
     build_recipe_panel,
@@ -350,6 +352,18 @@ class FishingCog(commands.Cog):
         """
         embed = await build_tide_pool_embed(ctx.author.id, ctx.guild.id)
         view = TidePoolView(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="dock", aliases=["pier", "fishingdock"])
+    async def dock(self, ctx):
+        """Build a Dock — the cheap coral+wood structure that makes fish bite faster.
+
+        The Tide Pool's sibling: coral drops on a **deepwater** reel (`!sail`) and
+        wood you already mine. Faster bites (Dock) vs. rarer fish (`!tidepool`) —
+        spend your coral where you like.
+        """
+        embed = await build_dock_embed(ctx.author.id, ctx.guild.id)
+        view = DockView(ctx.author, ctx.guild.id)
         view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="craftcurio", aliases=["carve", "curiocraft"])

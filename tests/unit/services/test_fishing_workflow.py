@@ -993,6 +993,76 @@ async def test_begin_cast_with_no_tide_pool_is_byte_identical():
     assert start.tide_pool_bonus is False
 
 
+# ---------------------------------------------------------------------------
+# Dock — the bite-speed structure knob (2026-07-01): the Tide Pool's sibling
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_folds_a_built_dock_into_the_bite_speed():
+    """A built Dock lowers ``effective_bite_speed`` (faster bite) and flags
+    ``dock_bonus`` — without touching the rarity pull."""
+    from utils.fishing import rods
+    from utils.mining import structures
+
+    starter = rods.rod_for_tier(0)
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
+        patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
+        patch.object(
+            wf.db,
+            "get_structures",
+            AsyncMock(return_value={structures.DOCK: 2}),
+        ),
+        patch.object(wf, "roll_catch", fake_roll_catch()),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()),
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert start.effective_bite_speed == pytest.approx(
+        starter.bite_speed * structures.dock_bite_speed_mult(2),
+    )
+    assert start.effective_bite_speed < starter.bite_speed  # the dock sped the bite
+    assert start.dock_bonus is True
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_with_no_dock_is_byte_identical():
+    """An unbuilt Dock ⇒ ×1.0 ⇒ the bite speed is unchanged + ``dock_bonus`` False."""
+    from utils.fishing import rods
+
+    starter = rods.rod_for_tier(0)
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
+        patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
+        patch.object(wf, "roll_catch", fake_roll_catch()),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()),
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert start.effective_bite_speed == pytest.approx(starter.bite_speed)
+    assert start.dock_bonus is False
+
+
 @pytest.mark.asyncio
 async def test_get_forecast_returns_todays_weather():
     from utils.fishing import weather as weather_mod

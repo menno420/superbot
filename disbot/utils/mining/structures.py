@@ -34,6 +34,7 @@ FORGE = "forge"
 HOME = "home"
 CAMPFIRE = "campfire"
 TIDE_POOL = "tide_pool"
+DOCK = "dock"
 
 #: Gear at or below this tier index needs **no** forge (bronze=1, iron=2,
 #: silver=3 are free; gold=4 → forge 1; diamond=5 → forge 2).  ``forge_level =
@@ -65,6 +66,18 @@ _TIDE_POOL_LEVEL_NAMES = ("(not built)", "Reef Pool", "Tidal Basin", "Grand Reef
 #: modest edge (the fishing-level axis still owns which fish are reachable at all;
 #: this only reweights the band).  Tunable — pin in the numbers doc + the test.
 _TIDE_POOL_PULL_STEP = 0.04
+
+#: Dock (2026-07-01): the Tide Pool's **sibling** — a second coral structure, but
+#: the *entry* one (cheaper, adds a common material) with a different payoff: it
+#: speeds up the bite rather than pulling rarer fish.  Each level shortens the bite
+#: wait via a ``bite_speed`` multiplier ≤ 1.0 folded into ``begin_cast`` (the same
+#: knob rod/bait use).  Unbuilt ⇒ ×1.0 ⇒ byte-identical.  Together with the Tide
+#: Pool it makes coral a real *choice* — faster fishing vs. rarer fish.
+_DOCK_LEVEL_NAMES = ("(not built)", "Fishing Dock", "Deepwater Pier")
+
+#: Per-level bite-speed reduction (subtracted from the ×1.0 base — lower = faster
+#: bite).  Level 2 ⇒ ×0.88.  Tunable — pin in the numbers doc + the test.
+_DOCK_BITE_STEP = 0.06
 
 
 @dataclass(frozen=True)
@@ -117,6 +130,17 @@ _TIDE_POOL_BUILD_LADDER: tuple[BuildCost, ...] = (
     BuildCost(coins=9_000, materials={"coral": 10}),
 )
 
+#: Dock build ladder — the *entry* coral structure: cheaper than the Tide Pool and
+#: it adds a common material (wood) so a shore-heavy player can afford it early with
+#: only a little coral.  Pin changes in ``docs/planning/fishing-dock-numbers-2026-07-01.md``
+#: + the test.
+_DOCK_BUILD_LADDER: tuple[BuildCost, ...] = (
+    # → Fishing Dock (×0.94 bite wait — 6% faster)
+    BuildCost(coins=1_200, materials={"coral": 2, "wood": 15}),
+    # → Deepwater Pier (×0.88 — 12% faster)
+    BuildCost(coins=3_500, materials={"coral": 5, "wood": 30}),
+)
+
 
 @dataclass(frozen=True)
 class StructureDef:
@@ -140,6 +164,7 @@ _DEFS: dict[str, StructureDef] = {
         _CAMPFIRE_BUILD_LADDER,
         _CAMPFIRE_LEVEL_NAMES,
     ),
+    DOCK: StructureDef(DOCK, "Dock", _DOCK_BUILD_LADDER, _DOCK_LEVEL_NAMES),
     TIDE_POOL: StructureDef(
         TIDE_POOL,
         "Tide Pool",
@@ -163,6 +188,9 @@ MAX_CAMPFIRE_LEVEL = len(_CAMPFIRE_BUILD_LADDER)
 #: Highest Tide Pool level (the top rarity-pull bonus).
 MAX_TIDE_POOL_LEVEL = len(_TIDE_POOL_BUILD_LADDER)
 
+#: Highest Dock level (the top bite-speed bonus).
+MAX_DOCK_LEVEL = len(_DOCK_BUILD_LADDER)
+
 
 def cooking_unlocked(campfire_level: int) -> bool:
     """True if a campfire at *campfire_level* unlocks cooking (level ≥ 1)."""
@@ -179,6 +207,17 @@ def tide_pool_pull_mult(level: int) -> float:
     """
     level = max(0, min(level, MAX_TIDE_POOL_LEVEL))
     return round(1.0 + _TIDE_POOL_PULL_STEP * level, 4)
+
+
+def dock_bite_speed_mult(level: int) -> float:
+    """The bite-speed multiplier a Dock at *level* grants (≤ 1.0 — lower = faster).
+
+    Folded into ``begin_cast``'s ``effective_bite_speed`` (the same knob rod/bait
+    use, where a smaller value means a shorter bite wait).  Level 0 (unbuilt) ⇒
+    exactly ``1.0`` ⇒ byte-identical.  Clamped to the ladder.
+    """
+    level = max(0, min(level, MAX_DOCK_LEVEL))
+    return round(1.0 - _DOCK_BITE_STEP * level, 4)
 
 
 def is_structure(name: str) -> bool:
@@ -270,15 +309,18 @@ __all__ = [
     "HOME",
     "CAMPFIRE",
     "TIDE_POOL",
+    "DOCK",
     "STRUCTURES",
     "MAX_FORGE_LEVEL",
     "MAX_CAMPFIRE_LEVEL",
     "MAX_TIDE_POOL_LEVEL",
+    "MAX_DOCK_LEVEL",
     "FREE_TIER_CEILING",
     "BuildCost",
     "is_structure",
     "cooking_unlocked",
     "tide_pool_pull_mult",
+    "dock_bite_speed_mult",
     "forge_level_name",
     "forge_build_cost",
     "forge_level_required",
