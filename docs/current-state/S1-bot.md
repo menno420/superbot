@@ -24,6 +24,15 @@
   same-day lesson). Added `!botinfo`/`!membercount` (Carl-bot/MEE6 parity) and the unit's first
   command-behaviour + `clear`/`invite` authority test coverage (21 tests). Remaining Utility gaps: punch #5
   tone polish (offline) + #6/#7 owner live walk/sign-off. Self-merge on green.
+- **Role-menu builder live-preview fix** (PR #1608, owner bug report from a live recording) — the
+  builder's preview panel never re-rendered, so Style/Pack/Channel/Counts changes didn't show even
+  though they took effect (the menu posted correctly). **Root cause:** the reaction-roles hub is
+  **ephemeral**, and `RoleMenuBuilder._rerender()` used `self.message.edit()` — which silently no-ops on
+  an ephemeral message (only the interaction/webhook token can edit it). Fix: store `_panel_interaction`
+  and route `_rerender`/`_show_parent` through the shipped `interaction_helpers.safe_edit`
+  (`response.edit_message`/`followup.edit_message`), fallback to `Message.edit` for non-ephemeral;
+  set/refresh the token at every panel-open + direct interaction; same one-liner for the sibling
+  `RoleMenuListView._rerender` (stale list after delete/repost). No migration; +3 routing tests.
 - **Inventory — item-detail density (per-rarity-tier fields)** (PR #1595, completion-first deepening,
   Inventory cert **punch #4 CLOSED**) — the category detail page's dense single-line item list became,
   in the default rarity sort, a **dedicated embed field per rarity tier** (Epic/Rare/Uncommon/Common)
