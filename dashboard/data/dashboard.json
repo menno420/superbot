@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T03:20:15Z",
+    "generated_at": "2026-07-01T05:51:01Z",
     "build": {
-      "commit": "a0e4c0c6",
-      "subject": "fishing: open born-red session card for coral/curios slice",
-      "committed_at": "2026-07-01T03:20:15Z"
+      "commit": "bf8d8a31",
+      "subject": "Merge pull request #1596 from menno420/claude/funny-franklin-i3ggz1",
+      "committed_at": "2026-07-01T05:51:01Z"
     },
     "counts": {
       "functions": 43,
@@ -2711,9 +2711,9 @@
       "file": "2026-07-01-fishing-coral-curios.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing: coral 🪸 deepwater rare-material drop → cosmetic curio collectibles",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-06-30-welcome-random-messages.md",
