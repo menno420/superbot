@@ -188,6 +188,8 @@ select_option_truncation:
       reason: "_AVATARS[:4] is a fixed demo avatar gallery (UX lab)."
     - pattern: cogs/inventory_cog.py::UnifiedInventoryView.build_hub_embed
       reason: "items[:3] is the hub embed's per-category top-3 preview (with an explicit '+N more' overflow note), not a select; the file is flagged only because _CategoryView now also builds a type-filter select."
+    - pattern: views/xp/import_panel.py::XpImportView.build_embed
+      reason: "unresolved_names[:10] is a top-10 embed list of unmatched names (with an explicit '+N more' overflow), not a select; the file is flagged only because XpImportSetupView now also builds selects."
     # --- Bounded fixed-catalog selects: the option source is an in-repo catalog
     #     that cannot realistically exceed 25; the [:25] slice is defensive. ---
     - pattern: views/btd6/paragon_view.py::_ParagonSelect

@@ -74,6 +74,14 @@ introspection at all. So we cannot programmatically "read what bot X does."
 The catalog grows over time; the engine doesn't change. This is the same "explicit data + heuristic
 fallback" shape the repo already favors.
 
+**Detect enhancement — announcer fingerprinting (from the XP-import lane, 2026-07-01).** The shipped
+XP importer already has a per-bot announcer-format registry (`utils/xp_migration.FORMATS`) keyed by
+regex. A cheap "detect" win reuses it: sample recent messages per channel, match each present bot's
+**application id** + the format regexes, and surface *"MEE6's level-ups look present in #levels — import?"*
+This auto-detects both **which bot** and **which channel** without the operator naming either — the
+same fingerprinting the migration assistant needs for its broader detect phase, prototyped narrowly on
+leveling first.
+
 ## How it docks into existing seams (no architecture change)
 
 This is a **feature-layer extension**, confirmed by a read of the setup/moderation subsystems:
