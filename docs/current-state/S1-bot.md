@@ -393,11 +393,24 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   (registry entry + audited `build_structure` + `views/fishing/boathouse.py` + a 🛖 button in the
   Structures sub-hub + `!boathouse`); byte-identical energy when unbuilt. Sim-pinned
   ([boathouse numbers](../planning/fishing-boathouse-numbers-2026-07-01.md)).
-  ▶ **Next offline successor:** a *fourth* fishing structure (a new coral/wood payoff not yet taken —
-  the three axes quality/throughput/endurance are covered, so a fourth would need a fresh lever, e.g.
-  a **coin-yield "Fish Market"** or a **cook-at-shore energy-refill** structure), or the fishing
-  **open-world expansion** ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2:
-  boat-as-structure / travel-timer / destinations) — both pure + self-mergeable.
+  **The fourth structure the Fishery SHIPPED 2026-07-01 (dispatch run, PR #1626):** the **Fishery**
+  🐟 — a coral + **wood** structure whose payoff is a higher **lucky double-catch chance** (yield /
+  abundance), the genuinely-distinct *fourth* axis so coral now has **five** sinks (cosmetic curios ·
+  rarity Tide Pool · speed Dock · endurance Boathouse · **yield Fishery**). A built Fishery raises the
+  double-catch chance above the base `rewards.BONUS_CATCH_CHANCE` (`fishery_bonus_chance`, +0.05/level),
+  computed once in `begin_cast` and threaded onto `Cast.double_catch_chance` so `commit_catch` stays
+  DB-free; byte-identical when unbuilt. Same pattern (registry entry + audited `build_structure` +
+  `views/fishing/fishery.py` + a 🐟 button in the Structures sub-hub + `!fishery`). Sim-pinned
+  ([fishery numbers](../planning/fishing-fishery-numbers-2026-07-01.md)). **Bundled bugs-first root fix
+  (BUG-0031):** `mining_workflow.build_structure` indexed a hand-maintained `_STRUCTURE_BUILD_REASON`
+  map that never got a `boathouse` entry (#1605) → `!boathouse` build crashed with `KeyError`; now
+  derives the audit reason generically (`market.structure_build_reason`) + a regression test over every
+  registered structure.
+  ▶ **Next offline successor:** a *fifth* fishing structure would need yet another fresh lever (the
+  four axes quality/throughput/endurance/yield are covered — e.g. a **coin-yield "Fish Market"** sell
+  bonus, which crosses into the mining sell path), or the fishing **open-world expansion**
+  ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2: boat-as-structure /
+  travel-timer / destinations) — both pure + self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

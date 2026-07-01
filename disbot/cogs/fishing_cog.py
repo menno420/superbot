@@ -40,12 +40,14 @@ from views.fishing import (
     BaitShopView,
     BoathouseView,
     DockView,
+    FisheryView,
     FishingMenuView,
     RodShopView,
     TidePoolView,
     build_bait_embed,
     build_boathouse_embed,
     build_dock_embed,
+    build_fishery_embed,
     build_fishlog_embed,
     build_menu_embed,
     build_recipe_panel,
@@ -378,6 +380,19 @@ class FishingCog(commands.Cog):
         """
         embed = await build_boathouse_embed(ctx.author.id, ctx.guild.id)
         view = BoathouseView(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="fishery", aliases=["hatchery", "fishfarm"])
+    async def fishery(self, ctx):
+        """Build a Fishery — the coral+wood structure that lands more double catches.
+
+        The fourth coral structure: coral drops on a **deepwater** reel (`!sail`) and
+        wood you already mine. A well-stocked fishery means a landed reel is likelier
+        to hook a **second** fish. More fish per catch (Fishery) vs. rarer fish
+        (`!tidepool`) vs. faster bites (`!dock`) vs. faster energy (`!boathouse`).
+        """
+        embed = await build_fishery_embed(ctx.author.id, ctx.guild.id)
+        view = FisheryView(ctx.author, ctx.guild.id)
         view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="craftcurio", aliases=["carve", "curiocraft"])

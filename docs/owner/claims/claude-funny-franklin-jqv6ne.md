@@ -1,1 +1,0 @@
-- `claude/funny-franklin-jqv6ne` · Karma reaction-to-thank (completion-first deepening) · disbot/cogs/karma_cog.py, disbot/services/karma_config.py, disbot/cogs/karma/schemas.py, disbot/utils/settings_keys/karma.py, tests/unit/**karma** · 2026-07-01

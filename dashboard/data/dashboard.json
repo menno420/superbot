@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T19:41:35Z",
+    "generated_at": "2026-07-01T21:13:59Z",
     "build": {
-      "commit": "4fa02e9",
-      "subject": "logging(v2): Discord audit-log integration for Dyno-parity server logging",
-      "committed_at": "2026-07-01T19:41:35Z"
+      "commit": "076c9fd0",
+      "subject": "session: open born-red — Fishery structure + boathouse build-crash root fix",
+      "committed_at": "2026-07-01T21:13:59Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 483,
+      "commands": 484,
       "setting_keys": 120,
       "setting_domains": 17,
       "typed_settings": 100,
@@ -2899,6 +2899,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-01-fishery-structure-and-boathouse-buildfix.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Fishery (4th fishing structure) + Boathouse build-crash root fix",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-btd6-menu-panel-hub.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — BTD6 panel: Layout-B category hub (owner picked B)",
@@ -3190,14 +3198,6 @@
       "file": "2026-06-28-server-function-completion-assessments.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Server-function completion assessments (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-server-fn-assessments-batch2.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Server-function completion assessments, batch 2 (Q-0209)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -7040,6 +7040,20 @@
           "parent": null,
           "aliases": [],
           "brief": "Cast a line — wait for the bite, then reel it in before it gets away.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "fishery",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "hatchery",
+            "fishfarm"
+          ],
+          "brief": "Build a Fishery — the coral+wood structure that lands more double catches.",
           "classification": "",
           "has_panel": true,
           "button_backed": true

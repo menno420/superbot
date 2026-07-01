@@ -347,15 +347,20 @@ async def test_commit_catch_on_empty_cast_writes_nothing():
 # ---------------------------------------------------------------------------
 
 
-async def _commit_with_grant(rng):
-    """Commit a fixed cast under a forced *rng* and return (result, grant mock)."""
+async def _commit_with_grant(rng, *, double_catch_chance=None):
+    """Commit a fixed cast under a forced *rng* and return (result, grant mock).
+
+    *double_catch_chance* overrides the cast's fishery-fixed double-catch chance
+    (``None`` = the dataclass default, the base ``BONUS_CATCH_CHANCE``).
+    """
     sentinel_conn = MagicMock(name="conn")
 
     @asynccontextmanager
     async def _ctx():
         yield sentinel_conn
 
-    cast = wf.Cast(catch=_CATCH, level_before=1)
+    kw = {} if double_catch_chance is None else {"double_catch_chance": double_catch_chance}
+    cast = wf.Cast(catch=_CATCH, level_before=1, **kw)
     with (
         patch.object(wf.db, "transaction", _ctx),
         # Isolate the bonus path from the pearl drop — the fish grant stays the
@@ -397,6 +402,26 @@ async def test_commit_catch_grants_one_and_no_bonus_on_an_unlucky_reel():
     assert result.bonus_catch is False
     args, _ = grant.await_args
     assert args[3] == 1
+
+
+@pytest.mark.asyncio
+async def test_fishery_raises_the_double_catch_chance_on_commit():
+    """A built Fishery lifts ``cast.double_catch_chance`` above the base, so a reel
+    that would MISS the base 0.10 chance can still double at the fishery-raised chance."""
+    from utils.fishing import rewards
+
+    # A roll just above the base chance but under a Grand Fishery's +0.10 → 0.20.
+    forced = MagicMock()
+    forced.random.return_value = 0.15
+    assert rewards.BONUS_CATCH_CHANCE == 0.10  # 0.15 misses the base…
+
+    # Unbuilt cast (base chance): no double.
+    _, base_grant = await _commit_with_grant(forced, double_catch_chance=0.10)
+    assert base_grant.await_args.args[3] == 1
+
+    # Grand-Fishery cast (chance 0.20): the same 0.15 roll now doubles.
+    _, fishery_grant = await _commit_with_grant(forced, double_catch_chance=0.20)
+    assert fishery_grant.await_args.args[3] == 2
 
 
 # ---------------------------------------------------------------------------

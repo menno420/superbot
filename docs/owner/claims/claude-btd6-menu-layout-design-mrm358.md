@@ -1,1 +1,0 @@
-- `claude/btd6-menu-layout-design-mrm358` · BTD6 panel Layout-B category hub (owner picked B) · disbot/views/btd6/panel.py, disbot/views/btd6/hub_panels.py · 2026-07-01
