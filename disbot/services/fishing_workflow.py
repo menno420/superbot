@@ -46,6 +46,7 @@ from utils.fishing import (
 from utils.fishing import venue as venue_mod
 from utils.fishing import weather as weather_mod
 from utils.mining import character
+from utils.mining import structures as structures_mod
 
 logger = logging.getLogger("bot.fishing_workflow")
 
@@ -299,6 +300,11 @@ class CastStart:
     #: ``effective_bite_speed``) — for the 🎣 cast-panel note. ``False`` when no
     #: fishing gear is equipped, in which case the cast is byte-identical.
     fishing_gear_bonus: bool = False
+    #: Whether a built **Tide Pool** structure biased this cast toward rarer fish
+    #: (its rarity-pull bonus is already folded into the roll pull) — for the 🪸
+    #: cast-panel note. ``False`` when the Tide Pool is unbuilt (level 0), in which
+    #: case that knob is ×1.0 and the cast is byte-identical.
+    tide_pool_bonus: bool = False
 
 
 def _fmt_wait(seconds: int) -> str:
@@ -369,16 +375,24 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     )
     gear_pull = fishing_gear.fishing_pull_mult(gear_stats)
     gear_bite_speed = fishing_gear.fishing_bite_speed_mult(gear_stats)
-    # Four "how-well" knobs compound: rod × bait × weather × gear. rarity_pull
-    # (all ≥ 1) pulls the catch toward the big end of the SAME unlocked band (never
-    # a new band — that stays the fishing-level axis); bite_speed (rod/bait/gear ≤ 1,
-    # weather either way) scales the bite wait. Weather is the transient, shared,
-    # free knob (a storm makes a rarer catch likelier but the wait longer).
+    # The 5th knob: a built **Tide Pool** structure (coral's functional sink). Its
+    # rarity-pull bonus is another ≥ 1.0 multiplier; unbuilt (level 0) ⇒ ×1.0 ⇒
+    # byte-identical, exactly like the gear knob's additive-safety property.
+    built = await db.get_structures(user_id, guild_id)
+    tide_pool_level = built.get(structures_mod.TIDE_POOL, 0)
+    tide_pool_pull = structures_mod.tide_pool_pull_mult(tide_pool_level)
+    # Five "how-well" knobs compound: rod × bait × weather × gear × tide pool.
+    # rarity_pull (all ≥ 1) pulls the catch toward the big end of the SAME unlocked
+    # band (never a new band — that stays the fishing-level axis); bite_speed
+    # (rod/bait/gear ≤ 1, weather either way) scales the bite wait. Weather is the
+    # transient, shared, free knob (a storm makes a rarer catch likelier but the
+    # wait longer).
     effective_pull = (
         rod.rarity_pull
         * (bait.rarity_pull if bait else 1.0)
         * weather.rarity_mult
         * gear_pull
+        * tide_pool_pull
     )
     effective_bite_speed = (
         rod.bite_speed
@@ -428,6 +442,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         venue_profile=profile,
         weather=weather,
         fishing_gear_bonus=fishing_gear.has_fishing_bonus(gear_stats),
+        tide_pool_bonus=tide_pool_level > 0,
     )
 
 

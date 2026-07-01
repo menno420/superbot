@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T03:20:15Z",
+    "generated_at": "2026-07-01T06:13:15Z",
     "build": {
-      "commit": "a0e4c0c6",
-      "subject": "fishing: open born-red session card for coral/curios slice",
-      "committed_at": "2026-07-01T03:20:15Z"
+      "commit": "a1d868c8",
+      "subject": "chore(session): open born-red card — fishing Tide Pool coral structure sink",
+      "committed_at": "2026-07-01T06:13:15Z"
     }
   },
   "counts": {
-    "commands": 476,
+    "commands": 477,
     "features": 43,
     "games": 12
   },
@@ -9937,6 +9937,31 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "tidepool",
+      "aliases": [
+        "reef",
+        "tidepools"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+      "description": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!curios"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
       ],

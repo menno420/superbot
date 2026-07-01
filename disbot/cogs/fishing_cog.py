@@ -40,11 +40,13 @@ from views.fishing import (
     BaitShopView,
     FishingMenuView,
     RodShopView,
+    TidePoolView,
     build_bait_embed,
     build_fishlog_embed,
     build_menu_embed,
     build_recipe_panel,
     build_rod_embed,
+    build_tide_pool_embed,
     prepare_cast,
 )
 
@@ -337,6 +339,18 @@ class FishingCog(commands.Cog):
             )
         embed.set_footer(text="Carve with !craftcurio <name>")
         await ctx.send(embed=embed)
+
+    @commands.command(name="tidepool", aliases=["reef", "tidepools"])
+    async def tidepool(self, ctx):
+        """Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.
+
+        Coral drops rarely on a **deepwater** reel (`!sail`). Stock a reef pool with
+        it to bias every cast toward the big end of your unlocked band — coral's
+        *functional* sink alongside the cosmetic curios (`!curios`).
+        """
+        embed = await build_tide_pool_embed(ctx.author.id, ctx.guild.id)
+        view = TidePoolView(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="craftcurio", aliases=["carve", "curiocraft"])
     async def craftcurio(self, ctx, *, curio: str = ""):

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T05:51:01Z",
+    "generated_at": "2026-07-01T06:13:15Z",
     "build": {
-      "commit": "bf8d8a31",
-      "subject": "Merge pull request #1596 from menno420/claude/funny-franklin-i3ggz1",
-      "committed_at": "2026-07-01T05:51:01Z"
+      "commit": "a1d868c8",
+      "subject": "chore(session): open born-red card — fishing Tide Pool coral structure sink",
+      "committed_at": "2026-07-01T06:13:15Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 476,
+      "commands": 477,
       "setting_keys": 115,
       "setting_domains": 17,
       "typed_settings": 95,
@@ -2708,6 +2708,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-01-fishing-tide-pool-structure.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Fishing Tide Pool structure (coral structure-target sink)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-fishing-coral-curios.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing: coral 🪸 deepwater rare-material drop → cosmetic curio collectibles",
@@ -3161,14 +3169,6 @@
       "title": "2026-06-27 — Fishing-gear acquisition depth: fish→charm craft path",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-feature-completion-framework.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Feature-completion certification framework (S1 bot units)",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
@@ -7081,6 +7081,20 @@
           "classification": "",
           "has_panel": false,
           "button_backed": false
+        },
+        {
+          "name": "tidepool",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "reef",
+            "tidepools"
+          ],
+          "brief": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
         },
         {
           "name": "trophies",

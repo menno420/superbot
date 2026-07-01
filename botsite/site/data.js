@@ -6342,6 +6342,30 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "tidepool",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+    "description": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+    "usage": "!tidepool",
+    "aliases": [
+      "reef",
+      "tidepools"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!curios"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "timedprize",
     "area": "moderation",
     "status": "finished",
@@ -7241,7 +7265,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "a0e4c0c6",
+    "build": "a1d868c8",
     "title": "New public bot website",
     "changes": [
       {
@@ -7253,7 +7277,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "a0e4c0c6",
+    "build": "a1d868c8",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7265,7 +7289,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "a0e4c0c6",
+    "build": "a1d868c8",
     "title": "Command-alias suggestions",
     "changes": [
       {

@@ -33,6 +33,7 @@ from utils import equipment
 FORGE = "forge"
 HOME = "home"
 CAMPFIRE = "campfire"
+TIDE_POOL = "tide_pool"
 
 #: Gear at or below this tier index needs **no** forge (bronze=1, iron=2,
 #: silver=3 are free; gold=4 → forge 1; diamond=5 → forge 2).  ``forge_level =
@@ -51,6 +52,19 @@ _HOME_LEVEL_NAMES = ("(not built)", "Cozy Cabin", "Stone Keep", "Grand Hall")
 #: **cooking fish into food** (energy refill, see ``services/mining_workflow.cook``).
 #: A small coin + material sink, buildable early — a progression beat, not a wall.
 _CAMPFIRE_LEVEL_NAMES = ("(not built)", "Campfire")
+
+#: Tide Pool (2026-07-01): the deepwater-**coral** structure sink — coral's first
+#: *functional* payoff (the cosmetic curios are its other sink).  A stocked reef
+#: pool nudges the fishing catch toward the big end of the unlocked band: each
+#: level adds a small ``rarity_pull`` bonus folded into ``begin_cast`` as the 5th
+#: "how-well" knob (rod × bait × weather × gear × tide pool).  Unbuilt ⇒ ×1.0 ⇒
+#: byte-identical casts — additive, never a wall.
+_TIDE_POOL_LEVEL_NAMES = ("(not built)", "Reef Pool", "Tidal Basin", "Grand Reef")
+
+#: Per-level rarity-pull bonus (added to the ×1.0 base).  Level 3 ⇒ ×1.12 — a
+#: modest edge (the fishing-level axis still owns which fish are reachable at all;
+#: this only reweights the band).  Tunable — pin in the numbers doc + the test.
+_TIDE_POOL_PULL_STEP = 0.04
 
 
 @dataclass(frozen=True)
@@ -89,6 +103,20 @@ _CAMPFIRE_BUILD_LADDER: tuple[BuildCost, ...] = (
     BuildCost(coins=500, materials={"wood": 20, "stone": 10}),
 )
 
+#: Tide Pool build ladder — a rising coin + **coral** sink for the three levels
+#: (coral is the deepwater-only reel drop, ``utils.fishing.rewards.CORAL_ITEM``;
+#: it reuses the generic ``mining_inventory`` store).  Comparable total-coral cost
+#: to carving the full curio shelf, so coral has two real sinks to choose between.
+#: Pin changes in ``docs/planning/fishing-tide-pool-numbers-2026-07-01.md`` + the test.
+_TIDE_POOL_BUILD_LADDER: tuple[BuildCost, ...] = (
+    # → Reef Pool (×1.04 rarity pull)
+    BuildCost(coins=1_500, materials={"coral": 3}),
+    # → Tidal Basin (×1.08)
+    BuildCost(coins=4_000, materials={"coral": 6}),
+    # → Grand Reef (×1.12)
+    BuildCost(coins=9_000, materials={"coral": 10}),
+)
+
 
 @dataclass(frozen=True)
 class StructureDef:
@@ -112,6 +140,12 @@ _DEFS: dict[str, StructureDef] = {
         _CAMPFIRE_BUILD_LADDER,
         _CAMPFIRE_LEVEL_NAMES,
     ),
+    TIDE_POOL: StructureDef(
+        TIDE_POOL,
+        "Tide Pool",
+        _TIDE_POOL_BUILD_LADDER,
+        _TIDE_POOL_LEVEL_NAMES,
+    ),
 }
 
 STRUCTURES: tuple[str, ...] = tuple(_DEFS)
@@ -126,10 +160,25 @@ MAX_HOME_LEVEL = len(_HOME_BUILD_LADDER)
 #: Highest Campfire level (a single buildable level).
 MAX_CAMPFIRE_LEVEL = len(_CAMPFIRE_BUILD_LADDER)
 
+#: Highest Tide Pool level (the top rarity-pull bonus).
+MAX_TIDE_POOL_LEVEL = len(_TIDE_POOL_BUILD_LADDER)
+
 
 def cooking_unlocked(campfire_level: int) -> bool:
     """True if a campfire at *campfire_level* unlocks cooking (level ≥ 1)."""
     return campfire_level >= 1
+
+
+def tide_pool_pull_mult(level: int) -> float:
+    """The fishing rarity-pull multiplier a Tide Pool at *level* grants (≥ 1.0).
+
+    Folded into ``services.fishing_workflow.begin_cast`` as the 5th "how-well"
+    knob.  Level 0 (unbuilt) ⇒ exactly ``1.0`` so an existing cast is
+    byte-identical — the additive-safety property the fishing gear knob relies on.
+    Clamped to the ladder so an out-of-range level can never over-reward.
+    """
+    level = max(0, min(level, MAX_TIDE_POOL_LEVEL))
+    return round(1.0 + _TIDE_POOL_PULL_STEP * level, 4)
 
 
 def is_structure(name: str) -> bool:
@@ -220,13 +269,16 @@ __all__ = [
     "FORGE",
     "HOME",
     "CAMPFIRE",
+    "TIDE_POOL",
     "STRUCTURES",
     "MAX_FORGE_LEVEL",
     "MAX_CAMPFIRE_LEVEL",
+    "MAX_TIDE_POOL_LEVEL",
     "FREE_TIER_CEILING",
     "BuildCost",
     "is_structure",
     "cooking_unlocked",
+    "tide_pool_pull_mult",
     "forge_level_name",
     "forge_build_cost",
     "forge_level_required",

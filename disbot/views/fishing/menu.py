@@ -283,6 +283,24 @@ class FishingMenuView(HubView):
         shop.message = interaction.message
         self.stop()
 
+    @discord.ui.button(
+        label="Tide Pool",
+        emoji="🪸",
+        style=discord.ButtonStyle.secondary,
+    )
+    async def tide_pool_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        from views.fishing.tide_pool import TidePoolView, build_tide_pool_embed
+
+        embed = await build_tide_pool_embed(self._author.id, self.guild_id)
+        view = TidePoolView(self._author, self.guild_id)
+        await interaction.response.edit_message(embed=embed, view=view)
+        view.message = interaction.message
+        self.stop()
+
     @discord.ui.button(label="Fishdex", emoji="📖", style=discord.ButtonStyle.secondary)
     async def fishdex_btn(
         self,

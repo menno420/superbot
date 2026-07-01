@@ -1,1 +1,0 @@
-claude/funny-franklin-4n38rf · fishing Tide Pool coral structure-target sink · disbot/utils/mining/structures.py + market.py + services/{mining_workflow,fishing_workflow}.py + views/fishing/ + cogs/fishing_cog.py + tests · 2026-07-01
