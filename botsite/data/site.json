@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T14:20:46Z",
+    "generated_at": "2026-07-01T15:12:59Z",
     "build": {
-      "commit": "64a7364",
-      "subject": "xp-migration: born-red session card + lane claim",
-      "committed_at": "2026-07-01T14:20:46Z"
+      "commit": "8e43dd6e",
+      "subject": "chore(session): born-red card — Utility completion deepening",
+      "committed_at": "2026-07-01T15:12:59Z"
     }
   },
   "counts": {
-    "commands": 480,
+    "commands": 483,
     "features": 43,
     "games": 12
   },
@@ -1314,16 +1314,16 @@
     },
     {
       "name": "latency",
-      "aliases": [
-        "ping"
-      ],
+      "aliases": [],
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Report the bot's WebSocket latency.",
-      "description": "Report the bot's WebSocket latency.",
+      "usage": "Report the bot's WebSocket latency (admin detail view).",
+      "description": "Report the bot's WebSocket latency (admin detail view).",
       "use_cases": null,
-      "examples": [],
+      "examples": [
+        "!ping"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
@@ -12815,6 +12815,22 @@
       "notes": null
     },
     {
+      "name": "botinfo",
+      "aliases": [
+        "about"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show information about the bot — servers, uptime, latency, version.",
+      "description": "Show information about the bot — servers, uptime, latency, version.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "clear",
       "aliases": [
         "purge"
@@ -12963,6 +12979,22 @@
       "notes": null
     },
     {
+      "name": "membercount",
+      "aliases": [
+        "members"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show this server's member count — humans, bots, and total.",
+      "description": "Show this server's member count — humans, bots, and total.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "motivate",
       "aliases": [],
       "category": "utility",
@@ -13000,6 +13032,22 @@
       "description": "View your per-server profile card.",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "ping",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Check the bot's responsiveness — gateway + message round-trip.",
+      "description": "Check the bot's responsiveness — gateway + message round-trip.",
+      "use_cases": null,
+      "examples": [
+        "!latency"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
