@@ -1,0 +1,1 @@
+ - `claude/reaction-roles-counter-bgxnyd` · **role-menu builder layout simulation** — optimizer for the builder's button placement + function set (finds the layout, advisory) · `tools/sim/role_menu_layout_sim.py` `tests/unit/tools/test_role_menu_layout_sim.py` · 2026-07-01 · in-progress
