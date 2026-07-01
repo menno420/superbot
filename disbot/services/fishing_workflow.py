@@ -25,13 +25,24 @@ from typing import Protocol
 from core.events import bus
 from services import economy_service, game_xp_service
 from utils import db
-from utils.fishing import MAX_LEVEL, PEARL_ITEM, Catch
+from utils.fishing import (
+    CORAL_ITEM,
+    MAX_LEVEL,
+    PEARL_ITEM,
+    Catch,
+)
 from utils.fishing import bait as bait_mod
+from utils.fishing import curios as curios_mod
 from utils.fishing import energy as fish_energy
 from utils.fishing import fish as fish_mod
 from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
-from utils.fishing import roll_bonus_catch, roll_catch, roll_pearl_drop
+from utils.fishing import (
+    roll_bonus_catch,
+    roll_catch,
+    roll_coral_drop,
+    roll_pearl_drop,
+)
 from utils.fishing import venue as venue_mod
 from utils.fishing import weather as weather_mod
 from utils.mining import character
@@ -82,6 +93,12 @@ class FishResult:
     #: Granted into the inventory; never a dex/trophy row. Byte-identical when
     #: ``False``. Bigger fish drop pearls more often (size-scaled roll).
     pearl_found: bool = False
+    #: True when this reel also yielded a **coral** — the second rare crafting
+    #: material (``utils.fishing.CORAL_ITEM``), a **deepwater-only** reef find that
+    #: carves into the cosmetic curio collection (``utils.fishing.curios``).
+    #: Granted into the inventory; never a dex/trophy row. Always ``False`` on a
+    #: shore cast; byte-identical economics when ``False``.
+    coral_found: bool = False
 
 
 @dataclass(frozen=True)
@@ -166,6 +183,7 @@ async def commit_catch(
     bonus = roll_bonus_catch(rng)
     grant = 2 if bonus else 1
     pearl = roll_pearl_drop(catch.species.size_rank, rng)
+    coral = roll_coral_drop(cast.venue, rng)
     async with db.transaction() as conn:
         prev_best = await db.record_catch(
             user_id,
@@ -174,15 +192,27 @@ async def commit_catch(
             catch.weight,
             conn=conn,
         )
-        # A pearl drop (the rare crafting material) is granted before the fish so
-        # the fish grant stays the last write — a stable seam for callers/tests
-        # that read the species-grant call. Inventory-only, same atomic catch
-        # transaction (RS02); never a dex/trophy row.
+        # The rare-material drops (pearl, coral) are granted before the fish so the
+        # fish grant stays the last write — a stable seam for callers/tests that
+        # read the species-grant call. Inventory-only, same atomic catch
+        # transaction (RS02); neither is ever a dex/trophy row. The rolls are
+        # drawn (bonus → pearl → coral) before the transaction so the write set is
+        # deterministic under an injected rng.
         if pearl:
             await db.update_mining_item(
                 str(user_id),
                 guild_id,
                 PEARL_ITEM,
+                1,
+                conn=conn,
+            )
+        # Coral is deepwater-only (roll_coral_drop returns False on shore), the
+        # boat venue's unique reward — it carves into the cosmetic curio set.
+        if coral:
+            await db.update_mining_item(
+                str(user_id),
+                guild_id,
+                CORAL_ITEM,
                 1,
                 conn=conn,
             )
@@ -220,6 +250,7 @@ async def commit_catch(
         new_personal_best=new_best,
         bonus_catch=bonus,
         pearl_found=pearl,
+        coral_found=coral,
     )
 
 
@@ -815,6 +846,85 @@ async def craft_pearl_bait(
         f"**{pearl_cost}** 🦪 pearls — **{new_charges}** casts ready.",
         bait=bait,
         charges=new_charges,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Curio carving — turn the deepwater rare-material (coral) into cosmetic
+# collectibles (the coral sink; S1 "▶ next offline successor"). Coral's analogue
+# of craft_pearl_bait, but the target is a cosmetic TREASURE item (a completionist
+# collection), not a bait. An inventory-only conversion: debit coral, grant the
+# curio, in ONE db.transaction() (Q-0071). Never a coin sink, never sellable.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CurioCraftResult:
+    """The outcome of a ``craft_curio`` attempt — a flag + a player-facing message."""
+
+    success: bool
+    message: str
+    #: The curio carved on success (``None`` on failure).
+    curio: curios_mod.Curio | None = None
+
+
+async def craft_curio(
+    user_id: int,
+    guild_id: int,
+    curio_key: str,
+) -> CurioCraftResult:
+    """Carve one *curio_key* from **coral** — the deepwater rare-material sink.
+
+    Coral drops only on a deepwater (boat) reel; this is its sole home — a
+    cosmetic carving collection (:mod:`utils.fishing.curios`). An inventory-only
+    conversion (no coins, no external call): debit the coral and grant the curio
+    item in ONE ``db.transaction()`` (Q-0071). The curio is a cosmetic
+    :class:`utils.mining.items.ItemKind` ``TREASURE`` — never sellable, no gameplay
+    effect; the reward is the collection. Crafting a curio you already own simply
+    adds another copy (harmless; the collection tally counts distinct curios).
+    """
+    curio = curios_mod.curio_by_key(curio_key)
+    if curio is None:
+        return CurioCraftResult(
+            False,
+            "That isn't a carvable curio — see `!curios` for the collection.",
+        )
+
+    inventory = await db.get_mining_inventory(str(user_id), guild_id)
+    have = inventory.get(CORAL_ITEM, 0)
+    if have < curio.coral_cost:
+        return CurioCraftResult(
+            False,
+            f"You need **{curio.coral_cost}** 🪸 coral to carve **{curio.name}** "
+            f"{curio.emoji} — you have **{have}**. Coral drops rarely when you reel "
+            "in a fish out in **deepwater** (`!sail` to the boat first).",
+        )
+
+    async with db.transaction() as conn:
+        await db.update_mining_item(
+            str(user_id),
+            guild_id,
+            CORAL_ITEM,
+            -curio.coral_cost,
+            conn=conn,
+        )
+        await db.update_mining_item(
+            str(user_id),
+            guild_id,
+            curio.item,
+            1,
+            conn=conn,
+        )
+
+    owned, total = curios_mod.collection_progress(
+        {**inventory, curio.item: inventory.get(curio.item, 0) + 1},
+    )
+    return CurioCraftResult(
+        True,
+        f"Carved **{curio.name}** {curio.emoji} from **{curio.coral_cost}** 🪸 "
+        f"coral — a cosmetic collectible for your shelf. "
+        f"Collection: **{owned}/{total}** curios.",
+        curio=curio,
     )
 
 

@@ -1678,6 +1678,31 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "craftcurio",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+    "description": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+    "usage": "!craftcurio",
+    "aliases": [
+      "carve",
+      "curiocraft"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!craftcurio coral idol",
+      "!curios"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "craftpearl",
     "area": "games",
     "status": "in-progress",
@@ -1841,6 +1866,30 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
+      }
+    ]
+  },
+  {
+    "name": "curios",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Show the coral-carving collection + your coral and craft progress.",
+    "description": "Show the coral-carving collection + your coral and craft progress.",
+    "usage": "!curios",
+    "aliases": [
+      "curio",
+      "carvings"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!craftcurio <name>"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
   },
@@ -7192,7 +7241,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "4ecf0dac",
+    "build": "a0e4c0c6",
     "title": "New public bot website",
     "changes": [
       {
@@ -7204,7 +7253,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "4ecf0dac",
+    "build": "a0e4c0c6",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7216,7 +7265,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "4ecf0dac",
+    "build": "a0e4c0c6",
     "title": "Command-alias suggestions",
     "changes": [
       {

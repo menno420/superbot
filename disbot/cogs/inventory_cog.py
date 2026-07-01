@@ -98,12 +98,50 @@ ITEM_CATALOGUE: dict[str, dict] = {
         "type": "Job Unlock",
         "rarity": "Rare",
     },
+    # Fishing rare materials (mining_inventory) — the reel-drop crafting materials.
+    # Pearl (any venue, size-scaled) crafts the premium bait; coral (deepwater
+    # only) carves the cosmetic curios below. Catalogued here so the browser shows
+    # them with a proper emoji/rarity instead of the "Other" catch-all.
+    "pearl": {
+        "category": "Fishing",
+        "emoji": "🦪",
+        "type": "Material",
+        "rarity": "Rare",
+    },
+    "coral": {
+        "category": "Fishing",
+        "emoji": "🪸",
+        "type": "Material",
+        "rarity": "Rare",
+    },
+    # Fishing curios (mining_inventory) — cosmetic carvings crafted from coral
+    # (utils/fishing/curios.py). Purely collectible; never sold, no gameplay use.
+    "coral shell": {
+        "category": "Collectibles",
+        "emoji": "🐚",
+        "type": "Curio",
+        "rarity": "Uncommon",
+    },
+    "coral seahorse": {
+        "category": "Collectibles",
+        "emoji": "🌊",
+        "type": "Curio",
+        "rarity": "Rare",
+    },
+    "coral idol": {
+        "category": "Collectibles",
+        "emoji": "🗿",
+        "type": "Curio",
+        "rarity": "Epic",
+    },
 }
 
 _CATEGORY_ORDER: tuple[str, ...] = (
     "Mining Materials",
     "Crafted Items",
     "Tools",
+    "Fishing",
+    "Collectibles",
     "Economy Items",
 )
 
@@ -111,6 +149,8 @@ _CATEGORY_META: dict[str, dict] = {
     "Mining Materials": {"emoji": "⛏️", "color": ECONOMY_COLOR},
     "Crafted Items": {"emoji": "🏗️", "color": WARNING_COLOR},
     "Tools": {"emoji": "🔧", "color": INFO_COLOR},
+    "Fishing": {"emoji": "🎣", "color": INFO_COLOR},
+    "Collectibles": {"emoji": "🏆", "color": WARNING_COLOR},
     "Economy Items": {"emoji": "💼", "color": ECONOMY_COLOR},
     "Other": {"emoji": "📦", "color": MINING_COLOR},
 }

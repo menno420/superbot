@@ -50,7 +50,9 @@ def test_smaller_fish_are_more_common_than_bigger_ones():
     rng = random.Random(99)
     from collections import Counter
 
-    counts = Counter(roll_catch(fish.MAX_LEVEL, rng).species.size_rank for _ in range(8000))
+    counts = Counter(
+        roll_catch(fish.MAX_LEVEL, rng).species.size_rank for _ in range(8000)
+    )
     # The smallest fish should out-appear the largest (inverse-size weighting).
     assert counts[1] > counts[len(fish.SPECIES)]
 
@@ -124,8 +126,13 @@ def test_roll_yields_only_the_requested_venues_fish():
 
 def test_shore_and_deepwater_rolls_draw_from_disjoint_pools():
     rng = random.Random(11)
-    shore = {roll_catch(fish.MAX_LEVEL, rng, venue="shore").species.name for _ in range(400)}
-    deep = {roll_catch(fish.MAX_LEVEL, rng, venue="deepwater").species.name for _ in range(400)}
+    shore = {
+        roll_catch(fish.MAX_LEVEL, rng, venue="shore").species.name for _ in range(400)
+    }
+    deep = {
+        roll_catch(fish.MAX_LEVEL, rng, venue="deepwater").species.name
+        for _ in range(400)
+    }
     assert shore.isdisjoint(deep)
 
 
@@ -187,7 +194,9 @@ def test_pearl_drop_stays_rare_not_the_norm():
 
 
 def test_roll_pearl_drop_is_deterministic_for_a_fixed_seed():
-    assert roll_pearl_drop(10, random.Random(7)) == roll_pearl_drop(10, random.Random(7))
+    assert roll_pearl_drop(10, random.Random(7)) == roll_pearl_drop(
+        10, random.Random(7)
+    )
 
 
 def test_roll_pearl_drop_fires_about_at_the_size_scaled_rate():
@@ -204,3 +213,44 @@ def test_bigger_fish_drop_pearls_more_often():
         return sum(roll_pearl_drop(rank, rng) for _ in range(20_000)) / 20_000
 
     assert rate(21) > rate(1)
+
+
+# ---------------------------------------------------------------------------
+# the coral rare-material drop (deepwater-only, flat — this PR)
+# ---------------------------------------------------------------------------
+from utils.fishing.rewards import (  # noqa: E402
+    CORAL_DROP_CHANCE,
+    coral_drop_chance,
+    roll_coral_drop,
+)
+from utils.fishing.venue import DEEPWATER, SHORE  # noqa: E402
+
+
+def test_coral_only_drops_in_deepwater():
+    assert coral_drop_chance(DEEPWATER) == CORAL_DROP_CHANCE
+    assert coral_drop_chance(SHORE) == 0.0
+    # unknown / empty venue normalizes to shore → no coral
+    assert coral_drop_chance("") == 0.0
+
+
+def test_roll_coral_drop_never_fires_on_shore():
+    rng = random.Random(3)
+    assert all(not roll_coral_drop(SHORE, rng) for _ in range(5_000))
+
+
+def test_roll_coral_drop_is_deterministic_for_a_fixed_seed():
+    assert roll_coral_drop(DEEPWATER, random.Random(7)) == roll_coral_drop(
+        DEEPWATER,
+        random.Random(7),
+    )
+
+
+def test_roll_coral_drop_fires_about_at_the_configured_rate():
+    rng = random.Random(123)
+    hits = sum(roll_coral_drop(DEEPWATER, rng) for _ in range(20_000))
+    rate = hits / 20_000
+    assert abs(rate - CORAL_DROP_CHANCE) < 0.02
+
+
+def test_coral_stays_rare_not_the_norm():
+    assert 0.0 < CORAL_DROP_CHANCE <= 0.15

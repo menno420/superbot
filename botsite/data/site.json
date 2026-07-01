@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T00:11:46Z",
+    "generated_at": "2026-07-01T03:20:15Z",
     "build": {
-      "commit": "4ecf0dac",
-      "subject": "wip(logging): open born-red card — ignored channels/users exclusion lists",
-      "committed_at": "2026-07-01T00:11:46Z"
+      "commit": "a0e4c0c6",
+      "subject": "fishing: open born-red session card for coral/curios slice",
+      "committed_at": "2026-07-01T03:20:15Z"
     }
   },
   "counts": {
-    "commands": 474,
+    "commands": 476,
     "features": 43,
     "games": 12
   },
@@ -5097,6 +5097,32 @@
       "notes": null
     },
     {
+      "name": "craftcurio",
+      "aliases": [
+        "carve",
+        "curiocraft"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+      "description": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!craftcurio coral idol",
+        "!curios"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "craftpearl",
       "aliases": [
         "pearlcraft"
@@ -5353,6 +5379,31 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "curios",
+      "aliases": [
+        "curio",
+        "carvings"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the coral-carving collection + your coral and craft progress.",
+      "description": "Show the coral-carving collection + your coral and craft progress.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!craftcurio <name>"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
       ],

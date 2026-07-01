@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T00:11:46Z",
+    "generated_at": "2026-07-01T03:20:15Z",
     "build": {
-      "commit": "4ecf0dac",
-      "subject": "wip(logging): open born-red card — ignored channels/users exclusion lists",
-      "committed_at": "2026-07-01T00:11:46Z"
+      "commit": "a0e4c0c6",
+      "subject": "fishing: open born-red session card for coral/curios slice",
+      "committed_at": "2026-07-01T03:20:15Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 474,
+      "commands": 476,
       "setting_keys": 115,
       "setting_domains": 17,
       "typed_settings": 95,
@@ -2695,6 +2695,22 @@
       "file": "2026-07-01-logging-ignored-lists.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Logging: ignored channels/users exclusion lists (completion deepening)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-inventory-density.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Inventory: item-detail density (rarity-tier fields) — completion deepening",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-fishing-coral-curios.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Fishing: coral 🪸 deepwater rare-material drop → cosmetic curio collectibles",
       "status": "in-progress",
       "run_type": "routine",
       "self_initiated": false
@@ -3154,22 +3170,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-effectivestats-knob-coverage.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — EffectiveStats knob-coverage guard + dead-stat finding (BUG-00xx)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-economy-flow-timeseries.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Games-economy observability: per-day faucet/sink trend view",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -6923,6 +6923,20 @@
           "button_backed": false
         },
         {
+          "name": "craftcurio",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "carve",
+            "curiocraft"
+          ],
+          "brief": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "craftpearl",
           "type": "prefix",
           "is_group": false,
@@ -6944,6 +6958,20 @@
             "rodcraft"
           ],
           "brief": "Craft the next rod up the ladder from caught fish — the non-coin path.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "curios",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "curio",
+            "carvings"
+          ],
+          "brief": "Show the coral-carving collection + your coral and craft progress.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
