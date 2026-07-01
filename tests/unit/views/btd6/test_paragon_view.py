@@ -218,9 +218,16 @@ def test_error_embed_surfaces_valid_towers():
 # --- panel + command wiring --------------------------------------------------
 
 
-def test_btd6_panel_has_paragon_button():
+def test_paragon_reachable_from_panel_units_subpanel():
+    # Layout B (2026-07-01): the Paragon calculator moved from a top-level panel
+    # button into the 🗼 Units sub-panel. Assert the panel exposes the Units
+    # category button AND that the Units sub-panel wires the paragon calculator.
     ids = [getattr(c, "custom_id", None) for c in BTD6PanelView().children]
-    assert "btd6:paragon" in ids
+    assert "btd6:units" in ids
+    from views.btd6.hub_panels import _CATEGORIES, _open_paragon
+
+    units_handlers = [entry[3] for entry in _CATEGORIES["units"][3]]
+    assert _open_paragon in units_handlers
 
 
 def test_cog_registers_paragon_command():
