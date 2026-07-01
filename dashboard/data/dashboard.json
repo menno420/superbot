@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T14:37:18Z",
+    "generated_at": "2026-07-01T14:20:46Z",
     "build": {
-      "commit": "3c0eef03",
-      "subject": "Merge pull request #1605 from menno420/claude/funny-franklin-d7e1so",
-      "committed_at": "2026-07-01T14:37:18Z"
+      "commit": "64a7364",
+      "subject": "xp-migration: born-red session card + lane claim",
+      "committed_at": "2026-07-01T14:20:46Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 479,
+      "commands": 480,
       "setting_keys": 115,
       "setting_domains": 17,
       "typed_settings": 95,
@@ -1317,7 +1317,7 @@
       "title": "Bot-migration assistant — detect → map → replicate → retire other bots (2026-06-24)",
       "status": "ideas",
       "date": "2026-06-24",
-      "summary": "This is a **bot-migration / consolidation assistant**: the operator runs one flow, SuperBot inventories",
+      "summary": "The first **data carry-over** slice of the \"replicate\" phase shipped independently, owner-requested:",
       "subsystems": [
         "setup"
       ]
@@ -2698,6 +2698,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-01-xp-level-migration.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — XP/level migration from other bots (Arcane)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-owner-bypass-all-permission-gates.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Owner bypasses ALL permission gates (not just administrator)",
@@ -3165,14 +3173,6 @@
       "file": "2026-06-27-s1-offline-handoff.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Sharpen S1 ▶ Next with an offline-startable item (handoff hygiene)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-reconcile-marker-band-consistency-guard.md",
-      "date": "2026-06-27",
-      "title": "Session — reconcile-marker band-consistency guard (+ marker conflation fix)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -9874,6 +9874,17 @@
           "parent": null,
           "aliases": [],
           "brief": "Open the XP configuration panel (admin only).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "xpimport",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Migrate XP/levels from another bot by scanning its level-up channel.",
           "classification": "",
           "has_panel": true,
           "button_backed": true

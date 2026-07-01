@@ -1,1 +1,0 @@
-- `claude/bot-xp-level-migration-9e9br8` · XP/level migration from other bots (Arcane level-up channel scan + extensible provider seam) · `disbot/utils/xp_migration.py`, `disbot/utils/db/xp.py`, `disbot/services/xp_service.py`, `disbot/services/xp_migration.py`, `disbot/views/xp/import_panel.py`, `disbot/cogs/xp_cog.py`, docs + tests · 2026-07-01
