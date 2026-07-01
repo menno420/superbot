@@ -1,1 +1,0 @@
- - `claude/reaction-roles-counter-bgxnyd` · **role-menu builder live-preview fix** — ephemeral panel never re-rendered (style/pack/channel/counts didn't reflect); route re-render through the interaction token · `disbot/views/roles/role_menu_builder.py` `disbot/views/roles/reaction_panel.py` · 2026-06-30 · in-progress
