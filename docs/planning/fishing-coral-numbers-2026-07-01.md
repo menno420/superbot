@@ -37,11 +37,14 @@ multiple coral, so the collection is a genuine long-tail.
 | Carved Coral Shell | 🐚 | 2 | Uncommon | 30 |
 | Coral Seahorse | 🌊 | 4 | Rare | 60 |
 | Coral Idol | 🗿 | 8 | Epic | 120 |
+| Coral Leviathan | 🐉 | 16 | Legendary | 240 |
 
-- **Ascending coral cost** (2 → 4 → 8) makes the Idol a genuine deep-sea trophy:
-  ~14 coral for the full set, i.e. ~230 successful deepwater reels at 6% before
-  the average player completes it — deliberately long-tail, since it is pure
-  cosmetic completion with no power attached.
+- **Doubling coral cost** (2 → 4 → 8 → 16) makes the **Leviathan** the top deep-sea
+  trophy (the 2026-07-01 second-tier extension): ~30 coral for the full set, i.e.
+  ~500 successful deepwater reels at 6% before the average player completes the
+  shelf — deliberately long-tail, since it is pure cosmetic completion with no power
+  attached. Each tier keeps the geometric ratio (cost ×2, value ×2), so the
+  Leviathan is exactly twice the Idol on both axes.
 - **`value`** is inventory net-worth display only (curios are `TREASURE`, so
   `market.sell_price` returns `None` — never sellable, no coin faucet).
 

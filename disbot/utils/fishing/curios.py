@@ -63,6 +63,14 @@ CURIO_CATALOG: tuple[Curio, ...] = (
         rarity="Rare",
     ),
     Curio("coral idol", "coral idol", "Coral Idol", "🗿", coral_cost=8, rarity="Epic"),
+    Curio(
+        "coral leviathan",
+        "coral leviathan",
+        "Coral Leviathan",
+        "🐉",
+        coral_cost=16,
+        rarity="Legendary",
+    ),
 )
 
 _BY_KEY: dict[str, Curio] = {c.key: c for c in CURIO_CATALOG}
