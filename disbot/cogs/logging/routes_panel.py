@@ -32,19 +32,24 @@ if TYPE_CHECKING:
 logger = logging.getLogger("bot.cogs.logging.routes_panel")
 
 
-# Display order for the routes embed. Sources first, then severity,
-# then audit, then the server-event routes — mirrors the operator's
-# typical mental model.
+# Display order for the routes embed + select — **roots-first**
+# (tools/sim/settings_order_sim.py, 2026-07-01). The two fallback roots lead so
+# the operator sees the minimum coverage set immediately: set ``mod`` + those
+# two and every route is delivered *somewhere*; everything below refines one of
+# them. This cut scroll-to-full-coverage from 7 → 1 vs the old category-first
+# order (pinned to the sim by tests/unit/invariants/test_settings_order.py).
 _ROUTE_DISPLAY_ORDER: tuple[str, ...] = (
-    "mod",
+    # Roots — set these two and everything is covered by fallback.
+    "mod",  # ROOT: severity / audit / cleanup fall back here
+    "events",  # ROOT: message / member / role fall back here
+    # ``mod`` overrides (moderation sources + severity + audit):
     "cleanup",
     "debug",
     "info",
     "warning",
     "error",
     "audit",
-    # Server event logging v1 (Q-0109).
-    "events",
+    # ``events`` overrides (per-category server events, Q-0109):
     "message_log",
     "member_log",
     "role_log",
@@ -125,10 +130,14 @@ async def build_routes_embed(guild: discord.Guild | None) -> discord.Embed:
     embed = discord.Embed(
         title="🗺️ Logging Routes",
         description=(
-            "Every logging route, its current binding, and where it "
-            "resolves today. Set / Create through the buttons below — "
-            "writes route through `BindingMutationPipeline` / "
-            "`ResourceProvisioningPipeline` and record an audit row."
+            "**Quick start:** set the top two — **`mod`** and **`events`** — "
+            "and every route is delivered somewhere (the rest fall back to "
+            "them). Split out any route below only when you want it in its own "
+            "channel.\n\n"
+            "Each row shows a route, its binding, and where it resolves today. "
+            "Pick one, then **Set Channel** (bind an existing channel) or "
+            "**Create Channel** — both route through `BindingMutationPipeline` "
+            "/ `ResourceProvisioningPipeline` and record an audit row."
         ),
         color=ADMIN_COLOR,
     )
