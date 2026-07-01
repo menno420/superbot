@@ -1,1 +1,0 @@
-- `claude/treasury-cog-tests` · Treasury completion punch #1/#2 (cog-level command + modal-parse tests) · `tests/unit/cogs/test_treasury_cog.py`, `tests/unit/views/test_treasury_contribute_modal.py`, treasury cert · 2026-07-01
