@@ -13,7 +13,7 @@ from core.runtime.message_pipeline import (
     MessagePipelineContext,
     StageResult,
 )
-from core.runtime.permission_checks import admin_or_owner
+from core.runtime.permission_checks import admin_or_owner, perms_or_owner
 from services import governance_service, moderation_service
 from services.governance_service import GovernanceContext
 from services.history_cleanup import (
@@ -320,7 +320,7 @@ class Cleanup(commands.Cog):
         self._strict_cache.pop(guild.id, None)
 
     @commands.command(name="cleanuphistory")
-    @commands.has_permissions(manage_messages=True)
+    @perms_or_owner(manage_messages=True)
     @commands.cooldown(1, 10, commands.BucketType.channel)
     async def cleanup_history(self, ctx, limit: int = 100, *, keyword: str = None):
         """Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.

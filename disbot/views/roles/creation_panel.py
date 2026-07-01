@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import safe_defer
+from core.runtime.permission_checks import member_has_perms_or_owner
 from services import role_automation
 from services.lifecycle import SUCCESS
 from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleService
@@ -171,7 +172,7 @@ class RoleCreatePanel(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, manage_roles=True):
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.",
                 ephemeral=True,

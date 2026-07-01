@@ -21,6 +21,7 @@ from discord.ext import commands
 
 from cogs.automod.listener import process_message
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
+from core.runtime.permission_checks import perms_or_owner
 from services import automod_config
 from utils.ui_constants import MOD_COLOR
 
@@ -114,7 +115,7 @@ class Automod(commands.Cog):
         extras={"classification": "primary_entrypoint"},
     )
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def automod_status(self, ctx: commands.Context) -> None:
         """Render the effective automod policy (admin/manage-guild only)."""
         policy = await automod_config.load_policy(ctx.guild.id)

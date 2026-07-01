@@ -7854,3 +7854,21 @@ own-capability checks (`me.guild_permissions`). **Enforce, don't exhort (Q-0194)
 the build on a re-introduction —
 `tests/unit/invariants/test_owner_override_guards.py::{test_no_raw_admin_in_view_interaction_check,
 test_no_admin_only_command_decorator}` — the exact miss-class #1573 shipped.
+
+**Third extension — #1602 (2026-07-01): owner bypasses ALL permission gates, not just administrator.**
+Owner directive *"make sure that I can do everything with this bot as owner"* (screenshot: `/help → Roles
+→ Role Menus → New Menu` → "You need the Manage Roles permission to do that"). #1573/#1577 covered only
+`administrator`; specific-permission gates (`manage_roles`, `manage_guild`, `manage_channels`,
+`manage_messages`, `moderate_members`, `create_instant_invite`) still denied the owner. This **resolves the
+original scope tension** (Q-0212 first read as "config, not alter the server"; the owner has now made it
+explicit — *everything*). `core.runtime.permission_checks` is generalized to any permission
+(`member_has_perms_or_owner(user, **perms)` / `perms_or_owner(**perms)` / `app_perms_or_owner(**perms)`;
+`admin_or_owner` etc. become thin wrappers), and **every** `has_permissions(...)` decorator (49 across 18
+cogs) + inline `guild_permissions.<perm>` user-gate (18 across ~12 cogs/views — role menus, role hub,
+mining, channel, proof-channel, btd6, role-grants) now routes through it. **Untouched by design:** the
+bot's own-capability checks (`me.guild_permissions`), informational reads, and the moderation surfaces
+(the owner already passes those via the `can_execute` governance path → owner tier). **Enforcement:** the
+decorator guard is generalized to *any* `has_permissions(...)` and a new `test_role_surface_gates_are_owner_aware`
+pins the role views — completeness is machine-checked, not scoped by judgment (the fix for the three
+narrow-scope round-trips #1573→#1577→#1602). Home: `disbot/core/runtime/permission_checks.py` +
+`tests/unit/invariants/test_owner_override_guards.py`.

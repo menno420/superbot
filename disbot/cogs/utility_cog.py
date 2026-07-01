@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
+from core.runtime.permission_checks import perms_or_owner
 from utils import embeds as em
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
 from views.base import HubView, send_panel
@@ -155,7 +156,7 @@ class UtilityCog(commands.Cog):
         )
 
     @commands.command(name="clear", aliases=["purge"])
-    @commands.has_permissions(manage_messages=True)
+    @perms_or_owner(manage_messages=True)
     async def clear(self, ctx, amount: int = 5):
         """Purge messages. Max 100."""
         if amount <= 0:
@@ -285,7 +286,7 @@ class UtilityCog(commands.Cog):
         )
 
     @commands.command(name="invite")
-    @commands.has_permissions(create_instant_invite=True)
+    @perms_or_owner(create_instant_invite=True)
     async def invite(self, ctx):
         """Generate a one-use server invite."""
         invite = await ctx.channel.create_invite(max_uses=1, unique=True)

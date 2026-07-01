@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 import discord
 
 from core.runtime.ai.contracts import AITask
+from core.runtime.permission_checks import member_has_perms_or_owner
 from utils.btd6.body_coerce import coerce_body as _coerce_body
 from utils.btd6.coverage import (
     AREA_BOSS,
@@ -1060,9 +1061,7 @@ async def handle_ctteam(
     guild_id = guild.id
     action = (arg or "").strip()
     author = getattr(ctx, "author", None)
-    can_manage = bool(
-        getattr(getattr(author, "guild_permissions", None), "manage_guild", False),
-    )
+    can_manage = member_has_perms_or_owner(author, manage_guild=True)
     if action:
         if not can_manage:
             return (

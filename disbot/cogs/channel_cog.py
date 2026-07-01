@@ -21,6 +21,7 @@ from discord.ext import commands
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim
+from core.runtime.permission_checks import member_has_perms_or_owner
 from services.channel_lifecycle_service import (
     MAX_SLOWMODE_SECONDS,
     ChannelLifecycleRequest,
@@ -75,7 +76,7 @@ class ChannelCog(commands.Cog):
 
         async def predicate(ctx):
             return (
-                ctx.author.guild_permissions.administrator
+                member_has_perms_or_owner(ctx.author, administrator=True)
                 or ctx.author.id == ctx.guild.owner_id
             )
 

@@ -52,6 +52,7 @@ from cogs.btd6._embeds import (
 from cogs.btd6._embeds import response_to_embed as _response_to_embed
 from cogs.btd6._reply import reply_ephemeral
 from core.runtime.interaction_helpers import safe_defer, safe_followup
+from core.runtime.permission_checks import perms_or_owner
 from services import btd6_ai_service
 from utils.discord_permissions import is_administrator_member, is_staff_member
 from views.btd6 import strategy_browse
@@ -505,7 +506,7 @@ async def strat_pending_slash(
 
 
 @strat_prefix.command(name="pending")  # type: ignore[arg-type]
-@commands.has_guild_permissions(manage_guild=True)
+@perms_or_owner(manage_guild=True)
 async def strat_pending_prefix(ctx: commands.Context, limit: int = 5) -> None:
     """List pending strategy submissions with review buttons (staff-only)."""
     if not ctx.guild:
@@ -936,7 +937,7 @@ async def events_refresh_source_slash(
 
 
 @events_prefix.command(name="refresh-source")  # type: ignore[arg-type]
-@commands.has_guild_permissions(manage_guild=True)
+@perms_or_owner(manage_guild=True)
 async def events_refresh_source_prefix(
     ctx: commands.Context,
     source_key: str,
