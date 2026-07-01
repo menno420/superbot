@@ -385,3 +385,91 @@ def test_boathouse_coral_cost_sits_between_the_dock_and_the_tide_pool() -> None:
 def test_boathouse_does_not_gate_crafting() -> None:
     """The Boathouse is a fishing bonus — never a gear-craft forge gate."""
     assert structures.forge_level_required("boathouse") == 0
+
+
+# --------------------------------------------------------------------------- #
+# The Fishery — the FOURTH coral structure (yield/abundance: double-catch chance).
+# Pinned in docs/planning/fishing-fishery-numbers-2026-07-01.md.
+# --------------------------------------------------------------------------- #
+
+
+def test_fishery_registered_and_named() -> None:
+    assert structures.FISHERY in structures.STRUCTURES
+    assert structures.display_name(structures.FISHERY) == "Fishery"
+    assert (
+        structures.max_level(structures.FISHERY)
+        == structures.MAX_FISHERY_LEVEL
+        == 2
+    )
+
+
+def test_fishery_level_names() -> None:
+    assert structures.level_name(structures.FISHERY, 0) == "(not built)"
+    assert structures.level_name(structures.FISHERY, 1) == "Fishery"
+    assert structures.level_name(structures.FISHERY, 2) == "Grand Fishery"
+    # Clamped past the top.
+    assert structures.level_name(structures.FISHERY, 99) == "Grand Fishery"
+
+
+def test_fishery_build_cost_ladder_is_a_rising_coral_and_wood_sink() -> None:
+    costs = [structures.build_cost(structures.FISHERY, lvl) for lvl in range(2)]
+    assert [c.coins for c in costs] == [2_500, 6_000]
+    assert [c.materials["coral"] for c in costs] == [4, 8]
+    assert [c.materials["wood"] for c in costs] == [25, 45]
+    # Strictly rising coin + material sink.
+    assert costs[0].coins < costs[1].coins
+    assert costs[0].materials["coral"] < costs[1].materials["coral"]
+
+
+def test_fishery_build_cost_maxed_returns_none() -> None:
+    assert (
+        structures.build_cost(structures.FISHERY, structures.MAX_FISHERY_LEVEL)
+        is None
+    )
+
+
+def test_fishery_bonus_chance_ladder_and_additive_safety() -> None:
+    # Unbuilt ⇒ exactly +0.0 (byte-identical catch economics — additive-safety).
+    assert structures.fishery_bonus_chance(0) == 0.0
+    assert structures.fishery_bonus_chance(1) == 0.05
+    assert structures.fishery_bonus_chance(2) == 0.10
+    # Clamped: an out-of-range level can never over-reward (nor go negative).
+    assert structures.fishery_bonus_chance(99) == 0.10
+    assert structures.fishery_bonus_chance(-5) == 0.0
+    # Strictly rising across the ladder, always non-negative.
+    bonuses = [structures.fishery_bonus_chance(lvl) for lvl in range(3)]
+    assert bonuses == sorted(bonuses)
+    assert bonuses[0] == 0.0
+
+
+def test_fishery_is_the_dearest_coral_and_wood_structure() -> None:
+    """The Fishery's yield payoff compounds every catch — dearest of the coral+wood set."""
+    def coral_total(structure: str, max_level: int) -> int:
+        return sum(
+            structures.build_cost(structure, lvl).materials["coral"]
+            for lvl in range(max_level)
+        )
+
+    fishery_coral = coral_total(structures.FISHERY, structures.MAX_FISHERY_LEVEL)
+    boathouse_coral = coral_total(structures.BOATHOUSE, structures.MAX_BOATHOUSE_LEVEL)
+    dock_coral = coral_total(structures.DOCK, structures.MAX_DOCK_LEVEL)
+    # Dearest of the three coral+wood structures (Dock < Boathouse < Fishery); the
+    # coral-only Tide Pool is dearer on coral alone (no wood leg) — a separate sink.
+    assert dock_coral < boathouse_coral < fishery_coral
+
+
+def test_fishery_does_not_gate_crafting() -> None:
+    """The Fishery is a fishing bonus — never a gear-craft forge gate."""
+    assert structures.forge_level_required("fishery") == 0
+
+
+def test_every_registered_structure_resolves_a_build_reason() -> None:
+    """BUG-0031 regression: build_structure derives the audit reason generically, so
+    a *newly-registered* structure can never crash the build path for want of a
+    hand-maintained map entry (the boathouse KeyError that shipped in #1605)."""
+    from utils.mining import market
+
+    for structure in structures.STRUCTURES:
+        reason = market.structure_build_reason(structure)
+        assert reason == f"mining:{structure}_build"
+        assert reason  # non-empty for every registered structure

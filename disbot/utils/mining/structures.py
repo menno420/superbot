@@ -36,6 +36,7 @@ CAMPFIRE = "campfire"
 TIDE_POOL = "tide_pool"
 DOCK = "dock"
 BOATHOUSE = "boathouse"
+FISHERY = "fishery"
 
 #: Gear at or below this tier index needs **no** forge (bronze=1, iron=2,
 #: silver=3 are free; gold=4 → forge 1; diamond=5 → forge 2).  ``forge_level =
@@ -91,6 +92,21 @@ _BOATHOUSE_LEVEL_NAMES = ("(not built)", "Boathouse", "Grand Boathouse")
 #: Per-level regen speed-up (subtracted from the ×1.0 base — lower = faster regen).
 #: Level 2 ⇒ ×0.76.  Tunable — pin in the numbers doc + the test.
 _BOATHOUSE_REGEN_STEP = 0.12
+
+#: Fishery (2026-07-01): the **fourth** coral structure, giving coral a genuinely
+#: distinct *fourth* payoff — a higher **lucky double-catch** chance (yield /
+#: abundance), where the Tide Pool is quality, the Dock is per-cast throughput, and
+#: the Boathouse is endurance.  A well-stocked fishery keeps the waters plentiful, so
+#: a landed reel is more likely to hook a *second* copy of the same fish (extra craft
+#: fodder / sell material) — folded into ``services.fishing_workflow.commit_catch``
+#: as a bonus **added** to ``utils.fishing.rewards.BONUS_CATCH_CHANCE``.  Unbuilt ⇒
+#: +0.0 ⇒ the base chance is unchanged ⇒ byte-identical catch economics.
+_FISHERY_LEVEL_NAMES = ("(not built)", "Fishery", "Grand Fishery")
+
+#: Per-level double-catch-chance bonus (**added** to the ×base chance — higher =
+#: more double catches).  Level 2 ⇒ +0.10 (0.10 base → 0.20).  Tunable — pin in the
+#: numbers doc + the test.
+_FISHERY_BONUS_STEP = 0.05
 
 
 @dataclass(frozen=True)
@@ -164,6 +180,18 @@ _BOATHOUSE_BUILD_LADDER: tuple[BuildCost, ...] = (
     BuildCost(coins=5_000, materials={"coral": 6, "wood": 40}),
 )
 
+#: Fishery build ladder — a coral + **wood** sink priced *above* the Boathouse (coral
+#: total 12, vs Boathouse 9, Dock 7) — its yield payoff compounds every catch, so it
+#: is the dearest of the three coral+wood structures (the coral-only Tide Pool is
+#: dearer still on coral alone).  Pin changes in
+#: ``docs/planning/fishing-fishery-numbers-2026-07-01.md`` + the test.
+_FISHERY_BUILD_LADDER: tuple[BuildCost, ...] = (
+    # → Fishery (+0.05 double-catch chance — 0.10 → 0.15)
+    BuildCost(coins=2_500, materials={"coral": 4, "wood": 25}),
+    # → Grand Fishery (+0.10 — 0.10 → 0.20)
+    BuildCost(coins=6_000, materials={"coral": 8, "wood": 45}),
+)
+
 
 @dataclass(frozen=True)
 class StructureDef:
@@ -194,6 +222,12 @@ _DEFS: dict[str, StructureDef] = {
         _BOATHOUSE_BUILD_LADDER,
         _BOATHOUSE_LEVEL_NAMES,
     ),
+    FISHERY: StructureDef(
+        FISHERY,
+        "Fishery",
+        _FISHERY_BUILD_LADDER,
+        _FISHERY_LEVEL_NAMES,
+    ),
     TIDE_POOL: StructureDef(
         TIDE_POOL,
         "Tide Pool",
@@ -222,6 +256,9 @@ MAX_DOCK_LEVEL = len(_DOCK_BUILD_LADDER)
 
 #: Highest Boathouse level (the top energy-regen bonus).
 MAX_BOATHOUSE_LEVEL = len(_BOATHOUSE_BUILD_LADDER)
+
+#: Highest Fishery level (the top double-catch-chance bonus).
+MAX_FISHERY_LEVEL = len(_FISHERY_BUILD_LADDER)
 
 
 def cooking_unlocked(campfire_level: int) -> bool:
@@ -263,6 +300,19 @@ def boathouse_regen_mult(level: int) -> float:
     """
     level = max(0, min(level, MAX_BOATHOUSE_LEVEL))
     return round(1.0 - _BOATHOUSE_REGEN_STEP * level, 4)
+
+
+def fishery_bonus_chance(level: int) -> float:
+    """The double-catch-chance bonus a Fishery at *level* grants (≥ 0.0 — higher = more).
+
+    **Added** to ``utils.fishing.rewards.BONUS_CATCH_CHANCE`` in
+    ``services.fishing_workflow.commit_catch`` (the effective chance is clamped to
+    ``[0, 1]`` there).  Level 0 (unbuilt) ⇒ exactly ``0.0`` ⇒ the base chance is
+    unchanged ⇒ byte-identical catch economics.  Clamped to the ladder so an
+    out-of-range level can never over-reward.
+    """
+    level = max(0, min(level, MAX_FISHERY_LEVEL))
+    return round(_FISHERY_BONUS_STEP * level, 4)
 
 
 def is_structure(name: str) -> bool:
@@ -356,12 +406,14 @@ __all__ = [
     "TIDE_POOL",
     "DOCK",
     "BOATHOUSE",
+    "FISHERY",
     "STRUCTURES",
     "MAX_FORGE_LEVEL",
     "MAX_CAMPFIRE_LEVEL",
     "MAX_TIDE_POOL_LEVEL",
     "MAX_DOCK_LEVEL",
     "MAX_BOATHOUSE_LEVEL",
+    "MAX_FISHERY_LEVEL",
     "FREE_TIER_CEILING",
     "BuildCost",
     "is_structure",
@@ -369,6 +421,7 @@ __all__ = [
     "tide_pool_pull_mult",
     "dock_bite_speed_mult",
     "boathouse_regen_mult",
+    "fishery_bonus_chance",
     "forge_level_name",
     "forge_build_cost",
     "forge_level_required",

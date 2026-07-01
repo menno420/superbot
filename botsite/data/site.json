@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T20:31:17Z",
+    "generated_at": "2026-07-01T21:13:59Z",
     "build": {
-      "commit": "d1efa404",
-      "subject": "Merge pull request #1620 from menno420/claude/funny-franklin-jqv6ne",
-      "committed_at": "2026-07-01T20:31:17Z"
+      "commit": "076c9fd0",
+      "subject": "session: open born-red — Fishery structure + boathouse build-crash root fix",
+      "committed_at": "2026-07-01T21:13:59Z"
     }
   },
   "counts": {
-    "commands": 483,
+    "commands": 484,
     "features": 43,
     "games": 12
   },
@@ -6034,6 +6034,33 @@
       "description": "Cast a line — wait for the bite, then reel it in before it gets away.",
       "use_cases": null,
       "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "fishery",
+      "aliases": [
+        "hatchery",
+        "fishfarm"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Build a Fishery — the coral+wood structure that lands more double catches.",
+      "description": "Build a Fishery — the coral+wood structure that lands more double catches.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!tidepool",
+        "!dock",
+        "!boathouse"
+      ],
       "status": "in-progress",
       "linked_ideas": [
         {

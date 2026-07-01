@@ -58,15 +58,26 @@ def roll_catch(
 BONUS_CATCH_CHANCE = 0.10
 
 
-def roll_bonus_catch(rng: random.Random | None = None) -> bool:
-    """Roll the lucky-double-catch bonus — ``True`` ≈ :data:`BONUS_CATCH_CHANCE`.
+def roll_bonus_catch(
+    rng: random.Random | None = None,
+    *,
+    chance: float | None = None,
+) -> bool:
+    """Roll the lucky-double-catch bonus — ``True`` ≈ *chance*.
 
     Rolled at commit time (only a *landed* catch can double), separate from the
     species roll so the bonus is a clean, independently-tunable knob. State-in
     (an explicit ``random.Random`` for seed-determinism in tests), return-out.
+
+    *chance* defaults to :data:`BONUS_CATCH_CHANCE` (so every existing caller is
+    byte-identical). A built **Fishery** structure raises it — see
+    ``services.fishing_workflow.commit_catch`` — and it is clamped to ``[0, 1]`` so
+    an over-large bonus can never exceed certainty.
     """
+    effective = BONUS_CATCH_CHANCE if chance is None else chance
+    effective = min(1.0, max(0.0, effective))
     r = rng or random.Random()
-    return r.random() < BONUS_CATCH_CHANCE
+    return r.random() < effective
 
 
 #: The dedicated **rare crafting material** a successful reel can also yield — a

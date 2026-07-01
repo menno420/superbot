@@ -36,6 +36,7 @@ from utils.fishing import curios as curios_mod
 from utils.fishing import energy as fish_energy
 from utils.fishing import fish as fish_mod
 from utils.fishing import gear as fishing_gear
+from utils.fishing import rewards as rewards_mod
 from utils.fishing import rods as rods_mod
 from utils.fishing import (
     roll_bonus_catch,
@@ -118,6 +119,11 @@ class Cast:
     #: The venue this cast was made in (``shore`` / ``deepwater``) — picks the
     #: species pool + the minigame difficulty (``utils.fishing.venue``).
     venue: str = venue_mod.SHORE
+    #: The lucky-double-catch chance fixed at cast time — a built **Fishery**
+    #: structure raises it above ``rewards.BONUS_CATCH_CHANCE`` (``commit_catch``
+    #: rolls it). Defaults to the base chance so a hand-built ``Cast`` (and the
+    #: legacy path) is byte-identical.
+    double_catch_chance: float = rewards_mod.BONUS_CATCH_CHANCE
 
 
 async def roll_cast(
@@ -127,6 +133,7 @@ async def roll_cast(
     *,
     rarity_pull: float | None = None,
     venue: str = venue_mod.SHORE,
+    double_catch_chance: float | None = None,
 ) -> Cast:
     """Read the player's level and roll a catch **without writing anything**.
 
@@ -140,6 +147,12 @@ async def roll_cast(
     new band (that stays the fishing-level axis). *rarity_pull*, when given,
     overrides the rod's own pull — ``begin_cast`` passes ``rod.rarity_pull``
     multiplied by any loaded bait so the two how-well knobs compound.
+
+    *double_catch_chance*, when given, is the fishery-adjusted lucky-double-catch
+    chance ``begin_cast`` computed from its one structures read (so the read isn't
+    repeated at commit). When ``None`` (the legacy ``fish()`` seam, which has no
+    runtime callers), it defaults to the base ``rewards.BONUS_CATCH_CHANCE`` — i.e.
+    the Fishery bonus is applied through ``begin_cast``, the real cast path.
     """
     rod = rod or rods_mod.STARTER
     venue = venue_mod.normalize(venue)
@@ -150,7 +163,14 @@ async def roll_cast(
     catch = roll_catch(level_before, rarity_pull=pull, venue=venue)
     if catch is None:
         logger.error("fishing: no catchable species (venue=%s, catalog empty?)", venue)
-    return Cast(catch=catch, level_before=level_before, venue=venue)
+    if double_catch_chance is None:
+        double_catch_chance = rewards_mod.BONUS_CATCH_CHANCE
+    return Cast(
+        catch=catch,
+        level_before=level_before,
+        venue=venue,
+        double_catch_chance=double_catch_chance,
+    )
 
 
 async def commit_catch(
@@ -181,7 +201,12 @@ async def commit_catch(
     if catch is None:
         return FishResult(catch=None, fishing_level=level_before)
 
-    bonus = roll_bonus_catch(rng)
+    # The double-catch chance was fixed at cast time (``roll_cast``) — a built
+    # **Fishery** (4th coral structure, coral's yield/abundance sink) raises it above
+    # the base ``BONUS_CATCH_CHANCE``; unbuilt ⇒ exactly the base ⇒ byte-identical
+    # catch economics. The bonus roll is still drawn first, so the pearl/coral draws
+    # below stay deterministic under an injected rng.
+    bonus = roll_bonus_catch(rng, chance=cast.double_catch_chance)
     grant = 2 if bonus else 1
     pearl = roll_pearl_drop(catch.species.size_rank, rng)
     coral = roll_coral_drop(cast.venue, rng)
@@ -309,6 +334,11 @@ class CastStart:
     #: multiplier is already folded into ``effective_bite_speed``) — for the ⚓
     #: cast-panel note. ``False`` when the Dock is unbuilt (level 0).
     dock_bonus: bool = False
+    #: Whether a built **Fishery** structure raised this cast's double-catch chance
+    #: (already fixed onto ``cast.double_catch_chance``) — for the 🐟 cast-panel
+    #: note. ``False`` when the Fishery is unbuilt (level 0), in which case the
+    #: chance is exactly ``rewards.BONUS_CATCH_CHANCE`` and the cast is byte-identical.
+    fishery_bonus: bool = False
 
 
 def _fmt_wait(seconds: int) -> str:
@@ -414,6 +444,13 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     tide_pool_pull = structures_mod.tide_pool_pull_mult(tide_pool_level)
     dock_level = built.get(structures_mod.DOCK, 0)
     dock_bite_speed = structures_mod.dock_bite_speed_mult(dock_level)
+    # The Fishery (4th coral structure) raises the lucky-double-catch chance —
+    # fixed here from the same one structures read and threaded onto the Cast so
+    # commit_catch stays DB-free. Unbuilt ⇒ +0.0 ⇒ the base chance ⇒ byte-identical.
+    fishery_level = built.get(structures_mod.FISHERY, 0)
+    double_catch_chance = rewards_mod.BONUS_CATCH_CHANCE + (
+        structures_mod.fishery_bonus_chance(fishery_level)
+    )
     # The "how-well" knobs compound: rod × bait × weather × gear × tide pool (pull),
     # and rod × bait × weather × gear × dock (bite speed). rarity_pull (all ≥ 1)
     # pulls the catch toward the big end of the SAME unlocked band (never a new band
@@ -440,6 +477,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         rod,
         rarity_pull=effective_pull,
         venue=profile.key,
+        double_catch_chance=double_catch_chance,
     )
     if cast.catch is None:
         return CastStart(
@@ -478,6 +516,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         fishing_gear_bonus=fishing_gear.has_fishing_bonus(gear_stats),
         tide_pool_bonus=tide_pool_level > 0,
         dock_bonus=dock_level > 0,
+        fishery_bonus=fishery_level > 0,
     )
 
 

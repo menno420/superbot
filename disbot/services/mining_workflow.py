@@ -673,16 +673,6 @@ async def vault_upgrade(user_id: int, guild_id: int) -> TradeResult:
     )
 
 
-# Per-structure economy-audit reason for a build (the money-flow tag).
-_STRUCTURE_BUILD_REASON = {
-    structures.FORGE: market.FORGE_BUILD_REASON,
-    structures.HOME: market.HOME_BUILD_REASON,
-    structures.CAMPFIRE: market.CAMPFIRE_BUILD_REASON,
-    structures.TIDE_POOL: market.TIDE_POOL_BUILD_REASON,
-    structures.DOCK: market.DOCK_BUILD_REASON,
-}
-
-
 def _build_success_suffix(structure: str, new_level: int) -> str:
     """The structure-specific reward line appended to a successful build.
 
@@ -702,6 +692,13 @@ def _build_success_suffix(structure: str, new_level: int) -> str:
         mult = structures.dock_bite_speed_mult(new_level)
         pct = round((1.0 - mult) * 100)
         return f" Fish now bite **{pct}%** faster."
+    if structure == structures.BOATHOUSE:
+        mult = structures.boathouse_regen_mult(new_level)
+        pct = round((1.0 - mult) * 100)
+        return f" Your fishing energy now refills **{pct}%** faster."
+    if structure == structures.FISHERY:
+        pct = round(structures.fishery_bonus_chance(new_level) * 100)
+        return f" Your reels now have **+{pct}%** chance of a double catch."
     return ""
 
 
@@ -748,7 +745,7 @@ async def build_structure(
             f"plus {cost.coins} 🪙 — you're short on materials.",
         )
     deltas = {mat: -qty for mat, qty in cost.materials.items()}
-    reason = _STRUCTURE_BUILD_REASON[structure]
+    reason = market.structure_build_reason(structure)
     try:
         async with db.transaction() as conn:
             new_balance = await economy_service.debit_in_txn(

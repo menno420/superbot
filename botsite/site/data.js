@@ -2630,6 +2630,32 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "fishery",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Build a Fishery — the coral+wood structure that lands more double catches.",
+    "description": "Build a Fishery — the coral+wood structure that lands more double catches.",
+    "usage": "!fishery",
+    "aliases": [
+      "hatchery",
+      "fishfarm"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!tidepool",
+      "!dock",
+      "!boathouse"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "fishing",
     "area": "games",
     "status": "in-progress",
@@ -7375,7 +7401,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "d1efa404",
+    "build": "076c9fd0",
     "title": "New public bot website",
     "changes": [
       {
@@ -7387,7 +7413,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "d1efa404",
+    "build": "076c9fd0",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7399,7 +7425,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "d1efa404",
+    "build": "076c9fd0",
     "title": "Command-alias suggestions",
     "changes": [
       {

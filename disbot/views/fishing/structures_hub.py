@@ -48,6 +48,14 @@ def _boathouse_line(level: int) -> str:
     return f"**{name}** ({level}/{structures.MAX_BOATHOUSE_LEVEL}) — {bonus}"
 
 
+def _fishery_line(level: int) -> str:
+    """A one-line status for the Fishery at *level* (bonus + built name)."""
+    pct = round(structures.fishery_bonus_chance(level) * 100)
+    bonus = f"+{pct}% double-catch chance" if pct else "not built yet"
+    name = structures.level_name(structures.FISHERY, level)
+    return f"**{name}** ({level}/{structures.MAX_FISHERY_LEVEL}) — {bonus}"
+
+
 async def build_structures_embed(user_id: int, guild_id: int) -> discord.Embed:
     """The sub-hub landing embed — every coral structure's status at a glance."""
     built = await db.get_structures(user_id, guild_id)
@@ -71,8 +79,13 @@ async def build_structures_embed(user_id: int, guild_id: int) -> discord.Embed:
         value=_boathouse_line(built.get(structures.BOATHOUSE, 0)),
         inline=False,
     )
+    embed.add_field(
+        name="🐟 Fishery",
+        value=_fishery_line(built.get(structures.FISHERY, 0)),
+        inline=False,
+    )
     embed.set_footer(
-        text="🪸 Tide Pool  •  ⚓ Dock  •  🛖 Boathouse  •  ↩ Fishing menu",
+        text="🪸 Tide Pool  •  ⚓ Dock  •  🛖 Boathouse  •  🐟 Fishery  •  ↩ Fishing menu",
     )
     return embed
 
@@ -144,9 +157,28 @@ class StructuresView(HubView):
         self.stop()
 
     @discord.ui.button(
-        label="↩ Fishing menu",
+        label="Fishery",
+        emoji="🐟",
         style=discord.ButtonStyle.secondary,
         row=0,
+    )
+    async def fishery_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        from views.fishing.fishery import FisheryView, build_fishery_embed
+
+        embed = await build_fishery_embed(self._author.id, self.guild_id)
+        view = FisheryView(self._author, self.guild_id)
+        await interaction.response.edit_message(embed=embed, view=view)
+        view.message = interaction.message
+        self.stop()
+
+    @discord.ui.button(
+        label="↩ Fishing menu",
+        style=discord.ButtonStyle.secondary,
+        row=1,
     )
     async def back_btn(
         self,

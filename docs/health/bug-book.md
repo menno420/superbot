@@ -23,6 +23,31 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0031 — building a **Boathouse** raises `KeyError: 'boathouse'` (structure never added to the build-reason map) — FIXED (root)
+
+- **Symptom (latent, found by inspection during the PR #1626 dispatch run):** invoking `!boathouse`
+  and pressing **Build** — or any build of the Boathouse structure — raises
+  `KeyError: 'boathouse'` inside `services.mining_workflow.build_structure` before the transaction,
+  so the build never happens and the panel would surface an error. Shipped live in **#1605** (the
+  Boathouse structure); no test exercised the *build* path so CI was green.
+- **Root cause — a hand-maintained map that must be kept in sync, and wasn't:** `build_structure`
+  resolved the economy-audit reason via `reason = _STRUCTURE_BUILD_REASON[structure]` — a literal
+  `{structure: market.*_BUILD_REASON}` dict. When #1605 registered the `boathouse` structure it added
+  the ladder, level names, and panel but **not** a `_STRUCTURE_BUILD_REASON` entry, so the direct
+  `[structure]` index raised. Same drift class as the `give` collision — a second source of truth that
+  a new structure silently omits. Notably **every** existing reason constant was exactly
+  `mining:{structure}_build`, so the map added zero information over deriving it — pure drift surface.
+- **Fix (root — PR #1626, this entry):** deleted the map; `build_structure` now derives the reason
+  generically via `market.structure_build_reason(structure)` (`mining:{structure}_build`), so a
+  newly-registered structure can **never** crash the build path for want of a map entry. The named
+  `*_BUILD_REASON` constants stay (public, unchanged strings) + `BOATHOUSE`/`FISHERY` added for parity.
+- **Stays-fixed guard (same PR):** `test_every_registered_structure_resolves_a_build_reason`
+  (`tests/unit/utils/test_mining_structures.py`) asserts `structure_build_reason` returns a non-empty
+  `mining:<key>_build` for **every** structure in `structures.STRUCTURES` — fails against the pre-fix
+  direct-index map (which had no `boathouse` key) and catches any future registered-but-unmapped
+  structure.
+- **Status:** FIXED (root) 2026-07-01 (dispatch run). Live on the next auto-deploy; no data step.
+
 ## BUG-0030 — `!dock` structure command collides with `!sail`'s `dock` alias → `fishing` cog fails to load → boot crash loop — FIXED (root)
 
 - **Symptom (live PROD outage, 2026-07-01):** after PR #1599 (fishing Dock structure) merged and
