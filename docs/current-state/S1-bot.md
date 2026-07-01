@@ -345,9 +345,16 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   Dock). Same pattern (registry entry + audited `build_structure` + a bite-speed knob fold +
   `views/fishing/dock.py` + `!dock` + a menu button); byte-identical when unbuilt. Sim-pinned
   ([dock numbers](../planning/fishing-dock-numbers-2026-07-01.md)).
-  ▶ **Next offline successor:** a *second* curio tier, or a **structures sub-hub** that folds the
-  now-two fishing-structure menu buttons (Tide Pool + Dock) into one "🏗 Structures" child so the
-  fishing menu stays lean as more structures land — pure + self-mergeable.
+  **The structures sub-hub + a second curio tier SHIPPED 2026-07-01 (dispatch run, PR #1603):** the
+  **🏗 Structures** child (`views/fishing/structures_hub.py`) folds the two menu structure buttons
+  (Tide Pool + Dock) into one sub-hub so the fishing menu stays lean (menu → structures → panel; the
+  panels' ↩ back now returns to the sub-hub), **and** the cosmetic curio collection gained a Legendary
+  top tier — the **Coral Leviathan** 🐉 (16 coral, net-worth 240; doubling long-tail 2→4→8→16). Both
+  pure/offline, no migration.
+  ▶ **Next offline successor:** a *third* fishing structure (a new coral/wood payoff — e.g. an
+  energy-regen "Boathouse" — that slots straight into the new 🏗 Structures sub-hub), or the fishing
+  **open-world expansion** ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2:
+  boat-as-structure / travel-timer / destinations) — both pure + self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·
