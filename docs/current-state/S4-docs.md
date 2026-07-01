@@ -9,6 +9,17 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-first Q-0107 reconciliation pass** (band-#1620, issue #1622 —
+  [pass record](../planning/reconciliation-pass-2026-07-01-band1620.md)): reconciled the ledger
+  (band #1591–#1620 — seven grouped entries, headlined by the **S1 completion-deepening lane** —
+  fishing coral structures #1596…#1605, reaction-roles slim builder #1608…#1615, XP import #1607/#1610,
+  server-logging depth #1594/#1618/#1619 — plus the **bot-owner permission-gate bypass** #1602 and a
+  **boot smoke-test CI guard** #1601), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed), disposed 8 open PRs (none a stale session PR:
+  #1621 in flight, #1509 left for owner per the prior pass, six dependabot bumps), confirmed
+  **ROUTINE_PAT set / loop self-fires** (issue #1622 authored by `menno420`), carried the forward queue
+  intact (still deep, no THIN flag), refreshed the dashboard export (Q-0167), reset the marker
+  #1590 → #1620.
 - **Thirtieth Q-0107 reconciliation pass** (band-#1590, issue #1591 —
   [pass record](../planning/reconciliation-pass-2026-06-30-band1590.md)): reconciled the ledger
   (band #1561–#1590 — seven grouped entries, headlined by the **bot-owner platform-admin override**
