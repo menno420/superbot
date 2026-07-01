@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T15:41:50Z",
+    "generated_at": "2026-07-01T18:10:33Z",
     "build": {
-      "commit": "22cb0e9",
-      "subject": "xp-import: add button entry point + generic \"another bot\" framing",
-      "committed_at": "2026-07-01T15:41:50Z"
+      "commit": "daa91151",
+      "subject": "Merge pull request #1613 from menno420/claude/reaction-roles-counter-bgxnyd",
+      "committed_at": "2026-07-01T18:10:33Z"
     },
     "counts": {
       "functions": 43,
@@ -2723,6 +2723,30 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-01-treasury-cog-tests.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Treasury completion tests (cog + modal)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-role-menu-layout-sim.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Role-menu builder button-layout simulation",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-role-menu-layout-sim-pin-style.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Layout sim: pin Style first-screen (owner correction)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-01-owner-bypass-all-permission-gates.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Owner bypasses ALL permission gates (not just administrator)",
@@ -3150,30 +3174,6 @@
       "file": "2026-06-28-deathmatch-pvp-deadend.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Deathmatch + RPS PvP trapped-view dead-end fixes (completion-first)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-casino-completion-cert.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Casino (poker) feature-completion certificate (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-youtube-fetch-renderer-tests.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Media/YouTube focused test coverage (fetch service + renderers/embeds)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-youtube-cache-db-tests.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — YouTube cache DB-primitive test coverage (dispatch slice 2)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
