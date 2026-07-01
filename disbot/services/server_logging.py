@@ -1122,8 +1122,18 @@ def format_role_change_embed(
     member: discord.Member,
     added: list[discord.Role],
     removed: list[discord.Role],
+    *,
+    actor: Any = None,
 ) -> discord.Embed:
-    """Render a member's role grants/revocations as a log embed."""
+    """Render a member's role grants/revocations as a log embed.
+
+    ``actor`` (server event logging v2) is the user who performed the change,
+    resolved from the Discord audit log — when supplied it adds an **Actor**
+    field so the log finally names *who* granted/revoked the role (the
+    phase-2 gap called out in ``docs/server-logging.md``). Defaults to
+    ``None`` (the v1 passive path never had an actor), so existing callers
+    render byte-identically.
+    """
     embed = discord.Embed(
         title="🎭 Roles updated",
         color=discord.Color.blurple(),
@@ -1138,16 +1148,38 @@ def format_role_change_embed(
     if added:
         embed.add_field(
             name="➕ Added",
-            value=_truncate(", ".join(r.mention for r in added)),
+            value=_truncate(", ".join(_role_ref(r) for r in added)),
             inline=False,
         )
     if removed:
         embed.add_field(
             name="➖ Removed",
-            value=_truncate(", ".join(r.mention for r in removed)),
+            value=_truncate(", ".join(_role_ref(r) for r in removed)),
             inline=False,
         )
+    actor_id = getattr(actor, "id", None)
+    if actor_id is not None:
+        embed.add_field(name="Actor", value=f"<@{actor_id}>", inline=False)
     return embed
+
+
+def _role_ref(role: Any) -> str:
+    """Render a role reference that is safe for partial audit-log objects.
+
+    A cached ``discord.Role`` renders as a ``@role`` mention; an uncached
+    audit-log ``discord.Object`` has no ``.mention`` / ``.name`` and falls
+    back to its id. Keeps :func:`format_role_change_embed` usable from both
+    the passive path (real Roles) and the v2 audit-log path (possibly bare
+    ``Object`` ids).
+    """
+    mention = getattr(role, "mention", None)
+    if mention:
+        return str(mention)
+    rid = getattr(role, "id", None)
+    name = getattr(role, "name", None)
+    if name and rid:
+        return f"{name} (`{rid}`)"
+    return f"`{rid}`" if rid else str(role)
 
 
 async def resolve_event_channel(
@@ -1162,13 +1194,15 @@ async def resolve_event_channel(
     category's own route (``message_log`` / ``member_log`` / ``role_log``),
     which the route table falls back to ``events`` for when its own channel
     is unset. Returns ``None`` when nothing resolves (event not logged).
+
+    Server event logging v2 categories (``moderation`` / ``channels`` /
+    ``server`` / ``voice``) have **no dedicated per-category route** — they
+    always resolve to the combined ``events`` channel, even in
+    ``per_category`` mode. An unmapped category therefore falls back to
+    ``events`` rather than returning ``None`` (which would have silently
+    dropped every v2 event whenever a guild picked ``per_category`` routing).
     """
-    if per_category:
-        kind = _CATEGORY_TO_ROUTE.get(category)
-        if kind is None:
-            return None
-    else:
-        kind = "events"
+    kind = _CATEGORY_TO_ROUTE.get(category, "events") if per_category else "events"
     return await resolve_log_channel(guild, kind)
 
 
@@ -1337,6 +1371,462 @@ async def log_role_change(
 
 
 # ---------------------------------------------------------------------------
+# Server event logging v2 — Discord audit-log integration
+# ---------------------------------------------------------------------------
+#
+# One gateway event — ``on_audit_log_entry_create`` — surfaces *every*
+# administrative action Discord records, performed by *anyone* (a moderator
+# using the native right-click menu, another bot such as Dyno, or SuperBot
+# itself), with the responsible actor named. This is the layer that closes the
+# "Dyno catches things we don't" gap: the pre-v2 service only heard SuperBot's
+# **own** moderation actions (the ``moderation.action_taken`` bus event), so a
+# ban / kick / channel-edit / role-rename done outside SuperBot was invisible.
+#
+# Requires the bot to hold the **View Audit Log** permission in the guild —
+# without it Discord never dispatches the gateway event at all (surfaced in
+# ``!logging status`` so an operator can see why the audit categories are
+# silent). Every path is fail-safe like the rest of this module.
+
+# category token → embed accent colour (imported categories kept as string
+# literals here to avoid a module-level services import; a drift-guard test
+# asserts every value is a real ``server_logging_config.CATEGORIES`` member).
+_AUDIT_CATEGORY_COLOR: dict[str, discord.Color] = {
+    "moderation": discord.Color.red(),
+    "channels": discord.Color.blue(),
+    "server": discord.Color.blurple(),
+    "roles": discord.Color.blurple(),
+    "messages": discord.Color.dark_grey(),
+}
+
+# audit-log action name → (category, icon, human verb). Keyed by
+# ``AuditLogEntry.action.name`` (a stable discord.py enum-member string) so the
+# map is robust across discord.py point releases and needs no enum imports.
+# Actions absent from this map are simply not logged (e.g. single
+# ``message_delete`` — the passive raw/cached path owns those, with content;
+# ``member_role_update`` is handled specially below via the richer role embed).
+_AUDIT_ACTION_META: dict[str, tuple[str, str, str]] = {
+    # -- moderation ----------------------------------------------------------
+    "kick": ("moderation", "👢", "Member kicked"),
+    "ban": ("moderation", "🔨", "Member banned"),
+    "unban": ("moderation", "🕊️", "Member unbanned"),
+    "member_prune": ("moderation", "🧹", "Members pruned"),
+    "member_update": ("moderation", "⏳", "Member updated"),  # verb refined at render
+    "member_disconnect": ("moderation", "🔇", "Member disconnected from voice"),
+    "member_move": ("moderation", "↔️", "Member moved between voice channels"),
+    "automod_block_message": ("moderation", "🛡️", "AutoMod blocked a message"),
+    "automod_flag_message": ("moderation", "🚩", "AutoMod flagged a message"),
+    "automod_timeout_member": ("moderation", "⏳", "AutoMod timed out a member"),
+    # -- roles (member grants/revocations, with actor) — special-cased ------
+    "member_role_update": ("roles", "🎭", "Roles updated"),
+    # -- channels ------------------------------------------------------------
+    "channel_create": ("channels", "📁", "Channel created"),
+    "channel_update": ("channels", "📝", "Channel updated"),
+    "channel_delete": ("channels", "🗑️", "Channel deleted"),
+    "overwrite_create": ("channels", "🔐", "Channel permission added"),
+    "overwrite_update": ("channels", "🔐", "Channel permission updated"),
+    "overwrite_delete": ("channels", "🔓", "Channel permission removed"),
+    "thread_create": ("channels", "🧵", "Thread created"),
+    "thread_update": ("channels", "🧵", "Thread updated"),
+    "thread_delete": ("channels", "🧵", "Thread deleted"),
+    "stage_instance_create": ("channels", "🎙️", "Stage started"),
+    "stage_instance_update": ("channels", "🎙️", "Stage updated"),
+    "stage_instance_delete": ("channels", "🎙️", "Stage ended"),
+    # -- server (settings / structure) --------------------------------------
+    "guild_update": ("server", "🛠️", "Server settings updated"),
+    "role_create": ("server", "✨", "Role created"),
+    "role_update": ("server", "🖊️", "Role updated"),
+    "role_delete": ("server", "❌", "Role deleted"),
+    "emoji_create": ("server", "😀", "Emoji created"),
+    "emoji_update": ("server", "😀", "Emoji renamed"),
+    "emoji_delete": ("server", "😶", "Emoji deleted"),
+    "sticker_create": ("server", "🏷️", "Sticker created"),
+    "sticker_update": ("server", "🏷️", "Sticker updated"),
+    "sticker_delete": ("server", "🏷️", "Sticker deleted"),
+    "webhook_create": ("server", "🪝", "Webhook created"),
+    "webhook_update": ("server", "🪝", "Webhook updated"),
+    "webhook_delete": ("server", "🪝", "Webhook deleted"),
+    "integration_create": ("server", "🔌", "Integration added"),
+    "integration_update": ("server", "🔌", "Integration updated"),
+    "integration_delete": ("server", "🔌", "Integration removed"),
+    "bot_add": ("server", "🤖", "Bot added"),
+    "invite_create": ("server", "✉️", "Invite created"),
+    "invite_update": ("server", "✉️", "Invite updated"),
+    "invite_delete": ("server", "✉️", "Invite deleted"),
+    "automod_rule_create": ("server", "🛡️", "AutoMod rule created"),
+    "automod_rule_update": ("server", "🛡️", "AutoMod rule updated"),
+    "automod_rule_delete": ("server", "🛡️", "AutoMod rule deleted"),
+    "scheduled_event_create": ("server", "📅", "Event scheduled"),
+    "scheduled_event_update": ("server", "📅", "Scheduled event updated"),
+    "scheduled_event_delete": ("server", "📅", "Scheduled event deleted"),
+    # -- messages (only actions the passive path can't see) -----------------
+    "message_bulk_delete": ("messages", "🧨", "Messages bulk-deleted"),
+    "message_pin": ("messages", "📌", "Message pinned"),
+    "message_unpin": ("messages", "📍", "Message unpinned"),
+}
+
+# member_update audit entries cover several distinct actions; refine the verb
+# from the attribute that changed so the embed title is meaningful.
+_MEMBER_UPDATE_VERBS: tuple[tuple[tuple[str, ...], str, str], ...] = (
+    (
+        ("timed_out_until", "communication_disabled_until"),
+        "⏳",
+        "Member timeout changed",
+    ),
+    (("nick",), "✏️", "Nickname changed"),
+    (("mute",), "🔇", "Member server-mute changed"),
+    (("deaf",), "🔇", "Member server-deafen changed"),
+)
+
+
+def _audit_ref(obj: Any) -> str:
+    """Render an audit-log actor/target as ``mention (id)`` / ``name (id)`` / id.
+
+    Handles the full range of ``entry.target`` types (Member, User, Role,
+    channel, Invite, Emoji, or a bare ``discord.Object`` id) without raising on
+    a partial object — the same defensive contract as :func:`_role_ref`.
+    """
+    if obj is None:
+        return "*(none)*"
+    mention = getattr(obj, "mention", None)
+    oid = getattr(obj, "id", None)
+    name = getattr(obj, "name", None) or getattr(obj, "code", None)
+    if mention and oid is not None:
+        return f"{mention} (`{oid}`)"
+    if name and oid is not None:
+        return f"{name} (`{oid}`)"
+    if oid is not None:
+        return f"`{oid}`"
+    return _truncate(str(obj), 200)
+
+
+def _fmt_change_value(value: Any) -> str:
+    """Compactly render one before/after audit-diff value, capped for embeds."""
+    if value is None:
+        return "*(none)*"
+    if isinstance(value, (list, tuple, set)):
+        parts = [getattr(x, "name", None) or str(getattr(x, "id", x)) for x in value]
+        return _truncate(", ".join(str(p) for p in parts) or "*(empty)*", 300)
+    return _truncate(str(value), 300)
+
+
+def _iter_diff(diff: Any) -> dict[str, Any]:
+    """Best-effort ``{attr: value}`` from an ``AuditLogDiff`` (never raises)."""
+    out: dict[str, Any] = {}
+    try:
+        for attr, val in diff:
+            out[attr] = val
+    except Exception:  # noqa: BLE001 — a malformed diff must not crash logging
+        return {}
+    return out
+
+
+def _refine_member_update(entry: Any, icon: str, verb: str) -> tuple[str, str]:
+    """Pick a specific icon/verb for a ``member_update`` entry by changed attr."""
+    changed = set(_iter_diff(getattr(entry.changes, "before", None))) | set(
+        _iter_diff(getattr(entry.changes, "after", None)),
+    )
+    for attrs, ricon, rverb in _MEMBER_UPDATE_VERBS:
+        if changed.intersection(attrs):
+            return ricon, rverb
+    return icon, verb
+
+
+def format_audit_log_embed(
+    entry: Any,
+    *,
+    icon: str,
+    verb: str,
+    category: str,
+) -> discord.Embed:
+    """Render a generic ``AuditLogEntry`` as a structured log embed.
+
+    Shows the actor (in the author slot **and** an Actor field), the affected
+    target, the audit reason, and a compact before→after diff of the changed
+    attributes (capped at :data:`_MAX_EXTRA_FIELDS`). Special-cased entries
+    (``member_role_update``) never reach here — they use the richer role embed.
+    """
+    if getattr(entry, "action", None) is not None and (
+        getattr(entry.action, "name", None) == "member_update"
+    ):
+        icon, verb = _refine_member_update(entry, icon, verb)
+
+    actor = getattr(entry, "user", None)
+    embed = discord.Embed(
+        title=f"{icon} {verb}",
+        color=_AUDIT_CATEGORY_COLOR.get(category, discord.Color.dark_grey()),
+        timestamp=getattr(entry, "created_at", None)
+        or datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    _set_subject_author(embed, actor)
+    actor_id = getattr(actor, "id", None)
+    embed.add_field(
+        name="Actor",
+        value=(
+            f"<@{actor_id}> (`{actor_id}`)" if actor_id is not None else "*(unknown)*"
+        ),
+        inline=True,
+    )
+    embed.add_field(
+        name="Target",
+        value=_audit_ref(getattr(entry, "target", None)),
+        inline=True,
+    )
+
+    reason = getattr(entry, "reason", None)
+    if reason:
+        embed.add_field(name="Reason", value=_truncate(str(reason), 1000), inline=False)
+
+    # Compact before→after diff of the changed attributes.
+    changes = getattr(entry, "changes", None)
+    before = _iter_diff(getattr(changes, "before", None)) if changes is not None else {}
+    after = _iter_diff(getattr(changes, "after", None)) if changes is not None else {}
+    keys = list(dict.fromkeys([*before, *after]))
+    shown = 0
+    for key in keys:
+        if shown >= _MAX_EXTRA_FIELDS:
+            embed.add_field(
+                name="… more",
+                value=f"{len(keys) - shown} more field(s) changed.",
+                inline=False,
+            )
+            break
+        b_val = _fmt_change_value(before.get(key))
+        a_val = _fmt_change_value(after.get(key))
+        if b_val == a_val:
+            continue
+        embed.add_field(
+            name=str(key)[:256],
+            value=_truncate(f"{b_val} → {a_val}", _EVENT_VALUE_CAP),
+            inline=False,
+        )
+        shown += 1
+
+    # A few actions carry their payload in ``extra`` rather than ``changes``.
+    extra = getattr(entry, "extra", None)
+    extra_count = getattr(extra, "count", None) if extra is not None else None
+    if extra_count is not None:
+        embed.add_field(name="Count", value=str(extra_count), inline=True)
+    return embed
+
+
+def _build_role_update_embed(entry: Any) -> discord.Embed:
+    """Render a ``member_role_update`` audit entry via the role embed (+ actor).
+
+    discord.py exposes the removed roles as ``changes.before.roles`` and the
+    added roles as ``changes.after.roles``; either may be a partial
+    ``discord.Object`` list, which :func:`_role_ref` renders safely.
+    """
+    member = getattr(entry, "target", None)
+    changes = getattr(entry, "changes", None)
+    added = list(getattr(getattr(changes, "after", None), "roles", None) or [])
+    removed = list(getattr(getattr(changes, "before", None), "roles", None) or [])
+    return format_role_change_embed(
+        member,
+        added,
+        removed,
+        actor=getattr(entry, "user", None),
+    )
+
+
+async def log_audit_entry(entry: Any) -> bool:
+    """Post a log embed for a Discord audit-log entry (server event logging v2).
+
+    Categorises the entry via :data:`_AUDIT_ACTION_META`, gates on the master
+    switch + the matching category flag + the ignore lists (checked against
+    **both** the actor and the target so an operator can mute a noisy bot by
+    adding its id to ``ignored_users``), then posts to the routed channel.
+    Uncategorised actions and disabled categories are skipped; every failure
+    path is counted and swallowed — a logging fault never re-enters the gateway.
+    """
+    guild = getattr(entry, "guild", None)
+    action = getattr(entry, "action", None)
+    action_name = getattr(action, "name", None)
+    if guild is None or action_name is None:
+        return False
+    meta = _AUDIT_ACTION_META.get(action_name)
+    if meta is None:
+        return False  # uncategorised audit action — deliberately not logged
+    category, icon, verb = meta
+
+    from services import server_logging_config as _cfg
+
+    try:
+        policy = await _cfg.load_policy(guild.id)
+        if not policy.should_log(category):
+            _bump("event_skipped_disabled")
+            return False
+        actor_id = getattr(getattr(entry, "user", None), "id", None)
+        target_id = getattr(getattr(entry, "target", None), "id", None)
+        if policy.is_ignored(user_id=actor_id) or policy.is_ignored(user_id=target_id):
+            _bump("event_skipped_ignored")
+            return False
+        if action_name == "member_role_update":
+            embed = _build_role_update_embed(entry)
+        else:
+            embed = format_audit_log_embed(
+                entry,
+                icon=icon,
+                verb=verb,
+                category=category,
+            )
+        return await _post_event_embed(
+            guild,
+            category,
+            per_category=policy.per_category,
+            embed=embed,
+        )
+    except Exception as exc:  # noqa: BLE001 — a logging fault must never block
+        _bump("subscriber_errors")
+        logger.exception(
+            "server_logging audit-log handler raised %s — counted and swallowed.",
+            type(exc).__name__,
+            exc_info=exc,
+        )
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Server event logging v2 — voice state + uncached message deletions
+# ---------------------------------------------------------------------------
+
+
+def format_voice_state_embed(
+    member: discord.Member,
+    kind: str,
+    before_channel: Any,
+    after_channel: Any,
+) -> discord.Embed:
+    """Render a voice join / leave / move as a log embed.
+
+    ``kind`` is ``"join"`` / ``"leave"`` / ``"move"``; the relevant channel
+    mention(s) are shown. The moving member rides the author slot for the
+    same face-per-entry look as the other event embeds.
+    """
+    icon, verb, color = {
+        "join": ("🔊", "Joined voice", discord.Color.green()),
+        "leave": ("🔈", "Left voice", discord.Color.dark_orange()),
+        "move": ("↔️", "Moved voice channel", discord.Color.blurple()),
+    }.get(kind, ("🎧", "Voice update", discord.Color.blurple()))
+    embed = discord.Embed(
+        title=f"{icon} {verb}",
+        color=color,
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    _set_subject_author(embed, member)
+    embed.add_field(
+        name="Member",
+        value=f"<@{member.id}> (`{member.id}`)",
+        inline=True,
+    )
+    if kind == "move":
+        embed.add_field(
+            name="From → To",
+            value=(
+                f"{getattr(before_channel, 'mention', '*(unknown)*')} → "
+                f"{getattr(after_channel, 'mention', '*(unknown)*')}"
+            ),
+            inline=False,
+        )
+    else:
+        channel = after_channel if kind == "join" else before_channel
+        embed.add_field(
+            name="Channel",
+            value=getattr(channel, "mention", "*(unknown)*"),
+            inline=True,
+        )
+    return embed
+
+
+async def log_voice_state(
+    member: discord.Member,
+    before: Any,
+    after: Any,
+) -> bool:
+    """Post a voice join/leave/move embed when the voice category is enabled.
+
+    Only the three channel transitions are logged — a same-channel state change
+    (mute / deafen / stream toggle) is intentionally skipped to keep the voice
+    log signal-dense. Fail-safe + gated + ignore-list aware via the shared gate.
+    """
+    from services.server_logging_config import CATEGORY_VOICE
+
+    before_channel = getattr(before, "channel", None)
+    after_channel = getattr(after, "channel", None)
+    before_id = getattr(before_channel, "id", None)
+    after_id = getattr(after_channel, "id", None)
+    if before_channel is None and after_channel is not None:
+        kind = "join"
+    elif before_channel is not None and after_channel is None:
+        kind = "leave"
+    elif before_id != after_id:
+        kind = "move"
+    else:
+        return False  # same channel — mute/deafen/stream toggle, not logged
+
+    return await _log_event_if_enabled(
+        getattr(member, "guild", None),
+        CATEGORY_VOICE,
+        lambda: format_voice_state_embed(member, kind, before_channel, after_channel),
+        channel_id=after_id if kind != "leave" else before_id,
+        user_id=getattr(member, "id", None),
+    )
+
+
+def format_uncached_message_delete_embed(
+    channel_id: int | None,
+    message_id: int,
+) -> discord.Embed:
+    """Render the fallback embed for a deleted message that was not cached.
+
+    The passive ``on_message_delete`` path only fires for messages in the
+    client cache, so an older/post-restart delete produced no log at all
+    (a v1 gap). The raw path catches it, but Discord gives no content for an
+    uncached message — so this embed records the *event* (channel + id) with
+    the content marked unavailable, rather than dropping it silently. A raw
+    ``<#id>`` still resolves to a channel link in the client with no cached
+    channel object required.
+    """
+    embed = discord.Embed(
+        title="🗑️ Message deleted",
+        color=discord.Color.red(),
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    embed.add_field(
+        name="Channel",
+        value=f"<#{channel_id}>" if channel_id is not None else "*(unknown)*",
+        inline=True,
+    )
+    embed.add_field(name="Message ID", value=f"`{message_id}`", inline=True)
+    embed.add_field(
+        name="Content",
+        value="*(unavailable — message was not in the bot's cache)*",
+        inline=False,
+    )
+    return embed
+
+
+async def log_uncached_message_delete(
+    guild: discord.Guild | None,
+    channel_id: int | None,
+    message_id: int,
+) -> bool:
+    """Log an uncached message deletion under the messages category.
+
+    Complements — never duplicates — the passive ``on_message_delete`` path:
+    the raw listener only calls this when ``payload.cached_message is None``
+    (so the cached path did not, and will not, fire for this id).
+    """
+    from services.server_logging_config import CATEGORY_MESSAGES
+
+    return await _log_event_if_enabled(
+        guild,
+        CATEGORY_MESSAGES,
+        lambda: format_uncached_message_delete_embed(channel_id, message_id),
+        channel_id=channel_id,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Setup / diagnostics registration
 # ---------------------------------------------------------------------------
 
@@ -1389,6 +1879,7 @@ __all__ = [
     "counters_snapshot",
     "ensure_log_channel",
     "format_audit_embed",
+    "format_audit_log_embed",
     "format_log_embed",
     "format_member_join_embed",
     "format_member_leave_embed",
@@ -1396,7 +1887,10 @@ __all__ = [
     "format_message_edit_embed",
     "format_public_log_embed",
     "format_role_change_embed",
+    "format_uncached_message_delete_embed",
+    "format_voice_state_embed",
     "is_enabled",
+    "log_audit_entry",
     "log_audit_event",
     "log_event",
     "log_member_join",
@@ -1404,6 +1898,8 @@ __all__ = [
     "log_message_delete",
     "log_message_edit",
     "log_role_change",
+    "log_uncached_message_delete",
+    "log_voice_state",
     "maybe_log_public",
     "resolve_event_channel",
     "resolve_log_channel",

@@ -41,11 +41,24 @@ SUBSYSTEM = "logging"
 # route kind (see ``services.server_logging._CATEGORY_TO_ROUTE``).
 # ---------------------------------------------------------------------------
 
-CATEGORY_MESSAGES = "messages"  # message edits + deletions
-CATEGORY_MEMBERS = "members"  # member joins + leaves
-CATEGORY_ROLES = "roles"  # role grants + revocations
+CATEGORY_MESSAGES = "messages"  # message edits + deletions (passive gateway)
+CATEGORY_MEMBERS = "members"  # member joins + leaves (passive gateway)
+CATEGORY_ROLES = "roles"  # member role grants + revocations (audit-log in v2)
+# -- Server event logging v2 (Discord audit-log integration) ----------------
+CATEGORY_MODERATION = "moderation"  # ban/unban/kick/timeout/prune (audit-log)
+CATEGORY_CHANNELS = "channels"  # channel + overwrite changes (audit-log)
+CATEGORY_SERVER = "server"  # guild/roles-defs/emoji/webhook/invite (audit-log)
+CATEGORY_VOICE = "voice"  # voice join/leave/move (passive gateway)
 
-CATEGORIES: tuple[str, ...] = (CATEGORY_MESSAGES, CATEGORY_MEMBERS, CATEGORY_ROLES)
+CATEGORIES: tuple[str, ...] = (
+    CATEGORY_MESSAGES,
+    CATEGORY_MEMBERS,
+    CATEGORY_ROLES,
+    CATEGORY_MODERATION,
+    CATEGORY_CHANNELS,
+    CATEGORY_SERVER,
+    CATEGORY_VOICE,
+)
 
 # ---------------------------------------------------------------------------
 # Routing modes.  ``combined`` sends every category to one channel;
@@ -73,6 +86,11 @@ DEFAULT_ENABLED = False  # master switch (the existing logging.enabled key)
 DEFAULT_MESSAGES_ENABLED = False
 DEFAULT_MEMBERS_ENABLED = False
 DEFAULT_ROLES_ENABLED = False
+# Server event logging v2 — new audit-log/voice categories, all OFF by default.
+DEFAULT_MODERATION_ENABLED = False
+DEFAULT_CHANNELS_ENABLED = False
+DEFAULT_SERVER_ENABLED = False
+DEFAULT_VOICE_ENABLED = False
 DEFAULT_EVENT_ROUTING = ROUTING_COMBINED
 
 # Exclusion lists (completion cert punch #1) — comma-separated id CSV,
@@ -94,6 +112,11 @@ class EventLoggingPolicy:
     messages_enabled: bool = DEFAULT_MESSAGES_ENABLED
     members_enabled: bool = DEFAULT_MEMBERS_ENABLED
     roles_enabled: bool = DEFAULT_ROLES_ENABLED
+    # Server event logging v2 — audit-log-sourced + voice categories.
+    moderation_enabled: bool = DEFAULT_MODERATION_ENABLED
+    channels_enabled: bool = DEFAULT_CHANNELS_ENABLED
+    server_enabled: bool = DEFAULT_SERVER_ENABLED
+    voice_enabled: bool = DEFAULT_VOICE_ENABLED
     routing: str = DEFAULT_EVENT_ROUTING
     # Exclusion lists (completion cert punch #1). A passive event whose
     # channel id is in ``ignored_channel_ids`` or whose subject (author /
@@ -110,7 +133,17 @@ class EventLoggingPolicy:
     @property
     def any_category_enabled(self) -> bool:
         """True when at least one category could log (still gated by ``enabled``)."""
-        return self.messages_enabled or self.members_enabled or self.roles_enabled
+        return any(
+            (
+                self.messages_enabled,
+                self.members_enabled,
+                self.roles_enabled,
+                self.moderation_enabled,
+                self.channels_enabled,
+                self.server_enabled,
+                self.voice_enabled,
+            ),
+        )
 
     def category_enabled(self, category: str) -> bool:
         """Return the per-category flag for ``category`` (False if unknown)."""
@@ -118,6 +151,10 @@ class EventLoggingPolicy:
             CATEGORY_MESSAGES: self.messages_enabled,
             CATEGORY_MEMBERS: self.members_enabled,
             CATEGORY_ROLES: self.roles_enabled,
+            CATEGORY_MODERATION: self.moderation_enabled,
+            CATEGORY_CHANNELS: self.channels_enabled,
+            CATEGORY_SERVER: self.server_enabled,
+            CATEGORY_VOICE: self.voice_enabled,
         }.get(category, False)
 
     def should_log(self, category: str) -> bool:
@@ -176,6 +213,30 @@ async def load_policy(guild_id: int) -> EventLoggingPolicy:
         "roles_enabled",
         DEFAULT_ROLES_ENABLED,
     )
+    moderation_enabled = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "moderation_enabled",
+        DEFAULT_MODERATION_ENABLED,
+    )
+    channels_enabled = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "channels_enabled",
+        DEFAULT_CHANNELS_ENABLED,
+    )
+    server_enabled = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "server_enabled",
+        DEFAULT_SERVER_ENABLED,
+    )
+    voice_enabled = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "voice_enabled",
+        DEFAULT_VOICE_ENABLED,
+    )
     routing = await resolve_value(
         guild_id,
         SUBSYSTEM,
@@ -202,6 +263,10 @@ async def load_policy(guild_id: int) -> EventLoggingPolicy:
         messages_enabled=messages_enabled,
         members_enabled=members_enabled,
         roles_enabled=roles_enabled,
+        moderation_enabled=moderation_enabled,
+        channels_enabled=channels_enabled,
+        server_enabled=server_enabled,
+        voice_enabled=voice_enabled,
         routing=routing,
         ignored_channel_ids=parse_id_csv(ignored_channels_raw),
         ignored_user_ids=parse_id_csv(ignored_users_raw),
@@ -210,15 +275,23 @@ async def load_policy(guild_id: int) -> EventLoggingPolicy:
 
 __all__ = [
     "CATEGORIES",
+    "CATEGORY_CHANNELS",
     "CATEGORY_MEMBERS",
     "CATEGORY_MESSAGES",
+    "CATEGORY_MODERATION",
     "CATEGORY_ROLES",
+    "CATEGORY_SERVER",
+    "CATEGORY_VOICE",
+    "DEFAULT_CHANNELS_ENABLED",
     "DEFAULT_EVENT_ROUTING",
     "DEFAULT_IGNORED_CHANNELS",
     "DEFAULT_IGNORED_USERS",
     "DEFAULT_MEMBERS_ENABLED",
     "DEFAULT_MESSAGES_ENABLED",
+    "DEFAULT_MODERATION_ENABLED",
     "DEFAULT_ROLES_ENABLED",
+    "DEFAULT_SERVER_ENABLED",
+    "DEFAULT_VOICE_ENABLED",
     "EventLoggingPolicy",
     "ROUTING_COMBINED",
     "ROUTING_PER_CATEGORY",

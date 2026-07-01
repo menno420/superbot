@@ -47,12 +47,16 @@ from core.runtime.subsystem_schema import (
     SubsystemSchema,
 )
 from services.server_logging_config import (
+    DEFAULT_CHANNELS_ENABLED,
     DEFAULT_EVENT_ROUTING,
     DEFAULT_IGNORED_CHANNELS,
     DEFAULT_IGNORED_USERS,
     DEFAULT_MEMBERS_ENABLED,
     DEFAULT_MESSAGES_ENABLED,
+    DEFAULT_MODERATION_ENABLED,
     DEFAULT_ROLES_ENABLED,
+    DEFAULT_SERVER_ENABLED,
+    DEFAULT_VOICE_ENABLED,
     ROUTING_COMBINED,
     ROUTING_PER_CATEGORY,
     VALID_ROUTING,
@@ -169,6 +173,66 @@ LOGGING_SETTINGS: tuple[SettingSpec, ...] = (
         settings_key=_log_keys.LOGGING_ROLES_ENABLED,
         capability_required="logging.settings.configure",
         hint="Log role grants and revocations on members (which roles were added/removed).",
+        validator=_validate_bool,
+    ),
+    # -- Server event logging v2 (Discord audit-log integration) ---------
+    # New categories sourced from the Discord audit log — they capture
+    # administrative actions taken by *anyone* (native UI, another bot, or
+    # SuperBot), with the actor named, closing the "Dyno catches things we
+    # don't" gap. `voice` is a passive gateway event (not audit-log). All
+    # default OFF and require the bot to hold **View Audit Log** (except
+    # voice); see `!logging status`.
+    SettingSpec(
+        name="moderation_enabled",
+        value_type=bool,
+        default=DEFAULT_MODERATION_ENABLED,
+        settings_key=_log_keys.LOGGING_MODERATION_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log moderation actions from the Discord audit log — bans, unbans, "
+            "kicks, timeouts, prunes, and voice disconnects/moves — taken by "
+            "anyone (native UI, another bot, or SuperBot), with the actor "
+            "named.  Requires the bot's **View Audit Log** permission."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="channels_enabled",
+        value_type=bool,
+        default=DEFAULT_CHANNELS_ENABLED,
+        settings_key=_log_keys.LOGGING_CHANNELS_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log channel and permission changes from the audit log — channel "
+            "create/delete/update, permission overwrites, threads, and stages.  "
+            "Requires the bot's **View Audit Log** permission."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="server_enabled",
+        value_type=bool,
+        default=DEFAULT_SERVER_ENABLED,
+        settings_key=_log_keys.LOGGING_SERVER_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log server-structure changes from the audit log — server settings, "
+            "role definitions (create/rename/delete), emojis, stickers, "
+            "webhooks, integrations, and invites.  Requires the bot's **View "
+            "Audit Log** permission."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="voice_enabled",
+        value_type=bool,
+        default=DEFAULT_VOICE_ENABLED,
+        settings_key=_log_keys.LOGGING_VOICE_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log voice-channel joins, leaves, and moves (bots excluded).  "
+            "Passive gateway event — no audit-log permission needed."
+        ),
         validator=_validate_bool,
     ),
     SettingSpec(
@@ -503,7 +567,11 @@ LOGGING_CONFIG_SCHEMA = SubsystemSchema(
     # resource requirements.
     # v4 (completion cert punch #1): added the ignored_channels /
     # ignored_users exclusion-list scalar settings.
-    version=4,
+    # v5 (server event logging v2 — audit-log integration): added the
+    # moderation / channels / server / voice category flags. The audit-log
+    # categories reuse the combined `events_channel` route (no new bindings);
+    # `roles` is repurposed to the audit-log path for actor attribution.
+    version=5,
 )
 
 

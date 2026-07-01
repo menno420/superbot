@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T18:12:08Z",
+    "generated_at": "2026-07-01T19:02:12Z",
     "build": {
-      "commit": "2f3fbd1c",
-      "subject": "Karma reaction-to-thank: open born-red session card + claim",
-      "committed_at": "2026-07-01T18:12:08Z"
+      "commit": "9e92767",
+      "subject": "logging(v2): open born-red session card + claim lane",
+      "committed_at": "2026-07-01T19:02:12Z"
     },
     "counts": {
       "functions": 43,
@@ -16,9 +16,9 @@
       "env_vars": 39,
       "cogs": 55,
       "commands": 483,
-      "setting_keys": 116,
+      "setting_keys": 120,
       "setting_domains": 17,
-      "typed_settings": 96,
+      "typed_settings": 100,
       "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
@@ -2755,6 +2755,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-01-server-logging-v2-audit-log.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Server event logging v2: Discord audit-log integration (Dyno parity)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-server-log-avatar.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Server-log embeds: a face per entry (avatar in the author slot)",
@@ -2806,7 +2814,7 @@
       "file": "2026-07-01-karma-reaction-to-thank.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Karma reaction-to-thank (completion-first deepening)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
@@ -2864,6 +2872,14 @@
       "title": "2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-btd6-menu-panel-hub.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — BTD6 panel: Layout-B category hub (owner picked B)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": true
     },
     {
@@ -3169,22 +3185,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-question-router-answer-documentation.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Document owner answers + decide the router-vs-durable-home convention",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-no-dead-end-view-guard.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — No-dead-end terminal-view arch guard (friction→guard)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -3718,7 +3718,7 @@
       "usages": [
         {
           "file": "disbot/bot1.py",
-          "line": 175,
+          "line": 180,
           "layer": "bot1",
           "has_default": true
         }
@@ -3907,7 +3907,7 @@
       "usages": [
         {
           "file": "disbot/bot1.py",
-          "line": 172,
+          "line": 177,
           "layer": "bot1",
           "has_default": true
         }
@@ -10465,6 +10465,22 @@
         {
           "constant": "LOGGING_ROLES_ENABLED",
           "key": "logging_roles_enabled"
+        },
+        {
+          "constant": "LOGGING_MODERATION_ENABLED",
+          "key": "logging_moderation_enabled"
+        },
+        {
+          "constant": "LOGGING_CHANNELS_ENABLED",
+          "key": "logging_channels_enabled"
+        },
+        {
+          "constant": "LOGGING_SERVER_ENABLED",
+          "key": "logging_server_enabled"
+        },
+        {
+          "constant": "LOGGING_VOICE_ENABLED",
+          "key": "logging_voice_enabled"
         },
         {
           "constant": "LOGGING_EVENT_ROUTING",

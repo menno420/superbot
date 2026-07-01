@@ -54,7 +54,7 @@ only — never a value**; the values live in Railway service variables
 | `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:268` *(default)* |
 | `HEALTH_HOST` | healthserver | `disbot/healthserver.py:70` *(default)* |
 | `HEALTH_PORT` | healthserver | `disbot/healthserver.py:64` *(default)* |
-| `IDENTITY_CONTRACT_STRICT` | bot1 | `disbot/bot1.py:175` *(default)* |
+| `IDENTITY_CONTRACT_STRICT` | bot1 | `disbot/bot1.py:180` *(default)* |
 | `LOG_LEVEL` | config | `disbot/config.py:149` *(default)* |
 | `OPENAI_API_KEY` | config, core, services | `disbot/config.py:185` *(default)*<br>`disbot/core/runtime/ai/providers/openai_moderation.py:68` *(default)*<br>`disbot/core/runtime/ai/providers/openai_provider.py:74` *(default)*<br>`disbot/services/setup_ai_advisor.py:205` *(default)*<br>`disbot/services/setup_ai_advisor.py:485` *(default)* |
 | `PARAGON_API_BASE_URL` | config, services | `disbot/config.py:212` *(default)*<br>`disbot/services/paragon_service.py:49` *(default)* |
@@ -62,7 +62,7 @@ only — never a value**; the values live in Railway service variables
 | `RAILWAY_GIT_COMMIT_SHA` | core | `disbot/core/runtime/command_manifest.py:243` *(default)* |
 | `SETUP_ADVISOR_OPENAI_MODEL` | config, services | `disbot/config.py:184` *(default)*<br>`disbot/services/setup_ai_advisor.py:203` *(default)* |
 | `SETUP_ADVISOR_PROVIDER` | config, core, services | `disbot/config.py:183` *(default)*<br>`disbot/core/runtime/ai/feature_flags.py:129` *(default)*<br>`disbot/services/setup_ai_advisor.py:472` *(default)* |
-| `STRICT_DISABLED` | bot1 | `disbot/bot1.py:172` *(default)* |
+| `STRICT_DISABLED` | bot1 | `disbot/bot1.py:177` *(default)* |
 
 <!-- END GENERATED — everything below is hand-maintained (web-tier env vars the disbot scanner can't see); the scanner preserves it across --write-doc. -->
 

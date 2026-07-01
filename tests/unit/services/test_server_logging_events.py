@@ -179,7 +179,17 @@ async def test_load_policy_rejects_unknown_routing(monkeypatch):
 
 
 def test_category_route_map_in_sync_with_config_categories():
-    assert set(server_logging._CATEGORY_TO_ROUTE) == set(
+    # v1 (Q-0109) categories each have a dedicated per-category route.
+    # v2 (audit-log integration) categories deliberately have NO dedicated
+    # route — they resolve to the combined ``events`` channel via
+    # ``resolve_event_channel``'s fallback, so they must NOT appear here.
+    assert set(server_logging._CATEGORY_TO_ROUTE) == {
+        server_logging_config.CATEGORY_MESSAGES,
+        server_logging_config.CATEGORY_MEMBERS,
+        server_logging_config.CATEGORY_ROLES,
+    }
+    # No orphan routes: every mapped category is a real config category.
+    assert set(server_logging._CATEGORY_TO_ROUTE) <= set(
         server_logging_config.CATEGORIES,
     )
 

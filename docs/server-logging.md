@@ -324,8 +324,9 @@ Deleted-message logging surfaces content members removed. Q-0109
 requires this be disclosed: the `messages_enabled` SettingSpec hint
 carries a ⚠️ privacy line, and the setup wizard's logging-presets
 section states it too. Actor attribution for role changes (who granted
-the role) needs audit-log integration and is a phase-2 enhancement;
-v1 logs role grants/revokes on non-bot members without naming the actor.
+the role) needed audit-log integration — **delivered in v2 below**: the
+`roles` category is now sourced from the Discord audit log and names the
+actor. (When the bot lacks *View Audit Log*, role changes no longer log.)
 
 ### Counters
 
@@ -333,6 +334,97 @@ v1 logs role grants/revokes on non-bot members without naming the actor.
 off), `event_missing_channel` (no routed channel). Delivery failures
 share the existing `permission_error` / `send_error` buckets, and a
 handler exception bumps `subscriber_errors`.
+
+## Server event logging v2 (Discord audit-log integration)
+
+> **Status:** `binding` — the layer that makes SuperBot's logging match a
+> mature logging bot (Dyno). Default: **OFF** per-category.
+
+### The gap it closes
+
+v1 (and every layer before it) could only see:
+
+* five **passive gateway** events on **non-bot** subjects (message
+  edit/delete, member join/leave, member role-update), **cached** messages
+  only; and
+* moderation actions taken **through SuperBot's own commands** (the
+  `moderation.action_taken` bus event).
+
+So a ban / kick / timeout / channel-edit / role-rename / server-setting change
+done via **Discord's native UI or another bot** was **completely invisible** —
+the reported "Dyno catches other things than ours". v2 adds a single gateway
+listener, `on_audit_log_entry_create`, that surfaces **every administrative
+action Discord records, by anyone, with the responsible actor named.**
+
+### Where it lives
+
+* **Listener** — `cogs/logging_cog.py` gains `on_audit_log_entry_create`
+  (plus `on_voice_state_update` and `on_raw_message_delete`). Each delegates
+  to a `server_logging` handler; all fail-safe.
+* **Handlers + embeds** — `services/server_logging.py`:
+  `log_audit_entry` (+ `_AUDIT_ACTION_META`, `format_audit_log_embed`),
+  `log_voice_state` (+ `format_voice_state_embed`), and
+  `log_uncached_message_delete` (+ `format_uncached_message_delete_embed`).
+* **Config** — four new category flags in `services/server_logging_config.py`
+  and `cogs/logging/schemas.py`.
+
+### New categories (all default OFF, gated by master + own flag)
+
+| Category | Source | What it logs |
+|---|---|---|
+| `moderation` | audit log | ban / unban / kick / timeout / prune / voice-disconnect / voice-move, AutoMod actions |
+| `channels` | audit log | channel + permission-overwrite create/delete/update, threads, stages |
+| `server` | audit log | server settings, role **definitions**, emoji / sticker / webhook / integration changes, invites, scheduled events |
+| `voice` | gateway | voice-channel join / leave / move (bots excluded) |
+| `roles` *(repurposed)* | audit log | member role grants/revocations — **now with the actor named** |
+
+`_AUDIT_ACTION_META` maps ~50 `AuditLogAction` names → (category, icon, verb).
+An action not in the map is deliberately **not** logged — notably single
+`message_delete`, which the passive path already logs **with content** (the
+audit log carries no message content). A drift-guard test asserts every mapped
+category is a real `server_logging_config.CATEGORIES` member.
+
+### Routing
+
+The v2 categories have **no dedicated per-category channel** — they all resolve
+to the combined **`events_channel`** (even in `per_category` mode, via
+`resolve_event_channel`'s fallback). Bind `logging.events_channel` (or enable
+`auto_create_channels` to get `bot-event-log`) and every v2 event lands there.
+Per-category channels for the v2 groups are a possible follow-up.
+
+> The audit-log `moderation` category is **separate from** `logging.mod_channel`.
+> `mod_channel` receives SuperBot's **own** actions (rich domain embed, with
+> reason, from the bus); the `moderation` category receives the audit-log view
+> of **all** moderation by anyone. Keeping them on different channels avoids
+> double-logging SuperBot's own actions.
+
+### The View Audit Log requirement
+
+Discord only dispatches `on_audit_log_entry_create` to a bot that holds the
+**View Audit Log** permission. Without it, the `moderation` / `channels` /
+`server` categories are silently inert (`voice` and the passive categories are
+unaffected). `!logging status` shows an **Audit-log access** health line
+(✅ / ⚠️) whenever any audit category is enabled, so an operator who "turned
+everything on" can see the real cause.
+
+### Message-delete completeness
+
+The passive `on_message_delete` only fires for **cached** messages, so deleting
+an older / post-restart message logged nothing. `on_raw_message_delete` now
+catches those: it defers to the cached path when `payload.cached_message` is
+present (that path has the content) and otherwise logs the event with content
+marked *unavailable*. `bot1.py` also widens discord.py's message cache
+(`max_messages=5000`) so more deletes keep their content.
+
+### Known limitations (v2)
+
+* **Single message deletions** log the content (passive path) but do **not**
+  name who deleted it — correlating the audit `message_delete` entry is a
+  follow-up. Bulk deletes (`message_bulk_delete`) *are* logged with the actor.
+* v2 categories share one `events_channel` (no per-category routing yet).
+* The setup wizard's quick-toggle (`essential_setup.py`) still lists only the
+  v1 activity categories; the v2 categories are configured via `!settings` /
+  `!logging status`. Surfacing them in the wizard is a follow-up.
 
 ## What's NOT in PR-11 (the original foundation)
 
