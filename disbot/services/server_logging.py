@@ -425,6 +425,58 @@ _MAX_EXTRA_FIELDS = 6
 _EXTRA_VALUE_CAP = 500
 
 
+def _set_subject_author(embed: discord.Embed, user: Any) -> None:
+    """Put the event *subject*'s avatar + name in the embed's author slot.
+
+    Discord renders the author slot as a small round avatar beside a name at the
+    top of the embed, so every log entry gets a face — the "who" of the event at
+    a glance while scanning the channel (what mature log bots show).  Purely
+    additive: the structured fields below (the mention + copyable id, channel,
+    content…) are untouched, and there is **no network on our side** — the embed
+    just references the avatar's CDN url, so nothing is fetched and there is no
+    failure path to guard.  Defensive so a partial object (a bare id, an odd
+    fake, or ``None``) yields no author line rather than raising into the
+    fail-safe handler; ``display_name`` / ``display_avatar`` exist on both
+    ``discord.User`` and ``discord.Member``.
+    """
+    if user is None:
+        return
+    name = getattr(user, "display_name", None) or getattr(user, "name", None)
+    if not name:
+        return
+    avatar = getattr(user, "display_avatar", None)
+    icon_url = getattr(avatar, "url", None)
+    embed.set_author(name=str(name)[:256], icon_url=icon_url)
+
+
+def _resolve_subject_user(guild: discord.Guild, user_id: int | None) -> Any:
+    """Best-effort resolve a user id to a member/user object for the avatar.
+
+    The passive-event embeds already hold the ``discord.Member``/``User`` object
+    they log; the moderation + audit embeds carry only ids, so this is how they
+    get the same face.  Tries the guild member cache first (via the canonical
+    ``resources.resolve_member`` resolver — the invariant forbids a raw
+    ``guild.get_member`` here), then the bot's global user cache (covers a
+    just-banned/kicked member no longer in the guild).  **Cache lookups only —
+    never a network call** in the hot logging path.  Returns ``None`` when
+    neither resolves, so the embed simply gets no author line (the same graceful
+    degradation as a departed member in the passive log).
+    """
+    if user_id is None:
+        return None
+    # Lazy import: this module never imports core.runtime at module load (it
+    # would re-enter a partially-loaded core.runtime during startup) — mirrors
+    # resolve_log_channel below.
+    from core.runtime.guild_resources import resolve_member
+
+    member = resolve_member(guild, user_id)
+    if member is not None:
+        return member
+    bot = _BOT
+    get_user = getattr(bot, "get_user", None) if bot is not None else None
+    return get_user(user_id) if get_user is not None else None
+
+
 def format_log_embed(
     *,
     action: str,
@@ -433,6 +485,7 @@ def format_log_embed(
     actor_id: int | None,
     reason: str,
     extras: dict[str, Any] | None = None,
+    subject: Any = None,
 ) -> discord.Embed:
     """Render a moderation/cleanup payload as a Discord embed.
 
@@ -442,7 +495,9 @@ def format_log_embed(
     :data:`_MAX_EXTRA_FIELDS` slots and each value is truncated to
     :data:`_EXTRA_VALUE_CAP` chars; if more keys are supplied, a
     single ``"... truncated"`` field reports the count so the embed
-    stays under Discord's 25-field / 6000-char limits.
+    stays under Discord's 25-field / 6000-char limits.  ``subject`` (the
+    resolved target member/user, when the sender could look it up) puts a
+    face in the author slot, matching the passive-event embeds.
     """
     root = _root_action(action)
     color = _ACTION_COLOR.get(root, discord.Color.dark_grey())
@@ -453,6 +508,7 @@ def format_log_embed(
         color=color,
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    _set_subject_author(embed, subject)
     embed.add_field(name="Target", value=f"<@{target_id}> (`{target_id}`)", inline=True)
     actor_display = f"<@{actor_id}>" if actor_id else "system"
     embed.add_field(name="Actor", value=actor_display, inline=True)
@@ -482,13 +538,16 @@ def format_public_log_embed(
     action: str,
     target_id: int,
     reason: str,
+    subject: Any = None,
 ) -> discord.Embed:
     """Render the **public** moderation-log embed (server-management PR10).
 
     Deliberately narrower than :func:`format_log_embed`: it shows the action,
     the affected member, and the reason — but **never the acting moderator**
     (the maintainer's choice for the public surface) nor the internal guild id.
-    The staff mod-log keeps the full record.
+    The staff mod-log keeps the full record.  ``subject`` (the affected member)
+    rides the author slot for the same face-per-entry look; it is the *target*,
+    never the moderator, so the public surface still never reveals who acted.
     """
     root = _root_action(action)
     embed = discord.Embed(
@@ -496,6 +555,7 @@ def format_public_log_embed(
         color=_ACTION_COLOR.get(root, discord.Color.dark_grey()),
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    _set_subject_author(embed, subject)
     embed.add_field(name="Member", value=f"<@{target_id}> (`{target_id}`)", inline=True)
     if reason:
         embed.add_field(name="Reason", value=reason[:1000], inline=False)
@@ -541,6 +601,7 @@ async def log_event(
         actor_id=actor_id,
         reason=reason,
         extras=extras,
+        subject=_resolve_subject_user(guild, target_id),
     )
     try:
         await channel.send(embed=embed)
@@ -588,13 +649,16 @@ def format_audit_embed(
     actor_id: int | None,
     actor_type: str,
     occurred_at: str,
+    subject: Any = None,
 ) -> discord.Embed:
     """Render an ``audit.action_recorded`` payload as a Discord embed.
 
     Phase 9c.1 — generic audit-trail rendering. The payload contract
     matches what :func:`services.rollout_mutation._emit_audit_event`
     sends; future publishers (other mutation pipelines) MUST use the
-    same field names.
+    same field names.  ``subject`` (the resolved **actor**, when a user
+    made the change) rides the author slot for the same face-per-entry
+    look; a system/pipeline actor simply has no face.
     """
     embed = discord.Embed(
         title=f"📋 {mutation_type}",
@@ -604,6 +668,7 @@ def format_audit_embed(
         ),
         color=discord.Color.dark_teal(),
     )
+    _set_subject_author(embed, subject)
     embed.add_field(name="Target", value=f"`{target}`", inline=True)
     actor_display = f"<@{actor_id}>" if actor_id else f"`{actor_type}`"
     embed.add_field(name="Actor", value=actor_display, inline=True)
@@ -670,6 +735,7 @@ async def log_audit_event(
         actor_id=actor_id,
         actor_type=actor_type,
         occurred_at=occurred_at,
+        subject=_resolve_subject_user(guild, actor_id),
     )
     try:
         await channel.send(embed=embed)
@@ -843,7 +909,12 @@ async def maybe_log_public(
     if not isinstance(channel, discord.TextChannel):
         _bump("mod_public_skipped")  # channel unset or stale/invalid
         return False
-    embed = format_public_log_embed(action=action, target_id=target_id, reason=reason)
+    embed = format_public_log_embed(
+        action=action,
+        target_id=target_id,
+        reason=reason,
+        subject=_resolve_subject_user(guild, target_id),
+    )
     try:
         await channel.send(embed=embed)
     except (discord.Forbidden, discord.HTTPException) as exc:
@@ -936,6 +1007,7 @@ def format_message_delete_embed(message: discord.Message) -> discord.Embed:
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
     author = message.author
+    _set_subject_author(embed, author)
     embed.add_field(
         name="Author",
         value=f"<@{author.id}> (`{author.id}`)",
@@ -969,6 +1041,7 @@ def format_message_edit_embed(
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
     author = after.author
+    _set_subject_author(embed, author)
     embed.add_field(
         name="Author",
         value=f"<@{author.id}> (`{author.id}`)",
@@ -1002,6 +1075,7 @@ def format_member_join_embed(member: discord.Member) -> discord.Embed:
         color=discord.Color.green(),
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    _set_subject_author(embed, member)
     embed.add_field(
         name="Member",
         value=f"<@{member.id}> (`{member.id}`)",
@@ -1023,6 +1097,7 @@ def format_member_leave_embed(member: discord.Member) -> discord.Embed:
         color=discord.Color.dark_orange(),
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    _set_subject_author(embed, member)
     # Show the username too — a mention of a departed member often won't
     # resolve to a name in the client.
     embed.add_field(
@@ -1054,6 +1129,7 @@ def format_role_change_embed(
         color=discord.Color.blurple(),
         timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    _set_subject_author(embed, member)
     embed.add_field(
         name="Member",
         value=f"<@{member.id}> (`{member.id}`)",
