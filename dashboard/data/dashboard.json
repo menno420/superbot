@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T08:58:08Z",
+    "generated_at": "2026-07-01T11:36:11Z",
     "build": {
-      "commit": "07c881a",
-      "subject": "Merge pull request #1599 from menno420/claude/funny-franklin-4n38rf",
-      "committed_at": "2026-07-01T08:58:08Z"
+      "commit": "4f1d4ce8",
+      "subject": "Merge pull request #1603 from menno420/claude/funny-franklin-td09cd",
+      "committed_at": "2026-07-01T11:36:11Z"
     },
     "counts": {
       "functions": 43,
       "ideas": 159,
-      "bugs": 29,
+      "bugs": 30,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -2515,6 +2515,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0030",
+      "title": "!dock structure command collides with !sail's dock alias → fishing cog fails to load → boot crash loop — FIXED (root)",
+      "status": "unknown",
+      "summary": "after PR #1599 (fishing Dock structure) merged and auto-deployed, the worker entered a boot crash loop — restart every ~30s, never reaching the gateway. cogs.fishing_cog failed to load with CommandRegistrationError: The command dock is already an existing command or alias, so th…"
+    },
+    {
       "id": "BUG-0029",
       "title": "XP level-up role grants bypass the audited role seam (no audit.action_recorded, no shared hierarchy preflight) — FIXED (root)",
       "status": "unknown",
@@ -2692,6 +2698,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-01-owner-bypass-all-permission-gates.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Owner bypasses ALL permission gates (not just administrator)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-01-logging-ignored-lists.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Logging: ignored channels/users exclusion lists (completion deepening)",
@@ -2716,6 +2730,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-01-fishing-structures-subhub.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Fishing structures sub-hub (🏗 Structures child) + Legendary curio tier",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-01-fishing-dock-structure.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing Dock structure (bite-speed coral sink, Tide Pool sibling)",
@@ -2724,9 +2746,25 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-01-fishing-dock-sail-alias-crash.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — PROD hotfix: fishing `dock` command collided with `sail`'s `dock` alias (crash loop)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-fishing-coral-curios.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing: coral 🪸 deepwater rare-material drop → cosmetic curio collectibles",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-boot-smoke-test-guard.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Boot smoke-test guard (never ship a cog that won't load)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -3138,38 +3176,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-mining-wire-light-luck.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Wire the two dead EffectiveStats (light_radius + luck) into mining (BUG-0026)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-mining-loadout-presets.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Mining/character gear loadout presets (V-14 / Q-0175 Phase-1 unified-loadout model)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-fishing-rod-craft.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Fishing acquisition depth: fish→rod craft + lucky double catch",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-fishing-gear-stats.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Fishing-specific gear stats (loadout presets become a real optimisation)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
