@@ -59,12 +59,14 @@ edit_in_place:
       reason: "Opens RolePackView(on_created=_add_pack_roles); the created pack roles fold into the draft via _rerender."
     - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.template_btn
       reason: "Opens a PaginatedSelectView template picker; _apply_template folds the template into the draft via _rerender."
-    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.card_btn
-      reason: "Opens the _CardPickView banner picker; the chosen card applies to the draft via _rerender."
-    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.theme_btn
-      reason: "Opens a PaginatedSelectView theme picker; _apply_theme folds the theme into the draft via _rerender."
-    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.mode_btn
-      reason: "Opens a PaginatedSelectView mode picker; _apply_mode folds the mode into the draft via _rerender."
+    - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.advanced_btn
+      reason: "Opens the _AdvancedView sub-panel (the folded Theme/Card/Counts/Mode/Limit controls); its controls fold into the draft via _rerender (lean layout, tools/sim/role_menu_layout_sim.py)."
+    - pattern: views/roles/role_menu_builder.py::_AdvancedView.theme_btn
+      reason: "Opens a PaginatedSelectView theme picker; _apply_theme folds the theme into the draft via the builder's _rerender."
+    - pattern: views/roles/role_menu_builder.py::_AdvancedView.mode_btn
+      reason: "Opens a PaginatedSelectView mode picker; _apply_mode folds the mode into the draft via the builder's _rerender."
+    - pattern: views/roles/role_menu_builder.py::_AdvancedView.card_btn
+      reason: "Opens the _CardPickView banner picker; the chosen card applies to the draft via the builder's _rerender."
     - pattern: views/roles/role_menu_builder.py::RoleMenuBuilder.channel_btn
       reason: "Opens the _ChannelPickView channel picker; the chosen channel applies to the draft via _rerender."
     - pattern: views/server_management/hub.py::ServerManagementHubView.help_editor_btn

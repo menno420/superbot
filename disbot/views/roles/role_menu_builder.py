@@ -494,7 +494,7 @@ class RoleMenuBuilder(BaseView):
                 label="↩ Back",
                 custom_id="role:builder:back",
                 parent_builder=_build_parent,
-                row=2,
+                row=1,
             )
 
     @classmethod
@@ -628,56 +628,32 @@ class RoleMenuBuilder(BaseView):
             await self.message.edit(embed=embed, view=self.parent)
 
     # -- field editors ------------------------------------------------------
+    # Lean layout (owner-approved, tools/sim/role_menu_layout_sim.py, 2026-07-01):
+    #   row 0 = the hot content path (Template · Packs · Roles · Style · Text)
+    #   row 1 = Colours · Channel · ⚙️ Advanced (Theme/Card/Counts/Mode/Limit) ·
+    #           🚀 Post · ↩ Back
+    # Style stays first-screen (a primary dropdown-vs-buttons choice); the
+    # rarely-tapped knobs fold behind ⚙️ Advanced. Method definition order sets
+    # the left-to-right order within each row.
 
-    @discord.ui.button(label="📝 Text", style=discord.ButtonStyle.grey, row=0)
-    async def text_btn(
+    @discord.ui.button(label="🧩 Template", style=discord.ButtonStyle.grey, row=0)
+    async def template_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.send_modal(_TextModal(self))
-
-    @discord.ui.button(label="🏷️ Roles", style=discord.ButtonStyle.grey, row=0)
-    async def roles_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        manageable, _excluded = role_feasibility.manageable_roles(
-            self.guild.roles,
-            bot_member=self.guild.me,
-            actor=(
-                interaction.user
-                if isinstance(interaction.user, discord.Member)
-                else None
+        options = [
+            discord.SelectOption(label=t.label[:100], value=t.key)
+            for t in presentation.templates()
+        ]
+        await interaction.response.send_message(
+            "Start from a template (you can still tweak everything):",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self._apply_template,
+                placeholder="Pick a starter template…",
             ),
-        )
-        if not manageable:
-            await interaction.response.send_message(
-                "I can't manage any of this server's roles (they're all above my "
-                "highest role). Move my role up, then try again.",
-                ephemeral=True,
-            )
-            return
-        await interaction.response.send_message(
-            "Pick the roles this menu offers (up to 25):",
-            view=_RolePickView(self, manageable),
-            ephemeral=True,
-        )
-
-    @discord.ui.button(label="🎨 Colours", style=discord.ButtonStyle.grey, row=0)
-    async def colours_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        if not _can_manage(interaction):
-            await _deny(interaction)
-            return
-        await interaction.response.send_message(
-            "Pick preset colours to auto-create as roles, or **✏️ Custom** for a "
-            "custom colour or gradient — each becomes a role added to this menu:",
-            view=_ColourRolesView(self),
             ephemeral=True,
         )
 
@@ -715,117 +691,68 @@ class RoleMenuBuilder(BaseView):
                 self.role_ids.append(role_id)
         await self._rerender()
 
-    @discord.ui.button(label="🧩 Template", style=discord.ButtonStyle.grey, row=0)
-    async def template_btn(
+    @discord.ui.button(label="🏷️ Roles", style=discord.ButtonStyle.grey, row=0)
+    async def roles_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        options = [
-            discord.SelectOption(label=t.label[:100], value=t.key)
-            for t in presentation.templates()
-        ]
-        await interaction.response.send_message(
-            "Start from a template (you can still tweak everything):",
-            view=PaginatedSelectView(
-                interaction.user,
-                options,
-                self._apply_template,
-                placeholder="Pick a starter template…",
+        manageable, _excluded = role_feasibility.manageable_roles(
+            self.guild.roles,
+            bot_member=self.guild.me,
+            actor=(
+                interaction.user
+                if isinstance(interaction.user, discord.Member)
+                else None
             ),
-            ephemeral=True,
         )
-
-    # Row 2 (the action row, with 🚀 Post + ↩ Back): row 0 filled to Discord's
-    # 5-button cap once the 📦 Packs button landed, so the banner-card toggle sits
-    # next to Post — the last thing you set before posting.
-    @discord.ui.button(label="🖼️ Card", style=discord.ButtonStyle.grey, row=2)
-    async def card_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        await interaction.response.send_message(
-            "Add an optional **banner image** above the menu, or set its overlay "
-            "text. Pick **✖️ None** to remove the card:",
-            view=_CardPickView(self),
-            ephemeral=True,
-        )
-
-    @discord.ui.button(label="📊 Counts", style=discord.ButtonStyle.grey, row=2)
-    async def counts_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        """Toggle the live sign-up counter (current holders shown on the menu)."""
-        self.show_counts = not self.show_counts
-        self._panel_interaction = interaction
-        await safe_edit(interaction, embed=self.build_embed(), view=self)
-
-    @discord.ui.button(label="🎭 Theme", style=discord.ButtonStyle.grey, row=1)
-    async def theme_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        options = [
-            discord.SelectOption(
-                label=t.label,
-                value=t.key,
-                default=t.key == self.theme,
+        if not manageable:
+            await interaction.response.send_message(
+                "I can't manage any of this server's roles (they're all above my "
+                "highest role). Move my role up, then try again.",
+                ephemeral=True,
             )
-            for t in presentation.themes()
-        ]
+            return
         await interaction.response.send_message(
-            "Pick an embed theme:",
-            view=PaginatedSelectView(
-                interaction.user,
-                options,
-                self._apply_theme,
-                placeholder="Theme…",
-            ),
+            "Pick the roles this menu offers (up to 25):",
+            view=_RolePickView(self, manageable),
             ephemeral=True,
         )
 
-    @discord.ui.button(label="⚙️ Mode", style=discord.ButtonStyle.grey, row=1)
-    async def mode_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        options = [
-            discord.SelectOption(label=_MODE_LABEL[m], value=m, default=m == self.mode)
-            for m in ("normal", "unique", "verify")
-        ]
-        await interaction.response.send_message(
-            "How should members pick from this menu?",
-            view=PaginatedSelectView(
-                interaction.user,
-                options,
-                self._apply_mode,
-                placeholder="Mode…",
-            ),
-            ephemeral=True,
-        )
-
-    @discord.ui.button(label="🎚️ Style", style=discord.ButtonStyle.grey, row=1)
+    @discord.ui.button(label="🎚️ Style", style=discord.ButtonStyle.grey, row=0)
     async def style_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
+        """Toggle dropdown vs buttons — a first-screen choice (owner directive)."""
         self.style = "button" if self.style == "dropdown" else "dropdown"
         self._panel_interaction = interaction
         await safe_edit(interaction, embed=self.build_embed(), view=self)
 
-    @discord.ui.button(label="🔢 Limit", style=discord.ButtonStyle.grey, row=1)
-    async def limit_btn(
+    @discord.ui.button(label="📝 Text", style=discord.ButtonStyle.grey, row=0)
+    async def text_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.send_modal(_LimitModal(self))
+        await interaction.response.send_modal(_TextModal(self))
+
+    @discord.ui.button(label="🎨 Colours", style=discord.ButtonStyle.grey, row=1)
+    async def colours_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await interaction.response.send_message(
+            "Pick preset colours to auto-create as roles, or **✏️ Custom** for a "
+            "custom colour or gradient — each becomes a role added to this menu:",
+            view=_ColourRolesView(self),
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="📍 Channel", style=discord.ButtonStyle.grey, row=1)
     async def channel_btn(
@@ -848,7 +775,24 @@ class RoleMenuBuilder(BaseView):
             ephemeral=True,
         )
 
-    @discord.ui.button(label="🚀 Post", style=discord.ButtonStyle.green, row=2)
+    @discord.ui.button(label="⚙️ Advanced", style=discord.ButtonStyle.grey, row=1)
+    async def advanced_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Open the folded less-common options (Theme / Card / Counts / Mode / Limit).
+
+        Their current values stay visible on the main preview above; this sub-panel
+        is just the controls, so the top-level builder stays lean.
+        """
+        await interaction.response.send_message(
+            "Fine-tune the less-common options — the menu preview above updates live:",
+            view=_AdvancedView(self),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🚀 Post", style=discord.ButtonStyle.green, row=1)
     async def post_btn(
         self,
         interaction: discord.Interaction,
@@ -1023,6 +967,119 @@ class RoleMenuBuilder(BaseView):
 # ---------------------------------------------------------------------------
 
 
+class _AdvancedView(BaseView):
+    """The ⚙️ Advanced sub-panel — the less-common menu options folded off the
+    lean two-row builder (Theme / Card / Counts / Mode / Limit).
+
+    Each control edits the builder draft and refreshes the **main preview** via
+    the builder's stored panel interaction (``_rerender``), so the current values
+    stay visible on that preview while the top-level builder stays clean. The
+    pickers/modals reused here are exactly the ones the builder opened when these
+    were top-level buttons.
+    """
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__(builder._author, timeout=300)
+        self.builder = builder
+
+    def build_embed(self) -> discord.Embed:
+        counts = "on" if self.builder.show_counts else "off"
+        return discord.Embed(
+            title="⚙️ Advanced options",
+            description=(
+                "Fine-tune the less-common menu options below. Every current value "
+                "is shown on the **menu preview above**, which updates live as you "
+                "change it here.\n\n"
+                f"📊 Sign-up counts: **{counts}** — tap 📊 Counts to toggle."
+            ),
+            color=presentation.theme_color(self.builder.theme),
+        )
+
+    @discord.ui.button(label="🎭 Theme", style=discord.ButtonStyle.grey, row=0)
+    async def theme_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        options = [
+            discord.SelectOption(
+                label=t.label,
+                value=t.key,
+                default=t.key == self.builder.theme,
+            )
+            for t in presentation.themes()
+        ]
+        await interaction.response.send_message(
+            "Pick an embed theme:",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self.builder._apply_theme,
+                placeholder="Theme…",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="⚙️ Mode", style=discord.ButtonStyle.grey, row=0)
+    async def mode_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        options = [
+            discord.SelectOption(
+                label=_MODE_LABEL[m],
+                value=m,
+                default=m == self.builder.mode,
+            )
+            for m in ("normal", "unique", "verify")
+        ]
+        await interaction.response.send_message(
+            "How should members pick from this menu?",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self.builder._apply_mode,
+                placeholder="Mode…",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🔢 Limit", style=discord.ButtonStyle.grey, row=0)
+    async def limit_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(_LimitModal(self.builder))
+
+    @discord.ui.button(label="🖼️ Card", style=discord.ButtonStyle.grey, row=1)
+    async def card_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_message(
+            "Add an optional **banner image** above the menu, or set its overlay "
+            "text. Pick **✖️ None** to remove the card:",
+            view=_CardPickView(self.builder),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="📊 Counts", style=discord.ButtonStyle.grey, row=1)
+    async def counts_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Toggle the live sign-up counter (current holders shown on the menu)."""
+        self.builder.show_counts = not self.builder.show_counts
+        # Refresh this sub-panel in place (shows the new state) …
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+        # … then the main builder preview via its stored panel interaction.
+        await self.builder._rerender()
+
+
 class _RolePickView(BaseView):
     """Ephemeral windowed multi-role picker feeding the builder draft."""
 
@@ -1102,8 +1159,11 @@ class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[c
             )
             return
         self.builder.max_roles = value
-        self.builder._panel_interaction = interaction
-        await safe_edit(interaction, embed=self.builder.build_embed(), view=self.builder)
+        # Opened from the ⚙️ Advanced sub-panel, so this interaction is NOT the main
+        # panel's — refresh the main preview through the builder's stored token.
+        if not await safe_defer(interaction):
+            return
+        await self.builder._rerender()
 
 
 class _CardPickView(BaseView):
