@@ -110,6 +110,12 @@ _CATALOG: dict[str, ItemDef] = {
         value=120,
         tags=frozenset({"curio"}),
     ),
+    "coral leviathan": ItemDef(
+        "coral leviathan",
+        ItemKind.TREASURE,
+        value=240,
+        tags=frozenset({"curio"}),
+    ),
     # Food / boosters — eaten via mining_workflow.use_item to refill mining
     # energy (utils/mining/energy.py RESTORE_VALUES). Buyable from the market
     # (a coin sink that lets active players keep digging past the passive regen).

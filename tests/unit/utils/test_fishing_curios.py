@@ -12,10 +12,20 @@ from utils.mining import items, market
 
 def test_catalog_shape_and_ascending_coral_cost():
     keys = curios.CURIO_KEYS
-    assert keys == ("coral shell", "coral seahorse", "coral idol")
+    assert keys == ("coral shell", "coral seahorse", "coral idol", "coral leviathan")
     costs = [c.coral_cost for c in curios.CURIO_CATALOG]
-    assert costs == sorted(costs)  # ascending — the Idol is the trophy
-    assert costs == [2, 4, 8]  # pinned (numbers doc)
+    assert costs == sorted(costs)  # ascending — the Leviathan is the top trophy
+    assert costs == [2, 4, 8, 16]  # pinned (numbers doc) — doubling long-tail
+
+
+def test_leviathan_is_the_legendary_top_tier():
+    # The 2026-07-01 second-tier extension: a Legendary curio at double the Idol's
+    # coral cost and net-worth value, capping the collection long-tail.
+    leviathan = curios.curio_by_key("coral leviathan")
+    assert leviathan is not None
+    assert leviathan.rarity == "Legendary"
+    assert leviathan.coral_cost == 16
+    assert curios.craftable_key_for("Coral Leviathan") == "coral leviathan"
 
 
 def test_curio_by_key_resolves_and_rejects_unknown():
@@ -34,12 +44,12 @@ def test_craftable_key_for_matches_key_or_display_name_case_insensitively():
 
 
 def test_collection_progress_counts_distinct_owned_curios():
-    assert curios.collection_progress({}) == (0, 3)
-    assert curios.collection_progress({"coral shell": 5}) == (1, 3)
+    assert curios.collection_progress({}) == (0, 4)
+    assert curios.collection_progress({"coral shell": 5}) == (1, 4)
     # a zero/negative qty is not "owned"
-    assert curios.collection_progress({"coral shell": 0, "coral idol": 2}) == (1, 3)
+    assert curios.collection_progress({"coral shell": 0, "coral idol": 2}) == (1, 4)
     full = {item: 1 for item in curios.CURIO_ITEMS}
-    assert curios.collection_progress(full) == (3, 3)
+    assert curios.collection_progress(full) == (4, 4)
 
 
 def test_every_curio_is_a_non_sellable_treasure_item():

@@ -58,9 +58,10 @@ def build_menu_embed(
             "bite, reel it in, and fight the big ones; then level up and buy "
             "better rods.\n\n"
             "**🎣 Cast** — wait → bite → reel\n"
-            "**⛵ Set sail / 🏖️ Dock** — shore ↔ deepwater\n"
+            "**⛵ Set sail** — shore ↔ deepwater\n"
             "**🎒 Rod** — view & upgrade your rod\n"
             "**🪱 Bait** — load a lure for rarer catches\n"
+            "**🏗 Structures** — build coral structures\n"
             "**📖 Fishdex** — your collection"
         ),
         color=GAME_COLOR,
@@ -284,33 +285,24 @@ class FishingMenuView(HubView):
         self.stop()
 
     @discord.ui.button(
-        label="Tide Pool",
-        emoji="🪸",
+        label="Structures",
+        emoji="🏗",
         style=discord.ButtonStyle.secondary,
     )
-    async def tide_pool_btn(
+    async def structures_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from views.fishing.tide_pool import TidePoolView, build_tide_pool_embed
+        # One button opens the structures sub-hub (🪸 Tide Pool · ⚓ Dock · …),
+        # keeping the menu lean as more coral structures land.
+        from views.fishing.structures_hub import (
+            StructuresView,
+            build_structures_embed,
+        )
 
-        embed = await build_tide_pool_embed(self._author.id, self.guild_id)
-        view = TidePoolView(self._author, self.guild_id)
-        await interaction.response.edit_message(embed=embed, view=view)
-        view.message = interaction.message
-        self.stop()
-
-    @discord.ui.button(label="Dock", emoji="⚓", style=discord.ButtonStyle.secondary)
-    async def dock_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        from views.fishing.dock import DockView, build_dock_embed
-
-        embed = await build_dock_embed(self._author.id, self.guild_id)
-        view = DockView(self._author, self.guild_id)
+        embed = await build_structures_embed(self._author.id, self.guild_id)
+        view = StructuresView(self._author, self.guild_id)
         await interaction.response.edit_message(embed=embed, view=view)
         view.message = interaction.message
         self.stop()
