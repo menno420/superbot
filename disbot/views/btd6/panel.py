@@ -6,11 +6,15 @@ decorator side-effect on :class:`BTD6PanelView`; the persistent
 view registry then resolves the ``btd6`` subsystem when
 ``on_ready`` restores anchors.
 
-User actions: Ask / Towers / Heroes / Maps / Modes / Status. Staff actions
-sit behind the **🛠️ Admin** button — opens an ephemeral
-:class:`views.btd6.admin_panel.BTD6AdminView` with manual fetch
-controls and diagnostics. Natural-language replies are owned by the
-AI Platform's central stage — this panel never invokes a provider.
+Menu Layout B (category hub, owner-picked 2026-07-01 via
+``tools/btd6/menu_layout_simulator.html``; design study in
+``docs/btd6/btd6-menu-layout-design-2026-07-01.md``): eight labelled
+subdivisions instead of the old 13-button wall. **Ask** opens a modal;
+every other button opens an ephemeral sub-panel
+(:mod:`views.btd6.hub_panels`) for that subdivision — so every function
+is 1–2 clicks away. Staff actions sit behind **🛠️ Admin**. Natural-language
+replies are owned by the AI Platform's central stage — this panel never
+invokes a provider.
 """
 
 from __future__ import annotations
@@ -110,9 +114,9 @@ async def build_btd6_panel_embed() -> discord.Embed:
     embed = discord.Embed(
         title="🐵 BTD6 Assistant",
         description=(
-            "Ask BTD6 questions or browse tower / hero / mode / round "
-            "info. Staff can open the **🛠️ Admin** panel for manual "
-            "data fetches and diagnostics."
+            "Ask BTD6 questions or browse tower / hero / round / event "
+            "info by category. Staff can open the **🛠️ Admin** panel for "
+            "manual data fetches and diagnostics."
         ),
         color=_PANEL_COLOR,
     )
@@ -153,32 +157,32 @@ async def build_btd6_panel_embed() -> discord.Embed:
 
 @register
 class BTD6PanelView(PersistentView):
-    """BTD6 Assistant panel.
+    """BTD6 Assistant panel — Layout B (category hub).
 
-    All non-modal callbacks open ephemeral sub-views via
-    :func:`safe_followup`. The public anchor embed is **never edited**
-    on click — this is a UX upgrade from PR 2 (clicking Towers used to
-    mutate the panel for everyone in the channel).
+    Eight subdivision buttons; **Ask** opens a modal, the rest open an
+    ephemeral :class:`views.btd6.hub_panels.BTD6CategoryView` sub-panel via
+    :func:`safe_followup`. The public anchor embed is **never edited** on
+    click, so a click never mutates the shared panel for the whole channel.
 
     Modal exception: the **Ask** button calls
-    ``interaction.response.send_modal`` as the initial response and
-    does no service work before that — modals require the response
-    slot.
+    ``interaction.response.send_modal`` as the initial response and does no
+    service work before that — modals require the response slot.
 
-    Back-compat: keeps every legacy ``btd6:*`` custom_id so existing
-    panel anchor messages in production keep routing correctly.
-    Discord does not re-render existing anchor messages at restart;
-    the rendered button row is whatever was posted historically. The
-    legacy custom_ids (``btd6:towers`` / ``btd6:heroes`` / ``btd6:modes``)
-    redirect to the new ephemeral browsers.
+    Back-compat: the reused ``btd6:*`` custom_ids (``ask`` / ``events`` /
+    ``maps`` / ``strategy`` / ``status`` / ``admin``) keep existing production
+    anchors routing. The Layout-A leaf ids that were folded into sub-panels
+    (``towers`` / ``heroes`` / ``leaderboards`` / ``ct`` / ``modes`` /
+    ``paragon``) are dropped from the top level — an old anchor still showing
+    those buttons needs a one-time re-post (``!btd6menu``), which happens
+    naturally when the new panel is posted.
     """
 
-    # back-compat redirect — drop after 2026-Q3
     SUBSYSTEM = "btd6"
 
-    # Row 0 — primary user actions (5 buttons)
+    # Row 0 — Ask (modal) + the highest-traffic browse categories.
     @discord.ui.button(
         label="Ask",
+        emoji="🧠",
         style=discord.ButtonStyle.success,
         row=0,
         custom_id="btd6:ask",
@@ -194,6 +198,7 @@ class BTD6PanelView(PersistentView):
 
     @discord.ui.button(
         label="Live Events",
+        emoji="🎯",
         style=discord.ButtonStyle.primary,
         row=0,
         custom_id="btd6:events",
@@ -203,120 +208,79 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        from views.btd6.live_events_view import open_live_events_browser
+        from views.btd6.hub_panels import open_category
 
-        await open_live_events_browser(interaction)
+        await open_category(interaction, "events")
 
     @discord.ui.button(
-        label="Towers",
+        label="Units",
+        emoji="🗼",
         style=discord.ButtonStyle.primary,
         row=0,
-        custom_id="btd6:towers",
+        custom_id="btd6:units",
     )
-    async def towers_btn(
+    async def units_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        from views.btd6.tower_browser_view import open_tower_browser
+        from views.btd6.hub_panels import open_category
 
-        await open_tower_browser(interaction)
+        await open_category(interaction, "units")
 
     @discord.ui.button(
-        label="Heroes",
+        label="Rounds",
+        emoji="🎲",
         style=discord.ButtonStyle.primary,
         row=0,
-        custom_id="btd6:heroes",
+        custom_id="btd6:rounds",
     )
-    async def heroes_btn(
+    async def rounds_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        from views.btd6.hero_browser_view import open_hero_browser
+        from views.btd6.hub_panels import open_category
 
-        await open_hero_browser(interaction)
+        await open_category(interaction, "rounds")
 
+    # Row 1 — reference categories + staff.
     @discord.ui.button(
-        label="Leaderboards",
-        style=discord.ButtonStyle.primary,
-        row=0,
-        custom_id="btd6:leaderboards",
-    )
-    async def leaderboards_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        from views.btd6.leaderboard_browser_view import open_leaderboard_browser
-
-        await open_leaderboard_browser(interaction)
-
-    # Row 1 — secondary actions + staff
-    @discord.ui.button(
-        label="🗺️ CT",
+        label="Maps & Modes",
+        emoji="🗺️",
         style=discord.ButtonStyle.secondary,
         row=1,
-        custom_id="btd6:ct",
+        custom_id="btd6:maps",
     )
-    async def ct_btn(
+    async def maps_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # Contested Territory browser: active CT events + their relic tiles,
-        # with a rendered hex map of the current event when Pillow is present.
-        from cogs.btd6._builders import build_ct_browser_embed
-        from views.btd6.ct_map_view import build_ct_map_file
+        from views.btd6.hub_panels import open_category
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_ct_browser_embed()
-        map_file, _ = await build_ct_map_file()
-        if map_file is not None:
-            embed.set_image(url="attachment://ct_map.png")
-        await safe_followup(
-            interaction,
-            embed=embed,
-            file=map_file,
-            ephemeral=True,
-        )
+        await open_category(interaction, "maps")
 
     @discord.ui.button(
-        label="Modes",
+        label="Strategy",
+        emoji="📋",
         style=discord.ButtonStyle.secondary,
         row=1,
-        custom_id="btd6:modes",
+        custom_id="btd6:strategy",
     )
-    async def modes_btn(
+    async def strategy_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # Back-compat redirect: open the modes catalog as an ephemeral.
-        # The old behaviour (editing the public panel in place) was a
-        # UX anti-pattern; PR 2 switches every drill-down to ephemeral.
-        from cogs.btd6._embeds import build_modes_embed
+        from views.btd6.hub_panels import open_category
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        await safe_followup(
-            interaction,
-            embed=build_modes_embed(),
-            ephemeral=True,
-        )
+        await open_category(interaction, "strategy")
 
     @discord.ui.button(
         label="Status",
-        style=discord.ButtonStyle.primary,
+        emoji="📊",
+        style=discord.ButtonStyle.secondary,
         row=1,
         custom_id="btd6:status",
     )
@@ -325,29 +289,9 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.btd6._embeds import build_status_embed
+        from views.btd6.hub_panels import open_category
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_status_embed()
-        await safe_followup(interaction, embed=embed, ephemeral=True)
-
-    @discord.ui.button(
-        label="🔮 Paragon",
-        style=discord.ButtonStyle.primary,
-        row=1,
-        custom_id="btd6:paragon",
-    )
-    async def paragon_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        from views.btd6.paragon_view import open_paragon_calculator
-
-        await open_paragon_calculator(interaction)
+        await open_category(interaction, "status")
 
     @discord.ui.button(
         label="🛠️ Admin",
@@ -376,52 +320,5 @@ class BTD6PanelView(PersistentView):
             interaction,
             embed=embed,
             view=view,
-            ephemeral=True,
-        )
-
-    # Row 2 — info catalogs that don't fit rows 0/1 (both full at 5).
-    @discord.ui.button(
-        label="🗺️ Maps",
-        style=discord.ButtonStyle.secondary,
-        row=2,
-        custom_id="btd6:maps",
-    )
-    async def maps_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        # All 89 maps grouped by difficulty (with the has_water marker).
-        from cogs.btd6._embeds import build_maps_embed
-
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        await safe_followup(
-            interaction,
-            embed=build_maps_embed(),
-            ephemeral=True,
-        )
-
-    @discord.ui.button(
-        label="📋 Strategy",
-        style=discord.ButtonStyle.secondary,
-        row=2,
-        custom_id="btd6:strategy",
-    )
-    async def strategy_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        # Browse published community strategies — the same surface as
-        # `!btd6 strat browse`, surfaced here so the strategy memory is
-        # reachable by clicking through the BTD6 hub (discoverability audit).
-        from views.btd6 import strategy_browse
-
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        await safe_followup(
-            interaction,
-            embed=await strategy_browse.build_browse_embed(limit=10),
             ephemeral=True,
         )

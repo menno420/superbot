@@ -45,6 +45,21 @@ def _is_interaction_response_send(expr: ast.expr) -> bool:
     return isinstance(func, ast.Attribute) and func.attr == "send_message"
 
 
+def _is_open_category_call(expr: ast.expr) -> bool:
+    """A delegation to ``hub_panels.open_category`` — a safe first await.
+
+    The Layout-B category buttons are thin delegates: their whole body is
+    ``await open_category(interaction, "<id>")``. ``open_category`` calls
+    ``safe_defer`` before any follow-up work (pinned by
+    :func:`test_open_category_defers_before_followup`), so a button that delegates
+    to it satisfies the same defer-before-service-work contract.
+    """
+    return isinstance(expr, ast.Call) and (
+        (isinstance(expr.func, ast.Name) and expr.func.id == "open_category")
+        or (isinstance(expr.func, ast.Attribute) and expr.func.attr == "open_category")
+    )
+
+
 def _collect_awaits_in_source_order(node: ast.AST) -> list[ast.Await]:
     out: list[ast.Await] = []
     for child in ast.walk(node):
@@ -68,13 +83,14 @@ _MODAL_EXEMPT = frozenset(
     "class_name,method_name",
     [
         ("BTD6AskModal", "on_submit"),
+        # Category buttons — thin delegates to open_category (defers internally).
         ("BTD6PanelView", "events_btn"),
-        ("BTD6PanelView", "towers_btn"),
-        ("BTD6PanelView", "heroes_btn"),
-        ("BTD6PanelView", "leaderboards_btn"),
-        ("BTD6PanelView", "modes_btn"),
+        ("BTD6PanelView", "units_btn"),
+        ("BTD6PanelView", "rounds_btn"),
+        ("BTD6PanelView", "maps_btn"),
+        ("BTD6PanelView", "strategy_btn"),
         ("BTD6PanelView", "status_btn"),
-        ("BTD6PanelView", "paragon_btn"),
+        # Admin does its own safe_defer before the admin-panel build.
         ("BTD6PanelView", "admin_btn"),
     ],
 )
@@ -89,11 +105,52 @@ def test_handler_defers_before_service_work(class_name, method_name):
     for await_node in awaits:
         if _is_interaction_response_send(await_node.value):
             continue
-        assert _is_safe_defer_call(await_node.value), (
+        assert _is_safe_defer_call(await_node.value) or _is_open_category_call(
+            await_node.value
+        ), (
             f"{class_name}.{method_name}: first DB/service await at line "
-            f"{await_node.lineno} is not safe_defer()."
+            f"{await_node.lineno} is not safe_defer() or open_category()."
         )
         return
+
+
+_HUB_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "disbot"
+    / "views"
+    / "btd6"
+    / "hub_panels.py"
+)
+
+
+def test_open_category_defers_before_followup() -> None:
+    """``open_category`` — the delegate every category button routes through —
+    must ``safe_defer`` before its ``safe_followup`` (the guarantee the button
+    delegates inherit)."""
+    tree = ast.parse(_HUB_PATH.read_text())
+    node = next(
+        (
+            n
+            for n in ast.walk(tree)
+            if isinstance(n, ast.AsyncFunctionDef) and n.name == "open_category"
+        ),
+        None,
+    )
+    assert node is not None, "open_category not found in hub_panels.py"
+    awaits = _collect_awaits_in_source_order(node)
+    defer_lines = [a.lineno for a in awaits if _is_safe_defer_call(a.value)]
+    followup_lines = [
+        a.lineno
+        for a in awaits
+        if isinstance(a.value, ast.Call)
+        and isinstance(a.value.func, ast.Name)
+        and a.value.func.id == "safe_followup"
+    ]
+    assert defer_lines, "open_category must call safe_defer"
+    assert followup_lines, "open_category must call safe_followup"
+    assert min(defer_lines) < min(
+        followup_lines
+    ), "open_category must safe_defer before its first safe_followup"
 
 
 def test_ask_button_calls_send_modal_directly() -> None:
