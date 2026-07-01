@@ -684,6 +684,21 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "botinfo",
+    "area": "utility",
+    "status": "finished",
+    "summary": "Show information about the bot — servers, uptime, latency, version.",
+    "description": "Show information about the bot — servers, uptime, latency, version.",
+    "usage": "!botinfo",
+    "aliases": [
+      "about"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "browse",
     "area": "games",
     "status": "in-progress",
@@ -3231,15 +3246,15 @@ const COMMANDS = [
     "name": "latency",
     "area": "admin",
     "status": "finished",
-    "summary": "Report the bot's WebSocket latency.",
-    "description": "Report the bot's WebSocket latency.",
+    "summary": "Report the bot's WebSocket latency (admin detail view).",
+    "description": "Report the bot's WebSocket latency (admin detail view).",
     "usage": "!latency",
-    "aliases": [
-      "ping"
-    ],
+    "aliases": [],
     "permissions": "Administrator",
     "cooldown": null,
-    "examples": [],
+    "examples": [
+      "!ping"
+    ],
     "planned": []
   },
   {
@@ -3579,6 +3594,21 @@ const COMMANDS = [
     "description": "Content-free media (YouTube) diagnostics.",
     "usage": "!media",
     "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "membercount",
+    "area": "utility",
+    "status": "finished",
+    "summary": "Show this server's member count — humans, bots, and total.",
+    "description": "Show this server's member count — humans, bots, and total.",
+    "usage": "!membercount",
+    "aliases": [
+      "members"
+    ],
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
@@ -4012,6 +4042,21 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
+    "planned": []
+  },
+  {
+    "name": "ping",
+    "area": "utility",
+    "status": "finished",
+    "summary": "Check the bot's responsiveness — gateway + message round-trip.",
+    "description": "Check the bot's responsiveness — gateway + message round-trip.",
+    "usage": "!ping",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!latency"
+    ],
     "planned": []
   },
   {
@@ -7329,7 +7374,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "64a7364",
+    "build": "ce39becc",
     "title": "New public bot website",
     "changes": [
       {
@@ -7341,7 +7386,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "64a7364",
+    "build": "ce39becc",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7353,7 +7398,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "64a7364",
+    "build": "ce39becc",
     "title": "Command-alias suggestions",
     "changes": [
       {
