@@ -1,1 +1,0 @@
-claude/funny-franklin-4n38rf · boot smoke-test guard (dynamic cog-load) + BUG-0030 record · tests/unit/invariants/test_cog_load_smoke.py + docs/health/bug-book.md · hardening after #1599/#1600 outage · 2026-07-01
