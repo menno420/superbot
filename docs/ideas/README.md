@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`audit-log-catchup-on-reconnect-2026-07-01.md`](./audit-log-catchup-on-reconnect-2026-07-01.md) —
+  **session idea (2026-07-01, Q-0089, from the server-logging-v2 audit-log pass):** replay missed
+  Discord audit-log entries on `on_ready`/`on_resume` so moderation/server logging is **gap-free
+  across restarts and deploys** (every merge redeploys `worker`). A per-guild high-water mark (last
+  posted entry id) bounds the replay and dedups against live gateway delivery.
 - [`leaderboard-row-avatars-2026-07-01.md`](./leaderboard-row-avatars-2026-07-01.md) —
   **session idea (2026-07-01, Q-0089, from the Arcane/MEE6 card-polish pass):** add a per-row avatar
   thumbnail to the `!leaderboard` image (the Arcane-defining visual) — the `avatar_disc` primitive +

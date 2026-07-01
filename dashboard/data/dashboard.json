@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T18:54:13Z",
+    "generated_at": "2026-07-01T19:41:35Z",
     "build": {
-      "commit": "89b7fe8b",
-      "subject": "docs: thirty-first Q-0107 reconciliation pass (band-#1620) (#1623)",
-      "committed_at": "2026-07-01T18:54:13Z"
+      "commit": "4fa02e9",
+      "subject": "logging(v2): Discord audit-log integration for Dyno-parity server logging",
+      "committed_at": "2026-07-01T19:41:35Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 161,
+      "ideas": 162,
       "bugs": 30,
       "reviews": 0,
       "reviews_open": 0,
@@ -16,9 +16,9 @@
       "env_vars": 39,
       "cogs": 55,
       "commands": 483,
-      "setting_keys": 116,
+      "setting_keys": 120,
       "setting_domains": 17,
-      "typed_settings": 96,
+      "typed_settings": 100,
       "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "audit-log-catchup-on-reconnect-2026-07-01.md",
+      "title": "Idea — Audit-log catch-up on reconnect (gap-free logging across restarts)",
+      "status": "ideas",
+      "date": "2026-07-01",
+      "summary": "Server event logging v2 (this session) added `on_audit_log_entry_create`, so SuperBot now",
+      "subsystems": null
+    },
     {
       "file": "band-themes-show-pr-subject-2026-07-01.md",
       "title": "Idea — `band_pr_status.py --themes` should print each PR's subject line",
@@ -2763,6 +2771,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-01-server-logging-v2-audit-log.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Server event logging v2: Discord audit-log integration (Dyno parity)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-server-log-avatar.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Server-log embeds: a face per entry (avatar in the author slot)",
@@ -3182,14 +3198,6 @@
       "file": "2026-06-28-server-fn-assessments-batch2.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Server-function completion assessments, batch 2 (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-reconcile.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — twenty-eighth Q-0107 reconciliation pass (band-#1530)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -3726,7 +3734,7 @@
       "usages": [
         {
           "file": "disbot/bot1.py",
-          "line": 175,
+          "line": 180,
           "layer": "bot1",
           "has_default": true
         }
@@ -3915,7 +3923,7 @@
       "usages": [
         {
           "file": "disbot/bot1.py",
-          "line": 172,
+          "line": 177,
           "layer": "bot1",
           "has_default": true
         }
@@ -10473,6 +10481,22 @@
         {
           "constant": "LOGGING_ROLES_ENABLED",
           "key": "logging_roles_enabled"
+        },
+        {
+          "constant": "LOGGING_MODERATION_ENABLED",
+          "key": "logging_moderation_enabled"
+        },
+        {
+          "constant": "LOGGING_CHANNELS_ENABLED",
+          "key": "logging_channels_enabled"
+        },
+        {
+          "constant": "LOGGING_SERVER_ENABLED",
+          "key": "logging_server_enabled"
+        },
+        {
+          "constant": "LOGGING_VOICE_ENABLED",
+          "key": "logging_voice_enabled"
         },
         {
           "constant": "LOGGING_EVENT_ROUTING",

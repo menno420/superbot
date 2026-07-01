@@ -89,6 +89,11 @@ def test_logging_settings_include_event_logging_v1():
         # Completion cert punch #1 — exclusion lists.
         "ignored_channels",
         "ignored_users",
+        # Server event logging v2 — audit-log + voice categories.
+        "moderation_enabled",
+        "channels_enabled",
+        "server_enabled",
+        "voice_enabled",
     }
 
 
@@ -224,11 +229,11 @@ def test_logging_bindings_include_event_routes_v1():
     }
 
 
-def test_logging_schema_version_bumped_to_v4_for_ignore_lists():
-    """Schema-shape change → version bump (v3 event logging → v4 ignore lists)."""
+def test_logging_schema_version_bumped_for_audit_log_v2():
+    """Schema-shape change → version bump (v4 ignore lists → v5 audit-log v2)."""
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
-    assert LOGGING_CONFIG_SCHEMA.version == 4
+    assert LOGGING_CONFIG_SCHEMA.version == 5
 
 
 def test_ignore_list_settings_point_at_legacy_keys_and_default_empty():

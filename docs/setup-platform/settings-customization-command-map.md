@@ -2118,6 +2118,13 @@ deliberately absent — no external calls, no PII stored.
    CSV, default empty, tolerant `parse_id_csv` read / loud write
    validator) — a passive event whose channel or subject id is listed is
    never logged, for every category.
+   **Server event logging v2 (schema v5, audit-log integration)** adds four
+   more category gates: `moderation_enabled` / `channels_enabled` /
+   `server_enabled` (bool, default False — audit-log-sourced groups sharing
+   the combined `events_channel` route, requiring the bot's View-Audit-Log
+   permission) and `voice_enabled` (bool, default False — passive
+   `on_voice_state_update` join/leave/move logging, bots excluded).  The
+   `roles` category is repurposed to the audit-log path so it names the actor.
 10. **existing_settings_keys**: `LOGGING_ENABLED`,
     `LOGGING_AUTO_CREATE_CHANNELS` from `utils.settings_keys.logging`.
     The two channel-id keys (`LOGGING_MOD_CHANNEL`,
@@ -2127,7 +2134,10 @@ deliberately absent — no external calls, no PII stored.
     `LOGGING_ROLES_ENABLED`, and `LOGGING_EVENT_ROUTING` (all legacy
     KV keys, no migration).  Schema v4 adds `LOGGING_IGNORED_CHANNELS`
     and `LOGGING_IGNORED_USERS` (legacy KV, no migration) for the
-    exclusion lists.
+    exclusion lists.  Schema v5 (audit-log v2) adds
+    `LOGGING_MODERATION_ENABLED`, `LOGGING_CHANNELS_ENABLED`,
+    `LOGGING_SERVER_ENABLED`, and `LOGGING_VOICE_ENABLED` (legacy KV, no
+    migration) for the new audit-log-sourced + voice categories.
 11. **existing_BindingSpec_entries**: `mod_channel`, `cleanup_channel`
     — both `BindingKind.CHANNEL`, optional.  Declared in S7a; S7b
     wires the mutation path through `BindingMutationPipeline`.
