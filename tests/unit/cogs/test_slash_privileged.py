@@ -125,14 +125,15 @@ def test_platform_slash_default_permissions_administrator():
 def _has_runtime_permission_check(cmd) -> bool:
     """Return True if ``cmd.checks`` contains a runtime admin check.
 
-    Either discord.py's ``has_permissions`` (moderation still uses it) or the
-    owner-aware ``app_admin_or_owner`` that replaced
-    ``has_permissions(administrator=True)`` bot-wide (Q-0212) — both register a
-    predicate on ``Command.checks``; match on the qualified name.
+    Either discord.py's ``has_permissions`` or the owner-aware
+    ``perms_or_owner`` / ``app_perms_or_owner`` (and the ``admin_or_owner``
+    wrappers) that replaced every ``has_permissions(...)`` bot-wide (Q-0212) —
+    all register a predicate on ``Command.checks``; match on the qualified name
+    (every owner-aware check's predicate qualname contains ``_or_owner``).
     """
     for check in cmd.checks:
         qn = getattr(check, "__qualname__", "")
-        if "has_permissions" in qn or "admin_or_owner" in qn:
+        if "has_permissions" in qn or "_or_owner" in qn:
             return True
     return False
 

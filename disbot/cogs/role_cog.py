@@ -7,7 +7,11 @@ from discord.ext import commands, tasks
 
 from core.runtime import panel_manager, resources
 from core.runtime.component_registry import stats_block
-from core.runtime.permission_checks import admin_or_owner
+from core.runtime.permission_checks import (
+    admin_or_owner,
+    member_has_perms_or_owner,
+    perms_or_owner,
+)
 from core.runtime.persistent_views import PersistentView, register
 from services import reaction_role_service, role_automation
 from services.lifecycle import SUCCESS
@@ -90,7 +94,7 @@ class RoleHubPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, manage_roles=True):
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.",
                 ephemeral=True,
@@ -116,7 +120,7 @@ class RoleHubPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, manage_roles=True):
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.",
                 ephemeral=True,
@@ -143,7 +147,7 @@ class RoleHubPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, administrator=True):
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.",
                 ephemeral=True,
@@ -170,7 +174,7 @@ class RoleHubPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, administrator=True):
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.",
                 ephemeral=True,
@@ -218,7 +222,7 @@ class RoleHubPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, administrator=True):
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.",
                 ephemeral=True,
@@ -245,7 +249,7 @@ class RoleHubPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, administrator=True):
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.",
                 ephemeral=True,
@@ -421,7 +425,7 @@ class RoleCog(commands.Cog):
         hidden=True,
         extras={"classification": "legacy_duplicate"},
     )
-    @commands.has_permissions(manage_roles=True)
+    @perms_or_owner(manage_roles=True)
     async def rolecreator(self, ctx: commands.Context) -> None:
         """Open the role hub (use !roles instead)."""
         await ctx.invoke(self.roles_hub)
@@ -442,7 +446,7 @@ class RoleCog(commands.Cog):
         hidden=True,
         extras={"classification": "panel_action"},
     )
-    @commands.has_permissions(manage_roles=True)
+    @perms_or_owner(manage_roles=True)
     async def createrole(
         self,
         ctx: commands.Context,
@@ -481,7 +485,7 @@ class RoleCog(commands.Cog):
         hidden=True,
         extras={"classification": "panel_action"},
     )
-    @commands.has_permissions(manage_roles=True)
+    @perms_or_owner(manage_roles=True)
     async def deleterole(self, ctx: commands.Context, *, role: discord.Role) -> None:
         """Delete a role by name or mention."""
         name = role.name
@@ -645,7 +649,7 @@ class RoleCog(commands.Cog):
             pass
 
     @commands.command(name="reactroles", aliases=["reaktionsrollen"])
-    @commands.has_permissions(manage_roles=True)
+    @perms_or_owner(manage_roles=True)
     async def setup_reaction_roles(
         self,
         ctx: commands.Context,
@@ -683,7 +687,7 @@ class RoleCog(commands.Cog):
         )
 
     @commands.command(name="removereactrole")
-    @commands.has_permissions(manage_roles=True)
+    @perms_or_owner(manage_roles=True)
     async def remove_reaction_role(
         self,
         ctx: commands.Context,
@@ -703,7 +707,7 @@ class RoleCog(commands.Cog):
         )
 
     @commands.command(name="listreactroles")
-    @commands.has_permissions(manage_roles=True)
+    @perms_or_owner(manage_roles=True)
     async def list_reaction_roles(self, ctx: commands.Context) -> None:
         """List all active reaction roles in this server."""
         rows = await reaction_role_service.list_bindings(ctx.guild.id)

@@ -22,6 +22,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import panel_manager
+from core.runtime.permission_checks import member_has_perms_or_owner
 from services import game_xp_service, mining_workflow, skill_service
 from utils import db, equipment
 from utils.mining import market, skills, workshop, world
@@ -485,7 +486,7 @@ class MiningCog(commands.Cog):
                 "maps. Server managers can reseed with `!mineworld <number>`.",
             )
             return
-        if not ctx.author.guild_permissions.manage_guild:
+        if not member_has_perms_or_owner(ctx.author, manage_guild=True):
             await ctx.send("Only server managers can reseed the mining world.")
             return
         await mining_workflow.reseed_world(ctx.guild.id, seed)
@@ -756,7 +757,7 @@ class MiningCog(commands.Cog):
     @commands.command()
     async def reset_inventory(self, ctx, member: discord.Member):
         """Admin-only: reset a user's inventory in THIS guild (PR M3 — guild-scoped)."""
-        if not ctx.author.guild_permissions.administrator:
+        if not member_has_perms_or_owner(ctx.author, administrator=True):
             return await ctx.send("You don't have permission to do that.")
 
         await mining_workflow.admin_reset(

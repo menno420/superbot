@@ -23,6 +23,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
+from core.runtime.permission_checks import perms_or_owner
 from services import welcome_config
 from utils.ui_constants import GENERAL_COLOR
 
@@ -157,7 +158,7 @@ class WelcomeCog(commands.Cog):
         extras={"classification": "primary_entrypoint"},
     )
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def welcome_status(self, ctx: commands.Context) -> None:
         """Render the effective welcome policy (admin/manage-guild only)."""
         policy = await welcome_config.load_policy(ctx.guild.id)

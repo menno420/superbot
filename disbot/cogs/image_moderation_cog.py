@@ -23,6 +23,7 @@ from discord.ext import commands
 
 from cogs.image_moderation.listener import process_message
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
+from core.runtime.permission_checks import perms_or_owner
 from services import image_moderation_config
 from utils.ui_constants import MOD_COLOR
 
@@ -118,7 +119,7 @@ class ImageModeration(commands.Cog):
         extras={"classification": "primary_entrypoint"},
     )
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def imagemod_status(self, ctx: commands.Context) -> None:
         """Render the effective image-moderation policy (manage-guild only)."""
         policy = await image_moderation_config.load_policy(ctx.guild.id)

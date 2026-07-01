@@ -26,6 +26,7 @@ from discord.ext import commands
 
 from core.events import bus
 from core.runtime import guild_resources
+from core.runtime.permission_checks import perms_or_owner
 from services import ticket_mutation, ticket_service
 from views.tickets import (
     TicketConfirmView,
@@ -233,14 +234,14 @@ class TicketCog(commands.Cog):
     # ----- admin / setup --------------------------------------------------- #
 
     @commands.command(name="ticketpanel")
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def ticket_panel(self, ctx: commands.Context) -> None:
         """Post the public ticket launcher panel in this channel (managers)."""
         await post_launcher(ctx.channel)
         await ctx.message.add_reaction("📮")
 
     @commands.command(name="ticketsetup")
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def ticket_setup(
         self,
         ctx: commands.Context,
@@ -272,7 +273,7 @@ class TicketCog(commands.Cog):
         )
 
     @commands.command(name="ticketlimit")
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def ticket_limit(self, ctx: commands.Context, max_open: int) -> None:
         """Set the max simultaneously-open tickets per member (managers)."""
         max_open = max(1, min(max_open, 25))
@@ -284,7 +285,7 @@ class TicketCog(commands.Cog):
         await ctx.send(f"✅ Members may now hold up to **{max_open}** open ticket(s).")
 
     @commands.group(name="ticketblacklist", invoke_without_command=True)
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def ticket_blacklist(self, ctx: commands.Context) -> None:
         """Manage who may open tickets: ``!ticketblacklist add|remove @user``."""
         await ctx.send("Usage: `!ticketblacklist add|remove @user`.")

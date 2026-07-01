@@ -30,6 +30,7 @@ from core.events import bus
 from core.runtime import message_pipeline
 from core.runtime.guild_resources import resolve_settings_channel
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
+from core.runtime.permission_checks import perms_or_owner
 from services import ai_preset_service as presets
 from services import ai_review_log_service as review
 from utils.settings_keys import ai as ai_keys
@@ -169,7 +170,7 @@ class AIReviewCog(commands.Cog):
     # -------------------------------------------------------------- command
 
     @commands.group(name="aireview", invoke_without_command=True)
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_group(self, ctx: commands.Context) -> None:
         """Show the AI review-log status (channel + unreviewed backlog)."""
         guild = ctx.guild
@@ -197,7 +198,7 @@ class AIReviewCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @aireview_group.command(name="channel")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_channel(
         self,
         ctx: commands.Context,
@@ -220,7 +221,7 @@ class AIReviewCog(commands.Cog):
         )
 
     @aireview_group.command(name="off")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_off(self, ctx: commands.Context) -> None:
         """Clear the review channel (entries are still recorded + queryable)."""
         guild = ctx.guild
@@ -234,7 +235,7 @@ class AIReviewCog(commands.Cog):
         )
 
     @aireview_group.command(name="list")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_list(
         self,
         ctx: commands.Context,
@@ -272,7 +273,7 @@ class AIReviewCog(commands.Cog):
         await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
 
     @aireview_group.command(name="export")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_export(
         self,
         ctx: commands.Context,
@@ -329,7 +330,7 @@ class AIReviewCog(commands.Cog):
         )
 
     @aireview_group.command(name="resolve")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_resolve(self, ctx: commands.Context, entry_id: int) -> None:
         """Mark one review entry reviewed: ``!aireview resolve <id>``."""
         guild = ctx.guild
@@ -351,7 +352,7 @@ class AIReviewCog(commands.Cog):
         name="preset",
         invoke_without_command=True,
     )
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_preset(self, ctx: commands.Context) -> None:
         """Manage vetted answer presets (served with zero model call)."""
         await ctx.send(
@@ -362,7 +363,7 @@ class AIReviewCog(commands.Cog):
         )
 
     @aireview_preset.command(name="add")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_preset_add(
         self,
         ctx: commands.Context,
@@ -378,7 +379,7 @@ class AIReviewCog(commands.Cog):
         await self._store_preset(ctx, guild.id, question, answer, source="operator")
 
     @aireview_preset.command(name="from")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_preset_from(
         self,
         ctx: commands.Context,
@@ -441,7 +442,7 @@ class AIReviewCog(commands.Cog):
         )
 
     @aireview_preset.command(name="list")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_preset_list(
         self,
         ctx: commands.Context,
@@ -477,7 +478,7 @@ class AIReviewCog(commands.Cog):
         await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
 
     @aireview_preset.command(name="remove")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_preset_remove(
         self,
         ctx: commands.Context,

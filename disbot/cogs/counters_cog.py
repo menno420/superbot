@@ -22,6 +22,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 
 from core.runtime import resources
+from core.runtime.permission_checks import app_perms_or_owner, perms_or_owner
 from services import counter_config, counter_service
 
 logger = logging.getLogger("bot.cogs.counters")
@@ -154,7 +155,7 @@ class CountersCog(commands.Cog):
         extras={"classification": "primary_entrypoint"},
     )
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def counters_status(self, ctx: commands.Context) -> None:
         """Render the effective counter policy (admin/manage-guild only)."""
         policy = await counter_config.load_policy(ctx.guild.id)
@@ -168,7 +169,7 @@ class CountersCog(commands.Cog):
         ),
     )
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def counter_preset(
         self,
         ctx: commands.Context,
@@ -222,7 +223,7 @@ class CountersCog(commands.Cog):
         description="Show this server's live counter channels (members / humans / bots).",
     )
     @app_commands.guild_only()
-    @app_commands.checks.has_permissions(manage_guild=True)
+    @app_perms_or_owner(manage_guild=True)
     async def counters_slash(self, interaction: discord.Interaction) -> None:
         """Slash front door for the counter status — ephemeral, manage-guild gated."""
         if interaction.guild is None:
