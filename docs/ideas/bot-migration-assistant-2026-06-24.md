@@ -15,6 +15,18 @@
 > rivals' features into *our backlog by hand*; this idea is the bot doing **detect → map → replicate →
 > retire** *live in a server*, which is the user-facing payoff of "free **and** all-in-one."
 
+## Shipped precedent — XP/level data carry-over (2026-07-01)
+
+The first **data carry-over** slice of the "replicate" phase shipped independently, owner-requested:
+a **level-migration importer** that scans another bot's level-up channel (Arcane is the live case —
+it has *no* import API, confirmed) and copies the announced levels into SuperBot's chat XP, raise-only
+and audited. See `docs/operations/xp-migration.md` and `services/xp_migration.import_levels`. This
+partially answers the plan's open "scope of replication" caveat (§"Open questions"): it proves some
+competitor state (leveling) **can** be carried over via channel scraping, not only re-started fresh —
+and the `import_levels(guild, records, …)` seam is provider-agnostic, so a future *direct* provider
+(e.g. MEE6's public leaderboard API) or the migration-advisor feeds the same audited import. When this
+idea is promoted to build, the XP importer is the reusable pattern for the "carry over user data" step.
+
 ## The idea, in the owner's words
 
 > "The goal of my bot is easy configuration and all-inclusive functionality, so one thing that would

@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T12:13:32Z",
+    "generated_at": "2026-07-01T14:20:46Z",
     "build": {
-      "commit": "48a226f6",
-      "subject": "chore(session): born-red card — third fishing structure (Boathouse)",
-      "committed_at": "2026-07-01T12:13:32Z"
+      "commit": "64a7364",
+      "subject": "xp-migration: born-red session card + lane claim",
+      "committed_at": "2026-07-01T14:20:46Z"
     }
   },
   "counts": {
-    "commands": 479,
+    "commands": 480,
     "features": 43,
     "games": 12
   },
@@ -12748,6 +12748,23 @@
       "description": "Open the XP configuration panel (admin only).",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "xpimport",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Migrate XP/levels from another bot by scanning its level-up channel.",
+      "description": "Migrate XP/levels from another bot by scanning its level-up channel.",
+      "use_cases": null,
+      "examples": [
+        "!xpimport [source] [#channel] [limit]",
+        "!xpimport help"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null

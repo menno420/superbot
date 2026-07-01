@@ -6,18 +6,24 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim
 from core.runtime.permission_checks import admin_or_owner
 from services import xp_service
 from services.rank_providers import get_provider
 from services.xp_helpers import _STAT_TYPES, RANK_CARD_FILENAME, build_rank_response
 from utils import embeds as em
+from utils import xp_migration as xpm
 from utils.rank_render import render_rank_card
-from utils.ui_constants import ECONOMY_COLOR
+from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
+from utils.xp_migration import ScanPlan
 from views.base import send_panel
 from views.xp.config_panel import XpConfigView
+from views.xp.import_panel import XpImportView
 from views.xp.main_panel import _XpHubView
 from views.xp.rank_view import _RankView
+
+_SCAN_SAMPLE_LIMIT = 10
 
 logger = logging.getLogger("bot")
 
@@ -204,6 +210,166 @@ class XpCog(commands.Cog):
         view = XpConfigView(ctx)
         msg = await ctx.send(embed=await view.build_embed(), view=view)
         view.message = msg
+
+    @commands.command(name="xpimport")
+    @admin_or_owner()
+    async def xpimport(self, ctx: commands.Context, *args: str):
+        """Migrate XP/levels from another bot by scanning its level-up channel.
+
+        Usage: ``!xpimport [source] [#channel] [limit]`` (admin only).
+
+        * ``source``  — the other bot's announcer format: ``arcane`` (default),
+          ``mee6``, ``superbot``, or ``generic``.  Arcane exposes no import API,
+          so scanning its level-up channel is the supported path.
+        * ``#channel`` — where the level-up messages are (defaults to here).
+        * ``limit``    — max messages to scan (defaults to the whole channel).
+
+        Reads the channel, keeps the **highest** level announced per member,
+        and opens a preview to confirm before writing.  The import is
+        **raise-only** — it never lowers a member — so it is safe to re-run.
+        Run ``!xpimport help`` to list the known formats.
+        """
+        source_key: str | None = None
+        channel: discord.TextChannel | None = None
+        limit: int | None = None
+        for arg in args:
+            lowered = arg.lower()
+            if lowered in {"help", "formats", "list"}:
+                await ctx.send(embed=self._formats_embed())
+                return
+            if xpm.get_format(lowered) is not None:
+                source_key = lowered
+                continue
+            if arg.isdigit():
+                limit = int(arg)
+                continue
+            try:
+                channel = await commands.TextChannelConverter().convert(ctx, arg)
+                continue
+            except commands.BadArgument:
+                pass  # unknown token — ignore; preview shows what was scanned
+
+        fmt = xpm.get_format(source_key or xpm.DEFAULT_FORMAT)
+        assert fmt is not None  # noqa: S101 — DEFAULT_FORMAT is always a valid key
+        target: discord.TextChannel = channel or ctx.channel  # type: ignore[assignment]
+
+        status = await ctx.send(
+            embed=discord.Embed(
+                title="📥 Scanning…",
+                description=f"Reading {target.mention} for **{fmt.label}** level-ups…",
+                color=UTILITY_COLOR,
+            ),
+        )
+
+        plan = await self._scan_channel(ctx.guild, target, fmt, limit)
+        if plan is None:
+            await status.edit(
+                embed=em.error(
+                    f"I can't read message history in {target.mention}. "
+                    "Grant me **Read Message History** there and try again.",
+                ),
+            )
+            return
+        if not plan.records:
+            await status.edit(
+                embed=discord.Embed(
+                    title="Nothing to import",
+                    description=(
+                        f"Scanned **{plan.scanned_messages}** message(s) in "
+                        f"{target.mention} but found no **{fmt.label}** level-up "
+                        "announcements. Try a different `source` or `#channel` — "
+                        "`!xpimport help` lists the formats."
+                    ),
+                    color=UTILITY_COLOR,
+                ),
+            )
+            return
+
+        view = XpImportView(ctx, plan)
+        view.message = await status.edit(embed=view.build_embed(), view=view)
+
+    async def _scan_channel(
+        self,
+        guild: discord.Guild,
+        channel: discord.TextChannel,
+        fmt: xpm.AnnouncerFormat,
+        limit: int | None,
+    ) -> ScanPlan | None:
+        """Read ``channel`` history and build a :class:`ScanPlan`.
+
+        Only messages authored by a bot/webhook are parsed (the announcer),
+        so member chatter in the channel can't be mistaken for a level-up.
+        Returns ``None`` when history is unreadable (missing permission).
+        """
+        scanned = 0
+        matched = 0
+        records: list[tuple[int, int]] = []
+        unresolved: dict[str, int] = {}
+        try:
+            async for msg in channel.history(limit=limit):
+                scanned += 1
+                if not (msg.author.bot or msg.webhook_id):
+                    continue
+                parsed = xpm.parse_level_message(
+                    msg.content,
+                    [u.id for u in msg.mentions],
+                    fmt=fmt,
+                )
+                if parsed is None:
+                    continue
+                matched += 1
+                if parsed.user_id is not None:
+                    records.append((parsed.user_id, parsed.level))
+                elif parsed.name:
+                    member = resources.resolve_member_by_name(guild, parsed.name)
+                    if member is not None:
+                        records.append((member.id, parsed.level))
+                    else:
+                        unresolved[parsed.name] = max(
+                            unresolved.get(parsed.name, -1),
+                            parsed.level,
+                        )
+        except discord.Forbidden:
+            return None
+
+        reduced = xpm.reduce_max_levels(records)
+        top = sorted(reduced.items(), key=lambda kv: kv[1], reverse=True)
+        sample: list[tuple[str, int]] = []
+        for uid, level in top[:_SCAN_SAMPLE_LIMIT]:
+            member = resources.resolve_member(guild, uid)
+            sample.append((member.display_name if member else f"user {uid}", level))
+
+        return ScanPlan(
+            source_key=fmt.key,
+            source_label=fmt.label,
+            channel_id=channel.id,
+            scanned_messages=scanned,
+            matched=matched,
+            records=tuple(reduced.items()),
+            sample=tuple(sample),
+            unresolved_names=tuple(sorted(unresolved)),
+        )
+
+    @staticmethod
+    def _formats_embed() -> discord.Embed:
+        embed = discord.Embed(
+            title="📥 XP import — known formats",
+            description=(
+                "`!xpimport [source] [#channel] [limit]` scans another bot's "
+                "level-up channel and copies the levels (raise-only, preview "
+                "first)."
+            ),
+            color=UTILITY_COLOR,
+        )
+        for key in xpm.format_keys():
+            fmt = xpm.get_format(key)
+            assert fmt is not None  # noqa: S101 — iterating the registry's own keys
+            default = " *(default)*" if key == xpm.DEFAULT_FORMAT else ""
+            embed.add_field(name=f"`{key}`{default}", value=fmt.label, inline=True)
+        embed.set_footer(
+            text="Arcane has no import API — scanning its channel is the way.",
+        )
+        return embed
 
 
 async def setup(bot: commands.Bot):
