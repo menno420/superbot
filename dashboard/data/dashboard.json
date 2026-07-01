@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T21:13:59Z",
+    "generated_at": "2026-07-01T23:43:41Z",
     "build": {
-      "commit": "076c9fd0",
-      "subject": "session: open born-red — Fishery structure + boathouse build-crash root fix",
-      "committed_at": "2026-07-01T21:13:59Z"
+      "commit": "eee211f5",
+      "subject": "Merge pull request #1626 from menno420/claude/funny-franklin-lkqjh9",
+      "committed_at": "2026-07-01T23:43:41Z"
     },
     "counts": {
       "functions": 43,
       "ideas": 162,
-      "bugs": 30,
+      "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
@@ -2540,6 +2540,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0031",
+      "title": "building a Boathouse raises KeyError: 'boathouse' (structure never added to the build-reason map) — FIXED (root)",
+      "status": "unknown",
+      "summary": "invoking !boathouse and pressing Build — or any build of the Boathouse structure — raises KeyError: 'boathouse' inside services.mining_workflow.build_structure before the transaction, so the build never happens and the panel would surface an error. Shipped live in #1605 (the Boa…"
+    },
+    {
       "id": "BUG-0030",
       "title": "!dock structure command collides with !sail's dock alias → fishing cog fails to load → boot crash loop — FIXED (root)",
       "status": "unknown",
@@ -2902,9 +2908,9 @@
       "file": "2026-07-01-fishery-structure-and-boathouse-buildfix.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishery (4th fishing structure) + Boathouse build-crash root fix",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-07-01-btd6-menu-panel-hub.md",
