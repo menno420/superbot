@@ -113,6 +113,8 @@ def test_is_structure() -> None:
     assert structures.is_structure("  Forge ") is True
     assert structures.is_structure("home") is True  # Slice C added Home
     assert structures.is_structure("  Home ") is True
+    assert structures.is_structure("tide_pool") is True  # 2026-07-01 Tide Pool
+    assert structures.is_structure("  Tide_Pool ") is True
     assert structures.is_structure("castle") is False
     assert structures.is_structure("") is False
 
@@ -175,3 +177,69 @@ def test_home_does_not_gate_crafting() -> None:
     """Home is cosmetic — it never appears in the gear-craft forge gate."""
     # forge_level_required only ever consults the gear ladder, never Home.
     assert structures.forge_level_required("home") == 0
+
+
+# --------------------------------------------------------------------------- #
+# Tide Pool (2026-07-01) — coral's functional sink; the fishing cast's 5th knob.
+# Numbers pinned to docs/planning/fishing-tide-pool-numbers-2026-07-01.md.
+# --------------------------------------------------------------------------- #
+
+
+def test_tide_pool_registered_and_named() -> None:
+    assert structures.TIDE_POOL in structures.STRUCTURES
+    assert structures.display_name(structures.TIDE_POOL) == "Tide Pool"
+    assert (
+        structures.max_level(structures.TIDE_POOL)
+        == structures.MAX_TIDE_POOL_LEVEL
+        == 3
+    )
+
+
+def test_tide_pool_level_names() -> None:
+    assert structures.level_name(structures.TIDE_POOL, 0) == "(not built)"
+    assert structures.level_name(structures.TIDE_POOL, 1) == "Reef Pool"
+    assert structures.level_name(structures.TIDE_POOL, 2) == "Tidal Basin"
+    assert structures.level_name(structures.TIDE_POOL, 3) == "Grand Reef"
+    # Clamped above the ladder.
+    assert structures.level_name(structures.TIDE_POOL, 99) == "Grand Reef"
+
+
+def test_tide_pool_build_cost_ladder_is_a_rising_coral_sink() -> None:
+    costs = [structures.build_cost(structures.TIDE_POOL, lvl) for lvl in range(3)]
+    assert [c.coins for c in costs] == [1_500, 4_000, 9_000]
+    assert [c.materials["coral"] for c in costs] == [3, 6, 10]
+    # Strictly rising coin + coral sink.
+    assert costs[0].coins < costs[1].coins < costs[2].coins
+    assert (
+        costs[0].materials["coral"]
+        < costs[1].materials["coral"]
+        < costs[2].materials["coral"]
+    )
+
+
+def test_tide_pool_build_cost_maxed_returns_none() -> None:
+    assert (
+        structures.build_cost(structures.TIDE_POOL, structures.MAX_TIDE_POOL_LEVEL)
+        is None
+    )
+    assert structures.build_cost(structures.TIDE_POOL, -1) is None
+
+
+def test_tide_pool_pull_mult_ladder_and_additive_safety() -> None:
+    # Unbuilt ⇒ exactly 1.0 (byte-identical cast — the additive-safety property).
+    assert structures.tide_pool_pull_mult(0) == 1.0
+    assert structures.tide_pool_pull_mult(1) == 1.04
+    assert structures.tide_pool_pull_mult(2) == 1.08
+    assert structures.tide_pool_pull_mult(3) == 1.12
+    # Clamped: an out-of-range level can never over-reward.
+    assert structures.tide_pool_pull_mult(99) == 1.12
+    assert structures.tide_pool_pull_mult(-5) == 1.0
+    # Strictly rising bonus across the ladder.
+    mults = [structures.tide_pool_pull_mult(lvl) for lvl in range(4)]
+    assert mults == sorted(mults)
+    assert mults[0] < mults[-1]
+
+
+def test_tide_pool_does_not_gate_crafting() -> None:
+    """The Tide Pool is a fishing bonus — never a gear-craft forge gate."""
+    assert structures.forge_level_required("tide_pool") == 0

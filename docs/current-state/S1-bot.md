@@ -331,8 +331,15 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   by the existing inventory browser; `!curios` / `!craftcurio`). Mirrors the pearl pattern; no
   migration, no minigame mechanic wiring; also catalogued the previously-uncatalogued pearl for clean
   display (fix-on-sight). Sim-pinned ([coral numbers](../planning/fishing-coral-numbers-2026-07-01.md)).
-  ▶ **Next offline successor:** a *second* curio tier or a **structure**-target variant (a deepwater
-  material that builds a fishing structure rather than a collectible) — pure + sim-pinnable, self-mergeable.
+  **The structure-target variant SHIPPED 2026-07-01 (dispatch run, PR #1598):** the **Tide Pool** 🪸 —
+  coral's first *functional* sink (alongside the cosmetic curios). A coral-built structure on the
+  generic `mining_structures` table (no migration) whose rarity-pull bonus folds into `begin_cast` as
+  the cast's **5th "how-well" knob** (rod × bait × weather × gear × **tide pool**), default ×1.0 when
+  unbuilt ⇒ byte-identical. Reuses the Forge/Home/Campfire pattern end-to-end (registry entry + audited
+  `mining_workflow.build_structure` + `views/fishing/tide_pool.py` panel + `!tidepool` + a menu button).
+  Sim-pinned ([tide-pool numbers](../planning/fishing-tide-pool-numbers-2026-07-01.md)).
+  ▶ **Next offline successor:** a *second* curio tier, or a **second** Tide Pool-style structure with a
+  different fishing payoff (e.g. a bite-speed "dock") — pure + sim-pinnable, self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

@@ -678,6 +678,7 @@ _STRUCTURE_BUILD_REASON = {
     structures.FORGE: market.FORGE_BUILD_REASON,
     structures.HOME: market.HOME_BUILD_REASON,
     structures.CAMPFIRE: market.CAMPFIRE_BUILD_REASON,
+    structures.TIDE_POOL: market.TIDE_POOL_BUILD_REASON,
 }
 
 
@@ -692,6 +693,10 @@ def _build_success_suffix(structure: str, new_level: int) -> str:
         return f" Now crafts **{unlocked[-1]}-tier** gear." if unlocked else ""
     if structure == structures.HOME:
         return " It now frames your Character card."
+    if structure == structures.TIDE_POOL:
+        mult = structures.tide_pool_pull_mult(new_level)
+        pct = round((mult - 1.0) * 100)
+        return f" Your casts now pull **+{pct}%** toward rarer fish."
     return ""
 
 

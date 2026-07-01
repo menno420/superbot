@@ -567,6 +567,7 @@ async def test_buy_rod_debits_coins_and_raises_the_tier():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf.db, "transaction", _ctx),
         patch.object(
             wf.economy_service,
@@ -599,6 +600,7 @@ async def test_buy_rod_with_insufficient_funds_writes_nothing():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf.db, "transaction", _ctx),
         patch.object(
             wf.economy_service,
@@ -650,6 +652,7 @@ async def test_begin_cast_spends_energy_and_rolls_when_charged():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
@@ -692,6 +695,7 @@ async def test_begin_cast_does_not_charge_on_an_empty_catalog():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
@@ -778,6 +782,7 @@ async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf, "roll_catch", recording_roll_catch(rec)),
@@ -815,6 +820,7 @@ async def test_begin_cast_compounds_the_days_weather_onto_the_knobs():
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=3)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf, "roll_catch", recording_roll_catch(rec)),
@@ -863,6 +869,7 @@ async def test_begin_cast_folds_equipped_fishing_gear_into_the_knobs():
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value=equipped)),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
     ):
@@ -902,6 +909,7 @@ async def test_begin_cast_with_no_fishing_gear_is_byte_identical():
             AsyncMock(return_value={"tool": "diamond pickaxe"}),
         ),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf, "roll_catch", recording_roll_catch(rec)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()),
     ):
@@ -910,6 +918,79 @@ async def test_begin_cast_with_no_fishing_gear_is_byte_identical():
     assert rec["rarity_pull"] == pytest.approx(starter.rarity_pull)
     assert start.effective_bite_speed == pytest.approx(starter.bite_speed)
     assert start.fishing_gear_bonus is False
+
+
+# ---------------------------------------------------------------------------
+# Tide Pool — the 5th cast knob (2026-07-01): rod × bait × weather × gear × pool
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_folds_a_built_tide_pool_into_the_pull():
+    """A built Tide Pool raises the roll's rarity pull and flags ``tide_pool_bonus``
+    — the 5th how-well knob."""
+    from utils.fishing import rods
+    from utils.mining import structures
+
+    rec: dict = {}
+    starter = rods.rod_for_tier(0)
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
+        patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
+        patch.object(
+            wf.db,
+            "get_structures",
+            AsyncMock(return_value={structures.TIDE_POOL: 3}),
+        ),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()),
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert rec["rarity_pull"] == pytest.approx(
+        starter.rarity_pull * structures.tide_pool_pull_mult(3),
+    )
+    assert rec["rarity_pull"] > starter.rarity_pull  # the pool actually pulled
+    assert start.tide_pool_bonus is True
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_with_no_tide_pool_is_byte_identical():
+    """An unbuilt Tide Pool ⇒ ×1.0 ⇒ the pull is unchanged + ``tide_pool_bonus``
+    False (the additive-safety property)."""
+    from utils.fishing import rods
+
+    rec: dict = {}
+    starter = rods.rod_for_tier(0)
+    with (
+        patch.object(wf.time, "time", lambda: 1000),
+        patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
+        patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
+        patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
+        patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
+        patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
+        patch.object(wf, "roll_catch", recording_roll_catch(rec)),
+        patch.object(wf.db, "set_fishing_energy", AsyncMock()),
+    ):
+        start = await wf.begin_cast(99, 1)
+
+    assert rec["rarity_pull"] == pytest.approx(starter.rarity_pull)
+    assert start.tide_pool_bonus is False
 
 
 @pytest.mark.asyncio

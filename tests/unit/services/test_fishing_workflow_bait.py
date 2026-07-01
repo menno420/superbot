@@ -32,12 +32,13 @@ _FEAST_PEARLS = bait_mod.pearl_recipe("feast")  # pearls per Royal Feast pack
 
 @pytest.fixture(autouse=True)
 def _no_fishing_gear():
-    """Default the cast's gear reads (Q-0175 4th knob) to empty so the bait-layer
-    assertions stay rod×bait-only — fishing gear is exercised in
+    """Default the cast's gear + structure reads (the 4th/5th knobs) to empty so the
+    bait-layer assertions stay rod×bait-only — fishing gear is exercised in
     ``test_fishing_workflow.py``. Tests that need gear can re-patch these."""
     with (
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
     ):
         yield
 

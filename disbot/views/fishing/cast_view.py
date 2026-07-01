@@ -127,6 +127,10 @@ async def prepare_cast(
         # Equipped fishing gear is biasing this cast (rarer catches + quicker
         # bites) — its stats are already folded into the roll / bite speed.
         footer += " · 🎣 fishing gear"
+    if start.tide_pool_bonus:
+        # A built Tide Pool is nudging this cast toward rarer fish (its pull
+        # bonus is already folded into the roll).
+        footer += " · 🪸 tide pool"
     embed.set_footer(text=footer)
     return embed, view
 
