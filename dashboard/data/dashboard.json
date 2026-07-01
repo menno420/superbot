@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T14:20:46Z",
+    "generated_at": "2026-07-01T15:31:03Z",
     "build": {
-      "commit": "64a7364",
-      "subject": "xp-migration: born-red session card + lane claim",
-      "committed_at": "2026-07-01T14:20:46Z"
+      "commit": "ce39becc",
+      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-kj8ctr' into claude/funny-franklin-kj8ctr",
+      "committed_at": "2026-07-01T15:31:03Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 480,
+      "commands": 483,
       "setting_keys": 115,
       "setting_domains": 17,
       "typed_settings": 95,
@@ -99,7 +99,7 @@
       ],
       "entry_points": [
         "diagnostics",
-        "ping",
+        "latency",
         "platform"
       ],
       "related_subsystems": [
@@ -1150,7 +1150,8 @@
         "utilitymenu",
         "myprofile",
         "avatar",
-        "serverinfo"
+        "serverinfo",
+        "ping"
       ],
       "related_subsystems": [
         "general"
@@ -2706,6 +2707,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-01-utility-completion-deepening.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Utility completion-first deepening",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-owner-bypass-all-permission-gates.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Owner bypasses ALL permission gates (not just administrator)",
@@ -2800,6 +2809,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-30-role-menu-builder-live-preview-fix.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Role-menu builder live-preview fix (ephemeral re-render)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-30-reconcile-band1590.md",
@@ -3157,22 +3174,6 @@
       "file": "2026-06-27-startability-offline-fit-tags.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — Per-sector offline-fit startability tags (workflow improvement)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-setup-wizard-command-channels.md",
-      "date": "2026-06-27",
-      "title": "Session — 2026-06-27 · Setup wizard: \"Where can people use commands?\" (per-channel command access)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-s1-offline-handoff.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Sharpen S1 ▶ Next with an offline-startable item (handoff hygiene)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -6647,10 +6648,8 @@
           "type": "prefix",
           "is_group": false,
           "parent": null,
-          "aliases": [
-            "ping"
-          ],
-          "brief": "Report the bot's WebSocket latency.",
+          "aliases": [],
+          "brief": "Report the bot's WebSocket latency (admin detail view).",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -9653,6 +9652,19 @@
           "button_backed": false
         },
         {
+          "name": "botinfo",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "about"
+          ],
+          "brief": "Show information about the bot — servers, uptime, latency, version.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "clear",
           "type": "prefix",
           "is_group": false,
@@ -9688,6 +9700,19 @@
           "button_backed": false
         },
         {
+          "name": "membercount",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "members"
+          ],
+          "brief": "Show this server's member count — humans, bots, and total.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "myprofile",
           "type": "prefix",
           "is_group": false,
@@ -9708,6 +9733,17 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "ping",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Check the bot's responsiveness — gateway + message round-trip.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         },
         {
           "name": "poll",

@@ -203,10 +203,15 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
         embed = build_bot_status_embed(self.bot)
         await ctx.send(embed=embed)
 
-    @commands.command(name="latency", aliases=["ping"])
+    @commands.command(name="latency")
     @admin_or_owner()
     async def latency(self, ctx):
-        """Report the bot's WebSocket latency."""
+        """Report the bot's WebSocket latency (admin detail view).
+
+        The user-facing ``!ping`` lives in the utility cog (user tier); this is
+        the admin-tier readout. The ``ping`` alias was re-homed to utility so
+        ordinary members have a ping (registry capability ``utility.tool.ping``).
+        """
         embed = build_latency_embed(self.bot)
         await ctx.send(embed=embed)
 
