@@ -108,13 +108,13 @@ def test_route_labels_cover_every_kind():
 
     for kind in _ROUTE_TO_BINDING:
         assert kind in SELECT_LABELS, f"select_view._KIND_TO_LABEL missing {kind!r}"
-        assert kind in PROVISION_LABELS, (
-            f"provision_view._KIND_TO_LABEL missing {kind!r}"
-        )
+        assert (
+            kind in PROVISION_LABELS
+        ), f"provision_view._KIND_TO_LABEL missing {kind!r}"
 
 
 @pytest.mark.parametrize(
-    "kind", ["mod", "cleanup", "events", "message_log", "member_log", "role_log"]
+    "kind", ["mod", "cleanup", "events", "message_log", "member_log", "role_log"],
 )
 def test_select_view_constructs_for_every_route(kind: str):
     """The Routes 'Set Channel' path must build the picker without raising.
@@ -246,9 +246,7 @@ async def test_set_delegates_to_open_select_with_chosen_kind():
         for c in view.children
         if isinstance(c, discord.ui.Button) and c.custom_id == "logging_routes.set"
     )
-    with patch(
-        "cogs.logging.panel._open_select", new_callable=AsyncMock
-    ) as fake_open:
+    with patch("cogs.logging.panel._open_select", new_callable=AsyncMock) as fake_open:
         await btn.callback(interaction)  # type: ignore[union-attr,misc]
     fake_open.assert_awaited_once()
     _args, kwargs = fake_open.call_args
@@ -266,7 +264,7 @@ async def test_create_delegates_to_open_provision_with_chosen_kind():
         if isinstance(c, discord.ui.Button) and c.custom_id == "logging_routes.create"
     )
     with patch(
-        "cogs.logging.panel._open_provision", new_callable=AsyncMock
+        "cogs.logging.panel._open_provision", new_callable=AsyncMock,
     ) as fake_open:
         await btn.callback(interaction)  # type: ignore[union-attr,misc]
     fake_open.assert_awaited_once()

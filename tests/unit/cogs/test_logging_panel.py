@@ -20,7 +20,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
-from cogs.logging.panel import LoggingPanelView, build_panel_embed
+from cogs.logging.panel import LoggingPanelView
 from cogs.logging.provision_view import LogChannelProvisionView
 from cogs.logging.select_view import LogChannelSelectView
 from cogs.logging_cog import LoggingCog
@@ -116,19 +116,23 @@ async def test_status_button_re_renders_panel_embed_in_place():
 
     fake_embed = discord.Embed(title="📝 Server logging — status")
 
-    with patch(
-        "cogs.logging.panel.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.logging.panel.build_panel_embed",
-        new_callable=AsyncMock,
-        return_value=fake_embed,
-    ), patch(
-        "cogs.logging.panel.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.logging.panel.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.logging.panel.build_panel_embed",
+            new_callable=AsyncMock,
+            return_value=fake_embed,
+        ),
+        patch(
+            "cogs.logging.panel.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
     edit.assert_awaited_once()
     assert edit.await_args.kwargs["view"] is view
@@ -143,19 +147,23 @@ async def test_overview_button_renders_panel_embed():
     interaction.user = view._author
     interaction.guild = MagicMock()
 
-    with patch(
-        "cogs.logging.panel.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.logging.panel.build_panel_embed",
-        new_callable=AsyncMock,
-        return_value=discord.Embed(title="overview"),
-    ), patch(
-        "cogs.logging.panel.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.logging.panel.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.logging.panel.build_panel_embed",
+            new_callable=AsyncMock,
+            return_value=discord.Embed(title="overview"),
+        ),
+        patch(
+            "cogs.logging.panel.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
     edit.assert_awaited_once()
     assert edit.await_args.kwargs["view"] is view
@@ -286,15 +294,18 @@ async def test_test_button_calls_log_event_with_warn_action():
     interaction.response.defer = AsyncMock()
     interaction.followup.send = AsyncMock()
 
-    with patch(
-        "cogs.logging.panel.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "services.server_logging.log_event",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as log_event:
+    with (
+        patch(
+            "cogs.logging.panel.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "services.server_logging.log_event",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as log_event,
+    ):
         await btn.callback(interaction)
     log_event.assert_awaited_once()
     kwargs = log_event.await_args.kwargs

@@ -221,7 +221,8 @@ async def test_attach_back_button_callback_forwards_the_parent_help_nav_card():
     """Forward-path pin (help-nav attachment seam, H3): when the rebuilt parent
     carries a ``help_nav_card``, the in-place edit must forward it as
     ``attachments=[card]`` so the card survives the back-navigation. A future
-    edit that drops the forwarding fails here."""
+    edit that drops the forwarding fails here.
+    """
     view = discord.ui.View()
     parent_embed = discord.Embed(title="parent")
     parent_view = discord.ui.View()
@@ -943,11 +944,11 @@ def test_carry_back_carries_the_back_target_for_chaining():
 def test_attach_back_button_is_idempotent_by_custom_id():
     view = discord.ui.View()
     assert attach_back_button(
-        view, label="A", custom_id="dup", parent_builder=_parent_builder
+        view, label="A", custom_id="dup", parent_builder=_parent_builder,
     )
     # Second attach with the same custom_id (different label) is a no-op.
     assert attach_back_button(
-        view, label="B", custom_id="dup", parent_builder=_parent_builder
+        view, label="B", custom_id="dup", parent_builder=_parent_builder,
     )
     dup_buttons = [c for c in view.children if getattr(c, "custom_id", None) == "dup"]
     assert len(dup_buttons) == 1
@@ -1047,7 +1048,7 @@ def test_standard_nav_skips_a_panel_with_its_own_back_to_parent():
 def test_has_standard_nav_detects_hub_back_without_help():
     view = discord.ui.View()
     attach_back_button(
-        view, label="↩ Games", custom_id="nav:hub:games", parent_builder=_parent_builder
+        view, label="↩ Games", custom_id="nav:hub:games", parent_builder=_parent_builder,
     )
     assert has_standard_nav(view)
 
