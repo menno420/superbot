@@ -19,7 +19,11 @@ import pytest
 from cogs import leaderboard_cog
 from cogs.leaderboard_cog import _CARD_FILENAME, _render_card
 from services.rank_providers import RankEntry, get_provider
-from utils.ux_patterns.image_builders import render_leaderboard_image
+from utils.ux_patterns.image_builders import (
+    _bar_fraction,
+    _clean_name,
+    render_leaderboard_image,
+)
 
 
 def _guild() -> MagicMock:
@@ -154,3 +158,44 @@ def test_renderer_renders_in_every_named_theme(theme):
     pytest.importorskip("PIL")
     data = render_leaderboard_image((("Alice", 250.0),), theme=theme)
     assert data is not None and len(data) > 0
+
+
+def test_renderer_handles_outlier_and_unresolved_rows():
+    # A runaway leader + an unresolved <@id> row + an emoji title must render
+    # cleanly to bytes (no crash, no clipped value, no tofu).
+    pytest.importorskip("PIL")
+    data = render_leaderboard_image(
+        (("tramway", 118030.0), ("<@123456789012345678>", 8450.0), ("m", 3720.0)),
+        title="🏆 XP Leaderboard",
+        value_texts=("118,030 XP", "8,450 XP", "3,720 XP"),
+    )
+    assert data is not None and len(data) > 0
+
+
+# ---------------------------------------------------------------------------
+# render helpers — name cleaning + outlier-safe bar scaling
+# ---------------------------------------------------------------------------
+
+
+def test_clean_name_neutralises_raw_mentions():
+    # A member who left / isn't cached renders as <@id>; never bake that into
+    # the image — show a neutral placeholder instead.
+    assert _clean_name("<@1118746464013787268>") == "unknown"
+    assert _clean_name("<@!123>") == "unknown"
+    assert _clean_name("  <@123>  ") == "unknown"
+    # Resolved names (even with punctuation) pass through untouched.
+    assert _clean_name("tramway") == "tramway"
+    assert _clean_name("What the...?!") == "What the...?!"
+
+
+def test_bar_fraction_is_outlier_safe():
+    # The runaway leader fills the bar; every other row keeps a visible, floored
+    # bar instead of collapsing into an invisible stub (the screenshot bug).
+    assert _bar_fraction(118030, 118030) == pytest.approx(1.0)
+    small = _bar_fraction(3720, 118030)
+    assert 0.12 <= small < 1.0
+    # Monotonic — more score is always a longer bar.
+    assert _bar_fraction(10045, 118030) > _bar_fraction(3720, 118030)
+    # Degenerate inputs never raise / go negative.
+    assert _bar_fraction(0, 100) == 0.0
+    assert _bar_fraction(50, 0) == 0.0

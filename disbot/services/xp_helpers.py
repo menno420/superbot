@@ -32,6 +32,23 @@ _STAT_TYPES: set[str] = {"xp", "coins", "both"}
 RANK_CARD_FILENAME = "rank.png"
 
 
+async def fetch_avatar_png(member: discord.Member) -> bytes | None:
+    """Fetch a member's avatar as PNG bytes for the rank card, or ``None``.
+
+    This is the one seam where the otherwise-pure card pipeline touches the
+    network: the renderer stays pure (``utils`` takes bytes), and this service
+    helper fetches them.  A small static PNG is forced so the Pillow renderer
+    always gets a format it can decode without extra codecs.  Any failure
+    (network, CDN, unexpected asset) returns ``None`` so the card degrades to
+    the initials disc instead of failing the whole ``!rank`` command.
+    """
+    try:
+        asset = member.display_avatar.replace(size=128, static_format="png")
+        return await asset.read()
+    except Exception:  # noqa: BLE001 — network/asset failure → initials fallback
+        return None
+
+
 async def _guild_xp_settings(guild_id: int) -> tuple[int, int, int]:
     """Return (xp_min, xp_max, cooldown_seconds) for this guild.
 
@@ -158,6 +175,7 @@ def _render_rank_image(
     data: RankCardData,
     guild: discord.Guild,
     stat: str,
+    avatar_png: bytes | None = None,
 ) -> bytes | None:
     """Render the rank card as a PNG, or ``None`` for the embed-only fallback."""
     progress: tuple[str, float] | None = None
@@ -172,6 +190,7 @@ def _render_rank_image(
         subtitle=f"{guild.name} · rank",
         stats=_rank_card_stats(data, stat),
         progress=progress,
+        avatar_png=avatar_png,
     )
 
 
@@ -201,7 +220,8 @@ async def build_rank_response(
     """
     data = await build_rank_card_data(member, guild)
     embed = _rank_embed_from_data(data, stat)
-    png = _render_rank_image(data, guild, stat)
+    avatar_png = await fetch_avatar_png(member)
+    png = _render_rank_image(data, guild, stat, avatar_png)
     if png is None:
         return embed, None
     embed.set_image(url=f"attachment://{RANK_CARD_FILENAME}")

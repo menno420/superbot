@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`leaderboard-row-avatars-2026-07-01.md`](./leaderboard-row-avatars-2026-07-01.md) —
+  **session idea (2026-07-01, Q-0089, from the Arcane/MEE6 card-polish pass):** add a per-row avatar
+  thumbnail to the `!leaderboard` image (the Arcane-defining visual) — the `avatar_disc` primitive +
+  `fetch_avatar_png` seam shipped this session make it pure-additive; needs bounded concurrent avatar
+  fetches + a small in-process avatar LRU so re-renders don't re-hit the CDN.
 - [`superbot-fresh-rebuild-vision-2026-06-30.md`](./superbot-fresh-rebuild-vision-2026-06-30.md) —
   **maintainer vision (2026-06-30, in-chat, captured verbatim + Claude's verified counter-research):**
   a full rebuild of SuperBot as a fresh repo — keep all working code, port it incrementally against the
