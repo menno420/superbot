@@ -324,9 +324,15 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   ([pearl numbers](../planning/fishing-pearl-numbers-2026-06-28.md)). **The rod-ladder recipe browser
   UI SHIPPED 2026-06-30 (PR #1585):** a 📋 Recipes panel (rod shop button + `!rodrecipes`) shows every
   craftable tier with the player's live eligible-fish progress, not just the bare requirement — see
-  Recently shipped above. ▶ **Next offline successor:** the remaining **fish-loot rare *material*-drop
-  variant** (a dedicated craft material that feeds a *new* craft target rather than the premium bait —
-  e.g. a "kelp"/"driftwood" that crafts a cosmetic or a structure). Pure + sim-pinnable, self-mergeable.
+  Recently shipped above. **The fish-loot rare *material*-drop variant SHIPPED 2026-07-01 (dispatch
+  run):** **coral 🪸** — a **deepwater-only** rare reel-drop (gives the boat venue #1340 a unique
+  payoff) whose sink is a *new, non-bait* craft target: cosmetic **curios** (`utils/fishing/curios.py`
+  — carvings crafted from coral, `ItemKind.TREASURE` → non-sellable, a completionist collection shown
+  by the existing inventory browser; `!curios` / `!craftcurio`). Mirrors the pearl pattern; no
+  migration, no minigame mechanic wiring; also catalogued the previously-uncatalogued pearl for clean
+  display (fix-on-sight). Sim-pinned ([coral numbers](../planning/fishing-coral-numbers-2026-07-01.md)).
+  ▶ **Next offline successor:** a *second* curio tier or a **structure**-target variant (a deepwater
+  material that builds a fishing structure rather than a collectible) — pure + sim-pinnable, self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

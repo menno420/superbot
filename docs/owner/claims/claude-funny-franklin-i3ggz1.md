@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-i3ggz1` · scope: fishing rare-material successor (coral 🪸 deepwater drop → cosmetic curio collectibles) · area: `utils/fishing/`, `services/fishing_workflow.py`, `utils/mining/items.py`, `cogs/fishing_cog.py`, `cogs/inventory_cog.py`, `views/fishing/cast_view.py` · 2026-07-01

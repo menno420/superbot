@@ -456,6 +456,70 @@ async def test_commit_catch_no_pearl_on_an_unlucky_reel_is_byte_identical():
 
 
 # ---------------------------------------------------------------------------
+# commit_catch — the coral rare-material drop (deepwater-only, this PR)
+# ---------------------------------------------------------------------------
+
+
+async def _commit_venue(rng, venue):
+    """Commit a fixed cast made in *venue* under a forced *rng*."""
+    sentinel_conn = MagicMock(name="conn")
+
+    @asynccontextmanager
+    async def _ctx():
+        yield sentinel_conn
+
+    cast = wf.Cast(catch=_CATCH, level_before=1, venue=venue)
+    with (
+        patch.object(wf.db, "transaction", _ctx),
+        patch.object(wf.db, "record_catch", AsyncMock(return_value=None)),
+        patch.object(wf.db, "update_mining_item", AsyncMock()) as grant,
+        patch.object(
+            wf.game_xp_service,
+            "award",
+            AsyncMock(return_value=_award(game_total=10)),
+        ),
+        patch.object(wf.game_xp_service, "emit_award_events", AsyncMock()),
+    ):
+        result = await wf.commit_catch(99, 1, cast, rng=rng)
+    return result, grant
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_grants_coral_on_a_lucky_deepwater_reel():
+    forced = MagicMock()
+    forced.random.return_value = 0.0  # every roll fires
+    result, grant = await _commit_venue(forced, wf.venue_mod.DEEPWATER)
+
+    assert result.coral_found is True
+    items = [call.args[2] for call in grant.await_args_list]
+    assert wf.CORAL_ITEM in items
+    assert grant.await_args_list[-1].args[2] == _CATCH.species.name  # fish stays last
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_never_grants_coral_on_shore_even_when_lucky():
+    forced = MagicMock()
+    forced.random.return_value = 0.0
+    result, grant = await _commit_venue(forced, wf.venue_mod.SHORE)
+
+    assert result.coral_found is False
+    items = [call.args[2] for call in grant.await_args_list]
+    assert wf.CORAL_ITEM not in items
+
+
+@pytest.mark.asyncio
+async def test_commit_catch_no_coral_on_an_unlucky_deepwater_reel():
+    forced = MagicMock()
+    forced.random.return_value = 0.99  # nothing fires
+    result, grant = await _commit_venue(forced, wf.venue_mod.DEEPWATER)
+
+    assert result.coral_found is False
+    items = [call.args[2] for call in grant.await_args_list]
+    assert wf.CORAL_ITEM not in items
+    assert items == [_CATCH.species.name]  # only the fish, byte-identical
+
+
+# ---------------------------------------------------------------------------
 # roll_cast — the rod's rarity_pull reaches the roll
 # ---------------------------------------------------------------------------
 
@@ -589,7 +653,9 @@ async def test_begin_cast_spends_energy_and_rolls_when_charged():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
-        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
         patch.object(wf, "roll_catch", fake_roll_catch()),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
     ):
@@ -629,7 +695,9 @@ async def test_begin_cast_does_not_charge_on_an_empty_catalog():
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
-        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
         patch.object(wf, "roll_catch", fake_roll_catch(None)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
     ):
@@ -685,7 +753,9 @@ async def test_set_venue_deepwater_message_names_the_tradeoff():
 async def test_toggle_venue_flips_from_the_stored_value():
     with (
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
-        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
         patch.object(wf.db, "set_fishing_venue", AsyncMock()) as set_v,
     ):
         change = await wf.toggle_venue(99, 1)
@@ -702,7 +772,9 @@ async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="deepwater")),
-        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
         patch.object(wf.db, "get_skills", AsyncMock(return_value={})),
@@ -715,7 +787,9 @@ async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
 
     assert start.ok is True
     assert rec["venue"] == "deepwater"  # the stored venue gated the roll
-    assert start.venue_profile is venue_mod.DEEPWATER_PROFILE  # ...and the view's tuning
+    assert (
+        start.venue_profile is venue_mod.DEEPWATER_PROFILE
+    )  # ...and the view's tuning
     assert start.cast.venue == "deepwater"
 
 
@@ -754,7 +828,9 @@ async def test_begin_cast_compounds_the_days_weather_onto_the_knobs():
     assert start.effective_bite_speed == pytest.approx(
         gold.bite_speed * storm.bite_speed_mult,
     )
-    assert start.effective_bite_speed != pytest.approx(gold.bite_speed)  # weather moved it
+    assert start.effective_bite_speed != pytest.approx(
+        gold.bite_speed
+    )  # weather moved it
 
 
 # ---------------------------------------------------------------------------
@@ -779,7 +855,9 @@ async def test_begin_cast_folds_equipped_fishing_gear_into_the_knobs():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
-        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
@@ -812,7 +890,9 @@ async def test_begin_cast_with_no_fishing_gear_is_byte_identical():
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
-        patch.object(wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]),
+        patch.object(
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+        ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),

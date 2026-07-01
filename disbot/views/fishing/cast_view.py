@@ -423,6 +423,11 @@ class FishingCastView(discord.ui.View):
                 "\n🦪 **A pearl!** A rare crafting material — save them up to "
                 "craft the premium **Royal Feast** bait (`!craftpearl`)."
             )
+        if result.coral_found:
+            desc += (
+                "\n🪸 **A piece of coral!** A rare deepwater find — carve it into "
+                "cosmetic curios for your collection (`!curios`)."
+            )
         if result.unlocked_bigger:
             cap = max_size_rank_for_level(result.fishing_level, species.venue)
             desc += (

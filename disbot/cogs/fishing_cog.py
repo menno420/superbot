@@ -29,8 +29,9 @@ from discord.ext import commands
 from core.runtime import guild_resources as resources
 from services import fishing_workflow, game_xp_service
 from utils import db
-from utils.fishing import PEARL_ITEM
+from utils.fishing import CORAL_ITEM, PEARL_ITEM
 from utils.fishing import bait as bait_mod
+from utils.fishing import curios as curios_mod
 from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
 from utils.fishing import weather as weather_mod
@@ -300,6 +301,60 @@ class FishingCog(commands.Cog):
             )
             return
         result = await fishing_workflow.craft_pearl_bait(
+            ctx.author.id,
+            ctx.guild.id,
+            key,
+        )
+        await ctx.send(result.message)
+
+    @commands.command(name="curios", aliases=["curio", "carvings"])
+    async def curios(self, ctx):
+        """Show the coral-carving collection + your coral and craft progress.
+
+        Coral drops rarely when you reel in a fish out in **deepwater** (`!sail`).
+        Carve it into cosmetic curios with `!craftcurio <name>` — a completionist
+        shelf, purely for show (never sold, no gameplay effect).
+        """
+        inventory = await db.get_mining_inventory(str(ctx.author.id), ctx.guild.id)
+        coral = inventory.get(CORAL_ITEM, 0)
+        owned, total = curios_mod.collection_progress(inventory)
+        embed = discord.Embed(
+            title="🪸 Coral Curios",
+            description=(
+                f"You have **{coral}** 🪸 coral · collection **{owned}/{total}** carved.\n"
+                "Coral drops rarely on a **deepwater** reel (`!sail` to the boat)."
+            ),
+            color=_FISHING_COLOR,
+        )
+        for curio in curios_mod.CURIO_CATALOG:
+            have = inventory.get(curio.item, 0)
+            mark = "✅" if have > 0 else ("🔨" if coral >= curio.coral_cost else "🔒")
+            owned_txt = f" ×{have}" if have > 0 else ""
+            embed.add_field(
+                name=f"{mark} {curio.emoji} {curio.name}{owned_txt}",
+                value=f"{curios_mod.cost_text(curio)} · {curio.rarity}",
+                inline=False,
+            )
+        embed.set_footer(text="Carve with !craftcurio <name>")
+        await ctx.send(embed=embed)
+
+    @commands.command(name="craftcurio", aliases=["carve", "curiocraft"])
+    async def craftcurio(self, ctx, *, curio: str = ""):
+        """Carve a cosmetic curio from coral — the deepwater rare-material sink.
+
+        Coral drops rarely when you reel in a fish out in **deepwater** (`!sail`).
+        Name a curio (e.g. `!craftcurio coral idol`); with no argument it lists the
+        collection. See `!curios` for your coral and progress.
+        """
+        key = curios_mod.craftable_key_for(curio)
+        if key is None:
+            craftable = ", ".join(c.name for c in curios_mod.CURIO_CATALOG)
+            await ctx.send(
+                f"That isn't a carvable curio. Carvable: {craftable}. "
+                "See `!curios` for your collection.",
+            )
+            return
+        result = await fishing_workflow.craft_curio(
             ctx.author.id,
             ctx.guild.id,
             key,
