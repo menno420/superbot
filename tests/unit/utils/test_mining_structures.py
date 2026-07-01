@@ -128,7 +128,7 @@ def test_is_structure() -> None:
 
 def test_forge_helpers_match_generic_registry() -> None:
     """The forge-specific wrappers stay byte-identical to the generic lookups."""
-    assert structures.MAX_FORGE_LEVEL == structures.max_level(structures.FORGE)
+    assert structures.max_level(structures.FORGE) == structures.MAX_FORGE_LEVEL
     assert structures.display_name(structures.FORGE) == "Forge"
     for level in range(-1, structures.MAX_FORGE_LEVEL + 2):
         assert structures.forge_build_cost(level) == structures.build_cost(
@@ -298,7 +298,8 @@ def test_dock_bite_speed_mult_ladder_and_additive_safety() -> None:
 
 def test_dock_is_cheaper_on_coral_than_the_tide_pool() -> None:
     """The Dock is the *entry* coral structure — a smaller total-coral commitment
-    than the full Tide Pool, so a player can afford faster fishing before rarer."""
+    than the full Tide Pool, so a player can afford faster fishing before rarer.
+    """
     dock_coral = sum(
         structures.build_cost(structures.DOCK, lvl).materials["coral"]
         for lvl in range(structures.MAX_DOCK_LEVEL)
@@ -313,3 +314,74 @@ def test_dock_is_cheaper_on_coral_than_the_tide_pool() -> None:
 def test_dock_does_not_gate_crafting() -> None:
     """The Dock is a fishing bonus — never a gear-craft forge gate."""
     assert structures.forge_level_required("dock") == 0
+
+
+def test_boathouse_registered_and_named() -> None:
+    assert structures.BOATHOUSE in structures.STRUCTURES
+    assert structures.display_name(structures.BOATHOUSE) == "Boathouse"
+    assert (
+        structures.max_level(structures.BOATHOUSE)
+        == structures.MAX_BOATHOUSE_LEVEL
+        == 2
+    )
+
+
+def test_boathouse_level_names() -> None:
+    assert structures.level_name(structures.BOATHOUSE, 0) == "(not built)"
+    assert structures.level_name(structures.BOATHOUSE, 1) == "Boathouse"
+    assert structures.level_name(structures.BOATHOUSE, 2) == "Grand Boathouse"
+    # Clamped past the top.
+    assert structures.level_name(structures.BOATHOUSE, 99) == "Grand Boathouse"
+
+
+def test_boathouse_build_cost_ladder_is_a_rising_coral_and_wood_sink() -> None:
+    costs = [structures.build_cost(structures.BOATHOUSE, lvl) for lvl in range(2)]
+    assert [c.coins for c in costs] == [2_000, 5_000]
+    assert [c.materials["coral"] for c in costs] == [3, 6]
+    assert [c.materials["wood"] for c in costs] == [20, 40]
+    # Strictly rising coin + material sink.
+    assert costs[0].coins < costs[1].coins
+    assert costs[0].materials["coral"] < costs[1].materials["coral"]
+
+
+def test_boathouse_build_cost_maxed_returns_none() -> None:
+    assert (
+        structures.build_cost(structures.BOATHOUSE, structures.MAX_BOATHOUSE_LEVEL)
+        is None
+    )
+
+
+def test_boathouse_regen_mult_ladder_and_additive_safety() -> None:
+    # Unbuilt ⇒ exactly 1.0 (byte-identical energy — the additive-safety property).
+    assert structures.boathouse_regen_mult(0) == 1.0
+    assert structures.boathouse_regen_mult(1) == 0.88
+    assert structures.boathouse_regen_mult(2) == 0.76
+    # Clamped: an out-of-range level can never over-reward (nor go non-positive).
+    assert structures.boathouse_regen_mult(99) == 0.76
+    assert structures.boathouse_regen_mult(-5) == 1.0
+    # Strictly falling (faster) across the ladder, always positive.
+    mults = [structures.boathouse_regen_mult(lvl) for lvl in range(3)]
+    assert mults == sorted(mults, reverse=True)
+    assert mults[-1] > 0
+
+
+def test_boathouse_coral_cost_sits_between_the_dock_and_the_tide_pool() -> None:
+    """The Boathouse is the middle coral sink — dearer than the Dock, cheaper than the pool."""
+    dock_coral = sum(
+        structures.build_cost(structures.DOCK, lvl).materials["coral"]
+        for lvl in range(structures.MAX_DOCK_LEVEL)
+    )
+    boathouse_coral = sum(
+        structures.build_cost(structures.BOATHOUSE, lvl).materials["coral"]
+        for lvl in range(structures.MAX_BOATHOUSE_LEVEL)
+    )
+    pool_coral = sum(
+        structures.build_cost(structures.TIDE_POOL, lvl).materials["coral"]
+        for lvl in range(structures.MAX_TIDE_POOL_LEVEL)
+    )
+    assert dock_coral < boathouse_coral < pool_coral
+
+
+def test_boathouse_does_not_gate_crafting() -> None:
+    """The Boathouse is a fishing bonus — never a gear-craft forge gate."""
+    assert structures.forge_level_required("boathouse") == 0

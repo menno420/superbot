@@ -83,7 +83,7 @@ async def test_both_legs_on_one_conn_and_emit_after_commit():
         events.append("record")
         assert conn is sentinel_conn
         assert species == "trout"
-        return None
+        return
 
     async def _award_fn(guild_id, user_id, *, game, action, conn=None, depth=0):
         events.append("award")
@@ -657,7 +657,7 @@ async def test_begin_cast_spends_energy_and_rolls_when_charged():
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf, "roll_catch", fake_roll_catch()),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
@@ -676,6 +676,7 @@ async def test_begin_cast_blocks_and_never_spends_when_out_of_energy():
     with (
         patch.object(wf.time, "time", lambda: 1000),
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(0, 1000))),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
         patch.object(wf.db, "get_rod_tier", AsyncMock()) as rod,
     ):
@@ -700,7 +701,7 @@ async def test_begin_cast_does_not_charge_on_an_empty_catalog():
         patch.object(wf.db, "get_active_bait", AsyncMock(return_value=("", 0))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf, "roll_catch", fake_roll_catch(None)),
         patch.object(wf.db, "set_fishing_energy", AsyncMock()) as set_energy,
@@ -717,6 +718,7 @@ async def test_get_energy_returns_the_settled_value():
     now_intervals = 3 * wf.fish_energy.REGEN_SECONDS
     with (
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(5, 0))),
+        patch.object(wf.db, "get_structures", AsyncMock(return_value={})),
         patch.object(wf.time, "time", lambda: now_intervals),
     ):
         cur = await wf.get_energy(99, 1)
@@ -758,7 +760,7 @@ async def test_toggle_venue_flips_from_the_stored_value():
     with (
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf.db, "set_fishing_venue", AsyncMock()) as set_v,
     ):
@@ -777,7 +779,7 @@ async def test_begin_cast_threads_the_stored_venue_into_the_roll_and_profile():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="deepwater")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
@@ -835,7 +837,7 @@ async def test_begin_cast_compounds_the_days_weather_onto_the_knobs():
         gold.bite_speed * storm.bite_speed_mult,
     )
     assert start.effective_bite_speed != pytest.approx(
-        gold.bite_speed
+        gold.bite_speed,
     )  # weather moved it
 
 
@@ -847,7 +849,8 @@ async def test_begin_cast_compounds_the_days_weather_onto_the_knobs():
 @pytest.mark.asyncio
 async def test_begin_cast_folds_equipped_fishing_gear_into_the_knobs():
     """An equipped fishing charm biases the roll pull + bite speed and flags
-    ``fishing_gear_bonus`` — the 4th how-well knob."""
+    ``fishing_gear_bonus`` — the 4th how-well knob.
+    """
     from utils import equipment as eq_mod
     from utils.fishing import gear as fishing_gear
     from utils.fishing import rods
@@ -862,7 +865,7 @@ async def test_begin_cast_folds_equipped_fishing_gear_into_the_knobs():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
@@ -888,7 +891,8 @@ async def test_begin_cast_folds_equipped_fishing_gear_into_the_knobs():
 @pytest.mark.asyncio
 async def test_begin_cast_with_no_fishing_gear_is_byte_identical():
     """No fishing gear ⇒ knobs unchanged + ``fishing_gear_bonus`` False (the
-    additive safety property — mining gear must not move the fishing knobs)."""
+    additive safety property — mining gear must not move the fishing knobs).
+    """
     from utils.fishing import rods
 
     rec: dict = {}
@@ -898,7 +902,7 @@ async def test_begin_cast_with_no_fishing_gear_is_byte_identical():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_game_xp", AsyncMock(return_value={"fishing": 0})),
@@ -928,7 +932,8 @@ async def test_begin_cast_with_no_fishing_gear_is_byte_identical():
 @pytest.mark.asyncio
 async def test_begin_cast_folds_a_built_tide_pool_into_the_pull():
     """A built Tide Pool raises the roll's rarity pull and flags ``tide_pool_bonus``
-    — the 5th how-well knob."""
+    — the 5th how-well knob.
+    """
     from utils.fishing import rods
     from utils.mining import structures
 
@@ -939,7 +944,7 @@ async def test_begin_cast_folds_a_built_tide_pool_into_the_pull():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
@@ -966,7 +971,8 @@ async def test_begin_cast_folds_a_built_tide_pool_into_the_pull():
 @pytest.mark.asyncio
 async def test_begin_cast_with_no_tide_pool_is_byte_identical():
     """An unbuilt Tide Pool ⇒ ×1.0 ⇒ the pull is unchanged + ``tide_pool_bonus``
-    False (the additive-safety property)."""
+    False (the additive-safety property).
+    """
     from utils.fishing import rods
 
     rec: dict = {}
@@ -976,7 +982,7 @@ async def test_begin_cast_with_no_tide_pool_is_byte_identical():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
@@ -1001,7 +1007,8 @@ async def test_begin_cast_with_no_tide_pool_is_byte_identical():
 @pytest.mark.asyncio
 async def test_begin_cast_folds_a_built_dock_into_the_bite_speed():
     """A built Dock lowers ``effective_bite_speed`` (faster bite) and flags
-    ``dock_bonus`` — without touching the rarity pull."""
+    ``dock_bonus`` — without touching the rarity pull.
+    """
     from utils.fishing import rods
     from utils.mining import structures
 
@@ -1011,7 +1018,7 @@ async def test_begin_cast_folds_a_built_dock_into_the_bite_speed():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
@@ -1046,7 +1053,7 @@ async def test_begin_cast_with_no_dock_is_byte_identical():
         patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(10, 1000))),
         patch.object(wf.db, "get_fishing_venue", AsyncMock(return_value="shore")),
         patch.object(
-            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0]
+            wf.weather_mod, "current_weather", lambda: wf.weather_mod.CONDITIONS[0],
         ),
         patch.object(wf.db, "get_rod_tier", AsyncMock(return_value=0)),
         patch.object(wf.db, "get_equipment", AsyncMock(return_value={})),
@@ -1061,6 +1068,51 @@ async def test_begin_cast_with_no_dock_is_byte_identical():
 
     assert start.effective_bite_speed == pytest.approx(starter.bite_speed)
     assert start.dock_bonus is False
+
+
+@pytest.mark.asyncio
+async def test_get_energy_regens_faster_with_a_built_boathouse():
+    """A built Boathouse shortens the regen interval, so the settled gauge is higher
+    for the same stored state + elapsed time; unbuilt ⇒ byte-identical.
+    """
+    from utils.mining import structures
+
+    now = 100  # 100s elapsed: 3 ticks at 30s/tick, 4 at 23s/tick (×0.76 boathouse)
+
+    async def _energy(built):
+        with (
+            patch.object(wf.time, "time", lambda: now),
+            patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(5, 0))),
+            patch.object(wf.db, "get_structures", AsyncMock(return_value=built)),
+        ):
+            return await wf.get_energy(99, 1)
+
+    plain = await _energy({})
+    boathoused = await _energy({structures.BOATHOUSE: 2})
+    # Faster refill = strictly more energy in the same wall-clock time (30s→23s
+    # gives an extra tick over 90s); an unbuilt boathouse matches the base rate.
+    assert boathoused > plain
+
+
+@pytest.mark.asyncio
+async def test_begin_cast_out_of_energy_wait_is_shorter_with_a_built_boathouse():
+    """The out-of-energy "ready in" wait uses the Boathouse-adjusted regen interval —
+    46s (×0.76 ⇒ 23s/energy) vs the base 1m 00s (30s/energy) for two energy.
+    """
+    from utils.mining import structures
+
+    async def _wait_message(built):
+        with (
+            patch.object(wf.time, "time", lambda: 0),
+            patch.object(wf.db, "get_fishing_energy", AsyncMock(return_value=(0, 0))),
+            patch.object(wf.db, "get_structures", AsyncMock(return_value=built)),
+        ):
+            start = await wf.begin_cast(99, 1)
+        assert start.ok is False
+        return start.message
+
+    assert "1m 00s" in await _wait_message({})
+    assert "46s" in await _wait_message({structures.BOATHOUSE: 2})
 
 
 @pytest.mark.asyncio

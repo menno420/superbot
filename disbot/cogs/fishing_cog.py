@@ -38,11 +38,13 @@ from utils.fishing import weather as weather_mod
 from utils.fishing.fish import SPECIES, fish_names, species_by_name
 from views.fishing import (
     BaitShopView,
+    BoathouseView,
     DockView,
     FishingMenuView,
     RodShopView,
     TidePoolView,
     build_bait_embed,
+    build_boathouse_embed,
     build_dock_embed,
     build_fishlog_embed,
     build_menu_embed,
@@ -364,6 +366,18 @@ class FishingCog(commands.Cog):
         """
         embed = await build_dock_embed(ctx.author.id, ctx.guild.id)
         view = DockView(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="boathouse", aliases=["moorings", "boat"])
+    async def boathouse(self, ctx):
+        """Build a Boathouse — the coral+wood structure that refills energy faster.
+
+        The third coral structure: coral drops on a **deepwater** reel (`!sail`) and
+        wood you already mine. More fishing (Boathouse) vs. rarer fish (`!tidepool`)
+        vs. faster bites (`!dock`) — spend your coral where you like.
+        """
+        embed = await build_boathouse_embed(ctx.author.id, ctx.guild.id)
+        view = BoathouseView(ctx.author, ctx.guild.id)
         view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="craftcurio", aliases=["carve", "curiocraft"])

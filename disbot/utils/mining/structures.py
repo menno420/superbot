@@ -35,6 +35,7 @@ HOME = "home"
 CAMPFIRE = "campfire"
 TIDE_POOL = "tide_pool"
 DOCK = "dock"
+BOATHOUSE = "boathouse"
 
 #: Gear at or below this tier index needs **no** forge (bronze=1, iron=2,
 #: silver=3 are free; gold=4 → forge 1; diamond=5 → forge 2).  ``forge_level =
@@ -78,6 +79,18 @@ _DOCK_LEVEL_NAMES = ("(not built)", "Fishing Dock", "Deepwater Pier")
 #: Per-level bite-speed reduction (subtracted from the ×1.0 base — lower = faster
 #: bite).  Level 2 ⇒ ×0.88.  Tunable — pin in the numbers doc + the test.
 _DOCK_BITE_STEP = 0.06
+
+#: Boathouse (2026-07-01): the **third** coral structure, giving coral a distinct
+#: *third* payoff — faster **fishing energy regen** (endurance), where the Tide Pool
+#: is quality and the Dock is per-cast throughput.  Each level shortens the passive
+#: energy-refill interval via a ``regen`` multiplier ≤ 1.0 (lower = faster refill)
+#: applied to ``utils.fishing.energy.REGEN_SECONDS`` in ``begin_cast`` / ``get_energy``.
+#: Unbuilt ⇒ ×1.0 ⇒ the interval is exactly ``REGEN_SECONDS`` ⇒ byte-identical energy.
+_BOATHOUSE_LEVEL_NAMES = ("(not built)", "Boathouse", "Grand Boathouse")
+
+#: Per-level regen speed-up (subtracted from the ×1.0 base — lower = faster regen).
+#: Level 2 ⇒ ×0.76.  Tunable — pin in the numbers doc + the test.
+_BOATHOUSE_REGEN_STEP = 0.12
 
 
 @dataclass(frozen=True)
@@ -141,6 +154,16 @@ _DOCK_BUILD_LADDER: tuple[BuildCost, ...] = (
     BuildCost(coins=3_500, materials={"coral": 5, "wood": 30}),
 )
 
+#: Boathouse build ladder — a coral + **wood** sink priced *between* the Dock and the
+#: Tide Pool (coral total 9, vs Dock 7 / Tide Pool 19).  Pin changes in
+#: ``docs/planning/fishing-boathouse-numbers-2026-07-01.md`` + the test.
+_BOATHOUSE_BUILD_LADDER: tuple[BuildCost, ...] = (
+    # → Boathouse (×0.88 regen interval — 12% faster refill)
+    BuildCost(coins=2_000, materials={"coral": 3, "wood": 20}),
+    # → Grand Boathouse (×0.76 — 24% faster)
+    BuildCost(coins=5_000, materials={"coral": 6, "wood": 40}),
+)
+
 
 @dataclass(frozen=True)
 class StructureDef:
@@ -165,6 +188,12 @@ _DEFS: dict[str, StructureDef] = {
         _CAMPFIRE_LEVEL_NAMES,
     ),
     DOCK: StructureDef(DOCK, "Dock", _DOCK_BUILD_LADDER, _DOCK_LEVEL_NAMES),
+    BOATHOUSE: StructureDef(
+        BOATHOUSE,
+        "Boathouse",
+        _BOATHOUSE_BUILD_LADDER,
+        _BOATHOUSE_LEVEL_NAMES,
+    ),
     TIDE_POOL: StructureDef(
         TIDE_POOL,
         "Tide Pool",
@@ -190,6 +219,9 @@ MAX_TIDE_POOL_LEVEL = len(_TIDE_POOL_BUILD_LADDER)
 
 #: Highest Dock level (the top bite-speed bonus).
 MAX_DOCK_LEVEL = len(_DOCK_BUILD_LADDER)
+
+#: Highest Boathouse level (the top energy-regen bonus).
+MAX_BOATHOUSE_LEVEL = len(_BOATHOUSE_BUILD_LADDER)
 
 
 def cooking_unlocked(campfire_level: int) -> bool:
@@ -218,6 +250,19 @@ def dock_bite_speed_mult(level: int) -> float:
     """
     level = max(0, min(level, MAX_DOCK_LEVEL))
     return round(1.0 - _DOCK_BITE_STEP * level, 4)
+
+
+def boathouse_regen_mult(level: int) -> float:
+    """The energy-regen multiplier a Boathouse at *level* grants (≤ 1.0 — lower = faster).
+
+    Applied to ``utils.fishing.energy.REGEN_SECONDS`` (via
+    :func:`utils.fishing.energy.regen_seconds_for`) in ``begin_cast`` / ``get_energy``,
+    where a shorter interval means faster passive energy refill.  Level 0 (unbuilt) ⇒
+    exactly ``1.0`` ⇒ the interval is unchanged ⇒ byte-identical energy.  Clamped to
+    the ladder so an out-of-range level can never over-reward.
+    """
+    level = max(0, min(level, MAX_BOATHOUSE_LEVEL))
+    return round(1.0 - _BOATHOUSE_REGEN_STEP * level, 4)
 
 
 def is_structure(name: str) -> bool:
@@ -310,17 +355,20 @@ __all__ = [
     "CAMPFIRE",
     "TIDE_POOL",
     "DOCK",
+    "BOATHOUSE",
     "STRUCTURES",
     "MAX_FORGE_LEVEL",
     "MAX_CAMPFIRE_LEVEL",
     "MAX_TIDE_POOL_LEVEL",
     "MAX_DOCK_LEVEL",
+    "MAX_BOATHOUSE_LEVEL",
     "FREE_TIER_CEILING",
     "BuildCost",
     "is_structure",
     "cooking_unlocked",
     "tide_pool_pull_mult",
     "dock_bite_speed_mult",
+    "boathouse_regen_mult",
     "forge_level_name",
     "forge_build_cost",
     "forge_level_required",

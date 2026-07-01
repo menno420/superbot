@@ -40,8 +40,16 @@ def _dock_line(level: int) -> str:
     return f"**{name}** ({level}/{structures.MAX_DOCK_LEVEL}) — {bonus}"
 
 
+def _boathouse_line(level: int) -> str:
+    """A one-line status for the Boathouse at *level* (bonus + built name)."""
+    pct = round((1.0 - structures.boathouse_regen_mult(level)) * 100)
+    bonus = f"{pct}% faster energy regen" if pct else "not built yet"
+    name = structures.level_name(structures.BOATHOUSE, level)
+    return f"**{name}** ({level}/{structures.MAX_BOATHOUSE_LEVEL}) — {bonus}"
+
+
 async def build_structures_embed(user_id: int, guild_id: int) -> discord.Embed:
-    """The sub-hub landing embed — both coral structures' status at a glance."""
+    """The sub-hub landing embed — every coral structure's status at a glance."""
     built = await db.get_structures(user_id, guild_id)
     embed = discord.Embed(title="🏗 Fishing structures", color=GAME_COLOR)
     embed.description = (
@@ -58,7 +66,14 @@ async def build_structures_embed(user_id: int, guild_id: int) -> discord.Embed:
         value=_dock_line(built.get(structures.DOCK, 0)),
         inline=False,
     )
-    embed.set_footer(text="🪸 Tide Pool  •  ⚓ Dock  •  ↩ Fishing menu")
+    embed.add_field(
+        name="🛖 Boathouse",
+        value=_boathouse_line(built.get(structures.BOATHOUSE, 0)),
+        inline=False,
+    )
+    embed.set_footer(
+        text="🪸 Tide Pool  •  ⚓ Dock  •  🛖 Boathouse  •  ↩ Fishing menu",
+    )
     return embed
 
 
@@ -105,6 +120,25 @@ class StructuresView(HubView):
 
         embed = await build_dock_embed(self._author.id, self.guild_id)
         view = DockView(self._author, self.guild_id)
+        await interaction.response.edit_message(embed=embed, view=view)
+        view.message = interaction.message
+        self.stop()
+
+    @discord.ui.button(
+        label="Boathouse",
+        emoji="🛖",
+        style=discord.ButtonStyle.secondary,
+        row=0,
+    )
+    async def boathouse_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        from views.fishing.boathouse import BoathouseView, build_boathouse_embed
+
+        embed = await build_boathouse_embed(self._author.id, self.guild_id)
+        view = BoathouseView(self._author, self.guild_id)
         await interaction.response.edit_message(embed=embed, view=view)
         view.message = interaction.message
         self.stop()

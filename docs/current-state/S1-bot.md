@@ -351,8 +351,18 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   panels' ↩ back now returns to the sub-hub), **and** the cosmetic curio collection gained a Legendary
   top tier — the **Coral Leviathan** 🐉 (16 coral, net-worth 240; doubling long-tail 2→4→8→16). Both
   pure/offline, no migration.
-  ▶ **Next offline successor:** a *third* fishing structure (a new coral/wood payoff — e.g. an
-  energy-regen "Boathouse" — that slots straight into the new 🏗 Structures sub-hub), or the fishing
+  **The third structure the Boathouse SHIPPED 2026-07-01 (dispatch run, PR #1605):** the **Boathouse**
+  🛖 — a coral + **wood** structure whose payoff is **faster fishing energy regen** (endurance), the
+  genuinely-distinct *third* axis so coral now has **four** sinks (cosmetic curios · rarity Tide Pool ·
+  speed Dock · endurance Boathouse). Each level shortens the passive energy-refill interval via a
+  `regen` multiplier ≤ 1.0 (`boathouse_regen_mult`) turned into an effective `regen_seconds` by
+  `utils/fishing/energy.regen_seconds_for` and threaded into `begin_cast` / `get_energy`. Same pattern
+  (registry entry + audited `build_structure` + `views/fishing/boathouse.py` + a 🛖 button in the
+  Structures sub-hub + `!boathouse`); byte-identical energy when unbuilt. Sim-pinned
+  ([boathouse numbers](../planning/fishing-boathouse-numbers-2026-07-01.md)).
+  ▶ **Next offline successor:** a *fourth* fishing structure (a new coral/wood payoff not yet taken —
+  the three axes quality/throughput/endurance are covered, so a fourth would need a fresh lever, e.g.
+  a **coin-yield "Fish Market"** or a **cook-at-shore energy-refill** structure), or the fishing
   **open-world expansion** ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2:
   boat-as-structure / travel-timer / destinations) — both pure + self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`

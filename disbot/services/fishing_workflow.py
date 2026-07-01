@@ -319,10 +319,22 @@ def _fmt_wait(seconds: int) -> str:
 
 
 async def get_energy(user_id: int, guild_id: int) -> int:
-    """The player's *settled* current fishing energy (for the ⚡ gauge / menu)."""
+    """The player's *settled* current fishing energy (for the ⚡ gauge / menu).
+
+    Settles at the player's Boathouse-adjusted regen interval so the gauge matches the
+    faster refill a built Boathouse grants (unbuilt ⇒ REGEN_SECONDS ⇒ byte-identical).
+    """
     now = int(time.time())
+    built = await db.get_structures(user_id, guild_id)
+    regen_seconds = fish_energy.regen_seconds_for(
+        structures_mod.boathouse_regen_mult(built.get(structures_mod.BOATHOUSE, 0)),
+    )
     cur, ts = await db.get_fishing_energy(user_id, guild_id)
-    return fish_energy.settle(fish_energy.EnergyState(cur, ts), now).current
+    return fish_energy.settle(
+        fish_energy.EnergyState(cur, ts),
+        now,
+        regen_seconds=regen_seconds,
+    ).current
 
 
 async def get_active_bait(
@@ -350,11 +362,25 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     catalog-load failure never charges the player.
     """
     now = int(time.time())
+    # One structures read serves every structure knob (Tide Pool / Dock below) *and*
+    # the Boathouse's energy-regen speed-up, which must be known before the energy
+    # settle so the out-of-energy gate + "ready in" wait already reflect it. A built
+    # Boathouse shortens the regen interval; unbuilt (level 0) ⇒ ×1.0 ⇒ exactly
+    # REGEN_SECONDS ⇒ byte-identical energy.
+    built = await db.get_structures(user_id, guild_id)
+    regen_seconds = fish_energy.regen_seconds_for(
+        structures_mod.boathouse_regen_mult(built.get(structures_mod.BOATHOUSE, 0)),
+    )
     cur, ts = await db.get_fishing_energy(user_id, guild_id)
     state = fish_energy.EnergyState(cur, ts)
-    settled = fish_energy.settle(state, now)
+    settled = fish_energy.settle(state, now, regen_seconds=regen_seconds)
     if settled.current < fish_energy.CAST_COST:
-        wait = fish_energy.seconds_until(state, now, fish_energy.CAST_COST)
+        wait = fish_energy.seconds_until(
+            state,
+            now,
+            fish_energy.CAST_COST,
+            regen_seconds=regen_seconds,
+        )
         return CastStart(
             ok=False,
             message=(
@@ -382,8 +408,8 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     # The structure knobs: the built **Tide Pool** (rarity-pull, coral's functional
     # sink) and its sibling the **Dock** (bite-speed). Both default to their neutral
     # multiplier when unbuilt (level 0) ⇒ ×1.0 ⇒ byte-identical, exactly like the
-    # gear knob's additive-safety property. One structures read serves both.
-    built = await db.get_structures(user_id, guild_id)
+    # gear knob's additive-safety property. ``built`` was read once above (it also
+    # feeds the Boathouse regen speed-up).
     tide_pool_level = built.get(structures_mod.TIDE_POOL, 0)
     tide_pool_pull = structures_mod.tide_pool_pull_mult(tide_pool_level)
     dock_level = built.get(structures_mod.DOCK, 0)
@@ -425,7 +451,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
             energy_current=settled.current,
         )
 
-    spent = fish_energy.spend(state, now)
+    spent = fish_energy.spend(state, now, regen_seconds=regen_seconds)
     await db.set_fishing_energy(user_id, guild_id, spent.current, spent.updated_at)
 
     # Consume one bait charge — only now that the cast is actually happening (the
