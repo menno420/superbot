@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T00:41:25Z",
+    "generated_at": "2026-07-01T00:11:46Z",
     "build": {
-      "commit": "cb5fc6de",
-      "subject": "Merge pull request #1592 from menno420/claude/jolly-johnson-t742p4",
-      "committed_at": "2026-07-01T00:41:25Z"
+      "commit": "4ecf0dac",
+      "subject": "wip(logging): open born-red card — ignored channels/users exclusion lists",
+      "committed_at": "2026-07-01T00:11:46Z"
     },
     "counts": {
       "functions": 43,
@@ -16,9 +16,9 @@
       "env_vars": 39,
       "cogs": 55,
       "commands": 474,
-      "setting_keys": 113,
+      "setting_keys": 115,
       "setting_domains": 17,
-      "typed_settings": 93,
+      "typed_settings": 95,
       "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
@@ -2692,6 +2692,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-01-logging-ignored-lists.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Logging: ignored channels/users exclusion lists (completion deepening)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-30-welcome-random-messages.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Welcome random messages + opt-in DM greeting (S1 completion deepening)",
@@ -3162,14 +3170,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-btd6-session-close-docs.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 QA arc: session-close documentation (what shipped + live-test checklist)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -10331,6 +10331,14 @@
         {
           "constant": "LOGGING_EVENT_ROUTING",
           "key": "logging_event_routing"
+        },
+        {
+          "constant": "LOGGING_IGNORED_CHANNELS",
+          "key": "logging_ignored_channels"
+        },
+        {
+          "constant": "LOGGING_IGNORED_USERS",
+          "key": "logging_ignored_users"
         },
         {
           "constant": "DEFAULT_EVENTS_CHANNEL_NAME",

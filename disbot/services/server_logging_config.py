@@ -32,7 +32,7 @@ imports are stdlib only.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 SUBSYSTEM = "logging"
 
@@ -75,6 +75,11 @@ DEFAULT_MEMBERS_ENABLED = False
 DEFAULT_ROLES_ENABLED = False
 DEFAULT_EVENT_ROUTING = ROUTING_COMBINED
 
+# Exclusion lists (completion cert punch #1) — comma-separated id CSV,
+# empty by default (no exclusion, so every existing guild is unchanged).
+DEFAULT_IGNORED_CHANNELS = ""
+DEFAULT_IGNORED_USERS = ""
+
 
 @dataclass(frozen=True)
 class EventLoggingPolicy:
@@ -90,6 +95,12 @@ class EventLoggingPolicy:
     members_enabled: bool = DEFAULT_MEMBERS_ENABLED
     roles_enabled: bool = DEFAULT_ROLES_ENABLED
     routing: str = DEFAULT_EVENT_ROUTING
+    # Exclusion lists (completion cert punch #1). A passive event whose
+    # channel id is in ``ignored_channel_ids`` or whose subject (author /
+    # member) id is in ``ignored_user_ids`` is never logged, for every
+    # category. Empty by default → no exclusion.
+    ignored_channel_ids: frozenset[int] = field(default_factory=frozenset)
+    ignored_user_ids: frozenset[int] = field(default_factory=frozenset)
 
     @property
     def per_category(self) -> bool:
@@ -113,6 +124,26 @@ class EventLoggingPolicy:
         """The single gate: master switch ON **and** the category enabled."""
         return self.enabled and self.category_enabled(category)
 
+    def is_ignored(
+        self,
+        *,
+        channel_id: int | None = None,
+        user_id: int | None = None,
+    ) -> bool:
+        """Return True when this event's channel or subject is excluded.
+
+        The exclusion gate applied *after* :meth:`should_log`: a passive
+        event is suppressed when its originating channel is in
+        :attr:`ignored_channel_ids` **or** its subject (message author /
+        joining-leaving member / role-changed member) is in
+        :attr:`ignored_user_ids`.  ``None`` ids (e.g. a channel-less
+        member event) never match, so a category with no channel context
+        is only ever filtered by the user list.
+        """
+        if channel_id is not None and channel_id in self.ignored_channel_ids:
+            return True
+        return user_id is not None and user_id in self.ignored_user_ids
+
 
 async def load_policy(guild_id: int) -> EventLoggingPolicy:
     """Load the effective :class:`EventLoggingPolicy` for ``guild_id``.
@@ -123,6 +154,7 @@ async def load_policy(guild_id: int) -> EventLoggingPolicy:
     default.  An unrecognised routing token also degrades to the default
     (``combined``) rather than disabling routing.
     """
+    from services.automod_config import parse_id_csv
     from services.settings_resolution import resolve_value
 
     enabled = await resolve_value(guild_id, SUBSYSTEM, "enabled", DEFAULT_ENABLED)
@@ -152,6 +184,18 @@ async def load_policy(guild_id: int) -> EventLoggingPolicy:
     )
     if routing not in VALID_ROUTING:
         routing = DEFAULT_EVENT_ROUTING
+    ignored_channels_raw = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "ignored_channels",
+        DEFAULT_IGNORED_CHANNELS,
+    )
+    ignored_users_raw = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "ignored_users",
+        DEFAULT_IGNORED_USERS,
+    )
 
     return EventLoggingPolicy(
         enabled=enabled,
@@ -159,6 +203,8 @@ async def load_policy(guild_id: int) -> EventLoggingPolicy:
         members_enabled=members_enabled,
         roles_enabled=roles_enabled,
         routing=routing,
+        ignored_channel_ids=parse_id_csv(ignored_channels_raw),
+        ignored_user_ids=parse_id_csv(ignored_users_raw),
     )
 
 
@@ -168,6 +214,8 @@ __all__ = [
     "CATEGORY_MESSAGES",
     "CATEGORY_ROLES",
     "DEFAULT_EVENT_ROUTING",
+    "DEFAULT_IGNORED_CHANNELS",
+    "DEFAULT_IGNORED_USERS",
     "DEFAULT_MEMBERS_ENABLED",
     "DEFAULT_MESSAGES_ENABLED",
     "DEFAULT_ROLES_ENABLED",

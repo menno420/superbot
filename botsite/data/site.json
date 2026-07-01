@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T00:26:18Z",
+    "generated_at": "2026-07-01T00:11:46Z",
     "build": {
-      "commit": "e98fd31d",
-      "subject": "Merge pull request #1590 from menno420/claude/fresh-rebuild-vision-correction",
-      "committed_at": "2026-07-01T00:26:18Z"
+      "commit": "4ecf0dac",
+      "subject": "wip(logging): open born-red card — ignored channels/users exclusion lists",
+      "committed_at": "2026-07-01T00:11:46Z"
     }
   },
   "counts": {

@@ -342,6 +342,121 @@ async def test_handler_counts_missing_channel():
     assert server_logging.counters_snapshot()["counters"]["event_missing_channel"] == 1
 
 
+# ---------------------------------------------------------------------------
+# Ignore lists (completion cert punch #1)
+# ---------------------------------------------------------------------------
+
+
+def test_is_ignored_gate():
+    pol = EventLoggingPolicy(
+        ignored_channel_ids=frozenset({42}),
+        ignored_user_ids=frozenset({7}),
+    )
+    # Channel match.
+    assert pol.is_ignored(channel_id=42, user_id=99) is True
+    # User match.
+    assert pol.is_ignored(channel_id=1, user_id=7) is True
+    # Neither → not ignored.
+    assert pol.is_ignored(channel_id=1, user_id=2) is False
+    # None ids never match (a channel-less member event with no user match).
+    assert pol.is_ignored(channel_id=None, user_id=None) is False
+    # Empty policy ignores nothing.
+    assert EventLoggingPolicy().is_ignored(channel_id=42, user_id=7) is False
+
+
+@pytest.mark.asyncio
+async def test_load_policy_parses_ignore_lists(monkeypatch):
+    stored = {
+        "ignored_channels": "42, 43 ,bad",  # tolerant: 'bad' dropped
+        "ignored_users": "7",
+    }
+
+    async def fake_resolve(guild_id, subsystem, name, fallback):
+        return stored.get(name, fallback)
+
+    import services.settings_resolution as sr
+
+    monkeypatch.setattr(sr, "resolve_value", fake_resolve)
+
+    pol = await server_logging_config.load_policy(guild_id=1)
+    assert pol.ignored_channel_ids == frozenset({42, 43})
+    assert pol.ignored_user_ids == frozenset({7})
+    # Unset lists default empty (no exclusion).
+    assert EventLoggingPolicy().ignored_channel_ids == frozenset()
+
+
+@pytest.mark.asyncio
+async def test_handler_skips_when_channel_ignored():
+    # A deleted message in an ignored channel is not logged even though the
+    # messages category is on.
+    msg = _message(content="hi")
+    msg.channel.id = 42
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(
+            enabled=True,
+            messages_enabled=True,
+            ignored_channel_ids=frozenset({42}),
+        ),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=_channel(),
+    ) as resolve:
+        sent = await server_logging.log_message_delete(msg)
+    assert sent is False
+    resolve.assert_not_awaited()  # gated out before any channel work
+    assert server_logging.counters_snapshot()["counters"]["event_skipped_ignored"] == 1
+
+
+@pytest.mark.asyncio
+async def test_handler_skips_when_user_ignored():
+    # A join from an ignored user is not logged even though the members
+    # category is on and there is no channel context.
+    member = _member()  # id == 11
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(
+            enabled=True,
+            members_enabled=True,
+            ignored_user_ids=frozenset({11}),
+        ),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=_channel(),
+    ) as resolve:
+        sent = await server_logging.log_member_join(member)
+    assert sent is False
+    resolve.assert_not_awaited()
+    assert server_logging.counters_snapshot()["counters"]["event_skipped_ignored"] == 1
+
+
+@pytest.mark.asyncio
+async def test_handler_sends_when_ids_not_ignored():
+    # Ignore lists present but the event's ids are not on them → logs normally.
+    channel = _channel()
+    member = _member()  # id == 11
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(
+            enabled=True,
+            members_enabled=True,
+            ignored_user_ids=frozenset({999}),
+        ),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
+    ):
+        sent = await server_logging.log_member_join(member)
+    assert sent is True
+    assert server_logging.counters_snapshot()["counters"]["event_skipped_ignored"] == 0
+
+
 @pytest.mark.asyncio
 async def test_role_change_handler_no_diff_short_circuits():
     # Empty add/remove returns before any policy/channel work.

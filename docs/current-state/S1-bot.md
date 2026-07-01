@@ -16,6 +16,16 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Logging — ignored channels/users exclusion lists** (PR #1594, completion-first deepening, Logging
+  cert **punch #1 CLOSED**) — the named best-in-class gap vs Carl-bot/Dyno. Two per-guild scalar
+  settings (`logging_ignored_channels` / `logging_ignored_users`, comma-separated id CSV, default
+  empty, **no migration**) resolved into `EventLoggingPolicy.ignored_channel_ids`/`ignored_user_ids`
+  via the tolerant `parse_id_csv` (reused from `automod_config`, the one-source pattern
+  `image_moderation_config` already imports) + an `is_ignored(channel_id, user_id)` gate wired into
+  the shared `_log_event_if_enabled` (new `event_skipped_ignored` counter). A passive event whose
+  channel or subject id is listed is skipped for **every** category (e.g. log all deletes except in
+  #bot-testing). Schema v3→v4, loud write-time `_validate_id_csv`; byte-identical for every existing
+  guild (empty lists ⇒ no exclusion). +8 tests; self-merge on green.
 - **Cleanup — spam-duplicate window → real per-guild setting** (PR #1588, completion-first deepening,
   Cleanup cert punch #4 — **Cleanup's offline punch-list now CLOSED**) — the hardcoded
   `SPAM_DUPLICATE_WINDOW_SECONDS = 15` constant (used by the `!cleanuphistory` spam sweep) became the
@@ -262,7 +272,7 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   the arc is now `◐ → ✔` certification work, which is **`[owner]`/`[needs-live-bot]`** by definition (each
   unit needs a `/verify-bot` live walkthrough + owner sign-off). **Offline deepening picks** from the
   punch-lists: Inventory item-grant audit + capability cleanup · Proof-channel lock/unlock audit + modal
-  re-check · logging ignored-lists/channel+voice events · the AI BUG-0019 #1 owner decision · ~~best-in-class
+  re-check · logging ~~ignored-lists~~ **✅ #1594** / channel+voice events (punch #2, owner) · the AI BUG-0019 #1 owner decision · ~~best-in-class
   command gaps (channel slowmode/topic, utility roleinfo)~~ **✅ DONE 2026-06-29 (#1561): `!slowmode` +
   `!topic` (audited ChannelLifecycleService seam) + `!roleinfo` (read-only)** — `channelinfo`/`userinfo`
   already existed; these closed the remaining named gaps. The Blackjack/Casino/Word-Chain

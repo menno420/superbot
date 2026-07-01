@@ -2110,7 +2110,11 @@ deliberately absent — no external calls, no PII stored.
    `allowed_values=("combined", "per_category")`, default `combined`)
    selecting one-channel vs per-category routing.  The
    `messages_enabled` hint carries the deleted-message privacy
-   disclosure.
+   disclosure.  **Exclusion lists (schema v4, completion cert punch #1)**
+   add `ignored_channels` and `ignored_users` (str, comma-separated id
+   CSV, default empty, tolerant `parse_id_csv` read / loud write
+   validator) — a passive event whose channel or subject id is listed is
+   never logged, for every category.
 10. **existing_settings_keys**: `LOGGING_ENABLED`,
     `LOGGING_AUTO_CREATE_CHANNELS` from `utils.settings_keys.logging`.
     The two channel-id keys (`LOGGING_MOD_CHANNEL`,
@@ -2118,7 +2122,9 @@ deliberately absent — no external calls, no PII stored.
     bindings in S7b.  Server event logging v1 adds
     `LOGGING_MESSAGES_ENABLED`, `LOGGING_MEMBERS_ENABLED`,
     `LOGGING_ROLES_ENABLED`, and `LOGGING_EVENT_ROUTING` (all legacy
-    KV keys, no migration).
+    KV keys, no migration).  Schema v4 adds `LOGGING_IGNORED_CHANNELS`
+    and `LOGGING_IGNORED_USERS` (legacy KV, no migration) for the
+    exclusion lists.
 11. **existing_BindingSpec_entries**: `mod_channel`, `cleanup_channel`
     — both `BindingKind.CHANNEL`, optional.  Declared in S7a; S7b
     wires the mutation path through `BindingMutationPipeline`.
