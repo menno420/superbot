@@ -1,1 +1,0 @@
-- branch `claude/funny-franklin-d7e1so` · scope: third fishing structure (Boathouse — coral+wood, energy-regen payoff) · area: `utils/mining/structures.py`, `utils/fishing/energy.py`, `services/fishing_workflow.py`, `views/fishing/{boathouse,structures_hub}.py`, `cogs/fishing_cog.py` · 2026-07-01

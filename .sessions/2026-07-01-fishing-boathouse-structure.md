@@ -1,6 +1,6 @@
 # 2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 **Run type:** `routine · dispatch`
 
