@@ -1,6 +1,7 @@
 # 2026-07-01 — Role-menu builder "slim" lean layout
 
-> **Status:** `in-progress` — born-red card (Q-0133). Run type: manual · owner-directed.
+> **Status:** `complete` — ready to merge (Q-0133). Run type: manual · owner-directed.
+> Full CI mirror green (**13598 passed**; lint/mypy/consistency clean; arch 0 new). PR #1615.
 
 **Branch:** `claude/reaction-roles-counter-bgxnyd` (restarted from `main` @ #1613 — the sim merged).
 

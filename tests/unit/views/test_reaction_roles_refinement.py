@@ -13,10 +13,11 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+import discord
 import pytest
 
 from views.roles import reaction_panel
-from views.roles.role_menu_builder import RoleMenuBuilder
+from views.roles.role_menu_builder import _AdvancedView, RoleMenuBuilder
 
 
 class _FakeRole:
@@ -217,6 +218,51 @@ async def test_apply_template_sets_mode_and_counts_from_template() -> None:
     assert builder.style == "button"
     assert builder.mode == "unique"
     assert builder.show_counts is True
+
+
+def _button_labels(view) -> list[str]:
+    return [c.label for c in view.children if isinstance(c, discord.ui.Button)]
+
+
+def test_lean_builder_keeps_hot_buttons_and_style_first_screen() -> None:
+    """The lean layout keeps content + Style top-level and folds the rare knobs."""
+    builder = _counter_builder()
+    labels = _button_labels(builder)
+    for present in (
+        "🧩 Template",
+        "📦 Packs",
+        "🏷️ Roles",
+        "🎚️ Style",  # Style stays first-screen (owner directive)
+        "📝 Text",
+        "🎨 Colours",
+        "📍 Channel",
+        "⚙️ Advanced",
+        "🚀 Post",
+    ):
+        assert present in labels, present
+    # The five rarely-tapped knobs are no longer top-level (folded into Advanced).
+    for folded in ("🎭 Theme", "⚙️ Mode", "🔢 Limit", "🖼️ Card", "📊 Counts"):
+        assert folded not in labels, folded
+
+
+def test_advanced_view_holds_exactly_the_folded_controls() -> None:
+    builder = _counter_builder()
+    labels = set(_button_labels(_AdvancedView(builder)))
+    assert labels == {"🎭 Theme", "⚙️ Mode", "🔢 Limit", "🖼️ Card", "📊 Counts"}
+
+
+@pytest.mark.asyncio
+async def test_advanced_counts_toggle_flips_builder_flag() -> None:
+    builder = _counter_builder()
+    builder.show_counts = False
+    adv = _AdvancedView(builder)
+    counts = next(c for c in adv.children if getattr(c, "label", None) == "📊 Counts")
+    interaction = SimpleNamespace(
+        response=SimpleNamespace(edit_message=AsyncMock()),
+    )
+    await counts.callback(interaction)
+    assert builder.show_counts is True
+    interaction.response.edit_message.assert_awaited_once()
 
 
 def test_builder_keeps_every_action_row_within_discords_five_button_cap() -> None:

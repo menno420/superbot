@@ -139,6 +139,17 @@
 > `RoleMenuListView._rerender` got the same one-liner (stale list after delete/repost). Lesson for any
 > ephemeral multi-step panel: **never refresh via `Message.edit()` — use the interaction token.**
 >
+> **▶ Refinement (2026-07-01, owner-directed — the "slim" builder, sim #1612/#1613 → PR):** the builder
+> was **14 buttons over 3 rows** and felt dense in a live test. A layout optimizer
+> (`tools/sim/role_menu_layout_sim.py`) modelled the buttons + weighted operator journeys + a UX cost
+> model and recommended a **lean two-row layout** — adopted here: **row 0** = Template · Packs · Roles ·
+> **Style** · Text (the hot content path; Style stays first-screen per owner directive — dropdown-vs-
+> buttons is a primary choice); **row 1** = Colours · Channel · **⚙️ Advanced** · Post · Back. The five
+> rarely-tapped knobs (Theme / Card / Counts / Mode / Limit) fold into a new **`_AdvancedView`** sub-panel
+> (their current values still show on the main preview, which updates live). Reuses the existing pickers/
+> modals; `_LimitModal` + the folded Counts toggle refresh the **main** preview via the builder's stored
+> panel interaction (`_rerender`), not their own sub-panel interaction. No behaviour change to what posts.
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,

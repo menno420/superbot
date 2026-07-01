@@ -1,1 +1,0 @@
- - `claude/reaction-roles-counter-bgxnyd` · **role-menu builder lean layout** — adopt the sim's "slim" 2-row layout: fold rare knobs behind ⚙️ Advanced, keep Style first-screen · `disbot/views/roles/role_menu_builder.py` `architecture_rules/consistency_exceptions.yml` · 2026-07-01 · in-progress
