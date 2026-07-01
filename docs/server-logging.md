@@ -254,14 +254,19 @@ activity is deliberately out of v1 scope.
   `log_member_leave` / `log_role_change`, plus the matching
   `format_*_embed` builders). Each handler loads the policy, gates,
   resolves the routed channel, and posts — fully fail-safe. Each
-  `format_*_embed` also puts the event **subject's** avatar + display name
-  in the embed **author slot** (`_set_subject_author`) — a face per entry
-  for at-a-glance scanning. Purely additive (the structured fields are
-  unchanged) and network-free (the embed just references the avatar's CDN
-  url, so there is nothing to fetch and no failure path). The
-  moderation/audit embeds (`format_log_embed` / `format_audit_embed`)
-  carry only ids, so their avatar is a follow-up (resolve the member from
-  the guild at send time).
+  `format_*_embed` also puts the relevant **subject's** avatar + display
+  name in the embed **author slot** (`_set_subject_author`) — a face per
+  entry for at-a-glance scanning. Purely additive (the structured fields
+  are unchanged) and network-free (the embed just references the avatar's
+  CDN url, so there is nothing to fetch and no failure path). **Every log
+  surface carries the same face:** the passive-event embeds use the object
+  they already hold, and the **moderation** + **audit** embeds — which
+  carry only ids — resolve one via `_resolve_subject_user` (guild member
+  cache, then the bot's global user cache, so a just-banned member still
+  gets a face; cache-only, never a network call). The mod-log shows the
+  **target**; the audit embed shows the **actor**; the public mod-log shows
+  the **target** only (never the moderator, preserving that surface's
+  redaction).
 * **Config read model** — `services/server_logging_config.py`
   (`EventLoggingPolicy` + `load_policy`), mirroring `automod_config`.
 
