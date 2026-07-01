@@ -55,6 +55,14 @@ is one folder behind the folio instead of ~14 files scattered at the root.
   question/answer corpus for bot accuracy (damage-type ↔ bloon-property interactions, bloons,
   economy, paragons), with the damage-type interaction-grounding layer it backs.
 
+## UI / menu
+
+- [`btd6-menu-layout-design-2026-07-01.md`](./btd6-menu-layout-design-2026-07-01.md) —
+  design study + back-compat implementation plan for the `/btd6menu` panel: the
+  Cyber-Quincy function comparison, the ten subdivisions, the mobile button-truncation
+  finding, and the A/B/C candidate layouts. Companion to the interactive
+  [`tools/btd6/menu_layout_simulator.html`](../../tools/btd6/menu_layout_simulator.html).
+
 ## Checklists
 
 - [`btd6-smoke-test-checklist.md`](./btd6-smoke-test-checklist.md) — BTD6 smoke-test
