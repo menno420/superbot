@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T12:13:32Z",
+    "generated_at": "2026-07-01T14:37:18Z",
     "build": {
-      "commit": "48a226f6",
-      "subject": "chore(session): born-red card — third fishing structure (Boathouse)",
-      "committed_at": "2026-07-01T12:13:32Z"
+      "commit": "3c0eef03",
+      "subject": "Merge pull request #1605 from menno420/claude/funny-franklin-d7e1so",
+      "committed_at": "2026-07-01T14:37:18Z"
     },
     "counts": {
       "functions": 43,
@@ -2765,9 +2765,9 @@
       "file": "2026-07-01-fishing-boathouse-structure.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-07-01-boot-smoke-test-guard.md",
