@@ -11,7 +11,6 @@ Ask-modal path wiring (``answer_question``) that previously bypassed the floor.
 
 from __future__ import annotations
 
-import asyncio
 import sys
 from pathlib import Path
 
@@ -152,16 +151,11 @@ def test_builder_routes_abr_when_cued():
 # --- the Ask-modal path wiring (btd6_ai_service.answer_question) ----------------
 
 
-def _answer(text: str):
-    return asyncio.get_event_loop().run_until_complete(
-        btd6_ai_service.answer_question(text),
-    )
-
-
-def test_ask_path_serves_the_range_floor_not_the_endpoint_round():
+@pytest.mark.asyncio
+async def test_ask_path_serves_the_range_floor_not_the_endpoint_round():
     # Before the fix, the Ask path answered "Round 29 …" (deterministic_answer
     # took intent.rounds[0]); now the range floor owns the whole-span answer.
-    response = _answer("list all the bloons from r29 till r63")
+    response = await btd6_ai_service.answer_question("list all the bloons from r29 till r63")
     body = response.short_answer
     assert "Bloons across rounds 29" in body
     assert "Ceramic Bloon" in body and "MOAB" in body
@@ -169,7 +163,8 @@ def test_ask_path_serves_the_range_floor_not_the_endpoint_round():
     assert not response.title.startswith("Round 29")
 
 
-def test_ask_path_single_round_still_uses_the_entity_answer():
+@pytest.mark.asyncio
+async def test_ask_path_single_round_still_uses_the_entity_answer():
     # A single round is not a range — the normal deterministic round answer wins.
-    response = _answer("what happens on round 63")
+    response = await btd6_ai_service.answer_question("what happens on round 63")
     assert response.title.startswith("Round 63")
