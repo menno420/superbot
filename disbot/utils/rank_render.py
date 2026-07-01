@@ -32,7 +32,7 @@ _COL_GAP = 18
 _ROW_GAP = 16
 _PANEL_H = 100
 _GRID_TOP_PAD = 24
-_PROG_H = 70
+_PROG_H = 92
 _FOOTER_H = 44
 
 
@@ -44,6 +44,7 @@ def render_rank_card(
     progress: tuple[str, float] | None = None,
     theme: str | None = None,
     footer: str = "SuperBot",
+    avatar_png: bytes | None = None,
 ) -> bytes | None:
     """Render the single-user rank card.
 
@@ -63,6 +64,11 @@ def render_rank_card(
         A :data:`utils.card_render.THEMES` key; unknown/None → default skin.
     footer:
         Subtle bottom-left caption.
+    avatar_png:
+        The member's avatar as PNG/JPEG bytes.  When given and decodable it is
+        composited into the identity disc (the real-avatar look); otherwise the
+        card falls back to the initials disc, so a fetch failure or a
+        Pillow-less host never breaks the render.
 
     Returns PNG bytes, or ``None`` when Pillow is unavailable.
     """
@@ -86,12 +92,16 @@ def render_rank_card(
     canvas.draw.rectangle((0, _HEADER_H - 4, _WIDTH, _HEADER_H), fill=t.accent)
 
     disc_cx, disc_cy, disc_r = 92, _HEADER_H // 2, 52
-    canvas.initials_disc(
-        (disc_cx, disc_cy),
-        disc_r,
-        initials(display_name),
-        size=42,
-    )
+    drew_avatar = False
+    if avatar_png is not None:
+        drew_avatar = canvas.avatar_disc((disc_cx, disc_cy), disc_r, avatar_png)
+    if not drew_avatar:
+        canvas.initials_disc(
+            (disc_cx, disc_cy),
+            disc_r,
+            initials(display_name),
+            size=42,
+        )
 
     text_x = disc_cx + disc_r + 32
     text_max = _WIDTH - text_x - _MARGIN
@@ -136,14 +146,26 @@ def render_rank_card(
                 max_width=pw - 36,
             )
 
-    # Level progress bar (when present).
+    # Level progress bar (when present) — a bold, readable rail with a right-
+    # aligned % readout, not the near-invisible sliver the flat dark track used
+    # to render (the track is now the panel colour, so the empty portion shows).
     if progress is not None:
         label, fraction = progress
-        by = height - _FOOTER_H - 30
-        canvas.text((_MARGIN, by - 28), label, size=20, color=t.subtle)
+        clamped = 0.0 if fraction < 0 else 1.0 if fraction > 1 else fraction
+        by = height - _FOOTER_H - 38
+        canvas.text((_MARGIN, by - 30), label, size=20, color=t.subtle)
+        canvas.text(
+            (_WIDTH - _MARGIN, by - 30),
+            f"{int(round(clamped * 100))}%",
+            size=22,
+            bold=True,
+            color=t.accent_alt,
+            anchor="ra",
+        )
         canvas.progress_bar(
-            (_MARGIN, by, _WIDTH - _MARGIN, by + 22),
+            (_MARGIN, by, _WIDTH - _MARGIN, by + 26),
             fraction,
+            track=t.panel,
             fill=t.accent_alt,
         )
 

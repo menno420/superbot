@@ -104,7 +104,22 @@ they'd envy. The four moves:
   `RankCardData` value object) and builds both the embed and the image from it, with a clean
   embed-only fallback when Pillow is unavailable. **Remaining H3:** the rank/profile **hub panels**
   (`!xpmenu`) + the genuine season/world skin packs.
+  **🟢 Readability + real-avatar polish (2026-07-01, owner-directed — Arcane/MEE6 screenshot compare):**
+  the first pass that judged the *shipped* cards against the incumbents (`!rank`, `!leaderboard`) and
+  closed the visible gaps. Engine: `CardCanvas.avatar_disc` (composite a real, circular-cropped avatar
+  from fetched bytes — the caller's one network seam is `services.xp_helpers.fetch_avatar_png`; graceful
+  fall-back to `initials_disc`) + `card_render.image_safe` (strip the emoji the bundled DejaVu font draws
+  as a tofu □ box, applied at the `CardCanvas.text` seam so *no* card can tofu again — the 🏆/🪙 titles
+  and values in the screenshots). Rank card: the live avatar replaces the "ME" initials, and the level
+  bar gained a visible track + right-aligned `%` readout (was a near-invisible dot). Leaderboard:
+  **outlier-safe bar scaling** (`_bar_fraction` — a runaway #1 no longer squashes the field into
+  invisible stubs), a **reserved right value column** (the #1 value no longer clips off-canvas),
+  **podium colours** for the top three, and `_clean_name` so a departed member's raw `<@id>` never bakes
+  into the image. **Next obvious adopter:** `/myprofile` (`utils.profile_render`) still uses the "ME"
+  disc — the `avatar_disc` primitive is now ready for it.
 - **H4 — Real art + fonts.** Owner art pack lands file-for-file; brand fonts named per theme.
+  (When a colour-emoji font lands here, gate `card_render.image_safe` on glyph coverage so intentional
+  emoji can render instead of being stripped.)
 - **H5 — Animation + per-user themes (the exceed move).** Frame-sequence animated cards and a
   cosmetic theme picker (premium-gated), the visual differentiator over DM.
 
