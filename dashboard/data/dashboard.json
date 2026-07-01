@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T18:10:33Z",
+    "generated_at": "2026-07-01T18:12:08Z",
     "build": {
-      "commit": "daa91151",
-      "subject": "Merge pull request #1613 from menno420/claude/reaction-roles-counter-bgxnyd",
-      "committed_at": "2026-07-01T18:10:33Z"
+      "commit": "2f3fbd1c",
+      "subject": "Karma reaction-to-thank: open born-red session card + claim",
+      "committed_at": "2026-07-01T18:12:08Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 159,
+      "ideas": 160,
       "bugs": 30,
       "reviews": 0,
       "reviews_open": 0,
@@ -16,9 +16,9 @@
       "env_vars": 39,
       "cogs": 55,
       "commands": 483,
-      "setting_keys": 115,
+      "setting_keys": 116,
       "setting_domains": 17,
-      "typed_settings": 95,
+      "typed_settings": 96,
       "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "leaderboard-row-avatars-2026-07-01.md",
+      "title": "Idea: leaderboard row avatars (the Arcane-defining visual)",
+      "status": "ideas",
+      "date": "2026-07-01",
+      "summary": "The leaderboard **image card** now reads well (outlier-safe bars, podium colours, clean values — this",
+      "subsystems": null
+    },
     {
       "file": "compute-dont-refuse-capability-sweep-2026-06-30.md",
       "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
@@ -2715,6 +2723,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-01-visual-comparison-cards.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Visual comparison: out-read Arcane/MEE6 on the rank + leaderboard cards",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-utility-completion-deepening.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Utility completion-first deepening",
@@ -2728,6 +2744,22 @@
       "title": "2026-07-01 — Treasury completion tests (cog + modal)",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-settings-order-sim-and-binding-back-button-bugs.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Server-logging: per-route binding crash + disappearing back button + settings-order sim",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-server-log-avatar.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Server-log embeds: a face per entry (avatar in the author slot)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -2747,6 +2779,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-01-role-menu-builder-lean-layout.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Role-menu builder \"slim\" lean layout",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-01-owner-bypass-all-permission-gates.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Owner bypasses ALL permission gates (not just administrator)",
@@ -2761,6 +2801,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-karma-reaction-to-thank.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Karma reaction-to-thank (completion-first deepening)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
     },
     {
       "file": "2026-07-01-inventory-density.md",
@@ -2816,6 +2864,14 @@
       "title": "2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-btd6-menu-layout-design.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — BTD6 menu layout design (simulator) + round-range NL answer fix",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": true
     },
     {
@@ -3126,54 +3182,6 @@
       "file": "2026-06-28-no-dead-end-view-guard.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — No-dead-end terminal-view arch guard (friction→guard)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-mining-creatures-completion-assessments.md",
-      "date": "2026-06-28",
-      "title": "Session — feature-completion assessments: Mining + Creatures + Welcome (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-fishing-pearl-rare-material.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Fishing: the \"pearl\" rare-material drop + a premium-bait pearl craft",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-fishing-counting-completion-punchlist.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Fishing + Counting feature-completion punch-list clears",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-feature-completion-games-and-gate-fix.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Feature-completion assessments (RPS · Deathmatch · Chicken farm) + born-red gate collision fix",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-feature-completion-assessments.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Feature-completion unit assessments + counting leaderboard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-deathmatch-pvp-deadend.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Deathmatch + RPS PvP trapped-view dead-end fixes (completion-first)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -10407,6 +10415,14 @@
           "hint": "Maximum karma grants one member can give per rolling 24 hours.",
           "allowed_values": [],
           "default": 10
+        },
+        {
+          "constant": "KARMA_REACTION_EMOJI",
+          "key": "karma_reaction_emoji",
+          "type": "str",
+          "hint": "React-to-thank: set an emoji (e.g. ✨) and reacting with it on a message grants karma to that message's author — same cooldown and daily cap as !thanks. Leave empty to disable (the default).",
+          "allowed_values": [],
+          "default": ""
         }
       ]
     },

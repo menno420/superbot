@@ -68,8 +68,12 @@ Karma is pure social reputation — non-spendable, no paywall, no P2W.
 
 ## Plans / pending (deferred)
 
-Per the plan's recommended defaults, **PR 3 is deferred** (owner-gated):
-- **Reaction-grant** — react with a configured emoji to grant karma, behind a
-  `karma_reaction_enabled` setting (reuses the reaction-roles raw seam).
+- **Reaction-grant (react-to-thank)** — ✅ **shipped 2026-07-01 (PR #1620).** React with the guild's
+  configured trigger emoji (`karma_reaction_emoji`, empty = off) to grant karma to the message author;
+  the `on_raw_reaction_add` listener in `karma_cog` routes through the same audited
+  `karma_service.give(source="reaction")` seam (cooldown + daily cap + self-give guard apply), silent,
+  byte-identical when unset.
+
+Per the plan's recommended defaults, the rest of **PR 3 stays deferred** (owner-gated):
 - **Karma roles** — auto-assign a role at thresholds (e.g. "Trusted Helper" @ 50).
 - **Milestone announcements** — a `karma.milestone` event + optional log channel.

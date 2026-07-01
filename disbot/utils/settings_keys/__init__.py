@@ -87,6 +87,7 @@ from utils.settings_keys.karma import (
     KARMA_COOLDOWN,
     KARMA_DAILY_CAP,
     KARMA_ENABLED,
+    KARMA_REACTION_EMOJI,
 )
 from utils.settings_keys.logging import (
     DEFAULT_CLEANUP_CHANNEL_NAME,
@@ -220,6 +221,7 @@ __all__ = [
     "KARMA_COOLDOWN",
     "KARMA_DAILY_CAP",
     "KARMA_ENABLED",
+    "KARMA_REACTION_EMOJI",
     "LOGGING_AUTO_CREATE_CHANNELS",
     "LOGGING_CLEANUP_CHANNEL",
     "LOGGING_ENABLED",

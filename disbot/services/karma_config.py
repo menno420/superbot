@@ -48,6 +48,14 @@ DEFAULT_DAILY_CAP = 10
 MIN_DAILY_CAP = 1
 MAX_DAILY_CAP = 1000
 
+# React-to-thank trigger emoji: when set, reacting with this emoji on a
+# message grants karma to that message's author (through the same audited
+# service seam, so the cooldown + daily cap + self-give guard all apply).
+# The empty string means the feature is OFF — the safe, byte-identical
+# default, so no existing guild's reactions ever silently mint karma.
+DEFAULT_REACTION_EMOJI = ""
+MAX_REACTION_EMOJI_LEN = 64  # a unicode emoji or a <:name:id> custom form
+
 
 @dataclass(frozen=True)
 class KarmaPolicy:
@@ -59,6 +67,7 @@ class KarmaPolicy:
     enabled: bool = DEFAULT_ENABLED
     cooldown_seconds: int = DEFAULT_COOLDOWN_SECONDS
     daily_cap: int = DEFAULT_DAILY_CAP
+    reaction_emoji: str = DEFAULT_REACTION_EMOJI
 
 
 async def load_policy(guild_id: int) -> KarmaPolicy:
@@ -83,8 +92,15 @@ async def load_policy(guild_id: int) -> KarmaPolicy:
         "daily_cap",
         DEFAULT_DAILY_CAP,
     )
+    reaction_emoji = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "reaction_emoji",
+        DEFAULT_REACTION_EMOJI,
+    )
     return KarmaPolicy(
         enabled=enabled,
         cooldown_seconds=cooldown_seconds,
         daily_cap=daily_cap,
+        reaction_emoji=reaction_emoji,
     )
