@@ -69,7 +69,7 @@ async def build_tide_pool_embed(
             value="Your Tide Pool is at its highest level — casts pull their best.",
             inline=False,
         )
-        embed.set_footer(text="↩ Fishing menu")
+        embed.set_footer(text="↩ Structures")
     else:
         nxt = structures.level_name(structures.TIDE_POOL, level + 1)
         embed.add_field(
@@ -77,7 +77,7 @@ async def build_tide_pool_embed(
             value=f"{workshop.describe_materials(cost.materials)} + **{cost.coins}** 🪙",
             inline=False,
         )
-        embed.set_footer(text="🪸 Build  •  ↩ Fishing menu")
+        embed.set_footer(text="🪸 Build  •  ↩ Structures")
     return embed
 
 
@@ -112,7 +112,7 @@ class TidePoolView(HubView):
         await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
-        label="↩ Fishing menu",
+        label="↩ Structures",
         style=discord.ButtonStyle.secondary,
         row=0,
     )
@@ -121,12 +121,12 @@ class TidePoolView(HubView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # The menu self.stop()s when it opens this panel, so rebuild the fully-
-        # navigable menu in place. Lazy import to respect menu→child direction.
-        from views.fishing.menu import open_fishing_menu
+        # The structures sub-hub self.stop()s when it opens this panel, so rebuild
+        # it in place. Lazy import to respect the sub-hub → panel direction.
+        from views.fishing.structures_hub import open_structures_hub
 
         self.stop()
-        await open_fishing_menu(interaction, self._author, self.guild_id)
+        await open_structures_hub(interaction, self._author, self.guild_id)
 
 
 __all__ = ["TidePoolView", "build_tide_pool_embed"]

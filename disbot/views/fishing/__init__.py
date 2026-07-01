@@ -18,6 +18,11 @@ from views.fishing.menu import (
 )
 from views.fishing.rod_recipe_browser import RodRecipeBrowserView, build_recipe_panel
 from views.fishing.rod_shop import RodShopView, build_rod_embed
+from views.fishing.structures_hub import (
+    StructuresView,
+    build_structures_embed,
+    open_structures_hub,
+)
 from views.fishing.tide_pool import TidePoolView, build_tide_pool_embed
 
 __all__ = [
@@ -27,6 +32,7 @@ __all__ = [
     "FishingMenuView",
     "RodRecipeBrowserView",
     "RodShopView",
+    "StructuresView",
     "TidePoolView",
     "active_casts",
     "build_bait_embed",
@@ -35,6 +41,8 @@ __all__ = [
     "build_menu_embed",
     "build_recipe_panel",
     "build_rod_embed",
+    "build_structures_embed",
     "build_tide_pool_embed",
+    "open_structures_hub",
     "prepare_cast",
 ]
