@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T15:31:03Z",
+    "generated_at": "2026-07-01T15:41:50Z",
     "build": {
-      "commit": "ce39becc",
-      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-kj8ctr' into claude/funny-franklin-kj8ctr",
-      "committed_at": "2026-07-01T15:31:03Z"
+      "commit": "22cb0e9",
+      "subject": "xp-import: add button entry point + generic \"another bot\" framing",
+      "committed_at": "2026-07-01T15:41:50Z"
     }
   },
   "counts": {
@@ -12758,10 +12758,11 @@
       "category": "progression",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Migrate XP/levels from another bot by scanning its level-up channel.",
-      "description": "Migrate XP/levels from another bot by scanning its level-up channel.",
+      "usage": "Import XP/levels from another bot by reading its level-up channel.",
+      "description": "Import XP/levels from another bot by reading its level-up channel.",
       "use_cases": null,
       "examples": [
+        "!xpconfig",
         "!xpimport [source] [#channel] [limit]",
         "!xpimport help"
       ],

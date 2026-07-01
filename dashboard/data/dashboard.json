@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T15:31:03Z",
+    "generated_at": "2026-07-01T15:41:50Z",
     "build": {
-      "commit": "ce39becc",
-      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-kj8ctr' into claude/funny-franklin-kj8ctr",
-      "committed_at": "2026-07-01T15:31:03Z"
+      "commit": "22cb0e9",
+      "subject": "xp-import: add button entry point + generic \"another bot\" framing",
+      "committed_at": "2026-07-01T15:41:50Z"
     },
     "counts": {
       "functions": 43,
@@ -2707,6 +2707,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-01-xp-import-button-generic.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — XP import: button entry + generic framing (follow-up)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-utility-completion-deepening.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Utility completion-first deepening",
@@ -3166,14 +3174,6 @@
       "file": "2026-06-27-youtube-cache-db-tests.md",
       "date": "2026-06-27",
       "title": "2026-06-27 — YouTube cache DB-primitive test coverage (dispatch slice 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-startability-offline-fit-tags.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Per-sector offline-fit startability tags (workflow improvement)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
@@ -9920,7 +9920,7 @@
           "is_group": false,
           "parent": null,
           "aliases": [],
-          "brief": "Migrate XP/levels from another bot by scanning its level-up channel.",
+          "brief": "Import XP/levels from another bot by reading its level-up channel.",
           "classification": "",
           "has_panel": true,
           "button_backed": true
