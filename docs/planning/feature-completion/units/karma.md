@@ -8,7 +8,7 @@
 > Source: `disbot/cogs/karma_cog.py` (`!thanks`/`!karma` + Help hook) ·
 > `disbot/services/karma_service.py` (audited grant seam) · `disbot/services/karma_config.py` (policy
 > read model) · `disbot/utils/db/karma.py` (migration; credit + audit log + anti-abuse reads) ·
-> `disbot/cogs/karma/schemas.py` (3-spec settings group) · `disbot/utils/settings_keys/karma.py` ·
+> `disbot/cogs/karma/schemas.py` (4-spec settings group) · `disbot/utils/settings_keys/karma.py` ·
 > the `KarmaProvider` in `services/rank_providers.py` · folio `docs/subsystems/karma.md`
 
 > Assessed during the completion-first arc (Q-0209). Karma is a **clean, well-guarded MVP** peer-
@@ -16,10 +16,12 @@
 > cooldown (default 1h), and a per-giver rolling 24h daily cap (default 10) — all enforced at the service
 > with **no write on a blocked grant**. Every grant appends to `karma_audit_log` (which doubles as the
 > anti-abuse read) and emits `EVT_KARMA_GRANTED`, with INV-K fencing direct writes out of the cog/view;
-> config is a typed 3-spec settings group; the karma leaderboard is a registered provider. The honest
-> gaps are **deliberately-deferred breadth** (reaction-to-thank, karma roles/rewards, decay, negative
-> rep, per-channel enable, an admin adjust panel) and one **audit-consistency** note (it uses a
-> domain-specific audit log like Economy, not the generic `audit.action_recorded`).
+> config is a typed 4-spec settings group; the karma leaderboard is a registered provider. The honest
+> gaps are **deliberately-deferred breadth** (karma roles/rewards, decay, negative rep, per-channel
+> enable, an admin adjust panel) and one **audit-consistency** note (it uses a domain-specific audit log
+> like Economy, not the generic `audit.action_recorded`). *(**React-to-thank shipped 2026-07-01, PR
+> #1620** — an opt-in per-guild trigger emoji, off by default, grants karma through the same audited
+> seam.)*
 
 ## Rubric (server function)
 
@@ -27,9 +29,10 @@
 - [x] **Core promise delivered** — `!thanks @user [reason]` / `!karma give` (aliases `!rep`/`!thank`)
       grants 1 karma; `!karma` shows a reputation card; karma leaderboard via the provider
       (`karma_service.py`, `karma_cog.py`, `rank_providers.py`).
-- [ ] **Every best-in-class sub-option exists** — ❌ **partial.** **Deferred (folio-documented):**
-      reaction-to-thank · karma roles/rewards at thresholds · milestone announcements · decay · negative
-      rep · per-channel enable. → punch-list #2.
+- [ ] **Every best-in-class sub-option exists** — ⚠️ **partial (react-to-thank now done).**
+      ✅ **React-to-thank** (opt-in trigger emoji, PR #1620). **Deferred (folio-documented):** karma
+      roles/rewards at thresholds · milestone announcements · decay · negative rep · per-channel enable.
+      → punch-list #2.
 - [x] **Failure modes honest** — self-give → `SelfKarmaError`; bot recipient rejected at the cog;
       disabled guild, cooldown-active, and daily-cap-hit each return a friendly message; absent target
       reads as zeros.
@@ -51,7 +54,10 @@
 - [x] **In-place, not spammy** — grants post a single confirmation; the card is one message.
 
 ### C. Convenience
-- [ ] **React-to-thank** — ❌ command-only today (reaction grant deferred). → punch-list #2.
+- [x] **React-to-thank** — ✅ **shipped (PR #1620).** An opt-in per-guild trigger emoji
+      (`karma.reaction_emoji`, empty = off); reacting with it grants karma to the message author through
+      the audited `karma_service.give(source="reaction")` seam (cooldown + daily cap + self-give guard
+      all apply). Silent (no channel spam); byte-identical when unset.
 - [x] **Sensible defaults** — cooldown 1h, daily cap 10, enabled by default (opt-out)
       (`karma_config.py`).
 - [x] **Clear feedback** — success shows the recipient's new total; cooldown shows the retry time; cap
@@ -70,12 +76,12 @@
 - [x] **Reuses governance** — capability floor `karma.settings.configure` on the settings specs.
 
 ### E. Configuration
-- [x] **Settings route through the pipeline** — `KARMA_CONFIG_SCHEMA` (3 specs: `enabled`,
-      `cooldown_seconds` 0–604800, `daily_cap` 1–1000) via `SubsystemSchema`/`SettingsMutationPipeline`
+- [x] **Settings route through the pipeline** — `KARMA_CONFIG_SCHEMA` (4 specs: `enabled`,
+      `cooldown_seconds` 0–604800, `daily_cap` 1–1000, `reaction_emoji` free-text) via `SubsystemSchema`/`SettingsMutationPipeline`
       (`karma/schemas.py`); defaults pinned to the policy (single source of truth, tested).
-- [x] **`settings_keys` constants** — `KARMA_ENABLED`/`KARMA_COOLDOWN`/`KARMA_DAILY_CAP`
+- [x] **`settings_keys` constants** — `KARMA_ENABLED`/`KARMA_COOLDOWN`/`KARMA_DAILY_CAP`/`KARMA_REACTION_EMOJI`
       (`utils/settings_keys/karma.py`).
-- [x] **Typed widgets** — bool + numeric-preset specs with validators.
+- [x] **Typed widgets** — bool + numeric-preset + free-text specs with validators.
 
 ### F. Wiring & discoverability
 - [x] **Registry** — key `karma`, `category: progression`, `visibility_tier: user`,
@@ -103,7 +109,7 @@
 1. **Bespoke command panel (rubric B)** *(deepening, or owner waiver)* — an actionable Karma panel (give
    / view card / settings link / back) rather than relying on the card + generic settings group — or the
    owner waives it (the card + settings group may suffice for a light user feature, the Welcome shape).
-2. **Best-in-class breadth (rubric A/C)** *(owner-paced, deferred)* — **reaction-to-thank** · karma
+2. **Best-in-class breadth (rubric A/C)** *(owner-paced, deferred)* — karma
    roles/rewards at thresholds · milestone announcements · decay · negative rep · per-channel enable ·
    an admin adjust/reset panel. The folio already lists these as the phase-2 deferral.
 3. **Audit-consistency** *(offline, minor)* — decide whether karma should also emit the generic
@@ -124,6 +130,6 @@
 Karma is a **clean, well-guarded MVP** — atomic grants, a self-give guard, cooldown + daily-cap
 anti-abuse that never writes on a block, an audited seam (INV-K-fenced), typed config, and a leaderboard
 provider. It is **not yet `✔ certified`**: the gaps are a missing **bespoke panel** (#1, or a waiver),
-**deliberately-deferred breadth** (reaction grant, karma roles, decay — #2), a minor audit-consistency
+**deliberately-deferred breadth** (karma roles, decay, negative rep — #2; react-to-thank ✅ #1620), a minor audit-consistency
 note (#3), small cog-test gaps (#4), and the owner walkthrough/sign-off (#5/#6). No safety/audit/dead-end
 issues found.

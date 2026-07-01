@@ -16,6 +16,14 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Karma react-to-thank** (PR #1620, completion-first deepening — closes the Karma cert's rubric-C
+  "React-to-thank" box) — an **opt-in per-guild trigger emoji** (`karma.reaction_emoji`, empty = off, the
+  4th karma setting-spec). When set, reacting with it on a message grants karma to that message's author
+  through the **existing audited `karma_service.give(source="reaction")` seam** — no new mutation path; the
+  self-give guard, per-(giver→receiver) cooldown, and per-giver daily cap all apply. An `on_raw_reaction_add`
+  listener in `karma_cog` (starboard-style fast gate: bot pre-filter → one policy read → emoji match →
+  message fetch). Silent (no channel spam); blocked grants swallowed; **byte-identical when unset** (no
+  existing guild's reactions silently mint karma). +11 tests; no migration; self-merge on green.
 - **Reaction-roles builder — "slim" lean layout** (owner-directed, from the layout sim #1612/#1613) —
   the role-menu builder went from **14 buttons / 3 rows** (felt dense in a live test) to a **lean 2-row**
   layout the optimizer recommended: row 0 = Template · Packs · Roles · **Style** · Text; row 1 = Colours ·
