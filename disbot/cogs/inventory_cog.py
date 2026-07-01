@@ -122,6 +122,42 @@ _RARITY_ORDER: dict[str, int] = {
     "Common": 3,
 }
 
+# Display order for the per-rarity-tier fields (punch #4). Rarest-first, with an
+# ``Unknown`` catch-all for items whose meta carries no recognised rarity.
+_RARITY_TIERS: tuple[str, ...] = ("Epic", "Rare", "Uncommon", "Common", "Unknown")
+
+
+def _item_line(item_key: str, qty: int, meta: dict) -> str:
+    """Render one inventory item as a single display line (name · qty · type).
+
+    Rarity is *not* repeated here — the per-rarity-tier field header already
+    names the tier (punch #4). Used by the grouped-fields renderer.
+    """
+    emoji = meta.get("emoji", "📦")
+    itype = meta.get("type", "Item")
+    display_name = item_key.replace("_", " ").title()
+    return f"{emoji} **{display_name}** × {qty} · {itype}"
+
+
+def _group_page_by_rarity(
+    page_items: list[tuple[str, int, dict]],
+) -> list[tuple[str, list[str]]]:
+    """Group one page's items into ``(tier_label, lines)`` pairs, rarest-first.
+
+    Pure display helper for the rarity-sorted detail view (punch #4): a large
+    inventory renders as a dedicated field per rarity tier present on the page
+    instead of one dense description block. Only tiers with at least one item
+    on the page are returned, in :data:`_RARITY_TIERS` order; an unrecognised
+    rarity falls into the ``Unknown`` bucket.
+    """
+    buckets: dict[str, list[str]] = {}
+    for item_key, qty, meta in page_items:
+        rarity = meta.get("rarity", "Unknown")
+        tier = rarity if rarity in _RARITY_ORDER else "Unknown"
+        buckets.setdefault(tier, []).append(_item_line(item_key, qty, meta))
+    return [(tier, buckets[tier]) for tier in _RARITY_TIERS if tier in buckets]
+
+
 # Sort modes for the category detail view (punch #5). "rarity" is the default and
 # matches the rarest-first grouping order; the others let a large inventory be
 # re-ordered by quantity or name. Each is a stable total order (name tiebreak).
@@ -316,15 +352,26 @@ class _CategoryView(BaseView):
         start = self._page * self._PER_PAGE
         page_items = self._shown[start : start + self._PER_PAGE]
 
-        lines = []
-        for item_key, qty, meta in page_items:
-            emoji = meta.get("emoji", "📦")
-            rarity = meta.get("rarity", "Unknown")
-            itype = meta.get("type", "Item")
-            display_name = item_key.replace("_", " ").title()
-            lines.append(f"{emoji} **{display_name}** × {qty}  `{rarity}` · {itype}")
-
-        embed.description = "\n".join(lines) if lines else "Nothing here."
+        if not page_items:
+            embed.description = "Nothing here."
+        elif self._sort == "rarity":
+            # Punch #4: in the default rarity sort, render the page as a
+            # dedicated field per rarity tier so a large inventory reads
+            # cleanly instead of one dense description block. (For the
+            # explicit quantity/name sorts we keep the flat list below so
+            # the grouping never fights the chosen order.)
+            for tier, tier_lines in _group_page_by_rarity(page_items):
+                embed.add_field(
+                    name=f"{tier} ({len(tier_lines)})",
+                    value="\n".join(tier_lines),
+                    inline=False,
+                )
+        else:
+            lines = [
+                f"{_item_line(item_key, qty, meta)}  `{meta.get('rarity', 'Unknown')}`"
+                for item_key, qty, meta in page_items
+            ]
+            embed.description = "\n".join(lines)
         filter_note = (
             "" if self._type_filter is None else f"{self._type_filter} only  •  "
         )
