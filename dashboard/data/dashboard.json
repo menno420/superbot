@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T19:02:12Z",
+    "generated_at": "2026-07-01T19:41:35Z",
     "build": {
-      "commit": "9e92767",
-      "subject": "logging(v2): open born-red session card + claim lane",
-      "committed_at": "2026-07-01T19:02:12Z"
+      "commit": "4fa02e9",
+      "subject": "logging(v2): Discord audit-log integration for Dyno-parity server logging",
+      "committed_at": "2026-07-01T19:41:35Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 160,
+      "ideas": 162,
       "bugs": 30,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,22 @@
     }
   ],
   "ideas": [
+    {
+      "file": "audit-log-catchup-on-reconnect-2026-07-01.md",
+      "title": "Idea — Audit-log catch-up on reconnect (gap-free logging across restarts)",
+      "status": "ideas",
+      "date": "2026-07-01",
+      "summary": "Server event logging v2 (this session) added `on_audit_log_entry_create`, so SuperBot now",
+      "subsystems": null
+    },
+    {
+      "file": "band-themes-show-pr-subject-2026-07-01.md",
+      "title": "Idea — `band_pr_status.py --themes` should print each PR's subject line",
+      "status": "ideas",
+      "date": "2026-07-01",
+      "summary": "`band_pr_status.py --themes` drafts a grouped-entry skeleton for the Recently-shipped ledger, but it",
+      "subsystems": null
+    },
     {
       "file": "leaderboard-row-avatars-2026-07-01.md",
       "title": "Idea: leaderboard row avatars (the Arcane-defining visual)",
@@ -2758,7 +2774,7 @@
       "file": "2026-07-01-server-logging-v2-audit-log.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Server event logging v2: Discord audit-log integration (Dyno parity)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
@@ -2792,6 +2808,14 @@
       "title": "2026-07-01 — Role-menu builder \"slim\" lean layout",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-01-reconcile.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — thirty-first Q-0107 reconciliation pass (band-#1620)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": true
     },
     {
@@ -3174,14 +3198,6 @@
       "file": "2026-06-28-server-fn-assessments-batch2.md",
       "date": "2026-06-28",
       "title": "2026-06-28 — Server-function completion assessments, batch 2 (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-reconcile.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — twenty-eighth Q-0107 reconciliation pass (band-#1530)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false

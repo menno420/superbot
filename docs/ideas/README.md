@@ -460,6 +460,11 @@ Current broad captures:
   the opaque merge-commit PRs (this pass hand-`git show --stat`'d 11 of them). The next mechanisation of the
   reconciliation routine after the trim actuator + callout prune. Stdlib, disposable (Q-0105). → relates
   `scripts/band_pr_status.py` · the reconciliation routine STEP 2.
+- [`band-themes-show-pr-subject-2026-07-01.md`](./band-themes-show-pr-subject-2026-07-01.md) —
+  follow-on to the classifier above: `--themes` buckets by **touched dir** and omits each PR's **subject**,
+  so the agent still hand-greps `git log` titles to regroup (the band-#1620 pass did exactly this). Print
+  the PR subject on every skeleton line (from the git log the helper already runs) so themes are readable
+  without re-fetching. Additive, offline, disposable (Q-0105). → relates `scripts/band_pr_status.py`.
 - [`band-pr-merge-status-helper-2026-06-19.md`](./band-pr-merge-status-helper-2026-06-19.md) —
   **SHIPPED 2026-06-20** as `scripts/band_pr_status.py` + `tests/unit/scripts/test_band_pr_status.py`,
   wired into the reconciliation routine's STEP 2. A stdlib
