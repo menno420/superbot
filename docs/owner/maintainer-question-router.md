@@ -7772,10 +7772,12 @@ distinct command, untouched.
 `tests/unit/invariants/test_extension_integrity.py`:
 - `test_no_banned_command_tokens_anywhere` — fails the build if any command/alias named `give` is ever
   re-added (`BANNED_COMMAND_TOKENS = {"give"}`; recurses into group subcommands).
-- `test_no_duplicate_top_level_command_names_across_cogs` — the broader root-cause guard: catches **any**
-  duplicate top-level command name/alias across cogs at CI time. The runtime `command_surface_ledger`
-  only sees duplicates *after* every cog loads — which a collision prevents — so it could never catch
-  this class; the static check can.
+- `test_no_duplicate_top_level_command_tokens` — the broader root-cause guard: catches **any**
+  top-level command name/alias claimed by two distinct commands at CI time, **same-cog or cross-cog**
+  (broadened + renamed from `…_across_cogs` on 2026-07-01 after the fishing `dock`/`sail` *same-cog*
+  collision crash-looped boot — PR #1600 — which the original, de-duplicating claimants by cog, missed).
+  The runtime `command_surface_ledger` only sees duplicates *after* every cog loads — which a collision
+  prevents — so it could never catch this class; the static check can.
 
 **Home:** this Q-block (canonical) + `tests/unit/invariants/test_extension_integrity.py` (enforcement) +
 `.claude/CLAUDE.md` § Helpers "Exact-name guard (Q-0200)" (the sibling same-module guard this extends

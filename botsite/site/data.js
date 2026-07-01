@@ -5010,12 +5010,11 @@ const COMMANDS = [
     "name": "sail",
     "area": "games",
     "status": "in-progress",
-    "summary": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
-    "description": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+    "summary": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
+    "description": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
     "usage": "!sail",
     "aliases": [
-      "setsail",
-      "dock"
+      "setsail"
     ],
     "permissions": "anyone",
     "cooldown": null,
@@ -7289,7 +7288,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "8f679dba",
+    "build": "07c881a",
     "title": "New public bot website",
     "changes": [
       {
@@ -7301,7 +7300,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "8f679dba",
+    "build": "07c881a",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7313,7 +7312,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "8f679dba",
+    "build": "07c881a",
     "title": "Command-alias suggestions",
     "changes": [
       {
