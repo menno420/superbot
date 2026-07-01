@@ -20,7 +20,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
-from cogs.logging.panel import LoggingPanelView, build_panel_embed
+from cogs.logging.panel import LoggingPanelView
 from cogs.logging.provision_view import LogChannelProvisionView
 from cogs.logging.select_view import LogChannelSelectView
 from cogs.logging_cog import LoggingCog
@@ -55,13 +55,34 @@ def _find_button(view: discord.ui.View, label_substr: str) -> discord.ui.Button:
 # ---------------------------------------------------------------------------
 
 
-def test_panel_view_has_eight_buttons_across_five_rows():
-    """Phase 9b added a Routes button alongside Test at row 3."""
+def test_panel_view_has_its_actions_plus_durable_nav():
+    """Eight panel actions PLUS the universal durable nav.
+
+    The eight actions (Refresh, Set Mod/Cleanup, Create Mod/Cleanup, Test,
+    Routes, Overview) are joined by the auto-attached 📚 Help + ↩ Moderation
+    controls: logging declares ``SUBSYSTEM`` with ``parent_hub="moderation"``,
+    and the ``↩ Overview`` self-refresh no longer opts the panel out of
+    standard nav (the stranding-fix — previously it did, leaving the panel
+    dependent on a fragile externally-attached back).
+    """
     view = LoggingPanelView(_author())
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    # Refresh, Set Mod, Set Cleanup, Create Mod, Create Cleanup, Test,
-    # Routes (new in 9b), Overview.
-    assert len(buttons) == 8
+    labels = [b.label or "" for b in buttons]
+    for expected in (
+        "Refresh Status",
+        "Set Mod Channel",
+        "Set Cleanup Channel",
+        "Create Mod Channel",
+        "Create Cleanup Channel",
+        "Test",
+        "Routes",
+        "Overview",
+    ):
+        assert any(expected in lbl for lbl in labels), f"missing action: {expected}"
+    nav_ids = {b.custom_id for b in buttons if b.custom_id}
+    assert "nav:help" in nav_ids, "expected the universal 📚 Help back button"
+    assert "nav:hub:moderation" in nav_ids, "expected the ↩ Moderation hub back"
+    assert len(buttons) == 10  # 8 actions + Help + hub-back
     rows = sorted({b.row for b in buttons})
     assert rows == [0, 1, 2, 3, 4]
 
@@ -95,19 +116,23 @@ async def test_status_button_re_renders_panel_embed_in_place():
 
     fake_embed = discord.Embed(title="📝 Server logging — status")
 
-    with patch(
-        "cogs.logging.panel.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.logging.panel.build_panel_embed",
-        new_callable=AsyncMock,
-        return_value=fake_embed,
-    ), patch(
-        "cogs.logging.panel.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.logging.panel.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.logging.panel.build_panel_embed",
+            new_callable=AsyncMock,
+            return_value=fake_embed,
+        ),
+        patch(
+            "cogs.logging.panel.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
     edit.assert_awaited_once()
     assert edit.await_args.kwargs["view"] is view
@@ -122,19 +147,23 @@ async def test_overview_button_renders_panel_embed():
     interaction.user = view._author
     interaction.guild = MagicMock()
 
-    with patch(
-        "cogs.logging.panel.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "cogs.logging.panel.build_panel_embed",
-        new_callable=AsyncMock,
-        return_value=discord.Embed(title="overview"),
-    ), patch(
-        "cogs.logging.panel.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "cogs.logging.panel.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "cogs.logging.panel.build_panel_embed",
+            new_callable=AsyncMock,
+            return_value=discord.Embed(title="overview"),
+        ),
+        patch(
+            "cogs.logging.panel.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
     edit.assert_awaited_once()
     assert edit.await_args.kwargs["view"] is view
@@ -265,15 +294,18 @@ async def test_test_button_calls_log_event_with_warn_action():
     interaction.response.defer = AsyncMock()
     interaction.followup.send = AsyncMock()
 
-    with patch(
-        "cogs.logging.panel.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "services.server_logging.log_event",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as log_event:
+    with (
+        patch(
+            "cogs.logging.panel.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "services.server_logging.log_event",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as log_event,
+    ):
         await btn.callback(interaction)
     log_event.assert_awaited_once()
     kwargs = log_event.await_args.kwargs

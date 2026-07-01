@@ -298,6 +298,26 @@ Critically, the event routes fall back to `events` (then nothing), never
 to `mod` — passive-event noise must not land in the moderation-action
 channel.
 
+### Routes panel order + per-route binding (operator UX)
+
+The Routes panel (`!logging routes`, or the 🗺️ **Routes** button on the logging
+panel) lists every route in **roots-first** order — `mod` and `events` lead
+because they are the two fallback roots: set those two and every route is
+delivered *somewhere* (severity / audit / cleanup fall back to `mod`; the
+per-category event routes fall back to `events`). Everything below refines one of
+them. The order is derived from the live fallback DAG and pinned to
+`tools/sim/settings_order_sim.py` by
+`tests/unit/invariants/test_settings_order.py` — roots-first cut
+scroll-to-full-coverage from 7 → 1 vs the old category-first order.
+
+Each route binds **independently**: pick it, then **Set Channel** (bind an
+existing channel, via `BindingMutationPipeline`) or **Create Channel** (provision
+a new one, via `ResourceProvisioningPipeline`). Per-route Set Channel works for
+**every** route, including the Q-0109 event routes — the `_KIND_TO_LABEL` gap
+that crashed Set Channel for `events` / `message_log` / `member_log` / `role_log`
+(a `KeyError` surfaced as *"An error occurred. Please try again."*) is fixed and
+guarded by `test_logging_routes_panel.test_route_labels_cover_every_kind`.
+
 ### Privacy
 
 Deleted-message logging surfaces content members removed. Q-0109
