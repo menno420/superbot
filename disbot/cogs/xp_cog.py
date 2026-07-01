@@ -10,7 +10,12 @@ from core.runtime.interaction_helpers import help_ctx_shim
 from core.runtime.permission_checks import admin_or_owner
 from services import xp_migration, xp_service
 from services.rank_providers import get_provider
-from services.xp_helpers import _STAT_TYPES, RANK_CARD_FILENAME, build_rank_response
+from services.xp_helpers import (
+    _STAT_TYPES,
+    RANK_CARD_FILENAME,
+    build_rank_response,
+    fetch_avatar_png,
+)
 from utils import embeds as em
 from utils import xp_migration as xpm
 from utils.rank_render import render_rank_card
@@ -57,6 +62,7 @@ async def _build_rank_provider_response(
         subtitle=provider.display_title,
         stats=[("Rank", f"#{rank_pos}"), (provider.select_label, rendered)],
         theme=provider.card_theme,
+        avatar_png=await fetch_avatar_png(member),
     )
     if png is None:
         return embed, None
