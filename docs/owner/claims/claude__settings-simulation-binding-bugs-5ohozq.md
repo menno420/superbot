@@ -1,1 +1,0 @@
-- `claude/settings-simulation-binding-bugs-5ohozq` · Server-logging routes: per-route binding-edit crash + disappearing back-to-settings/help button + a settings-order simulation · `disbot/cogs/logging/{select_view,provision_view,panel,routes_panel}.py`, `disbot/views/navigation.py`, `tools/sim/settings_order_sim.py`, tests · 2026-07-01
