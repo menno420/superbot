@@ -329,11 +329,14 @@ reputation; per-user totals + a leaderboard category on an audited mutation seam
 7. **dedicated_panel_command**: `none` (card-style embed, no interactive hub yet).
 8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (the viewer's card).
 9. **existing_SettingSpec_declarations**: `enabled`, `cooldown_seconds`,
-   `daily_cap` (`disbot/cogs/karma/schemas.py`). Defaults + bounds are the single
-   source of truth in `disbot/services/karma_config.py`.
+   `daily_cap`, `reaction_emoji` (`disbot/cogs/karma/schemas.py`). Defaults + bounds
+   are the single source of truth in `disbot/services/karma_config.py`. The
+   `reaction_emoji` trigger (empty = off) drives the react-to-thank listener in
+   `karma_cog` — reacting with it grants karma through the same audited seam.
 10. **existing_settings_keys**: `KARMA_ENABLED`, `KARMA_COOLDOWN`,
-    `KARMA_DAILY_CAP` (`disbot/utils/settings_keys/karma.py`). Stored as scalar
-    guild settings — schema-declared, with the two karma tables in migration 093.
+    `KARMA_DAILY_CAP`, `KARMA_REACTION_EMOJI` (`disbot/utils/settings_keys/karma.py`).
+    Stored as scalar guild settings — schema-declared, with the two karma tables in
+    migration 093.
 11. **existing_BindingSpec_entries**: none.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=user`; grant/card are
