@@ -1,1 +1,0 @@
-- `claude/funny-franklin-kj8ctr` · Utility completion-first deepening (resolve `utility.tool.ping` as a user-tier `!ping`; add `!botinfo`/`!membercount`; command+authority tests) · `disbot/cogs/utility_cog.py`, `disbot/cogs/diagnostic_cog.py`, `disbot/utils/subsystem_registry.py`, `tests/unit/cogs/` · 2026-07-01

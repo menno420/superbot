@@ -16,6 +16,14 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Utility — user-tier `!ping` + `!botinfo`/`!membercount` + first command/authority tests** (PR #1609,
+  completion-first deepening, Utility cert punch #1/#2/#3 CLOSED + #4 advanced) — resolved the
+  declared-but-unimplemented `utility.tool.ping` capability by adding a real **user-tier `!ping`** (gateway
+  + round-trip) and **re-homing the `ping` alias off** diagnostic's admin-tier `!latency` (diagnostic keeps
+  `!latency`); registry `entry_points` updated on both sides (collision-checked first per the BUG-0030
+  same-day lesson). Added `!botinfo`/`!membercount` (Carl-bot/MEE6 parity) and the unit's first
+  command-behaviour + `clear`/`invite` authority test coverage (21 tests). Remaining Utility gaps: punch #5
+  tone polish (offline) + #6/#7 owner live walk/sign-off. Self-merge on green.
 - **Inventory — item-detail density (per-rarity-tier fields)** (PR #1595, completion-first deepening,
   Inventory cert **punch #4 CLOSED**) — the category detail page's dense single-line item list became,
   in the default rarity sort, a **dedicated embed field per rarity tier** (Epic/Rare/Uncommon/Common)
