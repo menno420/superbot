@@ -26,6 +26,9 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+import discord
+
+from core.runtime import resources
 from services import (
     role_automation,
     role_exemption_service,
@@ -33,9 +36,80 @@ from services import (
     xp_service,
 )
 from services.audit_events import emit_audit_action
+from utils import xp_migration as xpm
 from utils.guild_config_accessors import get_xp_threshold_roles
+from utils.xp_migration import ScanPlan
 
 logger = logging.getLogger("bot.xp_migration")
+
+# How many members to preview in a ScanPlan sample.
+_SCAN_SAMPLE_LIMIT = 10
+
+
+async def scan_channel(
+    guild: Any,
+    channel: Any,
+    fmt: xpm.AnnouncerFormat,
+    limit: int | None = None,
+) -> ScanPlan | None:
+    """Read ``channel`` history and build a :class:`ScanPlan` for ``fmt``.
+
+    The shared scan behind both the ``!xpimport`` command and the import
+    button.  Only messages authored by a **bot/webhook** are parsed (the
+    announcer), so member chatter in the channel can't be mistaken for a
+    level-up.  Mentions resolve exactly; a plain-text name is matched against
+    the current roster and otherwise recorded as unresolved.  Keeps the
+    highest level seen per member.  Returns ``None`` when the channel's
+    history is unreadable (the bot lacks Read Message History).
+    """
+    scanned = 0
+    matched = 0
+    records: list[tuple[int, int]] = []
+    unresolved: dict[str, int] = {}
+    try:
+        async for msg in channel.history(limit=limit):
+            scanned += 1
+            if not (msg.author.bot or msg.webhook_id):
+                continue
+            parsed = xpm.parse_level_message(
+                msg.content,
+                [u.id for u in msg.mentions],
+                fmt=fmt,
+            )
+            if parsed is None:
+                continue
+            matched += 1
+            if parsed.user_id is not None:
+                records.append((parsed.user_id, parsed.level))
+            elif parsed.name:
+                member = resources.resolve_member_by_name(guild, parsed.name)
+                if member is not None:
+                    records.append((member.id, parsed.level))
+                else:
+                    unresolved[parsed.name] = max(
+                        unresolved.get(parsed.name, -1),
+                        parsed.level,
+                    )
+    except discord.Forbidden:
+        return None
+
+    reduced = xpm.reduce_max_levels(records)
+    top = sorted(reduced.items(), key=lambda kv: kv[1], reverse=True)
+    sample: list[tuple[str, int]] = []
+    for uid, level in top[:_SCAN_SAMPLE_LIMIT]:
+        member = resources.resolve_member(guild, uid)
+        sample.append((member.display_name if member else f"user {uid}", level))
+
+    return ScanPlan(
+        source_key=fmt.key,
+        source_label=fmt.label,
+        channel_id=channel.id,
+        scanned_messages=scanned,
+        matched=matched,
+        records=tuple(reduced.items()),
+        sample=tuple(sample),
+        unresolved_names=tuple(sorted(unresolved)),
+    )
 
 
 @dataclass(frozen=True)

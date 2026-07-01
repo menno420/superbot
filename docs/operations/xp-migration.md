@@ -4,8 +4,12 @@
 > `services/xp_migration.py`, `utils/xp_migration.py`) wins if they disagree.
 
 SuperBot can adopt the chat levels a server already earned under a previous
-leveling bot, so members keep their rank when you switch. The supported path is
-**scanning the old bot's level-up channel** and copying the announced levels.
+leveling bot, so members keep their rank when you switch. It works by **reading
+that bot's dedicated level-up channel** — the channel where the old bot posts
+*"so-and-so reached level N"* — and copying the highest level it announced for
+each member. This works with any bot that has such a channel; Arcane, MEE6, and
+SuperBot's own format are recognised out of the box (plus a permissive
+`generic` fallback).
 
 ## Does the other bot have a direct import? (Arcane: no)
 
@@ -25,33 +29,44 @@ import pipeline — see "Extending" below.)
 
 ## How to migrate (operator steps)
 
-1. Make sure SuperBot can **read** the old bot's level-up channel (it needs
-   **Read Message History** there). The old bot's announcements must still be
-   present — don't delete the channel before migrating.
-2. Run, in that channel (Administrator only):
+First: make sure SuperBot can **read** the old bot's level-up channel (it needs
+**Read Message History** there), and don't delete that channel before migrating —
+its announcements are the source.
 
-   ```
-   !xpimport arcane
-   ```
+### Option A — the button (easiest)
 
-   or point it at a specific channel / cap the scan:
+1. Run `!xpconfig` (Administrator only) and press **📥 Import from another bot**.
+2. Pick the old bot's **level-up channel** and **which bot** posted the messages
+   (defaults to Arcane), then press **🔍 Scan**.
+3. Review the **preview** and **✅ Apply import** (see "What the preview shows"
+   below).
 
-   ```
-   !xpimport arcane #level-up 5000
-   ```
+### Option B — the command
 
-   - `source` — the old bot's announcer format: `arcane` (default), `mee6`,
-     `superbot`, or `generic` (permissive "…level N…"). `!xpimport help` lists
-     them.
-   - `#channel` — where the level-up messages are (defaults to the current
-     channel).
-   - `limit` — max messages to scan (defaults to the **whole** channel).
+Run, in the level-up channel (Administrator only):
 
-3. SuperBot scans the channel, keeps the **highest** level announced per member,
-   and shows a **preview** — how many members, a sample, and any names it
-   couldn't match. Nothing is written yet.
-4. Toggle **Assign level roles** (on by default) if you want members' XP-threshold
-   roles granted as part of the import, then press **✅ Apply import**.
+```
+!xpimport
+```
+
+or name the bot / channel / a scan cap explicitly:
+
+```
+!xpimport arcane #level-up 5000
+```
+
+- `source` — which bot posted the announcements: `arcane` (default), `mee6`,
+  `superbot`, or `generic` (permissive "…level N…"). `!xpimport help` lists them.
+- `#channel` — the old bot's level-up channel (defaults to the current channel).
+- `limit` — max messages to scan (defaults to the **whole** channel).
+
+### What the preview shows
+
+Either path scans the channel, keeps the **highest** level announced per member,
+and shows a **preview** — how many members, a sample, and any names it couldn't
+match. Nothing is written yet. Toggle **Assign level roles** (on by default) if
+you want members' XP-threshold roles granted as part of the import, then press
+**✅ Apply import**.
 
 ## What it does (and safety)
 

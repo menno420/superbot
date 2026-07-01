@@ -7166,13 +7166,14 @@ const COMMANDS = [
     "name": "xpimport",
     "area": "progression",
     "status": "finished",
-    "summary": "Migrate XP/levels from another bot by scanning its level-up channel.",
-    "description": "Migrate XP/levels from another bot by scanning its level-up channel.",
+    "summary": "Import XP/levels from another bot by reading its level-up channel.",
+    "description": "Import XP/levels from another bot by reading its level-up channel.",
     "usage": "!xpimport",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
     "examples": [
+      "!xpconfig",
       "!xpimport [source] [#channel] [limit]",
       "!xpimport help"
     ],
@@ -7374,7 +7375,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "ce39becc",
+    "build": "22cb0e9",
     "title": "New public bot website",
     "changes": [
       {
@@ -7386,7 +7387,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "ce39becc",
+    "build": "22cb0e9",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7398,7 +7399,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "ce39becc",
+    "build": "22cb0e9",
     "title": "Command-alias suggestions",
     "changes": [
       {
