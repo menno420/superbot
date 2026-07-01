@@ -1,0 +1,1 @@
+- `claude/new-session-4nyrrq` · **PROD crash-loop hotfix** — fishing `dock`/`sail` command-token collision (same-cog) + broaden the duplicate-token guard to catch it · `disbot/cogs/fishing_cog.py` `tests/unit/invariants/test_extension_integrity.py` · 2026-07-01 · PR pending

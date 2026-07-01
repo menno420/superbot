@@ -109,9 +109,9 @@ class FishingCog(commands.Cog):
         embed.set_footer(text="Same for everyone today · 🎣 !fish to cast")
         await ctx.send(embed=embed)
 
-    @commands.command(name="sail", aliases=["setsail", "dock"])
+    @commands.command(name="sail", aliases=["setsail"])
     async def sail(self, ctx):
-        """Set sail for deepwater (or dock back on shore) — toggles your fishing venue.
+        """Set sail for deepwater (or return to shore) — toggles your fishing venue.
 
         Deepwater holds rare boat-only fish that bite slower and fight harder;
         shore is the relaxed everyday catch. Your choice persists, so ``!fish``

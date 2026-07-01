@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T06:42:29Z",
+    "generated_at": "2026-07-01T08:58:08Z",
     "build": {
-      "commit": "8f679dba",
-      "subject": "chore(session): open born-red card — fishing Dock bite-speed structure",
-      "committed_at": "2026-07-01T06:42:29Z"
+      "commit": "07c881a",
+      "subject": "Merge pull request #1599 from menno420/claude/funny-franklin-4n38rf",
+      "committed_at": "2026-07-01T08:58:08Z"
     },
     "counts": {
       "functions": 43,
@@ -2719,9 +2719,9 @@
       "file": "2026-07-01-fishing-dock-structure.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing Dock structure (bite-speed coral sink, Tide Pool sibling)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-07-01-fishing-coral-curios.md",
@@ -7088,10 +7088,9 @@
           "is_group": false,
           "parent": null,
           "aliases": [
-            "setsail",
-            "dock"
+            "setsail"
           ],
-          "brief": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+          "brief": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

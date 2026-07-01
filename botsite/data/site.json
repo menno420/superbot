@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T06:42:29Z",
+    "generated_at": "2026-07-01T08:58:08Z",
     "build": {
-      "commit": "8f679dba",
-      "subject": "chore(session): open born-red card — fishing Dock bite-speed structure",
-      "committed_at": "2026-07-01T06:42:29Z"
+      "commit": "07c881a",
+      "subject": "Merge pull request #1599 from menno420/claude/funny-franklin-4n38rf",
+      "committed_at": "2026-07-01T08:58:08Z"
     }
   },
   "counts": {
@@ -8414,14 +8414,13 @@
     {
       "name": "sail",
       "aliases": [
-        "setsail",
-        "dock"
+        "setsail"
       ],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
-      "description": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+      "usage": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
+      "description": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
       "use_cases": null,
       "examples": [
         "!fish"
