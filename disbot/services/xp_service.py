@@ -52,6 +52,16 @@ class XpAward:
 
 
 @dataclass(frozen=True)
+class XpImport:
+    """Result of a single bot-to-bot level import."""
+
+    final_xp: int
+    final_level: int
+    raised: bool
+    source: str
+
+
+@dataclass(frozen=True)
 class UserXPRecord:
     """Typed read-only view of an XP row for permission/level checks."""
 
@@ -136,6 +146,63 @@ async def award(
         new_level=new_level,
         leveled_up=leveled_up,
         delta=amount,
+        source=source,
+    )
+
+
+async def import_level(
+    guild_id: int,
+    user_id: int,
+    level: int,
+    *,
+    source: str,
+    now: int | None = None,
+) -> XpImport:
+    """Set *user_id*'s XP to the migration target for *level* (raise-only).
+
+    The single seam for bot-to-bot XP migration.  Converts a scraped/exported
+    *level* into the concrete XP total that reaches it
+    (:func:`db.total_xp_for_level`) and writes it via the raise-only
+    ``db.set_imported_xp`` primitive, so an import never lowers a member who
+    already earned more here and re-running the same import is idempotent.
+
+    Deliberately emits **no** events: unlike :func:`award` it does not fire
+    ``EVT_LEVEL_UP`` (a bulk migration must not spam the level-up announce
+    channel), and it skips ``EVT_XP_AWARDED`` because an absolute set has no
+    meaningful per-message ``delta``.  The batch caller
+    (:mod:`services.xp_migration`) records one summary audit action for the
+    whole import and optionally syncs level roles.
+
+    Args:
+        guild_id: discord guild.
+        user_id: target member.
+        level: the level the member reached under the other bot.  Must be >= 0.
+        source: short label for the import ("import:arcane", ...).
+        now: optional Unix timestamp for the ``last_xp`` column on first
+            insert.  Defaults to ``int(time.time())``.
+
+    Returns:
+        :class:`XpImport` describing the post-import state.
+
+    Raises:
+        ValueError: if ``level < 0``.
+    """
+    if level < 0:
+        msg = f"import level must be >= 0, got {level}"
+        raise ValueError(msg)
+    ts = now if now is not None else int(time.time())
+    target_xp = db.total_xp_for_level(level)
+    final_xp, final_level, raised = await db.set_imported_xp(
+        user_id,
+        guild_id,
+        target_xp,
+        level,
+        ts,
+    )
+    return XpImport(
+        final_xp=final_xp,
+        final_level=final_level,
+        raised=raised,
         source=source,
     )
 

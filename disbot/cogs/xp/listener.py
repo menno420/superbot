@@ -189,94 +189,39 @@ async def _apply_xp_threshold_roles(
 
     Hits the F-1 cached threshold-roles list (S2.2) so the role list
     is at most one DB read per (TTL × guild) instead of per-level-up.
+
+    Planning (stack / exempt / threshold resolution) is the shared
+    :func:`services.xp_role_sync.plan_level_role_assignments` — the *same*
+    planner the bot-to-bot migration uses, so an imported member is granted
+    exactly the roles they would have earned live.  The grant itself routes
+    through the audited ``role_automation`` seam (one source of truth for
+    member-role mutation; fires ``audit.action_recorded`` and reuses the
+    shared manage-roles / hierarchy preflight).
     """
     try:
-        from services import role_automation, role_exemption_service
-        from services.role_automation import Assignment, summarize_failures
+        from services import role_automation, role_exemption_service, xp_role_sync
+        from services.role_automation import summarize_failures
 
         guild = message.guild
         member = message.author
-        member_role_ids = {r.id for r in getattr(member, "roles", ())}
 
         exempt = await role_exemption_service.get_exempt_role_ids(guild.id)
-        if member_role_ids & exempt.xp:
-            return  # member holds an XP-exempt role — grant nothing
-
         xp_roles = await get_xp_threshold_roles(guild.id)
-        qualifying: list = []  # earned roles (level_required <= new_level)
-        configured: list = []  # every configured XP role that resolves
-        for role_cfg in xp_roles:
-            # Id-first (PR6 migration 056), normalized-name fallback for legacy
-            # rows — a renamed role keeps its XP tier.
-            discord_role = resources.resolve_role(
-                guild,
-                role_id=role_cfg.get("role_id"),
-                name=role_cfg["role_name"],
-            )
-            if discord_role is None:
-                continue
-            configured.append(discord_role)
-            if role_cfg["level_required"] <= new_level:
-                qualifying.append(discord_role)
-        if not qualifying:
-            return
-
-        member_roles = member.roles  # type: ignore[union-attr]
         stack = await role_exemption_service.xp_roles_stack(guild.id)
-        if stack:
-            to_add = [r for r in qualifying if r not in member_roles]
-            to_remove: list = []
-        else:
-            # Single-role mode: keep only the highest earned level role
-            # (xp_roles is ordered by level_required ascending).
-            target = qualifying[-1]
-            to_add = [] if target in member_roles else [target]
-            to_remove = [r for r in configured if r != target and r in member_roles]
 
-        # Route the grant through the audited role_automation seam (one source of
-        # truth for member-role mutation) rather than calling member.add_roles
-        # directly — this fires `audit.action_recorded` and reuses the shared
-        # manage-roles / hierarchy preflight, matching every other role grant in
-        # the bot (Welcome's entry-role, the role cog). A direct add/remove here
-        # was the one XP-side audit gap.
-        member_display = getattr(member, "display_name", str(member.id))
-        reason = f"XP level-up: reached level {new_level}"
-        assignments: list[Assignment] = []
-        if stack:
-            # Stacking mode: one promote assignment per newly-earned role.
-            for r in to_add:
-                assignments.append(
-                    Assignment(
-                        member_id=member.id,
-                        member_display=member_display,
-                        add_role_id=r.id,
-                        add_role_name=r.name,
-                        remove_role_ids=(),
-                        remove_role_names=(),
-                        reason=reason,
-                        days_in_guild=0,
-                    ),
-                )
-        else:
-            # Single-role mode: one assignment carries the promote + demotions.
-            target = to_add[0] if to_add else None
-            if target is not None or to_remove:
-                assignments.append(
-                    Assignment(
-                        member_id=member.id,
-                        member_display=member_display,
-                        add_role_id=target.id if target is not None else None,
-                        add_role_name=target.name if target is not None else None,
-                        remove_role_ids=tuple(r.id for r in to_remove),
-                        remove_role_names=tuple(r.name for r in to_remove),
-                        reason=reason,
-                        days_in_guild=0,
-                    ),
-                )
-
+        assignments = xp_role_sync.plan_level_role_assignments(
+            guild,
+            member,
+            new_level,
+            stack=stack,
+            exempt_xp_ids=exempt.xp,
+            xp_roles=xp_roles,
+            reason=f"XP level-up: reached level {new_level}",
+        )
         if not assignments:
             return
 
+        member_display = getattr(member, "display_name", str(member.id))
         result = await role_automation.apply(guild, assignments, actor_type="system")
         if result.succeeded:
             logger.info(
