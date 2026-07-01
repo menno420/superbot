@@ -1,0 +1,1 @@
+- branch `claude/funny-franklin-td09cd` · scope: fishing structures sub-hub (fold Tide Pool + Dock menu buttons into one "🏗 Structures" child) + follow-on completion-deepening · area: `disbot/views/fishing/`, `disbot/cogs/fishing_cog.py`, tests · 2026-07-01
