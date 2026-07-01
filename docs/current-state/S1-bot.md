@@ -16,6 +16,14 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Reaction-roles builder — "slim" lean layout** (owner-directed, from the layout sim #1612/#1613) —
+  the role-menu builder went from **14 buttons / 3 rows** (felt dense in a live test) to a **lean 2-row**
+  layout the optimizer recommended: row 0 = Template · Packs · Roles · **Style** · Text; row 1 = Colours ·
+  Channel · **⚙️ Advanced** · Post · Back. The five rarely-tapped knobs (Theme/Card/Counts/Mode/Limit)
+  fold into a new `_AdvancedView` sub-panel (values still shown live on the main preview). Style stays
+  first-screen per owner directive. Reuses the existing pickers; the folded Limit modal + Counts toggle
+  refresh the **main** preview via the stored panel interaction. No change to what posts; +3 tests,
+  consistency allowlist updated.
 - **Utility — user-tier `!ping` + `!botinfo`/`!membercount` + first command/authority tests** (PR #1609,
   completion-first deepening, Utility cert punch #1/#2/#3 CLOSED + #4 advanced) — resolved the
   declared-but-unimplemented `utility.tool.ping` capability by adding a real **user-tier `!ping`** (gateway
