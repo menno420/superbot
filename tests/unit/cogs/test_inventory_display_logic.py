@@ -20,6 +20,7 @@ from cogs.inventory_cog import (
     UnifiedInventoryView,
     _build_combined_inventory,
     _CategoryView,
+    _group_page_by_rarity,
     _sort_items,
 )
 
@@ -240,6 +241,67 @@ async def test_cycle_sort_wraps_back_to_rarity():
     for _ in range(len(_SORT_MODES)):
         await view._cycle_sort(interaction)
     assert view._sort == "rarity"  # full cycle returns to the default
+
+
+# ---------------------------------------------------------------------------
+# Item-detail density — per-rarity-tier fields (completion-cert punch #4)
+# ---------------------------------------------------------------------------
+
+
+def test_group_page_by_rarity_orders_rarest_first_and_buckets_unknown():
+    page = [
+        ("gold", 1, {"rarity": "Rare"}),
+        ("mystery", 2, {}),  # no rarity → Unknown bucket
+        ("diamond", 1, {"rarity": "Epic"}),
+        ("ruby", 1, {"rarity": "Rare"}),
+    ]
+    groups = _group_page_by_rarity(page)
+    # Rarest-first, Unknown last; only tiers present appear.
+    assert [name for name, _ in groups] == ["Epic", "Rare", "Unknown"]
+    by_tier = dict(groups)
+    assert len(by_tier["Rare"]) == 2  # gold + ruby share the tier
+    assert len(by_tier["Epic"]) == 1
+    # The per-item line names qty + type but NOT the rarity (the field header does).
+    assert "× 1" in by_tier["Epic"][0]
+    assert "`" not in by_tier["Epic"][0]
+
+
+def test_rarity_sort_renders_one_field_per_tier():
+    view = _CategoryView(_member(), "Mining Materials", _mixed(), hub=_hub())
+    embed = view.build_embed()
+    # Default rarity sort → dedicated fields per tier, rarest-first; no dense block.
+    assert embed.description is None
+    assert [f.name for f in embed.fields] == [
+        "Epic (1)",
+        "Rare (1)",
+        "Uncommon (1)",
+        "Common (1)",
+    ]
+    epic = next(f for f in embed.fields if f.name.startswith("Epic"))
+    assert "Diamond" in epic.value
+
+
+@pytest.mark.asyncio
+async def test_explicit_sort_keeps_flat_description_not_tier_fields():
+    view = _CategoryView(_member(), "Mining Materials", _mixed(), hub=_hub())
+    interaction = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+    await view._cycle_sort(interaction)  # rarity → quantity
+    embed = view.build_embed()
+    # An explicit sort keeps the flat ordered list so grouping never fights it.
+    assert not embed.fields
+    assert embed.description
+    # Highest quantity first (iron=9), with the rarity shown inline in this mode.
+    assert "Iron" in embed.description
+    assert "`Uncommon`" in embed.description
+
+
+def test_empty_page_has_no_tier_fields():
+    view = _CategoryView(_member(), "Tools", [], hub=_hub())
+    embed = view.build_embed()
+    assert embed.description == "Nothing here."
+    assert not embed.fields
 
 
 # ---------------------------------------------------------------------------

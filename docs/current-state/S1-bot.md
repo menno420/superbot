@@ -16,6 +16,12 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Inventory — item-detail density (per-rarity-tier fields)** (PR #1595, completion-first deepening,
+  Inventory cert **punch #4 CLOSED**) — the category detail page's dense single-line item list became,
+  in the default rarity sort, a **dedicated embed field per rarity tier** (Epic/Rare/Uncommon/Common)
+  via pure `_group_page_by_rarity` + `_item_line` helpers, so a large inventory reads cleanly; the
+  explicit quantity/name sorts keep the flat ordered list so grouping never fights the chosen sort.
+  Pure display logic, no migration; +4 tests (29 on the unit). Self-merge on green.
 - **Logging — ignored channels/users exclusion lists** (PR #1594, completion-first deepening, Logging
   cert **punch #1 CLOSED**) — the named best-in-class gap vs Carl-bot/Dyno. Two per-guild scalar
   settings (`logging_ignored_channels` / `logging_ignored_users`, comma-separated id CSV, default
