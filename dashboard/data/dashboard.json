@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T15:12:59Z",
+    "generated_at": "2026-07-01T15:31:03Z",
     "build": {
-      "commit": "8e43dd6e",
-      "subject": "chore(session): born-red card — Utility completion deepening",
-      "committed_at": "2026-07-01T15:12:59Z"
+      "commit": "ce39becc",
+      "subject": "Merge remote-tracking branch 'origin/claude/funny-franklin-kj8ctr' into claude/funny-franklin-kj8ctr",
+      "committed_at": "2026-07-01T15:31:03Z"
     },
     "counts": {
       "functions": 43,
@@ -2710,7 +2710,7 @@
       "file": "2026-07-01-utility-completion-deepening.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Utility completion-first deepening",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
@@ -2809,6 +2809,14 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-30-role-menu-builder-live-preview-fix.md",
+      "date": "2026-06-30",
+      "title": "2026-06-30 — Role-menu builder live-preview fix (ephemeral re-render)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-30-reconcile-band1590.md",
@@ -3168,14 +3176,6 @@
       "title": "2026-06-27 — Per-sector offline-fit startability tags (workflow improvement)",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-setup-wizard-command-channels.md",
-      "date": "2026-06-27",
-      "title": "Session — 2026-06-27 · Setup wizard: \"Where can people use commands?\" (per-channel command access)",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": true
     }
   ],
