@@ -1,0 +1,1 @@
+- `claude/bot-xp-level-migration-9e9br8` · XP-import follow-up: button entry point (XP config panel) + generic "import from another bot" framing (Arcane→one supported format) · `disbot/views/xp/import_panel.py`, `disbot/views/xp/config_panel.py`, `disbot/services/xp_migration.py`, `disbot/cogs/xp_cog.py`, `docs/operations/xp-migration.md`, tests · 2026-07-01
