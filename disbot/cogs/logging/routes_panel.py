@@ -308,7 +308,7 @@ class LoggingRoutesView(HubView):
     ) -> None:
         # Phase 3.5 — share the defer + edit + error-handling flow with
         # every other back-button in the codebase via views.navigation.
-        from views.navigation import transition_to
+        from views.navigation import carry_back, transition_to
 
         async def _build_logging_parent(
             interaction: discord.Interaction,
@@ -316,6 +316,10 @@ class LoggingRoutesView(HubView):
             from cogs.logging.panel import LoggingPanelView, build_panel_embed
 
             view = LoggingPanelView(self._author)
+            # Carry the externally-attached back (↩ Back to Settings / Help)
+            # forward onto the rebuilt panel so returning from Routes does not
+            # strand the operator one level up from where they entered.
+            carry_back(self, view)
             embed = await build_panel_embed(interaction.guild)
             return embed, view
 

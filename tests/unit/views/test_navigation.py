@@ -1011,6 +1011,39 @@ def test_standard_nav_skips_unknown_subsystem():
     assert _back_ids(view) == set()
 
 
+class _OverviewNavView(discord.ui.View):
+    """A SUBSYSTEM panel whose only nav-shaped control is a labelled button —
+    the ``LoggingPanelView`` / ``EconomyPanelView`` shape (an ``↩ Overview``
+    self-refresh). The button is added before ``attach_standard_nav`` so the
+    ``_self_navigates`` heuristic sees it, as it does at runtime.
+    """
+
+    def __init__(self, subsystem: str, label: str) -> None:
+        super().__init__(timeout=None)
+        self.SUBSYSTEM = subsystem
+        self.add_item(discord.ui.Button(label=label, custom_id="panel.local"))
+        attach_standard_nav(self)
+
+
+def test_standard_nav_covers_a_panel_whose_only_nav_is_overview():
+    """Regression (LoggingPanelView / EconomyPanelView): an ``↩ Overview``
+    button is a self-refresh, NOT parent-nav, so a panel whose only nav-shaped
+    control is Overview must still receive the universal Help + hub back.
+    """
+    view = _OverviewNavView("farm", "↩ Overview")  # farm → parent_hub games
+    assert {NAV_HELP_ID, "nav:hub:games"} <= _back_ids(view)
+
+
+def test_standard_nav_skips_a_panel_with_its_own_back_to_parent():
+    """A genuine ``↩ Back to <parent>`` button IS self-navigation — the panel
+    keeps its own nav and must not get a duplicate from auto-nav.
+    """
+    view = _OverviewNavView("farm", "↩ Back to Games")
+    ids = _back_ids(view)
+    assert NAV_HELP_ID not in ids
+    assert "nav:hub:games" not in ids
+
+
 def test_has_standard_nav_detects_hub_back_without_help():
     view = discord.ui.View()
     attach_back_button(

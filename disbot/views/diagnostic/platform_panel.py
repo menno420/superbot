@@ -402,9 +402,15 @@ class _PlatformHubView(HubView):
             FlagManagerView,
             build_flag_manager_overview_embed,
         )
+        from views.navigation import carry_back
 
         guild_id = interaction.guild.id if interaction.guild else None
         manager = FlagManagerView(self._author, guild_id=guild_id)
+        # Carry the externally-attached back (↩ Back to Admin, added by the
+        # admin-hub opener) onto the fresh Flag Manager so the grandparent link
+        # is not dropped entering it (the same fresh-instance back-loss class as
+        # the logging Routes round-trip).
+        carry_back(self, manager)
         await safe_edit(
             interaction,
             embed=build_flag_manager_overview_embed(),
