@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from views.fishing.bait_shop import BaitShopView, build_bait_embed
 from views.fishing.cast_view import FishingCastView, active_casts, prepare_cast
+from views.fishing.dock import DockView, build_dock_embed
 from views.fishing.menu import (
     FishingMenuView,
     build_fishlog_embed,
@@ -21,6 +22,7 @@ from views.fishing.tide_pool import TidePoolView, build_tide_pool_embed
 
 __all__ = [
     "BaitShopView",
+    "DockView",
     "FishingCastView",
     "FishingMenuView",
     "RodRecipeBrowserView",
@@ -28,6 +30,7 @@ __all__ = [
     "TidePoolView",
     "active_casts",
     "build_bait_embed",
+    "build_dock_embed",
     "build_fishlog_embed",
     "build_menu_embed",
     "build_recipe_panel",

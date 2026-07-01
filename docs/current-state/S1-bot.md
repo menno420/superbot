@@ -338,8 +338,16 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   unbuilt ⇒ byte-identical. Reuses the Forge/Home/Campfire pattern end-to-end (registry entry + audited
   `mining_workflow.build_structure` + `views/fishing/tide_pool.py` panel + `!tidepool` + a menu button).
   Sim-pinned ([tide-pool numbers](../planning/fishing-tide-pool-numbers-2026-07-01.md)).
-  ▶ **Next offline successor:** a *second* curio tier, or a **second** Tide Pool-style structure with a
-  different fishing payoff (e.g. a bite-speed "dock") — pure + sim-pinnable, self-mergeable.
+  **Its sibling the Dock SHIPPED 2026-07-01 (dispatch run, PR #1599):** the **Dock** ⚓ — a second,
+  *entry* coral structure (cheaper, coral + **wood**) whose payoff is **bite-speed** (faster bites)
+  rather than rarity-pull, so a coral investment is a genuine *choice* — faster fishing vs. rarer
+  fish — and coral now has **three** distinct sinks (cosmetic curios · rarity Tide Pool · speed
+  Dock). Same pattern (registry entry + audited `build_structure` + a bite-speed knob fold +
+  `views/fishing/dock.py` + `!dock` + a menu button); byte-identical when unbuilt. Sim-pinned
+  ([dock numbers](../planning/fishing-dock-numbers-2026-07-01.md)).
+  ▶ **Next offline successor:** a *second* curio tier, or a **structures sub-hub** that folds the
+  now-two fishing-structure menu buttons (Tide Pool + Dock) into one "🏗 Structures" child so the
+  fishing menu stays lean as more structures land — pure + self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

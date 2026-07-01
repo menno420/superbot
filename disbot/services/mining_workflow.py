@@ -679,6 +679,7 @@ _STRUCTURE_BUILD_REASON = {
     structures.HOME: market.HOME_BUILD_REASON,
     structures.CAMPFIRE: market.CAMPFIRE_BUILD_REASON,
     structures.TIDE_POOL: market.TIDE_POOL_BUILD_REASON,
+    structures.DOCK: market.DOCK_BUILD_REASON,
 }
 
 
@@ -697,6 +698,10 @@ def _build_success_suffix(structure: str, new_level: int) -> str:
         mult = structures.tide_pool_pull_mult(new_level)
         pct = round((mult - 1.0) * 100)
         return f" Your casts now pull **+{pct}%** toward rarer fish."
+    if structure == structures.DOCK:
+        mult = structures.dock_bite_speed_mult(new_level)
+        pct = round((1.0 - mult) * 100)
+        return f" Fish now bite **{pct}%** faster."
     return ""
 
 

@@ -131,6 +131,10 @@ async def prepare_cast(
         # A built Tide Pool is nudging this cast toward rarer fish (its pull
         # bonus is already folded into the roll).
         footer += " · 🪸 tide pool"
+    if start.dock_bonus:
+        # A built Dock is speeding up the bite (its bite-speed bonus is already
+        # folded into effective_bite_speed).
+        footer += " · ⚓ dock"
     embed.set_footer(text=footer)
     return embed, view
 
