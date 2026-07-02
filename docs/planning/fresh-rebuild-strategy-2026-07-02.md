@@ -1,6 +1,6 @@
 # Fresh-rebuild strategy — verified baseline + plan-of-plans (2026-07-02)
 
-> **Status:** `analysis` — research-grounded strategy, **not an approved execution plan.**
+> **Status:** `plan` — research-grounded strategy (analysis-grade), **not an approved execution plan.**
 > Every quantitative claim below was verified against **live source / tooling on 2026-07-02** by a
 > 7-agent verification fleet, not carried over from prior docs. Where an earlier figure drifted or was
 > wrong, the correction is marked **⚠️**.
@@ -374,6 +374,12 @@ on the *current* repo now.
    *running now as the `rebuild-harvest` ultracode*; raw material for the design.
 4. Hand **Fable** the **Phase 2 design spec** (judge-panel + cross-model review) with verified material,
    not a blank page — then the owner-approval gate.
+
+**Launch pad for the fresh ultracode sessions:**
+[`rebuild-ultracode-handoff-2026-07-02.md`](rebuild-ultracode-handoff-2026-07-02.md) — paste-ready
+session prompts (harvest / finish substrate-kit / golden harness / Fable design) plus the
+verified-baseline TL;DR and the non-negotiable constraints, so a fresh high-core `/effort ultracode`
+session starts without this session's in-memory context.
 
 ---
 
