@@ -136,6 +136,26 @@ For **each subsystem in your lane**, write one section into your lane file
 - **Stay in your lane** (see `PARTITION.md`) — subsystems are assigned disjointly so lanes never
   collide. If you finish early, do a *verify* pass on an adjacent lane's tier-3 findings, don't re-audit.
 
+## Launch preconditions & hard boundaries (every lane, before any work)
+
+*(Added 2026-07-02 from the prompt-refinement pass — stated once here so every lane inherits them.)*
+
+- **Substrate precondition.** This substrate merged to `main` in **#1661**, so a fresh checkout has it.
+  Before working, confirm your checkout contains `BRIEF.md`, `PARTITION.md`, your lane file, and
+  `ground-truth/`. If any are missing, **stop and report the missing contract — do not invent the
+  schema.**
+- **Documentation-only boundary (the precise read-only rule).** The *only* writes allowed are: your
+  **assigned audit markdown** under `docs/analysis/rebuild-discovery/new-bot-capability-audit/`, an
+  optional findings note explicitly assigned to your lane, the session-journal/log entries the repo
+  workflow requires, and the PR metadata for those docs. **No** `disbot/`, tests, migrations, configs,
+  generated files, or any new-repo code.
+- **Capstone carry-forward fields.** Every per-capability recommendation must carry: **dependency-layer
+  guess · production-grade done-definition · outperform target** (or `pending Lane F`) **·
+  owner-gated / blocked / external-dependency status.** The capstone can't order the build plan without them.
+- **Phase-3 hard stop (owner gate).** The rebuild design is **owner-gated**: no Phase-3 / new-repo
+  implementation until the owner approves the design spec. This audit produces **planning evidence, not
+  build approval** — never start implementation or treat a lane finding as a green light to build.
+
 ## Exit bar — when the design is "durable enough to start building"
 
 The final review (see `FINAL-REVIEW-HANDOFF.md`) declares GO when, **across all 43 subsystems**:
