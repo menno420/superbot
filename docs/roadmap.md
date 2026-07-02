@@ -149,11 +149,15 @@
   [design spec](planning/rebuild-design-spec-2026-07-02.md) plus the
   [linchpin-validation evidence package](planning/rebuild-linchpin-validation-2026-07-02.md) (#1639 —
   Phase-0.5 golden harness `parity/` coverage-measured + grammar spike 73%→85% tier-1/2, verdict
-  **GO with six grammar amendments**). **▶** meanwhile: the owner's
-  **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)**
-  OSS arc — resume at the **PR-2 remainder** (modes + contract-doc templates + trigger/drift detection
-  → PR 3). **Owner re-elevated this to top focus 2026-06-30** (fresh-rebuild vision #1589/#1590: "bot is
-  mostly production ready, focus on the AI-memory project now") — this **supersedes any earlier "demoted
+  **GO with six grammar amendments**).
+- **Now:** **▶ FINALIZE THE MEMORY SUBSTRATE** — owner-queued 2026-07-02 as a **Fable 5 ultracode**
+  session; canonical startup prompt =
+  **[rebuild handoff §5.B](planning/rebuild-ultracode-handoff-2026-07-02.md)** (extended with the
+  context-economy engine per **Q-0214** / the
+  [retention plan](planning/memory-retention-and-context-economy-plan-2026-07-02.md) §10 + a verified
+  gap/uncertainty addendum). Subsumes the old "resume at the PR-2 remainder → PR 3" framing of the
+  **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)** OSS arc.
+  **Owner re-elevated this to top focus 2026-06-30** (fresh-rebuild vision #1589/#1590: "bot is  mostly production ready, focus on the AI-memory project now") — this **supersedes any earlier "demoted
   after fourth band-carry" language** in the cross-horizon snapshot below. The **autonomous-loop
   mechanism** is live (#742/#753–#761; operating layer hardened #863/#865/#868/#869/#870) — its
   *operation* is S5, its *design* is here.

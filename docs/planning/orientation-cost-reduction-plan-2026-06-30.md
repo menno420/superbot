@@ -3,6 +3,10 @@
 > **Status:** `plan` — drafted 2026-06-30, owner-directed live in-chat. Not yet executed. Cross-check
 > the live file state and `router_status.py` output before executing — every count below is a
 > 2026-06-30 snapshot and several numbers (router size especially) are growing weekly.
+> **Companion (2026-07-02):** [`memory-retention-and-context-economy-plan-2026-07-02.md`](memory-retention-and-context-economy-plan-2026-07-02.md)
+> covers the axis this plan deliberately leaves open — delete-vs-archive policy, retention windows,
+> and hard caps for the terminal corpus (.sessions/, historical plans, ideas, ledger tails). This
+> plan stays authoritative for boot-path compression (CLAUDE.md · router · AGENT_ORIENTATION).
 
 ## Origin
 
@@ -123,6 +127,12 @@ add a line-count check so a future session can't silently blow past the stated c
 same way nothing currently catches it today.
 
 ## Workstream D — propose (don't apply) a standing "shrink" rule
+
+> **Settled by Q-0214.3 (2026-07-02, owner, live):** shrink duty = **checker + routine** (mechanical
+> prunes via `check_retention.py --fix`, judgment prunes via the retention-debt routine issue) — the
+> owner chose this over a per-session shrink ritual, so the DISCUSS proposal below is no longer
+> needed. See `memory-retention-and-context-economy-plan-2026-07-02.md` §5. Original text kept for
+> provenance:
 
 The project has several mandatory session-end **growth** rules (Q-0089 idea-of-the-session, Q-0102
 previous-session review, Q-0104 docs audit). There is no equivalently-weighted **shrink** counterpart,
