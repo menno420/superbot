@@ -1,6 +1,6 @@
 # 2026-07-02 — Review the most recent session (#1649 substrate-kit finalize)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/review-recent-session-qcyc44` · **PR:** #1653
 > **Session type:** review — "review the work done by the most recent session"
 

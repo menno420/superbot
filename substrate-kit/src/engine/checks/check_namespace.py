@@ -136,9 +136,8 @@ def check_namespace(
             # `_` is the conventional throwaway (and the canonical
             # singledispatch register target); `.register`-decorated defs are
             # the named-function dispatch form — neither is real shadowing.
-            exempt_shadow = _ns_overloaded_names(tree) | _ns_dispatch_registered_names(
-                tree
-            )
+            exempt_shadow = _ns_overloaded_names(tree)
+            exempt_shadow |= _ns_dispatch_registered_names(tree)
             for name, lineno in _ns_top_level_defs(tree):
                 if name in seen and name not in exempt_shadow and name != "_":
                     msg = (
