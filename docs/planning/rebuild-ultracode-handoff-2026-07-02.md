@@ -76,21 +76,69 @@ Adversarially verify before writing. Synthesize → docs/planning/rebuild-harves
 decision-ledger,settings-model,migration-contract}.md. Opus xhigh. Born-red session card.
 ```
 
-### B — Finish the substrate-kit adaptive half (Phase 0)
+### B — Finalise + ship the AI-memory system (Phase 0 — the REAL new-repo gate)
+> **Elevated 2026-07-02 (owner):** this is not "finish the adaptive half" as a side task — it is the
+> **gating deliverable that lets the new repo start correctly.** Design-spec §9.1 makes the substrate-kit
+> K0's very first act (doc skeletons · decision-ledger format · orientation-budget checker · namespace
+> guard · seam-authority checks). If the memory system isn't finished + shippable before K0, every agent
+> in the new repo works without its nervous system — reintroducing the exact "recurring errors, nothing
+> centralised" failure the rebuild exists to kill. Run on **Fable 5** (a self-improving memory system is a
+> reasoning problem), `/effort ultracode`, with room to speculate. This gate is parallel to — and more
+> fundamental than — the linchpin proof (§F): §F gates *committing* to the build; B gates *starting* the repo.
 ```
-ultracode: Finish the AI-memory substrate-kit's adaptive half (Phase 0). Read
-docs/planning/rebuild-ultracode-handoff-2026-07-02.md, fresh-rebuild-strategy-2026-07-02.md (§1.2/§3/§5),
-and portable-substrate-kit-extraction-2026-06-13.md (approved plan + "RESUME HERE"). Source of truth:
-substrate-kit/src/**, tests/unit/substrate_kit/**. Build the UNBUILT nervous system (verified
-absent/stubbed): the three mode behaviors observe/guided/active (the field is set but nothing reads it);
-drift/staleness/trigger detection; the reflection buffer + meta-reflection miner (forward-injected into
-orientation); the 7 MISSING contract templates (architecture, ownership, runtime_contracts,
-repo-navigation-map, helper-policy, ai-project-workflow, owner-profile — this kills the dangling
-question_bank routes); the remaining hooks (session_start orientation injection, post_edit, stop_check) +
-settings.template.json; memory-integrity/quarantine + a context budget; ship the namespace-guard as a
-portable checker. Regenerate dist/bootstrap.py after ANY src/engine edit; keep zero disbot imports;
-bootstrap stays stdlib-only. Verify: python3.10 -m pytest tests/unit/substrate_kit/ -q; build_bootstrap +
-dist/bootstrap.py --simulate 1; python3.10 scripts/check_quality.py --full. Opus xhigh. Born-red card.
+ultracode (Claude Fable 5, effort ultracode): Produce the FINALISED, complete, shippable AI-memory
+system — the substrate-kit's full self-improving nervous system built on its existing declaration/
+bootstrap layer, PACKAGED as a single-file bootstrap + a downloadable package that a fresh repo adopts in
+ONE step. This is the real gate for starting the new repo (design-spec §9.1 K0 plants it first);
+"finished and ready to ship" is the bar, not "further along."
+
+READ (verify against source — Q-0120, don't adopt): portable-substrate-kit-extraction-2026-06-13.md (v9
+approved plan — the ▶ RESUME HERE recipe, §6 self-review/maintenance loop, the modes/stances/skills/
+personas design, the bootstrap distribution form); the CURRENT source substrate-kit/src/**,
+substrate-kit/dist/bootstrap.py, tests/unit/substrate_kit/** (the built declaration/bootstrap/interview/
+skills/stances layer + 117 tests); rebuild-design-spec-2026-07-02.md §7 (the kit IS K0's bootstrap:
+templates · ledger format · orientation-budget checker · namespace guard · seam-authority checks), §2.10
+(AgentContextPack fed by the manifest snapshot), §3.5 (namespace guard evolved from the kit's portable
+guard); rebuild-parallel-execution-plan-2026-07-02.md (why this gates K0).
+
+BUILD the unbuilt nervous system (establish the exact current gap yourself against source first): the
+three integration-mode BEHAVIORS observe/guided/active (the field is set but nothing reads it to change
+agent behavior); drift/staleness/trigger detection (mandatory-question sessions that fire "whenever the
+current state requires it"); the reflection buffer + meta-reflection miner (forward-injected into
+orientation); the §6 self-review & maintenance loop (model-agnostic — compaction triggers, blocking-
+question escalation, the review seam); the remaining contract templates (kills the dangling question_bank
+routes); the remaining hooks (session_start orientation injection, post_edit, stop_check) +
+settings.template.json; memory-integrity/quarantine + a context budget; the namespace-guard + symbol-
+shadowing pass as portable checkers; the AgentContextPack generator (able to consume a manifest snapshot,
+per design-spec §2.10).
+
+FINALISE + PACKAGE (the owner's explicit "single file or downloadable package"): complete and regenerate
+dist/bootstrap.py (single-file, stdlib-only, self-expanding — must run in a bare new repo with nothing
+installed); produce a clean downloadable/pip-installable package with an init/adopt flow that plants, in
+one step, the doc skeletons + the provenance-separated decision ledger (docs/decisions.md, [D-NNNN]) + the
+orientation router (≤7,000-word budget + its checker) + all the checkers (namespace/shadowing, seam-
+authority, docs, session-log, orientation-budget) + the hooks + the staged-learning onboarding. Write the
+substrate-kit README (what it is · install/adopt · the staged-learning contract). Make it INTERLOCK with
+the new repo so K0's bootstrap cleanly yields the CONSTITUTION/architecture/ownership/runtime-contracts
+skeleton the design spec expects.
+
+YOUR LATITUDE (use it — this is the artifact the whole self-improving-agent ecosystem is really about):
+reason freely about what a FINISHED agent-memory system should be; improve on the v9 plan where you see
+better; speculate about capabilities that make the next agent work more correctly with less steering —
+that IS the product's purpose — and pursue the good ones. Produce a genuinely well-made, complete end
+product. Do NOT re-litigate the 10 settled review rounds — verify against source, build forward.
+
+HARD RAILS: zero coupling (no disbot/ imports anywhere in substrate-kit/; bootstrap stdlib-only); Q-0120
+(the plan + design spec + this briefing are input to verify, not orders); extend the 117-test suite to
+cover every new capability; prove the single-file artifact end-to-end (build_bootstrap → dist/bootstrap.py
+runs in a scratch dir → adopt-in-one-step works); python3.10 scripts/check_quality.py --full before
+pushing (the FULL suite, not just check_docs); born-red .sessions/ card first → complete last; PR ready →
+auto-merge on green.
+
+END-PRODUCT BAR: a COMPLETE, SHIPPABLE package — single-file bootstrap + downloadable package + one-step
+adopt flow + full test coverage + README — that the new repo is planted from at K0. Deliver a short
+"shippable-readiness" note confirming the zero-coupling, single-file, adopt-in-one-step, and
+new-repo-interlock properties. This is the gate; the new repo starts correctly once it's shipped.
 ```
 
 ### C — Behavioral golden harness (Phase 0.5) — *capture while the bot is live, before any freeze*
