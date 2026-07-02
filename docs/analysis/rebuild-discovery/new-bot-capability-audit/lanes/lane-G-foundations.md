@@ -123,12 +123,16 @@ custom_id/event/settings-key collisions. This is the central L0 gap the namespac
   outcome (`startup_outcome.record_extension_success/failure`, `bot1.py:707/710`), and continues —
   one bad cog does not down the bot (INV-J, `docs/architecture.md:135`). A **boot smoke-test CI guard**
   (#1601, `docs/current-state.md:299-304`) fails the *build* when a cog won't load — defense in depth.
-- **The failure-mode ambiguity (a real finding)**: a failed cog's subsystem is marked **INTERNAL**
-  via `governance_service.register_failed_subsystems` (matched by `entry_points` absence,
-  `bot1.py:722-736`). This *hides* the subsystem from users rather than surfacing "this feature is
-  broken in production" — it degrades silently. The health snapshot's `extensions` adapter reads the
-  outcomes (`startup_outcome.py:238-291`), so the state is *observable*, but the default user-facing
-  behavior is concealment, not a visible degraded banner.
+- **The failure-mode ambiguity (a real finding)**: after the load loop, for each subsystem that
+  declares `entry_points`, if **none** of those entry-point command names appear in the loaded command
+  set the subsystem is registered failed and marked **INTERNAL** via
+  `governance_service.register_failed_subsystems` (`bot1.py:722-736`); subsystems with empty
+  `entry_points` are skipped by the `if entry_points and …` guard. This *hides* the subsystem from
+  users rather than surfacing "this feature is broken in production" — it degrades silently. The health
+  snapshot's `extensions` adapter reads the outcomes (`startup_outcome.py:238-291`), so the state is
+  *observable*, but the default user-facing behavior is concealment, not a visible degraded banner.
+  (It is also an *inference* — "no commands registered" — not a direct "this extension raised" signal,
+  so a cog that loads but registers no command reads the same as a crashed one.)
 
 ### 2.4 Env / config / secrets — `disbot/config.py`
 
@@ -256,7 +260,7 @@ Replace = re-architect; Centralize = one home; Drop = remove.**
 | I1 | Structured logging w/ `boot_id` (`bot1.py:29-60`) | **Improve → centralize** | Correct behavior; move out of the bootstrap module into `kernel/observability` so it is the leaf every layer imports. |
 | I2 | Prometheus metrics (`services/metrics.py`) | **Centralize (relocate)** | Relocate to `kernel/observability` — a dependency-free leaf. This **dissolves the one live layer break** (`core/runtime/ai/gateway.py:51 from services import metrics`, verified) at its root (spec §1.4). |
 | I3 | Diagnostics provider registry (`diagnostics_service`) | **Preserve + improve** | Generalize into a manifest `DiagnosticProviderSpec`; keep the register/snapshot shape. |
-| R1 | `bot1.py` composition root (1463 lines) | **Replace** | Extract every non-composition concern into kernel engines; the new `app/` root is "load manifests → validate namespace → build → boot" (spec §1.1). See §7. |
+| R1 | `bot1.py` composition root (1463 lines) | **Replace** | Extract every non-composition concern into kernel engines; the new `app/` root is "load manifests → validate namespace → build → boot" (spec §1.1). Concrete extraction examples: the cross-cutting `on_guild_remove → guild_lifecycle.teardown` hand-wired in the bootstrap (`bot1.py:342-346`) becomes a manifest-declared lifecycle subscription; the 6 event handlers become kernel event/interaction wiring. See §7. |
 | R2 | `config.INITIAL_EXTENSIONS` hardcoded loader (`config.py:79-143`) | **Replace** | Manifest-driven dynamic discovery, no hardcoded list, declared dependency order, failure isolation (see §4). |
 | R3 | `config.py` flat env module | **Replace → centralize** | One typed, validated config/secrets object loaded + validated **before gateway connect**; scattered `os.getenv` banned by a checker; secrets separated from config (see §6.2). |
 | R4 | `validate_registry` god-function (cognitive 83, `subsystem_registry.py:1309`) | **Replace** | Becomes a linear pass over the derived namespace index (spec §1.5); the three registry fragments (`SUBSYSTEMS` + `HUBS` + `SubsystemSchema`) consolidate into one `SubsystemManifest` (spec §2.1). |
@@ -309,49 +313,100 @@ silent-hide default.
 
 ## 5. Benchmark — external foundation patterns
 
-> External facts, clearly labeled **[external]**; corroborated by the Lane G benchmark fan-out.
-> Relevance is to *our* manifest-driven L0.
+> External facts, clearly labeled **[external]** with source URLs; gathered by the Lane G benchmark
+> fan-out (context7 + web) and folded in here. Relevance verdict = ADOPT / ADAPT / REJECT for *our*
+> manifest-driven L0.
 
-- **[external] discord.py 2.x async extension loading.** `bot.load_extension(name)` is coroutine-based;
-  the idiomatic place to load is the `setup_hook` (runs after login, before `on_ready`), and each
-  extension exposes an `async def setup(bot)`. discord.py has **no built-in dependency system and no
-  auto-discovery** — bots roll their own (source: discord.py docs, "ext.commands — Extensions";
-  discordpy.readthedocs.io). *Relevance:* our current `_load_cogs` runs inside `async with bot`
-  before `bot.start` (`bot1.py:1092`), which is functionally the `setup_hook` window; the rebuild
-  should keep loading *before* gateway connect but drive it from manifest discovery, not a literal
-  list — and supply the dependency ordering discord.py lacks.
-- **[external] Dynamic folder-scan discovery.** The common OSS pattern is
-  `pkgutil.iter_modules(package.__path__)` over a `cogs`/`plugins` package, loading each with
-  per-module `try/except` (source: widely documented discord.py cookbook patterns). *Relevance:*
-  directly maps to scanning `sb/manifest/*.py`; the manifest world is *stronger* because the unit
-  loaded is declarative data, not arbitrary import side effects.
-- **[external] Red-DiscordBot cog manager.** Red loads cogs dynamically from install paths, tracks
-  per-cog load outcomes, isolates failures so one broken cog doesn't stop the others, and its
-  Downloader resolves per-cog `requirements`/`info.json` metadata (source: Red-DiscordBot docs,
-  docs.discord.red). *Relevance:* validates "declared per-unit metadata + isolated load + visible
-  failure state" as the mature shape; our `SubsystemManifest` + `startup_outcome` are the same idea,
-  and Red's *visible* "cog failed to load" surface is the argument against our silent-INTERNAL default.
-- **[external] Python plugin/dependency idioms.** `importlib.metadata.entry_points` (setuptools
-  entry-points), `pluggy` (pytest/tox hook system), and `stevedore` are the standard extensible-plugin
-  mechanisms; topological load order is typically an explicit declared-dependency graph, not import
-  order (sources: packaging.python.org; pluggy.readthedocs.io). *Relevance:* confirms declared
-  `dependencies=(...)` + topological sort over entry-points/manifests is the field-standard answer to
-  "how is load order declared and validated"; we adopt the *declaration + toposort*, not the
-  out-of-tree entry-points packaging.
-- **[external] Fail-before-connect / typed config validation.** 12-factor config + `pydantic-settings`
-  validate all config at process start and fail fast on missing/invalid values; Kubernetes splits
-  **liveness / readiness / startup** probes so an orchestrator routes traffic away from a not-ready or
-  draining replica; "exit non-zero on invalid config so the rollout stops" is the standard anti-
-  crash-loop posture (sources: 12factor.net; docs.pydantic.dev/latest/concepts/pydantic_settings;
-  kubernetes.io "Configure Liveness, Readiness and Startup Probes"). *Relevance:* our `/health` vs
-  `/ready` split (`healthserver.py`) already matches k8s; the gaps to close are typed-config
-  validation before connect (§6.2) and namespace validation before connect (§6.1).
+### 5.1 discord.py 2.x extension loading (the loader contract)
 
-**Outperform reading:** most bots (MEE6/Dyno/Carl-bot as closed products; Red as the mature OSS
-skeleton) do dynamic discovery + isolated load, but **none has a pre-connect *name/identity collision*
-gate** — collisions are a runtime failure everywhere. The rebuild's namespace registry (compile +
-merge-result + pre-boot, §6.1) is the concrete way our L0 **outperforms** the field: the collision
-class that crash-looped us — and that any large bot risks — becomes structurally impossible to ship.
+- **[external] `setup_hook()`, not `on_ready`, is the load window; loads are coroutines.** In
+  discord.py 2.x `load_extension`/`unload`/`reload`/`add_cog` are all `await`-able; the canonical place
+  to load is `setup_hook` (runs once after login, **before the gateway READY**), so cogs + their
+  app-commands register before the bot is live. Source: discordpy.readthedocs.io
+  `/ext/commands/extensions.html`, `/migrating.html`. **ADOPT** — and note our current `_load_cogs`
+  already runs in that window (`bot1.py:1092`, inside `async with bot` before `bot.start`), so the
+  rebuild keeps the *timing* and only changes *what* it loads (manifest scan, not a literal list).
+- **[external] Distinct load-failure exception types.** `commands.ExtensionError` is the catch-base;
+  its children `NoEntryPointError` / `ExtensionFailed` / `ExtensionNotFound` / `ExtensionAlreadyLoaded`
+  name distinct failure modes. Source: discordpy.readthedocs.io `/ext/commands/api.html`. **ADOPT** —
+  the L0 loader's failure-isolation should record *which* failure per host (a richer signal than our
+  current inferred "no commands registered", §2.3).
+- **[external] Dynamic folder-scan discovery.** `pathlib.Path('cogs').rglob('*.py')` (or
+  `pkgutil.iter_modules` over a package), skipping `_`-prefixed files, is the standard no-hardcoded-list
+  pattern. Source: fallendeity.github.io/discord.py-masterclass/cogs/. **ADOPT** — maps directly to
+  scanning `sb/manifest/*.py`; `pkgutil` is cleaner when `manifest` is an importable package.
+- **[external] Atomic `reload_extension` (rollback-on-error).** "If an error occurred during the
+  reloading process, the bot will pretend as if the reload never happened" — the old module is cached
+  and restored on failure. Source: discordpy.readthedocs.io `/ext/commands/extensions.html`;
+  github.com/Rapptz/discord.py issue #1658. **ADOPT** as the L0 hot-reload primitive for a
+  `SubsystemHost`: snapshot the live host, rebuild from the re-read manifest, swap in only on success.
+- **[external] discord.py has NO built-in dependency/ordering system** — extensions load in feed order
+  and nothing is resolved; the docs recommend a hardcoded list. Source: discordpy.readthedocs.io
+  `/ext/commands/cogs.html`. **This is the exact gap our L0 must fill** (§4) — and REJECT the
+  filename-prefix ordering hack (fragile, invisible) that today's `bootstrap_access_cog`-must-be-first
+  positional rule (`config.py:84-85`) is an instance of.
+
+### 5.2 Large OSS bot skeletons + Python plugin systems
+
+- **[external] Red-DiscordBot `info.json` cog manifest** declares `requirements` (pip), `required_cogs`
+  (name → repo URL), `min_bot_version`. Source: docs.discord.red `/framework_downloader.html`.
+  **ADAPT** — our `dependencies=("economy",)` is Red's `required_cogs` but pointing at *in-repo
+  siblings*, which is strictly simpler (no repo-URL resolution).
+- **[external] Red declares `required_cogs` but does NOT enforce it** — "Downloader will not deal with
+  this functionality"; there is no topological load ordering. Source: docs.discord.red
+  `/framework_downloader.html`. **REJECT Red's punt — this is precisely the gap our design closes:** our
+  `dependencies` are machine-readable *and* in-process, so the `SubsystemHost` loader builds the
+  dependency DAG and toposorts (§4), doing what even the mature OSS skeleton declined to.
+- **[external] Red CogManager folder-scan with priority path list** (install_path > user > core) +
+  cache invalidation. Source: edu-discordbot.readthedocs.io redbot cog_manager. **ADOPT** the
+  folder-scan model; our single-directory `sb/manifest/*` glob is simpler (no path-priority ambiguity).
+- **[external] stevedore (OpenStack) `on_load_failure_callback(manager, entrypoint, exception)`** fires
+  per failed plugin so one bad plugin never crashes the host. Source: docs.openstack.org/stevedore.
+  **ADOPT** the per-host failure-callback shape (collect the exception, keep loading) — the mature form
+  of our `startup_outcome` isolation.
+- **[external] `importlib.metadata.entry_points`** is the packaging-standard discovery (pytest's
+  `pytest11`, etc.). Source: packaging.python.org "creating-and-discovering-plugins". **REJECT for our
+  loader** — entry-points earn their keep only for *separately-distributed third-party* plugins; our
+  subsystems are first-party in-repo, so a package scan is simpler and avoids the install-step coupling.
+- **[external] pluggy (`tryfirst`/`trylast` relative-ordering hints).** Source: pluggy.readthedocs.io.
+  **ADAPT the philosophy, not the machinery** — lighter than a DAG, but our explicit `dependencies=(...)`
+  DAG is more auditable; note the hint pattern as a fallback for order ties.
+
+### 5.3 Fail-before-connect / typed config / born-red deploy
+
+- **[external] The "12.1-factor" rule** — read all config from the env at boot and **refuse to start
+  (exit non-zero) if any required value is missing/malformed**. Source: 12factor.net/config +
+  marmelab/medium "12.1-factor apps". **ADOPT** as the backbone of the boot order — it *is* our
+  "validate before gateway connect" (§3.2 + §6.2).
+- **[external] `pydantic-settings` typed validation at boot** — one `BaseSettings` model instantiated
+  once coerces + validates all env, raising a `ValidationError` list instead of failing lazily deep in
+  a request path. Source: github.com/pydantic/pydantic-settings. **ADOPT** the pattern (library optional
+  — owner decision §11.3).
+- **[external] Kubernetes three-probe split** — startup ("init done?") gates readiness ("serve
+  traffic?") and liveness ("restart me?"). Source: kubernetes.io "Configure Liveness, Readiness and
+  Startup Probes". **ADAPT** — Railway single-worker has no literal probes, but the three-question model
+  maps cleanly onto our `/health` (liveness) + `/ready` (readiness, lifecycle-aware) split
+  (`healthserver.py:92-139`), with boot config+namespace validation as the "startup" gate.
+- **[external] "Red deploy, not crash-loop"** — on invalid config, `sys.exit(non-zero)` exactly once so
+  the orchestrator halts the rollout and keeps the previous version serving; no internal retry loop.
+  Source: kubernetes.io probes docs. **ADOPT** — this is our born-red deploy (§3.2 phase 3).
+- **[external] Registration-time name-collision detection** — key each entry on its name as it
+  registers; a second registration of a seen key **raises, naming both sources**. Sources: craftcms
+  issue #3457; philsturgeon "global namespace class collisions". **ADOPT directly for §6.1** — the
+  runtime-registry analogue of our compile-time namespace check, and the pattern nobody in the bot
+  ecosystem applies pre-connect.
+
+### 5.4 Outperform reading
+
+Most bots (MEE6/Dyno/Carl-bot as closed products; **Red as the mature OSS skeleton**) do dynamic
+discovery + isolated load — but **two edges are ours alone**: (1) Red *declares* inter-cog dependencies
+yet **does not enforce ordering** (its own docs say so); our machine-readable, in-process
+`dependencies=(...)` + toposort closes that gap. (2) **No bot in the field has a pre-connect
+name/identity collision gate** — collisions are a runtime failure everywhere (the exact class that
+crash-looped us). The rebuild's namespace registry (compile + merge-result + pre-boot, §6.1) makes that
+class **structurally unshippable**. Those two, plus the generated-panel/settings/help foundation (97%
+operator-band fit) that removes the per-feature UI layer these bots hand-maintain, are the concrete L0
+outperform targets.
 
 ---
 
@@ -501,8 +556,9 @@ done-definition field).
   8-step order is asserted by an integration test.
 - **Dynamic loader** — done when there is **no hardcoded extension list**; discovery is a manifest scan;
   the dependency graph is toposorted and a cycle/missing-dep fails the build; a per-host load failure is
-  isolated **and surfaced** in health (not silently hidden); the namespace revalidation runs
-  pre-connect.
+  isolated **and surfaced** in health (not silently hidden) and records the *specific* failure (the
+  discord.py `ExtensionError` family, `[external]` §5.1 — not an inferred "no commands registered");
+  the namespace revalidation runs pre-connect.
 - **Config/env/secrets** — done when one typed config object loads + validates the full required set
   **before connect**; a checker bans scattered `os.getenv`; secrets are a separate never-logged
   category; per-env profiles resolve deterministically.
@@ -602,9 +658,15 @@ done-definition field).
   `subsystem_registry.py:1309` (file 1928 lines, `SUBSYSTEMS` at `:58`); `core/runtime/__init__.py`
   subscribes the governance events via `bus.on(...)` inside `setup()` (~`:181-183`); 103 migration
   `.sql` files; 46 metric families in `services/metrics.py`.
+- **Adversarial-verify pass (Q-0120 discipline):** a background fleet (10 area-map agents + 3 external
+  benchmark agents + 10 adversarial citation-verify batches, 23 agents, 0 errors, ~1.46M tokens)
+  re-opened the cited source. Of 80 spot-checked citations, **79 CONFIRMED, 1 FALSE** — the FALSE was a
+  *sub-agent's* over-claim (that `server_management`/`ux_lab` have empty `entry_points`; source shows
+  both declare non-empty `entry_points`), which prompted the §2.3 wording correction above; no citation
+  in this document failed verification.
 - **⚠ unverified:** the exact cognitive-complexity numbers for `validate_registry` (83) and
   `AINaturalLanguageStage.process` (135) are the design spec's measurements (§1.5), not re-measured this
   session — carried as cited, not independently confirmed. The "47 `KNOWN_EVENTS`" count is the linchpin
   doc's figure (§1.1), not recounted here.
-- External (§5) benchmark facts are labeled `[external]` and sourced to the named docs; treat as
-  best-practice references, not repo source.
+- External (§5) benchmark facts are labeled `[external]` with source URLs; treat as best-practice
+  references, not repo source.
