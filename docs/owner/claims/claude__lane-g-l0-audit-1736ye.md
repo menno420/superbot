@@ -1,0 +1,1 @@
+ - `claude/lane-g-l0-audit-1736ye` · **Lane G — L0 Foundations & Runtime Skeleton audit** — docs-only capability audit of bootstrap/loader/config/helpers/kernel/observability · `docs/analysis/rebuild-discovery/new-bot-capability-audit/lanes/lane-G-foundations.md` · 2026-07-02 · in-progress
