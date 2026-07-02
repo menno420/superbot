@@ -29,6 +29,7 @@ MODULE_ORDER = (
     "lib/config.py",
     "lib/state.py",
     "lib/guardrail.py",
+    "lib/modes.py",
     "interview/question_bank.py",
     "interview/stages.py",
     "interview/interview.py",

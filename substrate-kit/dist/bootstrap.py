@@ -69,8 +69,58 @@ def _new_project_id() -> str:
 
 
 def _default_cadence() -> dict[str, int]:
-    """Return the default cadence knobs."""
-    return {"reconciliation_prs": 20}
+    """Return the default cadence knobs (every hardcoded cadence lives here)."""
+    return {
+        "reconciliation_prs": 20,
+        "reconciliation_sessions": 20,
+        "compaction_sessions": 20,
+        "critical_slot_grace_sessions": 3,
+        "staleness_days": 14,
+        "guided_practice_sessions": 3,
+    }
+
+
+def _default_reflection() -> dict:
+    """Return the reflection-buffer knobs (size cap is a hard context guard)."""
+    return {"enabled": True, "buffer_size": 5}
+
+
+def _default_orientation() -> dict:
+    """Return the orientation-budget knobs (the K0 ≤7,000-word gate).
+
+    ``boot_docs`` empty means "fall back to ``readpath_docs``" — the
+    unconditional boot-read set the budget counts.
+    """
+    return {"budget_words": 7000, "boot_docs": []}
+
+
+def _default_economy() -> dict:
+    """Return the context-economy knobs (taxonomy/gauges are host policy).
+
+    ``maturity`` gates the actuator: ``shadow`` (report only, the first-prune
+    safety protocol) -> ``gated`` (apply with review) -> ``normal``. Classes and
+    gauges ship empty — the engine supplies a documented generic default when
+    unset; each adopting repo declares its own table (the kit ships the search,
+    not our constants).
+    """
+    return {
+        "maturity": "shadow",
+        "reference_roots": [],
+        "id_patterns": [r"Q-\d{3,}", r"D-\d{3,}", r"R-\d{3,}"],
+        "classes": [],
+        "gauges": [],
+        "debt_threshold": 10,
+    }
+
+
+def _default_namespace() -> dict:
+    """Return the namespace-guard knobs (roots to scan + reserved-name map)."""
+    return {"roots": [], "reserved": {}}
+
+
+def _default_review_seam() -> dict:
+    """Return the review-seam knobs (provisioned, not wired — no live reviewer)."""
+    return {"reviewer": None}
 
 
 def _default_badge_tokens() -> list[str]:
@@ -120,6 +170,12 @@ class Config:
     session_markers: list[dict[str, str]] = field(
         default_factory=_default_session_markers,
     )
+    reflection: dict = field(default_factory=_default_reflection)
+    orientation: dict = field(default_factory=_default_orientation)
+    economy: dict = field(default_factory=_default_economy)
+    namespace: dict = field(default_factory=_default_namespace)
+    seams: list[dict] = field(default_factory=list)
+    review_seam: dict = field(default_factory=_default_review_seam)
 
     def to_json(self) -> str:
         """Serialise the config to indented, key-sorted JSON."""
@@ -184,6 +240,11 @@ def default_state(project_id: str) -> dict[str, Any]:
                 "blocking_questions": 0,
             },
         },
+        "mode_history": [],
+        "reflection_buffer": {"active_count": 0, "last_mined": None},
+        "graduation_proposed": False,
+        "last_compaction_session": 0,
+        "review_log": [],
     }
 
 
@@ -305,6 +366,153 @@ def assert_safe_target(target: Path, kit_root: Path) -> None:
         msg = f"refusing to operate on the kit's own tree: {target}"
         raise UnsafeTargetError(msg)
 
+# --- engine/lib/modes.py ---
+"""Integration-mode behavior policies (plan section 3 — the adoption-pace axis).
+
+The ``mode`` state field (observe | guided | active) existed since PR 1 but nothing
+read it; this module is the single place its *behavior* is defined, so every
+consumer (interview quota, orientation depth, trigger mandates, actuator gating,
+graduation) asks one policy table instead of re-deriving the semantics.
+
+The three modes, per the approved plan:
+
+- **observe** — the kit imposes nothing: each session writes a light note, asks
+  only 1-2 observation questions, and passively profiles how the user already
+  works; after enough sessions it *proposes* a tailored workflow (never
+  auto-graduates — proposal only).
+- **guided** — the default: the workflow rolls out one practice at a time in a
+  fixed order (session logs → idea lifecycle → question router → session-enders
+  → gates), each arriving only after the prior is established; triggers may
+  mandate questions.
+- **active** — the full workflow from session 1; the interview runs aggressively
+  (no quota) to fill slots fast.
+
+``promotion_rights`` is the *separate* autonomy axis: what the agent may change
+without sign-off. Actuators (economy prunes, maintenance writes) may apply only
+when the mode allows it AND promotion_rights is ``"promote"`` — otherwise they
+stay dry-run/propose.
+"""
+
+
+
+MODES = ("observe", "guided", "active")
+
+# The guided-mode rollout order is fixed by the plan; only the pacing is ours.
+GUIDED_ROLLOUT = (
+    "session_logs",
+    "idea_lifecycle",
+    "question_router",
+    "session_enders",
+    "gates",
+)
+
+DEFAULT_MODE = "guided"
+
+# One behavior record per mode. quota None = unlimited questions per session.
+_MODE_POLICIES: dict[str, dict[str, Any]] = {
+    "observe": {
+        "question_quota": 2,
+        "orientation_depth": "minimal",
+        "practices": "none",
+        "triggers_mandate": False,
+        "actuators_allowed": False,
+        "auto_graduate": False,
+        "workflow_proposal_after_sessions": 5,
+    },
+    "guided": {
+        "question_quota": 3,
+        "orientation_depth": "standard",
+        "practices": "rollout",
+        "triggers_mandate": True,
+        "actuators_allowed": True,
+        "auto_graduate": True,
+        "workflow_proposal_after_sessions": None,
+    },
+    "active": {
+        "question_quota": None,
+        "orientation_depth": "full",
+        "practices": "all",
+        "triggers_mandate": True,
+        "actuators_allowed": True,
+        "auto_graduate": True,
+        "workflow_proposal_after_sessions": None,
+    },
+}
+
+
+def mode_policy(state: dict[str, Any]) -> dict[str, Any]:
+    """Return the behavior policy for the state's active mode.
+
+    An unknown or missing mode falls back to the default (``guided``) so every
+    consumer fails open onto sane behavior rather than crashing on bad state.
+    """
+    mode = state.get("mode", DEFAULT_MODE)
+    return dict(_MODE_POLICIES.get(mode, _MODE_POLICIES[DEFAULT_MODE]))
+
+
+def question_quota(state: dict[str, Any]) -> int | None:
+    """Return the per-session interview question quota (None = unlimited)."""
+    quota = mode_policy(state)["question_quota"]
+    return quota if quota is None else int(quota)
+
+
+def orientation_depth(state: dict[str, Any]) -> str:
+    """Return the orientation-injection depth: minimal | standard | full."""
+    return str(mode_policy(state)["orientation_depth"])
+
+
+def triggers_mandate(state: dict[str, Any]) -> bool:
+    """True when fired triggers may *mandate* questions (guided/active only)."""
+    return bool(mode_policy(state)["triggers_mandate"])
+
+
+def actuators_may_apply(state: dict[str, Any]) -> bool:
+    """True when actuators may apply changes (mode allows AND rights say promote).
+
+    This is the promotion-rights enforcement point: whatever the mode, an agent
+    whose ``promotion_rights`` is ``"propose"`` (or ``"observe"``) only ever
+    produces dry-run reports.
+    """
+    if not mode_policy(state)["actuators_allowed"]:
+        return False
+    return state.get("promotion_rights") == "promote"
+
+
+def may_auto_graduate(state: dict[str, Any]) -> bool:
+    """True when graduation may fire automatically (observe mode proposes only)."""
+    return bool(mode_policy(state)["auto_graduate"])
+
+
+def workflow_proposal_due(state: dict[str, Any]) -> bool:
+    """True when observe mode has watched long enough to propose its workflow."""
+    threshold = mode_policy(state)["workflow_proposal_after_sessions"]
+    if threshold is None:
+        return False
+    return int(state.get("session_count", 0)) >= int(threshold)
+
+
+def active_practices(
+    state: dict[str, Any],
+    cadence: dict[str, int] | None = None,
+) -> list[str]:
+    """Return the workflow practices currently active under the mode's pacing.
+
+    observe: none (the kit imposes nothing). active: all from session 1.
+    guided: one practice unlocks per ``guided_practice_sessions`` sessions
+    (config cadence, default 3), in the fixed rollout order — the "only after
+    the prior is established" pacing, made deterministic.
+    """
+    practices = mode_policy(state)["practices"]
+    if practices == "none":
+        return []
+    if practices == "all":
+        return list(GUIDED_ROLLOUT)
+    interval = int((cadence or {}).get("guided_practice_sessions", 3))
+    interval = max(interval, 1)
+    sessions = int(state.get("session_count", 0))
+    unlocked = 1 + sessions // interval
+    return list(GUIDED_ROLLOUT[:unlocked])
+
 # --- engine/interview/question_bank.py ---
 """The interview question bank — the seed set the staged onboarding draws from.
 
@@ -323,6 +531,14 @@ Entry fields:
   routing   — where a confirmed answer lands (a doc:field or state:key).
   priority  — "blocking" | "high" | "normal".
   critical  — True if graduation requires this slot filled (confirmed, not assumed).
+
+Optional fields:
+  trigger   — a trigger kind (see engine/loop/triggers.py); the question is pulled
+              into a mandatory-question session when that trigger fires.
+  objective — True when a different model can verify the answer against evidence
+              (the review seam may then confirm a provisional answer); subjective
+              slots stay provisional until the user confirms.
+  min_len   — anti-gaming floor: an answer shorter than this never fills the slot.
 """
 
 
@@ -349,6 +565,8 @@ QUESTIONS: list[dict] = [
         "routing": "templates/CLAUDE.md:project_name",
         "priority": "high",
         "critical": True,
+        "objective": True,
+        "min_len": 2,
     },
     {
         "id": "Q-003",
@@ -358,6 +576,8 @@ QUESTIONS: list[dict] = [
         "routing": "templates/CLAUDE.md:language",
         "priority": "high",
         "critical": True,
+        "objective": True,
+        "min_len": 3,
     },
     {
         "id": "Q-004",
@@ -367,6 +587,9 @@ QUESTIONS: list[dict] = [
         "routing": "templates/architecture.md:layers",
         "priority": "high",
         "critical": True,
+        "trigger": "critical_unfilled",
+        "objective": True,
+        "min_len": 20,
     },
     {
         "id": "Q-005",
@@ -376,6 +599,8 @@ QUESTIONS: list[dict] = [
         "routing": "templates/CLAUDE.md:verify_command",
         "priority": "high",
         "critical": True,
+        "objective": True,
+        "min_len": 4,
     },
     {
         "id": "Q-006",
@@ -385,6 +610,8 @@ QUESTIONS: list[dict] = [
         "routing": "templates/ownership.md:owners",
         "priority": "normal",
         "critical": False,
+        "objective": True,
+        "min_len": 20,
     },
     {
         "id": "Q-007",
@@ -412,6 +639,8 @@ QUESTIONS: list[dict] = [
         "routing": "templates/runtime_contracts.md:mutations",
         "priority": "normal",
         "critical": False,
+        "objective": True,
+        "min_len": 20,
     },
     {
         "id": "Q-010",
@@ -421,6 +650,36 @@ QUESTIONS: list[dict] = [
         "routing": "templates/owner-profile.md:procedures",
         "priority": "normal",
         "critical": False,
+    },
+    {
+        "id": "Q-011",
+        "slot": "drift_resolution",
+        "audience": "self",
+        "prompt": "Doc-hygiene checks are failing - what drifted, and what fixes it?",
+        "routing": "state:open_questions",
+        "priority": "high",
+        "critical": False,
+        "trigger": "drift",
+    },
+    {
+        "id": "Q-012",
+        "slot": "staleness_review",
+        "audience": "user",
+        "prompt": "Memory looks stale (reconciliation overdue) - what changed since the last update?",
+        "routing": "templates/current-state.md:refresh",
+        "priority": "normal",
+        "critical": False,
+        "trigger": "staleness",
+    },
+    {
+        "id": "Q-013",
+        "slot": "new_area_ownership",
+        "audience": "user",
+        "prompt": "A new area appeared with no ownership/folio entry - which component owns it?",
+        "routing": "templates/ownership.md:owners",
+        "priority": "high",
+        "critical": False,
+        "trigger": "new_area",
     },
 ]
 
@@ -432,6 +691,7 @@ the project's **critical** content slots are mostly filled (by confirmed, not
 assumed, answers), no blocking questions remain, and several consecutive sessions
 surface no new mandatory question — not at a hard session count.
 """
+
 
 
 
@@ -476,13 +736,23 @@ def graduation_ready(
 
 
 def maybe_graduate(backend: Any, critical: list[str]) -> bool:
-    """Advance integration -> steady if ready; return whether it graduated."""
+    """Advance integration -> steady if ready; return whether it graduated.
+
+    Mode-conditional (the plan's per-mode behavior): ``observe`` mode never
+    auto-graduates — when ready it records a *proposal* (``graduation_proposed``)
+    for the user to accept (switch mode or graduate explicitly); guided/active
+    graduate automatically.
+    """
     if backend.get("stage") != STAGE_INTEGRATION:
         return False
     ready, _ = graduation_ready(backend.data, critical)
-    if ready:
-        backend.set("stage", STAGE_STEADY)
-    return ready
+    if not ready:
+        return False
+    if not may_auto_graduate(backend.data):
+        backend.set("graduation_proposed", True)
+        return False
+    backend.set("stage", STAGE_STEADY)
+    return True
 
 # --- engine/interview/interview.py ---
 """The interview pass — fills content slots from the question bank (plan section 4).
@@ -496,6 +766,9 @@ it records assumptions, flags them, and moves on.
 
 
 
+
+_PRIORITY_ORDER = {"blocking": 0, "high": 1, "normal": 2}
+_PLACEHOLDER_ANSWERS = frozenset({"todo", "tbd", "...", "n/a", "?"})
 
 
 def critical_slots(bank: list[dict] | None = None) -> list[str]:
@@ -514,13 +787,59 @@ def pending_questions(
     return [q for q in bank if slots.get(q["slot"]) != "filled"]
 
 
+def session_questions(
+    state: dict[str, Any],
+    bank: list[dict] | None = None,
+) -> list[dict]:
+    """Return this session's ask list: pending, priority-ordered, quota-capped.
+
+    The cap is the integration mode's question quota (observe asks 1-2, guided a
+    few, active unlimited). Blocking questions sort first, so a quota can never
+    hide one.
+    """
+    pending = sorted(
+        pending_questions(state, bank),
+        key=lambda q: _PRIORITY_ORDER.get(q.get("priority", "normal"), 2),
+    )
+    quota = question_quota(state)
+    return pending if quota is None else pending[:quota]
+
+
+def answer_is_substantive(question: dict, answer: str) -> bool:
+    """True when ``answer`` passes the anti-gaming floor for this slot.
+
+    Completeness counts only non-placeholder content: no leftover ``${slot}``
+    marker, not a stock placeholder word, and at least the slot's ``min_len``
+    characters — so an autonomous run can't graduate on hollow answers.
+    """
+    text = answer.strip()
+    if not text or "${" in text:
+        return False
+    if text.lower() in _PLACEHOLDER_ANSWERS:
+        return False
+    return len(text) >= int(question.get("min_len", 1))
+
+
+def _clear_open_question(backend: Any, question_id: str) -> None:
+    """Drop ``question_id`` from the escalated open-questions list, if present."""
+    open_questions = list(backend.get("open_questions", []))
+    if question_id in open_questions:
+        open_questions.remove(question_id)
+        backend.set("open_questions", open_questions)
+
+
 def record_answer(backend: Any, question: dict, answer: str, *, source: str) -> None:
     """Fill ``question``'s slot from an answer.
 
-    ``source="user"`` confirms the slot (``filled``); any other source records a
-    ``provisional`` self-answer that must be confirmed before it counts.
+    ``source="user"`` confirms the slot (``filled``) when the answer passes the
+    anti-gaming floor (``partial`` otherwise); any other source records a
+    ``provisional`` self-answer that must be confirmed before it counts. A
+    filled answer also resolves the question's escalated open-question entry.
     """
-    status = "filled" if source == "user" else "provisional"
+    if source == "user":
+        status = "filled" if answer_is_substantive(question, answer) else "partial"
+    else:
+        status = "provisional"
     slots = dict(backend.get("slots", {}))
     values = dict(backend.get("slot_values", {}))
     slots[question["slot"]] = status
@@ -532,6 +851,31 @@ def record_answer(backend: Any, question: dict, answer: str, *, source: str) -> 
     with backend.transaction():
         backend.set("slots", slots)
         backend.set("slot_values", values)
+    if status == "filled":
+        _clear_open_question(backend, question["id"])
+
+
+def confirm_slot(backend: Any, slot: str, *, source: str) -> bool:
+    """Promote a ``provisional`` slot to ``filled`` (the confirmation seam).
+
+    ``source`` records who confirmed (``"user"`` or ``"reviewer:<name>"``).
+    Returns False when the slot is not provisional (nothing to confirm).
+    """
+    slots = dict(backend.get("slots", {}))
+    if slots.get(slot) != "provisional":
+        return False
+    values = dict(backend.get("slot_values", {}))
+    entry = dict(values.get(slot, {}))
+    entry["source"] = f"confirmed:{source}"
+    slots[slot] = "filled"
+    values[slot] = entry
+    with backend.transaction():
+        backend.set("slots", slots)
+        backend.set("slot_values", values)
+    question_id = entry.get("question_id")
+    if question_id:
+        _clear_open_question(backend, question_id)
+    return True
 
 
 def run_session(
@@ -544,21 +888,34 @@ def run_session(
     """Run one interview session, then attempt graduation.
 
     ``answers`` maps slot -> user answer. A pending question with a user answer is
-    confirmed; otherwise, in ``autonomous`` mode it is self-answered provisionally.
-    A session that leaves no blocking question unanswered extends the quiet streak;
-    any unanswered blocking question resets it.
+    confirmed; otherwise, in ``autonomous`` mode it is self-answered provisionally
+    (within the integration mode's question quota — blocking questions sort first,
+    so the quota never starves one). A session that leaves no blocking question
+    unanswered extends the quiet streak; any unanswered blocking question resets
+    it AND escalates onto ``open_questions``, which holds graduation until the
+    question is answered.
     """
     bank = QUESTIONS if bank is None else bank
-    pending = pending_questions(backend.data, bank)
+    pending = sorted(
+        pending_questions(backend.data, bank),
+        key=lambda q: _PRIORITY_ORDER.get(q.get("priority", "normal"), 2),
+    )
+    quota = question_quota(backend.data)
     left_blocking = False
+    self_answered = 0
     for question in pending:
         slot = question["slot"]
         if slot in answers:
             record_answer(backend, question, answers[slot], source="user")
-        elif autonomous:
+        elif autonomous and (quota is None or self_answered < quota):
             record_answer(backend, question, f"ASSUMED: {slot}", source="assumption")
+            self_answered += 1
         elif question.get("priority") == "blocking":
             left_blocking = True
+            open_questions = list(backend.get("open_questions", []))
+            if question["id"] not in open_questions:
+                open_questions.append(question["id"])
+                backend.set("open_questions", open_questions)
 
     backend.set("session_count", int(backend.get("session_count", 0)) + 1)
     quiet = int(backend.get("quiet_sessions", 0))
@@ -1817,12 +2174,13 @@ _ENGINE_MANIFEST = {
     'engine/agents/__init__.py': '"""Personas — spawnable read-only specialists (plan section 3c).\n\nA persona is a sub-agent the working agent can spawn for a focused, read-only\ntask (design review, independent critique, deep exploration). The kit ships\ngeneralized persona sources here and emits native ``.claude/agents/<name>.md``\nfiles (frontmatter + system-prompt body), each filled from the project\'s own\ncontract docs via ``${slot}`` substitution.\n"""\n',
     'engine/hooks/__init__.py': '"""Hook layer — the PreToolUse stance guard (plan section 3b, the enforcement half).\n\nStances ship advisory by default; this is the optional guard that makes them\n*enforced*. Claude Code calls a PreToolUse hook before each tool runs, passing\nthe tool name; the guard maps that tool to a stance action category and, if the\naction is outside the active stance\'s tool-scope, emits a warning. Advisory —\nit warns, it does not block.\n"""\n',
     'engine/lib/atomicio.py': '"""Atomic file writes for crash-safe state.\n\nA write goes to a sibling ``*.tmp`` file and is renamed into place with\n``os.replace`` — an atomic rename on POSIX and Windows — so a process that dies\nmid-write can never leave a half-written, unparseable file behind. This is the\nrobustness floor the whole engine builds on (plan: Gemini round).\n"""\n\nfrom __future__ import annotations\n\nimport os\nfrom pathlib import Path\n\n\ndef atomic_write_text(path: Path, text: str) -> None:\n    """Write ``text`` to ``path`` atomically via a temp file + ``os.replace``."""\n    path.parent.mkdir(parents=True, exist_ok=True)\n    tmp = path.with_name(path.name + ".tmp")\n    tmp.write_text(text, encoding="utf-8")\n    os.replace(tmp, path)\n',
-    'engine/lib/config.py': '"""Host-project configuration for one substrate-kit install.\n\nReads and writes ``substrate.config.json`` — the single file that absorbs every\nhost-specific knob so the engine code never hardcodes a project value. Two\ninterpreters are kept explicitly separate (Hermes-final): ``interpreter`` is the\nkit\'s own runtime, ``interpreter_for_checks`` is the host project\'s verification\nruntime (e.g. ``python3.10`` for a repo whose CI pins 3.10).\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport sys\nimport uuid\nfrom dataclasses import asdict, dataclass, field, fields\nfrom pathlib import Path\n\nfrom engine.lib.atomicio import atomic_write_text\n\nCONFIG_FILENAME = "substrate.config.json"\nDEFAULT_STATE_DIR = ".substrate"\n\n\ndef _new_project_id() -> str:\n    """Return a short, stable identifier for one install."""\n    return uuid.uuid4().hex[:12]\n\n\ndef _default_cadence() -> dict[str, int]:\n    """Return the default cadence knobs."""\n    return {"reconciliation_prs": 20}\n\n\ndef _default_badge_tokens() -> list[str]:\n    """Return the default Status-badge taxonomy the doc checker accepts."""\n    return [\n        "binding",\n        "living-ledger",\n        "reference",\n        "plan",\n        "historical",\n        "audit",\n        "owner-guidance",\n        "ideas",\n        "archive",\n    ]\n\n\ndef _default_readpath_docs() -> list[str]:\n    """Return the read-path doc names that seed the reachability roots."""\n    return ["AGENT_ORIENTATION.md", "current-state.md"]\n\n\ndef _default_session_markers() -> list[dict[str, str]]:\n    """Return the markers every session log must carry (label + substring)."""\n    return [\n        {"label": "Status badge", "needle": "**Status:**"},\n        {"label": "Session idea", "needle": "💡"},\n        {"label": "Previous-session review", "needle": "previous-session review"},\n    ]\n\n\n@dataclass\nclass Config:\n    """Host-project configuration for one substrate-kit install."""\n\n    project_id: str = field(default_factory=_new_project_id)\n    interpreter: str = field(default_factory=lambda: sys.executable)\n    interpreter_for_checks: str | None = None\n    state_dir: str = DEFAULT_STATE_DIR\n    docs_root: str = "docs"\n    sessions_dir: str = ".sessions"\n    paths: dict[str, str] = field(default_factory=dict)\n    cadence: dict[str, int] = field(default_factory=_default_cadence)\n    scopes: dict[str, str] = field(default_factory=dict)\n    badge_tokens: list[str] = field(default_factory=_default_badge_tokens)\n    readpath_docs: list[str] = field(default_factory=_default_readpath_docs)\n    session_markers: list[dict[str, str]] = field(\n        default_factory=_default_session_markers,\n    )\n\n    def to_json(self) -> str:\n        """Serialise the config to indented, key-sorted JSON."""\n        return json.dumps(asdict(self), indent=2, sort_keys=True)\n\n    @classmethod\n    def from_dict(cls, data: dict) -> Config:\n        """Build a Config from a parsed dict, ignoring unknown keys."""\n        known = {f.name for f in fields(cls)}\n        return cls(**{k: v for k, v in data.items() if k in known})\n\n\ndef config_path(root: Path) -> Path:\n    """Return the config-file path for a project ``root``."""\n    return root / CONFIG_FILENAME\n\n\ndef load_config(root: Path) -> Config:\n    """Load the config from ``root``; return defaults if none exists."""\n    path = config_path(root)\n    if not path.exists():\n        return Config()\n    data = json.loads(path.read_text(encoding="utf-8"))\n    return Config.from_dict(data)\n\n\ndef save_config(root: Path, config: Config) -> None:\n    """Write ``config`` to ``root`` atomically."""\n    atomic_write_text(config_path(root), config.to_json() + "\\n")\n',
-    'engine/lib/state.py': '"""The state-backend interface and its default JSON implementation.\n\nThe *interface* — not a raw JSON shape — is the contract the rest of the engine\ncodes against (Hermes-final, plan §2), so a future SQLite backend can replace the\nJSON one without a rewrite. The default backend is one JSON file written\natomically; mutations inside a ``transaction`` roll back on error and flush once.\n"""\n\nfrom __future__ import annotations\n\nimport copy\nimport json\nfrom abc import ABC, abstractmethod\nfrom collections.abc import Iterator\nfrom contextlib import AbstractContextManager, contextmanager\nfrom pathlib import Path\nfrom typing import Any\n\nfrom engine.lib.atomicio import atomic_write_text\n\nSTATE_SCHEMA_VERSION = 1\n\n\ndef default_state(project_id: str) -> dict[str, Any]:\n    """Return the initial state document for a fresh install."""\n    return {\n        "version": STATE_SCHEMA_VERSION,\n        "project_id": project_id,\n        "mode": "guided",\n        "promotion_rights": "propose",\n        "stage": "integration",\n        "stance": "analysis",\n        "session_count": 0,\n        "slots": {},\n        "open_questions": [],\n        "graduation": {\n            "soft_target_sessions": 50,\n            "criteria": {\n                "critical_slots_filled_pct": 0.8,\n                "blocking_questions": 0,\n            },\n        },\n    }\n\n\nclass StateBackend(ABC):\n    """Read / write / query / transaction / migrate contract for engine state."""\n\n    version: int = STATE_SCHEMA_VERSION\n\n    @abstractmethod\n    def get(self, key: str, default: Any = None) -> Any:\n        """Return the value stored at ``key`` or ``default``."""\n\n    @abstractmethod\n    def set(self, key: str, value: Any) -> None:\n        """Store ``value`` at ``key`` (flushing unless inside a transaction)."""\n\n    @abstractmethod\n    def query(self, prefix: str = "") -> dict[str, Any]:\n        """Return all key/value pairs whose key starts with ``prefix``."""\n\n    @abstractmethod\n    def transaction(self) -> AbstractContextManager[StateBackend]:\n        """Return a context manager that commits on success, rolls back on error."""\n\n    @abstractmethod\n    def migrate(self, to_version: int) -> None:\n        """Migrate the stored document to schema ``to_version``."""\n\n\nclass JsonStateBackend(StateBackend):\n    """A StateBackend backed by one atomically-written JSON file."""\n\n    def __init__(self, path: Path) -> None:\n        self._path = Path(path)\n        self._data: dict[str, Any] = self._read()\n        self._in_txn = False\n\n    def _read(self) -> dict[str, Any]:\n        if not self._path.exists():\n            return {}\n        return json.loads(self._path.read_text(encoding="utf-8"))\n\n    def _flush(self) -> None:\n        atomic_write_text(\n            self._path,\n            json.dumps(self._data, indent=2, sort_keys=True) + "\\n",\n        )\n\n    def get(self, key: str, default: Any = None) -> Any:\n        """Return the value stored at ``key`` or ``default``."""\n        return self._data.get(key, default)\n\n    def set(self, key: str, value: Any) -> None:\n        """Store ``value`` at ``key``; flush now unless inside a transaction."""\n        self._data[key] = value\n        if not self._in_txn:\n            self._flush()\n\n    def query(self, prefix: str = "") -> dict[str, Any]:\n        """Return all key/value pairs whose key starts with ``prefix``."""\n        return {k: v for k, v in self._data.items() if k.startswith(prefix)}\n\n    @contextmanager\n    def transaction(self) -> Iterator[JsonStateBackend]:\n        """Buffer writes; roll back the whole document on error, else flush once."""\n        snapshot = copy.deepcopy(self._data)\n        self._in_txn = True\n        try:\n            yield self\n        except Exception:\n            self._data = snapshot\n            raise\n        finally:\n            self._in_txn = False\n        self._flush()\n\n    def migrate(self, to_version: int) -> None:\n        """Set the stored schema version (no transforms needed at v1)."""\n        self._data["version"] = to_version\n        self._flush()\n\n    @property\n    def data(self) -> dict[str, Any]:\n        """Return a shallow copy of the current state document."""\n        return dict(self._data)\n',
+    'engine/lib/config.py': '"""Host-project configuration for one substrate-kit install.\n\nReads and writes ``substrate.config.json`` — the single file that absorbs every\nhost-specific knob so the engine code never hardcodes a project value. Two\ninterpreters are kept explicitly separate (Hermes-final): ``interpreter`` is the\nkit\'s own runtime, ``interpreter_for_checks`` is the host project\'s verification\nruntime (e.g. ``python3.10`` for a repo whose CI pins 3.10).\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport sys\nimport uuid\nfrom dataclasses import asdict, dataclass, field, fields\nfrom pathlib import Path\n\nfrom engine.lib.atomicio import atomic_write_text\n\nCONFIG_FILENAME = "substrate.config.json"\nDEFAULT_STATE_DIR = ".substrate"\n\n\ndef _new_project_id() -> str:\n    """Return a short, stable identifier for one install."""\n    return uuid.uuid4().hex[:12]\n\n\ndef _default_cadence() -> dict[str, int]:\n    """Return the default cadence knobs (every hardcoded cadence lives here)."""\n    return {\n        "reconciliation_prs": 20,\n        "reconciliation_sessions": 20,\n        "compaction_sessions": 20,\n        "critical_slot_grace_sessions": 3,\n        "staleness_days": 14,\n        "guided_practice_sessions": 3,\n    }\n\n\ndef _default_reflection() -> dict:\n    """Return the reflection-buffer knobs (size cap is a hard context guard)."""\n    return {"enabled": True, "buffer_size": 5}\n\n\ndef _default_orientation() -> dict:\n    """Return the orientation-budget knobs (the K0 ≤7,000-word gate).\n\n    ``boot_docs`` empty means "fall back to ``readpath_docs``" — the\n    unconditional boot-read set the budget counts.\n    """\n    return {"budget_words": 7000, "boot_docs": []}\n\n\ndef _default_economy() -> dict:\n    """Return the context-economy knobs (taxonomy/gauges are host policy).\n\n    ``maturity`` gates the actuator: ``shadow`` (report only, the first-prune\n    safety protocol) -> ``gated`` (apply with review) -> ``normal``. Classes and\n    gauges ship empty — the engine supplies a documented generic default when\n    unset; each adopting repo declares its own table (the kit ships the search,\n    not our constants).\n    """\n    return {\n        "maturity": "shadow",\n        "reference_roots": [],\n        "id_patterns": [r"Q-\\d{3,}", r"D-\\d{3,}", r"R-\\d{3,}"],\n        "classes": [],\n        "gauges": [],\n        "debt_threshold": 10,\n    }\n\n\ndef _default_namespace() -> dict:\n    """Return the namespace-guard knobs (roots to scan + reserved-name map)."""\n    return {"roots": [], "reserved": {}}\n\n\ndef _default_review_seam() -> dict:\n    """Return the review-seam knobs (provisioned, not wired — no live reviewer)."""\n    return {"reviewer": None}\n\n\ndef _default_badge_tokens() -> list[str]:\n    """Return the default Status-badge taxonomy the doc checker accepts."""\n    return [\n        "binding",\n        "living-ledger",\n        "reference",\n        "plan",\n        "historical",\n        "audit",\n        "owner-guidance",\n        "ideas",\n        "archive",\n    ]\n\n\ndef _default_readpath_docs() -> list[str]:\n    """Return the read-path doc names that seed the reachability roots."""\n    return ["AGENT_ORIENTATION.md", "current-state.md"]\n\n\ndef _default_session_markers() -> list[dict[str, str]]:\n    """Return the markers every session log must carry (label + substring)."""\n    return [\n        {"label": "Status badge", "needle": "**Status:**"},\n        {"label": "Session idea", "needle": "💡"},\n        {"label": "Previous-session review", "needle": "previous-session review"},\n    ]\n\n\n@dataclass\nclass Config:\n    """Host-project configuration for one substrate-kit install."""\n\n    project_id: str = field(default_factory=_new_project_id)\n    interpreter: str = field(default_factory=lambda: sys.executable)\n    interpreter_for_checks: str | None = None\n    state_dir: str = DEFAULT_STATE_DIR\n    docs_root: str = "docs"\n    sessions_dir: str = ".sessions"\n    paths: dict[str, str] = field(default_factory=dict)\n    cadence: dict[str, int] = field(default_factory=_default_cadence)\n    scopes: dict[str, str] = field(default_factory=dict)\n    badge_tokens: list[str] = field(default_factory=_default_badge_tokens)\n    readpath_docs: list[str] = field(default_factory=_default_readpath_docs)\n    session_markers: list[dict[str, str]] = field(\n        default_factory=_default_session_markers,\n    )\n    reflection: dict = field(default_factory=_default_reflection)\n    orientation: dict = field(default_factory=_default_orientation)\n    economy: dict = field(default_factory=_default_economy)\n    namespace: dict = field(default_factory=_default_namespace)\n    seams: list[dict] = field(default_factory=list)\n    review_seam: dict = field(default_factory=_default_review_seam)\n\n    def to_json(self) -> str:\n        """Serialise the config to indented, key-sorted JSON."""\n        return json.dumps(asdict(self), indent=2, sort_keys=True)\n\n    @classmethod\n    def from_dict(cls, data: dict) -> Config:\n        """Build a Config from a parsed dict, ignoring unknown keys."""\n        known = {f.name for f in fields(cls)}\n        return cls(**{k: v for k, v in data.items() if k in known})\n\n\ndef config_path(root: Path) -> Path:\n    """Return the config-file path for a project ``root``."""\n    return root / CONFIG_FILENAME\n\n\ndef load_config(root: Path) -> Config:\n    """Load the config from ``root``; return defaults if none exists."""\n    path = config_path(root)\n    if not path.exists():\n        return Config()\n    data = json.loads(path.read_text(encoding="utf-8"))\n    return Config.from_dict(data)\n\n\ndef save_config(root: Path, config: Config) -> None:\n    """Write ``config`` to ``root`` atomically."""\n    atomic_write_text(config_path(root), config.to_json() + "\\n")\n',
+    'engine/lib/state.py': '"""The state-backend interface and its default JSON implementation.\n\nThe *interface* — not a raw JSON shape — is the contract the rest of the engine\ncodes against (Hermes-final, plan §2), so a future SQLite backend can replace the\nJSON one without a rewrite. The default backend is one JSON file written\natomically; mutations inside a ``transaction`` roll back on error and flush once.\n"""\n\nfrom __future__ import annotations\n\nimport copy\nimport json\nfrom abc import ABC, abstractmethod\nfrom collections.abc import Iterator\nfrom contextlib import AbstractContextManager, contextmanager\nfrom pathlib import Path\nfrom typing import Any\n\nfrom engine.lib.atomicio import atomic_write_text\n\nSTATE_SCHEMA_VERSION = 1\n\n\ndef default_state(project_id: str) -> dict[str, Any]:\n    """Return the initial state document for a fresh install."""\n    return {\n        "version": STATE_SCHEMA_VERSION,\n        "project_id": project_id,\n        "mode": "guided",\n        "promotion_rights": "propose",\n        "stage": "integration",\n        "stance": "analysis",\n        "session_count": 0,\n        "slots": {},\n        "open_questions": [],\n        "graduation": {\n            "soft_target_sessions": 50,\n            "criteria": {\n                "critical_slots_filled_pct": 0.8,\n                "blocking_questions": 0,\n            },\n        },\n        "mode_history": [],\n        "reflection_buffer": {"active_count": 0, "last_mined": None},\n        "graduation_proposed": False,\n        "last_compaction_session": 0,\n        "review_log": [],\n    }\n\n\nclass StateBackend(ABC):\n    """Read / write / query / transaction / migrate contract for engine state."""\n\n    version: int = STATE_SCHEMA_VERSION\n\n    @abstractmethod\n    def get(self, key: str, default: Any = None) -> Any:\n        """Return the value stored at ``key`` or ``default``."""\n\n    @abstractmethod\n    def set(self, key: str, value: Any) -> None:\n        """Store ``value`` at ``key`` (flushing unless inside a transaction)."""\n\n    @abstractmethod\n    def query(self, prefix: str = "") -> dict[str, Any]:\n        """Return all key/value pairs whose key starts with ``prefix``."""\n\n    @abstractmethod\n    def transaction(self) -> AbstractContextManager[StateBackend]:\n        """Return a context manager that commits on success, rolls back on error."""\n\n    @abstractmethod\n    def migrate(self, to_version: int) -> None:\n        """Migrate the stored document to schema ``to_version``."""\n\n\nclass JsonStateBackend(StateBackend):\n    """A StateBackend backed by one atomically-written JSON file."""\n\n    def __init__(self, path: Path) -> None:\n        self._path = Path(path)\n        self._data: dict[str, Any] = self._read()\n        self._in_txn = False\n\n    def _read(self) -> dict[str, Any]:\n        if not self._path.exists():\n            return {}\n        return json.loads(self._path.read_text(encoding="utf-8"))\n\n    def _flush(self) -> None:\n        atomic_write_text(\n            self._path,\n            json.dumps(self._data, indent=2, sort_keys=True) + "\\n",\n        )\n\n    def get(self, key: str, default: Any = None) -> Any:\n        """Return the value stored at ``key`` or ``default``."""\n        return self._data.get(key, default)\n\n    def set(self, key: str, value: Any) -> None:\n        """Store ``value`` at ``key``; flush now unless inside a transaction."""\n        self._data[key] = value\n        if not self._in_txn:\n            self._flush()\n\n    def query(self, prefix: str = "") -> dict[str, Any]:\n        """Return all key/value pairs whose key starts with ``prefix``."""\n        return {k: v for k, v in self._data.items() if k.startswith(prefix)}\n\n    @contextmanager\n    def transaction(self) -> Iterator[JsonStateBackend]:\n        """Buffer writes; roll back the whole document on error, else flush once."""\n        snapshot = copy.deepcopy(self._data)\n        self._in_txn = True\n        try:\n            yield self\n        except Exception:\n            self._data = snapshot\n            raise\n        finally:\n            self._in_txn = False\n        self._flush()\n\n    def migrate(self, to_version: int) -> None:\n        """Set the stored schema version (no transforms needed at v1)."""\n        self._data["version"] = to_version\n        self._flush()\n\n    @property\n    def data(self) -> dict[str, Any]:\n        """Return a shallow copy of the current state document."""\n        return dict(self._data)\n',
     'engine/lib/guardrail.py': '"""The live-loop guardrail.\n\nA mechanical guarantee (plan: design-corroboration) that the kit never operates\non its own repository root — which would let it mutate the very workflow it runs\ninside. Safe targets are the system temp tree, an ``examples/`` subtree of the\nkit, or any directory outside the kit. Enforced in code, in the first commit —\nnot left as a doc.\n"""\n\nfrom __future__ import annotations\n\nimport tempfile\nfrom pathlib import Path\n\n\nclass UnsafeTargetError(Exception):\n    """Raised when a target directory would corrupt the kit\'s own live loop."""\n\n\ndef assert_safe_target(target: Path, kit_root: Path) -> None:\n    """Refuse to operate on the kit\'s own repo root.\n\n    Safe: the system temp tree, an ``examples/`` subtree of ``kit_root``, or any\n    path outside ``kit_root``. Unsafe: ``kit_root`` itself or a non-``examples``\n    path inside it.\n    """\n    target = Path(target).resolve()\n    kit_root = Path(kit_root).resolve()\n    tmp_root = Path(tempfile.gettempdir()).resolve()\n    if target.is_relative_to(tmp_root):\n        return\n    inside_kit = target == kit_root or target.is_relative_to(kit_root)\n    inside_examples = target.is_relative_to(kit_root / "examples")\n    if inside_kit and not inside_examples:\n        msg = f"refusing to operate on the kit\'s own tree: {target}"\n        raise UnsafeTargetError(msg)\n',
-    'engine/interview/question_bank.py': '"""The interview question bank — the seed set the staged onboarding draws from.\n\nCuration policy (Hermes #7): keep this lean. Add a question only when its slot\ngenuinely blocks graduation, or a checker keeps flagging its absence; prune\nquestions that no longer earn their place. Each entry is a plain dict so the bank\nships inside the stdlib-only bootstrap with no parser (the plan named\n``question_bank.yml``; a Python module is the simplest form that embeds and runs\nidentically in ``src`` and the single-file ``dist`` — no YAML/JSON dependency).\n\nEntry fields:\n  id        — stable "Q-NNN" identifier.\n  slot      — the content slot it fills (matches the project index).\n  audience  — "user" (ask the maintainer) or "self" (the agent infers).\n  prompt    — the question text.\n  routing   — where a confirmed answer lands (a doc:field or state:key).\n  priority  — "blocking" | "high" | "normal".\n  critical  — True if graduation requires this slot filled (confirmed, not assumed).\n"""\n\nfrom __future__ import annotations\n\nCURATION_RULE = (\n    "Lean bank: add a question only when it blocks graduation or a checker keeps "\n    "flagging its slot; prune questions that no longer earn their place."\n)\n\nQUESTIONS: list[dict] = [\n    {\n        "id": "Q-001",\n        "slot": "integration_mode",\n        "audience": "user",\n        "prompt": "Adoption pace for the workflow? observe | guided | active.",\n        "routing": "state:mode",\n        "priority": "blocking",\n        "critical": True,\n    },\n    {\n        "id": "Q-002",\n        "slot": "project_name",\n        "audience": "user",\n        "prompt": "What is this project called?",\n        "routing": "templates/CLAUDE.md:project_name",\n        "priority": "high",\n        "critical": True,\n    },\n    {\n        "id": "Q-003",\n        "slot": "primary_language",\n        "audience": "user",\n        "prompt": "Primary language / runtime (e.g. Python 3.10, TypeScript)?",\n        "routing": "templates/CLAUDE.md:language",\n        "priority": "high",\n        "critical": True,\n    },\n    {\n        "id": "Q-004",\n        "slot": "architecture_layers",\n        "audience": "user",\n        "prompt": "What are the top-level layers and their import rules?",\n        "routing": "templates/architecture.md:layers",\n        "priority": "high",\n        "critical": True,\n    },\n    {\n        "id": "Q-005",\n        "slot": "verify_command",\n        "audience": "user",\n        "prompt": "One command that proves a change is good (tests + lint)?",\n        "routing": "templates/CLAUDE.md:verify_command",\n        "priority": "high",\n        "critical": True,\n    },\n    {\n        "id": "Q-006",\n        "slot": "ownership_model",\n        "audience": "self",\n        "prompt": "Which component owns each data store / write path?",\n        "routing": "templates/ownership.md:owners",\n        "priority": "normal",\n        "critical": False,\n    },\n    {\n        "id": "Q-007",\n        "slot": "doc_roots",\n        "audience": "self",\n        "prompt": "Where does durable documentation live?",\n        "routing": "state:paths.docs",\n        "priority": "normal",\n        "critical": False,\n    },\n    {\n        "id": "Q-008",\n        "slot": "owner_profile",\n        "audience": "user",\n        "prompt": "How do you like an agent to work (tone, detail, autonomy)?",\n        "routing": "templates/owner-profile.md:style",\n        "priority": "normal",\n        "critical": False,\n    },\n    {\n        "id": "Q-009",\n        "slot": "mutation_seam",\n        "audience": "self",\n        "prompt": "How are writes gated (the audited mutation seam)?",\n        "routing": "templates/runtime_contracts.md:mutations",\n        "priority": "normal",\n        "critical": False,\n    },\n    {\n        "id": "Q-010",\n        "slot": "review_ritual",\n        "audience": "user",\n        "prompt": "Your PR-review and release rhythm?",\n        "routing": "templates/owner-profile.md:procedures",\n        "priority": "normal",\n        "critical": False,\n    },\n]\n',
-    'engine/interview/stages.py': '"""Stage state machine + adaptive graduation (plan section 2).\n\nStage 1 (``integration``) graduates to stage 2 (``steady``) *adaptively* — when\nthe project\'s **critical** content slots are mostly filled (by confirmed, not\nassumed, answers), no blocking questions remain, and several consecutive sessions\nsurface no new mandatory question — not at a hard session count.\n"""\n\nfrom __future__ import annotations\n\nfrom typing import Any\n\nSTAGE_INTEGRATION = "integration"\nSTAGE_STEADY = "steady"\n\n_DEFAULT_FILL_PCT = 0.8\n_DEFAULT_QUIET_SESSIONS = 3\n\n\ndef critical_fill_ratio(slots: dict[str, str], critical: list[str]) -> float:\n    """Return the fraction of ``critical`` slots marked ``filled``."""\n    if not critical:\n        return 1.0\n    filled = sum(1 for name in critical if slots.get(name) == "filled")\n    return filled / len(critical)\n\n\ndef graduation_ready(\n    state: dict[str, Any],\n    critical: list[str],\n) -> tuple[bool, list[str]]:\n    """Return ``(ready, reasons)`` for graduating integration -> steady.\n\n    ``reasons`` lists the unmet criteria when not ready (empty when ready).\n    """\n    criteria = state.get("graduation", {}).get("criteria", {})\n    want_pct = criteria.get("critical_slots_filled_pct", _DEFAULT_FILL_PCT)\n    want_quiet = criteria.get("quiet_sessions_required", _DEFAULT_QUIET_SESSIONS)\n    reasons: list[str] = []\n\n    ratio = critical_fill_ratio(state.get("slots", {}), critical)\n    if ratio < want_pct:\n        reasons.append(f"critical slots {ratio:.0%} < {want_pct:.0%}")\n    blocking = len(state.get("open_questions", []))\n    if blocking:\n        reasons.append(f"{blocking} blocking question(s) open")\n    quiet = state.get("quiet_sessions", 0)\n    if quiet < want_quiet:\n        reasons.append(f"quiet streak {quiet} < {want_quiet}")\n    return (not reasons, reasons)\n\n\ndef maybe_graduate(backend: Any, critical: list[str]) -> bool:\n    """Advance integration -> steady if ready; return whether it graduated."""\n    if backend.get("stage") != STAGE_INTEGRATION:\n        return False\n    ready, _ = graduation_ready(backend.data, critical)\n    if ready:\n        backend.set("stage", STAGE_STEADY)\n    return ready\n',
-    'engine/interview/interview.py': '"""The interview pass — fills content slots from the question bank (plan section 4).\n\nA session asks its pending questions. A user-facing answer fills a slot\n(``filled``); when no human is present the agent self-answers, recording a\n*provisional* assumption (``provisional``) that never counts toward graduation\nuntil confirmed. This is what lets an autonomous run keep moving without blocking:\nit records assumptions, flags them, and moves on.\n"""\n\nfrom __future__ import annotations\n\nfrom typing import Any\n\nfrom engine.interview.question_bank import QUESTIONS\nfrom engine.interview.stages import maybe_graduate\n\n\ndef critical_slots(bank: list[dict] | None = None) -> list[str]:\n    """Return the slot names the bank marks as critical."""\n    bank = QUESTIONS if bank is None else bank\n    return [q["slot"] for q in bank if q.get("critical")]\n\n\ndef pending_questions(\n    state: dict[str, Any],\n    bank: list[dict] | None = None,\n) -> list[dict]:\n    """Return bank questions whose slot is not yet ``filled``."""\n    bank = QUESTIONS if bank is None else bank\n    slots = state.get("slots", {})\n    return [q for q in bank if slots.get(q["slot"]) != "filled"]\n\n\ndef record_answer(backend: Any, question: dict, answer: str, *, source: str) -> None:\n    """Fill ``question``\'s slot from an answer.\n\n    ``source="user"`` confirms the slot (``filled``); any other source records a\n    ``provisional`` self-answer that must be confirmed before it counts.\n    """\n    status = "filled" if source == "user" else "provisional"\n    slots = dict(backend.get("slots", {}))\n    values = dict(backend.get("slot_values", {}))\n    slots[question["slot"]] = status\n    values[question["slot"]] = {\n        "value": answer,\n        "source": source,\n        "question_id": question["id"],\n    }\n    with backend.transaction():\n        backend.set("slots", slots)\n        backend.set("slot_values", values)\n\n\ndef run_session(\n    backend: Any,\n    answers: dict[str, str],\n    *,\n    autonomous: bool = False,\n    bank: list[dict] | None = None,\n) -> dict[str, Any]:\n    """Run one interview session, then attempt graduation.\n\n    ``answers`` maps slot -> user answer. A pending question with a user answer is\n    confirmed; otherwise, in ``autonomous`` mode it is self-answered provisionally.\n    A session that leaves no blocking question unanswered extends the quiet streak;\n    any unanswered blocking question resets it.\n    """\n    bank = QUESTIONS if bank is None else bank\n    pending = pending_questions(backend.data, bank)\n    left_blocking = False\n    for question in pending:\n        slot = question["slot"]\n        if slot in answers:\n            record_answer(backend, question, answers[slot], source="user")\n        elif autonomous:\n            record_answer(backend, question, f"ASSUMED: {slot}", source="assumption")\n        elif question.get("priority") == "blocking":\n            left_blocking = True\n\n    backend.set("session_count", int(backend.get("session_count", 0)) + 1)\n    quiet = int(backend.get("quiet_sessions", 0))\n    backend.set("quiet_sessions", 0 if left_blocking else quiet + 1)\n\n    graduated = maybe_graduate(backend, critical_slots(bank))\n    return {\n        "session": backend.get("session_count"),\n        "pending_after": len(pending_questions(backend.data, bank)),\n        "graduated": graduated,\n        "stage": backend.get("stage"),\n    }\n',
+    'engine/lib/modes.py': '"""Integration-mode behavior policies (plan section 3 — the adoption-pace axis).\n\nThe ``mode`` state field (observe | guided | active) existed since PR 1 but nothing\nread it; this module is the single place its *behavior* is defined, so every\nconsumer (interview quota, orientation depth, trigger mandates, actuator gating,\ngraduation) asks one policy table instead of re-deriving the semantics.\n\nThe three modes, per the approved plan:\n\n- **observe** — the kit imposes nothing: each session writes a light note, asks\n  only 1-2 observation questions, and passively profiles how the user already\n  works; after enough sessions it *proposes* a tailored workflow (never\n  auto-graduates — proposal only).\n- **guided** — the default: the workflow rolls out one practice at a time in a\n  fixed order (session logs → idea lifecycle → question router → session-enders\n  → gates), each arriving only after the prior is established; triggers may\n  mandate questions.\n- **active** — the full workflow from session 1; the interview runs aggressively\n  (no quota) to fill slots fast.\n\n``promotion_rights`` is the *separate* autonomy axis: what the agent may change\nwithout sign-off. Actuators (economy prunes, maintenance writes) may apply only\nwhen the mode allows it AND promotion_rights is ``"promote"`` — otherwise they\nstay dry-run/propose.\n"""\n\nfrom __future__ import annotations\n\nfrom typing import Any\n\nMODES = ("observe", "guided", "active")\n\n# The guided-mode rollout order is fixed by the plan; only the pacing is ours.\nGUIDED_ROLLOUT = (\n    "session_logs",\n    "idea_lifecycle",\n    "question_router",\n    "session_enders",\n    "gates",\n)\n\nDEFAULT_MODE = "guided"\n\n# One behavior record per mode. quota None = unlimited questions per session.\n_MODE_POLICIES: dict[str, dict[str, Any]] = {\n    "observe": {\n        "question_quota": 2,\n        "orientation_depth": "minimal",\n        "practices": "none",\n        "triggers_mandate": False,\n        "actuators_allowed": False,\n        "auto_graduate": False,\n        "workflow_proposal_after_sessions": 5,\n    },\n    "guided": {\n        "question_quota": 3,\n        "orientation_depth": "standard",\n        "practices": "rollout",\n        "triggers_mandate": True,\n        "actuators_allowed": True,\n        "auto_graduate": True,\n        "workflow_proposal_after_sessions": None,\n    },\n    "active": {\n        "question_quota": None,\n        "orientation_depth": "full",\n        "practices": "all",\n        "triggers_mandate": True,\n        "actuators_allowed": True,\n        "auto_graduate": True,\n        "workflow_proposal_after_sessions": None,\n    },\n}\n\n\ndef mode_policy(state: dict[str, Any]) -> dict[str, Any]:\n    """Return the behavior policy for the state\'s active mode.\n\n    An unknown or missing mode falls back to the default (``guided``) so every\n    consumer fails open onto sane behavior rather than crashing on bad state.\n    """\n    mode = state.get("mode", DEFAULT_MODE)\n    return dict(_MODE_POLICIES.get(mode, _MODE_POLICIES[DEFAULT_MODE]))\n\n\ndef question_quota(state: dict[str, Any]) -> int | None:\n    """Return the per-session interview question quota (None = unlimited)."""\n    quota = mode_policy(state)["question_quota"]\n    return quota if quota is None else int(quota)\n\n\ndef orientation_depth(state: dict[str, Any]) -> str:\n    """Return the orientation-injection depth: minimal | standard | full."""\n    return str(mode_policy(state)["orientation_depth"])\n\n\ndef triggers_mandate(state: dict[str, Any]) -> bool:\n    """True when fired triggers may *mandate* questions (guided/active only)."""\n    return bool(mode_policy(state)["triggers_mandate"])\n\n\ndef actuators_may_apply(state: dict[str, Any]) -> bool:\n    """True when actuators may apply changes (mode allows AND rights say promote).\n\n    This is the promotion-rights enforcement point: whatever the mode, an agent\n    whose ``promotion_rights`` is ``"propose"`` (or ``"observe"``) only ever\n    produces dry-run reports.\n    """\n    if not mode_policy(state)["actuators_allowed"]:\n        return False\n    return state.get("promotion_rights") == "promote"\n\n\ndef may_auto_graduate(state: dict[str, Any]) -> bool:\n    """True when graduation may fire automatically (observe mode proposes only)."""\n    return bool(mode_policy(state)["auto_graduate"])\n\n\ndef workflow_proposal_due(state: dict[str, Any]) -> bool:\n    """True when observe mode has watched long enough to propose its workflow."""\n    threshold = mode_policy(state)["workflow_proposal_after_sessions"]\n    if threshold is None:\n        return False\n    return int(state.get("session_count", 0)) >= int(threshold)\n\n\ndef active_practices(\n    state: dict[str, Any],\n    cadence: dict[str, int] | None = None,\n) -> list[str]:\n    """Return the workflow practices currently active under the mode\'s pacing.\n\n    observe: none (the kit imposes nothing). active: all from session 1.\n    guided: one practice unlocks per ``guided_practice_sessions`` sessions\n    (config cadence, default 3), in the fixed rollout order — the "only after\n    the prior is established" pacing, made deterministic.\n    """\n    practices = mode_policy(state)["practices"]\n    if practices == "none":\n        return []\n    if practices == "all":\n        return list(GUIDED_ROLLOUT)\n    interval = int((cadence or {}).get("guided_practice_sessions", 3))\n    interval = max(interval, 1)\n    sessions = int(state.get("session_count", 0))\n    unlocked = 1 + sessions // interval\n    return list(GUIDED_ROLLOUT[:unlocked])\n',
+    'engine/interview/question_bank.py': '"""The interview question bank — the seed set the staged onboarding draws from.\n\nCuration policy (Hermes #7): keep this lean. Add a question only when its slot\ngenuinely blocks graduation, or a checker keeps flagging its absence; prune\nquestions that no longer earn their place. Each entry is a plain dict so the bank\nships inside the stdlib-only bootstrap with no parser (the plan named\n``question_bank.yml``; a Python module is the simplest form that embeds and runs\nidentically in ``src`` and the single-file ``dist`` — no YAML/JSON dependency).\n\nEntry fields:\n  id        — stable "Q-NNN" identifier.\n  slot      — the content slot it fills (matches the project index).\n  audience  — "user" (ask the maintainer) or "self" (the agent infers).\n  prompt    — the question text.\n  routing   — where a confirmed answer lands (a doc:field or state:key).\n  priority  — "blocking" | "high" | "normal".\n  critical  — True if graduation requires this slot filled (confirmed, not assumed).\n\nOptional fields:\n  trigger   — a trigger kind (see engine/loop/triggers.py); the question is pulled\n              into a mandatory-question session when that trigger fires.\n  objective — True when a different model can verify the answer against evidence\n              (the review seam may then confirm a provisional answer); subjective\n              slots stay provisional until the user confirms.\n  min_len   — anti-gaming floor: an answer shorter than this never fills the slot.\n"""\n\nfrom __future__ import annotations\n\nCURATION_RULE = (\n    "Lean bank: add a question only when it blocks graduation or a checker keeps "\n    "flagging its slot; prune questions that no longer earn their place."\n)\n\nQUESTIONS: list[dict] = [\n    {\n        "id": "Q-001",\n        "slot": "integration_mode",\n        "audience": "user",\n        "prompt": "Adoption pace for the workflow? observe | guided | active.",\n        "routing": "state:mode",\n        "priority": "blocking",\n        "critical": True,\n    },\n    {\n        "id": "Q-002",\n        "slot": "project_name",\n        "audience": "user",\n        "prompt": "What is this project called?",\n        "routing": "templates/CLAUDE.md:project_name",\n        "priority": "high",\n        "critical": True,\n        "objective": True,\n        "min_len": 2,\n    },\n    {\n        "id": "Q-003",\n        "slot": "primary_language",\n        "audience": "user",\n        "prompt": "Primary language / runtime (e.g. Python 3.10, TypeScript)?",\n        "routing": "templates/CLAUDE.md:language",\n        "priority": "high",\n        "critical": True,\n        "objective": True,\n        "min_len": 3,\n    },\n    {\n        "id": "Q-004",\n        "slot": "architecture_layers",\n        "audience": "user",\n        "prompt": "What are the top-level layers and their import rules?",\n        "routing": "templates/architecture.md:layers",\n        "priority": "high",\n        "critical": True,\n        "trigger": "critical_unfilled",\n        "objective": True,\n        "min_len": 20,\n    },\n    {\n        "id": "Q-005",\n        "slot": "verify_command",\n        "audience": "user",\n        "prompt": "One command that proves a change is good (tests + lint)?",\n        "routing": "templates/CLAUDE.md:verify_command",\n        "priority": "high",\n        "critical": True,\n        "objective": True,\n        "min_len": 4,\n    },\n    {\n        "id": "Q-006",\n        "slot": "ownership_model",\n        "audience": "self",\n        "prompt": "Which component owns each data store / write path?",\n        "routing": "templates/ownership.md:owners",\n        "priority": "normal",\n        "critical": False,\n        "objective": True,\n        "min_len": 20,\n    },\n    {\n        "id": "Q-007",\n        "slot": "doc_roots",\n        "audience": "self",\n        "prompt": "Where does durable documentation live?",\n        "routing": "state:paths.docs",\n        "priority": "normal",\n        "critical": False,\n    },\n    {\n        "id": "Q-008",\n        "slot": "owner_profile",\n        "audience": "user",\n        "prompt": "How do you like an agent to work (tone, detail, autonomy)?",\n        "routing": "templates/owner-profile.md:style",\n        "priority": "normal",\n        "critical": False,\n    },\n    {\n        "id": "Q-009",\n        "slot": "mutation_seam",\n        "audience": "self",\n        "prompt": "How are writes gated (the audited mutation seam)?",\n        "routing": "templates/runtime_contracts.md:mutations",\n        "priority": "normal",\n        "critical": False,\n        "objective": True,\n        "min_len": 20,\n    },\n    {\n        "id": "Q-010",\n        "slot": "review_ritual",\n        "audience": "user",\n        "prompt": "Your PR-review and release rhythm?",\n        "routing": "templates/owner-profile.md:procedures",\n        "priority": "normal",\n        "critical": False,\n    },\n    {\n        "id": "Q-011",\n        "slot": "drift_resolution",\n        "audience": "self",\n        "prompt": "Doc-hygiene checks are failing - what drifted, and what fixes it?",\n        "routing": "state:open_questions",\n        "priority": "high",\n        "critical": False,\n        "trigger": "drift",\n    },\n    {\n        "id": "Q-012",\n        "slot": "staleness_review",\n        "audience": "user",\n        "prompt": "Memory looks stale (reconciliation overdue) - what changed since the last update?",\n        "routing": "templates/current-state.md:refresh",\n        "priority": "normal",\n        "critical": False,\n        "trigger": "staleness",\n    },\n    {\n        "id": "Q-013",\n        "slot": "new_area_ownership",\n        "audience": "user",\n        "prompt": "A new area appeared with no ownership/folio entry - which component owns it?",\n        "routing": "templates/ownership.md:owners",\n        "priority": "high",\n        "critical": False,\n        "trigger": "new_area",\n    },\n]\n',
+    'engine/interview/stages.py': '"""Stage state machine + adaptive graduation (plan section 2).\n\nStage 1 (``integration``) graduates to stage 2 (``steady``) *adaptively* — when\nthe project\'s **critical** content slots are mostly filled (by confirmed, not\nassumed, answers), no blocking questions remain, and several consecutive sessions\nsurface no new mandatory question — not at a hard session count.\n"""\n\nfrom __future__ import annotations\n\nfrom typing import Any\n\nfrom engine.lib.modes import may_auto_graduate\n\nSTAGE_INTEGRATION = "integration"\nSTAGE_STEADY = "steady"\n\n_DEFAULT_FILL_PCT = 0.8\n_DEFAULT_QUIET_SESSIONS = 3\n\n\ndef critical_fill_ratio(slots: dict[str, str], critical: list[str]) -> float:\n    """Return the fraction of ``critical`` slots marked ``filled``."""\n    if not critical:\n        return 1.0\n    filled = sum(1 for name in critical if slots.get(name) == "filled")\n    return filled / len(critical)\n\n\ndef graduation_ready(\n    state: dict[str, Any],\n    critical: list[str],\n) -> tuple[bool, list[str]]:\n    """Return ``(ready, reasons)`` for graduating integration -> steady.\n\n    ``reasons`` lists the unmet criteria when not ready (empty when ready).\n    """\n    criteria = state.get("graduation", {}).get("criteria", {})\n    want_pct = criteria.get("critical_slots_filled_pct", _DEFAULT_FILL_PCT)\n    want_quiet = criteria.get("quiet_sessions_required", _DEFAULT_QUIET_SESSIONS)\n    reasons: list[str] = []\n\n    ratio = critical_fill_ratio(state.get("slots", {}), critical)\n    if ratio < want_pct:\n        reasons.append(f"critical slots {ratio:.0%} < {want_pct:.0%}")\n    blocking = len(state.get("open_questions", []))\n    if blocking:\n        reasons.append(f"{blocking} blocking question(s) open")\n    quiet = state.get("quiet_sessions", 0)\n    if quiet < want_quiet:\n        reasons.append(f"quiet streak {quiet} < {want_quiet}")\n    return (not reasons, reasons)\n\n\ndef maybe_graduate(backend: Any, critical: list[str]) -> bool:\n    """Advance integration -> steady if ready; return whether it graduated.\n\n    Mode-conditional (the plan\'s per-mode behavior): ``observe`` mode never\n    auto-graduates — when ready it records a *proposal* (``graduation_proposed``)\n    for the user to accept (switch mode or graduate explicitly); guided/active\n    graduate automatically.\n    """\n    if backend.get("stage") != STAGE_INTEGRATION:\n        return False\n    ready, _ = graduation_ready(backend.data, critical)\n    if not ready:\n        return False\n    if not may_auto_graduate(backend.data):\n        backend.set("graduation_proposed", True)\n        return False\n    backend.set("stage", STAGE_STEADY)\n    return True\n',
+    'engine/interview/interview.py': '"""The interview pass — fills content slots from the question bank (plan section 4).\n\nA session asks its pending questions. A user-facing answer fills a slot\n(``filled``); when no human is present the agent self-answers, recording a\n*provisional* assumption (``provisional``) that never counts toward graduation\nuntil confirmed. This is what lets an autonomous run keep moving without blocking:\nit records assumptions, flags them, and moves on.\n"""\n\nfrom __future__ import annotations\n\nfrom typing import Any\n\nfrom engine.interview.question_bank import QUESTIONS\nfrom engine.interview.stages import maybe_graduate\nfrom engine.lib.modes import question_quota\n\n_PRIORITY_ORDER = {"blocking": 0, "high": 1, "normal": 2}\n_PLACEHOLDER_ANSWERS = frozenset({"todo", "tbd", "...", "n/a", "?"})\n\n\ndef critical_slots(bank: list[dict] | None = None) -> list[str]:\n    """Return the slot names the bank marks as critical."""\n    bank = QUESTIONS if bank is None else bank\n    return [q["slot"] for q in bank if q.get("critical")]\n\n\ndef pending_questions(\n    state: dict[str, Any],\n    bank: list[dict] | None = None,\n) -> list[dict]:\n    """Return bank questions whose slot is not yet ``filled``."""\n    bank = QUESTIONS if bank is None else bank\n    slots = state.get("slots", {})\n    return [q for q in bank if slots.get(q["slot"]) != "filled"]\n\n\ndef session_questions(\n    state: dict[str, Any],\n    bank: list[dict] | None = None,\n) -> list[dict]:\n    """Return this session\'s ask list: pending, priority-ordered, quota-capped.\n\n    The cap is the integration mode\'s question quota (observe asks 1-2, guided a\n    few, active unlimited). Blocking questions sort first, so a quota can never\n    hide one.\n    """\n    pending = sorted(\n        pending_questions(state, bank),\n        key=lambda q: _PRIORITY_ORDER.get(q.get("priority", "normal"), 2),\n    )\n    quota = question_quota(state)\n    return pending if quota is None else pending[:quota]\n\n\ndef answer_is_substantive(question: dict, answer: str) -> bool:\n    """True when ``answer`` passes the anti-gaming floor for this slot.\n\n    Completeness counts only non-placeholder content: no leftover ``${slot}``\n    marker, not a stock placeholder word, and at least the slot\'s ``min_len``\n    characters — so an autonomous run can\'t graduate on hollow answers.\n    """\n    text = answer.strip()\n    if not text or "${" in text:\n        return False\n    if text.lower() in _PLACEHOLDER_ANSWERS:\n        return False\n    return len(text) >= int(question.get("min_len", 1))\n\n\ndef _clear_open_question(backend: Any, question_id: str) -> None:\n    """Drop ``question_id`` from the escalated open-questions list, if present."""\n    open_questions = list(backend.get("open_questions", []))\n    if question_id in open_questions:\n        open_questions.remove(question_id)\n        backend.set("open_questions", open_questions)\n\n\ndef record_answer(backend: Any, question: dict, answer: str, *, source: str) -> None:\n    """Fill ``question``\'s slot from an answer.\n\n    ``source="user"`` confirms the slot (``filled``) when the answer passes the\n    anti-gaming floor (``partial`` otherwise); any other source records a\n    ``provisional`` self-answer that must be confirmed before it counts. A\n    filled answer also resolves the question\'s escalated open-question entry.\n    """\n    if source == "user":\n        status = "filled" if answer_is_substantive(question, answer) else "partial"\n    else:\n        status = "provisional"\n    slots = dict(backend.get("slots", {}))\n    values = dict(backend.get("slot_values", {}))\n    slots[question["slot"]] = status\n    values[question["slot"]] = {\n        "value": answer,\n        "source": source,\n        "question_id": question["id"],\n    }\n    with backend.transaction():\n        backend.set("slots", slots)\n        backend.set("slot_values", values)\n    if status == "filled":\n        _clear_open_question(backend, question["id"])\n\n\ndef confirm_slot(backend: Any, slot: str, *, source: str) -> bool:\n    """Promote a ``provisional`` slot to ``filled`` (the confirmation seam).\n\n    ``source`` records who confirmed (``"user"`` or ``"reviewer:<name>"``).\n    Returns False when the slot is not provisional (nothing to confirm).\n    """\n    slots = dict(backend.get("slots", {}))\n    if slots.get(slot) != "provisional":\n        return False\n    values = dict(backend.get("slot_values", {}))\n    entry = dict(values.get(slot, {}))\n    entry["source"] = f"confirmed:{source}"\n    slots[slot] = "filled"\n    values[slot] = entry\n    with backend.transaction():\n        backend.set("slots", slots)\n        backend.set("slot_values", values)\n    question_id = entry.get("question_id")\n    if question_id:\n        _clear_open_question(backend, question_id)\n    return True\n\n\ndef run_session(\n    backend: Any,\n    answers: dict[str, str],\n    *,\n    autonomous: bool = False,\n    bank: list[dict] | None = None,\n) -> dict[str, Any]:\n    """Run one interview session, then attempt graduation.\n\n    ``answers`` maps slot -> user answer. A pending question with a user answer is\n    confirmed; otherwise, in ``autonomous`` mode it is self-answered provisionally\n    (within the integration mode\'s question quota — blocking questions sort first,\n    so the quota never starves one). A session that leaves no blocking question\n    unanswered extends the quiet streak; any unanswered blocking question resets\n    it AND escalates onto ``open_questions``, which holds graduation until the\n    question is answered.\n    """\n    bank = QUESTIONS if bank is None else bank\n    pending = sorted(\n        pending_questions(backend.data, bank),\n        key=lambda q: _PRIORITY_ORDER.get(q.get("priority", "normal"), 2),\n    )\n    quota = question_quota(backend.data)\n    left_blocking = False\n    self_answered = 0\n    for question in pending:\n        slot = question["slot"]\n        if slot in answers:\n            record_answer(backend, question, answers[slot], source="user")\n        elif autonomous and (quota is None or self_answered < quota):\n            record_answer(backend, question, f"ASSUMED: {slot}", source="assumption")\n            self_answered += 1\n        elif question.get("priority") == "blocking":\n            left_blocking = True\n            open_questions = list(backend.get("open_questions", []))\n            if question["id"] not in open_questions:\n                open_questions.append(question["id"])\n                backend.set("open_questions", open_questions)\n\n    backend.set("session_count", int(backend.get("session_count", 0)) + 1)\n    quiet = int(backend.get("quiet_sessions", 0))\n    backend.set("quiet_sessions", 0 if left_blocking else quiet + 1)\n\n    graduated = maybe_graduate(backend, critical_slots(bank))\n    return {\n        "session": backend.get("session_count"),\n        "pending_after": len(pending_questions(backend.data, bank)),\n        "graduated": graduated,\n        "stage": backend.get("stage"),\n    }\n',
     'engine/checks/check_docs.py': '"""Generic doc-hygiene checker (config-driven port of ``check_docs``).\n\nThree portable checks, every input supplied by the caller (from config) rather\nthan hardcoded:\n\n  1. **badge**      — every ``*.md`` under ``docs_root`` (non-ADR) carries a\n     ``> **Status:** `<token>``` line in its first 12 lines, ``<token>`` drawn\n     from the project\'s allowed taxonomy.\n  2. **link**       — every relative markdown link ``[text](path)`` resolves to\n     an existing file (external / anchor-only links are skipped).\n  3. **reachable**  — every live doc is reachable by following links + backtick\n     ``<docs>/*.md`` refs from a read-path root (the read-path docs + any\n     ``README.md``). Orphans fail unless badged ``historical`` / ``archive`` or\n     an ADR.\n\nThe host\'s soft ratchets (top-level pile, recently-shipped) and the\nsuperbot-specific freshness rule are intentionally left behind — they are\nproject policy, not portable mechanism. Pure stdlib; returns findings rather\nthan printing so the CLI owns all output.\n"""\n\nfrom __future__ import annotations\n\nimport re\nfrom collections import deque\nfrom collections.abc import Collection, Sequence\nfrom pathlib import Path\nfrom typing import NamedTuple\n\n\nclass Finding(NamedTuple):\n    """One doc-hygiene violation: ``path`` is relative to ``docs_root``."""\n\n    path: str\n    kind: str\n    message: str\n\n\n# `> **Status:** `<token>`` — the machine-readable badge (rich text may follow).\n_BADGE_RE = re.compile(r"\\*\\*Status:\\*\\*\\s*`([a-z-]+)`")\n# ADR filename: NNN-something.md (exempt — ADRs use their own Accepted/Superseded).\n_ADR_RE = re.compile(r"^\\d+-.*\\.md$")\n# Markdown link target: [text](target).\n_MD_LINK_RE = re.compile(r"\\[[^\\]]*\\]\\(([^)]+)\\)")\n# Badges whose docs are retired content and need no inbound link.\n_EXEMPT_BADGES = frozenset({"historical", "archive"})\n\n_BADGE_MISSING = "missing `> **Status:** `<token>`` in first 12 lines"\n_ORPHAN_MSG = (\n    "orphan: not reachable from any read-path doc / README "\n    "(link it from one, or badge it historical/archive)"\n)\n\n\ndef _md_files(docs_root: Path) -> list[Path]:\n    """Return every ``*.md`` under ``docs_root`` (sorted, empty if absent)."""\n    if not docs_root.exists():\n        return []\n    return sorted(docs_root.rglob("*.md"))\n\n\ndef _is_adr(path: Path) -> bool:\n    """True for ``decisions/NNN-*.md`` ADR files (badge-exempt)."""\n    return path.parent.name == "decisions" and bool(_ADR_RE.match(path.name))\n\n\ndef _badge_token(path: Path) -> str | None:\n    """Return the doc\'s Status-badge token from its first 12 lines, or None."""\n    head = "\\n".join(path.read_text(encoding="utf-8").splitlines()[:12])\n    match = _BADGE_RE.search(head)\n    return match.group(1) if match else None\n\n\ndef _link_target(raw: str) -> str:\n    """Normalise a markdown link target (drop ``<>``, title, ``#anchor``)."""\n    target = raw.strip()\n    if target.startswith("<") and ">" in target:\n        target = target[1:].split(">", 1)[0]\n    parts = target.split()\n    target = parts[0] if parts else target\n    return target.split("#", 1)[0]\n\n\ndef _backtick_docs_re(docs_root: Path) -> re.Pattern[str]:\n    """Compile the ``<docs>/*.md`` backtick-ref pattern for this doc root."""\n    name = re.escape(docs_root.name)\n    return re.compile(rf"`({name}/[\\w./-]+\\.md)`")\n\n\ndef check_badges(docs_root: Path, badge_tokens: Collection[str]) -> list[Finding]:\n    """Every non-ADR doc must declare a Status badge from the taxonomy."""\n    allowed = set(badge_tokens)\n    findings: list[Finding] = []\n    for f in _md_files(docs_root):\n        if _is_adr(f):\n            continue\n        rel = f.relative_to(docs_root).as_posix()\n        token = _badge_token(f)\n        if token is None:\n            findings.append(Finding(rel, "badge", _BADGE_MISSING))\n        elif token not in allowed:\n            allowed_list = ", ".join(sorted(allowed))\n            findings.append(\n                Finding(\n                    rel,\n                    "badge",\n                    f"invalid badge token `{token}` (allowed: {allowed_list})",\n                ),\n            )\n    return findings\n\n\ndef check_links(docs_root: Path) -> list[Finding]:\n    """Relative markdown links inside ``docs_root`` must resolve."""\n    findings: list[Finding] = []\n    for f in _md_files(docs_root):\n        rel = f.relative_to(docs_root).as_posix()\n        for lineno, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):\n            for raw in _MD_LINK_RE.findall(line):\n                if raw.startswith(("http://", "https://", "mailto:", "#")):\n                    continue\n                target = _link_target(raw)\n                if not target or target.startswith(("http", "mailto:")):\n                    continue\n                if not (f.parent / target).resolve().exists():\n                    msg = f"L{lineno}: dead link -> {raw}"\n                    findings.append(Finding(rel, "link", msg))\n    return findings\n\n\ndef _outgoing_links(path: Path, docs_root: Path) -> set[Path]:\n    """Resolve every relative markdown link + backtick ``<docs>/*.md`` ref."""\n    out: set[Path] = set()\n    backtick = _backtick_docs_re(docs_root)\n    root = docs_root.parent\n    try:\n        text = path.read_text(encoding="utf-8")\n    except (OSError, UnicodeDecodeError):\n        return out\n    for line in text.splitlines():\n        for raw in _MD_LINK_RE.findall(line):\n            if raw.startswith(("http://", "https://", "mailto:", "#")):\n                continue\n            target = _link_target(raw)\n            if target:\n                out.add((path.parent / target).resolve())\n        for ref in backtick.findall(line):\n            out.add((root / ref).resolve())\n    return out\n\n\ndef check_reachable(docs_root: Path, readpath_docs: Sequence[str]) -> list[Finding]:\n    """Every live doc must be reachable from a read-path root / README.\n\n    Walks the doc graph (markdown links + backtick ``<docs>/*.md`` refs) from the\n    roots; any doc not reached — and not ``historical`` / ``archive`` badged or an\n    ADR — is an orphan.\n    """\n    roots = [docs_root / name for name in readpath_docs]\n    roots += sorted(docs_root.rglob("README.md"))\n    seen: set[Path] = set()\n    queue: deque[Path] = deque()\n    for root in roots:\n        resolved = root.resolve()\n        if root.exists() and resolved not in seen:\n            seen.add(resolved)\n            queue.append(resolved)\n    while queue:\n        cur = queue.popleft()\n        if cur.suffix != ".md" or not cur.exists():\n            continue\n        for nxt in _outgoing_links(cur, docs_root):\n            if nxt not in seen and nxt.suffix == ".md" and nxt.exists():\n                seen.add(nxt)\n                queue.append(nxt)\n\n    findings: list[Finding] = []\n    for f in _md_files(docs_root):\n        if f.resolve() in seen or _is_adr(f):\n            continue\n        if _badge_token(f) in _EXEMPT_BADGES:\n            continue\n        rel = f.relative_to(docs_root).as_posix()\n        findings.append(Finding(rel, "reachable", _ORPHAN_MSG))\n    return findings\n\n\ndef run_doc_checks(\n    docs_root: Path,\n    badge_tokens: Collection[str],\n    readpath_docs: Sequence[str],\n) -> list[Finding]:\n    """Run every doc check and return the combined findings."""\n    return (\n        check_badges(docs_root, badge_tokens)\n        + check_links(docs_root)\n        + check_reachable(docs_root, readpath_docs)\n    )\n',
     'engine/checks/check_session_log.py': '"""Generic session-log completeness checker (config-driven port).\n\nThe session workflow asks every session to end with a\n``<sessions_dir>/<date>-<slug>.md`` log that carries a set of required markers\n(by default: a Status badge, a session-idea flag, and a previous-session review).\nEach marker is a ``{"label", "needle"}`` pair from ``substrate.config.json``, so a\nhost tunes the ritual without touching engine code.\n\nUnlike the host\'s version this port does **not** shell out to ``git`` to pick the\n"current" log — ``subprocess`` is banned in engine code and is host-CI sugar\nanyway. The current log is the newest ``*.md`` by mtime under ``sessions_dir``\n(the CLI also accepts an explicit ``--file``). Pure stdlib; returns the missing\nmarkers rather than printing.\n"""\n\nfrom __future__ import annotations\n\nfrom collections.abc import Mapping, Sequence\nfrom pathlib import Path\n\n\ndef missing_markers(text: str, markers: Sequence[Mapping[str, str]]) -> list[str]:\n    """Return the labels of markers whose needle is absent from ``text``."""\n    lower = text.lower()\n    return [m["label"] for m in markers if m["needle"].lower() not in lower]\n\n\ndef latest_session_log(sessions_dir: Path) -> Path | None:\n    """Best guess at this session\'s log: newest ``*.md`` by mtime (skip README)."""\n    if not sessions_dir.is_dir():\n        return None\n    candidates = [p for p in sessions_dir.glob("*.md") if p.name != "README.md"]\n    if not candidates:\n        return None\n    return max(candidates, key=lambda p: p.stat().st_mtime)\n\n\ndef check_log(path: Path, markers: Sequence[Mapping[str, str]]) -> list[str]:\n    """Return the missing-marker labels for one log file (all if unreadable)."""\n    try:\n        text = path.read_text(encoding="utf-8")\n    except OSError:\n        return [m["label"] for m in markers]\n    return missing_markers(text, markers)\n',
     'engine/stances/stances.py': '"""Task-stance definitions — the fourth control axis (plan section 3b).\n\nA *stance* is the working agent\'s operational posture for the current task,\ndistinct from adoption-pace (``mode``), promotion-rights, and stage. Following\nRoo Code\'s proven mode model, each stance scopes three things to cut context rot\nand tool misfires:\n\n  - a **reading-route** — which docs to load first;\n  - a **tool-scope** — which action categories are in-bounds;\n  - an **output contract** — what the stance is expected to produce.\n\nThe active stance lives in state (``"stance"``) and is **advisory**: the contract\nguides the agent, and an optional PreToolUse guard can warn on an out-of-stance\naction (e.g. an edit while in ``review``) via :func:`is_out_of_stance`.\n\nLike the question bank, the set ships as a Python module — not the plan\'s literal\n``stances.yml`` — so it embeds in the stdlib-only bootstrap with no YAML parser\nand runs identically in ``src`` and the single-file ``dist``.\n"""\n\nfrom __future__ import annotations\n\n# Canonical action categories a stance\'s tool-scope is drawn from.\nREAD = "read"  # read files / memory / source\nRUN = "run"  # run read-only tools / commands\nEDIT = "edit"  # modify files\nCOMMENT = "comment"  # emit review comments (no file edits)\n\nACTIONS = (READ, RUN, EDIT, COMMENT)\n\nDEFAULT_STANCE = "analysis"\n\nSTANCES: list[dict] = [\n    {\n        "name": "question",\n        "role": "Answer concisely from memory and source; make no changes.",\n        "when_to_use": "A direct question that memory or a quick read can answer.",\n        "reading_route": ["current-state.md", "AGENT_ORIENTATION.md"],\n        "tools": [READ],\n        "output": "A concise answer grounded in memory/source; no edits.",\n    },\n    {\n        "name": "analysis",\n        "role": "Read-only deep-dive: investigate and report, do not change.",\n        "when_to_use": "Understanding a system, tracing a behavior, scoping work.",\n        "reading_route": ["AGENT_ORIENTATION.md", "architecture.md", "ownership.md"],\n        "tools": [READ, RUN],\n        "output": "Findings (evidence + conclusion), not changes.",\n    },\n    {\n        "name": "debug",\n        "role": "Read, run, and make targeted edits to fix a known fault.",\n        "when_to_use": "A reproduced, localized fault with a clear blast radius.",\n        "reading_route": ["runtime_contracts.md", "current-state.md"],\n        "tools": [READ, RUN, EDIT],\n        "output": "A targeted fix for the known fault; no broad refactor.",\n    },\n    {\n        "name": "review",\n        "role": "Evaluate a diff against the contracts; comment, do not edit.",\n        "when_to_use": "Assessing a change someone else (or a prior stance) produced.",\n        "reading_route": ["architecture.md", "ownership.md", "runtime_contracts.md"],\n        "tools": [READ, COMMENT],\n        "output": "A verdict + comments against the contracts; no edits.",\n    },\n    {\n        "name": "plan",\n        "role": "Research + safe prototyping, then propose a plan for approval.",\n        "when_to_use": "A multi-step or architectural change worth designing first.",\n        "reading_route": ["AGENT_ORIENTATION.md", "current-state.md", "roadmap.md"],\n        "tools": [READ, RUN],\n        "output": "An approved plan (research + safe prototyping; no committed change).",\n    },\n]\n\n_BY_NAME = {s["name"]: s for s in STANCES}\n\n\ndef stance_names() -> list[str]:\n    """Return the available stance names, in declared order."""\n    return [s["name"] for s in STANCES]\n\n\ndef get_stance(name: str) -> dict | None:\n    """Return the stance definition for ``name`` (or None if unknown)."""\n    return _BY_NAME.get(name)\n\n\ndef action_allowed(name: str, action: str) -> bool:\n    """True if ``action`` is in ``name``\'s tool-scope (False for an unknown stance)."""\n    stance = _BY_NAME.get(name)\n    return stance is not None and action in stance["tools"]\n\n\ndef is_out_of_stance(name: str, action: str) -> bool:\n    """True if ``action`` falls *outside* a known stance\'s tool-scope.\n\n    The predicate a PreToolUse guard calls to warn on, e.g., an edit while the\n    active stance is ``review``. Returns False for an unknown stance (nothing to\n    enforce) so the guard fails **open** — it never blocks on a misconfigured name.\n    """\n    stance = _BY_NAME.get(name)\n    if stance is None:\n        return False\n    return action not in stance["tools"]\n\n\ndef stance_briefing(name: str) -> str:\n    """Return the orientation block injected for the active stance.\n\n    The reading-route + tool-scope + output contract, formatted for injection into\n    session orientation (alongside the user-style block and reflection buffer).\n    """\n    stance = _BY_NAME.get(name)\n    if stance is None:\n        choices = ", ".join(stance_names())\n        return f"Unknown stance {name!r} (choose from {choices})."\n    route = " -> ".join(stance["reading_route"])\n    tools = ", ".join(stance["tools"])\n    return (\n        f"Stance: {stance[\'name\']} — {stance[\'role\']}\\n"\n        f"  When: {stance[\'when_to_use\']}\\n"\n        f"  Read first: {route}\\n"\n        f"  In-scope actions: {tools}\\n"\n        f"  Output: {stance[\'output\']}"\n    )\n',

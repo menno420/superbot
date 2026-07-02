@@ -40,6 +40,11 @@ def default_state(project_id: str) -> dict[str, Any]:
                 "blocking_questions": 0,
             },
         },
+        "mode_history": [],
+        "reflection_buffer": {"active_count": 0, "last_mined": None},
+        "graduation_proposed": False,
+        "last_compaction_session": 0,
+        "review_log": [],
     }
 
 
