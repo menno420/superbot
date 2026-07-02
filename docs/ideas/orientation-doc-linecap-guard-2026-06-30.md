@@ -4,6 +4,10 @@
 > checker + a small allowlist) · **Provenance:** surfaced by the 2026-06-30 fresh-rebuild-vision audit
 > (`superbot-fresh-rebuild-vision-2026-06-30.md`, finding #1) and the orientation-cost-reduction plan
 > (#1586). Friction→guard (Q-0194) / enforce-don't-exhort (Q-0132).
+> **Routed (2026-07-02):** absorbed into
+> [`memory-retention-and-context-economy-plan-2026-07-02.md`](../planning/memory-retention-and-context-economy-plan-2026-07-02.md)
+> — self-declared per-doc caps become a gauge class in its `check_retention.py` (PR 1), alongside the
+> corpus-level windows/caps; the warn-first → graduate posture below carries over unchanged.
 
 ## The friction
 

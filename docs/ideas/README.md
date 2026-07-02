@@ -47,6 +47,11 @@ Current broad captures:
   token and drive it over the real Discord gateway in a test guild — dissolves the
   `[needs-live-bot]` startability gate and *is* the Phase-0.5 golden-harness Discord driver;
   complements (not duplicates) the in-process `bot-self-test-walker`.
+- [`context-cost-telemetry-2026-07-02.md`](./context-cost-telemetry-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, retention-policy design session):** parse session transcripts
+  to measure *real* per-session docs-words-read (boot tax, grep-hit class split) — recalibrates the
+  retention simulator's assumption-grade constants and supplies the rebuild's §5.2 footprint KPI;
+  enforce-with-measurements applied to the memory system's own biggest claim.
 - [`continuously-verified-backups-2026-07-02.md`](./continuously-verified-backups-2026-07-02.md) —
   **session idea (2026-07-02, Q-0089, harvest):** the restore drill as a *scheduled* workflow
   (service-container Postgres + restore newest artifact + substance asserts) — pg_dump is now the
