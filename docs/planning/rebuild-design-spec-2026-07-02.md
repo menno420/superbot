@@ -1391,15 +1391,21 @@ orientation-budget checker, namespace guard, and seam-authority checks are Phase
 | `docs/ownership.md` | **generated** from `StoreSpec` + invariant tags | n/a (generated) |
 | `docs/domains/<x>.md` | **generated** per-subsystem folio (surface, settings, events, stores, sim provenance) | n/a (generated) |
 | `docs/compat-contract.md` | the frozen §5.3 table + pinned artifacts — **amendable only with owner sign-off** (backed by `check_compat_frozen`) | ≤ 200 lines |
-| `docs/decisions.md` | the distilled ledger: one machine-parseable status format, ordered IDs, `supersedes:` links, promote/retire as first-class ops; seeded from the Phase-1 router distillation with zero orphaned citations | append-only |
+| `docs/decisions.md` | the distilled ledger: one machine-parseable status format, ordered IDs, `supersedes:` links, promote/retire as first-class ops; seeded from the Phase-1 router distillation with zero orphaned citations. **Entry depth (owner-decided, Q-0214.4, 2026-07-02): verdict + 2–3 lines of rationale + provenance link; full deliberation lives in git/PR history.** `supersedes:` is a machine-readable field so "what is the current rule?" is a query, never prose archaeology | append-only |
 | `docs/current-state.md` | living dated snapshot, today's discipline | ≤ 150 lines |
 | `docs/orientation.md` | the reading router | ≤ 120 lines |
 
 Rules state their current value only; provenance lives in `docs/decisions.md` via `[D-NNNN]` links —
-never narrated inline. `tools/check_orientation_budget.py` (a required-check sub-gate) fails CI when
+never narrated inline. **Stamp discipline (from the 2026-07-02 retention session's measured spread
+pattern — Q-0089 accumulated 176 live-doc citations as per-file footers):** a D-number is cited
+**once, at the rule's canonical home**; every other doc links *the rule's home*, not the decision —
+stamps are immutable pointers, never content, so they never need rewriting when content moves.
+`tools/check_orientation_budget.py` (a required-check sub-gate) fails CI when
 the hand-written boot-read set exceeds **7,000 words total** (vs ~25,300 today), so the docs cannot
-silently regrow. Generated docs carry the `NOT SOURCE OF TRUTH — edit the manifest` marker (the
-context-compiler convention, kept).
+silently regrow — and the kit's **context-economy engine**
+([`memory-retention-and-context-economy-plan-2026-07-02.md`](memory-retention-and-context-economy-plan-2026-07-02.md)
+§10, posture per Q-0214) supplies the retention half: per-class windows, tombstone/stub semantics,
+and the checker+actuator pair, so the corpus stays bounded by construction, not by cleanup heroics.
 
 ---
 

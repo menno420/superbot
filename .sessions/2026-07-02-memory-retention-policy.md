@@ -1,6 +1,6 @@
 # 2026-07-02 — Memory retention & deletion policy (design session)
 
-> **Status:** `complete` — ready to merge (Q-0133). Run type: manual ·
+> **Status:** `in-progress` — follow-up turn live (substrate-handoff prep); flip to complete last (Q-0133). Run type: manual ·
 > owner-directed (ultracode brainstorm). Docs + `tools/sim/` only; no `disbot/` code; **no real
 > content deleted this session** (one stale claim file removed — its checker surfaced it).
 > PR #1643.
@@ -120,3 +120,23 @@ to the ⚑ lines below rather than deciding them.
   dashboard export, router backtick `Home:` citations) — discovered only by adversarial sweep;
   nothing in the orientation route names the machine consumers of memory files. The plan's
   reference-pass + consumer inventory fixes this class.
+
+---
+
+## Addendum — same chat, post-merge turns (PRs #1647 + this one)
+
+The owner stayed live after #1643 merged and the session continued in-chat:
+
+1. **Q-0214 recorded** (#1647, merged): the four structural retention decisions, answered via the
+   question panel — delete+tombstones posture · website-feed inbox · checker-owned shrink
+   (supersedes orientation-plan Workstream D) · rebuilt-repo ledger = verdict + short why.
+2. **Router follow-up discussion** → two ledger refinements folded into
+   `rebuild-design-spec-2026-07-02.md` (this PR): the **stamp discipline** (a D-number is cited once
+   at the rule's canonical home; other docs link the rule's home — stamps are immutable pointers,
+   never content) and **supersession-as-a-query** made explicit on the `docs/decisions.md` row,
+   plus the Q-0214.4 entry depth and a context-economy-engine pointer.
+3. **Substrate-finalization launch prep** (this PR): the owner will start a Fable 5 ultracode
+   session to finalize the memory substrate for fresh-repo use. The canonical startup prompt is
+   the **rebuild handoff §B** (`rebuild-ultracode-handoff-2026-07-02.md`) — extended this turn with
+   the retention/context-economy engine scope, Q-0214, and a verified uncertainty list (grounded by
+   a 2-agent inventory/uncertainty workflow); S3 sector ▶ repointed at it.
