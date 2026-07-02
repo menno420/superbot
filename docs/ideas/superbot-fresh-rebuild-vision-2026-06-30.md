@@ -13,6 +13,9 @@
 > Fable 5 was **redeployed 2026-07-01** (verified live), so that gate is **cleared**. The
 > research-grounded plan that supersedes/extends this vision is
 > [`../planning/fresh-rebuild-strategy-2026-07-02.md`](../planning/fresh-rebuild-strategy-2026-07-02.md).
+> **Later the same day, the Phase-2 design spec this vision called for was produced:**
+> [`../planning/rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
+> (Fable-5 judge panel + Opus/GPT review) — **⏳ this idea's next lifecycle step is the owner gate.**
 
 ## Why this document exists
 

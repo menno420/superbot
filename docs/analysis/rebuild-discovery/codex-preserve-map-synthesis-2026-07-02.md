@@ -20,6 +20,17 @@
 
 All six spot-checks confirm the maps against live source: `ActionSpec` collides at `services/automation_registry.py:35`; `SettingSpec`/`BindingSpec`/`DomainPanelSpec`/`SubsystemSchema` sit in `subsystem_schema.py`; `multi_channel.py` is genuinely absent; the AI DB module is `utils/db/ai_review.py` (no `ai_review_log.py`); `gateway.py:51` really does `from services import metrics`; and the server hub command is `servermanagement`/`servermenu`/`guildmenu`. The corrections hold. Here is the synthesis body.
 
+> **⚠️ Corrections to THIS file, source-verified by the 2026-07-02 design-spec review fleet**
+> (carried in [`rebuild-design-spec-2026-07-02.md`](../../planning/rebuild-design-spec-2026-07-02.md)'s
+> header): (1) `BindingMutationPipeline` lives at `services/binding_mutation.py:154` and
+> `ResourceProvisioningPipeline` at `services/resource_provisioning.py:240` — **not** in
+> `settings_mutation.py` as §4 states; (2) the `EventBus` lives at `core/events.py:52` and
+> `utils/events.py` does not exist (the catalogue is `core/events_catalogue.py`); (3) §1's
+> PARTIAL-3 verdict is itself wrong — `governance.visibility.changed` / `governance.cache.invalidated`
+> (note the real literal, not `.changed`) / `governance.cleanup.changed` **are live-subscribed** at
+> `core/runtime/__init__.py:181–183`; the genuinely subscriber-less catalogued pair is
+> `governance.execution.allowed/denied` (`governance/execution.py`, no `bus.on` anywhere).
+
 ## 1. Verification summary — what held vs what didn't
 
 Across the 4 maps, **48 of 59 load-bearing verdicts are CONFIRMED, 2 are FALSE, 9 are PARTIAL.** The confirmed spine is solid: all ~39 platform-seam files exist; the four audited mutation pipelines, EventBus fan-out, lifecycle phase machine, capability seam, help-as-projection chain, health-findings persistence, the economy/XP/karma sole-writer invariants, the AI gateway + typed contracts, and every cited migration/table/script/workflow are real. The corrections below are the only places a Fable designer must **not** take a source map at face value.

@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`judge-panel-as-saved-workflow-2026-07-02.md`](./judge-panel-as-saved-workflow-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the rebuild-design-spec session):** encode the proven
+  judge-panel method (N forced-diverse designs + cross-model design → lens-diverse judges → best-of
+  synthesis → multi-lens adversarial review incl. a live non-Claude GPT reviewer → source-verifying
+  reviser) as one **saved, parameterized workflow** so every future owner-gate-grade deliverable
+  (Phase-3 spine designs, harness architecture) reuses it instead of re-authoring the orchestration.
 - [`audit-log-catchup-on-reconnect-2026-07-01.md`](./audit-log-catchup-on-reconnect-2026-07-01.md) —
   **session idea (2026-07-01, Q-0089, from the server-logging-v2 audit-log pass):** replay missed
   Discord audit-log entries on `on_ready`/`on_resume` so moderation/server logging is **gap-free

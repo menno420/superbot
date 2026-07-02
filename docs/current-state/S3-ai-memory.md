@@ -38,6 +38,14 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag".)*
+- `[owner]` **🔒 THE REBUILD OWNER GATE — the Phase-2 design spec is DONE and awaiting approval**
+  (2026-07-02): [`rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
+  (Fable-5 judge panel + Opus/GPT adversarial review). The owner ratifies the design + the
+  backward-compat contract + the rebuild go/no-go (§10.2 lists exactly what approval means);
+  **no Phase-3 new-repo code until then.** `[offline]` meanwhile the ungated phases stay buildable:
+  Phase 0 (finish the substrate-kit adaptive half) · Phase 0.5 (golden harness + telemetry capture
+  against the live bot) · Phase 1 (harvest) · Phase 2.5 (cold-start proof) — see the
+  [strategy §3](../planning/fresh-rebuild-strategy-2026-07-02.md).
 - `[offline]` **AI-memory portable substrate-kit — PR 2 remainder + PR 3** — **owner-re-elevated to top
   focus** by the 2026-06-30 fresh-rebuild vision (#1589/#1590): "bot is mostly production ready, focus on
   the AI-memory project now." This reverses the band-#870 §6 demotion (dropped from the plannable queue

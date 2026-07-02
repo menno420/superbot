@@ -106,7 +106,7 @@ replayed against (red-until-parity). Deliver a runnable harness + the golden cor
 current-bot regression net. Opus xhigh/max on the harness core, Sonnet for per-subsystem capture. Born-red card.
 ```
 
-### D — The Fable design spec (Phase 2) — *its main input (the Codex preserve map) has LANDED; run it now (owner-gate deliverable)*
+### D — The Fable design spec (Phase 2) — *✅ RAN 2026-07-02; do NOT re-run. Deliverable: [`rebuild-design-spec-2026-07-02.md`](rebuild-design-spec-2026-07-02.md), ⏳ awaiting owner approval*
 ```
 ultracode (start the session on Claude Fable 5, effort max): Produce the comprehensive from-scratch rebuild
 DESIGN SPEC for SuperBot — the "one picture." DESIGN, NOT CODE. Read (all) fresh-rebuild-strategy-2026-07-02.md,
@@ -152,3 +152,21 @@ Output → docs/planning/rebuild-design-spec-2026-07-xx.md. Owner approves befor
 Fable where reasoning is the bottleneck (the Phase-2 design, session D); Opus `xhigh` for the builds
 (A/B/C); Sonnet for wide fan-out / the Phase-4 port; independent review always a *different* model than
 built it. The golden harness (C) is what makes cheap-tier porting safe later (red-until-parity).
+
+### E — External full-tier review of the design spec (owner: paste into Codex / ChatGPT) — *NEW 2026-07-02, optional but recommended before approving*
+
+D's in-session non-Claude review ran on `gpt-5.4-mini` (the strongest OpenAI model available to the
+deployment's key). A full-tier external pass is the one review seam still open. Paste-ready prompt:
+
+```
+You are the independent non-Claude reviewer of a Discord-bot rebuild design spec authored by Claude
+models (a judge panel + adversarial review already ran; your value is out-of-family judgment).
+Review docs/planning/rebuild-design-spec-2026-07-02.md against the verified evidence in
+docs/analysis/rebuild-discovery/codex-preserve-map-synthesis-2026-07-02.md (its §1 corrections and
+§5 backward-compat contract are binding; verify claims against shipped source, not prior docs).
+Find REAL defects only: internal contradictions, backward-compat holes, a namespace/settings design
+that won't deliver its stated guarantee, mechanisms an implementer could not build from the text,
+and blind spots a same-family model panel would share. For each finding: severity
+(blocker/major/minor), the spec section, the issue, evidence (file:line where factual), suggested
+fix. No style notes. End with a verdict: approve / approve-with-fixes / needs-rework.
+```

@@ -177,7 +177,9 @@ ledger; settings-authority audit → authoritative model; functionality inventor
 backward-compat map. Verified GPT-stream findings folded in (§6). *(Running now as the `rebuild-harvest`
 ultracode → `docs/planning/rebuild-harvest/`.)*
 
-**Phase 2 — The comprehensive design spec** *(the Fable job; the decision gate).* One coherent picture:
+**Phase 2 — The comprehensive design spec** *(the Fable job; the decision gate).*
+**✅ Produced 2026-07-02: [`rebuild-design-spec-2026-07-02.md`](rebuild-design-spec-2026-07-02.md)
+(judge-panel + Opus/GPT review) — ⏳ the owner gate below is now the live blocker.** One coherent picture:
 redone architecture + contracts; the manifest grammar (§4/§6.1) designed **to be simulated over** (§4);
 the central namespace; the authoritative settings model; the data model + backward-compat contract; the
 control-plane (rulesets + OIDC); the regenerated binding docs. Independent-model review before freeze.
