@@ -245,7 +245,7 @@ const COMMANDS = [
   {
     "name": "admin",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the Admin control panel (administrator only).",
     "description": "Slash front door for the Admin hub — ephemeral, admin-only.",
     "usage": "!admin",
@@ -253,12 +253,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "adminmenu",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the interactive admin control panel.",
     "description": "Open the interactive admin control panel.",
     "usage": "!adminmenu",
@@ -266,7 +271,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "ai",
@@ -1423,7 +1433,7 @@ const COMMANDS = [
   {
     "name": "cog",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Load, unload, or reload a cog by name (underscores and _cog suffix optional).",
     "description": "Load, unload, or reload a cog by name (underscores and _cog suffix optional).",
     "usage": "!cog",
@@ -1431,12 +1441,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "coglist",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the interactive cog manager — the panel's 📋 Cog List button.",
     "description": "Open the interactive cog manager — the panel's 📋 Cog List button.",
     "usage": "!coglist",
@@ -1450,7 +1465,12 @@ const COMMANDS = [
     "examples": [
       "!cog"
     ],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "command-access",
@@ -1800,6 +1820,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
       {
         "status": "idea",
         "title": "Safety & Community — one operator landing"
@@ -3443,7 +3467,7 @@ const COMMANDS = [
   {
     "name": "loadall",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Load all unloaded cogs, skipping already-loaded ones.",
     "description": "Load all unloaded cogs, skipping already-loaded ones.",
     "usage": "!loadall",
@@ -3451,7 +3475,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "loadout",
@@ -3527,6 +3556,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
+      {
+        "status": "idea",
         "title": "Safety & Community — one operator landing"
       }
     ]
@@ -3534,7 +3567,7 @@ const COMMANDS = [
   {
     "name": "loglevel",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
     "description": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
     "usage": "!loglevel",
@@ -3542,7 +3575,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "lookup",
@@ -4705,7 +4743,7 @@ const COMMANDS = [
   {
     "name": "restart",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Request a graceful restart through the lifecycle service.",
     "description": "Request a graceful restart through the lifecycle service.",
     "usage": "!restart",
@@ -4715,7 +4753,12 @@ const COMMANDS = [
     "examples": [
       "!restart"
     ],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "rod",
@@ -4893,6 +4936,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
       {
         "status": "idea",
         "title": "Safety & Community — one operator landing"
@@ -5303,7 +5350,7 @@ const COMMANDS = [
   {
     "name": "serverstats",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Display server statistics.",
     "description": "Display server statistics.",
     "usage": "!serverstats",
@@ -5311,7 +5358,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "sessions",
@@ -5338,6 +5390,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
       {
         "status": "idea",
         "title": "Safety & Community — one operator landing"
@@ -5778,7 +5834,7 @@ const COMMANDS = [
   {
     "name": "slashes",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "List currently-registered slash commands (admin only).",
     "description": "List currently-registered slash commands (admin only).",
     "usage": "!slashes",
@@ -5788,7 +5844,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "slow",
@@ -6239,7 +6300,7 @@ const COMMANDS = [
   {
     "name": "syncslash",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Sync the app-command tree for slash commands (owner only).",
     "description": "Sync the app-command tree for slash commands (owner only).",
     "usage": "!syncslash",
@@ -6249,7 +6310,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "system_info",
@@ -6317,6 +6383,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
       {
         "status": "idea",
         "title": "Safety & Community — one operator landing"
@@ -6742,7 +6812,7 @@ const COMMANDS = [
   {
     "name": "unloadall",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Unload all loaded cogs except this one.",
     "description": "Unload all loaded cogs except this one.",
     "usage": "!unloadall",
@@ -6750,7 +6820,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "unlock",
@@ -7401,7 +7476,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "076c9fd0",
+    "build": "8fa70dbf",
     "title": "New public bot website",
     "changes": [
       {
@@ -7413,7 +7488,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "076c9fd0",
+    "build": "8fa70dbf",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7425,7 +7500,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "076c9fd0",
+    "build": "8fa70dbf",
     "title": "Command-alias suggestions",
     "changes": [
       {
