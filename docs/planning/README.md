@@ -114,6 +114,7 @@ The source-grounded discovery evidence — 4 Codex maps, verified against shippe
 
 | Plan | Status / gate |
 |---|---|
+| [rebuild-design-spec](rebuild-design-spec-2026-07-02.md) | **the Phase-2 design spec — the owner-gate deliverable, ⏳ awaiting owner approval.** The "one picture": architecture + manifest grammar (simulable, S/A/O-classified) + central namespace + settings model (safe-default-ON) + data/backward-compat contract + control plane + build order. Produced by the Fable-5 judge panel (4 designs → judges → synthesis → Opus + GPT adversarial review); **no Phase-3 new-repo code until the owner approves it** |
 | [fresh-rebuild-strategy](fresh-rebuild-strategy-2026-07-02.md) | the **verified baseline + end-to-end order** (Phase 0→5 + gates); analysis-grade, **not an approved execution plan** |
 | [simulation-driven-design](simulation-driven-design-2026-07-02.md) | owner-directed **standing rule** — structure (grouping / ordering / layout) is discovered by simulation; the manifest is the search space |
 | [rebuild-ultracode-handoff](rebuild-ultracode-handoff-2026-07-02.md) | **START-HERE launch pad** — paste-ready ultracode session prompts (harvest · finish substrate-kit · golden harness · Fable design) |
