@@ -9,6 +9,18 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-second Q-0107 reconciliation pass** (band-#1650, issue #1651 —
+  [pass record](../planning/reconciliation-pass-2026-07-02-band1650.md)): reconciled the ledger
+  (band #1621–#1650 — six grouped entries, headlined by the **S3 fresh-rebuild arc** — the Fable 5
+  Phase-2 design spec, fresh-rebuild strategy + Codex map fold #1634/#1642, parallel-execution schedule
+  #1644/#1645, the memory-retention/context-economy plan #1643/#1647/#1648 (Q-0214) and the linchpin
+  validation #1639 — plus **server-logging v2 audit-log** #1624, **fishing Fishery** #1626, **BTD6
+  Layout B** #1621, and the 31st-pass+dashboard docs band), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed — moved 7 oldest bullets), disposed 8 open PRs
+  (none a stale session PR: #1649 memory-substrate in flight, #1509 left for owner, six dependabot
+  bumps), confirmed **ROUTINE_PAT set / loop self-fires** (issue #1651 authored by `menno420`), carried
+  the forward queue intact (still deep, no THIN flag), refreshed the dashboard export (Q-0167), reset
+  the marker #1620 → #1650.
 - **Thirty-first Q-0107 reconciliation pass** (band-#1620, issue #1622 —
   [pass record](../planning/reconciliation-pass-2026-07-01-band1620.md)): reconciled the ledger
   (band #1591–#1620 — seven grouped entries, headlined by the **S1 completion-deepening lane** —

@@ -86,6 +86,38 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1589 · #1590 (2026-06-30, owner-vision capture — fresh-rebuild + Fable 5)** — captured the maintainer's
+  **fresh-rebuild vision** + verified Fable 5 research (#1589) with two maintainer fact-corrections folded
+  in (#1590). **Idea-stage, not approved** — gated on Fable 5 (withdrawn since 2026-06-12) + the owner's
+  keep/change spec + a multi-agent planning sequence; **re-elevates the AI-memory substrate-kit to top
+  focus** (reverses the band-#870 §6 demotion). [doc](ideas/superbot-fresh-rebuild-vision-2026-06-30.md).
+- **#1561 · #1550 · #1551 (2026-06-29, operator command gaps + proof-channel audit — S1 best-in-class)** —
+  `!slowmode` · `!topic` (through the audited mutation seam) + `!roleinfo` — the operator commands
+  that close best-in-class gaps vs. mature management bots (#1561); plus a proof-channel
+  completion-deepening that **audits** prize lock/unlock and **re-checks `manage_channels`** at the
+  modal/panel callbacks (authority re-check at execution time, not panel-open, #1550/#1551).
+- **#1546 · #1548 · #1553 (2026-06-29, S1 game depth + workflow guards)** — the Creatures **interactive
+  game panel** + dex browser + `entry_points` + settle-once terminal guard (#1546); a
+  **session-slug-uniqueness guard** (hardens the born-red merge gate, BUG-0027 class) + a Mining how-to
+  button (#1548); and a **registry↔ledger completion-parity guard** plus inventory sort-cycle / type-filter
+  + display-logic tests on the category view (#1553).
+- **#1540 · #1542 (2026-06-29, unified-hub leaderboard providers — completion-first deepening)** —
+  **Fishing** (#1540) and **Farm** (#1542) leaderboard providers registered in the unified leaderboard hub.
+- **#1549 (2026-06-29, Project Moon (Limbus) — combat-mechanics knowledge layer)** — the clash / speed /
+  IDs+passives rules layer on the Limbus knowledge stack (extends the #1453…#1470 grounding arc).
+- **#1541 · #1544 (2026-06-29, PROD hotfix — `give`-collision boot crash, Q-0211)** — #1541 added a
+  `!give` / `!pay` peer coin-transfer command, which **collided** with mining's admin `give` (dormant
+  since the initial commit, never PR'd) → the STRICT identity-contract aborted startup → **bot offline in
+  a crash loop**. #1544 **retired `give` surface-wide** (removed economy `!give`/`!pay` + mining's admin
+  `give` + its orphaned `admin_grant` caller) and added a **cross-cog duplicate-command boot guard** so the
+  whole collision class can't recur (owner-directed root-cause prevention beyond the literal ask).
+- **#1534 · #1536 · #1538 · #1545 (2026-06-29, S1 feature-completion certification arc — Q-0209)** —
+  assessed every S1 bot unit against the #1513 certification framework to **100% assessed**: Mining /
+  Creatures (◐) + Welcome (#1534), Moderation / Economy / Roles / XP **+ root-fix BUG-0029** (XP level-up
+  role grants bypassed the audited role seam — no `audit.action_recorded`, no shared hierarchy preflight)
+  (#1536), Settings / Leaderboards / Tickets / Karma (#1538), and the **final 17 server-fn units →
+  completion ledger 100% assessed** + a fix-on-sight cleanup of 6 stale claim files for already-merged
+  branches (#1545, Q-0166).
 - **#1532 + 8 dashboard refreshes (2026-06-28/29, docs — twenty-eighth Q-0107 pass + dashboard)** — the
   **twenty-eighth Q-0107 reconciliation pass** (band-#1530,
   [pass record](planning/reconciliation-pass-2026-06-28-band1530.md), #1532); plus eight per-source-merge

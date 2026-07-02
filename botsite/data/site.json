@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-01T21:13:59Z",
+    "generated_at": "2026-07-02T18:22:03Z",
     "build": {
-      "commit": "076c9fd0",
-      "subject": "session: open born-red — Fishery structure + boathouse build-crash root fix",
-      "committed_at": "2026-07-01T21:13:59Z"
+      "commit": "8fa70dbf",
+      "subject": "Merge pull request #1650 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-02T18:22:03Z"
     }
   },
   "counts": {
@@ -765,8 +765,13 @@
       "description": "Slash front door for the Admin hub — ephemeral, admin-only.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -779,8 +784,13 @@
       "description": "Open the interactive admin control panel.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1017,8 +1027,13 @@
       "description": "Load, unload, or reload a cog by name (underscores and _cog suffix optional).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1037,8 +1052,13 @@
       "examples": [
         "!cog"
       ],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1053,6 +1073,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -1374,8 +1398,13 @@
       "description": "Load all unloaded cogs, skipping already-loaded ones.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1390,6 +1419,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -1407,8 +1440,13 @@
       "description": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1777,8 +1815,13 @@
       "examples": [
         "!restart"
       ],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1793,6 +1836,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -1943,8 +1990,13 @@
       "description": "Display server statistics.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1959,6 +2011,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -2124,8 +2180,13 @@
       "description": "List currently-registered slash commands (admin only).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -2242,6 +2303,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -2363,8 +2428,13 @@
       "description": "Sync the app-command tree for slash commands (owner only).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -2395,6 +2465,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -2428,8 +2502,13 @@
       "description": "Unload all loaded cogs except this one.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
