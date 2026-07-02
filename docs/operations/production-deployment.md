@@ -11,9 +11,14 @@
 ## Where production runs
 
 - **Platform:** [Railway](https://railway.com) — project `reliable-grace`, environment
-  `production`, two services:
-  - **`worker`** — the bot, built from this GitHub repo.
-  - **`Postgres`** — Railway-native Postgres with a `postgres-volume` for data.
+  `production`, **four services** (count re-verified against the Railway API 2026-07-02):
+  - **`worker`** — the bot, built from this GitHub repo (start: `python disbot/bot1.py`).
+  - **`Postgres`** — Railway-native Postgres with a `postgres-volume` for data (EU region).
+  - **`dashboard`** — the FastAPI operator dashboard (repo `dashboard/`, healthcheck `/healthz`).
+  - **`botsite`** — the public site (repo `botsite/`).
+  A full verified as-is inventory (triggers, healthchecks, backups, token capabilities) + the
+  new-project Railway plan live in
+  [`planning/railway-setup-plan-2026-07-02.md`](../planning/railway-setup-plan-2026-07-02.md).
 - **Runtime secrets** (Discord token, `DATABASE_URL`, AI provider keys, …) live in
   Railway **service variables**, not in the repo. For the complete inventory of every
   environment variable the bot reads — where each is read, and whether it is required or
