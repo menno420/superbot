@@ -61,7 +61,7 @@ CAL = {
     "rate_idea": 0.24,  # 172 idea files / 732 sessions (Q-0089 file-worthy subset)
     "rate_other_terminal": 0.08,  # audits/pass-records/etc.
     # --- sizes (avg words, measured) ---
-    "w_session_log": 765,  # 563,294 / 736
+    "w_session_log": 735,  # 541,014 words / 736 files (mean 734, median 724)
     "w_plan": 2700,  # hist 199k/71=2800, active 146k/57=2566
     "w_idea": 830,  # 121k/145
     "w_other_terminal": 2000,

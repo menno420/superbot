@@ -24,7 +24,7 @@ of linear.
 | Class | Terminal state | Policy (sim-selected) | Mechanism |
 |---|---|---|---|
 | Binding docs, contracts, guidebook rules | never | **never touched** (hard constraint) | — |
-| `.sessions/` logs | at birth | **DELETE, harvest-gated**: only logs at/under the recon pass's `Harvested-through: PR #N` marker (never mere age); full run-report (⚑ decisions · ⚑ manual steps · 💡 · 📊 telemetry · reflection counts) lands in the pass record first; one grep-visible index line per pruned log (slug · title · PR#); logs cited from **any tracked file** are held | `check_retention.py --fix` |
+| `.sessions/` logs | at birth | **DELETE, harvest-gated** at max(2 bands, 14 days): a log is deletable only when its slug appears in a **committed pass-record harvest table** (per-file evidence, never mere age); the full run-report (⚑ decisions · ⚑ manual steps · 💡 · 📊 telemetry · reflection counts) lands in the pass record first; one grep-visible index line per pruned log (per-band sharded); logs cited from **any tracked file** are held | `check_retention.py --fix`, single-writer (claims lock) |
 | Historical plans (`docs/planning/`) | on `historical` rebadge | **ARCHIVE-with-stub after 2 bands** (Q-0210 pattern); DELETE only after 8 bands with zero inbound refs | reconciliation pass step |
 | Idea files (implemented) | on grooming | **DELETE after 4 bands**, one-line tombstone in the ideas README index | `check_retention.py --fix` |
 | Idea files (rejected) | on grooming | **KEEP body** (tiny class) — under Q-0172 any agent may build without approval, so the rejection rationale must stay grep-findable | — |
@@ -104,11 +104,16 @@ itself. The result must fold into the finalised AI-memory substrate-kit (which r
   **Q-0210's router archive was decided 2026-06-28 and has been skipped by every reconciliation
   pass since** (130→131 unclassified blocks; the archive is still a stub). The orientation plan
   itself concedes "permission-to-prune alone hasn't been sufficient."
-- What *does* hold: checker + actuator pairs. `trim_recently_shipped.py` (dry-run default,
-  idempotent, invoked by the recon routine) keeps its ratchet at 20; **`check_stale_claims
-  --strict` + delete-at-close is the system's one real deletion loop — and it works** (it caught a
-  merged branch's leftover claim during this very session, CI-red until any passing session deletes
-  the file: enforce, don't exhort, Q-0132/Q-0194).
+- What *does* hold: **advisory + actuator + cadence/fix-on-sight** — not blocking. The precise
+  split (the adversarial round corrected this plan's own first draft here): stale-claims surfacing
+  is **warn-only by explicit owner decision** (Q-0206, `continue-on-error` in `code-quality.yml` —
+  it never blocks a merge), yet the loop works: it surfaced a merged branch's leftover claim during
+  this very session and the passing session deleted it. `trim_recently_shipped.py` (dry-run
+  default, idempotent, recon-invoked) keeps its ratchet at 20 the same way. The repo has **zero
+  hard global-state gates** — its one hard-and-holding gate, the session gate, is **diff-scoped**
+  (engages only on what the PR itself adds). The lesson is not "make caps block"; it is "give
+  every gauge an actuator and a cadence, and reserve hard CI for defects the diff itself
+  introduces."
 
 ## 3. The retention principle — reference topology decides, not sentiment
 
@@ -159,7 +164,7 @@ lane has run exactly this way for weeks with zero recorded misses.
 3. **Non-git consumers.** The dashboard export (`scripts/export_dashboard_data.py`) and any website
    surface read the working tree; the substrate-kit export ships the tree. → windows must respect
    the *slowest structural consumer* — concretely, nothing is pruned before the reconciliation pass
-   that reads it has run and harvested what it needs (⚑/💡 run-report lines into the pass record).
+   that reads it has run and committed its harvest table (full run-report lines into the pass record).
 4. **Squash/rewrite risk is a policy invariant, not a footnote:** the git-provenance argument is
    valid *because* history is append-only here. The rule ships with that stated assumption.
 
@@ -170,12 +175,17 @@ reference dangles — both checkable by machine. That is what makes it safe *una
 
 §0's table is normative. Details and edge cases:
 
-- **Session logs.** The window is expressed as 2 reconciliation bands, but **deletion is
-  harvest-gated, never age-gated** (the adversarial round's central amendment): the recon pass, as
-  part of its harvest step, advances a `Harvested-through: PR #N` marker (mirror of the existing
-  `Last reconciliation pass` marker), and `--fix` may only delete logs at/under it. A skipped pass
-  stops deletion instead of racing it — the Q-0210 skip record (a decided mandatory step unexecuted
-  across 3+ passes) is why age alone can't be the trigger. The harvest takes the **full run-report**:
+- **Session logs.** The window is **max(2 bands, 14 days)** — the band term is the sim knee; the
+  day floor covers the two human/machine consumers the sim doesn't model (measured owner action-lag
+  runs ~19 days on control-plane items, and `scripts/export_dashboard_data.py` feeds the owner's
+  website `/updates` from the newest ~60 raw logs) — at ~2–3k words/session over the sim-optimal
+  window, the stated price of the owner-inbox floor, retunable by one constant once the pass-record
+  inbox proves itself. And **deletion is harvest-gated, never age-gated** (the panel's central
+  amendment): `--fix` may delete log X only if X's slug appears in a **committed pass-record
+  harvest table** — per-file machine evidence, not a hand-advanced marker; a skipped pass
+  self-blocks exactly the unharvested files. The Q-0210 skip record (a decided mandatory step
+  unexecuted across 3+ passes) is why neither age nor a promised step can be the trigger. The
+  harvest takes the **full run-report**:
   ⚑ Self-initiated, ⚑ Owner decisions needed, ⚑ Owner manual steps, 💡 ideas, status/PR line, the 📊
   telemetry footer (5 numbers), and the band's aggregate reflection counts ("needed but not pointed
   to" / "pointed to but didn't need" — 142/115 today, the system's route-quality telemetry). The
@@ -235,24 +245,42 @@ Q-0210 skipped 3+ passes), **checker+actuator = held** (recently-shipped ratchet
 So every cap below ships **with its actuator** or it doesn't ship (Q-0194 friction→guard, applied
 to retention itself). Two enforcement tiers by prune type:
 
-**Tier M — mechanical prunes** (rule fully determines the action; safe in any session):
-session-log prune (harvest-marker-bounded), journal word gauge, recently-shipped trim (exists),
-router live-size gauge, unbadged-file report.
-→ `scripts/check_retention.py` (new): reports every class vs. its cap; `--fix` performs the
-mechanical prunes (dry-run default, house posture like `trim_recently_shipped.py`); wired into
-`code-quality` as a **soft census first** (like the existing ratchets), flipping to **hard-fail
-with grace headroom** (warn at cap, red at cap × 1.5) once the actuator has proven itself over a
-few bands (Q-0105 graduate-or-delete). A red is never an ambush: the fix is one command, docs-only,
-runs in the failing session.
+**The enforcement polarity (the panel's central inversion — matches the owner's recorded
+posture):** corpus-*state* caps are **never PR-blocking** — they warn-print in PR CI forever, the
+proven ratchet pattern, per the owner's own Q-0206 choice (offered blocking and picking warn-only
+for stale claims four days before this plan) and the repo's total absence of hard global-state
+gates. **Hard CI red is reserved for diff-scoped defects the PR itself introduces** — this PR
+deletes a file that still has inbound references elsewhere in the tree; this PR introduces a
+dangling reference — the session-gate precedent (engage-when-present, never ambushes an unrelated
+PR). Cap breaches escalate by **opening work, not blocking work**: a push-to-main check auto-opens
+a `retention`-labeled routine issue (body emitted by `check_retention --issue-body`, label-scoped
+dedupe, the `reconciliation-trigger.yml` pattern) that the routine answers.
+
+**Tier M — mechanical prunes** (rule fully determines the action):
+session-log prune, journal word gauge, recently-shipped trim (exists), router live-size gauge,
+unbadged-file report.
+→ `scripts/check_retention.py` (new): reports every class vs. its cap (warn census in PR CI);
+`--fix` performs the mechanical prunes (dry-run default, house posture like
+`trim_recently_shipped.py`). Two hard rules on the actuator itself: **deletion eligibility is
+per-file machine evidence, not a trusted marker** — `--fix` may delete log X only if X's slug
+appears in a *committed* reconciliation-pass record's harvest table (a skipped harvest
+self-blocks exactly the unharvested files — no global freeze, no hand-advanced line to drift);
+and **pruning is single-writer** — `--fix` requires holding a retention claim file
+(`docs/owner/claims/`, the existing lock), in practice recon-routine-owned, with per-band sharded
+prune-index files (`.sessions/pruned/band-NNNN.md`) instead of any shared append-point (the
+claims sim measured shared-append at ~98% merge-conflict vs 0% per-file).
 
 **Tier J — judgment prunes** (need reading: plan archival/deletion, ledger-tail compression,
 pass-record compression):
-→ bound to the **every-30-PR reconciliation pass** as a mandatory numbered step in its saved
-prompt (`docs/operations/autonomous-routines.md`), *plus* the enforcement Q-0210 never had: the
-retention checker counts **retention debt** (docs past window) and the session-start banner +
-recon-due trigger (`.github/workflows/reconciliation-trigger.yml` pattern) surface it; debt above
-a threshold opens the routine issue. The pass can't silently skip the step anymore, because the
-debt number is printed red in every session until it drains.
+→ bound to the **every-30-PR reconciliation pass** as a numbered step in its saved prompt
+(`docs/operations/autonomous-routines.md`) — but the *enforcement* is not the prompt (Q-0210 is
+already a numbered mandatory step there, with a self-exempting clause, skipped by every pass
+since it was decided): it is the **retention-debt escalation** above (debt past threshold →
+labeled routine issue → a session whose entire job is the prune) plus the per-file evidence rule,
+which makes "skipped the step" mean "nothing new becomes deletable" rather than "debt silently
+grows invisible". PR-3 also adds a retention row to the control-plane table so a dead
+ROUTINE_PAT (the trigger's documented single point of failure) is live-verified instead of
+silently freezing the loop.
 
 **Safety rails (all tiers):** prunes land as dedicated docs-only commits (one `git revert`
 restores everything); the inbound-reference gate blocks any delete with a dangling ref — hold
@@ -272,7 +300,7 @@ this plan cited; owner can retune any of them by number):
 
 | Cap | Value | Basis |
 |---|---|---|
-| `.sessions/` retention | 2 bands **AND harvested** (`Harvested-through` marker) | sim knee: 1–2 bands indistinguishable on cost; the marker, not age, is the trigger |
+| `.sessions/` retention | max(2 bands, 14 days) **AND slug in a committed harvest table** | sim knee: 1–2 bands; day floor = owner-lag + dashboard feed; per-file evidence, not age, is the trigger |
 | plan archive window | 2 bands after `historical` | afterlife citations cluster near completion (halflife ~3 bands) |
 | plan delete window | 8 bands + zero refs | conservative 4× the citation halflife |
 | idea delete window | 4 bands after terminal | grooming pass cadence |
@@ -296,10 +324,10 @@ by construction") = smallest tree at horizon among policies within 5% of the bes
 
 | Policy | words/session | vs. status quo | tree @ horizon | miss/band |
 |---|---|---|---|---|
-| status quo (keep everything) | 92,071 | — | 2,734k (unbounded, linear) | 0 |
-| archive-everything @2 bands | 31,043 | −66% | 2,734k (unbounded) | 0 |
-| delete-bare @1 band (no tombstones) | 29,964 | −67% | 807k | **0.119 — infeasible** |
-| **winner: sess=delete@2b · plan=archive@2b · ideas=delete@4b · ledger-compress · journal-capped** | **~27,300** | **−70%** | **1,649k (bounded)** | **0.000** |
+| status quo (keep everything) | 92,066 | — | 2,694k (unbounded, linear) | 0 |
+| archive-everything @2 bands | 31,041 | −66% | 2,694k (unbounded) | 0 |
+| delete-bare @1 band (no tombstones) | 29,964 | −67% | 806k | **0.119 — infeasible** |
+| **winner: sess=delete (harvest-gated) · plan=archive@2b · ideas=delete@4b · ledger-compress · journal-capped** | **~27,300** | **−70%** | **1,648k (bounded)** | **0.000** |
 
 What the sim actually teaches (more durable than the point numbers):
 
@@ -307,8 +335,8 @@ What the sim actually teaches (more durable than the point numbers):
    decays with ~3-band halflife and the cited 5% are reference-held anyway.
 2. **Archive vs. delete is a ~0.4% read-cost difference — with the sign favoring ARCHIVE.** Stated
    plainly (the adversarial round caught the draft soft-pedaling this): the sim's primary objective
-   ranks session-log archive at 27,162 w/s vs delete at 27,267 at every window; **deletion wins only
-   on the secondary objective** (tree size 1,649k vs 2,647k words at horizon, bounded vs unbounded).
+   ranks session-log archive at 27,161 w/s vs delete at 27,267 at every window; **deletion wins only
+   on the secondary objective** (tree size 1,648k vs 2,607k words at horizon, bounded vs unbounded).
    So DELETE-for-logs is the owner's stated lean-by-construction goal applied as a tiebreak, **not a
    sim discovery** — the sim's finding is that the read-cost objective genuinely does not
    distinguish them, i.e. the choice is safe to make on principle. The sim-optimal
@@ -374,30 +402,39 @@ journal/sessions/router, 2026-07-02):
   preference; provenance-by-default is.
 
 **The adversarial panel (2026-07-02, this session).** Three lenses attacked the draft —
-over-deletion red team, archive-everything steelman, enforcement critic. Both returned verdicts of
-**adopt-with-amendments**; every blocking/serious objection is folded into §4/§5/§6 above, the
-five that changed the policy being: harvest-gated deletion (`Harvested-through` marker — mandatory
-recon steps demonstrably skip, so age alone can't trigger destruction), per-log grep-visible index
-lines (the Hermes dispatch skill greps `.sessions/` for shipped-slice detection — silent-empty
-would read as "not shipped" → duplicate work), hold-scope = any tracked file (the router's 30
-backtick `Home:` citations of session logs are invisible to live-badge scoping), rejected ideas
-keep their bodies (Q-0172 lets any agent build without approval — the rejection rationale is the
-dedup surface), and the sim-honesty restatement in §6.2 (archive wins the primary by ~0.4%;
-deletion is the owner's boundedness tiebreak). Notably, even the archive-everything steelman
-conceded the absolute: the owner has already directed removal-not-annotation for wrong content
-(#1278), and both soft ratchets sit pinned at their caps.
+over-deletion red team, archive-everything steelman, enforcement critic. All three returned
+**adopt-with-amendments**; every blocking/serious objection is folded into §4/§5/§6 above. The
+seven that changed the policy: **(1)** harvest-gated deletion upgraded to **per-file committed
+evidence** (a slug in a pass-record harvest table — mandatory recon steps demonstrably skip
+(Q-0210, 0-for-3+), so neither age nor a promised step nor a hand-advanced marker can gate
+destruction); **(2)** the **enforcement polarity inversion** — corpus-state caps warn forever
+(the owner's own Q-0206 posture; this plan's first draft even mischaracterized the stale-claims
+step as blocking — it is `continue-on-error`), hard CI red only for diff-scoped defects the PR
+introduces; **(3)** per-log grep-visible index lines, per-band sharded (the Hermes dispatch skill
+greps `.sessions/` for shipped-slice detection — silent-empty would read as "not shipped" →
+duplicate work; a shared index would re-import the measured 98%-conflict append-point); **(4)**
+hold-scope = any tracked file (the router's 30 backtick `Home:` citations of session logs are
+invisible to live-badge scoping); **(5)** rejected ideas keep their bodies (Q-0172 lets any agent
+build without approval — the rejection rationale is the dedup surface); **(6)** a **14-day floor**
+on the log window (owner action-lag measured ~19 days; the website `/updates` feed reads the
+newest ~60 raw logs); **(7)** the sim-honesty restatement in §6.2 (archive wins the primary by
+~0.4%; deletion is the owner's boundedness tiebreak) plus a **shadow band + `do-not-automerge` on
+the first executing prune** — the first mass deletion in repo history must not land on the
+docs-only fast path reviewed by nobody. Notably, even the archive-everything steelman conceded
+the absolute: the owner has already directed removal-not-annotation for wrong content (#1278),
+and both soft ratchets sit pinned at their caps.
 
 Standing risks and their mitigations:
 
 - **A wrongly-deleted doc**: bounded by the triple filter (terminal badge + past window + zero
   inbound refs) and restorable by one revert of a docs-only commit. Worst realistic case is the hop
   cost, not loss.
-- **Owner's audit trail**: ⚑/💡 run-report harvesting into pass records happens *before* a band's
+- **Owner's audit trail**: full run-report harvesting (⚑ decisions, ⚑ manual steps, 💡, 📊) into pass records happens *before* a band's
   logs become prunable; pass records persist (compressed, never bare-deleted). The owner reviews a
   30-PR band summary rather than 30 raw logs — strictly less to wade through.
-- **Parallel-session races**: prunes are recon-pass-owned (Tier J) or idempotent + age-based
-  (Tier M, same guarantees as `trim_recently_shipped.py`); the claims lane already exercises
-  concurrent delete safely.
+- **Parallel-session races**: prunes are recon-pass-owned (Tier J) or single-writer under the
+  retention claim lock with per-band sharded indexes (Tier M); the claims lane already exercises
+  concurrent delete safely at a measured 0% conflict rate.
 - **Actuator bugs**: dry-run default, Q-0105 unverified header with graduate-or-delete, and the
   checker (not the actuator) is what CI trusts.
 - **Unattended safety**: every mechanism above is deterministic and reviewable in the PR diff;
@@ -419,30 +456,38 @@ work still asks first).
 plain-text reference pass (Q-numbers + filename mentions, scanned across docs **and** `disbot/` /
 `scripts/` / `tools/` / `.github/` — code cites plans), `--fix` for Tier-M prunes (session-log
 window; dry-run default). Wire soft census into `code-quality` next to `check_docs`. Harvest step
-added to the reconciliation routine prompt (⚑/💡 → pass record). Unit tests over a fixture tree.
+added to the reconciliation routine prompt (full run-report → committed harvest table in the
+pass record). Unit tests over a fixture tree.
 *No deletions of real content in this PR.*
 
-**PR 2 — the first real prune (the cascade, top-down).**
-Prerequisite: PR 1's reference pass has run census-only for ≥1 band and its hold-set was
-spot-verified against the router's backtick `.sessions/` citations. Then in order: **migrate**
-still-live gate/blocked items out of the ledger narrative → ledger-tail compression
-(current-state narrative block → per-band one-liners keeping PR#s/filenames verbatim; roadmap
-history sections; current-state-archive entries past window) → re-run reference pass → archive
-newly-unreferenced historical plans (body → `docs/planning/archive/`, one-line stub file stays at
-the old path) → **execute the 2026-06-30 audit's 7 confirmed-delete files** (owner reviews them
-with this plan) → first session-log prune (only logs under the `Harvested-through` marker the
-recon pass has advanced; per-log index lines written; the Hermes dispatch-skill grep text updated
-in the same commit). Each step its own commit,
+**PR 2 — the first real prune (the cascade, top-down; shadow-first).**
+Prerequisites: PR 1's reference pass has run census-only for ≥1 band, its hold-set spot-verified
+against the router's backtick `.sessions/` citations; **one shadow band** — PR 2 first commits the
+would-delete report (file list + per-file ref-scan evidence) and the next reconciliation pass
+spot-verifies a sample against ground truth (the same Q-0105 graduation the cap flip gets).
+**The first executing prune PR carries the `do-not-automerge` label (Q-0114)** so the owner sees
+history's first mass deletion before it lands — every later prune rides normal auto-merge. Then
+in order: **migrate** still-live gate/blocked items out of the ledger narrative → ledger-tail
+compression (current-state narrative block → per-band one-liners keeping PR#s/filenames verbatim;
+roadmap history sections; current-state-archive entries past window) → re-run reference pass →
+archive newly-unreferenced historical plans (body → `docs/planning/archive/`, one-line stub file
+stays at the old path) → **execute the 2026-06-30 audit's 7 confirmed-delete files** (owner
+reviews them with this plan) → first session-log prune (only slugs present in committed harvest
+tables; per-band sharded index lines written; the Hermes dispatch-skill grep text updated in the
+same commit; run under the retention claim lock). Each step its own commit,
 `check_docs --strict` green throughout. Update plan-index convention text ("never deleted" →
 tiered rule, citing this plan + PR #1643 as owner-reviewed provenance) and `.sessions/README.md`
 banner.
 
-**PR 3 — the enforcement flip + kit export.**
-Graduate the checker to hard-fail-with-grace on the proven Tier-M caps; retention-debt threshold
-wired to the routine-issue trigger; draft the Workstream-D DISCUSS Q-block (standing shrink
-ender); port the checker + policy table into the substrate-kit as the **context-economy engine**
-(kit's §5.2 slot: budget + retention + tombstone semantics as a portable capability, config-driven
-classes so any repo it's planted in defines its own table).
+**PR 3 — the escalation loop + kit export.**
+Graduate the **diff-scoped** hard gates (deletes-referenced-file / introduces-dangling-ref) once
+proven; wire the retention-debt threshold to the routine-issue trigger (`retention` label,
+label-scoped dedupe, `--issue-body`, the routine registered in `autonomous-routines.md`, a
+retention row in `check_loop_health`'s control-plane table so a dead ROUTINE_PAT is
+live-verified); draft the Workstream-D DISCUSS Q-block (standing shrink ender); port the checker +
+policy table into the substrate-kit as the **context-economy engine** (kit's §5.2 slot: budget +
+retention + tombstone semantics as a portable capability, config-driven classes so any repo it's
+planted in defines its own table).
 
 Prerequisite ordering with the orientation plan: none — they are independent lanes (this plan
 never touches CLAUDE.md/router bodies); but the *full* win needs both, and B0–B3 should run soon
