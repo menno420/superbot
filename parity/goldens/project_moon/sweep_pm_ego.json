@@ -1,0 +1,125 @@
+{
+ "case_id": "sweep.pm_ego",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2021873211,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 10181046,
+        "fields": [
+         {
+          "inline": false,
+          "name": "ZAYIN",
+          "value": "The lowest E.G.O grade, named after the Sephirah/risk-tier convention shared across Project Moon. E.G.O are equippable skills with a Sin-affinity resource cost and a corrosion threshold."
+         },
+         {
+          "inline": false,
+          "name": "TETH",
+          "value": "The second E.G.O grade, above ZAYIN and below HE."
+         },
+         {
+          "inline": false,
+          "name": "HE",
+          "value": "The middle E.G.O grade, above TETH and below WAW."
+         },
+         {
+          "inline": false,
+          "name": "WAW",
+          "value": "The fourth E.G.O grade, above HE and below ALEPH."
+         },
+         {
+          "inline": false,
+          "name": "ALEPH",
+          "value": "The highest E.G.O grade, above WAW."
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Project Moon · Limbus Company — summarized facts (verify-at-ingest)"
+        },
+        "title": "🌑 Limbus — E.G.O grades",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!pm ego",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "project_moon"
+}

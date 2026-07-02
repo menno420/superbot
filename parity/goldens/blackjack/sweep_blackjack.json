@@ -1,0 +1,227 @@
+{
+ "case_id": "sweep.blackjack",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "game_state": {
+   "added": [
+    {
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "guild_id": "<guild>",
+     "id": 1,
+     "state": {
+      "bet": 0,
+      "dealer": [
+       "A ♥",
+       "Q ♣"
+      ],
+      "deck": [
+       "3 ♥",
+       "6 ♣",
+       "7 ♥",
+       "A ♣",
+       "6 ♥",
+       "10 ♦",
+       "5 ♠",
+       "10 ♣",
+       "5 ♣",
+       "3 ♣",
+       "Q ♦",
+       "7 ♠",
+       "9 ♥",
+       "8 ♥",
+       "8 ♣",
+       "J ♣",
+       "2 ♠",
+       "8 ♠",
+       "3 ♦",
+       "7 ♦",
+       "10 ♠",
+       "A ♠",
+       "Q ♠",
+       "5 ♦",
+       "J ♦",
+       "K ♦",
+       "9 ♣",
+       "K ♠",
+       "8 ♦",
+       "6 ♠",
+       "6 ♦",
+       "4 ♠",
+       "K ♣",
+       "9 ♠",
+       "Q ♥",
+       "4 ♥",
+       "J ♥",
+       "K ♥",
+       "A ♦",
+       "7 ♣",
+       "10 ♥",
+       "2 ♥",
+       "9 ♦",
+       "2 ♦",
+       "3 ♠",
+       "4 ♦",
+       "4 ♣",
+       "5 ♥"
+      ],
+      "doubled": false,
+      "player": [
+       "J ♠",
+       "2 ♣"
+      ]
+     },
+     "subsystem": "blackjack_solo",
+     "updated_at": "<ts>",
+     "user_id": "<@admin>",
+     "version": 1
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2052247471,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 21
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "👊"
+          },
+          "label": "Hit",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "✋"
+          },
+          "label": "Stand",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": true,
+          "emoji": {
+           "id": null,
+           "name": "✌️"
+          },
+          "label": "Double Down",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3066993,
+        "fields": [
+         {
+          "inline": false,
+          "name": "Dealer (11+?)",
+          "value": "A ♥  ||?||"
+         },
+         {
+          "inline": false,
+          "name": "Your hand (12)",
+          "value": "J ♠  2 ♣"
+         },
+         {
+          "inline": true,
+          "name": "Bet",
+          "value": "Free (win = +50 🪙)"
+         }
+        ],
+        "flags": 0,
+        "title": "🃏 Blackjack",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 21,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 21,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!blackjack",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "blackjack"
+}

@@ -1,0 +1,45 @@
+{
+ "case_id": "sweep.slash_counters",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "content": null,
+       "embeds": [
+        {
+         "color": 5793266,
+         "description": "**Master:** ⚫ off\n\n**Total** → *(unbound)*\n-# → `👥 Members: 4`\n**Humans** → *(unbound)*\n-# → `🧑 Humans: 3`\n**Bots** → *(unbound)*\n-# → `🤖 Bots: 1`",
+         "flags": 0,
+         "footer": {
+          "text": "Configure in !settings → Counters. Channels refresh every ~10 min (Discord rename rate limit)."
+         },
+         "title": "📊 Server counters",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
+   "input": {
+    "kind": "slash",
+    "name": "counters",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "counters"
+}

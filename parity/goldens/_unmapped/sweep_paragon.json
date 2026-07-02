@@ -1,0 +1,349 @@
+{
+ "case_id": "sweep.paragon",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1864956197,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": true,
+            "description": "Dart Monkey",
+            "label": "Apex Plasma Master",
+            "value": "apex_plasma_master"
+           },
+           {
+            "default": false,
+            "description": "Boomerang Monkey",
+            "label": "Glaive Dominus",
+            "value": "glaive_dominus"
+           },
+           {
+            "default": false,
+            "description": "Ninja Monkey",
+            "label": "Ascended Shadow",
+            "value": "ascended_shadow"
+           },
+           {
+            "default": false,
+            "description": "Monkey Buccaneer",
+            "label": "Navarch of the Seas",
+            "value": "navarch_of_the_seas"
+           },
+           {
+            "default": false,
+            "description": "Monkey Sub",
+            "label": "Nautic Siege Core",
+            "value": "nautic_siege_core"
+           },
+           {
+            "default": false,
+            "description": "Engineer Monkey",
+            "label": "Master Builder",
+            "value": "master_builder"
+           },
+           {
+            "default": false,
+            "description": "Wizard Monkey",
+            "label": "Magus Perfectus",
+            "value": "magus_perfectus"
+           },
+           {
+            "default": false,
+            "description": "Monkey Ace",
+            "label": "Goliath Doomship",
+            "value": "goliath_doomship"
+           },
+           {
+            "default": false,
+            "description": "Tack Shooter",
+            "label": "Crucible of Steel and Flame",
+            "value": "crucible_of_steel_and_flame"
+           },
+           {
+            "default": false,
+            "description": "Spike Factory",
+            "label": "Mega Massive Munitions Factory",
+            "value": "mega_massive_munitions_factory"
+           },
+           {
+            "default": false,
+            "description": "Bomb Shooter",
+            "label": "Ballistic Obliteration Missile Bunker (B.O.M.B.)",
+            "value": "ballistic_obliteration_missile_bunker"
+           },
+           {
+            "default": false,
+            "description": "Ice Monkey",
+            "label": "Herald of Everfrost",
+            "value": "herald_of_everfrost"
+           },
+           {
+            "default": false,
+            "description": "Druid",
+            "label": "Root of all Nature",
+            "value": "root_of_all_nature"
+           }
+          ],
+          "placeholder": "Choose a paragon…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": true,
+            "label": "Solo (1 player)",
+            "value": "1"
+           },
+           {
+            "default": false,
+            "label": "Co-op (2 players)",
+            "value": "2"
+           },
+           {
+            "default": false,
+            "label": "Co-op (3 players)",
+            "value": "3"
+           },
+           {
+            "default": false,
+            "label": "Co-op (4 players)",
+            "value": "4"
+           }
+          ],
+          "placeholder": "Players…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "label": "Easy (0.85x)",
+            "value": "easy"
+           },
+           {
+            "default": true,
+            "label": "Medium (1.0x)",
+            "value": "medium"
+           },
+           {
+            "default": false,
+            "label": "Hard (1.08x)",
+            "value": "hard"
+           },
+           {
+            "default": false,
+            "label": "Impoppable (1.2x)",
+            "value": "impoppable"
+           }
+          ],
+          "placeholder": "Difficulty…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:4>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": true,
+            "label": "0 extra T5",
+            "value": "0"
+           },
+           {
+            "default": false,
+            "label": "1 extra T5",
+            "value": "1"
+           }
+          ],
+          "placeholder": "Extra T5s…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:5>",
+          "disabled": false,
+          "label": "🧮 Calculate degree",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:6>",
+          "disabled": false,
+          "label": "🎯 Requirements",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:7>",
+          "disabled": false,
+          "label": "📊 Stats",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:8>",
+          "disabled": false,
+          "label": "↩ BTD6",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "disabled": false,
+          "label": "🌐 Web calculator",
+          "style": 5,
+          "type": 2,
+          "url": "https://paragon-calc.vercel.app/"
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3066993,
+        "description": "**Paragon:** Apex Plasma Master (Dart Monkey)\n**Players:** 1 (solo)\n**Difficulty:** Medium\n**Extra T5s:** 0",
+        "fields": [
+         {
+          "inline": false,
+          "name": "🧮 Calculate degree",
+          "value": "Enter your pops / cash / tiers / totems to see the degree you'd get."
+         },
+         {
+          "inline": false,
+          "name": "🎯 Requirements for a degree",
+          "value": "Pick a strategy and a target degree to get a recommended build."
+         },
+         {
+          "inline": false,
+          "name": "🔗 Web calculator & credits",
+          "value": "[paragon-calc.vercel.app](https://paragon-calc.vercel.app/) — built by **notausgang0341**"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Solo: 1 extra T5 (Dart only) · Co-op: up to 9 · totems are uncapped"
+        },
+        "title": "🔮 Paragon Calculator — Apex Plasma Master",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!paragon",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

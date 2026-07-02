@@ -1,0 +1,213 @@
+{
+ "case_id": "sweep.diagnostics",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2064592797,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "label": "🤖 Bot Status",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "label": "📡 Latency",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "label": "💻 System Info",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:4>",
+          "disabled": false,
+          "label": "🗄️ Database",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:5>",
+          "disabled": false,
+          "label": "📄 JSON Files",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:6>",
+          "disabled": false,
+          "label": "📋 Commands",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:7>",
+          "disabled": false,
+          "label": "🔍 Recent Errors",
+          "style": 4,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:8>",
+          "disabled": false,
+          "label": "🔔 Test Notify",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3447003,
+        "description": "Select a diagnostic tool below.\nAll tools require Administrator permission.",
+        "fields": [
+         {
+          "inline": true,
+          "name": "🤖 Bot Status",
+          "value": "Health & performance metrics"
+         },
+         {
+          "inline": true,
+          "name": "📡 Latency",
+          "value": "WebSocket ping"
+         },
+         {
+          "inline": true,
+          "name": "💻 System Info",
+          "value": "OS, disk & Python version"
+         },
+         {
+          "inline": true,
+          "name": "🗄️ Check Database",
+          "value": "Verify all DB tables exist"
+         },
+         {
+          "inline": true,
+          "name": "📄 Validate JSON",
+          "value": "Check data file integrity"
+         },
+         {
+          "inline": true,
+          "name": "📋 Command List",
+          "value": "Paginated command overview"
+         },
+         {
+          "inline": true,
+          "name": "🔍 Recent Errors",
+          "value": "Last 10 error log entries"
+         },
+         {
+          "inline": true,
+          "name": "🔔 Test Notify",
+          "value": "Fire a test webhook ping"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Diagnostics Hub  •  Admin only"
+        },
+        "title": "🔧 Diagnostics Hub",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!diagnostics",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "diagnostic"
+}
