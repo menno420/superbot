@@ -28,3 +28,6 @@ package-dir = { "" = "src" }
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["engine*"]
+
+[tool.setuptools.package-data]
+engine = ["templates/*.tmpl"]

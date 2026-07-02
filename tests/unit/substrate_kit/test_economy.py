@@ -402,3 +402,109 @@ def test_issue_body_carries_census_debt_and_rows(tmp_path):
 def test_economy_finding_is_a_named_triple():
     f = EconomyFinding("p.md", "expired", "msg")
     assert (f.path, f.kind, f.message) == ("p.md", "expired", "msg")
+
+
+# ---------------------------------------------------------------------------
+# Review-round hardening: maturity allowlist, gated tier, harvest exclusion
+# ---------------------------------------------------------------------------
+
+
+def _actuate_setup(tmp_path, maturity):
+    """One expired, harvested, uncited sessions file ready for actuation."""
+    config = Config(
+        economy={
+            "maturity": maturity,
+            "classes": [
+                {
+                    "name": "sessions",
+                    "globs": [".sessions/*.md"],
+                    "mode": "delete_tomb",
+                    "window_days": 0,
+                    "tombstone_dir": ".sessions/pruned",
+                },
+            ],
+            "gauges": [],
+            "id_patterns": [],
+            "reference_roots": [],
+            "debt_threshold": 10,
+        },
+    )
+    log = tmp_path / ".sessions" / "2020-01-01-old.md"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text("> **Status:** `complete`\n\nold\n", encoding="utf-8")
+    report = economy_check(tmp_path, config, harvested={"2020-01-01-old"})
+    return config, log, report
+
+
+def test_apply_refuses_typod_maturity(tmp_path):
+    """Allowlist, not blocklist: 'Shadow'/'shadoww' must refuse, not delete."""
+    for typo in ("Shadow", "shadoww", "SHADOW", ""):
+        config, log, report = _actuate_setup(tmp_path, typo)
+        lines = economy_actuate(tmp_path, config, report, apply=True)
+        assert any("refused" in line for line in lines), typo
+        assert log.exists(), typo
+        log.unlink() if not log.exists() else None
+
+
+def test_gated_maturity_requires_acknowledgment(tmp_path):
+    config, log, report = _actuate_setup(tmp_path, "gated")
+    lines = economy_actuate(tmp_path, config, report, apply=True)
+    assert any("refused" in line and "--reviewed" in line for line in lines)
+    assert log.exists()
+    lines = economy_actuate(
+        tmp_path,
+        config,
+        report,
+        apply=True,
+        acknowledged=True,
+    )
+    assert not log.exists(), lines
+
+
+def test_harvest_record_does_not_hold_its_own_slug(tmp_path):
+    """The pass record naming a slug is the deletion LICENSE, not a reference.
+
+    Regression (review blocker): the harvest table's slug cell counted as an
+    inbound reference, so nothing harvested could ever satisfy the triple
+    filter through the CLI wiring.
+    """
+    from engine.economy.harvest import harvest_sources, parse_harvest_tables
+
+    config, log, _ = _actuate_setup(tmp_path, "normal")
+    passes = tmp_path / "docs" / "planning"
+    passes.mkdir(parents=True, exist_ok=True)
+    record = passes / "pass-record.md"
+    record.write_text(
+        "> **Status:** `historical`\n\n## Harvest\n\n"
+        "| slug | status/PR |\n| --- | --- |\n| 2020-01-01-old | done |\n",
+        encoding="utf-8",
+    )
+    harvested = parse_harvest_tables(passes)
+    assert "2020-01-01-old" in harvested
+    # Without the exclusion the pass record itself blocks deletion...
+    held = economy_check(tmp_path, config, harvested=harvested)
+    row = next(r for r in held["would_act"] if "2020-01-01-old" in r["path"])
+    assert not row["eligible"]
+    # ...with it, the triple filter is satisfiable.
+    free = economy_check(
+        tmp_path,
+        config,
+        harvested=harvested,
+        harvest_exclude=harvest_sources(passes),
+    )
+    row = next(r for r in free["would_act"] if "2020-01-01-old" in r["path"])
+    assert row["eligible"], row
+
+
+def test_pending_table_under_harvest_heading_is_not_a_license(tmp_path):
+    """Only a table whose first header cell is 'slug' marks slugs harvested."""
+    from engine.economy.harvest import parse_harvest_tables
+
+    passes = tmp_path / "planning"
+    passes.mkdir()
+    (passes / "backlog.md").write_text(
+        "## Harvest backlog — still pending\n\n"
+        "| file | reason |\n| --- | --- |\n| 2026-06-01-unmined | waiting |\n",
+        encoding="utf-8",
+    )
+    assert parse_harvest_tables(passes) == set()

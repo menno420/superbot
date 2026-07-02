@@ -210,3 +210,24 @@ def test_review_dir_mirrors_maintenance_literal():
     from engine.loop.maintenance import _mnt_review_dir
 
     assert _mnt_review_dir() == REVIEW_DIR
+
+
+def test_verdict_on_non_provisional_slot_is_inert(tmp_path):
+    """A stray verdict must neither confirm, escalate, nor downgrade.
+
+    Regression (review finding): a 'fail' on a typo'd slot escalated a bogus
+    question and downgraded promotion rights; a 'pass' falsely reported
+    'confirmed'.
+    """
+    backend = _backend(tmp_path, promotion_rights="promote")
+    for verdict in ("pass", "fail"):
+        outcome = apply_review_verdict(
+            backend,
+            "never_answered_slot",
+            verdict=verdict,
+            reviewer="x",
+        )
+        assert outcome == "not-provisional"
+    assert backend.get("promotion_rights") == "promote"
+    assert backend.get("open_questions") == []
+    assert backend.get("review_log") == []

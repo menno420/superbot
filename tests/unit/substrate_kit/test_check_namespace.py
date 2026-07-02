@@ -157,3 +157,39 @@ def test_engine_tree_has_no_cross_module_top_level_collisions():
                 if first != rel:
                     collisions.append(f"{node.name}: {first} and {rel}")
     assert collisions == [], "\n".join(collisions)
+
+
+def test_engine_tree_has_no_cross_module_constant_collisions():
+    """The dist concatenation rule, extended to module-level constants.
+
+    A duplicate top-level NAME (def, class, or constant) across two engine
+    modules silently takes the last module's value in the single-file dist —
+    the def/class half is covered above; this covers simple assignments.
+    """
+    import ast as ast_mod
+
+    engine_root = Path(__file__).resolve().parents[3] / "substrate-kit/src/engine"
+    owners: dict[str, str] = {}
+    collisions: list[str] = []
+    for py in sorted(engine_root.rglob("*.py")):
+        if py.name == "__init__.py":
+            continue
+        tree = ast_mod.parse(py.read_text(encoding="utf-8"))
+        names: set[str] = set()
+        for node in tree.body:
+            if isinstance(node, ast_mod.Assign):
+                names |= {
+                    t.id for t in node.targets if isinstance(t, ast_mod.Name)
+                }
+            elif isinstance(node, ast_mod.AnnAssign) and isinstance(
+                node.target,
+                ast_mod.Name,
+            ):
+                names.add(node.target.id)
+        for name in names:
+            if name.startswith("__"):
+                continue
+            if name in owners and owners[name] != py.name:
+                collisions.append(f"{name}: {owners[name]} vs {py.name}")
+            owners.setdefault(name, py.name)
+    assert not collisions, f"constant collisions break the dist: {collisions}"

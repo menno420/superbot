@@ -23,7 +23,11 @@ from pathlib import Path
 from engine.checks.check_docs import badge_token
 from engine.lib.config import Config
 
-_PE_MARKER = "NOT SOURCE OF TRUTH"
+# The HTML-comment form only: planted (hand-editable) docs carry the bare
+# phrase "NOT SOURCE OF TRUTH" in their badge prose, and the guard must not
+# warn on every legitimate edit of a planted binding doc — only generated
+# artifacts (contextpacks etc.) open with this comment marker.
+_PE_MARKER = "<!-- NOT SOURCE OF TRUTH"
 _PE_HEAD_LINES = 12
 # <state_dir> subdirectories that hold build artifacts, never source.
 _PE_GENERATED_DIRS = ("rendered", "contextpacks")
@@ -75,7 +79,7 @@ def evaluate_edit(root: Path, config: Config, file_path: str) -> str | None:
     """Return the advisory warning for one edited file, or None.
 
     Warns on a generated artifact (path under ``<state_dir>/rendered`` /
-    ``<state_dir>/contextpacks``, or a ``NOT SOURCE OF TRUTH`` head marker)
+    ``<state_dir>/contextpacks``, or the generated-artifact HTML-comment marker)
     and on a docs-root ``*.md`` lacking a Status badge. Tolerant of absolute
     or root-relative ``file_path`` and of unreadable / missing files (None).
     """

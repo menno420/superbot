@@ -42,6 +42,7 @@ def _hrv_slugs_from_text(text: str) -> set[str]:
     slugs: set[str] = set()
     in_harvest = False
     in_table = False
+    table_is_harvest = False
     for line in text.splitlines():
         if _HRV_HEADING_RE.match(line):
             in_harvest = "harvest" in line.lower()
@@ -50,10 +51,16 @@ def _hrv_slugs_from_text(text: str) -> set[str]:
         if not in_harvest or not line.lstrip().startswith("|"):
             in_table = False
             continue
-        if not in_table:  # first row of a new table = header, skip it
+        if not in_table:
+            # First row of a new table = header. Only a table whose FIRST
+            # header cell is "slug" is a harvest table — an inventory or
+            # pending table under a "Harvest backlog" heading must never mark
+            # files as harvested (that is a deletion license).
             in_table = True
+            header = (_hrv_first_cell(line) or "").lower()
+            table_is_harvest = header == "slug"
             continue
-        if _HRV_SEPARATOR_RE.match(line.strip()):
+        if not table_is_harvest or _HRV_SEPARATOR_RE.match(line.strip()):
             continue
         cell = _hrv_first_cell(line)
         if cell:
@@ -102,3 +109,24 @@ def harvest_table_stub(entries: list[dict]) -> str:
             ),
         )
     return "\n".join(lines) + "\n"
+
+
+def harvest_sources(pass_records_dir: Path) -> dict[str, set[str]]:
+    """Map each harvested slug to the pass-record files that harvested it.
+
+    The harvest table row is the *deletion license* for its slug — the pass
+    record naming a slug must not count as an inbound reference to it, or the
+    triple filter becomes unsatisfiable (every harvested file is "referenced"
+    by its own harvest record).
+    """
+    sources: dict[str, set[str]] = {}
+    if not pass_records_dir.is_dir():
+        return sources
+    for record in sorted(pass_records_dir.glob("*.md")):
+        try:
+            text = record.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for slug in _hrv_slugs_from_text(text):
+            sources.setdefault(slug, set()).add(record.resolve().as_posix())
+    return sources

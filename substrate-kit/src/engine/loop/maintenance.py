@@ -35,6 +35,11 @@ def compaction_due(state: dict[str, Any], cadence: dict[str, int]) -> bool:
 
     Fires when ``session_count - last_compaction_session`` reaches
     ``cadence["compaction_sessions"]`` (default 20).
+
+    Deliberate reduction of the plan's "~700K tokens OR 20 sessions": the kit
+    has no token telemetry (stdlib-only, no provider hooks), so only the
+    session-count half ships; hosts with token accounting can trigger
+    ``run_compaction`` directly when their own meter trips.
     """
     every = int(cadence.get("compaction_sessions", 20))
     since = int(state.get("session_count", 0)) - int(

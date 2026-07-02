@@ -59,10 +59,16 @@ def _ref_is_inactive(entry: dict) -> bool:
 
 
 def _ref_prune(entries: list[dict], buffer_size: int) -> list[dict]:
-    """Drop overflow beyond ``buffer_size``: oldest inactive first, then oldest."""
+    """Drop overflow beyond ``buffer_size``: oldest inactive first, then oldest.
+
+    ``buffer_size`` is clamped to at least 1 — a zero/negative host config must
+    never silently discard every lesson (or crash), and the entry just added is
+    never its own prune victim.
+    """
+    buffer_size = max(1, int(buffer_size))
     pruned = list(entries)
     while len(pruned) > buffer_size:
-        victim = next((e for e in pruned if _ref_is_inactive(e)), pruned[0])
+        victim = next((e for e in pruned[:-1] if _ref_is_inactive(e)), pruned[0])
         pruned.remove(victim)
     return pruned
 

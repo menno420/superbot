@@ -77,14 +77,21 @@ def orientation_word_count(root: Path, boot_docs: list[Path]) -> dict[str, int]:
 def _ob_boot_paths(root: Path, config: Config) -> list[Path]:
     """Resolve the configured boot set to concrete paths.
 
-    Entries come from ``orientation["boot_docs"]`` (falling back to
-    ``readpath_docs``); a bare name resolves under ``docs_root``, an entry
-    with ``/`` resolves from the project root.
+    Explicit ``orientation["boot_docs"]`` entries: a bare name resolves under
+    ``docs_root``, an entry with ``/`` resolves from the project root. The
+    ``readpath_docs`` fallback resolves under ``docs_root`` unconditionally —
+    matching ``check_reachable``, which reads the same key.
     """
     orientation = config.orientation or {}
-    entries = list(orientation.get("boot_docs") or []) or list(config.readpath_docs)
     docs_root = root / config.docs_root
-    return [root / e if "/" in e else docs_root / e for e in entries]
+    explicit = list(orientation.get("boot_docs") or [])
+    if explicit:
+        # Explicit boot docs: a bare name resolves under docs_root, an entry
+        # with "/" resolves from the project root (CONSTITUTION.md etc.).
+        return [root / e if "/" in e else docs_root / e for e in explicit]
+    # readpath_docs fallback: resolve under docs_root unconditionally, matching
+    # check_reachable — the two consumers of that key must agree.
+    return [docs_root / e for e in config.readpath_docs]
 
 
 def check_orientation_budget(root: Path, config: Config) -> list[Finding]:

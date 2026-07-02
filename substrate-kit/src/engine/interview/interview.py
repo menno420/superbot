@@ -68,8 +68,16 @@ def answer_is_substantive(question: dict, answer: str) -> bool:
     return len(text) >= int(question.get("min_len", 1))
 
 
-def _clear_open_question(backend: Any, question_id: str) -> None:
-    """Drop ``question_id`` from the escalated open-questions list, if present."""
+def _set_without_open_question(backend: Any, question_id: str | None) -> None:
+    """Drop ``question_id`` from open_questions via ``backend.set`` (no flush).
+
+    Called *inside* a transaction so the slot fill and its escalation
+    resolution commit in one atomic flush — a crash between two separate
+    flushes once left a filled slot with a stale open question that nothing
+    automatic could clear.
+    """
+    if not question_id:
+        return
     open_questions = list(backend.get("open_questions", []))
     if question_id in open_questions:
         open_questions.remove(question_id)
@@ -99,8 +107,8 @@ def record_answer(backend: Any, question: dict, answer: str, *, source: str) -> 
     with backend.transaction():
         backend.set("slots", slots)
         backend.set("slot_values", values)
-    if status == "filled":
-        _clear_open_question(backend, question["id"])
+        if status == "filled":
+            _set_without_open_question(backend, question["id"])
 
 
 def confirm_slot(backend: Any, slot: str, *, source: str) -> bool:
@@ -120,9 +128,7 @@ def confirm_slot(backend: Any, slot: str, *, source: str) -> bool:
     with backend.transaction():
         backend.set("slots", slots)
         backend.set("slot_values", values)
-    question_id = entry.get("question_id")
-    if question_id:
-        _clear_open_question(backend, question_id)
+        _set_without_open_question(backend, entry.get("question_id"))
     return True
 
 
@@ -153,17 +159,25 @@ def run_session(
     self_answered = 0
     for question in pending:
         slot = question["slot"]
+        blocking = question.get("priority") == "blocking"
         if slot in answers:
             record_answer(backend, question, answers[slot], source="user")
-        elif autonomous and (quota is None or self_answered < quota):
+            continue
+        if autonomous and (quota is None or self_answered < quota):
             record_answer(backend, question, f"ASSUMED: {slot}", source="assumption")
             self_answered += 1
-        elif question.get("priority") == "blocking":
-            left_blocking = True
-            open_questions = list(backend.get("open_questions", []))
-            if question["id"] not in open_questions:
-                open_questions.append(question["id"])
-                backend.set("open_questions", open_questions)
+            if not blocking:
+                continue
+            # A provisional self-answer does NOT discharge a blocking question
+            # — it must still escalate, or an autonomous run could graduate on
+            # an unconfirmed assumption for the one slot marked blocking.
+        elif not blocking:
+            continue
+        left_blocking = True
+        open_questions = list(backend.get("open_questions", []))
+        if question["id"] not in open_questions:
+            open_questions.append(question["id"])
+            backend.set("open_questions", open_questions)
 
     backend.set("session_count", int(backend.get("session_count", 0)) + 1)
     quiet = int(backend.get("quiet_sessions", 0))

@@ -5,7 +5,7 @@ from engine.lib.config import Config
 
 BADGED = "> **Status:** `reference`\n\n# A doc\n"
 UNBADGED = "# A doc with no badge\n"
-GENERATED = "NOT SOURCE OF TRUTH — regenerate, do not edit\n\n# A pack\n"
+GENERATED = "<!-- NOT SOURCE OF TRUTH — regenerate, do not edit -->\n\n# A pack\n"
 
 
 def _write(root, rel, text):
@@ -60,7 +60,7 @@ def test_warns_on_not_source_of_truth_marker(tmp_path):
 
 def test_marker_beyond_first_12_lines_is_ignored(tmp_path):
     config = Config()
-    text = "\n" * 13 + "NOT SOURCE OF TRUTH\n"
+    text = "\n" * 13 + "<!-- NOT SOURCE OF TRUTH -->\n"
     _write(tmp_path, "notes/deep.txt", text)
     assert evaluate_edit(tmp_path, config, "notes/deep.txt") is None
 
@@ -123,3 +123,15 @@ def test_file_outside_root_fails_open(tmp_path):
     root = tmp_path / "project"
     root.mkdir()
     assert evaluate_edit(root, config, str(path)) is None
+
+
+def test_planted_templates_never_match_the_generated_marker():
+    """Planted docs mention 'NOT SOURCE OF TRUTH' in prose — the guard's
+    sentinel is the HTML-comment form, so editing a planted binding doc must
+    never warn (a verified false positive on 4 planted docs + CLAUDE.md)."""
+    from engine.hooks.post_edit import _PE_MARKER
+    from engine.render import load_templates
+
+    for name, text in load_templates().items():
+        head = "\n".join(text.splitlines()[:12])
+        assert _PE_MARKER not in head, f"{name} head matches the artifact marker"

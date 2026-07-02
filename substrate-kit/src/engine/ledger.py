@@ -163,9 +163,11 @@ def _led_stamp_superseded(text: str, old_id: str, new_id: str) -> str:
     in_target = False
     stamped = False
     for line in text.splitlines():
-        heading = _LED_HEADING_RE.match(line)
-        if heading is not None:
-            in_target = heading.group(1) == old_id
+        if line.startswith("## "):
+            # ANY level-2 heading ends the current block (mirrors _led_blocks)
+            # — a prose section after the target must never get stamped.
+            heading = _LED_HEADING_RE.match(line)
+            in_target = heading is not None and heading.group(1) == old_id
         field = _LED_FIELD_RE.match(line) if in_target else None
         if field is not None:
             key = field.group(1)

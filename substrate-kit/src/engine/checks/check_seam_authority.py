@@ -21,7 +21,6 @@ record from ``engine.checks.check_docs``; unreadable/binary files are skipped.
 from __future__ import annotations
 
 import re
-from fnmatch import fnmatch
 from pathlib import Path
 
 from engine.checks.check_docs import Finding
@@ -37,9 +36,17 @@ def _seam_files(root: Path, globs: list[str]) -> list[Path]:
     return sorted(matched)
 
 
-def _seam_is_exempt(rel: str, allowed: list[str]) -> bool:
-    """True when the relpath matches any exempt glob (fnmatch semantics)."""
-    return any(fnmatch(rel, pattern) for pattern in allowed)
+def _seam_exempt_files(root: Path, allowed: list[str]) -> set[Path]:
+    """Resolve the exempt set with the SAME glob semantics as ``paths``.
+
+    fnmatch let ``*`` cross ``/`` — an ``allowed`` pattern like ``src/*``
+    silently exempted ``src/sub/hack.py`` and opened a fence gap. Re-globbing
+    with ``root.glob`` keeps both sides of the seam on pathlib semantics.
+    """
+    exempt: set[Path] = set()
+    for pattern in allowed:
+        exempt.update(root.glob(pattern))
+    return exempt
 
 
 def check_seam_authority(root: Path, seams: list[dict]) -> list[Finding]:
@@ -60,10 +67,10 @@ def check_seam_authority(root: Path, seams: list[dict]) -> list[Finding]:
             msg = f"seam `{name}`: invalid forbidden regex: {exc}"
             findings.append(Finding("", "seam", msg))
             continue
-        allowed = list(seam.get("allowed", []))
+        exempt = _seam_exempt_files(root, list(seam.get("allowed", [])))
         for path in _seam_files(root, list(seam.get("paths", []))):
             rel = path.relative_to(root).as_posix()
-            if _seam_is_exempt(rel, allowed):
+            if path in exempt:
                 continue
             try:
                 text = path.read_text(encoding="utf-8")

@@ -125,10 +125,16 @@ def rebuild_episodic_index(sessions_dir: Path, index_path: Path) -> list[dict]:
 
 
 def append_episode(index_path: Path, entry: dict) -> None:
-    """Add ``entry`` to the index, replacing any existing entry with its slug."""
+    """Add ``entry`` to the index, replacing an existing (slug, date) match.
+
+    Keyed on slug *and* date: re-indexing the same log updates in place, while
+    a same-slug session from a different day appends instead of silently
+    deleting the earlier episode.
+    """
     entries = _epi_load(index_path)
+    key = (entry.get("slug"), entry.get("date"))
     for i, existing in enumerate(entries):
-        if existing.get("slug") == entry.get("slug"):
+        if (existing.get("slug"), existing.get("date")) == key:
             entries[i] = entry
             break
     else:

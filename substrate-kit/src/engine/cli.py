@@ -31,7 +31,7 @@ from engine.checks.check_seam_authority import check_seam_authority
 from engine.checks.check_session_log import check_log, latest_session_log
 from engine.contextpack import generate_packs, load_pack_index
 from engine.economy.engine import economy_actuate, economy_check, issue_body
-from engine.economy.harvest import parse_harvest_tables
+from engine.economy.harvest import harvest_sources, parse_harvest_tables
 from engine.economy.simulator import calibration_recipe, default_calibration, run_search
 from engine.hooks.post_edit import evaluate_edit
 from engine.hooks.session_start import compose_orientation
@@ -56,7 +56,7 @@ from engine.ledger import (
 from engine.lib.atomicio import atomic_write_text
 from engine.lib.config import Config, config_path, load_config, save_config
 from engine.lib.guardrail import UnsafeTargetError, assert_safe_target
-from engine.lib.modes import triggers_mandate
+from engine.lib.modes import actuators_may_apply, triggers_mandate
 from engine.lib.state import JsonStateBackend, default_state
 from engine.loop.episodes import (
     EPISODIC_INDEX_FILENAME,
@@ -95,8 +95,21 @@ def _emit(line: str = "") -> None:
 
 
 def _kit_root() -> Path:
-    """Return the kit root (``substrate-kit/``) for the guardrail check."""
-    return Path(__file__).resolve().parents[2]
+    """Return the tree the guardrail protects (the kit's own checkout).
+
+    Only the source layout (``.../src/engine/cli.py``) has a kit tree to
+    protect: there, the checkout root is ``parents[2]``. Running as the
+    copied single-file bootstrap or a pip install, this returns the module
+    file itself — a *file* matches no target directory, so the guardrail
+    never engages (there is no kit tree). The old unconditional
+    ``parents[2]`` made the dist's guardrail root the grandparent of the
+    user's repo, refusing EVERY real ``adopt``/``init`` outside the temp
+    tree — the documented primary flow.
+    """
+    here = Path(__file__).resolve()
+    if here.parent.name == "engine" and here.parent.parent.name == "src":
+        return here.parents[2]
+    return here
 
 
 def _state_path(root: Path, config: Config) -> Path:
@@ -251,6 +264,7 @@ def cmd_render(target: Path, live: bool = False) -> int:
     the *planted* docs in place (hand edits preserved) — the post-interview
     "make the live docs catch up" pass.
     """
+    assert_safe_target(target, _kit_root())
     config = load_config(target)
     backend = JsonStateBackend(_state_path(target, config))
     if not backend.data:
@@ -283,6 +297,8 @@ def cmd_skills(target: Path, build: bool) -> int:
     it never writes a live ``.claude/`` tree.
     """
     config = load_config(target)
+    if build:
+        assert_safe_target(target, _kit_root())
     if not build:
         _emit("skills:")
         for skill in SKILLS:
@@ -315,6 +331,8 @@ def cmd_agents(target: Path, build: bool) -> int:
     writes a live ``.claude/`` tree.
     """
     config = load_config(target)
+    if build:
+        assert_safe_target(target, _kit_root())
     if not build:
         _emit("agents:")
         for agent in AGENTS:
@@ -353,6 +371,8 @@ def cmd_hooks(target: Path, build: bool) -> int:
     it never writes a live ``.claude/`` tree.
     """
     config = load_config(target)
+    if build:
+        assert_safe_target(target, _kit_root())
     command = _hook_command(config)
     if not build:
         _emit("hooks:")
@@ -446,7 +466,12 @@ def cmd_hook(target: Path, event: str) -> int:
     missing / malformed payload, config, or state.
     """
     handler = _HOOK_EVENTS.get(event)
-    return handler(target) if handler else 0
+    if handler is None:
+        return 0
+    try:
+        return handler(target)
+    except Exception:  # noqa: BLE001 — hooks fail open by contract, always 0
+        return 0
 
 
 def _extra_check_findings(target: Path, config: Config) -> list:
@@ -522,7 +547,14 @@ def _require_state(
     target: Path,
     command: str,
 ) -> tuple[Config, JsonStateBackend] | None:
-    """Load config + state; None (with a message) when the install is missing."""
+    """Load config + state; None (with a message) when the install is missing.
+
+    Also runs the live-loop guardrail: state-backed commands read AND write
+    the install, and only ``init``/``adopt`` were guarded before — ``ledger``,
+    the ``--build`` emitters, and ``episodes --rebuild`` wrote into a target
+    the guardrail would have refused.
+    """
+    assert_safe_target(target, _kit_root())
     config = load_config(target)
     backend = JsonStateBackend(_state_path(target, config))
     if not backend.data:
@@ -617,7 +649,12 @@ def cmd_reflect(
         )
         _emit(f"reflect: added {entry['id']}.")
     if mine:
-        candidates = mine_reflections(target / config.sessions_dir)
+        known = {e.get("lesson", "") for e in load_reflections(path)}
+        candidates = [
+            c
+            for c in mine_reflections(target / config.sessions_dir)
+            if c["lesson"] not in known
+        ]
         for cand in candidates:
             entry = add_reflection(
                 path,
@@ -626,6 +663,7 @@ def cmd_reflect(
                 tags=list(cand.get("tags", [])),
                 buffer_size=buffer_size,
             )
+            known.add(cand["lesson"])
             _emit(f"reflect: mined {entry['id']} — {cand['lesson'][:60]}")
         if not candidates:
             _emit("reflect: mined nothing new.")
@@ -649,6 +687,8 @@ def cmd_reflect(
 def cmd_episodes(target: Path, *, rebuild: bool, search: str | None) -> int:
     """Rebuild or search the episodic index over the session logs."""
     config = load_config(target)
+    if rebuild:
+        assert_safe_target(target, _kit_root())
     index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME
     if rebuild:
         entries = rebuild_episodic_index(target / config.sessions_dir, index_path)
@@ -749,6 +789,12 @@ def cmd_review(
             reviewer=reviewer,
         )
         _emit(f"review: {slot} -> {outcome}.")
+        if outcome == "not-provisional":
+            _emit(
+                "review: nothing recorded — the slot is not provisional "
+                "(typo, already confirmed, or never answered).",
+            )
+            return 1
         return 0
     _emit(f"review: unknown action {action!r} (build | confirm | doc).")
     return 2
@@ -760,6 +806,7 @@ def cmd_economy(
     *,
     strict: bool,
     apply: bool,
+    reviewed: bool,
     bands: int,
 ) -> int:
     """Drive the context-economy engine: check, apply, simulate, recipe."""
@@ -774,8 +821,16 @@ def cmd_economy(
         name = winner.get("name") if isinstance(winner, dict) else winner
         _emit(f"economy: winner {name} (feasible: {result.get('feasible_count')}).")
         return 0
-    harvested = parse_harvest_tables(target / config.docs_root / "planning")
-    report = economy_check(target, config, harvested=harvested)
+    pass_records = (
+        target / config.docs_root / config.economy.get("pass_records_dir", "planning")
+    )
+    harvested = parse_harvest_tables(pass_records)
+    report = economy_check(
+        target,
+        config,
+        harvested=harvested,
+        harvest_exclude=harvest_sources(pass_records),
+    )
     if action == "issue-body":
         _emit(issue_body(report))
         return 0
@@ -801,7 +856,22 @@ def cmd_economy(
         over = bool(findings) or debt >= threshold
         return 1 if strict and over else 0
     if action == "apply":
-        lines = economy_actuate(target, config, report, apply=apply)
+        if apply:
+            backend = JsonStateBackend(_state_path(target, config))
+            if backend.data and not actuators_may_apply(backend.data):
+                _emit(
+                    "economy: refused — the mode/promotion policy does not "
+                    "permit actuators to apply (promotion_rights must be "
+                    "'promote'); dry-run only.",
+                )
+                return 1
+        lines = economy_actuate(
+            target,
+            config,
+            report,
+            apply=apply,
+            acknowledged=reviewed,
+        )
         for line in lines:
             _emit(f"  {line}")
         if not apply:
@@ -840,6 +910,7 @@ def cmd_adopt(target: Path, include_claude: bool) -> int:
 
 def cmd_contextpack(target: Path, index: Path | None) -> int:
     """Generate agent context packs from the project index (or a manifest)."""
+    assert_safe_target(target, _kit_root())
     config = load_config(target)
     index_path = index if index is not None else target / "project.index.json"
     if not index_path.exists():
@@ -906,6 +977,7 @@ def cmd_ledger(
     supersedes: str | None,
 ) -> int:
     """Append a decision to the [D-NNNN] ledger (created on first use)."""
+    assert_safe_target(target, _kit_root())
     config = load_config(target)
     path = target / config.docs_root / LEDGER_FILENAME
     entry = append_decision(
@@ -1072,6 +1144,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     economy.add_argument("--strict", action="store_true")
     economy.add_argument("--yes", action="store_true", help="really act (apply)")
+    economy.add_argument(
+        "--reviewed",
+        action="store_true",
+        help="acknowledge the human review a 'gated' maturity first prune needs",
+    )
     economy.add_argument("--bands", type=int, default=24)
     economy.add_argument("--target", type=Path, default=Path.cwd())
     ledger = sub.add_parser("ledger", help="append a [D-NNNN] decision")
@@ -1180,6 +1257,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.action,
                 strict=args.strict,
                 apply=args.yes,
+                reviewed=args.reviewed,
                 bands=args.bands,
             )
         if args.command == "adopt":

@@ -13,12 +13,14 @@ top of it, never a kit unit. ``economy["maturity"]`` gates the actuator —
 
 from __future__ import annotations
 
+import os
 import re
 import time
 from datetime import date
 from pathlib import Path
 from typing import Any, NamedTuple
 
+from engine.checks.check_orientation_budget import _ob_boot_paths
 from engine.lib.atomicio import atomic_write_text
 from engine.lib.config import Config
 
@@ -168,13 +170,12 @@ def _eco_count_cap_value(root: Path, config: Config, gauge: dict) -> int:
 def _eco_route_budget(root: Path, config: Config) -> tuple[int, int]:
     """Return (value, cap) for the boot-route word budget.
 
-    Value sums word counts over ``orientation["boot_docs"]`` (falling back to
-    ``readpath_docs``) resolved under the docs root; cap is
-    ``orientation["budget_words"]``.
+    Value sums word counts over the boot set resolved by the orientation
+    checker's own ``_ob_boot_paths`` (ONE resolver for both consumers — the
+    gauge once resolved everything under docs_root and undercounted
+    root-level boot docs to 0); cap is ``orientation["budget_words"]``.
     """
-    boot = list(config.orientation.get("boot_docs") or config.readpath_docs)
-    docs_root = root / config.docs_root
-    value = sum(_eco_wc(docs_root / name) for name in boot)
+    value = sum(_eco_wc(path) for path in _ob_boot_paths(root, config))
     cap = int(config.orientation.get("budget_words", 7000))
     return value, cap
 
@@ -231,6 +232,7 @@ def inbound_references(
     root: Path,
     config: Config,
     targets: list[Path],
+    exclude: dict[str, set[str]] | None = None,
 ) -> dict[str, list[str]]:
     """Map each target to the files that cite it (plain-text scan, stdlib).
 
@@ -238,8 +240,12 @@ def inbound_references(
     (``config.economy["id_patterns"]``) drawn from the target's filename, or
     (b) the target's filename stem. Scans every ``*.md`` under the docs root
     plus every text file under each ``economy["reference_roots"]`` glob; a
-    file never counts as citing itself.
+    file never counts as citing itself. ``exclude`` maps a target *stem* to
+    resolved scanner paths that must not count as citations — the pass record
+    whose harvest table licenses a slug's deletion would otherwise hold every
+    harvested file forever (the triple filter became unsatisfiable).
     """
+    exclude = exclude or {}
     patterns = [re.compile(p) for p in config.economy.get("id_patterns", [])]
     scanners: list[tuple[Path, str]] = []
     for f in _eco_scan_files(root, config):
@@ -250,10 +256,12 @@ def inbound_references(
     for target in targets:
         ids = {m for pat in patterns for m in pat.findall(target.name)}
         needles = ids | {target.stem}
+        excluded = exclude.get(target.stem, set())
         citing = {
             _eco_rel(f, root)
             for f, text in scanners
             if f.resolve() != target.resolve()
+            and f.resolve().as_posix() not in excluded
             and any(needle in text for needle in needles)
         }
         refs[_eco_rel(target, root)] = sorted(citing)
@@ -384,6 +392,7 @@ def economy_check(
     config: Config,
     *,
     harvested: set[str] | None = None,
+    harvest_exclude: dict[str, set[str]] | None = None,
 ) -> dict:
     """Run the full economy pass: census, gauges, findings, debt, would-act.
 
@@ -411,7 +420,11 @@ def economy_check(
         if cls.get("mode") == "delete_tomb"
         for f in buckets.get(cls["name"], [])
     ]
-    refs = inbound_references(root, config, delete_targets) if delete_targets else {}
+    refs = (
+        inbound_references(root, config, delete_targets, harvest_exclude)
+        if delete_targets
+        else {}
+    )
     rows, class_findings, debt = _eco_class_rows(
         root,
         classes,
@@ -522,33 +535,54 @@ def economy_actuate(
     report: dict,
     *,
     apply: bool = False,
+    acknowledged: bool = False,
 ) -> list[str]:
     """Apply (or dry-run) the would-act plan from ``economy_check``.
 
     Dry-run (the default) returns the would-act lines without touching
-    anything. ``apply=True`` refuses outright — acting on NOTHING — when
-    ``config.economy["maturity"]`` is ``"shadow"`` OR when
-    ``<state_dir>/economy.lock`` already exists (another actuation in
-    flight; the pre-existing lock is left in place). Otherwise it creates the
-    lock, deletes ONLY eligible delete rows (one tombstone line per deletion,
+    anything. ``apply=True`` acts only under the maturity ALLOWLIST:
+    ``"normal"`` applies, ``"gated"`` applies only with
+    ``acknowledged=True`` (the CE-14 first-prune human-review tier), and
+    anything else — including ``"shadow"`` and any typo — refuses outright.
+    The lock is acquired atomically (``O_CREAT|O_EXCL``); a pre-existing lock
+    refuses (another actuation in flight) and is left in place. It then
+    deletes ONLY eligible delete rows (one tombstone line per deletion,
     appended to the class's ``<tombstone_dir>/band-<YYYYMM>.md`` shard),
-    removes the lock in a ``finally`` block, and returns the action lines.
-    Archive rows are advisory — the kit never moves files.
+    removes its own lock in a ``finally`` block, and returns the action
+    lines. Archive rows are advisory — the kit never moves files.
     """
     if not apply:
         return [_eco_dry_line(row) for row in report.get("would_act", [])]
-    if str(config.economy.get("maturity", "shadow")) == "shadow":
+    maturity = str(config.economy.get("maturity", "shadow")).strip().lower()
+    if maturity not in ("gated", "normal"):
+        # Allowlist, not a blocklist: a typo'd maturity ("Shadow", "shadoww")
+        # must refuse, never silently apply — deletion is the one place the
+        # kit's fail-open posture inverts to fail-closed.
         return [
-            "refused: economy maturity is 'shadow' (report-only) — nothing changed",
+            f"refused: economy maturity {maturity!r} does not permit apply "
+            "(allowed: 'gated' with --reviewed, 'normal') — nothing changed",
+        ]
+    if maturity == "gated" and not acknowledged:
+        return [
+            "refused: economy maturity is 'gated' — the first executing prune "
+            "needs an explicit human review acknowledgment (pass --reviewed); "
+            "promote maturity to 'normal' once the first prune has been "
+            "reviewed — nothing changed",
         ]
     lock = root / config.state_dir / "economy.lock"
-    if lock.exists():
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        # O_CREAT|O_EXCL: atomic acquire — check-then-create raced, and two
+        # concurrent actuations could clobber a tombstone shard.
+        fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
         return [
             f"refused: {config.state_dir}/economy.lock exists — another "
             "actuation may be in flight; nothing changed",
         ]
-    atomic_write_text(lock, f"locked {date.today().isoformat()}\n")
     try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(f"locked {date.today().isoformat()}\n")
         return _eco_apply_rows(root, config, report.get("would_act", []))
     finally:
         lock.unlink(missing_ok=True)

@@ -56,6 +56,27 @@ def _ns_top_level_defs(tree: ast.Module) -> list[tuple[str, int]]:
     ]
 
 
+def _ns_overloaded_names(tree: ast.Module) -> set[str]:
+    """Names whose top-level defs carry ``@overload`` — not shadowing.
+
+    ``@typing.overload`` stacks re-bind the same name by design; flagging them
+    as in-module shadowing was a verified false positive.
+    """
+    names: set[str] = set()
+    for node in tree.body:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        for deco in node.decorator_list:
+            if (
+                isinstance(deco, ast.Name)
+                and deco.id == "overload"
+                or isinstance(deco, ast.Attribute)
+                and deco.attr == "overload"
+            ):
+                names.add(node.name)
+    return names
+
+
 def _ns_matches_canonical(rel: str, canonical: str) -> bool:
     """True when the scanned relpath is the reserved name's canonical module."""
     canon = canonical.replace("\\", "/").lstrip("./")
@@ -92,8 +113,9 @@ def check_namespace(
                 continue
 
             seen: dict[str, int] = {}
+            overloaded = _ns_overloaded_names(tree)
             for name, lineno in _ns_top_level_defs(tree):
-                if name in seen:
+                if name in seen and name not in overloaded:
                     msg = (
                         f"`{name}` defined twice in one module "
                         f"(L{seen[name]} and L{lineno}) — the later def "

@@ -68,3 +68,28 @@ def test_autonomous_self_answers_never_graduate(tmp_path):
     for _ in range(5):
         run_session(backend, {}, autonomous=True)
     assert backend.get("stage") == "integration"
+
+
+def test_autonomous_blocking_self_answer_still_escalates(tmp_path):
+    """A provisional self-answer never discharges a blocking question.
+
+    Regression (review finding): blocking questions sort first, so autonomous
+    mode always consumed them within quota — the slot went provisional, the
+    quiet streak grew, and the kit could graduate with its one blocking slot
+    only ASSUMED. The assumption must escalate onto open_questions (cleared by
+    record_answer/confirm_slot on fill/confirm) and hold the quiet streak.
+    """
+    backend = _backend(tmp_path)
+    # Fill every critical slot EXCEPT the blocking one (integration_mode).
+    answers = {s: f"v-{s}" for s in critical_slots() if s != "integration_mode"}
+    run_session(backend, answers)
+    for _ in range(4):
+        run_session(backend, {}, autonomous=True)
+    assert backend.get("slots")["integration_mode"] == "provisional"
+    assert "Q-001" in backend.get("open_questions")
+    assert backend.get("stage") == "integration"
+    # Confirming the assumption releases the escalation.
+    from engine.interview.interview import confirm_slot
+
+    assert confirm_slot(backend, "integration_mode", source="user")
+    assert "Q-001" not in backend.get("open_questions")

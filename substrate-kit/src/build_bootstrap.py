@@ -20,7 +20,7 @@ from pathlib import Path
 
 KIT_ROOT = Path(__file__).resolve().parents[1]
 ENGINE_ROOT = KIT_ROOT / "src" / "engine"
-TEMPLATES_ROOT = KIT_ROOT / "src" / "templates"
+TEMPLATES_ROOT = KIT_ROOT / "src" / "engine" / "templates"
 DIST_PATH = KIT_ROOT / "dist" / "bootstrap.py"
 
 # Dependency order: a module appears after everything it references.

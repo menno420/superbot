@@ -117,7 +117,7 @@ substrate-kit/
   src/engine/           # source of truth (lib, interview, loop, economy,
                         # checks, hooks, stances, skills, agents, ledger,
                         # adopt, contextpack, render, cli)
-  src/templates/        # the 16 content templates ADOPT_PLAN plants
+  src/engine/templates/ # the 16 content templates ADOPT_PLAN plants
   pyproject.toml        # pip-installable form (placeholder name)
 ```
 

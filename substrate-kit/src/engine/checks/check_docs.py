@@ -68,9 +68,13 @@ def badge_token(path: Path) -> str | None:
     """Return the doc's Status-badge token from its first 12 lines, or None.
 
     Public: the trigger detector (and any host tooling) classifies docs by this
-    same badge scan — one badge reader, not per-module copies.
+    same badge scan — one badge reader, not per-module copies. An unreadable or
+    non-UTF-8 file reads as badge-less rather than crashing the whole scan.
     """
-    head = "\n".join(path.read_text(encoding="utf-8").splitlines()[:12])
+    try:
+        head = "\n".join(path.read_text(encoding="utf-8").splitlines()[:12])
+    except (OSError, UnicodeDecodeError):
+        return None
     match = _BADGE_RE.search(head)
     return match.group(1) if match else None
 
@@ -119,11 +123,21 @@ def check_badges(docs_root: Path, badge_tokens: Collection[str]) -> list[Finding
 
 
 def check_links(docs_root: Path) -> list[Finding]:
-    """Relative markdown links inside ``docs_root`` must resolve."""
+    """Relative markdown links inside ``docs_root`` must resolve.
+
+    An unreadable / non-UTF-8 file is reported as an ``encoding`` finding
+    instead of crashing the scan (one bad byte must not take down triggers,
+    ``maintain``, and ``check`` together).
+    """
     findings: list[Finding] = []
     for f in _md_files(docs_root):
         rel = f.relative_to(docs_root).as_posix()
-        for lineno, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+        try:
+            lines = f.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeDecodeError) as exc:
+            findings.append(Finding(rel, "encoding", f"unreadable as UTF-8: {exc}"))
+            continue
+        for lineno, line in enumerate(lines, 1):
             for raw in _MD_LINK_RE.findall(line):
                 if raw.startswith(("http://", "https://", "mailto:", "#")):
                     continue

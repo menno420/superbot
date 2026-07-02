@@ -63,6 +63,7 @@ def _default_economy() -> dict:
     """
     return {
         "maturity": "shadow",
+        "pass_records_dir": "planning",
         "reference_roots": [],
         "id_patterns": [r"Q-\d{3,}", r"D-\d{3,}", r"R-\d{3,}"],
         "classes": [],

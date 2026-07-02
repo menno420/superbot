@@ -150,10 +150,15 @@ def apply_review_verdict(
       promotion rights to propose-only → ``"escalated"``.
 
     Every outcome appends a review-log entry. Raises ``ValueError`` on any
-    verdict other than ``"pass"`` / ``"fail"``.
+    verdict other than ``"pass"`` / ``"fail"``. A slot that is not currently
+    ``provisional`` (typo'd, already confirmed, never answered) returns
+    ``"not-provisional"`` untouched — mirroring ``build_review_payload``'s
+    guard, so a stray verdict can neither falsely confirm nor escalate.
     """
     if verdict not in ("pass", "fail"):
         raise ValueError(f"unknown review verdict: {verdict!r}")
+    if backend.get("slots", {}).get(slot) != "provisional":
+        return "not-provisional"
     question = _rev_bank_entry(slot)
     if verdict == "fail":
         question_id = str(_rev_slot_value(backend, slot).get("question_id", ""))
