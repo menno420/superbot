@@ -24,13 +24,14 @@ of linear.
 | Class | Terminal state | Policy (sim-selected) | Mechanism |
 |---|---|---|---|
 | Binding docs, contracts, guidebook rules | never | **never touched** (hard constraint) | — |
-| `.sessions/` logs | at birth | **DELETE after 2 reconciliation bands**, no per-file tombstone; run-report headers (⚑/💡) harvested into the band's pass record first; logs cited by live docs are mechanically held | `check_retention.py --fix` |
+| `.sessions/` logs | at birth | **DELETE, harvest-gated**: only logs at/under the recon pass's `Harvested-through: PR #N` marker (never mere age); full run-report (⚑ decisions · ⚑ manual steps · 💡 · 📊 telemetry · reflection counts) lands in the pass record first; one grep-visible index line per pruned log (slug · title · PR#); logs cited from **any tracked file** are held | `check_retention.py --fix` |
 | Historical plans (`docs/planning/`) | on `historical` rebadge | **ARCHIVE-with-stub after 2 bands** (Q-0210 pattern); DELETE only after 8 bands with zero inbound refs | reconciliation pass step |
-| Idea files (implemented/rejected) | on grooming | **DELETE after 4 bands**, one-line tombstone in the ideas README index | `check_retention.py --fix` |
+| Idea files (implemented) | on grooming | **DELETE after 4 bands**, one-line tombstone in the ideas README index | `check_retention.py --fix` |
+| Idea files (rejected) | on grooming | **KEEP body** (tiny class) — under Q-0172 any agent may build without approval, so the rejection rationale must stay grep-findable | — |
 | Router decided Q-blocks | on decision | **ARCHIVE with pointer stubs — never delete** (9,690 plain-text Q-refs must keep resolving) | orientation plan B1–B3 |
 | Ledger tails (`current-state.md` narrative, roadmap history, `current-state-archive.md`) | rolling | **compress to per-band one-liners past 2 bands**; archives get windows too | recon pass + trim actuators |
-| `.session-journal.md` | living | **hard word cap** (sim: ≤4,000 pays; ≥ current 8,349 doesn't) | `check_retention.py` gauge |
-| `.session-journal-archive.md` | frozen (zero reads since 2026-06-08) | **DELETE the file**, pointer line stays in the journal | one-time, PR 2 |
+| `.session-journal.md` | living | **stop-growth word cap at ~8,500** (today 8,349); shrinking below that has no lawful overflow target while CLAUDE.md promotion is owner-gated | `check_retention.py` gauge |
+| `.session-journal-archive.md` | frozen (zero reads since 2026-06-08) | **deletion DEFERRED** — CLAUDE.md L136 cites it and is owner-gated; rider on the orientation plan's owner-reviewed CLAUDE.md pass | orientation plan A |
 | Claims | at close | already delete-at-close — **the precedent, unchanged** | `check_stale_claims` (exists) |
 
 ## 1. Origin & goal
@@ -52,8 +53,9 @@ itself. The result must fold into the finalised AI-memory substrate-kit (which r
 - **Terminal content: 876 files / 924k words = 55% of all words** (badges historical/audit +
   `.sessions/` + archives). Live: 413 files / 710k words; 47 files carry no badge.
 - `.sessions/`: **736 files / 541k words in 27 days** (2026-06-06 → 07-02); median log 724 words;
-  created at 10–60/day (mean ~27, last-7-days ~16, peak 52 on 2026-06-22). **732 created, 736
-  present — the system has never deleted one.**
+  created at 10–60/day (mean ~27, last-7-days ~16, peak 52 on 2026-06-22). **No retention deletion
+  has ever occurred** — history's one deliberate log deletion was the owner-directed wrong-claim
+  removal (#1278), a precedent *for* this policy, not against it.
 - `docs/planning/`: 189 files / 397k words — 71 `historical` (199k words) vs 57 `plan`; the index
   README still says "~85 files" (it was true on 2026-06-19).
 - `docs/ideas/`: 172 files / 130k words (145 active-badged); the ideas README index alone is
@@ -168,16 +170,21 @@ reference dangles — both checkable by machine. That is what makes it safe *una
 
 §0's table is normative. Details and edge cases:
 
-- **Session logs.** Window = 2 reconciliation bands (~60 PRs; ~3 days at current velocity — the
-  unit is *bands*, not days, so a velocity change moves the wall-clock automatically). Before a
-  band's logs become prunable, its reconciliation pass **must have run** (the pass reads the band's
-  logs and now also harvests each log's run-report header — ⚑ Self-initiated flags, 💡 ideas, status
-  line, **plus the band's aggregate reflection-interview counts** ("needed but not pointed to" /
-  "pointed to but didn't need" — 142/115 such entries exist today and are the system's route-quality
-  telemetry) — into the per-band pass record, which is the owner's durable audit surface). The 5.3%
-  of logs cited from live docs are held automatically by the reference gate; everything else goes.
-  `.sessions/README.md` carries one banner line: "logs before YYYY-MM-DD are pruned — full text in
-  git history (`git log --diff-filter=D -- .sessions/`)".
+- **Session logs.** The window is expressed as 2 reconciliation bands, but **deletion is
+  harvest-gated, never age-gated** (the adversarial round's central amendment): the recon pass, as
+  part of its harvest step, advances a `Harvested-through: PR #N` marker (mirror of the existing
+  `Last reconciliation pass` marker), and `--fix` may only delete logs at/under it. A skipped pass
+  stops deletion instead of racing it — the Q-0210 skip record (a decided mandatory step unexecuted
+  across 3+ passes) is why age alone can't be the trigger. The harvest takes the **full run-report**:
+  ⚑ Self-initiated, ⚑ Owner decisions needed, ⚑ Owner manual steps, 💡 ideas, status/PR line, the 📊
+  telemetry footer (5 numbers), and the band's aggregate reflection counts ("needed but not pointed
+  to" / "pointed to but didn't need" — 142/115 today, the system's route-quality telemetry). The
+  pass record becomes the owner's durable audit surface; drill-down to a raw log = its index line →
+  git. Each pruned log leaves **one grep-visible index line** (slug · title · PR#) in a pruned-log
+  index under `.sessions/` — grep-shaped consumers (the Hermes dispatch skill greps `.sessions/` for
+  slice names to decide shipped-vs-not) hit the line instead of silent-empty; that skill's text is
+  updated in the same PR. Logs cited from **any tracked file** (the router cites 30 in backtick
+  prose as canonical `Home:` lines — live-badge scoping would miss them) are held automatically.
 - **Historical plans.** On rebadge: index row moves to Historical (existing convention). After 2
   bands: body moves to `docs/planning/archive/`, and a **one-line stub file stays at the old path**
   — required, not optional: inbound relative links must keep resolving (`check_docs` link gate;
@@ -188,19 +195,33 @@ reference dangles — both checkable by machine. That is what makes it safe *una
   (sim-pinned numbers etc.) are **live**, not terminal — untouched.
 - **Reconciliation pass records.** Keep the newest 2 (the working set); older ones compress to
   their summary header + the harvested run-report lines (they are the audit trail), then archive.
-- **Ideas.** Groomed-terminal (implemented/rejected) files: tombstone line in the README index
-  (which already exists as the lifecycle ledger) + delete after 4 bands. The 13k-word README itself
-  gets a word budget — it is a living index, not a second archive.
+- **Ideas.** Implemented ideas: tombstone line in the README index (which already exists as the
+  lifecycle ledger) + delete after 4 bands — the content shipped; the body is redundant with the
+  plan/PR record. **Rejected ideas keep their bodies**: under Q-0172 any agent may promote an idea
+  to implementation without approval, and the Q-0089 dedup surface is a grep of `docs/ideas/` — a
+  one-line tombstone is too weak to stop re-building something the owner declined; the class is
+  tiny (a handful of files). The 13k-word README itself gets a word budget — it is a living index,
+  not a second archive.
+- **Ledger tails.** Compress current-state.md's marked historical-narrative block (lines ~29–194) +
+  roadmap history sections to per-band one-liners, under two hard rules from the adversarial round:
+  (1) **migrate-then-compress** — the narrative is *not* purely historical (verified: the Q-0036
+  denial-copy gate, the V-16 ⛔ PNG-pack block, and "#702 still never owner-played" live only there,
+  absent from § Gates) — every still-live gate/blocked/never-verified item moves to § Gates or its
+  sector file *before* its band collapses; (2) **compressed one-liners keep PR numbers and plan
+  filenames verbatim** (they are how "which plan shipped #884" resolves by grep). The overflow
+  archive (current-state-archive.md, 29k words) gets the same treatment past its window.
 - **Router.** Unchanged from Q-0210/orientation-plan: decided blocks archive with pointer stubs,
   never delete, never renumber. This plan adds only the *enforcement*: the router-archive step
   becomes part of the retention checker's report, so skipping it a fourth time turns red instead
   of silent.
 - **Journal + archive.** Guidebook keeps its "correct-in-place, keep lean" contract with a real
-  gauge (word cap). The archive turned out to be simpler than drafted: it is **frozen pre-migration
-  history with zero recorded reads since 2026-06-08** — delete the whole file, leave the journal's
-  existing pointer line updated to "pre-2026-06-08 history: git (`git log -- .session-journal-archive.md`)".
-  Should the journal's Session-Log section ever overflow again, it rolls straight to the same
-  window rule as `.sessions/` logs rather than resurrecting an archive file.
+  gauge — a **stop-growth cap at ~8,500 words** (today 8,349). Not a shrink target: 94 rule bullets
+  live there and their only promotion outlet (CLAUDE.md) is owner-gated, so forcing a cut would
+  evict candidate rules with no lawful home. The archive is **frozen pre-migration history with
+  zero recorded reads since 2026-06-08** — the eventual move is deleting the file, but CLAUDE.md
+  L136 cites it and CLAUDE.md is owner-gated, so the deletion is a **rider on the orientation
+  plan's owner-reviewed CLAUDE.md pass** (one pointer line changes in the same breath), not a PR-2
+  action. It costs 6k words of nothing-on-any-route in the meantime.
 - **Generated packs** (`docs/agent/generated/`): build artifacts, regenerated, exempt (already
   marked NOT SOURCE OF TRUTH).
 - **Unbadged files** (47 today): the retention checker refuses to classify them and *reports* them
@@ -234,23 +255,28 @@ a threshold opens the routine issue. The pass can't silently skip the step anymo
 debt number is printed red in every session until it drains.
 
 **Safety rails (all tiers):** prunes land as dedicated docs-only commits (one `git revert`
-restores everything); the inbound-reference gate blocks any delete with a dangling ref
-(`check_docs` links CI-hard already; the plain-text Q/filename pass joins it); deletions are
-recorded as tombstones/banners at prune time (grep-discoverable); irreversible-by-policy content
-(binding docs, owner-guidance, ADRs, `reference` badges, the router) is **out of the pruner's
-jurisdiction entirely** — allowlist of prunable classes, not a blocklist of protected ones.
+restores everything); the inbound-reference gate blocks any delete with a dangling ref — hold
+scope is a reference from **any tracked file, live or terminal, docs or code** (the router cites
+session logs in backtick prose; historical audits cite them too; live-badge scoping would miss
+both), with sanctioned reference removal happening only through the compression steps;
+`check_docs`' link gate is CI-hard already and the plain-text Q/filename pass joins it — running
+**census-only for at least one band** (its hold-set spot-verified against the router's 30
+backtick `.sessions/` citations) before the first `--fix` deletion; deletions are recorded as
+tombstones/index-lines at prune time (grep-discoverable); irreversible-by-policy content (binding
+docs, owner-guidance, ADRs, `reference` badges, rejected ideas, the router) is **out of the
+pruner's jurisdiction entirely** — allowlist of prunable classes, not a blocklist of protected
+ones.
 
 **The caps** (sim-derived starting values; each is a named constant in `check_retention.py` with
 this plan cited; owner can retune any of them by number):
 
 | Cap | Value | Basis |
 |---|---|---|
-| `.sessions/` retention | 2 bands | sim knee: 1–2 bands indistinguishable on cost; 2 gives the recon pass slack |
+| `.sessions/` retention | 2 bands **AND harvested** (`Harvested-through` marker) | sim knee: 1–2 bands indistinguishable on cost; the marker, not age, is the trigger |
 | plan archive window | 2 bands after `historical` | afterlife citations cluster near completion (halflife ~3 bands) |
 | plan delete window | 8 bands + zero refs | conservative 4× the citation halflife |
 | idea delete window | 4 bands after terminal | grooming pass cadence |
-| journal gauge | 8,500 words warn / hard-cap discussion at 4,000 | sim: cap to 4k saves ~4.3k words/boot; needs owner's feel for the guidebook |
-| journal-archive window | 2 months | observed rule-promotion lag + margin |
+| journal gauge | stop-growth at ~8,500 words | shrink-to-4k would save ~4.3k words/boot but has no lawful overflow target (CLAUDE.md promotion is owner-gated) — owner's call if he wants the deeper cut |
 | router live gauge | orientation plan B2's budget (set by B0's result) | deferred to that plan |
 | active plans (`plan` badge) | soft gauge at 40 (57 today) | forces finish-or-park pressure; census prints the number |
 | self-declared per-doc caps | read from each doc's own header (e.g. AGENT_ORIENTATION's ~250 lines) | absorbs [`orientation-doc-linecap-guard`](../ideas/orientation-doc-linecap-guard-2026-06-30.md); warn-first → graduate |
@@ -279,24 +305,35 @@ What the sim actually teaches (more durable than the point numbers):
 
 1. **The knee is early.** Session-log windows beyond ~2 bands buy nothing — back-reference demand
    decays with ~3-band halflife and the cited 5% are reference-held anyway.
-2. **Archive vs. delete is a ~0.4% read-cost difference.** The objective genuinely does not care —
-   *both* crush status quo. What separates them is corpus boundedness: archive-everything keeps the
-   tree on the same linear growth line; delete bounds it. The owner's "lean by construction" goal
-   is the tiebreak, and it picks delete for the unreferenced classes.
+2. **Archive vs. delete is a ~0.4% read-cost difference — with the sign favoring ARCHIVE.** Stated
+   plainly (the adversarial round caught the draft soft-pedaling this): the sim's primary objective
+   ranks session-log archive at 27,162 w/s vs delete at 27,267 at every window; **deletion wins only
+   on the secondary objective** (tree size 1,649k vs 2,647k words at horizon, bounded vs unbounded).
+   So DELETE-for-logs is the owner's stated lean-by-construction goal applied as a tiebreak, **not a
+   sim discovery** — the sim's finding is that the read-cost objective genuinely does not
+   distinguish them, i.e. the choice is safe to make on principle. The sim-optimal
+   archive-everything variant remains on the table at one config change if the owner prefers
+   maximal reversibility over boundedness.
 3. **Plans ≠ session logs.** Real afterlife demand + 96% citation-lock makes archive-with-stub the
    right mode for plans (and for the router — Q-0210 had this right).
 4. **Bare deletion is the one genuinely dangerous mode** (miss-rate 0.119/band) — tombstones are
    what make aggressive deletion safe, at ~20 words each.
 5. **Boot dominates the residual** (~24.7k of 27.3k). Retention fixes discovery + growth;
    the **orientation plan fixes boot** — compose them for the full win (~4× total).
-6. **Sensitivity:** winner is rank-stable under ×⅓/×3 sweeps of every assumption-grade constant
-   (back-ref rates, stale rate, session velocity). Worst case (+3× velocity) costs +2.1k w/s —
-   the policy self-stabilizes because prunes scale with input.
+6. **Sensitivity:** the near-tie group ("prune terminal content within 1–2 bands + compress ledger
+   tails") is rank-stable under ×⅓/×3 sweeps of the assumption-grade constants — back-ref rates,
+   stale rate, session velocity, **and the archive-side/discovery weights the first sweep omitted**
+   (archive pollution, grep-hit rate, maintenance) — worst case (+3× velocity) costs +2.1k w/s;
+   the policy self-stabilizes because prunes scale with input. The archive-vs-delete ~0.4% gap
+   sits inside the sweep noise, which is precisely why it is a values call, not a measurement.
 
-Honest limits: the w/s figures are model estimates, not telemetry; the *structure* of the result
-(early knee, archive≈delete on read-cost, plans≠logs, tombstones-or-nothing, boot dominance) is
-what to trust, and it survived the sweeps. Re-run: `python3.10 tools/sim/retention_policy_sim.py`
-(≈seconds); recalibrate constants per §Appendix when velocity or composition shifts.
+Honest limits: the w/s figures are model estimates, not telemetry (the `context-cost-telemetry`
+idea is the upgrade path); the sim models **agent** costs only — owner-review lag, website, and
+dashboard surfaces are handled structurally (harvest-gating, pass records) rather than modeled,
+so call it **sim-informed** where humans are involved. The *structure* of the result (early knee,
+archive≈delete on read-cost, plans≠logs, tombstones-or-nothing, boot dominance) is what to trust,
+and it survived the sweeps. Re-run: `python3.10 tools/sim/retention_policy_sim.py` (≈seconds);
+recalibrate constants per §Appendix when velocity or composition shifts.
 
 ## 7. Failure modes & the adversarial evidence
 
@@ -336,6 +373,20 @@ journal/sessions/router, 2026-07-02):
   never reads about a problem that no longer exists." Retention-by-default is not a standing owner
   preference; provenance-by-default is.
 
+**The adversarial panel (2026-07-02, this session).** Three lenses attacked the draft —
+over-deletion red team, archive-everything steelman, enforcement critic. Both returned verdicts of
+**adopt-with-amendments**; every blocking/serious objection is folded into §4/§5/§6 above, the
+five that changed the policy being: harvest-gated deletion (`Harvested-through` marker — mandatory
+recon steps demonstrably skip, so age alone can't trigger destruction), per-log grep-visible index
+lines (the Hermes dispatch skill greps `.sessions/` for shipped-slice detection — silent-empty
+would read as "not shipped" → duplicate work), hold-scope = any tracked file (the router's 30
+backtick `Home:` citations of session logs are invisible to live-badge scoping), rejected ideas
+keep their bodies (Q-0172 lets any agent build without approval — the rejection rationale is the
+dedup surface), and the sim-honesty restatement in §6.2 (archive wins the primary by ~0.4%;
+deletion is the owner's boundedness tiebreak). Notably, even the archive-everything steelman
+conceded the absolute: the owner has already directed removal-not-annotation for wrong content
+(#1278), and both soft ratchets sit pinned at their caps.
+
 Standing risks and their mitigations:
 
 - **A wrongly-deleted doc**: bounded by the triple filter (terminal badge + past window + zero
@@ -372,12 +423,16 @@ added to the reconciliation routine prompt (⚑/💡 → pass record). Unit test
 *No deletions of real content in this PR.*
 
 **PR 2 — the first real prune (the cascade, top-down).**
-Run in order: ledger-tail compression (current-state narrative block lines ~29–194 → per-band
-one-liners; roadmap history sections; current-state-archive entries past window) → re-run
-reference pass → archive newly-unreferenced historical plans with stubs → **execute the 2026-06-30
-audit's 7 confirmed-delete files** (owner reviews them with this plan) → first session-log prune
-(everything older than 2 bands, post-harvest) → one-time deletion of the frozen
-`.session-journal-archive.md` (pointer line stays in the journal). Each step its own commit,
+Prerequisite: PR 1's reference pass has run census-only for ≥1 band and its hold-set was
+spot-verified against the router's backtick `.sessions/` citations. Then in order: **migrate**
+still-live gate/blocked items out of the ledger narrative → ledger-tail compression
+(current-state narrative block → per-band one-liners keeping PR#s/filenames verbatim; roadmap
+history sections; current-state-archive entries past window) → re-run reference pass → archive
+newly-unreferenced historical plans (body → `docs/planning/archive/`, one-line stub file stays at
+the old path) → **execute the 2026-06-30 audit's 7 confirmed-delete files** (owner reviews them
+with this plan) → first session-log prune (only logs under the `Harvested-through` marker the
+recon pass has advanced; per-log index lines written; the Hermes dispatch-skill grep text updated
+in the same commit). Each step its own commit,
 `check_docs --strict` green throughout. Update plan-index convention text ("never deleted" →
 tiered rule, citing this plan + PR #1643 as owner-reviewed provenance) and `.sessions/README.md`
 banner.

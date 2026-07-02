@@ -27,8 +27,9 @@ KEY MEASURED FACTS DRIVING THE MODEL (2026-07-02)
     are TERMINAL (historical/audit/session-log/archive) — 55% of all words.
   - grep noise: over 20 representative working-term greps, 69.6% of file
     hits land in terminal docs.
-  - .sessions/: 736 files / 563k words, ~10-60 new logs/day (median ~25);
-    732 created / 736 present -> the system has never deleted one.
+  - .sessions/: 736 files / ~541k words, ~10-60 new logs/day (median ~25);
+    no retention deletion has ever occurred (the one deliberate log deletion
+    in history was a wrong-claim removal, owner-directed, PR #1278).
   - back-references: 5.2% of session logs are ever cited from outside
     .sessions/; 3.7% cite a log >3 sessions older. Historical plans: 96%
     cited by live docs — but the top citers are the history tails of
@@ -451,6 +452,9 @@ def sensitivity(pol, c):
         "backref_plan_per_session",
         "stale_act_base",
         "rate_session_log",
+        "archive_pollution_w_per_Mw",
+        "grep_hits_per_1k_files",
+        "maintenance_w_per_Mw",
     ):
         for mult in (1 / 3, 3):
             c2 = dict(c)
