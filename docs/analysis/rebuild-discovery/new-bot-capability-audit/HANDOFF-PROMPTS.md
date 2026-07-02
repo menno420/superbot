@@ -1,8 +1,15 @@
 # Handoff prompts — copy-paste to launch each planned session
 
-> **Status:** `reference`. One ready-to-paste startup prompt per planned agent. Launch the four lanes in
-> parallel (they're file-disjoint), then the Fable 5 capstone once they've landed. Each prompt is
-> self-contained; the agent reads the shared contract from the repo.
+> **Status:** `reference`. One ready-to-paste startup prompt per planned agent (7 lanes + capstone).
+> Launch lanes A–D + G in parallel (file-disjoint), plus E/F cross-cutting, then the Fable 5 capstone.
+> Each prompt is self-contained; the agent reads the shared contract from the repo.
+>
+> **Preconditions live in [`BRIEF.md`](./BRIEF.md) § "Launch preconditions & hard boundaries"** — the
+> substrate-verification step, the precise docs-only write boundary, the capstone carry-forward fields,
+> and the **Phase-3 owner-gate hard stop** (no new-repo code until the owner approves). Since every lane
+> reads `BRIEF.md` first, those apply to *all* prompts below. **These prompts were refined via a
+> prompt-engineering pass (2026-07-02); fuller expanded per-lane variants exist and are equivalent** —
+> both read the same hardened contract, so either launches a well-guarded session.
 
 ---
 
