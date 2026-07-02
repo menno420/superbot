@@ -1,1 +1,0 @@
-- `claude/superbot-rebuild-design-spec-de4mh7` · **Ideas harvest from the 2026-07-02 session arc (docs-only)** — capture 5 owner-requested ideas born from today's rebuild/Railway/automation discussions into `docs/ideas/` + index · `docs/ideas/` `.sessions/2026-07-02-session-ideas-harvest.md` · 2026-07-02 · PR pending
