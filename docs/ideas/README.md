@@ -87,6 +87,12 @@ Current broad captures:
   synthesis → multi-lens adversarial review incl. a live non-Claude GPT reviewer → source-verifying
   reviser) as one **saved, parameterized workflow** so every future owner-gate-grade deliverable
   (Phase-3 spine designs, harness architecture) reuses it instead of re-authoring the orchestration.
+- [`rebuild-doc-set-start-here-index-2026-07-02.md`](./rebuild-doc-set-start-here-index-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the thirty-second reconciliation pass):** the fresh-rebuild
+  initiative (top-focus S3 lane) has accreted **nine** `docs/planning/rebuild-*`/`*-substrate-*` docs with
+  no single ordered entry point; add one "START HERE" index that orders them into a reading path with each
+  doc's **role + gate-state** (start-gate §B vs commit-gate §F), so the queued K0 executor starts cold
+  without re-deriving the map — paired with plan-homing so a new `rebuild-*` doc must join the index.
 - [`audit-log-catchup-on-reconnect-2026-07-01.md`](./audit-log-catchup-on-reconnect-2026-07-01.md) —
   **session idea (2026-07-01, Q-0089, from the server-logging-v2 audit-log pass):** replay missed
   Discord audit-log entries on `on_ready`/`on_resume` so moderation/server logging is **gap-free
