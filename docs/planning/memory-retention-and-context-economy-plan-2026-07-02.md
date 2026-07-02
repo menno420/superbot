@@ -247,6 +247,7 @@ this plan cited; owner can retune any of them by number):
 | journal-archive window | 2 months | observed rule-promotion lag + margin |
 | router live gauge | orientation plan B2's budget (set by B0's result) | deferred to that plan |
 | active plans (`plan` badge) | soft gauge at 40 (57 today) | forces finish-or-park pressure; census prints the number |
+| self-declared per-doc caps | read from each doc's own header (e.g. AGENT_ORIENTATION's ~250 lines) | absorbs [`orientation-doc-linecap-guard`](../ideas/orientation-doc-linecap-guard-2026-06-30.md); warn-first → graduate |
 | top-level docs, recently-shipped | 20 / 20 (exist) | unchanged |
 
 ## 6. The simulator — design, results, and how to re-run
