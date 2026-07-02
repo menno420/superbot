@@ -106,33 +106,47 @@ replayed against (red-until-parity). Deliver a runnable harness + the golden cor
 current-bot regression net. Opus xhigh/max on the harness core, Sonnet for per-subsystem capture. Born-red card.
 ```
 
-### D — The Fable design spec (Phase 2) — *run AFTER A (harvest) lands; the owner-gate deliverable*
+### D — The Fable design spec (Phase 2) — *its main input (the Codex preserve map) has LANDED; run it now (owner-gate deliverable)*
 ```
 ultracode (start the session on Claude Fable 5, effort max): Produce the comprehensive from-scratch rebuild
-DESIGN SPEC for SuperBot — the "one picture." DESIGN, NOT CODE. Read fresh-rebuild-strategy-2026-07-02.md
-(all), simulation-driven-design-2026-07-02.md, docs/planning/rebuild-harvest/*.md (the harvest artifacts),
-and the merged Codex "preserve" map. Run it as a JUDGE-PANEL: 3 independent designs from different framings
-(clean-slate-ideal / minimal-migration-risk / manifest-grammar-maximal) + 1 Opus, synthesize best-of, then
-independent review by Opus + a non-Claude model. Produce: redone architecture + layer/ownership/runtime
-contracts; the declarative MANIFEST GRAMMAR (Panel/Action/Setting/Binding/Resource/Nav/Selector) designed
-TO BE SIMULATED OVER; the central command/symbol namespace; the authoritative settings model + safe-default
-policy; the data model + backward-compat contract; the control-plane (GitHub rulesets + OIDC); the
-regenerated binding docs. Do NOT re-open the 10 settled substrate-kit review rounds — verify against source,
-don't re-litigate. Output → docs/planning/rebuild-design-spec-2026-07-xx.md. Owner approves before Phase 3.
+DESIGN SPEC for SuperBot — the "one picture." DESIGN, NOT CODE. Read (all) fresh-rebuild-strategy-2026-07-02.md,
+simulation-driven-design-2026-07-02.md, and — your primary evidence — the VERIFIED Codex preserve map
+docs/analysis/rebuild-discovery/codex-preserve-map-synthesis-2026-07-02.md (its §1 corrections are BINDING;
+drill into the 4 raw domain maps in that folder as needed). Run it as a JUDGE-PANEL: 3 independent designs
+from different framings (clean-slate-ideal / minimal-migration-risk / manifest-grammar-maximal) + 1 Opus,
+synthesize best-of, then independent review by Opus + a non-Claude model. Produce: redone architecture +
+layer/ownership/runtime contracts; the declarative MANIFEST GRAMMAR (Subsystem/Panel/Action/Setting/Binding/
+Resource/Nav/Selector) designed TO BE SIMULATED OVER; the central command/symbol namespace; the authoritative
+settings model + safe-default-ON policy; the data model + backward-compat contract (the map's §5 hazard set);
+the control-plane (GitHub rulesets + OIDC); the regenerated binding docs.
+VERIFIED CONSTRAINTS FROM THE MAP (do not re-derive, do not violate):
+ (1) RENAME the proposed `ActionSpec` — it HARD-COLLIDES with the shipped services/automation_registry.py:35
+     class ActionSpec; resolve repo-wide (PanelActionSpec/UIActionSpec) before any domain adopts it.
+ (2) EXTEND, never recreate, the already-shipped types: SettingSpec/BindingSpec (subsystem_schema.py),
+     CapabilityDecision (governance/capability.py), LifecycleResult/StepResult (lifecycle/contracts.py),
+     ResourceRequirement (resource_specs.py), AIGateway (core/runtime/ai/gateway.py, re-exported via
+     services/ai_gateway.py — preserve that seam split). The manifest grammar CONSOLIDATES the mature-but-
+     fragmented subsystem_schema.py + subsystem_registry.SUBSYSTEMS + hub_registry.HUBS — it is not greenfield.
+ (3) Honor the §5 backward-compat contract: persisted subsystem_registry keys, persistent custom_id strings,
+     catalogued event names/payloads, DB migrations/tables, settings keys, audit payload shapes.
+Do NOT re-open the 10 settled substrate-kit review rounds — verify against source, don't re-litigate.
+Output → docs/planning/rebuild-design-spec-2026-07-xx.md. Owner approves before Phase 3.
 ```
 
-> **Also:** the owner is running **4 Codex mapping sessions** (best-ideas-to-preserve, one per domain:
-> AI/knowledge · economy/games · server-mgmt/moderation · platform/UI). When they land, an orchestrator
-> session diffs them against A's functionality inventory, verifies against source (Q-0120), and folds the
-> union into one **preserve / redesign / drop** artifact that feeds D.
+> **The Codex preserve map is DONE (2026-07-02).** The owner's 4 Codex mapping sessions (platform/UI ·
+> admin/safety/server · economy/games · AI/knowledge) landed as PRs #1630–#1633; a verify-and-fold workflow
+> checked their load-bearing claims against source (Q-0120 — **48/59 confirmed, 2 false, 9 partial**) and
+> folded them into **[`codex-preserve-map-synthesis-2026-07-02.md`](../analysis/rebuild-discovery/codex-preserve-map-synthesis-2026-07-02.md)**.
+> This is D's primary input — the separate 16-wide harvest (A) is now **optional**, not a blocker for D.
 
 ## 6. Current in-flight state (as of this handoff)
-- **My 2-wide harvest** (`rebuild-harvest` workflow) is partial: 13 subsystem inventories in
-  `docs/planning/rebuild-harvest/_parts/` (gitignored scratch), no router/settings/deps parts or synthesized
-  artifacts yet. **Session A supersedes it 16-wide** — don't wait on it.
-- **4 Codex mapping sessions** running on the owner's side (independent cloud compute, truly parallel).
+- **The Codex preserve map is folded and verified** → `docs/analysis/rebuild-discovery/` (synthesis +
+  4 raw domain maps). D can run now; A (the 16-wide harvest) is optional additional depth, not a gate.
+- **My 2-wide harvest** (`rebuild-harvest` workflow) was partial (gitignored `_parts/` scratch) and is
+  **superseded** — the Codex maps cover the same functionality-inventory ground. Don't wait on it.
 - **Committed + pushed** on branch `claude/substrate-kit-planning-review-3a1jkf`: the strategy doc, the
-  simulation-driven-design doc, this handoff, the session log, and the Fable-status fixes in the vision doc.
+  simulation-driven-design doc, this handoff, the session log, the Fable-status fixes in the vision doc,
+  and the verified Codex synthesis + 4 preserved maps.
 
 ## 7. Model & ultracode allocation (quick ref — full table in strategy §3.1)
 Fable where reasoning is the bottleneck (the Phase-2 design, session D); Opus `xhigh` for the builds

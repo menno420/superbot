@@ -1,10 +1,29 @@
 # 2026-07-02 — Rebuild strategy + substrate-kit planning (interactive, owner-directed)
 
-> **Status:** `in-progress` — planning session **plus an in-session follow-up wave**: verifying the 4
-> Codex rebuild-discovery maps against shipped source (Q-0120) and folding them into one synthesis, and
-> fixing #1634's masked plan-homing CI failure. Original planning: Fable 5 re-introduction context; Max
-> ×20, weekly limits fresh; planning docs + ultracode launch pad captured; the 2-wide `rebuild-harvest`
-> is superseded by the fresh 16-wide Session A (handoff §5); **no code shipped to `disbot/`.**
+> **Status:** `complete` — planning session **plus an in-session follow-up wave**: verified the 4 Codex
+> rebuild-discovery maps against shipped source (Q-0120) and folded them into one synthesis, and fixed
+> #1634's masked plan-homing CI failure. Original planning: Fable 5 re-introduction context; Max ×20,
+> weekly limits fresh; planning docs + ultracode launch pad captured; the 2-wide `rebuild-harvest` is
+> superseded by the Codex maps (handoff §5/§6); **no code shipped to `disbot/`.**
+
+## Follow-up wave (2026-07-02) — Codex maps verified + folded; #1634 CI fixed
+- **#1634 CI, two masked failures fixed in sequence:** (1) `check_docs` — an invalid `analysis` badge +
+  an orphan handoff doc (fixed: badge→`plan`, linked the handoff); this short-circuited the job in 7 s,
+  which **hid** (2) `test_check_plan_homing` — the 3 new `docs/planning/*` plans were unhomed (fixed: a
+  dedicated cross-cutting subsection in `docs/planning/README.md`). **Lesson (durable):** for planning-doc
+  changes run `check_quality --full`, not just `check_docs` — the homing test lives in pytest, not check_docs.
+- **The 4 Codex PRs (#1630–#1633) actually PASSED CI** (correctly `historical`-badged, no session card) —
+  they were unmerged only because `auto-merge-enabler` arms `claude/*`, not `codex/*` (`enable-auto-merge`
+  skipped). Not a CI failure as assumed.
+- **Verify-and-fold workflow** (`codex-rebuild-map-verify-and-fold`, 5 agents, 0 err): checked 59
+  load-bearing claims against source → **48 CONFIRMED / 2 FALSE / 9 PARTIAL**. Folded into
+  `docs/analysis/rebuild-discovery/codex-preserve-map-synthesis-2026-07-02.md` (+ the 4 raw maps preserved
+  verbatim). **Key catches:** `ActionSpec` hard-collides with the shipped `automation_registry.py:35` (design
+  must rename repo-wide); `BindingSpec`/`LifecycleResult`/`CapabilityDecision` are **already shipped** (extend,
+  don't recreate); `multi_channel.py` doesn't exist; several command tokens (`servermanagement`, not `!server`)
+  and module paths (`ai_review.py`, not `ai_review_log.py`) corrected. The map now feeds the Fable prompt (D).
+- **#1630–#1633 superseded** (closed) — their reports live in #1634 + the synthesis; their stale
+  `dashboard.json` deltas were dropped (would clobber main's newer data).
 
 ## What this session did
 Started as a prompt-review request for a substrate-kit *finalization* pass; evolved (owner-directed) into
@@ -46,6 +65,8 @@ finished first as its foundation.
 - Launched the `rebuild-harvest` ultracode (read-only mapping; writes design docs under
   `docs/planning/rebuild-harvest/`).
 - Fixed stale Fable-availability status in `superbot-fresh-rebuild-vision-2026-06-30.md` (fix-on-sight drift).
+- **Owner-directed** (not unilateral): verified + folded the 4 Codex maps into one synthesis and **closed
+  PRs #1630–#1633 as superseded** (their reports preserved verbatim in #1634). Flagged here for the record.
 
 ## 💡 Session idea
 Simulation-driven design as a first-class, gated design step (owner-originated; captured, generalized,

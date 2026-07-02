@@ -108,9 +108,9 @@ Next action.** Remaining website work has its own durable handoff:
 Owner-directed **planning** thread (not yet an approved build) for a from-scratch SuperBot rebuild
 "designed as one picture," with the current repo as a frozen reference and the substrate-kit finished
 first as its foundation. **Rebuild go/no-go stays owner-gated** (after the Fable design + owner review).
-The source-grounded discovery evidence — 4 Codex maps, verified against shipped source per Q-0120 — is
-being folded into one synthesis artifact this session; the 4 verbatim domain maps live under
-[`analysis/rebuild-discovery/`](../analysis/rebuild-discovery/platform-ui-runtime-map.md).
+The source-grounded discovery evidence — 4 Codex maps, verified against shipped source per Q-0120
+(48/59 load-bearing claims confirmed, the corrections binding) — is folded into one artifact:
+[`analysis/rebuild-discovery/codex-preserve-map-synthesis`](../analysis/rebuild-discovery/codex-preserve-map-synthesis-2026-07-02.md).
 
 | Plan | Status / gate |
 |---|---|
