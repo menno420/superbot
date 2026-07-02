@@ -61,7 +61,14 @@ and alter everything.
 | **Plan caps** | Cannot exceed plan resources (verified live: containers cap at **8 vCPU / 8 GB RAM** on Hobby). Billing/plan changes are dashboard+payment surfaces, not this API. |
 | **Blast radius = the account** | It reaches only your workspaces (one exists). But within them there is *no* guardrail: a single mutation can delete the production database. |
 
-**Custody recommendations (the §6 roadmap makes these concrete):**
+> **⚠️ Custody recommendations below: DECLINED by owner directive Q-0213 (2026-07-02).** The
+> full-access account token in agent containers is **deliberate** — Claude is its sole holder and
+> the repo's main editor, so the whole project can run fully automated without owner dependency.
+> Kept for the record as the road-not-taken; the one piece that *survives* as binding convention:
+> **no automation ever calls a `*Delete`/`*Restore`/data-loss mutation without an explicit owner
+> ask** (Q-0213 item 4).
+
+**Custody recommendations (superseded — see the Q-0213 note above):**
 
 1. **Agents should not routinely hold the account token.** Railway offers **project tokens**
    (scoped to one project + one environment, `Project-Access-Token` header) — enough for
@@ -131,7 +138,7 @@ rollback platform for its bounded window (design spec §5.4), then winds down.
 | **Environments** | `production` + **`shadow`** (the spec's shadow-run home: full service set against a **restored-snapshot** Postgres — never the live DB). PR environments stay OFF (cost; CI covers it). |
 | **Services** | `worker` (bot kernel), `Postgres` (+ volume), `dashboard` (control surface — a client of the audited control API per spec §6), `botsite`. Same split that exists today; it maps 1:1 onto the spec. |
 | **Config-as-code** | Every service carries a checked-in `railway.json` (builder, start command, health check, restart policy, watch patterns, region) — **the Railway analog of the manifest principle**: declared, versioned, reviewable, regenerable. Dashboard-only settings are the exception, not the rule. |
-| **Deploy trigger** | `main`, **`checkSuites: true` (wait for CI) from the first deploy**, watch paths per service (`sb/**` + shared for worker; `dashboard/**`; `botsite/**`). Merge=deploy stays the model — now gated on green. |
+| **Deploy trigger** | `main`, watch paths per service (`sb/**` + shared for worker; `dashboard/**`; `botsite/**`). Merge=deploy stays the model. **Wait-for-CI only under three conditions** (learned the hard way — Q-0213 item 5: it was tried on the current repo and kept failing under fast merges): main-branch CI must run **per-commit** (no shared serial queue), the gating check must be **fast** (<~3 min, not the full suite), and runs must never be cancelled. The new repo's named-gate workflow (design spec §6) should be designed to satisfy these; until it does, the toggle stays off and the merge gate carries correctness. |
 | **Health checks** | HTTP checks on dashboard + botsite. **The worker exposes its kernel-observability health endpoint** (spec §1.1 K0 — metrics/health already exist as a leaf) on `PORT`, so Railway health-gates *bot* deploys too: a container that can't pass admission checks never replaces the healthy one. |
 | **Variables** | Secrets as **sealed** service variables; `DATABASE_URL` etc. as **reference variables** (never copy-pasted values); per-service scoping exactly as today (worker never holds OAuth secrets, dashboard never holds the bot token); names inventoried by the generated `env-vars.md` equivalent from day one. Spec §5 hazard 8 (env names/meanings) carries over verbatim. |
 | **Region** | Pin `europe-west4` explicitly on all services + volume (it's where the data already lives; keeps DB latency low and residency stable). |
@@ -163,19 +170,18 @@ Mapping the design spec's §5.2/§5.4 cutover to concrete Railway operations:
 
 ## 6. Roadmap
 
-**R-now — current project hygiene (small, high-value; each is a live-infra mutation, so per
-Q-0130 these need your go-ahead — one owner session in the dashboard, or say the word and an agent
-executes them via the API and reports back):**
+**R-now — current project hygiene. STATUS 2026-07-02 (executed under the Q-0213 automation grant,
+each change read-back-verified; PR #1640):**
 
-| # | Action | Cost/effort |
+| # | Action | Status |
 |---|---|---|
-| R1 | Flip **Wait for CI** on (worker, dashboard, botsite triggers) | 3 toggles |
-| R2 | Enable **Railway backup schedules** on `postgres-volume` (daily+weekly+monthly) | ~pennies/month at 724 MB |
-| R3 | Add **watch paths** per service (`disbot/**` etc.) | 3 fields |
-| R4 | Add **botsite health check** — the endpoint already exists (`botsite/app.py:97 /healthz`, verified); only the Railway field is missing | 1 field |
-| R5 | Set a **workspace usage limit + alert** | 1 dashboard form |
-| R6 | **Restore drill** (agent-runnable, read-only vs prod): download latest pg_dump artifact → restore to a scratch Postgres → row-count/table sanity → record in ops doc; closes the workflow's "UNVERIFIED" header | one session |
-| R7 | **Token hygiene:** mint project token(s) for routine automation; rotate the account token; update Q-0130's practical grant to match | owner + 10 min |
+| R1 | Flip **Wait for CI** on (worker, dashboard, botsite triggers) | **❌ DROPPED (owner history, Q-0213 item 5):** previously enabled and *"kept failing due to the fast merges"* — main-branch CI runs serialize in one queue (`code-quality-refs/heads/main`, ~10-min full suite, `cancel-in-progress: false`), so burst merges stack deploy delays and any non-success blocks the deploy. Do **not** re-enable here. New-repo condition (§4): wait-for-CI only with per-commit main CI (no shared serial queue), a fast (<~3 min) gate, and no cancellation — else keep it off and rely on the merge gate. |
+| R2 | **Railway backup schedules** on `postgres-volume` | **⛔ PLAN-GATED:** schedules *and* manual backup creation return `Not Authorized` on Hobby (verified with API-supplied ids; reads work). **Compensated repo-side:** `backup-db.yml` gained a monthly 400-day-retention artifact tier (owner one-time step: raise the repo artifact-retention setting to 400 days). Enabling Railway backups = a plan-upgrade decision (§7). |
+| R3 | **Watch paths** | **✅ DONE for dashboard (`dashboard/**`) + botsite (`botsite/**`)** — verified the recurring dashboard-refresh commits touch only `dashboard/data/`. **Worker deliberately unscoped** (deploy-on-everything): under-deploying the bot is the dangerous direction, and its true input set (`disbot/**`, `data/**`, root `requirements.txt`, …) is wide. |
+| R4 | **botsite health check** | **✅ DONE** — `healthcheckPath=/healthz` set + read back (endpoint verified at `botsite/app.py:97`). Takes effect on the next botsite deploy. |
+| R5 | **Usage alert** | **✅ DONE** — `softLimitDollars: 15` on the workspace customer (email alert only; **no hard limit set** — a hard limit stops workloads and stays an owner call). First attempt failed with the *workspace* id — Railway wants the **customer** id (`me.workspaces[].customer.id`), and returns the same opaque `Not Authorized` for wrong-id as for plan-gating. |
+| R6 | **Restore drill** (download latest pg_dump artifact → restore to scratch Postgres → sanity-check; closes the workflow's "UNVERIFIED" header) | **▶ open — next Railway session** (agent-runnable, read-only vs prod). |
+| R7 | **Token hygiene** (project tokens + rotate account token) | **❌ DECLINED by Q-0213** — full-access token is deliberate; see §1. |
 
 **R-3 — new-project bootstrap (rides the Phase-3 owner gate; agent-executable via API once
 granted, ~1 session):** create project + `production`/`shadow` envs → services from checked-in
@@ -190,12 +196,17 @@ standing rule.
 
 ## 7. Open owner decisions
 
-1. **Grant scope for the R-now items** — dashboard-yourself vs. agent-executes-via-API (updating
-   the Q-0130 envelope either way). The plan works with both; agents need nothing beyond what the
-   token already allows — this is purely an authority decision.
+1. ~~**Grant scope for the R-now items**~~ — **DECIDED (Q-0213, 2026-07-02):** agents execute via
+   the API under the full-automation grant; destructive/restore/billing ops stay ask-first.
+   Executed same day — see the §6 status column.
 2. **New project name** (`superbot-next`?) — cosmetic but persisted in tooling.
-3. **Token custody model** (§1): adopt project-tokens-for-agents + rotate the account token, or
-   consciously keep the account token in agent containers (recorded as a standing accepted risk).
+3. ~~**Token custody model**~~ — **DECIDED (Q-0213):** the full-access account token stays with
+   agents deliberately; recorded as a conscious accepted risk (§1 note).
 4. **Shadow-window budget:** accept the temporary ~2× runtime cost during Phase 4/5, or shorten
    the window / run shadow with sleep-enabled web services.
-5. *(Deferred by design, §4:)* plan tier and hosting alternatives — revisit post-parity.
+5. *(Deferred by design, §4:)* plan tier and hosting alternatives — revisit post-parity. **One new
+   input for this decision (2026-07-02):** Railway-native volume backups turned out plan-gated on
+   Hobby (§6 R2) — if a second, platform-level backup layer is wanted for the rebuild's database,
+   a plan upgrade is the lever; otherwise the layered pg_dump posture carries it.
+6. **Repo artifact-retention setting** (one dropdown, GitHub → Settings → Actions → General): raise
+   to **400 days** so the new monthly backup tier actually retains long-term (default 90 clamps it).
