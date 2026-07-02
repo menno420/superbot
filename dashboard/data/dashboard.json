@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T18:22:03Z",
+    "generated_at": "2026-07-02T19:30:45Z",
     "build": {
-      "commit": "8fa70dbf",
-      "subject": "Merge pull request #1650 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-02T18:22:03Z"
+      "commit": "87997562",
+      "subject": "Merge pull request #1649 from menno420/claude/ultracode-memory-substrate-2utgvc",
+      "committed_at": "2026-07-02T19:30:45Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 173,
+      "ideas": 174,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1226,6 +1226,14 @@
       "status": "ideas",
       "date": "2026-07-02",
       "summary": "Point a **Railway project webhook** at a Discord webhook so deploy events — above all",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-doc-set-start-here-index-2026-07-02.md",
+      "title": "Idea — a single \"START HERE\" index for the fresh-rebuild doc-set",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Reconciling band #1621–#1650 surfaced that the **fresh-rebuild initiative** — now the owner's top-focus",
       "subsystems": null
     },
     {
@@ -2817,11 +2825,27 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-02-ultracode-memory-substrate-finalize.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Finalize the AI-memory substrate (handoff §5.B, ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-session-ideas-harvest.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Ideas harvest from today's session arc (owner-requested)",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-reconcile.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Thirty-second Q-0107 reconciliation pass (band-#1650)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -3279,22 +3303,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-server-fn-completion-assessments.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Server-function feature-completion assessments (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-reconcile-band1560.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Twenty-ninth Q-0107 reconciliation pass (band-#1560)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
