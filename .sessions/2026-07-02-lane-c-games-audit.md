@@ -1,7 +1,7 @@
 # 2026-07-02 — Lane C new-bot capability audit (Games & Community)
 
 > **Status:** `in-progress`
-> **Branch:** `claude/lane-c-games-audit-q35nkr` · **PR:** #TBD
+> **Branch:** `claude/lane-c-games-audit-q35nkr` · **PR:** #1664
 > **Session type:** ultracode audit (docs-only) — new-bot-capability-audit Lane C
 
 ## What I'm about to do
