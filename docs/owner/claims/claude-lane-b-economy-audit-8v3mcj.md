@@ -1,0 +1,1 @@
+- branch `claude/lane-b-economy-audit-8v3mcj` · scope: new-bot capability audit **Lane B — Economy & Character-sim** · expected files: `docs/analysis/rebuild-discovery/new-bot-capability-audit/lanes/lane-B-economy.md` (docs-only; audits subsystems economy·inventory·treasury·mining·fishing·creature·farm·xp·casino·four_twenty·counters) · 2026-07-02
