@@ -54,6 +54,15 @@
 > that — §7; this document argues its case to the owner on purpose), a fixed per-subsystem
 > "manifest budget" (§2.9's ratchet already enforces the same thing without an arbitrary number),
 > and compile-time Discord component caps (already specified, §2.3).
+>
+> **Addendum (2026-07-02, owner architecture-brainstorm session):** two grammar gaps the owner
+> flagged before code starts, both folded in as compile rules rather than left as conventions:
+> **(1)** `SettingSpec`'s preset mechanism was ported verbatim in numeric-only form (§2.5) even
+> though Q-0070 already decided presets-plus-manual-entry applies to *every* setting class,
+> including authored text — closed via a `preset_kind` field (§2.5, Q-0215); **(2)** multi-select
+> was Q-0205's owner-directed idiom for the *current* bot but was never promoted into the rebuild
+> grammar as a compile-time default — closed via a `SelectorSpec` multiplicity-inference rule
+> (§2.4, Q-0216). Both are additive, no other section changes.
 
 ---
 
@@ -633,6 +642,16 @@ enum, entity}` (S), `options_source: static tuple | ProviderRef` (S), `placehold
 `audience_tier` (S — the §2.2 two-lane authority model), `usage_weight` (O). Placement lives in the
 owning `PanelSpec.layout` (A).
 
+**Multi-select-by-default compile rule (Q-0205's "pick which of these to turn on" idiom,
+promoted from bot-code convention to rebuild grammar, Q-0216):** when a `SelectorSpec`'s
+`on_select` target is a `BindingSpec` with `multiplicity > 1`, or a `str`-typed set/list
+"pick which apply" choice, `max_values` must default to that multiplicity (or the full option
+count for an unbounded pick-many) rather than the Discord-default `1`. A single-select
+(`max_values=1`) requires an explicit, justified override — the grammar treats "one at a time"
+as the exception for a naturally multi-valued choice, not the default. Genuinely single-valued
+selections (channel/role/member pickers backing a scalar `SettingSpec` or a `multiplicity=1`
+binding) are unaffected and stay single-select.
+
 ### 2.5 SettingSpec · BindingSpec · ResourceRequirement — the extended shipped types
 
 **Binding constraint 2, executed literally: these are the shipped classes**, carried into `sb/spec/`
@@ -660,6 +679,7 @@ treated by the mutation pipelines as the administrator floor, NOT "no auth"*). A
 | `panel_order` | `int = 0` | **A** | Order within its group. |
 | `edit_weight`, `co_edit_group` | `float = 1.0`, `str = ""` | O | Seed data for the settings-grouping sim: neutral-prior weight, optional seed pair-group — measured pairwise telemetry overrides both (§2.10.4). |
 | `depends_on` | `tuple[str,...] = ()` | O | Dependency-order constraint for grouping. |
+| `preset_kind` | `enum {none, numeric, text} = none` | S | **Generalizes the shipped `presets` field to authored-text settings (Q-0070, folded in Q-0215).** `numeric` is the shipped numeric-presets behavior, unchanged. `text` extends the same preset-then-edit-then-manual UX to any `str`-typed spec (DM templates, AI instruction bodies, embed copy): the editor renders `presets` as selectable starting points, each openable into a pre-filled override modal, plus an always-present "write your own" entry — never a preset-only editor. Compile rule: a `str`-typed `SettingSpec` with a non-empty `presets` tuple must declare `preset_kind="text"` (or the compiler flags it as decorative/inert data); manual entry can never be disabled by a preset list. |
 
 **SettingGroupSpec / HubGroupSpec — groups are declared; the sim only assigns.** A settings-hub
 group and a hub sub-group render user-visible headers, and copy is semantic (§2.0) — so group
