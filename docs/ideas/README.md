@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`central-admin-and-logging-guilds-2026-07-02.md`](./central-admin-and-logging-guilds-2026-07-02.md) —
+  **owner idea (2026-07-02, in-chat):** a dedicated **admin guild** (manage any server's bot config
+  via a cross-guild selector — Q-0212's authority without the "must be in the guild" clause) + a
+  **central logging guild** (all-server logging + platform feeds). Ops lane buildable; the
+  member-content mirror is owner-gated on a privacy policy; **the Railway-alerts feed was restored
+  live same-session** (`#railway-alerts` in the test guild; rule updated in place).
 - [`tried-before-ledger-2026-07-02.md`](./tried-before-ledger-2026-07-02.md) —
   **session idea (2026-07-02, Q-0089, owner-requested harvest):** a greppable negative-results
   ledger (`docs/operations/tried-before.md`) for abandoned operational experiments — born from the

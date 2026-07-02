@@ -26,3 +26,12 @@ S5 (operations) · pairs with
 and the `railway-config-drift-checker` idea (the webhook's existence becomes an expected-state
 line). One session, agent-executable; confirm the destination channel with the owner first
 (posting surface = owner taste).
+
+> **⚡ EXECUTED 2026-07-02 (same day):** it turned out the owner already had exactly this — a
+> Railway notification rule (all `Deployment.*`/`VolumeAlert.*`/`Monitor.*` events) pointing at a
+> Discord webhook whose channel he had accidentally deleted. Restored under Q-0213:
+> `#railway-alerts` + webhook recreated in the test guild, the existing rule updated in place,
+> delivery verified. Remaining scope of this idea: **failure-only filtering** (the rule currently
+> fires on every event incl. successes — tune `eventTypes` if it proves noisy) and the eventual
+> move to the HQ guild per
+> [`central-admin-and-logging-guilds-2026-07-02.md`](./central-admin-and-logging-guilds-2026-07-02.md).
