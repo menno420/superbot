@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T01:47:39Z",
+    "generated_at": "2026-07-02T09:15:57Z",
     "build": {
-      "commit": "0ee71833",
-      "subject": "Merge pull request #1628 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-02T01:47:39Z"
+      "commit": "60714aba",
+      "subject": "Merge pull request #1635 from menno420/claude/superbot-rebuild-design-spec-de4mh7",
+      "committed_at": "2026-07-02T09:15:57Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 162,
+      "ideas": 163,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "judge-panel-as-saved-workflow-2026-07-02.md",
+      "title": "Judge-panel design method as a saved, reusable workflow (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "The rebuild design spec was produced by a hand-authored judge-panel workflow that worked extremely",
+      "subsystems": null
+    },
     {
       "file": "audit-log-catchup-on-reconnect-2026-07-01.md",
       "title": "Idea — Audit-log catch-up on reconnect (gap-free logging across restarts)",
@@ -2729,6 +2737,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-02-rebuild-strategy-and-substrate-planning.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild strategy + substrate-kit planning (interactive, owner-directed)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-rebuild-design-spec.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild design spec: the \"one picture\" (docs-only, owner-gate deliverable)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-01-xp-level-migration.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — XP/level migration from other bots (Arcane)",
@@ -3188,22 +3212,6 @@
       "file": "2026-06-29-creatures-game-panel.md",
       "date": "2026-06-29",
       "title": "Session — Creatures completion: game panel + interactive dex browser (Q-0209 deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-completion-ledger-parity-guard.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Registry↔completion-ledger parity guard + inventory sort/filter",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-server-function-completion-assessments.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Server-function completion assessments (Q-0209)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
