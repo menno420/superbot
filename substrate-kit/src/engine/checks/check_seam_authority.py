@@ -42,10 +42,22 @@ def _seam_exempt_files(root: Path, allowed: list[str]) -> set[Path]:
     fnmatch let ``*`` cross ``/`` — an ``allowed`` pattern like ``src/*``
     silently exempted ``src/sub/hack.py`` and opened a fence gap. Re-globbing
     with ``root.glob`` keeps both sides of the seam on pathlib semantics.
+
+    A glob hit that is a *directory* is expanded to the files under it — a
+    trailing ``**`` (the documented ``src/db/**`` "own home" form) matches only
+    directories in ``Path.glob``, so exempting by raw glob hits compared the
+    file being scanned against a set of dirs and exempted **nothing**: a seam
+    flagged its own home. Directory hits now contribute their whole file
+    subtree (the ``economy`` reference-scan idiom), so ``src/db/**``,
+    ``src/db/*`` and ``src/db/**/*`` all exempt the subtree as documented.
     """
     exempt: set[Path] = set()
     for pattern in allowed:
-        exempt.update(root.glob(pattern))
+        for hit in root.glob(pattern):
+            if hit.is_file():
+                exempt.add(hit)
+            elif hit.is_dir():
+                exempt.update(p for p in hit.rglob("*") if p.is_file())
     return exempt
 
 
@@ -61,8 +73,16 @@ def check_seam_authority(root: Path, seams: list[dict]) -> list[Finding]:
     for seam in seams:
         name = seam.get("name", "unnamed")
         message = seam.get("message", "forbidden pattern")
+        pattern = seam.get("forbidden", "")
+        if not pattern:
+            # An empty pattern's ``.search`` matches every line — a seam with no
+            # ``forbidden`` would flag every line of every in-scope file. That is
+            # a misconfiguration; report it loud instead of drowning the report.
+            msg = f"seam `{name}`: no `forbidden` regex configured — seam skipped"
+            findings.append(Finding("", "seam", msg))
+            continue
         try:
-            forbidden = re.compile(seam.get("forbidden", ""))
+            forbidden = re.compile(pattern)
         except re.error as exc:
             msg = f"seam `{name}`: invalid forbidden regex: {exc}"
             findings.append(Finding("", "seam", msg))

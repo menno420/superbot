@@ -23,7 +23,15 @@ def _kpi_confirmation_rate(slot_values: dict[str, Any]) -> float:
     """
     confirmed = 0
     self_answered = 0
+    if not isinstance(slot_values, dict):
+        return 1.0
     for entry in slot_values.values():
+        if not isinstance(entry, dict):
+            # A hand-corrupted state.json can carry a non-dict slot value; skip
+            # it rather than raising (the kit's read-side fail-open contract —
+            # a KPI read must never brick session-close / maintain). Matches the
+            # non-dict guards in reflections / episodes / maintenance.
+            continue
         source = str(entry.get("source", ""))
         if source.startswith("confirmed:"):
             confirmed += 1

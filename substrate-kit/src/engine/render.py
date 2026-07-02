@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from string import Template
 from typing import Any
 
 _PLACEHOLDER_RE = re.compile(r"\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
@@ -24,8 +23,22 @@ def find_placeholders(text: str) -> set[str]:
 
 
 def render(text: str, context: dict[str, str]) -> str:
-    """Substitute ``${slot}`` placeholders from ``context`` (unfilled left as-is)."""
-    return Template(text).safe_substitute(context)
+    """Substitute ``${slot}`` placeholders from ``context`` (unfilled left as-is).
+
+    Only the braced ``${name}`` form is a placeholder — the *same* form
+    ``find_placeholders`` reports, so render and the "unfilled slots stay
+    visible" safety net can never disagree. Deliberately NOT
+    ``string.Template.safe_substitute``: that also collapses ``$$`` → ``$`` and
+    substitutes unbraced ``$word``, silently mangling host-authored ``$``
+    content (shell ``$$``/``$1``, ``$5`` prices, ``$$LaTeX$$``) on the routine
+    ``render --live`` in-place fill — and turning an escaped ``$${VERSION}``
+    into a live-looking ``${VERSION}`` that then reports as an unfilled slot.
+    A regex sub over the braced form leaves every other ``$`` byte untouched.
+    """
+    return _PLACEHOLDER_RE.sub(
+        lambda m: context[m.group(1)] if m.group(1) in context else m.group(0),
+        text,
+    )
 
 
 def build_context(state: dict[str, Any]) -> dict[str, str]:

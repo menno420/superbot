@@ -56,6 +56,30 @@ def test_nested_defs_are_not_top_level(tmp_path):
     assert check_namespace([tmp_path]) == []
 
 
+def test_singledispatch_register_underscore_is_not_shadowing(tmp_path):
+    # The functools.singledispatch idiom re-binds `def _` once per type via the
+    # `.register` decorator; the last global binding is irrelevant. Flagging the
+    # repeated defs as in-module shadowing was a false positive on valid Python.
+    _write(
+        tmp_path / "m.py",
+        "import functools\n\n\n@functools.singledispatch\n"
+        "def show(x):\n    pass\n\n\n@show.register\n"
+        "def _(x: int):\n    pass\n\n\n@show.register(str)\n"
+        "def _(x):\n    pass\n",
+    )
+    assert check_namespace([tmp_path]) == []
+
+
+def test_register_decorated_named_defs_are_not_shadowing(tmp_path):
+    # The same dispatch idiom with NAMED functions (both `@handler.register`).
+    _write(
+        tmp_path / "m.py",
+        "@handler.register\ndef on_event():\n    pass\n\n\n"
+        "@handler.register\ndef on_event():\n    pass\n",
+    )
+    assert check_namespace([tmp_path]) == []
+
+
 # ---------------------------------------------------------------------------
 # (2) Cross-module public collision within one package
 # ---------------------------------------------------------------------------

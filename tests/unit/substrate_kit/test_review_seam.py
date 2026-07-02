@@ -231,3 +231,19 @@ def test_verdict_on_non_provisional_slot_is_inert(tmp_path):
     assert backend.get("promotion_rights") == "promote"
     assert backend.get("open_questions") == []
     assert backend.get("review_log") == []
+
+
+def test_clear_review_payload_removes_consumed_payload(tmp_path):
+    # A recorded verdict consumes the payload, but the FILE persisted and
+    # maintenance kept counting it as "awaiting a reviewer" forever. Clearing it
+    # is how the count reflects reality; a missing payload is an idempotent no-op.
+    from engine.loop.review_seam import clear_review_payload
+
+    config = Config(state_dir=".substrate")
+    backend = _provisional(tmp_path, "project_name", "Q-002")
+    payload = build_review_payload(backend, "project_name")
+    path = write_review_payload(tmp_path, config, payload)
+    assert path.exists()
+    assert clear_review_payload(tmp_path, config, "project_name") is True
+    assert not path.exists()
+    assert clear_review_payload(tmp_path, config, "project_name") is False

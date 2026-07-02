@@ -50,6 +50,19 @@ def test_router_metrics_counts_and_completeness():
     assert m["session_count"] == 7
 
 
+def test_router_metrics_fails_open_on_malformed_slot_values():
+    # A hand-corrupted state.json can carry a non-dict slot value, or a non-dict
+    # slot_values entirely. The KPI read must fail OPEN (never brick
+    # session-close / maintain) — matching the kit's read-side guards elsewhere.
+    mixed = _state(
+        slot_values={"a": "oops", "b": None, "c": {"source": "assumption"}},
+    )
+    metrics = router_metrics(mixed)  # must not raise
+    assert "assumption_confirmation_rate" in metrics
+    not_a_dict = _state(slot_values="corrupt")
+    assert router_metrics(not_a_dict)["assumption_confirmation_rate"] == 1.0
+
+
 def test_router_metrics_empty_state():
     m = router_metrics({})
     assert m["slots_total"] == 0

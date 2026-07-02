@@ -143,9 +143,22 @@ def generate_packs(root: Path, config: Config, index: list[dict]) -> list[Path]:
     """
     out_dir = root / config.state_dir / "contextpacks"
     written: list[Path] = []
+    used: set[str] = set()
     for entry in index:
         area = _pack_area(entry)
-        path = out_dir / f"{_pack_slug(area['name'])}.context.md"
+        # Two areas whose names slugify alike (``Economy``/``economy``,
+        # ``API v1``/``API-v1``, two unnamed areas → ``area``) must not land on
+        # one filename: the later ``atomic_write_text`` would silently erase the
+        # earlier pack and ``written`` would double-count one file. Disambiguate
+        # to the first free ``slug`` / ``slug-2`` / ``slug-3`` … (robust even if
+        # a real ``slug-2`` area also exists); the pack body still names its area
+        # in the heading, so a suffixed file stays identifiable.
+        base = _pack_slug(area["name"])
+        slug, n = base, 2
+        while slug in used:
+            slug, n = f"{base}-{n}", n + 1
+        used.add(slug)
+        path = out_dir / f"{slug}.context.md"
         atomic_write_text(path, _pack_body(root, area))
         written.append(path)
     return written

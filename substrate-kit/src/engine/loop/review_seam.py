@@ -117,6 +117,21 @@ def write_review_payload(root: Path, config: Config, payload: dict) -> Path:
     return path
 
 
+def clear_review_payload(root: Path, config: Config, slot: str) -> bool:
+    """Remove the consumed payload for ``slot``; True when one was present.
+
+    A verdict recorded via ``apply_review_verdict`` consumes the payload, but the
+    payload FILE persists — and ``maintenance._mnt_advisories`` counts every
+    ``payload-*.json`` as "awaiting a reviewer", so without this the count never
+    decrements after a review (it grows without bound under a wired reviewer).
+    Idempotent: a missing payload is a no-op.
+    """
+    path = root / config.state_dir / REVIEW_DIR / f"payload-{slot}.json"
+    existed = path.exists()
+    path.unlink(missing_ok=True)
+    return existed
+
+
 def _rev_log(backend: Any, slot: str, verdict: str, reviewer: str) -> None:
     """Append one review-log entry (the state contract's four-field shape)."""
     log = list(backend.get("review_log", []))
