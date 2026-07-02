@@ -8,6 +8,11 @@
 > reintroduced) — before any work starts. This document exists so the reasoning from a long live
 > conversation isn't lost — mirrors the precedent set by `portable-agent-memory-package-2026-06-12.md`
 > and `autonomous-improvement-loop-vision-2026-06-12.md`.
+>
+> **⚠️ UPDATE 2026-07-02:** the "gated on Fable 5 / not reintroduced" status below is **superseded** —
+> Fable 5 was **redeployed 2026-07-01** (verified live), so that gate is **cleared**. The
+> research-grounded plan that supersedes/extends this vision is
+> [`../planning/fresh-rebuild-strategy-2026-07-02.md`](../planning/fresh-rebuild-strategy-2026-07-02.md).
 
 ## Why this document exists
 
@@ -248,9 +253,10 @@ just a fact fix:
 - The maintainer's own detailed keep/change specification — not started.
 - Extracting `substrate-kit/` into its own repo — available to start now (zero code coupling found),
   independent of the bigger rebuild decision.
-- Re-check the live Claude model picker periodically for Fable 5's actual availability (withdrawn
-  since 2026-06-12, not yet reintroduced as of 2026-06-30) — this is a real, currently-open gate on
-  the maintainer's stated timeline, not a cleared one.
+- Re-check the live Claude model picker periodically for Fable 5's actual availability. **UPDATE
+  2026-07-02: Fable 5 was REDEPLOYED 2026-07-01** (Anthropic, "Redeploying Fable 5"; global on Claude
+  Platform / Code / Cowork, cloud phasing in) — **this gate is now CLEARED**, verified live. The prior
+  "withdrawn since 2026-06-12, not yet reintroduced as of 2026-06-30" status is superseded.
 - The 7 confirmed-safe-to-delete docs from the historical-docs audit (this session) — awaiting the
   maintainer's go-ahead, not yet executed.
 - The 45 condense-candidate docs from the same audit — not yet scoped into a follow-up pass.

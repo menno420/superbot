@@ -103,6 +103,21 @@ Next action.** Remaining website work has its own durable handoff:
 | [owner-review-inbox-plan](owner-review-inbox-plan-2026-06-17.md) | Phase 1 shipped (#1091 `/reviews`); Phases 2–3 owner-paced |
 | [website-two-site-split-plan](website-two-site-split-plan-2026-06-19.md) | v1 build **code-complete + reviewed** (#1109–#1123); remaining = rollout + the control-API security-review-gated slices → tracked in the next-steps handoff |
 
+### Fresh from-scratch rebuild — cross-cutting planning initiative
+
+Owner-directed **planning** thread (not yet an approved build) for a from-scratch SuperBot rebuild
+"designed as one picture," with the current repo as a frozen reference and the substrate-kit finished
+first as its foundation. **Rebuild go/no-go stays owner-gated** (after the Fable design + owner review).
+The source-grounded discovery evidence — 4 Codex maps, verified against shipped source per Q-0120
+(48/59 load-bearing claims confirmed, the corrections binding) — is folded into one artifact:
+[`analysis/rebuild-discovery/codex-preserve-map-synthesis`](../analysis/rebuild-discovery/codex-preserve-map-synthesis-2026-07-02.md).
+
+| Plan | Status / gate |
+|---|---|
+| [fresh-rebuild-strategy](fresh-rebuild-strategy-2026-07-02.md) | the **verified baseline + end-to-end order** (Phase 0→5 + gates); analysis-grade, **not an approved execution plan** |
+| [simulation-driven-design](simulation-driven-design-2026-07-02.md) | owner-directed **standing rule** — structure (grouping / ordering / layout) is discovered by simulation; the manifest is the search space |
+| [rebuild-ultracode-handoff](rebuild-ultracode-handoff-2026-07-02.md) | **START-HERE launch pad** — paste-ready ultracode session prompts (harvest · finish substrate-kit · golden harness · Fable design) |
+
 ### Horizon backlog drafts (Later / Someday — routed, not stale)
 
 The 2026-06-08 product-growth roadmap drafts are **active as routed backlog** — each is wired into
