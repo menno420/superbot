@@ -7911,3 +7911,41 @@ on the Hobby plan — plan-gated, not token-gated — so the pg_dump workflow ga
 retention tier as the compensating layer (owner one-time step: raise the repo's artifact-retention
 setting to 400 days). Homes: `docs/planning/railway-setup-plan-2026-07-02.md` (plan + statuses),
 `docs/operations/production-deployment.md` (envelope + backups), `.github/workflows/backup-db.yml`.
+
+### Q-0214 — DECIDED: the finalised memory system's four structural retention choices (2026-07-02)
+
+> **Decided — owner picked all four live via the in-chat question panel (2026-07-02).**
+> Context: the owner-directed retention/context-economy design session (PR #1643,
+> [`docs/planning/memory-retention-and-context-economy-plan-2026-07-02.md`](../planning/memory-retention-and-context-economy-plan-2026-07-02.md))
+> converged on a sim-tested, adversarially-reviewed policy and surfaced four decisions the evidence
+> could not settle — pure owner-values calls (the sim proved each safe either way). Asked live via
+> the in-chat question panel; the owner picked the recommended option on all four.
+
+**Area:** AI-memory / docs system / substrate-kit · **Type:** Owner decisions (structural, durable)
+· **Status:** Answered (live, in-session, 2026-07-02).
+
+**The four decisions (verbatim options chosen):**
+
+1. **Session-log retention mode = "Delete + tombstones."** The kit's default posture is
+   delete-with-tombstones (bounded corpus by construction; one grep-visible index line per pruned
+   log; bodies one `git show` away), not archive-everything — the lean-by-construction tiebreak
+   applied, exactly as the plan's §6.2 framed it. Harvest-gating (per-file committed evidence) is
+   the safety condition that makes this posture acceptable unattended.
+2. **Owner inbox = "Website feed."** The `/updates` feed is the canonical surface for ⚑
+   owner-facing lines. Implementation consequence (binding on the plan's PR 2):
+   `scripts/export_dashboard_data.py` must read **pass-record harvest tables** in addition to raw
+   logs, so pruning never blanks the feed; the 14-day log-window floor may be revisited once the
+   harvest-fed feed is proven.
+3. **Shrink duty = "Checker + routine."** No new per-session shrink ritual: mechanical prunes via
+   checker+actuator, judgment prunes via the retention-debt routine issue. This **answers
+   orientation-plan Workstream D** (the proposed standing shrink ender): the owner chose the
+   mechanical/escalation design over a per-session ritual — the DISCUSS block Workstream D planned
+   is superseded by this decision; growth-side enders (Q-0089/Q-0102) are unchanged.
+4. **Rebuilt-repo decision-ledger depth = "Verdict + short why."** Each decided question keeps its
+   ruling line + 2–3 lines of rationale + provenance link in `decisions.md`; full deliberation
+   lives in git/PR history. (This repo's router keeps Q-0210 semantics unchanged — this decision
+   shapes the **kit/rebuild** ledger format only.)
+
+**Homes:** the retention plan (policy + PR specs, updated same session) ·
+`docs/planning/fresh-rebuild-strategy-2026-07-02.md` §5.2 slot (context-economy engine) ·
+orientation-cost-reduction plan Workstream D (superseded by decision 3).
