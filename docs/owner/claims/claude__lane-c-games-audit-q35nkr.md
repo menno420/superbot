@@ -1,0 +1,1 @@
+- `claude/lane-c-games-audit-q35nkr` · **Lane C new-bot capability audit (Games & Community)** — grammar-fit audit of games/blackjack/deathmatch/rps_tournament/counting/chain/leaderboard/community/community_spotlight/karma · `docs/analysis/rebuild-discovery/new-bot-capability-audit/lanes/lane-C-games.md` · 2026-07-02 · docs-only, PR pending
