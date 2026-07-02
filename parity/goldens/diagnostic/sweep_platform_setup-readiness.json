@@ -1,0 +1,116 @@
+{
+ "case_id": "sweep.platform_setup-readiness",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1767277500,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 5793266,
+        "description": "**0/17** bindings · **0/100** settings · **15** resource declarations · health `0 err` `0 warn` `17 info`",
+        "fields": [
+         {
+          "inline": false,
+          "name": "🎫 Support Tickets",
+          "value": "🔴 **Not set up** — members can't open support tickets yet. Enable them in the **Support Tickets** setup step (`!setup`) or run `!ticketsetup @StaffRole [#log]`."
+         },
+         {
+          "inline": false,
+          "name": "Subsystems (1–15)",
+          "value": "`ai            ` bindings 0/1 · settings 0/10 · resources 0 · 0%\n`automod       ` bindings 0/0 · settings 0/11 · resources 0 · 0%\n`blackjack     ` bindings 0/0 · settings 0/1 · resources 0 · 0%\n`btd6          ` bindings 0/2 · settings 0/0 · resources 0 · 0%\n`cleanup       ` bindings 0/0 · settings 0/1 · resources 0 · 0%\n`counters      ` bindings 0/0 · settings 0/7 · resources 0 · 0%\n`deathmatch    ` bindings 0/0 · settings 0/1 · resources 0 · 0%\n`economy       ` bindings 0/1 · settings 0/0 · resources 1 · 0%\n`help          ` bindings 0/0 · settings 0/0 · resources 0 · —\n`image_moderation` bindings 0/0 · settings 0/8 · resources 0 · 0%\n`karma         ` bindings 0/0 · settings 0/4 · resources 0 · 0%\n`logging       ` bindings 0/11 · settings 0/12 · resources 11 · 0%\n`moderation    ` bindings 0/0 · settings 0/15 · resources 1 · 0%\n`proof_channel ` bindings 0/1 · settings 0/0 · resources 1 · 0%\n`role          ` bindings 0/0 · settings 0/3 · resources 0 · 0%"
+         },
+         {
+          "inline": false,
+          "name": "Subsystems (16–19)",
+          "value": "`rps_tournament` bindings 0/0 · settings 0/1 · resources 0 · 0%\n`security      ` bindings 0/0 · settings 0/11 · resources 0 · 0%\n`welcome       ` bindings 0/0 · settings 0/12 · resources 0 · 0%\n`xp            ` bindings 0/1 · settings 0/3 · resources 1 · 0%"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Read-only. Empty settings_keys (legacy KV) count as unconfigured. Subsystems with no declared config show — in the score column."
+        },
+        "title": "🛰 Setup Readiness — 0%",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!platform setup-readiness",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "diagnostic"
+}

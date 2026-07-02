@@ -118,6 +118,7 @@ The source-grounded discovery evidence — 4 Codex maps, verified against shippe
 | [fresh-rebuild-strategy](fresh-rebuild-strategy-2026-07-02.md) | the **verified baseline + end-to-end order** (Phase 0→5 + gates); analysis-grade, **not an approved execution plan** |
 | [simulation-driven-design](simulation-driven-design-2026-07-02.md) | owner-directed **standing rule** — structure (grouping / ordering / layout) is discovered by simulation; the manifest is the search space |
 | [rebuild-ultracode-handoff](rebuild-ultracode-handoff-2026-07-02.md) | **START-HERE launch pad** — paste-ready ultracode session prompts (harvest · finish substrate-kit · golden harness · Fable design) |
+| [rebuild-linchpin-validation](rebuild-linchpin-validation-2026-07-02.md) | **the owner-gate EVIDENCE package (2026-07-02)** — both unproven linchpins built + measured: the **Phase-0.5 golden harness** ([`parity/`](../../parity/README.md), replay-deterministic, coverage measured in [`COVERAGE.md`](../../parity/COVERAGE.md)) and the **grammar-expressiveness spike** ([`tools/grammar_spike/`](../../tools/grammar_spike/RESULTS.md) — tier-1/2 fit 73% as-specced → **85% with six named grammar amendments**; operator band 97%). Verdict: **GO with the amendments folded into the design spec before K2** |
 
 ### Horizon backlog drafts (Later / Someday — routed, not stale)
 

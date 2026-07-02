@@ -1,0 +1,238 @@
+{
+ "case_id": "sweep.setrole",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "role_thresholds": {
+   "added": [
+    {
+     "days_required": 3,
+     "display_name": "test",
+     "guild_id": "<guild>",
+     "level_required": null,
+     "role_id": null,
+     "role_name": "test",
+     "xp_auto_assign": false
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1767279240,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": "✅ Role **test** will be assigned after **3** day(s).",
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:2>"
+     },
+     "method": "edit_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "logging_routes.select",
+          "disabled": true,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "label": "mod",
+            "value": "mod"
+           },
+           {
+            "default": false,
+            "label": "events",
+            "value": "events"
+           },
+           {
+            "default": false,
+            "label": "cleanup",
+            "value": "cleanup"
+           },
+           {
+            "default": false,
+            "label": "debug",
+            "value": "debug"
+           },
+           {
+            "default": false,
+            "label": "info",
+            "value": "info"
+           },
+           {
+            "default": false,
+            "label": "warning",
+            "value": "warning"
+           },
+           {
+            "default": false,
+            "label": "error",
+            "value": "error"
+           },
+           {
+            "default": false,
+            "label": "audit",
+            "value": "audit"
+           },
+           {
+            "default": false,
+            "label": "message_log",
+            "value": "message_log"
+           },
+           {
+            "default": false,
+            "label": "member_log",
+            "value": "member_log"
+           },
+           {
+            "default": false,
+            "label": "role_log",
+            "value": "role_log"
+           }
+          ],
+          "placeholder": "Choose a route…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "logging_routes.set",
+          "disabled": true,
+          "label": "🔗 Set Channel",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "logging_routes.create",
+          "disabled": true,
+          "label": "🆕 Create Channel",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "logging_routes.refresh",
+          "disabled": true,
+          "label": "🔄 Refresh",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "logging_routes.back",
+          "disabled": true,
+          "label": "↩ Back to Logging",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "flags": 0,
+      "tts": false
+     }
+    }
+   ],
+   "events": [
+    {
+     "event": "audit.action_recorded",
+     "payload": {
+      "actor_id": "<@admin>",
+      "actor_type": "user",
+      "guild_id": "<guild>",
+      "mutation_id": "<uuid>",
+      "mutation_type": "set_time_threshold",
+      "new_value": "3d",
+      "occurred_at": "<ts>",
+      "prev_value": null,
+      "scope": "guild",
+      "subsystem": "role_automation",
+      "target": "role:test"
+     }
+    },
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!setrole 3 test",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

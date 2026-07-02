@@ -1,0 +1,75 @@
+{
+ "case_id": "sweep.unlock",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": "❌ Command not found. Use `!help` for available commands.",
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:2>"
+     },
+     "method": "edit_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": true,
+          "label": "🎣 Craft next",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:2>",
+          "disabled": true,
+          "label": "↩ Rod shop",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "flags": 0,
+      "tts": false
+     }
+    }
+   ],
+   "input": {
+    "content": "!unlock test",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

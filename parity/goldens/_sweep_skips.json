@@ -1,0 +1,8 @@
+{
+ "/setup-delegate": "unsupported required option type user",
+ "/setup-undelegate": "unsupported required option type user",
+ "btd6 ops seed-data": "bulk data seed \u2014 the golden would embed the whole versioned BTD6 dataset (6.8MB) already pinned by btd6_data_blobs.sha256 provenance (compat item 9); zero oracle value over the data files themselves",
+ "btd6ops seed-data": "bulk data seed \u2014 the golden would embed the whole versioned BTD6 dataset (6.8MB) already pinned by btd6_data_blobs.sha256 provenance (compat item 9); zero oracle value over the data files themselves",
+ "restart": "process lifecycle \u2014 sets a shutdown intent that drains the harness",
+ "syncslash": "pushes the slash tree \u2014 deploy-ops, not guild behavior"
+}

@@ -1,0 +1,165 @@
+{
+ "case_id": "sweep.pm_mechanic",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1767277830,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 10181046,
+        "fields": [
+         {
+          "inline": false,
+          "name": "Clash — Clash system",
+          "value": "When an attacking skill meets a defending one, the two clash: both flip their coins and the higher final skill value wins. The loser's coin breaks (or its skill is cancelled) and the winner's hit lands — winning clashes is the heart of Limbus combat."
+         },
+         {
+          "inline": false,
+          "name": "Coin — Clash system",
+          "value": "Each offensive skill has one or more coins. A skill's value is its base power plus the coin power of every coin that lands on heads (tails add nothing). The chance of heads scales with Sanity — roughly 95% at maximum Sanity down to roughly 5% at minimum."
+         },
+         {
+          "inline": false,
+          "name": "Speed — Clash system",
+          "value": "At the start of each turn every unit rolls a Speed value inside its Identity's speed range. Higher Speed acts earlier and gets to pick which slower enemy to attack or clash with, so Speed sets both turn order and matchups. Haste raises it for a turn."
+         },
+         {
+          "inline": false,
+          "name": "Sanity — Stats & survival",
+          "value": "Sanity (SP) runs from -45 to +45 and sets how often a unit's coins land on heads. It rises from winning clashes and landing good hits, falls from losing clashes or allies dying, and at the bottom risks a Mental Break."
+         },
+         {
+          "inline": false,
+          "name": "Stagger — Stats & survival",
+          "value": "Units have stagger thresholds at fractions of their max HP. Crossing one leaves the unit Staggered on its next turn: it loses its actions, can't clash, and takes extra damage — the main window to burst an enemy down. Tremor can force or deepen it."
+         },
+         {
+          "inline": false,
+          "name": "Damage Resistance — Stats & survival",
+          "value": "Every unit has a separate resistance to each damage type (Slash / Pierce / Blunt), shown as Fatal (takes the most damage), Weak, Normal, Endure(d), or Ineffective (takes the least). Hitting Fatal types and avoiding Ineffective ones drives team-building."
+         },
+         {
+          "inline": false,
+          "name": "Mental Break — Stats & survival",
+          "value": "When a unit's Sanity bottoms out (around -45) it can suffer a Mental Break and Panic, losing control for a turn or more (the exact effect varies by Identity). Keeping Sanity up by winning clashes avoids it."
+         },
+         {
+          "inline": false,
+          "name": "Resonance — Skills & resonance",
+          "value": "When several skills queued in a turn share the same Sin affinity, they Resonate, adding bonus coin power that scales with how many of that Sin are present. Building a team around a couple of Sins keeps Resonance high."
+         },
+         {
+          "inline": false,
+          "name": "Skills — Skills & resonance",
+          "value": "Each Identity brings a few offensive skills plus a defensive one. Each turn you are dealt skills semi-randomly; pairing three identical skills replaces them with a stronger version, so managing the skill queue is part of the strategy."
+         },
+         {
+          "inline": false,
+          "name": "Defensive Skill — Skills & resonance",
+          "value": "When attacked and not clashing, a unit can use its defensive skill: Guard cuts incoming damage (often with a bonus effect), Evade clashes to dodge entirely and may grant an extra action, and Counter clashes back and strikes if it wins."
+         },
+         {
+          "inline": false,
+          "name": "Identity — Identities",
+          "value": "An Identity is a specific playable version of one of the 12 Sinners — its own stats (HP, speed range, defenses), skills, and passives. Identities come in three rarities: 0 (1-star), 00 (2-star), and 000 (3-star). One Sinner can have many Identities."
+         },
+         {
+          "inline": false,
+          "name": "Passive — Identities",
+          "value": "Passives are always-on or conditional effects an Identity grants; many switch on only once you own a minimum amount of a Sin's resources. A Support Passive instead applies while the Identity sits in the support slot, off the active team."
+         },
+         {
+          "inline": false,
+          "name": "E.G.O — Identities",
+          "value": "E.G.O are powerful equippable skills that spend Sin resources and come in grades from ZAYIN up to ALEPH. Using E.G.O while Sanity is low risks Corrosion — the unit loses control and attacks wildly — so it is a high-risk, high-reward option."
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Project Moon · Limbus Company — summarized facts (verify-at-ingest)"
+        },
+        "title": "🌑 Limbus — Mechanics",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!pm mechanic",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "project_moon"
+}

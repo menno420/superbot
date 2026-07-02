@@ -1,0 +1,18 @@
+{
+ "case_id": "sweep.slash_setup-status",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [],
+   "input": {
+    "kind": "slash",
+    "name": "setup-status",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "setup"
+}

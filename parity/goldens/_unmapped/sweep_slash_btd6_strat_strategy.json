@@ -1,0 +1,310 @@
+{
+ "case_id": "sweep.slash_btd6_strat_strategy",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>"
+     },
+     "method": "edit_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "settings_hub.subsystem_select",
+          "disabled": true,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "description": "Member greetings, farewells, and an optional entry role",
+            "emoji": {
+             "id": null,
+             "name": "👋"
+            },
+            "label": "Welcome",
+            "value": "welcome"
+           },
+           {
+            "default": false,
+            "description": "Live member-count channels (total · humans · bots)",
+            "emoji": {
+             "id": null,
+             "name": "📊"
+            },
+            "label": "Server Counters",
+            "value": "counters"
+           },
+           {
+            "default": false,
+            "description": "Raid detection + account-age screening on member join",
+            "emoji": {
+             "id": null,
+             "name": "🛡️"
+            },
+            "label": "Server Security",
+            "value": "security"
+           },
+           {
+            "default": false,
+            "description": "Proof submission and exclusive access sessions",
+            "emoji": {
+             "id": null,
+             "name": "📋"
+            },
+            "label": "Proof Channel",
+            "value": "proof_channel"
+           },
+           {
+            "default": false,
+            "description": "Time-based and XP-based automatic role assignment",
+            "emoji": {
+             "id": null,
+             "name": "🎭"
+            },
+            "label": "Roles",
+            "value": "role"
+           },
+           {
+            "default": false,
+            "description": "Prohibited words, command deletion, channel hygiene",
+            "emoji": {
+             "id": null,
+             "name": "🧹"
+            },
+            "label": "Cleanup",
+            "value": "cleanup"
+           },
+           {
+            "default": false,
+            "description": "Spam, invite links, excessive caps, and mass-mention filtering",
+            "emoji": {
+             "id": null,
+             "name": "🛡️"
+            },
+            "label": "Automod",
+            "value": "automod"
+           },
+           {
+            "default": false,
+            "description": "Scan uploaded images for sexual, violent, harassment, or hate content",
+            "emoji": {
+             "id": null,
+             "name": "🖼️"
+            },
+            "label": "Image moderation",
+            "value": "image_moderation"
+           },
+           {
+            "default": false,
+            "description": "Warnings, timeouts, bans, mod logs",
+            "emoji": {
+             "id": null,
+             "name": "🔨"
+            },
+            "label": "Moderation",
+            "value": "moderation"
+           },
+           {
+            "default": false,
+            "description": "Per-guild moderation/cleanup event logging — channel selection, auto-create, and audit (S7)",
+            "emoji": {
+             "id": null,
+             "name": "📝"
+            },
+            "label": "Server Logging",
+            "value": "logging"
+           },
+           {
+            "default": false,
+            "description": "Read-only AI gateway diagnostics: provider state, feature flags, task routing, and request/failure c",
+            "emoji": {
+             "id": null,
+             "name": "🤖"
+            },
+            "label": "AI Platform",
+            "value": "ai"
+           },
+           {
+            "default": false,
+            "description": "Interactive help menu and command discovery",
+            "emoji": {
+             "id": null,
+             "name": "📚"
+            },
+            "label": "Help",
+            "value": "help"
+           },
+           {
+            "default": false,
+            "description": "Daily coins, work, shop, balance",
+            "emoji": {
+             "id": null,
+             "name": "💰"
+            },
+            "label": "Economy",
+            "value": "economy"
+           },
+           {
+            "default": false,
+            "description": "Experience points, levels, and leaderboards",
+            "emoji": {
+             "id": null,
+             "name": "⭐"
+            },
+            "label": "XP & Levels",
+            "value": "xp"
+           },
+           {
+            "default": false,
+            "description": "Peer reputation — thank helpful members with !thanks",
+            "emoji": {
+             "id": null,
+             "name": "✨"
+            },
+            "label": "Karma",
+            "value": "karma"
+           },
+           {
+            "default": false,
+            "description": "Blackjack card game",
+            "emoji": {
+             "id": null,
+             "name": "🃏"
+            },
+            "label": "Blackjack",
+            "value": "blackjack"
+           },
+           {
+            "default": false,
+            "description": "Deterministic Bloons Tower Defense 6 assistant — tower/hero/map lookups, round threat summaries, and",
+            "emoji": {
+             "id": null,
+             "name": "🐵"
+            },
+            "label": "BTD6 Assistant",
+            "value": "btd6"
+           },
+           {
+            "default": false,
+            "description": "1v1 duel battles",
+            "emoji": {
+             "id": null,
+             "name": "⚔️"
+            },
+            "label": "Deathmatch",
+            "value": "deathmatch"
+           },
+           {
+            "default": false,
+            "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
+            "emoji": {
+             "id": null,
+             "name": "✂️"
+            },
+            "label": "Rock Paper Scissors",
+            "value": "rps_tournament"
+           }
+          ],
+          "placeholder": "Open a settings group…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "settings_hub.needs_setup",
+          "disabled": true,
+          "emoji": {
+           "id": null,
+           "name": "📋"
+          },
+          "label": "Needs setup",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "settings_hub.invalid",
+          "disabled": true,
+          "emoji": {
+           "id": null,
+           "name": "⚠️"
+          },
+          "label": "Invalid settings",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "settings_hub.missing_bindings",
+          "disabled": true,
+          "emoji": {
+           "id": null,
+           "name": "🔗"
+          },
+          "label": "Missing bindings",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "settings_hub.audit",
+          "disabled": true,
+          "emoji": {
+           "id": null,
+           "name": "🕒"
+          },
+          "label": "Recent changes",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "settings_hub.command_access",
+          "disabled": true,
+          "emoji": {
+           "id": null,
+           "name": "🚪"
+          },
+          "label": "Command access",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "flags": 0,
+      "tts": false
+     }
+    }
+   ],
+   "input": {
+    "kind": "slash",
+    "name": "btd6 strat strategy",
+    "options": [
+     {
+      "name": "strategy_id",
+      "type": 4,
+      "value": 3
+     }
+    ],
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

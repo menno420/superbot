@@ -1,0 +1,150 @@
+{
+ "case_id": "sweep.roleinfo",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1767278610,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 1752220,
+        "fields": [
+         {
+          "inline": true,
+          "name": "Mention",
+          "value": "<@&<@&admin>>"
+         },
+         {
+          "inline": true,
+          "name": "ID",
+          "value": "<@&admin>"
+         },
+         {
+          "inline": true,
+          "name": "Colour",
+          "value": "Default"
+         },
+         {
+          "inline": true,
+          "name": "Members",
+          "value": "2"
+         },
+         {
+          "inline": true,
+          "name": "Position",
+          "value": "1"
+         },
+         {
+          "inline": true,
+          "name": "Created",
+          "value": "2021-01-16"
+         },
+         {
+          "inline": true,
+          "name": "Hoisted",
+          "value": "No"
+         },
+         {
+          "inline": true,
+          "name": "Mentionable",
+          "value": "No"
+         },
+         {
+          "inline": true,
+          "name": "Managed",
+          "value": "No"
+         },
+         {
+          "inline": false,
+          "name": "Key Permissions",
+          "value": "Administrator (all permissions)"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Requested by AdminActor#0000"
+        },
+        "title": "Role Info — Admin",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!roleinfo <@&800000000000000201>",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

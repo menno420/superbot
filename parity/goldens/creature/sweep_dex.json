@@ -1,0 +1,131 @@
+{
+ "case_id": "sweep.dex",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2026062145,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3066993,
+        "description": "**0/36** creatures discovered · **0** total catches · Creature level **1**",
+        "fields": [
+         {
+          "inline": true,
+          "name": "Ember",
+          "value": "🔥 Cindling — *not yet caught*\n🔥 Emberpaw — *not yet caught*\n🔥 Ashpyre — *not yet caught*\n🔥 Cinderhorn — *not yet caught*\n🔥 Magmaul — *not yet caught*\n🔥 Infernox — *not yet caught*"
+         },
+         {
+          "inline": true,
+          "name": "Stone",
+          "value": "🪨 Gravelpup — *not yet caught*\n🪨 Pebblet — *not yet caught*\n🪨 Cobbleshell — *not yet caught*\n🪨 Slatewing — *not yet caught*\n🪨 Boulderon — *not yet caught*\n🪨 Tectonix — *not yet caught*"
+         },
+         {
+          "inline": true,
+          "name": "Gust",
+          "value": "🌪️ Gustling — *not yet caught*\n🌪️ Zephyrl — *not yet caught*\n🌪️ Breezle — *not yet caught*\n🌪️ Cloudhide — *not yet caught*\n🌪️ Galeon — *not yet caught*\n🌪️ Tempestra — *not yet caught*"
+         },
+         {
+          "inline": true,
+          "name": "Tide",
+          "value": "🌊 Rippling — *not yet caught*\n🌊 Splashfin — *not yet caught*\n🌊 Brinejet — *not yet caught*\n🌊 Shellback — *not yet caught*\n🌊 Coralisk — *not yet caught*\n🌊 Abysscale — *not yet caught*"
+         },
+         {
+          "inline": true,
+          "name": "Spark",
+          "value": "⚡ Sparkpup — *not yet caught*\n⚡ Voltkit — *not yet caught*\n⚡ Glimmerfly — *not yet caught*\n⚡ Voltaic — *not yet caught*\n⚡ Arcwing — *not yet caught*\n⚡ Stormfang — *not yet caught*"
+         },
+         {
+          "inline": true,
+          "name": "Bramble",
+          "value": "🌿 Sproutle — *not yet caught*\n🌿 Thornkit — *not yet caught*\n🌿 Barkhide — *not yet caught*\n🌿 Fernwhisk — *not yet caught*\n🌿 Thornmaw — *not yet caught*\n🌿 Verdankor — *not yet caught*"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "🐾 Catch to hunt · 🏆 Ladder for the leaderboard"
+        },
+        "title": "🐾 AdminActor's Creature Dex",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!dex",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "creature"
+}

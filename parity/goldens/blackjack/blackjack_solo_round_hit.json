@@ -1,0 +1,441 @@
+{
+ "case_id": "blackjack.solo_round_hit",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@member>"
+    },
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 2,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:2>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@member>"
+    }
+   ]
+  },
+  "economy": {
+   "added": [
+    {
+     "daily_count": 1,
+     "daily_streak": 1,
+     "guild_id": "<guild>",
+     "last_daily": 1996441214,
+     "last_worked": 0,
+     "user_id": "<@member>"
+    }
+   ]
+  },
+  "economy_audit_log": {
+   "added": [
+    {
+     "actor_id": "<@member>",
+     "delta": 1025,
+     "guild_id": "<guild>",
+     "id": 1,
+     "new_balance": 1025,
+     "occurred_at": "<ts>",
+     "reason": "daily",
+     "user_id": "<@member>"
+    }
+   ]
+  },
+  "game_state": {
+   "added": [
+    {
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "guild_id": "<guild>",
+     "id": 1,
+     "state": {
+      "bet": 10,
+      "dealer": [
+       "3 ♠",
+       "Q ♣"
+      ],
+      "deck": [
+       "10 ♠",
+       "6 ♣",
+       "K ♣",
+       "3 ♣",
+       "5 ♠",
+       "6 ♠",
+       "5 ♥",
+       "2 ♣",
+       "9 ♥",
+       "5 ♣",
+       "3 ♥",
+       "Q ♥",
+       "8 ♣",
+       "9 ♣",
+       "8 ♦",
+       "J ♥",
+       "A ♣",
+       "6 ♥",
+       "K ♠",
+       "2 ♠",
+       "8 ♥",
+       "3 ♦",
+       "10 ♦",
+       "6 ♦",
+       "10 ♣",
+       "7 ♠",
+       "A ♠",
+       "J ♦",
+       "7 ♥",
+       "K ♥",
+       "5 ♦",
+       "8 ♠",
+       "Q ♦",
+       "7 ♦",
+       "4 ♠",
+       "J ♠",
+       "9 ♠",
+       "K ♦",
+       "4 ♥",
+       "Q ♠",
+       "A ♥",
+       "A ♦",
+       "7 ♣",
+       "10 ♥",
+       "2 ♥",
+       "9 ♦",
+       "J ♣"
+      ],
+      "doubled": false,
+      "player": [
+       "4 ♣",
+       "4 ♦",
+       "2 ♦"
+      ]
+     },
+     "subsystem": "blackjack_solo",
+     "updated_at": "<ts>",
+     "user_id": "<@member>",
+     "version": 1
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 1025,
+     "guild_id": "<guild>",
+     "last_xp": 1996441214,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@member>",
+     "xp": 19
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "stateful game session: escrow through INV-F, dynamic session custom_ids, first button (Hit) clicked",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "author": {
+         "icon_url": "https://cdn.discordapp.com/embed/avatars/1.png",
+         "name": "MemberActor"
+        },
+        "color": 15844367,
+        "description": "🟩 **Uncommon** reward!",
+        "fields": [
+         {
+          "inline": true,
+          "name": "Coins earned",
+          "value": "**+1025** 🪙"
+         },
+         {
+          "inline": true,
+          "name": "Balance",
+          "value": "**1025** 🪙"
+         },
+         {
+          "inline": true,
+          "name": "Streak",
+          "value": "🔥 **1** days"
+         },
+         {
+          "inline": true,
+          "name": "Total claims",
+          "value": "1"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Current odds → Common: 44.8% · Uncommon: 24.9% · Rare: 15.1% · Epic: 8.1% · Legendary: 5.1% · Mythic: 2.1%"
+        },
+        "title": "🎁 Daily Reward",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "economy.balance_changed",
+     "payload": {
+      "delta": 1025,
+      "guild_id": "<guild>",
+      "new_balance": 1025,
+      "reason": "daily",
+      "user_id": "<@member>"
+     }
+    },
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 19,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 19,
+      "source": "chat",
+      "user_id": "<@member>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!daily",
+    "kind": "command",
+    "persona": "member"
+   }
+  },
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "👊"
+          },
+          "label": "Hit",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "✋"
+          },
+          "label": "Stand",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "✌️"
+          },
+          "label": "Double Down",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3066993,
+        "fields": [
+         {
+          "inline": false,
+          "name": "Dealer (3+?)",
+          "value": "3 ♠  ||?||"
+         },
+         {
+          "inline": false,
+          "name": "Your hand (8)",
+          "value": "4 ♣  4 ♦"
+         },
+         {
+          "inline": true,
+          "name": "Bet",
+          "value": "**10** 🪙"
+         }
+        ],
+        "flags": 0,
+        "title": "🃏 Blackjack",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:2>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "input": {
+    "content": "!blackjack 10",
+    "kind": "command",
+    "persona": "member"
+   }
+  },
+  {
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:3>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "type": 6
+     }
+    },
+    {
+     "args": {
+      "message_id": "<msg:4>",
+      "webhook_id": "<@bot>"
+     },
+     "method": "edit_followup",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "👊"
+          },
+          "label": "Hit",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "✋"
+          },
+          "label": "Stand",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": true,
+          "emoji": {
+           "id": null,
+           "name": "✌️"
+          },
+          "label": "Double Down",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "embeds": [
+       {
+        "color": 3066993,
+        "fields": [
+         {
+          "inline": false,
+          "name": "Dealer (3+?)",
+          "value": "3 ♠  ||?||"
+         },
+         {
+          "inline": false,
+          "name": "Your hand (10)",
+          "value": "4 ♣  4 ♦  2 ♦"
+         },
+         {
+          "inline": true,
+          "name": "Bet",
+          "value": "**10** 🪙"
+         }
+        ],
+        "flags": 0,
+        "title": "🃏 Blackjack",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    }
+   ],
+   "input": {
+    "custom_id": "<cid:1>",
+    "kind": "click",
+    "persona": "member",
+    "target_message": 2
+   }
+  }
+ ],
+ "subsystem": "blackjack"
+}

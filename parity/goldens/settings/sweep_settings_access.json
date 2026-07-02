@@ -1,0 +1,469 @@
+{
+ "case_id": "sweep.settings_access",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1767279300,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "description": "Interactive help menu and command discovery",
+            "emoji": {
+             "id": null,
+             "name": "📚"
+            },
+            "label": "Help",
+            "value": "help"
+           },
+           {
+            "default": false,
+            "description": "General bot commands and information",
+            "emoji": {
+             "id": null,
+             "name": "💬"
+            },
+            "label": "General",
+            "value": "general"
+           },
+           {
+            "default": false,
+            "description": "A leafy little easter-egg panel — wisdom and number trivia",
+            "emoji": {
+             "id": null,
+             "name": "🍃"
+            },
+            "label": "420",
+            "value": "four_twenty"
+           },
+           {
+            "default": false,
+            "description": "General utility commands",
+            "emoji": {
+             "id": null,
+             "name": "🔧"
+            },
+            "label": "Utility",
+            "value": "utility"
+           },
+           {
+            "default": false,
+            "description": "Daily coins, work, shop, balance",
+            "emoji": {
+             "id": null,
+             "name": "💰"
+            },
+            "label": "Economy",
+            "value": "economy"
+           },
+           {
+            "default": false,
+            "description": "Item management and crafting",
+            "emoji": {
+             "id": null,
+             "name": "🎒"
+            },
+            "label": "Inventory",
+            "value": "inventory"
+           },
+           {
+            "default": false,
+            "description": "Server-owned coin pool — contribute coins; managers disburse",
+            "emoji": {
+             "id": null,
+             "name": "🏛️"
+            },
+            "label": "Treasury",
+            "value": "treasury"
+           },
+           {
+            "default": false,
+            "description": "Private support tickets — open by command, panel, or the AI",
+            "emoji": {
+             "id": null,
+             "name": "🎫"
+            },
+            "label": "Support Tickets",
+            "value": "ticket"
+           },
+           {
+            "default": false,
+            "description": "Mining minigame and resource collection",
+            "emoji": {
+             "id": null,
+             "name": "⛏️"
+            },
+            "label": "Mining",
+            "value": "mining"
+           },
+           {
+            "default": false,
+            "description": "Interface gallery — browse UI patterns, all fake & safe",
+            "emoji": {
+             "id": null,
+             "name": "🧪"
+            },
+            "label": "UX Lab",
+            "value": "ux_lab"
+           },
+           {
+            "default": false,
+            "description": "Fishing minigame — cast a line, build your collection",
+            "emoji": {
+             "id": null,
+             "name": "🎣"
+            },
+            "label": "Fishing",
+            "value": "fishing"
+           },
+           {
+            "default": false,
+            "description": "Catch original creatures and build your collection dex",
+            "emoji": {
+             "id": null,
+             "name": "🐾"
+            },
+            "label": "Creatures",
+            "value": "creature"
+           },
+           {
+            "default": false,
+            "description": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
+            "emoji": {
+             "id": null,
+             "name": "🐔"
+            },
+            "label": "Chicken Farm",
+            "value": "farm"
+           },
+           {
+            "default": false,
+            "description": "Experience points, levels, and leaderboards",
+            "emoji": {
+             "id": null,
+             "name": "⭐"
+            },
+            "label": "XP & Levels",
+            "value": "xp"
+           },
+           {
+            "default": false,
+            "description": "Peer reputation — thank helpful members with !thanks",
+            "emoji": {
+             "id": null,
+             "name": "✨"
+            },
+            "label": "Karma",
+            "value": "karma"
+           },
+           {
+            "default": false,
+            "description": "Competitive games and channel activities",
+            "emoji": {
+             "id": null,
+             "name": "🎮"
+            },
+            "label": "Games",
+            "value": "games"
+           },
+           {
+            "default": false,
+            "description": "Progression, roles, and community activities",
+            "emoji": {
+             "id": null,
+             "name": "🌱"
+            },
+            "label": "Community",
+            "value": "community"
+           },
+           {
+            "default": false,
+            "description": "Live server activity dashboard — leaders, level-ups, game stats",
+            "emoji": {
+             "id": null,
+             "name": "🌟"
+            },
+            "label": "Community Spotlight",
+            "value": "community_spotlight"
+           },
+           {
+            "default": false,
+            "description": "Blackjack card game",
+            "emoji": {
+             "id": null,
+             "name": "🃏"
+            },
+            "label": "Blackjack",
+            "value": "blackjack"
+           },
+           {
+            "default": false,
+            "description": "Member greetings, farewells, and an optional entry role",
+            "emoji": {
+             "id": null,
+             "name": "👋"
+            },
+            "label": "Welcome",
+            "value": "welcome"
+           },
+           {
+            "default": false,
+            "description": "Group card games like multiplayer poker",
+            "emoji": {
+             "id": null,
+             "name": "🎰"
+            },
+            "label": "Casino",
+            "value": "casino"
+           },
+           {
+            "default": false,
+            "description": "Live member-count channels (total · humans · bots)",
+            "emoji": {
+             "id": null,
+             "name": "📊"
+            },
+            "label": "Server Counters",
+            "value": "counters"
+           },
+           {
+            "default": false,
+            "description": "Deterministic Bloons Tower Defense 6 assistant — tower/hero/map lookups, round threat summaries, and",
+            "emoji": {
+             "id": null,
+             "name": "🐵"
+            },
+            "label": "BTD6 Assistant",
+            "value": "btd6"
+           },
+           {
+            "default": false,
+            "description": "1v1 duel battles",
+            "emoji": {
+             "id": null,
+             "name": "⚔️"
+            },
+            "label": "Deathmatch",
+            "value": "deathmatch"
+           },
+           {
+            "default": false,
+            "description": "Raid detection + account-age screening on member join",
+            "emoji": {
+             "id": null,
+             "name": "🛡️"
+            },
+            "label": "Server Security",
+            "value": "security"
+           }
+          ],
+          "placeholder": "Choose a subsystem… — page 1/2",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "access:select_scope",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": true,
+            "description": "The channel this command was invoked in.",
+            "label": "Channel (current)",
+            "value": "channel"
+           },
+           {
+            "default": false,
+            "description": "The category that contains the channel.",
+            "label": "Category (current)",
+            "value": "category"
+           },
+           {
+            "default": false,
+            "description": "Guild-level — no channel/category override.",
+            "label": "Guild (server-wide)",
+            "value": "guild"
+           }
+          ],
+          "placeholder": "Choose a scope…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "access:explain",
+          "disabled": false,
+          "label": "🔬 Explain Access",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "access:reset",
+          "disabled": false,
+          "label": "🔄 Reset",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:2>",
+          "disabled": true,
+          "label": "◀ Prev",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "label": "Next ▶",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "nav:help",
+          "disabled": false,
+          "label": "📚 Help",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "nav:hub:admin",
+          "disabled": false,
+          "label": "↩ Administration",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3447003,
+        "description": "Read-only diagnostic for effective governance policy. Pick a subsystem and a scope, then press **Explain Access** to see the decision chain.",
+        "fields": [
+         {
+          "inline": true,
+          "name": "Subsystem",
+          "value": "_Pick from the first dropdown._"
+         },
+         {
+          "inline": true,
+          "name": "Scope",
+          "value": "_Pick from the second dropdown._"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Invoker: AdminActor. Only the invoker can interact with this panel."
+        },
+        "title": "🔍 Access Policy Explorer",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!settings access",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "settings"
+}

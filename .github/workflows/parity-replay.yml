@@ -1,0 +1,48 @@
+# Golden-parity replay — OPTIONAL, manual-dispatch only (never required).
+#
+# Replays the parity/goldens/ corpus against the current bot with a real
+# Postgres service — the CI shape the rebuild's required `golden-parity`
+# gate uses from day one (design spec §6), proven here first. Red means the
+# bot's observable behavior drifted from its goldens (or a golden is stale:
+# re-capture deliberately via `python3.10 -m parity.run capture`).
+#
+# Provenance (Q-0105): added 2026-07-02 by the linchpin-validation session
+# (#1639). Unverified: confirm its runs against ground truth a few times
+# across sessions before trusting it. Delete this workflow if it proves
+# unreliable over multiple sessions.
+
+name: parity-replay
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: superbot
+          POSTGRES_PASSWORD: superbot
+          POSTGRES_DB: superbot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U superbot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://superbot:superbot@localhost:5432/superbot
+      DISCORD_BOT_TOKEN_PRODUCTION: PARITY_PLACEHOLDER_TOKEN
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install runtime deps
+        run: python -m pip install -r requirements.txt
+      - name: Replay goldens (red on behavioral drift)
+        run: python -m parity.run check

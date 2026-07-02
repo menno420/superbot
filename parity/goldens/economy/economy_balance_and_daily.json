@@ -1,0 +1,314 @@
+{
+ "case_id": "economy.balance_and_daily",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@member>"
+    },
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 2,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:2>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@member>"
+    },
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 3,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:3>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@member>"
+    }
+   ]
+  },
+  "economy": {
+   "added": [
+    {
+     "daily_count": 1,
+     "daily_streak": 1,
+     "guild_id": "<guild>",
+     "last_daily": 1853737031,
+     "last_worked": 0,
+     "user_id": "<@member>"
+    }
+   ]
+  },
+  "economy_audit_log": {
+   "added": [
+    {
+     "actor_id": "<@member>",
+     "delta": 879,
+     "guild_id": "<guild>",
+     "id": 1,
+     "new_balance": 879,
+     "occurred_at": "<ts>",
+     "reason": "daily",
+     "user_id": "<@member>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 879,
+     "guild_id": "<guild>",
+     "last_xp": 1853737061,
+     "level": 0,
+     "messages": 2,
+     "user_id": "<@member>",
+     "xp": 44
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "INV-F: daily grant lands in economy + economy_audit_log",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15844367,
+        "fields": [
+         {
+          "inline": true,
+          "name": "🪙 Coins",
+          "value": "**0**"
+         },
+         {
+          "inline": true,
+          "name": "🏆 Level",
+          "value": "0"
+         }
+        ],
+        "flags": 0,
+        "thumbnail": {
+         "url": "https://cdn.discordapp.com/embed/avatars/1.png"
+        },
+        "title": "💰 MemberActor's Wallet",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@member>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!balance",
+    "kind": "command",
+    "persona": "member"
+   }
+  },
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "author": {
+         "icon_url": "https://cdn.discordapp.com/embed/avatars/1.png",
+         "name": "MemberActor"
+        },
+        "color": 15844367,
+        "description": "⬜ **Common** reward!",
+        "fields": [
+         {
+          "inline": true,
+          "name": "Coins earned",
+          "value": "**+879** 🪙"
+         },
+         {
+          "inline": true,
+          "name": "Balance",
+          "value": "**879** 🪙"
+         },
+         {
+          "inline": true,
+          "name": "Streak",
+          "value": "🔥 **1** days"
+         },
+         {
+          "inline": true,
+          "name": "Total claims",
+          "value": "1"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Current odds → Common: 44.8% · Uncommon: 24.9% · Rare: 15.1% · Epic: 8.1% · Legendary: 5.1% · Mythic: 2.1%"
+        },
+        "title": "🎁 Daily Reward",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:2>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "economy.balance_changed",
+     "payload": {
+      "delta": 879,
+      "guild_id": "<guild>",
+      "new_balance": 879,
+      "reason": "daily",
+      "user_id": "<@member>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!daily",
+    "kind": "command",
+    "persona": "member"
+   }
+  },
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15844367,
+        "fields": [
+         {
+          "inline": true,
+          "name": "🪙 Coins",
+          "value": "**879**"
+         },
+         {
+          "inline": true,
+          "name": "🏆 Level",
+          "value": "0"
+         }
+        ],
+        "flags": 0,
+        "thumbnail": {
+         "url": "https://cdn.discordapp.com/embed/avatars/1.png"
+        },
+        "title": "💰 MemberActor's Wallet",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:3>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 19,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 44,
+      "source": "chat",
+      "user_id": "<@member>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!balance",
+    "kind": "command",
+    "persona": "member"
+   }
+  }
+ ],
+ "subsystem": "economy"
+}

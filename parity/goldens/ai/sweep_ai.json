@@ -1,0 +1,217 @@
+{
+ "case_id": "sweep.ai",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1884357910,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "ai:refresh",
+          "disabled": false,
+          "label": "Refresh",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "ai:diagnostics",
+          "disabled": false,
+          "label": "Diagnostics",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "ai:providers",
+          "disabled": false,
+          "label": "Providers",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "ai:routing",
+          "disabled": false,
+          "label": "Routing",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "ai:settings",
+          "disabled": false,
+          "label": "Settings",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "ai:policy",
+          "disabled": false,
+          "label": "Policy",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "ai:behavior",
+          "disabled": false,
+          "label": "Behavior",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "ai:tools",
+          "disabled": false,
+          "label": "Tools",
+          "style": 3,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "nav:help",
+          "disabled": false,
+          "label": "📚 Help",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "nav:hub:admin",
+          "disabled": false,
+          "label": "↩ Administration",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 5793266,
+        "description": "Read-only diagnostics for the AI gateway. The buttons below open the matching subcommands without making a provider call.",
+        "fields": [
+         {
+          "inline": true,
+          "name": "Enabled",
+          "value": "no"
+         },
+         {
+          "inline": true,
+          "name": "Default provider",
+          "value": "deterministic"
+         },
+         {
+          "inline": true,
+          "name": "Setup advisor provider",
+          "value": "deterministic"
+         },
+         {
+          "inline": true,
+          "name": "Active provider (last call)",
+          "value": "deterministic"
+         },
+         {
+          "inline": true,
+          "name": "Requests / failures",
+          "value": "0 / 0"
+         },
+         {
+          "inline": true,
+          "name": "Redaction",
+          "value": "on"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "!ai status / !ai diagnostics / !ai providers / !ai routing"
+        },
+        "title": "💤 AI Platform",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!ai",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "ai"
+}

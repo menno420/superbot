@@ -1,0 +1,30 @@
+{
+ "case_id": "sweep.slash_bugreport",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [],
+   "input": {
+    "kind": "slash",
+    "name": "bugreport",
+    "options": [
+     {
+      "name": "title",
+      "type": 3,
+      "value": "test"
+     },
+     {
+      "name": "description",
+      "type": 3,
+      "value": "test"
+     }
+    ],
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "hermes"
+}

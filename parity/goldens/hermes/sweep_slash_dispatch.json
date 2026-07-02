@@ -1,0 +1,25 @@
+{
+ "case_id": "sweep.slash_dispatch",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [],
+   "input": {
+    "kind": "slash",
+    "name": "dispatch",
+    "options": [
+     {
+      "name": "work_order",
+      "type": 3,
+      "value": "test"
+     }
+    ],
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "hermes"
+}

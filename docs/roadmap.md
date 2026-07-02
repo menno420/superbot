@@ -145,7 +145,12 @@
   [ADR-006](decisions/006-btd6-data-provenance-ownership.md).
 
 ### S3 — AI-Memory system  ·  *the mechanism — the self-improving-agent engine (shippable on its own)*
-- **Now:** **▶** the owner's **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)**
+- **Now:** 👤 **the rebuild owner gate — design + evidence both in** (2026-07-02): the
+  [design spec](planning/rebuild-design-spec-2026-07-02.md) plus the
+  [linchpin-validation evidence package](planning/rebuild-linchpin-validation-2026-07-02.md) (#1639 —
+  Phase-0.5 golden harness `parity/` coverage-measured + grammar spike 73%→85% tier-1/2, verdict
+  **GO with six grammar amendments**). **▶** meanwhile: the owner's
+  **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)**
   OSS arc — resume at the **PR-2 remainder** (modes + contract-doc templates + trigger/drift detection
   → PR 3). **Owner re-elevated this to top focus 2026-06-30** (fresh-rebuild vision #1589/#1590: "bot is
   mostly production ready, focus on the AI-memory project now") — this **supersedes any earlier "demoted

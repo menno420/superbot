@@ -38,13 +38,17 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag".)*
-- `[owner]` **🔒 THE REBUILD OWNER GATE — the Phase-2 design spec is DONE and awaiting approval**
-  (2026-07-02): [`rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
-  (Fable-5 judge panel + Opus/GPT adversarial review). The owner ratifies the design + the
-  backward-compat contract + the rebuild go/no-go (§10.2 lists exactly what approval means);
-  **no Phase-3 new-repo code until then.** `[offline]` meanwhile the ungated phases stay buildable:
-  Phase 0 (finish the substrate-kit adaptive half) · Phase 0.5 (golden harness + telemetry capture
-  against the live bot) · Phase 1 (harvest) · Phase 2.5 (cold-start proof) — see the
+- `[owner]` **🔒 THE REBUILD OWNER GATE — the Phase-2 design spec is DONE and the evidence package
+  is IN** (2026-07-02): [`rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
+  (Fable-5 judge panel + Opus/GPT adversarial review), now backed by
+  [`rebuild-linchpin-validation-2026-07-02.md`](../planning/rebuild-linchpin-validation-2026-07-02.md)
+  (#1639) — **both previously-unproven linchpins built + measured**: the Phase-0.5 golden harness
+  (`parity/` — replay-deterministic, coverage in `parity/COVERAGE.md`) and the grammar spike
+  (tier-1/2 fit 73% as-specced → 85% with six named amendments; verdict **GO with amendments**).
+  The owner ratifies the design + the backward-compat contract + the rebuild go/no-go (§10.2 lists
+  exactly what approval means); **no Phase-3 new-repo code until then.** `[offline]` remaining
+  ungated phases: Phase 0 (substrate-kit adaptive half) · Phase-0.5 telemetry sidecar capture ·
+  Phase 1 (harvest) · Phase 2.5 (cold-start proof) — see the
   [strategy §3](../planning/fresh-rebuild-strategy-2026-07-02.md).
 - `[offline]` **AI-memory portable substrate-kit — PR 2 remainder + PR 3** — **owner-re-elevated to top
   focus** by the 2026-06-30 fresh-rebuild vision (#1589/#1590): "bot is mostly production ready, focus on

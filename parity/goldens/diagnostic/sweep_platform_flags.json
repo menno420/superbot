@@ -1,0 +1,108 @@
+{
+ "case_id": "sweep.platform_flags",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1767277020,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 5793266,
+        "description": "8 declared (2 operator · 6 internal)  ·  cache=0  ·  bootstrap_fallback=0",
+        "fields": [
+         {
+          "inline": false,
+          "name": "Operator flags",
+          "value": "`settings.manager_cog.enabled` — Settings menu (!settings) · default=True eff=on src=default\n`youtube.context.enabled` — YouTube context for AI replies · default=False eff=off src=default"
+         },
+         {
+          "inline": false,
+          "name": "Internal / platform gates",
+          "value": "_Migration & kill-switch gates — not user-facing features._\n`bindings.primary` — Bindings as primary source (internal rollout gate) · default=False eff=off src=default\n`feature_flag.primary` — Feature-flag runtime gate (env-only, internal) · default=False eff=off src=default\n`participation.enabled` — Participation runtime (internal rollout gate) · default=False eff=off src=default\n`resource_provisioning.primary` — Resource provisioning pipeline primary (operator kill-switch) · default=False eff=off src=default\n`resources.unified` — Unified resource discovery (internal rollout gate) · default=False eff=off src=default\n`settings.mutation.primary` — Settings mutation pipeline primary (operator kill-switch) · default=False eff=off src=default"
+         }
+        ],
+        "flags": 0,
+        "title": "🚩 Feature flags",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!platform flags",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "diagnostic"
+}

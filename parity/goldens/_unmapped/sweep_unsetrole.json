@@ -1,0 +1,122 @@
+{
+ "case_id": "sweep.unsetrole",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": "❌ Command not found. Use `!help` for available commands.",
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:2>"
+     },
+     "method": "edit_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": true,
+          "label": "💡 Fact",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": true,
+          "label": "😄 Joke",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": true,
+          "label": "💬 Quote",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:4>",
+          "disabled": true,
+          "label": "🧠 Trivia",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:5>",
+          "disabled": true,
+          "label": "💪 Motivate",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:6>",
+          "disabled": true,
+          "label": "🎱 8-Ball",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:7>",
+          "disabled": true,
+          "label": "👋 Greet",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:8>",
+          "disabled": true,
+          "label": "↩ Overview",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "flags": 0,
+      "tts": false
+     }
+    }
+   ],
+   "input": {
+    "content": "!unsetrole test",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

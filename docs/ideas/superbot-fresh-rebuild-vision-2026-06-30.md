@@ -16,6 +16,12 @@
 > **Later the same day, the Phase-2 design spec this vision called for was produced:**
 > [`../planning/rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
 > (Fable-5 judge panel + Opus/GPT review) — **⏳ this idea's next lifecycle step is the owner gate.**
+> **And on 2026-07-02 (#1639) the gate evidence landed:** both previously-unproven linchpins are
+> built + measured — the Phase-0.5 golden harness (`parity/`, replay-deterministic,
+> coverage-measured) and the grammar-expressiveness spike (73% → 85% tier-1/2 with six amendments) —
+> verdict **GO-with-amendments**:
+> [`../planning/rebuild-linchpin-validation-2026-07-02.md`](../planning/rebuild-linchpin-validation-2026-07-02.md).
+> **The owner gate now has everything it asked for: design + compat contract + empirical evidence.**
 
 ## Why this document exists
 

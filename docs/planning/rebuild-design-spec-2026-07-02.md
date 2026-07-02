@@ -33,6 +33,14 @@
 > `governance.cache.invalidated`, and the genuinely subscriber-less pair is
 > `governance.execution.allowed/denied` (§1.2). Source wins over docs.
 >
+> **Linchpin validation (2026-07-02, #1639):** the two unproven load-bearing assumptions — golden-
+> harness coverage (§6, §10.1 risk 1) and grammar tier-1/2 expressiveness (§2, §10.1 risk 5) — are
+> now **built and measured**: see
+> [`rebuild-linchpin-validation-2026-07-02.md`](rebuild-linchpin-validation-2026-07-02.md)
+> (harness: [`parity/`](../../parity/README.md), replay-deterministic, coverage measured; grammar:
+> 73% as-specced → **85% with six named amendments**, operator band 97% — fold the amendments in
+> before K2). Evidence verdict: **GO with amendments.**
+>
 > **Revision (2026-07-02, external review round 2):** the owner ran **two external GPT review
 > sessions** over the merged spec (the §E full-tier seam). Folded in, each verified per Q-0120:
 > the plain-language summary below (owner-endorsed), the table of contents, the glossary (§11), the
