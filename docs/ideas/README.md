@@ -31,6 +31,34 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`tried-before-ledger-2026-07-02.md`](./tried-before-ledger-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, owner-requested harvest):** a greppable negative-results
+  ledger (`docs/operations/tried-before.md`) for abandoned operational experiments — born from the
+  wait-for-CI near-miss, where one line of owner history ("kept failing") beat a correct-looking
+  fresh analysis and existed nowhere in the repo. Candidate substrate-kit template.
+- [`wire-level-live-bot-loop-2026-07-02.md`](./wire-level-live-bot-loop-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, harvest):** boot the bot under the verified Galaxy-Bot test
+  token and drive it over the real Discord gateway in a test guild — dissolves the
+  `[needs-live-bot]` startability gate and *is* the Phase-0.5 golden-harness Discord driver;
+  complements (not duplicates) the in-process `bot-self-test-walker`.
+- [`continuously-verified-backups-2026-07-02.md`](./continuously-verified-backups-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, harvest):** the restore drill as a *scheduled* workflow
+  (service-container Postgres + restore newest artifact + substance asserts) — pg_dump is now the
+  only backup layer (Railway backups plan-gated), and a backup that never restores is a hope.
+- [`shadow-clone-rehearsal-2026-07-02.md`](./shadow-clone-rehearsal-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, harvest):** agent-operated Railway shadow of the current bot
+  (Galaxy Bot + snapshot-restored Postgres) — rehearses the Phase-5 cutover choreography, proves
+  restore end-to-end, and gives the golden harness a consequence-free capture target. Real spend →
+  flag before running.
+- [`no-transcript-secret-plumbing-2026-07-02.md`](./no-transcript-secret-plumbing-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, harvest):** `scripts/secret_plumb.py` — secrets move
+  store-to-store (Railway ↔ GitHub secrets) process-to-process with hash-receipt output, never
+  through transcripts — the missing safety half of the Q-0213 full-automation grant.
+- [`railway-deploy-alerts-discord-webhook-2026-07-02.md`](./railway-deploy-alerts-discord-webhook-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the Railway automation-grant session):** point a Railway
+  project webhook at Discord so failed `worker` deploys push-alert the owner — today a broken
+  deploy is only discovered by looking; platform-side, no bot code, works even when the bot itself
+  failed to boot. Agent-executable under Q-0213 (confirm the destination channel first).
 - [`railway-config-drift-checker-2026-07-02.md`](./railway-config-drift-checker-2026-07-02.md) —
   **session idea (2026-07-02, Q-0089, from the Railway audit):** a read-only checker + weekly
   routine diffing live Railway deploy config (wait-for-CI flags, healthchecks, backup schedules,

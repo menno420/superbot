@@ -7872,3 +7872,42 @@ decorator guard is generalized to *any* `has_permissions(...)` and a new `test_r
 pins the role views — completeness is machine-checked, not scoped by judgment (the fix for the three
 narrow-scope round-trips #1573→#1577→#1602). Home: `disbot/core/runtime/permission_checks.py` +
 `tests/unit/invariants/test_owner_override_guards.py`.
+
+### Q-0213 — DIRECTED: full-access Railway token + credential set is deliberate — the whole project runs fully automated (2026-07-02)
+
+> **Context.** After the Railway audit session (#1638) recommended scoped project tokens + account-token
+> rotation, the owner directed in-chat: *"it has been deliberate that this token has full access, claude
+> is the only one that has access to it and also the main editor of the repo, I want it this way so you
+> don't have to rely on me to enter certain values or create extra workers or any of those things, you
+> also have a test bot token and access to API keys … so the whole project can be completely automated."*
+
+**Decision (owner-directed):**
+
+1. **The full-access Railway account token stays in agent containers by design.** Claude is its sole
+   holder and the repo's main editor. The #1638 custody recommendation (scoped project tokens + rotate
+   the account token) is **DECLINED** — recorded as a conscious, accepted risk, not an oversight.
+2. **The credential set exists to remove owner-dependency:** Railway account token, the test-bot Discord
+   token (application **"Galaxy Bot"**, id `1298426054636994611` — note the env var is misleadingly named
+   `DISCORD_BOT_TOKEN_PRODUCTION` in agent containers), and provider API keys (`OPENAI_API_KEY` verified
+   present; Anthropic key lives in the Railway worker vars). Agents should **use** these — entering
+   values, creating services/workers, wiring environments — rather than routing such steps to the owner.
+3. **Re-scopes the Q-0130 envelope:** agents may now operate the **Railway control plane** directly —
+   service/environment configuration, variables, deploy-affecting settings, creating services — with
+   read-back verification and a session-log record of every change. The old "deploy/restart/scale/
+   rollback stay the maintainer's" line is superseded for *routine* operations.
+4. **The standing safety brake is unchanged** (this is the automation grant's boundary, per the working
+   agreement's irreversibility rule): destructive or hard-to-reverse operations — `*Delete` mutations,
+   backup/volume **restores**, anything that can lose data, plan/billing changes — remain **ask-first**,
+   every time. Convention: no automation ever calls a delete/restore mutation.
+5. **Recorded operational history (same exchange):** Railway's *wait-for-CI* deploy gating was tried
+   before and **"kept failing due to the fast merges"** — R1 of the Railway plan is dropped; do not
+   re-enable on the current repo. (Mechanism + the new-repo design condition live in
+   `docs/planning/railway-setup-plan-2026-07-02.md` §6.)
+
+**Executed under this grant (2026-07-02, PR #1640, each read-back-verified):** dashboard + botsite
+watch-paths; botsite healthcheck `/healthz`; a $15/month **soft** usage alert (email-only, no hard
+limit). **Discovered:** Railway-native volume backups (schedules *and* manual) return `Not Authorized`
+on the Hobby plan — plan-gated, not token-gated — so the pg_dump workflow gained a monthly 400-day
+retention tier as the compensating layer (owner one-time step: raise the repo's artifact-retention
+setting to 400 days). Homes: `docs/planning/railway-setup-plan-2026-07-02.md` (plan + statuses),
+`docs/operations/production-deployment.md` (envelope + backups), `.github/workflows/backup-db.yml`.
