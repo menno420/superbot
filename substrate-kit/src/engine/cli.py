@@ -22,16 +22,22 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
+from engine.adopt import adopt
 from engine.agents.agents import AGENTS, agent_document, agent_relpath
 from engine.checks.check_docs import run_doc_checks
 from engine.checks.check_namespace import check_namespace
 from engine.checks.check_orientation_budget import check_orientation_budget
 from engine.checks.check_seam_authority import check_seam_authority
 from engine.checks.check_session_log import check_log, latest_session_log
+from engine.contextpack import generate_packs, load_pack_index
 from engine.economy.engine import economy_actuate, economy_check, issue_body
 from engine.economy.harvest import parse_harvest_tables
 from engine.economy.simulator import calibration_recipe, default_calibration, run_search
+from engine.hooks.post_edit import evaluate_edit
+from engine.hooks.session_start import compose_orientation
+from engine.hooks.settings import full_settings_template, hooks_fill_table
 from engine.hooks.stance_guard import evaluate_tool, settings_snippet, tool_from_payload
+from engine.hooks.stop_check import evaluate_stop
 from engine.interview.interview import (
     confirm_slot,
     critical_slots,
@@ -299,37 +305,42 @@ def _hook_command(config: Config) -> str:
 
 
 def cmd_hooks(target: Path, build: bool) -> int:
-    """Show the hook wiring, or ``--build`` the settings snippet into staging.
+    """Show the hook wiring, or ``--build`` the settings files into staging.
 
-    The only hook today is the **PreToolUse stance guard**. Building stages a
-    ``.claude/settings.json`` snippet into ``<state_dir>/hooks/`` that the host
-    merges into their own settings (adjusting the bootstrap path). Like the other
-    emitters, the kit stages; it never writes a live ``.claude/`` tree.
+    Four hooks: the **PreToolUse stance guard**, **SessionStart orientation**,
+    the **PostToolUse edit advisor**, and the **Stop-check advisor**. Building
+    stages the PreToolUse snippet, the full four-event
+    ``settings.template.json``, and the fill-table README into
+    ``<state_dir>/hooks/`` — the host merges them into their own settings
+    (adjusting the bootstrap path). Like the other emitters, the kit stages;
+    it never writes a live ``.claude/`` tree.
     """
     config = load_config(target)
     command = _hook_command(config)
     if not build:
         _emit("hooks:")
-        _emit("  pretooluse — stance guard: warns on an out-of-stance tool (advisory).")
+        _emit("  pretooluse   — stance guard: warns on an out-of-stance tool.")
+        _emit("  sessionstart — prints the mode-aware orientation injection.")
+        _emit("  postedit     — warns on generated-artifact / unbadged-doc edits.")
+        _emit("  stopcheck    — session-close advisories (log, questions, cadence).")
         _emit(f"  wiring command: {command}")
         return 0
     out = target / config.state_dir / "hooks" / "settings.snippet.json"
     atomic_write_text(out, settings_snippet(command))
+    tmpl = target / config.state_dir / "hooks" / "settings.template.json"
+    atomic_write_text(tmpl, full_settings_template(config))
+    atomic_write_text(
+        target / config.state_dir / "hooks" / "README.md",
+        hooks_fill_table(),
+    )
     _emit(f"hooks: wrote {out.relative_to(target)}")
-    _emit("hooks: merge its `hooks.PreToolUse` block into .claude/settings.json.")
+    _emit(f"hooks: wrote {tmpl.relative_to(target)} (all four events) + README.md")
+    _emit("hooks: merge the hook blocks into .claude/settings.json yourself.")
     return 0
 
 
-def cmd_hook(target: Path, event: str) -> int:
-    """Run a Claude Code hook check (currently: the ``pretooluse`` stance guard).
-
-    Reads the hook payload from stdin; for an out-of-stance tool it writes an
-    advisory warning to stderr. **Always returns 0** — the guard is advisory
-    (plan section 3b), so it never blocks a tool. Fails open on missing
-    state / stance / payload.
-    """
-    if event != "pretooluse":
-        return 0
+def _hook_pretooluse(target: Path) -> int:
+    """PreToolUse stance guard: warn on stderr for an out-of-stance tool."""
     tool_name = tool_from_payload(sys.stdin.read())
     if not tool_name:
         return 0
@@ -342,6 +353,63 @@ def cmd_hook(target: Path, event: str) -> int:
     if warning:
         sys.stderr.write(warning + "\n")
     return 0
+
+
+def _hook_sessionstart(target: Path) -> int:
+    """SessionStart: print the mode-aware orientation composition to stdout."""
+    config = load_config(target)
+    backend = JsonStateBackend(_state_path(target, config))
+    text = compose_orientation(target, config, backend)
+    if text:
+        sys.stdout.write(text)
+    return 0
+
+
+def _hook_postedit(target: Path) -> int:
+    """PostToolUse: warn on stderr for a generated-artifact / unbadged-doc edit."""
+    raw = sys.stdin.read()
+    try:
+        payload = json.loads(raw) if raw.strip() else {}
+    except json.JSONDecodeError:
+        return 0
+    tool_input = payload.get("tool_input") if isinstance(payload, dict) else None
+    file_path = tool_input.get("file_path") if isinstance(tool_input, dict) else None
+    if not isinstance(file_path, str) or not file_path:
+        return 0
+    warning = evaluate_edit(target, load_config(target), file_path)
+    if warning:
+        sys.stderr.write(warning + "\n")
+    return 0
+
+
+def _hook_stopcheck(target: Path) -> int:
+    """Stop: print the session-close advisory lines to stderr."""
+    config = load_config(target)
+    backend = JsonStateBackend(_state_path(target, config))
+    for line in evaluate_stop(target, config, backend):
+        sys.stderr.write(line + "\n")
+    return 0
+
+
+_HOOK_EVENTS = {
+    "pretooluse": _hook_pretooluse,
+    "sessionstart": _hook_sessionstart,
+    "postedit": _hook_postedit,
+    "stopcheck": _hook_stopcheck,
+}
+
+
+def cmd_hook(target: Path, event: str) -> int:
+    """Run a Claude Code hook entry point (all advisory — always exit 0).
+
+    ``pretooluse`` warns on an out-of-stance tool; ``sessionstart`` prints the
+    orientation injection to stdout; ``postedit`` reads the PostToolUse stdin
+    payload (``tool_input.file_path``) and warns on stderr; ``stopcheck``
+    prints session-close advisories to stderr. Every event fails open on a
+    missing / malformed payload, config, or state.
+    """
+    handler = _HOOK_EVENTS.get(event)
+    return handler(target) if handler else 0
 
 
 def _extra_check_findings(target: Path, config: Config) -> list:
@@ -709,6 +777,83 @@ def cmd_economy(
     return 2
 
 
+def cmd_adopt(target: Path, include_claude: bool) -> int:
+    """Adopt the workflow into ``target``: plant the docs, stage the packs."""
+    target.mkdir(parents=True, exist_ok=True)
+    if config_path(target).exists():
+        config = load_config(target)
+    else:
+        config = Config()
+        assert_safe_target(target, _kit_root())
+        save_config(target, config)
+    backend = JsonStateBackend(_state_path(target, config))
+    lines = adopt(
+        target,
+        config,
+        backend,
+        kit_root=_kit_root(),
+        include_claude=include_claude,
+    )
+    for line in lines:
+        _emit(f"adopt: {line}")
+    return 0
+
+
+def cmd_contextpack(target: Path, index: Path | None) -> int:
+    """Generate agent context packs from the project index (or a manifest)."""
+    config = load_config(target)
+    index_path = index if index is not None else target / "project.index.json"
+    if not index_path.exists():
+        _emit(f"contextpack: no index at {index_path} (run adopt first).")
+        return 1
+    try:
+        areas = load_pack_index(index_path)
+    except ValueError as exc:
+        _emit(f"contextpack: {exc}")
+        return 2
+    if not areas:
+        _emit("contextpack: index has no areas — nothing to generate.")
+        return 0
+    for path in generate_packs(target, config, areas):
+        rel = path.relative_to(target) if path.is_relative_to(target) else path
+        _emit(f"contextpack: wrote {rel}")
+    return 0
+
+
+def cmd_session_start(target: Path) -> int:
+    """Print this session's orientation injection (the SessionStart composition)."""
+    loaded = _require_state(target, "session-start")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    _emit(compose_orientation(target, config, backend))
+    return 0
+
+
+def cmd_session_close(target: Path) -> int:
+    """Run the session-close ritual: mine, index, advise, and report KPIs.
+
+    Mines the session logs into the reflection buffer, rebuilds the episodic
+    index, prints the stop-check advisories, and ends with the KPI footer —
+    the engine analog of the one-idea / previous-session-review enders.
+    """
+    loaded = _require_state(target, "session-close")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    rc = cmd_reflect(target, add=None, evidence="", tags="", mine=True)
+    if rc != 0:
+        return rc
+    index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME
+    entries = rebuild_episodic_index(target / config.sessions_dir, index_path)
+    _emit(f"session-close: indexed {len(entries)} session(s).")
+    for line in evaluate_stop(target, config, backend):
+        _emit(f"session-close: [advisory] {line}")
+    kpis = workflow_kpis(backend.data, target / config.sessions_dir)
+    _emit(kpi_footer(kpis))
+    return 0
+
+
 def cmd_ledger(
     target: Path,
     *,
@@ -823,9 +968,29 @@ def build_parser() -> argparse.ArgumentParser:
         ("render", "render content docs from filled slots"),
         ("triggers", "scan for fired triggers / mandatory questions"),
         ("metrics", "emit the router + workflow KPIs"),
+        ("session-start", "print this session's orientation injection"),
+        ("session-close", "mine reflections, index the session, report KPIs"),
     ):
         child = sub.add_parser(name, help=helptext)
         child.add_argument("--target", type=Path, default=Path.cwd())
+    adopt_p = sub.add_parser("adopt", help="plant the workflow docs + stage the packs")
+    adopt_p.add_argument(
+        "--include-claude",
+        action="store_true",
+        help="also write .claude/CLAUDE.md + .claude/settings.json (skip-if-exists)",
+    )
+    adopt_p.add_argument("--target", type=Path, default=Path.cwd())
+    contextpack = sub.add_parser(
+        "contextpack",
+        help="generate agent context packs from the index",
+    )
+    contextpack.add_argument(
+        "--index",
+        type=Path,
+        default=None,
+        help="index or manifest path (default: <target>/project.index.json)",
+    )
+    contextpack.add_argument("--target", type=Path, default=Path.cwd())
     answer = sub.add_parser("answer", help="record a user answer for a slot")
     answer.add_argument("slot")
     answer.add_argument("value", nargs="+", help="the answer text")
@@ -969,6 +1134,14 @@ def main(argv: list[str] | None = None) -> int:
                 apply=args.yes,
                 bands=args.bands,
             )
+        if args.command == "adopt":
+            return cmd_adopt(args.target, args.include_claude)
+        if args.command == "contextpack":
+            return cmd_contextpack(args.target, args.index)
+        if args.command == "session-start":
+            return cmd_session_start(args.target)
+        if args.command == "session-close":
+            return cmd_session_close(args.target)
         if args.command == "ledger":
             return cmd_ledger(
                 args.target,

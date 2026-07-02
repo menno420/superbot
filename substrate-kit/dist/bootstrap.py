@@ -4939,6 +4939,505 @@ def settings_snippet(command: str) -> str:
     }
     return json.dumps(snippet, indent=2) + "\n"
 
+# --- engine/hooks/session_start.py ---
+"""SessionStart orientation composer (plan section 5.B, Lane B7).
+
+The nervous system's *injection* point: when Claude Code starts a session, the
+``bootstrap hook sessionstart`` entry point prints the text this module
+composes, so the agent boots already knowing the project's mode, stance,
+learned lessons, fired triggers, and pending questions. The composition is
+**mode-aware** — ``orientation_depth`` (observe → minimal, guided → standard,
+active → full) decides which sections render and how hard they cap.
+
+Section order (the plan's fixed sequence): status header → stance briefing →
+user-style block → learned lessons (AFTER user-style) → trigger block →
+guided-practices line → economy-gauges advisory (over-cap only) → pending
+questions (quota view) → observe-mode workflow proposal.
+
+Every section is defensive: a failure inside one section drops that section,
+never the whole composition — orientation must never crash a session. This is
+the one place broad ``except Exception`` is correct by design (fail open, like
+the stance guard).
+"""
+
+
+
+
+# Depth "standard" caps the learned-lessons section at this many entries.
+_ORI_STANDARD_LESSON_CAP = 3
+# Depth "minimal" (observe) renders only these section numbers: the status
+# header (1), the trigger block as an advisory (5), and the workflow proposal
+# (9) — observe imposes nothing else.
+_ORI_MINIMAL_SECTIONS = frozenset({1, 5, 9})
+
+
+def _ori_status_header(state: dict[str, Any], config: Config) -> str:
+    """Render section 1 — the compact status header line block."""
+    project = str(state.get("project_id") or config.project_id)
+    return (
+        f"# Session orientation — {project}\n"
+        f"mode: {state.get('mode', '?')} · stage: {state.get('stage', '?')} · "
+        f"stance: {state.get('stance', '?')} · "
+        f"session: {int(state.get('session_count', 0))}"
+    )
+
+
+def _ori_stance(state: dict[str, Any]) -> str:
+    """Render section 2 — the active stance briefing ('' when no stance set)."""
+    stance = state.get("stance")
+    if not stance:
+        return ""
+    return stance_briefing(str(stance))
+
+
+def _ori_user_style(state: dict[str, Any]) -> str:
+    """Render section 3 — the owner_profile user-style block ('' when unfilled)."""
+    entry = state.get("slot_values", {}).get("owner_profile")
+    value = entry.get("value") if isinstance(entry, dict) else entry
+    text = str(value).strip() if value else ""
+    if not text:
+        return ""
+    return f"## How the owner works:\n\n> {text}"
+
+
+def _ori_lessons(root: Path, config: Config, depth: str) -> str:
+    """Render section 4 — learned lessons (standard caps at 3, full uncapped)."""
+    entries = load_reflections(root / config.state_dir / REFLECTIONS_FILENAME)
+    cap = _ORI_STANDARD_LESSON_CAP if depth == "standard" else len(entries)
+    return lessons_block(active_lessons(entries, cap))
+
+
+def _ori_triggers(root: Path, config: Config, state: dict[str, Any]) -> str:
+    """Render section 5 — the trigger block (mandate flag per the mode policy)."""
+    triggers = check_triggers(root, config, state)
+    questions = mandatory_questions(triggers)
+    return trigger_block(triggers, questions, mandate=triggers_mandate(state))
+
+
+def _ori_practices(state: dict[str, Any], config: Config) -> str:
+    """Render section 6 — the one-line guided-practices block ('' when empty)."""
+    practices = active_practices(state, dict(config.cadence or {}))
+    if not practices:
+        return ""
+    return "Active practices: " + ", ".join(practices)
+
+
+def _ori_gauges(root: Path, config: Config) -> str:
+    """Render section 7 — economy advisory listing ONLY over-cap gauges."""
+    over = [g for g in economy_gauges(root, config) if g.get("over")]
+    if not over:
+        return ""
+    lines = ["## Economy advisory — over-cap gauges", ""]
+    lines += [
+        f"- {g['name']} ({g['kind']}): {g['value']} words/items over cap {g['cap']}"
+        for g in over
+    ]
+    return "\n".join(lines)
+
+
+def _ori_questions(state: dict[str, Any]) -> str:
+    """Render section 8 — the quota-capped ask list with a '+N more' suffix."""
+    asks = session_questions(state)
+    if not asks:
+        return ""
+    lines = ["## Questions this session", ""]
+    lines += [
+        f"- {q['id']} ({q.get('priority', 'normal')}): {q['prompt']}" for q in asks
+    ]
+    extra = len(pending_questions(state)) - len(asks)
+    if extra > 0:
+        lines += ["", f"(+{extra} more later)"]
+    return "\n".join(lines)
+
+
+def _ori_proposal(state: dict[str, Any]) -> str:
+    """Render section 9 — observe mode's workflow proposal when it is due."""
+    if state.get("mode") != "observe" or not workflow_proposal_due(state):
+        return ""
+    return (
+        "## Proposed workflow\n\n"
+        "Observe mode has watched enough sessions to propose a tailored "
+        "workflow. If the pacing looks right, switch mode to adopt it: "
+        "`bootstrap mode guided` (one practice at a time) or "
+        "`bootstrap mode active` (the full workflow now). Observe imposes "
+        "nothing until you do."
+    )
+
+
+def _ori_safe(build: Any) -> str:
+    """Run one section builder, returning '' on any failure (fail open).
+
+    The one place broad ``except Exception`` is correct by design: a bad state
+    document or an unreadable file drops that single section — orientation
+    must never crash a session.
+    """
+    try:
+        return str(build()).strip()
+    except Exception:  # fail open — one bad section never breaks the whole
+        return ""
+
+
+def compose_orientation(root: Path, config: Config, backend: Any) -> str:
+    """Compose the mode-aware SessionStart orientation injection.
+
+    Assembles the nine plan sections in fixed order, gated by
+    ``orientation_depth``: ``minimal`` renders only the status header, the
+    trigger advisory, and the observe-mode proposal; ``standard`` renders all
+    sections but caps lessons at 3; ``full`` renders everything uncapped.
+    Every section builder runs inside its own guard — a bad state document or
+    an unreadable file drops that one section, never the whole composition
+    (orientation must never crash a session).
+    """
+    try:
+        state = dict(backend.data)
+    except Exception:  # fail open — orientation never crashes a session
+        state = {}
+    try:
+        depth = orientation_depth(state)
+    except Exception:  # fail open — fall back to the default depth
+        depth = "standard"
+    builders = (
+        (1, lambda: _ori_status_header(state, config)),
+        (2, lambda: _ori_stance(state)),
+        (3, lambda: _ori_user_style(state)),
+        (4, lambda: _ori_lessons(root, config, depth)),
+        (5, lambda: _ori_triggers(root, config, state)),
+        (6, lambda: _ori_practices(state, config)),
+        (7, lambda: _ori_gauges(root, config)),
+        (8, lambda: _ori_questions(state)),
+        (9, lambda: _ori_proposal(state)),
+    )
+    sections: list[str] = []
+    for number, build in builders:
+        if depth == "minimal" and number not in _ORI_MINIMAL_SECTIONS:
+            continue
+        text = _ori_safe(build)
+        if text:
+            sections.append(text)
+    if not sections:
+        return ""
+    return "\n\n".join(sections) + "\n"
+
+# --- engine/hooks/post_edit.py ---
+"""PostToolUse edit advisor (plan section 5.B, Lane B7).
+
+Runs after every Edit/Write tool call: the CLI's ``hook postedit`` entry point
+extracts the edited file path from the PostToolUse stdin payload and asks
+``evaluate_edit`` whether the edit deserves an advisory —
+
+- **generated artifact** — the file lives under ``<state_dir>/rendered`` or
+  ``<state_dir>/contextpacks``, or its head carries the ``NOT SOURCE OF
+  TRUTH`` marker: edit the template/index and re-render, not the artifact.
+- **missing Status badge** — a ``*.md`` under the docs root without a
+  ``> **Status:** `<token>``` badge in its first 12 lines (the same badge scan
+  ``check_docs`` runs, via the shared ``badge_token`` reader).
+
+Like every hook evaluator this **fails open**: absolute or root-relative paths
+both resolve, and an unreadable / missing file yields ``None`` — the advisor
+never gets in the way when it is unsure.
+"""
+
+
+
+
+_PE_MARKER = "NOT SOURCE OF TRUTH"
+_PE_HEAD_LINES = 12
+# <state_dir> subdirectories that hold build artifacts, never source.
+_PE_GENERATED_DIRS = ("rendered", "contextpacks")
+_PE_GENERATED_MSG = (
+    "generated artifact — edit the template/index and re-render, not this file"
+)
+_PE_BADGE_MSG = (
+    "missing Status badge — add `> **Status:** `<token>`` to its first 12 lines"
+)
+
+
+def _pe_resolve(root: Path, file_path: str) -> tuple[Path, Path | None]:
+    """Return ``(absolute path, root-relative path or None)`` for an edit path.
+
+    Accepts absolute and root-relative inputs; the relative half is ``None``
+    when the file lives outside ``root`` (nothing to classify against config
+    paths there).
+    """
+    path = Path(file_path)
+    if not path.is_absolute():
+        path = root / path
+    try:
+        rel = path.resolve().relative_to(root.resolve())
+    except (OSError, ValueError):
+        rel = None
+    return path, rel
+
+
+def _pe_head(path: Path) -> str:
+    """Return the file's first 12 lines ('' when unreadable — fail open)."""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return ""
+    return "\n".join(lines[:_PE_HEAD_LINES])
+
+
+def _pe_is_generated(config: Config, rel: Path | None, head: str) -> bool:
+    """True when the edited file is a build artifact (by path or by marker)."""
+    if _PE_MARKER in head:
+        return True
+    if rel is None:
+        return False
+    state_dir = Path(config.state_dir)
+    return any(rel.is_relative_to(state_dir / sub) for sub in _PE_GENERATED_DIRS)
+
+
+def evaluate_edit(root: Path, config: Config, file_path: str) -> str | None:
+    """Return the advisory warning for one edited file, or None.
+
+    Warns on a generated artifact (path under ``<state_dir>/rendered`` /
+    ``<state_dir>/contextpacks``, or a ``NOT SOURCE OF TRUTH`` head marker)
+    and on a docs-root ``*.md`` lacking a Status badge. Tolerant of absolute
+    or root-relative ``file_path`` and of unreadable / missing files (None).
+    """
+    try:
+        path, rel = _pe_resolve(root, file_path)
+        if not path.is_file():
+            return None
+        name = rel.as_posix() if rel is not None else path.as_posix()
+        if _pe_is_generated(config, rel, _pe_head(path)):
+            return f"{name}: {_PE_GENERATED_MSG}"
+        if (
+            rel is not None
+            and path.suffix == ".md"
+            and rel.is_relative_to(Path(config.docs_root))
+            and badge_token(path) is None
+        ):
+            return f"{name}: {_PE_BADGE_MSG}"
+        return None
+    except Exception:  # fail open — the advisor never blocks an edit
+        return None
+
+# --- engine/hooks/stop_check.py ---
+"""Stop-hook session-close advisor (plan section 5.B, Lane B7).
+
+Runs when a Claude Code session stops: the CLI's ``hook stopcheck`` entry
+point prints the advisory lines ``evaluate_stop`` returns, reminding the agent
+what the session ritual still owes —
+
+- the session log is missing, or exists but lacks required markers
+  (``latest_session_log`` + ``check_log`` with ``config.session_markers``);
+- escalated blocking questions are still open (``state["open_questions"]``);
+- the compaction cadence window has elapsed (``compaction_due``);
+- the reflection buffer has not been mined today
+  (``reflection_buffer.last_mined`` vs today's ISO date).
+
+Returns ``[]`` when all clean. Advisory only, and it **fails open**: every
+check runs inside its own guard, so a bad state document or an unreadable log
+drops that one advisory rather than crashing the stop hook.
+"""
+
+
+
+
+_STOP_UNMINED_MSG = "reflections unmined this session — run bootstrap reflect --mine"
+
+
+def _stop_safe(check: Any) -> list[str]:
+    """Run one advisory check, returning [] on any failure (fail open).
+
+    Each check is guarded on its own so one bad input never suppresses the
+    other advisories — the stop hook is advisory by contract.
+    """
+    try:
+        return list(check())
+    except Exception:  # fail open — one bad check drops only itself
+        return []
+
+
+def _stop_state(backend: Any) -> dict[str, Any]:
+    """Return the state document ({} when the backend is unusable — fail open)."""
+    try:
+        return dict(backend.data)
+    except Exception:  # fail open — a broken backend yields no state advisories
+        return {}
+
+
+def _stop_log(root: Path, config: Config) -> list[str]:
+    """Advise when the session log is missing or lacks required markers."""
+    log = latest_session_log(root / config.sessions_dir)
+    if log is None:
+        return [
+            f"no session log found under {config.sessions_dir}/ — "
+            "write one before ending the session",
+        ]
+    missing = check_log(log, config.session_markers)
+    if missing:
+        return [f"session log {log.name} is missing: {', '.join(missing)}"]
+    return []
+
+
+def _stop_questions(state: dict[str, Any]) -> list[str]:
+    """Advise when escalated blocking questions are still open."""
+    open_questions = [str(q) for q in state.get("open_questions", [])]
+    if not open_questions:
+        return []
+    listed = ", ".join(open_questions)
+    return [f"{len(open_questions)} blocking question(s) open: {listed}"]
+
+
+def _stop_compaction(state: dict[str, Any], config: Config) -> list[str]:
+    """Advise when the compaction cadence window has elapsed."""
+    if compaction_due(state, dict(config.cadence or {})):
+        return ["compaction due — write the State Delta snapshot (bootstrap maintain)"]
+    return []
+
+
+def _stop_reflections(state: dict[str, Any]) -> list[str]:
+    """Advise when the reflection buffer has not been mined today."""
+    buffer = state.get("reflection_buffer")
+    last_mined = buffer.get("last_mined") if isinstance(buffer, dict) else None
+    if last_mined == date.today().isoformat():
+        return []
+    return [_STOP_UNMINED_MSG]
+
+
+def evaluate_stop(root: Path, config: Config, backend: Any) -> list[str]:
+    """Return the session-close advisory lines ([] when all clean).
+
+    Four checks in fixed order: session log, open blocking questions,
+    compaction cadence, reflection mining. Each runs inside its own guard so
+    one failing check never suppresses the others — the stop hook is advisory
+    and fails open by contract.
+    """
+    state = _stop_state(backend)
+    checks = (
+        lambda: _stop_log(root, config),
+        lambda: _stop_questions(state),
+        lambda: _stop_compaction(state, config),
+        lambda: _stop_reflections(state),
+    )
+    advisories: list[str] = []
+    for check in checks:
+        advisories.extend(_stop_safe(check))
+    return advisories
+
+# --- engine/hooks/settings.py ---
+"""Hook settings template + customization contract (plan section 5.B, Lane B7).
+
+The staging half of the hook layer (HOOK-2): ``full_settings_template`` emits
+the complete ``.claude`` ``settings.template.json`` wiring all four hook
+events — PreToolUse (stance guard), SessionStart (orientation), PostToolUse
+(edit advisor), Stop (session-close advisor) — each to
+``<interpreter> bootstrap.py hook <event>``, the same command shape the CLI's
+``_hook_command`` builds. ``hooks_fill_table`` emits the markdown
+customization contract a host reads before merging: which config fields must
+match their repo, and the standing rule that the kit *stages* hook settings —
+it never writes a live ``.claude/`` tree itself.
+"""
+
+
+
+
+# (settings.json event key, bootstrap hook event, tool matcher or None).
+_SET_EVENTS: tuple[tuple[str, str, str | None], ...] = (
+    ("PreToolUse", "pretooluse", "*"),
+    ("SessionStart", "sessionstart", None),
+    ("PostToolUse", "postedit", "Edit|Write|NotebookEdit"),
+    ("Stop", "stopcheck", None),
+)
+
+_SET_FILL_ROWS: tuple[tuple[str, str], ...] = (
+    (
+        "`interpreter`",
+        "the Python that runs the kit itself — every hook command below "
+        "starts with it; set it to an interpreter available on your PATH",
+    ),
+    (
+        "`interpreter_for_checks`",
+        "your *project's* verification interpreter (the version your CI "
+        "pins, e.g. `python3.10`) — kept separate from `interpreter` on "
+        "purpose",
+    ),
+    (
+        "`bootstrap.py` path",
+        "each hook command assumes `bootstrap.py` sits at your repo root; "
+        "rewrite the path inside every command if it lives elsewhere",
+    ),
+    (
+        "`state_dir`",
+        "where kit state + staged artifacts live (default `.substrate`) — "
+        "the post-edit generated-artifact warning keys off it",
+    ),
+    (
+        "`docs_root`",
+        "your documentation root (default `docs`) — the post-edit badge "
+        "warning and the SessionStart trigger scan key off it",
+    ),
+    (
+        "`sessions_dir`",
+        "where per-session logs live (default `.sessions`) — the Stop-hook "
+        "session-log advisory keys off it",
+    ),
+    (
+        "cadence knobs",
+        "`cadence.*` in `substrate.config.json` (`compaction_sessions`, "
+        "`reconciliation_sessions`, `staleness_days`, "
+        "`critical_slot_grace_sessions`, `guided_practice_sessions`) drive "
+        "the SessionStart triggers and Stop-hook advisories",
+    ),
+)
+
+
+def _set_command(config: Config, event: str) -> str:
+    """Return the shell command Claude Code runs for one hook event."""
+    return f"{config.interpreter} bootstrap.py hook {event}"
+
+
+def full_settings_template(config: Config) -> str:
+    """Return the complete ``settings.template.json`` wiring all four hooks.
+
+    JSON text (2-space indent) a host merges into ``.claude/settings.json``:
+    PreToolUse (matcher ``*``), SessionStart, PostToolUse (matcher
+    ``Edit|Write|NotebookEdit``), and Stop, each running
+    ``<interpreter> bootstrap.py hook <event>``. Matcher-less events omit the
+    ``matcher`` key entirely (they apply unconditionally).
+    """
+    hooks: dict[str, list[dict]] = {}
+    for settings_event, cli_event, matcher in _SET_EVENTS:
+        entry: dict = {}
+        if matcher is not None:
+            entry["matcher"] = matcher
+        entry["hooks"] = [
+            {"type": "command", "command": _set_command(config, cli_event)},
+        ]
+        hooks[settings_event] = [entry]
+    return json.dumps({"hooks": hooks}, indent=2) + "\n"
+
+
+def hooks_fill_table() -> str:
+    """Return the markdown customization contract for the settings template.
+
+    One ``field | what must match your repo`` row per knob a host must verify
+    before installing, plus the install instruction: merge the staged template
+    into ``.claude/settings.json`` yourself — the kit stages hook settings, it
+    never writes a live ``.claude/`` tree.
+    """
+    lines = [
+        "# Hook settings — customization contract",
+        "",
+        "The kit **stages** `settings.template.json`; it never writes your",
+        "`.claude/` tree. Install by merging the template's `hooks` block into",
+        "your repo's `.claude/settings.json` yourself, after checking every",
+        "row below against your repo.",
+        "",
+        "| field | what must match your repo |",
+        "| --- | --- |",
+    ]
+    lines += [f"| {field} | {note} |" for field, note in _SET_FILL_ROWS]
+    lines += [
+        "",
+        "All four hooks are advisory and fail open: they always exit 0 and",
+        "never block a tool, an edit, or a session stop.",
+    ]
+    return "\n".join(lines) + "\n"
+
 # --- engine/render.py ---
 """Render the project's content docs from templates + filled interview slots.
 
@@ -4977,6 +5476,407 @@ def load_templates() -> dict[str, str]:
         return dict(embedded)
     root = Path(__file__).resolve().parent.parent / "templates"
     return {p.name: p.read_text(encoding="utf-8") for p in sorted(root.glob("*"))}
+
+# --- engine/contextpack.py ---
+"""AgentContextPack generator — index-or-manifest input (Lane B8, spec 2.10).
+
+Generates per-area *context packs* — the curated "what an agent must know to
+work in this area" bundles — from a project index. Two input forms are
+accepted (design-spec 2.10: the generator meets hosts where they are):
+
+  1. the kit's own ``project.index.json`` (``{"areas": [...]}``, planted by
+     the adopt flow as a skeleton), and
+  2. a manifest snapshot (``{"subsystems": [...]}``) as produced by a host's
+     existing subsystem manifest — mapped onto the same area shape with
+     sensible fallbacks.
+
+Each pack is written under ``<state_dir>/contextpacks/`` and opens with the
+``NOT SOURCE OF TRUTH`` marker: packs are build artifacts — regenerate them
+from the index, never hand-edit them. Pure stdlib; every write goes through
+``atomic_write_text``.
+"""
+
+
+
+
+_PACK_MARKER = (
+    "<!-- NOT SOURCE OF TRUTH — generated by substrate-kit; "
+    "regenerate, do not edit. -->"
+)
+
+# The list-valued fields of the canonical area shape, in emit order.
+_PACK_LIST_KEYS = (
+    "binding_docs",
+    "source_roots",
+    "do_not_create",
+    "gates",
+    "verification",
+)
+
+_PACK_SECTION_TITLES = {
+    "binding_docs": "Binding docs",
+    "source_roots": "Source roots",
+    "do_not_create": "Do-not-create",
+    "gates": "Gates",
+    "verification": "Verification",
+}
+
+_PACK_SLUG_STRIP_RE = re.compile(r"[^a-z0-9._-]")
+_PACK_SLUG_SEP_RE = re.compile(r"[\s/\\]+")
+
+
+def _pack_slug(name: str) -> str:
+    """Slugify an area name for its pack filename (spaces/slashes -> dashes)."""
+    slug = _PACK_SLUG_SEP_RE.sub("-", name.strip().lower())
+    slug = _PACK_SLUG_STRIP_RE.sub("", slug)
+    slug = re.sub(r"-{2,}", "-", slug).strip("-")
+    return slug or "area"
+
+
+def _pack_as_list(value: object) -> list[str]:
+    """Coerce an index field to a list of strings (unknown/missing -> [])."""
+    if isinstance(value, str):
+        return [value] if value.strip() else []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item).strip()]
+    return []
+
+
+def _pack_area(entry: dict) -> dict:
+    """Normalise one raw index entry onto the canonical area shape."""
+    name = str(entry.get("name") or "").strip() or "unnamed-area"
+    folio = entry.get("folio")
+    area: dict = {
+        "name": name,
+        "folio": str(folio).strip() if isinstance(folio, str) else "",
+    }
+    for key in _PACK_LIST_KEYS:
+        area[key] = _pack_as_list(entry.get(key))
+    return area
+
+
+def _pack_from_subsystem(entry: dict) -> dict:
+    """Map a manifest-snapshot subsystem entry onto the area shape."""
+    mapped = dict(entry)
+    if not mapped.get("binding_docs"):
+        mapped["binding_docs"] = mapped.get("docs")
+    if not mapped.get("source_roots"):
+        mapped["source_roots"] = mapped.get("roots")
+    return _pack_area(mapped)
+
+
+def load_pack_index(path: Path) -> list[dict]:
+    """Load a pack index from ``path``, accepting both supported forms.
+
+    Detects the form by top-level key: ``{"areas": [...]}`` is the kit's own
+    ``project.index.json``; ``{"subsystems": [...]}`` is a host manifest
+    snapshot (``docs``/``roots`` map onto ``binding_docs``/``source_roots``).
+    Unknown or missing per-entry keys become empty lists. Raises ``ValueError``
+    when the document is neither form (a wrong file, not a quiet no-op).
+    """
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(data, dict) and isinstance(data.get("areas"), list):
+        return [_pack_area(e) for e in data["areas"] if isinstance(e, dict)]
+    if isinstance(data, dict) and isinstance(data.get("subsystems"), list):
+        return [
+            _pack_from_subsystem(e) for e in data["subsystems"] if isinstance(e, dict)
+        ]
+    msg = f"{path.name}: expected top-level 'areas' or 'subsystems' list"
+    raise ValueError(msg)
+
+
+def _pack_section(title: str, items: list[str]) -> list[str]:
+    """Render one pack section as markdown lines (empty section -> no lines)."""
+    if not items:
+        return []
+    return [f"## {title}", "", *(f"- {item}" for item in items), ""]
+
+
+def _pack_body(root: Path, area: dict) -> str:
+    """Compose one pack's full markdown text from a normalised area."""
+    lines = [_PACK_MARKER, "", f"# {area['name']} — agent context pack", ""]
+    lines += _pack_section("Folio", [area["folio"]] if area["folio"] else [])
+    for key in _PACK_LIST_KEYS:
+        items = area[key]
+        if key == "source_roots":
+            items = [
+                entry if (root / entry).exists() else f"{entry} (MISSING)"
+                for entry in items
+            ]
+        lines += _pack_section(_PACK_SECTION_TITLES[key], items)
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def generate_packs(root: Path, config: Config, index: list[dict]) -> list[Path]:
+    """Write one context pack per index area; return the written paths.
+
+    Packs land in ``<root>/<state_dir>/contextpacks/<slug>.context.md``.
+    ``source_roots`` entries are existence-checked against ``root`` and
+    suffixed `` (MISSING)`` when absent, so a stale index is visible in the
+    pack instead of silently misleading the agent reading it.
+    """
+    out_dir = root / config.state_dir / "contextpacks"
+    written: list[Path] = []
+    for entry in index:
+        area = _pack_area(entry)
+        path = out_dir / f"{_pack_slug(area['name'])}.context.md"
+        atomic_write_text(path, _pack_body(root, area))
+        written.append(path)
+    return written
+
+
+def pack_index_skeleton(project_name: str) -> str:
+    """Return the planted ``project.index.json`` skeleton (JSON text).
+
+    One example area with every field present-but-empty, plus a ``_comment``
+    explaining how each field feeds the AgentContextPack generator
+    (index-or-manifest input, design-spec 2.10).
+    """
+    skeleton = {
+        "_comment": (
+            "AgentContextPack index (design-spec 2.10). Each `areas` entry "
+            "feeds one generated <state_dir>/contextpacks/<name>.context.md: "
+            "`name` (the area; slugified into the pack filename), `folio` "
+            "(the canonical entry-point doc for the area), `binding_docs` "
+            "(authoritative contracts to read first), `source_roots` (key "
+            "files/dirs; existence-checked at generation, missing ones "
+            "flagged), `do_not_create` (existing systems an agent must not "
+            "duplicate), `gates` (currently active expansion conditions), "
+            "`verification` (commands to run before pushing). The generator "
+            'also accepts a manifest snapshot ({"subsystems": [...]}) '
+            "instead of this file."
+        ),
+        "project": project_name,
+        "areas": [
+            {
+                "name": "example-area",
+                "folio": "",
+                "binding_docs": [],
+                "source_roots": [],
+                "do_not_create": [],
+                "gates": [],
+                "verification": [],
+            },
+        ],
+    }
+    return json.dumps(skeleton, indent=2) + "\n"
+
+# --- engine/adopt.py ---
+"""One-step adopt flow — plant the workflow docs, stage the packs (Lane B8).
+
+``adopt`` turns a bare host repo into a substrate-governed one in a single
+idempotent pass: it renders every content template with the currently filled
+interview slots and *plants* the live docs (constitution, contracts, ledgers,
+session scaffolding) — **skip-if-exists, never clobbering** a file the host
+already owns — then *stages* the ``.claude`` material (working agreement,
+skill pack, persona pack, hook wiring, CI example) under ``<state_dir>`` for
+the host to install deliberately. Only an explicit ``include_claude=True``
+writes a live ``.claude/`` tree, and even then only files that are absent
+(the host opt-in stays non-destructive).
+
+Unfilled ``${slot}`` placeholders survive rendering visibly, so a
+half-onboarded adoption shows its gaps instead of going silently blank. The
+guardrail runs first: the kit refuses to adopt into its own tree. Pure
+stdlib; every write goes through ``atomic_write_text``.
+"""
+
+
+
+
+# Template filename -> planted relpath. CLAUDE.md.tmpl is deliberately absent:
+# it is STAGED under <state_dir>/claude/ (the kit never live-writes .claude/
+# without the explicit include_claude opt-in).
+ADOPT_PLAN: list[tuple[str, str]] = [
+    ("CONSTITUTION.md.tmpl", "CONSTITUTION.md"),
+    ("decisions.md.tmpl", "docs/decisions.md"),
+    ("architecture.md.tmpl", "docs/architecture.md"),
+    ("ownership.md.tmpl", "docs/ownership.md"),
+    ("runtime_contracts.md.tmpl", "docs/runtime_contracts.md"),
+    ("repo-navigation-map.md.tmpl", "docs/repo-navigation-map.md"),
+    ("helper-policy.md.tmpl", "docs/helper-policy.md"),
+    ("collaboration-model.md.tmpl", "docs/collaboration-model.md"),
+    ("ai-project-workflow.md.tmpl", "docs/ai-project-workflow.md"),
+    ("owner-profile.md.tmpl", "docs/owner-profile.md"),
+    ("AGENT_ORIENTATION.md.tmpl", "docs/AGENT_ORIENTATION.md"),
+    ("current-state.md.tmpl", "docs/current-state.md"),
+    ("question-router.md.tmpl", "docs/question-router.md"),
+    ("ideas-README.md.tmpl", "docs/ideas/README.md"),
+    ("session-journal.md.tmpl", ".session-journal.md"),
+]
+
+_ADOPT_NEXT_STEPS = (
+    "next steps: run `bootstrap ask` to see the pending interview questions, "
+    "answer them so the docs re-render filled (`bootstrap render`), and set "
+    "the integration mode with `bootstrap mode <observe|guided|active>`."
+)
+
+
+def _adopt_dest(relpath: str, config: Config) -> str:
+    """Remap the plan's ``docs/`` prefix onto the host's configured docs root."""
+    prefix = "docs/"
+    if relpath.startswith(prefix) and config.docs_root != "docs":
+        return f"{config.docs_root}/{relpath[len(prefix):]}"
+    return relpath
+
+
+def _adopt_plant(path: Path, relpath: str, text: str, report: list[str]) -> None:
+    """Write ``text`` at ``path`` unless it exists; report planted/kept."""
+    if path.exists():
+        report.append(f"kept: {relpath}")
+        return
+    atomic_write_text(path, text)
+    report.append(f"planted: {relpath}")
+
+
+def _adopt_stage(path: Path, relpath: str, text: str, report: list[str]) -> None:
+    """Write a staged (generated, regenerable) artifact and report it."""
+    atomic_write_text(path, text)
+    report.append(f"staged: {relpath}")
+
+
+def _adopt_sessions_readme(markers: list[dict[str, str]]) -> str:
+    """Compose the one-paragraph ``.sessions/README.md`` (born-red convention)."""
+    labels = ", ".join(m.get("label", "") for m in markers if m.get("label"))
+    labels = labels or "(no markers configured)"
+    return (
+        "# Session logs\n\n"
+        "Per-session logs live here as `<date>-<slug>.md`, newest first. "
+        "Create the log as the session's FIRST commit with a born-red status "
+        "(`> **Status:** `in-progress``) so in-flight work is visible to "
+        "parallel sessions, then flip it to `complete` as the deliberate LAST "
+        "step once the close-out is written — a half-done session never reads "
+        "as finished. Before it counts as complete, a log must carry these "
+        f"markers: {labels}.\n"
+    )
+
+
+def ci_snippet() -> str:
+    """Return the staged, fully-commented GitHub-Actions-style CI example.
+
+    Everything is commented out: the host copies it into
+    ``.github/workflows/`` and uncomments/adjusts deliberately — the kit never
+    installs live CI.
+    """
+    return (
+        "# Example GitHub-Actions-style quality gate for a substrate-kit host.\n"
+        "# Copy into .github/workflows/, uncomment, and adjust the interpreter\n"
+        "# and bootstrap path to match your repo.\n"
+        "#\n"
+        "# `bootstrap.py check --strict` runs every kit checker in one pass:\n"
+        "# docs hygiene (badges / links / reachability), session-log markers,\n"
+        "# namespace shadowing, seam authority, orientation budget, and the\n"
+        "# decision ledger.\n"
+        "#\n"
+        "# name: substrate-quality\n"
+        "# on:\n"
+        "#   pull_request:\n"
+        "#   push:\n"
+        "#     branches: [main]\n"
+        "# jobs:\n"
+        "#   substrate-check:\n"
+        "#     runs-on: ubuntu-latest\n"
+        "#     steps:\n"
+        "#       - uses: actions/checkout@v4\n"
+        "#       - name: substrate checks\n"
+        "#         run: python3 bootstrap.py check --strict\n"
+    )
+
+
+def adopt(
+    root: Path,
+    config: Config,
+    backend: Any,
+    *,
+    kit_root: Path,
+    include_claude: bool = False,
+) -> list[str]:
+    """Adopt the substrate workflow into ``root``; return the report lines.
+
+    Steps (all idempotent): (0) guardrail — refuse the kit's own tree;
+    (1) plant every ``ADOPT_PLAN`` doc rendered from the current slots,
+    skip-if-exists; (2) plant ``<sessions_dir>/README.md``; (3) plant the
+    ``project.index.json`` skeleton; (4) stage the ``.claude`` material
+    (CLAUDE.md, skills, personas, hook settings + fill-table README) under
+    ``<state_dir>``; (5) stage the CI example; (6) with ``include_claude``,
+    additionally write ``.claude/CLAUDE.md`` + ``.claude/settings.json``
+    if absent; (7) close with the next-steps line.
+    """
+    assert_safe_target(root, kit_root)
+    templates = load_templates()
+    context = build_context(backend.data)
+    report: list[str] = []
+
+    # (1) Plant the live docs — never clobber; unfilled ${slots} stay visible.
+    for template_name, plan_rel in ADOPT_PLAN:
+        rel = _adopt_dest(plan_rel, config)
+        text = render(templates[template_name], context)
+        if template_name == "decisions.md.tmpl":
+            # The example D-0001 records THIS adoption — stamp the real date so
+            # the planted ledger is check_ledger-clean from its first commit.
+            text = text.replace("- date:\n", f"- date: {date.today().isoformat()}\n")
+        _adopt_plant(root / rel, rel, text, report)
+
+    # (2) Session-log scaffolding.
+    sessions_rel = f"{config.sessions_dir}/README.md"
+    readme = _adopt_sessions_readme(config.session_markers)
+    _adopt_plant(root / config.sessions_dir / "README.md", sessions_rel, readme, report)
+
+    # (3) The context-pack index skeleton.
+    project_name = context.get("project_name") or root.name
+    skeleton = pack_index_skeleton(project_name)
+    _adopt_plant(root / "project.index.json", "project.index.json", skeleton, report)
+
+    # (4) Stage the .claude material under <state_dir> (regenerated each run).
+    state_base = root / config.state_dir
+    claude_doc = render(templates["CLAUDE.md.tmpl"], context)
+    claude_rel = f"{config.state_dir}/claude/CLAUDE.md"
+    _adopt_stage(state_base / "claude" / "CLAUDE.md", claude_rel, claude_doc, report)
+    for skill in SKILLS:
+        rel = skill_relpath(skill)
+        body = render(skill["body"], context)
+        document = skill_document(skill, body)
+        _adopt_stage(state_base / rel, f"{config.state_dir}/{rel}", document, report)
+    for agent in AGENTS:
+        rel = agent_relpath(agent)
+        body = render(agent["body"], context)
+        document = agent_document(agent, body)
+        _adopt_stage(state_base / rel, f"{config.state_dir}/{rel}", document, report)
+    settings_text = full_settings_template(config)
+    settings_rel = f"{config.state_dir}/hooks/settings.template.json"
+    settings_path = state_base / "hooks" / "settings.template.json"
+    _adopt_stage(settings_path, settings_rel, settings_text, report)
+    hooks_readme_rel = f"{config.state_dir}/hooks/README.md"
+    hooks_readme = hooks_fill_table()
+    _adopt_stage(
+        state_base / "hooks" / "README.md",
+        hooks_readme_rel,
+        hooks_readme,
+        report,
+    )
+
+    # (5) Stage the CI example.
+    ci_rel = f"{config.state_dir}/ci/quality.yml.example"
+    _adopt_stage(
+        state_base / "ci" / "quality.yml.example",
+        ci_rel,
+        ci_snippet(),
+        report,
+    )
+
+    # (6) Explicit host opt-in: live .claude/ (still never overwrites).
+    if include_claude:
+        claude_dir = root / ".claude"
+        _adopt_plant(claude_dir / "CLAUDE.md", ".claude/CLAUDE.md", claude_doc, report)
+        _adopt_plant(
+            claude_dir / "settings.json",
+            ".claude/settings.json",
+            settings_text,
+            report,
+        )
+
+    # (7) Point the adopter at the interview loop.
+    report.append(_ADOPT_NEXT_STEPS)
+    return report
 
 # --- engine/cli.py ---
 """The substrate-kit bootstrap command line.
@@ -5218,37 +6118,42 @@ def _hook_command(config: Config) -> str:
 
 
 def cmd_hooks(target: Path, build: bool) -> int:
-    """Show the hook wiring, or ``--build`` the settings snippet into staging.
+    """Show the hook wiring, or ``--build`` the settings files into staging.
 
-    The only hook today is the **PreToolUse stance guard**. Building stages a
-    ``.claude/settings.json`` snippet into ``<state_dir>/hooks/`` that the host
-    merges into their own settings (adjusting the bootstrap path). Like the other
-    emitters, the kit stages; it never writes a live ``.claude/`` tree.
+    Four hooks: the **PreToolUse stance guard**, **SessionStart orientation**,
+    the **PostToolUse edit advisor**, and the **Stop-check advisor**. Building
+    stages the PreToolUse snippet, the full four-event
+    ``settings.template.json``, and the fill-table README into
+    ``<state_dir>/hooks/`` — the host merges them into their own settings
+    (adjusting the bootstrap path). Like the other emitters, the kit stages;
+    it never writes a live ``.claude/`` tree.
     """
     config = load_config(target)
     command = _hook_command(config)
     if not build:
         _emit("hooks:")
-        _emit("  pretooluse — stance guard: warns on an out-of-stance tool (advisory).")
+        _emit("  pretooluse   — stance guard: warns on an out-of-stance tool.")
+        _emit("  sessionstart — prints the mode-aware orientation injection.")
+        _emit("  postedit     — warns on generated-artifact / unbadged-doc edits.")
+        _emit("  stopcheck    — session-close advisories (log, questions, cadence).")
         _emit(f"  wiring command: {command}")
         return 0
     out = target / config.state_dir / "hooks" / "settings.snippet.json"
     atomic_write_text(out, settings_snippet(command))
+    tmpl = target / config.state_dir / "hooks" / "settings.template.json"
+    atomic_write_text(tmpl, full_settings_template(config))
+    atomic_write_text(
+        target / config.state_dir / "hooks" / "README.md",
+        hooks_fill_table(),
+    )
     _emit(f"hooks: wrote {out.relative_to(target)}")
-    _emit("hooks: merge its `hooks.PreToolUse` block into .claude/settings.json.")
+    _emit(f"hooks: wrote {tmpl.relative_to(target)} (all four events) + README.md")
+    _emit("hooks: merge the hook blocks into .claude/settings.json yourself.")
     return 0
 
 
-def cmd_hook(target: Path, event: str) -> int:
-    """Run a Claude Code hook check (currently: the ``pretooluse`` stance guard).
-
-    Reads the hook payload from stdin; for an out-of-stance tool it writes an
-    advisory warning to stderr. **Always returns 0** — the guard is advisory
-    (plan section 3b), so it never blocks a tool. Fails open on missing
-    state / stance / payload.
-    """
-    if event != "pretooluse":
-        return 0
+def _hook_pretooluse(target: Path) -> int:
+    """PreToolUse stance guard: warn on stderr for an out-of-stance tool."""
     tool_name = tool_from_payload(sys.stdin.read())
     if not tool_name:
         return 0
@@ -5261,6 +6166,63 @@ def cmd_hook(target: Path, event: str) -> int:
     if warning:
         sys.stderr.write(warning + "\n")
     return 0
+
+
+def _hook_sessionstart(target: Path) -> int:
+    """SessionStart: print the mode-aware orientation composition to stdout."""
+    config = load_config(target)
+    backend = JsonStateBackend(_state_path(target, config))
+    text = compose_orientation(target, config, backend)
+    if text:
+        sys.stdout.write(text)
+    return 0
+
+
+def _hook_postedit(target: Path) -> int:
+    """PostToolUse: warn on stderr for a generated-artifact / unbadged-doc edit."""
+    raw = sys.stdin.read()
+    try:
+        payload = json.loads(raw) if raw.strip() else {}
+    except json.JSONDecodeError:
+        return 0
+    tool_input = payload.get("tool_input") if isinstance(payload, dict) else None
+    file_path = tool_input.get("file_path") if isinstance(tool_input, dict) else None
+    if not isinstance(file_path, str) or not file_path:
+        return 0
+    warning = evaluate_edit(target, load_config(target), file_path)
+    if warning:
+        sys.stderr.write(warning + "\n")
+    return 0
+
+
+def _hook_stopcheck(target: Path) -> int:
+    """Stop: print the session-close advisory lines to stderr."""
+    config = load_config(target)
+    backend = JsonStateBackend(_state_path(target, config))
+    for line in evaluate_stop(target, config, backend):
+        sys.stderr.write(line + "\n")
+    return 0
+
+
+_HOOK_EVENTS = {
+    "pretooluse": _hook_pretooluse,
+    "sessionstart": _hook_sessionstart,
+    "postedit": _hook_postedit,
+    "stopcheck": _hook_stopcheck,
+}
+
+
+def cmd_hook(target: Path, event: str) -> int:
+    """Run a Claude Code hook entry point (all advisory — always exit 0).
+
+    ``pretooluse`` warns on an out-of-stance tool; ``sessionstart`` prints the
+    orientation injection to stdout; ``postedit`` reads the PostToolUse stdin
+    payload (``tool_input.file_path``) and warns on stderr; ``stopcheck``
+    prints session-close advisories to stderr. Every event fails open on a
+    missing / malformed payload, config, or state.
+    """
+    handler = _HOOK_EVENTS.get(event)
+    return handler(target) if handler else 0
 
 
 def _extra_check_findings(target: Path, config: Config) -> list:
@@ -5628,6 +6590,83 @@ def cmd_economy(
     return 2
 
 
+def cmd_adopt(target: Path, include_claude: bool) -> int:
+    """Adopt the workflow into ``target``: plant the docs, stage the packs."""
+    target.mkdir(parents=True, exist_ok=True)
+    if config_path(target).exists():
+        config = load_config(target)
+    else:
+        config = Config()
+        assert_safe_target(target, _kit_root())
+        save_config(target, config)
+    backend = JsonStateBackend(_state_path(target, config))
+    lines = adopt(
+        target,
+        config,
+        backend,
+        kit_root=_kit_root(),
+        include_claude=include_claude,
+    )
+    for line in lines:
+        _emit(f"adopt: {line}")
+    return 0
+
+
+def cmd_contextpack(target: Path, index: Path | None) -> int:
+    """Generate agent context packs from the project index (or a manifest)."""
+    config = load_config(target)
+    index_path = index if index is not None else target / "project.index.json"
+    if not index_path.exists():
+        _emit(f"contextpack: no index at {index_path} (run adopt first).")
+        return 1
+    try:
+        areas = load_pack_index(index_path)
+    except ValueError as exc:
+        _emit(f"contextpack: {exc}")
+        return 2
+    if not areas:
+        _emit("contextpack: index has no areas — nothing to generate.")
+        return 0
+    for path in generate_packs(target, config, areas):
+        rel = path.relative_to(target) if path.is_relative_to(target) else path
+        _emit(f"contextpack: wrote {rel}")
+    return 0
+
+
+def cmd_session_start(target: Path) -> int:
+    """Print this session's orientation injection (the SessionStart composition)."""
+    loaded = _require_state(target, "session-start")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    _emit(compose_orientation(target, config, backend))
+    return 0
+
+
+def cmd_session_close(target: Path) -> int:
+    """Run the session-close ritual: mine, index, advise, and report KPIs.
+
+    Mines the session logs into the reflection buffer, rebuilds the episodic
+    index, prints the stop-check advisories, and ends with the KPI footer —
+    the engine analog of the one-idea / previous-session-review enders.
+    """
+    loaded = _require_state(target, "session-close")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    rc = cmd_reflect(target, add=None, evidence="", tags="", mine=True)
+    if rc != 0:
+        return rc
+    index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME
+    entries = rebuild_episodic_index(target / config.sessions_dir, index_path)
+    _emit(f"session-close: indexed {len(entries)} session(s).")
+    for line in evaluate_stop(target, config, backend):
+        _emit(f"session-close: [advisory] {line}")
+    kpis = workflow_kpis(backend.data, target / config.sessions_dir)
+    _emit(kpi_footer(kpis))
+    return 0
+
+
 def cmd_ledger(
     target: Path,
     *,
@@ -5742,9 +6781,29 @@ def build_parser() -> argparse.ArgumentParser:
         ("render", "render content docs from filled slots"),
         ("triggers", "scan for fired triggers / mandatory questions"),
         ("metrics", "emit the router + workflow KPIs"),
+        ("session-start", "print this session's orientation injection"),
+        ("session-close", "mine reflections, index the session, report KPIs"),
     ):
         child = sub.add_parser(name, help=helptext)
         child.add_argument("--target", type=Path, default=Path.cwd())
+    adopt_p = sub.add_parser("adopt", help="plant the workflow docs + stage the packs")
+    adopt_p.add_argument(
+        "--include-claude",
+        action="store_true",
+        help="also write .claude/CLAUDE.md + .claude/settings.json (skip-if-exists)",
+    )
+    adopt_p.add_argument("--target", type=Path, default=Path.cwd())
+    contextpack = sub.add_parser(
+        "contextpack",
+        help="generate agent context packs from the index",
+    )
+    contextpack.add_argument(
+        "--index",
+        type=Path,
+        default=None,
+        help="index or manifest path (default: <target>/project.index.json)",
+    )
+    contextpack.add_argument("--target", type=Path, default=Path.cwd())
     answer = sub.add_parser("answer", help="record a user answer for a slot")
     answer.add_argument("slot")
     answer.add_argument("value", nargs="+", help="the answer text")
@@ -5888,6 +6947,14 @@ def main(argv: list[str] | None = None) -> int:
                 apply=args.yes,
                 bands=args.bands,
             )
+        if args.command == "adopt":
+            return cmd_adopt(args.target, args.include_claude)
+        if args.command == "contextpack":
+            return cmd_contextpack(args.target, args.index)
+        if args.command == "session-start":
+            return cmd_session_start(args.target)
+        if args.command == "session-close":
+            return cmd_session_close(args.target)
         if args.command == "ledger":
             return cmd_ledger(
                 args.target,
@@ -5913,7 +6980,7 @@ _ENGINE_MANIFEST = {
     'engine/stances/__init__.py': '"""Task-stance capability layer (plan section 3b).\n\nA stance is the working agent\'s operational posture for the current task — the\nfourth control axis, distinct from adoption-pace (mode), promotion-rights, and\nstage. Each stance scopes a reading-route, a tool-scope, and an output contract\nto cut context rot and tool misfires. Advisory by default.\n"""\n',
     'engine/skills/__init__.py': '"""Skills — the invoke-a-capability layer (plan section 3c).\n\nA skill is an invokable ``SKILL.md`` procedure (the counterpart to a stance\'s\nambient posture). The kit ships generalized skill *sources* here and emits native\n``.claude/skills/<name>/SKILL.md`` files (metadata-first frontmatter + body) so\nthey load progressively and port across agent CLIs.\n"""\n',
     'engine/agents/__init__.py': '"""Personas — spawnable read-only specialists (plan section 3c).\n\nA persona is a sub-agent the working agent can spawn for a focused, read-only\ntask (design review, independent critique, deep exploration). The kit ships\ngeneralized persona sources here and emits native ``.claude/agents/<name>.md``\nfiles (frontmatter + system-prompt body), each filled from the project\'s own\ncontract docs via ``${slot}`` substitution.\n"""\n',
-    'engine/hooks/__init__.py': '"""Hook layer — the PreToolUse stance guard (plan section 3b, the enforcement half).\n\nStances ship advisory by default; this is the optional guard that makes them\n*enforced*. Claude Code calls a PreToolUse hook before each tool runs, passing\nthe tool name; the guard maps that tool to a stance action category and, if the\naction is outside the active stance\'s tool-scope, emits a warning. Advisory —\nit warns, it does not block.\n"""\n',
+    'engine/hooks/__init__.py': '"""Hook layer — the kit\'s runtime seams into a Claude Code session.\n\nFour hooks: the **PreToolUse stance guard** (warns on an out-of-stance tool),\n**SessionStart orientation** (injects the mode-aware composition), the\n**PostToolUse edit advisor** (generated-artifact / unbadged-doc warnings), and\nthe **Stop-check advisor** (session-close hygiene). All advisory and fail-open\n— they inform, they never block. ``settings.py`` builds the staged\n``settings.template.json`` + fill-table a host merges into ``.claude/``.\n"""\n',
     'engine/lib/atomicio.py': '"""Atomic file writes for crash-safe state.\n\nA write goes to a sibling ``*.tmp`` file and is renamed into place with\n``os.replace`` — an atomic rename on POSIX and Windows — so a process that dies\nmid-write can never leave a half-written, unparseable file behind. This is the\nrobustness floor the whole engine builds on (plan: Gemini round).\n"""\n\nfrom __future__ import annotations\n\nimport os\nfrom pathlib import Path\n\n\ndef atomic_write_text(path: Path, text: str) -> None:\n    """Write ``text`` to ``path`` atomically via a temp file + ``os.replace``."""\n    path.parent.mkdir(parents=True, exist_ok=True)\n    tmp = path.with_name(path.name + ".tmp")\n    tmp.write_text(text, encoding="utf-8")\n    os.replace(tmp, path)\n',
     'engine/lib/config.py': '"""Host-project configuration for one substrate-kit install.\n\nReads and writes ``substrate.config.json`` — the single file that absorbs every\nhost-specific knob so the engine code never hardcodes a project value. Two\ninterpreters are kept explicitly separate (Hermes-final): ``interpreter`` is the\nkit\'s own runtime, ``interpreter_for_checks`` is the host project\'s verification\nruntime (e.g. ``python3.10`` for a repo whose CI pins 3.10).\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport sys\nimport uuid\nfrom dataclasses import asdict, dataclass, field, fields\nfrom pathlib import Path\n\nfrom engine.lib.atomicio import atomic_write_text\n\nCONFIG_FILENAME = "substrate.config.json"\nDEFAULT_STATE_DIR = ".substrate"\n\n\ndef _new_project_id() -> str:\n    """Return a short, stable identifier for one install."""\n    return uuid.uuid4().hex[:12]\n\n\ndef _default_cadence() -> dict[str, int]:\n    """Return the default cadence knobs (every hardcoded cadence lives here)."""\n    return {\n        "reconciliation_prs": 20,\n        "reconciliation_sessions": 20,\n        "compaction_sessions": 20,\n        "critical_slot_grace_sessions": 3,\n        "staleness_days": 14,\n        "guided_practice_sessions": 3,\n    }\n\n\ndef _default_reflection() -> dict:\n    """Return the reflection-buffer knobs (size cap is a hard context guard)."""\n    return {"enabled": True, "buffer_size": 5}\n\n\ndef _default_orientation() -> dict:\n    """Return the orientation-budget knobs (the K0 ≤7,000-word gate).\n\n    ``boot_docs`` empty means "fall back to ``readpath_docs``" — the\n    unconditional boot-read set the budget counts.\n    """\n    return {"budget_words": 7000, "boot_docs": []}\n\n\ndef _default_economy() -> dict:\n    """Return the context-economy knobs (taxonomy/gauges are host policy).\n\n    ``maturity`` gates the actuator: ``shadow`` (report only, the first-prune\n    safety protocol) -> ``gated`` (apply with review) -> ``normal``. Classes and\n    gauges ship empty — the engine supplies a documented generic default when\n    unset; each adopting repo declares its own table (the kit ships the search,\n    not our constants).\n    """\n    return {\n        "maturity": "shadow",\n        "reference_roots": [],\n        "id_patterns": [r"Q-\\d{3,}", r"D-\\d{3,}", r"R-\\d{3,}"],\n        "classes": [],\n        "gauges": [],\n        "debt_threshold": 10,\n    }\n\n\ndef _default_namespace() -> dict:\n    """Return the namespace-guard knobs (roots to scan + reserved-name map)."""\n    return {"roots": [], "reserved": {}}\n\n\ndef _default_review_seam() -> dict:\n    """Return the review-seam knobs (provisioned, not wired — no live reviewer)."""\n    return {"reviewer": None}\n\n\ndef _default_badge_tokens() -> list[str]:\n    """Return the default Status-badge taxonomy the doc checker accepts."""\n    return [\n        "binding",\n        "living-ledger",\n        "reference",\n        "plan",\n        "historical",\n        "audit",\n        "owner-guidance",\n        "ideas",\n        "archive",\n    ]\n\n\ndef _default_readpath_docs() -> list[str]:\n    """Return the read-path doc names that seed the reachability roots."""\n    return ["AGENT_ORIENTATION.md", "current-state.md"]\n\n\ndef _default_session_markers() -> list[dict[str, str]]:\n    """Return the markers every session log must carry (label + substring)."""\n    return [\n        {"label": "Status badge", "needle": "**Status:**"},\n        {"label": "Session idea", "needle": "💡"},\n        {"label": "Previous-session review", "needle": "previous-session review"},\n    ]\n\n\n@dataclass\nclass Config:\n    """Host-project configuration for one substrate-kit install."""\n\n    project_id: str = field(default_factory=_new_project_id)\n    interpreter: str = field(default_factory=lambda: sys.executable)\n    interpreter_for_checks: str | None = None\n    state_dir: str = DEFAULT_STATE_DIR\n    docs_root: str = "docs"\n    sessions_dir: str = ".sessions"\n    paths: dict[str, str] = field(default_factory=dict)\n    cadence: dict[str, int] = field(default_factory=_default_cadence)\n    scopes: dict[str, str] = field(default_factory=dict)\n    badge_tokens: list[str] = field(default_factory=_default_badge_tokens)\n    readpath_docs: list[str] = field(default_factory=_default_readpath_docs)\n    session_markers: list[dict[str, str]] = field(\n        default_factory=_default_session_markers,\n    )\n    reflection: dict = field(default_factory=_default_reflection)\n    orientation: dict = field(default_factory=_default_orientation)\n    economy: dict = field(default_factory=_default_economy)\n    namespace: dict = field(default_factory=_default_namespace)\n    seams: list[dict] = field(default_factory=list)\n    review_seam: dict = field(default_factory=_default_review_seam)\n\n    def to_json(self) -> str:\n        """Serialise the config to indented, key-sorted JSON."""\n        return json.dumps(asdict(self), indent=2, sort_keys=True)\n\n    @classmethod\n    def from_dict(cls, data: dict) -> Config:\n        """Build a Config from a parsed dict, ignoring unknown keys."""\n        known = {f.name for f in fields(cls)}\n        return cls(**{k: v for k, v in data.items() if k in known})\n\n\ndef config_path(root: Path) -> Path:\n    """Return the config-file path for a project ``root``."""\n    return root / CONFIG_FILENAME\n\n\ndef load_config(root: Path) -> Config:\n    """Load the config from ``root``; return defaults if none exists."""\n    path = config_path(root)\n    if not path.exists():\n        return Config()\n    data = json.loads(path.read_text(encoding="utf-8"))\n    return Config.from_dict(data)\n\n\ndef save_config(root: Path, config: Config) -> None:\n    """Write ``config`` to ``root`` atomically."""\n    atomic_write_text(config_path(root), config.to_json() + "\\n")\n',
     'engine/lib/state.py': '"""The state-backend interface and its default JSON implementation.\n\nThe *interface* — not a raw JSON shape — is the contract the rest of the engine\ncodes against (Hermes-final, plan §2), so a future SQLite backend can replace the\nJSON one without a rewrite. The default backend is one JSON file written\natomically; mutations inside a ``transaction`` roll back on error and flush once.\n"""\n\nfrom __future__ import annotations\n\nimport copy\nimport json\nfrom abc import ABC, abstractmethod\nfrom collections.abc import Iterator\nfrom contextlib import AbstractContextManager, contextmanager\nfrom pathlib import Path\nfrom typing import Any\n\nfrom engine.lib.atomicio import atomic_write_text\n\nSTATE_SCHEMA_VERSION = 1\n\n\ndef default_state(project_id: str) -> dict[str, Any]:\n    """Return the initial state document for a fresh install."""\n    return {\n        "version": STATE_SCHEMA_VERSION,\n        "project_id": project_id,\n        "mode": "guided",\n        "promotion_rights": "propose",\n        "stage": "integration",\n        "stance": "analysis",\n        "session_count": 0,\n        "slots": {},\n        "slot_values": {},\n        "open_questions": [],\n        "quiet_sessions": 0,\n        "graduation": {\n            "soft_target_sessions": 50,\n            "criteria": {\n                "critical_slots_filled_pct": 0.8,\n                "blocking_questions": 0,\n            },\n        },\n        "mode_history": [],\n        "reflection_buffer": {"active_count": 0, "last_mined": None},\n        "graduation_proposed": False,\n        "last_compaction_session": 0,\n        "review_log": [],\n    }\n\n\nclass StateBackend(ABC):\n    """Read / write / query / transaction / migrate contract for engine state."""\n\n    version: int = STATE_SCHEMA_VERSION\n\n    @abstractmethod\n    def get(self, key: str, default: Any = None) -> Any:\n        """Return the value stored at ``key`` or ``default``."""\n\n    @abstractmethod\n    def set(self, key: str, value: Any) -> None:\n        """Store ``value`` at ``key`` (flushing unless inside a transaction)."""\n\n    @abstractmethod\n    def query(self, prefix: str = "") -> dict[str, Any]:\n        """Return all key/value pairs whose key starts with ``prefix``."""\n\n    @abstractmethod\n    def transaction(self) -> AbstractContextManager[StateBackend]:\n        """Return a context manager that commits on success, rolls back on error."""\n\n    @abstractmethod\n    def migrate(self, to_version: int) -> None:\n        """Migrate the stored document to schema ``to_version``."""\n\n\nclass JsonStateBackend(StateBackend):\n    """A StateBackend backed by one atomically-written JSON file."""\n\n    def __init__(self, path: Path) -> None:\n        self._path = Path(path)\n        self._data: dict[str, Any] = self._read()\n        self._in_txn = False\n\n    def _read(self) -> dict[str, Any]:\n        if not self._path.exists():\n            return {}\n        return json.loads(self._path.read_text(encoding="utf-8"))\n\n    def _flush(self) -> None:\n        atomic_write_text(\n            self._path,\n            json.dumps(self._data, indent=2, sort_keys=True) + "\\n",\n        )\n\n    def get(self, key: str, default: Any = None) -> Any:\n        """Return the value stored at ``key`` or ``default``."""\n        return self._data.get(key, default)\n\n    def set(self, key: str, value: Any) -> None:\n        """Store ``value`` at ``key``; flush now unless inside a transaction."""\n        self._data[key] = value\n        if not self._in_txn:\n            self._flush()\n\n    def query(self, prefix: str = "") -> dict[str, Any]:\n        """Return all key/value pairs whose key starts with ``prefix``."""\n        return {k: v for k, v in self._data.items() if k.startswith(prefix)}\n\n    @contextmanager\n    def transaction(self) -> Iterator[JsonStateBackend]:\n        """Buffer writes; roll back the whole document on error, else flush once."""\n        snapshot = copy.deepcopy(self._data)\n        self._in_txn = True\n        try:\n            yield self\n        except Exception:\n            self._data = snapshot\n            raise\n        finally:\n            self._in_txn = False\n        self._flush()\n\n    def migrate(self, to_version: int) -> None:\n        """Set the stored schema version (no transforms needed at v1)."""\n        self._data["version"] = to_version\n        self._flush()\n\n    @property\n    def data(self) -> dict[str, Any]:\n        """Return a shallow copy of the current state document."""\n        return dict(self._data)\n',
@@ -5941,8 +7008,14 @@ _ENGINE_MANIFEST = {
     'engine/skills/skills.py': '"""Skill sources + the skill/stance precedence model (plan section 3c).\n\nA *skill* is an invokable procedure emitted as a native ``.claude/skills/<name>/\nSKILL.md`` (YAML frontmatter for metadata-first loading + a readable body). Unlike\na stance (an ambient posture), a skill is invoked for a specific job and **declares\nthe capabilities it needs** — so a skill\'s declared capability **takes precedence\nover the ambient stance** (a ``session-close`` that declares it edits can write the\nsession log even while the active stance is ``review``). Stances stay advisory for\nanything a skill has not declared.\n\nLike the question bank and the stances, the set ships as a Python module — embeds\nin the stdlib-only bootstrap with no YAML parser, identical in ``src`` and ``dist``.\nBodies use ``${slot}`` placeholders filled from the interview at build time, so a\nskill is project-aware (e.g. ``quality-gate`` runs the project\'s own verify command).\n"""\n\nfrom __future__ import annotations\n\nfrom engine.stances.stances import COMMENT, EDIT, READ, RUN, action_allowed\n\n_SESSION_CLOSE_BODY = """\\\nClose ${project_name}\'s current session correctly.\n\n1. Session log — write `.sessions/<date>-<slug>.md`: what changed, one new idea\n   you genuinely believe in, and a one-line review of the previous session.\n2. Idea backlog — groom one idea forward (the ideas-README lifecycle).\n3. Verify — run the project\'s checks: `${verify_command}` and `bootstrap check`.\n4. Commit + push on the session branch; open the PR ready (not draft).\n5. Drive the PR to a terminal state — merge on green CI, or close with a reason.\n\nDeclared capabilities: edit (the log + docs), run (the checks + git)."""\n\n_QUALITY_GATE_BODY = """\\\nProve a change is good before pushing ${project_name}.\n\n1. Run `${verify_command}` — the project\'s full verification (tests + lint/types).\n2. Run `bootstrap check --strict` — doc + session-log hygiene.\n3. Report every failure with the exact command to reproduce it.\n4. Do NOT push on red — green here should mean green in CI.\n\nDeclared capabilities: run."""\n\n_REVIEW_BODY = """\\\nReview the current branch\'s diff against ${project_name}\'s binding contracts.\n\n1. Read the contracts first (architecture / ownership / runtime), then the diff.\n2. For each change check layer boundaries, mutation ownership, and the project\'s\n   invariants. Flag violations with file:line and the rule they break.\n3. Produce a verdict (approve / request-changes) + concrete fixes.\n4. Do not edit — comment only. (The `review` stance pairs with this skill.)\n\nDeclared capabilities: comment."""\n\n_REPO_HEALTH_BODY = """\\\nAudit ${project_name}\'s documentation + session-log hygiene.\n\n1. Run `bootstrap check` — badges, link resolution, doc reachability, and the\n   required session-log markers.\n2. Summarize the drift: orphaned docs, missing badges, incomplete logs.\n3. Fix the small ones (link the orphan, badge the doc); capture the rest as ideas.\n\nDeclared capabilities: run."""\n\n_DEEP_RESEARCH_BODY = """\\\nAnswer a multi-source factual question with a cited report.\n\n1. Decompose the question into sub-questions; search broadly (fan out).\n2. Fetch the strongest sources; cross-check claims adversarially; prefer\n   primary/official docs over memory.\n3. Flag uncertainty explicitly; never state a guess as fact.\n4. Synthesize a concise report with inline citations.\n\nDeclared capabilities: run."""\n\n_QUESTION_BODY = """\\\nAnswer a direct question about ${project_name} concisely.\n\n1. Read current-state + the one relevant doc or source file.\n2. Answer in a few sentences, grounded in what you read; cite the source.\n3. Make no changes. (The `question` stance pairs with this skill.)\n\nDeclared capabilities: read-only."""\n\n_ANALYSIS_BODY = """\\\nInvestigate a ${project_name} system and report findings, changing nothing.\n\n1. Read the binding contracts and trace the behavior across files.\n2. Produce evidence (file:line) + a conclusion; name the uncertainty.\n3. Do not edit. (The `analysis` stance pairs with this skill.)\n\nDeclared capabilities: read-only."""\n\n# Each skill declares the capabilities it needs *beyond* read (read is implicit).\n# The declared set is what overrides the ambient stance (the precedence rule).\nSKILLS: list[dict] = [\n    {\n        "name": "session-close",\n        "description": "End the session correctly — write the log, groom + add an "\n        "idea, verify, commit, push, drive the PR to a terminal state.",\n        "capabilities": [EDIT, RUN],\n        "body": _SESSION_CLOSE_BODY,\n    },\n    {\n        "name": "quality-gate",\n        "description": "Run the project\'s full verification before pushing and "\n        "report what must be fixed.",\n        "capabilities": [RUN],\n        "body": _QUALITY_GATE_BODY,\n    },\n    {\n        "name": "review",\n        "description": "Review the branch diff against the binding contracts; "\n        "comment with a verdict and fixes, no edits.",\n        "capabilities": [COMMENT],\n        "body": _REVIEW_BODY,\n    },\n    {\n        "name": "repo-health",\n        "description": "Audit doc + session-log hygiene (bootstrap check) and "\n        "summarize drift.",\n        "capabilities": [RUN],\n        "body": _REPO_HEALTH_BODY,\n    },\n    {\n        "name": "deep-research",\n        "description": "Fan out web research, adversarially verify sources, and "\n        "synthesize a cited report.",\n        "capabilities": [RUN],\n        "body": _DEEP_RESEARCH_BODY,\n    },\n    {\n        "name": "question",\n        "description": "Answer a direct question concisely from memory and source; "\n        "make no changes.",\n        "capabilities": [],\n        "body": _QUESTION_BODY,\n    },\n    {\n        "name": "analysis",\n        "description": "Read-only deep-dive: investigate and report findings "\n        "without changing anything.",\n        "capabilities": [],\n        "body": _ANALYSIS_BODY,\n    },\n]\n\n_SKILL_BY_NAME = {s["name"]: s for s in SKILLS}\n\n\ndef skill_names() -> list[str]:\n    """Return the available skill names, in declared order."""\n    return [s["name"] for s in SKILLS]\n\n\ndef get_skill(name: str) -> dict | None:\n    """Return the skill definition for ``name`` (or None if unknown)."""\n    return _SKILL_BY_NAME.get(name)\n\n\ndef skill_capabilities(name: str) -> list[str]:\n    """Return a skill\'s full capability set (declared + the implicit ``read``)."""\n    skill = _SKILL_BY_NAME.get(name)\n    if skill is None:\n        return []\n    return [READ, *skill["capabilities"]]\n\n\ndef skill_permits(name: str, action: str) -> bool:\n    """True if skill ``name`` declares (or implies) ``action``."""\n    return action in skill_capabilities(name)\n\n\ndef action_permitted(\n    stance_name: str,\n    action: str,\n    skill_name: str | None = None,\n) -> bool:\n    """Resolve whether ``action`` is permitted under a stance, optionally in a skill.\n\n    Precedence (plan section 3c): a skill\'s explicitly-declared capability **wins**\n    over the ambient stance — so an invoked skill can do what it declares even when\n    the stance forbids it. For anything the skill has not declared, the stance\'s\n    advisory tool-scope applies.\n    """\n    if skill_name is not None and skill_permits(skill_name, action):\n        return True\n    return action_allowed(stance_name, action)\n\n\ndef skill_frontmatter(skill: dict) -> str:\n    """Return the native ``SKILL.md`` YAML frontmatter (metadata-first loading)."""\n    return f\'---\\nname: {skill["name"]}\\ndescription: "{skill["description"]}"\\n---\'\n\n\ndef skill_relpath(skill: dict) -> str:\n    """Return the emit path for a skill, relative to the skills root."""\n    return f"skills/{skill[\'name\']}/SKILL.md"\n\n\ndef skill_document(skill: dict, body: str) -> str:\n    """Compose the full ``SKILL.md`` text from a skill + its (rendered) body."""\n    return f"{skill_frontmatter(skill)}\\n\\n# {skill[\'name\']}\\n\\n{body.rstrip()}\\n"\n',
     'engine/agents/agents.py': '"""Persona (sub-agent) sources + native emission (plan section 3c).\n\nA *persona* is a spawnable, read-only specialist (the third capability mechanism\nalongside stances and skills): the working agent delegates a focused task —\ndesign review, independent critique, deep exploration — to a fresh sub-agent\ncontext. The kit ships three generalized personas, each emitted as a native\n``.claude/agents/<name>.md`` (YAML frontmatter ``name`` / ``description`` /\n``tools`` + a system-prompt body).\n\nPersonas are **interview-populated**: their binding sources are filled from the\nproject\'s own contract slots (``${architecture_layers}``, ``${ownership_model}``,\n…) at build time — so a persona reviews against *this* project\'s rules, not\nsuperbot\'s. Like the skills, they ship as a Python module (not a subdir of\n``templates/``) so they embed in the stdlib-only bootstrap with no extra loader.\n\nPersonas are spawned specialists, so — unlike skills — they carry no stance\nprecedence; they are read-only by construction (their declared ``tools`` grant\nno write).\n"""\n\nfrom __future__ import annotations\n\n# Native read-only tool set for a spawned specialist (no write/edit/run).\n_READONLY_TOOLS = ["Read", "Grep", "Glob"]\n\n_ARCHITECT_BODY = """\\\nYou are ${project_name}\'s architecture specialist — read-only. Answer design\nquestions and review proposed changes for layer/ownership compliance BEFORE they\nare coded.\n\nBinding model (this project\'s contracts):\n- Layers & import rules: ${architecture_layers}\n- Ownership (who owns each write path): ${ownership_model}\n- Mutation seam (how writes are gated): ${mutation_seam}\n\nMethod: read the relevant contracts + source, then judge a proposed change\nagainst them. Flag every layer-boundary or ownership violation with file:line and\nthe rule it breaks; propose the compliant placement. You advise — you do not edit."""\n\n_REVIEWER_BODY = """\\\nYou are ${project_name}\'s independent reviewer — a second pair of eyes that does\nNOT share the author\'s assumptions. Evaluate a diff against the binding contracts\nand surface the risks the author may have anchored past.\n\nReview against: ${architecture_layers} · ${ownership_model} · the project\'s\nverification (`${verify_command}`).\n\nAnti-anchoring rule: judge the change on its evidence, not the author\'s stated\nconfidence. Give a verdict (approve / request-changes) + the specific risks and\nfixes. Read-only — you comment, you do not edit. (Wire this persona to the\nindependent-review seam: a *different* model reviewing breaks the monoculture.)"""\n\n_RESEARCHER_BODY = """\\\nYou are ${project_name}\'s researcher — read-only deep exploration. Map unfamiliar\ncode or trace a behavior across the system and report findings; change nothing.\n\nStart from: ${doc_roots} (where durable documentation lives) and the read-path\ndocs, then follow the source.\n\nOutput: evidence (file:line) + a clear conclusion, with the uncertainty named.\nPrefer reading source over assuming. You produce understanding, not edits."""\n\nAGENTS: list[dict] = [\n    {\n        "name": "architect",\n        "description": "Read-only design/layer specialist — answer architecture "\n        "questions and flag layer/ownership violations before they are coded.",\n        "tools": list(_READONLY_TOOLS),\n        "body": _ARCHITECT_BODY,\n    },\n    {\n        "name": "reviewer",\n        "description": "Independent critic — evaluate a diff against the contracts "\n        "without the author\'s assumptions; verdict + risks, no edits.",\n        "tools": list(_READONLY_TOOLS),\n        "body": _REVIEWER_BODY,\n    },\n    {\n        "name": "researcher",\n        "description": "Read-only deep exploration — map unfamiliar code / trace a "\n        "behavior and report evidence-backed findings; change nothing.",\n        "tools": list(_READONLY_TOOLS),\n        "body": _RESEARCHER_BODY,\n    },\n]\n\n_AGENT_BY_NAME = {a["name"]: a for a in AGENTS}\n\n\ndef agent_names() -> list[str]:\n    """Return the available persona names, in declared order."""\n    return [a["name"] for a in AGENTS]\n\n\ndef get_agent(name: str) -> dict | None:\n    """Return the persona definition for ``name`` (or None if unknown)."""\n    return _AGENT_BY_NAME.get(name)\n\n\ndef agent_frontmatter(agent: dict) -> str:\n    """Return the native ``.claude/agents`` YAML frontmatter (name/description/tools)."""\n    tools = ", ".join(agent["tools"])\n    return (\n        f"---\\nname: {agent[\'name\']}\\n"\n        f\'description: "{agent["description"]}"\\n\'\n        f"tools: {tools}\\n---"\n    )\n\n\ndef agent_relpath(agent: dict) -> str:\n    """Return the emit path for a persona, relative to the agents root."""\n    return f"agents/{agent[\'name\']}.md"\n\n\ndef agent_document(agent: dict, body: str) -> str:\n    """Compose the full agent ``.md`` text from a persona + its (rendered) body."""\n    return f"{agent_frontmatter(agent)}\\n\\n{body.rstrip()}\\n"\n',
     'engine/hooks/stance_guard.py': '"""PreToolUse stance guard — makes the stance layer enforced, not just advisory.\n\nClaude Code calls a PreToolUse hook before each tool runs, passing the tool name\nin a JSON payload on stdin. This maps the tool to a stance action category\n(read / run / edit / comment) and, if that action is outside the active stance\'s\ntool-scope, produces an advisory warning — the agent stays free to proceed\n(stances are advisory by default, plan section 3b). The bootstrap\n``hook pretooluse`` command is the runtime entry point; ``settings_snippet``\ngenerates the ``.claude/settings.json`` wiring a host installs.\n\nEverything here **fails open**: an unknown tool, an unknown stance, or a\nmalformed payload yields no warning — the guard never gets in the way when it is\nunsure.\n"""\n\nfrom __future__ import annotations\n\nimport json\n\nfrom engine.stances.stances import EDIT, READ, RUN, is_out_of_stance\n\n# Claude Code tool name -> the stance action category it performs. Tools not\n# listed (Task, the slash-command tools, …) carry no stance opinion (fail open).\nTOOL_ACTIONS: dict[str, str] = {\n    "Read": READ,\n    "Grep": READ,\n    "Glob": READ,\n    "NotebookRead": READ,\n    "Edit": EDIT,\n    "Write": EDIT,\n    "NotebookEdit": EDIT,\n    "Bash": RUN,\n    "WebFetch": RUN,\n    "WebSearch": RUN,\n}\n\n\ndef tool_to_action(tool_name: str) -> str | None:\n    """Return the stance action category a Claude Code tool performs (or None)."""\n    return TOOL_ACTIONS.get(tool_name)\n\n\ndef tool_from_payload(raw: str) -> str:\n    """Extract the tool name from a PreToolUse stdin payload (``""`` if absent)."""\n    try:\n        payload = json.loads(raw) if raw.strip() else {}\n    except json.JSONDecodeError:\n        return ""\n    name = payload.get("tool_name", "") if isinstance(payload, dict) else ""\n    return name if isinstance(name, str) else ""\n\n\ndef evaluate_tool(stance: str, tool_name: str) -> str | None:\n    """Return an out-of-stance warning for ``tool_name`` under ``stance``, or None.\n\n    ``None`` means no objection — the tool carries no stance opinion, or the\n    action is within the stance\'s tool-scope. Fails open: an unknown stance or\n    tool never warns.\n    """\n    action = tool_to_action(tool_name)\n    if action is None or not is_out_of_stance(stance, action):\n        return None\n    return (\n        f"out-of-stance: {tool_name} ({action}) while stance is \'{stance}\'. "\n        "Re-check the task, or switch stance (`bootstrap stance <name>`). "\n        "(advisory — not blocked)"\n    )\n\n\ndef settings_snippet(command: str) -> str:\n    """Return a ``.claude/settings.json`` PreToolUse wiring snippet (JSON text).\n\n    ``command`` is the shell command Claude Code runs before each tool (e.g.\n    ``python3 bootstrap.py hook pretooluse``). The host merges the returned\n    ``hooks.PreToolUse`` block into their ``.claude/settings.json``.\n    """\n    snippet = {\n        "hooks": {\n            "PreToolUse": [\n                {\n                    "matcher": "*",\n                    "hooks": [{"type": "command", "command": command}],\n                },\n            ],\n        },\n    }\n    return json.dumps(snippet, indent=2) + "\\n"\n',
+    'engine/hooks/session_start.py': '"""SessionStart orientation composer (plan section 5.B, Lane B7).\n\nThe nervous system\'s *injection* point: when Claude Code starts a session, the\n``bootstrap hook sessionstart`` entry point prints the text this module\ncomposes, so the agent boots already knowing the project\'s mode, stance,\nlearned lessons, fired triggers, and pending questions. The composition is\n**mode-aware** — ``orientation_depth`` (observe → minimal, guided → standard,\nactive → full) decides which sections render and how hard they cap.\n\nSection order (the plan\'s fixed sequence): status header → stance briefing →\nuser-style block → learned lessons (AFTER user-style) → trigger block →\nguided-practices line → economy-gauges advisory (over-cap only) → pending\nquestions (quota view) → observe-mode workflow proposal.\n\nEvery section is defensive: a failure inside one section drops that section,\nnever the whole composition — orientation must never crash a session. This is\nthe one place broad ``except Exception`` is correct by design (fail open, like\nthe stance guard).\n"""\n\nfrom __future__ import annotations\n\nfrom pathlib import Path\nfrom typing import Any\n\nfrom engine.economy.engine import economy_gauges\nfrom engine.interview.interview import pending_questions, session_questions\nfrom engine.lib.config import Config\nfrom engine.lib.modes import (\n    active_practices,\n    orientation_depth,\n    triggers_mandate,\n    workflow_proposal_due,\n)\nfrom engine.loop.reflections import (\n    REFLECTIONS_FILENAME,\n    active_lessons,\n    lessons_block,\n    load_reflections,\n)\nfrom engine.loop.triggers import check_triggers, mandatory_questions, trigger_block\nfrom engine.stances.stances import stance_briefing\n\n# Depth "standard" caps the learned-lessons section at this many entries.\n_ORI_STANDARD_LESSON_CAP = 3\n# Depth "minimal" (observe) renders only these section numbers: the status\n# header (1), the trigger block as an advisory (5), and the workflow proposal\n# (9) — observe imposes nothing else.\n_ORI_MINIMAL_SECTIONS = frozenset({1, 5, 9})\n\n\ndef _ori_status_header(state: dict[str, Any], config: Config) -> str:\n    """Render section 1 — the compact status header line block."""\n    project = str(state.get("project_id") or config.project_id)\n    return (\n        f"# Session orientation — {project}\\n"\n        f"mode: {state.get(\'mode\', \'?\')} · stage: {state.get(\'stage\', \'?\')} · "\n        f"stance: {state.get(\'stance\', \'?\')} · "\n        f"session: {int(state.get(\'session_count\', 0))}"\n    )\n\n\ndef _ori_stance(state: dict[str, Any]) -> str:\n    """Render section 2 — the active stance briefing (\'\' when no stance set)."""\n    stance = state.get("stance")\n    if not stance:\n        return ""\n    return stance_briefing(str(stance))\n\n\ndef _ori_user_style(state: dict[str, Any]) -> str:\n    """Render section 3 — the owner_profile user-style block (\'\' when unfilled)."""\n    entry = state.get("slot_values", {}).get("owner_profile")\n    value = entry.get("value") if isinstance(entry, dict) else entry\n    text = str(value).strip() if value else ""\n    if not text:\n        return ""\n    return f"## How the owner works:\\n\\n> {text}"\n\n\ndef _ori_lessons(root: Path, config: Config, depth: str) -> str:\n    """Render section 4 — learned lessons (standard caps at 3, full uncapped)."""\n    entries = load_reflections(root / config.state_dir / REFLECTIONS_FILENAME)\n    cap = _ORI_STANDARD_LESSON_CAP if depth == "standard" else len(entries)\n    return lessons_block(active_lessons(entries, cap))\n\n\ndef _ori_triggers(root: Path, config: Config, state: dict[str, Any]) -> str:\n    """Render section 5 — the trigger block (mandate flag per the mode policy)."""\n    triggers = check_triggers(root, config, state)\n    questions = mandatory_questions(triggers)\n    return trigger_block(triggers, questions, mandate=triggers_mandate(state))\n\n\ndef _ori_practices(state: dict[str, Any], config: Config) -> str:\n    """Render section 6 — the one-line guided-practices block (\'\' when empty)."""\n    practices = active_practices(state, dict(config.cadence or {}))\n    if not practices:\n        return ""\n    return "Active practices: " + ", ".join(practices)\n\n\ndef _ori_gauges(root: Path, config: Config) -> str:\n    """Render section 7 — economy advisory listing ONLY over-cap gauges."""\n    over = [g for g in economy_gauges(root, config) if g.get("over")]\n    if not over:\n        return ""\n    lines = ["## Economy advisory — over-cap gauges", ""]\n    lines += [\n        f"- {g[\'name\']} ({g[\'kind\']}): {g[\'value\']} words/items over cap {g[\'cap\']}"\n        for g in over\n    ]\n    return "\\n".join(lines)\n\n\ndef _ori_questions(state: dict[str, Any]) -> str:\n    """Render section 8 — the quota-capped ask list with a \'+N more\' suffix."""\n    asks = session_questions(state)\n    if not asks:\n        return ""\n    lines = ["## Questions this session", ""]\n    lines += [\n        f"- {q[\'id\']} ({q.get(\'priority\', \'normal\')}): {q[\'prompt\']}" for q in asks\n    ]\n    extra = len(pending_questions(state)) - len(asks)\n    if extra > 0:\n        lines += ["", f"(+{extra} more later)"]\n    return "\\n".join(lines)\n\n\ndef _ori_proposal(state: dict[str, Any]) -> str:\n    """Render section 9 — observe mode\'s workflow proposal when it is due."""\n    if state.get("mode") != "observe" or not workflow_proposal_due(state):\n        return ""\n    return (\n        "## Proposed workflow\\n\\n"\n        "Observe mode has watched enough sessions to propose a tailored "\n        "workflow. If the pacing looks right, switch mode to adopt it: "\n        "`bootstrap mode guided` (one practice at a time) or "\n        "`bootstrap mode active` (the full workflow now). Observe imposes "\n        "nothing until you do."\n    )\n\n\ndef _ori_safe(build: Any) -> str:\n    """Run one section builder, returning \'\' on any failure (fail open).\n\n    The one place broad ``except Exception`` is correct by design: a bad state\n    document or an unreadable file drops that single section — orientation\n    must never crash a session.\n    """\n    try:\n        return str(build()).strip()\n    except Exception:  # fail open — one bad section never breaks the whole\n        return ""\n\n\ndef compose_orientation(root: Path, config: Config, backend: Any) -> str:\n    """Compose the mode-aware SessionStart orientation injection.\n\n    Assembles the nine plan sections in fixed order, gated by\n    ``orientation_depth``: ``minimal`` renders only the status header, the\n    trigger advisory, and the observe-mode proposal; ``standard`` renders all\n    sections but caps lessons at 3; ``full`` renders everything uncapped.\n    Every section builder runs inside its own guard — a bad state document or\n    an unreadable file drops that one section, never the whole composition\n    (orientation must never crash a session).\n    """\n    try:\n        state = dict(backend.data)\n    except Exception:  # fail open — orientation never crashes a session\n        state = {}\n    try:\n        depth = orientation_depth(state)\n    except Exception:  # fail open — fall back to the default depth\n        depth = "standard"\n    builders = (\n        (1, lambda: _ori_status_header(state, config)),\n        (2, lambda: _ori_stance(state)),\n        (3, lambda: _ori_user_style(state)),\n        (4, lambda: _ori_lessons(root, config, depth)),\n        (5, lambda: _ori_triggers(root, config, state)),\n        (6, lambda: _ori_practices(state, config)),\n        (7, lambda: _ori_gauges(root, config)),\n        (8, lambda: _ori_questions(state)),\n        (9, lambda: _ori_proposal(state)),\n    )\n    sections: list[str] = []\n    for number, build in builders:\n        if depth == "minimal" and number not in _ORI_MINIMAL_SECTIONS:\n            continue\n        text = _ori_safe(build)\n        if text:\n            sections.append(text)\n    if not sections:\n        return ""\n    return "\\n\\n".join(sections) + "\\n"\n',
+    'engine/hooks/post_edit.py': '"""PostToolUse edit advisor (plan section 5.B, Lane B7).\n\nRuns after every Edit/Write tool call: the CLI\'s ``hook postedit`` entry point\nextracts the edited file path from the PostToolUse stdin payload and asks\n``evaluate_edit`` whether the edit deserves an advisory —\n\n- **generated artifact** — the file lives under ``<state_dir>/rendered`` or\n  ``<state_dir>/contextpacks``, or its head carries the ``NOT SOURCE OF\n  TRUTH`` marker: edit the template/index and re-render, not the artifact.\n- **missing Status badge** — a ``*.md`` under the docs root without a\n  ``> **Status:** `<token>``` badge in its first 12 lines (the same badge scan\n  ``check_docs`` runs, via the shared ``badge_token`` reader).\n\nLike every hook evaluator this **fails open**: absolute or root-relative paths\nboth resolve, and an unreadable / missing file yields ``None`` — the advisor\nnever gets in the way when it is unsure.\n"""\n\nfrom __future__ import annotations\n\nfrom pathlib import Path\n\nfrom engine.checks.check_docs import badge_token\nfrom engine.lib.config import Config\n\n_PE_MARKER = "NOT SOURCE OF TRUTH"\n_PE_HEAD_LINES = 12\n# <state_dir> subdirectories that hold build artifacts, never source.\n_PE_GENERATED_DIRS = ("rendered", "contextpacks")\n_PE_GENERATED_MSG = (\n    "generated artifact — edit the template/index and re-render, not this file"\n)\n_PE_BADGE_MSG = (\n    "missing Status badge — add `> **Status:** `<token>`` to its first 12 lines"\n)\n\n\ndef _pe_resolve(root: Path, file_path: str) -> tuple[Path, Path | None]:\n    """Return ``(absolute path, root-relative path or None)`` for an edit path.\n\n    Accepts absolute and root-relative inputs; the relative half is ``None``\n    when the file lives outside ``root`` (nothing to classify against config\n    paths there).\n    """\n    path = Path(file_path)\n    if not path.is_absolute():\n        path = root / path\n    try:\n        rel = path.resolve().relative_to(root.resolve())\n    except (OSError, ValueError):\n        rel = None\n    return path, rel\n\n\ndef _pe_head(path: Path) -> str:\n    """Return the file\'s first 12 lines (\'\' when unreadable — fail open)."""\n    try:\n        lines = path.read_text(encoding="utf-8").splitlines()\n    except (OSError, UnicodeDecodeError):\n        return ""\n    return "\\n".join(lines[:_PE_HEAD_LINES])\n\n\ndef _pe_is_generated(config: Config, rel: Path | None, head: str) -> bool:\n    """True when the edited file is a build artifact (by path or by marker)."""\n    if _PE_MARKER in head:\n        return True\n    if rel is None:\n        return False\n    state_dir = Path(config.state_dir)\n    return any(rel.is_relative_to(state_dir / sub) for sub in _PE_GENERATED_DIRS)\n\n\ndef evaluate_edit(root: Path, config: Config, file_path: str) -> str | None:\n    """Return the advisory warning for one edited file, or None.\n\n    Warns on a generated artifact (path under ``<state_dir>/rendered`` /\n    ``<state_dir>/contextpacks``, or a ``NOT SOURCE OF TRUTH`` head marker)\n    and on a docs-root ``*.md`` lacking a Status badge. Tolerant of absolute\n    or root-relative ``file_path`` and of unreadable / missing files (None).\n    """\n    try:\n        path, rel = _pe_resolve(root, file_path)\n        if not path.is_file():\n            return None\n        name = rel.as_posix() if rel is not None else path.as_posix()\n        if _pe_is_generated(config, rel, _pe_head(path)):\n            return f"{name}: {_PE_GENERATED_MSG}"\n        if (\n            rel is not None\n            and path.suffix == ".md"\n            and rel.is_relative_to(Path(config.docs_root))\n            and badge_token(path) is None\n        ):\n            return f"{name}: {_PE_BADGE_MSG}"\n        return None\n    except Exception:  # fail open — the advisor never blocks an edit\n        return None\n',
+    'engine/hooks/stop_check.py': '"""Stop-hook session-close advisor (plan section 5.B, Lane B7).\n\nRuns when a Claude Code session stops: the CLI\'s ``hook stopcheck`` entry\npoint prints the advisory lines ``evaluate_stop`` returns, reminding the agent\nwhat the session ritual still owes —\n\n- the session log is missing, or exists but lacks required markers\n  (``latest_session_log`` + ``check_log`` with ``config.session_markers``);\n- escalated blocking questions are still open (``state["open_questions"]``);\n- the compaction cadence window has elapsed (``compaction_due``);\n- the reflection buffer has not been mined today\n  (``reflection_buffer.last_mined`` vs today\'s ISO date).\n\nReturns ``[]`` when all clean. Advisory only, and it **fails open**: every\ncheck runs inside its own guard, so a bad state document or an unreadable log\ndrops that one advisory rather than crashing the stop hook.\n"""\n\nfrom __future__ import annotations\n\nfrom datetime import date\nfrom pathlib import Path\nfrom typing import Any\n\nfrom engine.checks.check_session_log import check_log, latest_session_log\nfrom engine.lib.config import Config\nfrom engine.loop.maintenance import compaction_due\n\n_STOP_UNMINED_MSG = "reflections unmined this session — run bootstrap reflect --mine"\n\n\ndef _stop_safe(check: Any) -> list[str]:\n    """Run one advisory check, returning [] on any failure (fail open).\n\n    Each check is guarded on its own so one bad input never suppresses the\n    other advisories — the stop hook is advisory by contract.\n    """\n    try:\n        return list(check())\n    except Exception:  # fail open — one bad check drops only itself\n        return []\n\n\ndef _stop_state(backend: Any) -> dict[str, Any]:\n    """Return the state document ({} when the backend is unusable — fail open)."""\n    try:\n        return dict(backend.data)\n    except Exception:  # fail open — a broken backend yields no state advisories\n        return {}\n\n\ndef _stop_log(root: Path, config: Config) -> list[str]:\n    """Advise when the session log is missing or lacks required markers."""\n    log = latest_session_log(root / config.sessions_dir)\n    if log is None:\n        return [\n            f"no session log found under {config.sessions_dir}/ — "\n            "write one before ending the session",\n        ]\n    missing = check_log(log, config.session_markers)\n    if missing:\n        return [f"session log {log.name} is missing: {\', \'.join(missing)}"]\n    return []\n\n\ndef _stop_questions(state: dict[str, Any]) -> list[str]:\n    """Advise when escalated blocking questions are still open."""\n    open_questions = [str(q) for q in state.get("open_questions", [])]\n    if not open_questions:\n        return []\n    listed = ", ".join(open_questions)\n    return [f"{len(open_questions)} blocking question(s) open: {listed}"]\n\n\ndef _stop_compaction(state: dict[str, Any], config: Config) -> list[str]:\n    """Advise when the compaction cadence window has elapsed."""\n    if compaction_due(state, dict(config.cadence or {})):\n        return ["compaction due — write the State Delta snapshot (bootstrap maintain)"]\n    return []\n\n\ndef _stop_reflections(state: dict[str, Any]) -> list[str]:\n    """Advise when the reflection buffer has not been mined today."""\n    buffer = state.get("reflection_buffer")\n    last_mined = buffer.get("last_mined") if isinstance(buffer, dict) else None\n    if last_mined == date.today().isoformat():\n        return []\n    return [_STOP_UNMINED_MSG]\n\n\ndef evaluate_stop(root: Path, config: Config, backend: Any) -> list[str]:\n    """Return the session-close advisory lines ([] when all clean).\n\n    Four checks in fixed order: session log, open blocking questions,\n    compaction cadence, reflection mining. Each runs inside its own guard so\n    one failing check never suppresses the others — the stop hook is advisory\n    and fails open by contract.\n    """\n    state = _stop_state(backend)\n    checks = (\n        lambda: _stop_log(root, config),\n        lambda: _stop_questions(state),\n        lambda: _stop_compaction(state, config),\n        lambda: _stop_reflections(state),\n    )\n    advisories: list[str] = []\n    for check in checks:\n        advisories.extend(_stop_safe(check))\n    return advisories\n',
+    'engine/hooks/settings.py': '"""Hook settings template + customization contract (plan section 5.B, Lane B7).\n\nThe staging half of the hook layer (HOOK-2): ``full_settings_template`` emits\nthe complete ``.claude`` ``settings.template.json`` wiring all four hook\nevents — PreToolUse (stance guard), SessionStart (orientation), PostToolUse\n(edit advisor), Stop (session-close advisor) — each to\n``<interpreter> bootstrap.py hook <event>``, the same command shape the CLI\'s\n``_hook_command`` builds. ``hooks_fill_table`` emits the markdown\ncustomization contract a host reads before merging: which config fields must\nmatch their repo, and the standing rule that the kit *stages* hook settings —\nit never writes a live ``.claude/`` tree itself.\n"""\n\nfrom __future__ import annotations\n\nimport json\n\nfrom engine.lib.config import Config\n\n# (settings.json event key, bootstrap hook event, tool matcher or None).\n_SET_EVENTS: tuple[tuple[str, str, str | None], ...] = (\n    ("PreToolUse", "pretooluse", "*"),\n    ("SessionStart", "sessionstart", None),\n    ("PostToolUse", "postedit", "Edit|Write|NotebookEdit"),\n    ("Stop", "stopcheck", None),\n)\n\n_SET_FILL_ROWS: tuple[tuple[str, str], ...] = (\n    (\n        "`interpreter`",\n        "the Python that runs the kit itself — every hook command below "\n        "starts with it; set it to an interpreter available on your PATH",\n    ),\n    (\n        "`interpreter_for_checks`",\n        "your *project\'s* verification interpreter (the version your CI "\n        "pins, e.g. `python3.10`) — kept separate from `interpreter` on "\n        "purpose",\n    ),\n    (\n        "`bootstrap.py` path",\n        "each hook command assumes `bootstrap.py` sits at your repo root; "\n        "rewrite the path inside every command if it lives elsewhere",\n    ),\n    (\n        "`state_dir`",\n        "where kit state + staged artifacts live (default `.substrate`) — "\n        "the post-edit generated-artifact warning keys off it",\n    ),\n    (\n        "`docs_root`",\n        "your documentation root (default `docs`) — the post-edit badge "\n        "warning and the SessionStart trigger scan key off it",\n    ),\n    (\n        "`sessions_dir`",\n        "where per-session logs live (default `.sessions`) — the Stop-hook "\n        "session-log advisory keys off it",\n    ),\n    (\n        "cadence knobs",\n        "`cadence.*` in `substrate.config.json` (`compaction_sessions`, "\n        "`reconciliation_sessions`, `staleness_days`, "\n        "`critical_slot_grace_sessions`, `guided_practice_sessions`) drive "\n        "the SessionStart triggers and Stop-hook advisories",\n    ),\n)\n\n\ndef _set_command(config: Config, event: str) -> str:\n    """Return the shell command Claude Code runs for one hook event."""\n    return f"{config.interpreter} bootstrap.py hook {event}"\n\n\ndef full_settings_template(config: Config) -> str:\n    """Return the complete ``settings.template.json`` wiring all four hooks.\n\n    JSON text (2-space indent) a host merges into ``.claude/settings.json``:\n    PreToolUse (matcher ``*``), SessionStart, PostToolUse (matcher\n    ``Edit|Write|NotebookEdit``), and Stop, each running\n    ``<interpreter> bootstrap.py hook <event>``. Matcher-less events omit the\n    ``matcher`` key entirely (they apply unconditionally).\n    """\n    hooks: dict[str, list[dict]] = {}\n    for settings_event, cli_event, matcher in _SET_EVENTS:\n        entry: dict = {}\n        if matcher is not None:\n            entry["matcher"] = matcher\n        entry["hooks"] = [\n            {"type": "command", "command": _set_command(config, cli_event)},\n        ]\n        hooks[settings_event] = [entry]\n    return json.dumps({"hooks": hooks}, indent=2) + "\\n"\n\n\ndef hooks_fill_table() -> str:\n    """Return the markdown customization contract for the settings template.\n\n    One ``field | what must match your repo`` row per knob a host must verify\n    before installing, plus the install instruction: merge the staged template\n    into ``.claude/settings.json`` yourself — the kit stages hook settings, it\n    never writes a live ``.claude/`` tree.\n    """\n    lines = [\n        "# Hook settings — customization contract",\n        "",\n        "The kit **stages** `settings.template.json`; it never writes your",\n        "`.claude/` tree. Install by merging the template\'s `hooks` block into",\n        "your repo\'s `.claude/settings.json` yourself, after checking every",\n        "row below against your repo.",\n        "",\n        "| field | what must match your repo |",\n        "| --- | --- |",\n    ]\n    lines += [f"| {field} | {note} |" for field, note in _SET_FILL_ROWS]\n    lines += [\n        "",\n        "All four hooks are advisory and fail open: they always exit 0 and",\n        "never block a tool, an edit, or a session stop.",\n    ]\n    return "\\n".join(lines) + "\\n"\n',
     'engine/render.py': '"""Render the project\'s content docs from templates + filled interview slots.\n\nTemplates use ``${slot_name}`` placeholders (``string.Template``). A slot the\ninterview has filled substitutes in; an unfilled slot is left as ``${slot_name}``\nand reported — so a half-onboarded project\'s gaps stay visible rather than going\nsilently blank. Templates ship embedded in the bootstrap (the generated\n``_TEMPLATES`` dict) and, in the source tree, live under ``src/templates/``.\n"""\n\nfrom __future__ import annotations\n\nimport re\nfrom pathlib import Path\nfrom string import Template\nfrom typing import Any\n\n_PLACEHOLDER_RE = re.compile(r"\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}")\n\n\ndef find_placeholders(text: str) -> set[str]:\n    """Return the set of ``${name}`` placeholders remaining in ``text``."""\n    return set(_PLACEHOLDER_RE.findall(text))\n\n\ndef render(text: str, context: dict[str, str]) -> str:\n    """Substitute ``${slot}`` placeholders from ``context`` (unfilled left as-is)."""\n    return Template(text).safe_substitute(context)\n\n\ndef build_context(state: dict[str, Any]) -> dict[str, str]:\n    """Build the substitution context from a state document\'s filled slots."""\n    values = state.get("slot_values", {})\n    return {slot: str(entry.get("value", "")) for slot, entry in values.items()}\n\n\ndef load_templates() -> dict[str, str]:\n    """Return ``{filename: text}`` for every template (embedded or from src)."""\n    embedded = globals().get("_TEMPLATES")\n    if embedded is not None:\n        return dict(embedded)\n    root = Path(__file__).resolve().parent.parent / "templates"\n    return {p.name: p.read_text(encoding="utf-8") for p in sorted(root.glob("*"))}\n',
-    'engine/cli.py': '"""The substrate-kit bootstrap command line.\n\nSurface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``\n(show or set the task stance), ``ask`` (list the pending interview questions),\n``answer`` / ``confirm`` (fill / confirm a slot), ``render`` (write content\ndocs), ``skills`` / ``agents`` / ``hooks`` (list / ``--build`` the packs),\n``hook <event>`` (the runtime hook entry points), ``check`` (every hygiene\nchecker), ``triggers``, ``reflect``, ``episodes``, ``metrics``, ``maintain``,\n``review`` (the independent-review seam), ``economy`` (the context-economy\nengine), ``ledger`` (the [D-NNNN] decisions ledger), and ``--simulate N\n[--mode m]`` (the CI / proving smoke that drives the staged interview and\nasserts per-mode behavior). Output goes through ``_emit`` (``sys.stdout.write``)\nrather than ``print`` to keep the engine lint-clean.\n"""\n\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport sys\nimport tempfile\nfrom datetime import date\nfrom pathlib import Path\n\nfrom engine.agents.agents import AGENTS, agent_document, agent_relpath\nfrom engine.checks.check_docs import run_doc_checks\nfrom engine.checks.check_namespace import check_namespace\nfrom engine.checks.check_orientation_budget import check_orientation_budget\nfrom engine.checks.check_seam_authority import check_seam_authority\nfrom engine.checks.check_session_log import check_log, latest_session_log\nfrom engine.economy.engine import economy_actuate, economy_check, issue_body\nfrom engine.economy.harvest import parse_harvest_tables\nfrom engine.economy.simulator import calibration_recipe, default_calibration, run_search\nfrom engine.hooks.stance_guard import evaluate_tool, settings_snippet, tool_from_payload\nfrom engine.interview.interview import (\n    confirm_slot,\n    critical_slots,\n    pending_questions,\n    record_answer,\n    run_session,\n    session_questions,\n)\nfrom engine.interview.question_bank import QUESTIONS\nfrom engine.ledger import LEDGER_FILENAME, append_decision, check_ledger\nfrom engine.ledger import check_stamp_discipline as ledger_stamp_check\nfrom engine.lib.atomicio import atomic_write_text\nfrom engine.lib.config import Config, config_path, load_config, save_config\nfrom engine.lib.guardrail import UnsafeTargetError, assert_safe_target\nfrom engine.lib.modes import triggers_mandate\nfrom engine.lib.state import JsonStateBackend, default_state\nfrom engine.loop.episodes import (\n    EPISODIC_INDEX_FILENAME,\n    rebuild_episodic_index,\n    search_episodes,\n)\nfrom engine.loop.kpis import kpi_footer, workflow_kpis\nfrom engine.loop.maintenance import compaction_due, maintenance_report, run_compaction\nfrom engine.loop.reflections import (\n    REFLECTIONS_FILENAME,\n    add_reflection,\n    lessons_block,\n    load_reflections,\n    mine_reflections,\n)\nfrom engine.loop.review_seam import (\n    apply_review_verdict,\n    build_review_payload,\n    seam_wiring_doc,\n    write_review_payload,\n)\nfrom engine.loop.triggers import check_triggers, mandatory_questions, trigger_block\nfrom engine.render import build_context, find_placeholders, load_templates, render\nfrom engine.skills.skills import (\n    SKILLS,\n    skill_capabilities,\n    skill_document,\n    skill_relpath,\n)\nfrom engine.stances.stances import DEFAULT_STANCE, stance_briefing, stance_names\n\n\ndef _emit(line: str = "") -> None:\n    """Write a line to stdout (avoids the print() lint ban in engine code)."""\n    sys.stdout.write(line + "\\n")\n\n\ndef _kit_root() -> Path:\n    """Return the kit root (``substrate-kit/``) for the guardrail check."""\n    return Path(__file__).resolve().parents[2]\n\n\ndef _state_path(root: Path, config: Config) -> Path:\n    """Return the state-file path under a project ``root``."""\n    return root / config.state_dir / "state.json"\n\n\ndef cmd_init(target: Path) -> int:\n    """Create config + state under ``target`` if absent; never clobber."""\n    assert_safe_target(target, _kit_root())\n    target.mkdir(parents=True, exist_ok=True)\n    if config_path(target).exists():\n        config = load_config(target)\n    else:\n        config = Config()\n        save_config(target, config)\n    state_path = _state_path(target, config)\n    if state_path.exists():\n        _emit(f"init: already initialised at {target} (idempotent no-op).")\n        return 0\n    backend = JsonStateBackend(state_path)\n    with backend.transaction():\n        for key, value in default_state(config.project_id).items():\n            backend.set(key, value)\n    _emit(f"init: created {state_path} (project_id={config.project_id}).")\n    return 0\n\n\ndef cmd_status(target: Path) -> int:\n    """Print a one-screen summary of the install\'s state."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    data = backend.data\n    if not data:\n        _emit(f"status: no state at {target} (run init first).")\n        return 1\n    _emit(f"project_id : {data.get(\'project_id\')}")\n    _emit(f"stage      : {data.get(\'stage\')}")\n    _emit(f"mode       : {data.get(\'mode\')}")\n    _emit(f"stance     : {data.get(\'stance\')}")\n    _emit(f"sessions   : {data.get(\'session_count\')}")\n    return 0\n\n\ndef cmd_mode(target: Path, name: str) -> int:\n    """Set the integration mode (observe | guided | active)."""\n    valid = ("observe", "guided", "active")\n    if name not in valid:\n        _emit(f"mode: invalid mode {name!r} (choose from {list(valid)}).")\n        return 2\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"mode: no state at {target} (run init first).")\n        return 1\n    history = list(backend.get("mode_history", []))\n    history.append(\n        {\n            "mode": name,\n            "session": int(backend.get("session_count", 0)),\n            "date": date.today().isoformat(),\n        },\n    )\n    with backend.transaction():\n        backend.set("mode", name)\n        backend.set("mode_history", history)\n    _emit(f"mode: set to {name} (audit trail: {len(history)} switch(es)).")\n    return 0\n\n\ndef cmd_stance(target: Path, name: str | None) -> int:\n    """Show or set the active task stance (question|analysis|debug|review|plan).\n\n    With no ``name``, prints the active stance\'s briefing (reading-route +\n    tool-scope + output contract) and the available set. With a ``name``, switches\n    the active stance in state. The stance is advisory — it scopes orientation, it\n    does not block actions.\n    """\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"stance: no state at {target} (run init first).")\n        return 1\n    if name is None:\n        active = backend.data.get("stance", DEFAULT_STANCE)\n        _emit(stance_briefing(active))\n        _emit(f"  available: {\', \'.join(stance_names())}")\n        return 0\n    if name not in stance_names():\n        _emit(f"stance: invalid stance {name!r} (choose from {stance_names()}).")\n        return 2\n    backend.set("stance", name)\n    _emit(f"stance: set to {name}.")\n    _emit(stance_briefing(name))\n    return 0\n\n\ndef cmd_ask(target: Path) -> int:\n    """List the interview\'s currently pending questions."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"ask: no state at {target} (run init first).")\n        return 1\n    pending = pending_questions(backend.data)\n    if not pending:\n        _emit("ask: no pending questions — all slots filled.")\n        return 0\n    asked = session_questions(backend.data)\n    _emit(f"ask: {len(asked)} question(s) this session (mode quota):")\n    for question in asked:\n        _emit(\n            f"  [{question[\'id\']}] "\n            f"({question[\'audience\']}/{question[\'priority\']}) {question[\'prompt\']}",\n        )\n    remaining = len(pending) - len(asked)\n    if remaining > 0:\n        _emit(f"  (+{remaining} more later — the mode paces the interview)")\n    return 0\n\n\ndef cmd_render(target: Path) -> int:\n    """Render the content docs from the current filled slots into ``target``."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"render: no state at {target} (run init first).")\n        return 1\n    context = build_context(backend.data)\n    out_dir = target / config.state_dir / "rendered"\n    leftover_total = 0\n    for name, text in load_templates().items():\n        rendered = render(text, context)\n        leftover = find_placeholders(rendered)\n        leftover_total += len(leftover)\n        out_name = name[:-5] if name.endswith(".tmpl") else name\n        atomic_write_text(out_dir / out_name, rendered)\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"render: wrote {out_name}{suffix}")\n    _emit(f"render: {leftover_total} unfilled placeholder(s) total.")\n    return 0\n\n\ndef cmd_skills(target: Path, build: bool) -> int:\n    """List the skill pack, or ``--build`` it into ``<state_dir>/skills/``.\n\n    Listing shows each skill + its declared capabilities (what it may do beyond\n    read, overriding the ambient stance). Building emits a native ``SKILL.md`` per\n    skill into the staging area, body slot-filled from the interview — the host\n    then installs them under ``.claude/skills/``. Like ``render``, the kit stages;\n    it never writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    if not build:\n        _emit("skills:")\n        for skill in SKILLS:\n            caps = ", ".join(skill_capabilities(skill["name"]))\n            _emit(f"  {skill[\'name\']} — {skill[\'description\']}")\n            _emit(f"    capabilities: {caps}")\n        return 0\n    backend = JsonStateBackend(_state_path(target, config))\n    context = build_context(backend.data) if backend.data else {}\n    out_base = target / config.state_dir\n    leftover_total = 0\n    for skill in SKILLS:\n        body = render(skill["body"], context)\n        leftover = find_placeholders(body)\n        leftover_total += len(leftover)\n        atomic_write_text(out_base / skill_relpath(skill), skill_document(skill, body))\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"skills: wrote {skill_relpath(skill)}{suffix}")\n    _emit(f"skills: {len(SKILLS)} skill(s), {leftover_total} unfilled placeholder(s).")\n    return 0\n\n\ndef cmd_agents(target: Path, build: bool) -> int:\n    """List the persona pack, or ``--build`` it into ``<state_dir>/agents/``.\n\n    Listing shows each persona + its description. Building emits a native\n    ``.claude/agents``-style ``<name>.md`` per persona into the staging area, body\n    slot-filled from the project\'s contract slots — the host then installs them\n    under ``.claude/agents/``. Like ``render``/``skills``, the kit stages; it never\n    writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    if not build:\n        _emit("agents:")\n        for agent in AGENTS:\n            _emit(f"  {agent[\'name\']} — {agent[\'description\']}")\n        return 0\n    backend = JsonStateBackend(_state_path(target, config))\n    context = build_context(backend.data) if backend.data else {}\n    out_base = target / config.state_dir\n    leftover_total = 0\n    for agent in AGENTS:\n        body = render(agent["body"], context)\n        leftover = find_placeholders(body)\n        leftover_total += len(leftover)\n        atomic_write_text(out_base / agent_relpath(agent), agent_document(agent, body))\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"agents: wrote {agent_relpath(agent)}{suffix}")\n    count = len(AGENTS)\n    _emit(f"agents: {count} persona(s), {leftover_total} unfilled placeholder(s).")\n    return 0\n\n\ndef _hook_command(config: Config) -> str:\n    """Return the shell command Claude Code runs for the PreToolUse guard."""\n    return f"{config.interpreter} bootstrap.py hook pretooluse"\n\n\ndef cmd_hooks(target: Path, build: bool) -> int:\n    """Show the hook wiring, or ``--build`` the settings snippet into staging.\n\n    The only hook today is the **PreToolUse stance guard**. Building stages a\n    ``.claude/settings.json`` snippet into ``<state_dir>/hooks/`` that the host\n    merges into their own settings (adjusting the bootstrap path). Like the other\n    emitters, the kit stages; it never writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    command = _hook_command(config)\n    if not build:\n        _emit("hooks:")\n        _emit("  pretooluse — stance guard: warns on an out-of-stance tool (advisory).")\n        _emit(f"  wiring command: {command}")\n        return 0\n    out = target / config.state_dir / "hooks" / "settings.snippet.json"\n    atomic_write_text(out, settings_snippet(command))\n    _emit(f"hooks: wrote {out.relative_to(target)}")\n    _emit("hooks: merge its `hooks.PreToolUse` block into .claude/settings.json.")\n    return 0\n\n\ndef cmd_hook(target: Path, event: str) -> int:\n    """Run a Claude Code hook check (currently: the ``pretooluse`` stance guard).\n\n    Reads the hook payload from stdin; for an out-of-stance tool it writes an\n    advisory warning to stderr. **Always returns 0** — the guard is advisory\n    (plan section 3b), so it never blocks a tool. Fails open on missing\n    state / stance / payload.\n    """\n    if event != "pretooluse":\n        return 0\n    tool_name = tool_from_payload(sys.stdin.read())\n    if not tool_name:\n        return 0\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    stance = backend.data.get("stance") if backend.data else None\n    if not stance:\n        return 0\n    warning = evaluate_tool(stance, tool_name)\n    if warning:\n        sys.stderr.write(warning + "\\n")\n    return 0\n\n\ndef _extra_check_findings(target: Path, config: Config) -> list:\n    """Run the configured non-doc checkers (ledger, namespace, seams, budget).\n\n    Each checker engages only when its inputs exist — an un-adopted project\n    with no ledger, no namespace roots, no seams, and no boot docs runs none of\n    them, so ``check`` stays meaningful before onboarding.\n    """\n    findings: list = []\n    ledger_path = target / config.docs_root / LEDGER_FILENAME\n    if ledger_path.exists():\n        findings += check_ledger(ledger_path)\n        findings += ledger_stamp_check(target / config.docs_root, ledger_path)\n    roots = [target / r for r in config.namespace.get("roots", [])]\n    roots = [r for r in roots if r.exists()]\n    if roots:\n        findings += check_namespace(\n            roots,\n            reserved=config.namespace.get("reserved") or None,\n        )\n    if config.seams:\n        findings += check_seam_authority(target, config.seams)\n    boot_docs = config.orientation.get("boot_docs") or config.readpath_docs\n    docs_root = target / config.docs_root\n    if any((docs_root / doc).exists() or (target / doc).exists() for doc in boot_docs):\n        findings += check_orientation_budget(target, config)\n    return findings\n\n\ndef cmd_check(target: Path, strict: bool) -> int:\n    """Run every hygiene checker against ``target``.\n\n    Docs (badge/link/reachable), the decisions ledger + stamp discipline, the\n    namespace/shadowing guard, the seam-authority fences, and the orientation\n    word budget — each engaging only when its inputs exist. Findings always\n    count toward the exit code (under ``--strict``); a *missing* session log is\n    advisory (a host may run ``check`` mid-session), but an *incomplete*\n    existing log counts. Uses config defaults if ``target`` has no\n    ``substrate.config.json`` yet, so a project can lint before onboarding.\n    """\n    config = load_config(target)\n    docs_root = target / config.docs_root\n    doc_findings = run_doc_checks(\n        docs_root,\n        config.badge_tokens,\n        config.readpath_docs,\n    )\n    doc_findings = list(doc_findings) + _extra_check_findings(target, config)\n    if doc_findings:\n        _emit(f"check: {len(doc_findings)} finding(s):")\n        for finding in doc_findings:\n            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")\n\n    log = latest_session_log(target / config.sessions_dir)\n    log_missing: list[str] = check_log(log, config.session_markers) if log else []\n    if log is None:\n        _emit("check: no session log found yet (advisory — not a failure).")\n    else:\n        rel = log.relative_to(target) if log.is_relative_to(target) else log\n        if log_missing:\n            _emit(f"check: session log {rel} is missing: {\', \'.join(log_missing)}")\n        else:\n            _emit(f"check: session log {rel} complete.")\n\n    if not doc_findings and not log_missing:\n        _emit("check: all checks passed.")\n        return 0\n    return 1 if strict else 0\n\n\ndef _require_state(\n    target: Path,\n    command: str,\n) -> tuple[Config, JsonStateBackend] | None:\n    """Load config + state; None (with a message) when the install is missing."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"{command}: no state at {target} (run init first).")\n        return None\n    return config, backend\n\n\ndef _question_for_slot(slot: str) -> dict | None:\n    """Return the bank question that fills ``slot`` (None when unknown)."""\n    for question in QUESTIONS:\n        if question["slot"] == slot:\n            return question\n    return None\n\n\ndef cmd_answer(target: Path, slot: str, answer: str) -> int:\n    """Record a user answer for ``slot`` (fills it, resolves its escalation)."""\n    loaded = _require_state(target, "answer")\n    if loaded is None:\n        return 1\n    _, backend = loaded\n    question = _question_for_slot(slot)\n    if question is None:\n        known = ", ".join(q["slot"] for q in QUESTIONS)\n        _emit(f"answer: unknown slot {slot!r} (known: {known}).")\n        return 2\n    record_answer(backend, question, answer, source="user")\n    status = backend.get("slots", {}).get(slot)\n    _emit(f"answer: {slot} -> {status}.")\n    if status == "partial":\n        floor = int(question.get("min_len", 1))\n        _emit(f"answer: too thin to count (needs >= {floor} chars of substance).")\n    return 0\n\n\ndef cmd_confirm(target: Path, slot: str) -> int:\n    """Confirm a provisional (self-answered) slot as user-verified."""\n    loaded = _require_state(target, "confirm")\n    if loaded is None:\n        return 1\n    _, backend = loaded\n    if confirm_slot(backend, slot, source="user"):\n        _emit(f"confirm: {slot} confirmed (provisional -> filled).")\n        return 0\n    _emit(f"confirm: {slot} is not provisional (nothing to confirm).")\n    return 1\n\n\ndef cmd_triggers(target: Path) -> int:\n    """Scan for fired triggers and show the mandated / advisory questions."""\n    loaded = _require_state(target, "triggers")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    triggers = check_triggers(target, config, backend.data)\n    if not triggers:\n        _emit("triggers: none fired.")\n        return 0\n    questions = mandatory_questions(triggers)\n    block = trigger_block(\n        triggers,\n        questions,\n        mandate=triggers_mandate(backend.data),\n    )\n    _emit(block)\n    return 0\n\n\ndef cmd_reflect(\n    target: Path,\n    *,\n    add: str | None,\n    evidence: str,\n    tags: str,\n    mine: bool,\n) -> int:\n    """List, add to, or mine the forward reflection buffer."""\n    loaded = _require_state(target, "reflect")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    path = target / config.state_dir / REFLECTIONS_FILENAME\n    buffer_size = int(config.reflection.get("buffer_size", 5))\n    if add is not None:\n        entry = add_reflection(\n            path,\n            lesson=add,\n            evidence=evidence,\n            tags=[t for t in tags.split(",") if t],\n            buffer_size=buffer_size,\n        )\n        _emit(f"reflect: added {entry[\'id\']}.")\n    if mine:\n        candidates = mine_reflections(target / config.sessions_dir)\n        for cand in candidates:\n            entry = add_reflection(\n                path,\n                lesson=cand["lesson"],\n                evidence=cand.get("evidence", ""),\n                tags=list(cand.get("tags", [])),\n                buffer_size=buffer_size,\n            )\n            _emit(f"reflect: mined {entry[\'id\']} — {cand[\'lesson\'][:60]}")\n        if not candidates:\n            _emit("reflect: mined nothing new.")\n    entries = load_reflections(path)\n    backend.set(\n        "reflection_buffer",\n        {\n            "active_count": len(entries),\n            "last_mined": (\n                date.today().isoformat()\n                if mine\n                else (backend.get("reflection_buffer", {}) or {}).get("last_mined")\n            ),\n        },\n    )\n    block = lessons_block(entries)\n    _emit(block if block else "reflect: buffer empty.")\n    return 0\n\n\ndef cmd_episodes(target: Path, *, rebuild: bool, search: str | None) -> int:\n    """Rebuild or search the episodic index over the session logs."""\n    config = load_config(target)\n    index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME\n    if rebuild:\n        entries = rebuild_episodic_index(target / config.sessions_dir, index_path)\n        _emit(f"episodes: indexed {len(entries)} session(s).")\n    if search is not None:\n        hits = search_episodes(index_path, search)\n        for hit in hits:\n            _emit(\n                f"  {hit.get(\'date\', \'?\')} {hit.get(\'slug\', \'?\')} — "\n                f"{hit.get(\'summary\', \'\')}",\n            )\n        _emit(f"episodes: {len(hits)} hit(s) for {search!r}.")\n    if not rebuild and search is None:\n        _emit("episodes: pass --rebuild and/or --search TAG.")\n    return 0\n\n\ndef cmd_metrics(target: Path) -> int:\n    """Emit the router / workflow KPIs (JSON + the one-line footer)."""\n    loaded = _require_state(target, "metrics")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    kpis = workflow_kpis(backend.data, target / config.sessions_dir)\n    _emit(json.dumps(kpis, indent=2, sort_keys=True))\n    _emit(kpi_footer(kpis))\n    return 0\n\n\ndef cmd_maintain(target: Path, *, compact: bool) -> int:\n    """Run the self-maintenance loop\'s report (and compaction when asked)."""\n    loaded = _require_state(target, "maintain")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    if compact:\n        if compaction_due(backend.data, dict(config.cadence or {})):\n            path = run_compaction(target, config, backend)\n            rel = path.relative_to(target) if path.is_relative_to(target) else path\n            _emit(f"maintain: compaction written -> {rel}")\n        else:\n            _emit("maintain: compaction not due.")\n    triggers = check_triggers(target, config, backend.data)\n    economy = economy_check(target, config)\n    ledger_path = target / config.docs_root / LEDGER_FILENAME\n    ledger_findings = check_ledger(ledger_path) if ledger_path.exists() else []\n    kpis = workflow_kpis(backend.data, target / config.sessions_dir)\n    _emit(\n        maintenance_report(\n            target,\n            config,\n            backend,\n            triggers=triggers,\n            economy_findings=list(economy.get("findings", [])),\n            ledger_findings=ledger_findings,\n            kpis=kpis,\n        ),\n    )\n    return 0\n\n\ndef cmd_review(\n    target: Path,\n    action: str,\n    slot: str | None,\n    *,\n    verdict: str,\n    reviewer: str,\n) -> int:\n    """Drive the independent-review seam: build payloads, record verdicts."""\n    if action == "doc":\n        _emit(seam_wiring_doc())\n        return 0\n    if slot is None:\n        _emit("review: a slot is required for build/confirm.")\n        return 2\n    loaded = _require_state(target, "review")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    if action == "build":\n        payload = build_review_payload(backend, slot)\n        if not payload:\n            _emit(f"review: slot {slot!r} is not provisional — nothing to review.")\n            return 1\n        path = write_review_payload(target, config, payload)\n        rel = path.relative_to(target) if path.is_relative_to(target) else path\n        _emit(f"review: payload written -> {rel}")\n        return 0\n    if action == "confirm":\n        if verdict not in ("pass", "fail"):\n            _emit("review: --verdict must be pass or fail.")\n            return 2\n        outcome = apply_review_verdict(\n            backend,\n            slot,\n            verdict=verdict,\n            reviewer=reviewer,\n        )\n        _emit(f"review: {slot} -> {outcome}.")\n        return 0\n    _emit(f"review: unknown action {action!r} (build | confirm | doc).")\n    return 2\n\n\ndef cmd_economy(\n    target: Path,\n    action: str,\n    *,\n    strict: bool,\n    apply: bool,\n    bands: int,\n) -> int:\n    """Drive the context-economy engine: check, apply, simulate, recipe."""\n    config = load_config(target)\n    if action == "recipe":\n        _emit(calibration_recipe())\n        return 0\n    if action == "simulate":\n        result = run_search(default_calibration(), bands=bands)\n        _emit(str(result.get("why_it_won", "")))\n        winner = result.get("winner", {})\n        name = winner.get("name") if isinstance(winner, dict) else winner\n        _emit(f"economy: winner {name} (feasible: {result.get(\'feasible_count\')}).")\n        return 0\n    harvested = parse_harvest_tables(target / config.docs_root / "planning")\n    report = economy_check(target, config, harvested=harvested)\n    if action == "issue-body":\n        _emit(issue_body(report))\n        return 0\n    if action == "check":\n        census = report.get("census", {})\n        for name in sorted(census):\n            row = census[name]\n            _emit(\n                f"  class {name}: {row.get(\'files\', 0)} file(s), "\n                f"{row.get(\'words\', 0)} word(s)",\n            )\n        for gauge in report.get("gauges", []):\n            flag = "OVER" if gauge.get("over") else "ok"\n            _emit(f"  gauge {gauge[\'name\']}: {gauge[\'value\']}/{gauge[\'cap\']} [{flag}]")\n        findings = report.get("findings", [])\n        for finding in findings:\n            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")\n        for line in economy_actuate(target, config, report, apply=False):\n            _emit(f"  would-act: {line}")\n        debt = report.get("debt", 0)\n        threshold = int(config.economy.get("debt_threshold", 10))\n        _emit(f"economy: debt {debt} (threshold {threshold}).")\n        over = bool(findings) or debt >= threshold\n        return 1 if strict and over else 0\n    if action == "apply":\n        lines = economy_actuate(target, config, report, apply=apply)\n        for line in lines:\n            _emit(f"  {line}")\n        if not apply:\n            _emit("economy: dry-run (pass --yes to act; maturity gates apply).")\n        return 0\n    _emit(\n        f"economy: unknown action {action!r} "\n        "(check | apply | simulate | recipe | issue-body).",\n    )\n    return 2\n\n\ndef cmd_ledger(\n    target: Path,\n    *,\n    title: str,\n    verdict: str,\n    why: str,\n    provenance: str,\n    supersedes: str | None,\n) -> int:\n    """Append a decision to the [D-NNNN] ledger (created on first use)."""\n    config = load_config(target)\n    path = target / config.docs_root / LEDGER_FILENAME\n    entry = append_decision(\n        path,\n        title=title,\n        verdict=verdict,\n        why=why,\n        provenance=provenance,\n        supersedes=supersedes,\n    )\n    _emit(f"ledger: recorded {entry[\'id\']} — {title}")\n    if supersedes:\n        _emit(f"ledger: {supersedes} stamped superseded-by {entry[\'id\']}.")\n    return 0\n\n\ndef _simulate_mode_asserts(\n    mode: str,\n    data: dict,\n    graduated: bool,\n    n: int,\n) -> str | None:\n    """Return the per-mode behavior violation, or None when behavior held.\n\n    The behavior-assert half of the simulation: observe must never\n    auto-graduate (it proposes), guided/active must graduate once the quiet\n    streak is long enough.\n    """\n    quiet_needed = 3\n    if mode == "observe":\n        if graduated or data.get("stage") != "integration":\n            return "observe mode auto-graduated (must only propose)"\n        if n > quiet_needed and not data.get("graduation_proposed"):\n            return "observe mode never proposed graduation"\n        return None\n    if n > quiet_needed and not graduated:\n        return f"{mode} mode failed to graduate after the quiet streak"\n    return None\n\n\ndef cmd_simulate(n: int, mode: str = "guided") -> int:\n    """Init into a temp dir and drive ``n`` interview sessions; verify behavior.\n\n    Session 1 supplies confirmed answers for every critical slot; later sessions\n    supply none. Asserts the critical slots fill and that the run behaves\n    per ``mode``: guided/active graduate integration -> steady once quiet;\n    observe only ever *proposes* graduation.\n    """\n    with tempfile.TemporaryDirectory(prefix="substrate-sim-") as tmp:\n        target = Path(tmp)\n        rc = cmd_init(target)\n        if rc != 0:\n            return rc\n        state_path = _state_path(target, load_config(target))\n        if mode != "guided":\n            rc = cmd_mode(target, mode)\n            if rc != 0:\n                return rc\n        crit = critical_slots()\n        answers = {slot: f"value-for-{slot}" for slot in crit}\n        graduated = False\n        for index in range(n):\n            backend = JsonStateBackend(state_path)\n            result = run_session(backend, answers if index == 0 else {})\n            graduated = graduated or result["graduated"]\n        data = JsonStateBackend(state_path).data\n        missing = [s for s in crit if data.get("slots", {}).get(s) != "filled"]\n        if missing:\n            _emit(f"simulate: FAILED — critical slots unfilled: {missing}")\n            return 1\n        violation = _simulate_mode_asserts(mode, data, graduated, n)\n        if violation:\n            _emit(f"simulate: FAILED — {violation}")\n            return 1\n        _emit(\n            f"simulate: OK — {n} session(s), {len(crit)} critical slots filled, "\n            f"mode={mode}, stage={data.get(\'stage\')} (graduated={graduated}).",\n        )\n    return 0\n\n\ndef build_parser() -> argparse.ArgumentParser:\n    """Construct the bootstrap argument parser."""\n    parser = argparse.ArgumentParser(prog="bootstrap", description="substrate-kit")\n    parser.add_argument(\n        "--simulate",\n        type=int,\n        metavar="N",\n        help="run N synthetic sessions in a temp dir, then exit",\n    )\n    parser.add_argument(\n        "--mode",\n        default="guided",\n        choices=("observe", "guided", "active"),\n        help="integration mode for --simulate (behavior asserts differ per mode)",\n    )\n    sub = parser.add_subparsers(dest="command")\n    for name, helptext in (\n        ("init", "initialise a project"),\n        ("status", "show install state"),\n        ("ask", "list pending interview questions"),\n        ("render", "render content docs from filled slots"),\n        ("triggers", "scan for fired triggers / mandatory questions"),\n        ("metrics", "emit the router + workflow KPIs"),\n    ):\n        child = sub.add_parser(name, help=helptext)\n        child.add_argument("--target", type=Path, default=Path.cwd())\n    answer = sub.add_parser("answer", help="record a user answer for a slot")\n    answer.add_argument("slot")\n    answer.add_argument("value", nargs="+", help="the answer text")\n    answer.add_argument("--target", type=Path, default=Path.cwd())\n    confirm = sub.add_parser("confirm", help="confirm a provisional slot")\n    confirm.add_argument("slot")\n    confirm.add_argument("--target", type=Path, default=Path.cwd())\n    reflect = sub.add_parser("reflect", help="list/add/mine the reflection buffer")\n    reflect.add_argument("--add", metavar="LESSON", default=None)\n    reflect.add_argument("--evidence", default="")\n    reflect.add_argument("--tags", default="", help="comma-separated tags")\n    reflect.add_argument("--mine", action="store_true")\n    reflect.add_argument("--target", type=Path, default=Path.cwd())\n    episodes = sub.add_parser("episodes", help="rebuild/search the episodic index")\n    episodes.add_argument("--rebuild", action="store_true")\n    episodes.add_argument("--search", metavar="TAG", default=None)\n    episodes.add_argument("--target", type=Path, default=Path.cwd())\n    maintain = sub.add_parser("maintain", help="run the self-maintenance report")\n    maintain.add_argument("--compact", action="store_true")\n    maintain.add_argument("--target", type=Path, default=Path.cwd())\n    review = sub.add_parser("review", help="drive the independent-review seam")\n    review.add_argument("action", choices=("build", "confirm", "doc"))\n    review.add_argument("slot", nargs="?", default=None)\n    review.add_argument("--verdict", default="", help="pass | fail (for confirm)")\n    review.add_argument("--reviewer", default="external")\n    review.add_argument("--target", type=Path, default=Path.cwd())\n    economy = sub.add_parser("economy", help="run the context-economy engine")\n    economy.add_argument(\n        "action",\n        choices=("check", "apply", "simulate", "recipe", "issue-body"),\n    )\n    economy.add_argument("--strict", action="store_true")\n    economy.add_argument("--yes", action="store_true", help="really act (apply)")\n    economy.add_argument("--bands", type=int, default=24)\n    economy.add_argument("--target", type=Path, default=Path.cwd())\n    ledger = sub.add_parser("ledger", help="append a [D-NNNN] decision")\n    ledger.add_argument("--title", required=True)\n    ledger.add_argument("--verdict", required=True)\n    ledger.add_argument("--why", required=True)\n    ledger.add_argument("--provenance", required=True)\n    ledger.add_argument("--supersedes", default=None)\n    ledger.add_argument("--target", type=Path, default=Path.cwd())\n    mode = sub.add_parser("mode", help="set the integration mode")\n    mode.add_argument("name")\n    mode.add_argument("--target", type=Path, default=Path.cwd())\n    stance = sub.add_parser("stance", help="show or set the task stance")\n    stance.add_argument("name", nargs="?", default=None)\n    stance.add_argument("--target", type=Path, default=Path.cwd())\n    skills = sub.add_parser("skills", help="list or --build the skill pack")\n    skills.add_argument(\n        "--build",\n        action="store_true",\n        help="emit SKILL.md files into <state_dir>/skills/",\n    )\n    skills.add_argument("--target", type=Path, default=Path.cwd())\n    agents = sub.add_parser("agents", help="list or --build the persona pack")\n    agents.add_argument(\n        "--build",\n        action="store_true",\n        help="emit agent .md files into <state_dir>/agents/",\n    )\n    agents.add_argument("--target", type=Path, default=Path.cwd())\n    hooks = sub.add_parser("hooks", help="show or --build the hook wiring")\n    hooks.add_argument(\n        "--build",\n        action="store_true",\n        help="emit the PreToolUse settings snippet into <state_dir>/hooks/",\n    )\n    hooks.add_argument("--target", type=Path, default=Path.cwd())\n    hook = sub.add_parser("hook", help="run a hook check (e.g. `hook pretooluse`)")\n    hook.add_argument("event")\n    hook.add_argument("--target", type=Path, default=Path.cwd())\n    check = sub.add_parser("check", help="run the doc + session-log hygiene checks")\n    check.add_argument("--target", type=Path, default=Path.cwd())\n    check.add_argument("--strict", action="store_true", help="exit 1 if any violation")\n    return parser\n\n\ndef main(argv: list[str] | None = None) -> int:\n    """Run the bootstrap CLI; return a process exit code."""\n    parser = build_parser()\n    args = parser.parse_args(argv)\n    try:\n        if args.simulate is not None:\n            return cmd_simulate(args.simulate, args.mode)\n        if args.command == "init":\n            return cmd_init(args.target)\n        if args.command == "status":\n            return cmd_status(args.target)\n        if args.command == "ask":\n            return cmd_ask(args.target)\n        if args.command == "render":\n            return cmd_render(args.target)\n        if args.command == "mode":\n            return cmd_mode(args.target, args.name)\n        if args.command == "stance":\n            return cmd_stance(args.target, args.name)\n        if args.command == "skills":\n            return cmd_skills(args.target, args.build)\n        if args.command == "agents":\n            return cmd_agents(args.target, args.build)\n        if args.command == "hooks":\n            return cmd_hooks(args.target, args.build)\n        if args.command == "hook":\n            return cmd_hook(args.target, args.event)\n        if args.command == "check":\n            return cmd_check(args.target, args.strict)\n        if args.command == "answer":\n            return cmd_answer(args.target, args.slot, " ".join(args.value))\n        if args.command == "confirm":\n            return cmd_confirm(args.target, args.slot)\n        if args.command == "triggers":\n            return cmd_triggers(args.target)\n        if args.command == "reflect":\n            return cmd_reflect(\n                args.target,\n                add=args.add,\n                evidence=args.evidence,\n                tags=args.tags,\n                mine=args.mine,\n            )\n        if args.command == "episodes":\n            return cmd_episodes(args.target, rebuild=args.rebuild, search=args.search)\n        if args.command == "metrics":\n            return cmd_metrics(args.target)\n        if args.command == "maintain":\n            return cmd_maintain(args.target, compact=args.compact)\n        if args.command == "review":\n            return cmd_review(\n                args.target,\n                args.action,\n                args.slot,\n                verdict=args.verdict,\n                reviewer=args.reviewer,\n            )\n        if args.command == "economy":\n            return cmd_economy(\n                args.target,\n                args.action,\n                strict=args.strict,\n                apply=args.yes,\n                bands=args.bands,\n            )\n        if args.command == "ledger":\n            return cmd_ledger(\n                args.target,\n                title=args.title,\n                verdict=args.verdict,\n                why=args.why,\n                provenance=args.provenance,\n                supersedes=args.supersedes,\n            )\n    except UnsafeTargetError as exc:\n        _emit(f"refused: {exc}")\n        return 2\n    parser.print_help()\n    return 0\n',
+    'engine/contextpack.py': '"""AgentContextPack generator — index-or-manifest input (Lane B8, spec 2.10).\n\nGenerates per-area *context packs* — the curated "what an agent must know to\nwork in this area" bundles — from a project index. Two input forms are\naccepted (design-spec 2.10: the generator meets hosts where they are):\n\n  1. the kit\'s own ``project.index.json`` (``{"areas": [...]}``, planted by\n     the adopt flow as a skeleton), and\n  2. a manifest snapshot (``{"subsystems": [...]}``) as produced by a host\'s\n     existing subsystem manifest — mapped onto the same area shape with\n     sensible fallbacks.\n\nEach pack is written under ``<state_dir>/contextpacks/`` and opens with the\n``NOT SOURCE OF TRUTH`` marker: packs are build artifacts — regenerate them\nfrom the index, never hand-edit them. Pure stdlib; every write goes through\n``atomic_write_text``.\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport re\nfrom pathlib import Path\n\nfrom engine.lib.atomicio import atomic_write_text\nfrom engine.lib.config import Config\n\n_PACK_MARKER = (\n    "<!-- NOT SOURCE OF TRUTH — generated by substrate-kit; "\n    "regenerate, do not edit. -->"\n)\n\n# The list-valued fields of the canonical area shape, in emit order.\n_PACK_LIST_KEYS = (\n    "binding_docs",\n    "source_roots",\n    "do_not_create",\n    "gates",\n    "verification",\n)\n\n_PACK_SECTION_TITLES = {\n    "binding_docs": "Binding docs",\n    "source_roots": "Source roots",\n    "do_not_create": "Do-not-create",\n    "gates": "Gates",\n    "verification": "Verification",\n}\n\n_PACK_SLUG_STRIP_RE = re.compile(r"[^a-z0-9._-]")\n_PACK_SLUG_SEP_RE = re.compile(r"[\\s/\\\\]+")\n\n\ndef _pack_slug(name: str) -> str:\n    """Slugify an area name for its pack filename (spaces/slashes -> dashes)."""\n    slug = _PACK_SLUG_SEP_RE.sub("-", name.strip().lower())\n    slug = _PACK_SLUG_STRIP_RE.sub("", slug)\n    slug = re.sub(r"-{2,}", "-", slug).strip("-")\n    return slug or "area"\n\n\ndef _pack_as_list(value: object) -> list[str]:\n    """Coerce an index field to a list of strings (unknown/missing -> [])."""\n    if isinstance(value, str):\n        return [value] if value.strip() else []\n    if isinstance(value, list):\n        return [str(item) for item in value if str(item).strip()]\n    return []\n\n\ndef _pack_area(entry: dict) -> dict:\n    """Normalise one raw index entry onto the canonical area shape."""\n    name = str(entry.get("name") or "").strip() or "unnamed-area"\n    folio = entry.get("folio")\n    area: dict = {\n        "name": name,\n        "folio": str(folio).strip() if isinstance(folio, str) else "",\n    }\n    for key in _PACK_LIST_KEYS:\n        area[key] = _pack_as_list(entry.get(key))\n    return area\n\n\ndef _pack_from_subsystem(entry: dict) -> dict:\n    """Map a manifest-snapshot subsystem entry onto the area shape."""\n    mapped = dict(entry)\n    if not mapped.get("binding_docs"):\n        mapped["binding_docs"] = mapped.get("docs")\n    if not mapped.get("source_roots"):\n        mapped["source_roots"] = mapped.get("roots")\n    return _pack_area(mapped)\n\n\ndef load_pack_index(path: Path) -> list[dict]:\n    """Load a pack index from ``path``, accepting both supported forms.\n\n    Detects the form by top-level key: ``{"areas": [...]}`` is the kit\'s own\n    ``project.index.json``; ``{"subsystems": [...]}`` is a host manifest\n    snapshot (``docs``/``roots`` map onto ``binding_docs``/``source_roots``).\n    Unknown or missing per-entry keys become empty lists. Raises ``ValueError``\n    when the document is neither form (a wrong file, not a quiet no-op).\n    """\n    data = json.loads(path.read_text(encoding="utf-8"))\n    if isinstance(data, dict) and isinstance(data.get("areas"), list):\n        return [_pack_area(e) for e in data["areas"] if isinstance(e, dict)]\n    if isinstance(data, dict) and isinstance(data.get("subsystems"), list):\n        return [\n            _pack_from_subsystem(e) for e in data["subsystems"] if isinstance(e, dict)\n        ]\n    msg = f"{path.name}: expected top-level \'areas\' or \'subsystems\' list"\n    raise ValueError(msg)\n\n\ndef _pack_section(title: str, items: list[str]) -> list[str]:\n    """Render one pack section as markdown lines (empty section -> no lines)."""\n    if not items:\n        return []\n    return [f"## {title}", "", *(f"- {item}" for item in items), ""]\n\n\ndef _pack_body(root: Path, area: dict) -> str:\n    """Compose one pack\'s full markdown text from a normalised area."""\n    lines = [_PACK_MARKER, "", f"# {area[\'name\']} — agent context pack", ""]\n    lines += _pack_section("Folio", [area["folio"]] if area["folio"] else [])\n    for key in _PACK_LIST_KEYS:\n        items = area[key]\n        if key == "source_roots":\n            items = [\n                entry if (root / entry).exists() else f"{entry} (MISSING)"\n                for entry in items\n            ]\n        lines += _pack_section(_PACK_SECTION_TITLES[key], items)\n    return "\\n".join(lines).rstrip() + "\\n"\n\n\ndef generate_packs(root: Path, config: Config, index: list[dict]) -> list[Path]:\n    """Write one context pack per index area; return the written paths.\n\n    Packs land in ``<root>/<state_dir>/contextpacks/<slug>.context.md``.\n    ``source_roots`` entries are existence-checked against ``root`` and\n    suffixed `` (MISSING)`` when absent, so a stale index is visible in the\n    pack instead of silently misleading the agent reading it.\n    """\n    out_dir = root / config.state_dir / "contextpacks"\n    written: list[Path] = []\n    for entry in index:\n        area = _pack_area(entry)\n        path = out_dir / f"{_pack_slug(area[\'name\'])}.context.md"\n        atomic_write_text(path, _pack_body(root, area))\n        written.append(path)\n    return written\n\n\ndef pack_index_skeleton(project_name: str) -> str:\n    """Return the planted ``project.index.json`` skeleton (JSON text).\n\n    One example area with every field present-but-empty, plus a ``_comment``\n    explaining how each field feeds the AgentContextPack generator\n    (index-or-manifest input, design-spec 2.10).\n    """\n    skeleton = {\n        "_comment": (\n            "AgentContextPack index (design-spec 2.10). Each `areas` entry "\n            "feeds one generated <state_dir>/contextpacks/<name>.context.md: "\n            "`name` (the area; slugified into the pack filename), `folio` "\n            "(the canonical entry-point doc for the area), `binding_docs` "\n            "(authoritative contracts to read first), `source_roots` (key "\n            "files/dirs; existence-checked at generation, missing ones "\n            "flagged), `do_not_create` (existing systems an agent must not "\n            "duplicate), `gates` (currently active expansion conditions), "\n            "`verification` (commands to run before pushing). The generator "\n            \'also accepts a manifest snapshot ({"subsystems": [...]}) \'\n            "instead of this file."\n        ),\n        "project": project_name,\n        "areas": [\n            {\n                "name": "example-area",\n                "folio": "",\n                "binding_docs": [],\n                "source_roots": [],\n                "do_not_create": [],\n                "gates": [],\n                "verification": [],\n            },\n        ],\n    }\n    return json.dumps(skeleton, indent=2) + "\\n"\n',
+    'engine/adopt.py': '"""One-step adopt flow — plant the workflow docs, stage the packs (Lane B8).\n\n``adopt`` turns a bare host repo into a substrate-governed one in a single\nidempotent pass: it renders every content template with the currently filled\ninterview slots and *plants* the live docs (constitution, contracts, ledgers,\nsession scaffolding) — **skip-if-exists, never clobbering** a file the host\nalready owns — then *stages* the ``.claude`` material (working agreement,\nskill pack, persona pack, hook wiring, CI example) under ``<state_dir>`` for\nthe host to install deliberately. Only an explicit ``include_claude=True``\nwrites a live ``.claude/`` tree, and even then only files that are absent\n(the host opt-in stays non-destructive).\n\nUnfilled ``${slot}`` placeholders survive rendering visibly, so a\nhalf-onboarded adoption shows its gaps instead of going silently blank. The\nguardrail runs first: the kit refuses to adopt into its own tree. Pure\nstdlib; every write goes through ``atomic_write_text``.\n"""\n\nfrom __future__ import annotations\n\nfrom datetime import date\nfrom pathlib import Path\nfrom typing import Any\n\nfrom engine.agents.agents import AGENTS, agent_document, agent_relpath\nfrom engine.contextpack import pack_index_skeleton\nfrom engine.hooks.settings import full_settings_template, hooks_fill_table\nfrom engine.lib.atomicio import atomic_write_text\nfrom engine.lib.config import Config\nfrom engine.lib.guardrail import assert_safe_target\nfrom engine.render import build_context, load_templates, render\nfrom engine.skills.skills import SKILLS, skill_document, skill_relpath\n\n# Template filename -> planted relpath. CLAUDE.md.tmpl is deliberately absent:\n# it is STAGED under <state_dir>/claude/ (the kit never live-writes .claude/\n# without the explicit include_claude opt-in).\nADOPT_PLAN: list[tuple[str, str]] = [\n    ("CONSTITUTION.md.tmpl", "CONSTITUTION.md"),\n    ("decisions.md.tmpl", "docs/decisions.md"),\n    ("architecture.md.tmpl", "docs/architecture.md"),\n    ("ownership.md.tmpl", "docs/ownership.md"),\n    ("runtime_contracts.md.tmpl", "docs/runtime_contracts.md"),\n    ("repo-navigation-map.md.tmpl", "docs/repo-navigation-map.md"),\n    ("helper-policy.md.tmpl", "docs/helper-policy.md"),\n    ("collaboration-model.md.tmpl", "docs/collaboration-model.md"),\n    ("ai-project-workflow.md.tmpl", "docs/ai-project-workflow.md"),\n    ("owner-profile.md.tmpl", "docs/owner-profile.md"),\n    ("AGENT_ORIENTATION.md.tmpl", "docs/AGENT_ORIENTATION.md"),\n    ("current-state.md.tmpl", "docs/current-state.md"),\n    ("question-router.md.tmpl", "docs/question-router.md"),\n    ("ideas-README.md.tmpl", "docs/ideas/README.md"),\n    ("session-journal.md.tmpl", ".session-journal.md"),\n]\n\n_ADOPT_NEXT_STEPS = (\n    "next steps: run `bootstrap ask` to see the pending interview questions, "\n    "answer them so the docs re-render filled (`bootstrap render`), and set "\n    "the integration mode with `bootstrap mode <observe|guided|active>`."\n)\n\n\ndef _adopt_dest(relpath: str, config: Config) -> str:\n    """Remap the plan\'s ``docs/`` prefix onto the host\'s configured docs root."""\n    prefix = "docs/"\n    if relpath.startswith(prefix) and config.docs_root != "docs":\n        return f"{config.docs_root}/{relpath[len(prefix):]}"\n    return relpath\n\n\ndef _adopt_plant(path: Path, relpath: str, text: str, report: list[str]) -> None:\n    """Write ``text`` at ``path`` unless it exists; report planted/kept."""\n    if path.exists():\n        report.append(f"kept: {relpath}")\n        return\n    atomic_write_text(path, text)\n    report.append(f"planted: {relpath}")\n\n\ndef _adopt_stage(path: Path, relpath: str, text: str, report: list[str]) -> None:\n    """Write a staged (generated, regenerable) artifact and report it."""\n    atomic_write_text(path, text)\n    report.append(f"staged: {relpath}")\n\n\ndef _adopt_sessions_readme(markers: list[dict[str, str]]) -> str:\n    """Compose the one-paragraph ``.sessions/README.md`` (born-red convention)."""\n    labels = ", ".join(m.get("label", "") for m in markers if m.get("label"))\n    labels = labels or "(no markers configured)"\n    return (\n        "# Session logs\\n\\n"\n        "Per-session logs live here as `<date>-<slug>.md`, newest first. "\n        "Create the log as the session\'s FIRST commit with a born-red status "\n        "(`> **Status:** `in-progress``) so in-flight work is visible to "\n        "parallel sessions, then flip it to `complete` as the deliberate LAST "\n        "step once the close-out is written — a half-done session never reads "\n        "as finished. Before it counts as complete, a log must carry these "\n        f"markers: {labels}.\\n"\n    )\n\n\ndef ci_snippet() -> str:\n    """Return the staged, fully-commented GitHub-Actions-style CI example.\n\n    Everything is commented out: the host copies it into\n    ``.github/workflows/`` and uncomments/adjusts deliberately — the kit never\n    installs live CI.\n    """\n    return (\n        "# Example GitHub-Actions-style quality gate for a substrate-kit host.\\n"\n        "# Copy into .github/workflows/, uncomment, and adjust the interpreter\\n"\n        "# and bootstrap path to match your repo.\\n"\n        "#\\n"\n        "# `bootstrap.py check --strict` runs every kit checker in one pass:\\n"\n        "# docs hygiene (badges / links / reachability), session-log markers,\\n"\n        "# namespace shadowing, seam authority, orientation budget, and the\\n"\n        "# decision ledger.\\n"\n        "#\\n"\n        "# name: substrate-quality\\n"\n        "# on:\\n"\n        "#   pull_request:\\n"\n        "#   push:\\n"\n        "#     branches: [main]\\n"\n        "# jobs:\\n"\n        "#   substrate-check:\\n"\n        "#     runs-on: ubuntu-latest\\n"\n        "#     steps:\\n"\n        "#       - uses: actions/checkout@v4\\n"\n        "#       - name: substrate checks\\n"\n        "#         run: python3 bootstrap.py check --strict\\n"\n    )\n\n\ndef adopt(\n    root: Path,\n    config: Config,\n    backend: Any,\n    *,\n    kit_root: Path,\n    include_claude: bool = False,\n) -> list[str]:\n    """Adopt the substrate workflow into ``root``; return the report lines.\n\n    Steps (all idempotent): (0) guardrail — refuse the kit\'s own tree;\n    (1) plant every ``ADOPT_PLAN`` doc rendered from the current slots,\n    skip-if-exists; (2) plant ``<sessions_dir>/README.md``; (3) plant the\n    ``project.index.json`` skeleton; (4) stage the ``.claude`` material\n    (CLAUDE.md, skills, personas, hook settings + fill-table README) under\n    ``<state_dir>``; (5) stage the CI example; (6) with ``include_claude``,\n    additionally write ``.claude/CLAUDE.md`` + ``.claude/settings.json``\n    if absent; (7) close with the next-steps line.\n    """\n    assert_safe_target(root, kit_root)\n    templates = load_templates()\n    context = build_context(backend.data)\n    report: list[str] = []\n\n    # (1) Plant the live docs — never clobber; unfilled ${slots} stay visible.\n    for template_name, plan_rel in ADOPT_PLAN:\n        rel = _adopt_dest(plan_rel, config)\n        text = render(templates[template_name], context)\n        if template_name == "decisions.md.tmpl":\n            # The example D-0001 records THIS adoption — stamp the real date so\n            # the planted ledger is check_ledger-clean from its first commit.\n            text = text.replace("- date:\\n", f"- date: {date.today().isoformat()}\\n")\n        _adopt_plant(root / rel, rel, text, report)\n\n    # (2) Session-log scaffolding.\n    sessions_rel = f"{config.sessions_dir}/README.md"\n    readme = _adopt_sessions_readme(config.session_markers)\n    _adopt_plant(root / config.sessions_dir / "README.md", sessions_rel, readme, report)\n\n    # (3) The context-pack index skeleton.\n    project_name = context.get("project_name") or root.name\n    skeleton = pack_index_skeleton(project_name)\n    _adopt_plant(root / "project.index.json", "project.index.json", skeleton, report)\n\n    # (4) Stage the .claude material under <state_dir> (regenerated each run).\n    state_base = root / config.state_dir\n    claude_doc = render(templates["CLAUDE.md.tmpl"], context)\n    claude_rel = f"{config.state_dir}/claude/CLAUDE.md"\n    _adopt_stage(state_base / "claude" / "CLAUDE.md", claude_rel, claude_doc, report)\n    for skill in SKILLS:\n        rel = skill_relpath(skill)\n        body = render(skill["body"], context)\n        document = skill_document(skill, body)\n        _adopt_stage(state_base / rel, f"{config.state_dir}/{rel}", document, report)\n    for agent in AGENTS:\n        rel = agent_relpath(agent)\n        body = render(agent["body"], context)\n        document = agent_document(agent, body)\n        _adopt_stage(state_base / rel, f"{config.state_dir}/{rel}", document, report)\n    settings_text = full_settings_template(config)\n    settings_rel = f"{config.state_dir}/hooks/settings.template.json"\n    settings_path = state_base / "hooks" / "settings.template.json"\n    _adopt_stage(settings_path, settings_rel, settings_text, report)\n    hooks_readme_rel = f"{config.state_dir}/hooks/README.md"\n    hooks_readme = hooks_fill_table()\n    _adopt_stage(\n        state_base / "hooks" / "README.md",\n        hooks_readme_rel,\n        hooks_readme,\n        report,\n    )\n\n    # (5) Stage the CI example.\n    ci_rel = f"{config.state_dir}/ci/quality.yml.example"\n    _adopt_stage(\n        state_base / "ci" / "quality.yml.example",\n        ci_rel,\n        ci_snippet(),\n        report,\n    )\n\n    # (6) Explicit host opt-in: live .claude/ (still never overwrites).\n    if include_claude:\n        claude_dir = root / ".claude"\n        _adopt_plant(claude_dir / "CLAUDE.md", ".claude/CLAUDE.md", claude_doc, report)\n        _adopt_plant(\n            claude_dir / "settings.json",\n            ".claude/settings.json",\n            settings_text,\n            report,\n        )\n\n    # (7) Point the adopter at the interview loop.\n    report.append(_ADOPT_NEXT_STEPS)\n    return report\n',
+    'engine/cli.py': '"""The substrate-kit bootstrap command line.\n\nSurface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``\n(show or set the task stance), ``ask`` (list the pending interview questions),\n``answer`` / ``confirm`` (fill / confirm a slot), ``render`` (write content\ndocs), ``skills`` / ``agents`` / ``hooks`` (list / ``--build`` the packs),\n``hook <event>`` (the runtime hook entry points), ``check`` (every hygiene\nchecker), ``triggers``, ``reflect``, ``episodes``, ``metrics``, ``maintain``,\n``review`` (the independent-review seam), ``economy`` (the context-economy\nengine), ``ledger`` (the [D-NNNN] decisions ledger), and ``--simulate N\n[--mode m]`` (the CI / proving smoke that drives the staged interview and\nasserts per-mode behavior). Output goes through ``_emit`` (``sys.stdout.write``)\nrather than ``print`` to keep the engine lint-clean.\n"""\n\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport sys\nimport tempfile\nfrom datetime import date\nfrom pathlib import Path\n\nfrom engine.adopt import adopt\nfrom engine.agents.agents import AGENTS, agent_document, agent_relpath\nfrom engine.checks.check_docs import run_doc_checks\nfrom engine.checks.check_namespace import check_namespace\nfrom engine.checks.check_orientation_budget import check_orientation_budget\nfrom engine.checks.check_seam_authority import check_seam_authority\nfrom engine.checks.check_session_log import check_log, latest_session_log\nfrom engine.contextpack import generate_packs, load_pack_index\nfrom engine.economy.engine import economy_actuate, economy_check, issue_body\nfrom engine.economy.harvest import parse_harvest_tables\nfrom engine.economy.simulator import calibration_recipe, default_calibration, run_search\nfrom engine.hooks.post_edit import evaluate_edit\nfrom engine.hooks.session_start import compose_orientation\nfrom engine.hooks.settings import full_settings_template, hooks_fill_table\nfrom engine.hooks.stance_guard import evaluate_tool, settings_snippet, tool_from_payload\nfrom engine.hooks.stop_check import evaluate_stop\nfrom engine.interview.interview import (\n    confirm_slot,\n    critical_slots,\n    pending_questions,\n    record_answer,\n    run_session,\n    session_questions,\n)\nfrom engine.interview.question_bank import QUESTIONS\nfrom engine.ledger import LEDGER_FILENAME, append_decision, check_ledger\nfrom engine.ledger import check_stamp_discipline as ledger_stamp_check\nfrom engine.lib.atomicio import atomic_write_text\nfrom engine.lib.config import Config, config_path, load_config, save_config\nfrom engine.lib.guardrail import UnsafeTargetError, assert_safe_target\nfrom engine.lib.modes import triggers_mandate\nfrom engine.lib.state import JsonStateBackend, default_state\nfrom engine.loop.episodes import (\n    EPISODIC_INDEX_FILENAME,\n    rebuild_episodic_index,\n    search_episodes,\n)\nfrom engine.loop.kpis import kpi_footer, workflow_kpis\nfrom engine.loop.maintenance import compaction_due, maintenance_report, run_compaction\nfrom engine.loop.reflections import (\n    REFLECTIONS_FILENAME,\n    add_reflection,\n    lessons_block,\n    load_reflections,\n    mine_reflections,\n)\nfrom engine.loop.review_seam import (\n    apply_review_verdict,\n    build_review_payload,\n    seam_wiring_doc,\n    write_review_payload,\n)\nfrom engine.loop.triggers import check_triggers, mandatory_questions, trigger_block\nfrom engine.render import build_context, find_placeholders, load_templates, render\nfrom engine.skills.skills import (\n    SKILLS,\n    skill_capabilities,\n    skill_document,\n    skill_relpath,\n)\nfrom engine.stances.stances import DEFAULT_STANCE, stance_briefing, stance_names\n\n\ndef _emit(line: str = "") -> None:\n    """Write a line to stdout (avoids the print() lint ban in engine code)."""\n    sys.stdout.write(line + "\\n")\n\n\ndef _kit_root() -> Path:\n    """Return the kit root (``substrate-kit/``) for the guardrail check."""\n    return Path(__file__).resolve().parents[2]\n\n\ndef _state_path(root: Path, config: Config) -> Path:\n    """Return the state-file path under a project ``root``."""\n    return root / config.state_dir / "state.json"\n\n\ndef cmd_init(target: Path) -> int:\n    """Create config + state under ``target`` if absent; never clobber."""\n    assert_safe_target(target, _kit_root())\n    target.mkdir(parents=True, exist_ok=True)\n    if config_path(target).exists():\n        config = load_config(target)\n    else:\n        config = Config()\n        save_config(target, config)\n    state_path = _state_path(target, config)\n    if state_path.exists():\n        _emit(f"init: already initialised at {target} (idempotent no-op).")\n        return 0\n    backend = JsonStateBackend(state_path)\n    with backend.transaction():\n        for key, value in default_state(config.project_id).items():\n            backend.set(key, value)\n    _emit(f"init: created {state_path} (project_id={config.project_id}).")\n    return 0\n\n\ndef cmd_status(target: Path) -> int:\n    """Print a one-screen summary of the install\'s state."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    data = backend.data\n    if not data:\n        _emit(f"status: no state at {target} (run init first).")\n        return 1\n    _emit(f"project_id : {data.get(\'project_id\')}")\n    _emit(f"stage      : {data.get(\'stage\')}")\n    _emit(f"mode       : {data.get(\'mode\')}")\n    _emit(f"stance     : {data.get(\'stance\')}")\n    _emit(f"sessions   : {data.get(\'session_count\')}")\n    return 0\n\n\ndef cmd_mode(target: Path, name: str) -> int:\n    """Set the integration mode (observe | guided | active)."""\n    valid = ("observe", "guided", "active")\n    if name not in valid:\n        _emit(f"mode: invalid mode {name!r} (choose from {list(valid)}).")\n        return 2\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"mode: no state at {target} (run init first).")\n        return 1\n    history = list(backend.get("mode_history", []))\n    history.append(\n        {\n            "mode": name,\n            "session": int(backend.get("session_count", 0)),\n            "date": date.today().isoformat(),\n        },\n    )\n    with backend.transaction():\n        backend.set("mode", name)\n        backend.set("mode_history", history)\n    _emit(f"mode: set to {name} (audit trail: {len(history)} switch(es)).")\n    return 0\n\n\ndef cmd_stance(target: Path, name: str | None) -> int:\n    """Show or set the active task stance (question|analysis|debug|review|plan).\n\n    With no ``name``, prints the active stance\'s briefing (reading-route +\n    tool-scope + output contract) and the available set. With a ``name``, switches\n    the active stance in state. The stance is advisory — it scopes orientation, it\n    does not block actions.\n    """\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"stance: no state at {target} (run init first).")\n        return 1\n    if name is None:\n        active = backend.data.get("stance", DEFAULT_STANCE)\n        _emit(stance_briefing(active))\n        _emit(f"  available: {\', \'.join(stance_names())}")\n        return 0\n    if name not in stance_names():\n        _emit(f"stance: invalid stance {name!r} (choose from {stance_names()}).")\n        return 2\n    backend.set("stance", name)\n    _emit(f"stance: set to {name}.")\n    _emit(stance_briefing(name))\n    return 0\n\n\ndef cmd_ask(target: Path) -> int:\n    """List the interview\'s currently pending questions."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"ask: no state at {target} (run init first).")\n        return 1\n    pending = pending_questions(backend.data)\n    if not pending:\n        _emit("ask: no pending questions — all slots filled.")\n        return 0\n    asked = session_questions(backend.data)\n    _emit(f"ask: {len(asked)} question(s) this session (mode quota):")\n    for question in asked:\n        _emit(\n            f"  [{question[\'id\']}] "\n            f"({question[\'audience\']}/{question[\'priority\']}) {question[\'prompt\']}",\n        )\n    remaining = len(pending) - len(asked)\n    if remaining > 0:\n        _emit(f"  (+{remaining} more later — the mode paces the interview)")\n    return 0\n\n\ndef cmd_render(target: Path) -> int:\n    """Render the content docs from the current filled slots into ``target``."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"render: no state at {target} (run init first).")\n        return 1\n    context = build_context(backend.data)\n    out_dir = target / config.state_dir / "rendered"\n    leftover_total = 0\n    for name, text in load_templates().items():\n        rendered = render(text, context)\n        leftover = find_placeholders(rendered)\n        leftover_total += len(leftover)\n        out_name = name[:-5] if name.endswith(".tmpl") else name\n        atomic_write_text(out_dir / out_name, rendered)\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"render: wrote {out_name}{suffix}")\n    _emit(f"render: {leftover_total} unfilled placeholder(s) total.")\n    return 0\n\n\ndef cmd_skills(target: Path, build: bool) -> int:\n    """List the skill pack, or ``--build`` it into ``<state_dir>/skills/``.\n\n    Listing shows each skill + its declared capabilities (what it may do beyond\n    read, overriding the ambient stance). Building emits a native ``SKILL.md`` per\n    skill into the staging area, body slot-filled from the interview — the host\n    then installs them under ``.claude/skills/``. Like ``render``, the kit stages;\n    it never writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    if not build:\n        _emit("skills:")\n        for skill in SKILLS:\n            caps = ", ".join(skill_capabilities(skill["name"]))\n            _emit(f"  {skill[\'name\']} — {skill[\'description\']}")\n            _emit(f"    capabilities: {caps}")\n        return 0\n    backend = JsonStateBackend(_state_path(target, config))\n    context = build_context(backend.data) if backend.data else {}\n    out_base = target / config.state_dir\n    leftover_total = 0\n    for skill in SKILLS:\n        body = render(skill["body"], context)\n        leftover = find_placeholders(body)\n        leftover_total += len(leftover)\n        atomic_write_text(out_base / skill_relpath(skill), skill_document(skill, body))\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"skills: wrote {skill_relpath(skill)}{suffix}")\n    _emit(f"skills: {len(SKILLS)} skill(s), {leftover_total} unfilled placeholder(s).")\n    return 0\n\n\ndef cmd_agents(target: Path, build: bool) -> int:\n    """List the persona pack, or ``--build`` it into ``<state_dir>/agents/``.\n\n    Listing shows each persona + its description. Building emits a native\n    ``.claude/agents``-style ``<name>.md`` per persona into the staging area, body\n    slot-filled from the project\'s contract slots — the host then installs them\n    under ``.claude/agents/``. Like ``render``/``skills``, the kit stages; it never\n    writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    if not build:\n        _emit("agents:")\n        for agent in AGENTS:\n            _emit(f"  {agent[\'name\']} — {agent[\'description\']}")\n        return 0\n    backend = JsonStateBackend(_state_path(target, config))\n    context = build_context(backend.data) if backend.data else {}\n    out_base = target / config.state_dir\n    leftover_total = 0\n    for agent in AGENTS:\n        body = render(agent["body"], context)\n        leftover = find_placeholders(body)\n        leftover_total += len(leftover)\n        atomic_write_text(out_base / agent_relpath(agent), agent_document(agent, body))\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"agents: wrote {agent_relpath(agent)}{suffix}")\n    count = len(AGENTS)\n    _emit(f"agents: {count} persona(s), {leftover_total} unfilled placeholder(s).")\n    return 0\n\n\ndef _hook_command(config: Config) -> str:\n    """Return the shell command Claude Code runs for the PreToolUse guard."""\n    return f"{config.interpreter} bootstrap.py hook pretooluse"\n\n\ndef cmd_hooks(target: Path, build: bool) -> int:\n    """Show the hook wiring, or ``--build`` the settings files into staging.\n\n    Four hooks: the **PreToolUse stance guard**, **SessionStart orientation**,\n    the **PostToolUse edit advisor**, and the **Stop-check advisor**. Building\n    stages the PreToolUse snippet, the full four-event\n    ``settings.template.json``, and the fill-table README into\n    ``<state_dir>/hooks/`` — the host merges them into their own settings\n    (adjusting the bootstrap path). Like the other emitters, the kit stages;\n    it never writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    command = _hook_command(config)\n    if not build:\n        _emit("hooks:")\n        _emit("  pretooluse   — stance guard: warns on an out-of-stance tool.")\n        _emit("  sessionstart — prints the mode-aware orientation injection.")\n        _emit("  postedit     — warns on generated-artifact / unbadged-doc edits.")\n        _emit("  stopcheck    — session-close advisories (log, questions, cadence).")\n        _emit(f"  wiring command: {command}")\n        return 0\n    out = target / config.state_dir / "hooks" / "settings.snippet.json"\n    atomic_write_text(out, settings_snippet(command))\n    tmpl = target / config.state_dir / "hooks" / "settings.template.json"\n    atomic_write_text(tmpl, full_settings_template(config))\n    atomic_write_text(\n        target / config.state_dir / "hooks" / "README.md",\n        hooks_fill_table(),\n    )\n    _emit(f"hooks: wrote {out.relative_to(target)}")\n    _emit(f"hooks: wrote {tmpl.relative_to(target)} (all four events) + README.md")\n    _emit("hooks: merge the hook blocks into .claude/settings.json yourself.")\n    return 0\n\n\ndef _hook_pretooluse(target: Path) -> int:\n    """PreToolUse stance guard: warn on stderr for an out-of-stance tool."""\n    tool_name = tool_from_payload(sys.stdin.read())\n    if not tool_name:\n        return 0\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    stance = backend.data.get("stance") if backend.data else None\n    if not stance:\n        return 0\n    warning = evaluate_tool(stance, tool_name)\n    if warning:\n        sys.stderr.write(warning + "\\n")\n    return 0\n\n\ndef _hook_sessionstart(target: Path) -> int:\n    """SessionStart: print the mode-aware orientation composition to stdout."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    text = compose_orientation(target, config, backend)\n    if text:\n        sys.stdout.write(text)\n    return 0\n\n\ndef _hook_postedit(target: Path) -> int:\n    """PostToolUse: warn on stderr for a generated-artifact / unbadged-doc edit."""\n    raw = sys.stdin.read()\n    try:\n        payload = json.loads(raw) if raw.strip() else {}\n    except json.JSONDecodeError:\n        return 0\n    tool_input = payload.get("tool_input") if isinstance(payload, dict) else None\n    file_path = tool_input.get("file_path") if isinstance(tool_input, dict) else None\n    if not isinstance(file_path, str) or not file_path:\n        return 0\n    warning = evaluate_edit(target, load_config(target), file_path)\n    if warning:\n        sys.stderr.write(warning + "\\n")\n    return 0\n\n\ndef _hook_stopcheck(target: Path) -> int:\n    """Stop: print the session-close advisory lines to stderr."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    for line in evaluate_stop(target, config, backend):\n        sys.stderr.write(line + "\\n")\n    return 0\n\n\n_HOOK_EVENTS = {\n    "pretooluse": _hook_pretooluse,\n    "sessionstart": _hook_sessionstart,\n    "postedit": _hook_postedit,\n    "stopcheck": _hook_stopcheck,\n}\n\n\ndef cmd_hook(target: Path, event: str) -> int:\n    """Run a Claude Code hook entry point (all advisory — always exit 0).\n\n    ``pretooluse`` warns on an out-of-stance tool; ``sessionstart`` prints the\n    orientation injection to stdout; ``postedit`` reads the PostToolUse stdin\n    payload (``tool_input.file_path``) and warns on stderr; ``stopcheck``\n    prints session-close advisories to stderr. Every event fails open on a\n    missing / malformed payload, config, or state.\n    """\n    handler = _HOOK_EVENTS.get(event)\n    return handler(target) if handler else 0\n\n\ndef _extra_check_findings(target: Path, config: Config) -> list:\n    """Run the configured non-doc checkers (ledger, namespace, seams, budget).\n\n    Each checker engages only when its inputs exist — an un-adopted project\n    with no ledger, no namespace roots, no seams, and no boot docs runs none of\n    them, so ``check`` stays meaningful before onboarding.\n    """\n    findings: list = []\n    ledger_path = target / config.docs_root / LEDGER_FILENAME\n    if ledger_path.exists():\n        findings += check_ledger(ledger_path)\n        findings += ledger_stamp_check(target / config.docs_root, ledger_path)\n    roots = [target / r for r in config.namespace.get("roots", [])]\n    roots = [r for r in roots if r.exists()]\n    if roots:\n        findings += check_namespace(\n            roots,\n            reserved=config.namespace.get("reserved") or None,\n        )\n    if config.seams:\n        findings += check_seam_authority(target, config.seams)\n    boot_docs = config.orientation.get("boot_docs") or config.readpath_docs\n    docs_root = target / config.docs_root\n    if any((docs_root / doc).exists() or (target / doc).exists() for doc in boot_docs):\n        findings += check_orientation_budget(target, config)\n    return findings\n\n\ndef cmd_check(target: Path, strict: bool) -> int:\n    """Run every hygiene checker against ``target``.\n\n    Docs (badge/link/reachable), the decisions ledger + stamp discipline, the\n    namespace/shadowing guard, the seam-authority fences, and the orientation\n    word budget — each engaging only when its inputs exist. Findings always\n    count toward the exit code (under ``--strict``); a *missing* session log is\n    advisory (a host may run ``check`` mid-session), but an *incomplete*\n    existing log counts. Uses config defaults if ``target`` has no\n    ``substrate.config.json`` yet, so a project can lint before onboarding.\n    """\n    config = load_config(target)\n    docs_root = target / config.docs_root\n    doc_findings = run_doc_checks(\n        docs_root,\n        config.badge_tokens,\n        config.readpath_docs,\n    )\n    doc_findings = list(doc_findings) + _extra_check_findings(target, config)\n    if doc_findings:\n        _emit(f"check: {len(doc_findings)} finding(s):")\n        for finding in doc_findings:\n            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")\n\n    log = latest_session_log(target / config.sessions_dir)\n    log_missing: list[str] = check_log(log, config.session_markers) if log else []\n    if log is None:\n        _emit("check: no session log found yet (advisory — not a failure).")\n    else:\n        rel = log.relative_to(target) if log.is_relative_to(target) else log\n        if log_missing:\n            _emit(f"check: session log {rel} is missing: {\', \'.join(log_missing)}")\n        else:\n            _emit(f"check: session log {rel} complete.")\n\n    if not doc_findings and not log_missing:\n        _emit("check: all checks passed.")\n        return 0\n    return 1 if strict else 0\n\n\ndef _require_state(\n    target: Path,\n    command: str,\n) -> tuple[Config, JsonStateBackend] | None:\n    """Load config + state; None (with a message) when the install is missing."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"{command}: no state at {target} (run init first).")\n        return None\n    return config, backend\n\n\ndef _question_for_slot(slot: str) -> dict | None:\n    """Return the bank question that fills ``slot`` (None when unknown)."""\n    for question in QUESTIONS:\n        if question["slot"] == slot:\n            return question\n    return None\n\n\ndef cmd_answer(target: Path, slot: str, answer: str) -> int:\n    """Record a user answer for ``slot`` (fills it, resolves its escalation)."""\n    loaded = _require_state(target, "answer")\n    if loaded is None:\n        return 1\n    _, backend = loaded\n    question = _question_for_slot(slot)\n    if question is None:\n        known = ", ".join(q["slot"] for q in QUESTIONS)\n        _emit(f"answer: unknown slot {slot!r} (known: {known}).")\n        return 2\n    record_answer(backend, question, answer, source="user")\n    status = backend.get("slots", {}).get(slot)\n    _emit(f"answer: {slot} -> {status}.")\n    if status == "partial":\n        floor = int(question.get("min_len", 1))\n        _emit(f"answer: too thin to count (needs >= {floor} chars of substance).")\n    return 0\n\n\ndef cmd_confirm(target: Path, slot: str) -> int:\n    """Confirm a provisional (self-answered) slot as user-verified."""\n    loaded = _require_state(target, "confirm")\n    if loaded is None:\n        return 1\n    _, backend = loaded\n    if confirm_slot(backend, slot, source="user"):\n        _emit(f"confirm: {slot} confirmed (provisional -> filled).")\n        return 0\n    _emit(f"confirm: {slot} is not provisional (nothing to confirm).")\n    return 1\n\n\ndef cmd_triggers(target: Path) -> int:\n    """Scan for fired triggers and show the mandated / advisory questions."""\n    loaded = _require_state(target, "triggers")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    triggers = check_triggers(target, config, backend.data)\n    if not triggers:\n        _emit("triggers: none fired.")\n        return 0\n    questions = mandatory_questions(triggers)\n    block = trigger_block(\n        triggers,\n        questions,\n        mandate=triggers_mandate(backend.data),\n    )\n    _emit(block)\n    return 0\n\n\ndef cmd_reflect(\n    target: Path,\n    *,\n    add: str | None,\n    evidence: str,\n    tags: str,\n    mine: bool,\n) -> int:\n    """List, add to, or mine the forward reflection buffer."""\n    loaded = _require_state(target, "reflect")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    path = target / config.state_dir / REFLECTIONS_FILENAME\n    buffer_size = int(config.reflection.get("buffer_size", 5))\n    if add is not None:\n        entry = add_reflection(\n            path,\n            lesson=add,\n            evidence=evidence,\n            tags=[t for t in tags.split(",") if t],\n            buffer_size=buffer_size,\n        )\n        _emit(f"reflect: added {entry[\'id\']}.")\n    if mine:\n        candidates = mine_reflections(target / config.sessions_dir)\n        for cand in candidates:\n            entry = add_reflection(\n                path,\n                lesson=cand["lesson"],\n                evidence=cand.get("evidence", ""),\n                tags=list(cand.get("tags", [])),\n                buffer_size=buffer_size,\n            )\n            _emit(f"reflect: mined {entry[\'id\']} — {cand[\'lesson\'][:60]}")\n        if not candidates:\n            _emit("reflect: mined nothing new.")\n    entries = load_reflections(path)\n    backend.set(\n        "reflection_buffer",\n        {\n            "active_count": len(entries),\n            "last_mined": (\n                date.today().isoformat()\n                if mine\n                else (backend.get("reflection_buffer", {}) or {}).get("last_mined")\n            ),\n        },\n    )\n    block = lessons_block(entries)\n    _emit(block if block else "reflect: buffer empty.")\n    return 0\n\n\ndef cmd_episodes(target: Path, *, rebuild: bool, search: str | None) -> int:\n    """Rebuild or search the episodic index over the session logs."""\n    config = load_config(target)\n    index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME\n    if rebuild:\n        entries = rebuild_episodic_index(target / config.sessions_dir, index_path)\n        _emit(f"episodes: indexed {len(entries)} session(s).")\n    if search is not None:\n        hits = search_episodes(index_path, search)\n        for hit in hits:\n            _emit(\n                f"  {hit.get(\'date\', \'?\')} {hit.get(\'slug\', \'?\')} — "\n                f"{hit.get(\'summary\', \'\')}",\n            )\n        _emit(f"episodes: {len(hits)} hit(s) for {search!r}.")\n    if not rebuild and search is None:\n        _emit("episodes: pass --rebuild and/or --search TAG.")\n    return 0\n\n\ndef cmd_metrics(target: Path) -> int:\n    """Emit the router / workflow KPIs (JSON + the one-line footer)."""\n    loaded = _require_state(target, "metrics")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    kpis = workflow_kpis(backend.data, target / config.sessions_dir)\n    _emit(json.dumps(kpis, indent=2, sort_keys=True))\n    _emit(kpi_footer(kpis))\n    return 0\n\n\ndef cmd_maintain(target: Path, *, compact: bool) -> int:\n    """Run the self-maintenance loop\'s report (and compaction when asked)."""\n    loaded = _require_state(target, "maintain")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    if compact:\n        if compaction_due(backend.data, dict(config.cadence or {})):\n            path = run_compaction(target, config, backend)\n            rel = path.relative_to(target) if path.is_relative_to(target) else path\n            _emit(f"maintain: compaction written -> {rel}")\n        else:\n            _emit("maintain: compaction not due.")\n    triggers = check_triggers(target, config, backend.data)\n    economy = economy_check(target, config)\n    ledger_path = target / config.docs_root / LEDGER_FILENAME\n    ledger_findings = check_ledger(ledger_path) if ledger_path.exists() else []\n    kpis = workflow_kpis(backend.data, target / config.sessions_dir)\n    _emit(\n        maintenance_report(\n            target,\n            config,\n            backend,\n            triggers=triggers,\n            economy_findings=list(economy.get("findings", [])),\n            ledger_findings=ledger_findings,\n            kpis=kpis,\n        ),\n    )\n    return 0\n\n\ndef cmd_review(\n    target: Path,\n    action: str,\n    slot: str | None,\n    *,\n    verdict: str,\n    reviewer: str,\n) -> int:\n    """Drive the independent-review seam: build payloads, record verdicts."""\n    if action == "doc":\n        _emit(seam_wiring_doc())\n        return 0\n    if slot is None:\n        _emit("review: a slot is required for build/confirm.")\n        return 2\n    loaded = _require_state(target, "review")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    if action == "build":\n        payload = build_review_payload(backend, slot)\n        if not payload:\n            _emit(f"review: slot {slot!r} is not provisional — nothing to review.")\n            return 1\n        path = write_review_payload(target, config, payload)\n        rel = path.relative_to(target) if path.is_relative_to(target) else path\n        _emit(f"review: payload written -> {rel}")\n        return 0\n    if action == "confirm":\n        if verdict not in ("pass", "fail"):\n            _emit("review: --verdict must be pass or fail.")\n            return 2\n        outcome = apply_review_verdict(\n            backend,\n            slot,\n            verdict=verdict,\n            reviewer=reviewer,\n        )\n        _emit(f"review: {slot} -> {outcome}.")\n        return 0\n    _emit(f"review: unknown action {action!r} (build | confirm | doc).")\n    return 2\n\n\ndef cmd_economy(\n    target: Path,\n    action: str,\n    *,\n    strict: bool,\n    apply: bool,\n    bands: int,\n) -> int:\n    """Drive the context-economy engine: check, apply, simulate, recipe."""\n    config = load_config(target)\n    if action == "recipe":\n        _emit(calibration_recipe())\n        return 0\n    if action == "simulate":\n        result = run_search(default_calibration(), bands=bands)\n        _emit(str(result.get("why_it_won", "")))\n        winner = result.get("winner", {})\n        name = winner.get("name") if isinstance(winner, dict) else winner\n        _emit(f"economy: winner {name} (feasible: {result.get(\'feasible_count\')}).")\n        return 0\n    harvested = parse_harvest_tables(target / config.docs_root / "planning")\n    report = economy_check(target, config, harvested=harvested)\n    if action == "issue-body":\n        _emit(issue_body(report))\n        return 0\n    if action == "check":\n        census = report.get("census", {})\n        for name in sorted(census):\n            row = census[name]\n            _emit(\n                f"  class {name}: {row.get(\'files\', 0)} file(s), "\n                f"{row.get(\'words\', 0)} word(s)",\n            )\n        for gauge in report.get("gauges", []):\n            flag = "OVER" if gauge.get("over") else "ok"\n            _emit(f"  gauge {gauge[\'name\']}: {gauge[\'value\']}/{gauge[\'cap\']} [{flag}]")\n        findings = report.get("findings", [])\n        for finding in findings:\n            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")\n        for line in economy_actuate(target, config, report, apply=False):\n            _emit(f"  would-act: {line}")\n        debt = report.get("debt", 0)\n        threshold = int(config.economy.get("debt_threshold", 10))\n        _emit(f"economy: debt {debt} (threshold {threshold}).")\n        over = bool(findings) or debt >= threshold\n        return 1 if strict and over else 0\n    if action == "apply":\n        lines = economy_actuate(target, config, report, apply=apply)\n        for line in lines:\n            _emit(f"  {line}")\n        if not apply:\n            _emit("economy: dry-run (pass --yes to act; maturity gates apply).")\n        return 0\n    _emit(\n        f"economy: unknown action {action!r} "\n        "(check | apply | simulate | recipe | issue-body).",\n    )\n    return 2\n\n\ndef cmd_adopt(target: Path, include_claude: bool) -> int:\n    """Adopt the workflow into ``target``: plant the docs, stage the packs."""\n    target.mkdir(parents=True, exist_ok=True)\n    if config_path(target).exists():\n        config = load_config(target)\n    else:\n        config = Config()\n        assert_safe_target(target, _kit_root())\n        save_config(target, config)\n    backend = JsonStateBackend(_state_path(target, config))\n    lines = adopt(\n        target,\n        config,\n        backend,\n        kit_root=_kit_root(),\n        include_claude=include_claude,\n    )\n    for line in lines:\n        _emit(f"adopt: {line}")\n    return 0\n\n\ndef cmd_contextpack(target: Path, index: Path | None) -> int:\n    """Generate agent context packs from the project index (or a manifest)."""\n    config = load_config(target)\n    index_path = index if index is not None else target / "project.index.json"\n    if not index_path.exists():\n        _emit(f"contextpack: no index at {index_path} (run adopt first).")\n        return 1\n    try:\n        areas = load_pack_index(index_path)\n    except ValueError as exc:\n        _emit(f"contextpack: {exc}")\n        return 2\n    if not areas:\n        _emit("contextpack: index has no areas — nothing to generate.")\n        return 0\n    for path in generate_packs(target, config, areas):\n        rel = path.relative_to(target) if path.is_relative_to(target) else path\n        _emit(f"contextpack: wrote {rel}")\n    return 0\n\n\ndef cmd_session_start(target: Path) -> int:\n    """Print this session\'s orientation injection (the SessionStart composition)."""\n    loaded = _require_state(target, "session-start")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    _emit(compose_orientation(target, config, backend))\n    return 0\n\n\ndef cmd_session_close(target: Path) -> int:\n    """Run the session-close ritual: mine, index, advise, and report KPIs.\n\n    Mines the session logs into the reflection buffer, rebuilds the episodic\n    index, prints the stop-check advisories, and ends with the KPI footer —\n    the engine analog of the one-idea / previous-session-review enders.\n    """\n    loaded = _require_state(target, "session-close")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    rc = cmd_reflect(target, add=None, evidence="", tags="", mine=True)\n    if rc != 0:\n        return rc\n    index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME\n    entries = rebuild_episodic_index(target / config.sessions_dir, index_path)\n    _emit(f"session-close: indexed {len(entries)} session(s).")\n    for line in evaluate_stop(target, config, backend):\n        _emit(f"session-close: [advisory] {line}")\n    kpis = workflow_kpis(backend.data, target / config.sessions_dir)\n    _emit(kpi_footer(kpis))\n    return 0\n\n\ndef cmd_ledger(\n    target: Path,\n    *,\n    title: str,\n    verdict: str,\n    why: str,\n    provenance: str,\n    supersedes: str | None,\n) -> int:\n    """Append a decision to the [D-NNNN] ledger (created on first use)."""\n    config = load_config(target)\n    path = target / config.docs_root / LEDGER_FILENAME\n    entry = append_decision(\n        path,\n        title=title,\n        verdict=verdict,\n        why=why,\n        provenance=provenance,\n        supersedes=supersedes,\n    )\n    _emit(f"ledger: recorded {entry[\'id\']} — {title}")\n    if supersedes:\n        _emit(f"ledger: {supersedes} stamped superseded-by {entry[\'id\']}.")\n    return 0\n\n\ndef _simulate_mode_asserts(\n    mode: str,\n    data: dict,\n    graduated: bool,\n    n: int,\n) -> str | None:\n    """Return the per-mode behavior violation, or None when behavior held.\n\n    The behavior-assert half of the simulation: observe must never\n    auto-graduate (it proposes), guided/active must graduate once the quiet\n    streak is long enough.\n    """\n    quiet_needed = 3\n    if mode == "observe":\n        if graduated or data.get("stage") != "integration":\n            return "observe mode auto-graduated (must only propose)"\n        if n > quiet_needed and not data.get("graduation_proposed"):\n            return "observe mode never proposed graduation"\n        return None\n    if n > quiet_needed and not graduated:\n        return f"{mode} mode failed to graduate after the quiet streak"\n    return None\n\n\ndef cmd_simulate(n: int, mode: str = "guided") -> int:\n    """Init into a temp dir and drive ``n`` interview sessions; verify behavior.\n\n    Session 1 supplies confirmed answers for every critical slot; later sessions\n    supply none. Asserts the critical slots fill and that the run behaves\n    per ``mode``: guided/active graduate integration -> steady once quiet;\n    observe only ever *proposes* graduation.\n    """\n    with tempfile.TemporaryDirectory(prefix="substrate-sim-") as tmp:\n        target = Path(tmp)\n        rc = cmd_init(target)\n        if rc != 0:\n            return rc\n        state_path = _state_path(target, load_config(target))\n        if mode != "guided":\n            rc = cmd_mode(target, mode)\n            if rc != 0:\n                return rc\n        crit = critical_slots()\n        answers = {slot: f"value-for-{slot}" for slot in crit}\n        graduated = False\n        for index in range(n):\n            backend = JsonStateBackend(state_path)\n            result = run_session(backend, answers if index == 0 else {})\n            graduated = graduated or result["graduated"]\n        data = JsonStateBackend(state_path).data\n        missing = [s for s in crit if data.get("slots", {}).get(s) != "filled"]\n        if missing:\n            _emit(f"simulate: FAILED — critical slots unfilled: {missing}")\n            return 1\n        violation = _simulate_mode_asserts(mode, data, graduated, n)\n        if violation:\n            _emit(f"simulate: FAILED — {violation}")\n            return 1\n        _emit(\n            f"simulate: OK — {n} session(s), {len(crit)} critical slots filled, "\n            f"mode={mode}, stage={data.get(\'stage\')} (graduated={graduated}).",\n        )\n    return 0\n\n\ndef build_parser() -> argparse.ArgumentParser:\n    """Construct the bootstrap argument parser."""\n    parser = argparse.ArgumentParser(prog="bootstrap", description="substrate-kit")\n    parser.add_argument(\n        "--simulate",\n        type=int,\n        metavar="N",\n        help="run N synthetic sessions in a temp dir, then exit",\n    )\n    parser.add_argument(\n        "--mode",\n        default="guided",\n        choices=("observe", "guided", "active"),\n        help="integration mode for --simulate (behavior asserts differ per mode)",\n    )\n    sub = parser.add_subparsers(dest="command")\n    for name, helptext in (\n        ("init", "initialise a project"),\n        ("status", "show install state"),\n        ("ask", "list pending interview questions"),\n        ("render", "render content docs from filled slots"),\n        ("triggers", "scan for fired triggers / mandatory questions"),\n        ("metrics", "emit the router + workflow KPIs"),\n        ("session-start", "print this session\'s orientation injection"),\n        ("session-close", "mine reflections, index the session, report KPIs"),\n    ):\n        child = sub.add_parser(name, help=helptext)\n        child.add_argument("--target", type=Path, default=Path.cwd())\n    adopt_p = sub.add_parser("adopt", help="plant the workflow docs + stage the packs")\n    adopt_p.add_argument(\n        "--include-claude",\n        action="store_true",\n        help="also write .claude/CLAUDE.md + .claude/settings.json (skip-if-exists)",\n    )\n    adopt_p.add_argument("--target", type=Path, default=Path.cwd())\n    contextpack = sub.add_parser(\n        "contextpack",\n        help="generate agent context packs from the index",\n    )\n    contextpack.add_argument(\n        "--index",\n        type=Path,\n        default=None,\n        help="index or manifest path (default: <target>/project.index.json)",\n    )\n    contextpack.add_argument("--target", type=Path, default=Path.cwd())\n    answer = sub.add_parser("answer", help="record a user answer for a slot")\n    answer.add_argument("slot")\n    answer.add_argument("value", nargs="+", help="the answer text")\n    answer.add_argument("--target", type=Path, default=Path.cwd())\n    confirm = sub.add_parser("confirm", help="confirm a provisional slot")\n    confirm.add_argument("slot")\n    confirm.add_argument("--target", type=Path, default=Path.cwd())\n    reflect = sub.add_parser("reflect", help="list/add/mine the reflection buffer")\n    reflect.add_argument("--add", metavar="LESSON", default=None)\n    reflect.add_argument("--evidence", default="")\n    reflect.add_argument("--tags", default="", help="comma-separated tags")\n    reflect.add_argument("--mine", action="store_true")\n    reflect.add_argument("--target", type=Path, default=Path.cwd())\n    episodes = sub.add_parser("episodes", help="rebuild/search the episodic index")\n    episodes.add_argument("--rebuild", action="store_true")\n    episodes.add_argument("--search", metavar="TAG", default=None)\n    episodes.add_argument("--target", type=Path, default=Path.cwd())\n    maintain = sub.add_parser("maintain", help="run the self-maintenance report")\n    maintain.add_argument("--compact", action="store_true")\n    maintain.add_argument("--target", type=Path, default=Path.cwd())\n    review = sub.add_parser("review", help="drive the independent-review seam")\n    review.add_argument("action", choices=("build", "confirm", "doc"))\n    review.add_argument("slot", nargs="?", default=None)\n    review.add_argument("--verdict", default="", help="pass | fail (for confirm)")\n    review.add_argument("--reviewer", default="external")\n    review.add_argument("--target", type=Path, default=Path.cwd())\n    economy = sub.add_parser("economy", help="run the context-economy engine")\n    economy.add_argument(\n        "action",\n        choices=("check", "apply", "simulate", "recipe", "issue-body"),\n    )\n    economy.add_argument("--strict", action="store_true")\n    economy.add_argument("--yes", action="store_true", help="really act (apply)")\n    economy.add_argument("--bands", type=int, default=24)\n    economy.add_argument("--target", type=Path, default=Path.cwd())\n    ledger = sub.add_parser("ledger", help="append a [D-NNNN] decision")\n    ledger.add_argument("--title", required=True)\n    ledger.add_argument("--verdict", required=True)\n    ledger.add_argument("--why", required=True)\n    ledger.add_argument("--provenance", required=True)\n    ledger.add_argument("--supersedes", default=None)\n    ledger.add_argument("--target", type=Path, default=Path.cwd())\n    mode = sub.add_parser("mode", help="set the integration mode")\n    mode.add_argument("name")\n    mode.add_argument("--target", type=Path, default=Path.cwd())\n    stance = sub.add_parser("stance", help="show or set the task stance")\n    stance.add_argument("name", nargs="?", default=None)\n    stance.add_argument("--target", type=Path, default=Path.cwd())\n    skills = sub.add_parser("skills", help="list or --build the skill pack")\n    skills.add_argument(\n        "--build",\n        action="store_true",\n        help="emit SKILL.md files into <state_dir>/skills/",\n    )\n    skills.add_argument("--target", type=Path, default=Path.cwd())\n    agents = sub.add_parser("agents", help="list or --build the persona pack")\n    agents.add_argument(\n        "--build",\n        action="store_true",\n        help="emit agent .md files into <state_dir>/agents/",\n    )\n    agents.add_argument("--target", type=Path, default=Path.cwd())\n    hooks = sub.add_parser("hooks", help="show or --build the hook wiring")\n    hooks.add_argument(\n        "--build",\n        action="store_true",\n        help="emit the PreToolUse settings snippet into <state_dir>/hooks/",\n    )\n    hooks.add_argument("--target", type=Path, default=Path.cwd())\n    hook = sub.add_parser("hook", help="run a hook check (e.g. `hook pretooluse`)")\n    hook.add_argument("event")\n    hook.add_argument("--target", type=Path, default=Path.cwd())\n    check = sub.add_parser("check", help="run the doc + session-log hygiene checks")\n    check.add_argument("--target", type=Path, default=Path.cwd())\n    check.add_argument("--strict", action="store_true", help="exit 1 if any violation")\n    return parser\n\n\ndef main(argv: list[str] | None = None) -> int:\n    """Run the bootstrap CLI; return a process exit code."""\n    parser = build_parser()\n    args = parser.parse_args(argv)\n    try:\n        if args.simulate is not None:\n            return cmd_simulate(args.simulate, args.mode)\n        if args.command == "init":\n            return cmd_init(args.target)\n        if args.command == "status":\n            return cmd_status(args.target)\n        if args.command == "ask":\n            return cmd_ask(args.target)\n        if args.command == "render":\n            return cmd_render(args.target)\n        if args.command == "mode":\n            return cmd_mode(args.target, args.name)\n        if args.command == "stance":\n            return cmd_stance(args.target, args.name)\n        if args.command == "skills":\n            return cmd_skills(args.target, args.build)\n        if args.command == "agents":\n            return cmd_agents(args.target, args.build)\n        if args.command == "hooks":\n            return cmd_hooks(args.target, args.build)\n        if args.command == "hook":\n            return cmd_hook(args.target, args.event)\n        if args.command == "check":\n            return cmd_check(args.target, args.strict)\n        if args.command == "answer":\n            return cmd_answer(args.target, args.slot, " ".join(args.value))\n        if args.command == "confirm":\n            return cmd_confirm(args.target, args.slot)\n        if args.command == "triggers":\n            return cmd_triggers(args.target)\n        if args.command == "reflect":\n            return cmd_reflect(\n                args.target,\n                add=args.add,\n                evidence=args.evidence,\n                tags=args.tags,\n                mine=args.mine,\n            )\n        if args.command == "episodes":\n            return cmd_episodes(args.target, rebuild=args.rebuild, search=args.search)\n        if args.command == "metrics":\n            return cmd_metrics(args.target)\n        if args.command == "maintain":\n            return cmd_maintain(args.target, compact=args.compact)\n        if args.command == "review":\n            return cmd_review(\n                args.target,\n                args.action,\n                args.slot,\n                verdict=args.verdict,\n                reviewer=args.reviewer,\n            )\n        if args.command == "economy":\n            return cmd_economy(\n                args.target,\n                args.action,\n                strict=args.strict,\n                apply=args.yes,\n                bands=args.bands,\n            )\n        if args.command == "adopt":\n            return cmd_adopt(args.target, args.include_claude)\n        if args.command == "contextpack":\n            return cmd_contextpack(args.target, args.index)\n        if args.command == "session-start":\n            return cmd_session_start(args.target)\n        if args.command == "session-close":\n            return cmd_session_close(args.target)\n        if args.command == "ledger":\n            return cmd_ledger(\n                args.target,\n                title=args.title,\n                verdict=args.verdict,\n                why=args.why,\n                provenance=args.provenance,\n                supersedes=args.supersedes,\n            )\n    except UnsafeTargetError as exc:\n        _emit(f"refused: {exc}")\n        return 2\n    parser.print_help()\n    return 0\n',
 }
 
 _TEMPLATES = {

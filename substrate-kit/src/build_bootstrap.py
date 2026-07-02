@@ -52,7 +52,13 @@ MODULE_ORDER = (
     "skills/skills.py",
     "agents/agents.py",
     "hooks/stance_guard.py",
+    "hooks/session_start.py",
+    "hooks/post_edit.py",
+    "hooks/stop_check.py",
+    "hooks/settings.py",
     "render.py",
+    "contextpack.py",
+    "adopt.py",
     "cli.py",
 )
 PACKAGE_FILES = (
@@ -85,19 +91,43 @@ def _read(rel: str) -> str:
     return (ENGINE_ROOT / rel).read_text(encoding="utf-8")
 
 
+def _triple_quote_toggles(line: str, active: str | None) -> str | None:
+    """Track triple-quoted string state across a line; return the new state.
+
+    ``active`` is the open delimiter (``'\"\"\"'`` / ``\"'''\"``) or None. Naive
+    by design (counts delimiter occurrences; a line mixing both delimiters is
+    not handled) — module docstrings and the embedded prose blocks this builder
+    must survive are all well-formed.
+    """
+    if active is not None:
+        return None if line.count(active) % 2 == 1 else active
+    for delim in ('"""', "'''"):
+        if line.count(delim) % 2 == 1:
+            return delim
+    return None
+
+
 def _split_imports(source: str) -> tuple[list[str], list[str], list[str]]:
     """Split a module into (future imports, kept imports, body lines).
 
     Intra-package imports are dropped — in the concatenated file their names
     already live in the same namespace. A *parenthesized multi-line* intra-package
     import is dropped **whole**: its continuation lines must not leak into the body
-    (that produced an ``IndentationError`` in the generated bootstrap).
+    (that produced an ``IndentationError`` in the generated bootstrap). Lines
+    inside triple-quoted strings are never treated as imports — a docstring
+    sentence starting with ``from ...`` once got hoisted into the import block
+    and broke the generated file's syntax.
     """
     future: list[str] = []
     imports: list[str] = []
     body: list[str] = []
     dropping_multiline = False
+    in_string: str | None = None
     for line in source.splitlines():
+        if in_string is not None:
+            body.append(line)
+            in_string = _triple_quote_toggles(line, in_string)
+            continue
         if dropping_multiline:
             if ")" in line:
                 dropping_multiline = False
@@ -112,6 +142,7 @@ def _split_imports(source: str) -> tuple[list[str], list[str], list[str]]:
             imports.append(line)
         else:
             body.append(line)
+            in_string = _triple_quote_toggles(line, None)
     return future, imports, body
 
 
