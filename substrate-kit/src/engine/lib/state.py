@@ -32,7 +32,9 @@ def default_state(project_id: str) -> dict[str, Any]:
         "stance": "analysis",
         "session_count": 0,
         "slots": {},
+        "slot_values": {},
         "open_questions": [],
+        "quiet_sessions": 0,
         "graduation": {
             "soft_target_sessions": 50,
             "criteria": {
