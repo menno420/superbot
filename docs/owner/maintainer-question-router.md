@@ -7949,3 +7949,55 @@ setting to 400 days). Homes: `docs/planning/railway-setup-plan-2026-07-02.md` (p
 **Homes:** the retention plan (policy + PR specs, updated same session) ·
 `docs/planning/fresh-rebuild-strategy-2026-07-02.md` §5.2 slot (context-economy engine) ·
 orientation-cost-reduction plan Workstream D (superseded by decision 3).
+
+### Q-0215 — DIRECTED: generalize presets-plus-manual-entry from numeric-only to every settings class in the rebuild grammar (2026-07-02)
+
+> **Context.** A daily-review/brainstorm session asked the owner to re-confirm an architectural
+> gap before Phase 3 starts: "every text-based function should have presets you can choose from —
+> you should never have to write something yourself, but a custom-input option should exist
+> wherever useful." Research showed this exact posture was **already decided** as Q-0070
+> (2026-06-10) — presets + preset-then-edit + always-available manual entry, for *every* setting
+> class including authored text (DM templates, AI instruction bodies) — but the rebuild design
+> spec (`rebuild-design-spec-2026-07-02.md` §2.5) had only carried the shipped **numeric**-presets
+> mechanism forward verbatim, without generalizing it in the grammar itself. The owner confirmed
+> the posture stands and asked for it to be folded into the spec rather than left as a
+> settings-audit-only convention.
+
+**Decision:** `SettingSpec` gains a `preset_kind: enum {none, numeric, text} = none` field (§2.5).
+`text` extends the shipped numeric-presets UX (pick a preset, edit from it, or write your own) to
+any `str`-typed setting. Compile rule: a `str`-typed spec with a non-empty `presets` tuple must
+declare `preset_kind="text"`, and manual entry can never be the *only* path removed by a preset
+list — the grammar enforces Q-0070's three-requirement posture mechanically instead of relying on
+each port remembering it.
+
+**Scope boundary:** this decides the **grammar primitive** only — it does not re-open Q-0070's
+deferred "AI-suggested template/preset advisor" idea
+(`docs/ideas/settings-presets-and-ai-template-advisor.md`), which stays captured-only behind the
+AI per-exposure gates.
+
+**Homes:** `docs/planning/rebuild-design-spec-2026-07-02.md` §2.5 (new field + compile rule) and
+top-of-doc addendum; supersedes nothing — extends Q-0070's already-decided posture into the new
+repo's grammar.
+
+### Q-0216 — DIRECTED: multi-select promoted from bot-code convention to a rebuild-grammar compile rule (2026-07-02)
+
+> **Context.** Same brainstorm session, second architectural question: "multi-select menus should
+> also be the standard wherever possible." Research found this was **already owner-directed** for
+> the current bot as Q-0205 (2026-06-24) — "multi-select is the preferred idiom for 'pick which of
+> these to turn on'" — and applied in specific PRs (Essential Setup logging-channel step, the
+> block-spam toggle row), but never promoted into the rebuild's manifest grammar as a default rule
+> new ported/generated selectors would inherit automatically. Current-bot count at the time of
+> research: ~125 `Select` menus, only ~20 genuinely multi-select (~5:1 single-select-by-default),
+> confirming the gap is real, not just a preference already satisfied everywhere.
+
+**Decision:** `SelectorSpec` (§2.4) gets a compile-time default rule: when a selector's `on_select`
+target is a `BindingSpec` with `multiplicity > 1`, or otherwise backs a "pick which of these apply"
+choice, `max_values` defaults to that multiplicity (or full option count for unbounded pick-many)
+instead of Discord's single-select default. A single-select override requires explicit
+justification — the grammar treats "one at a time" as the exception for a naturally multi-valued
+choice, not the default. Scalar pickers (channel/role/member selectors backing a true
+single-value `SettingSpec` or a `multiplicity=1` binding) are unaffected.
+
+**Homes:** `docs/planning/rebuild-design-spec-2026-07-02.md` §2.4 (new compile rule) and
+top-of-doc addendum; extends Q-0205's already-directed idiom from the current codebase into the
+new repo's grammar as a mechanical default rather than a per-PR judgment call.
