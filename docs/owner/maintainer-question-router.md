@@ -8043,3 +8043,36 @@ run).
 
 **Homes:** `docs/planning/rebuild-design-spec-2026-07-02.md` §1.2/§2.2/§2.5/§2.8/§3.1/§6 + top-of-doc
 addendum; source: `docs/planning/rebuild-linchpin-validation-2026-07-02.md` §2.3/§3.
+
+### Q-0218 — DIRECTED: commit the multi-agent-workflow usage-consent flag so fleet sessions stop re-prompting (2026-07-02)
+
+> **Context.** The owner reported that every remote fleet session (ultracode) prompts him for permission
+> before starting a `Workflow`, asked whether that is a recently-added Anthropic requirement, and asked to
+> add it to the always-allowed list. Investigated against the *running* CLI binary (`/opt/claude-code/bin/claude`,
+> not memory — Q-0120).
+
+**Finding (verified in the binary).** The prompt is the **multi-agent-workflow usage-consent gate**
+(`skipWorkflowUsageWarning` / `recordWorkflowUsageConsent` / `workflowNeedsUsageConsentPrompt`; telemetry
+`tengu_workflow_usage_warning`), **not** a tool permission. It ships with the newer Workflow/ultracode
+feature. On *accept*, the runtime persists `skipWorkflowUsageWarning: true` to `~/.claude/settings.json`
+(**user** scope); ephemeral remote containers wipe that each session, so it re-prompts on every boot
+(this container started with no `~/.claude/settings.json`). It is a *usage acknowledgement*, so it is **not**
+in `permissions.allow` and adding `Workflow`/`Task`/`Agent` there cannot silence it — and `defaultMode` is
+already `bypassPermissions`, so those tools are already permission-allowed.
+
+**The scope catch.** The consent reader honors the flag only from **user / local / flag / policy** settings —
+**never committed *project* settings** (`.claude/settings.json`). So the flag cannot go in the shared project
+settings (it would be silently ignored). The one repo-committable scope it reads is
+**`localSettings` = `.claude/settings.local.json`**, previously gitignored.
+
+**Decision (owner-directed in-session; the Q-0106 executable-config exception applies — the maintainer is the
+live reviewer, so applied directly with this provenance Q).** Make `.claude/settings.local.json` a **tracked,
+shared** file carrying `{ "skipWorkflowUsageWarning": true }`, and un-gitignore it (with an explanatory
+comment at `.gitignore`). Every fresh fleet clone now boots pre-consented. Reversible in one commit.
+
+**Cleaner long-term alternative (offered, not applied).** Set the flag once at the code.claude.com
+**environment** level (env config / setup script → `flagSettings`/`userSettings` at boot), which keeps
+`settings.local.json` personal/gitignored. If the owner adopts that, revert the un-gitignore.
+
+**Homes:** `.claude/settings.local.json` (the flag) · `.gitignore` (the tracked-on-purpose comment) ·
+`.sessions/2026-07-02-workflow-consent-fleet-config.md` (session log).
