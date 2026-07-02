@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T09:15:57Z",
+    "generated_at": "2026-07-02T14:10:59Z",
     "build": {
-      "commit": "60714aba",
-      "subject": "Merge pull request #1635 from menno420/claude/superbot-rebuild-design-spec-de4mh7",
-      "committed_at": "2026-07-02T09:15:57Z"
+      "commit": "2e833060",
+      "subject": "Merge pull request #1645 from menno420/claude/superbot-rebuild-design-spec-de4mh7",
+      "committed_at": "2026-07-02T14:10:59Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 163,
+      "ideas": 172,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,11 +1165,83 @@
   ],
   "ideas": [
     {
+      "file": "central-admin-and-logging-guilds-2026-07-02.md",
+      "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Two dedicated Discord guilds (or one guild with two category zones — owner's taste) forming the",
+      "subsystems": null
+    },
+    {
+      "file": "continuously-verified-backups-2026-07-02.md",
+      "title": "Continuously-verified backups — the restore drill as a scheduled workflow (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Upgrade the Railway plan's one-shot **R6 restore drill** into standing CI: a scheduled (weekly or",
+      "subsystems": null
+    },
+    {
       "file": "judge-panel-as-saved-workflow-2026-07-02.md",
       "title": "Judge-panel design method as a saved, reusable workflow (2026-07-02)",
       "status": "ideas",
       "date": "2026-07-02",
       "summary": "The rebuild design spec was produced by a hand-authored judge-panel workflow that worked extremely",
+      "subsystems": null
+    },
+    {
+      "file": "no-transcript-secret-plumbing-2026-07-02.md",
+      "title": "No-transcript secret plumbing — moving secrets without ever printing them (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Q-0213's premise is that agents never need the owner \"to enter certain values\" — but several",
+      "subsystems": null
+    },
+    {
+      "file": "owner-gate-docs-plain-language-rule-2026-07-02.md",
+      "title": "Owner-gate docs always carry a plain-language layer (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "The rebuild design spec — the highest-stakes owner-gate artifact yet — shipped written for",
+      "subsystems": null
+    },
+    {
+      "file": "railway-config-drift-checker-2026-07-02.md",
+      "title": "Railway config-drift checker (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "A read-only `scripts/check_railway_config.py` (+ a weekly routine) that queries the Railway",
+      "subsystems": null
+    },
+    {
+      "file": "railway-deploy-alerts-discord-webhook-2026-07-02.md",
+      "title": "Railway deploy-failure alerts into Discord (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Point a **Railway project webhook** at a Discord webhook so deploy events — above all",
+      "subsystems": null
+    },
+    {
+      "file": "shadow-clone-rehearsal-2026-07-02.md",
+      "title": "Shadow-clone rehearsal — stand up the current bot's twin, agent-operated (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Under the Q-0213 grant, an agent can stand up the **entire Phase-5 shadow topology today, on the",
+      "subsystems": null
+    },
+    {
+      "file": "tried-before-ledger-2026-07-02.md",
+      "title": "The tried-before ledger — operational negative results as first-class memory (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "This session an agent analyzed Railway's *wait-for-CI* toggle from config and concluded it was",
+      "subsystems": null
+    },
+    {
+      "file": "wire-level-live-bot-loop-2026-07-02.md",
+      "title": "The wire-level live-bot loop — Galaxy Bot dissolves the [needs-live-bot] gate (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Agent containers hold a working **test-bot token** (\"Galaxy Bot\", verified live this session) plus",
       "subsystems": null
     },
     {
@@ -2737,6 +2809,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-02-session-ideas-harvest.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Ideas harvest from today's session arc (owner-requested)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-rebuild-strategy-and-substrate-planning.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Rebuild strategy + substrate-kit planning (interactive, owner-directed)",
@@ -2745,9 +2825,57 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-02-rebuild-execution-plan-and-memory-gate.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild: parallel-execution plan + AI-memory-system as the real new-repo gate",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-rebuild-design-spec.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Rebuild design spec: the \"one picture\" (docs-only, owner-gate deliverable)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-rebuild-design-spec-revision.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild design spec: external-review revision (plain-language + verified gap-fixes)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-railway-automation-grant.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Railway: the full-automation grant (Q-0213) + R-now execution",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-railway-audit-and-plan.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Railway: token-capability audit + new-project setup plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-hq-guild-live.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — HQ guild live: Railway feed moved + invite-flow fix + cutover-token confirmation",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-admin-logging-guilds-and-webhook.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Admin/logging guilds idea + Railway alerts webhook restored",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -3156,62 +3284,6 @@
       "file": "2026-06-29-proof-channel-completion-deepening.md",
       "date": "2026-06-29",
       "title": "Session — Proof Channel completion-deepening (audit trail + modal authority re-check)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-projmoon-combat-mechanics.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Project Moon (Limbus) combat-mechanics knowledge layer",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-operator-command-gaps.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Best-in-class operator command gaps (slowmode · topic · roleinfo)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-inventory-display-logic-tests.md",
-      "date": "2026-06-29",
-      "title": "Session — Inventory display-logic coverage (Q-0209 completion-cert punch #7)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-fishing-leaderboard-provider.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Fishing leaderboard provider (S1 deepening win)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-farm-leaderboard-provider.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Farm leaderboard provider (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-economy-give-pay.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Economy give/pay (S1 deepening win, slice 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-creatures-game-panel.md",
-      "date": "2026-06-29",
-      "title": "Session — Creatures completion: game panel + interactive dex browser (Q-0209 deepening)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
