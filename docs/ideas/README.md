@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`convergent-amendment-discovery-signal-2026-07-02.md`](./convergent-amendment-discovery-signal-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, Lane A capability-audit session):** when a multi-agent audit
+  fans out N independent workers over disjoint scope, count and surface **independent
+  rediscoveries** of the same proposed fix/amendment as a confidence-ranking signal during
+  synthesis — the Lane A audit found 2 grammar amendments each rediscovered 3-4× by unrelated
+  subsystem workers with no cross-talk, which is stronger evidence than any single agent's
+  argument. Cheap, tooling-free synthesis-step convention for the next multi-lane reconciliation.
 - [`central-admin-and-logging-guilds-2026-07-02.md`](./central-admin-and-logging-guilds-2026-07-02.md) —
   **owner idea (2026-07-02, in-chat):** a dedicated **admin guild** (manage any server's bot config
   via a cross-guild selector — Q-0212's authority without the "must be in the guild" clause) + a
