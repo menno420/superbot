@@ -1,1 +1,0 @@
-- `claude/memory-retention-policy-u8espg` · Memory retention/deletion policy design (owner-directed brainstorm): retention policy proposal + hard-limit recommendations + retention simulator prototype · docs/planning/, tools/sim/, .sessions/, docs/ideas/ (docs+tooling only, no disbot/ runtime) · 2026-07-02
