@@ -108,3 +108,10 @@ superbot_btd6_data/
 # Transient git worktrees created by background agents (isolation: worktree).
 # Registered under .git/worktrees and auto-cleaned; never tracked in the parent repo.
 .claude/worktrees/
+
+########################################
+# Ultracode / workflow scratch
+########################################
+# Intermediate per-agent mapper output written by planning workflows; the
+# synthesized artifacts committed alongside are the tracked deliverable.
+docs/planning/rebuild-harvest/_parts/
