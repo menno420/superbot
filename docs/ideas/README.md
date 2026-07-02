@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`owner-gate-docs-plain-language-rule-2026-07-02.md`](./owner-gate-docs-plain-language-rule-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the design-spec revision):** every owner-gate deliverable
+  must open with a `## Plain-language summary` (the approving reader is the non-coder owner), backed
+  by a ~10-line `check_docs` rule keyed on an `owner-gate` status token — the design spec needed a
+  full revision PR to retrofit exactly this, and the miss was structurally predictable.
 - [`judge-panel-as-saved-workflow-2026-07-02.md`](./judge-panel-as-saved-workflow-2026-07-02.md) —
   **session idea (2026-07-02, Q-0089, from the rebuild-design-spec session):** encode the proven
   judge-panel method (N forced-diverse designs + cross-model design → lens-diverse judges → best-of
