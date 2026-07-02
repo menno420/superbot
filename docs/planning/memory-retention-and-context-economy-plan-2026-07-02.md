@@ -28,7 +28,7 @@ of linear.
 | Historical plans (`docs/planning/`) | on `historical` rebadge | **ARCHIVE-with-stub after 2 bands** (Q-0210 pattern); DELETE only after 8 bands with zero inbound refs | reconciliation pass step |
 | Idea files (implemented) | on grooming | **DELETE after 4 bands**, one-line tombstone in the ideas README index | `check_retention.py --fix` |
 | Idea files (rejected) | on grooming | **KEEP body** (tiny class) — under Q-0172 any agent may build without approval, so the rejection rationale must stay grep-findable | — |
-| Router decided Q-blocks | on decision | **ARCHIVE with pointer stubs — never delete** (9,690 plain-text Q-refs must keep resolving) | orientation plan B1–B3 |
+| Router decided Q-blocks | on decision | **ARCHIVE with pointer stubs — never delete** (~5,422 working-tree Q-refs must keep resolving) | orientation plan B1–B3 |
 | Ledger tails (`current-state.md` narrative, roadmap history, `current-state-archive.md`) | rolling | **compress to per-band one-liners past 2 bands**; archives get windows too | recon pass + trim actuators |
 | `.session-journal.md` | living | **stop-growth word cap at ~8,500** (today 8,349); shrinking below that has no lawful overflow target while CLAUDE.md promotion is owner-gated | `check_retention.py` gauge |
 | `.session-journal-archive.md` | frozen (zero reads since 2026-06-08) | **deletion DEFERRED** — CLAUDE.md L136 cites it and is owner-gated; rider on the orientation plan's owner-reviewed CLAUDE.md pass | orientation plan A |
