@@ -22,7 +22,7 @@
   discipline, portable namespace/seam-authority/orientation-budget checkers, 4 Claude-Code hooks
   (staged, never live-written), the complete 16-template set, and the **one-step adopt flow**
   (`bootstrap adopt` on a bare dir + the stdlib-only single-file `dist/bootstrap.py`;
-  `render --live`; AgentContextPack generator, index-or-manifest). 117→399 kit tests; proven
+  `render --live`; AgentContextPack generator, index-or-manifest). 117→407 kit tests; proven
   end-to-end in a scratch repo. **Remaining owner-gated:** the Phase-2.5 cold-start A/B (still
   gates Phase 3) + the extract-to-standalone-repo step.
 - **Reconcile-marker band-consistency guard** (`scripts/check_reconcile_marker.py`, warn-first,

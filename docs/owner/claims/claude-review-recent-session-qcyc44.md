@@ -1,0 +1,1 @@
+- branch `claude/review-recent-session-qcyc44` · scope: review the most recent session (#1649 substrate-kit) + fix confirmed defects it missed · area: `substrate-kit/`, `tests/unit/substrate_kit/`, `docs/current-state*` · 2026-07-02
