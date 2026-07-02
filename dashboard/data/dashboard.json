@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T21:30:43Z",
+    "generated_at": "2026-07-02T23:37:32Z",
     "build": {
-      "commit": "ebb81949",
-      "subject": "Lane B — Economy &amp; Character-sim capability audit (docs-only) (#1665)",
-      "committed_at": "2026-07-02T21:30:43Z"
+      "commit": "21171158",
+      "subject": "Merge pull request #1670 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-02T23:37:32Z"
     },
     "counts": {
       "functions": 43,
