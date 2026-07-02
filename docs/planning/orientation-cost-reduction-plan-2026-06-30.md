@@ -128,6 +128,12 @@ same way nothing currently catches it today.
 
 ## Workstream D — propose (don't apply) a standing "shrink" rule
 
+> **Settled by Q-0214.3 (2026-07-02, owner, live):** shrink duty = **checker + routine** (mechanical
+> prunes via `check_retention.py --fix`, judgment prunes via the retention-debt routine issue) — the
+> owner chose this over a per-session shrink ritual, so the DISCUSS proposal below is no longer
+> needed. See `memory-retention-and-context-economy-plan-2026-07-02.md` §5. Original text kept for
+> provenance:
+
 The project has several mandatory session-end **growth** rules (Q-0089 idea-of-the-session, Q-0102
 previous-session review, Q-0104 docs audit). There is no equivalently-weighted **shrink** counterpart,
 and the evidence above (router unarchived for 2 passes past its own decided cadence; AGENT_ORIENTATION
