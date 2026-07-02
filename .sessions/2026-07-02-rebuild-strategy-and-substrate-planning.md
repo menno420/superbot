@@ -1,9 +1,10 @@
 # 2026-07-02 — Rebuild strategy + substrate-kit planning (interactive, owner-directed)
 
-> **Status:** `complete` — long interactive planning session with the owner (Fable 5 re-introduction
-> context; Max ×20, weekly limits fresh). Planning docs + the ultracode launch pad captured and pushed;
-> the 2-wide `rebuild-harvest` is superseded by the fresh 16-wide Session A (handoff §5); **no code
-> shipped to `disbot/`.** PR opened at session close.
+> **Status:** `in-progress` — planning session **plus an in-session follow-up wave**: verifying the 4
+> Codex rebuild-discovery maps against shipped source (Q-0120) and folding them into one synthesis, and
+> fixing #1634's masked plan-homing CI failure. Original planning: Fable 5 re-introduction context; Max
+> ×20, weekly limits fresh; planning docs + ultracode launch pad captured; the 2-wide `rebuild-harvest`
+> is superseded by the fresh 16-wide Session A (handoff §5); **no code shipped to `disbot/`.**
 
 ## What this session did
 Started as a prompt-review request for a substrate-kit *finalization* pass; evolved (owner-directed) into
