@@ -1,6 +1,6 @@
 # 2026-07-02 — Memory retention & deletion policy (design session)
 
-> **Status:** `in-progress` — follow-up turn live (substrate-handoff prep); flip to complete last (Q-0133). Run type: manual ·
+> **Status:** `complete` — ready to merge (Q-0133; follow-up turn done). Run type: manual ·
 > owner-directed (ultracode brainstorm). Docs + `tools/sim/` only; no `disbot/` code; **no real
 > content deleted this session** (one stale claim file removed — its checker surfaced it).
 > PR #1643.

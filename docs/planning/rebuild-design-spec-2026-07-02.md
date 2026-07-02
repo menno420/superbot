@@ -1406,6 +1406,8 @@ silently regrow — and the kit's **context-economy engine**
 ([`memory-retention-and-context-economy-plan-2026-07-02.md`](memory-retention-and-context-economy-plan-2026-07-02.md)
 §10, posture per Q-0214) supplies the retention half: per-class windows, tombstone/stub semantics,
 and the checker+actuator pair, so the corpus stays bounded by construction, not by cleanup heroics.
+Generated docs carry the `NOT SOURCE OF TRUTH — edit the manifest` marker (the context-compiler
+convention, kept).
 
 ---
 

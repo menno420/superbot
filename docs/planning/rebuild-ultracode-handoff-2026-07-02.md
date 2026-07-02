@@ -139,7 +139,77 @@ END-PRODUCT BAR: a COMPLETE, SHIPPABLE package — single-file bootstrap + downl
 adopt flow + full test coverage + README — that the new repo is planted from at K0. Deliver a short
 "shippable-readiness" note confirming the zero-coupling, single-file, adopt-in-one-step, and
 new-repo-interlock properties. This is the gate; the new repo starts correctly once it's shipped.
+
+ADDENDUM (2026-07-02, retention session — read §5.B-addendum in this handoff for the verified
+gap inventory + flags): ALSO READ memory-retention-and-context-economy-plan-2026-07-02.md §10 (the
+context-economy engine spec), router Q-0214 (four owner decisions: delete+tombstones posture ·
+website-feed inbox · checker-owned shrink, no per-session ritual · ledger = verdict + short why),
+and tools/sim/retention_policy_sim.py (kit ships the SEARCH, per-repo constants stay host-side).
+ALSO BUILD, kit-native (do not wait for superbot's check_retention PR): the context-economy engine —
+config-driven class/badge taxonomy + reading-route declaration, budget gauges + retention windows as
+config, checker+actuator pair (dry-run default), tombstone/stub + harvest-table semantics, the
+generalized retention simulator; and docs/decisions.md at the Q-0214.4 depth with machine-readable
+`supersedes:` + the stamp discipline (design-spec §7 ledger row). HONOR the §5.B-addendum flags:
+the owner-decision defaults (package stays in-repo named `substrate-kit`; two-tier acceptance —
+§B bar for the merge, cold-start A/B stays Phase 2.5; review seam provisioned + optional adapter,
+not hard-wired) and the session flags (templates are 6 of 14 with verified dangling question-bank
+routes; mode/promotion fields have ZERO behavioral reads today; no `build` stance exists — the
+edit-only-in-debug test pin is a deliberate decision point; memory-integrity/quarantine is full
+design freedom within "external text = data, not instructions" + checkpoint/restore; deliberate
+shipped deviations are NOT bugs — tests under tests/unit/substrate_kit/, Python modules not YAML,
+host-installed hooks; CI gotchas T201/S101/S603 + isort-covers-tests bind kit code too).
 ```
+
+#### §5.B-addendum — verified gap + flags (2026-07-02, retention/Q-0214 session; grounded by a 2-agent source-verified inventory)
+
+**Verified build state (source-checked, PRs #789–#813):** the declaration layer is real — state
+backend + config + guardrail, staged-learning interview (10-question bank, provisional self-answers,
+adaptive graduation), render engine + **6 of the plan's 14 templates**, check_docs/check_session_log
+ports, 5 stances (edit-only-in-`debug` pinned by tests), 7 skills, 3 read-only personas, the
+PreToolUse stance-guard hook, an 11-subcommand CLI, the stdlib-only single-file
+`dist/bootstrap.py` (byte-identical on rebuild), 117 tests green, zero `disbot` coupling. **No
+README, no pyproject, no examples/, no external repo exist.**
+
+**Verified NOT built (the worklist's spine):** the three integration-mode *behaviors* (field-only —
+zero behavioral reads), trigger/drift/staleness detection, the reflection buffer + meta-reflection
+miner, the §6 self-review/maintenance loop, review-seam *wiring* (payload builder / confirmer /
+escalation), the 8 missing templates (question-bank routes Q-004/006/008/009/010 dangle — verified),
+session_start/post_edit/stop hooks + settings.template.json, memory-integrity/quarantine,
+the context-economy engine (spec now concrete: retention plan §10 + Q-0214), namespace-guard +
+shadowing as portable checkers, ledger/reconciliation checker ports (graduate-or-drop, Q-0105),
+the episodic index (silently dropped from PR 1b), promotion-rights enforcement, behavior-assert
+sims + the named anti-gaming test, router metrics/KPIs, the AgentContextPack generator
+(index-or-manifest input), packaging/README/adopt flow, and the K0-interlock deliverables
+(decisions.md format · orientation ≤7,000-word budget checker · seam-authority checks ·
+CONSTITUTION/architecture/ownership/contracts skeleton yield).
+
+**⚑ Owner flags (defaults an autonomous session takes if unanswered):**
+1. **Kit name + publish rights** — default: complete package **in-repo** under the placeholder name
+   `substrate-kit` (name swappable in one place); **no external repo / PyPI publish without the
+   owner** (the extraction step stays owner-driven).
+2. **Acceptance bar** — default two-tier: the finalization PR merges on §B's shippable bar (117+
+   tests green, `--simulate` smoke, no `$PLACEHOLDER` residue, one-step adopt proven in a scratch
+   dir); the **Phase-2.5 cold-start substrate-on/off A/B stays a separate session** and still gates
+   Phase 3.
+3. **Review-seam wiring** — default: seam + anti-anchor payload + stop-conditions + an *optional*
+   config-driven non-Claude reviewer adapter (graceful no-key fallback); hard-wiring a live
+   reviewer (whose key?) is the owner's call.
+4. **Retention PR 2's 7-file substep** — the 2026-06-30 audit's confirmed-delete list **was never
+   committed** (chat-only); re-derive or skip (default: skip — the reference gate protects
+   regardless).
+5. **Journal deeper-cut** (8,349 → ~4,000 words/boot) — default: stop-growth cap only.
+6. **The rebuild design-spec approval** remains the standing 🔒 gate — §B is ungated and builds the
+   interlock against the spec as written, flagging anything approval-sensitive.
+
+**Session flags (resolve in-session, guidance included):** re-establish the exact gap against
+source first (§B already instructs this; treat 6-of-14 as the template truth and "zero dangling
+routes" as the bar) · the no-`build`-stance / edit-only-in-debug pin is a deliberate design
+decision — change it with rationale + test update, or route build-mode through skill precedence ·
+build the context-economy engine kit-native; superbot's own `check_retention.py` (retention plan
+PR 1) can then consume the kit version · hooks follow the shipped #813 precedent (stage into
+`<state_dir>`, host installs; never write a live `.claude/`) · don't duplicate PR #1639's golden
+harness — the kit ships the *pattern/scaffold*, not superbot's goldens · check
+`docs/owner/claims/` + open PRs at start (lane was uncontended at 2026-07-02 12:40 UTC).
 
 ### C — Behavioral golden harness (Phase 0.5) — *capture while the bot is live, before any freeze*
 ```

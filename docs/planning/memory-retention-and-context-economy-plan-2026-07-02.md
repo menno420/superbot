@@ -382,7 +382,9 @@ delete; **sole-source facts** → the harvest step moves them to durable homes *
 opens), its "45 need condensing" is the tail-compression workstream, and its population (historical
 plans/audits) is the class this policy *archives*, not deletes. The class it did not cover —
 session logs — is where the measured afterlife is near-zero. The audit's 7 confirmed-delete files
-(still awaiting the maintainer's go-ahead) become PR 2's first deletions under the new gates.
+were flagged for the maintainer's go-ahead — but **the file list itself was never committed** (it
+existed only in that session's chat; verified missing 2026-07-02), so PR 2 either re-derives
+candidates with the same classify→adversarially-verify method or skips the substep (⚑ owner flag).
 
 **The incident record splits the failure modes cleanly** (30+ incidents swept from
 journal/sessions/router, 2026-07-02):
@@ -477,8 +479,8 @@ in order: **migrate** still-live gate/blocked items out of the ledger narrative 
 compression (current-state narrative block → per-band one-liners keeping PR#s/filenames verbatim;
 roadmap history sections; current-state-archive entries past window) → re-run reference pass →
 archive newly-unreferenced historical plans (body → `docs/planning/archive/`, one-line stub file
-stays at the old path) → **execute the 2026-06-30 audit's 7 confirmed-delete files** (owner
-reviews them with this plan) → first session-log prune (only slugs present in committed harvest
+stays at the old path) → **the 2026-06-30 audit's 7-file substep — re-derive or skip** (the list was never committed;
+every deletion passes the inbound-reference gate regardless; ⚑ owner flag) → first session-log prune (only slugs present in committed harvest
 tables; per-band sharded index lines written; the Hermes dispatch-skill grep text updated in the
 same commit; run under the retention claim lock). Each step its own commit,
 `check_docs --strict` green throughout. Update plan-index convention text ("never deleted" →
