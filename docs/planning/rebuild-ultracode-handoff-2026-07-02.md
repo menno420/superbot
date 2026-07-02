@@ -76,7 +76,7 @@ Adversarially verify before writing. Synthesize → docs/planning/rebuild-harves
 decision-ledger,settings-model,migration-contract}.md. Opus xhigh. Born-red session card.
 ```
 
-### B — Finalise + ship the AI-memory system (Phase 0 — the REAL new-repo gate)
+### B — Finalise + ship the AI-memory system (Phase 0 — the REAL new-repo gate) — *✅ RAN 2026-07-02 (Fable 5 ultracode, PR #1649): the nervous system + context-economy engine + one-step-adopt packaging shipped; 117→399 kit tests; see the session log `.sessions/2026-07-02-ultracode-memory-substrate-finalize.md` for the shippable-readiness record. The Phase-2.5 cold-start substrate-on/off A/B remains a separate session (owner flag 2) and still gates Phase 3.*
 > **Elevated 2026-07-02 (owner):** this is not "finish the adaptive half" as a side task — it is the
 > **gating deliverable that lets the new repo start correctly.** Design-spec §9.1 makes the substrate-kit
 > K0's very first act (doc skeletons · decision-ledger format · orientation-budget checker · namespace

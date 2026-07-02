@@ -32,7 +32,9 @@ def default_state(project_id: str) -> dict[str, Any]:
         "stance": "analysis",
         "session_count": 0,
         "slots": {},
+        "slot_values": {},
         "open_questions": [],
+        "quiet_sessions": 0,
         "graduation": {
             "soft_target_sessions": 50,
             "criteria": {
@@ -40,6 +42,11 @@ def default_state(project_id: str) -> dict[str, Any]:
                 "blocking_questions": 0,
             },
         },
+        "mode_history": [],
+        "reflection_buffer": {"active_count": 0, "last_mined": None},
+        "graduation_proposed": False,
+        "last_compaction_session": 0,
+        "review_log": [],
     }
 
 

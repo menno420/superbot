@@ -10,6 +10,21 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **THE MEMORY SUBSTRATE IS FINALIZED (#1649, 2026-07-02 — the handoff §5.B Fable-5 ultracode
+  session; the K0 gate deliverable).** The substrate-kit's full nervous system shipped on the
+  declaration layer: mode *behaviors* (observe/guided/active now change quota / orientation /
+  mandates / actuator gating / graduation), trigger→mandatory-question sessions, the R-NNNN
+  reflection buffer + miner + episodic index, the §6 maintenance loop (compaction State Delta ·
+  blocking-question escalation · promotion downgrade), the anti-anchor review seam (provisioned,
+  not hard-wired), the **context-economy engine** (class taxonomy · gauges incl. the ≤7,000-word
+  orientation budget · triple-filter harvest-gated deletion · tombstone shards · the generalized
+  retention simulator — retention plan §10 + Q-0214), the [D-NNNN] decisions ledger + stamp
+  discipline, portable namespace/seam-authority/orientation-budget checkers, 4 Claude-Code hooks
+  (staged, never live-written), the complete 16-template set, and the **one-step adopt flow**
+  (`bootstrap adopt` on a bare dir + the stdlib-only single-file `dist/bootstrap.py`;
+  `render --live`; AgentContextPack generator, index-or-manifest). 117→399 kit tests; proven
+  end-to-end in a scratch repo. **Remaining owner-gated:** the Phase-2.5 cold-start A/B (still
+  gates Phase 3) + the extract-to-standalone-repo step.
 - **Reconcile-marker band-consistency guard** (`scripts/check_reconcile_marker.py`, warn-first,
   dispatch run 2026-06-27) — asserts the `Last reconciliation pass` marker in `current-state.md` is
   internally consistent (leading `PR #N` == the stated reset target · `band-#M` == `(N // 30) * 30` ·
@@ -50,19 +65,15 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   ungated phases: Phase 0 (substrate-kit adaptive half) · Phase-0.5 telemetry sidecar capture ·
   Phase 1 (harvest) · Phase 2.5 (cold-start proof) — see the
   [strategy §3](../planning/fresh-rebuild-strategy-2026-07-02.md).
-- `[offline]` **▶ FINALIZE THE MEMORY SUBSTRATE (owner-queued 2026-07-02, next up):** the owner will
-  start a **Fable 5 ultracode** session to make the substrate-kit finished + shippable for a fresh
-  repo. **The canonical startup prompt is
-  [`rebuild-ultracode-handoff-2026-07-02.md`](../planning/rebuild-ultracode-handoff-2026-07-02.md)
-  §5.B** (owner-elevated: the real new-repo gate), extended 2026-07-02 with the
-  **context-economy engine** scope
-  ([retention plan §10](../planning/memory-retention-and-context-economy-plan-2026-07-02.md), posture
-  + inbox + shrink + ledger-depth decided in **Q-0214**) and a flagged-uncertainty list. Subsumes the
-  old "PR 2 remainder + PR 3" framing of
-  [the extraction plan](../planning/portable-substrate-kit-extraction-2026-06-13.md) (owner-re-elevated
-  to top focus by the 2026-06-30 fresh-rebuild vision, #1589/#1590, reversing the band-#870 §6
-  demotion). `[owner]` the final *extract to a standalone repo* step + the full rebuild go/no-go stay
-  owner-driven.
+- ~~**▶ FINALIZE THE MEMORY SUBSTRATE**~~ — **✅ DONE #1649 (2026-07-02**, the
+  [handoff §5.B](../planning/rebuild-ultracode-handoff-2026-07-02.md) Fable-5 ultracode session —
+  see Recently shipped above). What remains of this lane: `[offline]` **Phase 2.5 cold-start
+  substrate-on/off A/B** (a fresh scratch repo adopted from `dist/bootstrap.py`, agent sessions
+  with vs. without the substrate — the owner-flag-2 acceptance tier that still gates Phase 3);
+  `[owner]` the *extract to a standalone repo* step + the full rebuild go/no-go. The old
+  "PR 2 remainder + PR 3" framing of
+  [the extraction plan](../planning/portable-substrate-kit-extraction-2026-06-13.md) is fully
+  subsumed and shipped.
 - `[offline]` **procedures→skills Batch 2**
   ([plan](../planning/procedures-to-skills-conversion-plan-2026-06-17.md)).
 - `[offline]` The **bot self-test walker** eval harness (pairs with S1 P1-1) — the harness scaffold is
