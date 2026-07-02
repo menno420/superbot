@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T21:04:15Z",
+    "generated_at": "2026-07-02T21:30:43Z",
     "build": {
-      "commit": "3c62e4af",
-      "subject": "Merge pull request #1659 from menno420/claude/daily-review-brainstorm-rcyar3",
-      "committed_at": "2026-07-02T21:04:15Z"
+      "commit": "ebb81949",
+      "subject": "Lane B — Economy &amp; Character-sim capability audit (docs-only) (#1665)",
+      "committed_at": "2026-07-02T21:30:43Z"
     },
     "counts": {
       "functions": 43,
@@ -2833,6 +2833,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-02-workflow-consent-fleet-config.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Stop fleet sessions re-prompting for multi-agent-workflow consent",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-ultracode-memory-substrate-finalize.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Finalize the AI-memory substrate (handoff §5.B, ultracode)",
@@ -2937,6 +2945,30 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-02-lane-g-l0-foundations-audit.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane G: L0 Foundations & Runtime Skeleton audit",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-lane-c-games-audit.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane C new-bot capability audit (Games & Community)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-lane-b-economy-audit.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane B new-bot capability audit (Economy & Character-sim)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-hq-guild-live.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — HQ guild live: Railway feed moved + invite-flow fix + cutover-token confirmation",
@@ -2945,11 +2977,27 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-02-grammar-audit-prep.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Prepare the repo for the new-bot capability audit (fleet substrate)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-daily-review-brainstorm.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Daily review + architecture brainstorm ahead of the rebuild gate",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-audit-brief-hardening.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Harden the new-bot capability-audit BRIEF (prompt-refinement pass)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3260,54 +3308,6 @@
       "file": "2026-06-30-cleanup-spam-window-setting.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Cleanup spam-window per-guild setting (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-cleanup-history-filters.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Cleanup history filters + age gate (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-btd6-track-lengths-rbs.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — BTD6 track lengths (Red Bloon Seconds) + estimator escape-margin",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-btd6-boss-fight-estimator.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — BTD6 boss-fight estimator (estimate, don't refuse)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-bot-owner-permissions-override.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Bot-owner platform-admin override (full config authority in any guild)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-bot-owner-override-completeness.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Bot-owner override: completeness follow-up (view gates + command decorators)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-blackjack-punchlist-2-3.md",
-      "date": "2026-06-30",
-      "title": "Session — Blackjack completion-cert punch-list #2 + #3",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
