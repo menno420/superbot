@@ -99,13 +99,13 @@ to the ⚑ lines below rather than deciding them.
 - **Shipped:** PR #1643 — plan doc, `tools/sim/retention_policy_sim.py`, plan-index/S4/idea
   routing, session card. 
 - **Run type:** `manual` (owner-directed ultracode brainstorm)
-- **⚑ Owner decisions needed:** (1) **adopt the policy?** — the plan is the proposal; PR 1
-  (checker, zero deletions) is safe to start on a nod; (2) **archive-vs-delete for session logs**
-  is a values tiebreak, not a sim verdict (archive wins read-cost by 0.4%; delete wins
-  boundedness) — plan §6.2 states it honestly; default = delete per your lean-by-construction
-  steer; (3) the **journal deeper-cut question** (8,349 → ~4,000 words would save ~4.3k/boot but
-  needs an owner-gated CLAUDE.md-adjacent overflow decision); (4) the 2026-06-30 audit's **7
-  confirmed-delete files** await your go-ahead (PR 2 executes them under the new gates).
+- **⚑ Owner decisions — ANSWERED live via question panel, recorded as Q-0214:** (1) session-log
+  posture = **delete + tombstones** (boundedness tiebreak confirmed); (2) owner inbox = **website
+  `/updates` feed** (export gains a harvest-table source in PR 2); (3) shrink duty = **checker +
+  routine**, no per-session ritual (supersedes orientation-plan Workstream D); (4) rebuilt-repo
+  ledger depth = **verdict + short why**. Still open for the implementing session: the journal
+  deeper-cut (8,349 → ~4,000 words; owner-gated overflow decision) and the 2026-06-30 audit's **7
+  confirmed-delete files** go-ahead (owner reviews with PR 2).
 - **⚑ Owner manual steps:** none.
 - **⚑ Self-initiated:** groomed `orientation-doc-linecap-guard` into the plan; stale-claim
   fix-on-sight; the `context-cost-telemetry` idea file. (All docs-lane, reversible.)

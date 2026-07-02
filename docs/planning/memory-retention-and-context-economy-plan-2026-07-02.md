@@ -8,6 +8,10 @@
 > [`simulation-driven-design-2026-07-02.md`](simulation-driven-design-2026-07-02.md) applied to the
 > memory system itself — the simulator is **built and run**: `tools/sim/retention_policy_sim.py`.
 > Every number below is a 2026-07-02 measurement or a sim output labeled as such.
+> **Owner decisions recorded (Q-0214, same day, live):** delete+tombstones posture confirmed ·
+> owner inbox = the website `/updates` feed (export must read harvest tables) · shrink duty =
+> checker+routine (no per-session ritual; supersedes orientation-plan Workstream D) · rebuilt-repo
+> ledger depth = verdict + short why.
 
 ## 0. TL;DR
 
@@ -193,7 +197,9 @@ reference dangles — both checkable by machine. That is what makes it safe *una
   git. Each pruned log leaves **one grep-visible index line** (slug · title · PR#) in a pruned-log
   index under `.sessions/` — grep-shaped consumers (the Hermes dispatch skill greps `.sessions/` for
   slice names to decide shipped-vs-not) hit the line instead of silent-empty; that skill's text is
-  updated in the same PR. Logs cited from **any tracked file** (the router cites 30 in backtick
+  updated in the same PR. **Owner inbox is the website feed (Q-0214.2):** `export_dashboard_data.py`
+  gains a harvest-table source alongside raw logs in PR 2, so the `/updates` feed survives pruning
+  by construction. Logs cited from **any tracked file** (the router cites 30 in backtick
   prose as canonical `Home:` lines — live-badge scoping would miss them) are held automatically.
 - **Historical plans.** On rebadge: index row moves to Historical (existing convention). After 2
   bands: body moves to `docs/planning/archive/`, and a **one-line stub file stays at the old path**
@@ -484,7 +490,8 @@ Graduate the **diff-scoped** hard gates (deletes-referenced-file / introduces-da
 proven; wire the retention-debt threshold to the routine-issue trigger (`retention` label,
 label-scoped dedupe, `--issue-body`, the routine registered in `autonomous-routines.md`, a
 retention row in `check_loop_health`'s control-plane table so a dead ROUTINE_PAT is
-live-verified); draft the Workstream-D DISCUSS Q-block (standing shrink ender); port the checker +
+live-verified); record that orientation-plan Workstream D is settled by Q-0214.3 (shrink = checker+routine, no
+per-session ritual — no DISCUSS block needed); port the checker +
 policy table into the substrate-kit as the **context-economy engine** (kit's §5.2 slot: budget +
 retention + tombstone semantics as a portable capability, config-driven classes so any repo it's
 planted in defines its own table).
