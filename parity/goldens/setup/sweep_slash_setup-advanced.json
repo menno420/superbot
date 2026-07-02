@@ -1,0 +1,143 @@
+{
+ "case_id": "sweep.slash_setup-advanced",
+ "db_delta": {
+  "setup_session": {
+   "added": [
+    {
+     "acknowledged_sections": [],
+     "created_at": "<ts>",
+     "current_step": "depth",
+     "delegated_admins": [],
+     "depth": null,
+     "essential_message_id": null,
+     "essential_step": null,
+     "guild_id": "<guild>",
+     "guild_name": "Parity Test Guild",
+     "joined_at": "<ts>",
+     "last_readiness_score": null,
+     "owner_id": "<@admin>",
+     "purpose": null,
+     "setup_channel_id": "<msg:1>",
+     "setup_message_id": "<msg:3>",
+     "setup_status": "in_progress",
+     "skipped_sections": [],
+     "updated_at": "<ts>"
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<msg:1>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "setup_depth:quick",
+          "disabled": false,
+          "label": "⚡ Quick",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "setup_depth:standard",
+          "disabled": false,
+          "label": "🛠 Standard",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "setup_depth:advanced",
+          "disabled": false,
+          "label": "🔬 Advanced",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 5793266,
+        "description": "How detailed do you want the wizard to be? You can change this later from the hub. Your selection only filters which sections appear — nothing applies until **Final review**.",
+        "fields": [
+         {
+          "inline": false,
+          "name": "⚡ Quick",
+          "value": "3 steps — server scan, choose a preset, apply. Best for small servers that just want safe defaults."
+         },
+         {
+          "inline": false,
+          "name": "🛠 Standard",
+          "value": "5–6 steps — scan, channels & logging, cleanup, optional preset, review. Best for most communities."
+         },
+         {
+          "inline": false,
+          "name": "🔬 Advanced",
+          "value": "Every section — identity, smart suggestions, cog routing, cleanup, channels, presets. Best for owners who want control."
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Recommended: Standard."
+        },
+        "title": "🛰 Choose your setup depth",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "interaction_id": "<msg:2>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "content": "Setup wizard is open in <#<msg:1>> — [Open setup workspace](https://discord.com/channels/<guild>/<msg:1>/<msg:3>).",
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
+   "events": [
+    {
+     "event": "audit.action_recorded",
+     "payload": {
+      "actor_id": "<@admin>",
+      "actor_type": "user",
+      "guild_id": "<guild>",
+      "mutation_id": "<uuid>",
+      "mutation_type": "setup.session.started",
+      "new_value": "pending",
+      "occurred_at": "<ts>",
+      "prev_value": null,
+      "scope": "guild",
+      "subsystem": "setup",
+      "target": "setup_session:<guild>"
+     }
+    }
+   ],
+   "input": {
+    "kind": "slash",
+    "name": "setup-advanced",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "setup"
+}

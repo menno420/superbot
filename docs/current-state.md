@@ -15,7 +15,7 @@
 > |---|---|---|
 > | **S1 Bot product** | [`current-state/S1-bot.md`](current-state/S1-bot.md) | reaction-roles arc Carl-bot-mature; creature game + mining grid live; Essential Setup wizard cut over to primary + follow-ons (PR 2 / 3a, #1449/#1451); Project Moon (Limbus) knowledge domain + combat-mechanics rules layer (#1453…#1549); **NEW band-#1620 completion deepening — fishing coral structures (#1596…#1605), reaction-roles slim builder (#1608…#1615), XP import from other bots (#1607/#1610), server-logging depth (#1594/#1618/#1619), bot-owner permission-gate bypass (#1602) + a boot smoke-test CI guard (#1601)**; ▶ next: Project Moon Q-0086 live walk / StaticData exact-number ingest / botsite React migration |
 > | **S2 BTD6** | [`current-state/S2-btd6.md`](current-state/S2-btd6.md) | buff-uptime + data auto-seed/drift shipped; eval anchor-complete; QA-accuracy arc — interaction grounding + honest semantic-grading eval harness (#1487…#1498); **NEW menu-layout simulator + round-range NL answer fix (#1617); owner picked Layout B — panel category-hub in flight (#1621)**; ▶ live re-test (owner) / curated counter lists / decode items 3–4 |
-> | **S3 AI-Memory** | [`current-state/S3-ai-memory.md`](current-state/S3-ai-memory.md) | settle-once money-safety guard (#1454) + cross-domain routing-disjointness guard (#1470); **self-improving-workflow guards #1476/#1477/#1479/#1482/#1495**; **owner re-elevated the portable substrate-kit to top focus (fresh-rebuild vision #1589/#1590 — reverses the band-#870 §6 demotion)**; ▶ **finalize the memory substrate** — Fable 5 ultracode, owner-queued 2026-07-02; startup prompt = [rebuild handoff §5.B](planning/rebuild-ultracode-handoff-2026-07-02.md) (+ context-economy engine per Q-0214 / [retention plan](planning/memory-retention-and-context-economy-plan-2026-07-02.md)) / then consistency-linter AI-nav PR 1 / procedures→skills Batch 2 |
+> | **S3 AI-Memory** | [`current-state/S3-ai-memory.md`](current-state/S3-ai-memory.md) | settle-once money-safety guard (#1454) + cross-domain routing-disjointness guard (#1470); **self-improving-workflow guards #1476/#1477/#1479/#1482/#1495**; **owner re-elevated the portable substrate-kit to top focus (fresh-rebuild vision #1589/#1590)**; **rebuild design spec shipped (#1637/#1638) + BOTH linchpins now built & measured (#1639 — Phase-0.5 golden harness `parity/` + grammar spike, verdict GO-with-amendments)**; ▶ **finalize the memory substrate** — Fable 5 ultracode, owner-queued 2026-07-02; startup prompt = [rebuild handoff §5.B](planning/rebuild-ultracode-handoff-2026-07-02.md) (+ context-economy engine per Q-0214 / [retention plan](planning/memory-retention-and-context-economy-plan-2026-07-02.md)) / owner gate (design + evidence in) / telemetry sidecar capture |
 > | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 31st Q-0107 pass done (band-#1620); next recon at #1650; **no PLAN-BACKLOG-THIN flag** |
 > | **S5 Operations** | [`current-state/S5-ops.md`](current-state/S5-ops.md) | merge=deploy clarity (Q-0193); loop self-fires; ▶ website rollout (owner/Hermes) |
 >
@@ -38,7 +38,11 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-07-01 — **thirty-first Q-0107 reconciliation pass (band-#1620, issue #1622
+> **Last updated:** 2026-07-02 — **rebuild linchpin validation shipped (#1639):** the Phase-0.5
+> golden harness (`parity/`, coverage-measured) + the grammar-expressiveness spike
+> (`tools/grammar_spike/`) — the owner-gate evidence package
+> ([go/no-go](planning/rebuild-linchpin-validation-2026-07-02.md), verdict GO-with-amendments).
+> Earlier: 2026-07-01 — **thirty-first Q-0107 reconciliation pass (band-#1620, issue #1622
 > — [pass record](planning/reconciliation-pass-2026-07-01-band1620.md));** reconciled band #1591–#1620
 > (seven grouped entries — fishing coral structures, reaction-roles slim builder, XP import, server-logging
 > depth, an S1 completion+owner-override+boot-guard bundle, BTD6 layout sim), forward queue still deep
@@ -230,6 +234,15 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1639 (2026-07-02, S3 rebuild — linchpin validation: golden harness + grammar spike)** — the two
+  unproven rebuild linchpins **built and measured** before the owner gate: the **Phase-0.5 golden
+  behavioral harness** (`parity/` — the real bot driven in-process through the real discord.py state
+  machine over a fake HTTP boundary; 400+ golden fixtures; **replay-deterministic**; coverage
+  measured with the uncovered tail named in `parity/COVERAGE.md`) and the **grammar-expressiveness
+  spike** (`tools/grammar_spike/` — real karma/logging/blackjack manifests in the §2 grammar;
+  tier-1/2 fit **73% as-specced → 85% with six named amendments**, operator band 97%). Owner-gate
+  evidence + GO-with-amendments verdict:
+  [`planning/rebuild-linchpin-validation-2026-07-02.md`](planning/rebuild-linchpin-validation-2026-07-02.md).
 - **#1591 + 5 dashboard refreshes (2026-06-30/07-01, docs — thirtieth Q-0107 pass + dashboard)** — the
   **thirtieth Q-0107 reconciliation pass** (band-#1590,
   [pass record](planning/reconciliation-pass-2026-06-30-band1590.md), #1591); plus five per-source-merge

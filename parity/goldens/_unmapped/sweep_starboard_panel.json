@@ -1,0 +1,160 @@
+{
+ "case_id": "sweep.starboard_panel",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1871825968,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "channel_types": [
+           0
+          ],
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "placeholder": "Set the hall-of-fame channel…",
+          "required": false,
+          "type": 8
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "channel_types": [
+           0
+          ],
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "placeholder": "Toggle an ignored channel…",
+          "required": false,
+          "type": 8
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "label": "✏️ Threshold",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:4>",
+          "disabled": false,
+          "label": "⭐ Self-star",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:5>",
+          "disabled": false,
+          "label": "🚫 Disable",
+          "style": 4,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15844367,
+        "description": "Starboard is **off**. Pick a hall-of-fame channel below to turn it on (default threshold **3**, then tap **✏️ Threshold** to change).",
+        "flags": 0,
+        "footer": {
+         "text": "Pick a channel below to toggle its ignore state."
+        },
+        "title": "⭐ Starboard config",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!starboard panel",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

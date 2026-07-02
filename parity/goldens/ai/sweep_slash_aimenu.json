@@ -1,0 +1,164 @@
+{
+ "case_id": "sweep.slash_aimenu",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "ai:refresh",
+           "disabled": false,
+           "label": "Refresh",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "ai:diagnostics",
+           "disabled": false,
+           "label": "Diagnostics",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "ai:providers",
+           "disabled": false,
+           "label": "Providers",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "ai:routing",
+           "disabled": false,
+           "label": "Routing",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "ai:settings",
+           "disabled": false,
+           "label": "Settings",
+           "style": 3,
+           "type": 2
+          },
+          {
+           "custom_id": "ai:policy",
+           "disabled": false,
+           "label": "Policy",
+           "style": 3,
+           "type": 2
+          },
+          {
+           "custom_id": "ai:behavior",
+           "disabled": false,
+           "label": "Behavior",
+           "style": 3,
+           "type": 2
+          },
+          {
+           "custom_id": "ai:tools",
+           "disabled": false,
+           "label": "Tools",
+           "style": 3,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "nav:help",
+           "disabled": false,
+           "label": "📚 Help",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "nav:hub:admin",
+           "disabled": false,
+           "label": "↩ Administration",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 5793266,
+         "description": "Read-only diagnostics for the AI gateway. The buttons below open the matching subcommands without making a provider call.",
+         "fields": [
+          {
+           "inline": true,
+           "name": "Enabled",
+           "value": "no"
+          },
+          {
+           "inline": true,
+           "name": "Default provider",
+           "value": "deterministic"
+          },
+          {
+           "inline": true,
+           "name": "Setup advisor provider",
+           "value": "deterministic"
+          },
+          {
+           "inline": true,
+           "name": "Active provider (last call)",
+           "value": "deterministic"
+          },
+          {
+           "inline": true,
+           "name": "Requests / failures",
+           "value": "0 / 0"
+          },
+          {
+           "inline": true,
+           "name": "Redaction",
+           "value": "on"
+          }
+         ],
+         "flags": 0,
+         "footer": {
+          "text": "!ai status / !ai diagnostics / !ai providers / !ai routing"
+         },
+         "title": "💤 AI Platform",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
+   "input": {
+    "kind": "slash",
+    "name": "aimenu",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "ai"
+}

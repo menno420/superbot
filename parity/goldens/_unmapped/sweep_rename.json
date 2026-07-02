@@ -1,0 +1,127 @@
+{
+ "case_id": "sweep.rename",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:2>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1946929464,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "edit_channel",
+     "payload": {
+      "name": "test"
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": "\"test\" renamed to \"test\".",
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:2>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "audit.action_recorded",
+     "payload": {
+      "actor_id": "<@admin>",
+      "actor_type": "admin",
+      "guild_id": "<guild>",
+      "mutation_id": "<uuid>",
+      "mutation_type": "channel_rename",
+      "new_value": "rename channel 'test' → 'test' (1/1 applied)",
+      "occurred_at": "<ts>",
+      "prev_value": null,
+      "scope": "guild",
+      "subsystem": "channel",
+      "target": "channel:<msg:1>"
+     }
+    },
+    {
+     "event": "channel.lifecycle_changed",
+     "payload": {
+      "applied": [
+       "<msg:1>"
+      ],
+      "failed": [],
+      "guild_id": "<guild>",
+      "mutation_id": "<uuid>",
+      "occurred_at": "<ts>",
+      "operation": "rename",
+      "outcome": "success"
+     }
+    },
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!rename test test",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

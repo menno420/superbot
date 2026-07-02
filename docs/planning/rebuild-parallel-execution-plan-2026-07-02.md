@@ -105,6 +105,15 @@ move:
 model into a date.* Spend generously on harness coverage; it directly buys the port's parallelism, the
 single biggest chunk of calendar.
 
+> **MEASURED (same day, #1639 — [the evidence package](rebuild-linchpin-validation-2026-07-02.md)):**
+> both throttles came in **strong**. (1) Harness coverage: **96% of prefix commands (390/406), 88% of
+> slash, 94% of persistent-panel components** — replay-deterministic at full-corpus scale (465 goldens,
+> final gating replay 459/459 green + a 5-case named advisory tail);
+> the thin dimensions (events 21% · tables 25% · settings mutations 2%) are named per-band curated work,
+> not unknowns. (2) Grammar fit: **73% as-specced → 85% with six named amendments; the operator band —
+> where the port bulk lives — measures 97%.** On this plan's own model, the center estimate holds:
+> the port fans out; it does not re-serialize.
+
 ## 5. Where to add parallelism — and where you can't
 
 - **Port (Phase 4): add lanes freely.** Per-subsystem manifest modules are independent files; collisions

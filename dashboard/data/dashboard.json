@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T14:10:59Z",
+    "generated_at": "2026-07-02T16:15:11Z",
     "build": {
-      "commit": "2e833060",
-      "subject": "Merge pull request #1645 from menno420/claude/superbot-rebuild-design-spec-de4mh7",
-      "committed_at": "2026-07-02T14:10:59Z"
+      "commit": "43a7ea72",
+      "subject": "Merge pull request #1639 from menno420/claude/superbot-linchpin-validation-tcyv25",
+      "committed_at": "2026-07-02T16:15:11Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 172,
+      "ideas": 173,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1170,6 +1170,14 @@
       "status": "ideas",
       "date": "2026-07-02",
       "summary": "Two dedicated Discord guilds (or one guild with two category zones — owner's taste) forming the",
+      "subsystems": null
+    },
+    {
+      "file": "context-cost-telemetry-2026-07-02.md",
+      "title": "Context-cost telemetry — measure real per-session reads, not modeled ones",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "boot-route words actually read) are modeled estimates, sensitivity-swept but not observed. The",
       "subsystems": null
     },
     {
@@ -2865,6 +2873,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-02-memory-retention-policy.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Memory retention & deletion policy (design session)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-02-linchpin-validation-harness-and-grammar-spike.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild linchpin validation: golden harness + grammar spike + go/no-go",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-hq-guild-live.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — HQ guild live: Railway feed moved + invite-flow fix + cutover-token confirmation",
@@ -3268,22 +3292,6 @@
       "file": "2026-06-29-reconcile-band1560.md",
       "date": "2026-06-29",
       "title": "2026-06-29 — Twenty-ninth Q-0107 reconciliation pass (band-#1560)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-railway-give-collision-crash.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — PROD hotfix: `give` command collision crashed boot (bot offline)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-proof-channel-completion-deepening.md",
-      "date": "2026-06-29",
-      "title": "Session — Proof Channel completion-deepening (audit trail + modal authority re-check)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false

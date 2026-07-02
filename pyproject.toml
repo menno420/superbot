@@ -95,6 +95,8 @@ ignore = [
 # botsite SPA data generator: runnable as a CLI (python3.10 -m botsite.site_data),
 # so its print() confirmation is intentional output — same rationale as scripts/.
 "botsite/site_data.py" = ["T201"]
+# Parity-harness CLI (python3.10 -m parity.run): print() is its output.
+"parity/**/*.py" = ["T201"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 8

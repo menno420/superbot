@@ -1,0 +1,126 @@
+{
+ "case_id": "sweep.btd6_round",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "btd6.answer",
+     "task": "btd6.answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1835831698,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3066993,
+        "description": "25 Red Bloon, 5 Blue Bloon. RBE 35.",
+        "fields": [
+         {
+          "inline": false,
+          "name": "Why it matters",
+          "value": "Threats this round: Red Bloon, Blue Bloon"
+         },
+         {
+          "inline": false,
+          "name": "Economy",
+          "value": "RBE **35** · Cash **$138** (cumulative **$1,046**) · XP **80**"
+         },
+         {
+          "inline": false,
+          "name": "Version sensitivity",
+          "value": "Round composition is stable but can shift slightly during major patches."
+         },
+         {
+          "inline": false,
+          "name": "Follow-up",
+          "value": "Use `!btd6 ask` for strategy advice on a specific round."
+         },
+         {
+          "inline": false,
+          "name": "Bloons this round — 30 spawned",
+          "value": "`   10×` Red Bloon\n`    5×` Blue Bloon\n`   15×` Red Bloon"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "BTD6 data v1.0 (game v55.1)"
+        },
+        "title": "Round 3 — danger: trivial",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!btd6 round 3",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "btd6"
+}
