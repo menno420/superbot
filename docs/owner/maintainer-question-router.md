@@ -8001,3 +8001,45 @@ single-value `SettingSpec` or a `multiplicity=1` binding) are unaffected.
 **Homes:** `docs/planning/rebuild-design-spec-2026-07-02.md` §2.4 (new compile rule) and
 top-of-doc addendum; extends Q-0205's already-directed idiom from the current codebase into the
 new repo's grammar as a mechanical default rather than a per-PR judgment call.
+
+### Q-0217 — EXECUTED: the linchpin-validation's six grammar amendments + five spec corrections folded into the design spec (2026-07-02)
+
+> **Context.** The linchpin-validation spike (#1639, `rebuild-linchpin-validation-2026-07-02.md`)
+> already recommended **GO — proceed to Phase 3, with the six grammar amendments folded into the
+> design spec first (a half-day docs pass, no re-design)**. This was not a fresh decision — the
+> owner asked in this session which plan steps are still left and which must happen before Phase 3
+> starts; the answer surfaced that the already-approved fold-in had not actually been executed yet,
+> and the owner asked for it to be done now.
+
+**Executed, source-verified against the spike doc's §2.3/§3 tables:**
+
+1. **G-1 — `GatewayListenerSpec`** (§2.8): the load-bearing one — raw Discord gateway listeners
+   (server-logging's 8, karma's react-to-thank, blackjack's reaction-join) had no grammar primitive.
+2. **G-2 — list-valued settings** (§2.5): `value_type="list[int]"` etc. + kernel add/remove/clear
+   workflows, covering the shipped exclusion-list pattern (#1594) and its recurrences.
+3. **G-3 — `AnnouncementRouteSpec`** (§2.8): event-class → template → bound-channel as data.
+4. **G-4 — `CommandSpec.cooldown`** (§2.2): declares the shipped `@commands.cooldown` rate limit,
+   previously silently dropped by the grammar at port time.
+5. **G-5 — declarative validator `bounds`** (§2.5): `(lo, hi)`/`max_len` fields replacing trivial
+   tier-3 validator refs.
+6. **G-6 — command-pool kind-scoping** (§2.2, §3.1): prefix/slash are disjoint Discord namespaces;
+   the pool is now partitioned per `CommandSpec.kind`, not one flat pool.
+7. **Harness-mechanism naming** (§6): corrected from "testcontainers + dpytest" to what `parity/`
+   actually is — fake HTTP over the real discord.py state machine, local Postgres, no new deps.
+8. **Evals/harness composition** (§6): evals stay the AI-answer oracle; the golden harness owns the
+   deterministic command/panel surface; they compose, they do not merge into one asset.
+9. **K10 CI requirement** (§6): `golden-parity` needs a real Postgres service container in the new
+   repo's CI — this repo's own `code-quality` runs none, which is why the harness skips there today.
+10. **Determinism-pinning budget** (§6): eight nondeterminism classes were pinned for command
+    capture; scheduled-loop capture will pay a comparable cost again — budgeted, not assumed free.
+11. **Clock + RNG as injectable kernel services** (§1.2): a new kernel requirement the spike
+    surfaced — unseeded RNG, real-TTL caches, and `datetime.now()`-derived ids are all
+    AST-fenced violations outside `kernel/clock`/`kernel/rng`, making every surface golden-testable.
+
+**Status:** the `rebuild-design-spec-2026-07-02.md` no longer has an outstanding fold-in debt
+against the linchpin-validation verdict. Remaining pre-Phase-3 items are unchanged from the
+strategy doc's §3: owner sign-off on the design spec, and the Phase 2.5 cold-start proof (not yet
+run).
+
+**Homes:** `docs/planning/rebuild-design-spec-2026-07-02.md` §1.2/§2.2/§2.5/§2.8/§3.1/§6 + top-of-doc
+addendum; source: `docs/planning/rebuild-linchpin-validation-2026-07-02.md` §2.3/§3.

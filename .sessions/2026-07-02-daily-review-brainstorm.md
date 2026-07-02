@@ -36,6 +36,15 @@ findings from the conversation get durably documented, not just left in chat.
    website rollout as a separate, non-blocking ops item, and the design spec §6 already requires a
    versioned control-API contract before the interaction runtime lands. No doc drift found; no
    edit needed there.
+6. Owner asked which plan steps remain and which gate Phase 3 — surfaced that the
+   linchpin-validation's own "GO with amendments" verdict (#1639) had never actually been folded
+   into the spec. Owner approved folding it in now. **Q-0217** (router): executed all six grammar
+   amendments (`GatewayListenerSpec`, list-valued settings, `AnnouncementRouteSpec`,
+   `CommandSpec.cooldown`, declarative validator bounds, per-kind command-pool scoping) plus five
+   spec corrections (harness-mechanism naming, evals/harness composition, K10 Postgres CI
+   requirement, determinism-pinning budget, clock+RNG as injectable kernel services) into
+   `docs/planning/rebuild-design-spec-2026-07-02.md` §1.2/§2.2/§2.5/§2.8/§3.1/§6, source-verified
+   against the linchpin-validation doc's own tables.
 
 ## Context delta
 
@@ -74,12 +83,15 @@ doc, not just this one.
 
 - **Did:** reviewed today's full session arc for the owner in plain language, researched two
   owner-raised architecture questions against the design spec + current bot code, folded both
-  into the rebuild grammar as compile rules with router provenance.
-- **Outcome:** shipped (docs-only).
+  into the rebuild grammar as compile rules with router provenance (Q-0215/Q-0216); then, on
+  owner request, audited remaining plan steps and found + executed the linchpin-validation's
+  never-folded-in amendments (Q-0217).
+- **Outcome:** shipped (docs-only), two PRs (#1658 merged; this session's remaining work follows
+  in the next push).
 - **Run type:** `manual` (owner-directed, live conversation).
-- **⚑ Owner decisions needed:** none new — Q-0215/Q-0216 record decisions the owner already made
-  live in this conversation.
+- **⚑ Owner decisions needed:** none new — Q-0215/Q-0216/Q-0217 record decisions/executions the
+  owner already directed live in this conversation.
 - **⚑ Owner manual steps:** none.
 - **⚑ Self-initiated:** none (every doc change traces to an explicit owner ask this session).
 - **↪ Next:** design-spec owner gate (Phase 3 start) still pending; Phase 2.5 cold-start A/B test
-  for substrate-kit still not run.
+  for substrate-kit still not run — these are now the only two items left before Phase 3.
