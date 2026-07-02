@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T19:30:45Z",
+    "generated_at": "2026-07-02T21:04:15Z",
     "build": {
-      "commit": "87997562",
-      "subject": "Merge pull request #1649 from menno420/claude/ultracode-memory-substrate-2utgvc",
-      "committed_at": "2026-07-02T19:30:45Z"
+      "commit": "3c62e4af",
+      "subject": "Merge pull request #1659 from menno420/claude/daily-review-brainstorm-rcyar3",
+      "committed_at": "2026-07-02T21:04:15Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 174,
+      "ideas": 175,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1242,6 +1242,14 @@
       "status": "ideas",
       "date": "2026-07-02",
       "summary": "Under the Q-0213 grant, an agent can stand up the **entire Phase-5 shadow topology today, on the",
+      "subsystems": null
+    },
+    {
+      "file": "substrate-kit-review-followups-2026-07-02.md",
+      "title": "Idea — substrate-kit hardening follow-ups (from the #1649 independent review)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Surfaced by the **independent review of session #1649** (the ultracode memory-substrate finalize),",
       "subsystems": null
     },
     {
@@ -2841,6 +2849,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-02-review-recent-session.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Review the most recent session (#1649 substrate-kit finalize)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-review-codex-prs.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Review the 2 recent Codex PRs (#1654, #1655) + fix the drift they found",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-reconcile.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Thirty-second Q-0107 reconciliation pass (band-#1650)",
@@ -2916,6 +2940,14 @@
       "file": "2026-07-02-hq-guild-live.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — HQ guild live: Railway feed moved + invite-flow fix + cutover-token confirmation",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-daily-review-brainstorm.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Daily review + architecture brainstorm ahead of the rebuild gate",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -3279,30 +3311,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-ai-review-backlog-triage-r1.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — AI review-log backlog triage, round 1 (DDT confabulation)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-ai-review-backlog-loop.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — AI review-log answer loop (export → triage → presets)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-session-slug-unique-guard.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Session-slug-uniqueness guard (close BUG-0027's residual clobber risk) + Mining how-to button",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
