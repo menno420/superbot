@@ -28,7 +28,7 @@
     {
      "coins": 0,
      "guild_id": "<guild>",
-     "last_xp": 1767276540,
+     "last_xp": 1841196345,
      "level": 0,
      "messages": 1,
      "user_id": "<@admin>",
@@ -95,65 +95,6 @@
       "reason": null
      },
      "method": "delete_message"
-    },
-    {
-     "args": {
-      "channel_id": "<#general>",
-      "message_id": "<msg:2>"
-     },
-     "method": "edit_message",
-     "payload": {
-      "components": [
-       {
-        "components": [
-         {
-          "custom_id": "<cid:1>",
-          "disabled": true,
-          "emoji": {
-           "id": null,
-           "name": "🃏"
-          },
-          "label": "New Poker Table",
-          "style": 3,
-          "type": 2
-         },
-         {
-          "custom_id": "<cid:2>",
-          "disabled": true,
-          "emoji": {
-           "id": null,
-           "name": "🎡"
-          },
-          "label": "Roulette (soon)",
-          "style": 2,
-          "type": 2
-         }
-        ],
-        "type": 1
-       },
-       {
-        "components": [
-         {
-          "custom_id": "nav:help",
-          "disabled": true,
-          "label": "📚 Help",
-          "style": 2,
-          "type": 2
-         },
-         {
-          "custom_id": "nav:hub:games",
-          "disabled": true,
-          "label": "↩ Games",
-          "style": 2,
-          "type": 2
-         }
-        ],
-        "type": 1
-       }
-      ],
-      "flags": 0,
-      "tts": false
-     }
     }
    ],
    "events": [

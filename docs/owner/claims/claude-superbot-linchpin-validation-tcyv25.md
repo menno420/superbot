@@ -1,1 +1,0 @@
-- `claude/superbot-linchpin-validation-tcyv25` · Rebuild linchpin validation: golden behavioral harness (Phase 0.5, coverage-measured) + manifest-grammar expressiveness spike + go/no-go readiness doc · parity/ (new), tools/grammar_spike/ (new), docs/planning/, docs/analysis/ · 2026-07-02

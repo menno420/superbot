@@ -6,19 +6,7 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [
-    {
-     "args": {
-      "channel_id": "<#general>"
-     },
-     "method": "send_message",
-     "payload": {
-      "components": [],
-      "content": "⏰ <@<@admin>> — Reminder: test",
-      "tts": false
-     }
-    }
-   ],
+   "calls": [],
    "input": {
     "kind": "slash",
     "name": "ai policy",

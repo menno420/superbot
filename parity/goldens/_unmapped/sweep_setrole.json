@@ -41,7 +41,7 @@
     {
      "coins": 0,
      "guild_id": "<guild>",
-     "last_xp": 1767279240,
+     "last_xp": 1767661301,
      "level": 0,
      "messages": 1,
      "user_id": "<@admin>",
@@ -74,128 +74,6 @@
       "reason": null
      },
      "method": "delete_message"
-    },
-    {
-     "args": {
-      "channel_id": "<#general>",
-      "message_id": "<msg:2>"
-     },
-     "method": "edit_message",
-     "payload": {
-      "components": [
-       {
-        "components": [
-         {
-          "custom_id": "logging_routes.select",
-          "disabled": true,
-          "max_values": 1,
-          "min_values": 1,
-          "options": [
-           {
-            "default": false,
-            "label": "mod",
-            "value": "mod"
-           },
-           {
-            "default": false,
-            "label": "events",
-            "value": "events"
-           },
-           {
-            "default": false,
-            "label": "cleanup",
-            "value": "cleanup"
-           },
-           {
-            "default": false,
-            "label": "debug",
-            "value": "debug"
-           },
-           {
-            "default": false,
-            "label": "info",
-            "value": "info"
-           },
-           {
-            "default": false,
-            "label": "warning",
-            "value": "warning"
-           },
-           {
-            "default": false,
-            "label": "error",
-            "value": "error"
-           },
-           {
-            "default": false,
-            "label": "audit",
-            "value": "audit"
-           },
-           {
-            "default": false,
-            "label": "message_log",
-            "value": "message_log"
-           },
-           {
-            "default": false,
-            "label": "member_log",
-            "value": "member_log"
-           },
-           {
-            "default": false,
-            "label": "role_log",
-            "value": "role_log"
-           }
-          ],
-          "placeholder": "Choose a route…",
-          "required": true,
-          "type": 3
-         }
-        ],
-        "type": 1
-       },
-       {
-        "components": [
-         {
-          "custom_id": "logging_routes.set",
-          "disabled": true,
-          "label": "🔗 Set Channel",
-          "style": 1,
-          "type": 2
-         },
-         {
-          "custom_id": "logging_routes.create",
-          "disabled": true,
-          "label": "🆕 Create Channel",
-          "style": 3,
-          "type": 2
-         },
-         {
-          "custom_id": "logging_routes.refresh",
-          "disabled": true,
-          "label": "🔄 Refresh",
-          "style": 2,
-          "type": 2
-         }
-        ],
-        "type": 1
-       },
-       {
-        "components": [
-         {
-          "custom_id": "logging_routes.back",
-          "disabled": true,
-          "label": "↩ Back to Logging",
-          "style": 2,
-          "type": 2
-         }
-        ],
-        "type": 1
-       }
-      ],
-      "flags": 0,
-      "tts": false
-     }
     }
    ],
    "events": [

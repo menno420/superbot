@@ -6,7 +6,22 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "content": "No staged operations to clear — the draft is already empty.",
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "setup-reset",

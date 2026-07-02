@@ -6,7 +6,183 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "<cid:1>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "🔘"
+           },
+           "label": "Buttons",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:2>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "📋"
+           },
+           "label": "Selects",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:3>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "⌨️"
+           },
+           "label": "Modals",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:4>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "🪧"
+           },
+           "label": "Embeds",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "<cid:5>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "🧱"
+           },
+           "label": "Components V2",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:6>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "🎨"
+           },
+           "label": "PIL cards",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:7>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "🎭"
+           },
+           "label": "Mock studio",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:8>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "🔬"
+           },
+           "label": "Probe bench",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "<cid:9>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "⚖️"
+           },
+           "label": "Compare",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "nav:help",
+           "disabled": false,
+           "label": "📚 Help",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "nav:hub:admin",
+           "disabled": false,
+           "label": "↩ Administration",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 5793266,
+         "description": "Browse every interaction pattern SuperBot could use. Every exhibit **reacts** when you press it and carries a spec card (use-for / avoid-for / platform limits).\n\n**Nothing here is real**: the lab never writes to the database or changes the server (CI-enforced).",
+         "fields": [
+          {
+           "inline": false,
+           "name": "Exhibits",
+           "value": "Buttons **11** · Selects **8** · Modals **6** · Embeds **14** · Components V2 **8** · PIL cards **6** · Mock studio **9** · Probe bench **10**"
+          },
+          {
+           "inline": false,
+           "name": "How to browse",
+           "value": "Open a wing → flip exhibits with ◀ ▶ → press things. 🏠 always returns here, in place."
+          }
+         ],
+         "flags": 0,
+         "footer": {
+          "text": "Design: docs/planning/ux-lab-interface-gallery-plan-2026-06-12.md"
+         },
+         "title": "🧪 UX Lab — interface gallery",
+         "type": "rich"
+        }
+       ],
+       "tts": false
+      },
+      "type": 4
+     }
+    },
+    {
+     "method": "get_original_response"
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "uxlab",

@@ -17,7 +17,13 @@ import discord
 from discord.ext import commands as dpy_commands
 from parity.harness.cases import GoldenCase, Step
 
-__all__ = ["build_sweep_cases", "EXCLUDED_COMMANDS", "SweepSkipError"]
+__all__ = [
+    "build_sweep_cases",
+    "EXCLUDED_COMMANDS",
+    "FLAKY_ADVISORY",
+    "SLASH_EXCLUDED_COMMANDS",
+    "SweepSkipError",
+]
 
 #: process-lifecycle / destructive-to-the-harness commands, with reasons —
 #: these appear in the coverage report as excluded-with-reason, not covered.
@@ -38,6 +44,70 @@ EXCLUDED_COMMANDS: dict[str, str] = {
         "(observed); deploy-ops, not guild behavior"
     ),
     "loadall": "extension management — same class as unloadall",
+    # --- host/process-state diagnostics: their OUTPUT is the machine ------
+    # (CPU %, disk GB, uptime, live latency, random snapshot ids). A
+    # rebuilt bot on other hardware can never byte-match these; their
+    # parity story is the diagnostics REGISTRY, not output bytes. Keys are
+    # exact QUALIFIED names — generic short names would over-exclude
+    # (e.g. a bare "status" would swallow `!logging status`).
+    "system_info": "host-state diagnostics — reports real disk/CPU/host state",
+    "diagnostic_bot_status": "process-state diagnostics — live CPU %/uptime",
+    "platform health": "process-state diagnostics — random snapshot ids + live stats",
+    "platform slow": "process-state diagnostics — real command-latency samples",
+    "platform startup": "process-state diagnostics — startup snapshot ids",
+    "platform status": "process-state diagnostics — live uptime",
+    "force": (
+        "admin re-dispatch wrapper — output depends on live dispatch/"
+        "process state, not guild behavior"
+    ),
+    # --- determinism-seam findings (REBUILD DESIGN INPUT, go/no-go §3) ----
+    # These commands are nondeterministic BY CONSTRUCTION in the current
+    # bot: unseeded private RNG instances or real-TTL in-memory caches that
+    # neither per-case seeding nor the pinned clock can reach. The rebuild
+    # kernel should make clock+RNG injectable (determinism by design);
+    # until then their goldens cannot be stable.
+    "catch": "unseeded private RNG in creature spawn selection",
+    "treasury grant": "treasury first-touch init rides a real-TTL in-memory cache",
+    "platform runtime": "process-state diagnostics — live uptime/loop stats",
+}
+
+#: slash-surface-only exclusions (the PREFIX form of the same name replays
+#: deterministically and stays covered — only the slash path is excluded).
+SLASH_EXCLUDED_COMMANDS: dict[str, str] = {
+    "btd6menu": (
+        "slash compose path rides a real-TTL in-memory cache (extra edit); "
+        "the prefix `!btd6menu` golden covers the surface deterministically"
+    ),
+    # settle-budget racers: their handlers legitimately take longer than any
+    # finite drain budget can distinguish from a stall (provider-health
+    # checks with ~10s network timeouts; dataset-scale BTD6 compute on
+    # first touch), so response ATTRIBUTION is nondeterministic in a
+    # wall-clock process — another face of the injectable-clock design
+    # requirement (go/no-go §3 row 6).
+    "ai diagnostics": "provider-health checks race the settle budget",
+    "ai providers": "provider-health checks race the settle budget",
+    "btd6 ct": "dataset-scale compute races the settle budget",
+    "btd6 diagnostics": "data-source freshness probes race the settle budget",
+    "btd6 rbe": "dataset-scale compute races the settle budget",
+    "btd6 relic": "dataset-scale compute races the settle budget",
+}
+
+
+#: The ADVISORY (non-gating) tail — the xfail pattern. These cases capture
+#: real behavior worth keeping, but their replay is marginal by
+#: construction: in-flow wall-timers or provider/compute latencies sit
+#: within ± the settle budget, so attribution flips run-to-run. Their
+#: goldens stay (inspectable, still catch gross drift by eye); `check`
+#: reports their diffs as advisory instead of failing. Both classes are
+#: faces of the injectable-clock/RNG kernel requirement (go/no-go §3 r6).
+FLAKY_ADVISORY: dict[str, str] = {
+    "sweep.fish": "bite-window sleep (3–6s) sits at the settle-budget edge",
+    "sweep.platform_consistency": "live consistency probe (process state)",
+    "sweep.slash_ai_readiness": "provider readiness probes race the budget",
+    "sweep.slash_btd6_events_latest-data": "data-freshness probe (live age)",
+    "sweep.slash_btd6_strat_strategies": (
+        "strategy-list compute races the settle budget"
+    ),
 }
 
 
@@ -137,6 +207,13 @@ def build_sweep_cases(bot: Any) -> tuple[list[GoldenCase], dict[str, str]]:
         if not isinstance(app_command, discord.app_commands.Command):
             continue
         qname = app_command.qualified_name
+        slash_excluded = {**EXCLUDED_COMMANDS, **SLASH_EXCLUDED_COMMANDS}
+        if qname in slash_excluded or app_command.name in slash_excluded:
+            skipped[f"/{qname}"] = slash_excluded.get(
+                qname,
+                slash_excluded.get(app_command.name, "excluded"),
+            )
+            continue
         options, skip_reason = _slash_options_for(app_command)
         if skip_reason is not None:
             skipped[f"/{qname}"] = skip_reason

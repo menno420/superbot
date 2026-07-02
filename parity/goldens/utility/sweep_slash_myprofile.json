@@ -6,7 +6,19 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "_files": [
+       "profile.png"
+      ]
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "myprofile",

@@ -6,7 +6,171 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "help_categories:select",
+           "disabled": false,
+           "max_values": 1,
+           "min_values": 1,
+           "options": [
+            {
+             "default": false,
+             "description": "Game flows and tournaments.",
+             "emoji": {
+              "id": null,
+              "name": "🎮"
+             },
+             "label": "Games",
+             "value": "games"
+            },
+            {
+             "default": false,
+             "description": "Bloons Tower Defense 6 assistant — lookups, strategy guidance, and round breakdowns.",
+             "emoji": {
+              "id": null,
+              "name": "🐵"
+             },
+             "label": "BTD6 Assistant",
+             "value": "btd6"
+            },
+            {
+             "default": false,
+             "description": "Limbus Company knowledge — Sinners, Sins, status keywords, damage types, and E.G.O grades.",
+             "emoji": {
+              "id": null,
+              "name": "🌑"
+             },
+             "label": "Project Moon",
+             "value": "project_moon"
+            },
+            {
+             "default": false,
+             "description": "Currency, items, work, shop, and standings.",
+             "emoji": {
+              "id": null,
+              "name": "💰"
+             },
+             "label": "Economy",
+             "value": "economy"
+            },
+            {
+             "default": false,
+             "description": "Warnings, timeouts, bans, cleanup, audit logs.",
+             "emoji": {
+              "id": null,
+              "name": "🛡️"
+             },
+             "label": "Moderation & Safety",
+             "value": "moderation"
+            },
+            {
+             "default": false,
+             "description": "Progression, roles, and community activities.",
+             "emoji": {
+              "id": null,
+              "name": "🌱"
+             },
+             "label": "Community",
+             "value": "community"
+            },
+            {
+             "default": false,
+             "description": "Info, tools, and discovery commands.",
+             "emoji": {
+              "id": null,
+              "name": "🧰"
+             },
+             "label": "Utility",
+             "value": "utility"
+            },
+            {
+             "default": false,
+             "description": "Settings, diagnostics, server management, channels, AI, and ops.",
+             "emoji": {
+              "id": null,
+              "name": "⚙️"
+             },
+             "label": "Server & Admin",
+             "value": "admin"
+            }
+           ],
+           "placeholder": "Pick a category…",
+           "required": true,
+           "type": 3
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 3447003,
+         "description": "Pick a category from the dropdown below.",
+         "fields": [
+          {
+           "inline": false,
+           "name": "🎮 Games",
+           "value": "Game flows and tournaments.\n→ `!games`"
+          },
+          {
+           "inline": false,
+           "name": "🐵 BTD6 Assistant",
+           "value": "Bloons Tower Defense 6 assistant — lookups, strategy guidance, and round breakdowns.\n→ `!btd6`"
+          },
+          {
+           "inline": false,
+           "name": "🌑 Project Moon",
+           "value": "Limbus Company knowledge — Sinners, Sins, status keywords, damage types, and E.G.O grades.\n→ `!pm`"
+          },
+          {
+           "inline": false,
+           "name": "💰 Economy",
+           "value": "Currency, items, work, shop, and standings.\n→ `!economymenu`"
+          },
+          {
+           "inline": false,
+           "name": "🛡️ Moderation & Safety",
+           "value": "Warnings, timeouts, bans, cleanup, audit logs.\n→ `!modmenu`"
+          },
+          {
+           "inline": false,
+           "name": "🌱 Community",
+           "value": "Progression, roles, and community activities.\n→ `!community`"
+          },
+          {
+           "inline": false,
+           "name": "🧰 Utility",
+           "value": "Info, tools, and discovery commands.\n→ `!utilitymenu`"
+          },
+          {
+           "inline": false,
+           "name": "⚙️ Server & Admin",
+           "value": "Settings, diagnostics, server management, channels, AI, and ops.\n→ `!adminmenu`"
+          }
+         ],
+         "flags": 0,
+         "title": "📚 Help Menu",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "help",

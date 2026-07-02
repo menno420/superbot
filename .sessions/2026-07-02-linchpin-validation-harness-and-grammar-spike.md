@@ -19,12 +19,12 @@ evidence package. Full readout:
    services, snowflake-encoded cooldown time, spawned-task attribution, `delete_after` timers,
    uuid/auto-custom_id randomness, volatile DB columns, wall-clock view timeouts, and
    position-dependent clock state — the last fixed with per-case hash-derived clock bases so
-   `--only` captures equal full-run replays). Corpus: **484 golden cases** (11 curated multi-step flows + a mechanical
-   sweep over every enumerable command, hidden included). **Coverage (live denominators):
-   prefix commands 402/406 = 99% · slash 71/73 = 97% · panel components 60/64 = 94% · panels
-   9/11 = 82% · events 10/47 = 21% · tables 26/105 = 25% · settings-key mutations 3/120 = 2%** —
-   invocation breadth ~done, deep-state dimensions named as the port bands' curated work
-   (`parity/COVERAGE.md`). Capture-integrity guard: an outbound call the fake doesn't model FAILS
+   `--only` captures equal full-run replays). Corpus: **465 golden cases** (460 gating + 5 named advisory; 11 curated multi-step flows + a
+   mechanical sweep over every enumerable command, hidden included). **Final gating replay
+   459/459 green.** **Coverage (live denominators): prefix 390/406 = 96% · slash 64/73 = 88% ·
+   panel components 60/64 = 94% · panels 9/11 = 82% · events 10/47 = 21% · tables 26/105 = 25% ·
+   settings-key mutations 3/120 = 2%** — invocation breadth ~done (every exclusion reasoned),
+   deep-state dimensions named as the port bands' curated work (`parity/COVERAGE.md`). Capture-integrity guard: an outbound call the fake doesn't model FAILS
    the case loudly (caught 4 real gaps across the sweep).
 2. **The grammar-expressiveness spike** — [`tools/grammar_spike/`](../tools/grammar_spike/__init__.py)
    (explicitly labeled; NOT the kernel; nothing imported by disbot/). Faithful §2 spec prototype

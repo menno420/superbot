@@ -28,7 +28,7 @@
     {
      "coins": 0,
      "guild_id": "<guild>",
-     "last_xp": 1767278520,
+     "last_xp": 2015318812,
      "level": 0,
      "messages": 1,
      "user_id": "<@admin>",
@@ -121,116 +121,6 @@
       "reason": null
      },
      "method": "delete_message"
-    },
-    {
-     "args": {
-      "channel_id": "<#general>",
-      "message_id": "<msg:2>"
-     },
-     "method": "edit_message",
-     "payload": {
-      "components": [
-       {
-        "components": [
-         {
-          "custom_id": "games:open:blackjack",
-          "disabled": true,
-          "label": "🃏 Blackjack",
-          "style": 1,
-          "type": 2
-         },
-         {
-          "custom_id": "games:open:casino",
-          "disabled": true,
-          "label": "🎰 Casino",
-          "style": 1,
-          "type": 2
-         },
-         {
-          "custom_id": "games:open:deathmatch",
-          "disabled": true,
-          "label": "⚔️ Deathmatch",
-          "style": 1,
-          "type": 2
-         },
-         {
-          "custom_id": "games:open:rps_tournament",
-          "disabled": true,
-          "label": "✂️ Rock Paper Scissors",
-          "style": 1,
-          "type": 2
-         }
-        ],
-        "type": 1
-       },
-       {
-        "components": [
-         {
-          "custom_id": "games:open:mining",
-          "disabled": true,
-          "label": "⛏️ Mining",
-          "style": 3,
-          "type": 2
-         },
-         {
-          "custom_id": "games:open:fishing",
-          "disabled": true,
-          "label": "🎣 Fishing",
-          "style": 3,
-          "type": 2
-         },
-         {
-          "custom_id": "games:open:creature",
-          "disabled": true,
-          "label": "🐾 Creatures",
-          "style": 3,
-          "type": 2
-         },
-         {
-          "custom_id": "games:open:farm",
-          "disabled": true,
-          "label": "🐔 Chicken Farm",
-          "style": 3,
-          "type": 2
-         },
-         {
-          "custom_id": "games:open:counting",
-          "disabled": true,
-          "label": "🔢 Counting",
-          "style": 3,
-          "type": 2
-         }
-        ],
-        "type": 1
-       },
-       {
-        "components": [
-         {
-          "custom_id": "games:open:chain",
-          "disabled": true,
-          "label": "🔗 Word Chain",
-          "style": 3,
-          "type": 2
-         }
-        ],
-        "type": 1
-       },
-       {
-        "components": [
-         {
-          "custom_id": "nav:help",
-          "disabled": true,
-          "label": "📚 Help",
-          "style": 2,
-          "type": 2
-         }
-        ],
-        "type": 1
-       }
-      ],
-      "flags": 0,
-      "tts": false
-     }
     }
    ],
    "events": [

@@ -39,6 +39,10 @@ _UUID = re.compile(
 # discord.py auto-generates a random 32-hex custom_id for components that
 # don't declare one (session views) — stable *refs*, not stable strings.
 _AUTO_CID = re.compile(r"\b[0-9a-f]{32}\b")
+# unpinned datetime.now() leaks: "Updated 12:14 UTC" footers and
+# fractional epoch stamps inside composed ids (xp_reset:...:1782994447.52)
+_SHORT_TIME = re.compile(r"\b\d{1,2}:\d{2} UTC\b")
+_EPOCH_FLOAT = re.compile(r"\b\d{10}\.\d+\b")
 
 #: payload keys that are pure client-side randomness
 _DROP_KEYS = {"nonce", "enforce_nonce"}
@@ -77,6 +81,8 @@ class Normalizer:
         text = _DISCORD_TS.sub("<t>", text)
         text = _ISO_TS.sub("<ts>", text)
         text = _UUID.sub("<uuid>", text)
+        text = _SHORT_TIME.sub("<hh:mm> UTC", text)
+        text = _EPOCH_FLOAT.sub("<epoch>", text)
 
         def _sub_cid(match: re.Match[str]) -> str:
             cid = match.group(0)

@@ -6,7 +6,426 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "platform_hub.runtime",
+           "disabled": false,
+           "max_values": 1,
+           "min_values": 1,
+           "options": [
+            {
+             "default": false,
+             "description": "Deterministic operational health snapshot (redacted)",
+             "emoji": {
+              "id": null,
+              "name": "🩺"
+             },
+             "label": "health",
+             "value": "health"
+            },
+            {
+             "default": false,
+             "description": "Settled-startup health report (extension load, gateway, DB)",
+             "emoji": {
+              "id": null,
+              "name": "🚀"
+             },
+             "label": "startup",
+             "value": "startup"
+            },
+            {
+             "default": false,
+             "description": "Persistent operational-health findings (open, redacted)",
+             "emoji": {
+              "id": null,
+              "name": "📋"
+             },
+             "label": "findings",
+             "value": "findings"
+            },
+            {
+             "default": false,
+             "description": "Uptime, cogs, guilds, scheduler, failed subsystems",
+             "emoji": {
+              "id": null,
+              "name": "🛠"
+             },
+             "label": "status",
+             "value": "status"
+            },
+            {
+             "default": false,
+             "description": "snapshot_all roll-up across every provider",
+             "emoji": {
+              "id": null,
+              "name": "🛰"
+             },
+             "label": "runtime",
+             "value": "runtime"
+            },
+            {
+             "default": false,
+             "description": "Lifecycle phase, pending requests, recent events",
+             "emoji": {
+              "id": null,
+              "name": "♻️"
+             },
+             "label": "lifecycle",
+             "value": "lifecycle"
+            },
+            {
+             "default": false,
+             "description": "F-1 guild_config + governance cache state",
+             "emoji": {
+              "id": null,
+              "name": "🧠"
+             },
+             "label": "caches",
+             "value": "caches"
+            },
+            {
+             "default": false,
+             "description": "Media (YouTube) cache health + provider outcomes",
+             "emoji": {
+              "id": null,
+              "name": "🎬"
+             },
+             "label": "media",
+             "value": "media"
+            },
+            {
+             "default": false,
+             "description": "scope_locks snapshot (no filter)",
+             "emoji": {
+              "id": null,
+              "name": "🔒"
+             },
+             "label": "locks",
+             "value": "locks"
+            },
+            {
+             "default": false,
+             "description": "Managed background-task snapshot",
+             "emoji": {
+              "id": null,
+              "name": "🔁"
+             },
+             "label": "tasks",
+             "value": "tasks"
+            },
+            {
+             "default": false,
+             "description": "Registered PersistentView classes by subsystem",
+             "emoji": {
+              "id": null,
+              "name": "🖼"
+             },
+             "label": "views",
+             "value": "views"
+            },
+            {
+             "default": false,
+             "description": "Active session counts by subsystem",
+             "emoji": {
+              "id": null,
+              "name": "🎫"
+             },
+             "label": "sessions",
+             "value": "sessions"
+            },
+            {
+             "default": false,
+             "description": "Slow-path log entries (latest 10)",
+             "emoji": {
+              "id": null,
+              "name": "🐢"
+             },
+             "label": "slow",
+             "value": "slow"
+            },
+            {
+             "default": false,
+             "description": "Scheduler status + per-guild rule management panel",
+             "emoji": {
+              "id": null,
+              "name": "🤖"
+             },
+             "label": "automation",
+             "value": "automation"
+            }
+           ],
+           "placeholder": "Runtime / status…",
+           "required": true,
+           "type": 3
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "platform_hub.catalogues",
+           "disabled": false,
+           "max_values": 1,
+           "min_values": 1,
+           "options": [
+            {
+             "default": false,
+             "description": "Registered SubsystemSchema instances",
+             "emoji": {
+              "id": null,
+              "name": "📐"
+             },
+             "label": "schemas",
+             "value": "schemas"
+            },
+            {
+             "default": false,
+             "description": "Every declared SettingSpec",
+             "emoji": {
+              "id": null,
+              "name": "🗂️"
+             },
+             "label": "settings-registry",
+             "value": "settings-registry"
+            },
+            {
+             "default": false,
+             "description": "Customization catalogue across subsystems",
+             "emoji": {
+              "id": null,
+              "name": "🧭"
+             },
+             "label": "customization",
+             "value": "customization"
+            },
+            {
+             "default": false,
+             "description": "ResourceRequirement × BindingSpec catalogue",
+             "emoji": {
+              "id": null,
+              "name": "🧰"
+             },
+             "label": "provisioning",
+             "value": "provisioning"
+            },
+            {
+             "default": false,
+             "description": "Registered ParticipationSchema instances",
+             "emoji": {
+              "id": null,
+              "name": "🧑‍🤝‍🧑"
+             },
+             "label": "participation-schemas",
+             "value": "participation-schemas"
+            },
+            {
+             "default": false,
+             "description": "Declared ResourceRequirement entries",
+             "emoji": {
+              "id": null,
+              "name": "🧱"
+             },
+             "label": "resource-requirements",
+             "value": "resource-requirements"
+            }
+           ],
+           "placeholder": "Catalogues…",
+           "required": true,
+           "type": 3
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "platform_hub.resources",
+           "disabled": false,
+           "max_values": 1,
+           "min_values": 1,
+           "options": [
+            {
+             "default": false,
+             "description": "Resource runtime taxonomy + status histogram",
+             "emoji": {
+              "id": null,
+              "name": "🧱"
+             },
+             "label": "resources",
+             "value": "resources"
+            },
+            {
+             "default": false,
+             "description": "Subsystem bindings taxonomy + per-guild counts",
+             "emoji": {
+              "id": null,
+              "name": "🔗"
+             },
+             "label": "bindings",
+             "value": "bindings"
+            },
+            {
+             "default": false,
+             "description": "Feature flag declarations + effective resolution",
+             "emoji": {
+              "id": null,
+              "name": "🚩"
+             },
+             "label": "flags",
+             "value": "flags"
+            },
+            {
+             "default": false,
+             "description": "Platform migration checkpoints",
+             "emoji": {
+              "id": null,
+              "name": "🛠"
+             },
+             "label": "migrations",
+             "value": "migrations"
+            }
+           ],
+           "placeholder": "Resources / rollout…",
+           "required": true,
+           "type": 3
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "platform_hub.validation",
+           "disabled": false,
+           "max_values": 1,
+           "min_values": 1,
+           "options": [
+            {
+             "default": false,
+             "description": "Identity-contract validator findings",
+             "emoji": {
+              "id": null,
+              "name": "🪪"
+             },
+             "label": "identity",
+             "value": "identity"
+            },
+            {
+             "default": false,
+             "description": "Unified platform readiness diagnostic",
+             "emoji": {
+              "id": null,
+              "name": "🛡"
+             },
+             "label": "consistency",
+             "value": "consistency"
+            },
+            {
+             "default": false,
+             "description": "Panel anchor restoration + active counts",
+             "emoji": {
+              "id": null,
+              "name": "📌"
+             },
+             "label": "anchors",
+             "value": "anchors"
+            },
+            {
+             "default": false,
+             "description": "Per-guild setup-readiness inventory",
+             "emoji": {
+              "id": null,
+              "name": "✅"
+             },
+             "label": "setup-readiness",
+             "value": "setup-readiness"
+            }
+           ],
+           "placeholder": "Validation…",
+           "required": true,
+           "type": 3
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "platform_hub.overview",
+           "disabled": false,
+           "label": "↩ Overview",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "platform_hub.flag_manager",
+           "disabled": false,
+           "label": "🚩 Flag manager",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 5793266,
+         "description": "Diagnostics + managers. Pick a surface from one of the category dropdowns below — every entry maps to an existing `!platform <subcommand>`. The four category dropdowns are **read-only**; mutation surfaces live under Mutations / managers.",
+         "fields": [
+          {
+           "inline": false,
+           "name": "Runtime / status",
+           "value": "🩺 `health` — Deterministic operational health snapshot (redacted)\n🚀 `startup` — Settled-startup health report (extension load, gateway, DB)\n📋 `findings` — Persistent operational-health findings (open, redacted)\n🛠 `status` — Uptime, cogs, guilds, scheduler, failed subsystems\n🛰 `runtime` — snapshot_all roll-up across every provider\n♻️ `lifecycle` — Lifecycle phase, pending requests, recent events\n🧠 `caches` — F-1 guild_config + governance cache state\n🎬 `media` — Media (YouTube) cache health + provider outcomes\n🔒 `locks` — scope_locks snapshot (no filter)\n🔁 `tasks` — Managed background-task snapshot\n🖼 `views` — Registered PersistentView classes by subsystem\n🎫 `sessions` — Active session counts by subsystem\n🐢 `slow` — Slow-path log entries (latest 10)\n🤖 `automation` — Scheduler status + per-guild rule management panel"
+          },
+          {
+           "inline": false,
+           "name": "Catalogues",
+           "value": "📐 `schemas` — Registered SubsystemSchema instances\n🗂️ `settings-registry` — Every declared SettingSpec\n🧭 `customization` — Customization catalogue across subsystems\n🧰 `provisioning` — ResourceRequirement × BindingSpec catalogue\n🧑‍🤝‍🧑 `participation-schemas` — Registered ParticipationSchema instances\n🧱 `resource-requirements` — Declared ResourceRequirement entries"
+          },
+          {
+           "inline": false,
+           "name": "Resources / rollout",
+           "value": "🧱 `resources` — Resource runtime taxonomy + status histogram\n🔗 `bindings` — Subsystem bindings taxonomy + per-guild counts\n🚩 `flags` — Feature flag declarations + effective resolution\n🛠 `migrations` — Platform migration checkpoints"
+          },
+          {
+           "inline": false,
+           "name": "Validation",
+           "value": "🪪 `identity` — Identity-contract validator findings\n🛡 `consistency` — Unified platform readiness diagnostic\n📌 `anchors` — Panel anchor restoration + active counts\n✅ `setup-readiness` — Per-guild setup-readiness inventory"
+          },
+          {
+           "inline": false,
+           "name": "Mutations / managers",
+           "value": "🚩 Flag manager — Open the editable per-guild flag manager"
+          }
+         ],
+         "flags": 0,
+         "footer": {
+          "text": "Typed `!platform <name>` commands keep working with their filters/limits (e.g. `!platform locks counting`)."
+         },
+         "title": "🛰 Platform hub",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "platform",

@@ -1,12 +1,175 @@
 {
  "case_id": "sweep.slash_economy",
- "db_delta": {},
+ "db_delta": {
+  "economy": {
+   "added": [
+    {
+     "daily_count": 0,
+     "daily_streak": 0,
+     "guild_id": "<guild>",
+     "last_daily": 0,
+     "last_worked": 0,
+     "user_id": "<@admin>"
+    }
+   ]
+  }
+ },
  "harness_version": 1,
  "notes": "mechanical slash sweep (admin persona)",
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "flags": 64
+      },
+      "type": 5
+     }
+    },
+    {
+     "args": {
+      "webhook_id": "<@bot>"
+     },
+     "method": "followup_send",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "economy:daily",
+          "disabled": false,
+          "label": "🎁 Daily",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "economy:work",
+          "disabled": false,
+          "label": "💼 Work",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "economy:shop",
+          "disabled": false,
+          "label": "🛒 Shop",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "economy:balance",
+          "disabled": false,
+          "label": "💰 Balance",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "economy:inventory",
+          "disabled": false,
+          "label": "🎒 Inventory",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "economy:jobs",
+          "disabled": false,
+          "label": "📋 Jobs",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "economy:treasury",
+          "disabled": false,
+          "label": "🏛️ Treasury",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "economy:overview",
+          "disabled": false,
+          "label": "↩ Overview",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "nav:help",
+          "disabled": false,
+          "label": "📚 Help",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "embeds": [
+       {
+        "author": {
+         "icon_url": "https://cdn.discordapp.com/embed/avatars/1.png",
+         "name": "AdminActor"
+        },
+        "color": 15844367,
+        "fields": [
+         {
+          "inline": true,
+          "name": "🪙 Coins",
+          "value": "0"
+         },
+         {
+          "inline": true,
+          "name": "🏆 Level",
+          "value": "0"
+         },
+         {
+          "inline": true,
+          "name": "🔥 Daily Streak",
+          "value": "0"
+         },
+         {
+          "inline": true,
+          "name": "🎁 Daily",
+          "value": "✅ Available!"
+         },
+         {
+          "inline": true,
+          "name": "💼 Work",
+          "value": "✅ Available!"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Use the buttons below to take actions."
+        },
+        "title": "💰 Economy Panel",
+        "type": "rich"
+       }
+      ],
+      "flags": 64,
+      "tts": false
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "economy",

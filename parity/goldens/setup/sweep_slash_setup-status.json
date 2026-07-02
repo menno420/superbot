@@ -6,7 +6,49 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<msg:1>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 5793266,
+        "description": "**Status:** `no session`",
+        "fields": [
+         {
+          "inline": false,
+          "name": "No session row",
+          "value": "The bot has not recorded any setup session for this guild. Run `!setup` or `/setup` to start."
+         }
+        ],
+        "flags": 0,
+        "title": "🛰 Setup status",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "interaction_id": "<msg:2>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "content": "📋 Setup status posted in the setup workspace.",
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "setup-status",

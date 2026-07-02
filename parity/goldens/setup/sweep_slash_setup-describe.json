@@ -6,7 +6,99 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "flags": 64
+      },
+      "type": 5
+     }
+    },
+    {
+     "args": {
+      "webhook_id": "<@bot>"
+     },
+     "method": "followup_send",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "label": "Accept all high-confidence",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "label": "Review one-by-one",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "label": "Reject all AI suggestions",
+          "style": 4,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:4>",
+          "disabled": false,
+          "label": "Rerun deterministic-only",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:5>",
+          "disabled": false,
+          "label": "Stage & open Final review",
+          "style": 3,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": "ℹ️ AI isn't configured on this instance, so I matched by channel and role **names** instead — your description wasn't used. The suggestions below are still safe to review and apply.",
+      "embeds": [
+       {
+        "color": 3066993,
+        "description": "_Smart suggestions are recommendations. Review before applying._\n\n**High:** 2 · **Medium:** 0 · **Low:** 0 · **Source:** `deterministic`",
+        "fields": [
+         {
+          "inline": false,
+          "name": "logging",
+          "value": "🟢 `audit_channel` → `audit-log` — channel name `audit-log` matches token `audit-log` (high)\n🟢 `mod_channel` → `mod-log` — channel name `mod-log` matches token `mod-log` (high)"
+         },
+         {
+          "inline": false,
+          "name": "Dropped",
+          "value": "• economy.announce_channel: binding economy.announce_channel not declared\n• commands.bot_channel: subsystem 'commands' not registered\n• general.main_channel: subsystem 'general' not registered"
+         }
+        ],
+        "flags": 0,
+        "title": "🤖 Smart suggestions",
+        "type": "rich"
+       }
+      ],
+      "flags": 64,
+      "tts": false
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "setup-describe",

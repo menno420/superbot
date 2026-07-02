@@ -35,7 +35,7 @@
      "panel_message_id": null,
      "ping_staff_on_open": true,
      "staff_role_id": null,
-     "updated_at": 1767280260
+     "updated_at": 1891601889
     }
    ]
   },
@@ -44,7 +44,7 @@
     {
      "coins": 0,
      "guild_id": "<guild>",
-     "last_xp": 1767280260,
+     "last_xp": 1891601889,
      "level": 0,
      "messages": 1,
      "user_id": "<@admin>",
@@ -77,121 +77,6 @@
       "reason": null
      },
      "method": "delete_message"
-    },
-    {
-     "args": {
-      "channel_id": "<#general>",
-      "message_id": "<msg:2>"
-     },
-     "method": "edit_message",
-     "payload": {
-      "components": [
-       {
-        "components": [
-         {
-          "custom_id": "flag_manager:select",
-          "disabled": true,
-          "max_values": 1,
-          "min_values": 1,
-          "options": [
-           {
-            "default": false,
-            "description": "settings.manager_cog.enabled",
-            "label": "🛠 Settings menu (!settings)",
-            "value": "settings.manager_cog.enabled"
-           },
-           {
-            "default": false,
-            "description": "youtube.context.enabled",
-            "label": "🛠 YouTube context for AI replies",
-            "value": "youtube.context.enabled"
-           },
-           {
-            "default": false,
-            "description": "bindings.primary",
-            "label": "⚙ Bindings as primary source (internal rollout gate)",
-            "value": "bindings.primary"
-           },
-           {
-            "default": false,
-            "description": "feature_flag.primary · env-only",
-            "label": "⚙ Feature-flag runtime gate (env-only, internal)",
-            "value": "feature_flag.primary"
-           },
-           {
-            "default": false,
-            "description": "participation.enabled",
-            "label": "⚙ Participation runtime (internal rollout gate)",
-            "value": "participation.enabled"
-           },
-           {
-            "default": false,
-            "description": "resource_provisioning.primary · inactive — no consumer",
-            "label": "⚙ Resource provisioning pipeline primary (operator kill-switch)",
-            "value": "resource_provisioning.primary"
-           },
-           {
-            "default": false,
-            "description": "resources.unified · inactive — no consumer",
-            "label": "⚙ Unified resource discovery (internal rollout gate)",
-            "value": "resources.unified"
-           },
-           {
-            "default": false,
-            "description": "settings.mutation.primary · inactive — no consumer",
-            "label": "⚙ Settings mutation pipeline primary (operator kill-switch)",
-            "value": "settings.mutation.primary"
-           }
-          ],
-          "placeholder": "Choose a flag…",
-          "required": true,
-          "type": 3
-         }
-        ],
-        "type": 1
-       },
-       {
-        "components": [
-         {
-          "custom_id": "flag_manager:enable",
-          "disabled": true,
-          "label": "✅ Enable for this guild",
-          "style": 3,
-          "type": 2
-         },
-         {
-          "custom_id": "flag_manager:disable",
-          "disabled": true,
-          "label": "🛑 Disable for this guild",
-          "style": 4,
-          "type": 2
-         },
-         {
-          "custom_id": "flag_manager:refresh",
-          "disabled": true,
-          "label": "🔄 Refresh",
-          "style": 2,
-          "type": 2
-         }
-        ],
-        "type": 1
-       },
-       {
-        "components": [
-         {
-          "custom_id": "flag_manager:back",
-          "disabled": true,
-          "label": "↩ Back to Platform",
-          "style": 2,
-          "type": 2
-         }
-        ],
-        "type": 1
-       }
-      ],
-      "flags": 0,
-      "tts": false
-     }
     }
    ],
    "events": [

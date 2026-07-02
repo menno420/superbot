@@ -6,7 +6,126 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "<cid:1>",
+           "disabled": false,
+           "label": "🖥️ Server Info",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:2>",
+           "disabled": false,
+           "label": "👤 User Info",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:3>",
+           "disabled": false,
+           "label": "🖼️ Avatar",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "<cid:4>",
+           "disabled": false,
+           "label": "📊 Poll",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:5>",
+           "disabled": false,
+           "label": "🔔 Remind Me",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:6>",
+           "disabled": false,
+           "label": "🔗 Invite",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "<cid:7>",
+           "disabled": false,
+           "label": "↩ Overview",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "utility:open:general",
+           "disabled": false,
+           "label": "💬 General",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "utility:open:four_twenty",
+           "disabled": false,
+           "label": "🍃 420",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 3447003,
+         "description": "**🖥️ Server Info** — server statistics\n**👤 User Info** — your profile details\n**🖼️ Avatar** — display your avatar\n**📊 Poll** — create a reaction poll\n**🔔 Remind Me** — set a timed reminder\n**🔗 Invite** — generate a one-use server invite",
+         "fields": [
+          {
+           "inline": false,
+           "name": "More in Utility",
+           "value": "💬 **General** — General bot commands and information\n🍃 **420** — A leafy little easter-egg panel — wisdom and number trivia"
+          }
+         ],
+         "flags": 0,
+         "footer": {
+          "text": "Click an action below."
+         },
+         "title": "🔧 Utility Panel",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "utility",

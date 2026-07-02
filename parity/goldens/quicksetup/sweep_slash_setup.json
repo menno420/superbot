@@ -6,7 +6,147 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<msg:1>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "description": "balanced spam protection, members told why they're actioned, steady XP",
+            "emoji": {
+             "id": null,
+             "name": "💬"
+            },
+            "label": "Community",
+            "value": "community"
+           },
+           {
+            "default": false,
+            "description": "spam & mass-ping protection (invite links allowed), faster XP",
+            "emoji": {
+             "id": null,
+             "name": "🎮"
+            },
+            "label": "Gaming",
+            "value": "gaming"
+           },
+           {
+            "default": false,
+            "description": "strict protection on everything, members told why, relaxed XP",
+            "emoji": {
+             "id": null,
+             "name": "🛟"
+            },
+            "label": "Support / Help desk",
+            "value": "support"
+           },
+           {
+            "default": false,
+            "description": "balanced spam protection, members told why, steady XP",
+            "emoji": {
+             "id": null,
+             "name": "🎨"
+            },
+            "label": "Creator / Content",
+            "value": "creator"
+           },
+           {
+            "default": false,
+            "description": "just basic spam protection — set everything else up yourself",
+            "emoji": {
+             "id": null,
+             "name": "🧭"
+            },
+            "label": "Just exploring",
+            "value": "exploring"
+           }
+          ],
+          "placeholder": "What kind of server is this?",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "✨"
+          },
+          "label": "Save & continue",
+          "style": 3,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "label": "Skip — set things up myself",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 5793266,
+        "description": "Pick the closest match and we'll switch on a set of safe, sensible defaults right away — you can change any of it later. We won't create or delete anything; this just turns on a few settings to get you started.\n\nThen press **Save & continue**.",
+        "fields": [
+         {
+          "inline": false,
+          "name": "Starter set",
+          "value": "_pick one above_"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Step 1 of 8"
+        },
+        "title": "✨ What kind of server is this?",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "interaction_id": "<msg:2>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "content": "✅ Setup is ready in <#<msg:1>> — [open it](https://discord.com/channels/<guild>/<msg:1>/<msg:3>).",
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "setup",

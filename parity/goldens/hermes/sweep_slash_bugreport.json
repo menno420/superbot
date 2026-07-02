@@ -6,7 +6,39 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "flags": 64
+      },
+      "type": 5
+     }
+    },
+    {
+     "args": {
+      "webhook_id": "<@bot>"
+     },
+     "method": "followup_send",
+     "payload": {
+      "embeds": [
+       {
+        "color": 15158332,
+        "description": "The Hermes→Claude dispatch bridge is not configured.\n\nSet these env vars on Railway (or in `.env` locally):\n```\nCLAUDE_ROUTINE_FIRE_URL=https://api.anthropic.com/v1/claude_code/routines/<id>/fire\nCLAUDE_ROUTINE_TOKEN=sk-ant-oat01-…\nCLAUDE_ROUTINE_BETA=experimental-cc-routine-2026-04-01\nCLAUDE_ROUTINE_VERSION=2023-06-01\n```\nSee `docs/operations/hermes-dispatch-bridge.md` for the full setup runbook.",
+        "flags": 0,
+        "title": "Hermes bridge not configured",
+        "type": "rich"
+       }
+      ],
+      "flags": 64,
+      "tts": false
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "bugreport",

@@ -28,7 +28,7 @@
     {
      "coins": 0,
      "guild_id": "<guild>",
-     "last_xp": 1767279810,
+     "last_xp": 1811561310,
      "level": 0,
      "messages": 1,
      "user_id": "<@admin>",
@@ -61,58 +61,6 @@
       "reason": null
      },
      "method": "delete_message"
-    },
-    {
-     "args": {
-      "channel_id": "<#general>",
-      "message_id": "<msg:2>"
-     },
-     "method": "edit_message",
-     "payload": {
-      "components": [
-       {
-        "components": [
-         {
-          "custom_id": "<cid:1>",
-          "disabled": true,
-          "emoji": {
-           "id": null,
-           "name": "🪨"
-          },
-          "label": "Rock",
-          "style": 2,
-          "type": 2
-         },
-         {
-          "custom_id": "<cid:2>",
-          "disabled": true,
-          "emoji": {
-           "id": null,
-           "name": "📄"
-          },
-          "label": "Paper",
-          "style": 2,
-          "type": 2
-         },
-         {
-          "custom_id": "<cid:3>",
-          "disabled": true,
-          "emoji": {
-           "id": null,
-           "name": "✂️"
-          },
-          "label": "Scissors",
-          "style": 2,
-          "type": 2
-         }
-        ],
-        "type": 1
-       }
-      ],
-      "content": "Game timed out.",
-      "flags": 0,
-      "tts": false
-     }
     }
    ],
    "events": [

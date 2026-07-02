@@ -28,7 +28,7 @@
     {
      "coins": 0,
      "guild_id": "<guild>",
-     "last_xp": 1767278490,
+     "last_xp": 1941454665,
      "level": 0,
      "messages": 1,
      "user_id": "<@admin>",
@@ -65,21 +65,12 @@
    ],
    "events": [
     {
-     "event": "xp.reset",
-     "payload": {
-      "actor_id": "<@admin>",
-      "guild_id": "<guild>",
-      "source": "admin:resetxp",
-      "user_id": "<@second_member>"
-     }
-    },
-    {
      "event": "audit.action_recorded",
      "payload": {
       "actor_id": "<@admin>",
       "actor_type": "admin",
       "guild_id": "<guild>",
-      "mutation_id": "xp_reset:<guild>:<@second_member>:1782992731.709184",
+      "mutation_id": "xp_reset:<guild>:<@second_member>:<epoch>",
       "mutation_type": "reset_xp",
       "new_value": null,
       "occurred_at": "<ts>",
@@ -98,6 +89,15 @@
       "new_xp": 25,
       "source": "chat",
       "user_id": "<@admin>"
+     }
+    },
+    {
+     "event": "xp.reset",
+     "payload": {
+      "actor_id": "<@admin>",
+      "guild_id": "<guild>",
+      "source": "admin:resetxp",
+      "user_id": "<@second_member>"
      }
     }
    ],

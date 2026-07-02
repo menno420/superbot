@@ -88,16 +88,31 @@ async def _check(args: argparse.Namespace) -> int:
     cases, _ = await _all_cases(harness, include_sweep=not args.curated)
     if args.only:
         cases = [c for c in cases if args.only in c.id]
+    from parity.cases.sweep import FLAKY_ADVISORY
+
     ok = 0
+    advisory: dict[str, int] = {}
     failed: dict[str, list[str]] = {}
+    gating_total = 0
     for case in cases:
         match, problems = await replay_case(harness, case, GOLDENS_ROOT)
+        if case.id in FLAKY_ADVISORY:
+            if not match:
+                advisory[case.id] = len(problems)
+            continue
+        gating_total += 1
         if match:
             ok += 1
         else:
             failed[case.id] = problems
     await harness.close()
-    print(f"parity: {ok}/{len(cases)} green")
+    print(
+        f"parity: {ok}/{gating_total} gating green"
+        f" (+{len(advisory)} advisory diffs"
+        f" of {len(FLAKY_ADVISORY)} advisory cases)",
+    )
+    for cid, n in sorted(advisory.items()):
+        print(f"ADVISORY {cid}: {n} diff(s) — {FLAKY_ADVISORY[cid]}")
     for cid, problems in sorted(failed.items()):
         print(f"RED {cid}")
         for problem in problems[:8]:

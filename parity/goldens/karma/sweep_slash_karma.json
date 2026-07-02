@@ -6,7 +6,61 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "flags": 64
+      },
+      "type": 5
+     }
+    },
+    {
+     "args": {
+      "webhook_id": "<@bot>"
+     },
+     "method": "followup_send",
+     "payload": {
+      "embeds": [
+       {
+        "color": 15277667,
+        "fields": [
+         {
+          "inline": true,
+          "name": "Karma",
+          "value": "**0** ✨"
+         },
+         {
+          "inline": true,
+          "name": "Rank",
+          "value": "unranked"
+         },
+         {
+          "inline": false,
+          "name": "Activity",
+          "value": "received **0** · given **0**"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Thank helpful members with !thanks @user"
+        },
+        "thumbnail": {
+         "url": "https://cdn.discordapp.com/embed/avatars/1.png"
+        },
+        "title": "✨ Karma — AdminActor",
+        "type": "rich"
+       }
+      ],
+      "flags": 64,
+      "tts": false
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "karma",

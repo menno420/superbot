@@ -152,6 +152,11 @@ async def capture_case(harness: Harness, case: GoldenCase) -> dict[str, Any]:
                 if components:
                     minted_components[rid] = components
         events = harness.take_events()
+        # Cross-listener fan-out order is asyncio-scheduler noise, not a
+        # behavioral contract (the bus is publish-accepted, no ordering
+        # guarantee across independent subscribers) — sort stably by event
+        # name so same-name sequences keep their real order.
+        events.sort(key=lambda e: e["event"])
         input_doc = _describe_step(step)
         if resolved_custom_id:
             input_doc["custom_id"] = normalizer.normalize(resolved_custom_id)

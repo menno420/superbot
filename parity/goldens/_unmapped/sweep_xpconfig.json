@@ -1,6 +1,42 @@
 {
  "case_id": "sweep.xpconfig",
- "db_delta": {},
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1987271953,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
  "harness_version": 1,
  "notes": "mechanical breadth sweep (admin persona)",
  "seed": 42,
@@ -13,8 +49,75 @@
      },
      "method": "send_message",
      "payload": {
-      "components": [],
-      "content": "❌ Command not found. Use `!help` for available commands.",
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "label": "XP Range",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "label": "Cooldown",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "label": "Level-up Channel",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:4>",
+          "disabled": false,
+          "label": "📥 Import from another bot",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3447003,
+        "fields": [
+         {
+          "inline": true,
+          "name": "XP per message",
+          "value": "15–25"
+         },
+         {
+          "inline": true,
+          "name": "Cooldown",
+          "value": "60s"
+         },
+         {
+          "inline": true,
+          "name": "Level-up channel",
+          "value": "Same channel as message"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Click a button below to change a setting."
+        },
+        "title": "⚙️ XP Configuration",
+        "type": "rich"
+       }
+      ],
       "tts": false
      }
     },
@@ -25,6 +128,19 @@
       "reason": null
      },
      "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
     }
    ],
    "input": {

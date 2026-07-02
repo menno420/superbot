@@ -72,12 +72,12 @@ manual):
 [`parity/COVERAGE.md`](../../parity/COVERAGE.md). Denominators come from the booted bot's own
 registries — never hand-maintained lists.)*
 
-**Corpus: 484 golden cases.** Headline numbers (2026-07-02 capture):
+**Corpus: 465 golden cases** (460 gating + 5 named advisory). Headline numbers (2026-07-02 final capture):
 
 | Surface | Captured | Total | Coverage |
 |---|---|---|---|
-| Prefix commands | 402 | 406 | **99%** |
-| Slash commands | 71 | 73 | **97%** |
+| Prefix commands | 390 | 406 | **96%** |
+| Slash commands | 64 | 73 | **88%** |
 | Persistent-panel components (custom_ids) | 60 | 64 | **94%** |
 | Persistent panels (>=1 component captured) | 9 | 11 | **82%** |
 | Bus events observed | 10 | 47 | **21%** |
@@ -85,12 +85,15 @@ registries — never hand-maintained lists.)*
 | Settings keys mutated by >=1 golden | 3 | 120 | **2%** |
 
 **The two-line honest reading:** the *invocation surface* (what users can trigger) is essentially
-fully captured — 99%/97%/94% with every exclusion named and reasoned. The *deep-state surface*
+fully captured — 96%/88%/94% with every exclusion named and reasoned (process-lifecycle ops,
+host-state diagnostics, and the determinism-seam class below account for the gap). The *deep-state surface*
 (which events fire, which tables move, which settings mutate) is deliberately thin at 21%/25%/2% —
 those dimensions grow with curated multi-step flows (config edits, game completions, event-rich
 paths), which is exactly the per-band work the port loop schedules; the numbers make the remaining
-work measurable instead of invisible. The safety ceiling is no longer unknown: it is 99% broad and
-measurably shallow, with the deepening mechanism in place.
+work measurable instead of invisible. **Replay stability is proven, not assumed: the final gating
+replay is 459/459 green**, with a 5-case named advisory tail (the xfail pattern — settle-budget
+racers kept for inspection, non-gating). The safety ceiling is no longer unknown: it is ~96% broad,
+replay-stable, and measurably shallow, with the deepening mechanism in place.
 
 **How to read it honestly:**
 
@@ -122,6 +125,13 @@ measurably shallow, with the deepening mechanism in place.
   `AIGateway` (model-answer quality), not commands — the two oracles compose (this harness owns
   the deterministic surface; evals own the AI-answer surface) but share no cases. The spec's §6
   phrasing should say "the evals corpus remains the AI-surface oracle" instead of implying reuse.
+- **Found: a new kernel design requirement — injectable clock + RNG.** A handful of current-bot
+  paths are nondeterministic BY CONSTRUCTION (unseeded private `random.Random` instances in spawn
+  selection; real-TTL in-memory caches keyed on wall time; `datetime.now()` composed into ids) —
+  no harness can pin them from outside, so their commands are excluded-with-reason. The rebuild
+  kernel should make time and randomness injectable services (the engines already centralize the
+  choreography, so this is cheap at K5/K7) — then *every* surface is golden-testable by
+  construction. This requirement exists in no earlier rebuild document; the harness discovered it.
 - **Measured: determinism is the real engineering cost.** Eight distinct nondeterminism classes
   had to be pinned before full-corpus replay went green (see README § determinism model — each
   entry names the replay diff that caught it). The new repo inherits these for free via this
@@ -227,7 +237,8 @@ tests.
 | 2 | Name the harness driver pattern (fake HTTP over real state machine, local Postgres) instead of "testcontainers + dpytest or equivalent" | spec §6 | `parity/harness/` runs today, no new deps, real dispatch fidelity |
 | 3 | Rephrase "reusing the evals corpus": evals stay the AI-answer oracle; the harness owns the deterministic surface; they compose, not merge | spec §6 | `tests/evals/harness.py` drives `AIGateway`, not commands |
 | 4 | The `golden-parity` gate needs a Postgres service container in the new repo's CI from K10 (this repo's `code-quality` runs none — the harness skips there today) | spec §6/K10 | CI workflow verified |
-| 5 | Budget the determinism-pinning cost per capture channel (six classes were required for command capture; scheduled-loop capture will pay again) | spec §9 K10 | README determinism ledger |
+| 5 | Budget the determinism-pinning cost per capture channel (eight classes were required for command capture; scheduled-loop capture will pay again) | spec §9 K10 | README determinism ledger |
+| 6 | New kernel requirement: **clock + RNG as injectable services** — the harness found current-bot paths that are nondeterministic by construction (unseeded private RNG, real-TTL caches, `datetime.now()` in ids); injectability makes every surface golden-testable | spec §1.2/K5/K7 | `parity/cases/sweep.py` exclusion ledger |
 
 ## 4. Improvements to the rebuild approach itself
 
@@ -246,10 +257,14 @@ tests.
 **Recommendation: GO — proceed to the Phase-3 K0–K10 build as specified, with the §3 table's
 amendments folded into the design spec first (a half-day docs pass, no re-design).**
 
+*(Schedule context: the same-day [parallel-execution plan](rebuild-parallel-execution-plan-2026-07-02.md)
+models ~2 weeks active build with these two numbers as its throttles — both measured strong here, so its
+center estimate stands rather than its stretch case.)*
+
 The two linchpins now carry evidence instead of assertion:
 
 1. **Harness:** built, deterministic (replay-proven), coverage measured with the tail named. The
-   safety model has a floor number instead of a hope — 99% of the command surface, with the thin deep-state dimensions (events 21%, tables 25%, settings mutations 2%) named as the port bands' curated-flow work. Coverage grows
+   safety model has a floor number instead of a hope — 96% of the command surface replay-stable, with the thin deep-state dimensions (events 21%, tables 25%, settings mutations 2%) named as the port bands' curated-flow work. Coverage grows
    mechanically (more cases, click-path sweeps, persona variants) — the *architecture* question
    is retired.
 2. **Grammar:** 73% as-written → **85% with amendments** on a deliberately hostile sample; the

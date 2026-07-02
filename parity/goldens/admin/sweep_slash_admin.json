@@ -145,7 +145,7 @@
        "embeds": [
         {
          "color": 15158332,
-         "description": "Loaded cogs: **1**\n\n**Tools**\n📊 Server Stats · 📋 Cog List · 🔄 Reload All · 📝 Log Level\n\n**Configure & Operate**\n🛠 Settings · 🧭 Server Management · 📐 Channels · 🤖 AI\n\n**Platform & Diagnostics**\n🛰 Platform · 🩺 Diagnostics · 🧪 UX Lab · 📝 Logging · 🧹 Cleanup\n\n📚 Help",
+         "description": "Loaded cogs: **58**\n\n**Tools**\n📊 Server Stats · 📋 Cog List · 🔄 Reload All · 📝 Log Level\n\n**Configure & Operate**\n🛠 Settings · 🧭 Server Management · 📐 Channels · 🤖 AI\n\n**Platform & Diagnostics**\n🛰 Platform · 🩺 Diagnostics · 🧪 UX Lab · 📝 Logging · 🧹 Cleanup\n\n📚 Help",
          "flags": 0,
          "footer": {
           "text": "Only you can interact with this panel."

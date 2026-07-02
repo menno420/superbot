@@ -687,16 +687,18 @@ class FakeWebhookAdapter:
 
 async def drain_dispatch_tasks(
     *,
-    max_rounds: int = 40,
+    max_rounds: int = 120,
     exclude: set[asyncio.Task[Any]] | None = None,
 ) -> None:
     """Let fire-and-forget dispatch tasks (listeners, error handlers) finish.
 
     discord.py dispatches events as unawaited tasks; a deterministic capture
-    must wait for them. A task set that stops shrinking (e.g. a flow parked
-    on ``bot.wait_for(...)`` user input) is a stall — bail after a few stable
-    rounds instead of hanging; the capture then honestly shows the prompt the
-    flow stopped at.
+    must wait for them. A task set that stops shrinking is either a flow
+    parked on ``bot.wait_for(...)`` user input (bail: the capture honestly
+    shows the prompt it stopped at) or a REAL bounded ``asyncio.sleep`` in
+    mid-flow (fishing bite windows are 3–6s) — so the stall patience must
+    outlast legitimate sleeps or their completions land in a later case
+    nondeterministically (observed: sweep.fish). ~7s of stability, then bail.
     """
     current = asyncio.current_task()
     excluded = exclude or set()
@@ -712,7 +714,7 @@ async def drain_dispatch_tasks(
             return
         if pending == previous:
             stable_rounds += 1
-            if stable_rounds >= 4:
+            if stable_rounds >= 45:  # ≈7s at 0.15s waits
                 return
         else:
             stable_rounds = 0

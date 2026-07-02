@@ -6,7 +6,133 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "community:open:ticket",
+           "disabled": false,
+           "label": "🎫 Support Tickets",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "community:open:xp",
+           "disabled": false,
+           "label": "⭐ XP & Levels",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "community:open:karma",
+           "disabled": false,
+           "label": "✨ Karma",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "community:open:community_spotlight",
+           "disabled": false,
+           "label": "🌟 Community Spotlight",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "community:open:welcome",
+           "disabled": false,
+           "label": "👋 Welcome",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "community:open:counters",
+           "disabled": false,
+           "label": "📊 Server Counters",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "community:open:role",
+           "disabled": false,
+           "label": "🎭 Roles",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "community:open:counting",
+           "disabled": false,
+           "label": "🔢 Counting",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "community:open:chain",
+           "disabled": false,
+           "label": "🔗 Word Chain",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "community:open:leaderboard",
+           "disabled": false,
+           "label": "🏆 Leaderboard",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "nav:help",
+           "disabled": false,
+           "label": "📚 Help",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 3066993,
+         "description": "Pick a community feature below.\n\n**Progression**\n• 🎫 **Support Tickets** — Private support tickets — open by command, panel, or the AI\n• ⭐ **XP & Levels** — Experience points, levels, and leaderboards\n• ✨ **Karma** — Peer reputation — thank helpful members with !thanks\n• 🌟 **Community Spotlight** — Live server activity dashboard — leaders, level-ups, game stats\n• 👋 **Welcome** — Member greetings, farewells, and an optional entry role\n• 📊 **Server Counters** — Live member-count channels (total · humans · bots)\n• 🎭 **Roles** — Time-based and XP-based automatic role assignment\n\n**Community games & standings**\n• 🔢 **Counting** — Collaborative counting game\n• 🔗 **Word Chain** — Word-chaining game\n• 🏆 **Leaderboard** — Server leaderboards for XP, coins, and games",
+         "flags": 0,
+         "footer": {
+          "text": "Only you can interact with this panel."
+         },
+         "title": "🌱 Community Hub",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "community",

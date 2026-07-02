@@ -1,6 +1,54 @@
 {
  "case_id": "sweep.work",
- "db_delta": {},
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "economy": {
+   "added": [
+    {
+     "daily_count": 0,
+     "daily_streak": 0,
+     "guild_id": "<guild>",
+     "last_daily": 0,
+     "last_worked": 0,
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1972793077,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
  "harness_version": 1,
  "notes": "mechanical breadth sweep (admin persona)",
  "seed": 42,
@@ -13,8 +61,67 @@
      },
      "method": "send_message",
      "payload": {
-      "components": [],
-      "content": "❌ Command not found. Use `!help` for available commands.",
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "description": "Base pay: 50 🪙  |  +10 XP  |  Tier 1",
+            "label": "🧹 Janitor",
+            "value": "janitor"
+           },
+           {
+            "default": false,
+            "description": "Base pay: 75 🪙  |  +15 XP  |  Tier 1",
+            "label": "🏪 Cashier",
+            "value": "cashier"
+           },
+           {
+            "default": false,
+            "description": "Base pay: 60 🪙  |  +12 XP  |  Tier 1",
+            "label": "🍽️ Dishwasher",
+            "value": "dishwasher"
+           }
+          ],
+          "placeholder": "Choose a job to work…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3447003,
+        "description": "Choose a job below.\nPay increases **+1%** each time you work the same job (max +100%).",
+        "fields": [
+         {
+          "inline": true,
+          "name": "Level",
+          "value": "0"
+         },
+         {
+          "inline": true,
+          "name": "Coins",
+          "value": "0 🪙"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Pick a job from the dropdown."
+        },
+        "title": "💼 Job Center",
+        "type": "rich"
+       }
+      ],
       "tts": false
      }
     },
@@ -25,6 +132,19 @@
       "reason": null
      },
      "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
     }
    ],
    "input": {

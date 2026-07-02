@@ -6,7 +6,142 @@
  "seed": 42,
  "steps": [
   {
-   "calls": [],
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "<cid:1>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "🌑"
+           },
+           "label": "Overview",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:2>",
+           "disabled": false,
+           "label": "Sinners",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:3>",
+           "disabled": false,
+           "label": "Sins",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:4>",
+           "disabled": false,
+           "label": "Damage types",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:5>",
+           "disabled": false,
+           "label": "Mechanics",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "<cid:6>",
+           "disabled": false,
+           "label": "E.G.O grades",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:7>",
+           "disabled": false,
+           "label": "Statuses",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:8>",
+           "disabled": false,
+           "emoji": {
+            "id": null,
+            "name": "📖"
+           },
+           "label": "Origins",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 10181046,
+         "description": "A browsable reference for *Limbus Company*. Pick a category below, or use `!pm <category> <name>` (e.g. `!pm mechanic clash`, `!pm status sinking`) or `!pm lookup <anything>`.",
+         "fields": [
+          {
+           "inline": false,
+           "name": "Sinners (12)",
+           "value": "Yi Sang, Faust, Don Quixote, Ryōshū, Meursault, Hong Lu, …"
+          },
+          {
+           "inline": false,
+           "name": "Sins (7)",
+           "value": "Wrath, Lust, Sloth, Gluttony, Gloom, Pride, …"
+          },
+          {
+           "inline": false,
+           "name": "Damage types (3)",
+           "value": "Slash, Pierce, Blunt"
+          },
+          {
+           "inline": false,
+           "name": "Mechanics (13)",
+           "value": "Clash, Coin, Speed, Sanity, Stagger, Damage Resistance, …"
+          },
+          {
+           "inline": false,
+           "name": "E.G.O grades (5)",
+           "value": "ZAYIN, TETH, HE, WAW, ALEPH"
+          },
+          {
+           "inline": false,
+           "name": "Statuses (8)",
+           "value": "Burn, Bleed, Tremor, Rupture, Sinking, Poise, …"
+          }
+         ],
+         "flags": 0,
+         "footer": {
+          "text": "Project Moon · Limbus Company — summarized facts (verify-at-ingest)"
+         },
+         "title": "🌑 Project Moon — Limbus knowledge",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
    "input": {
     "kind": "slash",
     "name": "pm",
