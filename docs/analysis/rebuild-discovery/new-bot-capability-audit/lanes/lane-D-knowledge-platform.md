@@ -1,529 +1,323 @@
 # Lane D — Knowledge, AI & Platform (Axis 1)
 
-> **Status:** `reference` — this lane's workspace. The surface-unit inventories below are **pre-extracted** (facts only, tier columns blank). The Lane D agent **verifies + completes them against source**, fills BOTH tier columns, writes each subsystem's §2 manifest sketch, dispositions tier-3s, and adds reconsider/optimize recommendations — per [`../BRIEF.md`](../BRIEF.md). Treat the inventory as a starting scaffold, not ground truth.
+> **Status:** `audit` — documentation-only audit for `ai`, `btd6`, `project_moon`, `help`, `settings`, `logging`, `diagnostic`, `ux_lab`, `utility`, `general`, and `proof_channel`.
+>
+> **Substrate verified:** `BRIEF.md`, `PARTITION.md`, and this lane file were present in this checkout before editing. Source code wins over docs; rows below cite source paths and line numbers.
 
-**Subsystems:** ai, btd6, project_moon, help, settings, logging, diagnostic, ux_lab, utility, general, proof_channel
+**Method:** required reading completed in order: `.claude/CLAUDE.md`, `docs/AGENT_ORIENTATION.md`, `docs/current-state.md`, `docs/current-state/S2-btd6.md`, `docs/current-state/S3-ai-memory.md`, audit `BRIEF.md`/`PARTITION.md`, this lane file, `ground-truth/command-surface.json`, grammar spike `spec.py`/`measure.py`/`RESULTS.md`/`manifests/server_logging.py`, and `docs/analysis/rebuild-discovery/ai-knowledge-data-tooling-map.md`. `python3.10 scripts/context_map.py ...` was attempted for inspected `disbot/*.py` files, but this environment lacks `PyYAML`, so exact source verification used `rg`, `sed`, and `nl` instead.
 
-**Method:** [`../BRIEF.md`](../BRIEF.md) · [`../PARTITION.md`](../PARTITION.md) · `tools/grammar_spike/` · `../ground-truth/command-surface.json`.
+**Tier semantics used exactly as the spike:** tier 1 = generated/kernel workflow; tier 2 = declared parameterized spec family; tier 3 = escape-hatch code/handler logic. Known amendments are G-1 GatewayListenerSpec, G-2 list-valued settings + add/remove workflows, G-3 AnnouncementRouteSpec, G-4 command cooldowns, G-5 declarative validator bounds, and G-6 per-kind command namespaces.
 
----
+## Lane-level conclusion
 
-### ai
-_cogs: disbot/cogs/ai_cog.py, disbot/cogs/ai_review_cog.py_
+Lane D needs two reusable grammar families in addition to G-1…G-6:
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !ai | command (group) | cogs/ai_cog.py:365 | | | |
-| !ai status | command | cogs/ai_cog.py:371 | | | |
-| !ai readiness | command | cogs/ai_cog.py:379 | | | |
-| !ai settings | command | cogs/ai_cog.py:409 | | | |
-| !ai why-no-response | command | cogs/ai_cog.py:417 | | | |
-| !ai policy | command | cogs/ai_cog.py:460 | | | |
-| !ai diagnostics | command | cogs/ai_cog.py:498 | | | |
-| !ai providers | command | cogs/ai_cog.py:503 | | | |
-| !ai routing | command | cogs/ai_cog.py:508 | | | |
-| !ai forget | command | cogs/ai_cog.py:523 | | | |
-| !ai support-report | command | cogs/ai_cog.py:551 | | | |
-| !aimenu | command (prefix) | cogs/ai_cog.py:519 | | | |
-| /ai status | command (slash) | cogs/ai_cog.py:581 | | | |
-| /ai readiness | command (slash) | cogs/ai_cog.py:589 | | | |
-| /ai diagnostics | command (slash) | cogs/ai_cog.py:623 | | | |
-| /ai providers | command (slash) | cogs/ai_cog.py:634 | | | |
-| /ai routing | command (slash) | cogs/ai_cog.py:645 | | | |
-| /ai forget | command (slash) | cogs/ai_cog.py:660 | | | |
-| /ai support-report | command (slash) | cogs/ai_cog.py:689 | | | |
-| /ai policy | command (slash) | cogs/ai_cog.py:713 | | | |
-| /ai settings | command (slash) | cogs/ai_cog.py:755 | | | |
-| /aimenu | command (slash) | cogs/ai_cog.py:777 | | | |
-| !aireview | command (group) | cogs/ai_review_cog.py:172 | | | |
-| !aireview channel | command | cogs/ai_review_cog.py:200 | | | |
-| !aireview off | command | cogs/ai_review_cog.py:223 | | | |
-| !aireview list | command | cogs/ai_review_cog.py:237 | | | |
-| !aireview export | command | cogs/ai_review_cog.py:275 | | | |
-| !aireview resolve | command | cogs/ai_review_cog.py:332 | | | |
-| !aireview preset | command (group) | cogs/ai_review_cog.py:351 | | | |
-| !aireview preset add | command | cogs/ai_review_cog.py:365 | | | |
-| !aireview preset from | command | cogs/ai_review_cog.py:381 | | | |
-| !aireview preset list | command | cogs/ai_review_cog.py:444 | | | |
-| !aireview preset remove | command | cogs/ai_review_cog.py:480 | | | |
-| AI settings panel view | panel/view | cogs/ai_cog.py:151-154 | | | `_build_ai_settings_panel` returns embed+View (⚠ view class unverified, not read in full) |
-| AI help menu embed/view | panel/view | cogs/ai_cog.py:788-791 | | | `build_help_menu_view` returns embed+View for aimenu |
-| on_raw_reaction_add (ai review) | listener | cogs/ai_review_cog.py:119 | | | reaction-based review triage listener |
-| bus.on EVT_AI_REVIEW_LOGGED | listener (EventBus) | cogs/ai_review_cog.py:109 | | | subscribes `_review_sub` in cog_load, unsubscribed line 112 |
-| _on_review_logged | listener (internal handler) | cogs/ai_review_cog.py:151 | | | handles the EVT_AI_REVIEW_LOGGED payload |
-| ai_policy_mutation bus.emit | event | services/ai_policy_mutation.py:382 | | | emits policy-change event with guild_id/mutation_id |
-| ai_policy_mutation bus.emit (2) | event | services/ai_policy_mutation.py:544 | | | second emit site in same service |
-| ai_review_log_service bus.emit | event | services/ai_review_log_service.py:297 | | | emits review-logged event consumed by ai_review_cog |
-| setting: AI_ENABLED | setting | utils/settings_keys/ai.py:10 | | | `ai_enabled` guild toggle |
-| setting: AI_NATURAL_LANGUAGE_ENABLED | setting | utils/settings_keys/ai.py:11 | | | `ai_natural_language_enabled` toggle |
-| setting: AI_DEFAULT_PROVIDER | setting | utils/settings_keys/ai.py:12 | | | `ai_default_provider` key |
-| setting: AI_DEFAULT_MODEL | setting | utils/settings_keys/ai.py:13 | | | `ai_default_model` key |
-| setting: AI_MINIMUM_LEVEL_DEFAULT | setting | utils/settings_keys/ai.py:14 | | | `ai_minimum_level_default` key |
-| setting: AI_COOLDOWN_SECONDS | setting | utils/settings_keys/ai.py:15 | | | `ai_cooldown_seconds` key |
-| setting: AI_FRESH_USER_MENTION_ALLOWANCE | setting | utils/settings_keys/ai.py:16 | | | `ai_fresh_user_mention_allowance` key |
-| setting: AI_GUILD_INSTRUCTION_PROFILE | setting | utils/settings_keys/ai.py:17 | | | `ai_guild_instruction_profile` key |
-| setting: AI_MEMORY_WINDOW_MINUTES | setting | utils/settings_keys/ai.py:24 | | | `ai_memory_window_minutes` key |
-| setting: AI_MEMORY_CHANNEL_SCAN_ENABLED | setting | utils/settings_keys/ai.py:30 | | | `ai_memory_channel_scan_enabled` key |
-| setting: AI_REVIEW_CHANNEL | setting | utils/settings_keys/ai.py:35 | | | `ai_review_channel` key |
-| store: ai_review_log | store | utils/db/ai_review.py:1 | | | table for logged AI answers, migration 100 |
-| store: ai_answer_presets | store | utils/db/ai_presets.py:26 | | | table for guild-curated preset answers |
-| SUBSYSTEMS["ai"] registry entry | registry/entry_points | utils/subsystem_registry.py:1122 | | | entry_points `ai`, `aimenu`; capabilities `ai.platform.view`, `ai.diagnostics.view`, `ai.provider.view`, `ai.routing.view`, plus M1 settings-UI capability (list truncated at read, ⚠ unverified full capability list) |
-| help catalogue entry | help | services/help_catalogue.py | | | ⚠ unverified — no direct "ai"/ai_cog reference found via grep; may be covered generically |
+* **G-7 `KnowledgeDomainSpec`** — required for BTD6 and Project Moon, and useful for generated help/settings diagnostics. It should declare `domain_key`, aliases, command/panel projections, source registry, trust/freshness policy, ingest/refresh actions, context builders, answerability/eval suites, diagnostics, AI routing/denial semantics, governance/audit boundaries, and visibility gates. Evidence: BTD6 exposes source registry/refresh/health/grounding commands in `btd6_events_cog.py:85-131`, AI-safe BTD6 context carries source/freshness labels in `btd6_ai_context_service.py:108-295`, and Project Moon mirrors the context/provenance seam in `projmoon_context_service.py:109-199`.
+* **G-8 `AITaskProfileSpec` / `AIProviderGatewaySpec`** — required for provider routing, task profiles, tool budgets, redaction, refusals, evals, review/preset feedback loops, and diagnostics. Evidence: `AITask`, `AIRequest`, `AIToolBudget`, `AIResponse`, and diagnostics contracts live in `core/runtime/ai/contracts.py:16-341`; provider/model routing is env + task driven in `core/runtime/ai/routing.py:28-136`; natural-language routing/context/refusal/provider orchestration is concentrated in `core/runtime/ai/natural_language_stage.py:220-1649`.
 
-**Unit kinds present:** command, panel, setting, listener, event, store, registry/entry_points, help (unverified)
-**Structural-pattern flags:** gateway (@commands.Cog.listener `on_raw_reaction_add`) listener + EventBus `bus.on`/`bus.emit` pub-sub (EVT_AI_REVIEW_LOGGED, ai_policy_mutation events); none of stateful game loop / wait_for wizard / scheduled loop / voice observed in these two cog files.
+These are **declaration families**, not approval to generate domain logic. Kernel generation should own the visible surfaces, policy gates, freshness/eval contracts, and provider/data-source wiring; deterministic calculators, parsers, source-specific fetchers, answer synthesis, and live moderation/audit seams remain explicit handler refs.
 
+### Lane D fit totals
+
+| Subsystem | Units | Tier 1/2 as-written | Fit as-written | Tier 1/2 with G-1…G-8 | Fit with amendments | Recommendation |
+|---|---:|---:|---:|---:|---:|---|
+| ai | 70 | 43 | 61% | 62 | 89% | redesign into AI platform specs; keep thin handlers |
+| btd6 | 78 | 42 | 54% | 66 | 85% | keep, improve as `KnowledgeDomainSpec` exemplar |
+| project_moon | 22 | 14 | 64% | 20 | 91% | improve/merge with knowledge-domain family |
+| help | 24 | 22 | 92% | 23 | 96% | keep as generated projection with overlay mutations |
+| settings | 28 | 26 | 93% | 27 | 96% | keep as generated config hub |
+| logging | 62 | 49 | 79% | 60 | 97% | keep; already spike exemplar for G-1/G-2/G-3 |
+| diagnostic | 65 | 39 | 60% | 56 | 86% | improve with `DiagnosticProviderSpec` catalogue |
+| ux_lab | 27 | 17 | 63% | 24 | 89% | keep as zero-write UX gallery/spec testbed |
+| utility | 21 | 15 | 71% | 18 | 86% | merge/simple utility command pack |
+| general | 22 | 16 | 73% | 19 | 86% | merge/simple content command pack |
+| proof_channel | 21 | 14 | 67% | 18 | 86% | improve as binding + timed-task surface |
+| **Total** | **440** | **297** | **68%** | **393** | **89%** | add G-7/G-8 before new-bot generation |
+
+## Proposed new amendments
+
+* **G-7 — `KnowledgeDomainSpec`:** `domain_key`, aliases, source registry, trust tier, freshness bucket policy, committed data refs, live data refs, ingestion/refresh routes, context builders, deterministic answerability rules, eval/probe suites, diagnostics providers, commands/panels/help projections, permission gates, audit boundaries.
+* **G-8 — `AITaskProfileSpec` + `AIProviderGatewaySpec`:** task id, provider/model routing, fallback provider, response mode, tool requirements/budgets, context builders, prompt/instruction profile, denial semantics, redaction contract, review/preset stores, diagnostics counters, eval suite, external-provider secret requirements.
+* **G-9 — `TimedTaskSpec`:** one-shot delayed task with key prefix, lifecycle cleanup, audit hooks, and recovery semantics. Needed by proof-channel timed unlocks and in-memory utility reminders; not covered by recurring `ManagedTaskSpec` alone.
+* **G-10 — `ModalFormSpec`:** Discord modal fields, validation, submit handler, result render, and audit declaration. Current `PanelActionSpec` covers a button opening a handler, but not reusable modal form schema for proof, utility, ux_lab, and generated settings/help editors.
 
 ---
 
-### btd6
-_cogs: disbot/cogs/btd6_cog.py, disbot/cogs/btd6_events_cog.py, disbot/cogs/btd6_ops_cog.py, disbot/cogs/btd6_reference_cog.py, disbot/cogs/btd6_strategy_cog.py_
+## ai
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !btd6menu | command | disbot/cogs/btd6_cog.py:171 | | | |
-| /btd6menu | command | disbot/cogs/btd6_cog.py:182 | | | |
-| !btd6events (group) | command | disbot/cogs/btd6_events_cog.py:38 | | | |
-| !btd6events live | command | disbot/cogs/btd6_events_cog.py:48 | | | |
-| !btd6events event | command | disbot/cogs/btd6_events_cog.py:58 | | | |
-| !btd6events leaderboard | command | disbot/cogs/btd6_events_cog.py:72 | | | |
-| !btd6events sources | command | disbot/cogs/btd6_events_cog.py:85 | | | |
-| !btd6events source-health | command | disbot/cogs/btd6_events_cog.py:90 | | | |
-| !btd6events latest-data | command | disbot/cogs/btd6_events_cog.py:99 | | | |
-| !btd6events refresh-source | command | disbot/cogs/btd6_events_cog.py:104 | | | |
-| !btd6events grounding | command | disbot/cogs/btd6_events_cog.py:123 | | | |
-| !btd6ops (group) | command | disbot/cogs/btd6_ops_cog.py:41 | | | |
-| !btd6ops readiness | command | disbot/cogs/btd6_ops_cog.py:52 | | | |
-| !btd6ops runs | command | disbot/cogs/btd6_ops_cog.py:59 | | | |
-| !btd6ops source_enable | command | disbot/cogs/btd6_ops_cog.py:71 | | | |
-| !btd6ops source_disable | command | disbot/cogs/btd6_ops_cog.py:84 | | | |
-| !btd6ops seed-data | command | disbot/cogs/btd6_ops_cog.py:97 | | | |
-| !btd6ops announcechannel | command | disbot/cogs/btd6_ops_cog.py:105 | | | |
-| !btd6ref (group) | command | disbot/cogs/btd6_reference_cog.py:37 | | | |
-| !btd6ref tower | command | disbot/cogs/btd6_reference_cog.py:47 | | | |
-| !btd6ref hero | command | disbot/cogs/btd6_reference_cog.py:51 | | | |
-| !btd6ref round | command | disbot/cogs/btd6_reference_cog.py:55 | | | |
-| !btd6ref income | command | disbot/cogs/btd6_reference_cog.py:65 | | | |
-| !btd6ref rbe | command | disbot/cogs/btd6_reference_cog.py:75 | | | |
-| !btd6ref relic | command | disbot/cogs/btd6_reference_cog.py:85 | | | |
-| !btd6ref ct | command | disbot/cogs/btd6_reference_cog.py:90 | | | |
-| !btd6strat (group) | command | disbot/cogs/btd6_strategy_cog.py:39 | | | |
-| !btd6strat browse | command | disbot/cogs/btd6_strategy_cog.py:49 | | | |
-| !btd6strat mine | command | disbot/cogs/btd6_strategy_cog.py:58 | | | |
-| !btd6strat strategy | command | disbot/cogs/btd6_strategy_cog.py:73 | | | |
-| !btd6strat strategy-audit | command | disbot/cogs/btd6_strategy_cog.py:90 | | | |
-| !btd6strat submit | command | disbot/cogs/btd6_strategy_cog.py:99 | | | |
-| !btd6strat pending | command | disbot/cogs/btd6_strategy_cog.py:111 | | | |
-| !btd6strat strategies | command | disbot/cogs/btd6_strategy_cog.py:135 | | | |
-| !btd6strat why-no-response | command | disbot/cogs/btd6_strategy_cog.py:144 | | | |
-| BTD6PanelView | panel/view | disbot/views/btd6/panel.py:159 | | | |
-| BTD6AdminView | panel/view | disbot/views/btd6/admin_panel.py:86 | | | |
-| BTD6CategoryView | panel/view | disbot/views/btd6/hub_panels.py:291 | | | |
-| CTGroupConfirmView | panel/view | disbot/views/btd6/ct_group_flow.py:109 | | | |
-| CTGroupEntryView | panel/view | disbot/views/btd6/ct_group_flow.py:218 | | | |
-| HeroBrowserView / HeroDetailView | panel/view | disbot/views/btd6/hero_browser_view.py:196,213 | | | |
-| HeroStatsView | panel/view | disbot/views/btd6/hero_stats_view.py:55 | | | |
-| LeaderboardBrowserView/KindListView/DetailView | panel/view | disbot/views/btd6/leaderboard_browser_view.py:200,208,226 | | | |
-| LiveOverviewView/LiveEventsBrowserView/EventDetailView | panel/view | disbot/views/btd6/live_events_view.py:327,448,486 | | | |
-| ParagonStatsView | panel/view | disbot/views/btd6/paragon_stats_view.py:145 | | | |
-| ParagonCalculatorView/ParagonRequirementsView | panel/view | disbot/views/btd6/paragon_view.py:493,594 | | | |
-| StrategyReviewView | panel/view | disbot/views/btd6/strategy_review.py:133 (extends discord.ui.View directly, ⚠ unverified why) | | | |
-| TowerBrowserView/TowerDetailView | panel/view | disbot/views/btd6/tower_browser_view.py:264,305 | | | |
-| TowerEventsView | panel/view | disbot/views/btd6/tower_events_view.py:43 | | | |
-| TowerStatsView | panel/view | disbot/views/btd6/tower_stats_view.py:98 | | | |
-| BTD6_STRATEGY_SUBMISSION_CHANNEL | setting | disbot/utils/settings_keys/btd6.py:31 | | | |
-| BTD6_CT_GROUP_ID | setting | disbot/utils/settings_keys/btd6.py:33 | | | |
-| BTD6_VERSION_ANNOUNCEMENT_CHANNEL | setting | disbot/utils/settings_keys/btd6.py:35 | | | |
-| btd6 SUBSYSTEMS capabilities (query.ask, strategy.view, diagnostics.view, settings.configure) | setting | disbot/utils/subsystem_registry.py:801-805 | | | |
-| BTD6EventsCog / BTD6OpsCog / BTD6ReferenceCog / BTD6StrategyCog / BTD6Cog classes | listener (Cog registration) | disbot/cogs/btd6_cog.py:64; btd6_events_cog.py:26; btd6_ops_cog.py:31; btd6_reference_cog.py:24; btd6_strategy_cog.py:27 | | | |
-| BTD6Cog.cog_load auto-seed check | listener/lifecycle | disbot/cogs/btd6_cog.py:70,112,115 | | | |
-| btd6.version_detected subscriber (_on_version_detected) | listener | disbot/services/btd6_version_announce.py:111 | | | |
-| btd6.version_detected emit | event | disbot/services/btd6_patch_service.py:150-151 | | | |
-| btd6_data.py table(s) — game data blobs store | store | disbot/utils/db/btd6_data.py:1 (⚠ unverified exact CREATE TABLE — no CREATE TABLE found in file, likely migration-owned) | | | |
-| btd6_sources.py table(s) — source registry/health store | store | disbot/utils/db/btd6_sources.py:1 (⚠ unverified) | | | |
-| btd6_strategies.py table(s) — strategy submissions store | store | disbot/utils/db/btd6_strategies.py:1 (⚠ unverified) | | | |
-| help entries for btd6 commands | help | docs/help-command-surface-map.md (⚠ unverified line-level; grep hit, not confirmed per-command) | | | |
+### Surface-unit ledger
 
-**Unit kinds present:** command, panel, setting, listener, event, store, help
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| `!ai`, `!aimenu`, `/ai`, `/aimenu` panel/status/readiness/settings/policy/diagnostics/providers/routing/forget/support-report | command family | `ai_cog.py:365-780` | 2 | 1 | Mostly command→panel/provider routes; slash/prefix duplicate namespace needs G-6; cooldown-free admin commands are generated. |
+| AI panel/settings/help views | panel/help | `ai_cog.py:151-159`, `ai_cog.py:788-793`, `views/ai/panel.py` | 2 | 1 | Generated panel projection over AI diagnostics/settings once AITaskProfileSpec exists. |
+| `!aireview` channel/off/list/export/resolve/preset add/from/list/remove | command family | `ai_review_cog.py:172-490` | 3 | 2 | Review/preset workflows recur; become declared AnswerReviewLog/PresetAnswerStore operations under G-8, with export/resolve as thin handlers. |
+| correction reply stage + 👎 reaction listener | listener/context path | `ai_review_cog.py:50-61`, `ai_review_cog.py:118-160` | 3 | 2 | G-1 declares reaction listener; correction stage remains handler but can be registered as an AI review ingestion path. |
+| `EVT_AI_REVIEW_LOGGED` subscription/emits + policy mutation emits | event/listener | `ai_review_cog.py:104-114`, `services/ai_review_log_service.py:297`, `services/ai_policy_mutation.py:382,544` | 2 | 1 | EventSpec/EventSubscription projections; handler code only for payload rendering. |
+| AI settings keys | setting | `utils/settings_keys/ai.py:10-35` | 1 | 1 | Plain settings; generated settings hub. |
+| AI policy, review-log, preset stores | store | `migrations/039_ai_policy.sql`, `migrations/100_ai_review_log.sql`, `migrations/102_ai_answer_presets.sql`, `utils/db/ai_presets.py:26` | 2 | 1 | StoreSpec plus sole-writer/projection boundaries. |
+| AI tasks, provider routing, tool budget, response/evidence contracts | AI task/platform | `contracts.py:16-341`, `routing.py:28-136` | 3 | 2 | Missing as-written; G-8 makes task/provider routing declarative while provider calls stay handler refs. |
+| Natural-language router, BTD6/Project Moon/YouTube context gathering/refusals | AI routing/context | `natural_language_stage.py:220-1649` | 3 | 2 | G-8 + G-7 declare routing, context builders, denial semantics; NL classification and rendering remain escape hatches. |
+| Diagnostics/readiness snapshot | diagnostic provider | `ai_cog.py:183-246`, `contracts.py:341` | 2 | 1 | DiagnosticProviderSpec. |
 
-**Structural-pattern flags:** gateway/EventBus listener (`bus.on(EVT_BTD6_VERSION_DETECTED, ...)` in disbot/services/btd6_version_announce.py:111) driving a version-announcement event chain; cog_load-time auto-seed lifecycle check (disbot/cogs/btd6_cog.py:70-115) rather than a scheduled `@tasks.loop`; heavy multi-step browser/hub panel views (Hero/Tower/Leaderboard/Live-events/Paragon browsers) implying wizard-like paginated navigation, though no explicit `wait_for` was found in the grepped cogs. No `@bot.event` or `@tasks.loop` found directly in the btd6 cog files (⚠ unverified exhaustive — only cogs/services named `btd6*` were grepped, not the full `disbot/cogs/btd6/` package internals).
+**Manifest sketch**
+
+```python
+SubsystemManifest(
+  key="ai",
+  commands=(CommandSpec("ai", PREFIX, route=PanelRef("ai.panel")), CommandSpec("ai diagnostics", PREFIX, route=PanelRef("ai.diagnostics")), ...),
+  panels=(PanelSpec("ai.panel", body=(BlockSpec("fields", ProviderRef("ai.status")),)),),
+  settings=(SettingSpec("AI_ENABLED"), SettingSpec("AI_DEFAULT_PROVIDER"), SettingSpec("AI_REVIEW_CHANNEL"), ...),
+  stores=(StoreSpec("ai_policy"), StoreSpec("ai_review_log"), StoreSpec("ai_answer_presets")),
+  events=(EventSpec("ai.review_logged"), EventSpec("ai.policy_changed")),
+  diagnostics=(DiagnosticProviderSpec("ai.readiness"), DiagnosticProviderSpec("ai.routing")),
+  ai_tasks=(AITaskProfileSpec("btd6.answer", context=ProviderRef("btd6.context"), eval_suite="btd6_qa"), ...),
+  ai_gateway=AIProviderGatewaySpec(providers=("openai", "anthropic"), redaction="required", fallback_env="AI_FALLBACK_PROVIDER"),
+)
+```
+
+**Tier-3 disposition:** external-provider calls, natural-language classification, provider SDK calls, prompt rendering, tool execution, and answer synthesis remain intentional handler refs; review/preset workflow, event wiring, task profiles, redaction, and diagnostics move to G-8.
+
+**Structural flags:** AI external-provider calls ✅; natural-language routing ✅; eval/answerability contracts partial; governance/visibility gates ✅; generated help/settings diagnostics ✅; event/listener wiring ✅.
+
+**MAP → RECONSIDER → SIMULATE → OPTIMIZE:** keep the platform contract but redesign as `AIProviderGatewaySpec` + `AITaskProfileSpec`; dependency layer core/runtime + services; done when every task has provider/fallback/context/eval/redaction/review declarations and CI proves no unredacted request path; outperform target pending Lane F.
 
 ---
 
-### project_moon
-_cogs: disbot/cogs/project_moon_cog.py_
+## btd6
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !pm | command (group) | disbot/cogs/project_moon_cog.py:74 | | | |
-| /pm | command (slash) | disbot/cogs/project_moon_cog.py:175 | | | |
-| !pm lookup (aliases: search, what) | command (subcommand) | disbot/cogs/project_moon_cog.py:84 | | | |
-| !pm list | command (subcommand) | disbot/cogs/project_moon_cog.py:100 | | | |
-| !pm origins (aliases: origin, literary) | command (subcommand) | disbot/cogs/project_moon_cog.py:139 | | | |
-| !pm sinner (aliases: sinners) | command (subcommand) | disbot/cogs/project_moon_cog.py:144 | | | |
-| !pm sin (aliases: sins, affinity) | command (subcommand) | disbot/cogs/project_moon_cog.py:149 | | | |
-| !pm status (aliases: statuses, keyword) | command (subcommand) | disbot/cogs/project_moon_cog.py:154 | | | |
-| !pm ego (aliases: grade) | command (subcommand) | disbot/cogs/project_moon_cog.py:159 | | | |
-| !pm damage (aliases: damagetype) | command (subcommand) | disbot/cogs/project_moon_cog.py:164 | | | |
-| !pm mechanic (aliases: mechanics, combat) | command (subcommand) | disbot/cogs/project_moon_cog.py:169 | | | |
-| LimbusBrowseView | panel/view | disbot/views/projmoon/browse.py:185 | | | |
-| _KindButton | panel/view (component) | disbot/views/projmoon/browse.py:140 | | | |
-| _OverviewButton | panel/view (component) | disbot/views/projmoon/browse.py:155 | | | |
-| _OriginsButton | panel/view (component) | disbot/views/projmoon/browse.py:170 | | | |
-| build_help_menu_view | help hook (help-menu direct-nav) | disbot/cogs/project_moon_cog.py:191 | | | |
-| project_moon.lookup.view (entry_points/help metadata) | setting/registry entry | disbot/utils/subsystem_registry.py:808 | | | |
+### Surface-unit ledger
 
-**Unit kinds present:** command, panel/view, help hook, setting/registry entry.
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| `!btd6menu` and `/btd6menu` | command/panel | `btd6_cog.py:171-198` | 2 | 1 | Command→panel + help projection. |
+| `!btd6events` live/event/leaderboard/sources/source-health/latest-data/refresh-source/grounding | command/diagnostic/data-source | `btd6_events_cog.py:38-131` | 3 | 2 | G-7 declares source registry, freshness, refresh and grounding inspection; refresh handler remains source-specific. |
+| `!btd6ops` readiness/runs/source_enable/source_disable/seed-data/announcechannel | command/ops/ingestion | `btd6_ops_cog.py:41-105` | 3 | 2 | G-7 ingestion/admin actions + governance gates; seed/toggle handlers stay service refs. |
+| `!btd6ref` tower/hero/round/income/rbe/relic/ct | command/knowledge query | `btd6_reference_cog.py:37-90` | 3 | 2 | Deterministic query routes over declared KnowledgeDomainSpec. |
+| `!btd6strat` browse/mine/strategy/audit/submit/pending/why-no-response | command/store/AI review | `btd6_strategy_cog.py:39-161` | 3 | 2 | Strategy store/review workflow is declarable; review extraction remains handler/AI task. |
+| BTD6 panel/admin/category/tower/hero/live/leaderboard/paragon/strategy views | panel/view | `views/btd6/*.py` (e.g. `panel.py:159`, `admin_panel.py:86`, `tower_browser_view.py:264`) | 2 | 1 | Generated panels over knowledge-domain read providers, except calculators/forms. |
+| settings and capabilities | setting/gate | `utils/settings_keys/btd6.py:31-35`, `utils/subsystem_registry.py:801-805` | 1 | 1 | Settings/capabilities are declaration data. |
+| source registry, snapshots, facts, blobs, strategies, ingestion runs | store/data source | `utils/db/btd6_sources.py`, `utils/db/btd6_data.py`, `utils/db/btd6_strategies.py`, BTD6 migrations | 2 | 1 | StoreSpec + G-7 source registry. |
+| version detected emit/subscriber | event/listener | `services/btd6_patch_service.py:150-151`, `services/btd6_version_announce.py:111` | 3 | 2 | AnnouncementRouteSpec/G-3 + G-7 source event. |
+| AI context summaries/source/freshness/facts | context builder | `btd6_ai_context_service.py:108-295`, `btd6_ai_context_service.py:528-648` | 3 | 2 | Core G-7 evidence: context builder + freshness/trust rules. |
+| evals/probes/refresh scripts | eval/ingestion | `scripts/run_evals.py`, `scripts/btd6_probe.py`, `scripts/fetch_btd6_wiki_data.py`, `scripts/parse_gamedata.py` | 3 | 2 | Declare eval and ingestion paths; source-specific parser/fetcher code remains handlers. |
 
-**Structural-pattern flags:** none obvious — read-only, deterministic reference cog; no @bot.event / bus.on listener, no bus.emit / emit_audit_action event, no DB store (grep of utils/db + migrations found no project_moon-owned table — "No writes, no DB, no AI gateway" per module docstring, disbot/cogs/project_moon_cog.py:16), no scheduled loop, no voice, no wait_for wizard, no settings_keys constant (subsystem_registry entries above are metadata/entry-points, not a db.get_setting key — ⚠ unverified whether any settings_keys constant exists elsewhere for this subsystem, grep found none).
+**Manifest sketch**
 
----
+```python
+KnowledgeDomainSpec(
+  domain_key="btd6", aliases=("btd6", "bloons"),
+  commands=("btd6menu", "btd6events sources", "btd6ref tower", "btd6strat submit", ...),
+  panels=("btd6.panel", "btd6.sources", "btd6.tower_browser", "btd6.strategy_review"),
+  sources=(SourceSpec("ninja_kiwi", trust="official", freshness="live"), SourceSpec("committed_csv", trust="repo", freshness="release"), SourceSpec("wiki_formula", trust="derived", freshness="manual")),
+  stores=("btd6_source_registry", "btd6_source_snapshots", "btd6_facts", "btd6_data_blobs", "btd6_strategies"),
+  ingest=(IngestAction("refresh-source", handler="btd6.refresh_source"), IngestAction("seed-data", handler="btd6.seed_data")),
+  context_builders=(ContextBuilderSpec("btd6.answer", provider="btd6_ai_context"),),
+  evals=(EvalSuiteSpec("btd6_qa", command="scripts/run_evals.py --btd6"), ProbeSpec("btd6_probe")),
+  diagnostics=("source-health", "latest-data", "grounding"),
+)
+```
 
-### help
-_cogs: disbot/cogs/help_cog.py, disbot/cogs/help/panels.py, disbot/cogs/help/route.py (support modules, not a Cog subclass)_
+**Tier-3 disposition:** propose G-7. Source fetchers, parsers, formulas, paragon calculators, and strategy review AI remain handler refs; source registry/freshness/trust/context/eval surfaces should be declared.
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !help | command | disbot/cogs/help_cog.py:284 | | | |
-| /help | command | disbot/cogs/help_cog.py:370 | | | |
-| HelpCategoryView | panel/view | disbot/cogs/help/panels.py:38 | | | |
-| HelpCategoryView._on_select | listener (component callback) | disbot/cogs/help/panels.py:94 | | | |
-| HelpEntityEditorView | panel/view | disbot/views/help/editor.py:285 | | | |
-| EntityPickerView | panel/view | disbot/views/help/editor.py:435 | | | |
-| _ResetAllConfirmView | panel/view | disbot/views/help/editor.py:526 | | | |
-| HelpEditorHomeView | panel/view | disbot/views/help/editor.py:567 | | | |
-| HomeMessageBuilderView | panel/view | disbot/views/help/home_builder.py:158 | | | |
-| HelpEntityEditorView Hide/Rename/Reset buttons | panel control | disbot/views/help/editor.py:309-373 | | | |
-| HelpEditorHomeView Hubs/Subsystems/Reset-all buttons | panel control | disbot/views/help/editor.py:570-614 | | | |
-| HomeMessageBuilderView Edit/Preview/Save/Reset buttons | panel control | disbot/views/help/home_builder.py:217-337 | | | |
-| help.menu.view | setting/capability | disbot/utils/subsystem_registry.py:1071 | | | |
-| help.settings.configure | setting/capability | disbot/utils/subsystem_registry.py:1072 | | | |
-| set_overlay_fields | mutation (hide/rename/redescribe entity) | disbot/services/help_overlay_mutation.py:150 | | | |
-| set_home_message | mutation (Help-Home title/body/color) | disbot/services/help_overlay_mutation.py:238 | | | |
-| reset_guild_overlay | mutation (reset all overlay rows) | disbot/services/help_overlay_mutation.py:326 | | | |
-| audit.action_recorded (help overlay writes) | event | disbot/services/help_overlay_mutation.py:363 (via services/audit_events.emit_audit_action) | | | |
-| help_overlay table | store | disbot/migrations/064_help_overlay.sql:26 (widened 067_help_overlay_home_message.sql) | | | |
-| get_guild_help_overlay | store accessor / cache | disbot/services/help_overlay.py:148 | | | |
-| build_help_catalogue | help catalogue builder | disbot/services/help_catalogue.py:116 | | | |
-| build_single_command_embed / build_not_found_embed | help entry rendering | disbot/cogs/help/route.py:166,192 | | | |
+**Structural flags:** knowledge trust/freshness ✅; eval/answerability ✅; diagnostics ✅; generated help/settings ✅; event/listener wiring ✅; scheduled refresh loops are external workflow/script-driven, not an in-process loop in inspected cogs.
 
-**Unit kinds present:** command, panel/view, panel control (button), setting/capability, mutation, event, store, help-catalogue/rendering helper
-
-**Structural-pattern flags:** none obvious (no @bot.event/bus.on listener, no wait_for wizard, no scheduled loop, no voice); Help editor views are persistent-view button/select panels reached from the Server Management hub, not a gateway listener.
-
+**Recommendation:** keep/improve; optimal form is the exemplar `KnowledgeDomainSpec`; dependency layer services + data + AI context; done when each answer block is source-labelled, each source has freshness, and refresh/eval probes are CI/ops-visible; outperform pending Lane F.
 
 ---
 
-### settings
-_cogs: disbot/cogs/settings_cog.py_
+## project_moon
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !settings | command (prefix group) | disbot/cogs/settings_cog.py:121 | | | |
-| !settings access | command (subcommand) | disbot/cogs/settings_cog.py:161 | | | |
-| /settings | command (slash) | disbot/cogs/settings_cog.py:194 | | | |
-| build_help_menu_view | help/nav hook | disbot/cogs/settings_cog.py:174 | | | |
-| SettingsHubView | panel/view (hub) | disbot/views/settings/hub.py:330 | | | |
-| _SubsystemSelect | panel/view (component) | disbot/views/settings/hub.py:138 | | | |
-| _GroupPageButton | panel/view (component) | disbot/views/settings/hub.py:191 | | | |
-| _OpenNeedsSetup | panel/view (component) | disbot/views/settings/hub.py:219 | | | |
-| _OpenInvalid | panel/view (component) | disbot/views/settings/hub.py:237 | | | |
-| _OpenMissingBindings | panel/view (component) | disbot/views/settings/hub.py:258 | | | |
-| _OpenAudit | panel/view (component) | disbot/views/settings/hub.py:279 | | | |
-| _OpenCommandAccess | panel/view (component) | disbot/views/settings/hub.py:300 | | | |
-| SubsystemSettingsView | panel/view (drill-down) | disbot/views/settings/subsystem_view.py:609 | | | |
-| RecentChangesView | panel/view (audit) | disbot/views/settings/audit_view.py:130 | | | |
-| InvalidSettingsView | panel/view | disbot/views/settings/invalid_settings.py:111 | | | |
-| MissingBindingsView | panel/view | disbot/views/settings/missing_bindings.py:103 | | | |
-| NeedsSetupView | panel/view | disbot/views/settings/needs_setup.py:131 | | | |
-| CommandAccessView | panel/view | disbot/views/settings/edit_command_access.py:492 | | | |
-| ChannelSettingSelectView | panel/view (discord.ui.View direct) | disbot/views/settings/edit_channel.py:157 | | | |
-| RoleSettingSelectView | panel/view (discord.ui.View direct) | disbot/views/settings/edit_role.py:155 | | | |
-| NumericPresetsView | panel/view (discord.ui.View direct) | disbot/views/settings/edit_number_presets.py:161 | | | |
-| NumberSettingModal | panel/view (modal) | disbot/views/settings/edit_number.py:21 | | | |
-| TextSettingModal | panel/view (modal) | disbot/views/settings/edit_text.py:19 | | | |
-| _DisabledHelpHookView | panel/view (fallback) | disbot/cogs/settings_cog.py:216 | | | |
-| settings.manager.view | setting/capability | disbot/utils/subsystem_registry.py (SUBSYSTEMS["settings"]["capabilities"]) | | | |
-| settings.manager_cog.enabled | setting (feature flag) | disbot/cogs/settings_cog.py:41 (`_FLAG_NAME`) | | | |
-| guild_settings | store (table, KV settings) | disbot/utils/db/settings.py:1; CREATE TABLE disbot/utils/db/migrations.py:272 | | | |
-| get_setting / set_setting | store (accessor) | disbot/utils/db/settings.py:21,29 | | | |
-| set_value_with_audit | store (accessor, audited write) | disbot/utils/db/settings_audit.py:33 | | | |
-| list_recent_for_guild / list_recent_for_key | store (accessor, audit history) | disbot/utils/db/settings_audit.py:133,155 | | | |
-| settings.changed (EVT_SETTINGS_CHANGED) | event (bus.emit) | disbot/services/settings_mutation.py:614 | | | |
-| emit_audit_action (settings mutation) | event (audit) | disbot/services/settings_mutation.py:385 | | | |
+### Surface-unit ledger
 
-**Unit kinds present:** command, panel/view, setting, store, event, help
-**Structural-pattern flags:** wait_for wizard-style modal flows (NumberSettingModal, TextSettingModal use discord.ui.Modal submit, not raw wait_for); no @bot.event/bus.on listener owned by this subsystem (it only emits `settings.changed`, does not subscribe); no scheduled loop; no voice; no stateful game loop. Otherwise: none obvious.
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| `!pm`/`/pm`, lookup/list/origins/sinner/sin/status/ego/damage/mechanic | command family | `project_moon_cog.py:74-175` | 3 | 2 | Knowledge query surface; G-7 makes category/query map declarative. |
+| `LimbusBrowseView` and category buttons | panel/view | `views/projmoon/browse.py:140-185` | 2 | 1 | Generated browse panel over domain registry/categories. |
+| help hook and registry capability | help/gate | `project_moon_cog.py:188-191`, `utils/subsystem_registry.py:808` | 1 | 1 | Help projection. |
+| committed structural data + keyword helpers | data source | `project_moon_cog.py:13-18`, `data/projmoon/`, `utils/projmoon/` | 3 | 2 | G-7 declares committed source registry/trust. |
+| AI grounding context/provenance | context builder | `projmoon_context_service.py:109-199` | 3 | 2 | Same G-7 context-builder pattern as BTD6. |
+
+**Manifest sketch**
+
+```python
+KnowledgeDomainSpec(
+  domain_key="project_moon", aliases=("pm", "limbus", "projectmoon"),
+  commands=("pm lookup", "pm list", "pm sinner", "pm status", ...),
+  sources=(SourceSpec("limbus_structural_data", trust="repo_committed", freshness="patch_stable"),),
+  context_builders=(ContextBuilderSpec("projmoon.answer", provider="projmoon_context_service"),),
+  panels=("project_moon.browse",), diagnostics=("source coverage",),
+)
+```
+
+**Tier-3 disposition:** G-7. No DB/write/store observed; fixture load/search logic remains handler code.
+
+**Flags/recommendation:** knowledge-source trust ✅; freshness coarse/patch-stable; natural-language grounding partial through AI stage; keep/improve and merge with BTD6 domain grammar; done when source registry and eval/answerability probes match BTD6.
 
 ---
 
-### logging
-_cogs: disbot/cogs/logging_cog.py, disbot/cogs/logging/panel.py, disbot/cogs/logging/select_view.py, disbot/cogs/logging/provision_view.py, disbot/cogs/logging/routes_panel.py, disbot/cogs/logging/schemas.py_
+## help
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !logging | command (group) | disbot/cogs/logging_cog.py:313 | | | |
-| !logging status | command | disbot/cogs/logging_cog.py:329 | | | |
-| !logging set <kind> | command | disbot/cogs/logging_cog.py:335 | | | |
-| !logging create <kind> | command | disbot/cogs/logging_cog.py:372 | | | |
-| !logging routes | command | disbot/cogs/logging_cog.py:401 | | | |
-| !logging test | command | disbot/cogs/logging_cog.py:421 | | | |
-| on_message_delete | listener | disbot/cogs/logging_cog.py:170 | | | |
-| on_message_edit | listener | disbot/cogs/logging_cog.py:179 | | | |
-| on_member_join | listener | disbot/cogs/logging_cog.py:199 | | | |
-| on_member_remove | listener | disbot/cogs/logging_cog.py:212 | | | |
-| on_member_update | listener | disbot/cogs/logging_cog.py:221 | | | |
-| on_audit_log_entry_create | listener | disbot/cogs/logging_cog.py:257 | | | |
-| on_voice_state_update | listener | disbot/cogs/logging_cog.py:267 | | | |
-| on_raw_message_delete | listener | disbot/cogs/logging_cog.py:285 | | | |
-| _on_moderation_action (EVT_MOD_ACTION → private log) | event listener (bus.on) | disbot/services/server_logging.py:1854 | | | |
-| _on_moderation_action_public (EVT_MOD_ACTION → public log) | event listener (bus.on) | disbot/services/server_logging.py:1855 | | | |
-| _on_audit_action (EVT_AUDIT_ACTION_RECORDED) | event listener (bus.on) | disbot/services/server_logging.py:1856 | | | |
-| LoggingPanelView | panel/view | disbot/cogs/logging/panel.py:49 | | | |
-| LogChannelSelectView | panel/view | disbot/cogs/logging/select_view.py:129 | | | |
-| LogChannelProvisionView | panel/view | disbot/cogs/logging/provision_view.py:181 | | | |
-| LoggingRoutesView | panel/view | disbot/cogs/logging/routes_panel.py:223 | | | |
-| _RouteSelect | panel/view (sub-component) | disbot/cogs/logging/routes_panel.py:188 | | | |
-| _LogChannelSelect | panel/view (sub-component) | disbot/cogs/logging/select_view.py:90 | | | |
-| _ClearBindingButton | panel/view (sub-component) | disbot/cogs/logging/select_view.py:114 | | | |
-| _ConfirmCreateButton | panel/view (sub-component) | disbot/cogs/logging/provision_view.py:144 | | | |
-| _CancelButton | panel/view (sub-component) | disbot/cogs/logging/provision_view.py:160 | | | |
-| LOGGING_ENABLED | setting | disbot/utils/settings_keys/logging.py:10 | | | |
-| LOGGING_MOD_CHANNEL | setting | disbot/utils/settings_keys/logging.py:13 | | | |
-| LOGGING_CLEANUP_CHANNEL | setting | disbot/utils/settings_keys/logging.py:17 | | | |
-| LOGGING_AUTO_CREATE_CHANNELS | setting | disbot/utils/settings_keys/logging.py:22 | | | |
-| LOGGING_MESSAGES_ENABLED | setting | disbot/utils/settings_keys/logging.py:43 | | | |
-| LOGGING_MEMBERS_ENABLED | setting | disbot/utils/settings_keys/logging.py:44 | | | |
-| LOGGING_ROLES_ENABLED | setting | disbot/utils/settings_keys/logging.py:45 | | | |
-| LOGGING_MODERATION_ENABLED | setting | disbot/utils/settings_keys/logging.py:73 | | | |
-| LOGGING_CHANNELS_ENABLED | setting | disbot/utils/settings_keys/logging.py:74 | | | |
-| LOGGING_SERVER_ENABLED | setting | disbot/utils/settings_keys/logging.py:75 | | | |
-| LOGGING_VOICE_ENABLED | setting | disbot/utils/settings_keys/logging.py:76 | | | |
-| LOGGING_EVENT_ROUTING | setting | disbot/utils/settings_keys/logging.py:83 | | | |
-| LOGGING_IGNORED_CHANNELS | setting | disbot/utils/settings_keys/logging.py:91 | | | |
-| LOGGING_IGNORED_USERS | setting | disbot/utils/settings_keys/logging.py:92 | | | |
-| capability logging.settings.configure | setting (capability) | disbot/utils/subsystem_registry.py:1205 | | | |
-| capability logging.channel.bind | setting (capability) | disbot/utils/subsystem_registry.py:1206 | | | |
-| capability logging.channel.create | setting (capability) | disbot/utils/subsystem_registry.py:1207 | | | |
-| guild key-value settings store (no dedicated logging table found) | store | disbot/utils/db/ ⚠ unverified — no `log_bindings`/`log_channel` table located | | | |
-| help entry for `logging` subsystem | help | disbot/services/help_catalogue.py ⚠ unverified — no explicit "logging" string match found in help_catalogue.py | | | |
+### Surface-unit ledger
 
-**Unit kinds present:** command, listener, event listener (bus.on), panel/view, setting (incl. capability), store, help
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| `!help` and `/help` | command | `help_cog.py:282-370` | 2 | 1 | G-4 command cooldown; otherwise generated projection. |
+| Help dropdown/category route | panel/listener | `cogs/help/panels.py:38-94`, `cogs/help/route.py:166-192` | 2 | 1 | Panel/select + renderer providers. |
+| Help overlay editor/home-builder/reset controls | panel/mutation | `views/help/editor.py:285-614`, `views/help/home_builder.py:158-337` | 2 | 2 | Generated forms/panels; modal/editor specifics benefit from G-10. |
+| overlay writes + audit event | store/event | `services/help_overlay_mutation.py:150-363`, `migrations/064_help_overlay.sql:26` | 2 | 1 | StoreSpec + EventSpec. |
+| build catalogue/single-command/not-found renderers | help projection | `services/help_catalogue.py:116`, `cogs/help/route.py:166-192` | 1 | 1 | Help-as-projection. |
 
-**Structural-pattern flags:** gateway (`@commands.Cog.listener()` on 8 Discord events: message delete/edit, member join/remove/update, audit-log-entry, voice-state, raw-message-delete) + EventBus `bus.on(...)` listener (3 subscriptions in server_logging.py) + select/confirm wizard-style views (LogChannelSelectView, LogChannelProvisionView). No stateful game loop, no scheduled loop, no voice-channel-audio usage (voice unit here is only voice-state-change logging, not audio).
+**Manifest sketch:** `SubsystemManifest(key="help", commands=(CommandSpec("help", cooldown=(3,10,"user")),), panels=(PanelSpec("help.home"), PanelSpec("help.editor")), stores=(StoreSpec("help_overlay"),), events=(EventSpec("audit.action_recorded"),), help=HelpEntrySpec(projected=True))`.
 
+**Disposition/recommendation:** no new AI/knowledge gap; G-10 improves editor forms. Keep. Done when all subsystem manifests project into help and overlay drift tests pass.
 
 ---
 
-### diagnostic
-_cogs: disbot/cogs/diagnostic_cog.py, disbot/cogs/diagnostic/platform_group.py (+ _platform_embeds.py, _log_buffer.py, _backfill.py, _helpers.py)_
+## settings
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !diagnostics / diag | command (prefix) | disbot/cogs/diagnostic_cog.py:57 | | | |
-| !lifecycle / lc | command (prefix) | disbot/cogs/diagnostic_cog.py:64 | | | |
-| /platform | command (slash) | disbot/cogs/diagnostic_cog.py:116 | | | |
-| !listcmds / list_commands_detailed | command (prefix) | disbot/cogs/diagnostic_cog.py:137 | | | |
-| !findcmd / find_command | command (prefix) | disbot/cogs/diagnostic_cog.py:148 | | | |
-| !validatejson / validate_json_files | command (prefix) | disbot/cogs/diagnostic_cog.py:183 | | | |
-| !checkdb / check_database | command (prefix) | disbot/cogs/diagnostic_cog.py:190 | | | |
-| !diag_status / diagnostic_bot_status | command (prefix) | disbot/cogs/diagnostic_cog.py:201 | | | |
-| !latency | command (prefix) | disbot/cogs/diagnostic_cog.py:208 | | | |
-| !sysinfo / system_info | command (prefix) | disbot/cogs/diagnostic_cog.py:220 | | | |
-| !querylogs / query_logs | command (prefix) | disbot/cogs/diagnostic_cog.py:231 | | | |
-| !errors / recent_errors | command (prefix) | disbot/cogs/diagnostic_cog.py:238 | | | |
-| !testnotify / test_notification | command (prefix) | disbot/cogs/diagnostic_cog.py:245 | | | |
-| !platform (group) | command (group) | disbot/cogs/diagnostic/platform_group.py:110 | | | |
-| platform status | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:131 | | | |
-| platform setup_readiness | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:137 | | | |
-| platform anchors | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:156 | | | |
-| platform identity | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:162 | | | |
-| platform runtime | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:179 | | | |
-| platform health | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:185 | | | |
-| platform startup | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:207 | | | |
-| platform findings | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:234 | | | |
-| platform finding <action> | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:267 | | | |
-| platform lifecycle | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:315 | | | |
-| platform caches | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:321 | | | |
-| platform media | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:327 | | | |
-| platform economy | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:340 | | | |
-| platform economy_trend | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:351 | | | |
-| platform locks | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:363 | | | |
-| platform tasks | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:369 | | | |
-| platform views | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:375 | | | |
-| platform slow | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:381 | | | |
-| platform automation | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:387 | | | |
-| platform sessions | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:402 | | | |
-| platform schemas | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:416 | | | |
-| platform settings_registry | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:422 | | | |
-| platform setting <subsystem> <name> | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:428 | | | |
-| platform customization | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:442 | | | |
-| platform provisioning | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:448 | | | |
-| platform participation_schemas | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:454 | | | |
-| platform resource_requirements | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:460 | | | |
-| platform bindings | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:466 | | | |
-| platform resources | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:472 | | | |
-| platform flags | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:478 | | | |
-| platform flag_manager | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:484 | | | |
-| platform migrations | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:507 | | | |
-| platform consistency | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:513 | | | |
-| platform backfill <action> | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:522 | | | |
-| platform command_access | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:533 | | | |
-| platform access | command (subcommand) | disbot/cogs/diagnostic/platform_group.py:559 | | | |
-| _PaginatorView | panel/view | disbot/views/diagnostic/paginator.py:21 | | | generic paginated embed view, BaseView subclass |
-| _DiagnosticsHubView | panel/view | disbot/views/diagnostic/hub_panel.py:41 | | | diagnostics hub panel, HubView subclass, opened by !diagnostics |
-| FlagManagerView | panel/view | disbot/views/diagnostic/flag_manager.py:304 | | | feature-flag manager panel, HubView subclass |
-| AutomationPanelView | panel/view | disbot/views/diagnostic/automation_panel.py:396 | | | automation status panel, HubView subclass |
-| _PlatformHubView | panel/view | disbot/views/diagnostic/platform_panel.py:332 | | | platform hub panel, HubView subclass opened by !platform |
-| diagnostic.health.view | setting/capability | disbot/utils/subsystem_registry.py:1094 | | | capability entry in SUBSYSTEMS["diagnostic"] |
-| diagnostic.latency.check | setting/capability | disbot/utils/subsystem_registry.py:1095 | | | capability entry in SUBSYSTEMS["diagnostic"] |
-| btd6.diagnostics.view | setting/capability (⚠ unverified subsystem owner) | disbot/utils/subsystem_registry.py:803 | | | referenced under related capability list, unclear which SUBSYSTEMS entry owns it |
-| health_findings store | store | disbot/utils/db/health_findings.py:1 | | | DB accessors for operational health findings table |
-| 057_operational_health_findings | store (migration) | disbot/migrations/057_operational_health_findings.sql:1 | | | creates operational_health_findings table |
-| platform_consistency store (⚠ related, not solely owned) | store | disbot/utils/db/platform_consistency.py:1 | | | consistency-layer DB accessors, adjacent subsystem per folio |
-| send_panel (diagnostics hub) | panel entry point | disbot/cogs/diagnostic_cog.py:60 | | | opens _DiagnosticsHubView via send_panel |
-| send_panel (platform hub) | panel entry point | disbot/cogs/diagnostic/platform_group.py:127 | | | opens _PlatformHubView via send_panel |
-| send_panel (automation panel) | panel entry point | disbot/cogs/diagnostic/platform_group.py:398 | | | opens AutomationPanelView via send_panel |
-| send_panel (flag manager) | panel entry point | disbot/cogs/diagnostic/platform_group.py:499 | | | opens FlagManagerView via send_panel |
-| diagnostic_helpers.build overview embed | help/embed | disbot/services/diagnostic_helpers.py:45 | | | static "Select a diagnostic tool below" overview embed |
-| _log_buffer.recent | log/store helper | disbot/cogs/diagnostic/_log_buffer.py:1 | | | in-memory recent-log buffer used by querylogs/errors |
+### Surface-unit ledger
 
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| `!settings`, `!settings access`, `/settings` | command | `settings_cog.py:120-198` | 2 | 1 | G-4 cooldown + generated settings hub. |
+| SettingsHub, subsystem, audit, invalid, missing binding/resource/access views | panel/diagnostic | `views/settings/hub.py:138-330`, `views/settings/subsystem_view.py:609`, `views/settings/audit_view.py:130` | 2 | 1 | Canonical generated config panel family. |
+| settings/binding/resource schemas | setting/binding/resource | `settings_cog.py:68`, subsystem schema modules | 1 | 1 | §2 core grammar already fits. |
+| recent changes/audit/invalid/missing providers | diagnostic provider | `views/settings/*.py`, `services/settings_*` | 2 | 1 | DiagnosticProviderSpec. |
+| help hook | help | `settings_cog.py:172` | 1 | 1 | Help projection. |
+
+**Manifest sketch:** `SubsystemManifest(key="settings", commands=("settings", "settings access"), panels=("settings.hub", "settings.subsystem", "settings.audit"), diagnostics=("invalid_settings", "missing_bindings", "recent_changes"), help=HelpEntrySpec(...))`.
+
+**Disposition/recommendation:** keep; no new gap beyond G-10 modal/editor forms. Done when every schema-defined setting has generated UI, validator bounds (G-5), audit trail, and help projection.
 
 ---
 
-### ux_lab
-_cogs: disbot/cogs/ux_lab_cog.py_
+## logging
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !uxlab (alias !interfacelab) | command | disbot/cogs/ux_lab_cog.py:57 | | | |
-| /uxlab | command | disbot/cogs/ux_lab_cog.py:68 | | | |
-| build_help_menu_view (help/hub direct-nav hook) | help | disbot/cogs/ux_lab_cog.py:42 | | | |
-| cog_load (registers persistent view) | listener | disbot/cogs/ux_lab_cog.py:35 | | | |
-| UxLabHomeView | panel/view | disbot/views/ux_lab/home.py:78 | | | |
-| ExhibitWingView | panel/view | disbot/views/ux_lab/wing.py:38 | | | |
-| ButtonsWingView | panel/view | disbot/views/ux_lab/buttons.py:263 | | | |
-| _TimeoutDemoView | panel/view | disbot/views/ux_lab/buttons.py:252 | | | |
-| _ConfirmDeleteModal | panel/view | disbot/views/ux_lab/buttons.py:228 | | | |
-| CompareView | panel/view | disbot/views/ux_lab/compare.py:143 | | | |
-| _VerdictModal | panel/view | disbot/views/ux_lab/compare.py:102 | | | |
-| EmbedsWingView | panel/view | disbot/views/ux_lab/embeds.py:146 | | | |
-| ImageWingView | panel/view | disbot/views/ux_lab/image_cards.py:195 | | | |
-| _LabLayout (discord.ui.LayoutView) | panel/view | disbot/views/ux_lab/layout_v2.py:108 | | | |
-| LayoutWingView | panel/view | disbot/views/ux_lab/layout_v2.py:143 | | | |
-| MockupsWingView | panel/view | disbot/views/ux_lab/mockups.py:106 | | | |
-| _ThresholdModal | panel/view | disbot/views/ux_lab/mockups.py:473 | | | |
-| _ShortLongModal | panel/view | disbot/views/ux_lab/modals.py:136 | | | |
-| _LabelSelectModal | panel/view | disbot/views/ux_lab/modals.py:157 | | | |
-| _ValidationModal | panel/view | disbot/views/ux_lab/modals.py:191 | | | |
-| _DraftModal | panel/view | disbot/views/ux_lab/modals.py:214 | | | |
-| _ReportFormModal | panel/view | disbot/views/ux_lab/modals.py:232 | | | |
-| _TemplateModal | panel/view | disbot/views/ux_lab/modals.py:254 | | | |
-| ModalsWingView | panel/view | disbot/views/ux_lab/modals.py:279 | | | |
-| UxLabPersistentDemo | panel/view | disbot/views/ux_lab/persistent_demo.py:23 | | | |
-| ProbesBenchView | panel/view | disbot/views/ux_lab/probes.py:104 | | | |
-| _SearchModal | panel/view | disbot/views/ux_lab/selects.py:160 | | | |
-| SelectsWingView | panel/view | disbot/views/ux_lab/selects.py:177 | | | |
+### Surface-unit ledger
 
-**Unit kinds present:** command, panel/view (incl. modals), help, listener (cog_load registration only). No `setting` unit (capabilities list is empty by design — "zero-write workbench"), no `event` (emit_audit_action), no `store` (DB tables) found — confirmed by grep returning no matches, consistent with the code comment "the lab mutates nothing (CI-fenced by tests/unit/invariants/test_ux_lab_zero_write.py)".
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| `!logging`, status, set, create, routes, test | command | `logging_cog.py:313-428` | 1/3 | 1/3 | All generated except live `test`, which intentionally exercises real posting. |
+| eight Discord gateway listeners | listener | `logging_cog.py:170-285` | 3 | 2 | G-1 evidence; declared listener + payload extractor. |
+| three bus subscriptions | event subscription | `services/server_logging.py:1854-1856` | 1 | 1 | EventSubscription. |
+| LoggingPanel/select/provision/routes views | panel/view | `cogs/logging/panel.py:49`, `select_view.py:90-129`, `provision_view.py:144-181`, `routes_panel.py:188-223` | 1/2 | 1 | Generated binding/provisioning/routing panels. |
+| settings/bindings/resources/list settings | setting/binding/resource | `utils/settings_keys/logging.py:10-92`, `cogs/logging/schemas.py` | 1/3 | 1 | G-2 list-valued ignored users/channels. |
+| log embed render/post path | announcement | `services/server_logging.py` | 3 | 2 | G-3 AnnouncementRouteSpec. |
+| help entry | help | `docs/help-command-surface-map.md:130` | 1 | 1 | Projection. |
 
-**Structural-pattern flags:** persistent view registered at cog_load (UxLabPersistentDemo, PersistentView, added via bot.add_view — a restart-surviving component-listener pattern); several `discord.ui.Modal` wizards (_ConfirmDeleteModal, _VerdictModal, _ThresholdModal, _ShortLongModal, _LabelSelectModal, _ValidationModal, _DraftModal, _ReportFormModal, _TemplateModal, _SearchModal) simulating wait_for-style forms; no @bot.event/bus.on gateway listener, no scheduled loop, no voice. Otherwise none obvious.
+**Manifest sketch:** use `tools/grammar_spike/manifests/server_logging.py` shape: commands, panels, `GatewayListenerSpec` for eight gateway events, `EventSubscription` for moderation/audit bus events, settings/bindings/resources, `AnnouncementRouteSpec` for event→template→bound channel, and `HandlerRef("logging.fire_test")`.
+
+**Disposition/recommendation:** keep; no new G-7/G-8 need. Existing G-1/G-2/G-3 close nearly all gaps. Done when live test remains the only tier-3 and all listener routes have declared gates.
 
 ---
 
-### utility
-_cogs: disbot/cogs/utility_cog.py_
+## diagnostic
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !utilitymenu | command | cogs/utility_cog.py:82 | | | |
-| /utility | command | cogs/utility_cog.py:99 | | | |
-| !myprofile | command | cogs/utility_cog.py:116 | | | |
-| /myprofile | command | cogs/utility_cog.py:135 | | | |
-| !clear (alias !purge) | command | cogs/utility_cog.py:162 | | | |
-| !info | command | cogs/utility_cog.py:181 | | | |
-| !serverinfo | command | cogs/utility_cog.py:251 | | | |
-| !userinfo | command | cogs/utility_cog.py:260 | | | |
-| !avatar | command | cogs/utility_cog.py:269 | | | |
-| !remind | command | cogs/utility_cog.py:277 | | | |
-| !invite | command | cogs/utility_cog.py:292 | | | |
-| !poll | command | cogs/utility_cog.py:298 | | | |
-| !ping | command | cogs/utility_cog.py:316 | | | |
-| !botinfo (alias !about) | command | cogs/utility_cog.py:334 | | | |
-| !membercount (alias !members) | command | cogs/utility_cog.py:374 | | | |
-| _UtilityPanelView | panel | cogs/utility_cog.py:472 | | | Main hub panel opened by utilitymenu/utility slash |
-| _UtilityChildButton | panel | cogs/utility_cog.py:461 | | | HubChildButton subclass for child-subsystem nav |
-| attach_back_to_utility_button | panel | cogs/utility_cog.py:416 | | | Adds Back-to-Utility button to child views |
-| _PollModal | panel | cogs/utility_cog.py:643 | | | discord.ui.Modal collecting poll question/options |
-| _RemindModal | panel | cogs/utility_cog.py:684 | | | discord.ui.Modal collecting reminder minutes/message |
-| cog_unload (reminder task cleanup) | listener | cogs/utility_cog.py:72 | | | Cancels in-memory "utility:" tasks on unload |
+### Surface-unit ledger
 
-**Unit kinds present:** command, panel
-**Structural-pattern flags:** wait_for wizard (modal-driven poll/remind flows: _PollModal, _RemindModal); none of stateful game loop / gateway listener / scheduled loop / voice obvious. No settings/db store/event/help-catalogue units found for this subsystem — utility_cog.py has no db.get_setting, bus.emit/emit_audit_action, or bot.event/Cog.listener calls (⚠ unverified beyond grep of utility_cog.py; SUBSYSTEMS["utility"] entry has no settings keys, only capabilities utility.info.server / utility.info.user / utility.tool.ping used for entry_points/menu discovery, not DB-backed settings).
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| diagnostics/lifecycle/list/find/validate/checkdb/status/latency/sysinfo/querylogs/errors/testnotify | command family | `diagnostic_cog.py:54-245` | 3 | 2 | DiagnosticProviderSpec covers command→provider; file/DB/log checks stay handlers. |
+| `/platform` and `!platform` 35+ provider commands | command/diagnostic | `platform_group.py:110-559` | 3 | 2 | Broad diagnostic provider catalogue; actions like backfill remain handlers. |
+| DiagnosticsHub/PlatformHub/FlagManager/Automation/Paginator panels | panel/view | `views/diagnostic/hub_panel.py:41`, `platform_panel.py:332`, `flag_manager.py:304`, `automation_panel.py:396`, `paginator.py:21` | 2 | 1 | Generated provider panels. |
+| health findings/platform consistency stores | store | `utils/db/health_findings.py:1`, `migrations/057_operational_health_findings.sql:1`, `utils/db/platform_consistency.py:1` | 2 | 1 | StoreSpec. |
+| diagnostics registry registration | diagnostic provider | `diagnostic_cog.py:252-261` | 2 | 1 | Provider registry is declarable. |
+| log buffer recent/query | store/provider | `cogs/diagnostic/_log_buffer.py:1` | 3 | 2 | Diagnostic provider with in-memory source. |
+
+**Manifest sketch:** `SubsystemManifest(key="diagnostic", commands=("diagnostics", "platform status", ...), panels=("diagnostic.hub", "platform.hub", "automation", "flag_manager"), stores=("operational_health_findings", "platform_consistency"), diagnostics=(DiagnosticProviderSpec("latency"), DiagnosticProviderSpec("db_tables"), DiagnosticProviderSpec("settings_registry"), ...))`.
+
+**Disposition/recommendation:** improve; no new family beyond stronger `DiagnosticProviderSpec` cataloguing. Done when every platform command maps to a provider id, input schema, permission gate, result renderer, and destructive flag/backfill audit.
 
 ---
 
-### general
-_cogs: disbot/cogs/general_cog.py_
+## ux_lab
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| !generalmenu (alias !gmenu) | command | cogs/general_cog.py:87 | | | |
-| !fact | command | cogs/general_cog.py:113 | | | |
-| !joke | command | cogs/general_cog.py:125 | | | |
-| !quote | command | cogs/general_cog.py:137 | | | |
-| !trivia | command | cogs/general_cog.py:152 | | | |
-| !motivate | command | cogs/general_cog.py:171 | | | |
-| !eightball (alias !8ball) | command | cogs/general_cog.py:184 | | | |
-| !greet | command | cogs/general_cog.py:191 | | | |
-| _GeneralPanelView | panel/view | cogs/general_cog.py:246 | | | |
-| _GeneralPanelView.fact_btn | panel/view | cogs/general_cog.py:262 | | | |
-| _GeneralPanelView.joke_btn | panel/view | cogs/general_cog.py:276 | | | |
-| _GeneralPanelView.quote_btn | panel/view | cogs/general_cog.py:290 | | | |
-| _GeneralPanelView.trivia_btn | panel/view | cogs/general_cog.py:304 | | | |
-| _GeneralPanelView.motivate_btn | panel/view | cogs/general_cog.py:328 | | | |
-| _GeneralPanelView.eightball_btn (opens _EightBallModal) | panel/view | cogs/general_cog.py:342 | | | |
-| _GeneralPanelView.greet_btn | panel/view | cogs/general_cog.py:350 | | | |
-| _GeneralPanelView.overview_btn | panel/view | cogs/general_cog.py:362 | | | |
-| _TriviaRevealView (reveal_btn) | panel/view | cogs/general_cog.py:222-236 | | | |
-| _EightBallModal | panel/view | cogs/general_cog.py:243 | | | |
-| build_help_menu_view (help-menu entry hook) | help | cogs/general_cog.py:99 | | | |
-| SUBSYSTEMS["general"] capabilities: general.info.view, general.community.interact | setting | utils/subsystem_registry.py:1027-1028 | | | |
-| SUBSYSTEMS["general"] entry_points: ["generalmenu"] | setting | utils/subsystem_registry.py:1017 | | | |
+### Surface-unit ledger
 
-**Unit kinds present:** command, panel/view, help, setting
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| `!uxlab`/`/uxlab` | command | `ux_lab_cog.py:54-68` | 2 | 1 | Command→panel; slash/prefix namespace G-6. |
+| help hook + persistent view registration | help/listener | `ux_lab_cog.py:35-42` | 3 | 2 | Persistent view lifecycle should be declared; not a gateway event. |
+| home/wing/persistent/probe views and many demo modals | panel/modal | `views/ux_lab/home.py:78`, `wing.py:38`, `buttons.py:228-263`, `compare.py:102-143`, `modals.py:136-279`, `persistent_demo.py:23` | 3 | 2 | G-10 ModalFormSpec + generated demo panel declarations; bespoke visual examples remain handler/render refs. |
+| zero-write/governance property | gate | `ux_lab_cog.py:29`, tests invariant referenced in lane scaffold | 1 | 1 | Visibility/gate declaration. |
 
-**Structural-pattern flags:** none obvious — stateless content-serving cog; no @bot.event/bus.on listeners, no DB tables/settings writes, no scheduled loops, no voice, no wait_for wizard. ⚠ unverified: docs/subsystems/general.md does not exist (checked, absent), so folio cross-reference could not be verified beyond subsystem_registry.py and source.
+**Manifest sketch:** `SubsystemManifest(key="ux_lab", commands=("uxlab",), panels=("ux_lab.home", "ux_lab.buttons", "ux_lab.modals", ...), persistent_views=("ux_lab.demo",), modal_forms=("confirm_delete", "verdict", "draft", ...), capabilities=(), help=HelpEntrySpec(...))`.
 
+**Disposition/recommendation:** keep as zero-write UX gallery; add G-10 and persistent-view lifecycle declaration. Done when examples are declared as gallery fixtures and invariant tests prove no DB/settings/audit writes.
 
 ---
 
-### proof_channel
-_cogs: disbot/cogs/proof_channel_cog.py, disbot/cogs/proof_channel/schemas.py, disbot/cogs/proof_channel/__init__.py_
+## utility
 
-| Unit | Kind | File:line | Tier (as-written) | Tier (with amendments) | Rationale / gap |
-|---|---|---|---|---|---|
-| +prize | command | disbot/cogs/proof_channel_cog.py:121 | | | |
-| -prize | command | disbot/cogs/proof_channel_cog.py:138 | | | |
-| prizestatus | command | disbot/cogs/proof_channel_cog.py:152 | | | |
-| prizemenu | command | disbot/cogs/proof_channel_cog.py:169 | | | |
-| timedprize | command | disbot/cogs/proof_channel_cog.py:184 | | | |
-| _PrizeManagerView (prize manager panel) | panel/view | disbot/cogs/proof_channel_cog.py:312 | | | |
-| btn_grant (🏆 Grant Access button) | panel | disbot/cogs/proof_channel_cog.py:339-343 | | | |
-| btn_timed (⏱️ Timed Access button) | panel | disbot/cogs/proof_channel_cog.py:345-353 | | | |
-| btn_end (🔒 End Session button) | panel | disbot/cogs/proof_channel_cog.py:355-371 | | | |
-| btn_refresh (🔄 Refresh Status button) | panel | disbot/cogs/proof_channel_cog.py:373-382 | | | |
-| _PrizeWinnerModal (winner input modal) | panel | disbot/cogs/proof_channel_cog.py:219-254 | | | |
-| _TimedPrizeModal (duration input modal) | panel | disbot/cogs/proof_channel_cog.py:257-309 | | | |
-| build_help_menu_view (help-menu direct-nav hook) | help | disbot/cogs/proof_channel_cog.py:174-180 | | | |
-| proof_channel binding (channel setting) | setting | disbot/cogs/proof_channel/schemas.py:43-51 | | | |
-| proof_channel.settings.configure capability | setting | disbot/utils/subsystem_registry.py:982 | | | |
-| proof_channel.access.grant/revoke/timed capabilities | setting | disbot/utils/subsystem_registry.py:979-981 | | | |
-| proof resource requirement (optional channel) | setting | disbot/cogs/proof_channel/schemas.py:58-70 | | | |
-| cog_load → register_schemas | listener | disbot/cogs/proof_channel_cog.py:25-28 | | | |
-| cog_unload → cancel proof:* tasks | listener | disbot/cogs/proof_channel_cog.py:30-33 | | | |
-| _emit_prize_audit (prize_access_grant/revoke audit) | event | disbot/cogs/proof_channel_cog.py:413-454 | | | |
-| proof:unlock:<guild_id> scheduled auto-unlock task | event | disbot/cogs/proof_channel_cog.py:201-216, 292-305 | | | |
+### Surface-unit ledger
 
-**Unit kinds present:** command, panel, setting, listener, event, help
-**Structural-pattern flags:** wait_for-style modal wizard (`_PrizeWinnerModal`/`_TimedPrizeModal` via `send_modal`); scheduled/timed one-shot task (`tasks.spawn` auto-unlock after duration, not a recurring loop). No `@bot.event`/`bus.on` listener beyond cog_load/cog_unload lifecycle hooks; no dedicated DB table (uses generic bindings/subsystem_schema store, not a domain table); no voice.
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| utility menu, slash utility, profile, clear, info, server/user/avatar, remind, invite, poll, ping, botinfo, membercount | command family | `utility_cog.py:80-374` | 2/3 | 2 | Simple info routes fit commands/providers; clear/remind/poll are handler workflows; G-4 cooldown. |
+| Utility hub, child buttons, back button | panel | `utility_cog.py:416-629` | 2 | 1 | Generated hub/child navigation. |
+| Poll/remind modals | modal/timed task | `utility_cog.py:643-686`, `utility_cog.py:72` | 3 | 2 | G-10 modal forms and G-9 timed task/lifecycle cleanup. |
+| help projection via registry | help | `docs/help-command-surface-map.md:143` | 1 | 1 | Help projection. |
+
+**Manifest sketch:** `SubsystemManifest(key="utility", commands=("utilitymenu", "ping", "poll", "remind", ...), panels=("utility.panel",), modal_forms=("poll", "reminder"), tasks=(TimedTaskSpec("utility:reminder")), help=HelpEntrySpec(...))`.
+
+**Disposition/recommendation:** merge with simple utility command pack; retain handler refs for destructive clear and actual reminder scheduling. Done when all info commands share ProviderRef renderers and modal/timed-task workflows are declared.
+
+---
+
+## general
+
+### Surface-unit ledger
+
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| general menu, fact, joke, quote, trivia, motivate, eightball, greet | command family | `general_cog.py:81-191` | 2 | 1 | Provider-backed content commands; G-4 cooldown. |
+| General panel buttons, trivia reveal, eight-ball modal | panel/modal | `general_cog.py:205-361` | 2/3 | 1/2 | Buttons generated; trivia reveal and modal form benefit from G-10 but content randomness remains provider. |
+| help hook and registry metadata | help/gate | `general_cog.py:97-99`, `utils/subsystem_registry.py:1017-1028` | 1 | 1 | Projection. |
+
+**Manifest sketch:** `SubsystemManifest(key="general", commands=("generalmenu", "fact", "joke", ...), panels=("general.panel", "general.trivia_reveal"), modal_forms=("eightball",), providers=("random_fact", "random_joke", ...), help=HelpEntrySpec(...))`.
+
+**Disposition/recommendation:** merge/simple content command pack. Done when static/random content providers are declared and panel buttons are generated.
+
+---
+
+## proof_channel
+
+### Surface-unit ledger
+
+| Unit | Kind | Evidence | Tier as-written | Tier with amendments | Rationale / gap |
+|---|---|---|---:|---:|---|
+| `+prize`, `-prize`, `prizestatus`, `prizemenu`, `timedprize` | command family | `proof_channel_cog.py:119-184` | 3 | 2 | Binding/resource command surface; grant/revoke/timed actions remain audited handlers. |
+| Prize manager buttons and modals | panel/modal | `proof_channel_cog.py:219-382` | 3 | 2 | G-10 modal forms; panel buttons generated. |
+| proof channel binding/resource/capabilities | binding/resource/gate | `cogs/proof_channel/schemas.py:43-70`, `utils/subsystem_registry.py:979-982` | 1 | 1 | Existing §2 binding/resource shape. |
+| schema registration/unload task cleanup | lifecycle/listener | `proof_channel_cog.py:25-33` | 2 | 1 | Lifecycle hooks declarable. |
+| prize audit events | event | `proof_channel_cog.py:413-454` | 2 | 1 | EventSpec/audit action; emit inside handler. |
+| timed auto-unlock task | timed task | `proof_channel_cog.py:201-216`, `proof_channel_cog.py:292-305` | 3 | 2 | G-9 one-shot TimedTaskSpec. |
+| help hook | help | `proof_channel_cog.py:174-180` | 1 | 1 | Projection. |
+
+**Manifest sketch:** `SubsystemManifest(key="proof_channel", commands=("prizemenu", "timedprize", ...), bindings=(BindingSpec("proof_channel"),), resources=(ResourceRequirement("proof"),), panels=("proof.panel",), modal_forms=("grant_prize", "timed_prize"), tasks=(TimedTaskSpec("proof:unlock"),), events=(EventSpec("proof_channel.prize_access_grant"), EventSpec("proof_channel.prize_access_revoke")))`.
+
+**Disposition/recommendation:** improve; G-9/G-10 close recurring gaps. Done when binding ownership, permission gates, audit events, and timed unlock recovery semantics are declared.
+
+---
+
+## Cross-lane dependencies and danger zones
+
+* **Lane A/B/C dependencies:** BTD6 strategy submissions touch moderation/guild permissions; proof-channel sits under Moderation; utility/general are Utility hub children; logging routes consume moderation/audit events; diagnostics reads platform/economy/media stores. Keep Lane D anchored to declarations and provider/gateway surfaces.
+* **AI external-provider calls:** require G-8 provider gateway, secret readiness diagnostics, redaction tests, fallback/degraded response contract.
+* **Natural-language routing:** central monolith should split into declarative task/domain routing plus handler refs.
+* **Knowledge trust/freshness:** G-7 must require source labels and freshness for BTD6/Project Moon answer blocks.
+* **Eval/answerability:** G-7/G-8 should bind eval suites/probes to each AI answerable domain; Project Moon is currently weaker than BTD6.
+* **Diagnostics providers:** platform commands need provider ids and schemas, not command-only bespoke functions.
+* **Generated help/settings/logging:** current repo proves these are good generation targets; keep overlay/test/live-posting as handler refs.
+* **Event/listener wiring:** G-1 and EventSubscription must make gateway/listener wiring visible.
+* **Scheduled refresh loops:** BTD6 refreshes are mostly scripts/workflows; proof/utility need one-shot G-9.
+* **Governance/visibility gates:** preserve capabilities from subsystem registry and command decorators.
+* **Proof-channel/binding ownership:** proof channel should be a binding/resource requirement, not ad hoc channel resolution.
+
+## Verification commands
+
+* `pwd && rg --files -g 'AGENTS.md' -g 'CLAUDE.md' -g 'BRIEF.md' -g 'PARTITION.md'` — verified substrate and absence of in-repo AGENTS instructions.
+* `sed -n ...` over required docs and grammar files — completed required reading.
+* `PYENV_VERSION=3.10.20 python3.10 scripts/context_map.py disbot/cogs/ai_cog.py` (and BTD6/Project Moon cogs) — failed because `yaml`/PyYAML is unavailable in this environment.
+* `rg -n ... disbot/cogs disbot/services disbot/utils tools/grammar_spike docs/help-command-surface-map.md data/btd6` — source verification for every lane subsystem.
