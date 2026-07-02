@@ -46,15 +46,19 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   Phase 0 (finish the substrate-kit adaptive half) · Phase 0.5 (golden harness + telemetry capture
   against the live bot) · Phase 1 (harvest) · Phase 2.5 (cold-start proof) — see the
   [strategy §3](../planning/fresh-rebuild-strategy-2026-07-02.md).
-- `[offline]` **AI-memory portable substrate-kit — PR 2 remainder + PR 3** — **owner-re-elevated to top
-  focus** by the 2026-06-30 fresh-rebuild vision (#1589/#1590): "bot is mostly production ready, focus on
-  the AI-memory project now." This reverses the band-#870 §6 demotion (dropped from the plannable queue
-  after a fourth band-carry, "returns when the owner re-steers it" — now re-steered). Agent-buildable:
-  PR 2's defined remainder (integration-mode behaviors, drift triggers, contract-template set) + all of
-  PR 3 (self-maintenance loop, review seam, distribution polish);
-  [plan](../planning/portable-substrate-kit-extraction-2026-06-13.md). `[owner]` the final *extract to a
-  standalone repo* step (zero code-coupling confirmed) + the full SuperBot rebuild (idea-stage, gated on
-  Fable 5 + owner keep/change spec) stay owner-driven.
+- `[offline]` **▶ FINALIZE THE MEMORY SUBSTRATE (owner-queued 2026-07-02, next up):** the owner will
+  start a **Fable 5 ultracode** session to make the substrate-kit finished + shippable for a fresh
+  repo. **The canonical startup prompt is
+  [`rebuild-ultracode-handoff-2026-07-02.md`](../planning/rebuild-ultracode-handoff-2026-07-02.md)
+  §5.B** (owner-elevated: the real new-repo gate), extended 2026-07-02 with the
+  **context-economy engine** scope
+  ([retention plan §10](../planning/memory-retention-and-context-economy-plan-2026-07-02.md), posture
+  + inbox + shrink + ledger-depth decided in **Q-0214**) and a flagged-uncertainty list. Subsumes the
+  old "PR 2 remainder + PR 3" framing of
+  [the extraction plan](../planning/portable-substrate-kit-extraction-2026-06-13.md) (owner-re-elevated
+  to top focus by the 2026-06-30 fresh-rebuild vision, #1589/#1590, reversing the band-#870 §6
+  demotion). `[owner]` the final *extract to a standalone repo* step + the full rebuild go/no-go stay
+  owner-driven.
 - `[offline]` **procedures→skills Batch 2**
   ([plan](../planning/procedures-to-skills-conversion-plan-2026-06-17.md)).
 - `[offline]` The **bot self-test walker** eval harness (pairs with S1 P1-1) — the harness scaffold is
