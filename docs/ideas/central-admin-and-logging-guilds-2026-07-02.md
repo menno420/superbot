@@ -67,6 +67,17 @@ updated in place to the new URL (hash-receipt match); a restoration notice poste
 webhook proves the Discord half. **When the HQ guild exists, moving the feed = one new Discord
 webhook + one `notificationRuleUpdate`** — a five-minute, known-good operation.
 
+> **⚡ UPDATE (same day, later):** the HQ guild is **live** — the owner created **"Superbot Admin"**
+> (`1522099141671653417`) and the feed moved there exactly as predicted: `#railway-alerts`
+> (`1522212273240801510`) + webhook via Galaxy Bot, rule re-pointed in place, verified. The old
+> test-guild channel is retired (owner may delete it). **Owner decisions landed with it:**
+> production SuperBot stays OUT of HQ for now (avoid state pollution; Galaxy Bot is HQ's operator),
+> and **the rebuilt bot inherits SuperBot's token at cutover** — the owner independently confirmed
+> the design spec §5 flip model ("when the rebuilt bot matches and exceeds the current state of
+> superbot we will use superbot's token"). The §1 admin-guild surfaces should therefore be designed
+> for the rebuild's grammar first (HQ = the rebuild's operator console), with any current-bot
+> retrofit strictly optional.
+
 ## Route
 
 S1/S5 · supersedes the destination question in
