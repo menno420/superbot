@@ -4983,12 +4983,15 @@ def load_templates() -> dict[str, str]:
 
 Surface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``
 (show or set the task stance), ``ask`` (list the pending interview questions),
-``render`` (write content docs), ``skills`` (list / ``--build`` the skill pack),
-``agents`` (list / ``--build`` the persona pack), ``hooks`` (show / ``--build``
-the hook wiring), ``hook <event>`` (the runtime hook entry point), ``check`` (run
-the doc + session-log hygiene checks), and ``--simulate N`` (the CI / proving
-smoke that drives the staged interview). Output goes through ``_emit``
-(``sys.stdout.write``) rather than ``print`` to keep the engine lint-clean.
+``answer`` / ``confirm`` (fill / confirm a slot), ``render`` (write content
+docs), ``skills`` / ``agents`` / ``hooks`` (list / ``--build`` the packs),
+``hook <event>`` (the runtime hook entry points), ``check`` (every hygiene
+checker), ``triggers``, ``reflect``, ``episodes``, ``metrics``, ``maintain``,
+``review`` (the independent-review seam), ``economy`` (the context-economy
+engine), ``ledger`` (the [D-NNNN] decisions ledger), and ``--simulate N
+[--mode m]`` (the CI / proving smoke that drives the staged interview and
+asserts per-mode behavior). Output goes through ``_emit`` (``sys.stdout.write``)
+rather than ``print`` to keep the engine lint-clean.
 """
 
 
@@ -5058,8 +5061,18 @@ def cmd_mode(target: Path, name: str) -> int:
     if not backend.data:
         _emit(f"mode: no state at {target} (run init first).")
         return 1
-    backend.set("mode", name)
-    _emit(f"mode: set to {name}.")
+    history = list(backend.get("mode_history", []))
+    history.append(
+        {
+            "mode": name,
+            "session": int(backend.get("session_count", 0)),
+            "date": date.today().isoformat(),
+        },
+    )
+    with backend.transaction():
+        backend.set("mode", name)
+        backend.set("mode_history", history)
+    _emit(f"mode: set to {name} (audit trail: {len(history)} switch(es)).")
     return 0
 
 
@@ -5101,12 +5114,16 @@ def cmd_ask(target: Path) -> int:
     if not pending:
         _emit("ask: no pending questions — all slots filled.")
         return 0
-    _emit(f"ask: {len(pending)} pending question(s):")
-    for question in pending:
+    asked = session_questions(backend.data)
+    _emit(f"ask: {len(asked)} question(s) this session (mode quota):")
+    for question in asked:
         _emit(
             f"  [{question['id']}] "
             f"({question['audience']}/{question['priority']}) {question['prompt']}",
         )
+    remaining = len(pending) - len(asked)
+    if remaining > 0:
+        _emit(f"  (+{remaining} more later — the mode paces the interview)")
     return 0
 
 
@@ -5246,13 +5263,44 @@ def cmd_hook(target: Path, event: str) -> int:
     return 0
 
 
-def cmd_check(target: Path, strict: bool) -> int:
-    """Run the doc-hygiene + session-log checks against ``target``.
+def _extra_check_findings(target: Path, config: Config) -> list:
+    """Run the configured non-doc checkers (ledger, namespace, seams, budget).
 
-    Doc findings always count toward the exit code (under ``--strict``); a
-    *missing* session log is advisory (a host may run ``check`` mid-session), but
-    an *incomplete* existing log counts. Uses config defaults if ``target`` has
-    no ``substrate.config.json`` yet, so a project can lint before onboarding.
+    Each checker engages only when its inputs exist — an un-adopted project
+    with no ledger, no namespace roots, no seams, and no boot docs runs none of
+    them, so ``check`` stays meaningful before onboarding.
+    """
+    findings: list = []
+    ledger_path = target / config.docs_root / LEDGER_FILENAME
+    if ledger_path.exists():
+        findings += check_ledger(ledger_path)
+        findings += ledger_stamp_check(target / config.docs_root, ledger_path)
+    roots = [target / r for r in config.namespace.get("roots", [])]
+    roots = [r for r in roots if r.exists()]
+    if roots:
+        findings += check_namespace(
+            roots,
+            reserved=config.namespace.get("reserved") or None,
+        )
+    if config.seams:
+        findings += check_seam_authority(target, config.seams)
+    boot_docs = config.orientation.get("boot_docs") or config.readpath_docs
+    docs_root = target / config.docs_root
+    if any((docs_root / doc).exists() or (target / doc).exists() for doc in boot_docs):
+        findings += check_orientation_budget(target, config)
+    return findings
+
+
+def cmd_check(target: Path, strict: bool) -> int:
+    """Run every hygiene checker against ``target``.
+
+    Docs (badge/link/reachable), the decisions ledger + stamp discipline, the
+    namespace/shadowing guard, the seam-authority fences, and the orientation
+    word budget — each engaging only when its inputs exist. Findings always
+    count toward the exit code (under ``--strict``); a *missing* session log is
+    advisory (a host may run ``check`` mid-session), but an *incomplete*
+    existing log counts. Uses config defaults if ``target`` has no
+    ``substrate.config.json`` yet, so a project can lint before onboarding.
     """
     config = load_config(target)
     docs_root = target / config.docs_root
@@ -5261,8 +5309,9 @@ def cmd_check(target: Path, strict: bool) -> int:
         config.badge_tokens,
         config.readpath_docs,
     )
+    doc_findings = list(doc_findings) + _extra_check_findings(target, config)
     if doc_findings:
-        _emit(f"check: {len(doc_findings)} doc finding(s):")
+        _emit(f"check: {len(doc_findings)} finding(s):")
         for finding in doc_findings:
             _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")
 
@@ -5283,12 +5332,359 @@ def cmd_check(target: Path, strict: bool) -> int:
     return 1 if strict else 0
 
 
-def cmd_simulate(n: int) -> int:
-    """Init into a temp dir and drive ``n`` interview sessions; verify progress.
+def _require_state(
+    target: Path,
+    command: str,
+) -> tuple[Config, JsonStateBackend] | None:
+    """Load config + state; None (with a message) when the install is missing."""
+    config = load_config(target)
+    backend = JsonStateBackend(_state_path(target, config))
+    if not backend.data:
+        _emit(f"{command}: no state at {target} (run init first).")
+        return None
+    return config, backend
+
+
+def _question_for_slot(slot: str) -> dict | None:
+    """Return the bank question that fills ``slot`` (None when unknown)."""
+    for question in QUESTIONS:
+        if question["slot"] == slot:
+            return question
+    return None
+
+
+def cmd_answer(target: Path, slot: str, answer: str) -> int:
+    """Record a user answer for ``slot`` (fills it, resolves its escalation)."""
+    loaded = _require_state(target, "answer")
+    if loaded is None:
+        return 1
+    _, backend = loaded
+    question = _question_for_slot(slot)
+    if question is None:
+        known = ", ".join(q["slot"] for q in QUESTIONS)
+        _emit(f"answer: unknown slot {slot!r} (known: {known}).")
+        return 2
+    record_answer(backend, question, answer, source="user")
+    status = backend.get("slots", {}).get(slot)
+    _emit(f"answer: {slot} -> {status}.")
+    if status == "partial":
+        floor = int(question.get("min_len", 1))
+        _emit(f"answer: too thin to count (needs >= {floor} chars of substance).")
+    return 0
+
+
+def cmd_confirm(target: Path, slot: str) -> int:
+    """Confirm a provisional (self-answered) slot as user-verified."""
+    loaded = _require_state(target, "confirm")
+    if loaded is None:
+        return 1
+    _, backend = loaded
+    if confirm_slot(backend, slot, source="user"):
+        _emit(f"confirm: {slot} confirmed (provisional -> filled).")
+        return 0
+    _emit(f"confirm: {slot} is not provisional (nothing to confirm).")
+    return 1
+
+
+def cmd_triggers(target: Path) -> int:
+    """Scan for fired triggers and show the mandated / advisory questions."""
+    loaded = _require_state(target, "triggers")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    triggers = check_triggers(target, config, backend.data)
+    if not triggers:
+        _emit("triggers: none fired.")
+        return 0
+    questions = mandatory_questions(triggers)
+    block = trigger_block(
+        triggers,
+        questions,
+        mandate=triggers_mandate(backend.data),
+    )
+    _emit(block)
+    return 0
+
+
+def cmd_reflect(
+    target: Path,
+    *,
+    add: str | None,
+    evidence: str,
+    tags: str,
+    mine: bool,
+) -> int:
+    """List, add to, or mine the forward reflection buffer."""
+    loaded = _require_state(target, "reflect")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    path = target / config.state_dir / REFLECTIONS_FILENAME
+    buffer_size = int(config.reflection.get("buffer_size", 5))
+    if add is not None:
+        entry = add_reflection(
+            path,
+            lesson=add,
+            evidence=evidence,
+            tags=[t for t in tags.split(",") if t],
+            buffer_size=buffer_size,
+        )
+        _emit(f"reflect: added {entry['id']}.")
+    if mine:
+        candidates = mine_reflections(target / config.sessions_dir)
+        for cand in candidates:
+            entry = add_reflection(
+                path,
+                lesson=cand["lesson"],
+                evidence=cand.get("evidence", ""),
+                tags=list(cand.get("tags", [])),
+                buffer_size=buffer_size,
+            )
+            _emit(f"reflect: mined {entry['id']} — {cand['lesson'][:60]}")
+        if not candidates:
+            _emit("reflect: mined nothing new.")
+    entries = load_reflections(path)
+    backend.set(
+        "reflection_buffer",
+        {
+            "active_count": len(entries),
+            "last_mined": (
+                date.today().isoformat()
+                if mine
+                else (backend.get("reflection_buffer", {}) or {}).get("last_mined")
+            ),
+        },
+    )
+    block = lessons_block(entries)
+    _emit(block if block else "reflect: buffer empty.")
+    return 0
+
+
+def cmd_episodes(target: Path, *, rebuild: bool, search: str | None) -> int:
+    """Rebuild or search the episodic index over the session logs."""
+    config = load_config(target)
+    index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME
+    if rebuild:
+        entries = rebuild_episodic_index(target / config.sessions_dir, index_path)
+        _emit(f"episodes: indexed {len(entries)} session(s).")
+    if search is not None:
+        hits = search_episodes(index_path, search)
+        for hit in hits:
+            _emit(
+                f"  {hit.get('date', '?')} {hit.get('slug', '?')} — "
+                f"{hit.get('summary', '')}",
+            )
+        _emit(f"episodes: {len(hits)} hit(s) for {search!r}.")
+    if not rebuild and search is None:
+        _emit("episodes: pass --rebuild and/or --search TAG.")
+    return 0
+
+
+def cmd_metrics(target: Path) -> int:
+    """Emit the router / workflow KPIs (JSON + the one-line footer)."""
+    loaded = _require_state(target, "metrics")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    kpis = workflow_kpis(backend.data, target / config.sessions_dir)
+    _emit(json.dumps(kpis, indent=2, sort_keys=True))
+    _emit(kpi_footer(kpis))
+    return 0
+
+
+def cmd_maintain(target: Path, *, compact: bool) -> int:
+    """Run the self-maintenance loop's report (and compaction when asked)."""
+    loaded = _require_state(target, "maintain")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    if compact:
+        if compaction_due(backend.data, dict(config.cadence or {})):
+            path = run_compaction(target, config, backend)
+            rel = path.relative_to(target) if path.is_relative_to(target) else path
+            _emit(f"maintain: compaction written -> {rel}")
+        else:
+            _emit("maintain: compaction not due.")
+    triggers = check_triggers(target, config, backend.data)
+    economy = economy_check(target, config)
+    ledger_path = target / config.docs_root / LEDGER_FILENAME
+    ledger_findings = check_ledger(ledger_path) if ledger_path.exists() else []
+    kpis = workflow_kpis(backend.data, target / config.sessions_dir)
+    _emit(
+        maintenance_report(
+            target,
+            config,
+            backend,
+            triggers=triggers,
+            economy_findings=list(economy.get("findings", [])),
+            ledger_findings=ledger_findings,
+            kpis=kpis,
+        ),
+    )
+    return 0
+
+
+def cmd_review(
+    target: Path,
+    action: str,
+    slot: str | None,
+    *,
+    verdict: str,
+    reviewer: str,
+) -> int:
+    """Drive the independent-review seam: build payloads, record verdicts."""
+    if action == "doc":
+        _emit(seam_wiring_doc())
+        return 0
+    if slot is None:
+        _emit("review: a slot is required for build/confirm.")
+        return 2
+    loaded = _require_state(target, "review")
+    if loaded is None:
+        return 1
+    config, backend = loaded
+    if action == "build":
+        payload = build_review_payload(backend, slot)
+        if not payload:
+            _emit(f"review: slot {slot!r} is not provisional — nothing to review.")
+            return 1
+        path = write_review_payload(target, config, payload)
+        rel = path.relative_to(target) if path.is_relative_to(target) else path
+        _emit(f"review: payload written -> {rel}")
+        return 0
+    if action == "confirm":
+        if verdict not in ("pass", "fail"):
+            _emit("review: --verdict must be pass or fail.")
+            return 2
+        outcome = apply_review_verdict(
+            backend,
+            slot,
+            verdict=verdict,
+            reviewer=reviewer,
+        )
+        _emit(f"review: {slot} -> {outcome}.")
+        return 0
+    _emit(f"review: unknown action {action!r} (build | confirm | doc).")
+    return 2
+
+
+def cmd_economy(
+    target: Path,
+    action: str,
+    *,
+    strict: bool,
+    apply: bool,
+    bands: int,
+) -> int:
+    """Drive the context-economy engine: check, apply, simulate, recipe."""
+    config = load_config(target)
+    if action == "recipe":
+        _emit(calibration_recipe())
+        return 0
+    if action == "simulate":
+        result = run_search(default_calibration(), bands=bands)
+        _emit(str(result.get("why_it_won", "")))
+        winner = result.get("winner", {})
+        name = winner.get("name") if isinstance(winner, dict) else winner
+        _emit(f"economy: winner {name} (feasible: {result.get('feasible_count')}).")
+        return 0
+    harvested = parse_harvest_tables(target / config.docs_root / "planning")
+    report = economy_check(target, config, harvested=harvested)
+    if action == "issue-body":
+        _emit(issue_body(report))
+        return 0
+    if action == "check":
+        census = report.get("census", {})
+        for name in sorted(census):
+            row = census[name]
+            _emit(
+                f"  class {name}: {row.get('files', 0)} file(s), "
+                f"{row.get('words', 0)} word(s)",
+            )
+        for gauge in report.get("gauges", []):
+            flag = "OVER" if gauge.get("over") else "ok"
+            _emit(f"  gauge {gauge['name']}: {gauge['value']}/{gauge['cap']} [{flag}]")
+        findings = report.get("findings", [])
+        for finding in findings:
+            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")
+        for line in economy_actuate(target, config, report, apply=False):
+            _emit(f"  would-act: {line}")
+        debt = report.get("debt", 0)
+        threshold = int(config.economy.get("debt_threshold", 10))
+        _emit(f"economy: debt {debt} (threshold {threshold}).")
+        over = bool(findings) or debt >= threshold
+        return 1 if strict and over else 0
+    if action == "apply":
+        lines = economy_actuate(target, config, report, apply=apply)
+        for line in lines:
+            _emit(f"  {line}")
+        if not apply:
+            _emit("economy: dry-run (pass --yes to act; maturity gates apply).")
+        return 0
+    _emit(
+        f"economy: unknown action {action!r} "
+        "(check | apply | simulate | recipe | issue-body).",
+    )
+    return 2
+
+
+def cmd_ledger(
+    target: Path,
+    *,
+    title: str,
+    verdict: str,
+    why: str,
+    provenance: str,
+    supersedes: str | None,
+) -> int:
+    """Append a decision to the [D-NNNN] ledger (created on first use)."""
+    config = load_config(target)
+    path = target / config.docs_root / LEDGER_FILENAME
+    entry = append_decision(
+        path,
+        title=title,
+        verdict=verdict,
+        why=why,
+        provenance=provenance,
+        supersedes=supersedes,
+    )
+    _emit(f"ledger: recorded {entry['id']} — {title}")
+    if supersedes:
+        _emit(f"ledger: {supersedes} stamped superseded-by {entry['id']}.")
+    return 0
+
+
+def _simulate_mode_asserts(
+    mode: str,
+    data: dict,
+    graduated: bool,
+    n: int,
+) -> str | None:
+    """Return the per-mode behavior violation, or None when behavior held.
+
+    The behavior-assert half of the simulation: observe must never
+    auto-graduate (it proposes), guided/active must graduate once the quiet
+    streak is long enough.
+    """
+    quiet_needed = 3
+    if mode == "observe":
+        if graduated or data.get("stage") != "integration":
+            return "observe mode auto-graduated (must only propose)"
+        if n > quiet_needed and not data.get("graduation_proposed"):
+            return "observe mode never proposed graduation"
+        return None
+    if n > quiet_needed and not graduated:
+        return f"{mode} mode failed to graduate after the quiet streak"
+    return None
+
+
+def cmd_simulate(n: int, mode: str = "guided") -> int:
+    """Init into a temp dir and drive ``n`` interview sessions; verify behavior.
 
     Session 1 supplies confirmed answers for every critical slot; later sessions
-    supply none. Asserts the critical slots fill and (for ``n`` past the quiet
-    threshold) the install graduates integration -> steady.
+    supply none. Asserts the critical slots fill and that the run behaves
+    per ``mode``: guided/active graduate integration -> steady once quiet;
+    observe only ever *proposes* graduation.
     """
     with tempfile.TemporaryDirectory(prefix="substrate-sim-") as tmp:
         target = Path(tmp)
@@ -5296,6 +5692,10 @@ def cmd_simulate(n: int) -> int:
         if rc != 0:
             return rc
         state_path = _state_path(target, load_config(target))
+        if mode != "guided":
+            rc = cmd_mode(target, mode)
+            if rc != 0:
+                return rc
         crit = critical_slots()
         answers = {slot: f"value-for-{slot}" for slot in crit}
         graduated = False
@@ -5308,9 +5708,13 @@ def cmd_simulate(n: int) -> int:
         if missing:
             _emit(f"simulate: FAILED — critical slots unfilled: {missing}")
             return 1
+        violation = _simulate_mode_asserts(mode, data, graduated, n)
+        if violation:
+            _emit(f"simulate: FAILED — {violation}")
+            return 1
         _emit(
             f"simulate: OK — {n} session(s), {len(crit)} critical slots filled, "
-            f"stage={data.get('stage')} (graduated={graduated}).",
+            f"mode={mode}, stage={data.get('stage')} (graduated={graduated}).",
         )
     return 0
 
@@ -5324,15 +5728,65 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="N",
         help="run N synthetic sessions in a temp dir, then exit",
     )
+    parser.add_argument(
+        "--mode",
+        default="guided",
+        choices=("observe", "guided", "active"),
+        help="integration mode for --simulate (behavior asserts differ per mode)",
+    )
     sub = parser.add_subparsers(dest="command")
     for name, helptext in (
         ("init", "initialise a project"),
         ("status", "show install state"),
         ("ask", "list pending interview questions"),
         ("render", "render content docs from filled slots"),
+        ("triggers", "scan for fired triggers / mandatory questions"),
+        ("metrics", "emit the router + workflow KPIs"),
     ):
         child = sub.add_parser(name, help=helptext)
         child.add_argument("--target", type=Path, default=Path.cwd())
+    answer = sub.add_parser("answer", help="record a user answer for a slot")
+    answer.add_argument("slot")
+    answer.add_argument("value", nargs="+", help="the answer text")
+    answer.add_argument("--target", type=Path, default=Path.cwd())
+    confirm = sub.add_parser("confirm", help="confirm a provisional slot")
+    confirm.add_argument("slot")
+    confirm.add_argument("--target", type=Path, default=Path.cwd())
+    reflect = sub.add_parser("reflect", help="list/add/mine the reflection buffer")
+    reflect.add_argument("--add", metavar="LESSON", default=None)
+    reflect.add_argument("--evidence", default="")
+    reflect.add_argument("--tags", default="", help="comma-separated tags")
+    reflect.add_argument("--mine", action="store_true")
+    reflect.add_argument("--target", type=Path, default=Path.cwd())
+    episodes = sub.add_parser("episodes", help="rebuild/search the episodic index")
+    episodes.add_argument("--rebuild", action="store_true")
+    episodes.add_argument("--search", metavar="TAG", default=None)
+    episodes.add_argument("--target", type=Path, default=Path.cwd())
+    maintain = sub.add_parser("maintain", help="run the self-maintenance report")
+    maintain.add_argument("--compact", action="store_true")
+    maintain.add_argument("--target", type=Path, default=Path.cwd())
+    review = sub.add_parser("review", help="drive the independent-review seam")
+    review.add_argument("action", choices=("build", "confirm", "doc"))
+    review.add_argument("slot", nargs="?", default=None)
+    review.add_argument("--verdict", default="", help="pass | fail (for confirm)")
+    review.add_argument("--reviewer", default="external")
+    review.add_argument("--target", type=Path, default=Path.cwd())
+    economy = sub.add_parser("economy", help="run the context-economy engine")
+    economy.add_argument(
+        "action",
+        choices=("check", "apply", "simulate", "recipe", "issue-body"),
+    )
+    economy.add_argument("--strict", action="store_true")
+    economy.add_argument("--yes", action="store_true", help="really act (apply)")
+    economy.add_argument("--bands", type=int, default=24)
+    economy.add_argument("--target", type=Path, default=Path.cwd())
+    ledger = sub.add_parser("ledger", help="append a [D-NNNN] decision")
+    ledger.add_argument("--title", required=True)
+    ledger.add_argument("--verdict", required=True)
+    ledger.add_argument("--why", required=True)
+    ledger.add_argument("--provenance", required=True)
+    ledger.add_argument("--supersedes", default=None)
+    ledger.add_argument("--target", type=Path, default=Path.cwd())
     mode = sub.add_parser("mode", help="set the integration mode")
     mode.add_argument("name")
     mode.add_argument("--target", type=Path, default=Path.cwd())
@@ -5375,7 +5829,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.simulate is not None:
-            return cmd_simulate(args.simulate)
+            return cmd_simulate(args.simulate, args.mode)
         if args.command == "init":
             return cmd_init(args.target)
         if args.command == "status":
@@ -5398,6 +5852,51 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_hook(args.target, args.event)
         if args.command == "check":
             return cmd_check(args.target, args.strict)
+        if args.command == "answer":
+            return cmd_answer(args.target, args.slot, " ".join(args.value))
+        if args.command == "confirm":
+            return cmd_confirm(args.target, args.slot)
+        if args.command == "triggers":
+            return cmd_triggers(args.target)
+        if args.command == "reflect":
+            return cmd_reflect(
+                args.target,
+                add=args.add,
+                evidence=args.evidence,
+                tags=args.tags,
+                mine=args.mine,
+            )
+        if args.command == "episodes":
+            return cmd_episodes(args.target, rebuild=args.rebuild, search=args.search)
+        if args.command == "metrics":
+            return cmd_metrics(args.target)
+        if args.command == "maintain":
+            return cmd_maintain(args.target, compact=args.compact)
+        if args.command == "review":
+            return cmd_review(
+                args.target,
+                args.action,
+                args.slot,
+                verdict=args.verdict,
+                reviewer=args.reviewer,
+            )
+        if args.command == "economy":
+            return cmd_economy(
+                args.target,
+                args.action,
+                strict=args.strict,
+                apply=args.yes,
+                bands=args.bands,
+            )
+        if args.command == "ledger":
+            return cmd_ledger(
+                args.target,
+                title=args.title,
+                verdict=args.verdict,
+                why=args.why,
+                provenance=args.provenance,
+                supersedes=args.supersedes,
+            )
     except UnsafeTargetError as exc:
         _emit(f"refused: {exc}")
         return 2
@@ -5443,7 +5942,7 @@ _ENGINE_MANIFEST = {
     'engine/agents/agents.py': '"""Persona (sub-agent) sources + native emission (plan section 3c).\n\nA *persona* is a spawnable, read-only specialist (the third capability mechanism\nalongside stances and skills): the working agent delegates a focused task —\ndesign review, independent critique, deep exploration — to a fresh sub-agent\ncontext. The kit ships three generalized personas, each emitted as a native\n``.claude/agents/<name>.md`` (YAML frontmatter ``name`` / ``description`` /\n``tools`` + a system-prompt body).\n\nPersonas are **interview-populated**: their binding sources are filled from the\nproject\'s own contract slots (``${architecture_layers}``, ``${ownership_model}``,\n…) at build time — so a persona reviews against *this* project\'s rules, not\nsuperbot\'s. Like the skills, they ship as a Python module (not a subdir of\n``templates/``) so they embed in the stdlib-only bootstrap with no extra loader.\n\nPersonas are spawned specialists, so — unlike skills — they carry no stance\nprecedence; they are read-only by construction (their declared ``tools`` grant\nno write).\n"""\n\nfrom __future__ import annotations\n\n# Native read-only tool set for a spawned specialist (no write/edit/run).\n_READONLY_TOOLS = ["Read", "Grep", "Glob"]\n\n_ARCHITECT_BODY = """\\\nYou are ${project_name}\'s architecture specialist — read-only. Answer design\nquestions and review proposed changes for layer/ownership compliance BEFORE they\nare coded.\n\nBinding model (this project\'s contracts):\n- Layers & import rules: ${architecture_layers}\n- Ownership (who owns each write path): ${ownership_model}\n- Mutation seam (how writes are gated): ${mutation_seam}\n\nMethod: read the relevant contracts + source, then judge a proposed change\nagainst them. Flag every layer-boundary or ownership violation with file:line and\nthe rule it breaks; propose the compliant placement. You advise — you do not edit."""\n\n_REVIEWER_BODY = """\\\nYou are ${project_name}\'s independent reviewer — a second pair of eyes that does\nNOT share the author\'s assumptions. Evaluate a diff against the binding contracts\nand surface the risks the author may have anchored past.\n\nReview against: ${architecture_layers} · ${ownership_model} · the project\'s\nverification (`${verify_command}`).\n\nAnti-anchoring rule: judge the change on its evidence, not the author\'s stated\nconfidence. Give a verdict (approve / request-changes) + the specific risks and\nfixes. Read-only — you comment, you do not edit. (Wire this persona to the\nindependent-review seam: a *different* model reviewing breaks the monoculture.)"""\n\n_RESEARCHER_BODY = """\\\nYou are ${project_name}\'s researcher — read-only deep exploration. Map unfamiliar\ncode or trace a behavior across the system and report findings; change nothing.\n\nStart from: ${doc_roots} (where durable documentation lives) and the read-path\ndocs, then follow the source.\n\nOutput: evidence (file:line) + a clear conclusion, with the uncertainty named.\nPrefer reading source over assuming. You produce understanding, not edits."""\n\nAGENTS: list[dict] = [\n    {\n        "name": "architect",\n        "description": "Read-only design/layer specialist — answer architecture "\n        "questions and flag layer/ownership violations before they are coded.",\n        "tools": list(_READONLY_TOOLS),\n        "body": _ARCHITECT_BODY,\n    },\n    {\n        "name": "reviewer",\n        "description": "Independent critic — evaluate a diff against the contracts "\n        "without the author\'s assumptions; verdict + risks, no edits.",\n        "tools": list(_READONLY_TOOLS),\n        "body": _REVIEWER_BODY,\n    },\n    {\n        "name": "researcher",\n        "description": "Read-only deep exploration — map unfamiliar code / trace a "\n        "behavior and report evidence-backed findings; change nothing.",\n        "tools": list(_READONLY_TOOLS),\n        "body": _RESEARCHER_BODY,\n    },\n]\n\n_AGENT_BY_NAME = {a["name"]: a for a in AGENTS}\n\n\ndef agent_names() -> list[str]:\n    """Return the available persona names, in declared order."""\n    return [a["name"] for a in AGENTS]\n\n\ndef get_agent(name: str) -> dict | None:\n    """Return the persona definition for ``name`` (or None if unknown)."""\n    return _AGENT_BY_NAME.get(name)\n\n\ndef agent_frontmatter(agent: dict) -> str:\n    """Return the native ``.claude/agents`` YAML frontmatter (name/description/tools)."""\n    tools = ", ".join(agent["tools"])\n    return (\n        f"---\\nname: {agent[\'name\']}\\n"\n        f\'description: "{agent["description"]}"\\n\'\n        f"tools: {tools}\\n---"\n    )\n\n\ndef agent_relpath(agent: dict) -> str:\n    """Return the emit path for a persona, relative to the agents root."""\n    return f"agents/{agent[\'name\']}.md"\n\n\ndef agent_document(agent: dict, body: str) -> str:\n    """Compose the full agent ``.md`` text from a persona + its (rendered) body."""\n    return f"{agent_frontmatter(agent)}\\n\\n{body.rstrip()}\\n"\n',
     'engine/hooks/stance_guard.py': '"""PreToolUse stance guard — makes the stance layer enforced, not just advisory.\n\nClaude Code calls a PreToolUse hook before each tool runs, passing the tool name\nin a JSON payload on stdin. This maps the tool to a stance action category\n(read / run / edit / comment) and, if that action is outside the active stance\'s\ntool-scope, produces an advisory warning — the agent stays free to proceed\n(stances are advisory by default, plan section 3b). The bootstrap\n``hook pretooluse`` command is the runtime entry point; ``settings_snippet``\ngenerates the ``.claude/settings.json`` wiring a host installs.\n\nEverything here **fails open**: an unknown tool, an unknown stance, or a\nmalformed payload yields no warning — the guard never gets in the way when it is\nunsure.\n"""\n\nfrom __future__ import annotations\n\nimport json\n\nfrom engine.stances.stances import EDIT, READ, RUN, is_out_of_stance\n\n# Claude Code tool name -> the stance action category it performs. Tools not\n# listed (Task, the slash-command tools, …) carry no stance opinion (fail open).\nTOOL_ACTIONS: dict[str, str] = {\n    "Read": READ,\n    "Grep": READ,\n    "Glob": READ,\n    "NotebookRead": READ,\n    "Edit": EDIT,\n    "Write": EDIT,\n    "NotebookEdit": EDIT,\n    "Bash": RUN,\n    "WebFetch": RUN,\n    "WebSearch": RUN,\n}\n\n\ndef tool_to_action(tool_name: str) -> str | None:\n    """Return the stance action category a Claude Code tool performs (or None)."""\n    return TOOL_ACTIONS.get(tool_name)\n\n\ndef tool_from_payload(raw: str) -> str:\n    """Extract the tool name from a PreToolUse stdin payload (``""`` if absent)."""\n    try:\n        payload = json.loads(raw) if raw.strip() else {}\n    except json.JSONDecodeError:\n        return ""\n    name = payload.get("tool_name", "") if isinstance(payload, dict) else ""\n    return name if isinstance(name, str) else ""\n\n\ndef evaluate_tool(stance: str, tool_name: str) -> str | None:\n    """Return an out-of-stance warning for ``tool_name`` under ``stance``, or None.\n\n    ``None`` means no objection — the tool carries no stance opinion, or the\n    action is within the stance\'s tool-scope. Fails open: an unknown stance or\n    tool never warns.\n    """\n    action = tool_to_action(tool_name)\n    if action is None or not is_out_of_stance(stance, action):\n        return None\n    return (\n        f"out-of-stance: {tool_name} ({action}) while stance is \'{stance}\'. "\n        "Re-check the task, or switch stance (`bootstrap stance <name>`). "\n        "(advisory — not blocked)"\n    )\n\n\ndef settings_snippet(command: str) -> str:\n    """Return a ``.claude/settings.json`` PreToolUse wiring snippet (JSON text).\n\n    ``command`` is the shell command Claude Code runs before each tool (e.g.\n    ``python3 bootstrap.py hook pretooluse``). The host merges the returned\n    ``hooks.PreToolUse`` block into their ``.claude/settings.json``.\n    """\n    snippet = {\n        "hooks": {\n            "PreToolUse": [\n                {\n                    "matcher": "*",\n                    "hooks": [{"type": "command", "command": command}],\n                },\n            ],\n        },\n    }\n    return json.dumps(snippet, indent=2) + "\\n"\n',
     'engine/render.py': '"""Render the project\'s content docs from templates + filled interview slots.\n\nTemplates use ``${slot_name}`` placeholders (``string.Template``). A slot the\ninterview has filled substitutes in; an unfilled slot is left as ``${slot_name}``\nand reported — so a half-onboarded project\'s gaps stay visible rather than going\nsilently blank. Templates ship embedded in the bootstrap (the generated\n``_TEMPLATES`` dict) and, in the source tree, live under ``src/templates/``.\n"""\n\nfrom __future__ import annotations\n\nimport re\nfrom pathlib import Path\nfrom string import Template\nfrom typing import Any\n\n_PLACEHOLDER_RE = re.compile(r"\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}")\n\n\ndef find_placeholders(text: str) -> set[str]:\n    """Return the set of ``${name}`` placeholders remaining in ``text``."""\n    return set(_PLACEHOLDER_RE.findall(text))\n\n\ndef render(text: str, context: dict[str, str]) -> str:\n    """Substitute ``${slot}`` placeholders from ``context`` (unfilled left as-is)."""\n    return Template(text).safe_substitute(context)\n\n\ndef build_context(state: dict[str, Any]) -> dict[str, str]:\n    """Build the substitution context from a state document\'s filled slots."""\n    values = state.get("slot_values", {})\n    return {slot: str(entry.get("value", "")) for slot, entry in values.items()}\n\n\ndef load_templates() -> dict[str, str]:\n    """Return ``{filename: text}`` for every template (embedded or from src)."""\n    embedded = globals().get("_TEMPLATES")\n    if embedded is not None:\n        return dict(embedded)\n    root = Path(__file__).resolve().parent.parent / "templates"\n    return {p.name: p.read_text(encoding="utf-8") for p in sorted(root.glob("*"))}\n',
-    'engine/cli.py': '"""The substrate-kit bootstrap command line.\n\nSurface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``\n(show or set the task stance), ``ask`` (list the pending interview questions),\n``render`` (write content docs), ``skills`` (list / ``--build`` the skill pack),\n``agents`` (list / ``--build`` the persona pack), ``hooks`` (show / ``--build``\nthe hook wiring), ``hook <event>`` (the runtime hook entry point), ``check`` (run\nthe doc + session-log hygiene checks), and ``--simulate N`` (the CI / proving\nsmoke that drives the staged interview). Output goes through ``_emit``\n(``sys.stdout.write``) rather than ``print`` to keep the engine lint-clean.\n"""\n\nfrom __future__ import annotations\n\nimport argparse\nimport sys\nimport tempfile\nfrom pathlib import Path\n\nfrom engine.agents.agents import AGENTS, agent_document, agent_relpath\nfrom engine.checks.check_docs import run_doc_checks\nfrom engine.checks.check_session_log import check_log, latest_session_log\nfrom engine.hooks.stance_guard import evaluate_tool, settings_snippet, tool_from_payload\nfrom engine.interview.interview import critical_slots, pending_questions, run_session\nfrom engine.lib.atomicio import atomic_write_text\nfrom engine.lib.config import Config, config_path, load_config, save_config\nfrom engine.lib.guardrail import UnsafeTargetError, assert_safe_target\nfrom engine.lib.state import JsonStateBackend, default_state\nfrom engine.render import build_context, find_placeholders, load_templates, render\nfrom engine.skills.skills import (\n    SKILLS,\n    skill_capabilities,\n    skill_document,\n    skill_relpath,\n)\nfrom engine.stances.stances import DEFAULT_STANCE, stance_briefing, stance_names\n\n\ndef _emit(line: str = "") -> None:\n    """Write a line to stdout (avoids the print() lint ban in engine code)."""\n    sys.stdout.write(line + "\\n")\n\n\ndef _kit_root() -> Path:\n    """Return the kit root (``substrate-kit/``) for the guardrail check."""\n    return Path(__file__).resolve().parents[2]\n\n\ndef _state_path(root: Path, config: Config) -> Path:\n    """Return the state-file path under a project ``root``."""\n    return root / config.state_dir / "state.json"\n\n\ndef cmd_init(target: Path) -> int:\n    """Create config + state under ``target`` if absent; never clobber."""\n    assert_safe_target(target, _kit_root())\n    target.mkdir(parents=True, exist_ok=True)\n    if config_path(target).exists():\n        config = load_config(target)\n    else:\n        config = Config()\n        save_config(target, config)\n    state_path = _state_path(target, config)\n    if state_path.exists():\n        _emit(f"init: already initialised at {target} (idempotent no-op).")\n        return 0\n    backend = JsonStateBackend(state_path)\n    with backend.transaction():\n        for key, value in default_state(config.project_id).items():\n            backend.set(key, value)\n    _emit(f"init: created {state_path} (project_id={config.project_id}).")\n    return 0\n\n\ndef cmd_status(target: Path) -> int:\n    """Print a one-screen summary of the install\'s state."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    data = backend.data\n    if not data:\n        _emit(f"status: no state at {target} (run init first).")\n        return 1\n    _emit(f"project_id : {data.get(\'project_id\')}")\n    _emit(f"stage      : {data.get(\'stage\')}")\n    _emit(f"mode       : {data.get(\'mode\')}")\n    _emit(f"stance     : {data.get(\'stance\')}")\n    _emit(f"sessions   : {data.get(\'session_count\')}")\n    return 0\n\n\ndef cmd_mode(target: Path, name: str) -> int:\n    """Set the integration mode (observe | guided | active)."""\n    valid = ("observe", "guided", "active")\n    if name not in valid:\n        _emit(f"mode: invalid mode {name!r} (choose from {list(valid)}).")\n        return 2\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"mode: no state at {target} (run init first).")\n        return 1\n    backend.set("mode", name)\n    _emit(f"mode: set to {name}.")\n    return 0\n\n\ndef cmd_stance(target: Path, name: str | None) -> int:\n    """Show or set the active task stance (question|analysis|debug|review|plan).\n\n    With no ``name``, prints the active stance\'s briefing (reading-route +\n    tool-scope + output contract) and the available set. With a ``name``, switches\n    the active stance in state. The stance is advisory — it scopes orientation, it\n    does not block actions.\n    """\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"stance: no state at {target} (run init first).")\n        return 1\n    if name is None:\n        active = backend.data.get("stance", DEFAULT_STANCE)\n        _emit(stance_briefing(active))\n        _emit(f"  available: {\', \'.join(stance_names())}")\n        return 0\n    if name not in stance_names():\n        _emit(f"stance: invalid stance {name!r} (choose from {stance_names()}).")\n        return 2\n    backend.set("stance", name)\n    _emit(f"stance: set to {name}.")\n    _emit(stance_briefing(name))\n    return 0\n\n\ndef cmd_ask(target: Path) -> int:\n    """List the interview\'s currently pending questions."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"ask: no state at {target} (run init first).")\n        return 1\n    pending = pending_questions(backend.data)\n    if not pending:\n        _emit("ask: no pending questions — all slots filled.")\n        return 0\n    _emit(f"ask: {len(pending)} pending question(s):")\n    for question in pending:\n        _emit(\n            f"  [{question[\'id\']}] "\n            f"({question[\'audience\']}/{question[\'priority\']}) {question[\'prompt\']}",\n        )\n    return 0\n\n\ndef cmd_render(target: Path) -> int:\n    """Render the content docs from the current filled slots into ``target``."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"render: no state at {target} (run init first).")\n        return 1\n    context = build_context(backend.data)\n    out_dir = target / config.state_dir / "rendered"\n    leftover_total = 0\n    for name, text in load_templates().items():\n        rendered = render(text, context)\n        leftover = find_placeholders(rendered)\n        leftover_total += len(leftover)\n        out_name = name[:-5] if name.endswith(".tmpl") else name\n        atomic_write_text(out_dir / out_name, rendered)\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"render: wrote {out_name}{suffix}")\n    _emit(f"render: {leftover_total} unfilled placeholder(s) total.")\n    return 0\n\n\ndef cmd_skills(target: Path, build: bool) -> int:\n    """List the skill pack, or ``--build`` it into ``<state_dir>/skills/``.\n\n    Listing shows each skill + its declared capabilities (what it may do beyond\n    read, overriding the ambient stance). Building emits a native ``SKILL.md`` per\n    skill into the staging area, body slot-filled from the interview — the host\n    then installs them under ``.claude/skills/``. Like ``render``, the kit stages;\n    it never writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    if not build:\n        _emit("skills:")\n        for skill in SKILLS:\n            caps = ", ".join(skill_capabilities(skill["name"]))\n            _emit(f"  {skill[\'name\']} — {skill[\'description\']}")\n            _emit(f"    capabilities: {caps}")\n        return 0\n    backend = JsonStateBackend(_state_path(target, config))\n    context = build_context(backend.data) if backend.data else {}\n    out_base = target / config.state_dir\n    leftover_total = 0\n    for skill in SKILLS:\n        body = render(skill["body"], context)\n        leftover = find_placeholders(body)\n        leftover_total += len(leftover)\n        atomic_write_text(out_base / skill_relpath(skill), skill_document(skill, body))\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"skills: wrote {skill_relpath(skill)}{suffix}")\n    _emit(f"skills: {len(SKILLS)} skill(s), {leftover_total} unfilled placeholder(s).")\n    return 0\n\n\ndef cmd_agents(target: Path, build: bool) -> int:\n    """List the persona pack, or ``--build`` it into ``<state_dir>/agents/``.\n\n    Listing shows each persona + its description. Building emits a native\n    ``.claude/agents``-style ``<name>.md`` per persona into the staging area, body\n    slot-filled from the project\'s contract slots — the host then installs them\n    under ``.claude/agents/``. Like ``render``/``skills``, the kit stages; it never\n    writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    if not build:\n        _emit("agents:")\n        for agent in AGENTS:\n            _emit(f"  {agent[\'name\']} — {agent[\'description\']}")\n        return 0\n    backend = JsonStateBackend(_state_path(target, config))\n    context = build_context(backend.data) if backend.data else {}\n    out_base = target / config.state_dir\n    leftover_total = 0\n    for agent in AGENTS:\n        body = render(agent["body"], context)\n        leftover = find_placeholders(body)\n        leftover_total += len(leftover)\n        atomic_write_text(out_base / agent_relpath(agent), agent_document(agent, body))\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"agents: wrote {agent_relpath(agent)}{suffix}")\n    count = len(AGENTS)\n    _emit(f"agents: {count} persona(s), {leftover_total} unfilled placeholder(s).")\n    return 0\n\n\ndef _hook_command(config: Config) -> str:\n    """Return the shell command Claude Code runs for the PreToolUse guard."""\n    return f"{config.interpreter} bootstrap.py hook pretooluse"\n\n\ndef cmd_hooks(target: Path, build: bool) -> int:\n    """Show the hook wiring, or ``--build`` the settings snippet into staging.\n\n    The only hook today is the **PreToolUse stance guard**. Building stages a\n    ``.claude/settings.json`` snippet into ``<state_dir>/hooks/`` that the host\n    merges into their own settings (adjusting the bootstrap path). Like the other\n    emitters, the kit stages; it never writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    command = _hook_command(config)\n    if not build:\n        _emit("hooks:")\n        _emit("  pretooluse — stance guard: warns on an out-of-stance tool (advisory).")\n        _emit(f"  wiring command: {command}")\n        return 0\n    out = target / config.state_dir / "hooks" / "settings.snippet.json"\n    atomic_write_text(out, settings_snippet(command))\n    _emit(f"hooks: wrote {out.relative_to(target)}")\n    _emit("hooks: merge its `hooks.PreToolUse` block into .claude/settings.json.")\n    return 0\n\n\ndef cmd_hook(target: Path, event: str) -> int:\n    """Run a Claude Code hook check (currently: the ``pretooluse`` stance guard).\n\n    Reads the hook payload from stdin; for an out-of-stance tool it writes an\n    advisory warning to stderr. **Always returns 0** — the guard is advisory\n    (plan section 3b), so it never blocks a tool. Fails open on missing\n    state / stance / payload.\n    """\n    if event != "pretooluse":\n        return 0\n    tool_name = tool_from_payload(sys.stdin.read())\n    if not tool_name:\n        return 0\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    stance = backend.data.get("stance") if backend.data else None\n    if not stance:\n        return 0\n    warning = evaluate_tool(stance, tool_name)\n    if warning:\n        sys.stderr.write(warning + "\\n")\n    return 0\n\n\ndef cmd_check(target: Path, strict: bool) -> int:\n    """Run the doc-hygiene + session-log checks against ``target``.\n\n    Doc findings always count toward the exit code (under ``--strict``); a\n    *missing* session log is advisory (a host may run ``check`` mid-session), but\n    an *incomplete* existing log counts. Uses config defaults if ``target`` has\n    no ``substrate.config.json`` yet, so a project can lint before onboarding.\n    """\n    config = load_config(target)\n    docs_root = target / config.docs_root\n    doc_findings = run_doc_checks(\n        docs_root,\n        config.badge_tokens,\n        config.readpath_docs,\n    )\n    if doc_findings:\n        _emit(f"check: {len(doc_findings)} doc finding(s):")\n        for finding in doc_findings:\n            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")\n\n    log = latest_session_log(target / config.sessions_dir)\n    log_missing: list[str] = check_log(log, config.session_markers) if log else []\n    if log is None:\n        _emit("check: no session log found yet (advisory — not a failure).")\n    else:\n        rel = log.relative_to(target) if log.is_relative_to(target) else log\n        if log_missing:\n            _emit(f"check: session log {rel} is missing: {\', \'.join(log_missing)}")\n        else:\n            _emit(f"check: session log {rel} complete.")\n\n    if not doc_findings and not log_missing:\n        _emit("check: all checks passed.")\n        return 0\n    return 1 if strict else 0\n\n\ndef cmd_simulate(n: int) -> int:\n    """Init into a temp dir and drive ``n`` interview sessions; verify progress.\n\n    Session 1 supplies confirmed answers for every critical slot; later sessions\n    supply none. Asserts the critical slots fill and (for ``n`` past the quiet\n    threshold) the install graduates integration -> steady.\n    """\n    with tempfile.TemporaryDirectory(prefix="substrate-sim-") as tmp:\n        target = Path(tmp)\n        rc = cmd_init(target)\n        if rc != 0:\n            return rc\n        state_path = _state_path(target, load_config(target))\n        crit = critical_slots()\n        answers = {slot: f"value-for-{slot}" for slot in crit}\n        graduated = False\n        for index in range(n):\n            backend = JsonStateBackend(state_path)\n            result = run_session(backend, answers if index == 0 else {})\n            graduated = graduated or result["graduated"]\n        data = JsonStateBackend(state_path).data\n        missing = [s for s in crit if data.get("slots", {}).get(s) != "filled"]\n        if missing:\n            _emit(f"simulate: FAILED — critical slots unfilled: {missing}")\n            return 1\n        _emit(\n            f"simulate: OK — {n} session(s), {len(crit)} critical slots filled, "\n            f"stage={data.get(\'stage\')} (graduated={graduated}).",\n        )\n    return 0\n\n\ndef build_parser() -> argparse.ArgumentParser:\n    """Construct the bootstrap argument parser."""\n    parser = argparse.ArgumentParser(prog="bootstrap", description="substrate-kit")\n    parser.add_argument(\n        "--simulate",\n        type=int,\n        metavar="N",\n        help="run N synthetic sessions in a temp dir, then exit",\n    )\n    sub = parser.add_subparsers(dest="command")\n    for name, helptext in (\n        ("init", "initialise a project"),\n        ("status", "show install state"),\n        ("ask", "list pending interview questions"),\n        ("render", "render content docs from filled slots"),\n    ):\n        child = sub.add_parser(name, help=helptext)\n        child.add_argument("--target", type=Path, default=Path.cwd())\n    mode = sub.add_parser("mode", help="set the integration mode")\n    mode.add_argument("name")\n    mode.add_argument("--target", type=Path, default=Path.cwd())\n    stance = sub.add_parser("stance", help="show or set the task stance")\n    stance.add_argument("name", nargs="?", default=None)\n    stance.add_argument("--target", type=Path, default=Path.cwd())\n    skills = sub.add_parser("skills", help="list or --build the skill pack")\n    skills.add_argument(\n        "--build",\n        action="store_true",\n        help="emit SKILL.md files into <state_dir>/skills/",\n    )\n    skills.add_argument("--target", type=Path, default=Path.cwd())\n    agents = sub.add_parser("agents", help="list or --build the persona pack")\n    agents.add_argument(\n        "--build",\n        action="store_true",\n        help="emit agent .md files into <state_dir>/agents/",\n    )\n    agents.add_argument("--target", type=Path, default=Path.cwd())\n    hooks = sub.add_parser("hooks", help="show or --build the hook wiring")\n    hooks.add_argument(\n        "--build",\n        action="store_true",\n        help="emit the PreToolUse settings snippet into <state_dir>/hooks/",\n    )\n    hooks.add_argument("--target", type=Path, default=Path.cwd())\n    hook = sub.add_parser("hook", help="run a hook check (e.g. `hook pretooluse`)")\n    hook.add_argument("event")\n    hook.add_argument("--target", type=Path, default=Path.cwd())\n    check = sub.add_parser("check", help="run the doc + session-log hygiene checks")\n    check.add_argument("--target", type=Path, default=Path.cwd())\n    check.add_argument("--strict", action="store_true", help="exit 1 if any violation")\n    return parser\n\n\ndef main(argv: list[str] | None = None) -> int:\n    """Run the bootstrap CLI; return a process exit code."""\n    parser = build_parser()\n    args = parser.parse_args(argv)\n    try:\n        if args.simulate is not None:\n            return cmd_simulate(args.simulate)\n        if args.command == "init":\n            return cmd_init(args.target)\n        if args.command == "status":\n            return cmd_status(args.target)\n        if args.command == "ask":\n            return cmd_ask(args.target)\n        if args.command == "render":\n            return cmd_render(args.target)\n        if args.command == "mode":\n            return cmd_mode(args.target, args.name)\n        if args.command == "stance":\n            return cmd_stance(args.target, args.name)\n        if args.command == "skills":\n            return cmd_skills(args.target, args.build)\n        if args.command == "agents":\n            return cmd_agents(args.target, args.build)\n        if args.command == "hooks":\n            return cmd_hooks(args.target, args.build)\n        if args.command == "hook":\n            return cmd_hook(args.target, args.event)\n        if args.command == "check":\n            return cmd_check(args.target, args.strict)\n    except UnsafeTargetError as exc:\n        _emit(f"refused: {exc}")\n        return 2\n    parser.print_help()\n    return 0\n',
+    'engine/cli.py': '"""The substrate-kit bootstrap command line.\n\nSurface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``\n(show or set the task stance), ``ask`` (list the pending interview questions),\n``answer`` / ``confirm`` (fill / confirm a slot), ``render`` (write content\ndocs), ``skills`` / ``agents`` / ``hooks`` (list / ``--build`` the packs),\n``hook <event>`` (the runtime hook entry points), ``check`` (every hygiene\nchecker), ``triggers``, ``reflect``, ``episodes``, ``metrics``, ``maintain``,\n``review`` (the independent-review seam), ``economy`` (the context-economy\nengine), ``ledger`` (the [D-NNNN] decisions ledger), and ``--simulate N\n[--mode m]`` (the CI / proving smoke that drives the staged interview and\nasserts per-mode behavior). Output goes through ``_emit`` (``sys.stdout.write``)\nrather than ``print`` to keep the engine lint-clean.\n"""\n\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport sys\nimport tempfile\nfrom datetime import date\nfrom pathlib import Path\n\nfrom engine.agents.agents import AGENTS, agent_document, agent_relpath\nfrom engine.checks.check_docs import run_doc_checks\nfrom engine.checks.check_namespace import check_namespace\nfrom engine.checks.check_orientation_budget import check_orientation_budget\nfrom engine.checks.check_seam_authority import check_seam_authority\nfrom engine.checks.check_session_log import check_log, latest_session_log\nfrom engine.economy.engine import economy_actuate, economy_check, issue_body\nfrom engine.economy.harvest import parse_harvest_tables\nfrom engine.economy.simulator import calibration_recipe, default_calibration, run_search\nfrom engine.hooks.stance_guard import evaluate_tool, settings_snippet, tool_from_payload\nfrom engine.interview.interview import (\n    confirm_slot,\n    critical_slots,\n    pending_questions,\n    record_answer,\n    run_session,\n    session_questions,\n)\nfrom engine.interview.question_bank import QUESTIONS\nfrom engine.ledger import LEDGER_FILENAME, append_decision, check_ledger\nfrom engine.ledger import check_stamp_discipline as ledger_stamp_check\nfrom engine.lib.atomicio import atomic_write_text\nfrom engine.lib.config import Config, config_path, load_config, save_config\nfrom engine.lib.guardrail import UnsafeTargetError, assert_safe_target\nfrom engine.lib.modes import triggers_mandate\nfrom engine.lib.state import JsonStateBackend, default_state\nfrom engine.loop.episodes import (\n    EPISODIC_INDEX_FILENAME,\n    rebuild_episodic_index,\n    search_episodes,\n)\nfrom engine.loop.kpis import kpi_footer, workflow_kpis\nfrom engine.loop.maintenance import compaction_due, maintenance_report, run_compaction\nfrom engine.loop.reflections import (\n    REFLECTIONS_FILENAME,\n    add_reflection,\n    lessons_block,\n    load_reflections,\n    mine_reflections,\n)\nfrom engine.loop.review_seam import (\n    apply_review_verdict,\n    build_review_payload,\n    seam_wiring_doc,\n    write_review_payload,\n)\nfrom engine.loop.triggers import check_triggers, mandatory_questions, trigger_block\nfrom engine.render import build_context, find_placeholders, load_templates, render\nfrom engine.skills.skills import (\n    SKILLS,\n    skill_capabilities,\n    skill_document,\n    skill_relpath,\n)\nfrom engine.stances.stances import DEFAULT_STANCE, stance_briefing, stance_names\n\n\ndef _emit(line: str = "") -> None:\n    """Write a line to stdout (avoids the print() lint ban in engine code)."""\n    sys.stdout.write(line + "\\n")\n\n\ndef _kit_root() -> Path:\n    """Return the kit root (``substrate-kit/``) for the guardrail check."""\n    return Path(__file__).resolve().parents[2]\n\n\ndef _state_path(root: Path, config: Config) -> Path:\n    """Return the state-file path under a project ``root``."""\n    return root / config.state_dir / "state.json"\n\n\ndef cmd_init(target: Path) -> int:\n    """Create config + state under ``target`` if absent; never clobber."""\n    assert_safe_target(target, _kit_root())\n    target.mkdir(parents=True, exist_ok=True)\n    if config_path(target).exists():\n        config = load_config(target)\n    else:\n        config = Config()\n        save_config(target, config)\n    state_path = _state_path(target, config)\n    if state_path.exists():\n        _emit(f"init: already initialised at {target} (idempotent no-op).")\n        return 0\n    backend = JsonStateBackend(state_path)\n    with backend.transaction():\n        for key, value in default_state(config.project_id).items():\n            backend.set(key, value)\n    _emit(f"init: created {state_path} (project_id={config.project_id}).")\n    return 0\n\n\ndef cmd_status(target: Path) -> int:\n    """Print a one-screen summary of the install\'s state."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    data = backend.data\n    if not data:\n        _emit(f"status: no state at {target} (run init first).")\n        return 1\n    _emit(f"project_id : {data.get(\'project_id\')}")\n    _emit(f"stage      : {data.get(\'stage\')}")\n    _emit(f"mode       : {data.get(\'mode\')}")\n    _emit(f"stance     : {data.get(\'stance\')}")\n    _emit(f"sessions   : {data.get(\'session_count\')}")\n    return 0\n\n\ndef cmd_mode(target: Path, name: str) -> int:\n    """Set the integration mode (observe | guided | active)."""\n    valid = ("observe", "guided", "active")\n    if name not in valid:\n        _emit(f"mode: invalid mode {name!r} (choose from {list(valid)}).")\n        return 2\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"mode: no state at {target} (run init first).")\n        return 1\n    history = list(backend.get("mode_history", []))\n    history.append(\n        {\n            "mode": name,\n            "session": int(backend.get("session_count", 0)),\n            "date": date.today().isoformat(),\n        },\n    )\n    with backend.transaction():\n        backend.set("mode", name)\n        backend.set("mode_history", history)\n    _emit(f"mode: set to {name} (audit trail: {len(history)} switch(es)).")\n    return 0\n\n\ndef cmd_stance(target: Path, name: str | None) -> int:\n    """Show or set the active task stance (question|analysis|debug|review|plan).\n\n    With no ``name``, prints the active stance\'s briefing (reading-route +\n    tool-scope + output contract) and the available set. With a ``name``, switches\n    the active stance in state. The stance is advisory — it scopes orientation, it\n    does not block actions.\n    """\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"stance: no state at {target} (run init first).")\n        return 1\n    if name is None:\n        active = backend.data.get("stance", DEFAULT_STANCE)\n        _emit(stance_briefing(active))\n        _emit(f"  available: {\', \'.join(stance_names())}")\n        return 0\n    if name not in stance_names():\n        _emit(f"stance: invalid stance {name!r} (choose from {stance_names()}).")\n        return 2\n    backend.set("stance", name)\n    _emit(f"stance: set to {name}.")\n    _emit(stance_briefing(name))\n    return 0\n\n\ndef cmd_ask(target: Path) -> int:\n    """List the interview\'s currently pending questions."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"ask: no state at {target} (run init first).")\n        return 1\n    pending = pending_questions(backend.data)\n    if not pending:\n        _emit("ask: no pending questions — all slots filled.")\n        return 0\n    asked = session_questions(backend.data)\n    _emit(f"ask: {len(asked)} question(s) this session (mode quota):")\n    for question in asked:\n        _emit(\n            f"  [{question[\'id\']}] "\n            f"({question[\'audience\']}/{question[\'priority\']}) {question[\'prompt\']}",\n        )\n    remaining = len(pending) - len(asked)\n    if remaining > 0:\n        _emit(f"  (+{remaining} more later — the mode paces the interview)")\n    return 0\n\n\ndef cmd_render(target: Path) -> int:\n    """Render the content docs from the current filled slots into ``target``."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"render: no state at {target} (run init first).")\n        return 1\n    context = build_context(backend.data)\n    out_dir = target / config.state_dir / "rendered"\n    leftover_total = 0\n    for name, text in load_templates().items():\n        rendered = render(text, context)\n        leftover = find_placeholders(rendered)\n        leftover_total += len(leftover)\n        out_name = name[:-5] if name.endswith(".tmpl") else name\n        atomic_write_text(out_dir / out_name, rendered)\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"render: wrote {out_name}{suffix}")\n    _emit(f"render: {leftover_total} unfilled placeholder(s) total.")\n    return 0\n\n\ndef cmd_skills(target: Path, build: bool) -> int:\n    """List the skill pack, or ``--build`` it into ``<state_dir>/skills/``.\n\n    Listing shows each skill + its declared capabilities (what it may do beyond\n    read, overriding the ambient stance). Building emits a native ``SKILL.md`` per\n    skill into the staging area, body slot-filled from the interview — the host\n    then installs them under ``.claude/skills/``. Like ``render``, the kit stages;\n    it never writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    if not build:\n        _emit("skills:")\n        for skill in SKILLS:\n            caps = ", ".join(skill_capabilities(skill["name"]))\n            _emit(f"  {skill[\'name\']} — {skill[\'description\']}")\n            _emit(f"    capabilities: {caps}")\n        return 0\n    backend = JsonStateBackend(_state_path(target, config))\n    context = build_context(backend.data) if backend.data else {}\n    out_base = target / config.state_dir\n    leftover_total = 0\n    for skill in SKILLS:\n        body = render(skill["body"], context)\n        leftover = find_placeholders(body)\n        leftover_total += len(leftover)\n        atomic_write_text(out_base / skill_relpath(skill), skill_document(skill, body))\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"skills: wrote {skill_relpath(skill)}{suffix}")\n    _emit(f"skills: {len(SKILLS)} skill(s), {leftover_total} unfilled placeholder(s).")\n    return 0\n\n\ndef cmd_agents(target: Path, build: bool) -> int:\n    """List the persona pack, or ``--build`` it into ``<state_dir>/agents/``.\n\n    Listing shows each persona + its description. Building emits a native\n    ``.claude/agents``-style ``<name>.md`` per persona into the staging area, body\n    slot-filled from the project\'s contract slots — the host then installs them\n    under ``.claude/agents/``. Like ``render``/``skills``, the kit stages; it never\n    writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    if not build:\n        _emit("agents:")\n        for agent in AGENTS:\n            _emit(f"  {agent[\'name\']} — {agent[\'description\']}")\n        return 0\n    backend = JsonStateBackend(_state_path(target, config))\n    context = build_context(backend.data) if backend.data else {}\n    out_base = target / config.state_dir\n    leftover_total = 0\n    for agent in AGENTS:\n        body = render(agent["body"], context)\n        leftover = find_placeholders(body)\n        leftover_total += len(leftover)\n        atomic_write_text(out_base / agent_relpath(agent), agent_document(agent, body))\n        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""\n        _emit(f"agents: wrote {agent_relpath(agent)}{suffix}")\n    count = len(AGENTS)\n    _emit(f"agents: {count} persona(s), {leftover_total} unfilled placeholder(s).")\n    return 0\n\n\ndef _hook_command(config: Config) -> str:\n    """Return the shell command Claude Code runs for the PreToolUse guard."""\n    return f"{config.interpreter} bootstrap.py hook pretooluse"\n\n\ndef cmd_hooks(target: Path, build: bool) -> int:\n    """Show the hook wiring, or ``--build`` the settings snippet into staging.\n\n    The only hook today is the **PreToolUse stance guard**. Building stages a\n    ``.claude/settings.json`` snippet into ``<state_dir>/hooks/`` that the host\n    merges into their own settings (adjusting the bootstrap path). Like the other\n    emitters, the kit stages; it never writes a live ``.claude/`` tree.\n    """\n    config = load_config(target)\n    command = _hook_command(config)\n    if not build:\n        _emit("hooks:")\n        _emit("  pretooluse — stance guard: warns on an out-of-stance tool (advisory).")\n        _emit(f"  wiring command: {command}")\n        return 0\n    out = target / config.state_dir / "hooks" / "settings.snippet.json"\n    atomic_write_text(out, settings_snippet(command))\n    _emit(f"hooks: wrote {out.relative_to(target)}")\n    _emit("hooks: merge its `hooks.PreToolUse` block into .claude/settings.json.")\n    return 0\n\n\ndef cmd_hook(target: Path, event: str) -> int:\n    """Run a Claude Code hook check (currently: the ``pretooluse`` stance guard).\n\n    Reads the hook payload from stdin; for an out-of-stance tool it writes an\n    advisory warning to stderr. **Always returns 0** — the guard is advisory\n    (plan section 3b), so it never blocks a tool. Fails open on missing\n    state / stance / payload.\n    """\n    if event != "pretooluse":\n        return 0\n    tool_name = tool_from_payload(sys.stdin.read())\n    if not tool_name:\n        return 0\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    stance = backend.data.get("stance") if backend.data else None\n    if not stance:\n        return 0\n    warning = evaluate_tool(stance, tool_name)\n    if warning:\n        sys.stderr.write(warning + "\\n")\n    return 0\n\n\ndef _extra_check_findings(target: Path, config: Config) -> list:\n    """Run the configured non-doc checkers (ledger, namespace, seams, budget).\n\n    Each checker engages only when its inputs exist — an un-adopted project\n    with no ledger, no namespace roots, no seams, and no boot docs runs none of\n    them, so ``check`` stays meaningful before onboarding.\n    """\n    findings: list = []\n    ledger_path = target / config.docs_root / LEDGER_FILENAME\n    if ledger_path.exists():\n        findings += check_ledger(ledger_path)\n        findings += ledger_stamp_check(target / config.docs_root, ledger_path)\n    roots = [target / r for r in config.namespace.get("roots", [])]\n    roots = [r for r in roots if r.exists()]\n    if roots:\n        findings += check_namespace(\n            roots,\n            reserved=config.namespace.get("reserved") or None,\n        )\n    if config.seams:\n        findings += check_seam_authority(target, config.seams)\n    boot_docs = config.orientation.get("boot_docs") or config.readpath_docs\n    docs_root = target / config.docs_root\n    if any((docs_root / doc).exists() or (target / doc).exists() for doc in boot_docs):\n        findings += check_orientation_budget(target, config)\n    return findings\n\n\ndef cmd_check(target: Path, strict: bool) -> int:\n    """Run every hygiene checker against ``target``.\n\n    Docs (badge/link/reachable), the decisions ledger + stamp discipline, the\n    namespace/shadowing guard, the seam-authority fences, and the orientation\n    word budget — each engaging only when its inputs exist. Findings always\n    count toward the exit code (under ``--strict``); a *missing* session log is\n    advisory (a host may run ``check`` mid-session), but an *incomplete*\n    existing log counts. Uses config defaults if ``target`` has no\n    ``substrate.config.json`` yet, so a project can lint before onboarding.\n    """\n    config = load_config(target)\n    docs_root = target / config.docs_root\n    doc_findings = run_doc_checks(\n        docs_root,\n        config.badge_tokens,\n        config.readpath_docs,\n    )\n    doc_findings = list(doc_findings) + _extra_check_findings(target, config)\n    if doc_findings:\n        _emit(f"check: {len(doc_findings)} finding(s):")\n        for finding in doc_findings:\n            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")\n\n    log = latest_session_log(target / config.sessions_dir)\n    log_missing: list[str] = check_log(log, config.session_markers) if log else []\n    if log is None:\n        _emit("check: no session log found yet (advisory — not a failure).")\n    else:\n        rel = log.relative_to(target) if log.is_relative_to(target) else log\n        if log_missing:\n            _emit(f"check: session log {rel} is missing: {\', \'.join(log_missing)}")\n        else:\n            _emit(f"check: session log {rel} complete.")\n\n    if not doc_findings and not log_missing:\n        _emit("check: all checks passed.")\n        return 0\n    return 1 if strict else 0\n\n\ndef _require_state(\n    target: Path,\n    command: str,\n) -> tuple[Config, JsonStateBackend] | None:\n    """Load config + state; None (with a message) when the install is missing."""\n    config = load_config(target)\n    backend = JsonStateBackend(_state_path(target, config))\n    if not backend.data:\n        _emit(f"{command}: no state at {target} (run init first).")\n        return None\n    return config, backend\n\n\ndef _question_for_slot(slot: str) -> dict | None:\n    """Return the bank question that fills ``slot`` (None when unknown)."""\n    for question in QUESTIONS:\n        if question["slot"] == slot:\n            return question\n    return None\n\n\ndef cmd_answer(target: Path, slot: str, answer: str) -> int:\n    """Record a user answer for ``slot`` (fills it, resolves its escalation)."""\n    loaded = _require_state(target, "answer")\n    if loaded is None:\n        return 1\n    _, backend = loaded\n    question = _question_for_slot(slot)\n    if question is None:\n        known = ", ".join(q["slot"] for q in QUESTIONS)\n        _emit(f"answer: unknown slot {slot!r} (known: {known}).")\n        return 2\n    record_answer(backend, question, answer, source="user")\n    status = backend.get("slots", {}).get(slot)\n    _emit(f"answer: {slot} -> {status}.")\n    if status == "partial":\n        floor = int(question.get("min_len", 1))\n        _emit(f"answer: too thin to count (needs >= {floor} chars of substance).")\n    return 0\n\n\ndef cmd_confirm(target: Path, slot: str) -> int:\n    """Confirm a provisional (self-answered) slot as user-verified."""\n    loaded = _require_state(target, "confirm")\n    if loaded is None:\n        return 1\n    _, backend = loaded\n    if confirm_slot(backend, slot, source="user"):\n        _emit(f"confirm: {slot} confirmed (provisional -> filled).")\n        return 0\n    _emit(f"confirm: {slot} is not provisional (nothing to confirm).")\n    return 1\n\n\ndef cmd_triggers(target: Path) -> int:\n    """Scan for fired triggers and show the mandated / advisory questions."""\n    loaded = _require_state(target, "triggers")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    triggers = check_triggers(target, config, backend.data)\n    if not triggers:\n        _emit("triggers: none fired.")\n        return 0\n    questions = mandatory_questions(triggers)\n    block = trigger_block(\n        triggers,\n        questions,\n        mandate=triggers_mandate(backend.data),\n    )\n    _emit(block)\n    return 0\n\n\ndef cmd_reflect(\n    target: Path,\n    *,\n    add: str | None,\n    evidence: str,\n    tags: str,\n    mine: bool,\n) -> int:\n    """List, add to, or mine the forward reflection buffer."""\n    loaded = _require_state(target, "reflect")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    path = target / config.state_dir / REFLECTIONS_FILENAME\n    buffer_size = int(config.reflection.get("buffer_size", 5))\n    if add is not None:\n        entry = add_reflection(\n            path,\n            lesson=add,\n            evidence=evidence,\n            tags=[t for t in tags.split(",") if t],\n            buffer_size=buffer_size,\n        )\n        _emit(f"reflect: added {entry[\'id\']}.")\n    if mine:\n        candidates = mine_reflections(target / config.sessions_dir)\n        for cand in candidates:\n            entry = add_reflection(\n                path,\n                lesson=cand["lesson"],\n                evidence=cand.get("evidence", ""),\n                tags=list(cand.get("tags", [])),\n                buffer_size=buffer_size,\n            )\n            _emit(f"reflect: mined {entry[\'id\']} — {cand[\'lesson\'][:60]}")\n        if not candidates:\n            _emit("reflect: mined nothing new.")\n    entries = load_reflections(path)\n    backend.set(\n        "reflection_buffer",\n        {\n            "active_count": len(entries),\n            "last_mined": (\n                date.today().isoformat()\n                if mine\n                else (backend.get("reflection_buffer", {}) or {}).get("last_mined")\n            ),\n        },\n    )\n    block = lessons_block(entries)\n    _emit(block if block else "reflect: buffer empty.")\n    return 0\n\n\ndef cmd_episodes(target: Path, *, rebuild: bool, search: str | None) -> int:\n    """Rebuild or search the episodic index over the session logs."""\n    config = load_config(target)\n    index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME\n    if rebuild:\n        entries = rebuild_episodic_index(target / config.sessions_dir, index_path)\n        _emit(f"episodes: indexed {len(entries)} session(s).")\n    if search is not None:\n        hits = search_episodes(index_path, search)\n        for hit in hits:\n            _emit(\n                f"  {hit.get(\'date\', \'?\')} {hit.get(\'slug\', \'?\')} — "\n                f"{hit.get(\'summary\', \'\')}",\n            )\n        _emit(f"episodes: {len(hits)} hit(s) for {search!r}.")\n    if not rebuild and search is None:\n        _emit("episodes: pass --rebuild and/or --search TAG.")\n    return 0\n\n\ndef cmd_metrics(target: Path) -> int:\n    """Emit the router / workflow KPIs (JSON + the one-line footer)."""\n    loaded = _require_state(target, "metrics")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    kpis = workflow_kpis(backend.data, target / config.sessions_dir)\n    _emit(json.dumps(kpis, indent=2, sort_keys=True))\n    _emit(kpi_footer(kpis))\n    return 0\n\n\ndef cmd_maintain(target: Path, *, compact: bool) -> int:\n    """Run the self-maintenance loop\'s report (and compaction when asked)."""\n    loaded = _require_state(target, "maintain")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    if compact:\n        if compaction_due(backend.data, dict(config.cadence or {})):\n            path = run_compaction(target, config, backend)\n            rel = path.relative_to(target) if path.is_relative_to(target) else path\n            _emit(f"maintain: compaction written -> {rel}")\n        else:\n            _emit("maintain: compaction not due.")\n    triggers = check_triggers(target, config, backend.data)\n    economy = economy_check(target, config)\n    ledger_path = target / config.docs_root / LEDGER_FILENAME\n    ledger_findings = check_ledger(ledger_path) if ledger_path.exists() else []\n    kpis = workflow_kpis(backend.data, target / config.sessions_dir)\n    _emit(\n        maintenance_report(\n            target,\n            config,\n            backend,\n            triggers=triggers,\n            economy_findings=list(economy.get("findings", [])),\n            ledger_findings=ledger_findings,\n            kpis=kpis,\n        ),\n    )\n    return 0\n\n\ndef cmd_review(\n    target: Path,\n    action: str,\n    slot: str | None,\n    *,\n    verdict: str,\n    reviewer: str,\n) -> int:\n    """Drive the independent-review seam: build payloads, record verdicts."""\n    if action == "doc":\n        _emit(seam_wiring_doc())\n        return 0\n    if slot is None:\n        _emit("review: a slot is required for build/confirm.")\n        return 2\n    loaded = _require_state(target, "review")\n    if loaded is None:\n        return 1\n    config, backend = loaded\n    if action == "build":\n        payload = build_review_payload(backend, slot)\n        if not payload:\n            _emit(f"review: slot {slot!r} is not provisional — nothing to review.")\n            return 1\n        path = write_review_payload(target, config, payload)\n        rel = path.relative_to(target) if path.is_relative_to(target) else path\n        _emit(f"review: payload written -> {rel}")\n        return 0\n    if action == "confirm":\n        if verdict not in ("pass", "fail"):\n            _emit("review: --verdict must be pass or fail.")\n            return 2\n        outcome = apply_review_verdict(\n            backend,\n            slot,\n            verdict=verdict,\n            reviewer=reviewer,\n        )\n        _emit(f"review: {slot} -> {outcome}.")\n        return 0\n    _emit(f"review: unknown action {action!r} (build | confirm | doc).")\n    return 2\n\n\ndef cmd_economy(\n    target: Path,\n    action: str,\n    *,\n    strict: bool,\n    apply: bool,\n    bands: int,\n) -> int:\n    """Drive the context-economy engine: check, apply, simulate, recipe."""\n    config = load_config(target)\n    if action == "recipe":\n        _emit(calibration_recipe())\n        return 0\n    if action == "simulate":\n        result = run_search(default_calibration(), bands=bands)\n        _emit(str(result.get("why_it_won", "")))\n        winner = result.get("winner", {})\n        name = winner.get("name") if isinstance(winner, dict) else winner\n        _emit(f"economy: winner {name} (feasible: {result.get(\'feasible_count\')}).")\n        return 0\n    harvested = parse_harvest_tables(target / config.docs_root / "planning")\n    report = economy_check(target, config, harvested=harvested)\n    if action == "issue-body":\n        _emit(issue_body(report))\n        return 0\n    if action == "check":\n        census = report.get("census", {})\n        for name in sorted(census):\n            row = census[name]\n            _emit(\n                f"  class {name}: {row.get(\'files\', 0)} file(s), "\n                f"{row.get(\'words\', 0)} word(s)",\n            )\n        for gauge in report.get("gauges", []):\n            flag = "OVER" if gauge.get("over") else "ok"\n            _emit(f"  gauge {gauge[\'name\']}: {gauge[\'value\']}/{gauge[\'cap\']} [{flag}]")\n        findings = report.get("findings", [])\n        for finding in findings:\n            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")\n        for line in economy_actuate(target, config, report, apply=False):\n            _emit(f"  would-act: {line}")\n        debt = report.get("debt", 0)\n        threshold = int(config.economy.get("debt_threshold", 10))\n        _emit(f"economy: debt {debt} (threshold {threshold}).")\n        over = bool(findings) or debt >= threshold\n        return 1 if strict and over else 0\n    if action == "apply":\n        lines = economy_actuate(target, config, report, apply=apply)\n        for line in lines:\n            _emit(f"  {line}")\n        if not apply:\n            _emit("economy: dry-run (pass --yes to act; maturity gates apply).")\n        return 0\n    _emit(\n        f"economy: unknown action {action!r} "\n        "(check | apply | simulate | recipe | issue-body).",\n    )\n    return 2\n\n\ndef cmd_ledger(\n    target: Path,\n    *,\n    title: str,\n    verdict: str,\n    why: str,\n    provenance: str,\n    supersedes: str | None,\n) -> int:\n    """Append a decision to the [D-NNNN] ledger (created on first use)."""\n    config = load_config(target)\n    path = target / config.docs_root / LEDGER_FILENAME\n    entry = append_decision(\n        path,\n        title=title,\n        verdict=verdict,\n        why=why,\n        provenance=provenance,\n        supersedes=supersedes,\n    )\n    _emit(f"ledger: recorded {entry[\'id\']} — {title}")\n    if supersedes:\n        _emit(f"ledger: {supersedes} stamped superseded-by {entry[\'id\']}.")\n    return 0\n\n\ndef _simulate_mode_asserts(\n    mode: str,\n    data: dict,\n    graduated: bool,\n    n: int,\n) -> str | None:\n    """Return the per-mode behavior violation, or None when behavior held.\n\n    The behavior-assert half of the simulation: observe must never\n    auto-graduate (it proposes), guided/active must graduate once the quiet\n    streak is long enough.\n    """\n    quiet_needed = 3\n    if mode == "observe":\n        if graduated or data.get("stage") != "integration":\n            return "observe mode auto-graduated (must only propose)"\n        if n > quiet_needed and not data.get("graduation_proposed"):\n            return "observe mode never proposed graduation"\n        return None\n    if n > quiet_needed and not graduated:\n        return f"{mode} mode failed to graduate after the quiet streak"\n    return None\n\n\ndef cmd_simulate(n: int, mode: str = "guided") -> int:\n    """Init into a temp dir and drive ``n`` interview sessions; verify behavior.\n\n    Session 1 supplies confirmed answers for every critical slot; later sessions\n    supply none. Asserts the critical slots fill and that the run behaves\n    per ``mode``: guided/active graduate integration -> steady once quiet;\n    observe only ever *proposes* graduation.\n    """\n    with tempfile.TemporaryDirectory(prefix="substrate-sim-") as tmp:\n        target = Path(tmp)\n        rc = cmd_init(target)\n        if rc != 0:\n            return rc\n        state_path = _state_path(target, load_config(target))\n        if mode != "guided":\n            rc = cmd_mode(target, mode)\n            if rc != 0:\n                return rc\n        crit = critical_slots()\n        answers = {slot: f"value-for-{slot}" for slot in crit}\n        graduated = False\n        for index in range(n):\n            backend = JsonStateBackend(state_path)\n            result = run_session(backend, answers if index == 0 else {})\n            graduated = graduated or result["graduated"]\n        data = JsonStateBackend(state_path).data\n        missing = [s for s in crit if data.get("slots", {}).get(s) != "filled"]\n        if missing:\n            _emit(f"simulate: FAILED — critical slots unfilled: {missing}")\n            return 1\n        violation = _simulate_mode_asserts(mode, data, graduated, n)\n        if violation:\n            _emit(f"simulate: FAILED — {violation}")\n            return 1\n        _emit(\n            f"simulate: OK — {n} session(s), {len(crit)} critical slots filled, "\n            f"mode={mode}, stage={data.get(\'stage\')} (graduated={graduated}).",\n        )\n    return 0\n\n\ndef build_parser() -> argparse.ArgumentParser:\n    """Construct the bootstrap argument parser."""\n    parser = argparse.ArgumentParser(prog="bootstrap", description="substrate-kit")\n    parser.add_argument(\n        "--simulate",\n        type=int,\n        metavar="N",\n        help="run N synthetic sessions in a temp dir, then exit",\n    )\n    parser.add_argument(\n        "--mode",\n        default="guided",\n        choices=("observe", "guided", "active"),\n        help="integration mode for --simulate (behavior asserts differ per mode)",\n    )\n    sub = parser.add_subparsers(dest="command")\n    for name, helptext in (\n        ("init", "initialise a project"),\n        ("status", "show install state"),\n        ("ask", "list pending interview questions"),\n        ("render", "render content docs from filled slots"),\n        ("triggers", "scan for fired triggers / mandatory questions"),\n        ("metrics", "emit the router + workflow KPIs"),\n    ):\n        child = sub.add_parser(name, help=helptext)\n        child.add_argument("--target", type=Path, default=Path.cwd())\n    answer = sub.add_parser("answer", help="record a user answer for a slot")\n    answer.add_argument("slot")\n    answer.add_argument("value", nargs="+", help="the answer text")\n    answer.add_argument("--target", type=Path, default=Path.cwd())\n    confirm = sub.add_parser("confirm", help="confirm a provisional slot")\n    confirm.add_argument("slot")\n    confirm.add_argument("--target", type=Path, default=Path.cwd())\n    reflect = sub.add_parser("reflect", help="list/add/mine the reflection buffer")\n    reflect.add_argument("--add", metavar="LESSON", default=None)\n    reflect.add_argument("--evidence", default="")\n    reflect.add_argument("--tags", default="", help="comma-separated tags")\n    reflect.add_argument("--mine", action="store_true")\n    reflect.add_argument("--target", type=Path, default=Path.cwd())\n    episodes = sub.add_parser("episodes", help="rebuild/search the episodic index")\n    episodes.add_argument("--rebuild", action="store_true")\n    episodes.add_argument("--search", metavar="TAG", default=None)\n    episodes.add_argument("--target", type=Path, default=Path.cwd())\n    maintain = sub.add_parser("maintain", help="run the self-maintenance report")\n    maintain.add_argument("--compact", action="store_true")\n    maintain.add_argument("--target", type=Path, default=Path.cwd())\n    review = sub.add_parser("review", help="drive the independent-review seam")\n    review.add_argument("action", choices=("build", "confirm", "doc"))\n    review.add_argument("slot", nargs="?", default=None)\n    review.add_argument("--verdict", default="", help="pass | fail (for confirm)")\n    review.add_argument("--reviewer", default="external")\n    review.add_argument("--target", type=Path, default=Path.cwd())\n    economy = sub.add_parser("economy", help="run the context-economy engine")\n    economy.add_argument(\n        "action",\n        choices=("check", "apply", "simulate", "recipe", "issue-body"),\n    )\n    economy.add_argument("--strict", action="store_true")\n    economy.add_argument("--yes", action="store_true", help="really act (apply)")\n    economy.add_argument("--bands", type=int, default=24)\n    economy.add_argument("--target", type=Path, default=Path.cwd())\n    ledger = sub.add_parser("ledger", help="append a [D-NNNN] decision")\n    ledger.add_argument("--title", required=True)\n    ledger.add_argument("--verdict", required=True)\n    ledger.add_argument("--why", required=True)\n    ledger.add_argument("--provenance", required=True)\n    ledger.add_argument("--supersedes", default=None)\n    ledger.add_argument("--target", type=Path, default=Path.cwd())\n    mode = sub.add_parser("mode", help="set the integration mode")\n    mode.add_argument("name")\n    mode.add_argument("--target", type=Path, default=Path.cwd())\n    stance = sub.add_parser("stance", help="show or set the task stance")\n    stance.add_argument("name", nargs="?", default=None)\n    stance.add_argument("--target", type=Path, default=Path.cwd())\n    skills = sub.add_parser("skills", help="list or --build the skill pack")\n    skills.add_argument(\n        "--build",\n        action="store_true",\n        help="emit SKILL.md files into <state_dir>/skills/",\n    )\n    skills.add_argument("--target", type=Path, default=Path.cwd())\n    agents = sub.add_parser("agents", help="list or --build the persona pack")\n    agents.add_argument(\n        "--build",\n        action="store_true",\n        help="emit agent .md files into <state_dir>/agents/",\n    )\n    agents.add_argument("--target", type=Path, default=Path.cwd())\n    hooks = sub.add_parser("hooks", help="show or --build the hook wiring")\n    hooks.add_argument(\n        "--build",\n        action="store_true",\n        help="emit the PreToolUse settings snippet into <state_dir>/hooks/",\n    )\n    hooks.add_argument("--target", type=Path, default=Path.cwd())\n    hook = sub.add_parser("hook", help="run a hook check (e.g. `hook pretooluse`)")\n    hook.add_argument("event")\n    hook.add_argument("--target", type=Path, default=Path.cwd())\n    check = sub.add_parser("check", help="run the doc + session-log hygiene checks")\n    check.add_argument("--target", type=Path, default=Path.cwd())\n    check.add_argument("--strict", action="store_true", help="exit 1 if any violation")\n    return parser\n\n\ndef main(argv: list[str] | None = None) -> int:\n    """Run the bootstrap CLI; return a process exit code."""\n    parser = build_parser()\n    args = parser.parse_args(argv)\n    try:\n        if args.simulate is not None:\n            return cmd_simulate(args.simulate, args.mode)\n        if args.command == "init":\n            return cmd_init(args.target)\n        if args.command == "status":\n            return cmd_status(args.target)\n        if args.command == "ask":\n            return cmd_ask(args.target)\n        if args.command == "render":\n            return cmd_render(args.target)\n        if args.command == "mode":\n            return cmd_mode(args.target, args.name)\n        if args.command == "stance":\n            return cmd_stance(args.target, args.name)\n        if args.command == "skills":\n            return cmd_skills(args.target, args.build)\n        if args.command == "agents":\n            return cmd_agents(args.target, args.build)\n        if args.command == "hooks":\n            return cmd_hooks(args.target, args.build)\n        if args.command == "hook":\n            return cmd_hook(args.target, args.event)\n        if args.command == "check":\n            return cmd_check(args.target, args.strict)\n        if args.command == "answer":\n            return cmd_answer(args.target, args.slot, " ".join(args.value))\n        if args.command == "confirm":\n            return cmd_confirm(args.target, args.slot)\n        if args.command == "triggers":\n            return cmd_triggers(args.target)\n        if args.command == "reflect":\n            return cmd_reflect(\n                args.target,\n                add=args.add,\n                evidence=args.evidence,\n                tags=args.tags,\n                mine=args.mine,\n            )\n        if args.command == "episodes":\n            return cmd_episodes(args.target, rebuild=args.rebuild, search=args.search)\n        if args.command == "metrics":\n            return cmd_metrics(args.target)\n        if args.command == "maintain":\n            return cmd_maintain(args.target, compact=args.compact)\n        if args.command == "review":\n            return cmd_review(\n                args.target,\n                args.action,\n                args.slot,\n                verdict=args.verdict,\n                reviewer=args.reviewer,\n            )\n        if args.command == "economy":\n            return cmd_economy(\n                args.target,\n                args.action,\n                strict=args.strict,\n                apply=args.yes,\n                bands=args.bands,\n            )\n        if args.command == "ledger":\n            return cmd_ledger(\n                args.target,\n                title=args.title,\n                verdict=args.verdict,\n                why=args.why,\n                provenance=args.provenance,\n                supersedes=args.supersedes,\n            )\n    except UnsafeTargetError as exc:\n        _emit(f"refused: {exc}")\n        return 2\n    parser.print_help()\n    return 0\n',
 }
 
 _TEMPLATES = {
