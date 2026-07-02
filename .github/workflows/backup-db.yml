@@ -29,7 +29,12 @@ name: Postgres backup (daily)
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # daily 02:00 UTC — between the two executor runs
+    - cron: '0 2 * * *'  # daily 02:00 UTC — between the two executor runs (90-day artifact)
+    - cron: '0 3 1 * *'  # monthly, 1st 03:00 UTC — long-retention tier (400-day artifact).
+                         # Added 2026-07-02 (Q-0213 session): Railway-native volume backups are
+                         # plan-gated on Hobby (API returns Not Authorized for schedule + manual
+                         # create), so this workflow is the ONLY backup layer — the monthly tier
+                         # protects against the 90-day artifact horizon.
   workflow_dispatch:
     inputs:
       reason:
@@ -123,9 +128,15 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: postgres-backup-${{ github.run_id }}
+          # The monthly schedule (1st, 03:00 UTC) uploads a long-retention artifact under a
+          # distinct name; the daily keeps its 90-day rolling window. 400 days is GitHub's
+          # maximum artifact retention — BUT GitHub silently clamps retention-days to the
+          # repo's own maximum (Settings → Actions → General → "Artifact and log retention",
+          # default 90). One-time owner step: raise that repo setting to 400, or the monthly
+          # tier quietly keeps 90-day retention.
+          name: postgres-backup-${{ github.event.schedule == '0 3 1 * *' && 'monthly-' || '' }}${{ github.run_id }}
           path: ${{ steps.dump.outputs.file }}
-          retention-days: 90
+          retention-days: ${{ github.event.schedule == '0 3 1 * *' && 400 || 90 }}
           if-no-files-found: error
 
       - name: Open issue on failure

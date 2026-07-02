@@ -53,3 +53,18 @@ Small. One stdlib script + a SessionStart hook line + a few probe adapters.
 Could grow into the `node_roles`-style "what can this session actually do?"
 self-report. Groom into a tooling PR when the external-integration surface grows
 past Railway.
+
+## Evidence update (2026-07-02, Railway automation-grant session)
+
+Two fresh instances of the failure class, both hit live:
+
+1. **Identity, not just reachability:** the agent-container var `DISCORD_BOT_TOKEN_PRODUCTION`
+   actually holds the **test bot** ("Galaxy Bot", id `1298426054636994611`) — verified via
+   `GET /users/@me`. An agent trusting the name could act believing it holds the production
+   bot. The smoke check should therefore print the **authenticated identity** (bot username /
+   Railway account email / GH login) per credential, not merely PASS/FAIL.
+2. The urllib-Cloudflare block recurred (Railway GraphQL 403 via urllib, fine via curl) and was
+   re-diagnosed from scratch before finding this idea file — a shipped `check_agent_env.py`
+   with its curl-based probes would have made that a non-event. (Also: Railway's API returns
+   the same opaque `Not Authorized` for wrong-id, plan-gated, and permission failures — the
+   probe's read-back pattern disambiguates.)

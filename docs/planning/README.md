@@ -118,6 +118,7 @@ The source-grounded discovery evidence — 4 Codex maps, verified against shippe
 | [fresh-rebuild-strategy](fresh-rebuild-strategy-2026-07-02.md) | the **verified baseline + end-to-end order** (Phase 0→5 + gates); analysis-grade, **not an approved execution plan** |
 | [simulation-driven-design](simulation-driven-design-2026-07-02.md) | owner-directed **standing rule** — structure (grouping / ordering / layout) is discovered by simulation; the manifest is the search space |
 | [rebuild-ultracode-handoff](rebuild-ultracode-handoff-2026-07-02.md) | **START-HERE launch pad** — paste-ready ultracode session prompts (harvest · finish substrate-kit · golden harness · Fable design) |
+| [railway-setup-plan](railway-setup-plan-2026-07-02.md) | **the runtime half of the control plane** (design-spec §6 is the GitHub half): verified Railway token-capability audit + as-is inventory + the new-project setup + the Phase-5 cutover choreography. **R-now hygiene executed 2026-07-02 under the Q-0213 automation grant** (watch paths ✅ · botsite healthcheck ✅ · $15 soft usage alert ✅ · wait-for-CI dropped per owner history · Railway backups plan-gated → monthly pg_dump tier instead); remaining: R6 restore drill ▶ |
 
 ### Horizon backlog drafts (Later / Someday — routed, not stale)
 
