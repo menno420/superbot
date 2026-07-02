@@ -1,8 +1,8 @@
 # 2026-07-02 — Memory retention & deletion policy (design session)
 
-> **Status:** `in-progress` — flip to complete as the final step. Run type: manual ·
+> **Status:** `complete` — ready to merge (Q-0133). Run type: manual ·
 > owner-directed (ultracode brainstorm). Docs + `tools/sim/` only; no `disbot/` code; **no real
-> content deleted this session** (one stale claim file removed — its checker demanded it).
+> content deleted this session** (one stale claim file removed — its checker surfaced it).
 > PR #1643.
 
 **Branch:** `claude/memory-retention-policy-u8espg`
