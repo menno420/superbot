@@ -1,7 +1,7 @@
 # 2026-07-02 — Stop fleet sessions re-prompting for multi-agent-workflow consent
 
-> **Status:** `in-progress`
-> **Branch:** `claude/review-recent-session-qcyc44` · **PR:** #(opening)
+> **Status:** `complete`
+> **Branch:** `claude/review-recent-session-qcyc44` · **PR:** #1669
 > **Session type:** owner-directed config fix — "why does each session keep asking permission to start a
 > workflow, and can we add it to always-allowed?"
 
@@ -63,4 +63,56 @@ keeps `settings.local.json` personal. Owner can adopt that and I revert the un-g
 Owner-directed in-session 2026-07-02 → router **Q-0218** (the Q-0106 exception: executable config is
 owner-gated, but a change the maintainer directs in-session is applied directly with its provenance Q).
 
-<!-- close-out enders (Q-0089 / Q-0102 / Q-0104) added at session end, then Status flipped to complete -->
+## What shipped
+
+- `.gitignore` — un-ignore `.claude/settings.local.json` with a tracked-on-purpose comment.
+- `.claude/settings.local.json` — now a tracked, shared `{ "skipWorkflowUsageWarning": true }` (dropped the
+  stale one-off kit-review scratch permissions).
+- `docs/owner/maintainer-question-router.md` — **Q-0218** provenance block.
+- Diagnosis delivered in chat + this log; env-level alternative offered for the owner to adopt later.
+
+Verified: `settings.local.json` valid JSON ✓ · no longer gitignored ✓ · `check_docs --strict` ✓. No Python
+touched. **Not applied:** any change to in-flight fleet PRs (owner constraint) — e.g. #1666 Lane G's
+"CI failure" is just its born-red gate holding correctly, left untouched.
+
+## ⚑ Self-initiated
+
+None beyond the owner's direct request. The change is owner-directed (Q-0218); the *mechanism* (un-gitignore
+`settings.local.json` as the only reader-honored repo scope) is the unnamed prerequisite the goal implied
+(Q-0014 "approving a goal approves the path to it").
+
+## 💡 Session idea
+
+**A `scripts/check_fleet_settings.py` guard (enforce, don't exhort — Q-0194).** This session's whole friction
+was *silent*: the consent gate re-prompts with no error, and the naive fix (project settings) would have
+failed *silently* because the reader ignores project scope. The durable defense is a tiny checker that asserts
+the fleet's harness-critical invariants still hold — `.claude/settings.local.json` is **tracked** (not
+re-gitignored by a future "cleanup") and still contains `skipWorkflowUsageWarning: true` — wired into
+`code-quality`. It converts "a future session quietly breaks the fleet's consent skip" from an invisible
+regression into a red check. Dedup-checked: no existing checker covers `.claude/settings.local.json`
+(the `check_*` family covers docs/arch/ledger/session-gate/claims, not harness settings).
+
+## ⟲ Previous-session review
+
+Previous session (`2026-07-02-grammar-audit-prep.md`, the fleet substrate #1661/#1662) did the hard part
+well: ground-truth extraction before judgment, one shared schema so N lane outputs compose, and a genuinely
+useful Lane-G foundations addition. **What it could have anticipated:** it designed the *repo-doc* launch
+preconditions (substrate present, docs-only boundary) but not the *harness/environment* preconditions each
+fleet session actually hits — the workflow-consent re-prompt is exactly that class, and it's now costing the
+owner a manual click per session. **System improvement:** the `BRIEF.md` "Launch preconditions" section (and
+`HANDOFF-PROMPTS.md`) should carry a one-line **container preflight** — verify branch freshness *and* that
+the workflow-consent flag is present — so operational friction is caught at launch, not discovered live.
+(This session's `settings.local.json` fix removes the consent half of that friction for good.)
+
+## 📊 Telemetry
+
+- PR #1669 · config/docs-only · 3 files (`.gitignore`, `.claude/settings.local.json`, router Q-0218) + this log.
+- Root cause traced to the running binary (`/opt/claude-code/bin/claude`), not to memory or the stale
+  `/opt/node22` npm copy — the consent-reader scope list (`user/local/flag/policy`, not `project`) is the
+  load-bearing fact.
+- No runtime code; born-red gate held the PR until this flip.
+
+## Doc audit (Q-0104)
+
+`check_docs --strict` green (router + session card reachable, badges valid) · owner decision recorded in the
+router (Q-0218) · `check_current_state_ledger --strict` re-run at close (see commit) · claim released.
