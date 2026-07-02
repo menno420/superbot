@@ -38,8 +38,13 @@
 > now **built and measured**: see
 > [`rebuild-linchpin-validation-2026-07-02.md`](rebuild-linchpin-validation-2026-07-02.md)
 > (harness: [`parity/`](../../parity/README.md), replay-deterministic, coverage measured; grammar:
-> 73% as-specced → **85% with six named amendments**, operator band 97% — fold the amendments in
-> before K2). Evidence verdict: **GO with amendments.**
+> 73% as-specced → **85% with six named amendments**, operator band 97%). Evidence verdict:
+> **GO with amendments — now folded in** (2026-07-02, see addendum below): `GatewayListenerSpec`
+> (§2.8, G-1), list-valued settings + declarative validator bounds (§2.5, G-2/G-5),
+> `AnnouncementRouteSpec` (§2.8, G-3), `CommandSpec.cooldown` (§2.2, G-4), per-`kind` command-pool
+> scoping (§2.2/§3.1, G-6), plus the harness-mechanism naming correction, the evals/harness
+> composition note, the K10 Postgres-service-container CI requirement, the determinism-pinning
+> budget note, and clock+RNG as injectable kernel services (§1.2, §6, §9).
 >
 > **Revision (2026-07-02, external review round 2):** the owner ran **two external GPT review
 > sessions** over the merged spec (the §E full-tier seam). Folded in, each verified per Q-0120:
@@ -326,6 +331,16 @@ drift.
   embed clamping, timeout-disable, invoker-lock, and the `PersistentView` restart contract
   (`timeout=None` + static custom_id + startup re-registration) are engine behavior, not
   per-view convention.
+- **Clock + RNG are injectable kernel services (linchpin-validation finding, 2026-07-02).** The
+  golden-harness spike found current-bot paths that are nondeterministic by construction —
+  unseeded private RNG instances, real-TTL caches, `datetime.now()` folded directly into minted
+  ids — each one a golden the harness had to exclude rather than capture (the `parity/cases/
+  sweep.py` exclusion ledger). The rebuild makes `kernel/clock` (`now()`) and `kernel/rng`
+  (seedable per test/session) the only sanctioned time/randomness sources; a direct
+  `datetime.now()`/`random`/`time.time()` call outside `kernel/clock`/`kernel/rng` is an
+  AST-fenced violation, same enforcement shape as the task-spawn (INV-T) and lazy-import fences.
+  This is what makes every surface golden-testable, not just the ones that happened to avoid
+  wall-clock/randomness already.
 
 ### 1.3 Ownership model — who writes what
 
@@ -531,12 +546,13 @@ manifest; `KnowledgeDomainSpec` (P4) is a facet of it (decision 2).
 
 | Field | Type | Role | Notes |
 |---|---|---|---|
-| `name`, `aliases` | `str`, `tuple[str,...]` | S | Each reserved individually in the namespace `command` kind, one shared pool with names — the exact Q-0211/BUG-0030 fix. |
+| `name`, `aliases` | `str`, `tuple[str,...]` | S | Each reserved individually in the namespace `command` kind, **scoped per `kind`** — the exact Q-0211/BUG-0030 fix, corrected by the linchpin spike (G-6, 2026-07-02): prefix (`!karma`) and slash (`/karma`) legitimately coexist today because Discord's own command namespaces are disjoint, so one *shared* pool across kinds would flag every dual-surface command as a false collision. The pool is one reservation *system* with a kind-keyed partition, not one flat pool. |
 | `kind` | `enum {prefix, slash, both}` | S | |
 | `summary`, `usage` | `str` | S | Help projection input. |
 | `capability_required` | `str = ""` | S | Config/governance-lane authority (the two-lane model below): empty ⇒ ADMINISTRATOR floor — the shipped mutation-pipeline invariant, verbatim, at its shipped scope. |
 | `audience_tier` | `str = "user"` | S | Domain-lane authority: the shipped visibility-tier vocabulary (`user/trusted/staff/moderator/administrator/owner`, `utils/visibility_rules.py:21`), resolved at execution time. |
 | `route` | `PanelRef \| HandlerRef` | S | Commands open panels by default; command-only behavior requires an escape-hatch justification (command-only surfaces are a drop class per the preserve map). |
+| `cooldown` | `CooldownSpec \| None = None` | S | **New (linchpin spike G-4, 2026-07-02).** `rate: int`, `per_s: float`, `scope: enum {user, guild, channel, global}` — declares the shipped command-layer rate limit (`@commands.cooldown`, live on karma/economy and widely elsewhere) as data. Without this field a port silently drops shipped anti-abuse behavior — caught only because the spike's manifests were checked against real source, not assumed. |
 | `help_section_order` | `int` | **A** | Order within the subsystem's help entry. |
 | `usage_weight` | `float` | O | Seeded from the Phase-1 harvest; telemetry-updated. |
 
@@ -680,6 +696,8 @@ treated by the mutation pipelines as the administrator floor, NOT "no auth"*). A
 | `edit_weight`, `co_edit_group` | `float = 1.0`, `str = ""` | O | Seed data for the settings-grouping sim: neutral-prior weight, optional seed pair-group — measured pairwise telemetry overrides both (§2.10.4). |
 | `depends_on` | `tuple[str,...] = ()` | O | Dependency-order constraint for grouping. |
 | `preset_kind` | `enum {none, numeric, text} = none` | S | **Generalizes the shipped `presets` field to authored-text settings (Q-0070, folded in Q-0215).** `numeric` is the shipped numeric-presets behavior, unchanged. `text` extends the same preset-then-edit-then-manual UX to any `str`-typed spec (DM templates, AI instruction bodies, embed copy): the editor renders `presets` as selectable starting points, each openable into a pre-filled override modal, plus an always-present "write your own" entry — never a preset-only editor. Compile rule: a `str`-typed `SettingSpec` with a non-empty `presets` tuple must declare `preset_kind="text"` (or the compiler flags it as decorative/inert data); manual entry can never be disabled by a preset list. |
+| `value_type` (list variant) | `"list[int]" \| "list[str]" \| ...` | S | **New (linchpin spike G-2, 2026-07-02).** The shipped exclusion lists (`logging_ignored_channels`/`logging_ignored_users`, #1594) are JSON-list KV values with add/remove UI, and §2.5's `SettingSpec` had no list shape at all — a gap that recurs across automod word lists, security allowlists, and welcome roles, not just logging. A list-typed spec gets kernel-generated add/remove/clear workflows and a chip-list widget for free, the same tier-1 payoff as scalar settings. |
+| `bounds` | `tuple[Number, Number] \| None = None` | S | **New (linchpin spike G-5, 2026-07-02).** Declarative `(lo, hi)` range for numeric specs, or `max_len` for string specs — replaces a whole class of trivial tier-3 `validator` refs (karma's two bounded-int settings, welcome's, automod's) with grammar the compiler checks directly. `validator` stays available for genuinely custom rules; `bounds` is the common case lifted out of escape-hatch code. |
 
 **SettingGroupSpec / HubGroupSpec — groups are declared; the sim only assigns.** A settings-hub
 group and a hub sub-group render user-visible headers, and copy is semantic (§2.0) — so group
@@ -803,6 +821,25 @@ authority**) · `snapshot_before: bool = True` (before-state into the audit payl
 
 All attach to `SubsystemManifest` fields (§2.1), completing the synthesis §3 taxonomy:
 
+- **GatewayListenerSpec** (`gateway_listeners`) — **new (linchpin spike G-1, 2026-07-02), the
+  load-bearing amendment.** §2's original taxonomy declared bus events only; raw Discord gateway
+  listeners (`@bot.event`/`on_message`/`on_reaction_add` etc.) had **no primitive at all** — and
+  the spike found the operator band lives on exactly these: server logging alone consumes 8
+  (`logging_cog.py:170–311`), plus karma's react-to-thank (`karma_cog.py:95`) and blackjack's
+  reaction-join (`:410`). Without this spec, every gateway-driven feature is tier-3 escape-hatch
+  code by construction, and the wiring map goes blind precisely where the current repo's own
+  wiring is invisible today. Fields: `event: enum {on_message, on_reaction_add, ...}` (S),
+  `handler: HandlerRef` (S), `gate: PredicateRef | None` (S — the shipped fast-gate-before-work
+  pattern, checked before dispatch so the listener body only runs when the declarative gate
+  passes). This single family alone moved the spike's logging-subsystem coverage from 79% to
+  90%+.
+- **AnnouncementRouteSpec** (`announcement_routes`) — **new (linchpin spike G-3, 2026-07-02).**
+  The pattern "event class → templated embed → bound destination channel" recurs across
+  server-logging routes, welcome greetings, and counters/spotlight, each currently hand-rendered.
+  Fields: `event_class: str` (S), `template: EmbedFrameSpec | HandlerRef` (S),
+  `destination: BindingRef` (S — the channel binding it targets). Declaring
+  event+template+binding as data guts most of `server_logging.py`'s bespoke per-event rendering
+  into one generic engine.
 - **EventSpec / AuditEventSpec** (`events`): `name` (S — legacy names verbatim-frozen),
   `payload_schema: tuple[FieldSpec,...]` (S — must be a **superset** of the current kwargs; a compat
   check diffs against the recorded legacy payload inventory), `owner_subsystem` (S),
@@ -1004,7 +1041,8 @@ substrate-kit's `AgentContextPack`, fed by the manifest instead of a hand-mainta
 
 `sb/namespace/` holds one reservation registry with typed kinds:
 
-`command` (names + aliases in one pool), `custom_id`, `event`, `setting_key`, `subsystem_key`,
+`command` (names + aliases, partitioned per `CommandSpec.kind` — prefix and slash are disjoint
+Discord namespaces, §2.2 G-6), `custom_id`, `event`, `setting_key`, `subsystem_key`,
 `capability`, `panel`, `handler_ref`, `task_prefix`, `stat_key`, `item_key`, `ai_task`,
 `context_id`, `actor_type`, `invariant_tag`, `table`.
 
@@ -1366,11 +1404,15 @@ compat-contract doc to owner review — the surfaces where a wrong merge is expe
 3. `architecture` — layer table, lazy-import ban, complexity budget, symbol-shadowing pass.
 4. `sim-gate` — sim-reviewed-or-exempt (§2.10.6).
 5. `golden-parity` — the acceptance oracle. `parity/parity.yml` lists every subsystem as
-   `pending | ported`; `ported` subsystems run their goldens (testcontainers Postgres + the Discord
-   driver) and **must** be green — any regression is a hard failure; `pending` subsystems are
-   expected-red and *reported*, not failing — so the check is required from day one, red-until-parity
-   is CI-enforced, flipping `pending → ported` is the port PR's deliberate last commit, and **green
-   is a one-way door**. The file doubles as the owner's live port-progress dashboard.
+   `pending | ported`; `ported` subsystems run their goldens (the `parity/` harness — see below —
+   against a real Postgres service container in CI) and **must** be green — any regression is a
+   hard failure; `pending` subsystems are expected-red and *reported*, not failing — so the check
+   is required from day one, red-until-parity is CI-enforced, flipping `pending → ported` is the
+   port PR's deliberate last commit, and **green is a one-way door**. The file doubles as the
+   owner's live port-progress dashboard. **CI requirement (linchpin spike, item 4, 2026-07-02):**
+   this repo's own `code-quality` workflow runs no Postgres service container, which is why the
+   harness skips there today — the new repo's CI must provision one from K10 onward, or
+   `golden-parity` cannot actually run in CI at all.
 6. `check_compat_frozen` — diffs the pinned compat artifacts (legacy custom_id list, subsystem keys,
    event literals, `AITask` names, audit payload field sets) against the manifest export; any drift
    from the §5.3 contract is red until the compat doc is explicitly amended **with owner sign-off**.
@@ -1386,12 +1428,23 @@ renders from. The concrete API contract (endpoints, auth, which workflows are ex
 **required K7/K8-entry deliverable** — the interaction runtime must not land while the dashboard's
 write path is undefined, or side-channel orchestration regrows.
 
-**The harness itself** is captured in Phase 0.5 against the live bot (command-in → embed/DB-out,
-testcontainers Postgres + a Discord driver, reusing the `evals/` corpus — the one true black-box
-asset the test-suite verification found). The new repo consumes it **read-only as a pinned external
-dependency — the goldens live outside the new repo's write reach**, so neither bot can silently
-rewrite its own oracle; golden updates are explicit, reviewed PRs to the harness repo. Telemetry
-capture (the sim's objective sidecar) is the scheduled Phase-0.5 sibling task (§2.10.4).
+**The harness itself** is captured in Phase 0.5 against the live bot (command-in → embed/DB-out).
+**Naming correction (linchpin spike, item 2, 2026-07-02):** the mechanism actually built and
+running today at [`parity/`](../../parity/README.md) is **fake HTTP over the real discord.py state
+machine, against a local Postgres** — not "testcontainers + dpytest or equivalent" as earlier
+drafts assumed; it needs no new test dependencies and gets real dispatch fidelity by driving
+discord.py's own state machine. **Composition with evals (item 3):** the harness and the `evals/`
+corpus are not the same asset merged — **evals stay the AI-answer oracle** (`tests/evals/
+harness.py` drives `AIGateway` directly, judging answer quality), while **the golden harness owns
+the deterministic command/panel surface** (embed/DB assertions, no AI judgment involved); the two
+compose (a subsystem can need both) rather than one subsuming the other. The new repo consumes the
+harness **read-only as a pinned external dependency — the goldens live outside the new repo's write
+reach**, so neither bot can silently rewrite its own oracle; golden updates are explicit, reviewed
+PRs to the harness repo. Telemetry capture (the sim's objective sidecar) is the scheduled Phase-0.5
+sibling task (§2.10.4). **Determinism-pinning budget (item 5):** capturing commands deterministically
+required pinning eight distinct nondeterminism classes (documented in the harness's determinism
+ledger); scheduled-loop capture (background tasks, not just interactions) will pay a comparable
+pinning cost again — budget for it rather than treating command-capture's cost as the whole bill.
 
 **Carries over from the current repo:** the deterministic `git merge-tree` conflict check (extended
 with namespace validation on the merge result), GitHub-native auto-merge armed on green at PR-open,
