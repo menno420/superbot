@@ -102,8 +102,13 @@ dist-app/
 superbot_btd6_data/
 .btd6_data_cache/
 
-# Local Claude Code settings (personal, not committed)
-.claude/settings.local.json
+# .claude/settings.local.json is intentionally TRACKED (not ignored) in this repo.
+# It carries `skipWorkflowUsageWarning: true` so ephemeral remote fleet sessions don't
+# re-prompt for multi-agent-workflow usage consent on every boot. The runtime's consent
+# reader only honors that flag from local/user/flag/policy scopes — never committed
+# *project* settings (.claude/settings.json) — so localSettings is the only repo-committable
+# home. Owner-directed 2026-07-02 (router Q-0218). Keep it committed; do NOT add personal
+# scratch here (it now travels to every clone).
 
 # Transient git worktrees created by background agents (isolation: worktree).
 # Registered under .git/worktrees and auto-cleaned; never tracked in the parent repo.
