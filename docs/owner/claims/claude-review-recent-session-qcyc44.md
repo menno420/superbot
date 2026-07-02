@@ -1,0 +1,1 @@
+- branch `claude/review-recent-session-qcyc44` · scope: review the 2 recent Codex PRs (#1654, #1655) + fix the hub-S3/S4 docs drift they surfaced · area: `docs/current-state.md`, `docs/current-state/S4-docs.md` · 2026-07-02
