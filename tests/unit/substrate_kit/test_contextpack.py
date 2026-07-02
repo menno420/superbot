@@ -160,6 +160,29 @@ def test_slugified_filenames(tmp_path):
     assert names == ["data-store-core.context.md", "weird-name.context.md"]
 
 
+def test_colliding_slugs_each_get_a_distinct_pack(tmp_path):
+    # Two+ areas whose names slugify identically must EACH get a file — the
+    # later write must not silently overwrite the earlier pack (which also made
+    # the return value double-count one path).
+    index = [
+        {"name": "Economy", "folio": "docs/econ.md"},
+        {"name": "economy", "folio": "docs/econ2.md"},
+        {"name": "economy"},
+    ]
+    paths = generate_packs(tmp_path, Config(), index)
+    assert len(paths) == 3
+    assert len(set(paths)) == 3  # three DISTINCT files, none lost
+    assert all(p.exists() for p in paths)
+    assert sorted(p.name for p in paths) == [
+        "economy-2.context.md",
+        "economy-3.context.md",
+        "economy.context.md",
+    ]
+    # the first area's unique folio survives in exactly one pack (not clobbered)
+    bodies = [p.read_text(encoding="utf-8") for p in paths]
+    assert sum("docs/econ.md" in b for b in bodies) == 1
+
+
 def test_generate_respects_config_state_dir(tmp_path):
     config = Config(state_dir=".kitstate")
     (path,) = generate_packs(tmp_path, config, [{"name": "a"}])

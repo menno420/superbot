@@ -41,6 +41,11 @@ QUESTIONS: list[dict] = [
         "routing": "state:mode",
         "priority": "blocking",
         "critical": True,
+        # The sole blocking+critical slot needs an anti-gaming floor too — the
+        # valid values (observe/guided/active) are all >=6 chars, so a floor of
+        # 4 rejects a hollow single-char graduation without ever rejecting a
+        # real mode.
+        "min_len": 4,
     },
     {
         "id": "Q-002",

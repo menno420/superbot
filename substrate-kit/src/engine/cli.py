@@ -75,6 +75,7 @@ from engine.loop.reflections import (
 from engine.loop.review_seam import (
     apply_review_verdict,
     build_review_payload,
+    clear_review_payload,
     seam_wiring_doc,
     write_review_payload,
 )
@@ -423,14 +424,23 @@ def _hook_sessionstart(target: Path) -> int:
 
 
 def _hook_postedit(target: Path) -> int:
-    """PostToolUse: warn on stderr for a generated-artifact / unbadged-doc edit."""
+    """PostToolUse: warn on stderr for a generated-artifact / unbadged-doc edit.
+
+    Handles Edit/Write (``tool_input.file_path``) and NotebookEdit
+    (``tool_input.notebook_path``) — the three tools the settings matcher wires.
+    A NotebookEdit carries ``notebook_path``, not ``file_path``, so keying only
+    on the latter matched notebook edits but never advised them (the matcher
+    over-advertised its coverage).
+    """
     raw = sys.stdin.read()
     try:
         payload = json.loads(raw) if raw.strip() else {}
     except json.JSONDecodeError:
         return 0
     tool_input = payload.get("tool_input") if isinstance(payload, dict) else None
-    file_path = tool_input.get("file_path") if isinstance(tool_input, dict) else None
+    if not isinstance(tool_input, dict):
+        return 0
+    file_path = tool_input.get("file_path") or tool_input.get("notebook_path")
     if not isinstance(file_path, str) or not file_path:
         return 0
     warning = evaluate_edit(target, load_config(target), file_path)
@@ -795,6 +805,10 @@ def cmd_review(
                 "(typo, already confirmed, or never answered).",
             )
             return 1
+        # The verdict is recorded → the payload is consumed. Remove it so the
+        # maintenance "awaiting a reviewer" count reflects reality.
+        if clear_review_payload(target, config, slot):
+            _emit(f"review: cleared consumed payload for {slot}.")
         return 0
     _emit(f"review: unknown action {action!r} (build | confirm | doc).")
     return 2

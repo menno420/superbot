@@ -80,6 +80,28 @@ def test_round_trip_append_supersede_parse(tmp_path):
     assert check_ledger(path) == []
 
 
+def test_supersede_of_last_entry_does_not_bleed_into_trailing_prose():
+    # When the superseded entry is the LAST block, `in_target` has no later
+    # `## ` heading to reset it — a field-shaped bullet in trailing prose must
+    # not be silently stamped. The entry's field block ends at its first blank.
+    from engine.ledger import _led_stamp_superseded
+
+    text = (
+        "## [D-0001] A rule\n"
+        "- status: decided\n"
+        "- verdict: v\n"
+        "- why: w\n"
+        "- provenance: p\n"
+        "\n"
+        "- status: legacy note — must stay\n"
+    )
+    out = _led_stamp_superseded(text, "D-0001", "D-0002")
+    assert "- status: superseded" in out  # the entry itself IS stamped
+    assert "- superseded-by: D-0002" in out
+    assert out.count("- superseded-by: D-0002") == 1  # only the entry, not prose
+    assert "- status: legacy note — must stay" in out  # trailing prose untouched
+
+
 def test_append_creates_header_with_badge_and_grammar(tmp_path):
     path = tmp_path / LEDGER_FILENAME
     append_decision(path, title="t", verdict="v", why="w", provenance="p")

@@ -168,6 +168,12 @@ def _led_stamp_superseded(text: str, old_id: str, new_id: str) -> str:
             # — a prose section after the target must never get stamped.
             heading = _LED_HEADING_RE.match(line)
             in_target = heading is not None and heading.group(1) == old_id
+        elif in_target and not line.strip():
+            # An entry's field block is contiguous and ends at its first blank
+            # line. Without this, a target that is the LAST entry keeps
+            # ``in_target`` true to EOF (no later ``## `` to reset it) and would
+            # silently stamp any field-shaped bullet in trailing prose.
+            in_target = False
         field = _LED_FIELD_RE.match(line) if in_target else None
         if field is not None:
             key = field.group(1)

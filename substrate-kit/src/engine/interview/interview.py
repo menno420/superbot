@@ -9,6 +9,7 @@ it records assumptions, flags them, and moves on.
 
 from __future__ import annotations
 
+import string
 from typing import Any
 
 from engine.interview.question_bank import QUESTIONS
@@ -17,6 +18,7 @@ from engine.lib.modes import question_quota
 
 _PRIORITY_ORDER = {"blocking": 0, "high": 1, "normal": 2}
 _PLACEHOLDER_ANSWERS = frozenset({"todo", "tbd", "...", "n/a", "?"})
+_ANSWER_STRIP = string.punctuation + string.whitespace
 
 
 def critical_slots(bank: list[dict] | None = None) -> list[str]:
@@ -63,7 +65,13 @@ def answer_is_substantive(question: dict, answer: str) -> bool:
     text = answer.strip()
     if not text or "${" in text:
         return False
-    if text.lower() in _PLACEHOLDER_ANSWERS:
+    # Strip surrounding punctuation before the placeholder-word check so
+    # "todo." / "tbd!" / "n/a?" cannot slip past the exact-match set.
+    if text.lower().strip(_ANSWER_STRIP) in _PLACEHOLDER_ANSWERS:
+        return False
+    # Content-free answers never fill a slot: no alphanumeric char at all
+    # ("??", "...", "!!"), or a single character repeated ("aaaa", "....").
+    if not any(ch.isalnum() for ch in text) or len(set(text)) == 1:
         return False
     return len(text) >= int(question.get("min_len", 1))
 

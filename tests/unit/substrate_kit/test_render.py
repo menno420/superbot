@@ -45,3 +45,23 @@ def test_full_fill_renders_without_leftovers():
 
 def test_templates_embedded_in_bootstrap():
     assert "_TEMPLATES = {" in build_bootstrap.build()
+
+
+def test_render_leaves_host_dollar_content_untouched():
+    # render() must act ONLY on ${braced} placeholders — never the $$ / unbraced
+    # $word forms that string.Template.safe_substitute silently transforms. Host
+    # shell/price/LaTeX content ($$pid, $$5, $$LaTeX$$) survives render --live.
+    ctx = {"name": "Ada"}
+    assert render("kill $$pid — costs $$5/run", ctx) == "kill $$pid — costs $$5/run"
+    assert render("unbraced $name stays literal", ctx) == "unbraced $name stays literal"
+    assert render("filled ${name}", ctx) == "filled Ada"
+
+
+def test_render_and_find_placeholders_never_disagree_on_dollars():
+    # An escaped $${X} must not become a live-looking ${X} that then reports as
+    # an unfilled slot (the safe_substitute trap). With X not a slot, everything
+    # but the real ${z} is left byte-for-byte.
+    text = "keep $${X} and $$ and $y; fill ${z}"
+    assert find_placeholders(text) == {"X", "z"}
+    out = render(text, {"z": "Z"})
+    assert out == "keep $${X} and $$ and $y; fill Z"

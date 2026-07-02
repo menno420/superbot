@@ -240,11 +240,16 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
-- **#1643 · #1647 · #1648 (2026-07-02, S3 rebuild — memory retention + context-economy plan, Q-0214)** —
+- **#1643 · #1647 · #1648 · #1649 (2026-07-02, S3 rebuild — memory substrate: retention/economy plan → finalized substrate-kit, Q-0214)** —
   the [memory-retention-and-context-economy plan](planning/memory-retention-and-context-economy-plan-2026-07-02.md):
   the retention half of the rebuild memory substrate — warn-forever corpus caps + diff-scoped hard gates,
   per-file harvest evidence, single-writer pruning, a 14-day floor, and a shadow-band + `do-not-automerge`
-  guard on the first prune (folded from an enforcement-critic verdict).
+  guard on the first prune (folded from an enforcement-critic verdict). **#1649 finalized it** (the
+  [handoff §5.B](planning/rebuild-ultracode-handoff-2026-07-02.md) Fable-5 ultracode session, the K0 gate
+  deliverable): the substrate-kit's full nervous system + context-economy engine + one-step-adopt packaging
+  shipped on the declaration layer (117→407 kit tests, proven end-to-end from the single-file dist) — see
+  [S3-ai-memory](current-state/S3-ai-memory.md). Owner-gated remainder: the Phase-2.5 cold-start A/B (still
+  gates Phase 3) + the extract-to-standalone-repo step.
 - **#1634 · #1635 · #1637 · #1638 · #1640 · #1641 · #1642 · #1644 · #1645 (2026-07-02, S3 rebuild — Fable 5 design spec + strategy + schedule)** —
   the [fresh-rebuild strategy + verified baseline](planning/fresh-rebuild-strategy-2026-07-02.md) with the four
   Codex discovery-maps verified against shipped source (Q-0120) and folded into one

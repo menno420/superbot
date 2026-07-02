@@ -37,6 +37,11 @@ Current broad captures:
   **central logging guild** (all-server logging + platform feeds). Ops lane buildable; the
   member-content mirror is owner-gated on a privacy policy; **the Railway-alerts feed was restored
   live same-session** (`#railway-alerts` in the test guild; rule updated in place).
+- [`substrate-kit-review-followups-2026-07-02.md`](./substrate-kit-review-followups-2026-07-02.md) —
+  **review capture (2026-07-02):** the two deferred findings from the independent review of #1649
+  (10 of 12 confirmed defects were fixed at root that session) — make `JsonStateBackend.transaction`
+  re-entrant so `apply_review_verdict` is atomic (its own PR, changes core semantics), and a
+  verified-low-risk `confirm_slot` floor note. Buildable follow-up.
 - [`tried-before-ledger-2026-07-02.md`](./tried-before-ledger-2026-07-02.md) —
   **session idea (2026-07-02, Q-0089, owner-requested harvest):** a greppable negative-results
   ledger (`docs/operations/tried-before.md`) for abandoned operational experiments — born from the
