@@ -1,8 +1,9 @@
 # 2026-07-02 — Rebuild strategy + substrate-kit planning (interactive, owner-directed)
 
-> **Status:** `in-progress` — long interactive planning session with the owner (Fable 5 re-introduction
-> context; Max ×20, weekly limits fresh). `rebuild-harvest` ultracode running; planning docs captured;
-> **no code shipped to `disbot/`.**
+> **Status:** `complete` — long interactive planning session with the owner (Fable 5 re-introduction
+> context; Max ×20, weekly limits fresh). Planning docs + the ultracode launch pad captured and pushed;
+> the 2-wide `rebuild-harvest` is superseded by the fresh 16-wide Session A (handoff §5); **no code
+> shipped to `disbot/`.** PR opened at session close.
 
 ## What this session did
 Started as a prompt-review request for a substrate-kit *finalization* pass; evolved (owner-directed) into
@@ -59,7 +60,10 @@ verification: the namespace-guard checker, the golden-harness pattern, and the s
   ~0 actually open); the "956 application files" figure (does not reconcile — 879); the "essential_setup
   fan-out ~210" hotspot.
 - **discovered-by-hand:** the settings two-layer + AI-fork structure + 40 raw-KV bypasses; the 10,036
-  Q-citations; the empty router archive; the file-ordering sim engine already existing (CodeGraph drift 48%).
+  Q-citations; the empty router archive; the file-ordering sim engine already existing (CodeGraph drift 48%);
+  ultracode concurrency = `min(16, cpu_cores−2)`, core-bound (this container = 4 cores → 2; a **fresh**
+  ultracode session provisions a high-core container → 16, owner-confirmed + official-docs-verified);
+  `scripts/extract_video_frames.py` is the repo's tool for viewing uploaded videos (bundled imageio-ffmpeg).
 
 ## Open threads
 - Harvest ultracode completes → commit its 4 artifacts, then fire the Phase 0 + Phase 0.5 ultracodes, then
