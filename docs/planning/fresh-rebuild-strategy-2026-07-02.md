@@ -22,6 +22,15 @@ that plan: the verified state of the world, the corrections the verification for
 approach, and the design principles + memory-package improvements that make "designed, not stitched"
 mechanical rather than aspirational.
 
+> **Fable 5 availability (verified live, 2026-07-02):** Fable 5 launched 2026-06-09, was **withdrawn
+> 2026-06-12**, and was **redeployed 2026-07-01** (Anthropic, "Redeploying Fable 5"; global on the Claude
+> Platform / Claude.ai / Claude Code / Cowork, cloud platforms phasing in). This **clears the "wait for
+> Fable 5" gate** the fresh-rebuild vision doc recorded as open (that doc's "not reintroduced as of
+> 2026-06-30" line is now stale — corrected there). Fable: $10/$50 per M tokens; 1M ctx / 128K out;
+> always-on thinking (effort-controlled `low`→`max`); `refusal` stop-reason + model fallbacks; requires
+> 30-day data retention. *(This session runs on `claude-opus-4-8`; the Fable-specific work is the Phase-2
+> design ultracode, §3.1.)*
+
 ---
 
 ## 1. Verified baseline
@@ -146,34 +155,85 @@ mechanical rather than aspirational.
 
 ---
 
-## 3. The plan-of-plans (phases + gates)
+## 3. End-to-end execution order (from here to a production-ready rebuilt bot)
 
-**Phase 0 — Finish the substrate-kit's adaptive half (buildable now).** Build the nervous system that's
-absent: mode-conditioned behaviors, drift/trigger detection, the reflection buffer + meta-reflection
-miner (forward-injected), the missing 7 contract templates (kills the dangling routes), the remaining
-hooks. This *also* de-risks Phase 1 by proving "design as one picture" on a self-contained kit before
-betting the 237k-line bot on it. It's the generator for the new repo's clean binding docs + router.
+**Critical path:** `[Phase 0 · 0.5 · 1 in parallel]` → **Phase 2 design** → **🔒 owner approval** →
+Phase 3 skeleton → Phase 4 port → Phase 5 cutover → **done.** Token limits are not the binding
+constraint; wall-clock is (see §3.1). Everything up to the owner-approval gate is agent-buildable now.
 
-**Phase 0.5 — Capture the behavioral golden set against the live bot (NEW, must precede any freeze).**
-Stand up a black-box golden-output harness (command-in → embed/DB-out, ephemeral Postgres + a Discord
-driver), snapshot the current bot's observable behavior, reuse the `evals/` corpus. This is the only
-structure-agnostic correctness oracle for the rebuild — and independently a better regression net for
-the current bot (which today only checks internal wiring).
+**Phase 0 — Finish the substrate-kit's adaptive half** *(buildable now).* Build the unbuilt nervous
+system: the three `mode` behaviors, drift/trigger detection, reflection buffer + meta-reflection miner,
+the 7 missing contract templates (kills the dangling routes), the remaining hooks, memory-integrity/
+quarantine + the context budget (§5.2). Ships the namespace-guard as a portable checker (§5.3). Also
+the design-method dry-run + the clean-binding-doc generator. **Gate:** kit green + extractable.
 
-**Phase 1 — The comprehensive design spec (the Fable job; design, not code).** One coherent picture,
-produced against the frozen reference: the redone architecture + layer/ownership/runtime contracts; the
-authoritative settings model (§4); the **central command/symbol namespace** (§4); the functionality
-inventory harvested from the old repo + goldens; the **distilled decision ledger** (§4); the data model;
-the regenerated binding docs. Owner-approved before any Phase-2 code. Fable's sweet spot: long-horizon,
-whole-picture, reason-from-knowledge — run at `xhigh`.
+**Phase 0.5 — Behavioral golden harness against the LIVE bot** *(parallel; must precede any freeze).*
+Black-box goldens (command-in → embed/DB-out, testcontainers Postgres + a Discord driver), reuse the
+`evals/` corpus. The only structure-agnostic rebuild oracle (§1.4), and a current-bot regression win.
+**Can only be captured while the old bot is live.**
 
-**Phase 2 — Execute the rebuild (gated).** Port behavior into the new repo, each slice **red-until-parity
-against the Phase-0.5 goldens**; substrate-kit driving the workflow from day one; old repo stays in
-production until verified parity. ~100 PRs.
+**Phase 1 — Harvest what to keep** *(parallel; feeds the design).* Router distillation → clean decision
+ledger; settings-authority audit → authoritative model; functionality inventory; hidden-dependency /
+backward-compat map. Verified GPT-stream findings folded in (§6). *(Running now as the `rebuild-harvest`
+ultracode → `docs/planning/rebuild-harvest/`.)*
 
-**Gates:** don't freeze the old repo before the goldens exist; don't start Phase-2 code before the design
-is owner-approved; keep the old repo live until parity; extraction-to-own-repo and the rebuild go/no-go
-stay owner decisions.
+**Phase 2 — The comprehensive design spec** *(the Fable job; the decision gate).* One coherent picture:
+redone architecture + contracts; the manifest grammar (§4/§6.1) designed **to be simulated over** (§4);
+the central namespace; the authoritative settings model; the data model + backward-compat contract; the
+control-plane (rulesets + OIDC); the regenerated binding docs. Independent-model review before freeze.
+**🔒 OWNER GATE — the big one:** owner approves the design + the backward-compat contract + the rebuild
+go/no-go. Nothing below starts until this.
+
+**Phase 2.5 — Cold-start proof** *(parallel with Phase 2; gates Phase 3).* Point the finished kit at a
+small throwaway repo; run the substrate-on vs -off A/B (§5.2). Proves the memory system works cold,
+cheaply, before the ~100-PR commitment.
+
+**Phase 3 — New-repo skeleton** *(owner-gated).* Create the repo; bootstrap the substrate-kit → clean
+binding docs + ledger + workflow; build the two spines first — the manifest-grammar runtime engine + the
+namespace registry; wire the control-plane (rulesets + OIDC); wire the golden harness as the acceptance
+gate (red until parity); CI. The spines exist *before* any feature — that's what makes it designed, not stitched.
+
+**Phase 4 — Port slice-by-slice, red-until-parity** *(the ~100-PR bulk).* Per subsystem: declare it in
+the manifest grammar (sim-optimized per §4), implement the service behind the audited seam, green its
+goldens. Order by dependency/risk — core platform + settings + governance first, then economy/moderation,
+then games/AI/BTD6. Migrations honor the backward-compat contract. Old repo = frozen oracle, in production
+throughout.
+
+**Phase 5 — Cutover** *(owner-verified — the end).* Shadow-run until goldens + live checks green →
+migrate data per the contract → flip production (Railway redeploy) → keep the old repo as frozen rollback
+for a bounded window → decommission. **End state: the fully working, production-ready rebuilt bot.**
+
+**Continuous side-track** *(low priority, parallel throughout):* keep the *old* bot healthy while it
+serves production — apply §6.2's safe control-plane toggles + fix prod bugs. The *designed* control-plane
+lands fresh in Phase 3.
+
+**Buildable now vs gated:** Phases 0, 0.5, 1, 2.5 and *drafting* Phase 2 are agent-buildable with no owner
+gate. The one hard gate is **owner approval of the design (Phase 2)** before any new-repo code. Cutover +
+data migration (Phase 5) stay owner-verified. **The two sequencing rules that matter most:** capture the
+goldens (0.5) before the old repo is ever frozen; approve the design (2) before Phase 3.
+
+### 3.1 Model & ultracode allocation
+
+Limits are not the binding constraint (Max ×20); **wall-clock is.** Principle: **spend Fable where
+reasoning is the bottleneck; run the parallel bulk on faster models for throughput, not cost** —
+unlimited *tokens* ≠ unlimited *time*, and a Fable fleet clears fewer items/hour than an Opus/Sonnet
+fleet. Independent review always uses a *different* model than built it (the review-seam pattern; Codex/
+GPT are the natural non-Claude reviewers).
+
+| Phase | Model + effort | Ultracode |
+|---|---|---|
+| 0 — finish kit | Opus 4.8 `xhigh`; Fable for the hard design calls | Opus ultracode |
+| 0.5 — golden harness | Opus/Sonnet fleet, Opus `max` core | Opus ultracode |
+| 1 — harvest/map | Opus + Sonnet fan-out; Fable synthesis; **Codex** parallel cross-check | Opus ultracode *(running)* |
+| 2 — design | **Fable judge-panel** (3 framings) + Opus `max` → synthesize → review by Opus + Codex/GPT | **the Fable ultracode** (clean usage-measurement run) |
+| 2.5 — cold-start | Sonnet runs, Opus interprets | — |
+| 3 — skeleton | Opus 4.8 `xhigh`/`max` on the spines; Sonnet on CI/control-plane | Opus ultracode |
+| 4 — port (~100 PRs) | **Sonnet 5** workhorse; Opus 4.8 escalation for hard subsystems; Haiku for boilerplate | Opus-supervised Sonnet fleet |
+| 5 — cutover | Opus 4.8 `high`; Sonnet for migration scripts | — |
+
+The golden harness (0.5) is what **makes the cheap tiers safe** on the Phase-4 port: red-until-parity
+catches any regression a Sonnet/Haiku agent introduces, so premium models are reserved for design
+(Fable) and the structural spines (Opus).
 
 ---
 
@@ -187,6 +247,12 @@ stay owner decisions.
   registry: panels, actions, settings, bindings, navigation and selectors declared once and *generated*
   by a runtime engine, not hand-coded per cog. Introduced *through* the central namespace so it can't
   recreate the `ActionSpec`-style collision. (§6.1)
+- **Structure is discovered by simulation, not decided by hand.** Any grouping/ordering/layout decision
+  with a measurable objective (commands, buttons/panels, settings, file ordering, AI-answer structure) is
+  run through a simulator that searches for the most efficient arrangement — a standing, first-class step
+  gated by a *sim-reviewed-or-exempt* check. The manifest grammar is what makes this cheap (the manifest
+  *is* the search space), so it must be designed **to be simulated over**. Full rule + guardrails +
+  per-domain mechanisms: [`simulation-driven-design-2026-07-02.md`](simulation-driven-design-2026-07-02.md).
 - **A central command/symbol namespace that reserves names at declaration and fails *before* boot.**
   The single highest-value structural fix — it directly prevents the class that crash-looped production
   twice in three days. (§1.6)
@@ -301,12 +367,13 @@ rebuild decision, from §6.1's hidden-dependency list); **manifest format** — 
 YAML/JSON vs hybrid; **control-plane hardening scope** — which of §6.2's safe GitHub toggles to enable
 on the *current* repo now.
 
-**Recommended immediate sequence (nothing here touches Phase-2 code or freezes the old repo):**
+**Recommended immediate sequence (nothing here touches Phase-3 code or freezes the old repo — full order in §3):**
 1. Finish the substrate-kit adaptive half (**Phase 0**) — first application of the design method.
-2. In parallel, stand up the **Phase-0.5** golden harness against the live bot (also a current-bot win).
-3. Run the **router distillation** + **settings-authority** harvests (buildable now, valuable even if the
-   rebuild slips) — they become raw material for Fable's Phase-1 design.
-4. Hand Fable (`xhigh`) the **Phase-1 design spec** with verified material, not a blank page.
+2. In parallel, stand up the **Phase 0.5** golden harness against the live bot (also a current-bot win).
+3. Run the **Phase 1 harvest** (router distillation + settings-authority + inventory + hidden-deps) —
+   *running now as the `rebuild-harvest` ultracode*; raw material for the design.
+4. Hand **Fable** the **Phase 2 design spec** (judge-panel + cross-model review) with verified material,
+   not a blank page — then the owner-approval gate.
 
 ---
 
