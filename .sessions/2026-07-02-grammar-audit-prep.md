@@ -1,7 +1,7 @@
 # 2026-07-02 — Prepare the repo for the new-bot capability audit (fleet substrate)
 
 > **Status:** `complete`
-> **Branch:** `claude/review-recent-session-qcyc44` · **PR:** #1660 (opening)
+> **Branch:** `claude/review-recent-session-qcyc44` · **PR:** #1661 (opening)
 > **Session type:** prep/orchestration — "prepare the repo for 2 Opus + 1 Sonnet ultracode + Codex/deep-research to create the final mapping audit, then a Fable 5 final review"
 
 ## What happened
@@ -62,7 +62,7 @@ reviewer to spot it — the "enforce, don't exhort" (Q-0132) response to a twice
 
 ## 📊 Telemetry
 
-- PR #1660 · new-bot-capability-audit substrate: 7 lanes + capstone + ground truth + handoff prompts
+- PR #1661 · new-bot-capability-audit substrate: 7 lanes + capstone + ground truth + handoff prompts
 - 43-agent inventory Workflow: 43/43 subsystems, 0 errors, ~2.0M subagent tokens, 271 surface units mapped
 - Docs-only; `check_docs --strict` green (badges + reachability); zero runtime code
 - Dir named `new-bot-capability-audit/` (owner-approved rename from `grammar-completeness/`)
