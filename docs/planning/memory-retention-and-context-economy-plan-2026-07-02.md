@@ -116,9 +116,10 @@ live content reference it**. That yields three tiers:
 1. **Live** (binding docs, active plans, living ledgers, the guidebook): on a route or cited as
    authority → stays in-tree, **budgeted** (caps + gauges). Never touched by retention. This is the
    hard constraint, by construction: the policy only ever sees terminal-state docs.
-2. **Referenced-terminal** (decided Q-blocks — 9,690 plain-text `Q-NNNN` refs repo-wide; historical
-   plans while still cited; anything a live doc *or code file* links): **archive in-tree with a
-   pointer stub** (exactly Q-0210's mechanism). The archive is a *reference target*, not reading
+2. **Referenced-terminal** (decided Q-blocks — 5,422 plain-text `Q-NNNN` refs across the working
+   tree (the recorded 9,084/9,690 figures counted `.git` objects — scope caveat verified
+   2026-07-02); historical plans while still cited; anything a live doc *or code file* links):
+   **archive in-tree with a pointer stub** (exactly Q-0210's mechanism). The archive is a *reference target*, not reading
    material — off every route, grep-resolvable forever. The proof-case for why the router class
    never graduates to deletion: **Q-0035 is cited by zero docs anywhere, yet two sessions genuinely
    invoked it 13 days after it was decided** — router blocks have real, unpredictable afterlife
@@ -145,7 +146,8 @@ lane has run exactly this way for weeks with zero recorded misses.
    git history speculatively. A deleted file without a pointer is not "archived," it is
    *undiscoverable*. → **Tombstones/banners are mandatory**: title + date + last path + one-line
    what-it-was. That converts "lost" into "one extra hop," at ~20 words instead of ~2,700.
-2. **Plain-text reference integrity.** ~9,690 `Q-NNNN` references resolve by grep into the router;
+2. **Plain-text reference integrity.** ~5,422 working-tree `Q-NNNN` references resolve by grep into
+   the router;
    filenames are cited in prose — **and in code**: 3 historical plans are cited from `disbot/` and
    `scripts/` (one as runtime UI text). Deleting a referenced body dangles them. → the
    **inbound-reference check is the deletion gate** (mechanical, not judgment): `check_docs`' CI
@@ -170,16 +172,20 @@ reference dangles — both checkable by machine. That is what makes it safe *una
   unit is *bands*, not days, so a velocity change moves the wall-clock automatically). Before a
   band's logs become prunable, its reconciliation pass **must have run** (the pass reads the band's
   logs and now also harvests each log's run-report header — ⚑ Self-initiated flags, 💡 ideas, status
-  line — into the per-band pass record, which is the owner's durable audit surface). The 5.2% of
-  logs cited from live docs are held automatically by the reference gate; everything else goes.
+  line, **plus the band's aggregate reflection-interview counts** ("needed but not pointed to" /
+  "pointed to but didn't need" — 142/115 such entries exist today and are the system's route-quality
+  telemetry) — into the per-band pass record, which is the owner's durable audit surface). The 5.3%
+  of logs cited from live docs are held automatically by the reference gate; everything else goes.
   `.sessions/README.md` carries one banner line: "logs before YYYY-MM-DD are pruned — full text in
   git history (`git log --diff-filter=D -- .sessions/`)".
 - **Historical plans.** On rebadge: index row moves to Historical (existing convention). After 2
-  bands: body moves to `docs/planning/archive/` (or the archive file pattern — implementing session
-  picks one), a one-line stub replaces it at the old path *or* the index row becomes the stub
-  (cheapest that keeps `check_docs` links green). After 8 bands with zero inbound refs (post
-  ledger-compression cascade): delete body, tombstone row stays in the index Historical section.
-  `reference`-badged companions (sim-pinned numbers etc.) are **live**, not terminal — untouched.
+  bands: body moves to `docs/planning/archive/`, and a **one-line stub file stays at the old path**
+  — required, not optional: inbound relative links must keep resolving (`check_docs` link gate;
+  the docs/archive README already records that moving historical docs breaks links, which is why
+  in-place rebadging won — the stub gets both: links resolve *and* the 2,700-word body leaves the
+  grep surface). After 8 bands with zero inbound refs (post ledger-compression cascade): delete
+  body, tombstone row stays in the index Historical section. `reference`-badged companions
+  (sim-pinned numbers etc.) are **live**, not terminal — untouched.
 - **Reconciliation pass records.** Keep the newest 2 (the working set); older ones compress to
   their summary header + the harvested run-report lines (they are the audit trail), then archive.
 - **Ideas.** Groomed-terminal (implemented/rejected) files: tombstone line in the README index
@@ -292,11 +298,45 @@ Honest limits: the w/s figures are model estimates, not telemetry; the *structur
 what to trust, and it survived the sweeps. Re-run: `python3.10 tools/sim/retention_policy_sim.py`
 (≈seconds); recalibrate constants per §Appendix when velocity or composition shifts.
 
-## 7. Failure modes & the adversarial round
+## 7. Failure modes & the adversarial evidence
 
-Three adversarial lenses (over-deletion red team, archive-everything steelman, enforcement critic)
-were run against the draft; amendments they forced are folded into §4/§5 above. Standing risks and
-their mitigations:
+**The strongest counter-evidence in the repo, addressed head-on.** On 2026-06-30 a 37-agent audit
+(~2.7M tokens) of the 111 in-place historical docs found only **7 (6%) safe to delete**; 14 initial
+delete votes were **refuted** — broken inbound links, sole-source facts — and 45 "need condensing"
+([`superbot-fresh-rebuild-vision-2026-06-30.md`](../ideas/superbot-fresh-rebuild-vision-2026-06-30.md)
+§4: "even deliberately hunting for dead weight, 94% of what looked deletable wasn't, once checked").
+That audit refutes *naive* deletion — and specifies this policy's gates: its two refutation classes
+are exactly what the mechanics make impossible (**broken links** → the reference gate blocks the
+delete; **sole-source facts** → the harvest step moves them to durable homes *before* the window
+opens), its "45 need condensing" is the tail-compression workstream, and its population (historical
+plans/audits) is the class this policy *archives*, not deletes. The class it did not cover —
+session logs — is where the measured afterlife is near-zero. The audit's 7 confirmed-delete files
+(still awaiting the maintainer's go-ahead) become PR 2's first deletions under the new gates.
+
+**The incident record splits the failure modes cleanly** (30+ incidents swept from
+journal/sessions/router, 2026-07-02):
+
+- *Bloat failures are pointer-prose failures*: the stamp wall Hermes acted on (named an
+  already-shipped slice, 2026-06-15 — and the wall had been archived once and **regrew**); the
+  40.5KB ▶ callout ("a pointer that's allowed to grow unboundedly becomes a liar", band-990); stale
+  plan-status headers and folio lines misleading sessions mid-task (3 recorded); the router
+  physically exceeding the Read tool's size limit (Q-0210's own session read it in slices); the
+  orientation tax making Sonnet "compact on arrival" — owner-recorded as costing "an entire weekly
+  bucket every week". **Deferral is the meta-failure: "a cleanup always one session away is never
+  done"** (band-#1200's deferred prune never happened; the wall grew another pass) — which is why
+  every cap here ships with its actuator.
+- *Missing-context failures are invisibility failures, not deletion failures*: every duplicate-work
+  incident (#677/#678, #1221, #804, the ultracode B4 collision) traces to claim/PR visibility gaps;
+  every re-derivation traces to knowledge parked in non-read homes (session logs, code comments).
+  **No incident in the repo's history traces to a deleted doc** — in 27 days only 8 non-claim docs
+  were ever deleted (1 owner-directed wrong-claim removal #1278, plus supersessions/renames), and
+  the two that left dangling refs caused zero recorded problems.
+- *The owner has already directed deletion where it matters most*: PR #1278 — "completely remove
+  wrong/fixed claims from the repo — not annotate them 'was wrong, now fixed' — so a future session
+  never reads about a problem that no longer exists." Retention-by-default is not a standing owner
+  preference; provenance-by-default is.
+
+Standing risks and their mitigations:
 
 - **A wrongly-deleted doc**: bounded by the triple filter (terminal badge + past window + zero
   inbound refs) and restorable by one revert of a docs-only commit. Worst realistic case is the hop
@@ -334,7 +374,8 @@ added to the reconciliation routine prompt (⚑/💡 → pass record). Unit test
 **PR 2 — the first real prune (the cascade, top-down).**
 Run in order: ledger-tail compression (current-state narrative block lines ~29–194 → per-band
 one-liners; roadmap history sections; current-state-archive entries past window) → re-run
-reference pass → archive newly-unreferenced historical plans with stubs → first session-log prune
+reference pass → archive newly-unreferenced historical plans with stubs → **execute the 2026-06-30
+audit's 7 confirmed-delete files** (owner reviews them with this plan) → first session-log prune
 (everything older than 2 bands, post-harvest) → one-time deletion of the frozen
 `.session-journal-archive.md` (pointer line stays in the journal). Each step its own commit,
 `check_docs --strict` green throughout. Update plan-index convention text ("never deleted" →
