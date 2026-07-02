@@ -94,10 +94,10 @@ def _read(rel: str) -> str:
 def _triple_quote_toggles(line: str, active: str | None) -> str | None:
     """Track triple-quoted string state across a line; return the new state.
 
-    ``active`` is the open delimiter (``'\"\"\"'`` / ``\"'''\"``) or None. Naive
-    by design (counts delimiter occurrences; a line mixing both delimiters is
-    not handled) — module docstrings and the embedded prose blocks this builder
-    must survive are all well-formed.
+    ``active`` is the open triple-quote delimiter (double or single form) or
+    None. Naive by design (counts delimiter occurrences; a line mixing both
+    delimiter forms is not handled) — module docstrings and the embedded prose
+    blocks this builder must survive are all well-formed.
     """
     if active is not None:
         return None if line.count(active) % 2 == 1 else active

@@ -96,3 +96,29 @@ def test_split_imports_ignores_import_like_docstring_lines():
     assert not future
     assert "from the index, never hand-edit them." in body
     assert "import-looking prose line." in body
+
+
+def test_no_aliased_intra_package_imports_in_engine():
+    """`from engine... import X as Y` breaks the generated single file.
+
+    The builder drops intra-package import lines whole, so an alias bound by
+    one never exists in the concatenated namespace (a `check` NameError in the
+    dist was the live failure). Enforce alias-free engine imports.
+    """
+    engine_root = Path(build_bootstrap.ENGINE_ROOT)
+    offenders = []
+    for path in sorted(engine_root.rglob("*.py")):
+        in_import = False
+        for lineno, line in enumerate(path.read_text().splitlines(), 1):
+            stripped = line.strip()
+            if line.startswith(("from engine", "import engine")):
+                in_import = not (")" in line or "(" not in line)
+                if " as " in line:
+                    offenders.append(f"{path.name}:{lineno}")
+                continue
+            if in_import:
+                if " as " in stripped:
+                    offenders.append(f"{path.name}:{lineno}")
+                if ")" in line:
+                    in_import = False
+    assert not offenders, f"aliased intra-package imports break the dist: {offenders}"

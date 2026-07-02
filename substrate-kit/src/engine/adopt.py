@@ -54,7 +54,7 @@ ADOPT_PLAN: list[tuple[str, str]] = [
 
 _ADOPT_NEXT_STEPS = (
     "next steps: run `bootstrap ask` to see the pending interview questions, "
-    "answer them so the docs re-render filled (`bootstrap render`), and set "
+    "answer them and fill the planted docs in place (`bootstrap render --live`), and set "
     "the integration mode with `bootstrap mode <observe|guided|active>`."
 )
 

@@ -22,7 +22,7 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-from engine.adopt import adopt
+from engine.adopt import ADOPT_PLAN, _adopt_dest, adopt
 from engine.agents.agents import AGENTS, agent_document, agent_relpath
 from engine.checks.check_docs import run_doc_checks
 from engine.checks.check_namespace import check_namespace
@@ -47,8 +47,12 @@ from engine.interview.interview import (
     session_questions,
 )
 from engine.interview.question_bank import QUESTIONS
-from engine.ledger import LEDGER_FILENAME, append_decision, check_ledger
-from engine.ledger import check_stamp_discipline as ledger_stamp_check
+from engine.ledger import (
+    LEDGER_FILENAME,
+    append_decision,
+    check_ledger,
+    check_stamp_discipline,
+)
 from engine.lib.atomicio import atomic_write_text
 from engine.lib.config import Config, config_path, load_config, save_config
 from engine.lib.guardrail import UnsafeTargetError, assert_safe_target
@@ -214,14 +218,47 @@ def cmd_ask(target: Path) -> int:
     return 0
 
 
-def cmd_render(target: Path) -> int:
-    """Render the content docs from the current filled slots into ``target``."""
+def _render_live(target: Path, context: dict[str, str]) -> int:
+    """Fill remaining ``${slot}`` placeholders in the PLANTED docs, in place.
+
+    Placeholders survive verbatim in a planted file until their slot fills, so
+    substituting over the live text updates exactly the newly-answered slots
+    while preserving every hand edit around them. Returns the leftover count.
+    """
+    leftover_total = 0
+    for _, plan_rel in ADOPT_PLAN:
+        rel = _adopt_dest(plan_rel, load_config(target))
+        path = target / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        filled = render(text, context)
+        leftover = find_placeholders(filled)
+        leftover_total += len(leftover)
+        if filled != text:
+            atomic_write_text(path, filled)
+            suffix = f" ({len(leftover)} slot(s) still unfilled)" if leftover else ""
+            _emit(f"render: filled {rel}{suffix}")
+    _emit(f"render: {leftover_total} unfilled placeholder(s) across planted docs.")
+    return 0
+
+
+def cmd_render(target: Path, live: bool = False) -> int:
+    """Render the content docs from the current filled slots.
+
+    Default: stage fresh renders of every template into
+    ``<state_dir>/rendered/``. With ``live``: fill remaining placeholders in
+    the *planted* docs in place (hand edits preserved) — the post-interview
+    "make the live docs catch up" pass.
+    """
     config = load_config(target)
     backend = JsonStateBackend(_state_path(target, config))
     if not backend.data:
         _emit(f"render: no state at {target} (run init first).")
         return 1
     context = build_context(backend.data)
+    if live:
+        return _render_live(target, context)
     out_dir = target / config.state_dir / "rendered"
     leftover_total = 0
     for name, text in load_templates().items():
@@ -423,7 +460,7 @@ def _extra_check_findings(target: Path, config: Config) -> list:
     ledger_path = target / config.docs_root / LEDGER_FILENAME
     if ledger_path.exists():
         findings += check_ledger(ledger_path)
-        findings += ledger_stamp_check(target / config.docs_root, ledger_path)
+        findings += check_stamp_discipline(target / config.docs_root, ledger_path)
     roots = [target / r for r in config.namespace.get("roots", [])]
     roots = [r for r in roots if r.exists()]
     if roots:
@@ -778,14 +815,16 @@ def cmd_economy(
 
 
 def cmd_adopt(target: Path, include_claude: bool) -> int:
-    """Adopt the workflow into ``target``: plant the docs, stage the packs."""
-    target.mkdir(parents=True, exist_ok=True)
-    if config_path(target).exists():
-        config = load_config(target)
-    else:
-        config = Config()
-        assert_safe_target(target, _kit_root())
-        save_config(target, config)
+    """Adopt the workflow into ``target``: init, plant the docs, stage the packs.
+
+    The one-step flow: ``init`` runs first (idempotent — config + state), so a
+    bare directory with nothing but the bootstrap file becomes a fully
+    substrate-governed project in this single command.
+    """
+    rc = cmd_init(target)
+    if rc != 0:
+        return rc
+    config = load_config(target)
     backend = JsonStateBackend(_state_path(target, config))
     lines = adopt(
         target,
@@ -840,13 +879,16 @@ def cmd_session_close(target: Path) -> int:
     loaded = _require_state(target, "session-close")
     if loaded is None:
         return 1
-    config, backend = loaded
+    config, _ = loaded
     rc = cmd_reflect(target, add=None, evidence="", tags="", mine=True)
     if rc != 0:
         return rc
     index_path = target / config.state_dir / EPISODIC_INDEX_FILENAME
     entries = rebuild_episodic_index(target / config.sessions_dir, index_path)
     _emit(f"session-close: indexed {len(entries)} session(s).")
+    # Re-read state: the mine above stamped reflection_buffer.last_mined, and
+    # a pre-mine snapshot would re-advise the mine it just ran.
+    backend = JsonStateBackend(_state_path(target, config))
     for line in evaluate_stop(target, config, backend):
         _emit(f"session-close: [advisory] {line}")
     kpis = workflow_kpis(backend.data, target / config.sessions_dir)
@@ -965,7 +1007,6 @@ def build_parser() -> argparse.ArgumentParser:
         ("init", "initialise a project"),
         ("status", "show install state"),
         ("ask", "list pending interview questions"),
-        ("render", "render content docs from filled slots"),
         ("triggers", "scan for fired triggers / mandatory questions"),
         ("metrics", "emit the router + workflow KPIs"),
         ("session-start", "print this session's orientation injection"),
@@ -991,6 +1032,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="index or manifest path (default: <target>/project.index.json)",
     )
     contextpack.add_argument("--target", type=Path, default=Path.cwd())
+    render_p = sub.add_parser("render", help="render content docs from filled slots")
+    render_p.add_argument(
+        "--live",
+        action="store_true",
+        help="fill remaining placeholders in the PLANTED docs in place",
+    )
+    render_p.add_argument("--target", type=Path, default=Path.cwd())
     answer = sub.add_parser("answer", help="record a user answer for a slot")
     answer.add_argument("slot")
     answer.add_argument("value", nargs="+", help="the answer text")
@@ -1083,7 +1131,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "ask":
             return cmd_ask(args.target)
         if args.command == "render":
-            return cmd_render(args.target)
+            return cmd_render(args.target, live=args.live)
         if args.command == "mode":
             return cmd_mode(args.target, args.name)
         if args.command == "stance":
