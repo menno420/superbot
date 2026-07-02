@@ -153,7 +153,7 @@ Fable where reasoning is the bottleneck (the Phase-2 design, session D); Opus `x
 (A/B/C); Sonnet for wide fan-out / the Phase-4 port; independent review always a *different* model than
 built it. The golden harness (C) is what makes cheap-tier porting safe later (red-until-parity).
 
-### E — External full-tier review of the design spec (owner: paste into Codex / ChatGPT) — *NEW 2026-07-02, optional but recommended before approving*
+### E — External full-tier review of the design spec (owner: paste into Codex / ChatGPT) — *✅ RAN 2026-07-02: the owner ran two external GPT sessions; findings verified + folded into the spec (see its header "Revision" note). A further pass is optional.*
 
 D's in-session non-Claude review ran on `gpt-5.4-mini` (the strongest OpenAI model available to the
 deployment's key). A full-tier external pass is the one review seam still open. Paste-ready prompt:

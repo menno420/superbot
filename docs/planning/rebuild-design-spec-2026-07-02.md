@@ -32,6 +32,111 @@
 > events **are live-subscribed** (`core/runtime/__init__.py:181–183`), the cache event's real name is
 > `governance.cache.invalidated`, and the genuinely subscriber-less pair is
 > `governance.execution.allowed/denied` (§1.2). Source wins over docs.
+>
+> **Revision (2026-07-02, external review round 2):** the owner ran **two external GPT review
+> sessions** over the merged spec (the §E full-tier seam). Folded in, each verified per Q-0120:
+> the plain-language summary below (owner-endorsed), the table of contents, the glossary (§11), the
+> §8 decision quick-table, the dashboard/control-surface contract (§6), pre-cutover operational
+> contracts + deliberate non-goals (§10.3), importer mismatch stop-codes (§5.2), the shadow-window
+> compat scoreboard (§5.4), canary + renderer kill-switch (§10.1), the AI session-state layering
+> note (§5.1), and the dense-panel sim fallback (§9.3). **Declined with reasons** (detail in the
+> session log): footnote-izing `file:line` citations (they are the verification substrate — every
+> one is re-checkable), splitting the document (the TOC solves navigation without breaking the
+> merged artifact's links), full normative/rationale separation (the new repo's *generated* docs do
+> that — §7; this document argues its case to the owner on purpose), a fixed per-subsystem
+> "manifest budget" (§2.9's ratchet already enforces the same thing without an arbitrary number),
+> and compile-time Discord component caps (already specified, §2.3).
+
+---
+
+## Plain-language summary — read this first
+
+*This section says what the whole document says, without the engineering vocabulary. Every claim
+here is specified precisely later; when they differ, the technical sections win.*
+
+**What this document is.** The complete blueprint for rebuilding SuperBot from scratch in a new
+repository. **You approve or reject this document before a single line of the new bot is written.**
+The current bot keeps running in production, untouched, the entire time — the new one replaces it
+only after it provably behaves the same.
+
+**Why rebuild at all.** Three verified problems, all structural — none fixable with one more patch:
+
+- **Every feature is smeared across many files** (its commands in one place, its buttons in another,
+  its settings in a third, its help text in a fourth). They drift apart, and keeping them aligned
+  consumes most of the effort of every change.
+- **Names collide at boot.** Twice in three days, two features claiming the same command name
+  crash-looped the production bot — and nothing in the system could catch that before it hit
+  Discord. The same class of silent name-clash exists for buttons, settings, and events.
+- **The good rules exist but are optional.** There is a correct, audited path for changing settings —
+  and 40 places in the code quietly bypass it. A safety rail you can step around is not a rail.
+
+**The three big ideas of the new design:**
+
+1. **One description file per feature (a "manifest").** Each feature declares everything it has —
+   commands, buttons, settings, events, tables, help — in one typed file. Panels, help pages, the
+   settings hub, permission checks, documentation, and test scaffolding are all *generated from it*,
+   so they can never drift apart again. Hand-written UI code still exists, but as a counted,
+   justified exception — not the normal way.
+2. **One name registry.** Every name — commands, button identities, setting keys, event names —
+   is reserved when declared. Two features claiming the same name fail the pull request *and* fail
+   the deploy **before the bot connects to Discord**. The crash-loop class dies structurally.
+3. **Layouts are computed, not debated.** Which button goes where, how settings group, which hub
+   hosts a feature: a deterministic simulator searches the options against real usage data and
+   produces a "here's the winner and why" report. **You ratify it** — and the machinery can touch
+   *only* arrangement, never meaning, wiring, or button identities (that separation is enforced by
+   tests, not promises).
+
+**What changes for you and your servers:**
+
+- **Useful things are ON by default.** Logging and AI answering work out of the box instead of
+  being silently off. Two hard safety lines survive verbatim: nothing posts or gets created until
+  you pick/confirm a destination, and anything that sends member content to an external paid
+  service (image moderation) stays strictly opt-in per server — the compiler physically refuses a
+  spec that tries otherwise.
+- **No more boot crash-loops from name collisions** — a colliding change goes red in CI instead.
+- **One settings surface** with one authority model and one audit trail.
+- **Nothing observable breaks.** Every button identity, setting key, event name, and all data
+  (coins, XP, karma, inventories, tickets, audit history) is on a frozen, machine-checked
+  compatibility list. Your data crosses over via an importer whose dry-run report **you review
+  before it runs for real**, and the old bot + its untouched database stay available as rollback
+  for a bounded window after the switch.
+
+**How the build runs after approval** (nothing below starts before it):
+
+```
+kernel first (K0–K10)          the engines + name registry + checkers — no features yet
+  → port features in 7 bands   each feature: declare manifest → implement → must match
+                               recordings of the CURRENT bot's behavior ("golden parity")
+  → cutover                    dry-run data import you review → freeze → flip → rollback window
+```
+
+**What you are approving:** the 14 items in [§10.2](#102-what-the-owner-ratifies-by-approving-this-spec)
+— most importantly: the manifest architecture, the name registry, safe-default-ON with its two
+carve-outs, the fresh-database-plus-importer migration (with a specified conservative fallback),
+and the build order. **What you are *not* approving yet:** the final cutover — that is a separate,
+owner-verified step at the very end.
+
+**Reader's guide.** Skim [§0](#0-executive-summary--the-one-picture) (the technical summary), then
+[§8](#8-the-ten-open-questions--decisions) (the ten decisions, with a quick-table) and
+[§10](#10-risks--what-the-owner-is-approving) (risks + exactly what approval means). The
+[glossary (§11)](#11-glossary) defines every term of art; the deep sections (§1–§7, §9) are
+reference material for the agents that will build this.
+
+### Table of contents
+
+- [Plain-language summary](#plain-language-summary--read-this-first)
+- [§0 Executive summary — the one picture](#0-executive-summary--the-one-picture)
+- [§1 Architecture](#1-architecture) — packages/layers, runtime contracts, ownership, AIGateway home, complexity budget
+- [§2 The manifest grammar](#2-the-manifest-grammar) — every primitive, field-level; format; escape hatch; the simulability contract
+- [§3 The central namespace](#3-the-central-namespace) — reservation, fail-before-boot, tombstones, custom-id versioning
+- [§4 Settings model](#4-settings-model) — one declaration path; three lanes; AI fold-in; safe-default-ON
+- [§5 Data model + backward-compat contract](#5-data-model--backward-compat-contract) — schema, migration decision, all nine hazard classes
+- [§6 Control plane](#6-control-plane) — rulesets/OIDC, required gates, golden parity, the dashboard contract
+- [§7 Regenerated binding docs](#7-regenerated-binding-docs)
+- [§8 The ten open questions — decisions](#8-the-ten-open-questions--decisions)
+- [§9 Build order](#9-build-order) — K0–K10, the seven port bands, the first simulator passes
+- [§10 Risks + what the owner is approving](#10-risks--what-the-owner-is-approving) — incl. §10.3 operational contracts + non-goals
+- [§11 Glossary](#11-glossary)
 
 ---
 
@@ -1135,7 +1240,11 @@ dropped) generalizes into a written rule, the **checkpoint test**: *if the row's
 money or an operator an audit answer, it is a table; if it costs a player a rematch, it is a
 checkpoint.* Per-user game stats become first-class (new, decision 10). In-process live-play state
 (counting, word-chain, casino rounds) either checkpoints or is declared
-`GameSessionPersistencePolicy.ephemeral` explicitly — never implicitly lossy.
+`GameSessionPersistencePolicy.ephemeral` explicitly — never implicitly lossy. The same two-layer
+memory split governs the AI domain: **AI conversation/approval state is session-class** (short-lived
+thread state in checkpoints, resumable across restarts where declared), while its durable stores
+(`ai_review_log`, `ai_answer_presets`, provenance) are ledgers/aggregates — an AI dialog never
+smuggles long-term truth into thread state or vice versa.
 
 ### 5.2 The migration decision (decision 8) — fresh chain + one-time importer, with a named fallback
 
@@ -1151,7 +1260,12 @@ the rebuild exists to shed, and would leave the manifest describing tables it di
 by dependency (guilds → settings/bindings → economy/XP/karma ledgers → inventory/game aggregates →
 tickets/treasury → AI stores → provenance); **dry-run mode emitting a reconciliation report** (row
 counts + per-table checksums + key coverage, old vs new) that the **owner reviews before the real
-run**; hard abort on any unmapped settings key, unknown subsystem key, or orphaned binding.
+run**; hard abort on any unmapped settings key, unknown subsystem key, or orphaned binding — and
+every abort class is **machine-readable**: the dry-run report enumerates a fixed set of mismatch
+classes (`unmapped_key`, `unknown_subsystem`, `orphaned_binding`, `checksum_drift`,
+`row_count_drift`, `key_coverage_gap`), each with a distinct hard stop-code, so "reconciliation
+failed" is never a judgment call read out of a log — the fallback trip-wire (below) keys on
+stop-codes, not vibes.
 Ledger/aggregate tables import **name-stable** where cheap (`subsystem_bindings`,
 `economy_audit_log`, `ai_review_log`, `ai_answer_presets`), shrinking the diff surface. The importer
 is **built and golden-tested in Phase 4 against a sanitized production snapshot fixture** — never
@@ -1192,6 +1306,13 @@ imported snapshot — the real acceptance test → (4) cutover: freeze old bot, 
 the Railway service → (5) bounded rollback window with the old repo + pre-import snapshot intact.
 The importer never writes to the old schema.
 
+**The shadow window is measured, not felt — the compat scoreboard.** During shadow-run and the
+rollback window, one generated report tracks per compat artifact: unknown-`custom_id` hits (clicks
+the router could not dispatch), legacy-alias read residue (§4.5's shim metric), event payload-shape
+diffs against the frozen inventory, importer residue by stop-code class, actor-type/audit-shape
+mismatches, and golden-parity status. Cutover-exit criteria are scoreboard lines (residue flatlined,
+zero unknown-id hits, goldens green), so "the window is over" is a read-off, not a feeling.
+
 ---
 
 ## 6. Control plane
@@ -1225,6 +1346,17 @@ compat-contract doc to owner review — the surfaces where a wrong merge is expe
 6. `check_compat_frozen` — diffs the pinned compat artifacts (legacy custom_id list, subsystem keys,
    event literals, `AITask` names, audit payload field sets) against the manifest export; any drift
    from the §5.3 contract is red until the compat doc is explicitly amended **with owner sign-off**.
+
+**The runtime control surface (the dashboard) is a client, never a second write path.** The current
+repo ships a separate FastAPI dashboard service; the rebuild keeps that split but makes the contract
+explicit — a gap the external review round correctly flagged. Rule: **every dashboard write goes
+through the same audited workflow lanes as a Discord interaction** (authority resolved for the
+acting operator, preview/confirm where declared, audit row, event, cache invalidation — the seams
+of §1.3), exposed over one versioned internal control API; the dashboard never receives DB
+credentials for direct writes, and its read models are the same generated projections the bot
+renders from. The concrete API contract (endpoints, auth, which workflows are exposed) is a
+**required K7/K8-entry deliverable** — the interaction runtime must not land while the dashboard's
+write path is undefined, or side-channel orchestration regrows.
 
 **The harness itself** is captured in Phase 0.5 against the live bot (command-in → embed/DB-out,
 testcontainers Postgres + a Discord driver, reusing the `evals/` corpus — the one true black-box
@@ -1272,6 +1404,21 @@ context-compiler convention, kept).
 ---
 
 ## 8. The ten open questions — decisions
+
+At a glance (full rationale in the numbered entries below):
+
+| # | Question | Decision (one line) |
+|---|---|---|
+| 1 | `ActionSpec` rename | UI primitive = `PanelActionSpec`; automation record = `AutomationActionSpec`; bare name tombstoned |
+| 2 | One manifest vs split registries | One `SubsystemManifest` (thin spine + typed facets), extending the shipped `SubsystemSchema` |
+| 3 | Legacy-KV vs binding route-truth | Bindings authoritative; old KV keys become declared read-aliases; no legacy write path |
+| 4 | INV-K overload | Karma keeps INV-K; the task-spawn invariant becomes INV-T; invariant tags namespace-reserved |
+| 5 | Safe-default policy | Four-valued `activation` axis; logging `on_when_bound`, AI `on_when_keyed`, image moderation compiler-forced `off_until_opt_in` |
+| 6 | Custom-id versioning | Static ids frozen verbatim (incl. the eight `ai:*`); dynamic session ids = versioned `g1:` scheme |
+| 7 | Where `AIGateway` lives | `kernel/ai` with a hard no-upward-imports rule; misfiled metrics moves to `kernel/observability` |
+| 8 | Data migration | Fresh chain from `0001` + one-time owner-reviewed importer; carry-the-chain is the trip-wired fallback |
+| 9 | Ingestion + eval determinism | One ingestion pipeline; `deterministic_provider` only for evals, socket-deny enforced; data bump ⇒ golden bump |
+| 10 | Leaderboard honesty | Stat writes ship inside the game-session primitive; a leaderboard without a declared writer fails compile |
 
 1. **The ActionSpec rename.** **`PanelActionSpec`** for the UI primitive; the shipped automation
    metadata record ports as **`AutomationActionSpec`**; the bare name **`ActionSpec` is tombstoned**
@@ -1405,7 +1552,10 @@ blast radius:
    landing its stat writes (decision 10).
 6. **AI + knowledge domains** — NL router + per-domain intents; review/preset stores (normalizer
    golden-pinned); BTD6 (the mature exemplar), then ProjMoon, then YouTube through the shared
-   ingestion pipeline.
+   ingestion pipeline. Deliberately last among the majors: the AI/ingestion runtimes are the
+   **outer ring** — the deterministic platform kernel and the operator/economy/game bands prove the
+   grammar and the parity loop first, so AI-runtime complexity (provider behavior, session state,
+   ingestion) never holds the platform hostage.
 7. **tickets, role menus, spotlight, BTD6 ops, long tail** — by golden coverage; parallelizable.
 
 The old repo serves production throughout as the frozen oracle. Post-parity bands (explicitly after
@@ -1430,7 +1580,10 @@ deferred by the fallback lane, escape-hatch reductions, telemetry-refreshed sim 
 3. **Dense-panel layout** — `PanelSpec.layout` for the server-management and games hubs, the two
    largest component sets under the 5×5 caps, with the destructive-placement constraint doing real
    work (engine precedents: the BTD6 #1617 and reaction-roles #1612 sims). Before those panels flip
-   `ported`.
+   `ported` — **with the §2.10.4 confidence rule doing real work here**: if telemetry is still thin
+   at band-2 time, the pass runs on the neutral prior, and a low-confidence winner **defers to the
+   legacy layout as the seed arrangement** (an explicit `Exempt`) rather than blocking or reshuffling
+   the port — dense-panel optimization is a post-telemetry win, never a parity gate.
 
 ---
 
@@ -1447,7 +1600,12 @@ deferred by the fallback lane, escape-hatch reductions, telemetry-refreshed sim 
 2. **Engine bugs have total blast radius** (one panel-engine defect breaks every panel).
    *Mitigation:* engines land in Phase 3 with their own golden + property suites before any feature
    exists; generated property tests exercise every spec instance; the port order proves the platform
-   on low-risk surfaces (settings/help) first; the `legacy_view` contingency bounds a stall.
+   on low-risk surfaces (settings/help) first; the `legacy_view` contingency bounds a stall. Two
+   operational additions from the external review round: each engine family gets a **canary
+   subsystem** (the first, lowest-risk consumer that ports on it and soaks in shadow-run before the
+   band ships wide), and the panel engine carries a **per-renderer-family runtime kill-switch** — an
+   operator toggle that drops an engine-rendered family back to its `legacy_view`/minimal rendering
+   while a defect is diagnosed, so an engine bug is a degraded surface, not a dead bot.
 3. **Importer correctness at cutover** — the least rehearsable step and the one irreversible failure
    class. *Mitigation:* built and golden-tested in Phase 4 against a sanitized snapshot; dry-run
    checksum reconciliation **owner-reviewed before the real run**; name-stable ledger imports; the
@@ -1528,3 +1686,76 @@ What the owner is **not** approving here (still gated per the standing rules): t
 execution and final data migration (owner-verified), live verification/rollback, and any per-PR
 data step a change names. This spec is the design gate; no new-repo code exists until it is
 approved.
+
+### 10.3 Pre-cutover operational contracts + deliberate non-goals
+
+**Operational contracts — specified during Phase 4, required before cutover** (the external review
+round correctly flagged these as present-but-implicit; they are now named deliverables, not
+solved-in-this-document):
+
+1. **An SLO set per runtime surface** — interaction-response latency, event-delivery lag, task-loop
+   health, AI-answer latency/degraded-rate — with the kernel observability metrics (K0) as the data
+   source and the diagnostics panel as the read surface. "Healthy" becomes a number before the flip.
+2. **Rate-limit and quota budgets** — a declared budget per external edge: Discord REST/gateway
+   (the adapters already own the choke points), and per AI provider via `TaskProfileSpec`'s
+   tool/cache budgets; provider spend surfaces in diagnostics, not in a bill surprise.
+3. **A DR runbook beyond the rollback window** — the specified rollback covers the bounded window;
+   the runbook covers the day after it closes: which stores restore from what (ledgers/aggregates
+   from Postgres backup, sessions accepted-lossy per their declared class), importer re-run
+   semantics on a partially-diverged database (idempotent by natural key — verified against the
+   snapshot fixture), and the decision tree for re-freezing.
+4. **A retention/deletion policy per store** — `StoreSpec.retention` (§2.8) already carries the
+   field; the pre-cutover deliverable is the filled-in inventory (what holds member content, how
+   long, how a guild-leave or member-erasure request cascades) — the privacy complement to the
+   image-moderation opt-in gate.
+
+**Deliberate non-goals of this design** (decided now so they are not re-litigated mid-port):
+
+- **No vector database in phase 1.** Nothing in the parity scope needs vector retrieval; if a
+  post-parity AI feature does, the first step is `pgvector` inside the existing Postgres (one
+  datastore, one ownership model, one backup story) — a dedicated vector service is a later,
+  evidence-gated escalation, never a parity dependency.
+- **No durable-execution engine (Temporal-class) in phase 1.** The workflow engine's lanes are
+  short-lived, transactional, and previewable; nothing in scope is a multi-day saga. If one appears
+  post-parity, it gets its own design pass.
+- **No external agent framework for the platform loop.** The interaction loop stays
+  application-owned (the whole point of the kernel); AI-domain internals may adopt session/handoff
+  patterns behind the gateway, but the platform never delegates its loop to a framework.
+- **No model pinning in this spec.** Provider/model choices are `TaskProfileSpec` data, decided at
+  the Phase-4 AI band against then-current models and prices — a design document is the wrong place
+  to freeze a model name.
+
+---
+
+## 11. Glossary
+
+Plain-word definitions; each term links the section that specifies it precisely.
+
+| Term | Meaning |
+|---|---|
+| **manifest** | The one typed file per feature declaring everything it has (commands, panels, settings, events, tables, help). The single source the engines and generators read. (§2.1) |
+| **spec** (e.g. `PanelSpec`) | One typed record inside a manifest describing one thing — a panel, a button, a setting. (§2) |
+| **kernel** | The small set of engines written once — panels, settings, workflow/mutations, help, events, tasks, diagnostics, AI gateway — that interpret manifests. No feature code lives here. (§1.1) |
+| **engine** | A kernel component that turns specs into runtime behavior (e.g. the panel engine renders `PanelSpec`s). (§0) |
+| **domain** | A feature's actual business logic (game rules, moderation actions) — plain code behind typed handler refs. (§1.1) |
+| **panel** | An interactive message the bot posts: an embed plus buttons/menus. (§2.3) |
+| **custom_id** | The hidden identity string on every Discord button/menu; Discord sends it back on click, and the router dispatches on it. Persisted in old messages — which is why legacy ids are frozen verbatim. (§3.4) |
+| **capability** | A named permission string (e.g. `logging.settings.configure`) resolved through the authority seam on every click. (§2.2) |
+| **audience tier** | The member-facing authority lane (`user/trusted/staff/…`) for surfaces that aren't config mutations. (§2.2) |
+| **binding** | A stored pointer from a feature to a Discord object ("logging posts to #mod-log"). The pointer lane of config. (§2.5) |
+| **provisioning** | The confirm-first lane that creates Discord resources (channels/roles) — never silently. (§4.2) |
+| **lane** | One of the four write paths in the workflow engine: scalar setting / binding / resource / governance. (§1.3) |
+| **namespace** | The central registry where every name (commands, custom_ids, events, keys) is reserved at declaration; collisions fail CI and fail before boot. (§3) |
+| **tombstone** | A name deliberately reserved so nobody can ever claim it (e.g. bare `ActionSpec`). (§3.3) |
+| **golden harness** | Recordings of the *current* bot's observable behavior (command in → embed/DB out), replayed against the new bot as the acceptance oracle. (§6) |
+| **red-until-parity** | A ported feature's CI check stays failing until it matches its goldens; flipping to green is deliberate and one-way. (§6) |
+| **checkpoint** | Short-lived session state (a game in progress) saved via the game-state store rather than its own table. (§5.1) |
+| **importer** | The one-time tool that copies all data from the live database into the new schema, with an owner-reviewed dry-run first. (§5.2) |
+| **shadow-run** | The new bot running against a restored data snapshot (never the live DB) while the old bot still serves production. (§5.2) |
+| **cutover** | The deployment flip from old bot to new, after goldens + scoreboard are green; rollback stays available for a window. (§5.4) |
+| **compat scoreboard** | The generated report that makes the shadow window measurable (unknown-id hits, alias residue, payload diffs…). (§5.4) |
+| **S / A / O tags** | Every manifest field is semantic (meaning — hand-authored), arrangement (layout — simulator-owned), or objective (data the sim's scoring reads). (§2.0) |
+| **sim gate** | The required CI check: any arrangement change ships with a simulator record or an explicit exemption. (§2.10.6) |
+| **lock overlay** | The machine-written file holding the simulator's arrangement choices — structurally unable to touch meaning. (§2.0) |
+| **escape hatch** | The counted, justified path for hand-written code where the grammar can't express something (game boards, ported legacy views). (§2.9) |
+| **telemetry sidecar** | The usage-data snapshot (click counts, co-use pairs) the simulator's objectives read — measured, never invented. (§2.10.4) |
