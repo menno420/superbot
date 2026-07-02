@@ -1,0 +1,528 @@
+{
+  "admin": {
+    "visibility_tier": "administrator",
+    "parent_hub": null,
+    "capabilities": [
+      "admin.cog.load",
+      "admin.cog.unload",
+      "admin.cog.reload",
+      "admin.server.stats"
+    ],
+    "entry_points": [
+      "adminmenu"
+    ]
+  },
+  "server_management": {
+    "visibility_tier": "administrator",
+    "parent_hub": "admin",
+    "capabilities": [],
+    "entry_points": [
+      "servermanagement"
+    ]
+  },
+  "moderation": {
+    "visibility_tier": "moderator",
+    "parent_hub": null,
+    "capabilities": [
+      "moderation.warn.apply",
+      "moderation.timeout.apply",
+      "moderation.kick.apply",
+      "moderation.ban.apply",
+      "moderation.ban.remove",
+      "moderation.log.view",
+      "moderation.settings.configure"
+    ],
+    "entry_points": [
+      "modmenu",
+      "warn",
+      "timeout",
+      "kick",
+      "ban",
+      "unban"
+    ]
+  },
+  "economy": {
+    "visibility_tier": "user",
+    "parent_hub": null,
+    "capabilities": [
+      "economy.currency.view",
+      "economy.currency.earn",
+      "economy.shop.browse",
+      "economy.shop.buy",
+      "economy.settings.configure"
+    ],
+    "entry_points": [
+      "economymenu",
+      "daily",
+      "work",
+      "balance"
+    ]
+  },
+  "inventory": {
+    "visibility_tier": "user",
+    "parent_hub": "economy",
+    "capabilities": [
+      "inventory.item.view",
+      "inventory.item.use",
+      "inventory.craft.recipe"
+    ],
+    "entry_points": [
+      "inventory"
+    ]
+  },
+  "treasury": {
+    "visibility_tier": "user",
+    "parent_hub": "economy",
+    "capabilities": [
+      "treasury.pool.view",
+      "treasury.pool.contribute",
+      "treasury.pool.disburse"
+    ],
+    "entry_points": [
+      "treasury"
+    ]
+  },
+  "ticket": {
+    "visibility_tier": "user",
+    "parent_hub": "community",
+    "capabilities": [
+      "ticket.ticket.open",
+      "ticket.ticket.manage",
+      "ticket.config.update"
+    ],
+    "entry_points": [
+      "ticket"
+    ]
+  },
+  "mining": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "mining.resource.mine",
+      "mining.resource.view"
+    ],
+    "entry_points": [
+      "minemenu",
+      "mine"
+    ]
+  },
+  "fishing": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "fishing.catch.fish",
+      "fishing.collection.view"
+    ],
+    "entry_points": [
+      "fish",
+      "fishlog"
+    ]
+  },
+  "creature": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "creature.catch.creature",
+      "creature.collection.view"
+    ],
+    "entry_points": [
+      "creatures",
+      "catch",
+      "dex",
+      "cbattle",
+      "cbrecord",
+      "cbattletop"
+    ]
+  },
+  "farm": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "farm.egg.collect",
+      "farm.coop.manage"
+    ],
+    "entry_points": [
+      "farm"
+    ]
+  },
+  "xp": {
+    "visibility_tier": "user",
+    "parent_hub": "community",
+    "capabilities": [
+      "xp.rank.view",
+      "xp.leaderboard.view",
+      "xp.settings.configure"
+    ],
+    "entry_points": [
+      "xpmenu",
+      "rank"
+    ]
+  },
+  "karma": {
+    "visibility_tier": "user",
+    "parent_hub": "community",
+    "capabilities": [
+      "karma.card.view",
+      "karma.grant.give",
+      "karma.settings.configure"
+    ],
+    "entry_points": [
+      "thanks",
+      "karma"
+    ]
+  },
+  "role": {
+    "visibility_tier": "administrator",
+    "parent_hub": "community",
+    "capabilities": [
+      "role.settings.configure",
+      "role.threshold.configure",
+      "role.assignment.manage",
+      "role.reaction.manage"
+    ],
+    "entry_points": [
+      "rolemenu"
+    ]
+  },
+  "channel": {
+    "visibility_tier": "administrator",
+    "parent_hub": "admin",
+    "capabilities": [
+      "channel.create.text",
+      "channel.create.voice",
+      "channel.delete.any",
+      "channel.restrict.apply",
+      "channel.visibility.configure"
+    ],
+    "entry_points": [
+      "channelmenu"
+    ]
+  },
+  "cleanup": {
+    "visibility_tier": "administrator",
+    "parent_hub": "moderation",
+    "capabilities": [
+      "cleanup.word.add",
+      "cleanup.word.remove",
+      "cleanup.history.scan",
+      "cleanup.policy.configure"
+    ],
+    "entry_points": [
+      "cleanup",
+      "wordmenu",
+      "cleanuphistory"
+    ]
+  },
+  "automod": {
+    "visibility_tier": "administrator",
+    "parent_hub": "moderation",
+    "capabilities": [
+      "automod.settings.configure"
+    ],
+    "entry_points": [
+      "automod"
+    ]
+  },
+  "image_moderation": {
+    "visibility_tier": "administrator",
+    "parent_hub": "moderation",
+    "capabilities": [
+      "image_moderation.settings.configure"
+    ],
+    "entry_points": [
+      "imagemod"
+    ]
+  },
+  "games": {
+    "visibility_tier": "user",
+    "parent_hub": null,
+    "capabilities": [
+      "games.hub.view"
+    ],
+    "entry_points": [
+      "games"
+    ]
+  },
+  "community": {
+    "visibility_tier": "user",
+    "parent_hub": null,
+    "capabilities": [
+      "community.hub.view"
+    ],
+    "entry_points": [
+      "community"
+    ]
+  },
+  "community_spotlight": {
+    "visibility_tier": "user",
+    "parent_hub": "community",
+    "capabilities": [
+      "community_spotlight.dashboard.view"
+    ],
+    "entry_points": [
+      "spotlight"
+    ]
+  },
+  "welcome": {
+    "visibility_tier": "administrator",
+    "parent_hub": "community",
+    "capabilities": [
+      "welcome.settings.configure"
+    ],
+    "entry_points": [
+      "welcome"
+    ]
+  },
+  "counters": {
+    "visibility_tier": "administrator",
+    "parent_hub": "community",
+    "capabilities": [
+      "counters.settings.configure"
+    ],
+    "entry_points": [
+      "counters"
+    ]
+  },
+  "security": {
+    "visibility_tier": "administrator",
+    "parent_hub": "moderation",
+    "capabilities": [
+      "security.settings.configure"
+    ],
+    "entry_points": [
+      "security"
+    ]
+  },
+  "blackjack": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "blackjack.game.play",
+      "blackjack.tournament.manage"
+    ],
+    "entry_points": [
+      "blackjack",
+      "bj"
+    ]
+  },
+  "casino": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "casino.game.play"
+    ],
+    "entry_points": [
+      "casino",
+      "poker",
+      "holdem"
+    ]
+  },
+  "btd6": {
+    "visibility_tier": "user",
+    "parent_hub": null,
+    "capabilities": [
+      "btd6.query.ask",
+      "btd6.strategy.view",
+      "btd6.diagnostics.view",
+      "btd6.settings.configure"
+    ],
+    "entry_points": [
+      "btd6",
+      "btd6menu"
+    ]
+  },
+  "project_moon": {
+    "visibility_tier": "user",
+    "parent_hub": null,
+    "capabilities": [
+      "project_moon.lookup.view"
+    ],
+    "entry_points": [
+      "pm",
+      "limbus"
+    ]
+  },
+  "deathmatch": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "deathmatch.game.challenge",
+      "deathmatch.stat.view"
+    ],
+    "entry_points": [
+      "deathmatch",
+      "dm"
+    ]
+  },
+  "rps_tournament": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "rps_tournament.game.join",
+      "rps_tournament.tournament.manage"
+    ],
+    "entry_points": [
+      "rps"
+    ]
+  },
+  "counting": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "counting.game.play",
+      "counting.game.configure"
+    ],
+    "entry_points": [
+      "count_info",
+      "counttop",
+      "countingmenu"
+    ]
+  },
+  "chain": {
+    "visibility_tier": "user",
+    "parent_hub": "games",
+    "capabilities": [
+      "chain.game.play",
+      "chain.game.configure"
+    ],
+    "entry_points": [
+      "chainmenu",
+      "chain"
+    ]
+  },
+  "leaderboard": {
+    "visibility_tier": "user",
+    "parent_hub": "economy",
+    "capabilities": [
+      "leaderboard.xp.view",
+      "leaderboard.economy.view"
+    ],
+    "entry_points": [
+      "leaderboard",
+      "lb"
+    ]
+  },
+  "proof_channel": {
+    "visibility_tier": "staff",
+    "parent_hub": "moderation",
+    "capabilities": [
+      "proof_channel.access.grant",
+      "proof_channel.access.revoke",
+      "proof_channel.access.timed",
+      "proof_channel.settings.configure"
+    ],
+    "entry_points": [
+      "prizemenu",
+      "prizestatus",
+      "timedprize"
+    ]
+  },
+  "utility": {
+    "visibility_tier": "user",
+    "parent_hub": null,
+    "capabilities": [
+      "utility.info.server",
+      "utility.info.user",
+      "utility.tool.ping"
+    ],
+    "entry_points": [
+      "utilitymenu",
+      "myprofile",
+      "avatar",
+      "serverinfo",
+      "ping"
+    ]
+  },
+  "general": {
+    "visibility_tier": "user",
+    "parent_hub": "utility",
+    "capabilities": [
+      "general.info.view",
+      "general.community.interact"
+    ],
+    "entry_points": [
+      "generalmenu"
+    ]
+  },
+  "four_twenty": {
+    "visibility_tier": "user",
+    "parent_hub": "utility",
+    "capabilities": [
+      "four_twenty.panel.view"
+    ],
+    "entry_points": [
+      "420",
+      "fourtwenty"
+    ]
+  },
+  "help": {
+    "visibility_tier": "user",
+    "parent_hub": null,
+    "capabilities": [
+      "help.menu.view",
+      "help.settings.configure"
+    ],
+    "entry_points": [
+      "help"
+    ]
+  },
+  "diagnostic": {
+    "visibility_tier": "administrator",
+    "parent_hub": "admin",
+    "capabilities": [
+      "diagnostic.health.view",
+      "diagnostic.latency.check"
+    ],
+    "entry_points": [
+      "diagnostics",
+      "latency",
+      "platform"
+    ]
+  },
+  "ux_lab": {
+    "visibility_tier": "administrator",
+    "parent_hub": "admin",
+    "capabilities": [],
+    "entry_points": [
+      "uxlab"
+    ]
+  },
+  "ai": {
+    "visibility_tier": "administrator",
+    "parent_hub": "admin",
+    "capabilities": [
+      "ai.platform.view",
+      "ai.diagnostics.view",
+      "ai.provider.view",
+      "ai.routing.view",
+      "ai.settings.configure",
+      "ai.settings.view"
+    ],
+    "entry_points": [
+      "ai",
+      "aimenu"
+    ]
+  },
+  "settings": {
+    "visibility_tier": "administrator",
+    "parent_hub": "admin",
+    "capabilities": [
+      "settings.manager.view"
+    ],
+    "entry_points": [
+      "settings"
+    ]
+  },
+  "logging": {
+    "visibility_tier": "administrator",
+    "parent_hub": "moderation",
+    "capabilities": [
+      "logging.settings.configure",
+      "logging.channel.bind",
+      "logging.channel.create"
+    ],
+    "entry_points": [
+      "logging"
+    ]
+  }
+}
