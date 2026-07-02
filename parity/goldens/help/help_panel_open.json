@@ -1,0 +1,220 @@
+{
+ "case_id": "help.panel_open",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@member>"
+    }
+   ]
+  },
+  "panel_anchors": {
+   "added": [
+    {
+     "anchor_id": "<uuid>",
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "guild_id": "<guild>",
+     "is_stale": false,
+     "last_updated_at": "<ts>",
+     "message_id": "<msg:2>",
+     "subsystem": "help",
+     "user_id": "<@member>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2060726624,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@member>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "the help panel projection + nav components",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "help_categories:select",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "description": "Game flows and tournaments.",
+            "emoji": {
+             "id": null,
+             "name": "🎮"
+            },
+            "label": "Games",
+            "value": "games"
+           },
+           {
+            "default": false,
+            "description": "Bloons Tower Defense 6 assistant — lookups, strategy guidance, and round breakdowns.",
+            "emoji": {
+             "id": null,
+             "name": "🐵"
+            },
+            "label": "BTD6 Assistant",
+            "value": "btd6"
+           },
+           {
+            "default": false,
+            "description": "Limbus Company knowledge — Sinners, Sins, status keywords, damage types, and E.G.O grades.",
+            "emoji": {
+             "id": null,
+             "name": "🌑"
+            },
+            "label": "Project Moon",
+            "value": "project_moon"
+           },
+           {
+            "default": false,
+            "description": "Currency, items, work, shop, and standings.",
+            "emoji": {
+             "id": null,
+             "name": "💰"
+            },
+            "label": "Economy",
+            "value": "economy"
+           },
+           {
+            "default": false,
+            "description": "Progression, roles, and community activities.",
+            "emoji": {
+             "id": null,
+             "name": "🌱"
+            },
+            "label": "Community",
+            "value": "community"
+           },
+           {
+            "default": false,
+            "description": "Info, tools, and discovery commands.",
+            "emoji": {
+             "id": null,
+             "name": "🧰"
+            },
+            "label": "Utility",
+            "value": "utility"
+           }
+          ],
+          "placeholder": "Pick a category…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3447003,
+        "description": "Pick a category from the dropdown below.",
+        "fields": [
+         {
+          "inline": false,
+          "name": "🎮 Games",
+          "value": "Game flows and tournaments.\n→ `!games`"
+         },
+         {
+          "inline": false,
+          "name": "🐵 BTD6 Assistant",
+          "value": "Bloons Tower Defense 6 assistant — lookups, strategy guidance, and round breakdowns.\n→ `!btd6`"
+         },
+         {
+          "inline": false,
+          "name": "🌑 Project Moon",
+          "value": "Limbus Company knowledge — Sinners, Sins, status keywords, damage types, and E.G.O grades.\n→ `!pm`"
+         },
+         {
+          "inline": false,
+          "name": "💰 Economy",
+          "value": "Currency, items, work, shop, and standings.\n→ `!economymenu`"
+         },
+         {
+          "inline": false,
+          "name": "🌱 Community",
+          "value": "Progression, roles, and community activities.\n→ `!community`"
+         },
+         {
+          "inline": false,
+          "name": "🧰 Utility",
+          "value": "Info, tools, and discovery commands.\n→ `!utilitymenu`"
+         }
+        ],
+        "flags": 0,
+        "title": "📚 Help Menu",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@member>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!help",
+    "kind": "command",
+    "persona": "member"
+   }
+  }
+ ],
+ "subsystem": "help"
+}

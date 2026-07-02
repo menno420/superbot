@@ -1,0 +1,233 @@
+{
+ "case_id": "sweep.modmenu",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "panel_anchors": {
+   "added": [
+    {
+     "anchor_id": "<uuid>",
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "guild_id": "<guild>",
+     "is_stale": false,
+     "last_updated_at": "<ts>",
+     "message_id": "<msg:2>",
+     "subsystem": "moderation",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1846127341,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "mod:warn",
+          "disabled": false,
+          "label": "⚠️ Warn",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "mod:timeout",
+          "disabled": false,
+          "label": "⏳ Timeout",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "mod:kick",
+          "disabled": false,
+          "label": "👢 Kick",
+          "style": 4,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "mod:ban",
+          "disabled": false,
+          "label": "🚫 Ban",
+          "style": 4,
+          "type": 2
+         },
+         {
+          "custom_id": "mod:unban",
+          "disabled": false,
+          "label": "✅ Unban",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "mod:logs",
+          "disabled": false,
+          "label": "📋 Mod Logs",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "mod:clearwarn",
+          "disabled": false,
+          "label": "⬛ Clear Warnings",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "nav:help",
+          "disabled": false,
+          "label": "📚 Help",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15105570,
+        "description": "Click a button to take a moderation action.\nYou'll be prompted to enter the user and reason.",
+        "fields": [
+         {
+          "inline": true,
+          "name": "⚠️ Warn",
+          "value": "Issue a warning (auto-timeout at 3)"
+         },
+         {
+          "inline": true,
+          "name": "⏳ Timeout",
+          "value": "Temporarily mute for N minutes"
+         },
+         {
+          "inline": true,
+          "name": "👢 Kick",
+          "value": "Remove from server"
+         },
+         {
+          "inline": true,
+          "name": "🚫 Ban",
+          "value": "Permanently ban"
+         },
+         {
+          "inline": true,
+          "name": "✅ Unban",
+          "value": "Lift a ban by user ID"
+         },
+         {
+          "inline": true,
+          "name": "📋 Mod Logs",
+          "value": "View moderation history"
+         },
+         {
+          "inline": true,
+          "name": "⬛ Clear Warnings",
+          "value": "Reset warning count"
+         },
+         {
+          "inline": false,
+          "name": "🤖 Bot readiness",
+          "value": "🟢 I can warn, timeout, kick, and ban.\nI can only action members below my top role (**Admin**)."
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Any staff member with Moderate Members permission may use this panel."
+        },
+        "title": "🔨 Moderation Panel",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!modmenu",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "moderation"
+}

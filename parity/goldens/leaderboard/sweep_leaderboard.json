@@ -1,0 +1,221 @@
+{
+ "case_id": "sweep.leaderboard",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1962539430,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "🏆"
+            },
+            "label": "XP",
+            "value": "xp"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "🪙"
+            },
+            "label": "Coins",
+            "value": "coins"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "⛏️"
+            },
+            "label": "Mining",
+            "value": "mining"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "🐾"
+            },
+            "label": "Creatures",
+            "value": "creatures"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "🎣"
+            },
+            "label": "Fishing",
+            "value": "fishing"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "🐔"
+            },
+            "label": "Farm",
+            "value": "farm"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "🎮"
+            },
+            "label": "Game Level",
+            "value": "gamexp"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "🔧"
+            },
+            "label": "Crafting",
+            "value": "crafting"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "⚔️"
+            },
+            "label": "Deathmatch",
+            "value": "deathmatch"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "✂️"
+            },
+            "label": "RPS",
+            "value": "rps"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "🔢"
+            },
+            "label": "Counting",
+            "value": "counting"
+           },
+           {
+            "default": false,
+            "emoji": {
+             "id": null,
+             "name": "✨"
+            },
+            "label": "Karma",
+            "value": "karma"
+           }
+          ],
+          "placeholder": "Choose a leaderboard category…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3447003,
+        "description": "Select a category below to view the leaderboard.",
+        "flags": 0,
+        "title": "📊 Leaderboards",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!leaderboard",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "leaderboard"
+}

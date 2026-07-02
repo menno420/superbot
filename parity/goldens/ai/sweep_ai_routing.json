@@ -1,0 +1,186 @@
+{
+ "case_id": "sweep.ai_routing",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1895084905,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 5793266,
+        "description": "Resolved provider/model/timeout for each AI task. This view does not invoke any provider.",
+        "fields": [
+         {
+          "inline": true,
+          "name": "setup.suggest",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "setup.explain",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "platform.explain_status",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "platform.explain_consistency",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "logs.triage",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "settings.explain",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "settings.propose",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "help.answer",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "code_context.explain",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "moderation.assist",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "btd6.answer",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "general.nl_answer",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "projmoon.answer",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "btd6.strategy_review",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "video.describe",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "video.compare",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         },
+         {
+          "inline": true,
+          "name": "video.qa",
+          "value": "provider: `deterministic`\nmodel: `gpt-4o-mini`\ntimeout: `20.0s`\nenabled: `False`"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Per-guild overrides from ai_guild_policy.default_provider / default_model take precedence at gateway time when set. Run !ai policy in a guild to see its typed overrides."
+        },
+        "title": "AI Gateway — Routing",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!ai routing",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "ai"
+}

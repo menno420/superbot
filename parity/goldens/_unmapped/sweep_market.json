@@ -1,0 +1,105 @@
+{
+ "case_id": "sweep.market",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2055954176,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 6323595,
+        "fields": [
+         {
+          "inline": false,
+          "name": "🛍️ Buy gear",
+          "value": "**Torch** — 10 🪙\n**Ration** — 20 🪙\n**Bronze Boots** — 25 🪙\n**Pickaxe** — 25 🪙\n**Sword** — 25 🪙\n**Bronze Sword** — 30 🪙\n**Dynamite** — 30 🪙\n**Shield** — 30 🪙\n**Bronze Helmet** — 35 🪙\n**Bronze Shield** — 40 🪙\n**Energy Drink** — 40 🪙\n**Iron Boots** — 40 🪙\n**Lantern** — 40 🪙\n**Bronze Leggings** — 45 🪙\n**Bronze Chestplate** — 55 🪙\n**Iron Helmet** — 55 🪙\n**Silver Boots** — 55 🪙\n**Iron Pickaxe** — 60 🪙\n**Iron Sword** — 60 🪙\n**Iron Shield** — 65 🪙\n**Iron Leggings** — 70 🪙\n**Gold Boots** — 75 🪙\n**Silver Helmet** — 75 🪙\n**Silver Sword** — 75 🪙\n**Lucky Charm** — 80 🪙\n**Iron Chestplate** — 85 🪙\n**Silver Shield** — 85 🪙\n**Fishing Charm** — 90 🪙\n**Gold Sword** — 95 🪙\n**Silver Leggings** — 95 🪙\n**Gold Helmet** — 105 🪙\n**Gold Shield** — 110 🪙\n**Silver Chestplate** — 115 🪙\n**Diamond Boots** — 130 🪙\n**Gold Leggings** — 135 🪙\n**Gold Pickaxe** — 140 🪙\n**Gold Chestplate** — 160 🪙\n**Diamond Sword** — 180 🪙\n**Diamond Helmet** — 190 🪙\n**Diamond Lantern** — 200 🪙\n**Diamond Shield** — 200 🪙\n**Anglers Charm** — 220 🪙\n**Diamond Leggings** — 240 🪙\n**Diamond Chestplate** — 280 🪙\n**Diamond Pickaxe** — 320 🪙\n**Master Angler Charm** — 420 🪙"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Balance: 0 🪙  •  !sell <item> [n] · !sellall · !buy <item>"
+        },
+        "title": "🛒 Mining Market",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!market",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

@@ -171,6 +171,11 @@ the design-method dry-run + the clean-binding-doc generator. **Gate:** kit green
 Black-box goldens (command-in → embed/DB-out, testcontainers Postgres + a Discord driver), reuse the
 `evals/` corpus. The only structure-agnostic rebuild oracle (§1.4), and a current-bot regression win.
 **Can only be captured while the old bot is live.**
+**✅ BUILT 2026-07-02 (#1639): [`parity/`](../../parity/README.md)** — replay-deterministic capture of
+the real bot (fake HTTP over the real discord.py state machine — no dpytest/testcontainers needed),
+coverage measured in [`parity/COVERAGE.md`](../../parity/COVERAGE.md); evidence + verdict in
+[`rebuild-linchpin-validation-2026-07-02.md`](rebuild-linchpin-validation-2026-07-02.md). The
+remaining Phase-0.5 sibling is the **telemetry sidecar capture** (sim objective data, spec §2.10.4).
 
 **Phase 1 — Harvest what to keep** *(parallel; feeds the design).* Router distillation → clean decision
 ledger; settings-authority audit → authoritative model; functionality inventory; hidden-dependency /

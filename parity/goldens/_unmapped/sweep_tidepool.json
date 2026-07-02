@@ -1,0 +1,155 @@
+{
+ "case_id": "sweep.tidepool",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2041952690,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "label": "🪸 Build",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "label": "↩ Structures",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "nav:help",
+          "disabled": false,
+          "label": "📚 Help",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "nav:hub:games",
+          "disabled": false,
+          "label": "↩ Games",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 1752220,
+        "description": "Stock a reef pool with **coral** to nudge your casts toward rarer fish. Coral drops on a **deepwater** reel (`!sail`) — the same coral you can carve into curios, now with a second, *useful* home.",
+        "fields": [
+         {
+          "inline": false,
+          "name": "Level",
+          "value": "**(not built)** (0/3)"
+         },
+         {
+          "inline": false,
+          "name": "Current bonus",
+          "value": "no bonus yet"
+         },
+         {
+          "inline": false,
+          "name": "Next: Reef Pool → +4% pull toward rarer fish",
+          "value": "3× coral + **1500** 🪙"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "🪸 Build  •  ↩ Structures"
+        },
+        "title": "🪸 Tide Pool",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!tidepool",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

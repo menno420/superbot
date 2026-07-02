@@ -1,0 +1,172 @@
+{
+ "case_id": "sweep.slash_admin",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "<cid:1>",
+           "disabled": false,
+           "label": "📊 Server Stats",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:2>",
+           "disabled": false,
+           "label": "📋 Cog List",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:3>",
+           "disabled": false,
+           "label": "🔄 Reload All",
+           "style": 2,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:4>",
+           "disabled": false,
+           "label": "📝 Log Level",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "<cid:5>",
+           "disabled": false,
+           "label": "🛠 Settings",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:6>",
+           "disabled": false,
+           "label": "🧭 Server Management",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:7>",
+           "disabled": false,
+           "label": "📐 Channels",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:8>",
+           "disabled": false,
+           "label": "🤖 AI",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "<cid:9>",
+           "disabled": false,
+           "label": "🛰 Platform",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:10>",
+           "disabled": false,
+           "label": "🩺 Diagnostics",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:11>",
+           "disabled": false,
+           "label": "🧪 UX Lab",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:12>",
+           "disabled": false,
+           "label": "📝 Logging",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:13>",
+           "disabled": false,
+           "label": "🧹 Cleanup",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "<cid:14>",
+           "disabled": false,
+           "label": "📚 Help",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "<cid:15>",
+           "disabled": false,
+           "label": "↩ Overview",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 15158332,
+         "description": "Loaded cogs: **58**\n\n**Tools**\n📊 Server Stats · 📋 Cog List · 🔄 Reload All · 📝 Log Level\n\n**Configure & Operate**\n🛠 Settings · 🧭 Server Management · 📐 Channels · 🤖 AI\n\n**Platform & Diagnostics**\n🛰 Platform · 🩺 Diagnostics · 🧪 UX Lab · 📝 Logging · 🧹 Cleanup\n\n📚 Help",
+         "flags": 0,
+         "footer": {
+          "text": "Only you can interact with this panel."
+         },
+         "title": "⚙️ Server & Admin",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
+   "input": {
+    "kind": "slash",
+    "name": "admin",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "admin"
+}

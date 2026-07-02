@@ -1,0 +1,18 @@
+{
+ "case_id": "sweep.slash_ai_settings",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [],
+   "input": {
+    "kind": "slash",
+    "name": "ai settings",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "ai"
+}

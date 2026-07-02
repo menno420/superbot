@@ -1,0 +1,158 @@
+{
+ "case_id": "sweep.casino",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2066495344,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "🃏"
+          },
+          "label": "New Poker Table",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": true,
+          "emoji": {
+           "id": null,
+           "name": "🎡"
+          },
+          "label": "Roulette (soon)",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "nav:help",
+          "disabled": false,
+          "label": "📚 Help",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "nav:hub:games",
+          "disabled": false,
+          "label": "↩ Games",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 10181046,
+        "description": "Group casino games you play together at one table — everyone gets their **own private, live-updating hand**.\n\nPick a game below. Typed shortcut: `!poker`.",
+        "fields": [
+         {
+          "inline": false,
+          "name": "🃏 Texas Hold'em Poker",
+          "value": "Multiplayer poker, 2–8 players. Take a seat, get a private hand, and bet it out — your cards update live as everyone plays. Play-chips."
+         },
+         {
+          "inline": false,
+          "name": "🎡 Roulette",
+          "value": "_Coming soon — built on the same shared-table framework._"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Only you can interact with this panel."
+        },
+        "title": "🎰 Casino",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!casino",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "casino"
+}

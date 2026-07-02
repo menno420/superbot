@@ -1,0 +1,161 @@
+{
+ "case_id": "sweep.daily",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "economy": {
+   "added": [
+    {
+     "daily_count": 1,
+     "daily_streak": 1,
+     "guild_id": "<guild>",
+     "last_daily": 2064513871,
+     "last_worked": 0,
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "economy_audit_log": {
+   "added": [
+    {
+     "actor_id": "<@admin>",
+     "delta": 1025,
+     "guild_id": "<guild>",
+     "id": 1,
+     "new_balance": 1025,
+     "occurred_at": "<ts>",
+     "reason": "daily",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 1025,
+     "guild_id": "<guild>",
+     "last_xp": 2064513871,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 19
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "author": {
+         "icon_url": "https://cdn.discordapp.com/embed/avatars/1.png",
+         "name": "AdminActor"
+        },
+        "color": 15844367,
+        "description": "🟩 **Uncommon** reward!",
+        "fields": [
+         {
+          "inline": true,
+          "name": "Coins earned",
+          "value": "**+1025** 🪙"
+         },
+         {
+          "inline": true,
+          "name": "Balance",
+          "value": "**1025** 🪙"
+         },
+         {
+          "inline": true,
+          "name": "Streak",
+          "value": "🔥 **1** days"
+         },
+         {
+          "inline": true,
+          "name": "Total claims",
+          "value": "1"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Current odds → Common: 44.8% · Uncommon: 24.9% · Rare: 15.1% · Epic: 8.1% · Legendary: 5.1% · Mythic: 2.1%"
+        },
+        "title": "🎁 Daily Reward",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "economy.balance_changed",
+     "payload": {
+      "delta": 1025,
+      "guild_id": "<guild>",
+      "new_balance": 1025,
+      "reason": "daily",
+      "user_id": "<@admin>"
+     }
+    },
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 19,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 19,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!daily",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "economy"
+}
