@@ -2,11 +2,14 @@
 
 > **Status:** `living-ledger` — operational facts about where production runs and how code
 > reaches it. Facts verified 2026-06-10 (PR #685); deploy-config + Railway-API access added
-> 2026-06-14 (Q-0130). Maintainer owns the Railway dashboard. **Q-0130 grants agents two API
-> capabilities:** read-only **logs** (Hermes) and owner-authorised **read/write of service env
-> variables** — see the two sections below. Everything else (deploy / restart / scale /
-> rollback) stays the maintainer's; non-API changes land repo-side (this doc,
-> `.python-version`, `Procfile`).
+> 2026-06-14 (Q-0130). **Agent authority re-scoped 2026-07-02 (owner directive Q-0213):** the
+> full-access Railway account token in agent containers is **deliberate** — agents operate the
+> Railway control plane directly (service/environment config, variables, deploy-affecting
+> settings, creating services), with **read-back verification and a session-log record of every
+> change**. The unchanged boundary: **destructive/hard-to-reverse operations — any `*Delete`
+> mutation, backup/volume restores, data-loss ops, plan/billing changes — stay ask-first, always.**
+> Known-bad setting: do **not** enable Railway's *wait-for-CI* deploy gating on this repo — tried
+> before, kept failing under the fast auto-merge cadence (Q-0213 item 5).
 
 ## Where production runs
 
@@ -209,15 +212,30 @@ environment's network policy.
 
 ## Backups
 
-**Posture (2026-06-13, band slot 3):** daily automated `pg_dump` to GitHub Actions
-artifacts (90-day rolling window) + a local-run script for ad-hoc dumps.
+**Posture (2026-06-13, band slot 3; monthly tier added 2026-07-02, Q-0213 session):** daily
+automated `pg_dump` to GitHub Actions artifacts (90-day rolling window) **+ a monthly
+long-retention artifact (1st of the month, 400-day retention)** + a local-run script for
+ad-hoc dumps.
+
+> **Why the pg_dump workflow is the ONLY backup layer (verified 2026-07-02):** Railway-native
+> volume backups are **plan-gated on Hobby** — both `volumeInstanceBackupScheduleUpdate` and a
+> manual `volumeInstanceBackupCreate` return `Not Authorized` via the account token (correct
+> ids; reads work). Upgrading the plan, or accepting the single-layer posture, is an owner
+> call recorded in `../planning/railway-setup-plan-2026-07-02.md` §6 R2.
+>
+> **Owner one-time step for the monthly tier:** GitHub → Settings → Actions → General →
+> *Artifact and log retention* → raise to **400 days**. GitHub silently clamps
+> `retention-days` to this repo setting (default 90), so until it is raised the monthly
+> artifact quietly keeps only 90-day retention.
 
 ### What runs automatically
 
 `.github/workflows/backup-db.yml` fires at **02:00 UTC every day** (also available
 as a manual `workflow_dispatch`). It runs `pg_dump --no-owner --no-acl` against the
 Railway public proxy URL, compresses with gzip, and uploads as an artifact named
-`postgres-backup-<run-id>` with 90-day retention. On failure it opens a GitHub issue.
+`postgres-backup-<run-id>` with 90-day retention. **On the 1st of every month (03:00 UTC)
+a second scheduled run uploads `postgres-backup-monthly-<run-id>` with 400-day retention**
+(subject to the repo-setting clamp above). On failure it opens a GitHub issue.
 
 ### One-time owner setup (required before the first scheduled run works)
 

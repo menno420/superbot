@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`railway-deploy-alerts-discord-webhook-2026-07-02.md`](./railway-deploy-alerts-discord-webhook-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the Railway automation-grant session):** point a Railway
+  project webhook at Discord so failed `worker` deploys push-alert the owner — today a broken
+  deploy is only discovered by looking; platform-side, no bot code, works even when the bot itself
+  failed to boot. Agent-executable under Q-0213 (confirm the destination channel first).
 - [`railway-config-drift-checker-2026-07-02.md`](./railway-config-drift-checker-2026-07-02.md) —
   **session idea (2026-07-02, Q-0089, from the Railway audit):** a read-only checker + weekly
   routine diffing live Railway deploy config (wait-for-CI flags, healthchecks, backup schedules,
