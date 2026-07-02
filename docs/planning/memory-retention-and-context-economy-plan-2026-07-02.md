@@ -236,7 +236,7 @@ So every cap below ships **with its actuator** or it doesn't ship (Q-0194 fricti
 to retention itself). Two enforcement tiers by prune type:
 
 **Tier M — mechanical prunes** (rule fully determines the action; safe in any session):
-session-log window, journal-archive window, journal word gauge, recently-shipped trim (exists),
+session-log prune (harvest-marker-bounded), journal word gauge, recently-shipped trim (exists),
 router live-size gauge, unbadged-file report.
 → `scripts/check_retention.py` (new): reports every class vs. its cap; `--fix` performs the
 mechanical prunes (dry-run default, house posture like `trim_recently_shipped.py`); wired into
