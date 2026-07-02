@@ -1,6 +1,6 @@
 # 2026-07-02 — Finalize the AI-memory substrate (handoff §5.B, ultracode)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/ultracode-memory-substrate-2utgvc` · **PR:** #1649
 > **Session type:** ultracode (Fable 5) — owner-queued via rebuild handoff §5.B + 2026-07-02 addendum
 
@@ -84,6 +84,25 @@ pip-install form works (`pip install ./substrate-kit`).
   planted doc (virgin adoption is `check --strict` clean).
 - **session-close re-advised the mine it just ran** (stale pre-mine snapshot) → re-reads state.
 
+### Adversarial review round (7 lenses / 40 agents; 29 confirmed, 4 refuted — all fixed at root)
+
+The verify-stage skeptics reproduced every confirmed finding by execution. The three
+**blockers** were all masked by /tmp-based proofs (the old guardrail temp-tree whitelist):
+the dist's `_kit_root()` made the guardrail refuse `adopt` in **every real directory**
+(now layout-aware; proven in `/home/user/kit-proof`); the pip wheel shipped **no templates**
+(relocated inside the package + package-data + hard-error on empty; proven in a fresh venv);
+and the harvest pass record counted as an inbound reference to every slug it licenses — the
+triple filter was **unsatisfiable** (harvest records are now excluded as citation sources).
+Majors included: autonomous self-answers neutralizing the blocking-question graduation gate
+(provisional blocking answers now still escalate), the maturity gate being fail-open on typos
+(now an allowlist with a real `gated` + `--reviewed` tier, and `actuators_may_apply` finally
+has its caller — the promotion-rights gate is live), a non-atomic actuation lock (now
+O_CREAT|O_EXCL), stray review verdicts escalating bogus questions (inert `not-provisional`
+outcome), ledger supersede-stamping bleeding into prose sections, @overload false-flags,
+inconsistent boot-doc resolution between the two budget consumers, fnmatch fence gaps in seam
+exemptions, unguarded writer commands, planted docs false-flagged as generated artifacts, and
+hooks crashing (not failing open) on corrupt config. Each fix carries a regression test.
+
 ### Owner-flag defaults honored (§5.B-addendum)
 
 1 in-repo placeholder name `substrate-kit`, no external publish · 2 two-tier acceptance (this PR
@@ -135,6 +154,7 @@ multi-module build.
 
 ## 📊 Telemetry
 
-- PR #1649 · 7+ commits · substrate-kit 117 → 399 tests · ~30 new engine/template files
-- 4 workflows (gap/specs · wave-1 ×7 · wave-2 ×2 · review ×7+verify) — ~1.6M subagent tokens
-- Full CI mirror green (black/isort/ruff + mypy + full repo pytest)
+- PR #1649 · 8 substantive commits · substrate-kit 117 → **407 tests** · ~30 new engine/template files
+- 4 workflows (gap/specs ×5 · wave-1 ×7 · wave-2 ×2 · review 7 lenses + 33 verifiers) — ~3.8M subagent tokens
+- Full CI mirror green (black/isort/ruff + mypy + full repo pytest); single-file dist 594KB
+- End-to-end proofs: /tmp scratch ×3, **real-dir** /home/user/kit-proof, pip venv install
