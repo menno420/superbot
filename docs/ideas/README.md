@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`fleet-structured-output-placeholder-guard-2026-07-03.md`](./fleet-structured-output-placeholder-guard-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, final-judgment PR #1701):** reject placeholder values
+  (`test`, `t/e/f`, `TODO`) in required evidence/reasoning fields of fleet structured outputs, with
+  one retry — schema validation passed twice on the same day while shipping degenerate content
+  (audit A row 221's `"test"` verdict; audit B's three `t/e/f` ledger rows, one HIGH). Few lines at
+  one seam; protects the whole Gate-V/audit-fleet trust chain.
 - [`ultracode-audit-consolidation-stage-2026-07-03.md`](./ultracode-audit-consolidation-stage-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, surface+proving audit PR #1691):** add a semantic
   **consolidation/dedup stage** between the completeness loop and synthesis in the reusable
