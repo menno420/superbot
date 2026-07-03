@@ -8405,3 +8405,31 @@ entirely**? Agent leaning: hidden = off by default, with a hide-without-disable 
 before §3 freezes.
 
 **Homes:** hub-navigation log §3–4; Gate-0 preset primitive unification + setup wizard.
+
+---
+
+### Q-0233 — DIRECTED: build a critical-review rubric that finds the gap-classes we spot by instinct (2026-07-03)
+
+> **Context.** After a session of reviewing the rebuild plan, the owner: *"do you now understand
+> what I meant earlier with the forgotten steps, missing features and proper goals etc? I think it
+> would be a good idea to create a rule or system that finds exactly the kind of things that we
+> have been spotting today, to make it easier to review the rest of the bot in the same critical
+> way."*
+
+**Decision:** extract the session's findings into a reusable **critical-review rubric** — ten
+finding-classes (dependency-order inversion · forgotten capability · thin/underspecified step ·
+stale un-anchored state claim · fragmentation/reinvention · under-generalization · missing
+cross-cutting standard · verification hole · UX/lifecycle-contract gap · naming/visibility/
+collision), each a probing question with the day's real example and a mechanization tag
+(human-probe / existing checker / build). Run it against **every subsystem in the Stage-2 walk** and
+**every plan in Phase B** (it *is* the adversarial-completeness pass's checklist). The common thread:
+*an artifact tells you what it does, never whether it's complete, correctly-ordered, non-duplicated,
+verifiable, and consistent* — the rubric asks the questions the artifact can't self-report.
+**Enforce-don't-exhort:** the mechanizable classes become checkers (extend
+`check_plan_staleness.py` for un-anchored `NN%` now; build dep-order / thin-step / fragmentation /
+verification-hole / UX-contract checkers against the rebuild's declared manifests); the judgment
+classes stay human probes with the rubric as their guard.
+
+**Homes:** `docs/planning/rebuild-critical-review-rubric-2026-07-03.md` (the rubric) ·
+`docs/ideas/rebuild-critical-review-checkers-2026-07-03.md` (the mechanization backlog) ·
+`.sessions/2026-07-03-critical-review-rubric.md`.
