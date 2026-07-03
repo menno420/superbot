@@ -119,3 +119,10 @@ DELIVERABLE: docs/analysis/rebuild-discovery/foundations/presentation-verificati
 - Workflow docs: <https://code.claude.com/docs/en/workflows>
 - Owner ruling: **Q-0236** in [`../owner/maintainer-question-router.md`](../owner/maintainer-question-router.md)
 - Session log: `.sessions/2026-07-03-foundational-mechanics-ultracode-brief.md` (PR #1688)
+
+## Delivered reports
+
+Each session lands one report under `docs/analysis/rebuild-discovery/foundations/`:
+
+- **Session A — engine room (runtime/logic):** [`runtime-logic-mechanics-2026-07-03.md`](../analysis/rebuild-discovery/foundations/runtime-logic-mechanics-2026-07-03.md) — 35 mechanics, 246 rubric-scored issues, 33 owner-gated calls (PR #1690).
+- **Session B — surface + proving (presentation/verification):** lands its report in the same folder (parallel session).
