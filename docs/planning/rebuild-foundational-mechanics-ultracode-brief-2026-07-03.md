@@ -133,3 +133,10 @@ Each session lands one report under `docs/analysis/rebuild-discovery/foundations
 
 - **Session A — engine room (runtime/logic):** [`runtime-logic-mechanics-2026-07-03.md`](../analysis/rebuild-discovery/foundations/runtime-logic-mechanics-2026-07-03.md) — 35 mechanics, 246 rubric-scored issues, 33 owner-gated calls (PR #1690).
 - **Session B — surface + proving (presentation/verification):** lands its report in the same folder (parallel session).
+
+## Final judgment (capstone)
+
+After both reports + the owner's 5 independent Codex reviews, a **Fable 5 ultracode** capstone
+review gives the final judgment over the whole day's work (verdict · reconciled master ledger ·
+re-prioritization · what's still missing). Paste-ready prompt:
+[`rebuild-phase-a-final-review-fable5-brief-2026-07-03.md`](rebuild-phase-a-final-review-fable5-brief-2026-07-03.md).
