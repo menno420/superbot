@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T23:37:32Z",
+    "generated_at": "2026-07-03T05:41:20Z",
     "build": {
-      "commit": "21171158",
-      "subject": "Merge pull request #1670 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-02T23:37:32Z"
+      "commit": "db571226",
+      "subject": "Merge pull request #1673 from menno420/claude/review-recent-session-qcyc44",
+      "committed_at": "2026-07-03T05:41:20Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 175,
+      "ideas": 176,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1187,6 +1187,14 @@
       "date": "2026-07-02",
       "summary": "Upgrade the Railway plan's one-shot **R6 restore drill** into standing CI: a scheduled (weekly or",
       "subsystems": null
+    },
+    {
+      "file": "convergent-amendment-discovery-signal-2026-07-02.md",
+      "title": "Convergent-discovery as an amendment-confidence signal (multi-agent audit methodology)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "During the Lane A new-bot capability audit, 11 independently-run subagents (one per subsystem,",
+      "subsystems": []
     },
     {
       "file": "judge-panel-as-saved-workflow-2026-07-02.md",
@@ -2953,6 +2961,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-02-lane-f-ecosystem-benchmark.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane F ecosystem benchmark (verify + incorporate owner-provided deep-research)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-lane-c-games-audit.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Lane C new-bot capability audit (Games & Community)",
@@ -2964,6 +2980,14 @@
       "file": "2026-07-02-lane-b-economy-audit.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Lane B new-bot capability audit (Economy & Character-sim)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-lane-a-governance-audit.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane A governance capability audit",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2990,6 +3014,14 @@
       "title": "2026-07-02 — Daily review + architecture brainstorm ahead of the rebuild gate",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-capstone-prompt-refresh.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Refresh the Fable 5 capstone prompt for the completed fleet",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3287,30 +3319,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-diagnostics-counters-deepening.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Diagnostics + Counters completion-deepening",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-counters-completion-deepening.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Counters completion-cert deepening (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-cleanup-spam-window-setting.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Cleanup spam-window per-guild setting (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
