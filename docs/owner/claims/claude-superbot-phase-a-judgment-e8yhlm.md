@@ -1,1 +1,0 @@
-- `claude/superbot-phase-a-judgment-e8yhlm` · capture 2 owner-originated rebuild ideas (in-server release→test→verify loop; websites cutover-role) + index · docs/ideas only · 2026-07-03
