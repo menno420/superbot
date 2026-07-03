@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T23:15:54Z",
+    "generated_at": "2026-07-04T00:04:12Z",
     "build": {
-      "commit": "7560fa16",
-      "subject": "Merge pull request #1701 from menno420/claude/superbot-phase-a-judgment-e8yhlm",
-      "committed_at": "2026-07-03T23:15:54Z"
+      "commit": "54bb2d7a",
+      "subject": "Merge pull request #1704 from menno420/claude/superbot-phase-a-judgment-e8yhlm",
+      "committed_at": "2026-07-04T00:04:12Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 186,
+      "ideas": 188,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1221,11 +1221,27 @@
       "subsystems": null
     },
     {
+      "file": "rebuild-release-testing-loop-2026-07-03.md",
+      "title": "Idea — the in-server release → test → verify loop (announce · coverage · test-mode · approve)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The Fable-5 judgment flagged, as gaps that survived the whole planning day: **no user-facing",
+      "subsystems": null
+    },
+    {
       "file": "rebuild-schema-growth-ledger-2026-07-03.md",
       "title": "Idea — rebuild schema-growth ledger (enforce the second-consumer rule mechanically)",
       "status": "ideas",
       "date": "2026-07-03",
       "summary": "The Q-0219 guardrail says the manifest grammar's declaration schema may grow a field **only when",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-websites-cutover-role-2026-07-03.md",
+      "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The shipped **public bot site** (`botsite/` — marketing, `/changelog`, interactive command",
       "subsystems": null
     },
     {
@@ -2929,6 +2945,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-03-tier1-owner-decisions.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Tier-1 owner decisions recorded (Q-0237)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-surface-proving-mechanics-ultracode.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Surface + proving foundations audit (PROMPT B, ultracode)",
@@ -2996,6 +3020,14 @@
       "file": "2026-07-03-permission-allowlist-and-endorse.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Permission allowlist fix + Q-0228 centralization endorsement (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-owner-ideas-release-loop-websites.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Capture 2 owner ideas: release→test→verify loop + websites cutover-role",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3383,22 +3415,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-fishing-tide-pool-structure.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing Tide Pool structure (coral structure-target sink)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-fishing-structures-subhub.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing structures sub-hub (🏗 Structures child) + Legendary curio tier",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
