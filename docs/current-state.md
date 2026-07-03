@@ -240,6 +240,16 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1680 (2026-07-03, S3 rebuild — Phase-A conventions freeze: naming · invocation ladder · mod-actions-as-data · authority, Q-0224…Q-0228)** —
+  the owner-live conventions-freeze continuation of Stage 1, folded into the
+  [conventions decisions log](planning/rebuild-conventions-invocation-authority-2026-07-03.md):
+  command **naming** (namespace only shared verbs, computed from the corpus; safe no-arg defaults);
+  the **four-rung invocation ladder** (exact → fuzzy typo matcher → NL intent → NL orchestration)
+  with **additive** guild/channel/user custom triggers, silent-on-no-match, and the three-tier
+  fuzzy matcher; **mod-actions-as-data** (resolving the ModerationActionSpec uncertainty to the
+  envelope); **one authority layer + a global bot-owner override** (verification test + transparent
+  audit); and **proposed** invocation-stack centralizations C-1…C-7 (Q-0228, pending owner
+  reaction). ▶ next: **Stage 2 — the subsystem walk**.
 - **#1679 (2026-07-03, S3 rebuild — Phase-A Stage-1 global review: standards + order audit + Gate-0 deltas, Q-0219…Q-0223)** —
   the owner-live **Stage-1 review** of the frozen BUILD-PLAN, folded into the
   [Stage-1 decisions log](planning/rebuild-stage1-global-review-2026-07-03.md): the **S-1

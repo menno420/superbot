@@ -8199,3 +8199,106 @@ S-2 (Q-0220).
 
 **Homes:** decisions log §4 D-4/D-5 + §5 (corrections);
 `docs/ideas/substrate-kit-review-followups-2026-07-02.md` (tail item ①, now scheduled).
+
+---
+
+### Q-0224 — DECIDED: command naming — namespace by shared verb (computed from the corpus), flat otherwise, with safe defaults (2026-07-03)
+
+> **Context.** Rebuild Phase-A conventions freeze (owner-live, PR #1680). Deciding the K1 registry's
+> input scheme before the subsystem walk. Owner: a hybrid that *"only uses explicit subcommands for
+> commands that need to be reused across multiple instances,"* with *"a proper rule for this to
+> prevent this becoming a liability,"* and *"most of those commands work with a standard default if
+> there is a clear usecase that gets primarily used by users."*
+
+**Decision:** a command takes the grouped form `/area verb` **only when its verb is shared across
+2+ subsystems**; a uniquely-used verb stays a flat top-level command. **The shared-verb set is
+computed once at design time from the known 271-command corpus** — so no collision is discovered at
+runtime and no flat command is ever force-renamed later (the liability); K1 permanently reserves
+each flat name. Commands with an obvious primary use **work with no arguments** (sensible default),
+**except** destructive/ambiguous actions, which never default to acting.
+
+**Homes:** `docs/planning/rebuild-conventions-invocation-authority-2026-07-03.md` §1; Stage-2 runs
+the corpus computation; Gate-0 folds the rule into the naming grammar.
+
+---
+
+### Q-0225 — DECIDED: the four-rung invocation ladder + additive custom triggers + the fuzzy typo matcher + AI orchestration (2026-07-03)
+
+> **Context.** Same session. The owner specified: both slash and prefix **plus** a Dank-Memer-style
+> configurable trigger (`pls <command>`) settable per guild/user/channel and **additive** (*"if one
+> word is set for a channel it should not mean that a word set for the whole guild wouldn't work
+> there… it just gets an extra option"*); **silent on non-matches** (*"never give error responses
+> for wrong commands… does not spam the chat"*); the **fuzzy matcher** that *"decides when a typo is
+> a real command"* (the thing he first called "the global parser"); and expanding the AI parser so
+> it can *find the right commands* and *"initiate commands gated by a confirm/deny prompt"* — e.g.
+> *"create 10 game channels for a D&D tournament for teams of 4"* → AI drafts a template → previews
+> the outcome → user presses Accept → it runs.
+
+**Decision:** one invocation engine, four front-ends resolving to the same declared commands:
+**(1) exact** (slash + prefix + additive union of global/guild/channel/user custom triggers,
+validated when set — min length, common-word blocklist, per-scope cap — and **silently ignored on
+no-match**); **(2) fuzzy** typo matcher, deterministic/AI-free, **three tiers** (very-close+safe →
+run directly; close → private "did you mean"; far → silent); **(3) NL intent** (language → one
+command; the existing central NL stage elevated to mainstream, router **generated from the
+manifests**); **(4) NL orchestration** (goal → multi-step **draft** → preview → Accept → atomic
+audited apply). Rungs 1–2 need no AI (deterministic-first preserved; the parser is never a
+dependency of a core command). Rung 4 **is the already-designed draft lane with the AI as a second
+producer** — one pipe, human or AI. **Default posture = hybrid:** answer freely, require a clear
+signal (mention/reply/channel) before acting; destructive AI-reached actions always confirm.
+
+**Homes:** conventions log §2; Gate-0 (interaction runtime K8); the D&D example is the
+compound-composition canary (FINAL-REVIEW uncertainty).
+
+---
+
+### Q-0226 — DECIDED: moderator actions declared as data (resolves the ModerationActionSpec uncertainty → envelope) (2026-07-03)
+
+> **Context.** Same session. Owner: *"whatever is the best option, I think declaring as data was
+> the better option to make it testable."*
+
+**Decision:** a mod action (warn/timeout/kick/ban) is a **declarative envelope** (target,
+hierarchy check, DM, cleanup, audit, log route) the engine runs; only the escalation decision stays
+a small Tier-3 handler. Chosen for testability (declared = simulable + golden-testable). Resolves
+the FINAL-REVIEW `ModerationActionSpec` uncertainty **in favor of the envelope**; grammar-level, so
+decided before the Gate-0 freeze, with the plan's ~1-hour spot-check (express one real action
+against the grammar) as the pre-freeze confirmation.
+
+**Homes:** conventions log §3; Gate-0 grammar plan.
+
+---
+
+### Q-0227 — DECIDED: one authority layer + a global bot-owner override with a verification test and transparent audit (2026-07-03)
+
+> **Context.** Same session. Owner: one authority layer *"but it should also include the bot owner
+> ID, like in the current bot, and it should be verified that every command works for the bot owner
+> in every server, so I can help my friends set up commands that may normally only be able to work
+> for server owners, like the setup."*
+
+**Decision:** every action carries a **single declared authority label** mapped to roles/Discord
+permissions in one place, re-checked at execution time; **on top sits a global bot-owner override**
+(by ID, per Q-0212) — the bot owner can run any command in any server, including server-owner-gated
+ones. Two clauses added: **(a)** a mechanical parity test — "bot-owner can run everything,
+everywhere" walks every command; **(b)** transparency — a bot-owner action in another server is
+**loudly audited to that server's log**, never silent. Pins Q-0212 as a rebuild grammar contract.
+
+**Homes:** conventions log §4; Gate-0 authority (K6).
+
+---
+
+### Q-0228 — PROPOSED (pending owner reaction): invocation-stack centralizations (2026-07-03)
+
+> **Context.** Same session, owner asked *"are there any other things related to this we could
+> centralize?"* Captured as **proposals**, not decisions — the owner reacts; blessed ones become
+> Gate-0/Phase-B contracts.
+
+**Proposed (agent-recommended):** **C-1** one command **resolver** all four rungs funnel through
+(authority + arg validation + cooldown + audit — the convergence point, strongest recommend);
+**C-2** one **preview/confirm/apply draft pipeline** shared by AI drafts, fuzzy-corrected
+destructive actions, NL actions, and human setup (one pipe, two producers); **C-3** one **template
+primitive** (named reusable draft, human- or AI-instantiated; unifies the scattered setup/role/
+channel templates + serves the D&D example); **C-4** one **response/result grammar**
+(`WorkflowResult`); **C-5** one **fuzzy/"did-you-mean" engine** (fold the scattered `difflib`
+uses); **C-6** one **cooldown/rate-limit engine** (also the abuse-posture home); **C-7** one
+**description surface** feeding slash/help/NL-router/fuzzy/suggestions.
+
+**Homes:** conventions log §6. **▶ Owner action:** confirm which of C-1…C-7 to adopt.
