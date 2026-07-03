@@ -211,17 +211,19 @@ OUTPUT: write docs/analysis/rebuild-discovery/new-bot-capability-audit/lanes/lan
 
 ```
 You are Fable 5 running the CAPSTONE review of the new-bot-capability-audit audit in the menno420/superbot
-repo. Four independent lanes (2 Opus + 1 Sonnet ultracode + Codex/deep-research) have measured whether the
-rebuild's §2 manifest grammar can express all 43 subsystems as tier-1/2 declarations. Turn their findings
-into one durable go/no-go — this is the gate between "planning/discovery" and "creating the new repo."
+repo. Seven independent lanes (A–G, across Opus + Sonnet ultracode + Codex/deep-research) have measured
+whether the rebuild's §2 manifest grammar can express all 43 subsystems as tier-1/2 declarations, plus the
+planned (Lane E) and ecosystem (Lane F) axes. All seven are MERGED to main — the substrate is complete. Turn
+their findings into one durable go/no-go — this is the gate between "planning/discovery" and "creating the
+new repo."
 
 READ FIRST:
 1. docs/analysis/rebuild-discovery/new-bot-capability-audit/FINAL-REVIEW-HANDOFF.md   (your full spec — follow it)
 2. docs/analysis/rebuild-discovery/new-bot-capability-audit/BRIEF.md
-3. All four docs/analysis/rebuild-discovery/new-bot-capability-audit/lanes/lane-*.md + anything in findings/
+3. All SEVEN lanes: docs/analysis/rebuild-discovery/new-bot-capability-audit/lanes/lane-*.md (A,B,C,D,E,G) + findings/ecosystem-benchmark.md (Lane F) + anything else in findings/
 4. tools/grammar_spike/RESULTS.md  (the 3-subsystem baseline you extend)
 
-DO: (1) VERIFY before trusting — spot-check the highest-leverage tier-3 verdicts against source; do not average lane numbers blindly (Q-0120 — the spike caught cross-agent maps mis-reading source 4×); down-weight "⚠ unverified" rows and re-derive disputed ones. (2) Compute the measured all-43 tier-1/2 fit (as-written vs with-amendments; 43 rows + overall; note if the mean is carried by high-fit CRUD subsystems while the stateful cluster drags). (3) Consolidate the amendment list (extend G-1…G-6, dedup; mark each soft-spec-note vs structural-new-family). (4) Answer each structural danger zone (stateful games / gateway listeners / wait_for wizards / scheduled loops / voice) — expressible, documented escape hatch, or needs a new family. (5) Per-subsystem preserve/redesign/drop disposition (fold with ../codex-preserve-map-synthesis-2026-07-02.md).
+DO: (1) VERIFY before trusting — spot-check the highest-leverage tier-3 verdicts against source; do not average lane numbers blindly (Q-0120 — the spike caught cross-agent maps mis-reading source 4×; Lane F's raw research misread SuperBot's own surface and had to be source-corrected). Down-weight "⚠ unverified" rows and re-derive disputed ones; before scheduling any ADD-from-ecosystem, re-check it isn't already a shipped subsystem. (2) Compute the measured all-43 tier-1/2 fit (as-written vs with-amendments; 43 rows + overall; note if the mean is carried by high-fit CRUD subsystems while the stateful cluster drags). (3) Consolidate the amendment list — the set already runs G-1…G-10: G-1…G-6 (spike) + G-7 KnowledgeDomainSpec, G-8 AI platform specs (AITaskProfileSpec/AIProviderGatewaySpec), G-9 TimedTaskSpec, G-10 ModalFormSpec (Lanes D/F); extend/dedup, don't renumber; mark each soft-spec-note vs structural-new-family. (4) Answer each structural danger zone (stateful games / gateway listeners / wait_for wizards / scheduled loops / voice) — expressible, documented escape hatch, or needs a new family. (5) Per-subsystem preserve/redesign/drop disposition (fold with ../codex-preserve-map-synthesis-2026-07-02.md).
 
 RULE THE VERDICT: GO / GO-with-amendments / NO-GO — with evidence, never a soft "looks fine." A subsystem class with no clean grammar answer is a NO-GO — that is exactly the "needs re-rebuilding in a year" failure this whole pass exists to catch.
 
