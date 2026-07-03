@@ -59,7 +59,18 @@ plan cannot be "100% complete" against a command/method surface that is still un
 
 ---
 
-## PHASE A — the content review pass  ◄◄ THE NEXT SESSION'S GOAL
+## PHASE A — the content review pass  ◄◄ IN PROGRESS (Stage 1 done)
+
+> **Phase-A progress (2026-07-03):** the owner runs this pass as **three stages** — Stage 1
+> global review → Stage 2 subsystem walk → Stage 3 consolidation. **Stage 1 is done** (owner-live
+> session, PR #1679): decisions log
+> [`rebuild-stage1-global-review-2026-07-03.md`](rebuild-stage1-global-review-2026-07-03.md) —
+> the S-1 engine/declaration/seam standard + S-2 ordering rule (Q-0219/Q-0220), the full
+> dependency-order audit (3 inversions dispositioned; welcome re-homed after the card engine),
+> the D-1…D-6 Gate-0 deltas (card engine · **new media-generation capability Q-0221** · the
+> **3-phase container-first cutover Q-0222** · the substrate-kit pre-bootstrap gate + per-subsystem
+> triage Q-0223 · one canonical L-vocabulary), and the corrected substrate-kit state. **Stage 2
+> (the subsystem walk) is the next Phase-A session's goal** — agenda in the decisions log §6.
 
 **What it is.** One more review pass over the *whole* plan, run as **dedicated, owner-led
 brainstorming / discussion sessions**, focused on the **actual surface** — the commands,

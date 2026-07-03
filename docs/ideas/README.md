@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-schema-growth-ledger-2026-07-03.md`](./rebuild-schema-growth-ledger-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, Stage-1 global review PR #1679):** enforce the Q-0219
+  schema-growth guardrail mechanically in the new repo — every grammar field addition mints a
+  same-PR ledger entry naming the ≥2 consumers that justified it (else: handler), with a CI diff
+  check; kills the inner-platform creep one-field-at-a-time failure mode. Routed to the Gate-0/K2
+  grammar plan.
 - [`golden-recapture-on-bugfix-2026-07-03.md`](./golden-recapture-on-bugfix-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, rebuild-planning-phase session):** a one-line protocol —
   every current-bot behavior fix must **re-capture its `parity/` golden** (or record "pre-capture,

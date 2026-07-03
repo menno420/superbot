@@ -8076,3 +8076,126 @@ comment at `.gitignore`). Every fresh fleet clone now boots pre-consented. Rever
 
 **Homes:** `.claude/settings.local.json` (the flag) · `.gitignore` (the tracked-on-purpose comment) ·
 `.sessions/2026-07-02-workflow-consent-fleet-config.md` (session log).
+
+---
+
+### Q-0219 — DECIDED: the engine/declaration/seam standard — how "plug-and-play for any future function" reconciles with centralization (2026-07-03)
+
+> **Context.** Rebuild Phase-A **Stage-1 global review** (owner-live session, PR #1679). The owner
+> stated the generalization requirement for the new bot: *"every foundational function becomes a
+> plug and play entry for any possible new function that may be added in the future… something
+> that defines the base structure, but is steered by the actual function calling it"* — and
+> himself flagged the tension: *"the way I'm explaining it it sounds like the methods would live
+> in multiple places, which would conflict with the centralization idea."* Discussed live; the
+> owner escalated the session to Fable 5 max specifically to review + lock this standard.
+
+**Decision (owner-agreed, escalated-review sharpened):** **what varies per caller is data, not
+code.** One engine per domain in exactly one place; callers steer it with **explicit
+declarations**; three steering tiers (declarative params → composition → **named registered
+handler seam** as the only per-caller code); **handlers are leaves** (compute + return, never
+orchestrate — counted under the escape-hatch ratchet); steering is **never by call-site
+identity** (user/authority context arrives as explicit request data, not caller inspection);
+**second-consumer rule** — build the general engine only when a real second consumer exists now
+or clearly imminent, otherwise keep logic specific **behind a clean seam** ("plug-and-play ready"
+= the seam discipline, so later generalization refactors the inside without moving callers);
+**schema-growth guardrail** — a declaration needing conditionals is the signal for a Tier-3
+handler, never for growing the schema into a language; schema fields are added only on ≥2
+recurring consumers.
+
+**Binding for:** every Phase-B plan, applied to every foundational function.
+**Homes:** `docs/planning/rebuild-stage1-global-review-2026-07-03.md` §2 S-1 (full statement);
+design-spec §2.9/§2.10 are the shipped shape it binds to; enforcement idea
+`docs/ideas/rebuild-schema-growth-ledger-2026-07-03.md`.
+
+---
+
+### Q-0220 — DECIDED: foundation-before-consumer build ordering; card engine promoted + welcome re-homed as its acceptance test (2026-07-03)
+
+> **Context.** Same Stage-1 session. The review found the frozen BUILD-PLAN's welcome row (L1b)
+> depends on both the visual card engine (L1c — a later band) and role (three slots later in the
+> same band). Owner ruling on the class: *"the foundation is correct first — that should be the
+> standard practice for every function"*; and the card engine specifically *"must not hold only
+> one focus — an elaborate system that can create custom cards on the run."*
+
+**Decision:** **S-2 ordering rule** — an **engine-class** dependency (one-to-many foundation
+engine) always ports before its first consumer; a **peer-class** dependency (feature consuming
+another feature's content) may ship as a **declared-seam deferral** (seam in the manifest day
+one, dormant, labeled activation). Applied dispositions: **welcome moves out of the L1b spine to
+L1c immediately after the card engine** (fixing both of its inversions; it becomes the engine's
+first-consumer acceptance test, mirroring mining-last); **deathmatch-gear and explore-mining stay
+put via declared-seam deferrals; mining-last stands.** The card engine is a first-class S-1
+engine (CardTemplateSpec declarations; 5+ consumers) with the **image-source seam declared from
+day one** (static/asset at L1c; generated images activate with Q-0221's provider at L4). Every
+Phase-B layer plan runs an explicit internal-order dependency check against S-2.
+
+**Homes:** decisions log §2 S-2 / §3 (audit table) / §4 D-1; Gate-0 folds the reorder.
+
+---
+
+### Q-0221 — DECIDED: media generation (prompt→image) added to the capability corpus (2026-07-03)
+
+> **Context.** Same Stage-1 session. The owner: *"I was also thinking about using an API key to
+> create real looking images based on prompts, which could be used to display the contents of a
+> story for the dungeons and dragons story game etc."* Nowhere in the 43-subsystem corpus — a
+> genuinely forgotten capability caught by the review.
+
+**Decision:** add a **`MediaGenerationSpec`** capability in the **L4 AI band**: provider call =
+egress escape hatch behind a **provider-agnostic adapter**; consumed via the card engine's
+image-source seam (Q-0220). **Mandatory cost/abuse posture at declaration time** (free-mission =
+owner pays): per-guild quota + global budget cap + cache-by-prompt-hash + owner kill switch +
+**default-OFF per guild** (image_moderation precedent); prompt content-safety filter before
+egress; no user PII in prompts. Feasibility grounded: `OPENAI_API_KEY` already in agent
+containers (Q-0213). **The D&D-style story game itself is NOT scheduled** — recorded on the
+known-options menu as a named future consumer only.
+
+**Homes:** decisions log §4 D-2; Gate-0 adds the corpus row + spec section.
+
+---
+
+### Q-0222 — DECIDED: the cutover model — 3-phase, container-first, manifest-driven import (2026-07-03)
+
+> **Context.** Same Stage-1 session. The BUILD-PLAN's cutover story was its thinnest area. Owner:
+> *"first only test the new bot directly through the agent's own environment… every session
+> should live test what it's built when I'm present, so we can go over every new command one by
+> one… installed something that allows us to export the data from the old bot but only the data
+> that's actually requested by the new bot… after that we can switch to superbot's token and
+> discontinue the old bot entirely."* Verified live: the test-bot token (Galaxy Bot, Q-0213) +
+> `DATABASE_URL` are present in agent containers — CUT-1 has zero setup prerequisite.
+
+**Decision:** **CUT-1 container-only live testing** — new bot runs only in the agent container on
+the test token in the test server; per-command owner sign-off ("passes when it beats the old
+bot"); kernel rails from day one: guild allowlist, single-instance lock, and a **per-command
+`verified_live` sign-off registry generated from the manifest** (the live-test checklist is an
+artifact). **CUT-2 manifest-driven selective import** — every StoreSpec declares an `import`
+mapping (old→new or `fresh-start`+reason); the importer walks the manifest snapshot, copies only
+declared needs, and emits a **full-coverage disposition report over every old-DB table** (every
+"not copied" is a decision, never an oversight); every Phase-B component plan gains a mandatory
+Import-mapping section. **CUT-3 token swap** — telemetry/golden capture before any freeze → short
+freeze → final import → real-token swap → old bot retired, kept runnable through a rollback
+window (N set at Stage 3). Concretizes design-spec §5.2's "fresh chain + one-time importer";
+amends §5.4.
+
+**Homes:** decisions log §4 D-3; Gate-0 replaces the thin cutover text.
+
+---
+
+### Q-0223 — DECIDED: substrate-kit fully completed before new-repo bootstrap (stale figure corrected); 43-subsystem return is not automatic — Stage-2 triage verdicts (2026-07-03)
+
+> **Context.** Same Stage-1 session, two rulings. (1) Owner on the substrate-kit: *"that should
+> definitely be fully completed and I was led to believe that it was already complete."* Session
+> verification: the strategy doc's ~45–55% figure is **stale** (predates #1649) — the `loop/`
+> nervous system + all five hooks + real mode branching are shipped, **422 kit tests green**,
+> packaging present; honest state ~90–95% with a named tail. (2) Owner on the corpus: *"some
+> features may not need to be reintroduced, or at least not yet until we have those planned to
+> completion as well… some features might be outdated or misplaced."*
+
+**Decision:** **(a)** Kit completion is a **named pre-bootstrap gate** (parallel to Stages 2–3,
+binding only the new-repo bootstrap), tail = ① re-entrant `transaction` → atomic
+`apply_review_verdict` (own PR; the one real correctness bug), ② standalone extraction-proof CI,
+③ extraction + owner-named rename. **(b)** Stage 2 assigns **every** BUILD-PLAN §1.1 row a triage
+verdict — `bring back` / `defer until planned to completion` / `drop` / `re-place` — with
+one-line reasons; `defer`/`drop` rows leave the Phase-B queue and their dependents re-check under
+S-2 (Q-0220).
+
+**Homes:** decisions log §4 D-4/D-5 + §5 (corrections);
+`docs/ideas/substrate-kit-review-followups-2026-07-02.md` (tail item ①, now scheduled).
