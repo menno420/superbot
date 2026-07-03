@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`golden-recapture-on-bugfix-2026-07-03.md`](./golden-recapture-on-bugfix-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, rebuild-planning-phase session):** a one-line protocol —
+  every current-bot behavior fix must **re-capture its `parity/` golden** (or record "pre-capture,
+  no golden yet") — so the rebuild's parity oracle never green-lights a *fixed* bug's old buggy
+  behavior. The six audit-routed bugs are the first candidates; applies through cutover.
 - [`rebuild-amendment-registry-2026-07-03.md`](./rebuild-amendment-registry-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, capability-audit capstone #1674):** one committed registry
   file as the **sole minting authority** for rebuild grammar-amendment IDs (G-n families, R-n

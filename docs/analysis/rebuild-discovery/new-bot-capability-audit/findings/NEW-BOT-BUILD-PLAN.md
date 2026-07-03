@@ -10,6 +10,12 @@
 > §7 spec-amendment pass lands and the owner ratifies the design spec (Phase-3 gate).
 > **Provenance rule:** where this plan and a lane file disagree, the lane file's per-unit ledger
 > is the deeper record; where any doc and shipped source disagree, source wins (Q-0120).
+>
+> **▶ What happens next (owner-directed 2026-07-03):** this plan is the **frozen reference**. The
+> next phase is (A) one more **content review pass** over the whole surface — commands / functions
+> / methods — in dedicated owner-led sessions, then (B) **one 100%-complete design plan per step**
+> before any code. The process + the immediate next-session goal live in
+> [`../../../../planning/rebuild-planning-phase-2026-07-03.md`](../../../../planning/rebuild-planning-phase-2026-07-03.md).
 
 ---
 
