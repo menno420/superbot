@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T06:34:32Z",
+    "generated_at": "2026-07-03T11:50:49Z",
     "build": {
-      "commit": "a3ddfb71",
-      "subject": "Merge pull request #1674 from menno420/claude/bot-capability-audit-capstone-scy0zx",
-      "committed_at": "2026-07-03T06:34:32Z"
+      "commit": "ac1667b5",
+      "subject": "Merge pull request #1677 from menno420/claude/bot-capability-audit-capstone-scy0zx",
+      "committed_at": "2026-07-03T11:50:49Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 177,
+      "ideas": 178,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "golden-recapture-on-bugfix-2026-07-03.md",
+      "title": "Golden recapture on current-bot bug fix — a protocol so parity never preserves a bug",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Two things the rebuild does at once:",
+      "subsystems": null
+    },
     {
       "file": "rebuild-amendment-registry-2026-07-03.md",
       "title": "Rebuild amendment registry — one minting authority for G-numbers (and R-/P-/refuted sets)",
@@ -2849,6 +2857,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-03-rebuild-planning-phase-doc.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Document the rebuild review-then-plan phase (process + next-session goal)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-capability-audit-capstone.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — New-bot capability-audit CAPSTONE (final review + unified build plan)",
@@ -3318,14 +3334,6 @@
       "title": "2026-06-30 — Fishing rod-recipe browser (live progress toward each tier)",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-ephemeral-panel-ownership-failclose.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Fix: ephemeral persistent-panel ownership fail-close (\"can no longer be verified\")",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": true
     }
   ],
