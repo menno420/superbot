@@ -8285,11 +8285,13 @@ everywhere" walks every command; **(b)** transparency — a bot-owner action in 
 
 ---
 
-### Q-0228 — PROPOSED (pending owner reaction): invocation-stack centralizations (2026-07-03)
+### Q-0228 — ENDORSED (owner-confirmed as foundations to document + decide): invocation-stack centralizations (2026-07-03)
 
 > **Context.** Same session, owner asked *"are there any other things related to this we could
-> centralize?"* Captured as **proposals**, not decisions — the owner reacts; blessed ones become
-> Gate-0/Phase-B contracts.
+> centralize?"* → then confirmed: *"yes all the things you mentioned are good candidates to
+> further think about and properly decide upon, your recommendations are good foundations and
+> should be documented."* So C-1…C-7 are **endorsed directions** (documented, to be decided in
+> detail at Gate-0) — not yet frozen contracts, but no longer merely speculative proposals.
 
 **Proposed (agent-recommended):** **C-1** one command **resolver** all four rungs funnel through
 (authority + arg validation + cooldown + audit — the convergence point, strongest recommend);
@@ -8301,4 +8303,39 @@ channel templates + serves the D&D example); **C-4** one **response/result gramm
 uses); **C-6** one **cooldown/rate-limit engine** (also the abuse-posture home); **C-7** one
 **description surface** feeding slash/help/NL-router/fuzzy/suggestions.
 
-**Homes:** conventions log §6. **▶ Owner action:** confirm which of C-1…C-7 to adopt.
+**Homes:** conventions log §6. **▶ Next:** each C-item's *detailed* decision (scope, contract
+shape) lands in its Gate-0 / Phase-B plan; the owner endorsed all seven as worth building toward
+(C-1 the command resolver is the load-bearing one — without it the four invocation rungs
+re-implement authority and drift, a safety bug).
+
+---
+
+### Q-0229 — DIRECTED: broaden the `.claude/settings.json` allowlist with whole-MCP-server entries to cut permission prompts (2026-07-03)
+
+> **Context.** Owner reported recurring permission prompts in sessions — including this one, for
+> `send_later` "and some other things" — and asked *"how we can improve the always allowlist… I
+> really never deny any requests, so isn't there a universal way to allow all actions you can
+> do?"* Investigated the actual config (Q-0120: check ground truth, not memory).
+
+**Findings.** `permissions.defaultMode` is **already** `bypassPermissions` and
+`skipDangerousModePermissionPrompt` is already true — the file already *requests* universal allow.
+The prompts persist because **on the Claude Code web/remote surface a project-file
+`bypassPermissions` is not fully honored** (it's treated as advisory for safety); the surface
+instead consults the explicit **`allow`** list, and MCP tools from the `Claude_Code_Remote` /
+`github` servers weren't on it. `AskUserQuestion` "prompting" is **by design** (it *is* the
+question UI, not a permission gate) — not fixable via the allowlist.
+
+**Decision (owner-directed in-session; Q-0106 executable-config exception — owner is the live
+reviewer, applied directly with this provenance Q).** Add **whole-MCP-server** allow entries —
+`mcp__Claude_Code_Remote`, `mcp__github`, `mcp__codegraph`, `mcp__context7` (bare `mcp__<server>`
+matches every tool on that server) — to `.claude/settings.json`. The destructive-ops **`ask`**
+brake (rm -r, force-push, railway, sudo, psql, docker, …) is **left intact** — it deliberately
+overrides bypass, matching the Q-0213 "destructive/irreversible stays ask-first" boundary.
+
+**The truly universal lever, for the record:** the only switch above the `allow` list is the
+**environment-level** permission mode on code.claude.com (or the in-session mode toggle) — the
+file can't force it on the web because the surface downgrades project-scope bypass by design. If
+the owner wants zero prompts for a class the allowlist can't cover, that's the place to set it.
+
+**Homes:** `.claude/settings.json` (the four entries) · this Q (provenance) ·
+`.sessions/2026-07-03-permission-allowlist-and-endorse.md`.
