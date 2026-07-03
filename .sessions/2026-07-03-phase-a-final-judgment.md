@@ -54,6 +54,15 @@ external-agent artifacts (branch names, or a rule that the owner lands Codex bra
 capstone launches); more generally, a `codex/*`-branch sweep belongs in the reconciliation
 routine's disposition step so external reviews can't sit unmerged and invisible.
 
+**Post-flip CI fix (drift on sight, Q-0166):** the final head failed
+`test_check_plan_homing::test_live_repo_plans_are_all_homed` — **pre-existing from #1700**, which
+landed the Fable-5 brief as a `plan`-badged doc homed on no routing doc (main carried the latent
+red; this PR merely inherited it). Fixed the checker's own intended way: the brief's work has now
+shipped, so it is rebadged `historical` in place with a delivered-pointer to the judgment doc.
+Open question for the next reconciliation pass: how #1700 merged with that test red — worth
+checking whether auto-merge fired on a stale green head (if so, that's a real enforcement gap in
+the Q-0123 merge path, router-DISCUSS material).
+
 **Docs audit (Q-0104):** `check_docs --strict` clean; `check_current_state_ledger --strict` clean
 (this PR's own entry is post-merge lag by design); judgment doc linked from the Fable-5 brief; no
 chat-only conclusions left unhomed — the deliverable, the two idea files, and this log carry
