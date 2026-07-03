@@ -1,7 +1,9 @@
 # Final review handoff — the Fable 5 capstone
 
 > **Status:** `reference`. This is the startup context for the **final Fable 5 session** (ultracode or
-> normal) that turns the four lanes' findings into one durable go/no-go on the rebuild grammar.
+> normal) that turns the seven lanes' findings into one durable go/no-go on the rebuild grammar.
+> **All seven lanes (A–G + F) are merged to `main`** as of 2026-07-02 — every input below is present and
+> source-verified; you are synthesizing a complete substrate, not waiting on anything.
 
 ## Your input (the whole substrate — all three axes)
 
@@ -13,7 +15,12 @@
   optimize recommendations. **L0 (Lane G) leads the build order — read it first.**
 - **Axis 2 — what we planned:** `lanes/lane-E-plans-ideas.md` — the forward-capability ledger.
 - **Axis 3 — what the ecosystem has:** `findings/ecosystem-benchmark.md` — the known-Discord-bot
-  capability-gap catalog + any other Codex / deep-research addenda in `findings/`.
+  capability-gap catalog + any other Codex / deep-research addenda in `findings/`. **Guard:** the raw Lane F
+  deep-research misread SuperBot's own surface (it flagged shipped subsystems — ticketing, reaction roles,
+  casino, welcome image cards, web dashboard — as missing "gaps"); the doc's SuperBot-status column is
+  already source-corrected, but **before you schedule any ADD-from-ecosystem, re-check the 43-subsystem
+  ground truth that it isn't already shipped.** Treat the competitor catalog as directional (outperform
+  targets), not as a build list.
 - **The baseline:** [`tools/grammar_spike/RESULTS.md`](../../../../tools/grammar_spike/RESULTS.md) (the
   3-subsystem spike this extends) and the design spec §2 + §10.1 risk 5.
 
@@ -30,10 +37,13 @@
    "85% is probably a floor" with a measured fact. Weight honestly — note if the mean is carried by a
    few high-fit CRUD subsystems while the stateful cluster drags.
 
-3. **Consolidate the amendment list.** Merge every lane's proposed `G-<n>` into one deduplicated set
-   (G-1…G-6 already exist — extend, don't renumber them). For each: what it adds, which subsystems need
-   it, and whether it's a **soft** spec note or a **structural** new primitive family. Flag any amendment
-   that implies real §2 redesign (not just a docs pass) — those are the durability-critical ones.
+3. **Consolidate the amendment list.** Merge every lane's proposed `G-<n>` into one deduplicated set.
+   The set already runs **G-1…G-10**: G-1…G-6 from the spike (GatewayListenerSpec, list-valued settings,
+   AnnouncementRouteSpec, CommandSpec.cooldown, validator bounds, per-kind namespaces) **plus Lanes D/F's
+   G-7 `KnowledgeDomainSpec` · G-8 AI platform specs (`AITaskProfileSpec`/`AIProviderGatewaySpec`) · G-9
+   `TimedTaskSpec` · G-10 `ModalFormSpec`** — extend/dedup, don't renumber. For each: what it adds, which
+   subsystems need it, and whether it's a **soft** spec note or a **structural** new primitive family. Flag
+   any amendment that implies real §2 redesign (not just a docs pass) — those are the durability-critical ones.
 
 4. **Answer the structural danger zones.** For each of stateful-games / gateway-listeners / `wait_for`
    wizards / scheduled-loops / voice: does the grammar (with amendments) express it, or does it stay a
