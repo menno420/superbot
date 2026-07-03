@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T15:21:16Z",
+    "generated_at": "2026-07-03T16:54:58Z",
     "build": {
-      "commit": "bebb9acc",
-      "subject": "Merge pull request #1689 from menno420/claude/bot-plan-review-stage-1-4o9c6w",
-      "committed_at": "2026-07-03T15:21:16Z"
+      "commit": "41d84854",
+      "subject": "Foundations audit: the engine room (runtime/logic mechanics) — PROMPT A (#1690)",
+      "committed_at": "2026-07-03T16:54:58Z"
     },
     "counts": {
       "functions": 43,
@@ -2977,6 +2977,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-03-foundations-engine-room-ultracode.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Foundational mechanics: the engine room (PROMPT A, runtime/logic)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
@@ -3372,14 +3380,6 @@
       "file": "2026-07-01-fishing-boathouse-structure.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-fishery-structure-and-boathouse-buildfix.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishery (4th fishing structure) + Boathouse build-crash root fix",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
