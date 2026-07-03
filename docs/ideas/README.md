@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`ultracode-audit-consolidation-stage-2026-07-03.md`](./ultracode-audit-consolidation-stage-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, surface+proving audit PR #1691):** add a semantic
+  **consolidation/dedup stage** between the completeness loop and synthesis in the reusable
+  ultracode-audit pattern — the completeness-critic's missing twin ("what did we say twice?" vs
+  "what did we forget?"). This session's completeness loop grew the inventory to 46 mechanics with
+  several near-duplicates that only exact-name dedup let through; a semantic-cluster merge makes the
+  inventory (and its headline count) honest by construction and lets the loop terminate on
+  "nothing *semantically* new."
 - [`rebuild-layout-success-simulator-2026-07-03.md`](./rebuild-layout-success-simulator-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089/Q-0235, PR #1687):** one instruction-driven layout-success
   simulator (deterministic + AI user models) that scores any generated hub/menu by task success
