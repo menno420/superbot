@@ -48,14 +48,27 @@ reason. The corpus is the boundary of "everything we'd ever expect."
 ## The phase sequence
 
 ```
-  [DONE] Capstone ──► [PHASE A] Content review pass ──► [PHASE B] Per-step planning ──► [PHASE C] Build
-         (frozen        (owner-led brainstorming:         (one 100%-complete plan          (execute plans;
-          reference)     commands/functions/methods)       per step, dependency-ordered)    plan = source of truth)
+  [DONE] Capstone ─► [PHASE A] Content review ─► [GATE V] Verification fleet ─► [PHASE B] Per-step planning ─► [PHASE C] Build ─► [MIGRATION]
+         (frozen       (owner-led review +          (multi-agent adversarial       (one 100%-complete plan         (execute plans;      (its own big
+          reference)    the critical-review rubric)  pass over the finished plan)    per step, dep-ordered)          plan=source of truth) plan → new repo)
 ```
 
-**Phase A is the immediate next work.** Phases B and C are documented here so the whole arc is
-visible, but **do not start Phase B until Phase A's surface decisions are captured** — a per-step
-plan cannot be "100% complete" against a command/method surface that is still under discussion.
+**Phase A is the current work.** Phases B/C + the two new markers are documented so the whole arc
+is visible, but **do not start Phase B until Phase A's surface decisions are captured** — a per-step
+plan cannot be "100% complete" against a surface still under discussion.
+
+**GATE V — the verification-fleet pass (owner-directed 2026-07-03, Q-0234).** Once the plan is
+*fully* done, run it past **multiple verification / research agents** to find the final
+improvements before Phase B. Their shared lens is the **ten-class critical-review rubric**
+([`rebuild-critical-review-rubric-2026-07-03.md`](rebuild-critical-review-rubric-2026-07-03.md)) —
+so the fleet interrogates consistently instead of free-associating. This is the adversarial-
+completeness pass, scaled to the whole plan.
+
+**MIGRATION — its own big plan (Q-0234).** The move to the new repo is a distinct planning effort,
+not a Phase-C tail. The framing: **the current repo becomes the *artifact*** (the what / why / how
+— the decision logs, the rubric, the frozen reference *are* its "why"); **the new repo becomes the
+clean *source of truth*** that makes it real, with a proper start that structurally prevents
+reintroducing old mistakes. The container-first cutover (Q-0222) is this migration's execution arm.
 
 ---
 
