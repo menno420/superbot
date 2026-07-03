@@ -8493,3 +8493,29 @@ standing rule; ties fragmentation-cleanup urgency to the sim being able to tune 
 **Homes:** `docs/ideas/rebuild-layout-success-simulator-2026-07-03.md` ·
 `docs/planning/simulation-driven-design-2026-07-02.md` (the standing rule) ·
 `.sessions/2026-07-03-layout-success-simulator.md`.
+
+---
+
+### Q-0236 — DIRECTED: prepare (not run) two parallel ultracode sessions to brainstorm+audit the foundational mechanics against today's decisions (2026-07-03)
+
+> **Context.** After the 2026-07-03 rebuild-decisions session, the owner: *"the correct thing to be
+> doing now is sending out 2 ultracode sessions… NOT in this current session, this should be a
+> preparation so that I can send out these 2 sessions in parallel to discover and document any
+> possible related issues to everything we discovered today. Those 2 sessions should brainstorm
+> thoroughly about any foundational mechanic and method we could possibly use and are using now."*
+> Asked to research what a dedicated ultracode session can do first (done — official docs).
+
+**Decision:** produce **two paste-ready, parallel-safe ultracode prompts** (this session prepares;
+it does NOT launch them). Split by domain to avoid overlap: **Session A = the engine room**
+(runtime/logic — grammar, namespace, invocation ladder, resolver, authority, audited-mutation/draft
+pipeline, composition, events, lifecycle, persistence, cooldowns, DB/import, settings, substrate-
+kit); **Session B = the surface + the proving** (hub/navigation, panel rendering, card+media
+engine, presets/templates, help/description projection, response grammar, suggestion surface, the
+rubric, the oracle, the layout-success simulator). Each prompt carries an explicit scope boundary,
+the shared method (per-mechanic find-now-in-source + research-alternatives + pressure-test →
+adversarial-verify vs source → completeness-critic loop → synthesize), the 10-class rubric as its
+scoring lens, and a rubric-scored issues-ledger deliverable; each claims its own lane + own PR.
+Owner-gated items are surfaced, not decided.
+
+**Homes:** `docs/planning/rebuild-foundational-mechanics-ultracode-brief-2026-07-03.md` (the two
+prompts + launch instructions) · `.sessions/2026-07-03-foundational-mechanics-ultracode-brief.md`.

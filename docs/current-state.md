@@ -246,6 +246,13 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1688 (2026-07-03, S3 rebuild — two parallel ultracode prompts prepared, Q-0236)** —
+  owner-directed preparation (not launched): [two paste-ready ultracode session
+  prompts](planning/rebuild-foundational-mechanics-ultracode-brief-2026-07-03.md) to brainstorm +
+  audit every foundational mechanic (use-now + could-use) against today's decisions — session A =
+  runtime/logic engine room, session B = presentation/UX + verification — disjoint scopes,
+  rubric-scored issues ledgers, each its own claim + PR. Owner sends them in parallel; survivors
+  feed the Stage-2 walk / Gate-V fleet.
 - **#1687 (2026-07-03, S3 rebuild — unified layout-success simulator idea, Q-0235)** —
   captured the idea to unify the 5 bespoke UX-layout sims into one **instruction-driven
   layout-success simulator** (deterministic + AI user models; "create roles" → does a user model
