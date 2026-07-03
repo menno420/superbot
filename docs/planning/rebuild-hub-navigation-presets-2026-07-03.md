@@ -33,6 +33,11 @@ decided per-subsystem against this framework.)*
 authority gate** (Q-0227) and is **re-checked at click time**, never only at panel-open — opening
 the hub does not authorize a later admin click.
 
+> **⚑ AMENDED by Q-0237(c), 2026-07-03 (owner, final-judgment sitting):** the admin node is
+> **HIDDEN** from those without permission, **not shown-locked**. The one-unified-hub model here is
+> kept; only "gated *visible* node" → "hidden node" changes. A viewer sees only the operator
+> surface(s) they hold the tier for (moderator slice for mods, full admin for admins).
+
 ## 2. The navigation contract (Q-0231) — framework-guaranteed, not per-panel discipline
 
 Every one of these is **injected by the panel framework into every rendered state**, so no
@@ -85,11 +90,18 @@ a **preset is a named bundle of that per-guild config.**
   bot at all*; presets decide what's *visible/on per server*. A dropped subsystem is gone
   everywhere; a preset-excluded one still exists, just not surfaced in that guild.
 
-**⚠ One open sub-decision (owner):** when a preset *excludes* a bucket, does that mean the features
-are **hidden from the hub but still runnable by command**, or **disabled entirely** for that guild?
-*Agent recommendation:* default **hidden = off** (least surprising — not in your interface ⇒ doesn't
-run), with a per-guild toggle to hide-without-disabling. To be confirmed before this section
-freezes.
+**✅ RESOLVED by Q-0237(a), 2026-07-03 (owner, final-judgment sitting):** preset exclusion is
+**visibility-only — hidden from the hub but still runnable by command**, preserving the shipped
+Q-0055/HLP-4 invariant that display-hide is presentation-only. A guild may *additionally* disable
+via an explicit per-preset toggle, but exclusion alone never disables. (This **reverses** the
+original agent recommendation of "hidden = off" below, which 5 of the day's 7 reviewers flagged as
+a contract reversal.) Keep **visibility** (hub surfacing) and **activation** (can-run) as distinct
+axes.
+
+> *(Original open sub-decision, now superseded — kept for provenance:)* when a preset *excludes* a
+> bucket, does that mean the features are **hidden from the hub but still runnable by command**, or
+> **disabled entirely** for that guild? *Agent recommendation was:* default **hidden = off**, with a
+> per-guild toggle to hide-without-disabling.
 
 ## 4. Improve + centralize — this already exists and works (Q-0232)
 

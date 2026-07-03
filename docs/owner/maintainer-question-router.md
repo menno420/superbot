@@ -8519,3 +8519,65 @@ Owner-gated items are surfaced, not decided.
 
 **Homes:** `docs/planning/rebuild-foundational-mechanics-ultracode-brief-2026-07-03.md` (the two
 prompts + launch instructions) · `.sessions/2026-07-03-foundational-mechanics-ultracode-brief.md`.
+
+---
+
+### Q-0237 — DECIDED: the 7 Tier-1 rebuild decisions from the Fable-5 final-judgment sitting (2026-07-03)
+
+> **Context.** After the Fable-5 capstone judgment (PR #1701,
+> `docs/analysis/rebuild-discovery/foundations/final-judgment-fable5-2026-07-03.md`) tiered the
+> ~58-item owner queue and named **7 Tier-1 decisions** as the ones that block the Stage-2
+> subsystem walk or a spec freeze, the owner answered all seven in one sitting via the question
+> panel. Provenance for each is this sitting. Six matched the judgment's recommendation; the admin
+> one (c) deviated and is recorded as an explicit amendment to Q-0230.
+
+**Decisions (a–g):**
+
+- **(a) Preset exclusion = visibility-only, never execution-off.** When a per-guild interface preset
+  excludes a feature/bucket, it is **hidden from the hub/help but still runnable** — preserving the
+  shipped, drift-tested **Q-0055/HLP-4** invariant that display-hide is presentation-only. A guild
+  may *additionally* opt to disable via an explicit per-preset toggle, but exclusion alone never
+  disables. **Resolves the Q-0232 §3 open sub-decision** (the doc's in-line "hidden = off"
+  recommendation is rejected). Vocabulary: keep **visibility** (hub surfacing) and **activation**
+  (can-run) as distinct axes (Codex-2's split).
+- **(b) Back-path = in-session real stack + semantic-parent fallback after restart.** "Back = pop
+  the real path you took" holds **within a live session** via the in-memory stack; after a
+  merge=deploy redeploy, Back **falls back to each panel's declared semantic parent**. No persisted
+  back-trail is required. **Amends the Q-0231 "versioned custom_id" wording** to the two-population
+  reality (static hub ids stable/unversioned; dynamic session ids versioned) and pins the medium
+  before the NavigationSpec/PanelSpec freeze.
+- **(c) Admin = a HIDDEN node INSIDE the one unified hub (amends Q-0230).** The admin/operator area
+  stays **inside the single hub** (Q-0230's one-front-door model is kept), but is **hidden from
+  those without permission** rather than shown-locked. This **amends Q-0230's "gated *visible*
+  node" to "hidden node"** — a viewer sees only the operator surface(s) they hold the tier for
+  (moderator slice for mods, full admin for admins), and nothing where they hold nothing. Q-0230's
+  "one unified hub, not two separate player/operator trees" headline is preserved.
+- **(d) Authority = one `authority_ref` per command.** Stage-2 authors declare a **single authority
+  label**; Gate-0 owns the internal mapping to either a governance capability or a domain audience
+  tier. **Resolves the design-spec two-lane (`capability_required`/`audience_tier`) vs
+  conventions-freeze one-label conflict** (judgment X-8 / L-13) in favor of one public concept;
+  the owner override applies once at the C-1 resolver.
+- **(e) Slash-cap = slash-common + prefix long-tail.** The common/discoverable set gets slash
+  commands; the long tail stays prefix-only. **The K1 shared-verb computation budgets against
+  Discord's 100 top-level / 25 sub / 1-nest caps** (feeds Q-0224). D-5 triage shrinks the corpus
+  further before the final count.
+- **(f) Deep-link names = decided names canonical, shipped names become hidden aliases.**
+  `!admin` / `!games` (and one command per hub node) are the **canonical** deep-links; the shipped
+  `!adminmenu` / `!modmenu` / `!economymenu` become **hidden aliases** so nothing breaks for current
+  users; **K1 reserves both** (feeds Q-0224/Q-0231).
+- **(g) Stage-2 contract = adopt Codex review 4's kit as-is.** The Stage-2 subsystem walk uses
+  **Codex review 4's per-row template** (command surface / invocation / hub placement / triage
+  verdict / oracle / 10-rubric-probes) + the **normalized verdict vocabulary**
+  (`keep/improve/merge/redesign/drop/defer/re-place/add`) + a **Lane-0 normalization owner**. It is
+  the only artifact that operationalizes D-5 and the rubric per row and already carries
+  `prompt-a-issue`/`prompt-b-issue` tags so the judgment's ledger binds to rows.
+
+**Effect.** All 7 Tier-1 blockers from the judgment §6 are cleared; combined with the RPS refund
+fix (judgment V-1) and the findings-closure rule (V-3), **the Stage-2 subsystem walk is unblocked**.
+Tier-2/Tier-3 queue items (~47) remain for Gate-0 with their recommended defaults.
+
+**Homes:** `docs/analysis/rebuild-discovery/foundations/final-judgment-fable5-2026-07-03.md` §6
+(Tier-1 rows marked RESOLVED) · amendment pointers in
+`rebuild-hub-navigation-presets-2026-07-03.md` (a/c), `rebuild-conventions-invocation-authority-2026-07-03.md`
+(d/e/f), `rebuild-stage1-global-review-2026-07-03.md` (Stage-2 §6 g) ·
+`.sessions/2026-07-03-tier1-owner-decisions.md`.

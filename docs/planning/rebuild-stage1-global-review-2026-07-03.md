@@ -259,6 +259,12 @@ Unchanged from the phase doc's seed agenda, minus what Stage 1 closed, plus what
   merge / drop / rename with final names + aliases (271 commands); slash-vs-prefix kind per
   surface; **naming conventions** (the K1 registry's input scheme); hub topology; concrete
   outperform feature lists; **the D-5 triage verdict per row**.
+  > **✅ Stage-2 starting contract decided — Q-0237(g), 2026-07-03 (owner):** adopt **Codex review
+  > 4's per-row template** (`rebuild-stage2-readiness-review-2026-07-03.md`: command surface /
+  > invocation / hub placement / triage verdict / oracle / 10-rubric-probes) + the **normalized
+  > verdict vocabulary** (`keep/improve/merge/redesign/drop/defer/re-place/add`) + a **Lane-0
+  > normalization owner**, with the judgment's ledger bound to rows via `prompt-a-issue`/
+  > `prompt-b-issue`/`FJ-L#` tags (findings-closure, judgment V-3).
 - **Cross-cutting method/seam vocabulary** (audited-mutation signatures, `WorkflowResult` shape,
   handler-ref + provider-ref naming) — now to be written **as S-1 applications** (which tier each
   recurring pattern uses).
