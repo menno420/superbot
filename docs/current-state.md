@@ -240,6 +240,17 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1679 (2026-07-03, S3 rebuild — Phase-A Stage-1 global review: standards + order audit + Gate-0 deltas, Q-0219…Q-0223)** —
+  the owner-live **Stage-1 review** of the frozen BUILD-PLAN, folded into the
+  [Stage-1 decisions log](planning/rebuild-stage1-global-review-2026-07-03.md): the **S-1
+  engine/declaration/seam generalization standard** + **S-2 foundation-before-consumer ordering
+  rule**; a full dependency-order audit (3 inversions — welcome re-homed to L1c after the card
+  engine; deathmatch/explore take declared-seam deferrals, mining-last stands); Gate-0 deltas
+  D-1…D-6 incl. a **new media-generation capability** (Q-0221) and the **3-phase container-first
+  cutover model** (Q-0222 — container-only live testing → manifest-driven selective import with
+  full-coverage disposition → token swap); the substrate-kit figure corrected (~90–95%, 422 tests
+  green — completion is the pre-bootstrap gate, Q-0223) and per-subsystem triage made a Stage-2
+  deliverable. ▶ next: **Stage 2 — the subsystem walk**.
 - **#1643 · #1647 · #1648 · #1649 (2026-07-02, S3 rebuild — memory substrate: retention/economy plan → finalized substrate-kit, Q-0214)** —
   the [memory-retention-and-context-economy plan](planning/memory-retention-and-context-economy-plan-2026-07-02.md):
   the retention half of the rebuild memory substrate — warn-forever corpus caps + diff-scoped hard gates,

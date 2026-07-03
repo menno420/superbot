@@ -2,6 +2,11 @@
 
 > **Status:** `ideas` — capture only, not approval, not a plan. Source + binding contracts win.
 > **Subsystem:** none (cross-cutting — the portable substrate-kit / agent-workflow substrate).
+> **▶ PROMOTED (2026-07-03, Stage-1 review PR #1679):** follow-up #1 (re-entrant transaction →
+> atomic `apply_review_verdict`) is now **item ① of the substrate-kit pre-bootstrap gate** —
+> owner-directed "fully complete the kit before the new repo bootstraps" (Q-0223; tail + gate in
+> [`../planning/rebuild-stage1-global-review-2026-07-03.md`](../planning/rebuild-stage1-global-review-2026-07-03.md)
+> §4 D-4). Any session may pick it up now as its own PR; #2 stays verified-low-risk/no-action.
 
 ## Provenance
 
