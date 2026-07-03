@@ -215,6 +215,16 @@ the same spec PR):
   held per the ≥2-recurrence bar. *The spec pass should check Lane E's feed-shaped plans (owner
   review inbox, feedback boards, per-command feedback threads — its proposed tagged-board
   family) for the second instance before deciding ratify-or-hold.*
+- **P-2…P-4 — future-family candidates from Axis 2** (not fit-bearing — they describe *unshipped*
+  capabilities, so they don't move the table; recorded so the Gate-0 pass considers them while it
+  is in the file): **P-2** `GatewayListenerSpec.catchup_policy` (declared high-water mark +
+  bounded replay + dedup for events missed while the bot restarts — material because **merging IS
+  deploying** here, so restart windows recur by design; from the audit-log-catch-up idea Lane E
+  missed); **P-3** `UserMemorySpec` (the owner-decided Q-0184 per-user product-AI-memory policy +
+  knowledge-domain conversation carryover, one opt-in/scope/retention declaration); **P-4**
+  `IdentityScopeSpec`/`TransferPolicySpec` (the answered Q-0091 cross-server identity +
+  conservation-based transfer design). P-3/P-4 attach to the L2/L4 ADDs that need them, not to
+  the port.
 
 ### 3.4 Bucket (d) — refuted / do-not-re-propose (adversarially killed; recorded so no future session re-adds them)
 

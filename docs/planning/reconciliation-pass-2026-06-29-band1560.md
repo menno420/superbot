@@ -1,6 +1,6 @@
 # Twenty-ninth Q-0107 reconciliation pass — band-#1560
 
-> **Status:** `plan` — the docs-only reconciliation + planning pass for the band crossing #1560.
+> **Status:** `historical` — the docs-only reconciliation + planning pass for the band crossing #1560.
 > Trigger: `reconcile` issue **#1563** (auto-opened by `reconciliation-trigger.yml`, author `menno420`).
 > Reset target: marker #1530 → **#1560**.
 >
