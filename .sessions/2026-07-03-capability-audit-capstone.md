@@ -1,6 +1,6 @@
 # 2026-07-03 — New-bot capability-audit CAPSTONE (final review + unified build plan)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/bot-capability-audit-capstone-scy0zx` · **PR:** #1674
 > **Session type:** capstone synthesis (Fable 5, ultracode) — the go/no-go gate between
 > planning/discovery and creating the new repo, per `FINAL-REVIEW-HANDOFF.md`.
