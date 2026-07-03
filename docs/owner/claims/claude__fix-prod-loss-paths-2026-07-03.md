@@ -1,0 +1,1 @@
+- `claude/fix-prod-loss-paths-2026-07-03` · **fix 2 confirmed prod loss paths (from the engine-room audit #1690)** — (1) blackjack tournament entry-fee forfeit on VERSION bump; (2) XP double-fire during the LP-4 deploy-handoff overlap · `disbot/cogs/blackjack_cog.py` `disbot/core/runtime/message_pipeline.py` · 2026-07-03 · PR pending
