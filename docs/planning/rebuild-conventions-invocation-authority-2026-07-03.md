@@ -167,11 +167,14 @@ Each of the above is **one engine steered by data**, per the Stage-1 keystone:
 
 ---
 
-## 6. Proposed invocation-stack centralizations (PROPOSALS — pending owner reaction)
+## 6. Invocation-stack centralizations — owner-endorsed foundations (Q-0228)
 
-Owner asked "what else related to this could we centralize?" Applying the second-consumer rule to
-the invocation/command area. **These are proposals, not decisions** — captured for the owner to
-react to; the ones he blesses become Gate-0 / Phase-B contracts.
+Owner asked "what else related to this could we centralize?" then confirmed: *"yes all the things
+you mentioned are good candidates to further think about and properly decide upon, your
+recommendations are good foundations and should be documented."* So the seven below are
+**endorsed directions to build toward**, documented here as the foundations; each item's *detailed*
+contract (scope, exact shape) is decided in its Gate-0 / Phase-B plan. (Applies the second-consumer
+rule to the invocation/command area.)
 
 - **C-1 — The command resolver (the convergence point).** *Strongly recommend.* All four rungs
   must funnel through **one** resolver that takes "a candidate command + args" and applies
