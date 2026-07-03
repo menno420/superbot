@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T14:08:10Z",
+    "generated_at": "2026-07-03T15:21:16Z",
     "build": {
-      "commit": "ad476ea2",
-      "subject": "Merge pull request #1680 from menno420/claude/bot-plan-review-stage-1-4o9c6w",
-      "committed_at": "2026-07-03T14:08:10Z"
+      "commit": "bebb9acc",
+      "subject": "Merge pull request #1689 from menno420/claude/bot-plan-review-stage-1-4o9c6w",
+      "committed_at": "2026-07-03T15:21:16Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 180,
+      "ideas": 184,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1181,6 +1181,14 @@
       "subsystems": null
     },
     {
+      "file": "rebuild-critical-review-checkers-2026-07-03.md",
+      "title": "Idea — mechanize the critical-review rubric (the checker backlog)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The [critical-review rubric](../planning/rebuild-critical-review-rubric-2026-07-03.md) has ten",
+      "subsystems": null
+    },
+    {
       "file": "rebuild-invocation-ladder-centralization-2026-07-03.md",
       "title": "Idea — the invocation-stack centralization set (C-1…C-7)",
       "status": "ideas",
@@ -1189,11 +1197,35 @@
       "subsystems": null
     },
     {
+      "file": "rebuild-layout-success-simulator-2026-07-03.md",
+      "title": "Idea — the unified layout-success simulator (instruction-driven, deterministic + AI)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "One simulator that scores any generated hub/menu layout by **task success rate**: given only a",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-navigation-completeness-check-2026-07-03.md",
+      "title": "Idea — navigation-completeness check (enforce the Back+Home contract)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Q-0231 guarantees **Back + Home on every rendered panel state, at every depth, across unlimited",
+      "subsystems": null
+    },
+    {
       "file": "rebuild-schema-growth-ledger-2026-07-03.md",
       "title": "Idea — rebuild schema-growth ledger (enforce the second-consumer rule mechanically)",
       "status": "ideas",
       "date": "2026-07-03",
       "summary": "The Q-0219 guardrail says the manifest grammar's declaration schema may grow a field **only when",
+      "subsystems": null
+    },
+    {
+      "file": "reconcile-headline-sector-currency-check-2026-07-03.md",
+      "title": "Idea — reconcile-pass headline-sector currency check",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The reconciliation routine reliably updates the **S4 docs sector file** (`current-state/S4-docs.md`)",
       "subsystems": null
     },
     {
@@ -2873,6 +2905,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-03-ultracode-quicklaunch.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Ultracode quick-launch prompts + durable-home verification",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-reconcile.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Thirty-third Q-0107 reconciliation pass (band-#1680)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-rebuild-stage1-global-review.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Rebuild Phase A · Stage 1: the global plan review (owner-live)",
@@ -2889,9 +2937,57 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-03-rebuild-hub-navigation.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · hub topology + navigation contract + interface presets (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-rebuild-conventions-freeze.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Rebuild Phase A · conventions freeze (owner-live, continued)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-permission-allowlist-and-endorse.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Permission allowlist fix + Q-0228 centralization endorsement (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-oracle-and-verification-strategy.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — New-feature oracle resolved + verification-fleet gate & repo-as-artifact strategy",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-layout-success-simulator.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Unified layout-success simulator (owner-directed capture)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-critical-review-rubric.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — The critical-review rubric (owner-directed)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3286,70 +3382,6 @@
       "title": "2026-07-01 — Fishery (4th fishing structure) + Boathouse build-crash root fix",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-btd6-menu-panel-hub.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — BTD6 panel: Layout-B category hub (owner picked B)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-btd6-menu-layout-design.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — BTD6 menu layout design (simulator) + round-range NL answer fix",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-boot-smoke-test-guard.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Boot smoke-test guard (never ship a cog that won't load)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-welcome-random-messages.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Welcome random messages + opt-in DM greeting (S1 completion deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-welcome-age-gate-delete-after.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Welcome age-gating + ping-then-delete (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-role-menu-builder-live-preview-fix.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Role-menu builder live-preview fix (ephemeral re-render)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-reconcile-band1590.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Thirtieth Q-0107 reconciliation pass (band-#1590)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-30-reaction-roles-signup-counter.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Reaction-roles live sign-up counter (S1 deepening)",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": true
     }
   ],
