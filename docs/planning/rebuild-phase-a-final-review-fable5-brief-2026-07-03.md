@@ -94,3 +94,4 @@ GUARDRAILS: SOURCE WINS on facts (Q-0120). Do NOT re-litigate frozen disposition
 - The Phase-A decision logs: [stage-1](rebuild-stage1-global-review-2026-07-03.md) · [conventions](rebuild-conventions-invocation-authority-2026-07-03.md) · [hub/nav](rebuild-hub-navigation-presets-2026-07-03.md).
 - Frozen reference: [`NEW-BOT-BUILD-PLAN.md`](../analysis/rebuild-discovery/new-bot-capability-audit/findings/NEW-BOT-BUILD-PLAN.md) · [`FINAL-REVIEW.md`](../analysis/rebuild-discovery/new-bot-capability-audit/findings/FINAL-REVIEW.md).
 - **Next:** the owner launches this in Fable 5; its verdict + re-prioritization feed the Stage-2 subsystem walk and the Gate-V verification fleet.
+- **Delivered:** [`final-judgment-fable5-2026-07-03.md`](../analysis/rebuild-discovery/foundations/final-judgment-fable5-2026-07-03.md) (PR #1701) — the reconciled verdict, master ledger, re-prioritization, and consolidated owner queue.

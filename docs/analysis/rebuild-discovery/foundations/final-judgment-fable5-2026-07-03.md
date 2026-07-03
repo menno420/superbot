@@ -1,7 +1,8 @@
 # Final judgment — the 2026-07-03 Phase-A day, reconciled (Fable 5)
 
-> **Status:** `draft-in-progress` — DO NOT CONSUME YET; finalized before this session's PR flips
-> green. Produced by the Fable-5 max-reasoning capstone session (PR #1701) the owner directed via
+> **Status:** `audit` — *(sections marked PENDING are being finalized in-session; complete before
+> PR #1701's card flips green)*. Produced by the Fable-5 max-reasoning capstone session the owner
+> directed via
 > [`../../../planning/rebuild-phase-a-final-review-fable5-brief-2026-07-03.md`](../../../planning/rebuild-phase-a-final-review-fable5-brief-2026-07-03.md).
 > This is the **judgment layer over everything 2026-07-03 produced** — not a fourth audit. Source
 > wins over this doc (Q-0120). Frozen dispositions are never reversed here; at most **flagged with
