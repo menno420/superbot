@@ -246,6 +246,15 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1684 (2026-07-03, S3 rebuild — Phase-A hub topology + navigation contract + interface presets, Q-0230…Q-0232)** —
+  owner-live [hub/navigation decisions log](planning/rebuild-hub-navigation-presets-2026-07-03.md):
+  one **unified help hub** (admin a permission-gated node + `!admin` direct-open, re-checked at
+  click time); the **navigation contract** (Back+Home injected into every rendered state, every
+  node directly openable by command, **persistent restart-safe panels** that also survive the
+  merge=deploy redeploys); and **per-guild interface presets** with live preview — verified as an
+  existing-but-fragmented surface (setup preset_select + help overlay editor + ~7 preset impls) to
+  be improved + centralized onto one preset/template primitive (C-3). Open: preset exclusion =
+  hide-vs-disable.
 - **#1683 (2026-07-03, workflow — cut permission prompts + endorse invocation centralizations, Q-0229/Q-0228)** —
   broadened `.claude/settings.json` with whole-MCP-server allow entries (`mcp__Claude_Code_Remote`,
   `mcp__github`, `mcp__codegraph`, `mcp__context7`) so tools like `send_later` stop prompting —
