@@ -1,0 +1,1 @@
+- `claude/superbot-phase-a-judgment-e8yhlm` · Fable-5 final judgment over all 2026-07-03 Phase-A work (reconcile audits A+B + Codex reviews + prod fixes; verdict + master ledger + re-prioritization) · expected files: `docs/analysis/rebuild-discovery/foundations/final-judgment-fable5-2026-07-03.md`, `.sessions/`, docs-only · 2026-07-03
