@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-critical-review-checkers-2026-07-03.md`](./rebuild-critical-review-checkers-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, critical-review-rubric PR #1685):** mechanize the rubric's
+  finding-classes into checkers — extend `check_plan_staleness.py` for un-anchored `NN%` claims now
+  (the class that misled twice on the substrate kit), and build dep-order / thin-step /
+  fragmentation / verification-hole / nav-contract checkers against the rebuild's declared
+  manifests. The enforce-don't-exhort arm of Q-0233.
 - [`rebuild-navigation-completeness-check-2026-07-03.md`](./rebuild-navigation-completeness-check-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, hub/navigation PR #1684):** a CI golden that walks every
   generated panel state and asserts Back+Home are present/working (the enforcement arm of the

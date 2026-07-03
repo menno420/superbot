@@ -246,6 +246,14 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1685 (2026-07-03, S3 rebuild — the critical-review rubric, Q-0233)** —
+  owner-directed [reusable review lens](planning/rebuild-critical-review-rubric-2026-07-03.md): the
+  ten gap-classes caught reviewing the rebuild plan this session (dependency-order inversion,
+  forgotten capability, thin step, stale un-anchored claim, fragmentation, under-generalization,
+  missing standard, verification hole, UX-contract gap, naming/collision) turned into probing
+  questions with mechanization tags — run against every subsystem in the Stage-2 walk + every
+  Phase-B plan (it *is* the adversarial-completeness checklist). Mechanizable classes routed as a
+  [checker backlog](ideas/rebuild-critical-review-checkers-2026-07-03.md).
 - **#1684 (2026-07-03, S3 rebuild — Phase-A hub topology + navigation contract + interface presets, Q-0230…Q-0232)** —
   owner-live [hub/navigation decisions log](planning/rebuild-hub-navigation-presets-2026-07-03.md):
   one **unified help hub** (admin a permission-gated node + `!admin` direct-open, re-checked at
