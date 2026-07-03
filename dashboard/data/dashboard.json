@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T16:54:58Z",
+    "generated_at": "2026-07-03T23:15:54Z",
     "build": {
-      "commit": "41d84854",
-      "subject": "Foundations audit: the engine room (runtime/logic mechanics) — PROMPT A (#1690)",
-      "committed_at": "2026-07-03T16:54:58Z"
+      "commit": "7560fa16",
+      "subject": "Merge pull request #1701 from menno420/claude/superbot-phase-a-judgment-e8yhlm",
+      "committed_at": "2026-07-03T23:15:54Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 184,
+      "ideas": 186,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
   ],
   "ideas": [
     {
+      "file": "fleet-structured-output-placeholder-guard-2026-07-03.md",
+      "title": "Idea — reject placeholder values in fleet structured outputs (workflow-layer guard)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Two independent multi-agent audits shipped **placeholder junk inside otherwise-validated",
+      "subsystems": null
+    },
+    {
       "file": "golden-recapture-on-bugfix-2026-07-03.md",
       "title": "Golden recapture on current-bot bug fix — a protocol so parity never preserves a bug",
       "status": "ideas",
@@ -1226,6 +1234,14 @@
       "status": "ideas",
       "date": "2026-07-03",
       "summary": "The reconciliation routine reliably updates the **S4 docs sector file** (`current-state/S4-docs.md`)",
+      "subsystems": null
+    },
+    {
+      "file": "ultracode-audit-consolidation-stage-2026-07-03.md",
+      "title": "Idea — a consolidation/dedup stage for the ultracode multi-agent audit pattern (2026-07-03)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The PROMPT-B audit workflow ran the brief's method verbatim: fan-out finders → adversarial-verify →",
       "subsystems": null
     },
     {
@@ -2913,6 +2929,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-03-surface-proving-mechanics-ultracode.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Surface + proving foundations audit (PROMPT B, ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-reconcile.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Thirty-third Q-0107 reconciliation pass (band-#1680)",
@@ -2953,6 +2977,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-03-prep-fable5-final-review.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare (not execute) a Fable-5 ultracode final-judgment prompt",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-phase-a-final-judgment.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Phase-A final judgment (Fable-5 ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-permission-allowlist-and-endorse.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Permission allowlist fix + Q-0228 centralization endorsement (owner-live)",
@@ -2988,6 +3028,14 @@
       "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-fix-prod-loss-paths.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Fix two confirmed prod loss paths (from the engine-room audit)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3348,38 +3396,6 @@
       "file": "2026-07-01-fishing-structures-subhub.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Fishing structures sub-hub (🏗 Structures child) + Legendary curio tier",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-fishing-dock-structure.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing Dock structure (bite-speed coral sink, Tide Pool sibling)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-fishing-dock-sail-alias-crash.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — PROD hotfix: fishing `dock` command collided with `sail`'s `dock` alias (crash loop)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-fishing-coral-curios.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing: coral 🪸 deepwater rare-material drop → cosmetic curio collectibles",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-fishing-boathouse-structure.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
