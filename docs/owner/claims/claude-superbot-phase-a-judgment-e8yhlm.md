@@ -1,1 +1,1 @@
-- `claude/superbot-phase-a-judgment-e8yhlm` · capture 2 owner-originated rebuild ideas (in-server release→test→verify loop; websites cutover-role) + index · docs/ideas only · 2026-07-03
+- `claude/superbot-phase-a-judgment-e8yhlm` · author (not execute) a comprehensive Opus-4.8 ultracode prompt for an overnight foundational-DESIGN session (design the audited-but-undesigned kernel functions + close never-surfaced concerns + surface all decisions) · docs/planning + prep only · 2026-07-03
