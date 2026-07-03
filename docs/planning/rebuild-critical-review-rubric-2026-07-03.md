@@ -87,12 +87,20 @@ inherits?*
 **Today:** command naming, invocation, authority — undecided, would have been re-litigated 43× until
 we froze them as standards (Q-0224…Q-0227).
 
-### 8. Verification hole — 🔧 checker (build)
+### 8. Verification hole — 🔧 checker (build) · oracle RESOLVED (Q-0234)
 **Probe:** *How do we prove this is correct? Is there an oracle?*
 **Today:** the new-feature oracle — giveaways/media-gen have no old-bot golden to match; the whole
-parity story has a hole for unbuilt capabilities.
-**Mechanize:** assert every subsystem plan declares a **done-definition + oracle** (parity golden,
-sim, or an explicit "new-feature oracle" method); flag any with none.
+parity story had a hole for unbuilt capabilities.
+**Resolution (Q-0234):** the oracle has **two halves** — **ported features** → parity goldens
+(match the old bot); **new features** → **competitor-benchmark + live co-test in the test server**,
+where the co-test asserts *works · logical · self-explanatory to use* and reuses the Q-0222
+`verified_live` per-command sign-off. So every feature declares, up front, the named competitor +
+specific behaviors to match **and** its live-co-test sign-off. "Self-explanatory" is a real
+acceptance criterion — the one thing no golden or competitor-diff can measure, only a human driving
+it live.
+**Mechanize:** assert every subsystem plan declares a **done-definition + oracle** — a parity
+golden (ported) *or* a named competitor-benchmark + a `verified_live` co-test hook (new); flag any
+with none.
 
 ### 9. UX / lifecycle-contract gap — 🔧 checker (build)
 **Probe:** *Does every state honor the standing contracts — navigation, timeout/restart, authority

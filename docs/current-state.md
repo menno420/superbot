@@ -246,6 +246,13 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1686 (2026-07-03, S3 rebuild — new-feature oracle + verification-fleet gate + repo-as-artifact strategy, Q-0234)** —
+  resolved the rubric's class-8 verification hole: the correctness oracle = parity goldens (ported) +
+  **competitor-benchmark & live co-test** ("works · logical · self-explanatory", reusing the Q-0222
+  `verified_live` sign-off) for new features. Recorded **Gate V** (a multi-agent verification-fleet
+  pass over the finished plan, using the ten-class rubric as its shared lens) between Phase A and
+  Phase B, and the **migration-as-its-own-plan / repo-as-artifact** framing (current repo = what/why/
+  how artifact; new repo = clean source of truth) in the phase sequence.
 - **#1685 (2026-07-03, S3 rebuild — the critical-review rubric, Q-0233)** —
   owner-directed [reusable review lens](planning/rebuild-critical-review-rubric-2026-07-03.md): the
   ten gap-classes caught reviewing the rebuild plan this session (dependency-order inversion,

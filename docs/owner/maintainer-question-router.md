@@ -8433,3 +8433,35 @@ classes stay human probes with the rubric as their guard.
 **Homes:** `docs/planning/rebuild-critical-review-rubric-2026-07-03.md` (the rubric) ·
 `docs/ideas/rebuild-critical-review-checkers-2026-07-03.md` (the mechanization backlog) ·
 `.sessions/2026-07-03-critical-review-rubric.md`.
+
+---
+
+### Q-0234 — DECIDED: the new-feature correctness oracle + the plan-verification-fleet gate + the repo-as-artifact migration framing (2026-07-03)
+
+> **Context.** Owner, resolving the rubric's class-8 verification hole and laying out the meta-plan:
+> *"the way we prove a function is correct is we compare it against known bots and we personally
+> test it together in the test server, so we can find out how it works and if it is logical and
+> self explanatory to use. I intend to run this entire plan against multiple verification and
+> research agents once it's fully done, to find out the final bits of improvements before moving on
+> to the step by step planning and then the migration to the new repo, which is also a big plan of
+> its own. My idea is to turn the current repo into an artifact that provides exactly the what the
+> why and the how, and our new repo becomes the clean source of truth that makes it all real with a
+> proper start that prevents reintroducing old mistakes."*
+
+**Decision (three parts):**
+1. **New-feature correctness oracle (resolves rubric class 8).** Two halves: **ported features** →
+   parity goldens (match the old bot); **new features** → **competitor-benchmark + live co-test in
+   the test server** asserting *works · logical · self-explanatory to use*, reusing the Q-0222
+   `verified_live` per-command sign-off. Each feature declares its named competitor + specific
+   behaviors + its live-co-test sign-off. "Self-explanatory" is a first-class acceptance criterion
+   (only a human driving it live can measure it).
+2. **GATE V — the verification-fleet pass.** When the plan is fully done, run it past **multiple
+   verification/research agents** for the final improvements **before Phase B**, using the
+   ten-class critical-review rubric (Q-0233) as their shared lens. Sits between Phase A and Phase B.
+3. **Migration is its own big plan; repo-as-artifact framing.** Current repo → the **artifact**
+   (what/why/how — the decision logs + rubric are its "why"); new repo → the clean **source of
+   truth** with a proper start that prevents reintroducing old mistakes. The Q-0222 container-first
+   cutover is this migration's execution arm.
+
+**Homes:** rubric §class-8 (resolved) · `rebuild-planning-phase-2026-07-03.md` (Gate V + Migration
+in the phase sequence) · `.sessions/2026-07-03-oracle-and-verification-strategy.md`.
