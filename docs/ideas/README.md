@@ -31,6 +31,20 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-release-testing-loop-2026-07-03.md`](./rebuild-release-testing-loop-2026-07-03.md) —
+  **owner idea (2026-07-03):** the in-server **release → test → verify loop** — a boot/release
+  announcer of what changed (so members know what to test), per-command "tested-since-its-change"
+  coverage from real usage, a dedicated **test/debug mode** (full traces to a channel, actions
+  self-explain), and an **explain-then-approve button** that doubles as the `verified_live`
+  sign-off. Closes judgment gaps #5/#7/#8 and is the missing *mechanism* for the decided Q-0234
+  oracle + Q-0222 CUT-1 live co-test. Routes as new Stage-2 capabilities; A/C could ship in the
+  current bot now.
+- [`rebuild-websites-cutover-role-2026-07-03.md`](./rebuild-websites-cutover-role-2026-07-03.md) —
+  **owner idea (2026-07-03):** give the off-Discord **botsite + dev dashboard** a rebuild
+  disposition (they die at cutover today — judgment #4), repoint their producer at the new repo's
+  manifest, and use them **during the switch** as the public changelog/cutover-comms surface and a
+  **rebuild-progress + verified_live dashboard** (the owner-consumable visual artifact judgment #16
+  flagged missing). Pairs with the release-loop idea.
 - [`fleet-structured-output-placeholder-guard-2026-07-03.md`](./fleet-structured-output-placeholder-guard-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, final-judgment PR #1701):** reject placeholder values
   (`test`, `t/e/f`, `TODO`) in required evidence/reasoning fields of fleet structured outputs, with
