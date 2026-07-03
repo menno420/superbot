@@ -8,6 +8,25 @@
 
 ---
 
+## ⚡ Quick launch — the two short startup prompts (paste one per session)
+
+Short launchers that point each session at its full prompt below. The `ultracode:` keyword makes
+each write + run its own workflow; it reads this doc and executes its half verbatim.
+
+**Session A (engine room):**
+```text
+ultracode: Read docs/planning/rebuild-foundational-mechanics-ultracode-brief-2026-07-03.md and run its "PROMPT A — the engine room" verbatim. This is the runtime/logic half; a parallel session runs PROMPT B (presentation/verification), so hold strictly to your scope boundary. Follow .claude/CLAUDE.md — claim your lane, born-red PR, auto-merge on green.
+```
+
+**Session B (surface + proving):**
+```text
+ultracode: Read docs/planning/rebuild-foundational-mechanics-ultracode-brief-2026-07-03.md and run its "PROMPT B — the surface + the proving" verbatim. This is the presentation/UX + verification half; a parallel session runs PROMPT A (runtime/logic), so hold strictly to your scope boundary. Follow .claude/CLAUDE.md — claim your lane, born-red PR, auto-merge on green.
+```
+
+*(The full prompts are in the two sections below; the launchers just save you pasting them.)*
+
+---
+
 ## What a dedicated ultracode session can do (researched — informs the prompt design)
 
 From the official docs ([code.claude.com/docs/en/workflows](https://code.claude.com/docs/en/workflows)):
