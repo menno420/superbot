@@ -112,6 +112,13 @@ DELIVERABLE: docs/analysis/rebuild-discovery/foundations/presentation-verificati
 4. Read the two issues ledgers; owner-gated items are flagged for you. Feed the survivors into the
    next planning stage (Stage 2 walk / Gate V verification fleet).
 
+## Deliverables (as the sessions land their reports)
+
+- **Session B — the surface + the proving** (presentation/UX + verification):
+  [`../analysis/rebuild-discovery/foundations/presentation-verification-mechanics-2026-07-03.md`](../analysis/rebuild-discovery/foundations/presentation-verification-mechanics-2026-07-03.md)
+  — 46 mechanics · 220 verified issues · 87 owner-gated flags (ultracode, 108 subagents).
+- **Session A — the engine room** (runtime/logic): `../analysis/rebuild-discovery/foundations/runtime-logic-mechanics-2026-07-03.md` *(lands when Session A's PR merges)*.
+
 ## Pointers
 
 - Rubric (the scoring lens): [`rebuild-critical-review-rubric-2026-07-03.md`](rebuild-critical-review-rubric-2026-07-03.md)
