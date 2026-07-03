@@ -120,3 +120,6 @@ superbot_btd6_data/
 # Intermediate per-agent mapper output written by planning workflows; the
 # synthesized artifacts committed alongside are the tracked deliverable.
 docs/planning/rebuild-harvest/_parts/
+
+# mypy incremental cache (created by check_quality.py --full local runs)
+.mypy_cache/
