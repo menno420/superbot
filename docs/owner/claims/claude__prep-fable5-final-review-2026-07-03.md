@@ -1,0 +1,1 @@
+- `claude/prep-fable5-final-review-2026-07-03` · **prepare (not execute) a Fable-5 ultracode final-judgment prompt over all 2026-07-03 work** — docs-only: one planning doc holding a paste-ready capstone-review prompt · `docs/planning/rebuild-phase-a-final-review-fable5-brief-2026-07-03.md` · 2026-07-03 · PR pending
