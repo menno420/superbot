@@ -1,10 +1,11 @@
 # Fable 5 ultracode — final judgment on the 2026-07-03 work (brief)
 
-> **Status:** `plan` — **preparation only** (owner-directed). A single paste-ready **Fable 5
-> ultracode** prompt for the *final* independent judgment over **everything decided, audited, and
-> fixed on 2026-07-03**, layered on top of the two foundations audits (#1690/#1691) and the owner's
-> **5 independent Codex reviews**. **Not launched from this preparing session** — the owner pastes
-> the prompt into a fresh Fable 5 session. Source wins over any doc (Q-0120).
+> **Status:** `historical` — **delivered.** This was the paste-ready **Fable 5 ultracode** prompt
+> for the final independent judgment over **everything decided, audited, and fixed on 2026-07-03**,
+> layered on top of the two foundations audits (#1690/#1691) and the owner's **5 independent Codex
+> reviews**. The owner launched it and the deliverable landed:
+> [`final-judgment-fable5-2026-07-03.md`](../analysis/rebuild-discovery/foundations/final-judgment-fable5-2026-07-03.md)
+> (PR #1701). Kept in place as the launch record. Source wins over any doc (Q-0120).
 
 ---
 
@@ -94,3 +95,4 @@ GUARDRAILS: SOURCE WINS on facts (Q-0120). Do NOT re-litigate frozen disposition
 - The Phase-A decision logs: [stage-1](rebuild-stage1-global-review-2026-07-03.md) · [conventions](rebuild-conventions-invocation-authority-2026-07-03.md) · [hub/nav](rebuild-hub-navigation-presets-2026-07-03.md).
 - Frozen reference: [`NEW-BOT-BUILD-PLAN.md`](../analysis/rebuild-discovery/new-bot-capability-audit/findings/NEW-BOT-BUILD-PLAN.md) · [`FINAL-REVIEW.md`](../analysis/rebuild-discovery/new-bot-capability-audit/findings/FINAL-REVIEW.md).
 - **Next:** the owner launches this in Fable 5; its verdict + re-prioritization feed the Stage-2 subsystem walk and the Gate-V verification fleet.
+- **Delivered:** [`final-judgment-fable5-2026-07-03.md`](../analysis/rebuild-discovery/foundations/final-judgment-fable5-2026-07-03.md) (PR #1701) — the reconciled verdict, master ledger, re-prioritization, and consolidated owner queue.
