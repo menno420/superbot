@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-invocation-ladder-centralization-2026-07-03.md`](./rebuild-invocation-ladder-centralization-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, conventions-freeze PR #1680):** the invocation-stack
+  centralization set C-1…C-7 (one command resolver, one draft pipeline with two producers, a
+  template primitive, one response grammar, one fuzzy engine, one cooldown engine, one description
+  surface) — the second-consumer rule applied where it has the most consumers. Proposed (Q-0228),
+  pending owner reaction; routed to Gate-0 K8.
 - [`rebuild-schema-growth-ledger-2026-07-03.md`](./rebuild-schema-growth-ledger-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, Stage-1 global review PR #1679):** enforce the Q-0219
   schema-growth guardrail mechanically in the new repo — every grammar field addition mints a
