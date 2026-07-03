@@ -384,6 +384,13 @@ Current broad captures:
   age/label/CI). A small stdlib classifier would bucket open PRs into *active in-flight* / *parked carve-out* /
   *genuinely stale*, so the reconciler only decides on the stale bucket — the one the routine warns is
   easiest to miss (#766 sat red 21h). Sibling of the band-status classifier (#1181) + trim actuator (#1206).
+- [`reconcile-headline-sector-currency-check-2026-07-03.md`](./reconcile-headline-sector-currency-check-2026-07-03.md) —
+  **captured by the band-#1680 reconciliation pass (2026-07-03):** the recon routine reliably updates its
+  home **S4** docs-sector file but can leave the band's *headline* sector (S1/S2/S3) stale — the file a
+  dispatcher actually reads for the hot lane. This pass found `current-state/S3-ai-memory.md` next-action
+  lagging the rebuild arc that dominated the band. A tiny advisory checker would infer the band's dominant
+  sector and warn if its `current-state/SN-*.md` doesn't mention a headline PR. Sibling of the open-PR
+  staleness classifier (same stdlib/advisory/disposable shape).
   Sector S3/S4. Disposable (Q-0105).
 - [`band-queue-hit-rate-metric-2026-06-22.md`](./band-queue-hit-rate-metric-2026-06-22.md) —
   **captured by the band-#1320 reconciliation pass (2026-06-22):** every pass plans a ~30-slice next band, and

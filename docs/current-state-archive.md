@@ -86,6 +86,25 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1573 · #1577 · #1582 (2026-06-30, bot-owner platform-admin override)** — full bot-config authority
+  in any guild for the bot owner (#1573), a completeness follow-on extending the override to view gates +
+  admin command decorators (#1577), and an ephemeral persistent-panel ownership **fail-close** fix (#1582).
+  Follows the Q-0211 `give`-collision prod hotfix from the prior band.
+- **#1565 · #1566 · #1568 · #1575 · #1588 (2026-06-29/30, S1 feature-completion certification deepening — Q-0209)** —
+  cert sync + S1-bot de-stale (#1565); cleanup **history content-type/age filters** + cert (#1566);
+  **counters completion** (presets + slash + channel-type/integration tests, #1568) and a per-guild
+  loop-backoff punch (#1575); and the **spam-duplicate window** promoted to a real per-guild setting
+  (cleanup cert punch #4, #1588). *(Sibling to the already-listed #1561 operator-command-gaps entry below.)*
+- **#1570 · #1571 · #1585 · #1579 · #1581 (2026-06-30, reaction-roles + fishing + welcome depth)** —
+  role-menu live **signup counts** (migration 103) on the reaction-roles overhaul (#1570/#1571); the
+  fishing **rod-recipe browser** (#1585); **welcome opt-in DM greeting on join** (completion punch #2,
+  #1579) + the age-gate/delete-after close-out (#1581).
+- **#1569 · #1574 · #1584 · #1586 (2026-06-30, workflow / orientation system)** — the AI answer-storage /
+  review-backlog loop + a `check_quality` **artifact-freshness guard** (#1569/#1574); a journal ruff-scope
+  rule (#1584); and the **orientation-cost-reduction plan** (CLAUDE.md + router conciseness, #1586).
+- **#1572 · #1578 (2026-06-30, BTD6)** — captured a prod **DDT-confabulation finding** into the regression
+  corpus from the review-log export (#1572); BTD6 **track lengths** (Red Bloon Seconds) + estimator
+  escape-margin (#1578).
 - **#1589 · #1590 (2026-06-30, owner-vision capture — fresh-rebuild + Fable 5)** — captured the maintainer's
   **fresh-rebuild vision** + verified Fable 5 research (#1589) with two maintainer fact-corrections folded
   in (#1590). **Idea-stage, not approved** — gated on Fable 5 (withdrawn since 2026-06-12) + the owner's

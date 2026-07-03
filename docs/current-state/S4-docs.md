@@ -9,6 +9,18 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-third Q-0107 reconciliation pass** (band-#1680, issue #1681 —
+  [pass record](../planning/reconciliation-pass-2026-07-03-band1680.md)): reconciled the ledger
+  (band #1651–#1680 — four grouped entries, headlined by the **S3 rebuild new-bot capability audit →
+  frozen BUILD-PLAN** #1662…#1668/#1674/#1677 (verdict **GO-with-amendments**, measured all-43 fit
+  **85.1%**) and the owner-live **Phase-A conventions freeze** #1679/#1680 — plus the 32nd-pass +
+  Q-0102 review/brainstorm routine sessions #1652/#1653/#1657/#1658/#1659/#1661/#1669/#1672/#1673 and
+  the per-merge dashboard refreshes #1656/#1660/#1670/#1671/#1675/#1676/#1678), trimmed Recently-shipped
+  to 20 (`trim_recently_shipped.py --apply`, moved 5 oldest bullets, floor recomputed), disposed 7 open
+  PRs (none a stale session PR: #1509 owner audit + six dependabot bumps), confirmed **ROUTINE_PAT set /
+  loop self-fires** (issue #1681 authored by `menno420`), carried the forward queue intact (still deep,
+  no THIN flag — the rebuild planning phase dominates), refreshed the dashboard export (Q-0167), reset
+  the marker #1650 → #1680.
 - **Thirty-second Q-0107 reconciliation pass** (band-#1650, issue #1651 —
   [pass record](../planning/reconciliation-pass-2026-07-02-band1650.md)): reconciled the ledger
   (band #1621–#1650 — six grouped entries, headlined by the **S3 fresh-rebuild arc** — the Fable 5
@@ -93,7 +105,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #1680** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1710** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).
