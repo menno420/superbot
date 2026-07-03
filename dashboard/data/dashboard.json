@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T05:41:20Z",
+    "generated_at": "2026-07-03T06:34:32Z",
     "build": {
-      "commit": "db571226",
-      "subject": "Merge pull request #1673 from menno420/claude/review-recent-session-qcyc44",
-      "committed_at": "2026-07-03T05:41:20Z"
+      "commit": "a3ddfb71",
+      "subject": "Merge pull request #1674 from menno420/claude/bot-capability-audit-capstone-scy0zx",
+      "committed_at": "2026-07-03T06:34:32Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 176,
+      "ideas": 177,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "rebuild-amendment-registry-2026-07-03.md",
+      "title": "Rebuild amendment registry — one minting authority for G-numbers (and R-/P-/refuted sets)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The capability audit's lanes each minted grammar-amendment IDs **locally**: Lane B assigned",
+      "subsystems": null
+    },
     {
       "file": "central-admin-and-logging-guilds-2026-07-02.md",
       "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
@@ -2841,6 +2849,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-03-capability-audit-capstone.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — New-bot capability-audit CAPSTONE (final review + unified build plan)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-02-workflow-consent-fleet-config.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Stop fleet sessions re-prompting for multi-agent-workflow consent",
@@ -3310,14 +3326,6 @@
       "title": "2026-06-30 — Fix: ephemeral persistent-panel ownership fail-close (\"can no longer be verified\")",
       "status": "complete",
       "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-diagnostics-pagination-metrics.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Diagnostics completion deepening (pagination + metrics reconcile)",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": true
     }
   ],
