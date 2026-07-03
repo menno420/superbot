@@ -387,6 +387,38 @@ the checker's standing output. It is advisory until it proves itself across a fe
 
 ---
 
+### 4.4 Rebuild doc-set consistency (what the Gate-0 session must also fix)
+
+A dedicated cross-check of the eight rebuild docs against each other and shipped source found
+**source fidelity excellent** (~25 load-bearing `file:line` citations in the design spec all
+verify exactly; parity numbers consistent across linchpin/parallel-plan/COVERAGE) — the problems
+are *freshness*, and they land squarely in the Gate-0 pass's lap:
+
+1. **[blocker-class] The design spec believes its amendment story is finished** ("six named
+   amendments — now folded in") and has zero pointer to this audit. Gate-0's first edit is the
+   spec header: link FINAL-REVIEW, state the G-9…G-24 + rider pass, and align §9.2's port order
+   with §2's L-layers (ticket/role/channel/image_moderation/proof_channel belong to the operator
+   spine, mining ports last).
+2. **Stale handoff §C**: it instructs a fresh session to *build* the golden harness that already
+   exists (`parity/`, #1639) with a mechanism the linchpin work disproved (dpytest). Rewrite §C
+   as "consume the shipped harness".
+3. **Phantom "handoff §F"** cited by three docs (the parallel plan twice + the start-here index)
+   — the handoff ends at §E; fix the pointers.
+4. **Strategy Phase-0 never stamped done** (the kit finalized in #1649; §3/§7 still present it
+   as open) and it points at a `rebuild-harvest/` directory that never existed in-tree.
+5. **Minor numeric drift** to reconcile in one sweep: command-surface denominators
+   (271 registered vs 406+73 walked — different bases, state which is canonical per consumer),
+   settings-key counts (~114 vs 120), kit test counts (399/407/422).
+
+Doc-set reviewer proposals adopted into this plan: a **golden-recapture protocol** for the six
+§6.3 bug fixes (each current-bot fix must re-capture its goldens or parity later "verifies" the
+bug); a **machine-readable gate-state ledger** (`rebuild-gates.yml`: design-approval · Gate-0 ·
+kit start-gate · linchpin commit-gate · telemetry capture · cutover — each with state +
+evidence link); the **canonical amendment registry** (see the session idea in this PR's session
+log — the B/C lanes independently minting colliding G-numbers is the proof it's needed); and a
+**named telemetry-capture session** with a paste-ready prompt + a trip-wire that it runs before
+the old bot is ever frozen.
+
 ## 5. Deliberate omissions & deferred known-options (labeled, with why)
 
 | Option | Status | Why |

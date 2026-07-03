@@ -1,6 +1,6 @@
 # FINAL REVIEW — the grammar go/no-go (capstone deliverable 1)
 
-> **Status:** `verdict` — the gate between planning/discovery and creating the new repo.
+> **Status:** `reference` — the capstone **verdict**: the gate between planning/discovery and creating the new repo.
 > **Prepared:** 2026-07-03 (Fable 5 capstone, PR #1674) per
 > [`../FINAL-REVIEW-HANDOFF.md`](../FINAL-REVIEW-HANDOFF.md).
 > **Inputs:** all seven merged lanes (A–G + F), the grammar spike

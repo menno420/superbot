@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-amendment-registry-2026-07-03.md`](./rebuild-amendment-registry-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, capability-audit capstone #1674):** one committed registry
+  file as the **sole minting authority** for rebuild grammar-amendment IDs (G-n families, R-n
+  riders, P-n provisional, the refuted set) — Lanes B/C/D independently minted colliding G-7…G-9
+  and the capstone reconciled the numbering by hand; the rebuild's namespace discipline applied
+  to its own meta-artifacts. The Gate-0 spec pass consumes it and stamps `in-spec`.
 - [`convergent-amendment-discovery-signal-2026-07-02.md`](./convergent-amendment-discovery-signal-2026-07-02.md) —
   **session idea (2026-07-02, Q-0089, Lane A capability-audit session):** when a multi-agent audit
   fans out N independent workers over disjoint scope, count and surface **independent
