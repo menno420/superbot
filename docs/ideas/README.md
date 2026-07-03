@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-navigation-completeness-check-2026-07-03.md`](./rebuild-navigation-completeness-check-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, hub/navigation PR #1684):** a CI golden that walks every
+  generated panel state and asserts Back+Home are present/working (the enforcement arm of the
+  Q-0231 navigation contract) + a preset-coverage assertion (every feature in ≥1 preset). Enforce,
+  don't exhort; routed to Gate-0 NavigationSpec.
 - [`rebuild-invocation-ladder-centralization-2026-07-03.md`](./rebuild-invocation-ladder-centralization-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, conventions-freeze PR #1680):** the invocation-stack
   centralization set C-1…C-7 (one command resolver, one draft pipeline with two producers, a

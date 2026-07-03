@@ -8339,3 +8339,69 @@ the owner wants zero prompts for a class the allowlist can't cover, that's the p
 
 **Homes:** `.claude/settings.json` (the four entries) · this Q (provenance) ·
 `.sessions/2026-07-03-permission-allowlist-and-endorse.md`.
+
+---
+
+### Q-0230 — DECIDED: one unified help hub; admin is a permission-gated node inside it (2026-07-03)
+
+> **Context.** Rebuild Phase-A hub-topology discussion (owner-live, PR #1684). Owner: *"everything
+> should function as one help panel, but admin should be locked unless you have the right
+> permissions, and admin should ideally be a button that opens a full admin help menu, which
+> should also directly open with a `!admin` command."* Broadly agreed with the five working
+> top-level buckets (Games/World · You · Community · Knowledge/AI · Admin), wants them refined.
+
+**Decision:** a **single unified help hub** (not two player/operator trees); **admin is a
+permission-gated node inside it** — a button locked unless the viewer has the authority (Q-0227
+label, **re-checked at click time**, not at open), opening a full admin menu, also directly
+openable via `!admin`. Top-level bucket set is a working spine; exact buckets + per-subsystem
+placement are Stage-2 work.
+
+**Homes:** `docs/planning/rebuild-hub-navigation-presets-2026-07-03.md` §1; Gate-0 PanelSpec/hub.
+
+---
+
+### Q-0231 — DECIDED: the navigation contract — Back+Home everywhere, persistent restart-safe panels, every node directly openable (2026-07-03)
+
+> **Context.** Same session. Owner: *"every panel everywhere should have a back to help and back
+> to parent hub available during all their stages, no matter how many times the panel got updated,
+> and we should try to make the panels resistant against timing out too soon."*
+
+**Decision (framework-guaranteed, injected into every rendered state — never per-panel
+discipline):** **(1)** two distinct controls on every state at every depth across unlimited
+re-renders — **Back** (pop the real navigation stack, contextual) and **Home** (jump to help root,
+absolute); **(2)** every hub/sub-hub **directly openable by its own command** (generalizes
+`!admin` to all nodes, S-1); **(3)** each panel **declares its semantic parent** so Back has a
+target on direct entry; **(4)** panels are **persistent + restart-safe** (no per-instance timeout,
+versioned custom_id, generated-from-state) — which *also* solves surviving the merge=deploy
+redeploys (Q-0193): "don't time out too soon" and "survive constant redeploys" are the same fix,
+free from the generated model.
+
+**Homes:** hub-navigation log §2; Gate-0 NavigationSpec + persistent-view/versioned-custom_id
+(design-spec decision 6).
+
+---
+
+### Q-0232 — DECIDED: per-guild interface presets with live preview; the existing (fragmented) surface is improved + centralized (2026-07-03)
+
+> **Context.** Same session. Owner: the interface should be *"very easily customizable… include a
+> couple of presets to fit any server"* (e.g. a game server needing btd6 info + moderation + server
+> functions + message levels + light games), *"easily adjusted during the setup steps, with clear
+> previews and logical presets… either go with a safe default"* — and *"this function already
+> exists and works, but it should be improved and centralized."* Verified in source: setup
+> `preset_select` (+ `preview_preset`) and the help overlay editor/projection exist and work;
+> presets are reimplemented ≥7 times across services/views.
+
+**Decision:** the hub is **customizable per guild**; **presets** (named bundles of per-guild
+visibility config) reshape it, chosen at setup with a **live preview** (the preview *is* the
+generated hub — no mockup), following the Q-0215/Q-0070 pick→edit→manual pattern with a
+safe-default preset. **This is the preset primitive (Q-0215) + template primitive (C-3, Q-0228)
+pointed at the hub — improve + centralize the existing working-but-fragmented surface** (setup
+preset_select + help editor + ~7 domain preset impls → one primitive, one generated hub; the
+existing code is the prior art to port). **Features declare their own preset membership**
+(anti-drift). Presets ≠ triage (visibility per guild vs existence in the bot).
+
+**⚠ Open sub-decision (owner):** preset exclusion = **hidden-but-runnable** vs **disabled
+entirely**? Agent leaning: hidden = off by default, with a hide-without-disable toggle. Resolve
+before §3 freezes.
+
+**Homes:** hub-navigation log §3–4; Gate-0 preset primitive unification + setup wizard.
