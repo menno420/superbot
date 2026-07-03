@@ -53,6 +53,17 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag".)*
+- `[owner]` **▶ THE REBUILD REVIEW-THEN-PLAN PHASE IS LIVE** (owner-directed 2026-07-03): the pre-build
+  **new-bot capability audit** is complete (#1662…#1668/#1674, verdict **GO-with-amendments**, measured
+  all-43 fit **85.1%**) and
+  [`NEW-BOT-BUILD-PLAN.md`](../analysis/rebuild-discovery/new-bot-capability-audit/findings/NEW-BOT-BUILD-PLAN.md)
+  is the **frozen reference**; the owner-live **Phase-A** then began — a **Stage-1 global review**
+  ([decisions log](../planning/rebuild-stage1-global-review-2026-07-03.md), #1679, Q-0219…Q-0223) and a
+  **conventions freeze** (naming · four-rung invocation ladder · mod-actions-as-data · authority +
+  bot-owner override; [decisions log](../planning/rebuild-conventions-invocation-authority-2026-07-03.md),
+  #1680, Q-0224…Q-0228). **▶ next: Stage 2 — the per-subsystem walk** (process:
+  [`planning/rebuild-planning-phase-2026-07-03.md`](../planning/rebuild-planning-phase-2026-07-03.md)).
+  Still behind the Phase-3 owner gate below (no new-repo code until design-spec ratification).
 - `[owner]` **🔒 THE REBUILD OWNER GATE — the Phase-2 design spec is DONE and the evidence package
   is IN** (2026-07-02): [`rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
   (Fable-5 judge panel + Opus/GPT adversarial review), now backed by

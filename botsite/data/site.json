@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-02T18:22:03Z",
+    "generated_at": "2026-07-03T14:08:10Z",
     "build": {
-      "commit": "8fa70dbf",
-      "subject": "Merge pull request #1650 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-02T18:22:03Z"
+      "commit": "ad476ea2",
+      "subject": "Merge pull request #1680 from menno420/claude/bot-plan-review-stage-1-4o9c6w",
+      "committed_at": "2026-07-03T14:08:10Z"
     }
   },
   "counts": {

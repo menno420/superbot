@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T11:50:49Z",
+    "generated_at": "2026-07-03T14:08:10Z",
     "build": {
-      "commit": "ac1667b5",
-      "subject": "Merge pull request #1677 from menno420/claude/bot-capability-audit-capstone-scy0zx",
-      "committed_at": "2026-07-03T11:50:49Z"
+      "commit": "ad476ea2",
+      "subject": "Merge pull request #1680 from menno420/claude/bot-plan-review-stage-1-4o9c6w",
+      "committed_at": "2026-07-03T14:08:10Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 178,
+      "ideas": 180,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1178,6 +1178,22 @@
       "status": "ideas",
       "date": "2026-07-03",
       "summary": "The capability audit's lanes each minted grammar-amendment IDs **locally**: Lane B assigned",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-invocation-ladder-centralization-2026-07-03.md",
+      "title": "Idea — the invocation-stack centralization set (C-1…C-7)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Applying the second-consumer rule (Q-0219) to the command/invocation area surfaces seven things",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-schema-growth-ledger-2026-07-03.md",
+      "title": "Idea — rebuild schema-growth ledger (enforce the second-consumer rule mechanically)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The Q-0219 guardrail says the manifest grammar's declaration schema may grow a field **only when",
       "subsystems": null
     },
     {
@@ -2857,9 +2873,25 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-03-rebuild-stage1-global-review.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · Stage 1: the global plan review (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-rebuild-planning-phase-doc.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Document the rebuild review-then-plan phase (process + next-session goal)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-conventions-freeze.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · conventions freeze (owner-live, continued)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3316,22 +3348,6 @@
       "file": "2026-06-30-reaction-roles-signup-counter.md",
       "date": "2026-06-30",
       "title": "2026-06-30 — Reaction-roles live sign-up counter (S1 deepening)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-reaction-roles-rsvp-roster.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Reaction-roles RSVP roster (\"Who's in?\")",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-30-fishing-rod-recipe-browser.md",
-      "date": "2026-06-30",
-      "title": "2026-06-30 — Fishing rod-recipe browser (live progress toward each tier)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
