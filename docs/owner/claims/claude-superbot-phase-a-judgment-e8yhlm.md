@@ -1,0 +1,1 @@
+- `claude/superbot-phase-a-judgment-e8yhlm` · record the 7 Tier-1 owner decisions from the Fable-5 judgment sitting (router Q-0237 + amendment pointers in the 3 decision docs + final-judgment §6) · docs-only · 2026-07-03

@@ -301,6 +301,14 @@ question n · C4 = Codex 4 §2.3 · FJ = this judgment.
 
 ### Tier 1 — answer BEFORE / AT Stage-2 start (each blocks a Stage-2 column or a spec freeze)
 
+> **✅ ALL 7 RESOLVED — owner sitting 2026-07-03, recorded as Q-0237(a–g).** Outcomes: **T1-1** →
+> visibility-only (a); **T1-2** → in-session real stack + semantic-parent fallback after restart;
+> **T1-3** → admin is a **hidden** node **inside** the unified hub (amends Q-0230's "gated visible
+> node"); **T1-4** → one `authority_ref`; **T1-5** → slash-common + prefix long-tail; **T1-6** →
+> decided `!admin`/`!games` canonical, shipped `-menu` names become hidden aliases; **T1-7** → adopt
+> Codex-4's Stage-2 kit as-is. Six matched the recommendation; T1-3 deviated (owner kept
+> hidden-not-locked). **Stage-2 is unblocked** (with V-1 RPS fix + V-3 findings-closure).
+
 | # | Decision | Options | Recommendation | Sources |
 |---|---|---|---|---|
 | T1-1 | **Hide-vs-disable / preset-exclusion semantics** — does display-hide EVER mean execution-off? | (a) hidden = visibility-only (shipped HLP-4 invariant) · (b) hidden = off · (c) per-feature choice | **(a)** as default + explicit per-preset "also disable" opt-in; adopt Codex 2's visibility/activation vocabulary split. Reverses the hub-doc's in-line agent recommendation — see §7 X-2 | B#1 · A#27 · C2-Q1 · C4 |
