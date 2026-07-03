@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-layout-success-simulator-2026-07-03.md`](./rebuild-layout-success-simulator-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089/Q-0235, PR #1687):** one instruction-driven layout-success
+  simulator (deterministic + AI user models) that scores any generated hub/menu by task success
+  rate ("create roles" → does the user reach the node?), unifying the 5 bespoke UX-layout sims.
+  Quantifies the "self-explanatory" half of the Q-0234 oracle; sim defines settings, live co-test
+  is the final review.
 - [`rebuild-critical-review-checkers-2026-07-03.md`](./rebuild-critical-review-checkers-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, critical-review-rubric PR #1685):** mechanize the rubric's
   finding-classes into checkers — extend `check_plan_staleness.py` for un-anchored `NN%` claims now

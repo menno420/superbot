@@ -8465,3 +8465,31 @@ classes stay human probes with the rubric as their guard.
 
 **Homes:** rubric §class-8 (resolved) · `rebuild-planning-phase-2026-07-03.md` (Gate V + Migration
 in the phase sequence) · `.sessions/2026-07-03-oracle-and-verification-strategy.md`.
+
+---
+
+### Q-0235 — DIRECTED: unify the UX-layout sims into one instruction-driven layout-success simulator; it defines settings, live co-test is the final review (2026-07-03)
+
+> **Context.** Extending the hub/arrangement discussion, the owner: *"this is exactly a step where
+> the simulations come into play, we could create deterministic or AI driven mockup menus to test
+> and see which of the layouts have the biggest success rate when given a simple instruction like
+> 'create roles' or 'play the mining game'"* — then, on the fragmentation: *"I even believe this
+> exists in multiple places… that's one of the reasons this should become centralized quickly, so
+> it can properly define the proper settings for everything, with a final review in the live bot
+> testing."* Verified: five bespoke UX-layout sims exist (`claim_layout_sim`,
+> `help_menu_grouping_sim`, `role_menu_layout_sim`, `settings_order_sim`, `setup_wizard_sim`).
+
+**Decision:** build **one** layout-success simulator over the manifest that scores any generated
+layout by **instruction-driven task success rate** (given only "create roles", does a user model
+reach the right node?), with **deterministic** (CI/regression) *and* **AI-driven** (naive-user,
+catches label ambiguity) user models — unifying the five existing sims. It **quantifies the
+"self-explanatory" half of the Q-0234 oracle** and is the mechanism behind "the sim optimizes
+arrangement" (Q-0230). **Pipeline:** the centralized sim **defines the proper settings/layout for
+everything** (arrangement, grouping, defaults, order) → the **live bot co-test is the final
+review** (the human signs off works·logical·self-explanatory on the sim's winner). The instruction
+corpus is reused to test the NL router (invocation rung 3). Extends the simulation-driven-design
+standing rule; ties fragmentation-cleanup urgency to the sim being able to tune bot-wide.
+
+**Homes:** `docs/ideas/rebuild-layout-success-simulator-2026-07-03.md` ·
+`docs/planning/simulation-driven-design-2026-07-02.md` (the standing rule) ·
+`.sessions/2026-07-03-layout-success-simulator.md`.

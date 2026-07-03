@@ -246,6 +246,12 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1687 (2026-07-03, S3 rebuild — unified layout-success simulator idea, Q-0235)** —
+  captured the idea to unify the 5 bespoke UX-layout sims into one **instruction-driven
+  layout-success simulator** (deterministic + AI user models; "create roles" → does a user model
+  reach the right node?) that quantifies the "self-explanatory" half of the Q-0234 oracle and is
+  the mechanism behind "sim optimizes arrangement" (Q-0230); sim defines settings bot-wide, live
+  co-test is the final review.
 - **#1686 (2026-07-03, S3 rebuild — new-feature oracle + verification-fleet gate + repo-as-artifact strategy, Q-0234)** —
   resolved the rubric's class-8 verification hole: the correctness oracle = parity goldens (ported) +
   **competitor-benchmark & live co-test** ("works · logical · self-explanatory", reusing the Q-0222
