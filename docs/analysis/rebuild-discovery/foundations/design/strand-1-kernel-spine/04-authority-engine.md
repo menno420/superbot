@@ -1,6 +1,6 @@
 # Strand 1 · Kernel Spine — ⑨ The Authority Engine (`authority_ref` + owner override)
 
-> **Status:** `design` — Phase-B foundational design, buildable depth. DOCS-ONLY (changes no
+> **Status:** `reference` — Phase-B foundational design, buildable depth. DOCS-ONLY (changes no
 > `disbot/` code; old repo stays frozen). This is **K6** in the design-spec §9.1 kernel order —
 > `authority` (`actor_holds_capability` + `CapabilityDecision` ported field-for-field; capability
 > strings namespace-validated). It designs the ONE thing the frozen upstream leaves open: the

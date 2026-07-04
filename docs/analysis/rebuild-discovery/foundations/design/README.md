@@ -1,6 +1,6 @@
 # SuperBot rebuild — foundational design (Phase-B) · the owner's entry point
 
-> **Status:** `synthesis` — **complete** (2026-07-04). **NOT SOURCE OF TRUTH for runtime.** This is
+> **Status:** `reference` — **complete** (2026-07-04). **NOT SOURCE OF TRUTH for runtime.** This is
 > the front-matter for the foundational-design deliverable: a scannable map over the 14 buildable
 > specs + the four synthesis artifacts that bind them. Source & merged PRs win (Q-0120); each owning
 > spec wins for a shape it owns; the frozen [`shared-vocabulary.md`](shared-vocabulary.md) wins where

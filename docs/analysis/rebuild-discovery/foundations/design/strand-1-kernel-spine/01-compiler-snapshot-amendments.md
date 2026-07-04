@@ -1,5 +1,7 @@
 # Strand 1 · Kernel spine · ① Manifest compiler + committed snapshot + amendment registry
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **Phase-B foundational design.** Docs-only. Designs the linchpin kernel function to buildable
 > depth against the frozen upstream contracts (design-spec §2.0/§2.1/§2.7/§2.10/§3.2/§9.1;
 > router Q-0219…Q-0237; FJ Fable-5) **and the reconciled cross-spec seams frozen in

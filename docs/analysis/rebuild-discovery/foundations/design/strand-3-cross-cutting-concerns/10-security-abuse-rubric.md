@@ -1,5 +1,7 @@
 # Strand 3 · Cross-cutting concern ⑩ — Security / abuse posture + rubric classes 11 / 12 / 13
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **NOT SOURCE OF TRUTH for runtime.** A Phase-B **design contract** for one never-surfaced
 > foundational concern: the rebuild has **no security/abuse review lens anywhere**, and the frozen
 > 10-class review rubric (`docs/planning/rebuild-critical-review-rubric-2026-07-03.md`) has **no

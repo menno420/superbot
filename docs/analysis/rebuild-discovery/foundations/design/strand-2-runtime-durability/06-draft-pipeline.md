@@ -1,5 +1,7 @@
 # Strand 2 · Runtime durability · ④ The C-2 draft / preview / confirm / apply pipeline (producer-agnostic)
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **Phase-B design spec. Buildable-depth. DOCS-ONLY — authors no `disbot/` and no `sb/` code.**
 > Design INTO the frozen design-spec (`docs/planning/rebuild-design-spec-2026-07-02.md`) §2.6
 > (PanelActionSpec), §2.7 (WorkflowResult / MutationPreview / ConfirmationSpec), §4.5 (legacy-KV

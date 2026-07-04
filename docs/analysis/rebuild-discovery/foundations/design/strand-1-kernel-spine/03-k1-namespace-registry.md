@@ -1,5 +1,7 @@
 # Strand 1 · Kernel spine · ⑧ The K1 namespace registry
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **Phase-B foundational design.** Docs-only. Designs the K1 registry's genuinely-undesigned gap to
 > buildable depth against the frozen upstream contracts (design-spec §1.1/§2.2/§3.1–§3.5/§9.1; router
 > Q-0219…Q-0237, esp. Q-0224 + Q-0237(e/f); FJ Fable-5 L-14/T1-5/T1-6). A fresh agent builds this

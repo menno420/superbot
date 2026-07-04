@@ -71,6 +71,13 @@ Current broad captures:
   (the class that misled twice on the substrate kit), and build dep-order / thin-step /
   fragmentation / verification-hole / nav-contract checkers against the rebuild's declared
   manifests. The enforce-don't-exhort arm of Q-0233.
+- [`rebuild-design-cite-checker-2026-07-04.md`](./rebuild-design-cite-checker-2026-07-04.md) —
+  **session idea (2026-07-04, Q-0089, foundational-design PR #1708):** a `check_doc_cites.py` that
+  validates every `path.py:NNN` source citation in an analysis/design doc resolves to a real file
+  (+ line-in-bounds). Kills the fabricated-cite class at authoring time — the exact
+  `core/contracts.py:48-52` bug (FJ L-25) that threaded a correction through ~11 design specs this
+  session. Stdlib, disposable (Q-0105), sibling of `check_docs`; missing-file → strict, line-bounds →
+  advisory.
 - [`rebuild-navigation-completeness-check-2026-07-03.md`](./rebuild-navigation-completeness-check-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, hub/navigation PR #1684):** a CI golden that walks every
   generated panel state and asserts Back+Home are present/working (the enforcement arm of the

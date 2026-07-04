@@ -1,5 +1,7 @@
 # Seam-Consistency Matrix — the 14 design specs against the 7 shared-vocabulary contracts
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **NOT SOURCE OF TRUTH for runtime — a design contract (Phase-B synthesis, method step 5:
 > "decide the recurring method once — prove the ten+ specs agree").** Precedence: shipped source &
 > merged PRs win (Q-0120); the owning spec wins for a shape it owns; the frozen

@@ -1,1 +1,0 @@
-- `claude/foundational-design-rebuild-i20jel` · **S3 rebuild — foundational KERNEL DESIGN bridge (AUDITED→Gate-0/L0-plannable)** — design the ~10 kernel functions to buildable depth + close the 5 never-surfaced concerns + one consolidated question register · `docs/analysis/rebuild-discovery/foundations/design/` · 2026-07-04 · PR pending (born-red)

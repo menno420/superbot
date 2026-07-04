@@ -1,6 +1,6 @@
 # Consolidated question register — SuperBot rebuild foundational design (method step 7)
 
-> **Status:** `harvest` — **complete** (2026-07-04). **NOT SOURCE OF TRUTH.** This is an
+> **Status:** `reference` — **complete** (2026-07-04). **NOT SOURCE OF TRUTH.** This is an
 > **owner-consumable** roll-up of every open decision the 14 foundational-design specs + the
 > seam-consistency matrix + the adversarial sweep surfaced. Source specs win over this table
 > (Q-0120); where a cell and a spec disagree, the spec is right. Durable owner answers route to

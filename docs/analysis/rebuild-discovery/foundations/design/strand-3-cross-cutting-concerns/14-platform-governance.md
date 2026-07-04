@@ -1,5 +1,7 @@
 # Strand 3 · Cross-cutting concern ⑭ — Discord platform-governance (verification cap · intent approval · per-guild permission overrides)
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **NOT SOURCE OF TRUTH for runtime.** A Phase-B **design contract** for one never-surfaced
 > foundational concern: the rebuild treats Discord's **externally-owned** governance gates as if they
 > did not exist. Three gates bite: (1) an **unverified bot hard-caps at ~100 guilds** and the growth

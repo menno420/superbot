@@ -1,5 +1,7 @@
 # Strand-3 · Cross-Cutting Concern (b) — Production-Data Integrity / Repair — Buildable Design Spec
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **NOT SOURCE OF TRUTH for runtime.** A Phase-B design contract. Precedence: shipped source &
 > merged PRs > the five strand-1 specs (for shapes they own) > the frozen `shared-vocabulary.md` >
 > the two written strand-2 siblings (`07`, `09`) > this doc. This dossier **closes one

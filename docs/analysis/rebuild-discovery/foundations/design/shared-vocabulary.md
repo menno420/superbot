@@ -1,5 +1,7 @@
 # Shared Vocabulary — Strand-1 Kernel Spine → Strand-2 & Cross-Cutting (FROZEN CONTRACT)
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **NOT SOURCE OF TRUTH for runtime.** This is a **design contract** — a Phase-B synthesis
 > that freezes the exact shape of every recurring seam the strand-1 kernel-spine specs
 > (`strand-1-kernel-spine/01…05`, **all five now hardened**) hand to **strand 2** (draft · workflow ·

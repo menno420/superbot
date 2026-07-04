@@ -1,6 +1,6 @@
 # Strand 1 · Kernel Spine — ② The C-1 Resolver + ③ The Dispatch Error/Failure Envelope
 
-> **Status:** `design` — Phase-B foundational design, buildable depth. DOCS-ONLY (changes no
+> **Status:** `reference` — Phase-B foundational design, buildable depth. DOCS-ONLY (changes no
 > `disbot/` code). One combined seam: the single `resolve(ResolveRequest) -> Result` chokepoint
 > **and** the `from_exception` error envelope that lives inside it. Design INTO the frozen design
 > spec §2.2 / §2.4 / §2.6 / §2.7 / §2.8 / §2.9 / §9.1

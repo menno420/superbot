@@ -1,5 +1,7 @@
 # Strand 3 · Cross-cutting concern ⑫ — Credential lifecycle + dependency supply-chain posture
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **NOT SOURCE OF TRUTH for runtime.** A Phase-B **design contract** for one never-surfaced
 > foundational concern: Q-0213 deliberately **concentrated** the full-access Railway account token,
 > the prod DSN, the Discord + provider tokens, and the GitHub repo-write token in agent containers so

@@ -1,5 +1,7 @@
 # Strand 1 · Kernel spine · ⑩ The ops kernel — config · DB seam · migrations · metrics · readiness · the data-plane rail
 
+> **Status:** `reference` — foundational design artifact (2026-07-04). **NOT SOURCE OF TRUTH** — a design contract; shipped source + the frozen upstream contracts win (Q-0120).
+
 > **Phase-B design spec.** Buildable-depth. Design INTO the frozen design-spec
 > (`docs/planning/rebuild-design-spec-2026-07-02.md`) §§4.4, 5.1, 5.2, 6, 10.2, 10.3 and the frozen
 > router answers Q-0219…Q-0237. It owns the operational-substrate contracts every other kernel spec
