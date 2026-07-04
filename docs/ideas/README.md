@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`dependabot-automerge-enabler-2026-07-04.md`](./dependabot-automerge-enabler-2026-07-04.md) —
+  **session idea (2026-07-04, Q-0089, open-PR sweep PR #1719):** extend the `auto-merge-enabler`
+  workflow to `dependabot/**` PRs — CI (full suite on the bumped deps) is the gate and the
+  `tool-pins` guard already holds the dangerous requirements-dev drift class red, so green
+  dependency PRs stop piling up for days (#1555–#1560 sat 5 days; staleness bred a conflict and
+  a closed-and-recreated group PR). Workflow edit ⇒ owner-gated (Q-0194 split).
 - [`rebuild-release-testing-loop-2026-07-03.md`](./rebuild-release-testing-loop-2026-07-03.md) —
   **owner idea (2026-07-03):** the in-server **release → test → verify loop** — a boot/release
   announcer of what changed (so members know what to test), per-command "tested-since-its-change"
