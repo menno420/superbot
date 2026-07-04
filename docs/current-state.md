@@ -256,6 +256,31 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1695 · #1696 · #1697 · #1698 · #1699 (2026-07-03/04, S3 rebuild — five Codex rebuild-planning reviews, merged via the open-PR sweep #1719)** —
+  the owner-launched Codex review fan-out over the 2026-07-03 Phase-A corpus, merged after
+  verification + fixes (badge `review`→`audit`, reachability links, and a **post-review status note**
+  on each — all five were written *before* the design bridge #1708 and the Gate-0 freeze #1716, so
+  their still-open items must be reconciled against the Gate-0 packet before acting): the
+  **planning sanity review** (#1695 — gate/phase map verified, no blocking inconsistency, stale-claim
+  table); the **decision-log consistency review** (#1696 — conflict table incl. authority-vocabulary /
+  C-1-status / preset-semantics rows, missing-durable-home + vocabulary-normalization tables, 10 owner
+  questions); the **foundational-mechanics ultracode review** (#1697 — Prompt A trust **high**, 10
+  source-verified samples); the **Stage-2 readiness review** (#1698 — subsystem-walk contract +
+  template, normalized verdict vocabulary, lane split); and the **verification review** (#1699 —
+  10 missing oracle/checker classes, 6 acceptance-criteria rewrites, block-Phase-B checker-spec list).
+  The stale June **unfinished-work audit #1509** (already harvested by #1510; its top finding since
+  resolved) was **closed with reason**, per the band-#1530 pass disposition.
+- **#1555 · #1556 · #1557 · #1558 · #1559 · #1560 · #1720 (2026-07-04, deps — dependabot batch, merged via the open-PR sweep #1719)** —
+  the six stale (5-day-old) dependabot PRs dispositioned: fastapi 0.138.2 → **0.139.0** + uvicorn
+  **0.50** (dashboard + botsite), openai ≥2.44, **Pillow 11 → 12** (major; CI-proven on the bumped
+  install + render tests re-verified locally on 12.3 against today's main), asyncpg ≥0.31,
+  prometheus-client ≥0.25, grimp 3.15. #1556 was fixed rather than rubber-stamped: dependabot had
+  bumped `requirements-dev.txt`'s tool pins alone (the #1074/#1315 drift class the `tool-pins` check
+  caught), so the sweep did the deliberate **three-place toolchain bump** — **ruff 0.15.20 · pytest
+  9.1.1 · pytest-xdist 3.8.0** aligned across `code-quality.yml` / `requirements-dev.txt` /
+  `.pre-commit-config.yaml` — verified by the full local CI mirror (14 059 passed) + one ERA001
+  prose-comment fix in `botsite/app.py`. Conflict-rotted #1560 and the recreated group PR #1720
+  were conflict-resolved on-branch and merged on green.
 - **#1689 · #1690 · #1691 · #1693 · #1700 · #1701 · #1703 · #1704 · #1705 (2026-07-03, S3 rebuild — foundations audit → Fable-5 judgment → design-prep, Q-0236/Q-0237)** —
   the pre-Phase-B foundations arc that dominated the band: the **engine-room audit** (PROMPT A,
   #1690 — a 75-agent ultracode discovery+audit of the runtime/logic foundation, 18 → 35 mechanics,
