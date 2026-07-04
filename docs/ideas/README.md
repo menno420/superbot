@@ -31,6 +31,26 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-release-testing-loop-2026-07-03.md`](./rebuild-release-testing-loop-2026-07-03.md) —
+  **owner idea (2026-07-03):** the in-server **release → test → verify loop** — a boot/release
+  announcer of what changed (so members know what to test), per-command "tested-since-its-change"
+  coverage from real usage, a dedicated **test/debug mode** (full traces to a channel, actions
+  self-explain), and an **explain-then-approve button** that doubles as the `verified_live`
+  sign-off. Closes judgment gaps #5/#7/#8 and is the missing *mechanism* for the decided Q-0234
+  oracle + Q-0222 CUT-1 live co-test. Routes as new Stage-2 capabilities; A/C could ship in the
+  current bot now.
+- [`rebuild-websites-cutover-role-2026-07-03.md`](./rebuild-websites-cutover-role-2026-07-03.md) —
+  **owner idea (2026-07-03):** give the off-Discord **botsite + dev dashboard** a rebuild
+  disposition (they die at cutover today — judgment #4), repoint their producer at the new repo's
+  manifest, and use them **during the switch** as the public changelog/cutover-comms surface and a
+  **rebuild-progress + verified_live dashboard** (the owner-consumable visual artifact judgment #16
+  flagged missing). Pairs with the release-loop idea.
+- [`fleet-structured-output-placeholder-guard-2026-07-03.md`](./fleet-structured-output-placeholder-guard-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, final-judgment PR #1701):** reject placeholder values
+  (`test`, `t/e/f`, `TODO`) in required evidence/reasoning fields of fleet structured outputs, with
+  one retry — schema validation passed twice on the same day while shipping degenerate content
+  (audit A row 221's `"test"` verdict; audit B's three `t/e/f` ledger rows, one HIGH). Few lines at
+  one seam; protects the whole Gate-V/audit-fleet trust chain.
 - [`ultracode-audit-consolidation-stage-2026-07-03.md`](./ultracode-audit-consolidation-stage-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, surface+proving audit PR #1691):** add a semantic
   **consolidation/dedup stage** between the completeness loop and synthesis in the reusable
@@ -51,6 +71,19 @@ Current broad captures:
   (the class that misled twice on the substrate kit), and build dep-order / thin-step /
   fragmentation / verification-hole / nav-contract checkers against the rebuild's declared
   manifests. The enforce-don't-exhort arm of Q-0233.
+- [`owner-decision-packet-renderer-2026-07-04.md`](./owner-decision-packet-renderer-2026-07-04.md) —
+  **session idea (2026-07-04, Q-0089, Gate-0 brief-prep PR #1713):** a reusable renderer/skill
+  (`/decision-packet`) that turns a question-register (options+recommendation rows) into an
+  owner-consumable **visual decision packet** — markdown v1 now, an Artifact-HTML v2 later. Closes FJ
+  gap #13 ("nothing renders decisions visually for a non-coding owner"); first consumer is the Gate-0
+  session's 12 owner-only rows.
+- [`rebuild-design-cite-checker-2026-07-04.md`](./rebuild-design-cite-checker-2026-07-04.md) —
+  **session idea (2026-07-04, Q-0089, foundational-design PR #1708):** a `check_doc_cites.py` that
+  validates every `path.py:NNN` source citation in an analysis/design doc resolves to a real file
+  (+ line-in-bounds). Kills the fabricated-cite class at authoring time — the exact
+  `core/contracts.py:48-52` bug (FJ L-25) that threaded a correction through ~11 design specs this
+  session. Stdlib, disposable (Q-0105), sibling of `check_docs`; missing-file → strict, line-bounds →
+  advisory.
 - [`rebuild-navigation-completeness-check-2026-07-03.md`](./rebuild-navigation-completeness-check-2026-07-03.md) —
   **session idea (2026-07-03, Q-0089, hub/navigation PR #1684):** a CI golden that walks every
   generated panel state and asserts Back+Home are present/working (the enforcement arm of the
@@ -417,6 +450,13 @@ Current broad captures:
   sector and warn if its `current-state/SN-*.md` doesn't mention a headline PR. Sibling of the open-PR
   staleness classifier (same stdlib/advisory/disposable shape).
   Sector S3/S4. Disposable (Q-0105).
+- [`ledger-fragmentation-linter-2026-07-04.md`](./ledger-fragmentation-linter-2026-07-04.md) —
+  **captured by the band-#1710 reconciliation pass (2026-07-04):** a warn-only linter (in `check_docs`
+  or a small disposable) that flags a run of N ≥ 3 consecutive Recently-shipped bullets sharing a
+  session-branch/date + theme-prefix/Q-arc signal, so a reconciler consolidates them into one grouped
+  entry instead of the fragmentation surviving every pass (this band's #1683–#1688 were six bullets for
+  one Phase-A arc). Mechanizes the grouped-entry convention the ledger depends on (Q-0194 friction →
+  guard). Sector S4. Disposable (Q-0105).
 - [`band-queue-hit-rate-metric-2026-06-22.md`](./band-queue-hit-rate-metric-2026-06-22.md) —
   **captured by the band-#1320 reconciliation pass (2026-06-22):** every pass plans a ~30-slice next band, and
   almost every subsequent pass records "the buffer became the band" in prose only — no number. Extend

@@ -48,3 +48,15 @@ hub arrangement, and at Gate V as part of the verification fleet). Detail on how
 (arrangement) · [`../planning/rebuild-critical-review-rubric-2026-07-03.md`](../planning/rebuild-critical-review-rubric-2026-07-03.md)
 (class 8 oracle) · `simulation-driven-design-2026-07-02.md` (the standing rule). Not current-repo
 work, though the 5 existing sims are the prior art to fold in.
+
+## Prior-art correction (2026-07-03 final-judgment session, PR #1701)
+
+The Q-0235 "five bespoke UX-layout sims" inventory over-counts: **`tools/sim/claim_layout_sim.py`
+is a git-merge-conflict simulation of the agent claims ledger, not a UX-layout sim** — the
+unification target is the other four (`help_menu_grouping_sim`, `role_menu_layout_sim`,
+`settings_order_sim`, `setup_wizard_sim`). The judgment's stress pass also flagged that several of
+those optimize objectives plain task-success-rate cannot express, and that reusing one
+agent-authored instruction corpus to both tune layouts *and* validate the NL router is a Goodhart
+loop (labels converge on corpus phrasing, then the router scores high on the same corpus). Scope
+the unified sim accordingly: four sims in, distinct objective support, and a router eval corpus
+with independent provenance. Source: `final-judgment-fable5-2026-07-03.md` §8 (Q-0235 amendment).
