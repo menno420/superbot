@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-04T23:08:50Z",
+    "generated_at": "2026-07-04T23:32:38Z",
     "build": {
-      "commit": "ab3c44bd",
-      "subject": "Merge pull request #1556 from menno420/dependabot/pip/python-minor-patch-cddc5e1523",
-      "committed_at": "2026-07-04T23:08:50Z"
+      "commit": "6bb30fdd",
+      "subject": "Merge pull request #1719 from menno420/claude/review-open-prs-1k48kg",
+      "committed_at": "2026-07-04T23:32:38Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 191,
+      "ideas": 192,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "dependabot-automerge-enabler-2026-07-04.md",
+      "title": "Extend the auto-merge enabler to dependabot PRs",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "Six dependabot PRs (#1555–#1560) sat open for **five days** — all but one had green CI the whole",
+      "subsystems": []
+    },
     {
       "file": "ledger-fragmentation-linter-2026-07-04.md",
       "title": "Idea — ledger-fragmentation linter (consolidate same-arc Recently-shipped bullets)",
@@ -2961,6 +2969,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-04-review-open-prs.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Open-PR review + merge sweep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-04-reconcile.md",
       "date": "2026-07-04",
       "title": "2026-07-04 — Thirty-fourth Q-0107 reconciliation pass (band-#1710)",
@@ -3428,14 +3444,6 @@
       "file": "2026-07-01-role-menu-layout-sim-pin-style.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Layout sim: pin Style first-screen (owner correction)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-role-menu-builder-lean-layout.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Role-menu builder \"slim\" lean layout",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
