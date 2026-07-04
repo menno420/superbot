@@ -1,6 +1,6 @@
 # Foundational-mechanics ultracode outputs — adversarial review (2026-07-03)
 
-> **Status:** `review` — read-through review of the two foundational-mechanics ultracode lanes.
+> **Status:** `audit` — read-through review of the two foundational-mechanics ultracode lanes.
 > Reviewed Prompt A's merged runtime/logic report, the required planning docs, and the current source
 > behind a sample of high-impact claims. Prompt B's expected final report was not present locally at
 > review time, and PR #1691 appeared to still be an in-progress session-card PR rather than a landed
@@ -9,6 +9,14 @@
 > **Read-only review note:** this document records review findings only. It does not approve an
 > implementation, does not add new rebuild requirements by itself, and does not supersede source or
 > owner rulings. Source wins over this document under Q-0120.
+
+> **Post-review status (2026-07-04, open-PR merge sweep):** written 2026-07-03 while PR #1691 was
+> still open — the Prompt-B report (`presentation-verification-mechanics-2026-07-03.md`) has since
+> **merged**, so the "Prompt B — low / unavailable" verdict below is about *this review's inputs*,
+> not the landed report. The recommended synthesis-then-Stage-2 sequence has partly happened since:
+> the Fable-5 capstone judgment (#1701), the foundational kernel design bridge (#1708), and the
+> Gate-0 grammar-freeze + Phase-B L0 build-order (#1716, `gate-0/`) consumed both foundations
+> reports. The ten verified Prompt-A samples and the owner-gated-decision filter remain live input.
 
 ## Required reading checked
 
