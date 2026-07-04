@@ -223,3 +223,46 @@ now registers them), but the recommended fix is a one-line home upgrade.
 - **V-3 rule of use:** when a Stage-2 row or a Gate-0 checklist item is written, it must name the
   L-row(s) / queue item(s) it retires, and this map is the completeness backstop that no row was
   dropped. Source and the specs' own retirement tables win over this roll-up (Q-0120).
+
+---
+
+## Gate-0 retirement continuity (2026-07-04)
+
+> **Additive V-3 continuity note — appended; Tables 1–6 above are unchanged.** This section records
+> what the **frozen Gate-0 L0 grammar** actually retires as it folds the 14 specs into one manifest,
+> so the "Covered by spec N" dispositions above graduate into a single "retired-in-the-frozen-grammar"
+> home. Sources read this pass (Q-0120): the per-group **Retires** columns of
+> **[`../gate-0/frozen-l0-grammar.md`](../gate-0/frozen-l0-grammar.md)** (Groups 1–18) and the four
+> closures in **[`../gate-0/cross-spec-wiring.md`](../gate-0/cross-spec-wiring.md)**. The grammar's own
+> Retires columns win over this roll-up.
+
+**What the frozen grammar retires (per-group Retires columns, consolidated).**
+
+- **L-rows:** L-1 (durable class fix, G11) · L-4 (G3) · L-5 (G1) · L-6 (G6) · L-7 (G9) · L-8 (G10) ·
+  L-9 (G7/G8) · L-10 (G5) · L-12 (G4) · L-13/T1-4 (G1/G4) · L-16 (G1/G12) · L-17 (G1/G5/G6/G17) ·
+  L-18 (G5/G13/G15) · L-19 (G16) · L-23 (G17) · L-24 (all five riders, G18 + G16 mass-ping leg).
+- **RC reconciliations:** RC-2/3/4/5/6/13/14/15 (G3/G4) · RC-12 (G2/G4) · RC-16/17 (G7/G8) ·
+  RC-18/F-4 + RC-19/F-5 (G2) · RC-20/F-1 (Q-D1, applied) · RC-21 (G16).
+- **Owner-queue items:** T2-2 (G6) · T2-3 (G7) · T2-4 (G3) · T2-6 (G10) · T2-7 (G11) · T2-8 (G10) ·
+  T2-9 (G1/G3) · T2-10 (G4) · T2-17 (G1/G3) · T2-21 (G8) · T2-22 (G5); T3 **A#21** (G6), **A#15** (G12).
+- **FJ §4 gaps / stress finds:** #2 (G13) · #3 (G16) · #7 (G11/G15) · #10 (G14) · #11 (G12) · #12 (G14) ·
+  FJ §6 T2 rollback-disposition (G13) · FJ §8 (G16); adversarial **X-1/X-3/X-7** (G16/G12/G4), **B#34**,
+  **R-1/R-2** (G12), **H4** (G3); resolved owner **Q-0237(d)/(e)** (G1/G4).
+- **Amendment flip:** **G-10 `ModalFormSpec` → in-spec** (G18). **Registers (carried to the owner queue,
+  not retired):** Q-D13 (G15), Q-D14/Q-D15 (G13), Q-D20/Q-D26 (G16), Q-D5/PG-2/F-3 (G17).
+
+**The four pending cross-spec wirings are now CLOSED-AT-GATE-0.** Each was flagged-but-unlanded above;
+the Gate-0 cross-spec-wiring doc lands all four as ready-to-apply edits:
+
+| Pending wiring | Was | Now | Owning § |
+|---|---|---|---|
+| **RC-12** `ActorRef.member_tier` | "02 must still add member_tier" (Table L-12 / seam-matrix) | **CLOSED-AT-GATE-0** (cross-spec-wiring Closure 1) | 04 §3.3 → 02 §3.1 |
+| **02-absorption** (RC-2/3/4/5/13/14/15) | 02 written to pre-hardening shapes; single loser-spec | **CLOSED-AT-GATE-0** (Closure 2) | 04 §3.3/§3.4/§3.5 → 02 |
+| **test_mode** `WorkflowContext.test_mode` | 06 §12 note-2 seam-correction, unlanded on 07 | **CLOSED-AT-GATE-0** (Closure 3; Q-D28 suppress default) | 06 §12 → 07 §3.2 |
+| **RC-21** `ChannelEmitter` egress port | "buried in the dossier owner table," unregistered | **CLOSED-AT-GATE-0** (Closure 4; Q-D26) | 10 §8.1 → 02/K8 |
+
+**No L-row or queue-item lost its home in the fold.** Every row Tables 1–6 marked **Covered** is
+retired in a frozen-grammar group above; every **Carried** row keeps its named gate (Gate-0 grammar,
+a CUT-stage gate, the Gate-V goldens, or a Stage-3 line) — the fold added retirement homes and removed
+none. The nine residual V-3 watch-list rows are unchanged (still carried on the softest binding). **V-3
+holds after the Gate-0 fold: 0 evaporations.**
