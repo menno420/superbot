@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-04T12:17:09Z",
+    "generated_at": "2026-07-04T16:02:29Z",
     "build": {
-      "commit": "978e5168",
-      "subject": "docs(rebuild): Gate-0 grammar-freeze + Phase-B L0 ultracode brief (next-step prep) (#1713)",
-      "committed_at": "2026-07-04T12:17:09Z"
+      "commit": "8fc71e54",
+      "subject": "Merge pull request #1714 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-04T16:02:29Z"
     },
     "counts": {
       "functions": 43,
