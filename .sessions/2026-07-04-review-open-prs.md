@@ -1,6 +1,6 @@
 # 2026-07-04 — Open-PR review + merge sweep
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/review-open-prs-1k48kg` · **PR:** #1719
 
 ## Intent
