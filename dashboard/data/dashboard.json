@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-04T10:35:51Z",
+    "generated_at": "2026-07-04T12:17:09Z",
     "build": {
-      "commit": "b4dd8f22",
-      "subject": "Session start: born-red card + claim — 34th Q-0107 reconciliation pass (band-#1710, issue #1711)",
-      "committed_at": "2026-07-04T10:35:51Z"
+      "commit": "978e5168",
+      "subject": "docs(rebuild): Gate-0 grammar-freeze + Phase-B L0 ultracode brief (next-step prep) (#1713)",
+      "committed_at": "2026-07-04T12:17:09Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 188,
+      "ideas": 191,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,30 @@
     }
   ],
   "ideas": [
+    {
+      "file": "ledger-fragmentation-linter-2026-07-04.md",
+      "title": "Idea — ledger-fragmentation linter (consolidate same-arc Recently-shipped bullets)",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "The `current-state.md` § Recently-shipped ledger is soft-ratcheted at 20 and relies on the",
+      "subsystems": null
+    },
+    {
+      "file": "owner-decision-packet-renderer-2026-07-04.md",
+      "title": "Idea — an owner-decision-packet renderer (register rows → a visual decision artifact)",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "The final judgment's surviving gap #13: *\"every binding checkpoint hands prose walls / JSON to a",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-design-cite-checker-2026-07-04.md",
+      "title": "Idea — `check_doc_cites.py`: validate source citations in analysis/design docs",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "Analysis and design docs cite shipped source by `path.py:NNN` constantly, and a **wrong cite",
+      "subsystems": null
+    },
     {
       "file": "fleet-structured-output-placeholder-guard-2026-07-03.md",
       "title": "Idea — reject placeholder values in fleet structured outputs (workflow-layer guard)",
@@ -2940,8 +2964,24 @@
       "file": "2026-07-04-reconcile.md",
       "date": "2026-07-04",
       "title": "2026-07-04 — Thirty-fourth Q-0107 reconciliation pass (band-#1710)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-rebuild-foundational-design.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Rebuild foundational-DESIGN (AUDITED → Gate-0 / L0-plannable)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-gate0-brief-prep.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Prepare the Gate-0 grammar-freeze + Phase-B L0 ultracode brief",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3396,22 +3436,6 @@
       "file": "2026-07-01-reconcile.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — thirty-first Q-0107 reconciliation pass (band-#1620)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-owner-bypass-all-permission-gates.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Owner bypasses ALL permission gates (not just administrator)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-logging-ignored-lists.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Logging: ignored channels/users exclusion lists (completion deepening)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
