@@ -22,7 +22,7 @@ pytest-xdist==3.8.0
 # Import-graph engine for scripts/context_map.py (the file-context tool).
 # Developer/agent-only — NOT a bot-runtime dep and NOT installed in CI; the tool
 # degrades to an AST fallback when grimp is absent. See docs/context-map-tooling.md.
-grimp==3.14
+grimp==3.15
 
 # pip-tools (`pip-compile`) — regenerates the dashboard lockfile
 # (dashboard/requirements.txt) from dashboard/requirements.in. Developer/agent-only,
