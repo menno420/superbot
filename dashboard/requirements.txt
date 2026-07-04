@@ -21,8 +21,8 @@ click==8.4.1
     # via uvicorn
 exceptiongroup==1.3.1
     # via anyio
-fastapi==0.138.2
-    # via -r requirements.in
+fastapi==0.139.0
+    # via -r dashboard/requirements.in
 h11==0.16.0
     # via
     #   httpcore
@@ -32,13 +32,13 @@ httpcore==1.0.9
 httptools==0.8.0
     # via uvicorn
 httpx==0.28.1
-    # via -r requirements.in
+    # via -r dashboard/requirements.in
 idna==3.18
     # via
     #   anyio
     #   httpx
 jinja2==3.1.6
-    # via -r requirements.in
+    # via -r dashboard/requirements.in
 markupsafe==3.0.3
     # via jinja2
 pydantic==2.13.4
@@ -65,8 +65,8 @@ typing-inspection==0.4.2
     # via
     #   fastapi
     #   pydantic
-uvicorn==0.49.0
-    # via -r requirements.in
+uvicorn==0.50.0
+    # via -r dashboard/requirements.in
 uvloop==0.22.1
     # via uvicorn
 watchfiles==1.2.0

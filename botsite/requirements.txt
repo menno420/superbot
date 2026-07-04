@@ -2,8 +2,8 @@
 # Kept separate from the bot's root requirements.txt (and from the dashboard's) so
 # CI's bot install and the bot's Railway build are unaffected — this is its own
 # Railway service (Root Directory = botsite). Mirrors the dashboard's proven recipe.
-fastapi>=0.137.2,<1.0
-uvicorn[standard]>=0.49.0,<1.0
+fastapi>=0.139.0,<1.0
+uvicorn[standard]>=0.50.0,<1.0
 jinja2>=3.1.6,<4.0
 # asyncpg: the /submit intake INSERTs one pending row into the dashboard-owned
 # submissions DB (botsite/submissions_db.py). Pinned floor matches the bot's so the
