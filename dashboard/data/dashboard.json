@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-04T00:04:12Z",
+    "generated_at": "2026-07-04T01:24:02Z",
     "build": {
-      "commit": "54bb2d7a",
-      "subject": "Merge pull request #1704 from menno420/claude/superbot-phase-a-judgment-e8yhlm",
-      "committed_at": "2026-07-04T00:04:12Z"
+      "commit": "01ef861b",
+      "subject": "Merge pull request #1706 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-04T01:24:02Z"
     },
     "counts": {
       "functions": 43,
@@ -3065,6 +3065,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-03-foundational-design-opus-brief.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare the Opus-4.8 foundational-DESIGN overnight prompt",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-fix-prod-loss-paths.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Fix two confirmed prod loss paths (from the engine-room audit)",
@@ -3404,14 +3412,6 @@
       "file": "2026-07-01-karma-reaction-to-thank.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Karma reaction-to-thank (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-inventory-density.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Inventory: item-detail density (rarity-tier fields) — completion deepening",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
