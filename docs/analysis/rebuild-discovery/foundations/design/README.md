@@ -148,7 +148,11 @@ guard (L-21), the additive `ActorRef.actor_type` / background `Surface` members 
 RC-18/RC-19), the `ChannelEmitter` egress port (Q-D26 → RC-21), and the L-24 presentation riders
 (alt-text, locale seam,
 `allowed_mentions` policy, `ModalSpec`, bundled fonts) as declared fields. All of Tier-3 batch-blesses
-here. This README + the four artifacts are the sitting's inputs.
+here. This README + the four artifacts are the sitting's inputs. **→ EXECUTED (2026-07-04):** the
+consolidation is done — the 14 specs are folded into one frozen grammar, the register resolved, and the
+L0 build sequenced under **[`../gate-0/`](../gate-0/README.md)**. The owner's ratification sitting now
+consumes [`../gate-0/owner-decision-packet.md`](../gate-0/owner-decision-packet.md) (12 owner-only rows
++ L-21); everything else is frozen.
 
 **→ The Phase-B L0 build (order across the specs).** L0 is the foundational layer everything imports;
 the strands *are* the build order:

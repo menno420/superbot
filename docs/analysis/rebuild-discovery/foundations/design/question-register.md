@@ -100,3 +100,54 @@ deferrals recorded so nothing evaporates.
 - **Where answers go:** owner-gated rows → `docs/owner/maintainer-question-router.md` (DISCUSS lane
   where a row narrows a binding Q-0213/Q-0105/frozen-vocab decision); the 08 §13 / 09 §8.1 tables are
   the durable home for their own OD-1s once ruled.
+
+---
+
+## Gate-0 disposition (2026-07-04)
+
+> **Additive V-3 continuity note — appended, no row above rewritten.** The 2026-07-04 Gate-0 grammar
+> freeze consolidated all 31 Q-D rows into two dispositions: **19 RATIFIED-DEFAULT** (frozen to their
+> built default by the grammar freeze — no owner ruling needed) and **12 OWNER-PENDING** (rendered as
+> decision cards; each ships its built default *until* the owner rules). The **L-21 aside** (old-bot
+> change-policy) is flagged owner-only but sits **outside** the count of 31. Full mechanism + the
+> Q-0120 F-label / shipped-default reconciliations: **[`../gate-0/register-resolution.md`](../gate-0/register-resolution.md)**
+> (the 19) and **[`../gate-0/owner-decision-packet.md`](../gate-0/owner-decision-packet.md)** (the 12 + L-21).
+> Source specs still win over this table (Q-0120); this section records only the *disposition*.
+
+| Q-D | Topic (one word) | Gate-0 disposition | Lands in |
+|---|---|---|---|
+| Q-D1 | outbox-relay host | **RATIFIED-DEFAULT** (F-1/RC-20) | register-resolution |
+| Q-D2 | atomic-apply / K7 draft entry | **RATIFIED-DEFAULT** (F-2) | register-resolution |
+| Q-D3 | `ActorRef.actor_type` | **RATIFIED-DEFAULT** (F-4/RC-18) | register-resolution |
+| Q-D4 | background `Surface.MAINTENANCE` | **RATIFIED-DEFAULT** (F-5/RC-19) | register-resolution |
+| Q-D5 | `IntentPosture` DEGRADE vs fail-closed | **OWNER-PENDING** (F-3/PG-2; flips frozen `required`) | owner-decision-packet |
+| Q-D6 | panel-action grammar (SF-a) | **RATIFIED-DEFAULT** (owner-visible) | register-resolution |
+| Q-D7 | owner-override scope + sink (SF-b) | **RATIFIED-DEFAULT** (owner-visible) | register-resolution |
+| Q-D8 | store-drop disposition default (SF-g) | **OWNER-PENDING** (data-loss policy) | owner-decision-packet |
+| Q-D9 | `AT_LEAST_ONCE` event set | **RATIFIED-DEFAULT** | register-resolution |
+| Q-D10 | `version_policy` default (bears_value) | **RATIFIED-DEFAULT** | register-resolution |
+| Q-D11 | invariant sweep vs migration | **RATIFIED-DEFAULT** | register-resolution |
+| Q-D12 | verify-import/verified-restore gates | **RATIFIED-DEFAULT** | register-resolution |
+| Q-D13 | repair DIRECTION (the money call) | **OWNER-PENDING** (money, near-irreversible) | owner-decision-packet |
+| Q-D14 | RPO target + backup tier | **OWNER-PENDING** (plan/build cost) | owner-decision-packet |
+| Q-D15 | rollback-data disposition + N | **OWNER-PENDING** (data-loss policy) | owner-decision-packet |
+| Q-D16 | credential-recovery arm at all | **OWNER-PENDING** (binding Q-0213) | owner-decision-packet |
+| Q-D17 | revocation carve-out from `*Delete` | **OWNER-PENDING** (binding Q-0213) | owner-decision-packet |
+| Q-D18 | supply-chain lockfile + `pip-audit` | **OWNER-PENDING** (binding Q-0105) | owner-decision-packet |
+| Q-D19 | `SB_PROD_ATTEST` custody source (SF-d) | **OWNER-PENDING** (ops/CUT-1) | owner-decision-packet |
+| Q-D20 | adopt rubric classes 11/12/13 | **OWNER-PENDING** (binding Q-0233, rubric edit) | owner-decision-packet |
+| Q-D21 | growth posture (PG-1) | **OWNER-PENDING** (mission strategy) | owner-decision-packet |
+| Q-D22 | un-preserved-override disposition (PG-4) | **RATIFIED-DEFAULT** | register-resolution |
+| Q-D23 | deployment identity (PG-5) | **RATIFIED-DEFAULT** (owner-visible) | register-resolution |
+| Q-D24 | multi-actor concurrency primitive | **OWNER-PENDING** (architecture) | owner-decision-packet |
+| Q-D25 | dispatch-trace/audit-retention (SF-c) | **RATIFIED-DEFAULT** (owner-visible) | register-resolution |
+| Q-D26 | `ChannelEmitter` egress port (T-7) | **RATIFIED-DEFAULT** (RC-21) | register-resolution |
+| Q-D27 | permission census as binding gate (PG-3) | **RATIFIED-DEFAULT** | register-resolution |
+| Q-D28 | test-mode effect routing | **RATIFIED-DEFAULT** (owner-visible) | register-resolution |
+| Q-D29 | durable cooldown store (SF-e) | **RATIFIED-DEFAULT** | register-resolution |
+| Q-D30 | Rung-4 NL-orchestration failure policy (SF-f) | **RATIFIED-DEFAULT** | register-resolution |
+| Q-D31 | batch-ratify seam refinements | **RATIFIED-DEFAULT** | register-resolution |
+| **L-21** (aside) | old-bot change-policy | **OWNER-PENDING**, tracked as an **L-row** — outside the 31 | owner-decision-packet (§ FLAGGED SEPARATELY) |
+
+**Tally:** 19 RATIFIED-DEFAULT + 12 OWNER-PENDING = **31**, complete; L-21 is the +1 owner-only aside
+outside the count. Every design-session fork has a disposition — none evaporated (V-3).
