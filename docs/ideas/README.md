@@ -71,6 +71,12 @@ Current broad captures:
   (the class that misled twice on the substrate kit), and build dep-order / thin-step /
   fragmentation / verification-hole / nav-contract checkers against the rebuild's declared
   manifests. The enforce-don't-exhort arm of Q-0233.
+- [`owner-decision-packet-renderer-2026-07-04.md`](./owner-decision-packet-renderer-2026-07-04.md) —
+  **session idea (2026-07-04, Q-0089, Gate-0 brief-prep PR #1713):** a reusable renderer/skill
+  (`/decision-packet`) that turns a question-register (options+recommendation rows) into an
+  owner-consumable **visual decision packet** — markdown v1 now, an Artifact-HTML v2 later. Closes FJ
+  gap #13 ("nothing renders decisions visually for a non-coding owner"); first consumer is the Gate-0
+  session's 12 owner-only rows.
 - [`rebuild-design-cite-checker-2026-07-04.md`](./rebuild-design-cite-checker-2026-07-04.md) —
   **session idea (2026-07-04, Q-0089, foundational-design PR #1708):** a `check_doc_cites.py` that
   validates every `path.py:NNN` source citation in an analysis/design doc resolves to a real file
