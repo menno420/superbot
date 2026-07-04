@@ -11,7 +11,7 @@
 # .pre-commit-config.yaml in the same change.
 black==26.5.1
 isort==8.0.1
-ruff==0.15.20  # MUST match code-quality.yml + .pre-commit-config.yaml (both pin 0.15.14; a lone Dependabot bump to 0.15.18 drifted this file in #1315 — realigned)
+ruff==0.15.20  # MUST match code-quality.yml + .pre-commit-config.yaml (all three bumped together to 0.15.20 in #1556; lone Dependabot bumps drifted this file in #1074/#1315 — scripts/check_tool_pins.py guards it)
 mypy==2.1.0
 pytest==9.1.1
 pytest-asyncio==1.4.0
