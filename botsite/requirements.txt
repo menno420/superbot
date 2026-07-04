@@ -2,14 +2,14 @@
 # Kept separate from the bot's root requirements.txt (and from the dashboard's) so
 # CI's bot install and the bot's Railway build are unaffected — this is its own
 # Railway service (Root Directory = botsite). Mirrors the dashboard's proven recipe.
-fastapi>=0.137.2,<1.0
+fastapi>=0.138.2,<1.0
 uvicorn[standard]>=0.49.0,<1.0
 jinja2>=3.1.6,<4.0
 # asyncpg: the /submit intake INSERTs one pending row into the dashboard-owned
 # submissions DB (botsite/submissions_db.py). Pinned floor matches the bot's so the
 # driver behaves identically. The form parses with stdlib urllib (no python-multipart)
 # and the app holds NO other secret than the INSERT-only submissions DSN (plan §4.4).
-asyncpg>=0.29.0,<1.0
+asyncpg>=0.31.0,<1.0
 # NOTE: deliberately NO httpx / itsdangerous / OAuth deps here. This is the public,
 # secret-free marketing surface — the gated "manage my server" manager is a SEPARATE
 # service (plan §4.4) and carries those deps in its own requirements, never this one.

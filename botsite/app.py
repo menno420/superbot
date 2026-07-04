@@ -166,7 +166,7 @@ def site_data_json() -> Response:
 # Legacy page routes — the earlier server-rendered Jinja front-end, kept as a
 # working fallback (owner decision: the SPA is what visitors see at `/`; the Jinja
 # pages stay in repo and reachable). The SPA's own nav uses in-page hash routes
-# (#/commands, …), so normal visitors never hit these; they remain for old
+# such as "#/commands", so normal visitors never hit these; they remain for old
 # bookmarks / no-JS fallback and render the same site.json data.
 @app.get("/commands", response_class=HTMLResponse)
 def commands(request: Request) -> HTMLResponse:
