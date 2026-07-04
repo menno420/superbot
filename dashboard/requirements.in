@@ -23,8 +23,8 @@
 # Kept separate from the bot's root requirements.txt so CI's bot install and the
 # bot's Railway build are unaffected (the dashboard is a separate Railway service).
 
-fastapi>=0.138.2,<1.0
-uvicorn[standard]>=0.49.0,<1.0
+fastapi>=0.139.0,<1.0
+uvicorn[standard]>=0.50.0,<1.0
 jinja2>=3.1.6,<4.0
 # httpx: the Discord OAuth token/identity calls + the bot control-API client, and
 # the test suite's Starlette TestClient transport.
