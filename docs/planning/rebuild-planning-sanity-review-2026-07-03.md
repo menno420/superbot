@@ -1,10 +1,18 @@
 # Rebuild planning sanity review — gates, phases, and next allowed work (2026-07-03)
 
-> **Status:** `review` — repo-grounded sanity review of the rebuild planning state as of
+> **Status:** `audit` — repo-grounded sanity review of the rebuild planning state as of
 > 2026-07-03. This document reviews consistency only: it does **not** approve implementation,
 > does **not** start Phase B, and does **not** authorize new-repo work. Source code + merged PRs
 > remain higher precedence than planning docs; binding rebuild docs remain higher precedence than
 > `docs/current-state.md`.
+
+> **Post-review status (2026-07-04, open-PR merge sweep):** written 2026-07-03, before the
+> foundational kernel **design bridge** (#1708) and the **Gate-0 grammar-freeze + Phase-B L0
+> build-order** (#1716, `docs/analysis/rebuild-discovery/foundations/gate-0/`) landed — neither had
+> this review in main when they ran. PR #1691 (the Session-B surface/proving report) has since
+> **merged**, resolving §1's main ambiguity. Read the gate/phase map + §7's "next destination" as a
+> dated snapshot; reconcile the §4 improvements + §6 stale-claim table against the Gate-0
+> owner-decision packet + amendment registry before acting on them.
 
 ## 1. Current-state verdict: **mostly clear**
 
