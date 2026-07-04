@@ -562,6 +562,28 @@ class ActionableGroup:
         return tuple(out)
 
 
+# Settings-dropdown ordering (tools/sim/settings_order_sim.py, 2026-07-01).
+# `!settings` is an admin-only surface: the operator opens it to *configure the
+# server*, so the server-operations groups (moderation / management / admin +
+# admin-tier community like welcome / counters) sort to the TOP — ahead of the
+# games / economy / progression groups that lead the *global* ``ui_priority``
+# discovery order. This is settings-surface-only: Help and the hubs still sort
+# by the global ``ui_priority``, untouched. The sim measured this cut the mean
+# config-group find-cost from ~28 to ~8 rows of scrolling.
+_SETTINGS_CONFIG_CATEGORIES = frozenset({"moderation", "management", "admin"})
+_SETTINGS_ADMIN_TIERS = frozenset({"staff", "moderator", "administrator", "owner"})
+
+
+def _settings_config_tier(meta: dict[str, object]) -> int:
+    """0 for server-config groups (sorted first in ``!settings``), else 1."""
+    category = meta.get("category")
+    if category in _SETTINGS_CONFIG_CATEGORIES:
+        return 0
+    if category == "community" and meta.get("visibility_tier") in _SETTINGS_ADMIN_TIERS:
+        return 0
+    return 1
+
+
 def actionable_settings_groups() -> tuple[ActionableGroup, ...]:
     """Every subsystem the Settings hub should offer, sorted for display.
 
@@ -577,10 +599,13 @@ def actionable_settings_groups() -> tuple[ActionableGroup, ...]:
       a declared binding, a declared resource requirement, or a
       registered domain-config panel.
 
-    Deterministic and side-effect-free; sorted by ``ui_priority`` then
-    display name. Discovery only — mutation stays with each surface's
-    canonical owner (scalar pipeline / binding / provisioning / domain
-    services).
+    Deterministic and side-effect-free; sorted **server-config groups first**
+    (see :func:`_settings_config_tier`), then by ``ui_priority`` then display
+    name within each tier — so an admin opening ``!settings`` reaches the
+    moderation / logging / welcome / roles groups without scrolling past the
+    games and economy groups. Discovery only — mutation stays with each
+    surface's canonical owner (scalar pipeline / binding / provisioning /
+    domain services).
     """
     # Function-local imports: keep this module import-light and let tests
     # monkeypatch the manifest/schema sources.
@@ -589,6 +614,7 @@ def actionable_settings_groups() -> tuple[ActionableGroup, ...]:
 
     schemas = all_schemas()
     groups: list[ActionableGroup] = []
+    tier_by_sub: dict[str, int] = {}
     for name, meta in SUBSYSTEMS.items():
         if meta.get("visibility_mode", "normal") == "internal":
             continue
@@ -603,6 +629,7 @@ def actionable_settings_groups() -> tuple[ActionableGroup, ...]:
         domain_panel = bool(schema.domain_panels) if schema is not None else False
         if not (editable or bindings or resources or domain_panel):
             continue
+        tier_by_sub[name] = _settings_config_tier(meta)
         groups.append(
             ActionableGroup(
                 subsystem=name,
@@ -616,7 +643,14 @@ def actionable_settings_groups() -> tuple[ActionableGroup, ...]:
                 has_domain_panel=domain_panel,
             ),
         )
-    groups.sort(key=lambda g: (g.ui_priority, g.display_name.lower(), g.subsystem))
+    groups.sort(
+        key=lambda g: (
+            tier_by_sub[g.subsystem],
+            g.ui_priority,
+            g.display_name.lower(),
+            g.subsystem,
+        ),
+    )
     return tuple(groups)
 
 

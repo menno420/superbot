@@ -23,6 +23,23 @@ VAULT_UPGRADE_REASON = "mining:vault_upgrade"
 FORGE_BUILD_REASON = "mining:forge_build"
 HOME_BUILD_REASON = "mining:home_build"
 CAMPFIRE_BUILD_REASON = "mining:campfire_build"
+TIDE_POOL_BUILD_REASON = "mining:tide_pool_build"
+DOCK_BUILD_REASON = "mining:dock_build"
+BOATHOUSE_BUILD_REASON = "mining:boathouse_build"
+FISHERY_BUILD_REASON = "mining:fishery_build"
+
+
+def structure_build_reason(structure: str) -> str:
+    """The economy-audit reason tag for building *structure* (the money-flow tag).
+
+    Derived generically as ``mining:{structure}_build`` — exactly what every named
+    ``*_BUILD_REASON`` constant above already spells.  ``build_structure`` uses this
+    instead of a hand-maintained ``{structure: reason}`` map so a newly-registered
+    structure can **never** crash the build path for want of a map entry (the
+    ``boathouse`` ``KeyError`` that shipped in #1605 — BUG-0031).
+    """
+    return f"mining:{structure.strip().lower()}_build"
+
 
 # Gear shop — coins to buy each item (the sink).  Priced ~5-6× the sell value
 # of the materials it would take to craft, so crafting stays the cheaper path
@@ -185,6 +202,11 @@ __all__ = [
     "FORGE_BUILD_REASON",
     "HOME_BUILD_REASON",
     "CAMPFIRE_BUILD_REASON",
+    "TIDE_POOL_BUILD_REASON",
+    "DOCK_BUILD_REASON",
+    "BOATHOUSE_BUILD_REASON",
+    "FISHERY_BUILD_REASON",
+    "structure_build_reason",
     "sell_price",
     "sellable_inventory",
     "total_sale_value",

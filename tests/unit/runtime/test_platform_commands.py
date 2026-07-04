@@ -184,3 +184,133 @@ async def test_platform_finding_not_found_reports_warning():
         await cog.platform_finding.callback(cog, ctx, "ignore", fingerprint="ghost")
 
     assert "No finding" in ctx.send.call_args.args[0]
+
+
+# ---------------------------------------------------------------------------
+# !platform findings / consistency — paginated dense subviews (cert punch #2)
+# ---------------------------------------------------------------------------
+
+
+def _finding_rows(n: int) -> list[dict]:
+    return [
+        {
+            "severity": "warn",
+            "status": "open",
+            "category": f"cat.{i}",
+            "message": f"msg {i}",
+            "occurrence_count": 1,
+        }
+        for i in range(n)
+    ]
+
+
+@pytest.mark.asyncio
+async def test_platform_findings_attaches_paginator_when_many_rows():
+    from cogs.diagnostic_cog import DiagnosticCog
+    from services.diagnostic_embeds import _FINDINGS_PER_PAGE
+    from views.diagnostic.paginator import _PaginatorView
+
+    cog = DiagnosticCog(MagicMock())
+    ctx = MagicMock()
+    ctx.send = AsyncMock()
+    ctx.author = MagicMock()
+
+    with (
+        patch(
+            "services.health_snapshot_service.resolve_audience",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "services.health_findings_service.list_by_status",
+            new_callable=AsyncMock,
+            return_value=_finding_rows(_FINDINGS_PER_PAGE * 2 + 1),
+        ),
+        patch(
+            "services.health_findings_service.count_by_status",
+            new_callable=AsyncMock,
+            return_value={"open": _FINDINGS_PER_PAGE * 2 + 1},
+        ),
+    ):
+        await cog.platform_findings.callback(cog, ctx, status="open")
+
+    # Multi-page output -> a _PaginatorView is attached to the sent message.
+    view = ctx.send.call_args.kwargs.get("view")
+    assert isinstance(view, _PaginatorView)
+    assert len(view.pages) == 3
+
+
+@pytest.mark.asyncio
+async def test_platform_findings_no_view_when_single_page():
+    from cogs.diagnostic_cog import DiagnosticCog
+
+    cog = DiagnosticCog(MagicMock())
+    ctx = MagicMock()
+    ctx.send = AsyncMock()
+    ctx.author = MagicMock()
+
+    with (
+        patch(
+            "services.health_snapshot_service.resolve_audience",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "services.health_findings_service.list_by_status",
+            new_callable=AsyncMock,
+            return_value=_finding_rows(2),
+        ),
+        patch(
+            "services.health_findings_service.count_by_status",
+            new_callable=AsyncMock,
+            return_value={"open": 2},
+        ),
+    ):
+        await cog.platform_findings.callback(cog, ctx, status="open")
+
+    assert ctx.send.call_args.kwargs.get("view") is None
+    assert ctx.send.call_args.kwargs.get("embed") is not None
+
+
+@pytest.mark.asyncio
+async def test_platform_consistency_attaches_paginator_when_many_sections():
+    import datetime
+
+    from cogs.diagnostic_cog import DiagnosticCog
+    from services.platform_consistency import (
+        ConsistencyReport,
+        SectionResult,
+        SectionStatus,
+    )
+    from views.diagnostic.paginator import _PaginatorView
+
+    sections = [
+        SectionResult(
+            name=f"s{i}",
+            status=SectionStatus.WARNING,
+            summary="X" * 700,
+            details=("d" * 120, "e" * 120, "f" * 120),
+            suggested_actions=("a" * 120, "b" * 120),
+        )
+        for i in range(30)
+    ]
+    report = ConsistencyReport(
+        sections=sections,
+        generated_at=datetime.datetime(2026, 6, 30, tzinfo=datetime.timezone.utc),
+    )
+
+    cog = DiagnosticCog(MagicMock())
+    ctx = MagicMock()
+    ctx.send = AsyncMock()
+    ctx.author = MagicMock()
+    ctx.guild = MagicMock()
+
+    with patch(
+        "services.platform_consistency.collect_report",
+        new_callable=AsyncMock,
+        return_value=report,
+    ):
+        await cog.platform_consistency.callback(cog, ctx)
+
+    view = ctx.send.call_args.kwargs.get("view")
+    assert isinstance(view, _PaginatorView)
+    # Every section is reachable across the pages -- none dropped.
+    assert sum(len(p.fields) for p in view.pages) == 30

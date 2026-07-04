@@ -283,6 +283,8 @@ from utils.db.xp import (
     get_guild_xp_totals,
     get_xp,
     level_progress,
+    set_imported_xp,
+    total_xp_for_level,
     xp_for_level,
 )
 
@@ -301,6 +303,8 @@ __all__ = [
     "get_guild_xp_totals",
     "get_xp",
     "level_progress",
+    "set_imported_xp",
+    "total_xp_for_level",
     "xp_for_level",
     # settings
     "get_setting",

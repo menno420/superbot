@@ -21,6 +21,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime.permission_checks import perms_or_owner
 from services import treasury_service
 from views.treasury import open_treasury_panel
 
@@ -58,7 +59,7 @@ class TreasuryCog(commands.Cog):
         await ctx.send(result.message)
 
     @treasury.command(name="grant", aliases=["disburse", "payout"])  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def grant(
         self,
         ctx: commands.Context,

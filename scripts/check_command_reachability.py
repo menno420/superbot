@@ -197,7 +197,13 @@ def _tier_from_decorators(fn: ast.AsyncFunctionDef | ast.FunctionDef) -> str:
         attr, _ = _decorator_name(dec)
         if attr in {"is_owner"}:
             return "owner"
-        if attr in {"is_admin_or_owner"}:
+        if attr in {
+            "is_admin_or_owner",
+            "admin_or_owner",
+            "app_admin_or_owner",
+            "perms_or_owner",
+            "app_perms_or_owner",
+        }:
             return "operator"
         if isinstance(dec, ast.Call):
             for kw in dec.keywords:

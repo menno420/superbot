@@ -408,6 +408,72 @@ class AINaturalLanguageStage:
             )
             return StageResult()
 
+        # Vetted answer preset (operator-authored) — the cheapest possible
+        # answer: an exact normalized-question match is served verbatim with
+        # ZERO model call (the ai_review_log answer loop's preset layer,
+        # services/ai_preset_service.py). Fires before feature-facts / gateway.
+        # Fail-safe: a lookup miss/outage returns None and the normal model path
+        # runs, so behaviour is byte-identical when no preset matches. The Q&A is
+        # still remembered so a later 👎 / correction on a preset reply is logged.
+        from services import ai_preset_service
+
+        preset_answer = await ai_preset_service.lookup(guild_id, user_text)
+        if preset_answer:
+            preset_sent = None
+            try:
+                reference = message.to_reference(fail_if_not_exists=False)
+                for index, chunk in enumerate(_split_for_discord(preset_answer)):
+                    sent = await message.channel.send(
+                        chunk,
+                        allowed_mentions=discord.AllowedMentions.none(),
+                        reference=reference if index == 0 else None,
+                    )
+                    if index == 0:
+                        preset_sent = sent
+            except discord.HTTPException:
+                logger.warning(
+                    "ai preset reply send failed for message=%s",
+                    getattr(message, "id", None),
+                    exc_info=True,
+                )
+            _record_user_turn_if_visible(
+                message,
+                raw_text,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                is_mention=is_mention,
+                record_mentions=True,
+            )
+            await ai_decision_audit_service.record(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                category_id=category_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                decision="replied",
+                reason_code=PolicyDenialReason.NONE,
+                policy_snapshot_hash=decision.policy_snapshot_hash,
+            )
+            if preset_sent is not None:
+                ai_review_log_service.remember_answer(
+                    preset_sent.id,
+                    guild_id=guild_id,
+                    channel_id=channel_id,
+                    user_id=user_id,
+                    message_id=message.id,
+                    question=raw_text,
+                    answer=preset_answer,
+                    task=routed.task.value,
+                    route="preset",
+                    provider=None,
+                    model=None,
+                )
+            ctx.metadata["handled_by"] = STAGE_NAME
+            return StageResult(short_circuit=True)
+
         try:
             _fact_req = FeatureFactRequest(
                 task=routed.task,
@@ -1195,10 +1261,10 @@ def _derive_scope(message: discord.Message) -> AIScope:
     # owner-gated diagnostics_health_snapshot tool reachable (D1). Mirrors the
     # id-gated owner seams in ai_tools.get_user_standing / bot_knowledge_service;
     # the deterministic !platform health surface uses bot.is_owner separately.
-    from config import BOT_OWNER_USER_ID
+    from config import is_platform_owner
 
     author_id = getattr(author, "id", None)
-    if BOT_OWNER_USER_ID is not None and author_id == BOT_OWNER_USER_ID:
+    if is_platform_owner(author_id):
         return AIScope.PLATFORM_OWNER
     if (
         guild is not None

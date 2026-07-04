@@ -1,0 +1,33 @@
+{
+ "case_id": "sweep.slash_setup-reset",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "content": "No staged operations to clear — the draft is already empty.",
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
+   "input": {
+    "kind": "slash",
+    "name": "setup-reset",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "setup"
+}

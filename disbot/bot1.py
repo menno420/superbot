@@ -81,6 +81,11 @@ bot = commands.Bot(
     command_prefix=config.PREFIX,
     intents=intents,
     help_command=None,
+    # Widen discord.py's in-memory message cache from the 1000 default so
+    # server-logging's message-delete/edit embeds carry content for a longer
+    # window; deletes older than the cache fall to the raw-event path, which
+    # logs the event with content marked unavailable (services.server_logging).
+    max_messages=5000,
     # Resolve case variants (``!Help``, ``!BAN``) at the source.  Lowercasing
     # can never change *which* command is meant — there are no two commands
     # differing only by case — so this is always safe and frees the typo

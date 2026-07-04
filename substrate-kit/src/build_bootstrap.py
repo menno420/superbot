@@ -20,7 +20,7 @@ from pathlib import Path
 
 KIT_ROOT = Path(__file__).resolve().parents[1]
 ENGINE_ROOT = KIT_ROOT / "src" / "engine"
-TEMPLATES_ROOT = KIT_ROOT / "src" / "templates"
+TEMPLATES_ROOT = KIT_ROOT / "src" / "engine" / "templates"
 DIST_PATH = KIT_ROOT / "dist" / "bootstrap.py"
 
 # Dependency order: a module appears after everything it references.
@@ -29,16 +29,36 @@ MODULE_ORDER = (
     "lib/config.py",
     "lib/state.py",
     "lib/guardrail.py",
+    "lib/modes.py",
     "interview/question_bank.py",
     "interview/stages.py",
     "interview/interview.py",
     "checks/check_docs.py",
     "checks/check_session_log.py",
+    "checks/check_namespace.py",
+    "checks/check_seam_authority.py",
+    "checks/check_orientation_budget.py",
+    "ledger.py",
+    "loop/kpis.py",
+    "loop/reflections.py",
+    "loop/episodes.py",
+    "loop/triggers.py",
+    "loop/maintenance.py",
+    "loop/review_seam.py",
+    "economy/engine.py",
+    "economy/harvest.py",
+    "economy/simulator.py",
     "stances/stances.py",
     "skills/skills.py",
     "agents/agents.py",
     "hooks/stance_guard.py",
+    "hooks/session_start.py",
+    "hooks/post_edit.py",
+    "hooks/stop_check.py",
+    "hooks/settings.py",
     "render.py",
+    "contextpack.py",
+    "adopt.py",
     "cli.py",
 )
 PACKAGE_FILES = (
@@ -46,6 +66,8 @@ PACKAGE_FILES = (
     "lib/__init__.py",
     "interview/__init__.py",
     "checks/__init__.py",
+    "loop/__init__.py",
+    "economy/__init__.py",
     "stances/__init__.py",
     "skills/__init__.py",
     "agents/__init__.py",
@@ -69,19 +91,43 @@ def _read(rel: str) -> str:
     return (ENGINE_ROOT / rel).read_text(encoding="utf-8")
 
 
+def _triple_quote_toggles(line: str, active: str | None) -> str | None:
+    """Track triple-quoted string state across a line; return the new state.
+
+    ``active`` is the open triple-quote delimiter (double or single form) or
+    None. Naive by design (counts delimiter occurrences; a line mixing both
+    delimiter forms is not handled) — module docstrings and the embedded prose
+    blocks this builder must survive are all well-formed.
+    """
+    if active is not None:
+        return None if line.count(active) % 2 == 1 else active
+    for delim in ('"""', "'''"):
+        if line.count(delim) % 2 == 1:
+            return delim
+    return None
+
+
 def _split_imports(source: str) -> tuple[list[str], list[str], list[str]]:
     """Split a module into (future imports, kept imports, body lines).
 
     Intra-package imports are dropped — in the concatenated file their names
     already live in the same namespace. A *parenthesized multi-line* intra-package
     import is dropped **whole**: its continuation lines must not leak into the body
-    (that produced an ``IndentationError`` in the generated bootstrap).
+    (that produced an ``IndentationError`` in the generated bootstrap). Lines
+    inside triple-quoted strings are never treated as imports — a docstring
+    sentence starting with ``from ...`` once got hoisted into the import block
+    and broke the generated file's syntax.
     """
     future: list[str] = []
     imports: list[str] = []
     body: list[str] = []
     dropping_multiline = False
+    in_string: str | None = None
     for line in source.splitlines():
+        if in_string is not None:
+            body.append(line)
+            in_string = _triple_quote_toggles(line, in_string)
+            continue
         if dropping_multiline:
             if ")" in line:
                 dropping_multiline = False
@@ -96,6 +142,7 @@ def _split_imports(source: str) -> tuple[list[str], list[str], list[str]]:
             imports.append(line)
         else:
             body.append(line)
+            in_string = _triple_quote_toggles(line, None)
     return future, imports, body
 
 

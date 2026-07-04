@@ -4,7 +4,7 @@
 > certified. Source + merged PRs win. System: [`../README.md`](../README.md).
 
 > **Unit:** `counters` · **Type:** server-fn · **Family:** community
-> **State:** ◐ assessed · **Assessed:** 2026-06-29 · **Certified:** —
+> **State:** ◐ assessed · **Assessed:** 2026-06-29 · **Deepened:** 2026-06-30 (punch #1/#2/#4/#5) · **Certified:** —
 > Source: `disbot/cogs/counters_cog.py` (`!counters` status + Help hook + 10-min update loop) ·
 > `disbot/cogs/counters/schemas.py` (7 SettingSpecs) · `disbot/services/counter_service.py`
 > (sync + change-detection) · `disbot/services/counter_config.py` (read model + name render) ·
@@ -34,7 +34,8 @@
 
 ### B. Reachability & UI
 - [x] **A command panel exists** — `!counters` renders the policy embed (rendered names + flags);
-      `manage_guild`-gated.
+      `manage_guild`-gated. ✅ punch #2 (2026-06-30): `/counters` slash status parity (ephemeral,
+      `manage_guild`-gated) reusing the same `_policy_embed`.
 - [x] **Reachable every natural way** — `!counters` entry point + `build_help_menu_view` hook +
       Community-hub child; config via `!settings → Counters`.
 - [N/A] **Integrated into Setup** — no dedicated wizard step (bound via `!settings`).
@@ -43,7 +44,10 @@
 
 ### C. Convenience
 - [x] **Defaults** — master OFF, all channels unbound (`counter_config.py`); fresh guild unaffected.
-- [ ] **Presets** — ⚠ only the hardcoded default templates; no curated preset picker. → punch #1.
+- [x] **Presets** — ✅ punch #1 (2026-06-30): a curated `TEMPLATE_PRESETS` catalog (`default` /
+      `minimal` / `brackets` / `bullet`) + `!counterpreset [name]` that lists them (no name) or applies
+      all three templates at once **through the audited `SettingsMutationPipeline`** (re-checks the
+      `counters.settings.configure` capability). `default` is byte-identical to the canonical defaults.
 - [x] **Clear feedback** — `!counters` shows the rendered names; channel-picker `input_hint` on the
       binding specs.
 
@@ -81,28 +85,37 @@
 - [ ] **Owner ✔** — pending → punch #7.
 
 ## Punch-list (clear these to certify)
-1. **Preset templates** *(offline, minor)* — 2–3 curated `{count}` templates / a preset picker.
-2. **Slash surface** *(offline, deepening)* — `/counters status` for modern-UX parity (typed-command only
-   today).
-3. **Loop backoff** *(offline, deepening)* — per-guild cooldown / backoff so a persistently-failing guild
-   isn't silently skipped forever.
-4. **Channel-type handling** *(offline, minor)* — document/test category vs voice vs text rename behavior
-   (voice preferred per a code comment, not enforced).
-5. **Integration test** *(offline, deepening)* — end-to-end settings-mutation → loop sync → event with a
-   real policy object (today `load_policy` is mocked).
+1. ✅ **Preset templates** — DONE 2026-06-30. `TEMPLATE_PRESETS` catalog + `!counterpreset [name]`
+   (list / apply-all-three via the audited `SettingsMutationPipeline`).
+2. ✅ **Slash surface** — DONE 2026-06-30. `/counters` ephemeral status (reuses `_policy_embed`).
+3. ✅ **Loop backoff** — DONE 2026-06-30 (PR #1575). `services.counter_service.GuildSyncBackoff` (pure,
+   discord-free, tick-based exponential backoff: skip 1 → 2 → 4 … capped at 6 ticks) wired into
+   `CountersCog._counter_sync_loop`: a guild whose `sync_guild` keeps raising is skipped for a growing
+   number of loop ticks (never dropped forever — the cap guarantees an ≥hourly retry at the 10-min
+   cadence), and one clean sync resets it. Per-process/ephemeral state (ADR-002). +8 tests (6 pure +
+   2 loop-wiring).
+4. ✅ **Channel-type handling** — DONE 2026-06-30. `sync_guild` renames any bound `GuildChannel`
+   (voice/text/category all tested); a non-guild target (DM) is skipped — pinned by parametrized tests.
+5. ✅ **Integration test** — DONE 2026-06-30. `test_counter_integration.py` drives the **real**
+   `load_policy` (composed from stored settings) → `sync_guild` → `counters.updated` event end-to-end,
+   including a preset-apply analogue.
 6. **Live walkthrough** *(owner / live-bot)* — `/verify-bot` boot, bind a channel, watch it rename, with
    screenshots.
 7. **Owner sign-off** — maintainer confirms "it does its job the most convenient way."
 
 ## Evidence
-- **Tests:** `tests/unit/services/test_counter_config.py` · `…/test_counter_service.py` ·
-  `tests/unit/cogs/test_counters_schemas.py` (~25 cases total) + shared `SettingsMutationPipeline` tests
+- **Tests:** `tests/unit/services/test_counter_config.py` (+ preset catalog cases) ·
+  `…/test_counter_service.py` (+ channel-type parametrized cases) ·
+  `…/test_counter_integration.py` (NEW — real load_policy → sync → event) ·
+  `tests/unit/cogs/test_counters_cog.py` (NEW — preset apply/list + slash) ·
+  `tests/unit/cogs/test_counters_schemas.py` (~35 cases total) + shared `SettingsMutationPipeline` tests
 - **Walkthrough:** pending (punch #6)
 - **Owner sign-off:** pending (punch #7)
 
 ## Verdict
 Counters is a **structurally complete, fail-safe, fully-audited** stat-channel unit — three live counters
 on a rate-limit-aware change-detection loop, never creating channels (rename-only), config-driven and
-defaults-OFF, with ~25 tests. It is **not yet `✔ certified`**: the gaps are polish (preset templates,
-slash surface, loop backoff, an integration test — #1–#5) and the owner walkthrough/sign-off (#6/#7). No
-safety/audit/dead-end issues found.
+defaults-OFF, with ~35 tests. The 2026-06-30 deepening closed punch #1/#2/#4/#5 (curated preset catalog +
+one-command audited apply, `/counters` slash parity, channel-type coverage, a real end-to-end integration
+test). It is **not yet `✔ certified`**: remaining gaps are loop backoff (#3, stateful) and the owner
+walkthrough/sign-off (#6/#7). No safety/audit/dead-end issues found.

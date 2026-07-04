@@ -145,6 +145,12 @@ STEP 2 — RECONCILE (the Q-0107 pass):
       record's §1. It uses git for merged-on-main + the same gh→REST fallback as
       `check_loop_health.py` for the closed/open half (SKIP-degrades, labels its source). Both
       disposable (Q-0105).
+    - To draft the **grouped Recently-shipped entries** (the authoring half — the drift-prone,
+      hand-rolled core of the pass), run `python3.10 scripts/band_pr_status.py --since <marker>
+      --themes`: it buckets the band's merged PRs by touched area into an editable skeleton and
+      works **offline via git** (no `gh` needed — proven on the band-#1620 pass, where `gh` was
+      unavailable). Edit its buckets into thematic prose; the touched-dir buckets cross-cut real
+      themes, so still read the PR subjects to regroup.
     - To do the Recently-shipped trim itself, run `python3.10 scripts/trim_recently_shipped.py`
       (dry-run diff) → review the moved bullets (the grouped band bullets are **non-monotonic** —
       the known hazard) → `--apply`. It moves the oldest over-ratchet bullets into the archive and

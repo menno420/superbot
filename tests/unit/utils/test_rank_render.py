@@ -83,6 +83,27 @@ def test_render_tolerates_overlong_and_symbolic_names():
     assert isinstance(out, bytes) and out
 
 
+def _sample_avatar_png() -> bytes:
+    import io
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (64, 64), (200, 120, 60)).save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def test_render_with_real_avatar_bytes():
+    out = _render(avatar_png=_sample_avatar_png())
+    assert isinstance(out, bytes) and out[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_render_with_undecodable_avatar_falls_back_to_initials():
+    # A bad/failed avatar fetch must never break the card.
+    out = _render(avatar_png=b"garbage-not-an-image")
+    assert isinstance(out, bytes) and out
+
+
 def test_unknown_theme_falls_back_not_crashes():
     out = _render(theme="no-such-theme")
     assert isinstance(out, bytes) and out

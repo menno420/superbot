@@ -42,6 +42,7 @@ _EXPECTED_DEFAULTS = {
     "enabled": karma_config.DEFAULT_ENABLED,
     "cooldown_seconds": karma_config.DEFAULT_COOLDOWN_SECONDS,
     "daily_cap": karma_config.DEFAULT_DAILY_CAP,
+    "reaction_emoji": karma_config.DEFAULT_REACTION_EMOJI,
 }
 
 
@@ -59,3 +60,20 @@ def test_all_specs_require_the_configure_capability():
 
     for spec in KARMA_SETTINGS:
         assert spec.capability_required == "karma.settings.configure"
+
+
+def test_reaction_emoji_validator_accepts_empty_and_an_emoji():
+    from cogs.karma.schemas import _validate_reaction_emoji
+
+    _validate_reaction_emoji("")  # empty = off, valid
+    _validate_reaction_emoji("✨")
+    _validate_reaction_emoji("<:thanks:123456789012345678>")
+
+
+def test_reaction_emoji_validator_rejects_overlong_and_non_str():
+    from cogs.karma.schemas import _validate_reaction_emoji
+
+    with pytest.raises(ValueError):
+        _validate_reaction_emoji("x" * 65)
+    with pytest.raises(ValueError):
+        _validate_reaction_emoji(123)

@@ -25,6 +25,7 @@ from collections.abc import Awaitable, Callable
 import discord
 
 from core.runtime.interaction_helpers import safe_defer
+from core.runtime.permission_checks import member_has_perms_or_owner
 from utils import role_packs
 from views.base import BaseView
 from views.roles._helpers import _COLOR_OPTIONS, _parse_color
@@ -36,8 +37,8 @@ OnRolesReady = Callable[[discord.Interaction, "list[int]"], Awaitable[None]]
 
 
 def _can_manage(interaction: discord.Interaction) -> bool:
-    perms = getattr(interaction.user, "guild_permissions", None)
-    return bool(perms is not None and (perms.manage_roles or perms.administrator))
+    # Owner OR manage_roles (admins implicitly hold manage_roles). Q-0212.
+    return member_has_perms_or_owner(interaction.user, manage_roles=True)
 
 
 class _PackCategorySelect(discord.ui.Select):

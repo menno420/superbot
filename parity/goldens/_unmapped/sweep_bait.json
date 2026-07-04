@@ -1,0 +1,299 @@
+{
+ "case_id": "sweep.bait",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1928093764,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "description": "×10 casts · ×1.25 rarity",
+            "emoji": {
+             "id": null,
+             "name": "🪱"
+            },
+            "label": "Worm Bait — 150 coins",
+            "value": "worm"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · ×1.5 rarity",
+            "emoji": {
+             "id": null,
+             "name": "🐛"
+            },
+            "label": "Glow Grub — 400 coins",
+            "value": "grub"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · ×2 rarity",
+            "emoji": {
+             "id": null,
+             "name": "✨"
+            },
+            "label": "Shimmer Lure — 1000 coins",
+            "value": "lure"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · −20% wait",
+            "emoji": {
+             "id": null,
+             "name": "🐟"
+            },
+            "label": "Live Minnow — 200 coins",
+            "value": "minnow"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · −40% wait",
+            "emoji": {
+             "id": null,
+             "name": "🌀"
+            },
+            "label": "Flash Spinner — 600 coins",
+            "value": "spinner"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · ×1.75 rarity · −30% wait",
+            "emoji": {
+             "id": null,
+             "name": "👑"
+            },
+            "label": "Royal Feast — 1800 coins",
+            "value": "feast"
+           }
+          ],
+          "placeholder": "Buy a pack of bait…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "description": "×10 casts · ×1.25 rarity",
+            "emoji": {
+             "id": null,
+             "name": "🪱"
+            },
+            "label": "Worm Bait — 3 fish (size ≤ 3)",
+            "value": "worm"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · ×1.5 rarity",
+            "emoji": {
+             "id": null,
+             "name": "🐛"
+            },
+            "label": "Glow Grub — 5 fish (size ≤ 6)",
+            "value": "grub"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · ×2 rarity",
+            "emoji": {
+             "id": null,
+             "name": "✨"
+            },
+            "label": "Shimmer Lure — 6 fish (size ≤ 9)",
+            "value": "lure"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · −20% wait",
+            "emoji": {
+             "id": null,
+             "name": "🐟"
+            },
+            "label": "Live Minnow — 3 fish (size ≤ 3)",
+            "value": "minnow"
+           },
+           {
+            "default": false,
+            "description": "×10 casts · −40% wait",
+            "emoji": {
+             "id": null,
+             "name": "🌀"
+            },
+            "label": "Flash Spinner — 5 fish (size ≤ 6)",
+            "value": "spinner"
+           }
+          ],
+          "placeholder": "Craft a pack from caught fish…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "description": "×10 casts · ×1.75 rarity · −30% wait",
+            "emoji": {
+             "id": null,
+             "name": "🦪"
+            },
+            "label": "Royal Feast — 4 🦪 pearls",
+            "value": "feast"
+           }
+          ],
+          "placeholder": "Craft a pack from pearls…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:4>",
+          "disabled": false,
+          "label": "↩ Fishing menu",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15844367,
+        "description": "No bait loaded — you're fishing bare (which catches fine!).\n*Load a pack for rarer, bigger fish or quicker bites.*",
+        "fields": [
+         {
+          "inline": false,
+          "name": "The shelf",
+          "value": "🪱 **Worm Bait** — 150 🪙 (×10 casts, ×1.25 rarity)\n🐛 **Glow Grub** — 400 🪙 (×10 casts, ×1.5 rarity)\n✨ **Shimmer Lure** — 1000 🪙 (×10 casts, ×2 rarity)\n🐟 **Live Minnow** — 200 🪙 (×10 casts, −20% wait)\n🌀 **Flash Spinner** — 600 🪙 (×10 casts, −40% wait)\n👑 **Royal Feast** — 1800 🪙 (×10 casts, ×1.75 rarity · −30% wait)"
+         },
+         {
+          "inline": false,
+          "name": "Craft from fish",
+          "value": "🪱 **Worm Bait** — 3 fish (size ≤ 3)\n🐛 **Glow Grub** — 5 fish (size ≤ 6)\n✨ **Shimmer Lure** — 6 fish (size ≤ 9)\n🐟 **Live Minnow** — 3 fish (size ≤ 3)\n🌀 **Flash Spinner** — 5 fish (size ≤ 6)\n*Turn small catches into bait — no coins needed.*"
+         },
+         {
+          "inline": false,
+          "name": "Craft from pearls (you have 0 🦪)",
+          "value": "👑 **Royal Feast** — 4 🦪 pearls\n*Pearls drop rarely when you reel in a fish — bigger fish, better odds.*"
+         },
+         {
+          "inline": false,
+          "name": "Your balance",
+          "value": "**0** 🪙"
+         }
+        ],
+        "flags": 0,
+        "title": "🪱 Bait Shop",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!bait",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

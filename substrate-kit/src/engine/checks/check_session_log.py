@@ -20,9 +20,18 @@ from pathlib import Path
 
 
 def missing_markers(text: str, markers: Sequence[Mapping[str, str]]) -> list[str]:
-    """Return the labels of markers whose needle is absent from ``text``."""
+    """Return the labels of markers whose needle is absent from ``text``.
+
+    Tolerant of partial host-config entries: a marker without a ``needle`` is
+    skipped (nothing to search for) rather than raising, and a missing
+    ``label`` reports as ``"?"``.
+    """
     lower = text.lower()
-    return [m["label"] for m in markers if m["needle"].lower() not in lower]
+    return [
+        m.get("label", "?")
+        for m in markers
+        if m.get("needle") and m.get("needle", "").lower() not in lower
+    ]
 
 
 def latest_session_log(sessions_dir: Path) -> Path | None:

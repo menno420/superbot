@@ -7,6 +7,7 @@ from discord import Member, app_commands
 from discord.ext import commands
 
 from core.runtime import panel_manager
+from core.runtime.permission_checks import app_perms_or_owner
 from core.runtime.ui_permissions import can_execute_ctx
 from services import moderation_service
 from services.moderation_helpers import (
@@ -93,7 +94,7 @@ class ModerationCog(commands.Cog):
         description="Open the Moderation hub (moderator only).",
     )
     @app_commands.default_permissions(moderate_members=True)
-    @app_commands.checks.has_permissions(moderate_members=True)
+    @app_perms_or_owner(moderate_members=True)
     async def moderation_slash(self, interaction: discord.Interaction) -> None:
         """Slash front door for the Moderation hub — ephemeral, mod-only.
 

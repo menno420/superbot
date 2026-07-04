@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 from unittest.mock import AsyncMock, MagicMock
 
 import discord
@@ -62,6 +63,48 @@ def test_leave_embed_uses_plain_name():
     assert embed.description == "Astro left Demo"
 
 
+def test_join_embed_picks_a_random_variant():
+    import random
+
+    member = _member()
+    policy = WelcomePolicy(
+        join_message="Hi {user}\n---\nWelcome {user}\n---\nHey {user}"
+    )
+    # Every render is one of the variants, placeholders expanded…
+    rendered = {
+        welcome_service.format_join_embed(
+            member, policy, 1, rng=random.Random(s)
+        ).description
+        for s in range(20)
+    }
+    assert rendered <= {"Hi <@200>", "Welcome <@200>", "Hey <@200>"}
+    # …and it genuinely varies across seeds.
+    assert len(rendered) > 1
+
+
+def test_leave_embed_picks_a_random_variant():
+    import random
+
+    member = _member()
+    policy = WelcomePolicy(leave_message="Bye {user}\n---\nFarewell {user}")
+    rendered = {
+        welcome_service.format_leave_embed(
+            member, policy, 1, rng=random.Random(s)
+        ).description
+        for s in range(20)
+    }
+    assert rendered <= {"Bye Astro", "Farewell Astro"}
+    assert len(rendered) > 1
+
+
+def test_dm_embed_renders_dm_message_with_mention():
+    member = _member()
+    policy = WelcomePolicy(dm_message="Welcome {user} to {server} (#{count})")
+    embed = welcome_service.format_dm_embed(member, policy, 7)
+    assert embed.description == "Welcome <@200> to Demo (#7)"
+    assert embed.color == discord.Color.green()
+
+
 # ---------------------------------------------------------------------------
 # handle_member_join
 # ---------------------------------------------------------------------------
@@ -114,6 +157,80 @@ async def test_join_posts_greeting_and_emits(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_join_sends_dm_greeting(monkeypatch):
+    member = _member()
+    member.send = AsyncMock()
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=False,  # no channel greeting
+                dm_enabled=True,
+                dm_message="Hey {user}!",
+            ),
+        ),
+    )
+
+    await welcome_service.handle_member_join(member)
+
+    member.send.assert_awaited_once()
+    embed = member.send.await_args.kwargs["embed"]
+    assert embed.description == "Hey <@200>!"
+    # No channel was configured → no channel post attempted.
+    member.guild.get_channel.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_join_dm_closed_is_swallowed(monkeypatch):
+    member = _member()
+    member.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "closed"))
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True, join_enabled=False, dm_enabled=True
+            ),
+        ),
+    )
+
+    # A member with DMs closed must not raise — the join dispatch completes.
+    await welcome_service.handle_member_join(member)
+    member.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_join_channel_greeting_and_dm_are_independent(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.send = AsyncMock()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                dm_enabled=True,
+            ),
+        ),
+    )
+    import core.events
+
+    monkeypatch.setattr(core.events.bus, "emit", AsyncMock())
+
+    await welcome_service.handle_member_join(member)
+
+    # Both the channel greeting and the DM fire.
+    channel.send.assert_awaited_once()
+    member.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_join_grants_entry_role(monkeypatch):
     role = MagicMock()
     role.id = 777
@@ -124,7 +241,9 @@ async def test_join_grants_entry_role(monkeypatch):
         welcome_service.welcome_config,
         "load_policy",
         AsyncMock(
-            return_value=WelcomePolicy(enabled=True, join_enabled=False, entry_role_id=777),
+            return_value=WelcomePolicy(
+                enabled=True, join_enabled=False, entry_role_id=777
+            ),
         ),
     )
     apply = AsyncMock()
@@ -362,3 +481,202 @@ async def test_leave_disabled_is_noop(monkeypatch):
     )
     await welcome_service.handle_member_leave(member)
     channel.send.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Join-delay age-gating (anti-raid)
+# ---------------------------------------------------------------------------
+
+
+def _aged_member(days_old: float, guild: MagicMock | None = None) -> MagicMock:
+    """A member whose account was created ``days_old`` days ago (tz-aware UTC)."""
+    member = _member(guild)
+    member.created_at = discord.utils.utcnow() - dt.timedelta(days=days_old)
+    return member
+
+
+@pytest.mark.asyncio
+async def test_join_too_young_account_is_skipped_entirely(monkeypatch):
+    """A below-threshold account gets no greeting, no DM, and no entry role."""
+    channel = _text_channel()
+    member = _aged_member(days_old=1)  # 1 day old, gate is 7 days
+    member.send = AsyncMock()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                dm_enabled=True,
+                channel_id=100,
+                entry_role_id=500,
+                min_account_age_days=7,
+            ),
+        ),
+    )
+    apply = AsyncMock()
+    monkeypatch.setattr("services.role_automation.apply", apply)
+
+    await welcome_service.handle_member_join(member)
+
+    channel.send.assert_not_called()
+    member.send.assert_not_called()
+    apply.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_join_old_enough_account_is_greeted(monkeypatch):
+    """An account at/above the threshold is greeted normally."""
+    channel = _text_channel()
+    member = _aged_member(days_old=30)  # 30 days old, gate is 7
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                min_account_age_days=7,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_join(member)
+    channel.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_join_gate_off_does_not_consult_account_age(monkeypatch):
+    """With the gate at 0 a brand-new account is still greeted (default behaviour)."""
+    channel = _text_channel()
+    member = _aged_member(days_old=0)  # created seconds ago
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                min_account_age_days=0,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_join(member)
+    channel.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_join_unknown_account_age_fails_open(monkeypatch):
+    """A missing created_at (unknown age) greets rather than silently dropping."""
+    channel = _text_channel()
+    member = _member()
+    member.created_at = None
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                min_account_age_days=7,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_join(member)
+    channel.send.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# Ping-then-delete (auto-delete the channel greeting/farewell)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_join_greeting_passes_delete_after(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                delete_after_seconds=30,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_join(member)
+    channel.send.assert_awaited_once()
+    assert channel.send.await_args.kwargs["delete_after"] == 30.0
+
+
+@pytest.mark.asyncio
+async def test_join_greeting_delete_after_off_is_none(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_join(member)
+    assert channel.send.await_args.kwargs["delete_after"] is None
+
+
+@pytest.mark.asyncio
+async def test_leave_farewell_passes_delete_after(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                leave_enabled=True,
+                channel_id=100,
+                delete_after_seconds=45,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_leave(member)
+    assert channel.send.await_args.kwargs["delete_after"] == 45.0
+
+
+@pytest.mark.asyncio
+async def test_dm_greeting_is_never_deleted(monkeypatch):
+    """delete_after applies to the channel post, never to the DM send."""
+    member = _member()
+    member.send = AsyncMock()
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                dm_enabled=True,
+                delete_after_seconds=30,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_join(member)
+    member.send.assert_awaited_once()
+    assert "delete_after" not in member.send.await_args.kwargs

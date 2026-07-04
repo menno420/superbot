@@ -309,6 +309,88 @@ async def test_clone_calls_clone_and_is_compensatable(svc):
     assert result.reversibility == COMPENSATABLE
 
 
+@pytest.mark.asyncio
+async def test_set_slowmode_calls_edit_and_is_reversible(svc):
+    ch = _channel(10, "general")
+    guild = _guild([ch])
+    result = await svc.apply(
+        guild,
+        ChannelLifecycleRequest(
+            operation="set_slowmode",
+            channel_ids=(10,),
+            slowmode_seconds=30,
+        ),
+        _actor(),
+    )
+    ch.edit.assert_awaited_once_with(slowmode_delay=30, reason=None)
+    assert result.outcome == SUCCESS
+    assert result.reversibility == REVERSIBLE
+
+
+@pytest.mark.asyncio
+async def test_set_slowmode_clamps_to_discord_cap(svc):
+    ch = _channel(10, "general")
+    guild = _guild([ch])
+    await svc.apply(
+        guild,
+        ChannelLifecycleRequest(
+            operation="set_slowmode",
+            channel_ids=(10,),
+            slowmode_seconds=999_999,
+        ),
+        _actor(),
+    )
+    # Clamped to the 6-hour Discord maximum, never passed through raw.
+    ch.edit.assert_awaited_once_with(slowmode_delay=21600, reason=None)
+
+
+@pytest.mark.asyncio
+async def test_set_slowmode_zero_disables(svc):
+    ch = _channel(10, "general")
+    guild = _guild([ch])
+    await svc.apply(
+        guild,
+        ChannelLifecycleRequest(
+            operation="set_slowmode",
+            channel_ids=(10,),
+            slowmode_seconds=0,
+        ),
+        _actor(),
+    )
+    ch.edit.assert_awaited_once_with(slowmode_delay=0, reason=None)
+
+
+@pytest.mark.asyncio
+async def test_set_topic_calls_edit_with_text(svc):
+    ch = _channel(10, "general")
+    guild = _guild([ch])
+    result = await svc.apply(
+        guild,
+        ChannelLifecycleRequest(
+            operation="set_topic",
+            channel_ids=(10,),
+            topic="welcome to the channel",
+        ),
+        _actor(),
+    )
+    ch.edit.assert_awaited_once_with(topic="welcome to the channel", reason=None)
+    assert result.outcome == SUCCESS
+    assert result.reversibility == REVERSIBLE
+
+
+@pytest.mark.asyncio
+async def test_set_topic_empty_clears_topic(svc):
+    ch = _channel(10, "general")
+    guild = _guild([ch])
+    await svc.apply(
+        guild,
+        ChannelLifecycleRequest(operation="set_topic", channel_ids=(10,), topic=""),
+        _actor(),
+    )
+    # Discord treats topic=None as "no topic" — clearing it.
+    ch.edit.assert_awaited_once_with(topic=None, reason=None)
+
+
 # ---------------------------------------------------------------------------
 # create_channels — the audited manual-channel creator (P0-4 PR 2, Q-0100)
 # ---------------------------------------------------------------------------

@@ -19,6 +19,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
+from core.runtime.permission_checks import perms_or_owner
 from services import starboard_service
 
 logger = logging.getLogger("bot.cogs.starboard")
@@ -148,7 +149,7 @@ class StarboardCog(commands.Cog):
     # ------------------------------------------------------------------ config
 
     @commands.group(name="starboard", invoke_without_command=True)
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def starboard_group(
         self,
         ctx: commands.Context,
@@ -191,14 +192,14 @@ class StarboardCog(commands.Cog):
         )
 
     @starboard_group.command(name="off")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def starboard_off(self, ctx: commands.Context) -> None:
         """Disable the starboard (config is preserved)."""
         await starboard_service.disable(guild_id=ctx.guild.id, actor_id=ctx.author.id)
         await ctx.send("✅ Starboard disabled. Re-enable with `!starboard #channel`.")
 
     @starboard_group.command(name="selfstar")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def starboard_selfstar(self, ctx: commands.Context, value: str) -> None:
         """Count the author's own ⭐? ``!starboard selfstar on|off`` (default off)."""
         on = value.strip().lower() in {"on", "yes", "true", "1", "enable", "enabled"}
@@ -216,7 +217,7 @@ class StarboardCog(commands.Cog):
         )
 
     @starboard_group.command(name="ignore")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def starboard_ignore(
         self,
         ctx: commands.Context,
@@ -233,7 +234,7 @@ class StarboardCog(commands.Cog):
         )
 
     @starboard_group.command(name="unignore")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def starboard_unignore(
         self,
         ctx: commands.Context,
@@ -248,7 +249,7 @@ class StarboardCog(commands.Cog):
         await ctx.send(f"✅ No longer ignoring {channel.mention}.")
 
     @starboard_group.command(name="panel")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def starboard_panel(self, ctx: commands.Context) -> None:
         """Open the interactive starboard config panel."""
         from views.base import send_panel

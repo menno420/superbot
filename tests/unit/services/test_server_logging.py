@@ -263,6 +263,72 @@ def test_format_log_embed_extra_value_truncated_at_cap():
 
 
 # ---------------------------------------------------------------------------
+# Subject avatar — the mod-log embed matches the passive-event embeds
+# ---------------------------------------------------------------------------
+
+
+def _subject(name: str = "TargetUser", url: str = "https://cdn.example/t.png") -> MagicMock:
+    s = MagicMock()
+    s.display_name = name
+    s.display_avatar = MagicMock()
+    s.display_avatar.url = url
+    return s
+
+
+def test_format_log_embed_subject_sets_author_avatar():
+    embed = format_log_embed(
+        action="ban",
+        guild_id=1,
+        target_id=7,
+        actor_id=2,
+        reason="x",
+        subject=_subject(),
+    )
+    assert embed.author.name == "TargetUser"
+    assert embed.author.icon_url == "https://cdn.example/t.png"
+
+
+def test_format_log_embed_without_subject_has_no_author():
+    embed = format_log_embed(action="ban", guild_id=1, target_id=7, actor_id=2, reason="x")
+    assert embed.author.name is None
+
+
+def test_format_public_log_embed_subject_sets_author_avatar():
+    embed = format_public_log_embed(action="ban", target_id=7, reason="x", subject=_subject())
+    assert embed.author.name == "TargetUser"
+
+
+def test_resolve_subject_user_prefers_guild_member():
+    guild = _make_guild()
+    member = _subject()
+    guild.get_member = MagicMock(return_value=member)
+    assert server_logging._resolve_subject_user(guild, 7) is member
+
+
+def test_resolve_subject_user_falls_back_to_bot_user_cache():
+    # A just-banned member is gone from the guild cache but still in the bot's
+    # global user cache — so bans/kicks still get a face.
+    guild = _make_guild()
+    guild.get_member = MagicMock(return_value=None)
+    user = _subject()
+    fake_bot = MagicMock()
+    fake_bot.get_user = MagicMock(return_value=user)
+    server_logging._BOT = fake_bot
+    try:
+        assert server_logging._resolve_subject_user(guild, 7) is user
+    finally:
+        server_logging._BOT = None
+
+
+def test_resolve_subject_user_none_when_unresolvable_or_no_id():
+    guild = _make_guild()
+    guild.get_member = MagicMock(return_value=None)
+    server_logging._BOT = None
+    assert server_logging._resolve_subject_user(guild, 7) is None
+    assert server_logging._resolve_subject_user(guild, None) is None
+
+
+# ---------------------------------------------------------------------------
 # resolve_log_channel
 # ---------------------------------------------------------------------------
 

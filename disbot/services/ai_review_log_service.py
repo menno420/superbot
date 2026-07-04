@@ -342,6 +342,49 @@ async def query(
     )
 
 
+async def get_entry(guild_id: int, entry_id: int) -> dict[str, Any] | None:
+    """Return one review entry by id (read-only), or None. Fail-safe."""
+    try:
+        from utils.db import ai_review as ai_review_db
+
+        return await ai_review_db.get_review_entry(guild_id, entry_id)
+    except Exception:  # noqa: BLE001
+        logger.warning("ai_review_log: get_entry failed", exc_info=True)
+        return None
+
+
+async def export(
+    guild_id: int,
+    *,
+    kind: str | None = None,
+    include_reviewed: bool = True,
+    limit: int = 1000,
+) -> list[dict[str, Any]]:
+    """Triage-ready export of a guild's review entries (read-only).
+
+    Returns plain JSON-serializable dicts (``created_at`` as an ISO string) for
+    the operator ``!aireview export`` dump → ``scripts/ai_review_triage.py``.
+    Text is already redacted at write time, so the export carries no un-scrubbed
+    content. Newest handling first happens downstream; rows arrive oldest-first.
+    """
+    from utils.db import ai_review as ai_review_db
+
+    rows = await ai_review_db.export_review_entries(
+        guild_id,
+        kind=kind,
+        include_reviewed=include_reviewed,
+        limit=max(1, min(5000, int(limit))),
+    )
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        item = dict(row)
+        created = item.get("created_at")
+        if isinstance(created, datetime):
+            item["created_at"] = created.isoformat()
+        out.append(item)
+    return out
+
+
 async def mark_reviewed(guild_id: int, entry_id: int) -> bool:
     """Mark one entry reviewed; True if a row matched. Fail-safe."""
     try:
@@ -401,6 +444,8 @@ __all__ = [
     "AnswerContext",
     "already_flagged",
     "count_unreviewed",
+    "export",
+    "get_entry",
     "lookup_answer",
     "mark_reviewed",
     "query",

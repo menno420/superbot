@@ -27,8 +27,59 @@ def _new_project_id() -> str:
 
 
 def _default_cadence() -> dict[str, int]:
-    """Return the default cadence knobs."""
-    return {"reconciliation_prs": 20}
+    """Return the default cadence knobs (every hardcoded cadence lives here)."""
+    return {
+        "reconciliation_prs": 20,
+        "reconciliation_sessions": 20,
+        "compaction_sessions": 20,
+        "critical_slot_grace_sessions": 3,
+        "staleness_days": 14,
+        "guided_practice_sessions": 3,
+    }
+
+
+def _default_reflection() -> dict:
+    """Return the reflection-buffer knobs (size cap is a hard context guard)."""
+    return {"enabled": True, "buffer_size": 5}
+
+
+def _default_orientation() -> dict:
+    """Return the orientation-budget knobs (the K0 ≤7,000-word gate).
+
+    ``boot_docs`` empty means "fall back to ``readpath_docs``" — the
+    unconditional boot-read set the budget counts.
+    """
+    return {"budget_words": 7000, "boot_docs": []}
+
+
+def _default_economy() -> dict:
+    """Return the context-economy knobs (taxonomy/gauges are host policy).
+
+    ``maturity`` gates the actuator: ``shadow`` (report only, the first-prune
+    safety protocol) -> ``gated`` (apply with review) -> ``normal``. Classes and
+    gauges ship empty — the engine supplies a documented generic default when
+    unset; each adopting repo declares its own table (the kit ships the search,
+    not our constants).
+    """
+    return {
+        "maturity": "shadow",
+        "pass_records_dir": "planning",
+        "reference_roots": [],
+        "id_patterns": [r"Q-\d{3,}", r"D-\d{3,}", r"R-\d{3,}"],
+        "classes": [],
+        "gauges": [],
+        "debt_threshold": 10,
+    }
+
+
+def _default_namespace() -> dict:
+    """Return the namespace-guard knobs (roots to scan + reserved-name map)."""
+    return {"roots": [], "reserved": {}}
+
+
+def _default_review_seam() -> dict:
+    """Return the review-seam knobs (provisioned, not wired — no live reviewer)."""
+    return {"reviewer": None}
 
 
 def _default_badge_tokens() -> list[str]:
@@ -78,6 +129,12 @@ class Config:
     session_markers: list[dict[str, str]] = field(
         default_factory=_default_session_markers,
     )
+    reflection: dict = field(default_factory=_default_reflection)
+    orientation: dict = field(default_factory=_default_orientation)
+    economy: dict = field(default_factory=_default_economy)
+    namespace: dict = field(default_factory=_default_namespace)
+    seams: list[dict] = field(default_factory=list)
+    review_seam: dict = field(default_factory=_default_review_seam)
 
     def to_json(self) -> str:
         """Serialise the config to indented, key-sorted JSON."""

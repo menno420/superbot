@@ -73,6 +73,50 @@ def _select(view: SettingsHubView) -> discord.ui.Select:
 
 
 # ---------------------------------------------------------------------------
+# Dropdown ordering — server-config groups first (settings_order_sim)
+# ---------------------------------------------------------------------------
+
+
+def test_settings_dropdown_sorts_server_config_groups_first(monkeypatch):
+    """`!settings` is an admin surface, so a server-config group (moderation)
+    sorts ABOVE a fun group (economy) even when the fun group has a lower
+    (earlier) *global* ``ui_priority``. Regression guard for the settings-order
+    sim's ~28→~8 find-cost win; the global ``ui_priority`` (Help / hubs) is
+    untouched because only this dropdown reads ``actionable_settings_groups``.
+    """
+    import utils.subsystem_registry as registry_mod
+
+    fake = {
+        # Fun group — LOW global ui_priority (would lead the old order).
+        "econ_fun": {
+            "display_name": "Economy",
+            "description": "coins",
+            "visibility_mode": "normal",
+            "category": "economy",
+            "visibility_tier": "user",
+            "ui_priority": 10,
+        },
+        # Server-config group — HIGH global ui_priority (buried in the old
+        # order); must lead the settings dropdown now.
+        "mod_cfg": {
+            "display_name": "Moderation",
+            "description": "warns, bans",
+            "visibility_mode": "normal",
+            "category": "moderation",
+            "visibility_tier": "moderator",
+            "ui_priority": 80,
+        },
+    }
+    monkeypatch.setattr(registry_mod, "SUBSYSTEMS", fake)
+    for name in fake:
+        schema_mod.register(
+            SubsystemSchema(subsystem=name, settings=(_editable_spec(),)),
+        )
+    order = [g.subsystem for g in actionable_settings_groups()]
+    assert order.index("mod_cfg") < order.index("econ_fun")
+
+
+# ---------------------------------------------------------------------------
 # Actionable-group discovery (audit §6 inclusion rule)
 # ---------------------------------------------------------------------------
 
@@ -135,11 +179,12 @@ def test_groups_include_bindings_only_subsystem():
 
 
 def test_groups_include_declared_domain_config_subsystem():
-    """Cleanup has no scalar/binding/resource declarations — it appears via
-    its schema's ``domain_panels`` declaration (Settings Phase 2; audit §4:
-    domain group linked to its canonical panel, never an empty scalar page).
-    Registers the REAL cleanup schema so the test pins the shipped
-    declaration, not a synthetic one.
+    """Cleanup appears via its schema's ``domain_panels`` declaration (Settings
+    Phase 2; audit §4: domain group linked to its canonical panel).  Since the
+    completion-cert punch #4 it *also* declares one scalar ``SettingSpec`` (the
+    ``!cleanuphistory`` spam-duplicate window) with a config-input widget, so it
+    surfaces **both** a scalar settings page and the domain panel.  Registers
+    the REAL cleanup schema so the test pins the shipped declaration.
     """
     from cogs.cleanup.schemas import CLEANUP_CONFIG_SCHEMA
 
@@ -148,7 +193,8 @@ def test_groups_include_declared_domain_config_subsystem():
     groups = {g.subsystem: g for g in actionable_settings_groups()}
     assert "cleanup" in groups
     assert groups["cleanup"].has_domain_panel is True
-    assert groups["cleanup"].surfaces == ("panel",)
+    assert groups["cleanup"].editable_setting_count == 1
+    assert groups["cleanup"].surfaces == ("settings", "panel")
 
 
 def test_groups_exclude_internal_subsystems(monkeypatch):
@@ -328,9 +374,19 @@ async def test_create_reads_guild_routing_for_labels(monkeypatch):
         "list_for_guild",
         AsyncMock(
             return_value=[
-                {"scope_type": "guild", "scope_id": None, "cog_name": "xp", "enabled": False},
+                {
+                    "scope_type": "guild",
+                    "scope_id": None,
+                    "cog_name": "xp",
+                    "enabled": False,
+                },
                 # Channel-scope restrictions are not a group-level state.
-                {"scope_type": "channel", "scope_id": 5, "cog_name": "cleanup", "enabled": False},
+                {
+                    "scope_type": "channel",
+                    "scope_id": 5,
+                    "cog_name": "cleanup",
+                    "enabled": False,
+                },
             ],
         ),
     )
@@ -387,8 +443,9 @@ def test_hub_inventory_reflects_registered_settings_and_groups():
     settings_registry.build_registry()
     embed = SettingsHubView.build_embed()
     inventory = next(f.value for f in embed.fields if f.name == "Inventory")
-    assert "`settings`: 2" in inventory
-    # xp (scalar) + cleanup (declared domain group) are the actionable groups.
+    # xp's 2 scalars + cleanup's 1 scalar (spam-window, punch #4) = 3.
+    assert "`settings`: 3" in inventory
+    # xp (scalar) + cleanup (scalar + declared domain group) are the actionable groups.
     assert "`groups`: 2" in inventory
 
 

@@ -36,7 +36,7 @@ import logging
 import re
 from typing import Any
 
-from config import BOT_OWNER_USER_ID
+from config import is_platform_owner
 from core.runtime import command_descriptions
 from services import ai_decision_audit_service
 from services.ai_instruction_service import BotKnowledgeBlock
@@ -232,7 +232,7 @@ def _bot_owner_block(user_id: int) -> BotKnowledgeBlock | None:
     recognise its owner/operator and trust their statements about editing the
     bot, while text-only claims of ownership stay untrusted.
     """
-    if BOT_OWNER_USER_ID is None or user_id != BOT_OWNER_USER_ID:
+    if not is_platform_owner(user_id):
         return None
     return BotKnowledgeBlock(kind="bot_user_identity", text=_BOT_OWNER_TEXT)
 

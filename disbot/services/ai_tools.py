@@ -97,11 +97,9 @@ def _make_user_standing(
             result["has_admin_access"] = tier in ("server_owner", "administrator")
         # Bot-owner recognition, keyed to the authoritative actor id (the live
         # Discord user id), consistent with the bot_user_identity span.
-        from config import BOT_OWNER_USER_ID
+        from config import is_platform_owner
 
-        result["is_bot_owner"] = (
-            BOT_OWNER_USER_ID is not None and actor_id == BOT_OWNER_USER_ID
-        )
+        result["is_bot_owner"] = is_platform_owner(actor_id)
         return result
 
     return handler

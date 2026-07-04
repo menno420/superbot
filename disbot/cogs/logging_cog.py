@@ -16,6 +16,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime.permission_checks import admin_or_owner
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR
 
 
@@ -71,13 +72,18 @@ async def build_logging_status_embed(guild: discord.Guild | None) -> discord.Emb
         value=cleanup_value,
         inline=False,
     )
-    # Server event logging v1 (Q-0109) — categories + routing summary.
+    # Server event logging (Q-0109 v1 + audit-log v2) — categories + routing.
     active_categories = [
         name
         for name, on in (
             ("messages", event_policy.messages_enabled),
             ("members", event_policy.members_enabled),
             ("roles", event_policy.roles_enabled),
+            # v2 (Discord audit-log integration) + voice.
+            ("moderation", event_policy.moderation_enabled),
+            ("channels", event_policy.channels_enabled),
+            ("server", event_policy.server_enabled),
+            ("voice", event_policy.voice_enabled),
         )
         if on
     ]
@@ -91,6 +97,33 @@ async def build_logging_status_embed(guild: discord.Guild | None) -> discord.Emb
         ),
         inline=False,
     )
+    # Audit-log v2 health: the moderation/channels/server categories depend on
+    # the bot's View-Audit-Log permission — without it Discord never dispatches
+    # on_audit_log_entry_create, so those categories are silently inert. Surface
+    # it so an operator who "enabled everything" can see the real cause.
+    audit_categories_on = (
+        event_policy.moderation_enabled
+        or event_policy.channels_enabled
+        or event_policy.server_enabled
+    )
+    if audit_categories_on:
+        me = getattr(guild, "me", None) if guild else None
+        has_view_audit = bool(
+            getattr(getattr(me, "guild_permissions", None), "view_audit_log", False),
+        )
+        embed.add_field(
+            name="Audit-log access",
+            value=(
+                "✅ bot has **View Audit Log**"
+                if has_view_audit
+                else (
+                    "⚠️ bot is **missing View Audit Log** — the moderation / "
+                    "channels / server categories cannot receive events until "
+                    "the bot is granted this permission."
+                )
+            ),
+            inline=False,
+        )
     embed.add_field(
         name="Counters (process-local)",
         value="\n".join(f"`{k}` = {v}" for k, v in sorted(counters.items())),
@@ -210,11 +243,75 @@ class LoggingCog(commands.Cog):
         await server_logging.log_role_change(after, added, removed)
 
     # ------------------------------------------------------------------
+    # Server event logging v2 — Discord audit-log + voice + raw deletes
+    # ------------------------------------------------------------------
+    #
+    # The v2 layer. ``on_audit_log_entry_create`` is a single gateway event
+    # that surfaces every administrative action Discord records — by anyone,
+    # with the actor named — so the log finally matches what a mature logging
+    # bot (Dyno) shows: bans/kicks/timeouts, channel/role/server changes,
+    # invites, emojis, webhooks. The handler categorises + gates + posts, fully
+    # fail-safe. Requires the bot to hold **View Audit Log**; without it Discord
+    # never dispatches this event (surfaced in ``!logging status``).
+
+    @commands.Cog.listener()
+    async def on_audit_log_entry_create(
+        self,
+        entry: discord.AuditLogEntry,
+    ) -> None:
+        """Log a Discord audit-log entry (bans, channel/role/server changes…)."""
+        from services import server_logging
+
+        await server_logging.log_audit_entry(entry)
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(
+        self,
+        member: discord.Member,
+        before: discord.VoiceState,
+        after: discord.VoiceState,
+    ) -> None:
+        """Log a voice join/leave/move when the voice category is enabled.
+
+        Skips bots (music/util bots would flood the log) and delegates the
+        transition classification + same-channel-noise filter to the handler.
+        """
+        if member.bot:
+            return
+        from services import server_logging
+
+        await server_logging.log_voice_state(member, before, after)
+
+    @commands.Cog.listener()
+    async def on_raw_message_delete(
+        self,
+        payload: discord.RawMessageDeleteEvent,
+    ) -> None:
+        """Log a deletion the cached ``on_message_delete`` path could not see.
+
+        Fires for **every** delete, so it defers to ``on_message_delete`` when
+        the message was cached (``payload.cached_message`` present — that path
+        logs it with content) and only handles the uncached case itself. This
+        closes the v1 gap where deleting an older/post-restart message logged
+        nothing at all.
+        """
+        if payload.guild_id is None or payload.cached_message is not None:
+            return
+        from services import server_logging
+
+        guild = self.bot.get_guild(payload.guild_id)
+        await server_logging.log_uncached_message_delete(
+            guild,
+            payload.channel_id,
+            payload.message_id,
+        )
+
+    # ------------------------------------------------------------------
     # !logging — command group
     # ------------------------------------------------------------------
 
     @commands.group(name="logging", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_grp(self, ctx: commands.Context) -> None:
         """Open the logging admin panel (S7d).
 
@@ -230,13 +327,13 @@ class LoggingCog(commands.Cog):
         await send_panel(ctx, embed=embed, view=view)
 
     @logging_grp.command(name="status")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_status(self, ctx: commands.Context) -> None:
         """Show this guild's server-logging configuration + counters."""
         await ctx.send(embed=await build_logging_status_embed(ctx.guild))
 
     @logging_grp.command(name="set")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_set(self, ctx: commands.Context, kind: str = "") -> None:
         """Open the channel-select view for ``mod`` or ``cleanup`` binding."""
         from cogs.logging.select_view import LogChannelSelectView
@@ -273,7 +370,7 @@ class LoggingCog(commands.Cog):
         )
 
     @logging_grp.command(name="create")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_create(self, ctx: commands.Context, kind: str = "") -> None:
         """Preview + create a new log channel for any registered route."""
         from cogs.logging.provision_view import (
@@ -302,7 +399,7 @@ class LoggingCog(commands.Cog):
         await ctx.send(embed=preview_embed, view=view)
 
     @logging_grp.command(name="routes")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_routes(self, ctx: commands.Context) -> None:
         """Open the Phase 9b Routes subpage directly.
 
@@ -322,7 +419,7 @@ class LoggingCog(commands.Cog):
         await send_panel(ctx, embed=embed, view=view)
 
     @logging_grp.command(name="test")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def logging_test(self, ctx: commands.Context) -> None:
         """Send a synthetic warn embed to the configured log channel."""
         from services import server_logging

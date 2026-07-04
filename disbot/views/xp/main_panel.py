@@ -11,7 +11,7 @@ import discord
 from discord.ext import commands
 
 from services.xp_helpers import _build_rank_embed, build_rank_response
-from views.base import HubView
+from views.base import HubView, interaction_is_admin, member_is_admin
 
 
 class _XpHubView(HubView):
@@ -31,7 +31,7 @@ class _XpHubView(HubView):
         back-navigation) so the chrome stays in exactly one place.
         """
         embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
-        is_admin = self.ctx.author.guild_permissions.administrator  # type: ignore[union-attr]
+        is_admin = member_is_admin(self.ctx.author)
         lines = ["Use the buttons below to switch stat views."]
         if is_admin:
             lines.append("Admin controls: ⚙️ Configure · 🎁 Give XP · 🔄 Reset XP")
@@ -92,7 +92,7 @@ class _XpHubView(HubView):
 
     @discord.ui.button(label="⚙️ Configure", style=discord.ButtonStyle.grey, row=1)
     async def btn_config(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Administrator permission required.",
                 ephemeral=True,
@@ -114,7 +114,7 @@ class _XpHubView(HubView):
 
     @discord.ui.button(label="🎁 Give XP", style=discord.ButtonStyle.grey, row=1)
     async def btn_givexp(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Administrator permission required.",
                 ephemeral=True,
@@ -126,7 +126,7 @@ class _XpHubView(HubView):
 
     @discord.ui.button(label="🔄 Reset XP", style=discord.ButtonStyle.danger, row=1)
     async def btn_resetxp(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Administrator permission required.",
                 ephemeral=True,

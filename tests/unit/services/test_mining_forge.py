@@ -187,3 +187,61 @@ async def test_build_unknown_structure():
     result = await mining_workflow.build_structure(1, 99, "spaceport")
     assert result.ok is False
     assert "isn't a buildable structure" in result.message
+
+
+@pytest.mark.asyncio
+async def test_build_tide_pool_consumes_coral_and_reports_the_bonus(_null_txn):
+    """The Tide Pool routes through the same audited build seam: coral consumed
+    as a negative delta + level raised, with the fishing-bonus reward line."""
+    with (
+        patch(f"{_WF}.db.get_structures", new_callable=AsyncMock, return_value={}),
+        patch(
+            f"{_WF}.db.get_mining_inventory",
+            new_callable=AsyncMock,
+            return_value={"coral": 20},
+        ),
+        patch(
+            f"{_WF}.economy_service.debit_in_txn",
+            new_callable=AsyncMock,
+            return_value=8_500,
+        ),
+        patch(f"{_WF}.db.apply_inventory_deltas", new_callable=AsyncMock) as deltas,
+        patch(f"{_WF}.db.set_structure_level", new_callable=AsyncMock) as lvl,
+        patch(f"{_WF}._emit_balance", new_callable=AsyncMock),
+    ):
+        result = await mining_workflow.build_structure(1, 99, "tide_pool")
+    assert result.ok is True
+    assert "Reef Pool" in result.message
+    assert "+4%" in result.message  # the level-1 rarity-pull bonus reward line
+    # Coral consumed as a negative delta; level raised 0 → 1.
+    assert deltas.await_args.args[2] == {"coral": -3}
+    assert lvl.await_args.args[:4] == (1, 99, "tide_pool", 1)
+
+
+@pytest.mark.asyncio
+async def test_build_dock_consumes_coral_and_wood_and_reports_the_bonus(_null_txn):
+    """The Dock routes through the same audited build seam: coral + wood consumed
+    as negative deltas + level raised, with the bite-speed reward line."""
+    with (
+        patch(f"{_WF}.db.get_structures", new_callable=AsyncMock, return_value={}),
+        patch(
+            f"{_WF}.db.get_mining_inventory",
+            new_callable=AsyncMock,
+            return_value={"coral": 10, "wood": 40},
+        ),
+        patch(
+            f"{_WF}.economy_service.debit_in_txn",
+            new_callable=AsyncMock,
+            return_value=6_000,
+        ),
+        patch(f"{_WF}.db.apply_inventory_deltas", new_callable=AsyncMock) as deltas,
+        patch(f"{_WF}.db.set_structure_level", new_callable=AsyncMock) as lvl,
+        patch(f"{_WF}._emit_balance", new_callable=AsyncMock),
+    ):
+        result = await mining_workflow.build_structure(1, 99, "dock")
+    assert result.ok is True
+    assert "Fishing Dock" in result.message
+    assert "6%" in result.message  # the level-1 bite-speed reward line
+    # Both materials consumed as negative deltas; level raised 0 → 1.
+    assert deltas.await_args.args[2] == {"coral": -2, "wood": -15}
+    assert lvl.await_args.args[:4] == (1, 99, "dock", 1)

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BTD6 menu layout simulator — SuperBot</title>
+<style>
+  :root {
+    --bg: #1e1f22; --panel: #2b2d31; --panel2: #313338; --edge: #232428;
+    --txt: #dbdee1; --muted: #949ba4; --green: #248046; --greenH: #1a6334;
+    --blurple: #5865f2; --blurpleH: #4752c4; --grey: #4e5058; --greyH: #6d6f78;
+    --gold: #f0b232; --red: #da373c; --line: #3f4147; --accent: #00a8fc;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--txt);
+    font-family: "gg sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.45;
+  }
+  header { padding: 20px 24px 8px; border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0 0 4px; font-size: 20px; }
+  header p { margin: 4px 0; color: var(--muted); font-size: 14px; max-width: 980px; }
+  .wrap { display: flex; flex-wrap: wrap; gap: 24px; padding: 20px 24px 60px; align-items: flex-start; }
+  .col-phone { flex: 0 0 auto; }
+  .col-info { flex: 1 1 420px; min-width: 340px; }
+
+  /* layout tabs */
+  .tabs { display: flex; gap: 8px; margin: 14px 0 10px; flex-wrap: wrap; }
+  .tab {
+    background: var(--panel); color: var(--txt); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  .tab.active { background: var(--blurple); border-color: var(--blurple); color: #fff; }
+  .tab small { display: block; font-weight: 400; opacity: .8; font-size: 11px; }
+
+  /* phone mock */
+  .phone {
+    width: 360px; background: #000; border-radius: 28px; padding: 12px 10px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.5); border: 1px solid #333;
+  }
+  .screen { background: var(--bg); border-radius: 18px; overflow: hidden; min-height: 620px; display: flex; flex-direction: column; }
+  .chan { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--edge); font-weight: 600; font-size: 14px; }
+  .chan .hash { color: var(--muted); }
+  .chan .online { margin-left: auto; color: var(--muted); font-size: 11px; font-weight: 400; }
+  .msg { padding: 12px; overflow-y: auto; flex: 1; }
+  .embed {
+    border-left: 4px solid var(--green); background: var(--panel); border-radius: 4px;
+    padding: 12px 14px; font-size: 13px;
+  }
+  .embed h3 { margin: 0 0 6px; font-size: 15px; }
+  .embed .field-name { font-weight: 700; margin-top: 8px; font-size: 12px; }
+  .embed .field-val { color: var(--txt); font-size: 12px; }
+  .embed .foot { color: var(--muted); font-size: 11px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 6px; }
+  .mono { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--edge); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+
+  /* action rows (buttons) */
+  .rows { padding: 6px 10px 12px; }
+  .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: nowrap; }
+  .btn {
+    flex: 1 1 0; min-width: 0; border: none; border-radius: 8px; padding: 9px 6px; cursor: pointer;
+    font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; transition: filter .1s;
+  }
+  .btn:hover { filter: brightness(1.12); }
+  .btn.primary { background: var(--blurple); }
+  .btn.success { background: var(--green); }
+  .btn.secondary { background: var(--grey); }
+  .btn.danger { background: var(--red); }
+  .btn.ghost { background: transparent; border: 1px dashed var(--line); color: var(--muted); }
+  .select {
+    width: 100%; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; color: var(--txt); cursor: pointer; display: flex; align-items: center; font-size: 13px;
+  }
+  .select .chev { margin-left: auto; color: var(--muted); }
+  .subpanel { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 8px; }
+  .subpanel .crumb { font-size: 11px; color: var(--muted); padding: 0 2px 6px; }
+  .subpanel .crumb b { color: var(--accent); }
+  .backbtn { background: var(--panel2); color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; cursor: pointer; }
+  .ephemeral-tag { font-size: 10px; color: var(--muted); padding: 6px 4px 0; }
+
+  /* info panels */
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 8px; font-size: 15px; }
+  .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .metric { background: var(--panel2); border-radius: 8px; padding: 10px 12px; }
+  .metric .n { font-size: 22px; font-weight: 800; }
+  .metric .l { font-size: 11px; color: var(--muted); }
+  .metric.good .n { color: #3ba55d; }
+  .metric.warn .n { color: var(--gold); }
+  .metric.bad .n { color: var(--red); }
+  .verdict { font-size: 13px; margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--panel2); border-left: 3px solid var(--accent); }
+  .legend { font-size: 12px; color: var(--muted); }
+  .pill { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 700; vertical-align: middle; }
+  .pill.have { background: #204b2c; color: #4fd67e; }
+  .pill.new { background: #4a3a12; color: var(--gold); }
+
+  /* inventory */
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--edge); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--panel); }
+  .cat-h { font-weight: 800; color: #fff; background: var(--panel2); }
+  td.src { white-space: nowrap; }
+  .controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; font-size: 13px; }
+  .controls label { cursor: pointer; }
+  code.k { color: var(--accent); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>🐵 BTD6 menu layout simulator</h1>
+  <p>
+    A side-by-side of SuperBot's current BTD6 panel and two redesigns that pack
+    every useful function into clear subdivisions with a shallow click depth.
+    Toggle a layout, then <b>click the buttons/menu in the phone</b> to walk the
+    real drill-down. Metrics update per layout. The function inventory (bottom)
+    marks what SuperBot already ships (<span class="pill have">have</span>) vs.
+    gaps seen on the reference bot <b>Cyber&nbsp;Quincy</b> in the recording
+    (<span class="pill new">add</span>).
+  </p>
+  <p style="font-size:12px">
+    Data model lives in the <span class="mono">DATA</span> object in this file —
+    edit it to try your own grouping; the mock + metrics re-render from it.
+  </p>
+</header>
+
+<div class="wrap">
+  <!-- PHONE -->
+  <div class="col-phone">
+    <div class="tabs" id="tabs"></div>
+    <div class="phone">
+      <div class="screen">
+        <div class="chan"><span class="hash">#</span> 🤖 bots <span class="online">18 online</span></div>
+        <div class="msg">
+          <div class="embed">
+            <h3>🐵 BTD6 Assistant</h3>
+            <div class="field-val">Ask BTD6 questions or browse tower / hero / mode / round info.</div>
+            <div class="field-name">📚 Reference (seed)</div>
+            <div class="field-val">v1.0 · game v55.1 · 25 towers • 17 heroes • 86 maps • 18 modes • 140 rounds</div>
+            <div class="foot">!btd6 ask &lt;q&gt; · !btd6 round &lt;N&gt; · !btd6 leaderboard</div>
+          </div>
+          <div class="rows" id="rows"></div>
+          <div class="ephemeral-tag" id="ephHint"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="col-info">
+    <div class="card">
+      <h2 id="layoutTitle"></h2>
+      <div class="metrics" id="metrics"></div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+
+    <div class="card">
+      <h2>Why these subdivisions</h2>
+      <div class="legend" id="rationale"></div>
+    </div>
+
+    <div class="card">
+      <h2>Function inventory &amp; subdivisions</h2>
+      <div class="controls">
+        <label><input type="checkbox" id="showNew" checked /> show <span class="pill new">add</span> (Cyber Quincy gaps)</label>
+        <span id="invCount" class="legend"></span>
+      </div>
+      <div style="max-height: 520px; overflow-y: auto;">
+        <table id="inv"><tbody></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   DATA — edit here to try your own grouping. Everything else renders from this.
+   source: "have" = SuperBot ships it today (slash and/or panel button);
+           "new"  = a Cyber Quincy function worth adding.
+   ========================================================================== */
+const DATA = {
+  categories: {
+    ask:        { emoji:"🧠", label:"Ask",              short:"Ask",     blurb:"Free-form AI Q&A (grounded)." },
+    units:      { emoji:"🗼", label:"Units",            short:"Units",   blurb:"Towers, heroes, paragons — stats, upgrades, crosspaths." },
+    rounds:     { emoji:"🎲", label:"Rounds & Economy", short:"Rounds",  blurb:"Round info, RBE, income/cash, bloons, boss estimate." },
+    calc:       { emoji:"🧮", label:"Calculators",      short:"Calc",    blurb:"Cost/cash, sacrifices, hero-leveling, decay, glue." },
+    events:     { emoji:"🎯", label:"Live Events",      short:"Events",  blurb:"Race / boss / CT / odyssey, leaderboards, relics." },
+    mapsmodes:  { emoji:"🗺️", label:"Maps & Modes",     short:"Maps",    blurb:"Map browser + mode rules + tier list." },
+    strategy:   { emoji:"📋", label:"Strategy",         short:"Strats",  blurb:"Community strategy memory: browse / submit / mine." },
+    challenges: { emoji:"🏆", label:"Challenge Index",  short:"Index",   blurb:"2TC / 2MP / LTC / LCC / LCD / FTTC databases." },
+    help:       { emoji:"ℹ️", label:"Help & Status",    short:"Help",    blurb:"Help, status, diagnostics, data freshness." },
+    admin:      { emoji:"🛠️", label:"Admin",            short:"Admin",   blurb:"Staff: seed/sources/announce/readiness.", staff:true },
+  },
+  // functions per category
+  functions: {
+    ask:        [ {l:"Ask a question (AI)", s:"have", d:"grounded natural-language answer"} ],
+    units:      [ {l:"Towers browser", s:"have", d:"cost, upgrades, crosspaths, stats, Pro view"},
+                  {l:"Heroes browser", s:"have", d:"levels, abilities"},
+                  {l:"Paragon calculator", s:"have", d:"degree + stats"},
+                  {l:"Crosspath compare", s:"new", d:"compare two crosspaths for a tower"},
+                  {l:"Tier list", s:"new", d:"community tier list by version"} ],
+    rounds:     [ {l:"Round info", s:"have", d:"single round or a values table across a range"},
+                  {l:"RBE per round", s:"have", d:"single or inclusive range"},
+                  {l:"Income / cash", s:"have", d:"verified cash per round, single or range"},
+                  {l:"Bloon lookup", s:"have", d:"health, RBE, immunities, children"},
+                  {l:"Boss estimate", s:"have", d:"estimate a boss fight from HP/DPS/cost"} ],
+    calc:       [ {l:"Cost calculator", s:"new", d:"evaluate an upgrade-cost expression"},
+                  {l:"Cash goal", s:"new", d:"when can I afford $X (inverse income)"},
+                  {l:"Sun Temple sacrifice", s:"new", d:"max-temple / by-category sacrifice calc"},
+                  {l:"Hero leveling", s:"new", d:"level by income / by round placement"},
+                  {l:"Glue duration", s:"new", d:"how long a glue trap lasts"},
+                  {l:"CT tile decay", s:"new", d:"tile score decay over time"},
+                  {l:"Adora sacrifice", s:"new", d:"optimal Adora sacrifice"} ],
+    events:     [ {l:"Live events", s:"have", d:"race / boss / CT / odyssey / event"},
+                  {l:"Leaderboards", s:"have", d:"race / boss standings"},
+                  {l:"CT browser + map", s:"have", d:"tiles + rendered hex map"},
+                  {l:"Relic lookup", s:"have", d:"CT relic effects"} ],
+    mapsmodes:  [ {l:"Maps browser", s:"have", d:"by difficulty, water marker"},
+                  {l:"Modes catalog", s:"have", d:"mode rules & restrictions"} ],
+    strategy:   [ {l:"Browse strategies", s:"have", d:"published community strategies"},
+                  {l:"Submit a strategy", s:"have", d:"add to strategy memory"},
+                  {l:"My submissions", s:"have", d:"your own strategies in this guild"},
+                  {l:"Pending (staff)", s:"have", d:"review queue"} ],
+    challenges: [ {l:"2TC index", s:"new", d:"2-tower CHIMPS completions"},
+                  {l:"2MP index", s:"new", d:"2-money-pops completions"},
+                  {l:"LTC index", s:"new", d:"least-tiers CHIMPS"},
+                  {l:"LCC index", s:"new", d:"least-cash CHIMPS"},
+                  {l:"LCD index", s:"new", d:"least-cash deflation"},
+                  {l:"FTTC index", s:"new", d:"first-to-tier CHIMPS"} ],
+    help:       [ {l:"Status", s:"have", d:"assistant status"},
+                  {l:"Diagnostics", s:"have", d:"dataset diagnostics"},
+                  {l:"Help / commands", s:"have", d:"command reference"},
+                  {l:"Data sources", s:"have", d:"source registry freshness"} ],
+    admin:      [ {l:"Seed data", s:"have", d:"seed the Postgres store"},
+                  {l:"Sources on/off", s:"have", d:"enable / disable an ingestion source"},
+                  {l:"Announce channel", s:"have", d:"new-version announcements"},
+                  {l:"Readiness / runs", s:"have", d:"ingestion readiness + recent runs"},
+                  {l:"Admin panel", s:"have", d:"manual fetches + diagnostics"} ],
+  },
+  // three candidate layouts. Each row: list of controls.
+  // control kinds: {cat} category button (opens sub-panel) · {act} direct action
+  //                {sel:[cats]} a select menu whose options are categories
+  layouts: {
+    current: {
+      name: "A · Current (flat wall)",
+      blurb: "Every surfaced function is its own top-level button, ungrouped. Clear labels, but a 13-button wall that wraps to ~5 rows on mobile — and ~27 functions have no panel entry at all (slash-only).",
+      rows: [
+        [ {act:"Ask", cat:"ask", style:"success"}, {act:"Live Events", cat:"events", style:"primary"}, {act:"Towers", cat:"units", style:"primary"} ],
+        [ {act:"Heroes", cat:"units", style:"primary"}, {act:"Leaderboards", cat:"events", style:"primary"} ],
+        [ {act:"🗺️ CT", cat:"events", style:"secondary"}, {act:"Modes", cat:"mapsmodes", style:"secondary"}, {act:"Status", cat:"help", style:"primary"} ],
+        [ {act:"🔮 Paragon", cat:"units", style:"primary"}, {act:"🛠️ Admin", cat:"admin", style:"secondary"} ],
+        [ {act:"🗺️ Maps", cat:"mapsmodes", style:"secondary"}, {act:"📋 Strategy", cat:"strategy", style:"secondary"}, {act:"📚 Help", cat:"help", style:"secondary"} ],
+      ],
+    },
+    hub: {
+      name: "B · Category hub (recommended)",
+      blurb: "Ten labelled subdivisions, capped at FOUR buttons per row so short labels stay readable on mobile (5/row truncates to 'U…' — try it by editing the rows). Ask is a direct modal, the rest open an ephemeral sub-panel. Every function is 1–2 clicks away and there is room to add the whole calculator + challenge families without a new top-level button.",
+      rows: [
+        [ {cat:"ask", style:"success"}, {cat:"events", style:"primary"}, {cat:"units", style:"primary"}, {cat:"rounds", style:"primary"} ],
+        [ {cat:"calc", style:"primary"}, {cat:"mapsmodes", style:"secondary"}, {cat:"strategy", style:"secondary"}, {cat:"challenges", style:"secondary"} ],
+        [ {cat:"help", style:"secondary"}, {cat:"admin", style:"danger"} ],
+      ],
+    },
+    select: {
+      name: "C · Select hybrid (most compact)",
+      blurb: "Two hot buttons + one 'Browse BTD6…' dropdown that lists every browse category, + Admin. Smallest footprint (3 rows), scales to unlimited categories, still 1–2 clicks to any function. Slightly less glanceable than B because the categories hide inside the menu.",
+      rows: [
+        [ {cat:"ask", style:"success"}, {cat:"events", style:"primary"} ],
+        [ {sel:["units","rounds","calc","mapsmodes","strategy","challenges","help"]} ],
+        [ {cat:"admin", style:"danger"} ],
+      ],
+    },
+  },
+};
+
+/* ============================================================================ */
+const $ = s => document.querySelector(s);
+let current = "hub";        // active layout
+let drill = null;           // active sub-panel category id (or null)
+let selectOpen = false;
+
+const styleClass = s => ({success:"success", primary:"primary", secondary:"secondary", danger:"danger"}[s] || "secondary");
+const catLabel = id => `${DATA.categories[id].emoji} ${DATA.categories[id].label}`;
+const catBtnLabel = id => `${DATA.categories[id].emoji} ${DATA.categories[id].short || DATA.categories[id].label}`;
+
+function renderTabs() {
+  $("#tabs").innerHTML = "";
+  for (const key of Object.keys(DATA.layouts)) {
+    const L = DATA.layouts[key];
+    const b = document.createElement("button");
+    b.className = "tab" + (key === current ? " active" : "");
+    b.innerHTML = L.name.replace(/^(\S+ · )/, "<span>$1</span>").replace(/·/, "·");
+    b.onclick = () => { current = key; drill = null; selectOpen = false; renderAll(); };
+    $("#tabs").appendChild(b);
+  }
+}
+
+function controlButton(ctrl) {
+  const b = document.createElement("button");
+  b.className = "btn " + styleClass(ctrl.style);
+  b.textContent = ctrl.act || catBtnLabel(ctrl.cat);
+  b.onclick = () => {
+    if (ctrl.cat === "ask") { drill = "ask"; }
+    else { drill = ctrl.cat; }
+    selectOpen = false; renderRows(); renderMetrics();
+  };
+  return b;
+}
+
+function renderRows() {
+  const host = $("#rows");
+  host.innerHTML = "";
+  const L = DATA.layouts[current];
+
+  // Top-level controls
+  for (const row of L.rows) {
+    const r = document.createElement("div");
+    r.className = "row";
+    for (const ctrl of row) {
+      if (ctrl.sel) {
+        const sel = document.createElement("div");
+        sel.className = "select";
+        sel.innerHTML = `<span>🔽 Browse BTD6…</span><span class="chev">▾</span>`;
+        sel.onclick = () => { selectOpen = !selectOpen; drill = null; renderRows(); };
+        r.appendChild(sel);
+      } else {
+        r.appendChild(controlButton(ctrl));
+      }
+    }
+    host.appendChild(r);
+  }
+
+  // Expanded select options
+  if (selectOpen) {
+    const L2 = L.rows.flat().find(c => c.sel);
+    if (L2) {
+      const box = document.createElement("div");
+      box.className = "subpanel";
+      box.innerHTML = `<div class="crumb">Browse BTD6… — pick a category</div>`;
+      for (const catId of L2.sel) {
+        const opt = document.createElement("button");
+        opt.className = "btn secondary";
+        opt.style.marginTop = "6px";
+        opt.style.textAlign = "left";
+        opt.textContent = `${catLabel(catId)} — ${DATA.categories[catId].blurb}`;
+        opt.onclick = () => { drill = catId; selectOpen = false; renderRows(); renderMetrics(); };
+        box.appendChild(opt);
+      }
+      host.appendChild(box);
+    }
+  }
+
+  // Drill-down sub-panel
+  if (drill) {
+    host.appendChild(renderSubpanel(drill));
+  }
+  $("#ephHint").textContent = drill
+    ? "▲ ephemeral sub-panel — only you can see this"
+    : "Tip: click a category to open its ephemeral sub-panel.";
+}
+
+function renderSubpanel(catId) {
+  const box = document.createElement("div");
+  box.className = "subpanel";
+  const cat = DATA.categories[catId];
+  if (catId === "ask") {
+    box.innerHTML = `<div class="crumb"><b>${catLabel("ask")}</b> · a modal opens</div>
+      <div class="embed" style="border-color:var(--green)"><h3>Ask BTD6 Assistant</h3>
+      <div class="field-val">Type your question… e.g. <span class="mono">list all the bloons from r29 till r63</span></div></div>`;
+    const back = document.createElement("button");
+    back.className = "backbtn"; back.style.marginTop = "8px"; back.textContent = "↩ close";
+    back.onclick = () => { drill = null; renderRows(); renderMetrics(); };
+    box.appendChild(back);
+    return box;
+  }
+  const crumb = document.createElement("div");
+  crumb.className = "crumb";
+  crumb.innerHTML = `<b>${catLabel(catId)}</b> · ${cat.blurb}`;
+  box.appendChild(crumb);
+
+  const showNew = $("#showNew").checked;
+  const fns = DATA.functions[catId].filter(f => showNew || f.s === "have");
+  for (const f of fns) {
+    const b = document.createElement("button");
+    b.className = "btn " + (f.s === "new" ? "ghost" : "secondary");
+    b.style.marginTop = "6px";
+    b.style.textAlign = "left";
+    b.innerHTML = `${f.l} <span style="opacity:.6;font-weight:400">— ${f.d}</span>` +
+      (f.s === "new" ? ` <span class="pill new">add</span>` : "");
+    box.appendChild(b);
+  }
+  const back = document.createElement("button");
+  back.className = "backbtn"; back.style.marginTop = "8px"; back.textContent = "↩ back to menu";
+  back.onclick = () => { drill = null; renderRows(); renderMetrics(); };
+  box.appendChild(back);
+  return box;
+}
+
+/* ---- metrics ---- */
+function computeMetrics(key) {
+  const L = DATA.layouts[key];
+  const rows = L.rows;
+  const nRows = rows.length;
+  let controls = 0, hasSelect = false;
+  const reachableCats = new Set();
+  for (const row of rows) for (const c of row) {
+    controls++;
+    if (c.sel) { hasSelect = true; c.sel.forEach(x => reachableCats.add(x)); }
+    else if (c.cat) reachableCats.add(c.cat);
+  }
+  // functions reachable from the panel
+  const allCats = Object.keys(DATA.categories);
+  let reachFns = 0, totalFns = 0;
+  for (const cat of allCats) {
+    const n = DATA.functions[cat].length;
+    totalFns += n;
+    if (reachableCats.has(cat)) reachFns += n;
+  }
+  // max presses to a function: current = 1 (button==fn, the surfaced ones);
+  // hub = 2 (category → function); select = 2 (menu pick → function), ask = 1.
+  let maxPress;
+  if (key === "current") maxPress = 1;
+  else maxPress = 2;
+  return { nRows, controls, hasSelect, reachFns, totalFns, maxPress, coverage: Math.round(100*reachFns/totalFns) };
+}
+
+function renderMetrics() {
+  const m = computeMetrics(current);
+  $("#layoutTitle").textContent = DATA.layouts[current].name;
+  const cov = m.coverage;
+  const covCls = cov >= 100 ? "good" : cov >= 60 ? "warn" : "bad";
+  const rowCls = m.nRows <= 3 ? "good" : m.nRows <= 4 ? "warn" : "bad";
+  const cells = [
+    { n: m.controls, l: "top-level controls", cls: m.controls <= 5 ? "good" : m.controls <= 10 ? "warn" : "bad" },
+    { n: m.nRows, l: "rows on mobile", cls: rowCls },
+    { n: cov + "%", l: `functions reachable (${m.reachFns}/${m.totalFns})`, cls: covCls },
+    { n: "≤" + m.maxPress, l: "clicks to any function", cls: m.maxPress <= 2 ? "good" : "warn" },
+  ];
+  $("#metrics").innerHTML = cells.map(c =>
+    `<div class="metric ${c.cls}"><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
+  $("#verdict").innerHTML = DATA.layouts[current].blurb;
+  $("#rationale").innerHTML = rationaleHTML();
+}
+
+function rationaleHTML() {
+  return `
+    The recording showed the reference bot <b>Cyber Quincy</b> exposing ~40 BTD6
+    functions as flat <code class="k">/</code>slash commands. SuperBot already
+    owns most of them, but the <b>panel</b> only surfaces 13 as an ungrouped wall
+    (layout&nbsp;A) — so the depth is shallow but discovery is poor and the mobile
+    footprint is tall. Grouping into <b>ten subdivisions</b> keeps every function
+    1–2 clicks deep while making room for the whole
+    <span class="pill new">add</span> backlog (calculators, challenge indices)
+    without adding a single top-level button.
+    <br><br><b>Mobile finding (from the recording):</b> Discord truncates button
+    labels hard — <b>5 buttons per row</b> collapses "Events"→"E…". So the real
+    choice is <b>B at ≤4 buttons/row</b> (glanceable, 3 rows) vs. <b>C</b>, a
+    dropdown that stays fully readable at any width (2 rows).
+    <br><br><b>Recommendation:</b> ship <b>B</b> (category hub, ≤4/row) — clearest
+    subdivisions, 2-click depth, back-compatible with the existing
+    <span class="mono">btd6:*</span> button ids (they become the sub-panel
+    entries). Put a <b>select inside</b> the crowded sub-panels (Calculators,
+    Challenge Index) so they never exceed one row. If footprint matters more than
+    glanceability, <b>C</b> is the compact fallback.`;
+}
+
+/* ---- inventory table ---- */
+function renderInventory() {
+  const showNew = $("#showNew").checked;
+  const tb = $("#inv").querySelector("tbody");
+  tb.innerHTML = "";
+  let have = 0, add = 0;
+  for (const catId of Object.keys(DATA.categories)) {
+    const cat = DATA.categories[catId];
+    const fns = DATA.functions[catId].filter(f => showNew || f.s === "have");
+    if (!fns.length) continue;
+    const h = document.createElement("tr");
+    h.innerHTML = `<td class="cat-h" colspan="3">${cat.emoji} ${cat.label}${cat.staff ? " (staff)" : ""} — <span style="font-weight:400;color:var(--muted)">${cat.blurb}</span></td>`;
+    tb.appendChild(h);
+    for (const f of fns) {
+      if (f.s === "have") have++; else add++;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td style="width:170px">${f.l}</td>
+        <td class="src"><span class="pill ${f.s === "have" ? "have" : "new"}">${f.s === "have" ? "have" : "add"}</span></td>
+        <td style="color:var(--muted)">${f.d}</td>`;
+      tb.appendChild(tr);
+    }
+  }
+  $("#invCount").textContent = `${have} shipped · ${add} candidate additions · ${have+add} total`;
+}
+
+function renderAll() { renderTabs(); renderRows(); renderMetrics(); renderInventory(); }
+$("#showNew").addEventListener("change", () => { renderRows(); renderInventory(); });
+renderAll();
+</script>
+</body>
+</html>

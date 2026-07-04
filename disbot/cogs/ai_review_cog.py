@@ -30,6 +30,8 @@ from core.events import bus
 from core.runtime import message_pipeline
 from core.runtime.guild_resources import resolve_settings_channel
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
+from core.runtime.permission_checks import perms_or_owner
+from services import ai_preset_service as presets
 from services import ai_review_log_service as review
 from utils.settings_keys import ai as ai_keys
 
@@ -168,7 +170,7 @@ class AIReviewCog(commands.Cog):
     # -------------------------------------------------------------- command
 
     @commands.group(name="aireview", invoke_without_command=True)
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_group(self, ctx: commands.Context) -> None:
         """Show the AI review-log status (channel + unreviewed backlog)."""
         guild = ctx.guild
@@ -190,13 +192,13 @@ class AIReviewCog(commands.Cog):
         embed.set_footer(
             text=(
                 "!aireview channel #chan · !aireview list [unknown|correction] · "
-                "!aireview resolve <id> · !aireview off"
+                "!aireview export · !aireview resolve <id> · !aireview off"
             ),
         )
         await ctx.send(embed=embed)
 
     @aireview_group.command(name="channel")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_channel(
         self,
         ctx: commands.Context,
@@ -219,7 +221,7 @@ class AIReviewCog(commands.Cog):
         )
 
     @aireview_group.command(name="off")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_off(self, ctx: commands.Context) -> None:
         """Clear the review channel (entries are still recorded + queryable)."""
         guild = ctx.guild
@@ -233,7 +235,7 @@ class AIReviewCog(commands.Cog):
         )
 
     @aireview_group.command(name="list")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_list(
         self,
         ctx: commands.Context,
@@ -270,8 +272,65 @@ class AIReviewCog(commands.Cog):
         embed.set_footer(text="Mark one done with !aireview resolve <id>")
         await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
 
+    @aireview_group.command(name="export")  # type: ignore[arg-type]
+    @perms_or_owner(manage_guild=True)
+    async def aireview_export(
+        self,
+        ctx: commands.Context,
+        *flags: str,
+    ) -> None:
+        """Dump the backlog as a JSON file for triage.
+
+        ``!aireview export`` — all unreviewed entries (both kinds).
+        ``!aireview export unknown`` / ``correction`` — filter by kind.
+        ``!aireview export all`` — include already-resolved entries too.
+
+        The text is already redacted at write time, so the dump carries no
+        un-scrubbed content. Feed it to ``scripts/ai_review_triage.py``.
+        """
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        filter_kind, include_reviewed = _parse_export_flags(flags)
+        entries = await review.export(
+            guild.id,
+            kind=filter_kind,
+            include_reviewed=include_reviewed,
+        )
+        if not entries:
+            scope = "any" if include_reviewed else "unreviewed"
+            await ctx.send(f"No {scope} AI review entries to export.")
+            return
+        import io
+        import json
+
+        payload = {
+            "schema": "ai_review_export",
+            "version": 1,
+            "guild_id": guild.id,
+            "kind": filter_kind or "all",
+            "include_reviewed": include_reviewed,
+            "count": len(entries),
+            "entries": entries,
+        }
+        blob = json.dumps(payload, indent=2, ensure_ascii=False)
+        data = io.BytesIO(blob.encode("utf-8"))
+        await ctx.send(
+            content=(
+                f"📤 Exported **{len(entries)}** AI review "
+                f"{'entry' if len(entries) == 1 else 'entries'} "
+                f"({'all' if include_reviewed else 'unreviewed'}"
+                f"{', ' + filter_kind if filter_kind else ''}). "
+                "Paste this file's contents back to work the backlog, or run "
+                "`scripts/ai_review_triage.py` on it."
+            ),
+            file=discord.File(data, filename=f"ai_review_export_{guild.id}.json"),
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @aireview_group.command(name="resolve")  # type: ignore[arg-type]
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def aireview_resolve(self, ctx: commands.Context, entry_id: int) -> None:
         """Mark one review entry reviewed: ``!aireview resolve <id>``."""
         guild = ctx.guild
@@ -287,10 +346,178 @@ class AIReviewCog(commands.Cog):
             ),
         )
 
+    # ------------------------------------------------------- preset subgroup
+
+    @aireview_group.group(  # type: ignore[arg-type]
+        name="preset",
+        invoke_without_command=True,
+    )
+    @perms_or_owner(manage_guild=True)
+    async def aireview_preset(self, ctx: commands.Context) -> None:
+        """Manage vetted answer presets (served with zero model call)."""
+        await ctx.send(
+            "Vetted answer presets — the bot serves these verbatim, no AI call:\n"
+            '`!aireview preset add "<question>" <answer>` · '
+            "`!aireview preset from <entry_id> <answer>` · "
+            "`!aireview preset list` · `!aireview preset remove <id>`",
+        )
+
+    @aireview_preset.command(name="add")  # type: ignore[arg-type]
+    @perms_or_owner(manage_guild=True)
+    async def aireview_preset_add(
+        self,
+        ctx: commands.Context,
+        question: str,
+        *,
+        answer: str,
+    ) -> None:
+        """Author a preset: ``!aireview preset add "<question>" <answer>``."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        await self._store_preset(ctx, guild.id, question, answer, source="operator")
+
+    @aireview_preset.command(name="from")  # type: ignore[arg-type]
+    @perms_or_owner(manage_guild=True)
+    async def aireview_preset_from(
+        self,
+        ctx: commands.Context,
+        entry_id: int,
+        *,
+        answer: str,
+    ) -> None:
+        """Author a preset from a logged question: ``!aireview preset from <id> <answer>``."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        entry = await review.get_entry(guild.id, entry_id)
+        if entry is None:
+            await ctx.send(f"⚠️ No review entry `#{entry_id}` in this server.")
+            return
+        question = (entry.get("question") or "").strip()
+        if not question:
+            await ctx.send(
+                f"⚠️ Entry `#{entry_id}` has no captured question text to key a preset on.",
+            )
+            return
+        await self._store_preset(
+            ctx,
+            guild.id,
+            question,
+            answer,
+            task=entry.get("task"),
+            source=f"review:{entry_id}",
+        )
+
+    async def _store_preset(
+        self,
+        ctx: commands.Context,
+        guild_id: int,
+        question: str,
+        answer: str,
+        *,
+        task: str | None = None,
+        source: str | None = None,
+    ) -> None:
+        """Shared add/from path — validate, store, confirm."""
+        try:
+            preset_id = await presets.set_preset(
+                guild_id,
+                question,
+                answer,
+                task=task,
+                source=source,
+                actor_id=ctx.author.id,
+            )
+        except ValueError as exc:
+            await ctx.send(f"⚠️ Couldn't store that preset: {exc}.")
+            return
+        await ctx.send(
+            f"✅ Preset `#{preset_id}` stored — the bot will answer "
+            f"“{_clip(question, 120)}” with your vetted text (no AI call). "
+            f"Remove it with `!aireview preset remove {preset_id}`.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @aireview_preset.command(name="list")  # type: ignore[arg-type]
+    @perms_or_owner(manage_guild=True)
+    async def aireview_preset_list(
+        self,
+        ctx: commands.Context,
+        limit: int = 10,
+    ) -> None:
+        """List stored presets: ``!aireview preset list [n]``."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        rows = await presets.list_presets(guild.id, limit=max(1, min(25, limit)))
+        if not rows:
+            await ctx.send(
+                "No vetted presets yet. Add one with "
+                '`!aireview preset add "<question>" <answer>`.',
+            )
+            return
+        embed = discord.Embed(
+            title="🧠 Vetted answer presets",
+            color=discord.Color.green(),
+        )
+        for row in rows[:10]:
+            mark = "" if row.get("enabled", True) else " *(disabled)*"
+            embed.add_field(
+                name=f"#{row.get('id')}{mark}",
+                value=(
+                    f"**Q:** {_clip(row.get('question'), 200)}\n"
+                    f"**A:** {_clip(row.get('answer'), 300)}"
+                ),
+                inline=False,
+            )
+        embed.set_footer(text="Remove one with !aireview preset remove <id>")
+        await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+
+    @aireview_preset.command(name="remove")  # type: ignore[arg-type]
+    @perms_or_owner(manage_guild=True)
+    async def aireview_preset_remove(
+        self,
+        ctx: commands.Context,
+        preset_id: int,
+    ) -> None:
+        """Delete a preset: ``!aireview preset remove <id>``."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command needs a server context.")
+            return
+        ok = await presets.remove_preset(guild.id, preset_id, actor_id=ctx.author.id)
+        await ctx.send(
+            (
+                f"✅ Preset `#{preset_id}` removed."
+                if ok
+                else f"⚠️ No preset `#{preset_id}` in this server."
+            ),
+        )
+
 
 # ---------------------------------------------------------------------------
 # Embed / text helpers
 # ---------------------------------------------------------------------------
+
+
+def _parse_export_flags(flags: tuple[str, ...]) -> tuple[str | None, bool]:
+    """Parse ``!aireview export`` flags → ``(kind_filter, include_reviewed)``.
+
+    ``all`` → include resolved entries; ``unknown``/``correction`` (or ``u``/``c``)
+    → filter by kind. Pure + order-independent so it is unit-testable.
+    """
+    lowered = {f.lower() for f in flags}
+    include_reviewed = "all" in lowered
+    filter_kind: str | None = None
+    if {"unknown", "u", "unknowns"} & lowered:
+        filter_kind = review.KIND_UNKNOWN
+    elif {"correction", "corrections", "c"} & lowered:
+        filter_kind = review.KIND_CORRECTION
+    return filter_kind, include_reviewed
 
 
 def _clip(text: object, cap: int = 1000) -> str:

@@ -136,6 +136,48 @@ def test_format_audit_embed_renders_expected_fields():
     assert "set_flag_state" in (embed.title or "")
 
 
+def test_format_audit_embed_subject_sets_actor_avatar():
+    # The audit embed's face is the *actor* (who made the change), matching the
+    # face-per-entry look of every other log embed.
+    subject = MagicMock()
+    subject.display_name = "ActorUser"
+    subject.display_avatar = MagicMock()
+    subject.display_avatar.url = "https://cdn.example/a.png"
+    embed = format_audit_embed(
+        mutation_id="abc-123",
+        subsystem="logging",
+        mutation_type="set_flag_state",
+        target="flag:x",
+        scope="guild",
+        guild_id=42,
+        prev_value="off",
+        new_value="on",
+        actor_id=99,
+        actor_type="platform_owner",
+        occurred_at="2026-05-19T12:00:00+00:00",
+        subject=subject,
+    )
+    assert embed.author.name == "ActorUser"
+    assert embed.author.icon_url == "https://cdn.example/a.png"
+
+
+def test_format_audit_embed_without_subject_has_no_author():
+    embed = format_audit_embed(
+        mutation_id="x",
+        subsystem="logging",
+        mutation_type="set_flag_state",
+        target="flag:x",
+        scope="guild",
+        guild_id=42,
+        prev_value="off",
+        new_value="on",
+        actor_id=None,
+        actor_type="system",
+        occurred_at="2026-05-19T12:00:00+00:00",
+    )
+    assert embed.author.name is None
+
+
 def test_format_audit_embed_handles_cleared_value():
     embed = format_audit_embed(
         mutation_id="x",

@@ -245,7 +245,7 @@ const COMMANDS = [
   {
     "name": "admin",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the Admin control panel (administrator only).",
     "description": "Slash front door for the Admin hub — ephemeral, admin-only.",
     "usage": "!admin",
@@ -253,12 +253,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "adminmenu",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the interactive admin control panel.",
     "description": "Open the interactive admin control panel.",
     "usage": "!adminmenu",
@@ -266,7 +271,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "ai",
@@ -282,19 +292,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -314,19 +324,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -370,6 +380,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -379,10 +393,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -426,6 +436,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -435,10 +449,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -454,6 +464,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -659,6 +673,46 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "boathouse",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Build a Boathouse — the coral+wood structure that refills energy faster.",
+    "description": "Build a Boathouse — the coral+wood structure that refills energy faster.",
+    "usage": "!boathouse",
+    "aliases": [
+      "moorings",
+      "boat"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!tidepool",
+      "!dock"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
+    "name": "botinfo",
+    "area": "utility",
+    "status": "finished",
+    "summary": "Show information about the bot — servers, uptime, latency, version.",
+    "description": "Show information about the bot — servers, uptime, latency, version.",
+    "usage": "!botinfo",
+    "aliases": [
+      "about"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "browse",
     "area": "games",
     "status": "in-progress",
@@ -672,6 +726,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -681,10 +739,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -702,6 +756,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -711,10 +769,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -734,6 +788,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -743,10 +801,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -766,6 +820,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -775,10 +833,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -798,6 +852,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -807,10 +865,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -830,6 +884,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -839,10 +897,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -862,6 +916,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -871,10 +929,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -1304,8 +1358,8 @@ const COMMANDS = [
     "name": "cleanuphistory",
     "area": "moderation",
     "status": "finished",
-    "summary": "Clean matching channel history by keyword, commands, or prohibited words.",
-    "description": "Clean matching channel history by keyword, commands, or prohibited words.",
+    "summary": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
+    "description": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
     "usage": "!cleanuphistory",
     "aliases": [],
     "permissions": "Administrator",
@@ -1383,7 +1437,7 @@ const COMMANDS = [
   {
     "name": "cog",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Load, unload, or reload a cog by name (underscores and _cog suffix optional).",
     "description": "Load, unload, or reload a cog by name (underscores and _cog suffix optional).",
     "usage": "!cog",
@@ -1391,12 +1445,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "coglist",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the interactive cog manager — the panel's 📋 Cog List button.",
     "description": "Open the interactive cog manager — the panel's 📋 Cog List button.",
     "usage": "!coglist",
@@ -1410,7 +1469,12 @@ const COMMANDS = [
     "examples": [
       "!cog"
     ],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "command-access",
@@ -1541,6 +1605,30 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "counterpreset",
+    "area": "community",
+    "status": "in-progress",
+    "summary": "Apply a curated counter name-template preset (sets all three templates at once). Run without a name to list the presets.",
+    "description": "Apply one of the curated template presets through the audited seam.",
+    "usage": "!counterpreset",
+    "aliases": [],
+    "permissions": "Administrator",
+    "cooldown": null,
+    "examples": [
+      "!settings"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Safety & Community — one operator landing"
+      },
+      {
+        "status": "idea",
+        "title": "Community platform features — welcome, feeds, events, counters…"
+      }
+    ]
+  },
+  {
     "name": "counters",
     "area": "community",
     "status": "in-progress",
@@ -1654,6 +1742,31 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "craftcurio",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+    "description": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+    "usage": "!craftcurio",
+    "aliases": [
+      "carve",
+      "curiocraft"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!craftcurio coral idol",
+      "!curios"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "craftpearl",
     "area": "games",
     "status": "in-progress",
@@ -1713,6 +1826,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
+      {
+        "status": "idea",
         "title": "Safety & Community — one operator landing"
       }
     ]
@@ -1729,6 +1846,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -1774,6 +1895,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -1783,10 +1908,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -1804,6 +1925,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -1813,10 +1938,30 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
+      }
+    ]
+  },
+  {
+    "name": "curios",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Show the coral-carving collection + your coral and craft progress.",
+    "description": "Show the coral-carving collection + your coral and craft progress.",
+    "usage": "!curios",
+    "aliases": [
+      "curio",
+      "carvings"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!craftcurio <name>"
+    ],
+    "planned": [
       {
         "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
       }
     ]
   },
@@ -1885,6 +2030,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -1929,6 +2078,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -2038,19 +2191,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -2098,6 +2251,30 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": []
+  },
+  {
+    "name": "dock",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Build a Dock — the cheap coral+wood structure that makes fish bite faster.",
+    "description": "Build a Dock — the cheap coral+wood structure that makes fish bite faster.",
+    "usage": "!dock",
+    "aliases": [
+      "pier",
+      "fishingdock"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!tidepool"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
   },
   {
     "name": "economy",
@@ -2229,6 +2406,36 @@ const COMMANDS = [
     ]
   },
   {
+    "name": "estimate",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+    "description": "Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+    "usage": "!estimate",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
+      },
+      {
+        "status": "idea",
+        "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map"
+      },
+      {
+        "status": "idea",
+        "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
+      }
+    ]
+  },
+  {
     "name": "event",
     "area": "games",
     "status": "in-progress",
@@ -2242,6 +2449,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2251,10 +2462,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2272,6 +2479,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2281,10 +2492,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2326,6 +2533,23 @@ const COMMANDS = [
         "title": "Mining & Exploration — Brainstorm & Roadmap"
       }
     ]
+  },
+  {
+    "name": "export",
+    "area": "other",
+    "status": "finished",
+    "summary": "Dump the backlog as a JSON file for triage.",
+    "description": "Dump the backlog as a JSON file for triage.",
+    "usage": "!export",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!aireview export",
+      "!aireview export unknown",
+      "!aireview export all"
+    ],
+    "planned": []
   },
   {
     "name": "fact",
@@ -2438,6 +2662,32 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
+    "name": "fishery",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Build a Fishery — the coral+wood structure that lands more double catches.",
+    "description": "Build a Fishery — the coral+wood structure that lands more double catches.",
+    "usage": "!fishery",
+    "aliases": [
+      "hatchery",
+      "fishfarm"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!tidepool",
+      "!dock",
+      "!boathouse"
+    ],
     "planned": [
       {
         "status": "idea",
@@ -2605,21 +2855,36 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
+  },
+  {
+    "name": "from",
+    "area": "other",
+    "status": "finished",
+    "summary": "Author a preset from a logged question: ``!aireview preset from <id> <answer>``.",
+    "description": "Author a preset from a logged question: !aireview preset from <id> <answer>.",
+    "usage": "!from",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!aireview preset from <id> <answer>"
+    ],
+    "planned": []
   },
   {
     "name": "games",
@@ -2740,6 +3005,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2749,10 +3018,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2798,6 +3063,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2807,10 +3076,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -2902,6 +3167,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -2911,10 +3180,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3047,15 +3312,15 @@ const COMMANDS = [
     "name": "latency",
     "area": "admin",
     "status": "finished",
-    "summary": "Report the bot's WebSocket latency.",
-    "description": "Report the bot's WebSocket latency.",
+    "summary": "Report the bot's WebSocket latency (admin detail view).",
+    "description": "Report the bot's WebSocket latency (admin detail view).",
     "usage": "!latency",
-    "aliases": [
-      "ping"
-    ],
+    "aliases": [],
     "permissions": "Administrator",
     "cooldown": null,
-    "examples": [],
+    "examples": [
+      "!ping"
+    ],
     "planned": []
   },
   {
@@ -3072,6 +3337,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3081,10 +3350,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3102,6 +3367,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3111,10 +3380,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3181,6 +3446,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -3199,6 +3468,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3208,17 +3481,13 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
   {
     "name": "loadall",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Load all unloaded cogs, skipping already-loaded ones.",
     "description": "Load all unloaded cogs, skipping already-loaded ones.",
     "usage": "!loadall",
@@ -3226,7 +3495,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "loadout",
@@ -3302,6 +3576,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
+      {
+        "status": "idea",
         "title": "Safety & Community — one operator landing"
       }
     ]
@@ -3309,7 +3587,7 @@ const COMMANDS = [
   {
     "name": "loglevel",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
     "description": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
     "usage": "!loglevel",
@@ -3317,7 +3595,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "lookup",
@@ -3395,6 +3678,21 @@ const COMMANDS = [
     "description": "Content-free media (YouTube) diagnostics.",
     "usage": "!media",
     "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "membercount",
+    "area": "utility",
+    "status": "finished",
+    "summary": "Show this server's member count — humans, bots, and total.",
+    "description": "Show this server's member count — humans, bots, and total.",
+    "usage": "!membercount",
+    "aliases": [
+      "members"
+    ],
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
@@ -3711,6 +4009,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3720,10 +4022,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3801,6 +4099,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -3810,10 +4112,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -3828,6 +4126,21 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
+    "planned": []
+  },
+  {
+    "name": "ping",
+    "area": "utility",
+    "status": "finished",
+    "summary": "Check the bot's responsiveness — gateway + message round-trip.",
+    "description": "Check the bot's responsiveness — gateway + message round-trip.",
+    "usage": "!ping",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!latency"
+    ],
     "planned": []
   },
   {
@@ -3895,19 +4208,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -3918,6 +4231,19 @@ const COMMANDS = [
     "summary": "Create a simple reaction poll.",
     "description": "Create a simple reaction poll.",
     "usage": "!poll",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "preset",
+    "area": "other",
+    "status": "finished",
+    "summary": "Manage vetted answer presets (served with zero model call).",
+    "description": "Manage vetted answer presets (served with zero model call).",
+    "usage": "!preset",
     "aliases": [],
     "permissions": "anyone",
     "cooldown": null,
@@ -3964,19 +4290,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -4080,6 +4406,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4089,10 +4419,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4110,6 +4436,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -4130,19 +4460,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -4175,6 +4505,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4184,10 +4518,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4203,6 +4533,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -4223,6 +4557,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4232,10 +4570,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4292,6 +4626,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -4437,7 +4775,7 @@ const COMMANDS = [
   {
     "name": "restart",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Request a graceful restart through the lifecycle service.",
     "description": "Request a graceful restart through the lifecycle service.",
     "usage": "!restart",
@@ -4447,7 +4785,12 @@ const COMMANDS = [
     "examples": [
       "!restart"
     ],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "rod",
@@ -4459,6 +4802,27 @@ const COMMANDS = [
     "aliases": [
       "rodshop",
       "buyrod"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
+    "name": "rodrecipes",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Browse every fish→rod recipe and your live progress toward each tier.",
+    "description": "Browse every fish→rod recipe and your live progress toward each tier.",
+    "usage": "!rodrecipes",
+    "aliases": [
+      "rodrecipe",
+      "rrecipes"
     ],
     "permissions": "anyone",
     "cooldown": null,
@@ -4484,6 +4848,34 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
+        "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
+      }
+    ]
+  },
+  {
+    "name": "roleinfo",
+    "area": "management",
+    "status": "in-progress",
+    "summary": "Show a role's details. Usage: !roleinfo <@role|name|id>",
+    "description": "Read-only role detail card — the role sibling of !channelinfo / !info user.",
+    "usage": "!roleinfo",
+    "aliases": [
+      "ri"
+    ],
+    "permissions": "Administrator",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -4500,6 +4892,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -4520,6 +4916,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -4536,6 +4936,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -4556,6 +4960,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4565,10 +4973,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4584,6 +4988,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
       {
         "status": "idea",
         "title": "Safety & Community — one operator landing"
@@ -4604,19 +5012,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -4764,6 +5172,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4773,10 +5185,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4797,12 +5205,11 @@ const COMMANDS = [
     "name": "sail",
     "area": "games",
     "status": "in-progress",
-    "summary": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
-    "description": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+    "summary": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
+    "description": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
     "usage": "!sail",
     "aliases": [
-      "setsail",
-      "dock"
+      "setsail"
     ],
     "permissions": "anyone",
     "cooldown": null,
@@ -4865,6 +5272,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -4874,10 +5285,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -4995,7 +5402,7 @@ const COMMANDS = [
   {
     "name": "serverstats",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Display server statistics.",
     "description": "Display server statistics.",
     "usage": "!serverstats",
@@ -5003,7 +5410,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "sessions",
@@ -5030,6 +5442,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
       {
         "status": "idea",
         "title": "Safety & Community — one operator landing"
@@ -5098,6 +5514,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -5131,19 +5551,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -5470,7 +5890,7 @@ const COMMANDS = [
   {
     "name": "slashes",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "List currently-registered slash commands (admin only).",
     "description": "List currently-registered slash commands (admin only).",
     "usage": "!slashes",
@@ -5480,7 +5900,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "slow",
@@ -5491,6 +5916,21 @@ const COMMANDS = [
     "usage": "!slow",
     "aliases": [],
     "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
+    "name": "slowmode",
+    "area": "management",
+    "status": "finished",
+    "summary": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
+    "description": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
+    "usage": "!slowmode",
+    "aliases": [
+      "slow"
+    ],
+    "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
     "planned": []
@@ -5509,6 +5949,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5518,10 +5962,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5539,6 +5979,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5548,10 +5992,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5569,6 +6009,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5578,10 +6022,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5599,6 +6039,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5608,10 +6052,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5717,19 +6157,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -5747,6 +6187,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5756,10 +6200,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5777,6 +6217,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5786,10 +6230,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5807,6 +6247,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5816,10 +6260,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5837,6 +6277,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5846,10 +6290,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5867,6 +6307,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -5876,10 +6320,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -5897,26 +6337,26 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
   {
     "name": "syncslash",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Sync the app-command tree for slash commands (owner only).",
     "description": "Sync the app-command tree for slash commands (owner only).",
     "usage": "!syncslash",
@@ -5926,7 +6366,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "system_info",
@@ -5996,6 +6441,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      },
+      {
+        "status": "idea",
         "title": "Safety & Community — one operator landing"
       }
     ]
@@ -6014,6 +6463,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -6023,10 +6476,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -6138,6 +6587,30 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "tidepool",
+    "area": "games",
+    "status": "in-progress",
+    "summary": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+    "description": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+    "usage": "!tidepool",
+    "aliases": [
+      "reef",
+      "tidepools"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!sail",
+      "!curios"
+    ],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "The Explore hub — a federated open world (one world, each subsystem…"
+      }
+    ]
+  },
+  {
     "name": "timedprize",
     "area": "moderation",
     "status": "finished",
@@ -6233,6 +6706,21 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "topic",
+    "area": "management",
+    "status": "finished",
+    "summary": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+    "description": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+    "usage": "!topic",
+    "aliases": [
+      "settopic"
+    ],
+    "permissions": "Administrator",
+    "cooldown": null,
+    "examples": [],
+    "planned": []
+  },
+  {
     "name": "tower",
     "area": "games",
     "status": "in-progress",
@@ -6246,6 +6734,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
         "title": "BTD6 runtime/simulation mechanics — extract straight from the game"
       },
       {
@@ -6255,10 +6747,6 @@ const COMMANDS = [
       {
         "status": "idea",
         "title": "BTD6 community-shorthand corpus eval (router-class regression guard)"
-      },
-      {
-        "status": "idea",
-        "title": "Idea — a generated \"deterministic floor catalogue\" index"
       }
     ]
   },
@@ -6380,7 +6868,7 @@ const COMMANDS = [
   {
     "name": "unloadall",
     "area": "admin",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Unload all loaded cogs except this one.",
     "description": "Unload all loaded cogs except this one.",
     "usage": "!unloadall",
@@ -6388,7 +6876,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Central admin guild + central logging guild — the bot's HQ…"
+      }
+    ]
   },
   {
     "name": "unlock",
@@ -6415,6 +6908,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -6676,19 +7173,19 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "\"Compute, don't refuse\" — a capability sweep over the review log"
+      },
+      {
+        "status": "idea",
+        "title": "Frequency-driven preset suggestions from the review log"
+      },
+      {
+        "status": "idea",
         "title": "Session follow-up ideas — visual engine + AI-setup wedge arc…"
       },
       {
         "status": "idea",
         "title": "AI self-curated memory notebook — a write-back learning seam for the…"
-      },
-      {
-        "status": "idea",
-        "title": "AI reports corrections → an audience-routed AI ticket service"
-      },
-      {
-        "status": "idea",
-        "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord…"
       }
     ]
   },
@@ -6824,6 +7321,23 @@ const COMMANDS = [
     "permissions": "anyone",
     "cooldown": null,
     "examples": [],
+    "planned": []
+  },
+  {
+    "name": "xpimport",
+    "area": "progression",
+    "status": "finished",
+    "summary": "Import XP/levels from another bot by reading its level-up channel.",
+    "description": "Import XP/levels from another bot by reading its level-up channel.",
+    "usage": "!xpimport",
+    "aliases": [],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [
+      "!xpconfig",
+      "!xpimport [source] [#channel] [limit]",
+      "!xpimport help"
+    ],
     "planned": []
   },
   {
@@ -7022,7 +7536,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "6b110fa",
+    "build": "b4dd8f22",
     "title": "New public bot website",
     "changes": [
       {
@@ -7034,7 +7548,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "6b110fa",
+    "build": "b4dd8f22",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7046,7 +7560,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "6b110fa",
+    "build": "b4dd8f22",
     "title": "Command-alias suggestions",
     "changes": [
       {

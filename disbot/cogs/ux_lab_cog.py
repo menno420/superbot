@@ -19,6 +19,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from core.runtime.permission_checks import admin_or_owner, app_admin_or_owner
 from views.base import send_panel
 from views.ux_lab import UxLabHomeView, build_home_embed
 
@@ -51,7 +52,7 @@ class UxLabCog(commands.Cog, name="UX Lab"):  # type: ignore[call-arg]
         return build_home_embed(), UxLabHomeView(interaction.user)
 
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     @commands.command(name="uxlab", aliases=["interfacelab"])
     async def uxlab(self, ctx: commands.Context) -> None:
         """Open the UX Lab — the interface gallery + limit probe bench."""
@@ -62,7 +63,7 @@ class UxLabCog(commands.Cog, name="UX Lab"):  # type: ignore[call-arg]
         description="Open the UX Lab — browse interface patterns (admin).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def uxlab_slash(self, interaction: discord.Interaction) -> None:
         """Slash front door to the same panel (one door, not one per action)."""

@@ -142,3 +142,31 @@ def test_cli_hook_no_state_fails_open(tmp_path, monkeypatch, capsys):
 def test_cli_hook_ignores_other_events(tmp_path):
     # A non-pretooluse event returns 0 without touching stdin.
     assert cli.cmd_hook(tmp_path, "stop") == 0
+
+
+def test_cli_hook_postedit_advises_on_notebook_path(tmp_path, monkeypatch, capsys):
+    # The PostToolUse matcher wires NotebookEdit, whose payload carries
+    # `notebook_path` (not `file_path`). The advisor must key on it too — else a
+    # generated notebook edited via NotebookEdit is matched but never advised.
+    _init(tmp_path)
+    art = tmp_path / Config().state_dir / "rendered" / "board.ipynb"
+    art.parent.mkdir(parents=True, exist_ok=True)
+    art.write_text("{}", encoding="utf-8")
+    payload = json.dumps(
+        {"tool_name": "NotebookEdit", "tool_input": {"notebook_path": str(art)}},
+    )
+    monkeypatch.setattr("sys.stdin", io.StringIO(payload))
+    assert cli.cmd_hook(tmp_path, "postedit") == 0
+    assert "generated artifact" in capsys.readouterr().err
+
+
+def test_cli_hook_postedit_still_advises_on_file_path(tmp_path, monkeypatch, capsys):
+    # Regression guard: the Edit/Write file_path path must keep working.
+    _init(tmp_path)
+    art = tmp_path / Config().state_dir / "rendered" / "current-state.md"
+    art.parent.mkdir(parents=True, exist_ok=True)
+    art.write_text("# x\n", encoding="utf-8")
+    payload = json.dumps({"tool_name": "Edit", "tool_input": {"file_path": str(art)}})
+    monkeypatch.setattr("sys.stdin", io.StringIO(payload))
+    assert cli.cmd_hook(tmp_path, "postedit") == 0
+    assert "generated artifact" in capsys.readouterr().err

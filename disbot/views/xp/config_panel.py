@@ -95,3 +95,16 @@ class XpConfigView(BaseView):
         from views.xp.modals import _XpChannelModal
 
         await interaction.response.send_modal(_XpChannelModal(self))
+
+    @discord.ui.button(
+        label="📥 Import from another bot",
+        style=discord.ButtonStyle.grey,
+        row=1,
+    )
+    async def btn_import(self, interaction: discord.Interaction, _: discord.ui.Button):
+        """Drill into the XP-import setup (pick channel + bot → scan → preview)."""
+        from views.xp.import_panel import XpImportSetupView
+
+        view = XpImportSetupView(self.ctx)
+        await safe_edit(interaction, embed=view.build_embed(), view=view)
+        view.message = self.message

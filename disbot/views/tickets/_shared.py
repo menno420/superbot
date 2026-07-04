@@ -22,7 +22,11 @@ def is_ticket_staff(
     member: discord.Member,
     cfg: ticket_service.TicketConfig | None,
 ) -> bool:
-    """True if ``member`` may manage tickets (admin / manage-guild / staff role)."""
+    """True if ``member`` may manage tickets (platform owner / admin / manage-guild / staff role)."""
+    from config import is_platform_owner
+
+    if is_platform_owner(getattr(member, "id", None)):
+        return True
     perms = getattr(member, "guild_permissions", None)
     if perms is not None and (perms.administrator or perms.manage_guild):
         return True

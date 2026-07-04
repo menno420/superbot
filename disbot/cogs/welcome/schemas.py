@@ -26,23 +26,37 @@ from core.runtime.subsystem_schema import (
 from services.welcome_config import (
     DEFAULT_CARD_ENABLED,
     DEFAULT_CHANNEL,
+    DEFAULT_DELETE_AFTER_SECONDS,
+    DEFAULT_DM_ENABLED,
+    DEFAULT_DM_MESSAGE,
     DEFAULT_ENABLED,
     DEFAULT_ENTRY_ROLE,
     DEFAULT_JOIN_ENABLED,
     DEFAULT_JOIN_MESSAGE,
     DEFAULT_LEAVE_ENABLED,
     DEFAULT_LEAVE_MESSAGE,
+    DEFAULT_MIN_ACCOUNT_AGE_DAYS,
+    MAX_DELETE_AFTER_SECONDS,
     MAX_MESSAGE_LENGTH,
+    MAX_MESSAGE_VARIANTS,
+    MAX_MIN_ACCOUNT_AGE_DAYS,
+    MIN_DELETE_AFTER_SECONDS,
+    MIN_MIN_ACCOUNT_AGE_DAYS,
+    split_message_variants,
 )
 from utils.settings_keys import (
     WELCOME_CARD_ENABLED,
     WELCOME_CHANNEL,
+    WELCOME_DELETE_AFTER_SECONDS,
+    WELCOME_DM_ENABLED,
+    WELCOME_DM_MESSAGE,
     WELCOME_ENABLED,
     WELCOME_ENTRY_ROLE,
     WELCOME_JOIN_ENABLED,
     WELCOME_JOIN_MESSAGE,
     WELCOME_LEAVE_ENABLED,
     WELCOME_LEAVE_MESSAGE,
+    WELCOME_MIN_ACCOUNT_AGE_DAYS,
 )
 
 _WELCOME_CAPABILITY = "welcome.settings.configure"
@@ -72,19 +86,47 @@ def _validate_id(value: object) -> None:
         raise ValueError(f"'{token}' is not a numeric id") from None
 
 
+def _bounded_int(value: object, lo: int, hi: int) -> None:
+    # ``isinstance(True, int)`` is True, so guard the bool type explicitly.
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"expected int, got {value!r}")
+    if not (lo <= value <= hi):
+        raise ValueError(f"must be between {lo} and {hi}")
+
+
+def _validate_min_account_age_days(value: object) -> None:
+    _bounded_int(value, MIN_MIN_ACCOUNT_AGE_DAYS, MAX_MIN_ACCOUNT_AGE_DAYS)
+
+
+def _validate_delete_after_seconds(value: object) -> None:
+    _bounded_int(value, MIN_DELETE_AFTER_SECONDS, MAX_DELETE_AFTER_SECONDS)
+
+
 def _validate_message(value: object) -> None:
-    """A non-empty template within the length cap.
+    """One or more non-empty variants, each within the per-variant length cap.
 
     Placeholders (``{user}``/``{server}``/``{count}``) are substituted at
     render time by ``welcome_config.render_template`` (injection-safe), so any
-    text is accepted here — only emptiness and length are gated.
+    text is accepted here — only emptiness, variant count, and per-variant
+    length are gated.  Multiple ``---``-separated variants are picked from at
+    random on each greeting; a single message (no separator) validates exactly
+    as before (one variant, capped at ``MAX_MESSAGE_LENGTH``).
     """
     if not isinstance(value, str):
         raise ValueError(f"expected a message template string, got {value!r}")
-    if not value.strip():
+    variants = split_message_variants(value)
+    if not variants:
         raise ValueError("message template cannot be empty")
-    if len(value) > MAX_MESSAGE_LENGTH:
-        raise ValueError(f"message template must be <= {MAX_MESSAGE_LENGTH} characters")
+    if len(variants) > MAX_MESSAGE_VARIANTS:
+        raise ValueError(
+            f"at most {MAX_MESSAGE_VARIANTS} message variants "
+            f"(separate them with a '---' line), got {len(variants)}",
+        )
+    for variant in variants:
+        if len(variant) > MAX_MESSAGE_LENGTH:
+            raise ValueError(
+                f"each message variant must be <= {MAX_MESSAGE_LENGTH} characters",
+            )
 
 
 WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
@@ -140,7 +182,8 @@ WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
         capability_required=_WELCOME_CAPABILITY,
         hint=(
             "Greeting template.  Placeholders: {user} (mention), {server} "
-            "(name), {count} (member number)."
+            "(name), {count} (member number).  Add several variants separated "
+            "by a '---' line to greet joiners with a random one each time."
         ),
         validator=_validate_message,
     ),
@@ -152,7 +195,8 @@ WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
         capability_required=_WELCOME_CAPABILITY,
         hint=(
             "Farewell template.  Placeholders: {user} (name), {server} "
-            "(name), {count} (remaining members)."
+            "(name), {count} (remaining members).  Add several variants "
+            "separated by a '---' line to post a random one each time."
         ),
         validator=_validate_message,
     ),
@@ -182,6 +226,62 @@ WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
             "greeting when image rendering is unavailable."
         ),
         validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="dm_enabled",
+        value_type=bool,
+        default=DEFAULT_DM_ENABLED,
+        settings_key=WELCOME_DM_ENABLED,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Also send the joining member a direct-message greeting (in "
+            "addition to the channel greeting).  Off by default; needs no "
+            "channel.  Silently skipped for members with DMs closed."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="dm_message",
+        value_type=str,
+        default=DEFAULT_DM_MESSAGE,
+        settings_key=WELCOME_DM_MESSAGE,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Direct-message greeting template.  Placeholders: {user} (mention), "
+            "{server} (name), {count} (member number).  Add several variants "
+            "separated by a '---' line to DM a random one each time."
+        ),
+        validator=_validate_message,
+    ),
+    SettingSpec(
+        name="min_account_age_days",
+        value_type=int,
+        default=DEFAULT_MIN_ACCOUNT_AGE_DAYS,
+        settings_key=WELCOME_MIN_ACCOUNT_AGE_DAYS,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Anti-raid: skip the greeting, DM, and entry role for a joining "
+            "member whose Discord account is younger than this many days.  "
+            "0 disables it (every account is greeted)."
+        ),
+        validator=_validate_min_account_age_days,
+        input_hint="numeric_presets",
+        presets=(0, 1, 7),
+    ),
+    SettingSpec(
+        name="delete_after_seconds",
+        value_type=int,
+        default=DEFAULT_DELETE_AFTER_SECONDS,
+        settings_key=WELCOME_DELETE_AFTER_SECONDS,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Ping-then-delete: auto-delete the channel greeting/farewell this "
+            "many seconds after it posts, to keep a busy channel tidy.  "
+            "0 keeps the message.  The DM greeting is never deleted."
+        ),
+        validator=_validate_delete_after_seconds,
+        input_hint="numeric_presets",
+        presets=(0, 30, 60),
     ),
 )
 

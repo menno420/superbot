@@ -1,0 +1,18 @@
+{
+ "case_id": "sweep.slash_btd6_strat_browse",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [],
+   "input": {
+    "kind": "slash",
+    "name": "btd6 strat browse",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

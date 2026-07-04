@@ -63,6 +63,16 @@ def _binding_name_for(kind: str) -> str:
     return binding_name
 
 
+def _label_for(kind: str) -> str:
+    """Human label for *kind* — **total**, never raises (mirror of
+    ``select_view._label_for``). Every known kind still gets an explicit,
+    nicer label (pinned by ``test_route_labels_cover_every_kind``); the
+    derived fallback only guards a future kind added to the binding map but
+    not here.
+    """
+    return _KIND_TO_LABEL.get(kind, f"{kind.replace('_', ' ')} log")
+
+
 async def build_preview_embed(
     guild: discord.Guild,
     kind: str,
@@ -89,7 +99,7 @@ async def build_preview_embed(
     preview = await ResourceProvisioningPipeline().preview(guild, request)
 
     color = discord.Color.green() if preview.allowed else discord.Color.orange()
-    label = _KIND_TO_LABEL[kind]
+    label = _label_for(kind)
     embed = discord.Embed(
         title=f"🆕 Provision {label} channel — preview",
         description=(
@@ -273,7 +283,7 @@ async def _commit_provision(
         f"<#{result.resource_id}>" if result.resource_id is not None else "*(unknown)*"
     )
     embed = discord.Embed(
-        title=f"✅ {_KIND_TO_LABEL[kind].title()} channel provisioned",
+        title=f"✅ {_label_for(kind).title()} channel provisioned",
         description=(
             f"Created {channel_mention} and bound it to "
             f"`logging.{binding_name}`.\n"

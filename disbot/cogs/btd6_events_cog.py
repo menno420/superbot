@@ -18,6 +18,7 @@ import logging
 from discord.ext import commands
 
 from cogs.btd6 import _builders, _event_helpers
+from core.runtime.permission_checks import perms_or_owner
 
 logger = logging.getLogger("bot.cogs.btd6_events")
 
@@ -101,7 +102,7 @@ class BTD6EventsCog(commands.Cog):
         await ctx.send(embed=await _builders.build_latest_data_embed())
 
     @btd6events_group.command(name="refresh-source")  # type: ignore[arg-type]
-    @commands.has_guild_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def btd6_refresh_source(
         self,
         ctx: commands.Context,

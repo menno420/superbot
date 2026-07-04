@@ -366,20 +366,29 @@ def has_standard_nav(view: discord.ui.View) -> bool:
 
 
 def _self_navigates(view: discord.ui.View) -> bool:
-    """True when ``view`` already provides its own hub/help/back navigation.
+    """True when ``view`` already provides its own hub/help/**parent** navigation.
 
-    The mother-hub and operator panels (admin, utility, logging, settings, …)
-    define their own ``📚 Help`` / ``↩ Overview`` / ``↩ Back to <hub>`` buttons
-    as decorated components, so they keep that nav across redraws on their own
-    and must NOT receive a duplicate from :func:`attach_standard_nav`. The
-    panels that genuinely lose nav (the leaf panels — farm, mining, the game
-    panels, the AI/channel/ux_lab panels) have *no* nav button of their own and
+    The mother-hub and operator panels (admin, utility, settings, …) define
+    their own ``📚 Help`` / ``↩ Back to <hub>`` buttons as decorated
+    components, so they keep that nav across redraws on their own and must NOT
+    receive a duplicate from :func:`attach_standard_nav`. The panels that
+    genuinely lose nav (the leaf panels — farm, mining, the game panels, the
+    AI/channel/ux_lab panels) have *no* parent-nav button of their own and
     relied on an externally-attached back; those are exactly the ones that get
     auto-nav.
 
-    Detection is label-based (the codebase uses stable ``Help`` / ``Overview``
-    / ``Back to`` button copy) plus the canonical nav custom_ids. Heuristic —
-    if a future panel's button copy diverges this may misfire; revisit if a
+    An ``↩ Overview`` button does **not** count: it is a *self-refresh*
+    (re-renders the same panel in place), not navigation to a parent, so a
+    panel whose only nav-shaped control is Overview is genuinely stranded and
+    must still receive auto-nav. Treating "overview" as self-navigation was the
+    bug that stranded ``LoggingPanelView`` / ``EconomyPanelView``: they declare
+    a ``SUBSYSTEM`` (so the ``back_button`` linter assumes auto-nav covers
+    them) yet opted themselves *out* of it here, leaving only a fragile
+    externally-attached back that vanished on the first redraw.
+
+    Detection is label-based (the codebase uses stable ``Help`` / ``Back to``
+    button copy) plus the canonical nav custom_ids. Heuristic — if a future
+    panel's button copy diverges this may misfire; revisit if a
     self-navigating panel ever shows a duplicate or a leaf panel stays
     stranded.
     """
@@ -388,7 +397,9 @@ def _self_navigates(view: discord.ui.View) -> bool:
         if cid == NAV_HELP_ID or cid.startswith(NAV_HUB_ID_PREFIX):
             return True
         label = (getattr(child, "label", None) or "").lower()
-        if "help" in label or "overview" in label or "back to" in label:
+        # "overview" is deliberately absent — it is a self-refresh, not
+        # parent-nav (the LoggingPanelView / EconomyPanelView stranding class).
+        if "help" in label or "back to" in label:
             return True
     return False
 

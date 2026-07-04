@@ -13,10 +13,11 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+import discord
 import pytest
 
 from views.roles import reaction_panel
-from views.roles.role_menu_builder import RoleMenuBuilder
+from views.roles.role_menu_builder import _AdvancedView, RoleMenuBuilder
 
 
 class _FakeRole:
@@ -122,6 +123,146 @@ def test_from_menu_edit_keeps_id() -> None:
     )
     assert builder.menu_id == 5
     assert builder.title == "Game Roles"
+
+
+def _counter_builder(show_counts: bool = False) -> RoleMenuBuilder:
+    guild = SimpleNamespace(id=1, features=[])
+    builder = RoleMenuBuilder(SimpleNamespace(id=42), guild, None)
+    builder.show_counts = show_counts
+    return builder
+
+
+def test_builder_preview_shows_signup_counts_state() -> None:
+    off = _counter_builder(False).build_embed()
+    settings = next(f for f in off.fields if f.name == "Settings")
+    assert "Sign-up counts: **off**" in settings.value
+
+    on = _counter_builder(True).build_embed()
+    settings = next(f for f in on.fields if f.name == "Settings")
+    assert "Sign-up counts: **on**" in settings.value
+
+
+def test_from_menu_loads_show_counts() -> None:
+    guild = SimpleNamespace(id=1)
+    menu = {
+        "menu_id": 5,
+        "channel_id": 9,
+        "title": "RSVP",
+        "description": None,
+        "style": "button",
+        "mode": "unique",
+        "max_roles": 0,
+        "theme": "announcement",
+        "show_counts": True,
+    }
+    builder = RoleMenuBuilder.from_menu(
+        SimpleNamespace(id=42),
+        guild,
+        menu,
+        [SimpleNamespace(role_id=10)],
+        channel=SimpleNamespace(id=9),
+    )
+    assert builder.show_counts is True
+
+
+@pytest.mark.asyncio
+async def test_rerender_routes_through_panel_interaction() -> None:
+    """The live preview refreshes via the interaction token (works on ephemeral),
+    not Message.edit (which silently no-ops on an ephemeral hub message).
+    """
+    builder = _counter_builder()
+    builder._panel_interaction = SimpleNamespace()  # sentinel token holder
+    builder.message = SimpleNamespace(edit=AsyncMock())  # must NOT be used
+    with patch(
+        "views.roles.role_menu_builder.safe_edit",
+        new=AsyncMock(return_value=True),
+    ) as se:
+        await builder._rerender()
+    se.assert_awaited_once()
+    assert se.await_args.kwargs["view"] is builder
+    assert se.await_args.kwargs["embed"] is not None
+    builder.message.edit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_rerender_falls_back_to_message_edit_without_interaction() -> None:
+    builder = _counter_builder()
+    builder._panel_interaction = None
+    builder.message = SimpleNamespace(edit=AsyncMock())
+    await builder._rerender()
+    builder.message.edit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_rerender_falls_back_when_safe_edit_fails() -> None:
+    """If the token edit fails (e.g. expired), fall back to Message.edit."""
+    builder = _counter_builder()
+    builder._panel_interaction = SimpleNamespace()
+    builder.message = SimpleNamespace(edit=AsyncMock())
+    with patch(
+        "views.roles.role_menu_builder.safe_edit",
+        new=AsyncMock(return_value=False),
+    ):
+        await builder._rerender()
+    builder.message.edit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_apply_template_sets_mode_and_counts_from_template() -> None:
+    """The Event RSVP template pre-picks button + unique + the live counter."""
+    builder = _counter_builder()
+    interaction = SimpleNamespace(
+        response=SimpleNamespace(edit_message=AsyncMock()),
+    )
+    await builder._apply_template(interaction, ["event_rsvp"])
+    assert builder.style == "button"
+    assert builder.mode == "unique"
+    assert builder.show_counts is True
+
+
+def _button_labels(view) -> list[str]:
+    return [c.label for c in view.children if isinstance(c, discord.ui.Button)]
+
+
+def test_lean_builder_keeps_hot_buttons_and_style_first_screen() -> None:
+    """The lean layout keeps content + Style top-level and folds the rare knobs."""
+    builder = _counter_builder()
+    labels = _button_labels(builder)
+    for present in (
+        "🧩 Template",
+        "📦 Packs",
+        "🏷️ Roles",
+        "🎚️ Style",  # Style stays first-screen (owner directive)
+        "📝 Text",
+        "🎨 Colours",
+        "📍 Channel",
+        "⚙️ Advanced",
+        "🚀 Post",
+    ):
+        assert present in labels, present
+    # The five rarely-tapped knobs are no longer top-level (folded into Advanced).
+    for folded in ("🎭 Theme", "⚙️ Mode", "🔢 Limit", "🖼️ Card", "📊 Counts"):
+        assert folded not in labels, folded
+
+
+def test_advanced_view_holds_exactly_the_folded_controls() -> None:
+    builder = _counter_builder()
+    labels = set(_button_labels(_AdvancedView(builder)))
+    assert labels == {"🎭 Theme", "⚙️ Mode", "🔢 Limit", "🖼️ Card", "📊 Counts"}
+
+
+@pytest.mark.asyncio
+async def test_advanced_counts_toggle_flips_builder_flag() -> None:
+    builder = _counter_builder()
+    builder.show_counts = False
+    adv = _AdvancedView(builder)
+    counts = next(c for c in adv.children if getattr(c, "label", None) == "📊 Counts")
+    interaction = SimpleNamespace(
+        response=SimpleNamespace(edit_message=AsyncMock()),
+    )
+    await counts.callback(interaction)
+    assert builder.show_counts is True
+    interaction.response.edit_message.assert_awaited_once()
 
 
 def test_builder_keeps_every_action_row_within_discords_five_button_cap() -> None:

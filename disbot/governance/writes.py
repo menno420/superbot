@@ -29,6 +29,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
+from config import is_platform_owner
 from governance.cache import invalidate_guild_cache
 from governance.events import (
     EVT_CACHE_INVALIDATED,
@@ -86,6 +87,14 @@ def _validate_authority(ctx: GovernanceContext) -> None:
         raise UnauthorizedGovernanceWriteError(
             "Governance writes require a guild member context (member is None).",
         )
+    # Platform-owner override: the configured bot owner
+    # (config.BOT_OWNER_USER_ID / PermissionTier.PLATFORM_OWNER) may mutate
+    # governance state (e.g. per-channel subsystem visibility) in any guild they
+    # are a member of, so they can configure where the bot operates even without
+    # Discord perms there.  ctx.member is a member of the target guild, so this
+    # preserves the "authority bound to the write target" invariant.
+    if is_platform_owner(ctx.member.id):
+        return
     guild_owner_id = ctx.member.guild.owner_id if ctx.member.guild else 0
     tier = get_member_visibility_tier(ctx.member, guild_owner_id)
     if not is_tier_sufficient(tier, _WRITE_AUTHORITY_TIER):

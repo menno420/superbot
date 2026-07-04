@@ -50,6 +50,14 @@ Acceptable discovery paths:
 
 A command should not exist as a hidden standalone command unless it is intentionally internal.
 
+**Ship the button with the command (soft rule).** For a *member/operator-facing feature*, include the
+discoverable entry point — a button on the relevant panel/hub, or a hub tile — in the **same PR** as the
+command, not as a command-first v1 that predictably needs a follow-up. Owners navigate by UI, so a
+working command alone reads as "half-done" to them even when it's fully tested. (Command-first is fine
+for pure operator/CI tooling with no natural panel home.) Precedent: the XP-import feature shipped
+command-only, and the immediate owner ask was "is this a button?" — one PR of churn a same-PR button
+would have avoided.
+
 ### 3. Cog panels must support return navigation
 
 Every command panel and subview should include a clear navigation path.

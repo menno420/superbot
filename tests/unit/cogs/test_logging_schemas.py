@@ -86,6 +86,14 @@ def test_logging_settings_include_event_logging_v1():
         "members_enabled",
         "roles_enabled",
         "event_routing",
+        # Completion cert punch #1 — exclusion lists.
+        "ignored_channels",
+        "ignored_users",
+        # Server event logging v2 — audit-log + voice categories.
+        "moderation_enabled",
+        "channels_enabled",
+        "server_enabled",
+        "voice_enabled",
     }
 
 
@@ -221,11 +229,35 @@ def test_logging_bindings_include_event_routes_v1():
     }
 
 
-def test_logging_schema_version_bumped_to_v3_for_event_logging_v1():
-    """Schema-shape change → version bump (v2 Phase 9a → v3 event logging)."""
+def test_logging_schema_version_bumped_for_audit_log_v2():
+    """Schema-shape change → version bump (v4 ignore lists → v5 audit-log v2)."""
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
-    assert LOGGING_CONFIG_SCHEMA.version == 3
+    assert LOGGING_CONFIG_SCHEMA.version == 5
+
+
+def test_ignore_list_settings_point_at_legacy_keys_and_default_empty():
+    """Completion cert punch #1 — the two exclusion-list scalars."""
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    by_name = {s.name: s for s in LOGGING_CONFIG_SCHEMA.settings}
+    for name, key in (
+        ("ignored_channels", _log_keys.LOGGING_IGNORED_CHANNELS),
+        ("ignored_users", _log_keys.LOGGING_IGNORED_USERS),
+    ):
+        spec = by_name[name]
+        assert spec.value_type is str
+        assert spec.default == ""
+        assert spec.settings_key == key
+        assert spec.capability_required == "logging.settings.configure"
+        # Loud write-time validator: numeric CSV accepted, junk rejected.
+        assert spec.validator is not None
+        spec.validator("42, 43")
+        spec.validator("")  # empty = no exclusion
+        with pytest.raises(ValueError):
+            spec.validator("not-an-id")
+        with pytest.raises(ValueError):
+            spec.validator(123)
 
 
 def test_logging_bindings_are_channel_kind_and_optional():

@@ -152,11 +152,22 @@ builders into one shared `KnowledgeDomain` helper — until then this recipe is 
 3. Promote a single backlog idea through the `docs/ideas/README.md` gates as the first
    net-new tool (the roadmap's pick is bounded public-doc knowledge search).
 
+## Answer review loop (didn't-know + corrections → correct answers)
+
+The bot records every question it got wrong or couldn't answer in `ai_review_log`
+(migration 100, #1494): `services/ai_review_log_service.py` + `cogs/ai_review_cog.py`
+(`!aireview`). The **answer loop** that turns that backlog into correct answers —
+`!aireview export` → `scripts/ai_review_triage.py` → root-cause fix + regression probe
+**or** a vetted preset (`services/ai_preset_service.py`, served with zero model call) →
+`!aireview resolve` — is the
+[AI review-log backlog runbook](../operations/ai-review-backlog-runbook.md).
+
 ## Related docs
 
 `docs/ai/ai-readiness-plan.md` (`plan`), `docs/ai/ai-readiness-pr-notes.md`,
 `docs/ai/ai-provider-and-grounding-fix-plan.md` (`plan`),
-`disbot/core/runtime/ai/README.md` (package intent).
+`disbot/core/runtime/ai/README.md` (package intent),
+[AI review-log backlog runbook](../operations/ai-review-backlog-runbook.md).
 
 ## Product-extension routing (not approved)
 

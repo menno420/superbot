@@ -29,6 +29,7 @@ neither ``services``/``core``/``cogs`` nor Discord — it is pure rendering.
 from __future__ import annotations
 
 import io
+import re
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -222,6 +223,42 @@ def initials(name: str) -> str:
     return ("".join(letters[:2]) or "?").upper()
 
 
+# Codepoint ranges the bundled DejaVu fonts render as a missing-glyph "tofu" box
+# (□): emoji, pictographs, dingbats, and their presentation/joiner modifiers.
+# Renderable punctuation the cards actually draw ("→" U+2192, "·" U+00B7, "…"
+# U+2026) sits outside these ranges and is deliberately preserved.
+_EMOJI_RE = re.compile(
+    "["
+    "\U0001f000-\U0001faff"  # emoji / pictographs / symbols (🏆 🪙 🎣 🥇 📊 🚀)
+    "\U00002600-\U000026ff"  # miscellaneous symbols (☀ ⚡ ⛏ ⚔)
+    "\U00002700-\U000027bf"  # dingbats (✨ ✅ ✂ ➜)
+    "\U00002b00-\U00002bff"  # misc symbols & arrows (⭐ ⬛ ⬅)
+    "\U0000fe00-\U0000fe0f"  # variation selectors (emoji/text presentation)
+    "\U0000200d"  # zero-width joiner (multi-part emoji)
+    "\U000020e3"  # combining enclosing keycap
+    "]+",
+)
+
+
+def image_safe(text: str) -> str:
+    """Drop emoji/pictographs the bundled fonts can't draw, tidying the gap.
+
+    Discord embeds render colour emoji natively; a Pillow card drawn with a
+    plain text font cannot, so an emoji in a title / value / display-name
+    becomes a tofu □ box (see the screenshots that motivated this).  The engine
+    ships no colour-emoji font yet (vision H4), so every card draws its text
+    through this: dynamic strings ("🏆 XP Leaderboard", "8,473 🪙", a member's
+    "🎉Name") keep their readable characters and lose only the glyphs that would
+    have been boxes.  When a strip happens the leftover doubled/edge whitespace
+    is collapsed ("🏆 XP" → "XP"); untouched text is returned verbatim so
+    intentional spacing is preserved.  Pure — no Pillow needed.
+    """
+    cleaned = _EMOJI_RE.sub("", text)
+    if cleaned == text:
+        return text
+    return " ".join(cleaned.split())
+
+
 class CardCanvas:
     """A themed Pillow surface with the card primitives.
 
@@ -277,8 +314,10 @@ class CardCanvas:
         anchor: str | None = None,
     ) -> None:
         """Themed text.  ``max_width`` ellipsises overflow; ``color`` defaults
-        to the theme's body text colour.
+        to the theme's body text colour.  Emoji the font can't draw are stripped
+        (:func:`image_safe`) so a card never shows a tofu □ box.
         """
+        text = image_safe(text)
         font = self.font(size, bold=bold)
         if max_width is not None:
             text = self.fit(text, font, max_width)
@@ -383,6 +422,43 @@ class CardCanvas:
             anchor="mm",
         )
 
+    def avatar_disc(
+        self,
+        center: tuple[int, int],
+        radius: int,
+        avatar_png: bytes,
+        *,
+        ring: RGB | None = None,
+    ) -> bool:
+        """Composite a real, circular-cropped avatar with an accent ring.
+
+        The live-avatar counterpart to :meth:`initials_disc` — what makes the
+        card read like Arcane's / MEE6's instead of a placeholder.  The engine
+        stays pure: a caller that *may* touch the network (a service) fetches the
+        member's avatar bytes and passes them in.  Returns ``True`` on success,
+        or ``False`` when the bytes can't be decoded — so the renderer falls
+        back to :meth:`initials_disc` and never ships a broken card.
+        """
+        try:
+            from PIL import Image, ImageDraw  # lazy: optional at import time
+
+            av = Image.open(io.BytesIO(avatar_png)).convert("RGBA")
+        except Exception:  # noqa: BLE001 — any decode failure → initials fallback
+            return False
+        cx, cy = center
+        diameter = radius * 2
+        av = av.resize((diameter, diameter))
+        mask = Image.new("L", (diameter, diameter), 0)
+        ImageDraw.Draw(mask).ellipse((0, 0, diameter - 1, diameter - 1), fill=255)
+        ring_c = ring if ring is not None else self.theme.accent
+        self._draw.ellipse(
+            (cx - radius - 6, cy - radius - 6, cx + radius + 6, cy + radius + 6),
+            outline=ring_c,
+            width=6,
+        )
+        self._img.paste(av, (cx - radius, cy - radius), mask)
+        return True
+
     def to_png(self) -> bytes:
         buf = io.BytesIO()
         self._img.convert("RGB").save(buf, format="PNG")
@@ -434,6 +510,7 @@ __all__ = [
     "dejavu_fonts",
     "mix",
     "initials",
+    "image_safe",
     "CardCanvas",
     "new_canvas",
     "pillow_available",

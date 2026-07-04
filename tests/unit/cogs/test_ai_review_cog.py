@@ -63,6 +63,20 @@ def test_build_entry_embed_unknown_vs_correction() -> None:
     assert "corrected" in (correction.title or "").lower()
 
 
+def test_parse_export_flags() -> None:
+    # default: unreviewed, both kinds.
+    assert cog_mod._parse_export_flags(()) == (None, False)
+    # `all` includes resolved entries.
+    assert cog_mod._parse_export_flags(("all",)) == (None, True)
+    # kind filters (order-independent, with aliases).
+    assert cog_mod._parse_export_flags(("unknown",)) == (svc.KIND_UNKNOWN, False)
+    assert cog_mod._parse_export_flags(("c",)) == (svc.KIND_CORRECTION, False)
+    assert cog_mod._parse_export_flags(("all", "correction")) == (
+        svc.KIND_CORRECTION,
+        True,
+    )
+
+
 def test_entry_summary_shapes() -> None:
     s_unknown = cog_mod._entry_summary(
         {"kind": svc.KIND_UNKNOWN, "question": "q", "answer": "a", "id": 1},

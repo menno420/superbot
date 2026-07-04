@@ -1,0 +1,18 @@
+{
+ "case_id": "sweep.slash_btd6_strat_pending",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [],
+   "input": {
+    "kind": "slash",
+    "name": "btd6 strat pending",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

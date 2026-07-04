@@ -3,12 +3,14 @@
 Static AST scan that fails the build if any production file outside
 the service layer touches the XP primitives directly:
 
-    db.add_xp / db.delete_xp / utils.db.xp.add_xp / .delete_xp
+    db.add_xp / db.delete_xp / db.set_imported_xp
+    (or the utils.db.xp.* equivalents)
 
-The xp_service module is the only allowed caller of those primitives
-(it wraps them with EventBus emits for EVT_XP_AWARDED / EVT_LEVEL_UP /
-EVT_XP_RESET so subscribers — panel refresh, future audit log,
-level-role assignment — see every grant or reset).
+The xp_service module is the only allowed caller of those primitives.
+``add_xp`` / ``delete_xp`` are wrapped with EventBus emits (EVT_XP_AWARDED /
+EVT_LEVEL_UP / EVT_XP_RESET); ``set_imported_xp`` is the raise-only
+bot-to-bot migration write, wrapped by ``xp_service.import_level`` so the
+``xp`` column is still only ever written from one place.
 
 Also scans for inline raw SQL that writes or deletes the ``xp`` table,
 since a cog could route around xp_service by executing custom SQL.
@@ -37,7 +39,7 @@ _ALLOWED_PATHS = {
     _DISBOT / "utils" / "db" / "pool.py",
 }
 
-_FORBIDDEN_NAMES = {"add_xp", "delete_xp"}
+_FORBIDDEN_NAMES = {"add_xp", "delete_xp", "set_imported_xp"}
 
 # Raw SQL that writes the ``xp.xp`` integer column or deletes from
 # the xp table.  The xp table is shared with the coins column

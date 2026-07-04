@@ -21,48 +21,48 @@ only — never a value**; the values live in Railway service variables
 |---|---|---|
 | `DATABASE_URL` | utils | `disbot/utils/db/pool.py:41` |
 | `DISCORD_BOT_TOKEN_PRODUCTION` | config | `disbot/config.py:19` |
-| `YOUTUBE_API_KEY` | services | `disbot/services/diagnostic_embeds.py:1269`<br>`disbot/services/youtube_fetch_service.py:22` |
+| `YOUTUBE_API_KEY` | services | `disbot/services/diagnostic_embeds.py:1418`<br>`disbot/services/youtube_fetch_service.py:22` |
 
 ## Optional (a default is always supplied)
 
 | Variable | Layers | Usages |
 |---|---|---|
-| `AI_DEFAULT_PROVIDER` | config, core | `disbot/config.py:172` *(default)*<br>`disbot/core/runtime/ai/feature_flags.py:66` *(default)* |
-| `AI_ENABLED` | config | `disbot/config.py:171` *(default)* |
+| `AI_DEFAULT_PROVIDER` | config, core | `disbot/config.py:203` *(default)*<br>`disbot/core/runtime/ai/feature_flags.py:66` *(default)* |
+| `AI_ENABLED` | config | `disbot/config.py:202` *(default)* |
 | `AI_FALLBACK_PROVIDER` | core | `disbot/core/runtime/ai/routing.py:128` *(default)* |
-| `ANTHROPIC_API_KEY` | config, core | `disbot/config.py:155` *(default)*<br>`disbot/core/runtime/ai/providers/anthropic_provider.py:93` *(default)* |
+| `ANTHROPIC_API_KEY` | config, core | `disbot/config.py:186` *(default)*<br>`disbot/core/runtime/ai/providers/anthropic_provider.py:93` *(default)* |
 | `AUTOMATION_SCHEDULER_ENABLED` | services | `disbot/services/automation_scheduler.py:397` *(default)* |
-| `AUTO_SYNC_COMMANDS` | config | `disbot/config.py:218` *(default)* |
+| `AUTO_SYNC_COMMANDS` | config | `disbot/config.py:249` *(default)* |
 | `BOT_OWNER_USER_ID` | config | `disbot/config.py:40` *(default)* |
 | `BOT_PREFIX` | config | `disbot/config.py:28` *(default)* |
-| `BTD6_AUTO_SEED` | config | `disbot/config.py:210` *(default)* |
+| `BTD6_AUTO_SEED` | config | `disbot/config.py:241` *(default)* |
 | `BTD6_CONFIDENCE_THRESHOLD` | cogs | `disbot/cogs/btd6/stage.py:94` *(default)* |
 | `BTD6_COOLDOWN_SECONDS` | cogs | `disbot/cogs/btd6/stage.py:102` *(default)* |
-| `BTD6_DATA_BACKEND` | config | `disbot/config.py:198` *(default)* |
-| `BTD6_DATA_BASE_URL` | config | `disbot/config.py:201` *(default)* |
-| `BTD6_DATA_CACHE_DIR` | config | `disbot/config.py:204` *(default)* |
+| `BTD6_DATA_BACKEND` | config | `disbot/config.py:229` *(default)* |
+| `BTD6_DATA_BASE_URL` | config | `disbot/config.py:232` *(default)* |
+| `BTD6_DATA_CACHE_DIR` | config | `disbot/config.py:235` *(default)* |
 | `BTD6_INGESTION_DEFAULT_INTERVAL_S` | services | `disbot/services/btd6_ingestion_supervisor.py:35` *(default)* |
 | `BTD6_INGESTION_ENABLED` | services | `disbot/services/btd6_ingestion_supervisor.py:32` *(default)* |
 | `BTD6_INGESTION_STARTUP_DELAY_S` | services | `disbot/services/btd6_ingestion_supervisor.py:34` *(default)* |
 | `BTD6_PASSIVE_CHANNELS` | cogs | `disbot/cogs/btd6/stage.py:80` *(default)* |
-| `CLAUDE_ROUTINE_BETA` | cogs | `disbot/cogs/hermes_cog.py:51` *(default)* |
-| `CLAUDE_ROUTINE_FIRE_URL` | cogs | `disbot/cogs/hermes_cog.py:49` *(default)* |
-| `CLAUDE_ROUTINE_TOKEN` | cogs | `disbot/cogs/hermes_cog.py:50` *(default)* |
-| `CLAUDE_ROUTINE_VERSION` | cogs | `disbot/cogs/hermes_cog.py:52` *(default)* |
+| `CLAUDE_ROUTINE_BETA` | cogs | `disbot/cogs/hermes_cog.py:52` *(default)* |
+| `CLAUDE_ROUTINE_FIRE_URL` | cogs | `disbot/cogs/hermes_cog.py:50` *(default)* |
+| `CLAUDE_ROUTINE_TOKEN` | cogs | `disbot/cogs/hermes_cog.py:51` *(default)* |
+| `CLAUDE_ROUTINE_VERSION` | cogs | `disbot/cogs/hermes_cog.py:53` *(default)* |
 | `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:111` *(default)* |
-| `DISCORD_WEBHOOK_URL` | config | `disbot/config.py:117` *(default)* |
-| `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:267` *(default)* |
+| `DISCORD_WEBHOOK_URL` | config | `disbot/config.py:148` *(default)* |
+| `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:268` *(default)* |
 | `HEALTH_HOST` | healthserver | `disbot/healthserver.py:70` *(default)* |
 | `HEALTH_PORT` | healthserver | `disbot/healthserver.py:64` *(default)* |
-| `IDENTITY_CONTRACT_STRICT` | bot1 | `disbot/bot1.py:175` *(default)* |
-| `LOG_LEVEL` | config | `disbot/config.py:118` *(default)* |
-| `OPENAI_API_KEY` | config, core, services | `disbot/config.py:154` *(default)*<br>`disbot/core/runtime/ai/providers/openai_moderation.py:68` *(default)*<br>`disbot/core/runtime/ai/providers/openai_provider.py:74` *(default)*<br>`disbot/services/setup_ai_advisor.py:205` *(default)*<br>`disbot/services/setup_ai_advisor.py:485` *(default)* |
-| `PARAGON_API_BASE_URL` | config, services | `disbot/config.py:181` *(default)*<br>`disbot/services/paragon_service.py:49` *(default)* |
-| `PARAGON_API_KEY` | config, services | `disbot/config.py:185` *(default)*<br>`disbot/services/paragon_service.py:50` *(default)* |
+| `IDENTITY_CONTRACT_STRICT` | bot1 | `disbot/bot1.py:180` *(default)* |
+| `LOG_LEVEL` | config | `disbot/config.py:149` *(default)* |
+| `OPENAI_API_KEY` | config, core, services | `disbot/config.py:185` *(default)*<br>`disbot/core/runtime/ai/providers/openai_moderation.py:68` *(default)*<br>`disbot/core/runtime/ai/providers/openai_provider.py:74` *(default)*<br>`disbot/services/setup_ai_advisor.py:205` *(default)*<br>`disbot/services/setup_ai_advisor.py:485` *(default)* |
+| `PARAGON_API_BASE_URL` | config, services | `disbot/config.py:212` *(default)*<br>`disbot/services/paragon_service.py:49` *(default)* |
+| `PARAGON_API_KEY` | config, services | `disbot/config.py:216` *(default)*<br>`disbot/services/paragon_service.py:50` *(default)* |
 | `RAILWAY_GIT_COMMIT_SHA` | core | `disbot/core/runtime/command_manifest.py:243` *(default)* |
-| `SETUP_ADVISOR_OPENAI_MODEL` | config, services | `disbot/config.py:153` *(default)*<br>`disbot/services/setup_ai_advisor.py:203` *(default)* |
-| `SETUP_ADVISOR_PROVIDER` | config, core, services | `disbot/config.py:152` *(default)*<br>`disbot/core/runtime/ai/feature_flags.py:129` *(default)*<br>`disbot/services/setup_ai_advisor.py:472` *(default)* |
-| `STRICT_DISABLED` | bot1 | `disbot/bot1.py:172` *(default)* |
+| `SETUP_ADVISOR_OPENAI_MODEL` | config, services | `disbot/config.py:184` *(default)*<br>`disbot/services/setup_ai_advisor.py:203` *(default)* |
+| `SETUP_ADVISOR_PROVIDER` | config, core, services | `disbot/config.py:183` *(default)*<br>`disbot/core/runtime/ai/feature_flags.py:129` *(default)*<br>`disbot/services/setup_ai_advisor.py:472` *(default)* |
+| `STRICT_DISABLED` | bot1 | `disbot/bot1.py:177` *(default)* |
 
 <!-- END GENERATED — everything below is hand-maintained (web-tier env vars the disbot scanner can't see); the scanner preserves it across --write-doc. -->
 

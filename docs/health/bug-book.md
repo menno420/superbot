@@ -23,6 +23,64 @@
 > later empty-fire dispatch run can pick them up instead of them sitting un-promoted (the
 > trap BUG-0018 hit). Advisory by default; `--strict` exits 1 on a non-empty backlog.
 
+## BUG-0031 — building a **Boathouse** raises `KeyError: 'boathouse'` (structure never added to the build-reason map) — FIXED (root)
+
+- **Symptom (latent, found by inspection during the PR #1626 dispatch run):** invoking `!boathouse`
+  and pressing **Build** — or any build of the Boathouse structure — raises
+  `KeyError: 'boathouse'` inside `services.mining_workflow.build_structure` before the transaction,
+  so the build never happens and the panel would surface an error. Shipped live in **#1605** (the
+  Boathouse structure); no test exercised the *build* path so CI was green.
+- **Root cause — a hand-maintained map that must be kept in sync, and wasn't:** `build_structure`
+  resolved the economy-audit reason via `reason = _STRUCTURE_BUILD_REASON[structure]` — a literal
+  `{structure: market.*_BUILD_REASON}` dict. When #1605 registered the `boathouse` structure it added
+  the ladder, level names, and panel but **not** a `_STRUCTURE_BUILD_REASON` entry, so the direct
+  `[structure]` index raised. Same drift class as the `give` collision — a second source of truth that
+  a new structure silently omits. Notably **every** existing reason constant was exactly
+  `mining:{structure}_build`, so the map added zero information over deriving it — pure drift surface.
+- **Fix (root — PR #1626, this entry):** deleted the map; `build_structure` now derives the reason
+  generically via `market.structure_build_reason(structure)` (`mining:{structure}_build`), so a
+  newly-registered structure can **never** crash the build path for want of a map entry. The named
+  `*_BUILD_REASON` constants stay (public, unchanged strings) + `BOATHOUSE`/`FISHERY` added for parity.
+- **Stays-fixed guard (same PR):** `test_every_registered_structure_resolves_a_build_reason`
+  (`tests/unit/utils/test_mining_structures.py`) asserts `structure_build_reason` returns a non-empty
+  `mining:<key>_build` for **every** structure in `structures.STRUCTURES` — fails against the pre-fix
+  direct-index map (which had no `boathouse` key) and catches any future registered-but-unmapped
+  structure.
+- **Status:** FIXED (root) 2026-07-01 (dispatch run). Live on the next auto-deploy; no data step.
+
+## BUG-0030 — `!dock` structure command collides with `!sail`'s `dock` alias → `fishing` cog fails to load → boot crash loop — FIXED (root)
+
+- **Symptom (live PROD outage, 2026-07-01):** after PR #1599 (fishing Dock structure) merged and
+  auto-deployed, the `worker` entered a **boot crash loop** — restart every ~30s, never reaching the
+  gateway. `cogs.fishing_cog` failed to load with `CommandRegistrationError: The command dock is
+  already an existing command or alias`, so the `fishing` subsystem had no loaded commands, its
+  declared entry points (`fish`/`fishlog`) went missing, and the STRICT identity-contract aborted
+  startup. The bot was **offline** until #1600 merged and redeployed.
+- **Root cause — a *same-cog* top-level command-token collision, and a review miss:** `!sail` had
+  carried `dock` as an **alias** (the "return to shore" venue toggle) since 2026-06-29. PR #1599 added
+  a first-class command literally **named** `dock` (the Dock structure). At `add_cog`, discord.py's
+  single global prefix-command namespace rejects the second claim of `dock`. **This was avoidable:**
+  the dispatch run that shipped #1599 had *read* the `sail` command definition (with its `dock` alias)
+  minutes earlier and still chose the name `dock` — it treated "pick a command name" as a naming task,
+  not a namespace-collision check, and never ran the one `grep '"dock"'` that would have caught it. It
+  is the same class as BUG's-worth-of `give` collision (#1541/#1544) — the *second* boot-loop from a
+  command-token collision. Green CI did not catch it because **no CI check loads the cogs onto a bot**
+  the way boot does, and the existing static token guard de-duplicated claimants *by cog*, so a single
+  cog claiming a token twice slipped through.
+- **Fix (root — PR #1600, separate session):** dropped the vestigial `dock` alias from `!sail`; the new
+  `!dock` structure command owns the name (`!sail`/`!setsail` still cover the venue toggle).
+- **Stays-fixed guards (two layers):**
+  1. **Static (PR #1600):** broadened `test_no_duplicate_top_level_command_names_across_cogs`
+     (`tests/unit/invariants/test_extension_integrity.py`) to count distinct **commands** per token, so
+     it catches **same-cog** *and* cross-cog name/alias collisions (fails against re-adding the alias).
+  2. **Dynamic (PR #1601, this entry):** `tests/unit/invariants/test_cog_load_smoke.py` — constructs a
+     bot like `bot1` and **loads every `INITIAL_EXTENSIONS` cog**, failing CI if any raises at
+     `add_cog`. This is the "did the bot actually boot?" check and catches the whole boot-break class
+     (token collisions *and* a raising `cog_load`, a bad import, a duplicate app-command), not just the
+     token subclass. Fails against the pre-#1600 tree; passes 58/58 on fixed `main`.
+- **Status:** FIXED (root) 2026-07-01. Code fix live via #1600's auto-deploy (no data step). Prevention
+  live via #1600's broadened static guard + #1601's dynamic boot smoke test.
+
 ## BUG-0029 — XP level-up role grants bypass the audited role seam (no `audit.action_recorded`, no shared hierarchy preflight) — FIXED (root)
 
 - **Symptom (found 2026-06-28 by a dispatch run during the XP feature-completion assessment — code

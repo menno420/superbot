@@ -1,24 +1,24 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T18:14:43Z",
+    "generated_at": "2026-07-04T19:24:28Z",
     "build": {
-      "commit": "e7602df6",
-      "subject": "Merge pull request #1552 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-06-29T18:14:43Z"
+      "commit": "85dc9e58",
+      "subject": "Merge pull request #1717 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-04T19:24:28Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 154,
-      "bugs": 29,
+      "ideas": 191,
+      "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 460,
-      "setting_keys": 108,
-      "setting_domains": 16,
-      "typed_settings": 88,
+      "commands": 484,
+      "setting_keys": 120,
+      "setting_domains": 17,
+      "typed_settings": 100,
       "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
@@ -99,7 +99,7 @@
       ],
       "entry_points": [
         "diagnostics",
-        "ping",
+        "latency",
         "platform"
       ],
       "related_subsystems": [
@@ -1150,7 +1150,8 @@
         "utilitymenu",
         "myprofile",
         "avatar",
-        "serverinfo"
+        "serverinfo",
+        "ping"
       ],
       "related_subsystems": [
         "general"
@@ -1163,6 +1164,307 @@
     }
   ],
   "ideas": [
+    {
+      "file": "ledger-fragmentation-linter-2026-07-04.md",
+      "title": "Idea — ledger-fragmentation linter (consolidate same-arc Recently-shipped bullets)",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "The `current-state.md` § Recently-shipped ledger is soft-ratcheted at 20 and relies on the",
+      "subsystems": null
+    },
+    {
+      "file": "owner-decision-packet-renderer-2026-07-04.md",
+      "title": "Idea — an owner-decision-packet renderer (register rows → a visual decision artifact)",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "The final judgment's surviving gap #13: *\"every binding checkpoint hands prose walls / JSON to a",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-design-cite-checker-2026-07-04.md",
+      "title": "Idea — `check_doc_cites.py`: validate source citations in analysis/design docs",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "Analysis and design docs cite shipped source by `path.py:NNN` constantly, and a **wrong cite",
+      "subsystems": null
+    },
+    {
+      "file": "fleet-structured-output-placeholder-guard-2026-07-03.md",
+      "title": "Idea — reject placeholder values in fleet structured outputs (workflow-layer guard)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Two independent multi-agent audits shipped **placeholder junk inside otherwise-validated",
+      "subsystems": null
+    },
+    {
+      "file": "golden-recapture-on-bugfix-2026-07-03.md",
+      "title": "Golden recapture on current-bot bug fix — a protocol so parity never preserves a bug",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Two things the rebuild does at once:",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-amendment-registry-2026-07-03.md",
+      "title": "Rebuild amendment registry — one minting authority for G-numbers (and R-/P-/refuted sets)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The capability audit's lanes each minted grammar-amendment IDs **locally**: Lane B assigned",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-critical-review-checkers-2026-07-03.md",
+      "title": "Idea — mechanize the critical-review rubric (the checker backlog)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The [critical-review rubric](../planning/rebuild-critical-review-rubric-2026-07-03.md) has ten",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-invocation-ladder-centralization-2026-07-03.md",
+      "title": "Idea — the invocation-stack centralization set (C-1…C-7)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Applying the second-consumer rule (Q-0219) to the command/invocation area surfaces seven things",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-layout-success-simulator-2026-07-03.md",
+      "title": "Idea — the unified layout-success simulator (instruction-driven, deterministic + AI)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "One simulator that scores any generated hub/menu layout by **task success rate**: given only a",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-navigation-completeness-check-2026-07-03.md",
+      "title": "Idea — navigation-completeness check (enforce the Back+Home contract)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Q-0231 guarantees **Back + Home on every rendered panel state, at every depth, across unlimited",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-release-testing-loop-2026-07-03.md",
+      "title": "Idea — the in-server release → test → verify loop (announce · coverage · test-mode · approve)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The Fable-5 judgment flagged, as gaps that survived the whole planning day: **no user-facing",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-schema-growth-ledger-2026-07-03.md",
+      "title": "Idea — rebuild schema-growth ledger (enforce the second-consumer rule mechanically)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The Q-0219 guardrail says the manifest grammar's declaration schema may grow a field **only when",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-websites-cutover-role-2026-07-03.md",
+      "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The shipped **public bot site** (`botsite/` — marketing, `/changelog`, interactive command",
+      "subsystems": null
+    },
+    {
+      "file": "reconcile-headline-sector-currency-check-2026-07-03.md",
+      "title": "Idea — reconcile-pass headline-sector currency check",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The reconciliation routine reliably updates the **S4 docs sector file** (`current-state/S4-docs.md`)",
+      "subsystems": null
+    },
+    {
+      "file": "ultracode-audit-consolidation-stage-2026-07-03.md",
+      "title": "Idea — a consolidation/dedup stage for the ultracode multi-agent audit pattern (2026-07-03)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The PROMPT-B audit workflow ran the brief's method verbatim: fan-out finders → adversarial-verify →",
+      "subsystems": null
+    },
+    {
+      "file": "central-admin-and-logging-guilds-2026-07-02.md",
+      "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Two dedicated Discord guilds (or one guild with two category zones — owner's taste) forming the",
+      "subsystems": null
+    },
+    {
+      "file": "context-cost-telemetry-2026-07-02.md",
+      "title": "Context-cost telemetry — measure real per-session reads, not modeled ones",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "boot-route words actually read) are modeled estimates, sensitivity-swept but not observed. The",
+      "subsystems": null
+    },
+    {
+      "file": "continuously-verified-backups-2026-07-02.md",
+      "title": "Continuously-verified backups — the restore drill as a scheduled workflow (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Upgrade the Railway plan's one-shot **R6 restore drill** into standing CI: a scheduled (weekly or",
+      "subsystems": null
+    },
+    {
+      "file": "convergent-amendment-discovery-signal-2026-07-02.md",
+      "title": "Convergent-discovery as an amendment-confidence signal (multi-agent audit methodology)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "During the Lane A new-bot capability audit, 11 independently-run subagents (one per subsystem,",
+      "subsystems": []
+    },
+    {
+      "file": "judge-panel-as-saved-workflow-2026-07-02.md",
+      "title": "Judge-panel design method as a saved, reusable workflow (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "The rebuild design spec was produced by a hand-authored judge-panel workflow that worked extremely",
+      "subsystems": null
+    },
+    {
+      "file": "no-transcript-secret-plumbing-2026-07-02.md",
+      "title": "No-transcript secret plumbing — moving secrets without ever printing them (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Q-0213's premise is that agents never need the owner \"to enter certain values\" — but several",
+      "subsystems": null
+    },
+    {
+      "file": "owner-gate-docs-plain-language-rule-2026-07-02.md",
+      "title": "Owner-gate docs always carry a plain-language layer (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "The rebuild design spec — the highest-stakes owner-gate artifact yet — shipped written for",
+      "subsystems": null
+    },
+    {
+      "file": "railway-config-drift-checker-2026-07-02.md",
+      "title": "Railway config-drift checker (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "A read-only `scripts/check_railway_config.py` (+ a weekly routine) that queries the Railway",
+      "subsystems": null
+    },
+    {
+      "file": "railway-deploy-alerts-discord-webhook-2026-07-02.md",
+      "title": "Railway deploy-failure alerts into Discord (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Point a **Railway project webhook** at a Discord webhook so deploy events — above all",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-doc-set-start-here-index-2026-07-02.md",
+      "title": "Idea — a single \"START HERE\" index for the fresh-rebuild doc-set",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Reconciling band #1621–#1650 surfaced that the **fresh-rebuild initiative** — now the owner's top-focus",
+      "subsystems": null
+    },
+    {
+      "file": "shadow-clone-rehearsal-2026-07-02.md",
+      "title": "Shadow-clone rehearsal — stand up the current bot's twin, agent-operated (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Under the Q-0213 grant, an agent can stand up the **entire Phase-5 shadow topology today, on the",
+      "subsystems": null
+    },
+    {
+      "file": "substrate-kit-review-followups-2026-07-02.md",
+      "title": "Idea — substrate-kit hardening follow-ups (from the #1649 independent review)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Surfaced by the **independent review of session #1649** (the ultracode memory-substrate finalize),",
+      "subsystems": null
+    },
+    {
+      "file": "tried-before-ledger-2026-07-02.md",
+      "title": "The tried-before ledger — operational negative results as first-class memory (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "This session an agent analyzed Railway's *wait-for-CI* toggle from config and concluded it was",
+      "subsystems": null
+    },
+    {
+      "file": "wire-level-live-bot-loop-2026-07-02.md",
+      "title": "The wire-level live-bot loop — Galaxy Bot dissolves the [needs-live-bot] gate (2026-07-02)",
+      "status": "ideas",
+      "date": "2026-07-02",
+      "summary": "Agent containers hold a working **test-bot token** (\"Galaxy Bot\", verified live this session) plus",
+      "subsystems": null
+    },
+    {
+      "file": "audit-log-catchup-on-reconnect-2026-07-01.md",
+      "title": "Idea — Audit-log catch-up on reconnect (gap-free logging across restarts)",
+      "status": "ideas",
+      "date": "2026-07-01",
+      "summary": "Server event logging v2 (this session) added `on_audit_log_entry_create`, so SuperBot now",
+      "subsystems": null
+    },
+    {
+      "file": "band-themes-show-pr-subject-2026-07-01.md",
+      "title": "Idea — `band_pr_status.py --themes` should print each PR's subject line",
+      "status": "ideas",
+      "date": "2026-07-01",
+      "summary": "`band_pr_status.py --themes` drafts a grouped-entry skeleton for the Recently-shipped ledger, but it",
+      "subsystems": null
+    },
+    {
+      "file": "leaderboard-row-avatars-2026-07-01.md",
+      "title": "Idea: leaderboard row avatars (the Arcane-defining visual)",
+      "status": "ideas",
+      "date": "2026-07-01",
+      "summary": "The leaderboard **image card** now reads well (outlier-safe bars, podium colours, clean values — this",
+      "subsystems": null
+    },
+    {
+      "file": "compute-dont-refuse-capability-sweep-2026-06-30.md",
+      "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+      "status": "ideas",
+      "date": "2026-06-30",
+      "summary": "The boss-fight estimator fixed one instance of a general failure: **the bot refuses (or",
+      "subsystems": [
+        "ai",
+        "btd6"
+      ]
+    },
+    {
+      "file": "orientation-doc-linecap-guard-2026-06-30.md",
+      "title": "Idea — enforce the read-path docs' own stated line caps (orientation-cost regrowth guard)",
+      "status": "ideas",
+      "date": "2026-06-30",
+      "summary": "The session-start \"any task\" reading order measured **~25,593 words** before a session reaches its",
+      "subsystems": null
+    },
+    {
+      "file": "review-log-frequency-preset-suggestions-2026-06-30.md",
+      "title": "Frequency-driven preset suggestions from the review log",
+      "status": "ideas",
+      "date": "2026-06-30",
+      "summary": "The answer loop shipped this session is **operator-pull**: a human runs `!aireview export`,",
+      "subsystems": [
+        "ai"
+      ]
+    },
+    {
+      "file": "superbot-fresh-rebuild-vision-2026-06-30.md",
+      "title": "SuperBot fresh-rebuild vision — captured discussion (2026-06-30)",
+      "status": "ideas",
+      "date": "2026-06-30",
+      "summary": "A long in-chat conversation (2026-06-30, Claude Sonnet 5) covered: a session-start orientation-cost",
+      "subsystems": null
+    },
+    {
+      "file": "command-collision-checker-2026-06-29.md",
+      "title": "Idea — `check_command_collisions.py`: static guard against duplicate command names",
+      "status": "ideas",
+      "date": "2026-06-29",
+      "summary": "PR #1541 added a `!give`/`!pay` economy command. It **collided** with mining's admin `give` — a command",
+      "subsystems": null
+    },
     {
       "file": "knowledge-domain-conversation-carryover-2026-06-29.md",
       "title": "Idea — conversational domain-context carryover for knowledge domains",
@@ -1272,7 +1574,7 @@
       "title": "Bot-migration assistant — detect → map → replicate → retire other bots (2026-06-24)",
       "status": "ideas",
       "date": "2026-06-24",
-      "summary": "This is a **bot-migration / consolidation assistant**: the operator runs one flow, SuperBot inventories",
+      "summary": "The first **data carry-over** slice of the \"replicate\" phase shipped independently, owner-requested:",
       "subsystems": [
         "setup"
       ]
@@ -2470,6 +2772,18 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0031",
+      "title": "building a Boathouse raises KeyError: 'boathouse' (structure never added to the build-reason map) — FIXED (root)",
+      "status": "unknown",
+      "summary": "invoking !boathouse and pressing Build — or any build of the Boathouse structure — raises KeyError: 'boathouse' inside services.mining_workflow.build_structure before the transaction, so the build never happens and the panel would surface an error. Shipped live in #1605 (the Boa…"
+    },
+    {
+      "id": "BUG-0030",
+      "title": "!dock structure command collides with !sail's dock alias → fishing cog fails to load → boot crash loop — FIXED (root)",
+      "status": "unknown",
+      "summary": "after PR #1599 (fishing Dock structure) merged and auto-deployed, the worker entered a boot crash loop — restart every ~30s, never reaching the gateway. cogs.fishing_cog failed to load with CommandRegistrationError: The command dock is already an existing command or alias, so th…"
+    },
+    {
       "id": "BUG-0029",
       "title": "XP level-up role grants bypass the audited role seam (no audit.action_recorded, no shared hierarchy preflight) — FIXED (root)",
       "status": "unknown",
@@ -2647,484 +2961,484 @@
   "reviews": [],
   "updates": [
     {
-      "file": "2026-06-29-session-slug-unique-guard.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Session-slug-uniqueness guard (close BUG-0027's residual clobber risk) + Mining how-to button",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-server-fn-completion-assessments.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Server-function feature-completion assessments (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-railway-give-collision-crash.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — PROD hotfix: `give` command collision crashed boot (bot offline)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-proof-channel-completion-deepening.md",
-      "date": "2026-06-29",
-      "title": "Session — Proof Channel completion-deepening (audit trail + modal authority re-check)",
+      "file": "2026-07-04-reconcile.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Thirty-fourth Q-0107 reconciliation pass (band-#1710)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
     {
-      "file": "2026-06-29-projmoon-combat-mechanics.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Project Moon (Limbus) combat-mechanics knowledge layer",
+      "file": "2026-07-04-rebuild-foundational-design.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Rebuild foundational-DESIGN (AUDITED → Gate-0 / L0-plannable)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-gate0-brief-prep.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Prepare the Gate-0 grammar-freeze + Phase-B L0 ultracode brief",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-ultracode-quicklaunch.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Ultracode quick-launch prompts + durable-home verification",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-tier1-owner-decisions.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Tier-1 owner decisions recorded (Q-0237)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-surface-proving-mechanics-ultracode.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Surface + proving foundations audit (PROMPT B, ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-reconcile.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Thirty-third Q-0107 reconciliation pass (band-#1680)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-stage1-global-review.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · Stage 1: the global plan review (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-planning-phase-doc.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Document the rebuild review-then-plan phase (process + next-session goal)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-hub-navigation.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · hub topology + navigation contract + interface presets (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-conventions-freeze.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · conventions freeze (owner-live, continued)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-prep-fable5-final-review.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare (not execute) a Fable-5 ultracode final-judgment prompt",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-phase-a-final-judgment.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Phase-A final judgment (Fable-5 ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-permission-allowlist-and-endorse.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Permission allowlist fix + Q-0228 centralization endorsement (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-owner-ideas-release-loop-websites.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Capture 2 owner ideas: release→test→verify loop + websites cutover-role",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-oracle-and-verification-strategy.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — New-feature oracle resolved + verification-fleet gate & repo-as-artifact strategy",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-layout-success-simulator.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Unified layout-success simulator (owner-directed capture)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-foundations-engine-room-ultracode.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Foundational mechanics: the engine room (PROMPT A, runtime/logic)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-foundational-design-opus-brief.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare the Opus-4.8 foundational-DESIGN overnight prompt",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-fix-prod-loss-paths.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Fix two confirmed prod loss paths (from the engine-room audit)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-critical-review-rubric.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — The critical-review rubric (owner-directed)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-capability-audit-capstone.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — New-bot capability-audit CAPSTONE (final review + unified build plan)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-workflow-consent-fleet-config.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Stop fleet sessions re-prompting for multi-agent-workflow consent",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-ultracode-memory-substrate-finalize.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Finalize the AI-memory substrate (handoff §5.B, ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-session-ideas-harvest.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Ideas harvest from today's session arc (owner-requested)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
     },
     {
-      "file": "2026-06-29-inventory-display-logic-tests.md",
-      "date": "2026-06-29",
-      "title": "Session — Inventory display-logic coverage (Q-0209 completion-cert punch #7)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-fishing-leaderboard-provider.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Fishing leaderboard provider (S1 deepening win)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-farm-leaderboard-provider.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Farm leaderboard provider (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-29-economy-give-pay.md",
-      "date": "2026-06-29",
-      "title": "2026-06-29 — Economy give/pay (S1 deepening win, slice 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-29-creatures-game-panel.md",
-      "date": "2026-06-29",
-      "title": "Session — Creatures completion: game panel + interactive dex browser (Q-0209 deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-server-function-completion-assessments.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Server-function completion assessments (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-server-fn-assessments-batch2.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Server-function completion assessments, batch 2 (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-reconcile.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — twenty-eighth Q-0107 reconciliation pass (band-#1530)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-question-router-answer-documentation.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Document owner answers + decide the router-vs-durable-home convention",
+      "file": "2026-07-02-review-recent-session.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Review the most recent session (#1649 substrate-kit finalize)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
     {
-      "file": "2026-06-28-no-dead-end-view-guard.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — No-dead-end terminal-view arch guard (friction→guard)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-mining-creatures-completion-assessments.md",
-      "date": "2026-06-28",
-      "title": "Session — feature-completion assessments: Mining + Creatures + Welcome (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-fishing-pearl-rare-material.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Fishing: the \"pearl\" rare-material drop + a premium-bait pearl craft",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-fishing-counting-completion-punchlist.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Fishing + Counting feature-completion punch-list clears",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-28-feature-completion-games-and-gate-fix.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Feature-completion assessments (RPS · Deathmatch · Chicken farm) + born-red gate collision fix",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-feature-completion-assessments.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Feature-completion unit assessments + counting leaderboard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-deathmatch-pvp-deadend.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Deathmatch + RPS PvP trapped-view dead-end fixes (completion-first)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-28-casino-completion-cert.md",
-      "date": "2026-06-28",
-      "title": "2026-06-28 — Casino (poker) feature-completion certificate (Q-0209)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-youtube-fetch-renderer-tests.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Media/YouTube focused test coverage (fetch service + renderers/embeds)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-youtube-cache-db-tests.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — YouTube cache DB-primitive test coverage (dispatch slice 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-startability-offline-fit-tags.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Per-sector offline-fit startability tags (workflow improvement)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-setup-wizard-command-channels.md",
-      "date": "2026-06-27",
-      "title": "Session — 2026-06-27 · Setup wizard: \"Where can people use commands?\" (per-channel command access)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-s1-offline-handoff.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Sharpen S1 ▶ Next with an offline-startable item (handoff hygiene)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-reconcile-marker-band-consistency-guard.md",
-      "date": "2026-06-27",
-      "title": "Session — reconcile-marker band-consistency guard (+ marker conflation fix)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-reconcile-band1500.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Twenty-seventh Q-0107 reconciliation pass (band-#1500)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-mining-wire-light-luck.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Wire the two dead EffectiveStats (light_radius + luck) into mining (BUG-0026)",
+      "file": "2026-07-02-review-codex-prs.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Review the 2 recent Codex PRs (#1654, #1655) + fix the drift they found",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
     {
-      "file": "2026-06-27-mining-loadout-presets.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Mining/character gear loadout presets (V-14 / Q-0175 Phase-1 unified-loadout model)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-fishing-rod-craft.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Fishing acquisition depth: fish→rod craft + lucky double catch",
+      "file": "2026-07-02-reconcile.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Thirty-second Q-0107 reconciliation pass (band-#1650)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
     {
-      "file": "2026-06-27-fishing-gear-stats.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Fishing-specific gear stats (loadout presets become a real optimisation)",
+      "file": "2026-07-02-rebuild-strategy-and-substrate-planning.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild strategy + substrate-kit planning (interactive, owner-directed)",
       "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-27-fishing-charm-craft.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Fishing-gear acquisition depth: fish→charm craft path",
-      "status": "complete",
-      "run_type": "routine",
+      "run_type": "",
       "self_initiated": false
     },
     {
-      "file": "2026-06-27-feature-completion-framework.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Feature-completion certification framework (S1 bot units)",
+      "file": "2026-07-02-rebuild-execution-plan-and-memory-gate.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild: parallel-execution plan + AI-memory-system as the real new-repo gate",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
     },
     {
-      "file": "2026-06-27-effectivestats-knob-coverage.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — EffectiveStats knob-coverage guard + dead-stat finding (BUG-00xx)",
+      "file": "2026-07-02-rebuild-design-spec.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild design spec: the \"one picture\" (docs-only, owner-gate deliverable)",
       "status": "complete",
-      "run_type": "routine",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-rebuild-design-spec-revision.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild design spec: external-review revision (plain-language + verified gap-fixes)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-railway-automation-grant.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Railway: the full-automation grant (Q-0213) + R-now execution",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-railway-audit-and-plan.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Railway: token-capability audit + new-project setup plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-memory-retention-policy.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Memory retention & deletion policy (design session)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": true
     },
     {
-      "file": "2026-06-27-economy-flow-timeseries.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Games-economy observability: per-day faucet/sink trend view",
+      "file": "2026-07-02-linchpin-validation-harness-and-grammar-spike.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Rebuild linchpin validation: golden harness + grammar spike + go/no-go",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-lane-g-l0-foundations-audit.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane G: L0 Foundations & Runtime Skeleton audit",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-lane-f-ecosystem-benchmark.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane F ecosystem benchmark (verify + incorporate owner-provided deep-research)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-lane-c-games-audit.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane C new-bot capability audit (Games & Community)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-lane-b-economy-audit.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane B new-bot capability audit (Economy & Character-sim)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-lane-a-governance-audit.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Lane A governance capability audit",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-hq-guild-live.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — HQ guild live: Railway feed moved + invite-flow fix + cutover-token confirmation",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-grammar-audit-prep.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Prepare the repo for the new-bot capability audit (fleet substrate)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-daily-review-brainstorm.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Daily review + architecture brainstorm ahead of the rebuild gate",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-capstone-prompt-refresh.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Refresh the Fable 5 capstone prompt for the completed fleet",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-audit-brief-hardening.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Harden the new-bot capability-audit BRIEF (prompt-refinement pass)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-02-admin-logging-guilds-and-webhook.md",
+      "date": "2026-07-02",
+      "title": "2026-07-02 — Admin/logging guilds idea + Railway alerts webhook restored",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-xp-level-migration.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — XP/level migration from other bots (Arcane)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-xp-import-button-generic.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — XP import: button entry + generic framing (follow-up)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-visual-comparison-cards.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Visual comparison: out-read Arcane/MEE6 on the rank + leaderboard cards",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-utility-completion-deepening.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Utility completion-first deepening",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-treasury-cog-tests.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Treasury completion tests (cog + modal)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-01-settings-order-sim-and-binding-back-button-bugs.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Server-logging: per-route binding crash + disappearing back button + settings-order sim",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": true
     },
     {
-      "file": "2026-06-27-btd6-session-close-docs.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 QA arc: session-close documentation (what shipped + live-test checklist)",
+      "file": "2026-07-01-server-logging-v2-audit-log.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Server event logging v2: Discord audit-log integration (Dyno parity)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
     {
-      "file": "2026-06-27-btd6-revert-counter-list.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6: revert the auto-derived DDT counter list (it grounded wrong towers)",
+      "file": "2026-07-01-server-log-avatar.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Server-log embeds: a face per entry (avatar in the author slot)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
     },
     {
-      "file": "2026-06-27-btd6-qa-accuracy.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 QA accuracy: damage-type/status-effect interaction grounding + verified Q&A corpus",
+      "file": "2026-07-01-role-menu-layout-sim.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Role-menu builder button-layout simulation",
       "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-eval-semantic-grader.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 live eval: semantic grading (fix false-negatives) + honest limits",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-eval-live-path.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 evals: faithful \"exactly live\" answer-path replay",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-eval-corpus-action.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 QA corpus wired into the evals (offline grounding test + live action suite)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-ddt-counter-grounding.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6: ground VERIFIED DDT counter towers (fix the over-refusal)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-btd6-absence-guard-layer-b.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — BTD6 absence-guard Layer B (grounded-contradiction slice)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-audit-review-btd6-corpus.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — Reviewed the codex unfinished-work audit (PR #1509); shipped a BTD6 regression-corpus expansion",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-27-ai-answer-review-log.md",
-      "date": "2026-06-27",
-      "title": "2026-06-27 — AI answer review-log (didn't-know + user corrections)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-26-sessionclose-freshness-wiring.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Wire ▶ Next freshness guard into /session-close",
-      "status": "complete",
-      "run_type": "routine",
+      "run_type": "manual",
       "self_initiated": true
     },
     {
-      "file": "2026-06-26-session-close-gate-metacheck.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Meta-check: every \"run-at-close\" checker must be wired into /session-close",
+      "file": "2026-07-01-role-menu-layout-sim-pin-style.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Layout sim: pin Style first-screen (owner correction)",
       "status": "complete",
-      "run_type": "routine",
+      "run_type": "manual",
       "self_initiated": true
     },
     {
-      "file": "2026-06-26-sector-next-freshness-guard.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Sector ▶ Next freshness guard (S3 mechanism)",
+      "file": "2026-07-01-role-menu-builder-lean-layout.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — Role-menu builder \"slim\" lean layout",
       "status": "complete",
-      "run_type": "routine",
+      "run_type": "manual",
       "self_initiated": true
     },
     {
-      "file": "2026-06-26-reconcile-band1470.md",
-      "date": "2026-06-26",
-      "title": "Session — 2026-06-26 · twenty-sixth Q-0107 reconciliation pass (band-#1470)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-26-projmoon-grounding-path.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Project Moon (Limbus) grounding path (PR 2)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-26-projmoon-faithfulness-guard.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Project Moon (Limbus) faithfulness guard (S1)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-26-cross-domain-routing-disjoint-guard.md",
-      "date": "2026-06-26",
-      "title": "2026-06-26 — Cross-domain AI-routing disjointness guard (S1 / Project Moon prep)",
+      "file": "2026-07-01-reconcile.md",
+      "date": "2026-07-01",
+      "title": "2026-07-01 — thirty-first Q-0107 reconciliation pass (band-#1620)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-06-26-btd6-eval-anchor-coverage.md",
-      "date": "2026-06-26",
-      "title": "Session — 2026-06-26 · BTD6 eval-anchor coverage + distractor negative-anchor guard",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-xp-config-card-strand-fix.md",
-      "date": "2026-06-25",
-      "title": "2026-06-25 — XP hub: clear stranded rank card on Configure (BUG-0025 third instance)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-stale-claim-detector.md",
-      "date": "2026-06-25",
-      "title": "Session — 2026-06-25 · slice 2 — route claim-GC + badges findings",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-setup-wizard-pr3a-retire-dead-sections.md",
-      "date": "2026-06-25",
-      "title": "Session — 2026-06-25 · setup-wizard PR 3a — retire dead/legacy sections",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-25-settle-once-consistency-guard.md",
-      "date": "2026-06-25",
-      "title": "2026-06-25 — settle-once money-safety CI guard (check_consistency Rule 6)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-06-25-projmoon-sinner-literary-origins.md",
-      "date": "2026-06-25",
-      "title": "Session — 2026-06-25 · Project Moon — Limbus Sinner literary origins",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3190,7 +3504,7 @@
       "usages": [
         {
           "file": "disbot/services/diagnostic_embeds.py",
-          "line": 1269,
+          "line": 1418,
           "layer": "services",
           "has_default": false
         },
@@ -3213,7 +3527,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 172,
+          "line": 203,
           "layer": "config",
           "has_default": true
         },
@@ -3235,7 +3549,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 171,
+          "line": 202,
           "layer": "config",
           "has_default": true
         }
@@ -3268,7 +3582,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 155,
+          "line": 186,
           "layer": "config",
           "has_default": true
         },
@@ -3306,7 +3620,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 218,
+          "line": 249,
           "layer": "config",
           "has_default": true
         }
@@ -3354,7 +3668,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 210,
+          "line": 241,
           "layer": "config",
           "has_default": true
         }
@@ -3402,7 +3716,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 198,
+          "line": 229,
           "layer": "config",
           "has_default": true
         }
@@ -3418,7 +3732,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 201,
+          "line": 232,
           "layer": "config",
           "has_default": true
         }
@@ -3434,7 +3748,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 204,
+          "line": 235,
           "layer": "config",
           "has_default": true
         }
@@ -3514,7 +3828,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 51,
+          "line": 52,
           "layer": "cogs",
           "has_default": true
         }
@@ -3530,7 +3844,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 49,
+          "line": 50,
           "layer": "cogs",
           "has_default": true
         }
@@ -3546,7 +3860,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 50,
+          "line": 51,
           "layer": "cogs",
           "has_default": true
         }
@@ -3562,7 +3876,7 @@
       "usages": [
         {
           "file": "disbot/cogs/hermes_cog.py",
-          "line": 52,
+          "line": 53,
           "layer": "cogs",
           "has_default": true
         }
@@ -3594,7 +3908,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 117,
+          "line": 148,
           "layer": "config",
           "has_default": true
         }
@@ -3610,7 +3924,7 @@
       "usages": [
         {
           "file": "disbot/services/health_snapshot_service.py",
-          "line": 267,
+          "line": 268,
           "layer": "services",
           "has_default": true
         }
@@ -3658,7 +3972,7 @@
       "usages": [
         {
           "file": "disbot/bot1.py",
-          "line": 175,
+          "line": 180,
           "layer": "bot1",
           "has_default": true
         }
@@ -3674,7 +3988,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 118,
+          "line": 149,
           "layer": "config",
           "has_default": true
         }
@@ -3692,7 +4006,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 154,
+          "line": 185,
           "layer": "config",
           "has_default": true
         },
@@ -3733,7 +4047,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 181,
+          "line": 212,
           "layer": "config",
           "has_default": true
         },
@@ -3756,7 +4070,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 185,
+          "line": 216,
           "layer": "config",
           "has_default": true
         },
@@ -3795,7 +4109,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 153,
+          "line": 184,
           "layer": "config",
           "has_default": true
         },
@@ -3819,7 +4133,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 152,
+          "line": 183,
           "layer": "config",
           "has_default": true
         },
@@ -3847,7 +4161,7 @@
       "usages": [
         {
           "file": "disbot/bot1.py",
-          "line": 172,
+          "line": 177,
           "layer": "bot1",
           "has_default": true
         }
@@ -3956,6 +4270,28 @@
           "parent": "btd6",
           "aliases": [],
           "brief": "",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "estimate",
+          "type": "slash",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "estimate",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "btd6",
+          "aliases": [],
+          "brief": "Estimate a boss fight: `<tower> vs <boss> [tier]`, or `counters <boss>`.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4997,6 +5333,17 @@
           "button_backed": false
         },
         {
+          "name": "export",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "aireview",
+          "aliases": [],
+          "brief": "Dump the backlog as a JSON file for triage.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "list",
           "type": "prefix",
           "is_group": false,
@@ -5019,12 +5366,67 @@
           "button_backed": false
         },
         {
+          "name": "preset",
+          "type": "prefix",
+          "is_group": true,
+          "parent": "aireview",
+          "aliases": [],
+          "brief": "Manage vetted answer presets (served with zero model call).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "resolve",
           "type": "prefix",
           "is_group": false,
           "parent": "aireview",
           "aliases": [],
           "brief": "Mark one review entry reviewed: ``!aireview resolve <id>``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "add",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "preset",
+          "aliases": [],
+          "brief": "Author a preset: ``!aireview preset add \"<question>\" <answer>``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "from",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "preset",
+          "aliases": [],
+          "brief": "Author a preset from a logged question: ``!aireview preset from <id> <answer>``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "list",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "preset",
+          "aliases": [],
+          "brief": "List stored presets: ``!aireview preset list [n]``.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "remove",
+          "type": "prefix",
+          "is_group": false,
+          "parent": "preset",
+          "aliases": [],
+          "brief": "Delete a preset: ``!aireview preset remove <id>``.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -5946,6 +6348,32 @@
           "button_backed": false
         },
         {
+          "name": "slowmode",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "slow"
+          ],
+          "brief": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "topic",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "settopic"
+          ],
+          "brief": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "unlock",
           "type": "prefix",
           "is_group": false,
@@ -5981,7 +6409,7 @@
           "is_group": false,
           "parent": null,
           "aliases": [],
-          "brief": "Clean matching channel history by keyword, commands, or prohibited words.",
+          "brief": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -6101,6 +6529,17 @@
       "is_cog": true,
       "commands": [
         {
+          "name": "counterpreset",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Apply a curated counter name-template preset (sets all three templates at once). Run without a name to list the presets.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "counters",
           "type": "prefix",
           "is_group": false,
@@ -6108,6 +6547,17 @@
           "aliases": [],
           "brief": "Show the current server-counter channels for this server.",
           "classification": "primary_entrypoint",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "counters",
+          "type": "slash",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show this server's live counter channels (members / humans / bots).",
+          "classification": "",
           "has_panel": false,
           "button_backed": false
         }
@@ -6460,10 +6910,8 @@
           "type": "prefix",
           "is_group": false,
           "parent": null,
-          "aliases": [
-            "ping"
-          ],
-          "brief": "Report the bot's WebSocket latency.",
+          "aliases": [],
+          "brief": "Report the bot's WebSocket latency (admin detail view).",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -6716,6 +7164,20 @@
           "button_backed": true
         },
         {
+          "name": "boathouse",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "moorings",
+            "boat"
+          ],
+          "brief": "Build a Boathouse — the coral+wood structure that refills energy faster.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
           "name": "craftbait",
           "type": "prefix",
           "is_group": false,
@@ -6737,6 +7199,20 @@
             "charmcraft"
           ],
           "brief": "Craft a fishing charm from caught fish — the non-coin earn path.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "craftcurio",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "carve",
+            "curiocraft"
+          ],
+          "brief": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -6768,12 +7244,54 @@
           "button_backed": false
         },
         {
+          "name": "curios",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "curio",
+            "carvings"
+          ],
+          "brief": "Show the coral-carving collection + your coral and craft progress.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "dock",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "pier",
+            "fishingdock"
+          ],
+          "brief": "Build a Dock — the cheap coral+wood structure that makes fish bite faster.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
           "name": "fish",
           "type": "prefix",
           "is_group": false,
           "parent": null,
           "aliases": [],
           "brief": "Cast a line — wait for the bite, then reel it in before it gets away.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "fishery",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "hatchery",
+            "fishfarm"
+          ],
+          "brief": "Build a Fishery — the coral+wood structure that lands more double catches.",
           "classification": "",
           "has_panel": true,
           "button_backed": true
@@ -6846,18 +7364,45 @@
           "button_backed": true
         },
         {
+          "name": "rodrecipes",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "rodrecipe",
+            "rrecipes"
+          ],
+          "brief": "Browse every fish→rod recipe and your live progress toward each tier.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
           "name": "sail",
           "type": "prefix",
           "is_group": false,
           "parent": null,
           "aliases": [
-            "setsail",
-            "dock"
+            "setsail"
           ],
-          "brief": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+          "brief": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
+        },
+        {
+          "name": "tidepool",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "reef",
+            "tidepools"
+          ],
+          "brief": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
         },
         {
           "name": "trophies",
@@ -8762,6 +9307,19 @@
           "button_backed": false
         },
         {
+          "name": "roleinfo",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "ri"
+          ],
+          "brief": "Show a role's details. Usage: !roleinfo <@role|name|id>",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "rolemenu",
           "type": "prefix",
           "is_group": false,
@@ -9370,6 +9928,19 @@
           "button_backed": false
         },
         {
+          "name": "botinfo",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "about"
+          ],
+          "brief": "Show information about the bot — servers, uptime, latency, version.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "clear",
           "type": "prefix",
           "is_group": false,
@@ -9405,6 +9976,19 @@
           "button_backed": false
         },
         {
+          "name": "membercount",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "members"
+          ],
+          "brief": "Show this server's member count — humans, bots, and total.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
           "name": "myprofile",
           "type": "prefix",
           "is_group": false,
@@ -9425,6 +10009,17 @@
           "classification": "",
           "has_panel": true,
           "button_backed": true
+        },
+        {
+          "name": "ping",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Check the bot's responsiveness — gateway + message round-trip.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
         },
         {
           "name": "poll",
@@ -9591,6 +10186,17 @@
           "parent": null,
           "aliases": [],
           "brief": "Open the XP configuration panel (admin only).",
+          "classification": "",
+          "has_panel": true,
+          "button_backed": true
+        },
+        {
+          "name": "xpimport",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Import XP/levels from another bot by reading its level-up channel.",
           "classification": "",
           "has_panel": true,
           "button_backed": true
@@ -9835,6 +10441,20 @@
       ]
     },
     {
+      "domain": "cleanup",
+      "purpose": "Settings keys owned by the Cleanup subsystem (cogs.cleanup_cog).",
+      "keys": [
+        {
+          "constant": "CLEANUP_SPAM_WINDOW_SECONDS",
+          "key": "cleanup_spam_window_seconds",
+          "type": "int",
+          "hint": "Window (seconds) the `!cleanuphistory` spam sweep treats two near-identical messages from one author as duplicates.",
+          "allowed_values": [],
+          "default": 15
+        }
+      ]
+    },
+    {
       "domain": "counters",
       "purpose": "Settings keys owned by the Counters subsystem (cogs.counters_cog).",
       "keys": [
@@ -10063,6 +10683,14 @@
           "hint": "Maximum karma grants one member can give per rolling 24 hours.",
           "allowed_values": [],
           "default": 10
+        },
+        {
+          "constant": "KARMA_REACTION_EMOJI",
+          "key": "karma_reaction_emoji",
+          "type": "str",
+          "hint": "React-to-thank: set an emoji (e.g. ✨) and reacting with it on a message grants karma to that message's author — same cooldown and daily cap as !thanks. Leave empty to disable (the default).",
+          "allowed_values": [],
+          "default": ""
         }
       ]
     },
@@ -10107,8 +10735,32 @@
           "key": "logging_roles_enabled"
         },
         {
+          "constant": "LOGGING_MODERATION_ENABLED",
+          "key": "logging_moderation_enabled"
+        },
+        {
+          "constant": "LOGGING_CHANNELS_ENABLED",
+          "key": "logging_channels_enabled"
+        },
+        {
+          "constant": "LOGGING_SERVER_ENABLED",
+          "key": "logging_server_enabled"
+        },
+        {
+          "constant": "LOGGING_VOICE_ENABLED",
+          "key": "logging_voice_enabled"
+        },
+        {
           "constant": "LOGGING_EVENT_ROUTING",
           "key": "logging_event_routing"
+        },
+        {
+          "constant": "LOGGING_IGNORED_CHANNELS",
+          "key": "logging_ignored_channels"
+        },
+        {
+          "constant": "LOGGING_IGNORED_USERS",
+          "key": "logging_ignored_users"
         },
         {
           "constant": "DEFAULT_EVENTS_CHANNEL_NAME",
@@ -10403,7 +11055,7 @@
           "constant": "WELCOME_JOIN_MESSAGE",
           "key": "welcome_join_message",
           "type": "str",
-          "hint": "Greeting template.  Placeholders: {user} (mention), {server} (name), {count} (member number).",
+          "hint": "Greeting template.  Placeholders: {user} (mention), {server} (name), {count} (member number).  Add several variants separated by a '---' line to greet joiners with a random one each time.",
           "allowed_values": [],
           "default": "👋 Welcome {user} to **{server}**! You're member #{count}."
         },
@@ -10411,7 +11063,7 @@
           "constant": "WELCOME_LEAVE_MESSAGE",
           "key": "welcome_leave_message",
           "type": "str",
-          "hint": "Farewell template.  Placeholders: {user} (name), {server} (name), {count} (remaining members).",
+          "hint": "Farewell template.  Placeholders: {user} (name), {server} (name), {count} (remaining members).  Add several variants separated by a '---' line to post a random one each time.",
           "allowed_values": [],
           "default": "👋 **{user}** has left {server}. We're now {count} members."
         },
@@ -10424,12 +11076,44 @@
           "default": ""
         },
         {
+          "constant": "WELCOME_DM_ENABLED",
+          "key": "welcome_dm_enabled",
+          "type": "bool",
+          "hint": "Also send the joining member a direct-message greeting (in addition to the channel greeting).  Off by default; needs no channel.  Silently skipped for members with DMs closed.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "WELCOME_DM_MESSAGE",
+          "key": "welcome_dm_message",
+          "type": "str",
+          "hint": "Direct-message greeting template.  Placeholders: {user} (mention), {server} (name), {count} (member number).  Add several variants separated by a '---' line to DM a random one each time.",
+          "allowed_values": [],
+          "default": "👋 Welcome to **{server}**, {user}! Glad to have you — you're member #{count}."
+        },
+        {
           "constant": "WELCOME_CARD_ENABLED",
           "key": "welcome_card_enabled",
           "type": "bool",
           "hint": "Attach a rendered welcome card image to the join greeting (phase 2).  Off by default; falls back to the embed-only greeting when image rendering is unavailable.",
           "allowed_values": [],
           "default": false
+        },
+        {
+          "constant": "WELCOME_MIN_ACCOUNT_AGE_DAYS",
+          "key": "welcome_min_account_age_days",
+          "type": "int",
+          "hint": "Anti-raid: skip the greeting, DM, and entry role for a joining member whose Discord account is younger than this many days.  0 disables it (every account is greeted).",
+          "allowed_values": [],
+          "default": 0
+        },
+        {
+          "constant": "WELCOME_DELETE_AFTER_SECONDS",
+          "key": "welcome_delete_after_seconds",
+          "type": "int",
+          "hint": "Ping-then-delete: auto-delete the channel greeting/farewell this many seconds after it posts, to keep a busy channel tidy.  0 keeps the message.  The DM greeting is never deleted.",
+          "allowed_values": [],
+          "default": 0
         }
       ]
     },

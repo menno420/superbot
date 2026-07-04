@@ -69,6 +69,7 @@ def build_rod_embed(
         recipe = rods_mod.rod_recipe(nxt.tier)
         craft_line = (
             f"\n🎣 _or craft from {rods_mod.rod_recipe_text(recipe)}_"
+            " (📋 Recipes shows your live progress)"
             if recipe is not None
             else ""
         )
@@ -136,6 +137,22 @@ class RodShopView(BaseView):
             return
         result = await fishing_workflow.craft_rod(self._author.id, self.guild_id)
         await self._rerender(interaction, result.tier, result.message)
+
+    @discord.ui.button(label="📋 Recipes", style=discord.ButtonStyle.secondary)
+    async def recipes_btn(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        # Lazy import: rod_recipe_browser's own back button re-opens this view,
+        # so importing it at module level would create a load-time cycle.
+        from views.fishing.rod_recipe_browser import build_recipe_panel
+
+        if not await safe_defer(interaction):
+            return
+        embed, view = await build_recipe_panel(self._author, self.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
+        view.message = interaction.message
 
     @discord.ui.button(
         label="↩ Fishing menu",

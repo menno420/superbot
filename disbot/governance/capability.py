@@ -40,6 +40,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
+from config import is_platform_owner
 from utils.visibility_rules import get_member_visibility_tier, is_tier_sufficient
 
 logger = logging.getLogger("bot.governance.capability")
@@ -111,6 +112,29 @@ async def actor_holds_capability(
             ),
         )
 
+    actor_id = getattr(actor, "id", None)
+
+    # 2b. Platform-owner override.  The configured bot owner
+    #     (config.BOT_OWNER_USER_ID / PermissionTier.PLATFORM_OWNER) holds full
+    #     bot-configuration authority in any guild they are a member of, even
+    #     without Discord permissions there, so they can always set the bot up
+    #     correctly.  Placed AFTER the step-2 membership check so it composes
+    #     with the "authority bound to the write target" invariant (no
+    #     cross-guild escalation) and BEFORE the revoke overlay so a guild
+    #     cannot revoke the platform owner's authority.
+    if is_platform_owner(actor_id):
+        return CapabilityDecision(
+            allowed=True,
+            capability=capability,
+            required_tier=_DEFAULT_REQUIRED_TIER,
+            member_tier="owner",
+            reason=(
+                f"platform owner {actor_id!r} override for "
+                f"capability={capability or '(default)'!r} "
+                "(config.BOT_OWNER_USER_ID)"
+            ),
+        )
+
     # 3. Authority floor, keyed on the declared capability.  Tier is computed
     #    against the target guild's owner (actor_guild.id == guild.id here).
     guild_owner_id = getattr(guild, "owner_id", 0) or 0
@@ -146,7 +170,6 @@ async def actor_holds_capability(
         if override is False:
             allowed = False
 
-    actor_id = getattr(actor, "id", None)
     if allowed and actor_type == "setup_delegate":
         reason = (
             f"delegated setup admin {actor_id!r} (tier={member_tier!r}) "

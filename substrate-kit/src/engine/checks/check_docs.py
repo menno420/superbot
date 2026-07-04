@@ -64,11 +64,23 @@ def _is_adr(path: Path) -> bool:
     return path.parent.name == "decisions" and bool(_ADR_RE.match(path.name))
 
 
-def _badge_token(path: Path) -> str | None:
-    """Return the doc's Status-badge token from its first 12 lines, or None."""
-    head = "\n".join(path.read_text(encoding="utf-8").splitlines()[:12])
+def badge_token(path: Path) -> str | None:
+    """Return the doc's Status-badge token from its first 12 lines, or None.
+
+    Public: the trigger detector (and any host tooling) classifies docs by this
+    same badge scan — one badge reader, not per-module copies. An unreadable or
+    non-UTF-8 file reads as badge-less rather than crashing the whole scan.
+    """
+    try:
+        head = "\n".join(path.read_text(encoding="utf-8").splitlines()[:12])
+    except (OSError, UnicodeDecodeError):
+        return None
     match = _BADGE_RE.search(head)
     return match.group(1) if match else None
+
+
+# Backward-compatible alias for the original private name.
+_badge_token = badge_token
 
 
 def _link_target(raw: str) -> str:
@@ -95,7 +107,7 @@ def check_badges(docs_root: Path, badge_tokens: Collection[str]) -> list[Finding
         if _is_adr(f):
             continue
         rel = f.relative_to(docs_root).as_posix()
-        token = _badge_token(f)
+        token = badge_token(f)
         if token is None:
             findings.append(Finding(rel, "badge", _BADGE_MISSING))
         elif token not in allowed:
@@ -111,11 +123,21 @@ def check_badges(docs_root: Path, badge_tokens: Collection[str]) -> list[Finding
 
 
 def check_links(docs_root: Path) -> list[Finding]:
-    """Relative markdown links inside ``docs_root`` must resolve."""
+    """Relative markdown links inside ``docs_root`` must resolve.
+
+    An unreadable / non-UTF-8 file is reported as an ``encoding`` finding
+    instead of crashing the scan (one bad byte must not take down triggers,
+    ``maintain``, and ``check`` together).
+    """
     findings: list[Finding] = []
     for f in _md_files(docs_root):
         rel = f.relative_to(docs_root).as_posix()
-        for lineno, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+        try:
+            lines = f.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeDecodeError) as exc:
+            findings.append(Finding(rel, "encoding", f"unreadable as UTF-8: {exc}"))
+            continue
+        for lineno, line in enumerate(lines, 1):
             for raw in _MD_LINK_RE.findall(line):
                 if raw.startswith(("http://", "https://", "mailto:", "#")):
                     continue
@@ -178,7 +200,7 @@ def check_reachable(docs_root: Path, readpath_docs: Sequence[str]) -> list[Findi
     for f in _md_files(docs_root):
         if f.resolve() in seen or _is_adr(f):
             continue
-        if _badge_token(f) in _EXEMPT_BADGES:
+        if badge_token(f) in _EXEMPT_BADGES:
             continue
         rel = f.relative_to(docs_root).as_posix()
         findings.append(Finding(rel, "reachable", _ORPHAN_MSG))

@@ -29,20 +29,30 @@ from discord.ext import commands
 from core.runtime import guild_resources as resources
 from services import fishing_workflow, game_xp_service
 from utils import db
-from utils.fishing import PEARL_ITEM
+from utils.fishing import CORAL_ITEM, PEARL_ITEM
 from utils.fishing import bait as bait_mod
+from utils.fishing import curios as curios_mod
 from utils.fishing import gear as fishing_gear
 from utils.fishing import rods as rods_mod
 from utils.fishing import weather as weather_mod
 from utils.fishing.fish import SPECIES, fish_names, species_by_name
 from views.fishing import (
     BaitShopView,
+    BoathouseView,
+    DockView,
+    FisheryView,
     FishingMenuView,
     RodShopView,
+    TidePoolView,
     build_bait_embed,
+    build_boathouse_embed,
+    build_dock_embed,
+    build_fishery_embed,
     build_fishlog_embed,
     build_menu_embed,
+    build_recipe_panel,
     build_rod_embed,
+    build_tide_pool_embed,
     prepare_cast,
 )
 
@@ -103,9 +113,9 @@ class FishingCog(commands.Cog):
         embed.set_footer(text="Same for everyone today · 🎣 !fish to cast")
         await ctx.send(embed=embed)
 
-    @commands.command(name="sail", aliases=["setsail", "dock"])
+    @commands.command(name="sail", aliases=["setsail"])
     async def sail(self, ctx):
-        """Set sail for deepwater (or dock back on shore) — toggles your fishing venue.
+        """Set sail for deepwater (or return to shore) — toggles your fishing venue.
 
         Deepwater holds rare boat-only fish that bite slower and fight harder;
         shore is the relaxed everyday catch. Your choice persists, so ``!fish``
@@ -269,6 +279,12 @@ class FishingCog(commands.Cog):
         result = await fishing_workflow.craft_rod(ctx.author.id, ctx.guild.id)
         await ctx.send(result.message)
 
+    @commands.command(name="rodrecipes", aliases=["rodrecipe", "rrecipes"])
+    async def rodrecipes(self, ctx):
+        """Browse every fish→rod recipe and your live progress toward each tier."""
+        embed, view = await build_recipe_panel(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
+
     @commands.command(name="craftpearl", aliases=["pearlcraft"])
     async def craftpearl(self, ctx, *, bait: str = ""):
         """Spend pearls to craft the premium bait — the rare-material sink.
@@ -293,6 +309,109 @@ class FishingCog(commands.Cog):
             )
             return
         result = await fishing_workflow.craft_pearl_bait(
+            ctx.author.id,
+            ctx.guild.id,
+            key,
+        )
+        await ctx.send(result.message)
+
+    @commands.command(name="curios", aliases=["curio", "carvings"])
+    async def curios(self, ctx):
+        """Show the coral-carving collection + your coral and craft progress.
+
+        Coral drops rarely when you reel in a fish out in **deepwater** (`!sail`).
+        Carve it into cosmetic curios with `!craftcurio <name>` — a completionist
+        shelf, purely for show (never sold, no gameplay effect).
+        """
+        inventory = await db.get_mining_inventory(str(ctx.author.id), ctx.guild.id)
+        coral = inventory.get(CORAL_ITEM, 0)
+        owned, total = curios_mod.collection_progress(inventory)
+        embed = discord.Embed(
+            title="🪸 Coral Curios",
+            description=(
+                f"You have **{coral}** 🪸 coral · collection **{owned}/{total}** carved.\n"
+                "Coral drops rarely on a **deepwater** reel (`!sail` to the boat)."
+            ),
+            color=_FISHING_COLOR,
+        )
+        for curio in curios_mod.CURIO_CATALOG:
+            have = inventory.get(curio.item, 0)
+            mark = "✅" if have > 0 else ("🔨" if coral >= curio.coral_cost else "🔒")
+            owned_txt = f" ×{have}" if have > 0 else ""
+            embed.add_field(
+                name=f"{mark} {curio.emoji} {curio.name}{owned_txt}",
+                value=f"{curios_mod.cost_text(curio)} · {curio.rarity}",
+                inline=False,
+            )
+        embed.set_footer(text="Carve with !craftcurio <name>")
+        await ctx.send(embed=embed)
+
+    @commands.command(name="tidepool", aliases=["reef", "tidepools"])
+    async def tidepool(self, ctx):
+        """Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.
+
+        Coral drops rarely on a **deepwater** reel (`!sail`). Stock a reef pool with
+        it to bias every cast toward the big end of your unlocked band — coral's
+        *functional* sink alongside the cosmetic curios (`!curios`).
+        """
+        embed = await build_tide_pool_embed(ctx.author.id, ctx.guild.id)
+        view = TidePoolView(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="dock", aliases=["pier", "fishingdock"])
+    async def dock(self, ctx):
+        """Build a Dock — the cheap coral+wood structure that makes fish bite faster.
+
+        The Tide Pool's sibling: coral drops on a **deepwater** reel (`!sail`) and
+        wood you already mine. Faster bites (Dock) vs. rarer fish (`!tidepool`) —
+        spend your coral where you like.
+        """
+        embed = await build_dock_embed(ctx.author.id, ctx.guild.id)
+        view = DockView(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="boathouse", aliases=["moorings", "boat"])
+    async def boathouse(self, ctx):
+        """Build a Boathouse — the coral+wood structure that refills energy faster.
+
+        The third coral structure: coral drops on a **deepwater** reel (`!sail`) and
+        wood you already mine. More fishing (Boathouse) vs. rarer fish (`!tidepool`)
+        vs. faster bites (`!dock`) — spend your coral where you like.
+        """
+        embed = await build_boathouse_embed(ctx.author.id, ctx.guild.id)
+        view = BoathouseView(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="fishery", aliases=["hatchery", "fishfarm"])
+    async def fishery(self, ctx):
+        """Build a Fishery — the coral+wood structure that lands more double catches.
+
+        The fourth coral structure: coral drops on a **deepwater** reel (`!sail`) and
+        wood you already mine. A well-stocked fishery means a landed reel is likelier
+        to hook a **second** fish. More fish per catch (Fishery) vs. rarer fish
+        (`!tidepool`) vs. faster bites (`!dock`) vs. faster energy (`!boathouse`).
+        """
+        embed = await build_fishery_embed(ctx.author.id, ctx.guild.id)
+        view = FisheryView(ctx.author, ctx.guild.id)
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @commands.command(name="craftcurio", aliases=["carve", "curiocraft"])
+    async def craftcurio(self, ctx, *, curio: str = ""):
+        """Carve a cosmetic curio from coral — the deepwater rare-material sink.
+
+        Coral drops rarely when you reel in a fish out in **deepwater** (`!sail`).
+        Name a curio (e.g. `!craftcurio coral idol`); with no argument it lists the
+        collection. See `!curios` for your coral and progress.
+        """
+        key = curios_mod.craftable_key_for(curio)
+        if key is None:
+            craftable = ", ".join(c.name for c in curios_mod.CURIO_CATALOG)
+            await ctx.send(
+                f"That isn't a carvable curio. Carvable: {craftable}. "
+                "See `!curios` for your collection.",
+            )
+            return
+        result = await fishing_workflow.craft_curio(
             ctx.author.id,
             ctx.guild.id,
             key,

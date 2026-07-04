@@ -32,6 +32,22 @@ WELCOME_LEAVE_MESSAGE = "welcome_leave_message"
 # Optional entry role granted on join — a role id (str).  Empty grants none.
 WELCOME_ENTRY_ROLE = "welcome_entry_role"
 
+# Optional DM greeting — when on, the joining member is also sent the greeting
+# as a direct message (in addition to / independent of the channel greeting).
+# Off by default; needs no channel.  The DM body supports the same
+# {user}/{server}/{count} placeholders and the same "---" random variants.
+WELCOME_DM_ENABLED = "welcome_dm_enabled"
+WELCOME_DM_MESSAGE = "welcome_dm_message"
+
 # Welcome phase 2 (Q-0110): attach a rendered PIL greeting card to the join
 # embed.  Off by default; degrades to embed-only when Pillow is unavailable.
 WELCOME_CARD_ENABLED = "welcome_card_enabled"
+
+# Join-delay age-gating (completion punch-list #2): skip greeting/DM/entry-role
+# for a joining member whose account is younger than this many days (anti-raid).
+# 0 disables it (every account greeted).
+WELCOME_MIN_ACCOUNT_AGE_DAYS = "welcome_min_account_age_days"
+
+# Ping-then-delete (completion punch-list #2): auto-delete the channel
+# greeting/farewell message this many seconds after it posts.  0 keeps it.
+WELCOME_DELETE_AFTER_SECONDS = "welcome_delete_after_seconds"

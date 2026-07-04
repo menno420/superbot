@@ -56,7 +56,7 @@ async def test_exempt_xp_member_gets_no_level_roles():
             "cogs.xp.listener.get_xp_threshold_roles",
             new=AsyncMock(return_value=_XP_ROWS),
         ),
-        patch("cogs.xp.listener.resources") as res_mock,
+        patch("services.xp_role_sync.resources") as res_mock,
         patch(
             "services.role_automation.apply",
             new=AsyncMock(return_value=_apply_result()),
@@ -89,7 +89,7 @@ async def test_xp_roles_stack_adds_all_qualifying():
             "cogs.xp.listener.get_xp_threshold_roles",
             new=AsyncMock(return_value=_XP_ROWS),
         ),
-        patch("cogs.xp.listener.resources") as res_mock,
+        patch("services.xp_role_sync.resources") as res_mock,
         patch(
             "services.role_automation.apply",
             new=AsyncMock(return_value=_apply_result(succeeded=2)),
@@ -128,7 +128,7 @@ async def test_xp_roles_single_mode_keeps_highest_removes_lower():
             "cogs.xp.listener.get_xp_threshold_roles",
             new=AsyncMock(return_value=_XP_ROWS),
         ),
-        patch("cogs.xp.listener.resources") as res_mock,
+        patch("services.xp_role_sync.resources") as res_mock,
         patch(
             "services.role_automation.apply",
             new=AsyncMock(return_value=_apply_result()),

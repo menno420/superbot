@@ -1,0 +1,216 @@
+{
+ "case_id": "sweep.logging_routes",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1858879044,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "logging_routes.select",
+          "disabled": false,
+          "max_values": 1,
+          "min_values": 1,
+          "options": [
+           {
+            "default": false,
+            "label": "mod",
+            "value": "mod"
+           },
+           {
+            "default": false,
+            "label": "events",
+            "value": "events"
+           },
+           {
+            "default": false,
+            "label": "cleanup",
+            "value": "cleanup"
+           },
+           {
+            "default": false,
+            "label": "debug",
+            "value": "debug"
+           },
+           {
+            "default": false,
+            "label": "info",
+            "value": "info"
+           },
+           {
+            "default": false,
+            "label": "warning",
+            "value": "warning"
+           },
+           {
+            "default": false,
+            "label": "error",
+            "value": "error"
+           },
+           {
+            "default": false,
+            "label": "audit",
+            "value": "audit"
+           },
+           {
+            "default": false,
+            "label": "message_log",
+            "value": "message_log"
+           },
+           {
+            "default": false,
+            "label": "member_log",
+            "value": "member_log"
+           },
+           {
+            "default": false,
+            "label": "role_log",
+            "value": "role_log"
+           }
+          ],
+          "placeholder": "Choose a route…",
+          "required": true,
+          "type": 3
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "logging_routes.set",
+          "disabled": false,
+          "label": "🔗 Set Channel",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "logging_routes.create",
+          "disabled": false,
+          "label": "🆕 Create Channel",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "logging_routes.refresh",
+          "disabled": false,
+          "label": "🔄 Refresh",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "logging_routes.back",
+          "disabled": false,
+          "label": "↩ Back to Logging",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15158332,
+        "description": "**Quick start:** set the top two — **`mod`** and **`events`** — and every route is delivered somewhere (the rest fall back to them). Split out any route below only when you want it in its own channel.\n\nEach row shows a route, its binding, and where it resolves today. Pick one, then **Set Channel** (bind an existing channel) or **Create Channel** — both route through `BindingMutationPipeline` / `ResourceProvisioningPipeline` and record an audit row.",
+        "fields": [
+         {
+          "inline": false,
+          "name": "Routes",
+          "value": "**`mod`** ・ `logging.mod_channel` *(unset)*\n**`events`** ・ `logging.events_channel` *(unset)*\n**`cleanup`** ・ `logging.cleanup_channel` *(unset)*\n**`debug`** ・ `logging.debug_channel` *(unset)*\n**`info`** ・ `logging.info_channel` *(unset)*\n**`warning`** ・ `logging.warning_channel` *(unset)*\n**`error`** ・ `logging.error_channel` *(unset)*\n**`audit`** ・ `logging.audit_channel` *(unset)*\n**`message_log`** ・ `logging.message_channel` *(unset)*\n**`member_log`** ・ `logging.member_channel` *(unset)*\n**`role_log`** ・ `logging.role_channel` *(unset)*"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Pick a route below, then Set Channel or Create Channel. Routes without their own binding fall back along their fallback chain (severity/audit → mod; event routes → events)."
+        },
+        "title": "🗺️ Logging Routes",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!logging routes",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "logging"
+}

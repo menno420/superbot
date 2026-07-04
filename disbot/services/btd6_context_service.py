@@ -4295,6 +4295,106 @@ def deterministic_paragon_elite_reply(message_text: str) -> str | None:
     )
 
 
+# A bloon-listing intent over a round RANGE: "list all the bloons from r29 till
+# r63", "what bloons spawn between rounds 40 and 60", "which bloons in rounds
+# 29-63". Anchored on a bloon/spawn/composition noun so an economy range question
+# ("rbe of r29 to r63") still routes to deterministic_round_economy_reply above.
+_ROUND_RANGE_BLOON_CUE_RE = re.compile(
+    r"\b(?:bloons?|blimps?|moabs?|spawns?|spawned|spawning|composition|"
+    r"enemies|threats?)\b",
+    re.I,
+)
+# A bare "A-B" number-pair (no round token). Used ONLY to detect a second,
+# token-less comparison range — "which has more bloons, rounds 20-40 or 40-60"
+# (`_extract_round_ranges` needs a round token on each anchor, so it sees only
+# the first) — so the roster defers to the model on a comparison rather than
+# answering about the first range alone.
+_BARE_ROUND_PAIR_RE = re.compile(
+    r"(?<![\d-])(\d{1,3})\s*(?:to|through|thru|until|till|[-–])\s*(\d{1,3})(?![\d-])",
+    re.I,
+)
+
+
+def _format_round_range_bloons(result: dict[str, Any]) -> str:
+    """Render the :func:`btd6_data_service.round_range_bloon_roster` result."""
+    lo = result["round_start"]
+    hi = result["round_end"]
+    roster = result["roster"]
+    lines = [
+        f"**Bloons across rounds {lo}–{hi}** "
+        f"({result['roundset_label']} round set — {result['rounds_in_range']} "
+        f"rounds, {result['total_bloons_entering']:,} bloons enter, "
+        f"{result['total_rbe']:,} total RBE)",
+        f"**Bloon types that appear ({len(roster)}):**",
+    ]
+    for record in roster:
+        first, last = record["first_round"], record["last_round"]
+        span = f"R{first}" if first == last else f"R{first}–R{last}"
+        present = record["rounds_present"]
+        lines.append(
+            f"• **{record['bloon']}** — {span}, in {present} "
+            f"round{'' if present == 1 else 's'} (~{record['total']:,} spawned)",
+        )
+    modifiers = result.get("modifiers_seen") or []
+    if modifiers:
+        lines.append(f"_Modifiers seen across the range: {', '.join(modifiers)}._")
+    lines.append(
+        f"_Per-round detail: `/btd6 round {lo} {hi}` (values table), or ask about "
+        "a single round for its exact spawn composition._",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_round_range_bloons_reply(message_text: str) -> str | None:
+    """A code-built "which bloons appear across rounds X-Y" answer, or ``None``.
+
+    Fixes the "list all the bloons from r29 till r63" miss (owner-reported,
+    2026-07-01): the NL resolver extracts the two endpoint round NUMBERS with no
+    range concept, so the grounding pass rendered only rounds 29 and 63 and the
+    answer listed those two rounds' bloons instead of the whole span. This floor
+    OWNS the range roster — the distinct bloon TYPES across **every** round in the
+    range, off the audited :func:`btd6_data_service.round_range_bloon_roster`
+    engine — so the span is enumerated deterministically, never sampled at the
+    endpoints.
+
+    Fires on exactly ONE inclusive round range (``lo != hi``) + a bloon/spawn/
+    composition cue. Defers (``None``) when an economy cue is present (that is
+    :func:`deterministic_round_economy_reply`'s range case, earlier in the chain),
+    on two-or-more ranges (the comparison builder), or without a range — so it
+    stays mutually exclusive with its siblings and ordinary questions fall through
+    to the model.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _ROUND_RANGE_BLOON_CUE_RE.search(low):
+        return None
+    # Economy range questions belong to deterministic_round_economy_reply.
+    if _ROUND_ECONOMY_CUE_RE.search(low):
+        return None
+    distinct: set[tuple[int, int]] = {
+        (min(a, b), max(a, b)) for a, b in _extract_round_ranges(low) if a != b
+    }
+    # A second (possibly token-less) range makes this a comparison, not a listing.
+    for match in _BARE_ROUND_PAIR_RE.finditer(low):
+        a, b = int(match.group(1)), int(match.group(2))
+        if a != b:
+            distinct.add((min(a, b), max(a, b)))
+    if len(distinct) != 1:
+        return None
+    lo, hi = next(iter(distinct))
+
+    from services import btd6_data_service
+
+    roundset = "alternate" if _ABR_CUE_RE.search(low) else "default"
+    result = btd6_data_service.round_range_bloon_roster(lo, hi, roundset)
+    if not result.get("found"):
+        return None
+    return _format_round_range_bloons(result)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -4306,6 +4406,7 @@ def deterministic_paragon_elite_reply(message_text: str) -> str | None:
 # contract, no test edit needed. Append a new list family here.
 _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_round_economy_reply,
+    deterministic_round_range_bloons_reply,
     deterministic_round_xp_reply,
     deterministic_mk_reference_reply,
     deterministic_mk_category_roster_reply,

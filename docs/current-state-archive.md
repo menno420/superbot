@@ -86,6 +86,208 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1623 + 7 dashboard refreshes (2026-07-01/02, docs — thirty-first Q-0107 pass + dashboard)** — the
+  **thirty-first Q-0107 reconciliation pass** (band-#1620,
+  [pass record](planning/reconciliation-pass-2026-07-01-band1620.md), #1623); plus seven per-source-merge
+  **dashboard-data refreshes** (#1625 · #1627 · #1628 · #1629 · #1636 · #1646 · #1650, Q-0167).
+- **#1591 + 5 dashboard refreshes (2026-06-30/07-01, docs — thirtieth Q-0107 pass + dashboard)** — the
+  **thirtieth Q-0107 reconciliation pass** (band-#1590,
+  [pass record](planning/reconciliation-pass-2026-06-30-band1590.md), #1591); plus five per-source-merge
+  **dashboard-data refreshes** (#1593 · #1597 · #1604 · #1606 · #1616, Q-0167).
+- **#1596 · #1598 · #1603 · #1605 (2026-06-30/07-01, S1 fishing — coral structures arc)** — a coral
+  deepwater rare-material drop → cosmetic curio collectibles (#1596), the **Dock** bite-speed coral
+  structure (#1598) and the **Boathouse** energy-regen structure (#1605), folded together with the
+  Tide Pool into a 🏗 **Structures sub-hub** (#1603).
+- **#1608 · #1612 · #1613 · #1615 (2026-07-01, S1 reaction-roles menu builder)** — fixed the role-menu
+  builder preview never updating on its ephemeral panel (#1608) and adopted the layout-sim's **slim/lean
+  2-row menu-builder layout** (#1612/#1613/#1615, owner-directed after the 14-button builder felt dense).
+- **#1607 · #1610 (2026-07-01, S1 XP import/migration)** — **XP/level migration from other bots** via an
+  Arcane level-up-channel scan (#1607) plus a button entry point and generic "import from another bot"
+  framing (#1610).
+- **#1594 · #1618 · #1619 (2026-06-30/07-01, S1 server-logging depth)** — ignored-channels/users
+  **exclusion lists** (#1594), a **subject avatar in every log embed** (#1618), and a per-route
+  binding-crash + disappearing-back-button + settings-order simulation fix (#1619).
+- **#1602 · #1599/#1600/#1601 · #1595 · #1609 · #1614 · #1620 · #1611 (2026-06-30/07-01, S1 completion + owner override + boot guard)** —
+  the bot owner now **bypasses ALL permission gates**, not just `administrator` (#1602); a **boot
+  smoke-test CI guard** fails the build when a cog won't load, defense-in-depth after the #1599/#1600
+  cog-load outage (#1601); plus completion-first punches — inventory rarity-tier detail fields (#1595),
+  user-tier `!ping`/`!botinfo`/`!membercount` + command tests (#1609), rank/leaderboard **visual polish**
+  out-reading Arcane/MEE6 (#1614), **karma reaction-to-thank** (#1620), and treasury-cog tests (#1611).
+- **#1617 (2026-07-01, S2 BTD6)** — a **BTD6 menu layout simulator** + a round-range NL answer fix; the
+  owner picked Layout B and the panel-hub implementation is in flight (#1621).
+- **#1564 + 6 dashboard refreshes (2026-06-29/30, docs — twenty-ninth Q-0107 pass + dashboard)** — the
+  **twenty-ninth Q-0107 reconciliation pass** (band-#1560,
+  [pass record](planning/reconciliation-pass-2026-06-29-band1560.md), #1564); plus six per-source-merge
+  **dashboard-data refreshes** (#1562 · #1567 · #1576 · #1580 · #1583 · #1587, Q-0167).
+- **#1573 · #1577 · #1582 (2026-06-30, bot-owner platform-admin override)** — full bot-config authority
+  in any guild for the bot owner (#1573), a completeness follow-on extending the override to view gates +
+  admin command decorators (#1577), and an ephemeral persistent-panel ownership **fail-close** fix (#1582).
+  Follows the Q-0211 `give`-collision prod hotfix from the prior band.
+- **#1565 · #1566 · #1568 · #1575 · #1588 (2026-06-29/30, S1 feature-completion certification deepening — Q-0209)** —
+  cert sync + S1-bot de-stale (#1565); cleanup **history content-type/age filters** + cert (#1566);
+  **counters completion** (presets + slash + channel-type/integration tests, #1568) and a per-guild
+  loop-backoff punch (#1575); and the **spam-duplicate window** promoted to a real per-guild setting
+  (cleanup cert punch #4, #1588). *(Sibling to the already-listed #1561 operator-command-gaps entry below.)*
+- **#1570 · #1571 · #1585 · #1579 · #1581 (2026-06-30, reaction-roles + fishing + welcome depth)** —
+  role-menu live **signup counts** (migration 103) on the reaction-roles overhaul (#1570/#1571); the
+  fishing **rod-recipe browser** (#1585); **welcome opt-in DM greeting on join** (completion punch #2,
+  #1579) + the age-gate/delete-after close-out (#1581).
+- **#1569 · #1574 · #1584 · #1586 (2026-06-30, workflow / orientation system)** — the AI answer-storage /
+  review-backlog loop + a `check_quality` **artifact-freshness guard** (#1569/#1574); a journal ruff-scope
+  rule (#1584); and the **orientation-cost-reduction plan** (CLAUDE.md + router conciseness, #1586).
+- **#1572 · #1578 (2026-06-30, BTD6)** — captured a prod **DDT-confabulation finding** into the regression
+  corpus from the review-log export (#1572); BTD6 **track lengths** (Red Bloon Seconds) + estimator
+  escape-margin (#1578).
+- **#1589 · #1590 (2026-06-30, owner-vision capture — fresh-rebuild + Fable 5)** — captured the maintainer's
+  **fresh-rebuild vision** + verified Fable 5 research (#1589) with two maintainer fact-corrections folded
+  in (#1590). **Idea-stage, not approved** — gated on Fable 5 (withdrawn since 2026-06-12) + the owner's
+  keep/change spec + a multi-agent planning sequence; **re-elevates the AI-memory substrate-kit to top
+  focus** (reverses the band-#870 §6 demotion). [doc](ideas/superbot-fresh-rebuild-vision-2026-06-30.md).
+- **#1561 · #1550 · #1551 (2026-06-29, operator command gaps + proof-channel audit — S1 best-in-class)** —
+  `!slowmode` · `!topic` (through the audited mutation seam) + `!roleinfo` — the operator commands
+  that close best-in-class gaps vs. mature management bots (#1561); plus a proof-channel
+  completion-deepening that **audits** prize lock/unlock and **re-checks `manage_channels`** at the
+  modal/panel callbacks (authority re-check at execution time, not panel-open, #1550/#1551).
+- **#1546 · #1548 · #1553 (2026-06-29, S1 game depth + workflow guards)** — the Creatures **interactive
+  game panel** + dex browser + `entry_points` + settle-once terminal guard (#1546); a
+  **session-slug-uniqueness guard** (hardens the born-red merge gate, BUG-0027 class) + a Mining how-to
+  button (#1548); and a **registry↔ledger completion-parity guard** plus inventory sort-cycle / type-filter
+  + display-logic tests on the category view (#1553).
+- **#1540 · #1542 (2026-06-29, unified-hub leaderboard providers — completion-first deepening)** —
+  **Fishing** (#1540) and **Farm** (#1542) leaderboard providers registered in the unified leaderboard hub.
+- **#1549 (2026-06-29, Project Moon (Limbus) — combat-mechanics knowledge layer)** — the clash / speed /
+  IDs+passives rules layer on the Limbus knowledge stack (extends the #1453…#1470 grounding arc).
+- **#1541 · #1544 (2026-06-29, PROD hotfix — `give`-collision boot crash, Q-0211)** — #1541 added a
+  `!give` / `!pay` peer coin-transfer command, which **collided** with mining's admin `give` (dormant
+  since the initial commit, never PR'd) → the STRICT identity-contract aborted startup → **bot offline in
+  a crash loop**. #1544 **retired `give` surface-wide** (removed economy `!give`/`!pay` + mining's admin
+  `give` + its orphaned `admin_grant` caller) and added a **cross-cog duplicate-command boot guard** so the
+  whole collision class can't recur (owner-directed root-cause prevention beyond the literal ask).
+- **#1534 · #1536 · #1538 · #1545 (2026-06-29, S1 feature-completion certification arc — Q-0209)** —
+  assessed every S1 bot unit against the #1513 certification framework to **100% assessed**: Mining /
+  Creatures (◐) + Welcome (#1534), Moderation / Economy / Roles / XP **+ root-fix BUG-0029** (XP level-up
+  role grants bypassed the audited role seam — no `audit.action_recorded`, no shared hierarchy preflight)
+  (#1536), Settings / Leaderboards / Tickets / Karma (#1538), and the **final 17 server-fn units →
+  completion ledger 100% assessed** + a fix-on-sight cleanup of 6 stale claim files for already-merged
+  branches (#1545, Q-0166).
+- **#1532 + 8 dashboard refreshes (2026-06-28/29, docs — twenty-eighth Q-0107 pass + dashboard)** — the
+  **twenty-eighth Q-0107 reconciliation pass** (band-#1530,
+  [pass record](planning/reconciliation-pass-2026-06-28-band1530.md), #1532); plus eight per-source-merge
+  **dashboard-data refreshes** (#1533 · #1535 · #1537 · #1539 · #1543 · #1547 · #1552 · #1554, Q-0167).
+- **#1504 · #1505 · #1508 · #1515 · #1518 · #1521 (2026-06-27/28, fishing acquisition-depth + gear arc — S1 game depth)** —
+  fishing-specific gear stats that make the loadout presets a real optimisation (#1504); an
+  `EffectiveStats` knob-coverage guard that surfaced two dead stats — `light_radius`/`luck` —
+  before they were wired (#1505); a **fish → charm craft** path (#1508); a **fish → rod craft** path
+  plus the 🍀 lucky-double-catch chance (#1515); a **"pearl"** rare-material drop + premium-bait pearl
+  craft (#1518); and a fishing + counting **completion punch-list** (un-trap shops, fix menu nav/rules,
+  add the player entry point, #1521).
+- **#1513 · #1519 · #1523 · #1530 (2026-06-27/28, S1 feature-completion certification framework)** —
+  a reusable **feature-completion certification framework** for the S1 bot units (#1513), then the first
+  assessments against it: Fishing / Counting / Word Chain + surfacing the counting leaderboard (#1519);
+  RPS / Deathmatch / Chicken-farm (#1523); and **Casino (poker) → ◐ assessed** (#1530, Q-0209).
+- **#1512 · #1524 · #1527 · #1529 (2026-06-27/28, game-view robustness + arch guards)** —
+  wired `light_radius` + `luck` into mining gameplay (**BUG-0026**, #1512); fixed the **born-red gate
+  slug-collision hole** (**BUG-0027**) + restored a clobbered session log + game completion certs (#1524);
+  made deathmatch **PvP terminal views** no longer dead-ends + root-fixed a panel-PvP context crash (#1527);
+  and added an **arch guard flagging no-swap terminal handlers** in game views (#1529, friction→guard Q-0194).
+- **#1510 · #1511 (2026-06-27, BTD6 grounding — corpus + absence-guard Layer B)** — expanded the BTD6
+  regression corpus with 4 fixed-live-miss probes (reviewing the codex audit #1509, #1510); and shipped the
+  **absence-guard Layer B** — the grounded-contradiction gate (#1511, the design half left open by #855's
+  Layer A).
+- **#1522 (2026-06-27, router — owner answers + a durable-home convention)** — documented owner answers
+  **Q-0182…Q-0207** and decided the **router-vs-durable-home convention** (when a Q-block stays in the
+  router vs. graduates to a binding doc).
+- **#1502 + 10 dashboard refreshes (2026-06-27/28, docs — twenty-seventh Q-0107 pass + dashboard)** — the
+  **twenty-seventh Q-0107 reconciliation pass** (band-#1500,
+  [pass record](planning/reconciliation-pass-2026-06-27-band1500.md), #1502); plus ten per-source-merge
+  **dashboard-data refreshes** (#1503 · #1506 · #1507 · #1514 · #1516 · #1517 · #1520 · #1525 · #1526 · #1528, Q-0167).
+- **#1487 · #1488 · #1490 · #1491 · #1492 · #1493 · #1494 · #1498 (2026-06-27, BTD6 QA-accuracy arc — grounding + an honest eval harness, live-test driven)** —
+  the band's marquee, owner-directed from live Discord screenshots: damage-type/status-effect **interaction
+  grounding** + a VERIFIED Q&A corpus (#1487); the corpus **wired into the eval system** as an offline
+  grounding test + a live action suite (#1488); a **faithful "exactly live" answer-path replay**
+  (`tests/evals/btd6_live_path.py`, #1490) graded **semantically** by the same `llm_judge` to kill grader
+  false-negatives (a 2/12 scorecard was the grader, not the bot — #1491); plus an **AI answer review-log**
+  capturing didn't-know + user corrections (#1494). The DDT-counter sub-thread is the band's honesty story:
+  #1492 grounded a VERIFIED DDT counter-tower list to fix over-refusal, the owner live-tested it and found
+  3 wrong recommendations, so #1498 **reverted the auto-derived list at the root** (the committed stats
+  encode neither MOAB-class targeting nor config quality, so grounding it = grounding misinformation) and
+  replaced it with correct curated pop-guide prose — grounding the *rules*, not specific towers. #1493
+  consolidated the arc + a live-verification checklist. Eval-only / data-only; `disbot/` answer path
+  unchanged where noted. Live re-test + the still-open golden-set over-refusals stay owner-paced.
+- **#1476 · #1477 · #1479 · #1482 · #1495 · #1500 (2026-06-26/27, self-improving-workflow guards — the loop closing its own drift classes)** —
+  the S3/S4 mechanism lane, several slices *executing prior passes' own ideas*: a **▶ Next freshness guard**
+  (#1476) wired into `/session-close` (#1477); a **session-close-gate meta-check** asserting every checker
+  declaring the `[session-close-gate]` sentinel is actually referenced in `/session-close` Step-4 (#1479,
+  builds #1477's Q-0089 idea); **per-sector offline-fit startability tags** so the dispatch menu can pick an
+  offline-runnable item (#1482, owner decision Q-0207 DISCUSS); the **reconcile-marker band-consistency
+  guard** `check_reconcile_marker.py` + the live `#1472`→`#1470` marker-conflation fix (#1495, executes the
+  band-#1470 pass's own Q-0089 idea); and an **offline-startable S1 ▶ Next** handoff-hygiene sharpening
+  (#1500). All read-only / stdlib / offline.
+- **#1483 · #1496 · #1499 (2026-06-27, S1 feature depth — economy observability · setup · mining)** — a
+  games-economy **per-day faucet/sink trend view** (economy observability, #1483); a new Essential Setup
+  spine step **"Where can people use commands?"** surfacing the enforced per-channel Command Access control
+  (#1496); and **mining gear loadout presets** (V-14 / Q-0175 Phase-1 unified-loadout model, migration 101 —
+  applies automatically on next boot/auto-deploy, #1499).
+- **#1485 · #1486 (2026-06-27, autonomous test coverage — Media/YouTube)** — focused YouTube **fetch service +
+  renderer/embed tests** (#1485) and **YouTube cache DB-primitive tests** (#1486); empty-fire dispatch slices
+  that hardened a previously thin-covered subsystem.
+- **#1472 + 9 dashboard refreshes (2026-06-26/27, docs — twenty-sixth Q-0107 pass + dashboard)** — the
+  **twenty-sixth Q-0107 reconciliation pass** (band-#1470,
+  [pass record](planning/reconciliation-pass-2026-06-26-band1470.md), #1472); plus nine per-source-merge
+  **dashboard-data refreshes** (#1473 · #1474 · #1475 · #1478 · #1480 · #1481 · #1484 · #1489 · #1497, Q-0167).
+- **#1453 · #1456 · #1467 · #1469 · #1470 (2026-06-25/26, NEW Project Moon (Limbus) knowledge domain — data → grounding → faithfulness guard)** —
+  a standalone Limbus knowledge domain modeled on the BTD6 stack: committed structural/lore facts
+  (`disbot/data/projmoon/limbus/`: 12 Sinners · 7 Sins · damage types · E.G.O grades, provenance-tagged) +
+  a typed `services/projmoon_data_service.py` + a browsable `!pm` / `/pm` surface with its own top-level
+  **Project Moon** Help hub (PR 1, #1453); each Sinner's canonical `literary_origin` + an **Origins**
+  cross-reference view (lore-depth Slice A, #1456); the **AI grounding path** — `AITask.PROJMOON_ANSWER`
+  routing + provenanced fact injection into `_gather_feature_facts`, BTD6 path byte-identical (PR 2, #1467);
+  a **faithfulness guard** (`projmoon_grounding_service`, the projmoon analogue of `validate_btd6_reply` —
+  reject → regenerate-once → deterministic refusal, #1469); and a **cross-domain over-route guard** pinning
+  BTD6↔Limbus token disjointness + a detector-curation recipe so the next domain (LoR / LobCorp) is a
+  one-line registration (Slice B prep, #1470). Read-only, offline-unit-tested; the live Q-0086 runtime walk
+  stays owner-paced.
+- **#1458 · #1460 · #1461 · #1466 (2026-06-25/26, BTD6 eval-anchor hardening — S2 P1-1)** — a fixture-drift
+  anchor guard for the contains-grader grounding cases (#1458); projected-total eval figures anchored,
+  nailing the starting-cash convention (#1460); the #855 MOAB-class bonuses +15/+30/+99 anchored (#1461);
+  and the **eval-anchor coverage report + distractor negative-anchor guard** — every cleanly-derivable
+  dollar/HP truth must be anchored or on a documented distractor/user-input allowlist (#1466). The BTD6
+  grounding cases are now anchor-complete for every cleanly-derivable truth.
+- **#1444 · #1445 · #1454 (2026-06-24/25, settle-once money-safety for game-state views)** — a settle-once
+  terminal guard for game-state views (#1444), the blackjack-PvP settle-once guard + the shared mixin
+  relocated to `utils/` (#1445), and a `check_consistency` **Rule 6** warn-first adoption guard so the
+  settle-once money-safety pattern can't silently regress (#1454).
+- **#1449 · #1450 · #1451 (2026-06-25, Essential Setup wizard follow-ons)** — **PR 2**: the "All done"
+  **extras menu** (a plain menu of the optional features the spine skips) + a jargon-free **"Check my
+  setup"** readiness health check (#1449); **claim-GC automation** (Q-0206) + an Essential Setup
+  status-badges follow-on (#1450); **PR 3a**: retire the 7 dead read-only/metadata wizard sections +
+  demote cleanup to advanced-only (#1451).
+- **#1463 · #1464 (2026-06-25, BUG-0025 image-card navigation fix)** — the `/myprofile` hero-card image is
+  now preserved across editor navigation (#1463) and the stranded rank card is cleared when opening the XP
+  **Configure** panel (#1464); together they close **BUG-0025** (the cross-panel image-card transitions
+  that omitted `attachments=`).
+- **#1443 · #1447 + dashboard refreshes (2026-06-24/26, docs / grooming / dashboard)** — the **twenty-fifth
+  Q-0107 reconciliation pass** (band-#1440, [pass record](planning/reconciliation-pass-2026-06-24-band1440.md),
+  #1443); grooming to promote two ideas into the backlog (#1447); plus nine per-source-merge **dashboard
+  refreshes** (#1446 · #1448 · #1452 · #1455 · #1457 · #1459 · #1462 · #1465 · #1468, Q-0167).
+- **#1418 · #1420 · #1422 · #1425 · #1427 · #1429 · #1432 · #1434 · #1435 · #1436 · #1437 · #1438 · #1439 (2026-06-24, Essential Setup wizard restructure — one action per step, zero jargon)** —
+  the marquee S1 arc: a plan + simulator (#1418) and a **banned-jargon CI guard** (measured baseline 207
+  strings, #1420) drove a **plain-language sweep** (guild → server, jargon 207 → 154, #1422); then the
+  **Essential Setup spine** itself (#1425) — a linear, **direct-apply**, plain-language wizard, one action
+  per step — fleshed out step by step: steps 3–4 block-spam · help-desk (#1427), a "Choose a log channel"
+  step that binds + auto-creates (#1429) and grew into a **two-channel** mod + activity multi-select (#1432),
+  a "Reward active members" step (XP rate + level/time role rewards, #1434), spine polish + optional custom
+  naming (#1435), a **step-0 server-type starter preset** (#1437), and a logging-step defer fix before slow
+  channel-creation work (#1439). It was **cut over to the primary `!setup` / `/setup`** (#1438); the
+  setup-wizard plan + S1 state were reconciled to the shipped spine (#1436). Owner decisions Q-0202–Q-0205.
+- **#1417 · #1421 · #1423 (2026-06-24, support tickets — discoverability + full button setup)** — the
+  #1405 ticket subsystem was **wired into the `!setup` wizard + bot-join welcome** (#1417), the setup
+  **readiness scan now grades tickets** as a discoverability nudge (#1421), and ticket setup became a
+  **fully button/dropdown** flow that auto-creates the log channel (#1423).
+- **#1413 · #1430 · #1431 (2026-06-24, visual card-engine H3 — image cards through Help)** — the
+  `xpmenu` hub renders the **rank image card** (#1413); the **help-nav attachment seam** carries hub image
+  cards through Help (#1430), hardened with forward-path regression pins (#1431). Extends the card-engine
+  H2/H3 rollout (#1396…#1403).
 - **#1419 · #1424 · #1426 (2026-06-24, BTD6 unification + slash-sync runtime)** — the five BTD6 command
   groups **unified under one `/btd6`** (flattest layout, #1419); a **diff-gated startup command-tree
   auto-sync** (+ post-unification docs cleanup, #1424) with `!syncslash global` gated through the same

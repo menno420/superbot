@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from engine.lib.modes import may_auto_graduate
+
 STAGE_INTEGRATION = "integration"
 STAGE_STEADY = "steady"
 
@@ -51,10 +53,20 @@ def graduation_ready(
 
 
 def maybe_graduate(backend: Any, critical: list[str]) -> bool:
-    """Advance integration -> steady if ready; return whether it graduated."""
+    """Advance integration -> steady if ready; return whether it graduated.
+
+    Mode-conditional (the plan's per-mode behavior): ``observe`` mode never
+    auto-graduates — when ready it records a *proposal* (``graduation_proposed``)
+    for the user to accept (switch mode or graduate explicitly); guided/active
+    graduate automatically.
+    """
     if backend.get("stage") != STAGE_INTEGRATION:
         return False
     ready, _ = graduation_ready(backend.data, critical)
-    if ready:
-        backend.set("stage", STAGE_STEADY)
-    return ready
+    if not ready:
+        return False
+    if not may_auto_graduate(backend.data):
+        backend.set("graduation_proposed", True)
+        return False
+    backend.set("stage", STAGE_STEADY)
+    return True

@@ -1,0 +1,137 @@
+{
+ "case_id": "sweep.list_commands_detailed",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2010239729,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": true,
+          "label": "◀ Prev",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "label": "Next ▶",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3447003,
+        "fields": [
+         {
+          "inline": false,
+          "name": "AdminCog",
+          "value": "**`!adminmenu`** — Open the interactive admin control panel.\n  CD: 2x per 10s | Aliases: —\n**`!serverstats`** — Display server statistics.\n  CD: No cooldown | Aliases: —\n**`!cog`** — Load, unload, or reload a cog by name (underscores and _cog suffix optional).\n\nT\n  CD: No cooldown | Aliases: —\n**`!loadall`** — Load all unloaded cogs, skipping already-loaded ones.\n  CD: No cooldown | Aliases: —\n**`!unloadall`** — Unload all loaded cogs except this one.\n  CD: No cooldown | Aliases: —\n**`!coglist`** — Open the interactive cog manager — the panel's 📋 Cog List button.\n\nMirrors ``_Ad\n  CD: 2x per 10s | Aliases: cogs, listcogs, cogslist\n**`!syncslash`** — Sync the app-command tree for slash commands (owner only).\n\nPR E' — operator too\n  CD: No cooldown | Aliases: syncs\n**`!slashes`** — List currently-registered slash commands (admin only).\n\nPR E' — read-only deploy\n  CD: No cooldown | Aliases: slashlist\n**`!restart`** — Request a graceful restart through the lifecycle service.\n\nLP-3: the cog no long\n  CD: No cooldow"
+         },
+         {
+          "inline": false,
+          "name": "HelpCog",
+          "value": "**`!help`** — Shows available commands. Pass a category name for details.\n  CD: 3x per 10s | Aliases: hilfe"
+         },
+         {
+          "inline": false,
+          "name": "RoleCog",
+          "value": "**`!roles`** — Open the role management hub.\n  CD: No cooldown | Aliases: —\n**`!rolesettings`** — Open the role management hub (alias for !roles).\n  CD: No cooldown | Aliases: —\n**`!roleinfo`** — Show a role's details. Usage: !roleinfo <@role|name|id>\n  CD: No cooldown | Aliases: ri\n**`!rolemenu`** — Open the role hub (use !roles instead).\n  CD: No cooldown | Aliases: —\n**`!rolecreator`** — Open the role hub (use !roles instead).\n  CD: No cooldown | Aliases: —\n**`!assignroles`** — Manually run time-based role assignment for all members.\n  CD: No cooldown | Aliases: —\n**`!createrole`** — Create a role (use !roles → Create instead).\n  CD: No cooldown | Aliases: —\n**`!deleterole`** — Delete a role by name or mention.\n  CD: No cooldown | Aliases: —\n**`!setrole`** — Add or update a time-based role threshold.\n  CD: No cooldown | Aliases: —\n**`!unsetrole`** — Remove a role from time-based assignment.\n  CD: No cooldown | Aliases: —\n**`!debugroles`** — Print all role names for verification.\n  CD: No cooldown | Aliases"
+         },
+         {
+          "inline": false,
+          "name": "RoleGrantsCog",
+          "value": "**`!temprole`** — Give a member a role for a limited time. Usage: !temprole @member 2h @role\n  CD: No cooldown | Aliases: —\n**`!temproles`** — List active temporary roles. Usage: !temproles (yours) or !temproles @member (st\n  CD: No cooldown | Aliases: —"
+         }
+        ],
+        "flags": 0,
+        "title": "Command List — Page 1/14",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!list_commands_detailed",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

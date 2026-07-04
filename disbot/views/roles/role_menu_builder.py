@@ -18,7 +18,8 @@ import logging
 import discord
 
 from core.runtime import resources
-from core.runtime.interaction_helpers import safe_defer
+from core.runtime.interaction_helpers import safe_defer, safe_edit
+from core.runtime.permission_checks import member_has_perms_or_owner
 from utils import role_feasibility
 from utils import role_menu_presentation as presentation
 from views.base import BaseView
@@ -47,8 +48,8 @@ _MODE_LABEL = {
 
 
 def _can_manage(interaction: discord.Interaction) -> bool:
-    perms = getattr(interaction.user, "guild_permissions", None)
-    return bool(perms is not None and (perms.manage_roles or perms.administrator))
+    # Owner OR manage_roles (admins implicitly hold manage_roles). Q-0212.
+    return member_has_perms_or_owner(interaction.user, manage_roles=True)
 
 
 async def _deny(interaction: discord.Interaction) -> None:
@@ -104,6 +105,9 @@ class RoleMenuListView(BaseView):
         self.guild = guild
         self.channel = channel
         self.parent = parent
+        # See RoleMenuBuilder._panel_interaction — the manager list is on the same
+        # ephemeral message, so its refresh must route through the interaction too.
+        self._panel_interaction: discord.Interaction | None = None
         if parent is not None:
 
             async def _build_parent(
@@ -147,7 +151,13 @@ class RoleMenuListView(BaseView):
         return embed
 
     async def _rerender(self) -> None:
-        if self.message:
+        if self._panel_interaction is not None and await safe_edit(
+            self._panel_interaction,
+            embed=await self.build_embed(),
+            view=self,
+        ):
+            return
+        if self.message is not None:
             await self.message.edit(embed=await self.build_embed(), view=self)
 
     @discord.ui.button(label="➕ New Menu", style=discord.ButtonStyle.green, row=0)
@@ -177,6 +187,7 @@ class RoleMenuListView(BaseView):
             view=builder,
         )
         builder.message = interaction.message
+        builder._panel_interaction = interaction
 
     @discord.ui.button(label="✏️ Edit", style=discord.ButtonStyle.blurple, row=0)
     async def edit_btn(
@@ -282,10 +293,12 @@ class RoleMenuListView(BaseView):
             opts,
             parent=self,
         )
-        await interaction.response.edit_message(content="Opening editor…", view=None)
-        if self.message:
-            await self.message.edit(embed=builder.build_embed(), view=builder)
-            builder.message = self.message
+        builder._panel_interaction = interaction
+        await interaction.response.edit_message(
+            embed=builder.build_embed(),
+            view=builder,
+        )
+        builder.message = interaction.message
 
     async def _delete_menu(
         self,
@@ -405,10 +418,12 @@ class RoleMenuListView(BaseView):
             as_copy=True,
             channel=_as_messageable(self.channel),
         )
-        await interaction.response.edit_message(content="Opening a copy…", view=None)
-        if self.message:
-            await self.message.edit(embed=builder.build_embed(), view=builder)
-            builder.message = self.message
+        builder._panel_interaction = interaction
+        await interaction.response.edit_message(
+            embed=builder.build_embed(),
+            view=builder,
+        )
+        builder.message = interaction.message
 
     async def _delete_old_message(self, menu: dict) -> None:
         """Best-effort: remove a menu's previous posted message before a repost."""
@@ -448,6 +463,12 @@ class RoleMenuBuilder(BaseView):
         self.channel = channel
         self.parent = parent
         self.menu_id = menu_id
+        # The interaction that owns the (ephemeral) panel message. Ephemeral
+        # messages can't be edited via Message.edit() — only through the
+        # interaction/webhook token — so every live preview refresh routes
+        # through this via safe_edit(). Set at open + refreshed by each direct
+        # panel interaction (toggles/modals); sub-flows reuse the stored token.
+        self._panel_interaction: discord.Interaction | None = None
         # Draft state (dropdown default per owner decision §9 #2).
         self.title = "Pick your roles"
         self.description: str | None = None
@@ -458,6 +479,7 @@ class RoleMenuBuilder(BaseView):
         self.template: str | None = None
         self.card_template: str | None = None
         self.card_text: str | None = None
+        self.show_counts = False
         self.role_ids: list[int] = []
 
         if parent is not None:
@@ -472,7 +494,7 @@ class RoleMenuBuilder(BaseView):
                 label="↩ Back",
                 custom_id="role:builder:back",
                 parent_builder=_build_parent,
-                row=2,
+                row=1,
             )
 
     @classmethod
@@ -513,6 +535,7 @@ class RoleMenuBuilder(BaseView):
         builder.template = menu.get("template")
         builder.card_template = menu.get("card_template")
         builder.card_text = menu.get("card_text")
+        builder.show_counts = bool(menu.get("show_counts"))
         builder.role_ids = [o.role_id for o in options]
         return builder
 
@@ -551,13 +574,15 @@ class RoleMenuBuilder(BaseView):
         )
         card = presentation.get_card_template(self.card_template)
         card_str = card.label if card else "none"
+        counts_str = "on" if self.show_counts else "off"
         embed.add_field(
             name="Settings",
             value=(
                 f"Style: **{_STYLE_LABEL.get(self.style, self.style)}**\n"
                 f"Mode: **{_MODE_LABEL.get(self.mode, self.mode)}**\n"
                 f"Limit: **{limit}** · Theme: **{theme.label}**\n"
-                f"Card: **{card_str}** · Channel: {channel_str}{gradient_note}"
+                f"Card: **{card_str}** · Sign-up counts: **{counts_str}**\n"
+                f"Channel: {channel_str}{gradient_note}"
             ),
             inline=False,
         )
@@ -567,60 +592,68 @@ class RoleMenuBuilder(BaseView):
         return embed
 
     async def _rerender(self) -> None:
-        if self.message:
+        """Refresh the live preview panel in place.
+
+        Routes through the stored panel interaction (``safe_edit`` picks
+        ``response.edit_message`` / ``followup.edit_message`` as appropriate) so
+        the edit lands on the **ephemeral** hub message — a plain
+        ``Message.edit()`` silently no-ops there, which is why the preview used
+        to freeze while the underlying draft state changed. Falls back to
+        ``Message.edit`` for any non-ephemeral caller.
+        """
+        if self._panel_interaction is not None and await safe_edit(
+            self._panel_interaction,
+            embed=self.build_embed(),
+            view=self,
+        ):
+            return
+        if self.message is not None:
             await self.message.edit(embed=self.build_embed(), view=self)
 
+    async def _show_parent(self) -> None:
+        """Return the panel to its parent manager (after Post / Save)."""
+        if self.parent is None:
+            return
+        # Hand the live token to the parent so its own list refreshes work too.
+        if hasattr(self.parent, "_panel_interaction"):
+            self.parent._panel_interaction = self._panel_interaction  # type: ignore[attr-defined]
+        embed = await self.parent.build_embed()  # type: ignore[attr-defined]
+        if self._panel_interaction is not None and await safe_edit(
+            self._panel_interaction,
+            embed=embed,
+            view=self.parent,
+        ):
+            return
+        if self.message is not None:
+            await self.message.edit(embed=embed, view=self.parent)
+
     # -- field editors ------------------------------------------------------
+    # Lean layout (owner-approved, tools/sim/role_menu_layout_sim.py, 2026-07-01):
+    #   row 0 = the hot content path (Template · Packs · Roles · Style · Text)
+    #   row 1 = Colours · Channel · ⚙️ Advanced (Theme/Card/Counts/Mode/Limit) ·
+    #           🚀 Post · ↩ Back
+    # Style stays first-screen (a primary dropdown-vs-buttons choice); the
+    # rarely-tapped knobs fold behind ⚙️ Advanced. Method definition order sets
+    # the left-to-right order within each row.
 
-    @discord.ui.button(label="📝 Text", style=discord.ButtonStyle.grey, row=0)
-    async def text_btn(
+    @discord.ui.button(label="🧩 Template", style=discord.ButtonStyle.grey, row=0)
+    async def template_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.send_modal(_TextModal(self))
-
-    @discord.ui.button(label="🏷️ Roles", style=discord.ButtonStyle.grey, row=0)
-    async def roles_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        manageable, _excluded = role_feasibility.manageable_roles(
-            self.guild.roles,
-            bot_member=self.guild.me,
-            actor=(
-                interaction.user
-                if isinstance(interaction.user, discord.Member)
-                else None
+        options = [
+            discord.SelectOption(label=t.label[:100], value=t.key)
+            for t in presentation.templates()
+        ]
+        await interaction.response.send_message(
+            "Start from a template (you can still tweak everything):",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self._apply_template,
+                placeholder="Pick a starter template…",
             ),
-        )
-        if not manageable:
-            await interaction.response.send_message(
-                "I can't manage any of this server's roles (they're all above my "
-                "highest role). Move my role up, then try again.",
-                ephemeral=True,
-            )
-            return
-        await interaction.response.send_message(
-            "Pick the roles this menu offers (up to 25):",
-            view=_RolePickView(self, manageable),
-            ephemeral=True,
-        )
-
-    @discord.ui.button(label="🎨 Colours", style=discord.ButtonStyle.grey, row=0)
-    async def colours_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        if not _can_manage(interaction):
-            await _deny(interaction)
-            return
-        await interaction.response.send_message(
-            "Pick preset colours to auto-create as roles, or **✏️ Custom** for a "
-            "custom colour or gradient — each becomes a role added to this menu:",
-            view=_ColourRolesView(self),
             ephemeral=True,
         )
 
@@ -658,107 +691,68 @@ class RoleMenuBuilder(BaseView):
                 self.role_ids.append(role_id)
         await self._rerender()
 
-    @discord.ui.button(label="🧩 Template", style=discord.ButtonStyle.grey, row=0)
-    async def template_btn(
+    @discord.ui.button(label="🏷️ Roles", style=discord.ButtonStyle.grey, row=0)
+    async def roles_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        options = [
-            discord.SelectOption(label=t.label[:100], value=t.key)
-            for t in presentation.templates()
-        ]
-        await interaction.response.send_message(
-            "Start from a template (you can still tweak everything):",
-            view=PaginatedSelectView(
-                interaction.user,
-                options,
-                self._apply_template,
-                placeholder="Pick a starter template…",
+        manageable, _excluded = role_feasibility.manageable_roles(
+            self.guild.roles,
+            bot_member=self.guild.me,
+            actor=(
+                interaction.user
+                if isinstance(interaction.user, discord.Member)
+                else None
             ),
-            ephemeral=True,
         )
-
-    # Row 2 (the action row, with 🚀 Post + ↩ Back): row 0 filled to Discord's
-    # 5-button cap once the 📦 Packs button landed, so the banner-card toggle sits
-    # next to Post — the last thing you set before posting.
-    @discord.ui.button(label="🖼️ Card", style=discord.ButtonStyle.grey, row=2)
-    async def card_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        await interaction.response.send_message(
-            "Add an optional **banner image** above the menu, or set its overlay "
-            "text. Pick **✖️ None** to remove the card:",
-            view=_CardPickView(self),
-            ephemeral=True,
-        )
-
-    @discord.ui.button(label="🎭 Theme", style=discord.ButtonStyle.grey, row=1)
-    async def theme_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        options = [
-            discord.SelectOption(
-                label=t.label,
-                value=t.key,
-                default=t.key == self.theme,
+        if not manageable:
+            await interaction.response.send_message(
+                "I can't manage any of this server's roles (they're all above my "
+                "highest role). Move my role up, then try again.",
+                ephemeral=True,
             )
-            for t in presentation.themes()
-        ]
+            return
         await interaction.response.send_message(
-            "Pick an embed theme:",
-            view=PaginatedSelectView(
-                interaction.user,
-                options,
-                self._apply_theme,
-                placeholder="Theme…",
-            ),
+            "Pick the roles this menu offers (up to 25):",
+            view=_RolePickView(self, manageable),
             ephemeral=True,
         )
 
-    @discord.ui.button(label="⚙️ Mode", style=discord.ButtonStyle.grey, row=1)
-    async def mode_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        options = [
-            discord.SelectOption(label=_MODE_LABEL[m], value=m, default=m == self.mode)
-            for m in ("normal", "unique", "verify")
-        ]
-        await interaction.response.send_message(
-            "How should members pick from this menu?",
-            view=PaginatedSelectView(
-                interaction.user,
-                options,
-                self._apply_mode,
-                placeholder="Mode…",
-            ),
-            ephemeral=True,
-        )
-
-    @discord.ui.button(label="🎚️ Style", style=discord.ButtonStyle.grey, row=1)
+    @discord.ui.button(label="🎚️ Style", style=discord.ButtonStyle.grey, row=0)
     async def style_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
+        """Toggle dropdown vs buttons — a first-screen choice (owner directive)."""
         self.style = "button" if self.style == "dropdown" else "dropdown"
-        if not await safe_defer(interaction):
-            return
-        await self._rerender()
+        self._panel_interaction = interaction
+        await safe_edit(interaction, embed=self.build_embed(), view=self)
 
-    @discord.ui.button(label="🔢 Limit", style=discord.ButtonStyle.grey, row=1)
-    async def limit_btn(
+    @discord.ui.button(label="📝 Text", style=discord.ButtonStyle.grey, row=0)
+    async def text_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.send_modal(_LimitModal(self))
+        await interaction.response.send_modal(_TextModal(self))
+
+    @discord.ui.button(label="🎨 Colours", style=discord.ButtonStyle.grey, row=1)
+    async def colours_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not _can_manage(interaction):
+            await _deny(interaction)
+            return
+        await interaction.response.send_message(
+            "Pick preset colours to auto-create as roles, or **✏️ Custom** for a "
+            "custom colour or gradient — each becomes a role added to this menu:",
+            view=_ColourRolesView(self),
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="📍 Channel", style=discord.ButtonStyle.grey, row=1)
     async def channel_btn(
@@ -781,7 +775,24 @@ class RoleMenuBuilder(BaseView):
             ephemeral=True,
         )
 
-    @discord.ui.button(label="🚀 Post", style=discord.ButtonStyle.green, row=2)
+    @discord.ui.button(label="⚙️ Advanced", style=discord.ButtonStyle.grey, row=1)
+    async def advanced_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Open the folded less-common options (Theme / Card / Counts / Mode / Limit).
+
+        Their current values stay visible on the main preview above; this sub-panel
+        is just the controls, so the top-level builder stays lean.
+        """
+        await interaction.response.send_message(
+            "Fine-tune the less-common options — the menu preview above updates live:",
+            view=_AdvancedView(self),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🚀 Post", style=discord.ButtonStyle.green, row=1)
     async def post_btn(
         self,
         interaction: discord.Interaction,
@@ -811,11 +822,9 @@ class RoleMenuBuilder(BaseView):
             self.description = tpl.description
             self.theme = tpl.theme
             self.style = tpl.style
+            self.mode = tpl.mode
+            self.show_counts = tpl.show_counts
             self.template = tpl.key
-            if tpl.key == "colour_roles":
-                self.mode = "unique"
-            elif tpl.key == "verify":
-                self.mode = "verify"
         await interaction.response.edit_message(
             content="✓ Template applied.",
             view=None,
@@ -883,6 +892,7 @@ class RoleMenuBuilder(BaseView):
             theme=self.theme,
             card_template=self.card_template,
             card_text=self.card_text,
+            show_counts=self.show_counts,
             actor_id=interaction.user.id,
         )
         menu = await service.get_menu(menu_id)
@@ -903,11 +913,7 @@ class RoleMenuBuilder(BaseView):
             f"🚀 Posted **{self.title}** to {channel.mention}.",
             ephemeral=True,
         )
-        if self.parent is not None and self.message:
-            await self.message.edit(
-                embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
-                view=self.parent,
-            )
+        await self._show_parent()
 
     async def _save_edit(self, interaction, service, options) -> None:  # type: ignore[no-untyped-def]
         if self.menu_id is None:  # pragma: no cover - guarded by _commit
@@ -924,6 +930,7 @@ class RoleMenuBuilder(BaseView):
             theme=self.theme,
             card_template=self.card_template,
             card_text=self.card_text,
+            show_counts=self.show_counts,
             actor_id=interaction.user.id,
         )
         menu = await service.get_menu(self.menu_id)
@@ -952,16 +959,125 @@ class RoleMenuBuilder(BaseView):
             else "💾 Saved. (The posted message couldn't be edited; re-post if needed.)"
         )
         await interaction.followup.send(result_text, ephemeral=True)
-        if self.parent is not None and self.message:
-            await self.message.edit(
-                embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
-                view=self.parent,
-            )
+        await self._show_parent()
 
 
 # ---------------------------------------------------------------------------
 # Sub-views + modals
 # ---------------------------------------------------------------------------
+
+
+class _AdvancedView(BaseView):
+    """The ⚙️ Advanced sub-panel — the less-common menu options folded off the
+    lean two-row builder (Theme / Card / Counts / Mode / Limit).
+
+    Each control edits the builder draft and refreshes the **main preview** via
+    the builder's stored panel interaction (``_rerender``), so the current values
+    stay visible on that preview while the top-level builder stays clean. The
+    pickers/modals reused here are exactly the ones the builder opened when these
+    were top-level buttons.
+    """
+
+    def __init__(self, builder: RoleMenuBuilder) -> None:
+        super().__init__(builder._author, timeout=300)
+        self.builder = builder
+
+    def build_embed(self) -> discord.Embed:
+        counts = "on" if self.builder.show_counts else "off"
+        return discord.Embed(
+            title="⚙️ Advanced options",
+            description=(
+                "Fine-tune the less-common menu options below. Every current value "
+                "is shown on the **menu preview above**, which updates live as you "
+                "change it here.\n\n"
+                f"📊 Sign-up counts: **{counts}** — tap 📊 Counts to toggle."
+            ),
+            color=presentation.theme_color(self.builder.theme),
+        )
+
+    @discord.ui.button(label="🎭 Theme", style=discord.ButtonStyle.grey, row=0)
+    async def theme_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        options = [
+            discord.SelectOption(
+                label=t.label,
+                value=t.key,
+                default=t.key == self.builder.theme,
+            )
+            for t in presentation.themes()
+        ]
+        await interaction.response.send_message(
+            "Pick an embed theme:",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self.builder._apply_theme,
+                placeholder="Theme…",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="⚙️ Mode", style=discord.ButtonStyle.grey, row=0)
+    async def mode_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        options = [
+            discord.SelectOption(
+                label=_MODE_LABEL[m],
+                value=m,
+                default=m == self.builder.mode,
+            )
+            for m in ("normal", "unique", "verify")
+        ]
+        await interaction.response.send_message(
+            "How should members pick from this menu?",
+            view=PaginatedSelectView(
+                interaction.user,
+                options,
+                self.builder._apply_mode,
+                placeholder="Mode…",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="🔢 Limit", style=discord.ButtonStyle.grey, row=0)
+    async def limit_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(_LimitModal(self.builder))
+
+    @discord.ui.button(label="🖼️ Card", style=discord.ButtonStyle.grey, row=1)
+    async def card_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_message(
+            "Add an optional **banner image** above the menu, or set its overlay "
+            "text. Pick **✖️ None** to remove the card:",
+            view=_CardPickView(self.builder),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="📊 Counts", style=discord.ButtonStyle.grey, row=1)
+    async def counts_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Toggle the live sign-up counter (current holders shown on the menu)."""
+        self.builder.show_counts = not self.builder.show_counts
+        # Refresh this sub-panel in place (shows the new state) …
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+        # … then the main builder preview via its stored panel interaction.
+        await self.builder._rerender()
 
 
 class _RolePickView(BaseView):
@@ -1015,9 +1131,8 @@ class _TextModal(discord.ui.Modal, title="Menu text"):  # type: ignore[call-arg]
     async def on_submit(self, interaction: discord.Interaction) -> None:
         self.builder.title = self.title_in.value.strip() or "Pick your roles"
         self.builder.description = self.desc_in.value.strip() or None
-        if not await safe_defer(interaction):
-            return
-        await self.builder._rerender()
+        self.builder._panel_interaction = interaction
+        await safe_edit(interaction, embed=self.builder.build_embed(), view=self.builder)
 
 
 class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[call-arg]
@@ -1044,6 +1159,8 @@ class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[c
             )
             return
         self.builder.max_roles = value
+        # Opened from the ⚙️ Advanced sub-panel, so this interaction is NOT the main
+        # panel's — refresh the main preview through the builder's stored token.
         if not await safe_defer(interaction):
             return
         await self.builder._rerender()

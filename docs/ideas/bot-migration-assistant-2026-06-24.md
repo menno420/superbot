@@ -15,6 +15,18 @@
 > rivals' features into *our backlog by hand*; this idea is the bot doing **detect → map → replicate →
 > retire** *live in a server*, which is the user-facing payoff of "free **and** all-in-one."
 
+## Shipped precedent — XP/level data carry-over (2026-07-01)
+
+The first **data carry-over** slice of the "replicate" phase shipped independently, owner-requested:
+a **level-migration importer** that scans another bot's level-up channel (Arcane is the live case —
+it has *no* import API, confirmed) and copies the announced levels into SuperBot's chat XP, raise-only
+and audited. See `docs/operations/xp-migration.md` and `services/xp_migration.import_levels`. This
+partially answers the plan's open "scope of replication" caveat (§"Open questions"): it proves some
+competitor state (leveling) **can** be carried over via channel scraping, not only re-started fresh —
+and the `import_levels(guild, records, …)` seam is provider-agnostic, so a future *direct* provider
+(e.g. MEE6's public leaderboard API) or the migration-advisor feeds the same audited import. When this
+idea is promoted to build, the XP importer is the reusable pattern for the "carry over user data" step.
+
 ## The idea, in the owner's words
 
 > "The goal of my bot is easy configuration and all-inclusive functionality, so one thing that would
@@ -61,6 +73,14 @@ introspection at all. So we cannot programmatically "read what bot X does."
 
 The catalog grows over time; the engine doesn't change. This is the same "explicit data + heuristic
 fallback" shape the repo already favors.
+
+**Detect enhancement — announcer fingerprinting (from the XP-import lane, 2026-07-01).** The shipped
+XP importer already has a per-bot announcer-format registry (`utils/xp_migration.FORMATS`) keyed by
+regex. A cheap "detect" win reuses it: sample recent messages per channel, match each present bot's
+**application id** + the format regexes, and surface *"MEE6's level-ups look present in #levels — import?"*
+This auto-detects both **which bot** and **which channel** without the operator naming either — the
+same fingerprinting the migration assistant needs for its broader detect phase, prototyped narrowly on
+leveling first.
 
 ## How it docks into existing seams (no architecture change)
 

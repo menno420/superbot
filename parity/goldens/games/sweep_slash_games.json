@@ -1,0 +1,156 @@
+{
+ "case_id": "sweep.slash_games",
+ "db_delta": {},
+ "harness_version": 1,
+ "notes": "mechanical slash sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "interaction_id": "<msg:1>"
+     },
+     "method": "interaction_response",
+     "payload": {
+      "data": {
+       "components": [
+        {
+         "components": [
+          {
+           "custom_id": "games:open:blackjack",
+           "disabled": false,
+           "label": "🃏 Blackjack",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "games:open:casino",
+           "disabled": false,
+           "label": "🎰 Casino",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "games:open:deathmatch",
+           "disabled": false,
+           "label": "⚔️ Deathmatch",
+           "style": 1,
+           "type": 2
+          },
+          {
+           "custom_id": "games:open:rps_tournament",
+           "disabled": false,
+           "label": "✂️ Rock Paper Scissors",
+           "style": 1,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "games:open:mining",
+           "disabled": false,
+           "label": "⛏️ Mining",
+           "style": 3,
+           "type": 2
+          },
+          {
+           "custom_id": "games:open:fishing",
+           "disabled": false,
+           "label": "🎣 Fishing",
+           "style": 3,
+           "type": 2
+          },
+          {
+           "custom_id": "games:open:creature",
+           "disabled": false,
+           "label": "🐾 Creatures",
+           "style": 3,
+           "type": 2
+          },
+          {
+           "custom_id": "games:open:farm",
+           "disabled": false,
+           "label": "🐔 Chicken Farm",
+           "style": 3,
+           "type": 2
+          },
+          {
+           "custom_id": "games:open:counting",
+           "disabled": false,
+           "label": "🔢 Counting",
+           "style": 3,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "games:open:chain",
+           "disabled": false,
+           "label": "🔗 Word Chain",
+           "style": 3,
+           "type": 2
+          }
+         ],
+         "type": 1
+        },
+        {
+         "components": [
+          {
+           "custom_id": "nav:help",
+           "disabled": false,
+           "label": "📚 Help",
+           "style": 2,
+           "type": 2
+          }
+         ],
+         "type": 1
+        }
+       ],
+       "content": null,
+       "embeds": [
+        {
+         "color": 10181046,
+         "description": "Pick a game below to open it. Typed shortcuts (e.g. `!blackjack`, `!mine`) still work.",
+         "fields": [
+          {
+           "inline": false,
+           "name": "🏆 Competitive",
+           "value": "🃏 **Blackjack** — Blackjack card game\n🎰 **Casino** — Group card games like multiplayer poker\n⚔️ **Deathmatch** — 1v1 duel battles\n✂️ **Rock Paper Scissors** — Rock Paper Scissors: quick play, PvP, bot matches, tournaments"
+          },
+          {
+           "inline": false,
+           "name": "🎲 Activities",
+           "value": "⛏️ **Mining** — Mining minigame and resource collection\n🎣 **Fishing** — Fishing minigame — cast a line, build your collection\n🐾 **Creatures** — Catch original creatures and build your collection dex\n🐔 **Chicken Farm** — Idle egg farm — hens lay eggs over time; collect, sell, grow\n🔢 **Counting** — Collaborative counting game\n🔗 **Word Chain** — Word-chaining game"
+          }
+         ],
+         "flags": 0,
+         "footer": {
+          "text": "Only you can interact with this panel."
+         },
+         "title": "🎮 Games Hub",
+         "type": "rich"
+        }
+       ],
+       "flags": 64,
+       "tts": false
+      },
+      "type": 4
+     }
+    }
+   ],
+   "input": {
+    "kind": "slash",
+    "name": "games",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "games"
+}

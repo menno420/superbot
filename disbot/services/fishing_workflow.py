@@ -25,16 +25,29 @@ from typing import Protocol
 from core.events import bus
 from services import economy_service, game_xp_service
 from utils import db
-from utils.fishing import MAX_LEVEL, PEARL_ITEM, Catch
+from utils.fishing import (
+    CORAL_ITEM,
+    MAX_LEVEL,
+    PEARL_ITEM,
+    Catch,
+)
 from utils.fishing import bait as bait_mod
+from utils.fishing import curios as curios_mod
 from utils.fishing import energy as fish_energy
 from utils.fishing import fish as fish_mod
 from utils.fishing import gear as fishing_gear
+from utils.fishing import rewards as rewards_mod
 from utils.fishing import rods as rods_mod
-from utils.fishing import roll_bonus_catch, roll_catch, roll_pearl_drop
+from utils.fishing import (
+    roll_bonus_catch,
+    roll_catch,
+    roll_coral_drop,
+    roll_pearl_drop,
+)
 from utils.fishing import venue as venue_mod
 from utils.fishing import weather as weather_mod
 from utils.mining import character
+from utils.mining import structures as structures_mod
 
 logger = logging.getLogger("bot.fishing_workflow")
 
@@ -82,6 +95,12 @@ class FishResult:
     #: Granted into the inventory; never a dex/trophy row. Byte-identical when
     #: ``False``. Bigger fish drop pearls more often (size-scaled roll).
     pearl_found: bool = False
+    #: True when this reel also yielded a **coral** — the second rare crafting
+    #: material (``utils.fishing.CORAL_ITEM``), a **deepwater-only** reef find that
+    #: carves into the cosmetic curio collection (``utils.fishing.curios``).
+    #: Granted into the inventory; never a dex/trophy row. Always ``False`` on a
+    #: shore cast; byte-identical economics when ``False``.
+    coral_found: bool = False
 
 
 @dataclass(frozen=True)
@@ -100,6 +119,11 @@ class Cast:
     #: The venue this cast was made in (``shore`` / ``deepwater``) — picks the
     #: species pool + the minigame difficulty (``utils.fishing.venue``).
     venue: str = venue_mod.SHORE
+    #: The lucky-double-catch chance fixed at cast time — a built **Fishery**
+    #: structure raises it above ``rewards.BONUS_CATCH_CHANCE`` (``commit_catch``
+    #: rolls it). Defaults to the base chance so a hand-built ``Cast`` (and the
+    #: legacy path) is byte-identical.
+    double_catch_chance: float = rewards_mod.BONUS_CATCH_CHANCE
 
 
 async def roll_cast(
@@ -109,6 +133,7 @@ async def roll_cast(
     *,
     rarity_pull: float | None = None,
     venue: str = venue_mod.SHORE,
+    double_catch_chance: float | None = None,
 ) -> Cast:
     """Read the player's level and roll a catch **without writing anything**.
 
@@ -122,6 +147,12 @@ async def roll_cast(
     new band (that stays the fishing-level axis). *rarity_pull*, when given,
     overrides the rod's own pull — ``begin_cast`` passes ``rod.rarity_pull``
     multiplied by any loaded bait so the two how-well knobs compound.
+
+    *double_catch_chance*, when given, is the fishery-adjusted lucky-double-catch
+    chance ``begin_cast`` computed from its one structures read (so the read isn't
+    repeated at commit). When ``None`` (the legacy ``fish()`` seam, which has no
+    runtime callers), it defaults to the base ``rewards.BONUS_CATCH_CHANCE`` — i.e.
+    the Fishery bonus is applied through ``begin_cast``, the real cast path.
     """
     rod = rod or rods_mod.STARTER
     venue = venue_mod.normalize(venue)
@@ -132,7 +163,14 @@ async def roll_cast(
     catch = roll_catch(level_before, rarity_pull=pull, venue=venue)
     if catch is None:
         logger.error("fishing: no catchable species (venue=%s, catalog empty?)", venue)
-    return Cast(catch=catch, level_before=level_before, venue=venue)
+    if double_catch_chance is None:
+        double_catch_chance = rewards_mod.BONUS_CATCH_CHANCE
+    return Cast(
+        catch=catch,
+        level_before=level_before,
+        venue=venue,
+        double_catch_chance=double_catch_chance,
+    )
 
 
 async def commit_catch(
@@ -163,9 +201,15 @@ async def commit_catch(
     if catch is None:
         return FishResult(catch=None, fishing_level=level_before)
 
-    bonus = roll_bonus_catch(rng)
+    # The double-catch chance was fixed at cast time (``roll_cast``) — a built
+    # **Fishery** (4th coral structure, coral's yield/abundance sink) raises it above
+    # the base ``BONUS_CATCH_CHANCE``; unbuilt ⇒ exactly the base ⇒ byte-identical
+    # catch economics. The bonus roll is still drawn first, so the pearl/coral draws
+    # below stay deterministic under an injected rng.
+    bonus = roll_bonus_catch(rng, chance=cast.double_catch_chance)
     grant = 2 if bonus else 1
     pearl = roll_pearl_drop(catch.species.size_rank, rng)
+    coral = roll_coral_drop(cast.venue, rng)
     async with db.transaction() as conn:
         prev_best = await db.record_catch(
             user_id,
@@ -174,15 +218,27 @@ async def commit_catch(
             catch.weight,
             conn=conn,
         )
-        # A pearl drop (the rare crafting material) is granted before the fish so
-        # the fish grant stays the last write — a stable seam for callers/tests
-        # that read the species-grant call. Inventory-only, same atomic catch
-        # transaction (RS02); never a dex/trophy row.
+        # The rare-material drops (pearl, coral) are granted before the fish so the
+        # fish grant stays the last write — a stable seam for callers/tests that
+        # read the species-grant call. Inventory-only, same atomic catch
+        # transaction (RS02); neither is ever a dex/trophy row. The rolls are
+        # drawn (bonus → pearl → coral) before the transaction so the write set is
+        # deterministic under an injected rng.
         if pearl:
             await db.update_mining_item(
                 str(user_id),
                 guild_id,
                 PEARL_ITEM,
+                1,
+                conn=conn,
+            )
+        # Coral is deepwater-only (roll_coral_drop returns False on shore), the
+        # boat venue's unique reward — it carves into the cosmetic curio set.
+        if coral:
+            await db.update_mining_item(
+                str(user_id),
+                guild_id,
+                CORAL_ITEM,
                 1,
                 conn=conn,
             )
@@ -220,6 +276,7 @@ async def commit_catch(
         new_personal_best=new_best,
         bonus_catch=bonus,
         pearl_found=pearl,
+        coral_found=coral,
     )
 
 
@@ -268,6 +325,20 @@ class CastStart:
     #: ``effective_bite_speed``) — for the 🎣 cast-panel note. ``False`` when no
     #: fishing gear is equipped, in which case the cast is byte-identical.
     fishing_gear_bonus: bool = False
+    #: Whether a built **Tide Pool** structure biased this cast toward rarer fish
+    #: (its rarity-pull bonus is already folded into the roll pull) — for the 🪸
+    #: cast-panel note. ``False`` when the Tide Pool is unbuilt (level 0), in which
+    #: case that knob is ×1.0 and the cast is byte-identical.
+    tide_pool_bonus: bool = False
+    #: Whether a built **Dock** structure sped up this cast's bite (its bite-speed
+    #: multiplier is already folded into ``effective_bite_speed``) — for the ⚓
+    #: cast-panel note. ``False`` when the Dock is unbuilt (level 0).
+    dock_bonus: bool = False
+    #: Whether a built **Fishery** structure raised this cast's double-catch chance
+    #: (already fixed onto ``cast.double_catch_chance``) — for the 🐟 cast-panel
+    #: note. ``False`` when the Fishery is unbuilt (level 0), in which case the
+    #: chance is exactly ``rewards.BONUS_CATCH_CHANCE`` and the cast is byte-identical.
+    fishery_bonus: bool = False
 
 
 def _fmt_wait(seconds: int) -> str:
@@ -278,10 +349,22 @@ def _fmt_wait(seconds: int) -> str:
 
 
 async def get_energy(user_id: int, guild_id: int) -> int:
-    """The player's *settled* current fishing energy (for the ⚡ gauge / menu)."""
+    """The player's *settled* current fishing energy (for the ⚡ gauge / menu).
+
+    Settles at the player's Boathouse-adjusted regen interval so the gauge matches the
+    faster refill a built Boathouse grants (unbuilt ⇒ REGEN_SECONDS ⇒ byte-identical).
+    """
     now = int(time.time())
+    built = await db.get_structures(user_id, guild_id)
+    regen_seconds = fish_energy.regen_seconds_for(
+        structures_mod.boathouse_regen_mult(built.get(structures_mod.BOATHOUSE, 0)),
+    )
     cur, ts = await db.get_fishing_energy(user_id, guild_id)
-    return fish_energy.settle(fish_energy.EnergyState(cur, ts), now).current
+    return fish_energy.settle(
+        fish_energy.EnergyState(cur, ts),
+        now,
+        regen_seconds=regen_seconds,
+    ).current
 
 
 async def get_active_bait(
@@ -309,11 +392,25 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     catalog-load failure never charges the player.
     """
     now = int(time.time())
+    # One structures read serves every structure knob (Tide Pool / Dock below) *and*
+    # the Boathouse's energy-regen speed-up, which must be known before the energy
+    # settle so the out-of-energy gate + "ready in" wait already reflect it. A built
+    # Boathouse shortens the regen interval; unbuilt (level 0) ⇒ ×1.0 ⇒ exactly
+    # REGEN_SECONDS ⇒ byte-identical energy.
+    built = await db.get_structures(user_id, guild_id)
+    regen_seconds = fish_energy.regen_seconds_for(
+        structures_mod.boathouse_regen_mult(built.get(structures_mod.BOATHOUSE, 0)),
+    )
     cur, ts = await db.get_fishing_energy(user_id, guild_id)
     state = fish_energy.EnergyState(cur, ts)
-    settled = fish_energy.settle(state, now)
+    settled = fish_energy.settle(state, now, regen_seconds=regen_seconds)
     if settled.current < fish_energy.CAST_COST:
-        wait = fish_energy.seconds_until(state, now, fish_energy.CAST_COST)
+        wait = fish_energy.seconds_until(
+            state,
+            now,
+            fish_energy.CAST_COST,
+            regen_seconds=regen_seconds,
+        )
         return CastStart(
             ok=False,
             message=(
@@ -338,9 +435,26 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
     )
     gear_pull = fishing_gear.fishing_pull_mult(gear_stats)
     gear_bite_speed = fishing_gear.fishing_bite_speed_mult(gear_stats)
-    # Four "how-well" knobs compound: rod × bait × weather × gear. rarity_pull
-    # (all ≥ 1) pulls the catch toward the big end of the SAME unlocked band (never
-    # a new band — that stays the fishing-level axis); bite_speed (rod/bait/gear ≤ 1,
+    # The structure knobs: the built **Tide Pool** (rarity-pull, coral's functional
+    # sink) and its sibling the **Dock** (bite-speed). Both default to their neutral
+    # multiplier when unbuilt (level 0) ⇒ ×1.0 ⇒ byte-identical, exactly like the
+    # gear knob's additive-safety property. ``built`` was read once above (it also
+    # feeds the Boathouse regen speed-up).
+    tide_pool_level = built.get(structures_mod.TIDE_POOL, 0)
+    tide_pool_pull = structures_mod.tide_pool_pull_mult(tide_pool_level)
+    dock_level = built.get(structures_mod.DOCK, 0)
+    dock_bite_speed = structures_mod.dock_bite_speed_mult(dock_level)
+    # The Fishery (4th coral structure) raises the lucky-double-catch chance —
+    # fixed here from the same one structures read and threaded onto the Cast so
+    # commit_catch stays DB-free. Unbuilt ⇒ +0.0 ⇒ the base chance ⇒ byte-identical.
+    fishery_level = built.get(structures_mod.FISHERY, 0)
+    double_catch_chance = rewards_mod.BONUS_CATCH_CHANCE + (
+        structures_mod.fishery_bonus_chance(fishery_level)
+    )
+    # The "how-well" knobs compound: rod × bait × weather × gear × tide pool (pull),
+    # and rod × bait × weather × gear × dock (bite speed). rarity_pull (all ≥ 1)
+    # pulls the catch toward the big end of the SAME unlocked band (never a new band
+    # — that stays the fishing-level axis); bite_speed (rod/bait/gear/dock ≤ 1,
     # weather either way) scales the bite wait. Weather is the transient, shared,
     # free knob (a storm makes a rarer catch likelier but the wait longer).
     effective_pull = (
@@ -348,12 +462,14 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         * (bait.rarity_pull if bait else 1.0)
         * weather.rarity_mult
         * gear_pull
+        * tide_pool_pull
     )
     effective_bite_speed = (
         rod.bite_speed
         * (bait.bite_speed if bait else 1.0)
         * weather.bite_speed_mult
         * gear_bite_speed
+        * dock_bite_speed
     )
     cast = await roll_cast(
         user_id,
@@ -361,6 +477,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         rod,
         rarity_pull=effective_pull,
         venue=profile.key,
+        double_catch_chance=double_catch_chance,
     )
     if cast.catch is None:
         return CastStart(
@@ -372,7 +489,7 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
             energy_current=settled.current,
         )
 
-    spent = fish_energy.spend(state, now)
+    spent = fish_energy.spend(state, now, regen_seconds=regen_seconds)
     await db.set_fishing_energy(user_id, guild_id, spent.current, spent.updated_at)
 
     # Consume one bait charge — only now that the cast is actually happening (the
@@ -397,6 +514,9 @@ async def begin_cast(user_id: int, guild_id: int) -> CastStart:
         venue_profile=profile,
         weather=weather,
         fishing_gear_bonus=fishing_gear.has_fishing_bonus(gear_stats),
+        tide_pool_bonus=tide_pool_level > 0,
+        dock_bonus=dock_level > 0,
+        fishery_bonus=fishery_level > 0,
     )
 
 
@@ -645,16 +765,16 @@ class _FishRecipe(Protocol):
     max_size_rank: int
 
 
-def _plan_fish_spend(
+def _eligible_fish(
     inventory: dict[str, int],
     recipe: _FishRecipe,
-) -> dict[str, int] | None:
-    """Choose which eligible fish to consume for *recipe* (smallest-first).
+) -> list[tuple[int, str, int]]:
+    """The player's fish eligible toward *recipe*, as ``(size_rank, name, have)``.
 
     Eligible = a known fish species whose ``size_rank`` is ``≤ recipe.max_size_rank``.
-    Consumes the smallest ranks first (ties broken by name) so the player keeps
-    their bigger catches. Returns a ``{fish_name: count}`` spend map, or ``None``
-    when the player lacks ``recipe.fish_count`` eligible fish.
+    Shared by :func:`_plan_fish_spend` (which fish to debit) and
+    :func:`eligible_fish_total` (live progress display) so both read the exact
+    same eligibility rule.
     """
     eligible: list[tuple[int, str, int]] = []  # (size_rank, name, have)
     for name, have in inventory.items():
@@ -664,7 +784,30 @@ def _plan_fish_spend(
         if species is None or species.size_rank > recipe.max_size_rank:
             continue
         eligible.append((species.size_rank, name, have))
+    return eligible
 
+
+def eligible_fish_total(inventory: dict[str, int], recipe: _FishRecipe) -> int:
+    """Total fish in *inventory* eligible toward *recipe* (size_rank ≤ cap).
+
+    A pure progress readout — unlike :func:`_plan_fish_spend` it never gates on
+    ``recipe.fish_count`` being met, so a caller can show "7/10 eligible fish"
+    before the player has enough to craft.
+    """
+    return sum(have for _, _, have in _eligible_fish(inventory, recipe))
+
+
+def _plan_fish_spend(
+    inventory: dict[str, int],
+    recipe: _FishRecipe,
+) -> dict[str, int] | None:
+    """Choose which eligible fish to consume for *recipe* (smallest-first).
+
+    Consumes the smallest ranks first (ties broken by name) so the player keeps
+    their bigger catches. Returns a ``{fish_name: count}`` spend map, or ``None``
+    when the player lacks ``recipe.fish_count`` eligible fish.
+    """
+    eligible = _eligible_fish(inventory, recipe)
     if sum(have for _, _, have in eligible) < recipe.fish_count:
         return None
 
@@ -792,6 +935,85 @@ async def craft_pearl_bait(
         f"**{pearl_cost}** 🦪 pearls — **{new_charges}** casts ready.",
         bait=bait,
         charges=new_charges,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Curio carving — turn the deepwater rare-material (coral) into cosmetic
+# collectibles (the coral sink; S1 "▶ next offline successor"). Coral's analogue
+# of craft_pearl_bait, but the target is a cosmetic TREASURE item (a completionist
+# collection), not a bait. An inventory-only conversion: debit coral, grant the
+# curio, in ONE db.transaction() (Q-0071). Never a coin sink, never sellable.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CurioCraftResult:
+    """The outcome of a ``craft_curio`` attempt — a flag + a player-facing message."""
+
+    success: bool
+    message: str
+    #: The curio carved on success (``None`` on failure).
+    curio: curios_mod.Curio | None = None
+
+
+async def craft_curio(
+    user_id: int,
+    guild_id: int,
+    curio_key: str,
+) -> CurioCraftResult:
+    """Carve one *curio_key* from **coral** — the deepwater rare-material sink.
+
+    Coral drops only on a deepwater (boat) reel; this is its sole home — a
+    cosmetic carving collection (:mod:`utils.fishing.curios`). An inventory-only
+    conversion (no coins, no external call): debit the coral and grant the curio
+    item in ONE ``db.transaction()`` (Q-0071). The curio is a cosmetic
+    :class:`utils.mining.items.ItemKind` ``TREASURE`` — never sellable, no gameplay
+    effect; the reward is the collection. Crafting a curio you already own simply
+    adds another copy (harmless; the collection tally counts distinct curios).
+    """
+    curio = curios_mod.curio_by_key(curio_key)
+    if curio is None:
+        return CurioCraftResult(
+            False,
+            "That isn't a carvable curio — see `!curios` for the collection.",
+        )
+
+    inventory = await db.get_mining_inventory(str(user_id), guild_id)
+    have = inventory.get(CORAL_ITEM, 0)
+    if have < curio.coral_cost:
+        return CurioCraftResult(
+            False,
+            f"You need **{curio.coral_cost}** 🪸 coral to carve **{curio.name}** "
+            f"{curio.emoji} — you have **{have}**. Coral drops rarely when you reel "
+            "in a fish out in **deepwater** (`!sail` to the boat first).",
+        )
+
+    async with db.transaction() as conn:
+        await db.update_mining_item(
+            str(user_id),
+            guild_id,
+            CORAL_ITEM,
+            -curio.coral_cost,
+            conn=conn,
+        )
+        await db.update_mining_item(
+            str(user_id),
+            guild_id,
+            curio.item,
+            1,
+            conn=conn,
+        )
+
+    owned, total = curios_mod.collection_progress(
+        {**inventory, curio.item: inventory.get(curio.item, 0) + 1},
+    )
+    return CurioCraftResult(
+        True,
+        f"Carved **{curio.name}** {curio.emoji} from **{curio.coral_cost}** 🪸 "
+        f"coral — a cosmetic collectible for your shelf. "
+        f"Collection: **{owned}/{total}** curios.",
+        curio=curio,
     )
 
 

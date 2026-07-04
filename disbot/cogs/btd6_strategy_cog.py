@@ -18,6 +18,7 @@ import logging
 from discord.ext import commands
 
 from cogs.btd6 import _builders
+from core.runtime.permission_checks import perms_or_owner
 from views.btd6 import strategy_browse
 
 logger = logging.getLogger("bot.cogs.btd6_strategy")
@@ -108,7 +109,7 @@ class BTD6StrategyCog(commands.Cog):
         )
 
     @btd6strat_group.command(name="pending")  # type: ignore[arg-type]
-    @commands.has_guild_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def btd6_pending(self, ctx: commands.Context, limit: int = 5) -> None:
         """List pending strategy submissions with review buttons.
 

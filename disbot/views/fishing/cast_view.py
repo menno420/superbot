@@ -127,6 +127,14 @@ async def prepare_cast(
         # Equipped fishing gear is biasing this cast (rarer catches + quicker
         # bites) — its stats are already folded into the roll / bite speed.
         footer += " · 🎣 fishing gear"
+    if start.tide_pool_bonus:
+        # A built Tide Pool is nudging this cast toward rarer fish (its pull
+        # bonus is already folded into the roll).
+        footer += " · 🪸 tide pool"
+    if start.dock_bonus:
+        # A built Dock is speeding up the bite (its bite-speed bonus is already
+        # folded into effective_bite_speed).
+        footer += " · ⚓ dock"
     embed.set_footer(text=footer)
     return embed, view
 
@@ -422,6 +430,11 @@ class FishingCastView(discord.ui.View):
             desc += (
                 "\n🦪 **A pearl!** A rare crafting material — save them up to "
                 "craft the premium **Royal Feast** bait (`!craftpearl`)."
+            )
+        if result.coral_found:
+            desc += (
+                "\n🪸 **A piece of coral!** A rare deepwater find — carve it into "
+                "cosmetic curios for your collection (`!curios`)."
             )
         if result.unlocked_bigger:
             cap = max_size_rank_for_level(result.fishing_level, species.venue)

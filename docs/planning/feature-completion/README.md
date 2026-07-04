@@ -193,7 +193,11 @@ the punch-list (open gaps), evidence links (tests · walkthrough), and the curre
 - **Not the production-readiness maps.** Those are the *risk/hardening* axis (see the table up top).
   A unit needs both; this is the completeness ceiling, that is the safety floor.
 - **Not a new source of truth for the unit list.** The spine is the subsystem registry; this ledger
-  references it. (A registry↔ledger parity guard is a noted follow-up.)
+  references it. The **registry↔ledger parity guard**
+  (`python3.10 scripts/check_completion_ledger_parity.py --strict`) enforces this: every certifiable
+  registry subsystem (registry minus the documented routing-only / knowledge-domain exclusion set) has
+  exactly one ledger row + a `units/<key>.md` cert, and every cert maps to a live registry key (or the
+  documented non-registry `setup` exception).
 - **Not a hard freeze on new features.** Completion-first is a *soft* default; the owner greenlights
   new units freely.
 - **Not self-certifying.** No unit reaches `✔` without owner sign-off (Q-0209).

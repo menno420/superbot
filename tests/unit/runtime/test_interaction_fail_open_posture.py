@@ -16,7 +16,9 @@ import pytest
 from core.runtime import interaction_router, persistent_views
 
 
-def _fake_interaction(custom_id, *, guild_id=1, channel_id=2, user_id=10):
+def _fake_interaction(
+    custom_id, *, guild_id=1, channel_id=2, user_id=10, ephemeral=False
+):
     inter = MagicMock()
     inter.custom_id = custom_id
     inter.data = {"custom_id": custom_id}
@@ -30,6 +32,9 @@ def _fake_interaction(custom_id, *, guild_id=1, channel_id=2, user_id=10):
     inter.channel.category_id = None
     inter.message = MagicMock()
     inter.message.id = 555
+    # Explicit flags so the ephemeral short-circuit (private-message ownership) is
+    # tested deterministically — a bare MagicMock would make .flags.ephemeral truthy.
+    inter.message.flags = MagicMock(ephemeral=ephemeral)
     resp = MagicMock()
     resp.is_done.return_value = False
     resp.send_message = AsyncMock()
@@ -76,6 +81,24 @@ async def test_missing_anchor_fail_open_for_public_panel(monkeypatch):
     inter = _fake_interaction("test_public:x")
     assert await _PublicPanel().interaction_check(inter) is True
     inter.response.send_message.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_ephemeral_message_allowed_for_fail_closed_panel(monkeypatch):
+    """An ephemeral message is private to its opener — ownership is implicit, so a
+    fail-closed panel surfaced through an ephemeral help/nav path (e.g. /help →
+    Roles, which renders RoleHubPanelView) must NOT deny its own opener.
+
+    Regression for "This panel can no longer be verified — please re-open it."
+    """
+    from core.runtime import message_anchor_manager
+
+    spy = AsyncMock(return_value=None)
+    monkeypatch.setattr(message_anchor_manager, "get_by_message_id", spy)
+    inter = _fake_interaction("test_owner:x", ephemeral=True)
+    assert await _OwnerPanel().interaction_check(inter) is True
+    inter.response.send_message.assert_not_awaited()
+    spy.assert_not_awaited()  # ephemeral short-circuits before the anchor lookup
 
 
 @pytest.mark.asyncio

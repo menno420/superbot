@@ -47,6 +47,10 @@ _EXPECTED_DEFAULTS = {
     "leave_message": welcome_config.DEFAULT_LEAVE_MESSAGE,
     "entry_role": welcome_config.DEFAULT_ENTRY_ROLE,
     "card_enabled": welcome_config.DEFAULT_CARD_ENABLED,
+    "dm_enabled": welcome_config.DEFAULT_DM_ENABLED,
+    "dm_message": welcome_config.DEFAULT_DM_MESSAGE,
+    "min_account_age_days": welcome_config.DEFAULT_MIN_ACCOUNT_AGE_DAYS,
+    "delete_after_seconds": welcome_config.DEFAULT_DELETE_AFTER_SECONDS,
 }
 
 
@@ -103,9 +107,83 @@ def test_message_validator_rejects_empty_and_overlong():
         validator("x" * (welcome_config.MAX_MESSAGE_LENGTH + 1))
 
 
+def test_message_validator_accepts_multiple_variants():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    validator = {s.name: s for s in WELCOME_SETTINGS}["join_message"].validator
+    # Several "---"-separated variants are valid (random-greeting feature).
+    validator("Hi {user}\n---\nWelcome {user}\n---\nHey {user}")
+
+
+def test_message_validator_caps_variant_count():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    validator = {s.name: s for s in WELCOME_SETTINGS}["join_message"].validator
+    too_many = "\n---\n".join(
+        f"msg {i}" for i in range(welcome_config.MAX_MESSAGE_VARIANTS + 1)
+    )
+    with pytest.raises(ValueError):
+        validator(too_many)
+
+
+def test_message_validator_caps_each_variant_length():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    validator = {s.name: s for s in WELCOME_SETTINGS}["join_message"].validator
+    # The combined value is long, but each variant is within the per-variant
+    # cap → accepted (the cap is per variant, since only one renders at a time).
+    ok = "\n---\n".join(["x" * welcome_config.MAX_MESSAGE_LENGTH] * 3)
+    validator(ok)
+    # One over-long variant is still rejected.
+    bad = "fine\n---\n" + "x" * (welcome_config.MAX_MESSAGE_LENGTH + 1)
+    with pytest.raises(ValueError):
+        validator(bad)
+
+
 def test_bool_validator_guards_non_bool():
     from cogs.welcome.schemas import WELCOME_SETTINGS
 
     validator = {s.name: s for s in WELCOME_SETTINGS}["enabled"].validator
     with pytest.raises(ValueError):
         validator("yes")
+
+
+def test_min_account_age_validator_bounds_and_type():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    validator = {s.name: s for s in WELCOME_SETTINGS}["min_account_age_days"].validator
+    validator(0)  # disabled
+    validator(7)  # in range
+    validator(welcome_config.MAX_MIN_ACCOUNT_AGE_DAYS)  # boundary ok
+    with pytest.raises(ValueError):
+        validator(-1)  # below minimum
+    with pytest.raises(ValueError):
+        validator(welcome_config.MAX_MIN_ACCOUNT_AGE_DAYS + 1)  # above cap
+    with pytest.raises(ValueError):
+        validator(True)  # bool is not an int here
+    with pytest.raises(ValueError):
+        validator("7")  # str rejected
+
+
+def test_delete_after_validator_bounds_and_type():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    validator = {s.name: s for s in WELCOME_SETTINGS}["delete_after_seconds"].validator
+    validator(0)  # keep
+    validator(30)  # in range
+    validator(welcome_config.MAX_DELETE_AFTER_SECONDS)  # boundary ok
+    with pytest.raises(ValueError):
+        validator(-1)
+    with pytest.raises(ValueError):
+        validator(welcome_config.MAX_DELETE_AFTER_SECONDS + 1)
+    with pytest.raises(ValueError):
+        validator(True)
+
+
+def test_new_int_specs_carry_numeric_preset_hint():
+    from cogs.welcome.schemas import WELCOME_SETTINGS
+
+    by_name = {s.name: s for s in WELCOME_SETTINGS}
+    for name in ("min_account_age_days", "delete_after_seconds"):
+        assert by_name[name].input_hint == "numeric_presets"
+        assert by_name[name].presets and 0 in by_name[name].presets

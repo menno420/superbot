@@ -124,6 +124,16 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "what's the economy of round 95",
         "deterministic_round_economy_reply",
     ),
+    (
+        "list all the bloons from r29 till r63",
+        "deterministic_round_range_bloons_reply",
+    ),
+    # An economy cue over a range stays with the economy builder — the range-bloon
+    # roster defers whenever _ROUND_ECONOMY_CUE_RE matches (locks that boundary).
+    (
+        "what's the total rbe from rounds 29 to 63",
+        "deterministic_round_economy_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.

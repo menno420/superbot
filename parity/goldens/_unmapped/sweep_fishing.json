@@ -1,0 +1,220 @@
+{
+ "case_id": "sweep.fishing",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2028061309,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "<cid:1>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "🎣"
+          },
+          "label": "Cast",
+          "style": 3,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:2>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "⛵"
+          },
+          "label": "Set sail / Dock",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:3>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "🎒"
+          },
+          "label": "Rod",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:4>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "🪱"
+          },
+          "label": "Bait",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:5>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "🏗"
+          },
+          "label": "Structures",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "<cid:6>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "📖"
+          },
+          "label": "Fishdex",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "<cid:7>",
+          "disabled": false,
+          "emoji": {
+           "id": null,
+           "name": "📖"
+          },
+          "label": "How to fish",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "nav:help",
+          "disabled": false,
+          "label": "📚 Help",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "nav:hub:games",
+          "disabled": false,
+          "label": "↩ Games",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 10181046,
+        "description": "Cast a line to catch from **21** shoreline fish — or set sail for the **11** rare boat-only fish of the deep. Wait for the bite, reel it in, and fight the big ones; then level up and buy better rods.\n\n**🎣 Cast** — wait → bite → reel\n**⛵ Set sail** — shore ↔ deepwater\n**🎒 Rod** — view & upgrade your rod\n**🪱 Bait** — load a lure for rarer catches\n**🏗 Structures** — build coral structures\n**📖 Fishdex** — your collection",
+        "fields": [
+         {
+          "inline": false,
+          "name": "Fishing from",
+          "value": "🏖️ **Shore** — Relaxed casting from the shoreline."
+         },
+         {
+          "inline": false,
+          "name": "Today's forecast: 🌧️ Rain",
+          "value": "*Rain stirs the surface — the fish are biting fast today.* (faster bites)"
+         },
+         {
+          "inline": false,
+          "name": "Energy",
+          "value": "⚡ 60/60 [▰▰▰▰▰▰▰▰▰▰]"
+         }
+        ],
+        "flags": 0,
+        "title": "🎣 Fishing",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!fishing",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

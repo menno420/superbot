@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import discord
 
-from services.reaction_role_service import VALID_STYLES
+from services.reaction_role_service import VALID_MODES, VALID_STYLES
 from utils import role_menu_presentation as presentation
 from utils import role_menu_render
 
@@ -37,7 +37,23 @@ def test_templates_reference_valid_themes_and_styles():
     for tpl in templates:
         assert tpl.theme in theme_keys, f"{tpl.key} → unknown theme {tpl.theme!r}"
         assert tpl.style in VALID_STYLES, f"{tpl.key} → bad style {tpl.style!r}"
+        assert tpl.mode in VALID_MODES, f"{tpl.key} → bad mode {tpl.mode!r}"
         assert tpl.title and tpl.description
+
+
+def test_event_rsvp_template_is_a_counted_unique_button_poll():
+    """The RSVP starter pre-picks the multi-option live-poll config in one tap."""
+    rsvp = presentation.get_template("event_rsvp")
+    assert rsvp is not None
+    assert rsvp.style == "button"  # one button per option (Going / Maybe / …)
+    assert rsvp.mode == "unique"  # pick exactly one answer
+    assert rsvp.show_counts is True  # the live headcount is on by default
+
+
+def test_plain_templates_default_to_no_counter():
+    """Counts stay opt-in — only the RSVP starter turns them on."""
+    assert presentation.get_template("game_roles").show_counts is False
+    assert presentation.get_template("colour_roles").mode == "unique"
 
 
 def test_card_templates_are_non_empty_unique_and_renderable():

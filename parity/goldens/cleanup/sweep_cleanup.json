@@ -1,0 +1,176 @@
+{
+ "case_id": "sweep.cleanup",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1960422327,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "cleanup:words",
+          "disabled": false,
+          "label": "🔤 Prohibited Words",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "cleanup:logging",
+          "disabled": false,
+          "label": "📝 Logging Status",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "cleanup:settings",
+          "disabled": false,
+          "label": "⚙️ Settings",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "cleanup:policies",
+          "disabled": false,
+          "label": "🧹 Cleanup Policies",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "cleanup:refresh",
+          "disabled": false,
+          "label": "🔄 Refresh",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "nav:help",
+          "disabled": false,
+          "label": "📚 Help",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "nav:hub:moderation",
+          "disabled": false,
+          "label": "↩ Moderation",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15158332,
+        "description": "Auto-moderation policies for command-style messages and prohibited content. Per-channel behaviour is configured under **Cleanup Policies** below.",
+        "fields": [
+         {
+          "inline": true,
+          "name": "Prohibited Words",
+          "value": "_None configured_"
+         },
+         {
+          "inline": false,
+          "name": "Auto-Delete",
+          "value": "Invalid/failed command-style messages are removed per the channel's cleanup policy (set a channel to **Off** to exempt it). Prohibited-word matches are removed with a brief warning."
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Read-only summary. Use the buttons below to manage policies."
+        },
+        "title": "🧹 Cleanup Hub",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!cleanup",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "cleanup"
+}
