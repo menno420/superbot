@@ -10,7 +10,8 @@
 > **Consumes the FROZEN shared vocabulary — never redefines it:** the audit-row semantics (③
 > `emit_audit_action`, 11 fields, `audit_events.py:52` verified), the idempotency-key contract
 > (④ `IdempotencyKey`/`once`/`record_outcome`/`read_outcome` + `db.transaction()`), the error envelope
-> (① `from_exception`), `resolve_authority` scripted-bypass (②.3, `actor_type ∈ {system, backfill}`),
+> (① `from_exception` + the frozen background `Surface.MAINTENANCE` member, 02 §3.1), `resolve_authority`
+> scripted-bypass (②.3, `actor_type ∈ {system, backfill}`),
 > the config/settings rail (⑥, the 4th kernel rail), and the frozen ref-kinds (⑩ `refs.py`:
 > `ProviderRef` for a registered pure-read reader, `WorkflowRef` for an audited K7 mutation). It
 > **builds on** two written strand-2 siblings: the K7 workflow engine (`07-workflow-engine.md`) and the
@@ -297,6 +298,16 @@ async with db.transaction() as conn:                                 # the SWEEP
   `mutation_id` — never a silent DB edit. This is the deliberate improvement over the #1693 stopgap, which
   mutated without an idempotency key or an audit trail (§5 gap 1), and over 09's identical `compensation_ref`
   stance (a failed repair leaves the row **quarantined, not half-applied**).
+- **A repair exception's error envelope uses the frozen `Surface.MAINTENANCE` (① / PIN-4).** A sweep-repair
+  is a **headless background fire** — no interaction surface, no interaction `TargetRef`. When `run_ref`
+  raises, the sweep classifies the exception through the frozen envelope
+  `from_exception(exc, surface=Surface.MAINTENANCE, target=None)` (02 §3.1/§3.3), then quarantines the row
+  (never left half-applied). `MAINTENANCE` is the **single** background `Surface` member (02 §3.1) that both
+  09's scheduler-fires and 11's sweep-repairs classify under — **not** a local `scheduler`/`maintenance`
+  string. 02 widened `from_exception`'s `target` to `TargetRef | None` for exactly this headless case;
+  `surface`/`target` only enrich `user_message`, which a headless fire discards. This consumes 09's identical
+  §3.8 posture verbatim (`from_exception(exc, surface=Surface.MAINTENANCE, target=None)`) — one shared token,
+  no fork.
 
 **Soft-quarantine — evidence-preserving, never destroy.** For a `QUARANTINE_ONLY` row (or a REPAIRABLE
 row whose repair failed): snapshot the row's identity + full payload into **`sb_quarantine`**
@@ -446,7 +457,7 @@ sb_invariant_sweep_log (                     -- kernel-internal observability (N
 | 🔒 **Q1** | **Permanent runtime oracle vs one-time migration script.** *(the concern's first owner question)* | **(A)** permanent always-on sweep lane · **(B)** one-time verify-import script at cutover only · **(C)** permanent lane, **report-only by default** (`default_enforce=False`), with the cutover verify-import hard-checking the same invariants | **(C).** Corruption is *continuous*, not a cutover event (T-1…T-4 recur every deploy in steady state), so (B) re-inherits the FJ §4 #7 blindness the day after swap. (A)'s auto-repair is real mutation risk. (C) builds the permanent lane (≈one `PollLane` on infra 09 already owns), ships every invariant report-only (contained, reversible — mutates nothing), and flips individual invariants to auto-repair only as each check proves out. **Decide-able against the default; flagged for ratification because the concern marks it owner-gated.** | owner posture |
 | 🔒 **Q2** | **verify-import + verified-restore as HARD CUT gates vs advisory.** *(the concern's second owner question)* | **(A)** HARD on all invariants (safest; but one false-positive check blocks cutover — and CLAUDE.md warns checks can lie) · **(B)** advisory scoreboard line only (matches §5.4 "read-off"; but a missed line lets corrupt money rows become ground truth) · **(C)** **HARD on `bears_value` `RECONCILIATION`+`TERMINAL_ONCE`** invariants, **advisory** on the rest, with an **owner-signed quarantine-manifest override** (the §5.2 dry-run + SF-g signed-disposition pattern) | **(C).** A genuine owner-only call — the cutover data-loss-vs-blocking-risk tradeoff, near-irreversible either way (a bad cutover on corrupt money, or a blocked cutover on a false positive). Money/settle correctness hard-gates; everything else is advisory; the override keeps a real false-positive from stranding the program. **Options+recommendation only.** | owner call |
 | 🔒 **Q3** | **Repair DIRECTION for a value-bearing violation — which store is ground truth (the near-irreversible money call).** *(surfaced by the fence; never decided here)* | For `aggregate=500, ledger=480` on a value-bearing `RECONCILIATION`/`TERMINAL_ONCE`: **(A)** aggregate is ground truth ⇒ mint 20 ledger rows to match 500 (launders an unaudited mint into "audited") · **(B)** ledger is ground truth ⇒ claw the spendable aggregate down to 480 (destroys real player balance) · **(C)** neither auto-repairs — **`QUARANTINE_ONLY`**, owner signs each disposition | **(C) as the built default** — the fence (§2.3) makes a value-bearing repairable reconciliation **require** an explicit `ground_truth_store`, so absent an owner-signed direction such an invariant ships `QUARANTINE_ONLY` and never auto-mutates money. **The per-invariant direction (A vs B) is a genuine owner-only, near-irreversible call** and is set only when the owner declares `ground_truth_store`. **Options only — the money direction is decided nowhere in this dossier.** | owner call (money) |
-| 🔒 **Q4** | **`Surface` member for a sweep-repair's error classification (`from_exception` ①).** *(a vocab-freeze fork, not owned by 09 or 11)* | A repair/compensation exception has no natural interaction `Surface`; the frozen interaction `Surface` (RC-11) is `{SLASH, PREFIX, COMPONENT, MODAL, NL_INTENT, NL_ORCHESTRATION}` — neither `scheduler` nor `maintenance` is in it. **(A)** reuse **09's already-proposed `surface="scheduler"`** for sweep-repairs too (a sweep IS a scheduled background fire) — one token, no fork · **(B)** a broader `surface="maintenance"` covering scheduler fires *and* sweep repairs — a rename both siblings adopt | **(A) for v1 — reuse 09's `scheduler` token; do NOT introduce a competing second token.** Two written siblings must not answer the same open naming gap with different strings (that IS the drift the vocab exists to kill). `maintenance` (B) is a fine broader rename **iff** the vocab freezes it for *both* 09 and 11 at once; until then I ride 09's proposal. **Options+recommendation only — adding any `Surface` member touches the frozen vocab.** | vocab freeze |
+| ✅ **Q4 — RESOLVED** | **`Surface` member for a sweep-repair's error classification (`from_exception` ①).** *(was a vocab-freeze fork across 09/11; now frozen for both at once — PIN-4)* | The frozen interaction `Surface` (RC-11) is `{SLASH, PREFIX, COMPONENT, MODAL, NL_INTENT, NL_ORCHESTRATION}` — none fits a headless background fire, and the earlier draft weighed a per-sibling `scheduler` vs `maintenance` string (the fork the vocab exists to kill). | **DECIDED (PIN-4):** the `Surface` enum (spec 02 §3.1) gains **ONE** background member **`MAINTENANCE = "maintenance"`** covering scheduler fires (09) *and* invariant sweep-repairs (11); `from_exception`'s `target` widens to `TargetRef | None`; a headless fire calls `from_exception(exc, surface=Surface.MAINTENANCE, target=None)`, where `surface`/`target` only enrich `user_message` (a headless fire discards it). **Both 09 and 11 use `surface=Surface.MAINTENANCE`** — the single shared token, NOT the earlier `scheduler`/`maintenance` per-sibling string. Fork closed. | vocab freeze — CLOSED |
 | ▹ **Q5** | **Repair `actor_type` — reuse `backfill` vs a distinct `invariant_repair` actor.** | **(A)** reuse `backfill` (already in the frozen scripted-bypass set §②.3 — zero authority-surface change; distinguishes sweep-repairs from 09's `system` fires) · **(B)** add a reserved `actor_type="invariant_repair"` for finer forensic filterability (extends the §②.3 scripted set by one) | **(A) for v1** (zero change to K6 authority), with **(B) as an optional-additive forensic improvement** — a distinct actor makes "which mutations were sweep-driven?" a one-filter query. **Decide-able by design; flagged.** (B) touches the K6 scripted-bypass set → owner-gated if taken. | design default |
 
 ---
@@ -517,14 +528,17 @@ or the verify-import stage now.
    **repair guard** `{invariant_id}.repair:{row_id}:{fingerprint}`. Flagged so a builder does **not** read
    the list as closed. The contract shape is unchanged; only the site inventory grows. **No divergence — a
    completeness note on ④.2.**
-2. **`Surface` member for a sweep-repair — an UNRESOLVED shared naming fork (corrected).** `from_exception`
-   (①) takes `surface`; a repair/compensation exception has no natural interaction `Surface`, and neither
-   `scheduler` nor `maintenance` is in the frozen interaction `Surface` (RC-11). 09 proposed
-   `surface="scheduler"`. **This dossier does NOT introduce a competing `maintenance` token as if decided**
-   (the earlier draft's "consistent with 09" framing was wrong — a second token would *fork* the same open
-   gap). For v1 the sweep **reuses 09's proposed `surface="scheduler"`**; a broader `maintenance` rename is
-   a vocab-freeze call the vocab must make for *both* siblings at once (§4 Q4). **Presented as an open fork,
-   not decided.**
+2. **`Surface` member for a sweep-repair — RESOLVED at the vocab freeze (PIN-4).** `from_exception` (①)
+   takes `surface`; a repair/compensation exception has no natural *interaction* `Surface`, and the frozen
+   interaction `Surface` (RC-11) is `{SLASH, PREFIX, COMPONENT, MODAL, NL_INTENT, NL_ORCHESTRATION}` — the
+   earlier draft weighed a per-sibling `scheduler` vs `maintenance` string. **The fork is now closed at the
+   vocab:** the `Surface` enum (spec 02 §3.1) gains **ONE** background member **`MAINTENANCE = "maintenance"`**
+   that covers scheduler fires (09) *and* invariant sweep-repairs (11) — the single shared token both siblings
+   adopt at once, not a per-sibling string. `from_exception`'s `target` widens to `TargetRef | None`; a
+   headless sweep-repair fire calls `from_exception(exc, surface=Surface.MAINTENANCE, target=None)`, where
+   `surface`/`target` only enrich `user_message` (a headless fire discards it). **Both 09 (§3.8) and 11 (§2.2)
+   use `surface=Surface.MAINTENANCE`.** The earlier "open fork / reuse 09's `scheduler`" framing is
+   superseded by the frozen `MAINTENANCE` member — no divergence, no second token.
 3. **`run_ref` is OWNED by 07, not assumed (source-wins clarification).** 07 §3.2 (lines 221-232)
    **writes** `run_ref(ref, ctx, *, conn=None) -> WorkflowResult` as the external-conn entry, and 09 §4
    consumes it as "PROVIDED … the scheduler `_fire` target." My repair rides the **same** written seam.

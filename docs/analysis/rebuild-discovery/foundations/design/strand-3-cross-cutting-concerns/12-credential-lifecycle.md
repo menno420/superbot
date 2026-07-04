@@ -221,29 +221,84 @@ that is a **scheduled prompt**, not an operational dependency — routine work n
 
 | Tier | Credentials | Cadence mechanic | Owner touch |
 |---|---|---|---|
-| **Leaf** | provider keys · `CONTROL_API_TOKEN` · `DATABASE_PUBLIC_URL` · `SB_PROD_ATTEST` (`DATABASE_URL` = `MANAGED`, Railway rotates) | a **scheduled routine** (mirrors the reconciliation routine): re-issue via provider API → swap the store var → **read-back verify the POST-boot instance** → record `last_rotated_at` | **none** |
+| **Leaf** | provider keys · `CONTROL_API_TOKEN` · `DATABASE_PUBLIC_URL` · `SB_PROD_ATTEST` (`DATABASE_URL` = `MANAGED`, Railway rotates) | a **scheduled cadence routine** (mirrors the reconciliation routine) that only **detects** due (`check_rotation_due`) and **arms a DURABLE `OneShot` `ManagedTaskSpec` on 09's due-queue** (§2.B(1a)) — it does **not** swap inline. The durable one-shot runs the resumable re-issue → swap store var → **read-back verify the POST-boot instance** → `last_rotated_at`, so a crash mid-swap is boot-reconciled (below) | **none** |
 | **Root** | Railway account token · GitHub token | same routine **detects age** (past `cadence_days`) and **prompts** the owner (one platform step: re-provision the container secret) | **one scheduled prompt** (irreducible) |
 
-**Restart-safety (Q-0193 / shared-vocab §④/§⑤ — closes the exactly-once gap).** Swapping a **`WORKER_ENV`**
-credential is a Railway variable change, which **auto-redeploys the worker** — the same *deploy = restart*
-semantics as merge=deploy (Q-0193). Two consequences the mechanic must honor:
+**Restart-safety — WORKER_ENV rotation is a DURABLE due-queue one-shot, not an inline routine (Q-0193 /
+shared-vocab §④ + §⑤.1 item 3; 09 §3.7).** Swapping a **`WORKER_ENV`** credential is a Railway variable
+change, which **auto-redeploys the worker** — the same *deploy = restart* semantics as merge=deploy
+(Q-0193). A swap therefore **restarts the very process performing the swap**, mid-rotation. A *routine*
+fired on a cadence is **not** a durable timer and gets **no** boot-reconcile — that was the sweep gap: the
+earlier draft claimed "re-armed by boot-reconcile" for something the due-queue never persists (a routine is
+a producer, not a `sb_due_queue` row). So the rotation is split into a detector and a durable executor:
 
-- **Read-back verifies the post-boot instance, not the pre-swap one.** After the var swap the routine waits
-  for the new worker to report **`/ready` 200 (RUNNING)** (shared-vocab §⑤.3 / 05 §3.8 — never against a DB
-  the readiness gate would 503) and only then confirms the new credential serves. A synchronous "swap →
-  immediately read back" would test the dying instance.
-- **The rotation action is guarded `once(IdempotencyKey("credential.rotation", guild_id=0, dedup_token=f"{name}:{horizon_epoch}"))` inside `db.transaction()`** (shared-vocab §④), and re-armed by **boot-reconcile** (§⑤.3). So a rotation interrupted by the very redeploy it triggers does **not** re-issue a *second* credential on the retry after boot — the guard row records that this horizon's rotation already fired, and the post-boot reconcile completes the record/verify rather than minting again.
+**(1a) The cadence routine DETECTS; a durable one-shot EXECUTES — so boot-reconcile literally applies.**
+`check_rotation_due` (the scheduled routine, §2.B(1)) only *detects* a due `WORKER_ENV` credential and
+**arms a `TaskDurability.DURABLE` `OneShot` `ManagedTaskSpec` on 09's due-queue** —
+`arm_one_shot(rotation_spec, fire_at=now, payload={"name": name, "horizon_epoch": h})` (09 §3.7; the routine
+is the *producer*, exactly the producer-arms-one-shot path 09 §3.7 names). Being a **`DURABLE` `sb_due_queue`
+row** is what makes **09's `reconcile_on_boot` literally apply** (the correct cite — *not* a routine re-arm):
+a one-shot interrupted by the redeploy it triggers is left `pending`/overdue, and 09's boot-reconcile
+re-claims + re-fires it **after `/ready` 200 (RUNNING)** (vocab §⑤.1 item 3 — never against a DB the
+readiness gate would 503, 05 §3.8). This is the restart-safety the inline routine never actually had.
+
+**(1b) A distinguished externally-effecting one-shot — NOT a pure-DB `_fire_one` fire.** A vanilla due-queue
+fire is pure-DB and commits `once()` + effect + `record_outcome` + `mark_fired` in **one** txn (09 §3.4
+`atomic_db_only`, §3.7 `_fire_one`). Credential rotation cannot: its effect is **external** (a provider
+re-issue + a var-swap that restarts the worker), so it is **exempt** from the pure-DB scheduler-fire fence
+and does **not** ride `_fire_one`'s single-shared-txn commit-together guarantee. It rides only the
+due-queue's **durable timer + `reconcile_on_boot` + the deterministic `once()` key**, and runs its own
+**resumable, multi-txn protocol** over the rotation ledger. Its idempotency key is **horizon-stable, not
+timer-instance-stable**: `IdempotencyKey(namespace="credential.rotation", guild_id=0,
+dedup_token=f"{name}:{horizon_epoch}")` (**not** 09's default `task_id:fire_epoch`) — so a duplicate arm
+(e.g. both instances detect due during a deploy overlap) **and** a boot-reconcile re-fire **both resolve to
+the same guard row** and RESUME, never mint a second credential. The fire runs headless as `SYSTEM_ACTOR`
+(`actor_type="system"` ⇒ authority scripted-bypass, 09 §3.7 / PIN-3); any fire exception classifies through
+`from_exception(exc, surface=Surface.MAINTENANCE, target=None)` (09 §3.8 / PIN-4 — the one background
+`Surface`, no interaction target).
+
+**(1c) The intermediate ledger state — the issued-but-unverified recovery (closes the mid-flight `once()`
+gap).** Because the effect is external and the swap restarts the process **before** any single txn could
+commit `once()`+outcome together, the rotation ledger carries a per-`(name, horizon_epoch)` **`phase`**
+column — a small closed state machine committed across three txns:
+
+| `phase` | Committed when | Meaning |
+|---|---|---|
+| `RESERVED` | txn-1: `once(key)` inserts the guard row (outcome **NULL / pending**) **and** the ledger row, *before* any external call | we own this horizon; nothing issued yet |
+| `ISSUED_PENDING_VERIFY` | txn-2: after the provider re-issue succeeds and the store var is swapped — records the new credential's **non-secret identity / fingerprint** + `issued_at` (the secret value goes to the store var, never the ledger) | issued + swapped, not yet verified — the state the swap-redeploy leaves behind |
+| `VERIFIED` | txn-3 (post-boot): read-back against the `/ready`-200 instance confirms the new credential serves → sets `last_rotated_at`, `record_outcome(key, DONE)`, then `mark_fired`→DELETE the one-shot | terminal success |
+| `FAILED` | any phase, non-retryable | terminal; operator finding (09 §3.8 error routing) |
+
+**Re-run rule (makes the crash-retry well-defined instead of undefined).** When `reconcile_on_boot` / `tick`
+re-fires the still-pending one-shot after the swap-redeploy:
+
+- `once(key)` → **False** (the guard row committed at `RESERVED`) ⇒ do **not** re-enter as a fresh rotation.
+- `read_outcome(key)` → **outcome is `None` (pending)** — the vocab §④ *"reproduce … may be None if still
+  mid-flight"* case, which a pure-DB `_fire_one` never hits but this external fire is the *norm* for. So
+  instead of an **undefined** `_reproduce(None)`, the handler LOADS the ledger `phase` and RESUMES:
+  - `phase == ISSUED_PENDING_VERIFY` (the expected restart landing): the credential is already issued +
+    swapped ⇒ **skip re-issue**, run only the **read-back / verify** against the post-boot instance →
+    `VERIFIED` + `record_outcome(DONE)` + `last_rotated_at`. **This is the issued-but-unverified recovery —
+    the re-run *completes the verify*; it does not mint a second credential and is no longer undefined.**
+  - `phase == RESERVED` (crashed after the guard commit but before an issuance was confirmed): no confirmed
+    issuance ⇒ query the provider for an issuance already tagged with this horizon's `dedup_token` and adopt
+    it, else issue now → `ISSUED_PENDING_VERIFY` → verify. The Revoke step (§2.B(2)) kills any orphaned
+    partial copy, so no horizon ever leaves two live credentials.
+  - outcome already set (`phase == VERIFIED`) ⇒ reproduce / no-op → `mark_fired`.
 
 Non-`WORKER_ENV` rotations (GitHub Actions secret, account token, provider console) do **not** restart the
-worker; their read-back is a direct provider-API check with the same `once()` guard against double-issue.
+worker; they still arm a durable one-shot for uniform boot-reconcile, but their read-back is a
+**synchronous** direct provider-API check inside the same fire, guarded by the same horizon-stable `once()` —
+no `ISSUED_PENDING_VERIFY` resume is needed because no self-restart splits the fire.
 
 `scripts/check_rotation_due.py` (mirrors `check_reconciliation_due.py`) joins `CREDENTIAL_REGISTRY`'s static
 `cadence_days` against the rotation ledger's `last_rotated_at` (the routine writes it on each rotation —
 §2.B(3) Post-mortem; ledger home is the routine's saved state, analogous to the `Last reconciliation pass:
 #N` marker, durable-store wiring at CUT-1) and flags any row where `last_rotated_at + cadence_days < now`
 (or a never-rotated row older than `cadence_days` since first-seen). Rows with `cadence_days is None`
-(`MANAGED`/`ON_COMPROMISE`) are skipped — they have no our-side horizon. The routine acts on leaves and
-prompts on roots.
+(`MANAGED`/`ON_COMPROMISE`) are skipped — they have no our-side horizon. On a due leaf the routine **arms a
+DURABLE due-queue one-shot** (§2.B(1a), which carries the restart-safe execution + verify); on a due root it
+**prompts** the owner.
 
 **(2) Revocation kill-path — the carve-out that makes compromise-recovery autonomous (§4 CL-2):** the
 Q-0213 brake forbids `*Delete`/`*Restore` because they **lose data**. A **credential revoke loses no
@@ -263,7 +318,7 @@ c.blast, reverse=True)`.
 |---|---|---|
 | **Detect** | **live now (grounded):** the Railway **$15 soft usage alert** (verified live 2026-07-02 — anomalous spend) + the **deploy webhook to `#railway-alerts`** (verified live 2026-07-02 — unexpected deploy), both per `railway-setup-plan-2026-07-02.md` §Alerts + planning `README.md` + router Q-0213. **This-doc's addition:** `pip-audit` CI gate (§2.C) — known-CVE dep. **Owner-toggle (repo Settings, arm to complete Detect):** GitHub secret-scanning **push-protection** + Dependabot **security alerts** (both a Settings enable, dependabot.yml header) | live-passive · toggle = one owner action |
 | **Contain** | **per-credential — not a blanket claim.** `DATABASE_URL` (internal): the data-plane rail structurally caps it (can't open prod from a non-attested container, 05 §3.5) — *this* leaf is contained. **`DATABASE_PUBLIC_URL` (external proxy): NO structural containment** — C-3's uncapped read path — so recovery is **entirely** Rotate+Revoke, making it a **first-priority rotation target**. Account/control/spend leaves have no structural cap either — Rotate+Revoke is their only containment | structural only for the internal-DSN leaf; all others = Rotate+Revoke |
-| **Rotate** | re-issue the new credential (leaf: provider API; root: platform step) → swap into the store → for `WORKER_ENV`: await `/ready` 200, then **read-back verify the post-boot instance** (guarded by `once()`, §2.B(1)) | leaf: auto · root: prompt |
+| **Rotate** | `WORKER_ENV`: the **durable due-queue one-shot** (§2.B(1a–1c)) re-issues (leaf: provider API; root: platform step) → swaps the store var → on the swap-triggered redeploy, 09's `reconcile_on_boot` resumes at `ISSUED_PENDING_VERIFY` and **read-back verifies the post-boot instance** (`/ready` 200); the horizon-stable `once()` prevents double-issue. Non-`WORKER_ENV`: synchronous provider re-issue + read-back in-fire | leaf: auto · root: prompt |
 | **Revoke** | kill the leaked copy via `revocation_ref` (needs CL-2 carve-out for leaves) | leaf: auto (post-CL-2) |
 | **Post-mortem** | confirm prod healthy on new creds; write `last_rotated_at` + an entry to the credential-incident ledger (feeds `check_rotation_due`); if a supply-chain dep, remove/pin it + regenerate the lock (§2.C) | auto |
 
@@ -296,7 +351,7 @@ blocking live gate — a blocking gate would reintroduce the owner-dependency Q-
 |---|---|---|
 | `CredentialSpec` sibling leaf + `RotationPosture`/`RevocationRef`/`BlastTier`/`CredentialStore` + `CREDENTIAL_REGISTRY` | **new leaf `sb/spec/credentials.py`** (a §2.8-style sibling of `SecretSpec`; `SecretSpec`/§6.1 untouched) — Gate-0 grammar | a secret with no declared kill-path/horizon is unconstructible + CI-red |
 | `check_credential_lifecycle.py` (kill-path + cadence-consistency + config_ref completeness) | `tools/` CI gate (mirrors `check_metric_cardinality`, `check_data_lifecycle`) | required-check set; a registry entry missing/mismatched a field fails CI |
-| Rotation cadence + `check_rotation_due.py` + the rotation ledger (`last_rotated_at`) | a **scheduled routine** in `docs/operations/autonomous-routines.md` + the checker (mirrors the reconciliation routine); ledger = routine saved state, durable-store at CUT-1 | the routine fires on cadence; the checker joins `cadence_days`×`last_rotated_at` and flags overdue |
+| Rotation cadence (detect) + `check_rotation_due.py` + the **durable one-shot executor** + the rotation ledger (`last_rotated_at` + `phase`) | detect = a **scheduled routine** in `docs/operations/autonomous-routines.md` + the checker (mirrors the reconciliation routine); execute = a **`DURABLE` `OneShot` `ManagedTaskSpec` on 09's due-queue** (§2.B(1a–1c)); ledger (incl. the `RESERVED`/`ISSUED_PENDING_VERIFY`/`VERIFIED` `phase`) = routine saved state, durable-store at CUT-1 | the checker joins `cadence_days`×`last_rotated_at`, flags overdue, and **arms the one-shot**; 09's `reconcile_on_boot` re-fires a crash-interrupted swap; the `phase` column makes the outcome-pending re-run resume the verify, never double-issue |
 | Revocation carve-out (narrows the Q-0213 `*Delete` brake) | a **router DISCUSS Q** → once decided, the runbook + the routine's saved prompt | Q-0213 is a binding owner decision; the narrowing ships with its provenance Q |
 | Compromise-recovery runbook (blast-ordered triage + 5-step procedure) | **new ops doc `docs/operations/credential-lifecycle.md`** + cross-ref from `production-deployment.md` §Backups (which already homes the DR runbook) | it is the routine's saved procedure; the routine can't run without it |
 | Lockfile + `check_lockfile_fresh` + `pip-audit` | the new repo's `requirements.lock` + `.github/workflows` gate + `tools/check_lockfile_fresh.py` — Gate-0 | a non-fresh / vuln lock is CI-red before deploy |
@@ -346,7 +401,7 @@ credential lifecycle as a **sibling leaf**, the ⑪ discipline).
 
 | Deferral | Reason | Bound |
 |---|---|---|
-| The rotation **execution wiring** (concrete Railway/provider/Discord API calls + read-back) + the durable **rotation-ledger store** (`last_rotated_at`) | The *grammar* + *cadence posture* + *runbook* + the `once()`/boot-reconcile guard are designed here; the concrete API integration + durable ledger table are ops build, same tier as SF-d custody | **CUT-1** ops setup |
+| The rotation **execution wiring** (concrete Railway/provider/Discord API calls + read-back) + the durable **rotation-ledger table** (`last_rotated_at` + `phase`) | The *grammar* + *cadence posture* + *runbook* + the **durable-one-shot arming on 09's due-queue**, the **`RESERVED`/`ISSUED_PENDING_VERIFY`/`VERIFIED` phase state machine**, and the **horizon-stable `once()` + outcome-pending resume rule** are all designed here (§2.B(1a–1c)); only the concrete provider/Railway API bindings + the physical ledger table are ops build, same tier as SF-d custody | **CUT-1** ops setup |
 | `RevocationRef` **token → concrete API dispatch** map | The closed *vocabulary* is frozen now (so the gate validates membership); binding each token to its provider call is ops wiring | CUT-1 (with the rotation wiring) |
 | The compromise **detection anomaly-model** beyond the live/toggle signals (usage alert + deploy webhook live; secret-scanning + Dependabot alerts = owner-toggle) | A richer anomaly model (e.g. per-key spend baselining) is ops observability, not a foundational rail | ops observability (bounded) |
 | **FJ §4 #11** — prod-data copies in agent containers (restored snapshots, LLM-judge replays) retention/erasure | Distinct concern (data-subject erasure, not credential rotation); it is concern ⑩'s **class-12 R-2** probe + a Gate-0/CUT fix. *Note:* #10 and #11 share the same Q-0213 container, so the recovery arm's detection **helps**, but erasure is #11's home | Gate-0 / CUT-2 (concern ⑩ / ⑪) |
@@ -362,9 +417,13 @@ its owning phase within the corpus.
 
 *Authored 2026-07-04 for the strand-3 cross-cutting concerns; revised same day to close the design-critic
 findings (sibling-leaf grammar, disjoint registry, closed `RevocationRef`/`BlastTier`, `cadence_days`
-horizon + `check_rotation_due` join, `once()`/boot-reconcile restart-safety, per-credential Contain, L-21
+horizon + `check_rotation_due` join, per-credential Contain, L-21
 mis-cite removed, Detect signals grounded/toggle-split, `BOT_OWNER_USER_ID` excluded, SF-d custody carried
-forward as CL-5b). Consumes `shared-vocabulary.md` (⑥ config/secret grammar; §④/§⑤ idempotency+restart) +
+forward as CL-5b); reconciled same day against the strand seam-pass — WORKER_ENV rotation re-based from an
+inline routine onto a **DURABLE `OneShot` `ManagedTaskSpec` on 09's due-queue** so 09's `reconcile_on_boot`
+(vocab §⑤.1 item 3) *literally* applies, with a `RESERVED`/`ISSUED_PENDING_VERIFY`/`VERIFIED` ledger `phase`
++ horizon-stable `once()` giving the issued-but-unverified re-run a defined resume (was the mid-flight
+`once()`-pending gap), and the `§⑤.3` boot-reconcile mis-cite corrected. Consumes `shared-vocabulary.md` (⑥ config/secret grammar; §④/§⑤ idempotency+restart) +
 spec 05 (§3.1/§3.2/§3.5/§6.3) + concern ⑩ (class-13 N-1/N-2, `check_data_lifecycle`) + concern ⑪
 (sibling-leaf discipline). Spot-verified this session against shipped source / frozen decisions:
 `requirements.txt` (12 deps, 7 open `>=`, no lockfile), `.github/workflows/backup-db.yml:7`

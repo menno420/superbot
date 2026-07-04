@@ -26,11 +26,14 @@ declares a **CompoundOpSpec** (ordered **LegSpec**s + one `authority_ref` + a de
 posture + one central audit verb); the engine runs the DB legs inside **one** `db.transaction()`,
 writes **one central audit row** keyed by `mutation_id`, runs external/Discord legs *after* commit,
 and returns a **`WorkflowResult`** (the design superset of `LifecycleResult`, §0). It exposes **three
-co-designed entries over one internal core** (§3.2) so all three named consumers reach it through the
-seam they need: `run()` (self-owned txn — the resolver `INVOKE_WORKFLOW` target, verified
-`02-resolver-error-envelope.md:218`), `run_ref(ref, ctx, *, conn=…)` (the scheduler's external-conn fire,
-`09-scheduler-state.md:299`), and `apply(op, *, conn)` (the draft pipeline's external-conn batch apply,
-`06-draft-pipeline.md:281,339`).
+co-designed entries over one internal core** (§3.2) so every named consumer reaches it through the
+seam it needs: `run()` (self-owned txn — the resolver `INVOKE_WORKFLOW` target, verified
+`02-resolver-error-envelope.md:218`, **and the draft pipeline's per-op entry** — the draft resolves each
+`DraftOperation` → `CompoundOpSpec` and calls `run()` **per op**, each in its OWN txn,
+`06-draft-pipeline.md:451-466`), `run_ref(ref, ctx, *, conn=…)` (the external-conn fire for the scheduler's
+`ManagedTaskSpec.handler`, the invariant `repair_refs`, and version `compensation_refs`,
+`09-scheduler-state.md:389,491`), and `apply(op, *, conn)` (the op-kind → spec external-conn **sibling** of
+`run_ref`, declared per 06's expectation — **NOT** the draft's live entry).
 
 **Already designed (anti-pad — I do not re-derive these):**
 - `WorkflowResult` / `MutationPreview` / `ConfirmationSpec` **field sets are fully specified** in
@@ -229,11 +232,16 @@ async def run_ref(ref: "WorkflowRef", ctx: WorkflowContext, *,
 #   Resolves ref→spec (registry). conn is None ⇒ delegates to run(spec, ctx). conn provided ⇒
 #   EXTERNAL-CONN mode: runs the DB legs + central audit + AT_LEAST_ONCE enqueue on the CALLER's conn,
 #   opens NO txn, calls NO once()/record_outcome (caller owns dedup), runs NO EFFECT/BEST_EFFORT
-#   (caller owns commit). The scheduler _fire target (09:299).
+#   (caller owns commit). The external-conn fire for the scheduler ManagedTaskSpec.handler (09:389,491),
+#   the invariant repair_refs, and version compensation_refs (09:228). NOT the draft entry — the draft
+#   runs each DraftOperation through run() per-op (06 §3.5).
 
 async def apply(op: "DraftOperation", *, conn: "Connection") -> WorkflowResult: ...
-#   Maps op.op_kind→CompoundOpSpec (registry.resolve_op_kind), then behaves as run_ref EXTERNAL-CONN
-#   mode on the caller's conn. The draft-pipeline per-op apply (06 §3.5 step 4).
+#   The op_kind→spec external-conn SIBLING of run_ref: maps op.op_kind→CompoundOpSpec
+#   (registry.resolve_op_kind), then behaves as run_ref EXTERNAL-CONN mode on the caller's conn. Declared
+#   per 06's expectation (06:25-28) and atomic_db_only-fenced identically to run_ref. NOT the draft's live
+#   entry — the draft resolves each DraftOperation → CompoundOpSpec and calls run(spec, ctx) PER-OP (own
+#   txn per op, 06 §3.5); apply stays for op-kind external-conn dispatch.
 
 async def preview(target: "WorkflowRef | CompoundOpSpec", ctx: WorkflowContext) -> MutationPreview: ...
 #   == run(target, ctx, dry_run=True), projected to MutationPreview (§3.5).
@@ -244,15 +252,20 @@ differ on **who owns the txn and the dedup guard**:
 
 | Entry | Owns the txn? | Owns `once()`? | Runs EFFECT legs? | Consumer |
 |---|---|---|---|---|
-| `run()` | **engine** (`db.transaction()`) | **engine** (namespace=`op_key`) | yes (post-commit) | resolver `INVOKE_WORKFLOW` (02 step 5); standalone/canary |
-| `run_ref(conn=…)` | **caller** | **caller** (scheduler namespace `task_key`) | no — pure-DB + AT_LEAST_ONCE emits only (`atomic_db_only`) | scheduler `_fire` (09:299) |
-| `apply(op, conn)` | **caller** | **caller** (draft namespace `draft.apply`) | no — pure-DB + AT_LEAST_ONCE emits only | draft `apply_draft` (06 §3.5) |
+| `run()` | **engine** (`db.transaction()`) | **engine** (namespace=`op_key`) | yes (post-commit) | resolver `INVOKE_WORKFLOW` (02 step 5); **the draft's per-op apply** (06 §3.5 — each `DraftOperation` → its `run()` txn); standalone/canary |
+| `run_ref(conn=…)` | **caller** | **caller** (caller's namespace, e.g. scheduler `task_key`) | no — pure-DB + AT_LEAST_ONCE emits only (`atomic_db_only`) | scheduler `_fire` (09:389); invariant `repair_refs`; version `compensation_refs` (09:228) |
+| `apply(op, conn)` | **caller** | **caller** (caller's namespace) | no — pure-DB + AT_LEAST_ONCE emits only | the op-kind → spec external-conn **sibling** of `run_ref` (declared per 06; **not** the draft's live entry) |
 
-The external-conn entries deliberately do **not** open a txn or call `once()`: the scheduler/draft own a
-single `db.transaction()` across N ops so the whole batch is atomic (the T2-1 fix, §8 fork A) and own the
-guard row under their own namespace (avoiding a double-`once()`). This is exactly what
-`06-draft-pipeline.md:281,339` and `09-scheduler-state.md:299,339` consume; the earlier single-entry
-`run(spec, ctx)` (self-txn only) was structurally incompatible with both — resolved here.
+The external-conn entries deliberately do **not** open a txn or call `once()`: the caller (the scheduler's
+fire txn; the invariant/version repair-compensation txn) owns a single `db.transaction()` around the
+`run_ref` call and owns the guard row under its own namespace (avoiding a double-`once()`). This is exactly
+what `09-scheduler-state.md:389,491` (the `_fire` target) and `09`'s version-reject compensation (`:228`)
+consume. **The draft pipeline is NOT an external-conn caller** — it resolves each `DraftOperation` →
+`CompoundOpSpec` and calls `run(spec, ctx)` **per op** (own txn per op, `06-draft-pipeline.md:451-466`),
+because draft resource-create ops carry a post-commit Discord EFFECT leg that the `atomic_db_only` fence
+excludes from the external-conn path. The earlier single-entry `run(spec, ctx)` (self-txn only) was
+structurally incompatible with the scheduler's external `conn` — resolved by `run_ref`; the draft, by
+contrast, resolves to `run()` per-op (F-2 resolved by caller type, §8 fork A).
 
 **Dispatch-dedup co-ownership (no double-`once()`).** For `INVOKE_WORKFLOW`, the engine's `run()`
 `once()` (namespace=`op_key`) **is** the workflow-lane dispatch dedup (vocab §④.2) — the resolver
@@ -267,9 +280,9 @@ namespace. One guard row per invocation.
 |---|---|---|
 | 0 | **empty-state** | if `spec.empty_result` and its predicate holds ⇒ return `WorkflowResult(outcome=SUCCESS, steps=(), committed_at=None, user_message=empty.user_message)`. **No txn, no audit, no dedup.** (farm-collect's `eggs<=0`.) |
 | 1 | **authority** | `d = await resolve_authority(AuthorityRequest(spec.authority_ref, actor…))`; `not d.allowed` ⇒ `WorkflowResult(outcome=BLOCKED, reason=AUTHORITY, user_message=d.denial_message)`. **Return.** |
-| 2 | **confirm backstop** | keyed on **presence, not reversibility** (matches resolver 02 step 5 + design §2.7): `if spec.confirmation is not None and not ctx.confirmed:` raise `ConfirmRequired`. On the **resolver path** the resolver's own step-5 confirm gate fires *before* dispatch, so `run()` never actually sees an unconfirmed confirm-bearing op — step 2 is the **backstop for headless callers**. `ConfirmRequired` is a **typed control signal, NOT a `from_exception` input** (vocab §①.2): a headless caller (scheduler/draft, no confirm round-trip) catches it in `_execute`'s wrapper and maps it to `WorkflowResult(outcome=BLOCKED, reason=CONFIRM_DECLINED, user_message="This action needs interactive confirmation and can't run unattended.")`. (A compile fence additionally forbids a `confirmation`-bearing spec from being a scheduler `handler` or a draft `op_kind` — §3.6.) |
+| 2 | **confirm backstop** | keyed on **presence, not reversibility** (matches resolver 02 step 5 + design §2.7): `if spec.confirmation is not None and not ctx.confirmed:` raise `ConfirmRequired`. On the **resolver path** the resolver's own step-5 confirm gate fires *before* dispatch, so `run()` never actually sees an unconfirmed confirm-bearing op — step 2 is the **backstop for headless callers**. `ConfirmRequired` is a **typed control signal, NOT a `from_exception` input** (vocab §①.2): a headless caller (scheduler/draft, no confirm round-trip) catches it in `_execute`'s wrapper and maps it to `WorkflowResult(outcome=BLOCKED, reason=CONFIRM_DECLINED, user_message="This action needs interactive confirmation and can't run unattended.")`. (A compile fence additionally forbids a `confirmation`-bearing spec from being an **external-conn** caller — a scheduler `ManagedTaskSpec.handler` / invariant `repair_ref` / version `compensation_ref` — §3.6; a **draft** `op_kind` MAY carry a `confirmation` because the draft runs it through `run()` per-op, which honors this confirm gate.) |
 | 3 | **mint + key** | `mutation_id = uuid4()`. `DURABLE_ONCE` ⇒ `key = IdempotencyKey(namespace=op_key, guild_id, dedup_token=spec.dedup_key.render(ctx))`. `SINGLE_FLIGHT` ⇒ acquire the in-process lock keyed by `spec.single_flight_scope` (released in `finally`). |
-| 4 | **txn** | `async with db.transaction() as conn:` (K3). **a) guard** — `DURABLE_ONCE`: `if not await once(key, conn=conn): return _reproduce(await read_outcome(key, conn=conn))` (§3.7 — the no-op replay; may block on the guard row until the first txn commits, then reproduces; never double-effects). **b) DB legs** — run in order, `conn`-bound, collecting `LegOutcome`s. A **required** DB leg raising is caught in-txn, classified via `from_exception` (02) to an `ErrorEnvelope`, and the txn is aborted by re-raising an internal `_AbortTxn(envelope)` sentinel — the outer wrapper **catches it and RETURNS** `WorkflowResult(outcome=envelope.outcome, reason=envelope.reason, user_message=envelope.user_message)` (BLOCKED for user_error/denied/bug, DISCORD_FAILED for transient). **`run()` does not re-raise classified failures** (the error-return contract, §3.3-note). An **optional** DB leg raising ⇒ record `step.ok=False`, continue, op → PARTIAL. **c) build pending result** — assemble the in-txn `pending = WorkflowResult(mutation_id, …, outcome=so-far, before, after, steps, committed_at=None)` so `payload_builder(ctx, pending)` has every field it may read (the ordering fix — the final result at step 7 only *adds* `committed_at` + effect-leg outcomes). **d) central audit** (§3.4) — the `audit_log` DB row + the durable `enqueue_audit_action(conn, …)` bus trace, both in-txn. **e) AT_LEAST_ONCE emits** — `batch = await outbox.enqueue_all(spec.emits, ctx, pending, conn=conn)`: each `AT_LEAST_ONCE` emit is written as an outbox row **now** (in-txn); each `BEST_EFFORT` emit is appended to the returned `BestEffortBatch` for post-commit (§3.4). **f) record** — `DURABLE_ONCE`: `await record_outcome(key, outcome, result_ref=mutation_id, conn=conn)`. **g) dry_run** ⇒ raise `_DryRunRollback` (nothing persists; §3.5). |
+| 4 | **txn** | `async with db.transaction() as conn:` (K3). **a) guard** — `DURABLE_ONCE`: `if not await once(key, conn=conn): return _reproduce(await read_outcome(key, conn=conn))` (§3.7 — the no-op replay; may block on the guard row until the first txn commits, then reproduces; never double-effects). **b) DB legs** — run in order, `conn`-bound, collecting `LegOutcome`s. A **required** DB leg raising is caught in-txn, classified via **`from_exception(exc, surface=Surface.MAINTENANCE, target=None)`** (02) to an `ErrorEnvelope`, and the txn is aborted by re-raising an internal `_AbortTxn(envelope)` sentinel — the outer wrapper **catches it and RETURNS** `WorkflowResult(outcome=envelope.outcome, reason=envelope.reason, user_message=envelope.user_message)` (BLOCKED for user_error/denied/bug, DISCORD_FAILED for transient). **The `MAINTENANCE`/`None` inputs are the buildable K7 error path (PIN-4):** 02 adds the `Surface.MAINTENANCE` background member and widens `from_exception`'s `target` to `TargetRef | None`, and K7 is the surface-agnostic composition layer holding **no** interaction `TargetRef`, so it classifies under the ONE background surface with `target=None`. Because `surface`/`target` only enrich `user_message` while the classifier core (`error_class`→outcome/reason) is surface/target-independent (02 §3.3), `MAINTENANCE`/`None` yields the class's canonical copy verbatim; on the interactive resolver path the resolver's own step-5 `from_exception` (with the real surface/target) renders the user-facing copy, so K7's generic copy is only surfaced on a headless (scheduler / invariant-repair) leg failure. `Surface` is imported from `sb/kernel/interaction/request.py` (02 §2). **`run()` does not re-raise classified failures** (the error-return contract, §3.3-note). An **optional** DB leg raising ⇒ record `step.ok=False`, continue, op → PARTIAL. **c) build pending result** — assemble the in-txn `pending = WorkflowResult(mutation_id, …, outcome=so-far, before, after, steps, committed_at=None)` so `payload_builder(ctx, pending)` has every field it may read (the ordering fix — the final result at step 7 only *adds* `committed_at` + effect-leg outcomes). **d) central audit** (§3.4) — the `audit_log` DB row + the durable `enqueue_audit_action(conn, …)` bus trace, both in-txn. **e) AT_LEAST_ONCE emits** — `batch = await outbox.enqueue_all(spec.emits, ctx, pending, conn=conn)`: each `AT_LEAST_ONCE` emit is written as an outbox row **now** (in-txn); each `BEST_EFFORT` emit is appended to the returned `BestEffortBatch` for post-commit (§3.4). **f) record** — `DURABLE_ONCE`: `await record_outcome(key, outcome, result_ref=mutation_id, conn=conn)`. **g) dry_run** ⇒ raise `_DryRunRollback` (nothing persists; §3.5). |
 | 5 | **effect legs** (post-commit) | run **EFFECT legs** (`conn=None`). Fail + `COMPENSATABLE` ⇒ run `compensator`, op → PARTIAL; fail + `IRREVERSIBLE` ⇒ record an operator finding, op → PARTIAL/DISCORD_FAILED. (Skipped entirely under `dry_run`.) |
 | 6 | **best-effort emit** (post-commit) | `await batch.emit_after_commit()` — `bus.emit`s the `BEST_EFFORT` events captured at step 4e. (Skipped under `dry_run`.) |
 | 7 | **return** | finalize the step-4c `pending` with `committed_at`, effect-leg outcomes, `audit_emitted`, `event_emitted`, warnings. The **authoritative field list is design §2.7's** `WorkflowResult` (superset of `LifecycleResult`: `{mutation_id, guild_id, domain, operation=op_key, outcome, reversibility, steps, lane, before, after, committed_at, audit_emitted, event_emitted, cache_invalidated, source, warnings, user_message}`). |
@@ -277,19 +290,20 @@ namespace. One guard row per invocation.
 **Error-return contract (closes the raise-vs-return divergence).** `run()`/`run_ref()`/`apply()`
 **catch every *classified* leg failure, roll the txn back, and RETURN a `WorkflowResult`** on the frozen
 five outcomes — they never propagate a classified error to the caller. This is exactly what the draft
-(`06:316` — "engine.apply failure → classified → per-op `WorkflowResult` → draft PARTIAL") consumes: the
-per-op loop keeps going. The resolver's step-5 "exceptions → `from_exception`" path (02) is therefore
+(`06 §3.5` — each per-op `engine.run(spec, ctx)` failure → classified → per-op `WorkflowResult` → draft
+PARTIAL) consumes: the per-op loop keeps going. The resolver's step-5 "exceptions → `from_exception`" path (02) is therefore
 reserved for a **truly-unexpected escape** (an engine-internal bug that is not a leg failure) — the two
 consumers are now consistent.
 
 **External-conn variant (`run_ref(conn=…)` / `apply`).** Same steps **0–4e** on the **caller's** `conn`,
 with two differences: step 4a is **skipped** (the caller already ran `once()` under its namespace before
-calling — 06 step 4 / 09 `_fire`) and step 4f is **skipped** (the caller owns `record_outcome`). Steps 5
-and 6 are **not run** — the caller owns commit, so EFFECT legs and `BEST_EFFORT` emits have no post-commit
-home; the `atomic_db_only` fence (§3.6) guarantees an external-conn spec is pure-DB with `AT_LEAST_ONCE`
-(in-txn, durable) emits only. The returned `WorkflowResult` is the step-4c pending finalized with
-`committed_at=None` (the caller's commit stamps durability); `mutation_id` is present for the caller's
-`record_outcome(result_ref=result.mutation_id)`.
+calling — 09 `_fire` (`:389`) / the invariant-repair / version-compensation callers (`:228`)) and step 4f
+is **skipped** (the caller owns `record_outcome`). Steps 5 and 6 are **not run** — the caller owns commit,
+so EFFECT legs and `BEST_EFFORT` emits have no post-commit home; the `atomic_db_only` fence (§3.6)
+guarantees an external-conn spec is pure-DB with `AT_LEAST_ONCE` (in-txn, durable) emits only. The returned
+`WorkflowResult` is the step-4c pending finalized with `committed_at=None` (the caller's commit stamps
+durability); `mutation_id` is present for the caller's `record_outcome(result_ref=result.mutation_id)`.
+(The draft pipeline does **not** use this variant — it calls `run()` per-op, §3.2.)
 
 ### 3.4 The central audit row (completes vocab §③.3; closes the L-9 central-trace gap)
 
@@ -335,16 +349,23 @@ byte-identical and zero Discord/effect calls fired — the Gate-V acceptance ass
 - **`audit_completeness`** — a spec with `effect="mutating"` MUST carry a `WorkflowRef` (= a
   `CompoundOpSpec`), else `SEMANTIC_VIOLATION` → CI-red (vocab §③.4). Also derives + freezes
   `op.reversibility = max(leg reversibilities)` and asserts `IRREVERSIBLE ⇒ confirmation is not None`.
-- **`atomic_db_only`** — the predicate the external-conn seam relies on. For **every `CompoundOpSpec`
-  reachable as a scheduler `ManagedTaskSpec.handler` `WorkflowRef` or a draft `op_kind` mapping** (the
-  external-conn callers), assert: **(1)** every leg is `kind==DB` (no `EFFECT` legs — the caller owns
-  commit, so no post-commit leg can run); **(2)** every DB-leg handler's import closure touches only
-  `utils.db.*` + the domain `*_mutation.py` seams — **no** `discord`, `aiohttp`, `EventBus.emit`, or other
-  external I/O inside a DB leg (an AST import-closure check); **(3)** every `emit` is `AT_LEAST_ONCE` (or
-  absent) — no `BEST_EFFORT` emit on the external-conn path (it would have no post-commit home); **(4)**
-  `confirmation is None` (a headless external-conn spec cannot round-trip a confirm). Any violation is
-  `SEMANTIC_VIOLATION` → CI-red. Ops invoked **only** via `run()` (the resolver lane) are unconstrained —
-  they may carry EFFECT legs, BEST_EFFORT emits, and confirmations.
+- **`atomic_db_only`** — the predicate the external-conn seam relies on. Its scope is the **external-conn
+  `run_ref`/`apply` callers ONLY**: **every `CompoundOpSpec` reachable as a scheduler
+  `ManagedTaskSpec.handler` `WorkflowRef`, an invariant `repair_ref`, or a version `compensation_ref`** —
+  **NOT** a draft `op_kind` mapping (draft ops route through `run()` per-op, the unconstrained
+  EFFECT-legs-allowed lane, §3.2). For every in-scope spec, assert: **(1)** every leg is `kind==DB` (no
+  `EFFECT` legs — the caller owns commit, so no post-commit leg can run); **(2)** every DB-leg handler's
+  import closure touches only `utils.db.*` + the domain `*_mutation.py` seams — **no** `discord`,
+  `aiohttp`, `EventBus.emit`, or other external I/O inside a DB leg (an AST import-closure check); **(3)**
+  every `emit` is `AT_LEAST_ONCE` (or absent) — no `BEST_EFFORT` emit on the external-conn path (it would
+  have no post-commit home); **(4)** `confirmation is None` (a headless external-conn spec cannot
+  round-trip a confirm). Any violation is `SEMANTIC_VIOLATION` → CI-red. Ops invoked via `run()` — **the
+  resolver lane AND the draft's per-op apply** — are unconstrained: they may carry EFFECT legs,
+  BEST_EFFORT emits, and confirmations. **This scoping is load-bearing (PIN-2 / F-2):** the flagship
+  10-channel resource-create draft carries a post-commit Discord `create_channel` EFFECT leg per op — were
+  `atomic_db_only` to reach draft `op_kind` specs it would reject every such op as CI-red (an `EFFECT` leg
+  on the external-conn path). So the draft *must* run each op through `run()` per-op (EFFECT legs allowed),
+  and the fence *must not* scope to the draft.
 
 ### 3.7 `_reproduce(PriorOutcome)` — the deduped-replay result
 
@@ -372,9 +393,9 @@ then reproduces — never a partial replay.)
 | Shape | Consumer |
 |---|---|
 | `LegSpec` · `CompoundOpSpec` · `IdempotencyPosture` · `DedupKeySpec` · `WorkflowRegistry` | every mutating domain (Phase 4); the compiler fences |
-| `run()` (the `INVOKE_WORKFLOW` target) | resolver 02 step 5; the panel engine (renders `preview()`) |
-| `run_ref(ref, ctx, *, conn)` (external-conn fire) | the scheduler `_fire` (09:299) — runs the leg set in the scheduler's own txn under the scheduler's `once()` |
-| `apply(op, *, conn)` (external-conn batch apply) | the draft pipeline ④ (`apply_draft` step 4 — N pure-DB ops in ONE `db.transaction()` under the draft's `once()`) |
+| `run()` (the `INVOKE_WORKFLOW` target + the draft's per-op entry) | resolver 02 step 5; **the draft pipeline ④** — `apply_draft` resolves each `DraftOperation` → `CompoundOpSpec` and calls `run(spec, ctx)` **per-op** (own txn per op; 06 §3.5); the panel engine (renders `preview()`) |
+| `run_ref(ref, ctx, *, conn)` (external-conn fire) | the scheduler `_fire` (09:389) — runs the leg set in the scheduler's own txn under the scheduler's `once()`; the invariant `repair_refs` / version `compensation_refs` (09:228) |
+| `apply(op, *, conn)` (external-conn op-kind sibling of `run_ref`) | declared per 06's expectation (06:25-28) for op-kind external-conn dispatch; `atomic_db_only`-fenced identically to `run_ref` — **NOT** the draft's live entry (the draft uses `run()` per-op) |
 | `preview()` | the draft's per-op `preview` (06 §3.4); the panel confirm renderer |
 | the central-audit-row contract (one row + one durable bus event per op, `mutation_id`, legs as detail) | `server_logging._on_audit_action`; the operator audit log |
 | `WorkflowResult` (landed here) | resolver `Result.workflow`; the golden harness ("new-as-old") |
@@ -385,13 +406,13 @@ then reproduces — never a partial replay.)
 |---|---|---|
 | `IdempotencyKey`, `once`/`record_outcome`/`read_outcome`, `db.transaction()`, `idempotency_keys` | **K3 / spec 05** | `once(key,*,conn)->bool` (INSERT…ON CONFLICT DO NOTHING RETURNING); `record_outcome`/`read_outcome` same txn (`05:389-429`); `transaction()` yields a `conn.transaction()`-bound Connection (verified `pool.py:170-182`) |
 | `resolve_authority`, `AuthorityRequest`, `AuthorityDecision.{allowed,denial_message}` | **K6 / spec 04** | vocab §② — leg-0; the engine passes `ctx.actor.member_tier` (RC-12) |
-| `from_exception(exc,*,surface,target)->ErrorEnvelope` + `Result` | **spec 02** | vocab §① — every classified leg exception routes through it; `error_class`→outcome per the frozen table. `ConfirmRequired` is **not** an input (§3.3 step 2 — a control signal mapped directly to BLOCKED/CONFIRM_DECLINED) |
+| `from_exception(exc, *, surface, target)->ErrorEnvelope` + `Result` | **spec 02** | vocab §① — every classified leg exception routes through **`from_exception(exc, surface=Surface.MAINTENANCE, target=None)`** (K7 is surface-agnostic and holds no interaction `TargetRef`; **buildable via 02/PIN-4** — the `Surface.MAINTENANCE` background member + `target: TargetRef \| None`); `error_class`→outcome per the frozen table; `surface`/`target` only enrich `user_message` (the classifier core is surface-independent, 02 §3.3), so `MAINTENANCE`/`None` yields the class's canonical copy. `ConfirmRequired` is **not** an input (§3.3 step 2 — a control signal mapped directly to BLOCKED/CONFIRM_DECLINED). `Surface` imported from `sb/kernel/interaction/request.py` (02 §2) |
 | `emit_audit_action(**11 fields)` (best-effort fallback) | **shipped `audit_events.py:52`** | vocab §③.2 — the `BEST_EFFORT` central-row emit; failure-safe (returns False; DB authoritative). Never edited |
 | `enqueue_audit_action(conn, **11 fields)` (durable twin) + `enqueue_all(emits, ctx, result, *, conn) -> BestEffortBatch` + `BestEffortBatch.emit_after_commit()` | **strand-2 outbox (L-9/T2-3), `08:150,161,169`** | the durable central-trace emit + the in-txn AT_LEAST_ONCE writer; `enqueue_all` returns the best-effort batch the engine emits post-commit at step 6 |
 | `DeliveryClass` (imported enum) | **strand-2 outbox, `sb/spec/events.py`** | canonical home (§12 #1); `EventEmitSpec.delivery` imports it — never a local copy |
 | `ConfirmationSpec` (imported spec leaf) | **`sb/spec/confirmation.py` (K1/K2 leaf)** | compile-time-readable by `CommandSpec/PanelActionSpec.confirm` + 01 P6; `result.py` re-exports it |
 | `StepResult:56`, `LifecycleResult:77`, reversibility/outcome constants `:40-52` | **shipped `services/lifecycle/contracts.py`** | reused verbatim (design §2.7); `WorkflowResult` is the design superset (§0) |
-| `DraftOperation` (`op_kind`, `payload`, `dedup_token`) | **draft pipeline, spec 06 §3.2** | `apply(op, conn)` maps `op.op_kind → CompoundOpSpec` via `registry.resolve_op_kind` |
+| `DraftOperation` (`op_kind`, `payload`, `dedup_token`) | **draft pipeline, spec 06 §3.2** | the type `apply(op, conn)` — the op-kind external-conn **sibling** of `run_ref` — maps to a `CompoundOpSpec` via `registry.resolve_op_kind`. **The draft's own apply loop does NOT call `apply`** — it resolves each `DraftOperation` → `CompoundOpSpec` and calls `run(spec, ctx)` per-op (06 §3.5); this row is the op-kind dispatch shape `apply` retains |
 | `ChallengeSessionSpec.escrow` / `IdleAccrualSpec.collect_workflow` (`WorkflowRef`) | **design §2.8 game facet** | each resolves to a `CompoundOpSpec`; escrow ports the `game_wager_workflow` family (see seam-correction), accrual-collect ports the farm/mining pattern |
 
 ---
@@ -515,7 +536,7 @@ substrate the scheduler's boot-reconcile fires *through* via `run_ref(conn=…)`
 
 | Fork | Options | **Decision** | Why |
 |---|---|---|---|
-| **A · T2-1 "atomic" + engine entry** | (i) single self-txn `run(spec)` only (ii) drop "atomic" entirely (iii) `LegKind.DB`/`EFFECT` split **+ an external-conn seam** (`run_ref(conn)`/`apply(op,conn)`) so N caller-owned DB legs share one txn | **(iii)** — DB/EFFECT split; "all-or-nothing" reserved for the DB-leg set; **the external-conn entries let the draft (`06 §3.5`) and scheduler (`09:299`) run legs in *their* txn under *their* `once()`** | A#1 verbatim ("reserve all-or-nothing for pure-DB compound ops"); Discord ops can't roll back — encode it structurally. **The single-entry `run(spec)` was structurally incompatible with both consumers** (they pass an external `conn`); the external-conn seam is the co-decision. **T2-1 now resolved *identically* with ④: N pure-DB draft legs commit in one `db.transaction()`.** |
+| **A · T2-1 "atomic" + engine entry** | (i) single self-txn `run(spec)` only (ii) drop "atomic" entirely (iii) `LegKind.DB`/`EFFECT` split **+ an external-conn seam** (`run_ref(conn)`/`apply(op,conn)`) so a caller-owned txn can carry the pure-DB leg set | **(iii)** — DB/EFFECT split; "all-or-nothing" reserved for the DB-leg set; **the external-conn entries let the scheduler (`09:389`) and the invariant/version repair-compensation callers (`09:228`) run legs in *their* txn under *their* `once()`; the draft runs each op through `run()` per-op** (`06 §3.5`, own txn per op) | A#1 verbatim ("reserve all-or-nothing for pure-DB compound ops"); Discord ops can't roll back — encode it structurally. **The single-entry `run(spec)` was structurally incompatible with the scheduler's external `conn`**; the external-conn seam (`run_ref`) is the co-decision. **F-2 resolves by caller type (PIN-2): the draft's EFFECT-bearing resource-create ops go through `run()` per-op (per-op-atomic + idempotent-resume, NOT one shared txn); only pure-DB scheduler/invariant/version callers use `run_ref`/`apply`.** |
 | **B · audit granularity (③.3) + correlation** | (i) N rows, one per leg (ii) one row per op (iii) one row + a correlation id on the DB spine for the draft-apply group | **(ii)+(iii): one central row per invocation, legs = sub-detail; N rows ONLY when ④ invokes N ops, correlated by `audit_log.correlation_id` (a DB-spine column, NOT a 12th bus field)** | §③.3 "batched lifecycle op ⇒ 1 row"; keeps one-op = one-`mutation_id`. Homing correlation on the spine (§5) resolves `06 §12` without touching the frozen 11-field bus payload. Live-bus correlation is SF-c (deferred). |
 | **C · T2-21 idempotency** | (i) implicit single-flight (ii) mandatory declared posture (iii) per-leg keys | **(ii) `IdempotencyPosture` required + `idempotency_posture_declared` fence**, with the posture's mandated companion field (`dedup_key` / `idempotency_justification` / `single_flight_scope`) enforced | T2-21 mandate ("mandate a declared posture; single-flight is an *allowed* posture"). Closes L-6 for the workflow lane; a mutating op with no posture (or a posture missing its mandated field) is CI-red. |
 | **D · dry-run mechanism** | (i) handler-declared preview mode (ii) txn-rollback + skip-effects (iii) dual codepath | **(ii) txn-rollback + skip EFFECT/best-effort legs (structural); handler `ctx.dry_run` is an optional optimization** | `automation_executor` precedent generalized; the rollback is a *guarantee*, not per-handler discipline (the L-16/oracle "structural not exhortation" lesson). |
@@ -558,8 +579,8 @@ All deferrals sit behind a designed seam; none blocks building the engine + the 
 | Row (FJ §2 L / §4 gap / §6 owner-queue) | How this spec retires it |
 |---|---|
 | **K7 — the ~48-multi-leg-txn-site concern** | The `LegSpec`/`CompoundOpSpec`/`run()`/`run_ref()`/`apply()` engine replaces the multi-leg `db.transaction()` sites (of the ~66 total per-file sites, ~48 multi-leg) with declarations + leg handlers; §2 maps each file. **CLAIMED / CLOSED.** |
-| **the engine-entry seam (cross-sibling)** | Three co-designed entries over one core (`run` self-txn / `run_ref(conn)` scheduler / `apply(op,conn)` draft) + `WorkflowRegistry` for `WorkflowRef`/`op_kind`→`CompoundOpSpec`; matches `02:218`, `06:281,339`, `09:299` exactly (§3.2). **CLOSED — the single-entry mismatch resolved.** |
-| **T2-1 — atomic-apply meaning (owner-queue A#1)** | `LegKind.DB`/`EFFECT` split + the external-conn seam ⇒ N caller-owned DB legs commit in one txn (§8 fork A). **Co-owned with ④; resolved IDENTICALLY (both = one `db.transaction()` for the pure-DB set). CLOSED.** (The word "atomic" for the *resource-create* lane stays ④'s owner-gated fork, not K7's.) |
+| **the engine-entry seam (cross-sibling)** | Three co-designed entries over one core (`run` self-txn — the resolver target **and the draft's per-op entry** / `run_ref(conn)` scheduler + invariant + version / `apply(op,conn)` the op-kind external-conn sibling) + `WorkflowRegistry` for `WorkflowRef`/`op_kind`→`CompoundOpSpec`; matches `02:218`, `06:451-466`, `09:389,491` exactly (§3.2). **CLOSED — the single-entry mismatch resolved; F-2 (PIN-2) resolved by caller type.** |
+| **T2-1 — atomic-apply meaning (owner-queue A#1)** | `LegKind.DB`/`EFFECT` split + the external-conn seam ⇒ a caller-owned txn carries the pure-DB leg set for the scheduler / invariant-repair / version-compensation callers (§8 fork A). **The draft (F-2, PIN-2) does NOT share one txn across N ops — it runs each op through `run()` per-op (per-op-atomic + idempotent-resume), because its resource-create ops bear post-commit EFFECT legs. CLOSED by caller type.** (The word "atomic" for the *resource-create* lane stays ④'s owner-gated fork, not K7's.) |
 | **T2-21 — idempotency posture mandate per mutating action (A#13)** | `IdempotencyPosture` required field + compiler fence + mandated companion fields; 4 postures incl. single-flight (§8 fork C). **CLAIMED / CLOSED.** |
 | **③.3 audit-row-granularity fork (inherited from ④)** | One central `audit_log` row per compound-op invocation; N rows only from ④'s N invocations, correlated by the DB-spine `correlation_id` (§3.4, §5, §8 fork B). **CLAIMED / COMPLETED.** |
 | **L-9 — no outbox / commit-then-emit outside txn (incl. the CENTRAL audit trace)** | Engine writes `AT_LEAST_ONCE` emits **and** the central `audit.action_recorded` trace as outbox rows **inside** the txn via `enqueue_all`/`enqueue_audit_action` (§3.4, §8 fork F). **CONSUMED (seam provided); the central-trace crash-loss gap closed here, delivery retired by the outbox K-fn.** |
@@ -591,8 +612,8 @@ K4 events/outbox, K5 lifecycle, K6 authority).
 **What K7 blocks (nothing downstream builds without it):**
 - **K8** — `resolve()` step 5 `INVOKE_WORKFLOW` calls `run()`, returns `WorkflowResult`; `Result.workflow`
   wraps it.
-- **The scheduler ⑤** — `_fire` calls `run_ref(timer.handler, ctx, conn=conn)` (09:299).
-- **The draft pipeline ④** — `apply_draft` calls `apply(op, conn=conn)` per pure-DB op in one txn (06 §3.5).
+- **The scheduler ⑤** — `_fire` calls `run_ref(timer.handler, ctx, conn=conn)` (09:389).
+- **The draft pipeline ④** — `apply_draft` resolves each `DraftOperation` → `CompoundOpSpec` and calls `run(spec, ctx)` **per-op** (own txn per op; NOT `apply`/one shared txn — F-2, PIN-2; 06 §3.5).
 - **The game facet (design §2.8)** — `ChallengeSessionSpec.escrow` + `IdleAccrualSpec.collect_workflow`
   are `CompoundOpSpec`s.
 - **All Phase-4 mutating ports (§9.2)** — every `*_mutation` routes through a `CompoundOpSpec`; the
@@ -602,19 +623,24 @@ K4 events/outbox, K5 lifecycle, K6 authority).
 
 ## Seam corrections (flagged; source-wins Q-0120)
 
-1. **Engine entry — the single-entry `run(spec, ctx)` mismatched all three consumers (now co-designed).**
+1. **Engine entry — the single-entry `run(spec, ctx)` mismatched the external-conn consumers (now co-designed).**
    The earlier draft advertised one entry `run(spec: CompoundOpSpec, ctx)` that opened its own
-   `db.transaction()` + `once()`. But the draft pipeline calls `engine.apply(op, *, conn)` with an
-   **external** conn (`06-draft-pipeline.md:281,339` — N pure-DB ops in one draft-owned txn); the scheduler
-   calls `engine.run_ref(ref, ctx, *, conn)` with a `WorkflowRef` + external conn
-   (`09-scheduler-state.md:299` — legs run in the scheduler's own txn + `once()`); the resolver dispatches
-   a `WorkflowRef` (`02:218`, `INVOKE_WORKFLOW`) needing a `WorkflowRef→CompoundOpSpec` resolution. A
-   self-owned-txn-only `run(spec)` is **structurally impossible** for two of them (the caller's `conn` has
-   no way in; a re-acquired connection would break guard-row/effect atomicity + double-`once()`).
-   **Correction:** three entries over one core — `run()` (self-txn, resolver target), `run_ref(conn=…)`
-   (scheduler), `apply(op, conn)` (draft) — plus `WorkflowRegistry` for the ref/op_kind→spec resolution
-   (§3.2). T2-1 is thereby resolved **identically** with ④ (both = one `db.transaction()` for the pure-DB
-   set), not asserted-closed over a hole.
+   `db.transaction()` + `once()`. But the scheduler calls `engine.run_ref(ref, ctx, *, conn)` with a
+   `WorkflowRef` + external conn (`09-scheduler-state.md:389,491` — legs run in the scheduler's own txn +
+   `once()`), and the invariant/version repair-compensation path calls `run_ref(compensation_ref, ctx,
+   conn=conn)` on its own txn (`09:228`); the resolver dispatches a `WorkflowRef` (`02:218`,
+   `INVOKE_WORKFLOW`) needing a `WorkflowRef→CompoundOpSpec` resolution; the **draft** resolves each
+   `DraftOperation` → `CompoundOpSpec` and calls `run(spec, ctx)` **per op** (`06-draft-pipeline.md:451-466`
+   — own txn per op, because its resource-create ops bear post-commit EFFECT legs the `atomic_db_only`
+   fence excludes from the external-conn path). A self-owned-txn-only `run(spec)` is **structurally
+   impossible** for the external-conn callers (their `conn` has no way in; a re-acquired connection would
+   break guard-row/effect atomicity + double-`once()`).
+   **Correction:** three entries over one core — `run()` (self-txn, the resolver target **and the draft's
+   per-op entry**), `run_ref(conn=…)` (the scheduler / invariant / version external-conn fire), `apply(op,
+   conn)` (the op-kind external-conn **sibling** of `run_ref`, declared per 06) — plus `WorkflowRegistry`
+   for the ref/op_kind→spec resolution (§3.2). **F-2 (PIN-2) resolves by caller type:** EFFECT-bearing draft
+   ops → `run()` per-op (per-op-atomic + idempotent-resume, NOT one shared txn); pure-DB
+   scheduler/invariant/version callers → `run_ref`/`apply` — not asserted-closed over a hole.
 2. **`DeliveryClass` canonical home is the outbox leaf (absorbs `08 §12` seam-correction #1).** The
    earlier draft **defined** `class DeliveryClass` locally in `sb/kernel/workflow/spec.py`. The outbox
    sibling moved the canonical home to `sb/spec/events.py` (alongside `EventSpec.delivery`) so

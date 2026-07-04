@@ -22,7 +22,11 @@
 >   audit row (07 §3.4)**. There is **no `engine.apply(op)`** and **no per-`DraftOperation` entry**. This
 >   spec's earlier assumption of `engine.apply(op, *, conn)` / `preview(op, ctx)` was wrong; every call
 >   site is rewritten to resolve each `DraftOperation` → a `CompoundOpSpec` (via the op-kind registry
->   §3.3) → `engine.run(spec, ctx)` / `engine.preview(spec, ctx)`. K7 owns the per-op DB/EFFECT split,
+>   §3.3) → `engine.run(spec, ctx)` / `engine.preview(spec, ctx)`. **07 *does* also declare external-conn
+>   PURE-DB entries `run_ref(ref, ctx, *, conn)` / `apply(…)`, but they are `atomic_db_only`-fenced and
+>   reserved for the scheduler/invariant pure-DB callers — NOT a per-`DraftOperation` entry; this pipeline's
+>   EFFECT-bearing draft ops stay on `run(spec, ctx)` per-op (F-2 resolved by caller type, §12).** K7 owns
+>   the per-op DB/EFFECT split,
 >   the per-op `once()` idempotency, and the per-op audit row; **this pipeline orchestrates the ordered
 >   sequence and the correlation id**, nothing lower.
 > - **audit_log carries a nullable `correlation_id uuid` COLUMN** — already added by 07 §5 and
@@ -217,9 +221,18 @@ async def append_operation(draft_id: str, op: DraftOperation, *, conn) -> int   
 async def delete_operation(draft_id: str, op_seq: int, *, conn) -> int          # returns rowcount
 async def load_draft(draft_id: str, *, conn) -> Draft | None                    # READ-ONLY; joins ops, ordered by op_seq — NEVER mutates status
 async def list_open_drafts(scope: OwnerScope, *, conn) -> tuple[Draft, ...]     # see NULL-safe predicate below
-async def update_status(draft_id: str, status: DraftStatus, *, conn) -> None    # also bumps updated_at
-async def delete_draft(draft_id: str, *, conn) -> int                           # hard-delete on discard
-async def select_expired(now: datetime, *, conn) -> tuple[str, ...]             # READ: draft_ids past expires_at, non-terminal
+async def update_status(draft_id: str, status: DraftStatus, *, conn,
+                        expect: DraftStatus | None = None) -> bool              # bumps updated_at. When `expect` is given this is a
+                                                                               #   CONDITIONAL compare-and-set (UPDATE … WHERE status=expect),
+                                                                               #   returning whether the row transitioned (rowcount == 1);
+                                                                               #   expect=None keeps the old unconditional overwrite.
+async def reap_stuck_applying(now: datetime, ttl_s: int, *, conn) -> tuple[str, ...]  # CONDITIONAL CAS sweep, ONE statement:
+                                                                               #   UPDATE sb_drafts SET status='partial', updated_at=now()
+                                                                               #   WHERE status='applying' AND updated_at < now() - ttl_s
+                                                                               #   RETURNING draft_id. 09's stuck-APPLYING lane calls this (§6);
+                                                                               #   the TTL predicate means a legitimately slow apply is NEVER reaped.
+async def delete_draft(draft_id: str, *, conn) -> int                          # hard-delete on discard
+async def select_expired(now: datetime, *, conn) -> tuple[str, ...]            # READ: draft_ids past expires_at, non-terminal
 ```
 
 - **`list_open_drafts` is NULL-safe on `owner_actor_id` (critic finding #15).** `OwnerScope.render()`'s
@@ -230,6 +243,13 @@ async def select_expired(now: datetime, *, conn) -> tuple[str, ...]             
 - **`load_draft` and `select_expired` are READ-ONLY** — neither writes `EXPIRED`. The `OPEN/PREVIEWED →
   EXPIRED` transition is a WRITE owned by **09's `ExpiryJanitorLane`** (which calls `select_expired` →
   `update_status(EXPIRED)` under its poll, 09 §3.7/§4), never lazily at load time (§6).
+- **`reap_stuck_applying` is a strictly-CONDITIONAL compare-and-set** (`WHERE status='applying' AND
+  updated_at < now() - ttl_s`) — it can only ever move a **stale** `APPLYING` row to `PARTIAL`. A live apply
+  that is merely slow (a large multi-channel draft) keeps its `updated_at` fresh via the per-op heartbeat
+  (§3.5 step 2) and is invisible to the reaper until it genuinely stops progressing for the whole TTL. 09's
+  stuck-`APPLYING` lane owns the *cadence* (a registered `PollLane`); this primitive owns the *atomicity*, so
+  the reaper and a completing `apply_draft` can never clobber each other (the matching conditional write is
+  `update_status(APPLIED, expect=APPLYING)`, §3.5 step 5).
 
 ### 3.3 `sb/kernel/draft/registry.py` + `preview.py` — fail-closed op-kind slot + batch shapes
 
@@ -393,7 +413,12 @@ async def apply_draft(draft: Draft, decision: "AuthorityDecision", preview: Draf
      for a non-confirming draft `confirmed := True` trivially. This `confirmed` flag is threaded into every
      per-op K7 `WorkflowContext` so K7's own IRREVERSIBLE confirm-assert (07 §3.3 step 2) is satisfied
      without re-prompting.
-2. `update_status(APPLYING)` — makes a crash mid-apply reconcilable (§6; the stuck-`APPLYING` sweep is 09's).
+2. `update_status(APPLYING)` — makes a crash mid-apply reconcilable (§6; the stuck-`APPLYING` sweep is
+   09's). **Per-op heartbeat:** the loop bumps the draft row's `updated_at` as each op starts (a lightweight
+   `update_status(APPLYING, expect=APPLYING)` — a no-op status write whose only effect is the timestamp), so
+   the stuck-`APPLYING` TTL measures **time since the last op progressed**, not wall-clock apply length. A
+   legitimately slow multi-channel apply therefore keeps its row *fresh* and is **never reaped mid-flight**
+   (§6).
 3. **Sequence the ops in `op_seq` order — one K7 `run()` per op (NO whole-op resource partition).** For
    each `op`:
    - `binding = registry.get(op.op_kind)`; resolve `binding.workflow_ref` → the `CompoundOpSpec` (K2 ref table).
@@ -412,8 +437,15 @@ async def apply_draft(draft: Draft, decision: "AuthorityDecision", preview: Draf
 4. `classify_outcome`-style rollup over `op_results` → draft `outcome`
    (`SUCCESS` all-SUCCESS · `PARTIAL` ≥1 applied then a stop · `BLOCKED`/`DISCORD_FAILED`/`DECLINED`
    propagated from the failing op's `WorkflowResult.outcome` when nothing applied).
-5. `update_status(APPLIED)` on full success (draft eligible for GC); **`PARTIAL` keeps the draft** for a
-   recovery re-run (already-applied ops skip via K7's per-op `once()`).
+5. **`update_status(APPLIED, expect=APPLYING)` on full success — a CONDITIONAL compare-and-set, never a
+   blind overwrite.** It flips to `APPLIED` **only if the row is still `APPLYING`** (draft then eligible for
+   GC). If the CAS returns `False`, the reaper won a race — it had flipped the row to `PARTIAL` because this
+   apply outran the stuck-`APPLYING` TTL (vanishingly rare given the TTL headroom, §6): apply_draft
+   **re-reads** the row, honors the `PARTIAL`, and returns that outcome. The fully-applied ops are already
+   durable and a recovery re-run is a no-op (every op `once()`-skips), so no `APPLIED`-over-`PARTIAL` clobber
+   and no false success can occur. On the ordinary partial path (a mid-draft op failure) the write is
+   `update_status(PARTIAL)` and **`PARTIAL` keeps the draft** for a recovery re-run (already-applied ops skip
+   via K7's per-op `once()`).
 6. `hook.on_applied(draft, result)` if present (fail-open — a missing hook never blocks apply).
 
 **Atomicity contract (honest, per K7's real API — critic seam #2/#3/#6).** K7's `run(spec, ctx)` opens
@@ -423,8 +455,15 @@ its **own** `db.transaction()` per op and emits **one** audit row per op (07 §3
 - **Cross-op all-or-nothing is NOT a default guarantee** — a mid-draft failure leaves earlier ops
   committed; the draft goes `PARTIAL` and the recovery re-run resumes idempotently. (The old "one
   `db.transaction()` across all N pure-DB ops" claim was unachievable against K7's per-op entry and is
-  retired. A *cross-op* shared-txn upgrade would need K7 to expose an external-conn entry
-  `run_ref(ref, ctx, *, conn)` — the same entry 09 assumes; flagged as a shared K7 co-decision, §8 / §12.)
+  retired.) **07 *does* declare an external-conn entry `run_ref(ref, ctx, *, conn)` (and its `apply`
+  sibling), but it is fenced `atomic_db_only` and reserved for PURE-DB callers — 09's scheduler
+  `ManagedTaskSpec` handlers and the invariant `repair_refs` / version `compensation_refs`.** Draft
+  resource-create ops carry a **post-commit Discord EFFECT leg**, which is exactly what `run_ref`'s
+  `atomic_db_only` fence excludes, so they are **not eligible** for a shared pure-DB txn and stay on
+  `run(spec, ctx)` per-op. Cross-op shared-txn atomicity is therefore a **structural boundary for the draft
+  lane** (its ops bear effects), **not a pending K7 co-decision** — the F-2 fork resolves in this pipeline's
+  favor by caller type: EFFECT-bearing draft ops → `run(spec, ctx)`; pure-DB scheduler/invariant callers →
+  `run_ref`/`apply` (§12).
 - **Resource creates are best-effort, NOT exactly-once** (correcting the earlier overclaim, critic
   finding #3). K7 runs the Discord create as a post-commit EFFECT leg; a crash between the external create
   and its outcome record can orphan a channel or re-create on re-run — the DB `once()` guard covers only
@@ -495,7 +534,7 @@ class DraftPipeline:
 |---|---|---|
 | `authority_ref`, `AuthorityRequest`, `AuthorityDecision`, `resolve_authority`, `owner_override_holds` | K6 / spec 04 (frozen ②) | `resolve_authority(req)->AuthorityDecision` with the fixed step order; `owner_override_holds(user_id, is_member)` member-gated; TIERS total-ordered `user<…<owner`; every CAPABILITY ref ⇒ administrator floor (v1). `AuthorityDecision.actor` carries the resolved `ActorRef` (used to build the per-op WorkflowContext). |
 | error envelope: `from_exception`, `Result`, `DenialReason` | K8 / spec 02 (frozen ①) + `sb/spec/outcomes.py` | `from_exception(exc, surface, target, section_label)->ErrorEnvelope`; `DenialReason` incl. `CONFIRM_DECLINED`, `NOT_FOUND`, `AUTHORITY`, `USER_ERROR`. |
-| **`WorkflowEngine.run(spec, ctx)` / `.preview(spec, ctx)`** returning `WorkflowResult` / `MutationPreview`; `refs.resolve(workflow_ref) -> CompoundOpSpec` | **K7 workflow engine (`07-workflow-engine.md`, WRITTEN sibling)** | 07 §3.2: `async run(spec: CompoundOpSpec, ctx: WorkflowContext) -> WorkflowResult` (opens its OWN `db.transaction()` per op, 07 §3.3 step 4; emits ONE central audit row, 07 §3.4; per-op `once()` if the spec declares `DURABLE_ONCE`, using `dedup_key.render(ctx)` — I supply `_draft_dedup_token`); `async preview(spec, ctx) -> MutationPreview` (txn-rollback + skip-effects). **Two `WorkflowContext` fields this pipeline requires — `correlation_id: str \| None` and `test_mode: bool` — are seam-corrections flagged for 07 (§12).** **Cross-op shared-txn atomicity would need an external-conn entry `run_ref(ref, ctx, *, conn)` (the same one 09 assumes) — NOT in 07's declared API; flagged as a shared K7 co-decision (§8).** |
+| **`WorkflowEngine.run(spec, ctx)` / `.preview(spec, ctx)`** returning `WorkflowResult` / `MutationPreview`; `refs.resolve(workflow_ref) -> CompoundOpSpec` | **K7 workflow engine (`07-workflow-engine.md`, WRITTEN sibling)** | 07 §3.2: `async run(spec: CompoundOpSpec, ctx: WorkflowContext) -> WorkflowResult` (opens its OWN `db.transaction()` per op, 07 §3.3 step 4; emits ONE central audit row, 07 §3.4; per-op `once()` if the spec declares `DURABLE_ONCE`, using `dedup_key.render(ctx)` — I supply `_draft_dedup_token`); `async preview(spec, ctx) -> MutationPreview` (txn-rollback + skip-effects). **Two `WorkflowContext` fields this pipeline requires — `correlation_id: str \| None` and `test_mode: bool` — are seam-corrections flagged for 07 (§12).** **07 also declares external-conn PURE-DB entries `run_ref(ref, ctx, *, conn)` / `apply(…)`, fenced `atomic_db_only` and reserved for pure-DB callers (09 scheduler `ManagedTaskSpec` handlers; invariant `repair_refs` / version `compensation_refs`) — NOT this pipeline's ops. A draft resource-create op bears a post-commit Discord EFFECT leg (outside the `atomic_db_only` fence), so it stays on `run(spec, ctx)` per-op (§3.5); cross-op shared-txn atomicity is a structural boundary for the draft lane resolved by caller type, not a pending K7 co-decision (§12).** |
 | audit-row semantics: `emit_audit_action` (11 fields) + `audit_log.correlation_id` COLUMN | ③ (shipped `audit_events.py:52`) + K7 §5 / 08 §5.1 | K7 emits **one central row per op** (07 §3.4); I supply `correlation_id = draft_id` via `ctx.correlation_id`, written into the **nullable `correlation_id` column already added by 07 §5 and 08 §5.1** (the 11-field `emit_audit_action` bus payload is UNCHANGED — the correlation rides the column, not a 12th field; §12). |
 | `IdempotencyKey`, `once`/`record_outcome`/`read_outcome`, `db.transaction()` | K3 / spec 05 (frozen ④/⑤) | consumed **transitively through K7** — apply_draft never calls `once()` directly; K7 does, keyed on the `_draft_dedup_token` I pass. `namespace` reserved per op_kind's `op_key` (K1). |
 | `MutationPreview`/`WorkflowResult`/`ConfirmationSpec` single-op shapes, `classify_outcome`, `StepResult`, reversibility constants | §2.7 / lifecycle `contracts.py` | verbatim per the frozen §0/§2.7; `WorkflowResult` is the K7 design superset of shipped `LifecycleResult:77` (no shipped class). |
@@ -557,11 +596,31 @@ imported**; drafts open at cutover are dropped (the operator re-stages). No alia
 | Concern | Behavior |
 |---|---|
 | **Draft durability** | Drafts are **durable DB rows** — survive a merge=deploy restart. (Confirmations are session-scoped per ⑤ — a restart drops the confirm *prompt*; the actor re-opens Final Review, re-previews, re-confirms with a fresh `ConfirmationResponse`. `preview_hash` catches an op set that changed in between.) |
-| **Boot reconcile** | **No auto-apply on boot** — drafts are user-initiated, never scheduled, so unlike the scheduler (⑤.3) the draft pipeline arms nothing at boot. The only crash-visible state is `status=APPLYING`: **09's stuck-`APPLYING` sweep** (a registered `PollLane`, 09 §3.7) flips `APPLYING` older than a TTL to `PARTIAL`; either way the operator's re-run is safe because K7's per-op `once()` skips already-applied ops. |
+| **Boot reconcile** | **No auto-apply on boot** — drafts are user-initiated, never scheduled, so unlike the scheduler (⑤.3) the draft pipeline arms nothing at boot. The only crash-visible state is `status=APPLYING`: **09's stuck-`APPLYING` lane** (a registered `PollLane` on 09's one `PollSupervisor`, 5 s cadence, 09 §3.7) calls `db.draft.reap_stuck_applying(now, DRAFT_APPLY_STUCK_TTL_S)` — a **strictly-conditional compare-and-set** (`UPDATE … SET status='partial' WHERE status='applying' AND updated_at < now() - ttl`), so it can flip **only** an `APPLYING` row that has not progressed for the whole TTL. A live-but-slow multi-channel apply keeps its `updated_at` fresh (the per-op heartbeat, §3.5 step 2) and is therefore **never reaped mid-flight**. Either way the operator's re-run is safe because K7's per-op `once()` skips already-applied ops. |
 | **Exactly-once (per pure-DB op)** | Each op's DB legs are guarded **by K7** with `once(IdempotencyKey(op_key, guild_id, f"{draft_id}:{op_seq}"))` **inside K7's own `db.transaction()`** (④.1 canonical pattern). A confirm delivered to both gateway connections during fast-release overlap (⑤.4), or a re-run after a crash mid-apply, applies each pure-DB op **exactly once**; the second attempt `read_outcome`s and skips. **Resource-create EFFECT legs are best-effort, not exactly-once** — see the Atomicity row. |
 | **Dual-instance overlap** | Both workers live sub-second during fast-release. In-session double-click dedup is the in-memory `request_id` (④.2); the **durable** guard across instances is K7's per-op `once()`. No draft-level lock is needed — per-op `once()` covers it uniformly (the same reason ⑤.4 fast-release is correct). |
 | **Atomicity across restart** | **Per-op, not cross-op.** Each op is one K7 `db.transaction()` — a restart mid-op rolls that op back (nothing half-written); its re-run re-applies cleanly and later ops resume. Earlier committed ops stay committed (the draft is a sequenced idempotent batch, not one transaction — §3.5). Resource creates run as K7 post-commit EFFECT legs: a restart may leave a created channel; a crash *between* the external create and its outcome record can **orphan or duplicate** it (the DB guard does not cover the external effect) — reconciliation rides the compensation deferral (§9). |
 | **Expiry** | `store.select_expired(now)` (READ) yields non-terminal drafts past `expires_at`; **09's `ExpiryJanitorLane`** writes the `EXPIRED` transition under its poll (09 §3.7/§4). The old "OR lazily at `load_draft`" alternative is deleted — `load_draft` is a read-only primitive and must not mutate status. |
+
+**Stuck-`APPLYING` TTL — `DRAFT_APPLY_STUCK_TTL_S = 900` (15 minutes).** The reaper's age threshold is
+pinned *comfortably above* the worst-case honest apply, so the conditional CAS can only ever catch a genuine
+crash and never a live apply:
+
+- **Worst case in the capability corpus** is the flagship **10-channel canary** (and larger `PRESET`
+  instantiations). Each op is one K7 `run(spec, ctx)` — a short DB txn plus one post-commit Discord create
+  EFFECT leg. Discord channel-creates are per-route rate-limited; even a burst of a few dozen creates with
+  rate-limit backoff and a bounded retry completes in **well under 60 s**, and a pathological preset of a few
+  hundred ops still finishes in a small number of minutes.
+- **15 minutes is >10× that ceiling.** Combined with the per-op heartbeat (§3.5 step 2), the TTL measures
+  *time since the last op progressed*, not wall-clock apply length — so even an unusually large draft cannot
+  age out **while it is making progress**. Erring long is safe by construction: recovery is **cosmetic** (the
+  re-run is idempotent via K7's per-op `once()`), so a crashed `APPLYING` reaped a few minutes late costs
+  nothing, whereas a live apply reaped early would falsely strand a good draft as `PARTIAL`. At the 5 s poll
+  cadence a genuinely stuck row is cleaned within one poll after it crosses the TTL.
+- The reaper is a **conditional CAS**, and `apply_draft`'s success write is the matching conditional
+  `update_status(APPLIED, expect=APPLYING)` (§3.5 step 5) — so in the vanishing race where a completing apply
+  and the reaper touch the same row, exactly one write wins and the loser is a safe no-op that re-reads the
+  authoritative status. Never a blind overwrite in either direction.
 
 ---
 
@@ -606,8 +665,8 @@ imported**; drafts open at cutover are dropped (the operator re-stages). No alia
 | **`preflight_operations` fate** | (a) wire it as the preview provider · (b) **delete it, port its diff logic into K7 `preview()`** | **(b)** | It is env-gated dead code with zero consumers; its real value (the current/proposed read for bind/set_setting) is exactly what the workflow engine's per-lane `preview()` must compute anyway. One preview path, not two. |
 | **Accept authority** | (a) hard-wired setup-admin [shipped] · (b) fixed per-producer · (c) union-max to one string · (d) **derived DISPLAY floor + AND over every distinct op `authority_ref` as the gate** | **(d)** | (c) silently strips a capability op's revoke overlay in a mixed draft (a revoked role could Accept a setup-containing draft — critic #14). AND-over-distinct-refs vetoes on any single revoked ref; the derived string stays a display badge only. |
 | **Confirm mandate + enforcement** | (a) always confirm · (b) never · (c) T2-5 rule but flag-only · (d) **T2-5 rule + a fail-closed apply gate (`verify_confirmation` + `confirmed` threaded to K7)** | **(d)** | Computing `requires_confirmation` without gating it is the L-5 "charge once, run freely" class. The gate at §3.5 step 1 + the `confirmed` flag into K7's own confirm-assert (07 §3.3 step 2) makes confirmation structural. (Closes critic #2/#7.) |
-| **Apply atomicity granularity** | (a) call it "atomic" for everything · (b) **per-op-atomic via K7 `run(spec)` + idempotent resume; Discord-create = K7 post-commit EFFECT leg (best-effort)** · (c) one shared txn across all pure-DB ops | **(b)** | (c) is impossible against K7's declared `run(spec, ctx)` (own txn per op — 07 §3.3). (a) is dishonest for non-rollback-able creates (D-1..D-6). (b) is buildable NOW on K7's real API and honest about the EFFECT-leg best-effort boundary (T2-1). The *word* "atomic" for the resource lane, **and** the cross-op shared-txn upgrade, are surfaced below. |
-| **Cross-op shared transaction** | (a) per-op txn (K7 default) · (b) one shared txn across pure-DB ops via a K7 external-conn `run_ref(ref, ctx, *, conn)` | **(a) default; (b) is a flagged shared K7 co-decision** | 07's declared entry is per-op self-txn. A shared txn would need K7 to expose the same external-conn entry 09 also assumes (09 flags the identical open decision). Built default = per-op-atomic + idempotent resume; the upgrade is co-decided with 07/09 (§12), not assumed. |
+| **Apply atomicity granularity** | (a) call it "atomic" for everything · (b) **per-op-atomic via K7 `run(spec)` + idempotent resume; Discord-create = K7 post-commit EFFECT leg (best-effort)** · (c) one shared txn across all pure-DB ops | **(b)** | (c) cannot apply to the draft lane: a cross-op pure-DB txn would ride `run_ref`'s `atomic_db_only` fence, and draft resource-create ops bear a post-commit EFFECT leg that the fence excludes (07 §3.3 — effect-bearing ops enter via per-op `run(spec, ctx)`). (a) is dishonest for non-rollback-able creates (D-1..D-6). (b) is buildable NOW on K7's real API and honest about the EFFECT-leg best-effort boundary (T2-1). The *word* "atomic" for the resource lane is surfaced below. |
+| **Cross-op shared transaction** | (a) per-op txn via `run(spec, ctx)` · (b) one shared txn across pure-DB ops via 07's external-conn `run_ref(ref, ctx, *, conn)` | **(a) — for the draft lane it is the ONLY eligible entry, not a fallback** | 07 **does** expose `run_ref`/`apply` (external-conn, pure-DB), but they are fenced `atomic_db_only` and serve 09's scheduler + the invariant/version pure-DB callers. The draft's ops bear post-commit Discord EFFECT legs → **outside** that fence → they can only enter via `run(spec, ctx)` per-op. So (b) is **structurally unavailable** to this pipeline (not a pending co-decision); the F-2 fork resolves cleanly by caller type. Built = per-op-atomic + idempotent resume. |
 | **Build-now vs deferred behind C-1** | (a) build on the shipped singleton seam · (b) **fresh `sb/` primitive, sequenced after K7/K8** | **(b)** | The primitive is a *new* kernel function (L-7 says "not a port"); building on the singleton would inherit the collapse. It consumes K7 `run()` + K8 error envelope, so it sequences **after** them (K9), not "behind C-1" as a blocker — C-1 (the resolver) and C-2 (this) are peers over the same engine/authority substrate. |
 | **Draft-level lock** | (a) advisory lock per draft · (b) **per-op `once()` only (K7-owned)** | **(b)** | ⑤.4's lesson: `once()`+`db.transaction()` covers overlap uniformly; a draft lock adds a failure mode (stuck lock on crash) that `once()` doesn't have. |
 
@@ -617,9 +676,9 @@ imported**; drafts open at cutover are dropped (the operator re-stages). No alia
 
 | Deferral | Reason | Bound |
 |---|---|---|
-| **Cross-op shared-transaction atomicity** | K7's declared `run(spec, ctx)` opens its own txn per op; a whole-draft all-or-nothing pure-DB batch needs a K7 external-conn entry (`run_ref(ref, ctx, *, conn)`, the same 09 assumes). | Built default is per-op-atomic + idempotent resume (§3.5); the upgrade is a one-line K7 co-decision (§12) with zero change to this pipeline's op loop. |
+| **Cross-op shared-transaction atomicity** | 07 **does** expose the external-conn `run_ref(ref, ctx, *, conn)` / `apply` entries, but they are fenced `atomic_db_only` and serve pure-DB callers (09 scheduler; invariant `repair_refs` / version `compensation_refs`). Draft ops bear a post-commit Discord EFFECT leg, so they are outside that fence — a whole-draft shared pure-DB txn is **structurally unavailable** to this lane, not merely un-built. | Per-op-atomic + idempotent resume (§3.5) is the **final** semantics for effect-bearing draft ops (not a pending upgrade). Any all-or-nothing need across ops is met at the *recovery* layer (the compensation deferral below), never by a shared txn. |
 | **Test-mode effect routing to a real test guild** | The built default suppresses real Discord EFFECT writes under `test_mode` (fail-safe: never touch a real guild). True end-to-end verification against a live test guild is the release-testing band's + the L-10 test data-plane's (vocab §⑥.3). | `VerificationContext.test_mode` threads into every op's `WorkflowContext.test_mode`; the concrete "suppress vs route-to-test-guild" behavior is owned by the release-testing band behind the `AcceptHook` + L-10 data-plane seam. Safe default built now. |
-| **Stuck-`APPLYING` recovery ownership** | A crash between step 2 and step 5 leaves `APPLYING`; the re-run is already safe via K7's `once()`, so recovery is cosmetic. | Owned by **09's stuck-`APPLYING` sweep** (a registered `PollLane`, 09 §3.7); this pipeline supplies no janitor of its own. |
+| **Stuck-`APPLYING` recovery ownership** | A crash between step 2 and step 5 leaves `APPLYING`; the re-run is already safe via K7's `once()`, so recovery is cosmetic. | 09 owns the *cadence* (its stuck-`APPLYING` `PollLane`, 09 §3.7); this pipeline supplies the **conditional-CAS DB primitive** `reap_stuck_applying(now, ttl_s)` it calls (`WHERE status='applying' AND updated_at < now() - ttl`, §3.2) with `DRAFT_APPLY_STUCK_TTL_S = 900` s comfortably above a worst-case multi-channel apply (§6) — so a slow-but-live apply is never reaped. |
 | **Cross-draft preset dedup** | Default `dedup_token=f"{draft_id}:{op_seq}"` dedups within a draft; a preset re-instantiated twice creates twice. | The `dedup_token` override field already exists (§3.1) — a producer sets a stable natural key when it wants cross-draft idempotence. No schema change. |
 | **Compensation/undo of a partial batch (incl. orphaned resource creates)** | Full saga/rollback of created Discord resources is out of the C-2 corpus (A#26 "record without a saga engine"). | The `PARTIAL` result records what applied; K7's `compensator` seam (07 §3.3 step 5) records left-behind/orphaned effects; a compensation *engine* is a later band. |
 | **Concurrent edits to one draft** | Two admins editing the same `draft_id` — last-write-wins on `updated_at`, and `preview_hash` catches a stale confirm. | The optimistic `preview_hash` gate is built now; a pessimistic per-draft edit lock is deferred (rare; two admins share `owner_scope`). |
@@ -635,7 +694,7 @@ imported**; drafts open at cutover are dropped (the operator re-stages). No alia
 | **L-7 · unrepresentable 10-channel** | FJ §2 | op identity = `(draft_id, op_seq)`; 10 `create_channel` ops persist as 10 rows. **Retired.** |
 | **L-7 · Accept hard-wired to setup-admin** | FJ §2 | `resolve_draft_accept` = AND over every distinct op `authority_ref` through K6 (mixed-draft-safe); owner-override applies uniformly. **Retired.** |
 | **L-7 · dead `preflight_operations` diff (zero consumers)** | FJ §2 / verified | deleted; diff logic ports into K7 `preview(spec, ctx)` behind the fail-closed op-kind registry. **Retired.** |
-| **T2-1 · atomic-apply meaning for non-rollback-able Discord ops** | FJ §6 (A#1) | per-op-atomic via K7 `run(spec)`; resource creates = K7 post-commit EFFECT legs (best-effort, NOT exactly-once); cross-op all-or-nothing dropped as a default (needs a K7 external-conn entry, §8). The word "atomic" for the resource lane is owner-gated → open decision. **Reconciled with 07's per-op DB/EFFECT model; seam co-decided.** |
+| **T2-1 · atomic-apply meaning for non-rollback-able Discord ops** | FJ §6 (A#1) | per-op-atomic via K7 `run(spec)`; resource creates = K7 post-commit EFFECT legs (best-effort, NOT exactly-once); cross-op all-or-nothing is **structurally** off the table for the draft lane — 07's external-conn `run_ref`/`apply` shared-txn entry is fenced `atomic_db_only` and the draft's ops bear EFFECT legs, so they enter via `run(spec, ctx)` per-op (§8 / §12). The word "atomic" for the resource lane is owner-gated → open decision. **Reconciled with 07's per-op DB/EFFECT model; F-2 resolved by caller type.** |
 | **T2-5 · which actions MUST use preview/confirm** | FJ §6 (C2-Q4) | `requires_confirmation`: destructive ∨ AI-produced ∨ bulk/compound; single reversible direct-lane exempt — **and structurally gated** at apply via `verify_confirmation` + the `confirmed` flag into K7. **Retired (encoded + enforced).** |
 | **T2-19 · native Discord onboarding / server-template interop** | FJ §6 (B#9) | The draft primitive is **independent of** Discord-native onboarding/server-templates; a `PRESET` producer MAY emit ops mirroring a server template, but the draft is our own primitive with our own preview/confirm/audit. Interop is one-directional (we can *read* a template into ops; we never delegate apply to Discord's template engine). Boundary documented → **retired as a documented boundary.** |
 | **§4 gap: C-2 "not new architecture" claim re-baselined** | FJ §4 (L-7 lead-in) | §1 states plainly: C-2 **is** new architecture (the singleton can't carry a second producer). The conventions §2.4 "already-designed draft lane" line is corrected. |
@@ -696,15 +755,21 @@ on 09's supervisor.
    release-testing band's (§9). Flagged so 07 does not treat test_mode as merely `dry_run`.
 3. **Engine entry reconciliation (was the "K7 DOES NOT YET EXIST" assumption).** This pipeline now targets
    07's REAL declared API — `run(spec: CompoundOpSpec, ctx)` / `preview(spec: CompoundOpSpec, ctx)`, per-op
-   self-txn, one central audit row per op. There is no `engine.apply(op)`. Every earlier call site is
-   rewritten (§3.3/§3.5).
-4. **Cross-op shared-transaction upgrade (shared K7 co-decision with 09).** A whole-draft all-or-nothing
-   pure-DB batch would need K7 to expose an external-conn entry `run_ref(ref, ctx, *, conn)` so apply_draft
-   could open one `db.transaction()` and pass it to each op (yielding one shared txn + N correlated audit
-   rows). **09 already assumes exactly this entry** (`run_ref(ref, ctx, *, conn)`, 09 §3.7, and flags the
-   identical "if K7 cannot take an external conn, atomicity degrades to per-op" open decision). This
-   pipeline's built default is per-op-atomic (needs no such entry); the upgrade is a single K7 co-decision
-   shared with 09 (§8), not assumed here.
+   self-txn, one central audit row per op. There is no **per-`DraftOperation`** entry `engine.apply(op, *,
+   conn)` — 07's `apply(…)` is the pure-DB, `atomic_db_only`-fenced external-conn sibling of `run_ref` (item
+   4), consumed by the scheduler/invariant callers, never by this pipeline's op loop. Every earlier call site
+   is rewritten to resolve each op → a `CompoundOpSpec` → `run(spec, ctx)` (§3.3/§3.5).
+4. **Engine-entry split — F-2 RESOLVED (no open co-decision remains for this pipeline).** 07 declares
+   **both** entries: `run(spec, ctx)` (per-op self-txn + post-commit EFFECT legs) **and** the external-conn
+   `run_ref(ref, ctx, *, conn)` / `apply(…)` (fenced `atomic_db_only`). The F-2 fork resolves **by caller
+   type, not by adding an entry**: this pipeline's draft ops are **EFFECT-bearing** (a post-commit Discord
+   create), which `run_ref`'s `atomic_db_only` fence excludes, so **draft ops go through `run(spec, ctx)`
+   per-op** and a cross-op shared pure-DB txn is structurally unavailable to the draft lane. `run_ref`/`apply`
+   exist for the **pure-DB** callers that legitimately use them — 09's scheduler `ManagedTaskSpec` handlers,
+   and the invariant `repair_refs` / version `compensation_refs`. **Seam note for 07:** its `atomic_db_only`
+   fence must scope to the `run_ref`/`apply` callers **only** — it must **not** list any draft `op_kind`
+   mapping in scope, because draft ops legitimately carry EFFECT legs and enter via `run(spec, ctx)`. No
+   shared K7 co-decision is left open for this pipeline; **06's per-op semantics win the reconciliation.**
 
 ---
 

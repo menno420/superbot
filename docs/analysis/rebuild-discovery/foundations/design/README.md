@@ -75,11 +75,14 @@ audit-row + `mutation_id`, the idempotency-key contract, the restart-safety patt
 `EventSpec.delivery`, and the config/secret + data-plane rail — so no downstream port re-derives them
 (the exact drift class the rebuild exists to kill). The **seam-consistency matrix**
 ([`seam-consistency-matrix.md`](seam-consistency-matrix.md)) then **proves** the specs agree:
-**56 of 61 touched cells AGREE**, all 15 prior reconciliations (RC-1 … RC-15) hold, and every seam is
-verified against shipped source. Five genuine open forks remain (F-1 … F-5) — none blocks strand-2/3
-from *building* to the frozen shapes; each is a register entry an owner or a vocab re-freeze closes.
-The one concentrated edit the matrix surfaces: **spec 02** is written to its pre-hardening shapes and
-must absorb 04's frozen authority contracts before K8 wires up.
+**56 touched cells AGREE**, all prior reconciliations (RC-1 … RC-15) hold, and every seam is verified
+against shipped source. Of the **5 forks — 4 are mechanically reconciled + applied
+(F-1 / F-2 / F-4 / F-5)** to the specs (2026-07-04, → RC-18…RC-20 + the F-2 caller-type co-decision),
+and **1 is owner-gated (F-3 intent posture → register PG-2)** — carried, not closed by edit. None ever
+blocked strand-2/3 from *building* to the frozen shapes. The one concentrated edit the matrix still
+surfaces: **spec 02** is written to its pre-hardening shapes and must absorb 04's frozen authority
+contracts (RC-2/3/4/5/12/13/14/15) before K8 wires up — narrowed by one this pass, since F-4/RC-18
+(`actor_type`) has now landed on 02's `ActorRef`.
 
 ---
 
@@ -141,8 +144,9 @@ This foundational design **feeds two gates** and **hands off a third**:
 **→ Gate-0 (the grammar freeze).** The specs *pin* the grammar-field additions Gate-0 ratifies in one
 sitting: the C-1 single-seam contract incl. the panel pipeline + cooldown field (L-4/L-5), the error
 envelope (T2-4), the single `authority_ref` (T1-4), rubric classes 11–13 (L-19), the frozen-path CI
-guard (L-21), the additive `ActorRef.actor_type` / background `Surface` members (F-5/F-2), the
-`ChannelEmitter` egress port (Q-D26), and the L-24 presentation riders (alt-text, locale seam,
+guard (L-21), the additive `ActorRef.actor_type` / background `Surface` members (F-4/F-5, applied →
+RC-18/RC-19), the `ChannelEmitter` egress port (Q-D26 → RC-21), and the L-24 presentation riders
+(alt-text, locale seam,
 `allowed_mentions` policy, `ModalSpec`, bundled fonts) as declared fields. All of Tier-3 batch-blesses
 here. This README + the four artifacts are the sitting's inputs.
 
@@ -152,9 +156,11 @@ the strands *are* the build order:
    `db.transaction()` primitive and 04's authority contracts are the substrate strand-2 depends on.
    Land the **spec-02 absorption edit** (RC-2/3/4/5/12/13/14/15 + `actor_type`) here.
 2. **Strand 2 next** — 07 (K7 engine) underlies both 06 (draft) and 09 (scheduler); 08 (outbox)
-   provides durable delivery. **Close F-1** (who hosts the outbox relay — adopt 08's registered-lane
-   model) and **F-3** (which K7 entry the draft calls — reconcile to 06's `run()` semantics) before
-   wiring the composition root, plus the two residual blockers below.
+   provides durable delivery. **F-1** (who hosts the outbox relay — 09 now hosts the registered
+   relay/reaper lanes) and **F-2** (which K7 entry the draft calls — draft EFFECT ops on 06's per-op
+   `run()`; `run_ref`/`apply` fenced to pure-DB callers) are **reconciled + applied in-spec** this pass
+   (RC-20 + the F-2 caller-type co-decision), along with the residual sweep blockers (07's fence scope,
+   09's GLOBAL slot-key) — wire the composition root against the applied shapes.
 3. **Strand 3 rides both** — 10–14 consume the frozen grammar; adopt the owner rulings from §4.
 
 **Stage-2 still owns (and does NOT depend on completing this L0 build).** The 43×12 subsystem walk
@@ -169,22 +175,23 @@ gates (the data-plane rail, verify-import, backup/DR, permission census).
 
 ---
 
-## Residual polish — adversarial CLOSE-IN-SPEC items still un-applied
+## Residual polish — adversarial CLOSE-IN-SPEC items (APPLIED 2026-07-04)
 
 An adversarial sweep after the specs froze found **8 cross-spec defects deeper than the registered
-forks** (F-1 … F-5). Each is a contained **CLOSE-IN-SPEC** edit — recorded here so it stays visible,
-not lost, and lands with the F-1/F-3 reconciliation during the strand-2 wire-up. **All 8 remain
-un-applied** in the specs as of this synthesis (verified 2026-07-04). The two blockers make a green
-build *structurally impossible* until closed.
+forks** (F-1 … F-5). Each was a contained **CLOSE-IN-SPEC** edit — recorded here so it stayed visible,
+not lost. **All 8 have now been applied** to the specs (2026-07-04), landed alongside the
+F-1 / F-2 / F-4 / F-5 reconciliations during the cross-strand seam pass. The table below is retained as
+the record of each defect + the fix that landed; the two former blockers (07's `atomic_db_only` fence
+scope, 09's GLOBAL slot-key double-arm) are closed, so a green build is no longer structurally blocked.
 
 | Sev | Where | The defect (one line) | Close-in-spec |
 |---|---|---|---|
-| **blocker** | 07 §3.6 `atomic_db_only` ↔ 06 §3.3/§3.5 | The fence scopes "…**or a draft `op_kind` mapping**" and requires every leg be `kind==DB` → it CI-reds every EFFECT-bearing draft op, so the flagship 10-channel D&D canary (06 §11) cannot compile. Deeper than F-3: the entry-name fix alone does not remove it — the **fence scope** is what turns the disagreement CI-red. | **07:** drop "or a draft `op_kind` mapping" from `atomic_db_only`'s scope; draft ops go through `run()` (own txn; EFFECT legs allowed post-commit); fence only true external-conn callers (scheduler `run_ref` / `apply`). Land jointly with F-3. |
+| **blocker** | 07 §3.6 `atomic_db_only` ↔ 06 §3.3/§3.5 | The fence scopes "…**or a draft `op_kind` mapping**" and requires every leg be `kind==DB` → it CI-reds every EFFECT-bearing draft op, so the flagship 10-channel D&D canary (06 §11) cannot compile. Deeper than F-2: the entry-name fix alone does not remove it — the **fence scope** is what turns the disagreement CI-red. | **07 (APPLIED):** dropped "or a draft `op_kind` mapping" from `atomic_db_only`'s scope; draft ops go through `run()` (own txn; EFFECT legs allowed post-commit); fence only true external-conn callers (scheduler `run_ref` / `apply`). Landed jointly with F-2. |
 | **blocker** | 09 §3.5/§3.7 arm + §5 DDL | GLOBAL recurring tasks are **double-armed on every boot**: they store `guild_id = NULL`, and Postgres treats NULLs as DISTINCT, so `ON CONFLICT (task_key, guild_id) WHERE recurring` never fires — duplicate rows accrue and each fires every interval (daily digests double-post). `once()` can't dedup them (distinct `task_id` in the key). The table stores NULL while the fire key uses `guild_id or 0`. | **09:** normalize the GLOBAL slot key — `COALESCE(guild_id, 0)` in the unique index (or store `0`, or `NULLS NOT DISTINCT`); make the arm slot key and the fire dedup key use the **same** normalization. |
-| gap | 07 §3.3/§4 ↔ 02 §3.1; 09 §4 / 11 §8.2 | K7 classifies leg failures "via `from_exception`", but `from_exception(exc, *, surface, target)` needs both — and `WorkflowContext` carries **neither**; a background fire has no `TargetRef` at all. Deeper than F-2 (which only names the missing `Surface` member). The error path of every K7 public entry is unbuildable as literally written. | **07 (+ vocab §①):** either make `target: TargetRef \| None` + add the background `Surface` member + thread optional `surface`/`target` onto `WorkflowContext`; **or** state K7 classifies via a surface/target-free helper and reserves `from_exception` for the resolver. Pick one and pin it. |
+| gap | 07 §3.3/§4 ↔ 02 §3.1; 09 §4 / 11 §8.2 | K7 classifies leg failures "via `from_exception`", but `from_exception(exc, *, surface, target)` needs both — and `WorkflowContext` carries **neither**; a background fire has no `TargetRef` at all. Deeper than F-5 (which only names the missing `Surface` member). The error path of every K7 public entry is unbuildable as literally written. | **07 (+ vocab §①) (APPLIED):** made `target: TargetRef \| None` + added the background `Surface.MAINTENANCE` member (02 §3.1); K7's leg-exception path pins `from_exception(exc, surface=Surface.MAINTENANCE, target=None)` (07 §3.3-4b). RC-19. |
 | gap | 13 §2.4c ↔ §2.4a/§2.4b | 13 self-contradicts on `audit_log`: §2.4c lists it as a REVERSE_IMPORTABLE/LEDGER reverse-import target ("re-insert into the OLD DB by `mutation_id`"), but `audit_log` is a **new** fresh-chain spine table with no OLD-DB predecessor — and by 13's own derivation it is NEW_ONLY ⇒ DECLARED_LOSS. Would send the importer at a nonexistent OLD table. | **13 §2.4c:** remove `audit_log` from the reverse-import set — the LEDGER reverse-import target is `economy_audit_log` (NAME_STABLE) only; the new-bot `audit_log` slice is forensic + DECLARED_LOSS per §2.4a. |
 | gap | 12 §2.B | Credential rotation claims restart-safety "re-armed by boot-reconcile (§⑤.3)", but §⑤.3 is the **scheduler's** boot-reconcile (re-arms `sb_due_queue` only) and the rotation is a GitHub-Actions routine, not a due-queue task — nothing re-arms it. And the ledger has only `last_rotated_at`: an "issued-but-not-yet-verified" crash has undefined recovery. | **12:** arm rotation as a real durable `ManagedTaskSpec` (so §⑤.3 literally applies), **or** add a `rotation_state ∈ {issued, verified}` intermediate so a `once()`=False + outcome-pending re-run completes the read-back; fix the §⑤.3 cite. |
-| nit | 10 T-7 vs seam matrix §8 / vocab §⑩ | The new `ChannelEmitter` egress port + AST fence (a whole new port in the frozen `kernel/interaction` module) is registered by **neither** the seam matrix's fork roster nor the vocab's tracked-corrections list — only inside 10's own T-7 — while the analogous `ActorRef.member_tier`/`actor_type` additions **are** registered. An unreconciled cross-spec module addition the completeness layer omits. | **seam matrix / vocab §⑩:** register the `ChannelEmitter` port + egress fence as a pending 02/K8 seam correction (an RC or a fork row), parallel to RC-12/F-5. *(Homed as Q-D26 in the register; just not in the reconciliation layer.)* |
+| nit → **applied** | 10 T-7 vs seam matrix §8 / vocab §⑩ | The new `ChannelEmitter` egress port + AST fence (a whole new port in the frozen `kernel/interaction` module) was registered by **neither** the seam matrix's fork roster nor the vocab's tracked-corrections list — only inside 10's own T-7 — while the analogous `ActorRef.member_tier`/`actor_type` additions **were** registered. An unreconciled cross-spec module addition the completeness layer omitted. | **DONE:** the `ChannelEmitter` port + egress fence is now registered in the reconciliation layer as **RC-21** (a pending 02/K8 seam correction, parallel to RC-12/F-4) — in **both** the seam matrix (§8/§9) and vocab §⑨/§⑩. Homed as Q-D26 in the register. |
 | nit | 08 §12.5 vs 07 §3.3 4e+6 | 08 flags "07:192,236 **must change** to the two-call protocol / best-effort events never emit" — but 07 as written **already** implements it (§3.3 step 4e captures the in-txn `enqueue_all`; step 6 calls `emit_after_commit()`). The correction is stale; the seam matrix marks seam ⑥ AGREE without noting 08's flag is outdated. | **08 §12.5:** downgrade "07 must change" to "07 §3.3 steps 4e+6 already implement the two-call protocol — confirmed consistent," so a builder isn't sent to "fix" correct wiring. |
 | nit | 06 §6 ↔ 09 ExpiryJanitorLane | The stuck-`APPLYING` → PARTIAL TTL is never specified; a legitimately slow multi-channel apply (Discord rate limits) can exceed a short TTL and be flipped to PARTIAL while `apply_draft` is still running — a last-writer race (benign for correctness, wrong terminal status). | **06/09:** make the janitor transition a conditional compare-and-set (`WHERE status='applying' AND updated_at < now-TTL`), have apply's final `update_status(APPLIED)` re-read/heartbeat, and pin a TTL above worst-case resource-create batch time. |
 

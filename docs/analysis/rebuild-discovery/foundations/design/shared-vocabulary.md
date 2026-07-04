@@ -20,6 +20,17 @@
 > to shipped value strings, `denial_message` is **engine-generated (not `[S]`)**, the transparency
 > emit seam is pinned to a **`TransparencySink` port** (not `emit_audit_action`), and **RC-7 is now
 > RESOLVED** (01 adopted K1's namespace oracle shape). New reconciliations: **RC-12…RC-15**.
+>
+> **Cross-strand seam pass (2026-07-04) — reconciliations RC-16…RC-21 added.** After the strand-2/3
+> specs froze, the four mechanically-reconciled cross-strand forks were **applied to the specs** and the
+> reconciliation ledger below (§⑨) extended: **RC-16** correlation-id column (formalizes the prior
+> "new" row), **RC-17** `DeliveryClass` home = `sb/spec/events.py`, **RC-18** `ActorRef.actor_type`
+> additive field (F-4, applied), **RC-19** background `Surface.MAINTENANCE` member + `from_exception.target
+> → TargetRef | None` (F-5, applied), **RC-20** poll topology — 09 hosts the outbox relay/reaper lanes
+> (F-1, applied), and **RC-21** the pending `ChannelEmitter` 02/K8 egress port (Q-D26). The fifth fork
+> (F-3 intent posture) is **owner-gated → register PG-2**, not closed by edit. The frozen contract tables
+> in §①–§⑦ are otherwise unchanged; only the reconciled seams (`from_exception.target`, the `MAINTENANCE`
+> member) are updated to their applied shape.
 
 ---
 
@@ -64,7 +75,16 @@ the same function).
 
 ```python
 def from_exception(exc: BaseException, *, surface: Surface,
-                   target: TargetRef, section_label: str | None = None) -> ErrorEnvelope: ...
+                   target: TargetRef | None, section_label: str | None = None) -> ErrorEnvelope: ...
+#   RC-19 (applied 2026-07-04): `target` is `TargetRef | None` — a headless background fire has no
+#   TargetRef and passes `target=None`. `surface`/`target` only enrich `user_message`; the classifier
+#   core (exc → error_class → reason → outcome → retryable) is surface/target-independent.
+
+class Surface(enum.Enum):                           # 02 (interaction dispatch) — see RC-11 (do NOT unify w/ namespace Surface)
+    SLASH; PREFIX; COMPONENT; MODAL; NL_INTENT; NL_ORCHESTRATION   # the six interaction origins
+    MAINTENANCE = "maintenance"                     # RC-19: the ONE background/headless member —
+    #   covers 09 scheduler fires AND 11 invariant sweep-repairs; both call
+    #   from_exception(exc, surface=Surface.MAINTENANCE, target=None). NOT a per-sibling scheduler/maintenance split.
 
 class ErrorClass(enum.Enum):                       # sb/spec/outcomes.py (the leaf, §⑦.1)
     NONE="none"; USER_ERROR="user_error"; DENIED="denied"; TRANSIENT="transient"; BUG="bug"
@@ -616,6 +636,12 @@ above.
 | **RC-13** *(new)* | `ChannelAccessDecision` field count: earlier 7-field view vs 04's hardened 8-field | 04's **8-field** form (adds `detail ∈ {"", "commands_disabled", "channel_not_allowed"}`) wins — 04 owns the shape (§⑩ leaf inventory); `AccessMode` uses the **shipped value strings** (`"all_channels"`/…, `command_access.py:184`, verified), never `"all"/"selected"/"disabled"` | this doc's §②.4 absorbs the 8th field; any consumer view narrows to it |
 | **RC-14** *(new)* | `denial_message` role tag: earlier `[S]`-derived vs 04's engine-generated | **engine-generated** generic copy per `(lane, reason)` — **not** a spec field; the sole `[S]` field is `authority_ref`. A per-spec `denial_copy` override is a labeled deferral (04 §9) | earlier `[S]` tag dropped; `from_exception` reads `AuthorityDecision.denial_message` on the `denied` row |
 | **RC-15** *(new)* | Transparency emit seam: 02's unnamed "routes to the transparency-audit sink" vs 04's `TransparencySink` port | 04 owns `build_transparency_audit` + the `TransparencySink` port; emit path = **port + `command.dispatched` `override_applied`/`base_allowed` flags**, **NOT** `emit_audit_action` (a transparency notice is not a mutation and cannot fill the 11-field seam) | **spec 02** must **name** `build_transparency_audit` + `TransparencySink` at step 4 and derive the two flags from `AuthorityDecision` |
+| **RC-16** *(cross-strand pass)* | Compound-op ↔ audit correlation: a 12th `emit_audit_action` bus field vs a DB column | **`audit_log.correlation_id` column** (07 §5 / 08 §5.1) — the 11-field bus payload is unchanged; the compound draft correlates its N rows by `ctx.correlation_id = draft_id` written to the column | **RECONCILED across 06/07/08** — resolves 06 §12's open co-decision; no consumer re-derives a bus field |
+| **RC-17** *(cross-strand pass)* | `DeliveryClass` home: a local copy in K7 (07) vs the `[S]` grammar owner (08) | **`sb/spec/events.py`** owns `DeliveryClass{AT_LEAST_ONCE,BEST_EFFORT}` + `EventSpec.delivery`; **07 imports it** (no local copy) | **RECONCILED** — 08 §12.1 / 07 §8 fork F; one enum, no drift (see §⑩ leaf inventory) |
+| **RC-18** *(cross-strand pass, F-4 — APPLIED 2026-07-04)* | `ActorRef.actor_type`: 09/11 assume it (`system`/`backfill`); frozen `ActorRef` (§⑩) lacked it | **additive `actor_type: str = "user"`** (`{user, system, backfill, setup_delegate}`) on 02's `ActorRef` + vocab §⑩; K7 maps `ctx.actor.actor_type → AuthorityRequest.actor_type` (§②.3 scripted-bypass); `SYSTEM_ACTOR="system"`, `SWEEP_ACTOR="backfill"` | **APPLIED** — 02 §3.1 adds the field; 09/11 consume it (no longer flagged corrections). **Distinct from RC-12 `member_tier`, still pending on 02.** |
+| **RC-19** *(cross-strand pass, F-5 — APPLIED 2026-07-04)* | Background `Surface` member + `from_exception.target`: 09 used `surface="scheduler"`, 11 refused a `scheduler`/`maintenance` fork; interaction `Surface` (RC-11) had no background member and `target` was non-optional | **ONE** background member **`Surface.MAINTENANCE = "maintenance"`** (covers 09 scheduler fires AND 11 sweep-repairs — NOT a per-sibling split), added to the **interaction** `Surface` (02, not the namespace one — RC-11 still holds); **`from_exception.target → TargetRef \| None`**; background fires call `from_exception(exc, surface=Surface.MAINTENANCE, target=None)` (surface/target only enrich `user_message`) | **APPLIED** — 02 §3.1/§3.3 define; 09 §3.8 / 11 §2.2/§4 Q4/§8.2 / 07 §3.3-4b adopt; 11's Q4 → CLOSED |
+| **RC-20** *(cross-strand pass, F-1 — APPLIED 2026-07-04)* | Poll topology: 08 registered the outbox relay as a `PollLane` on 09's `PollSupervisor`; 09 (as drafted) modeled it as its own standalone `RELAY_TASK(Interval 1s)` — unhosted if built as drafted | **09 HOSTS** `OutboxRelayLane` + `OutboxReaperLane` as `PollLane`s on its **one** `PollSupervisor` at the shared **5 s** cadence; the standalone-1 s-loop / not-my-lane model is withdrawn; the lane roster is **non-exhaustive** (due-queue + draft janitor + outbox relay/reaper today; invariant sweep + credential rotation as future riders) | **APPLIED** — 09 adopts 08's registered-lane model throughout; 08 already cites 09 as host (unchanged) |
+| **RC-21** *(cross-strand pass, PENDING — Q-D26)* | `ChannelEmitter` send-egress port: a new `kernel/interaction` egress port + AST fence registered by neither the seam matrix nor this ledger — only inside 10's T-7 | register the **`ChannelEmitter.send` port** + the egress AST fence (raw discord send outside `adapters/discord/responders.py` = `SEMANTIC_VIOLATION`) as a pending **02/K8** seam correction; concrete `DiscordChannelEmitter` is the only module constructing `AllowedMentions` (`UNTRUSTED` default ⇒ `AllowedMentions.none()`) | **PENDING** — a registered additive correction parallel to RC-12/F-4; homed as **Q-D26** in the register, asserted by `10 §2.A`/§8. **02/K8 must add the port** when it wires egress |
 
 ---
 
@@ -632,7 +658,8 @@ above.
 | `sb/namespace/{kinds,records,validate,index,triggers}.py` | `NamespaceKind`, `Surface`(PREFIX/SLASH), scope key, `validate`, `NamespaceReport`, `Collision(+scope)`, `ReservationIndex`, `is_reserved`, `resolve_command`, `check_trigger` | K1 |
 | `sb/kernel/db/idempotency.py` | `IdempotencyKey`, `PriorOutcome`, `once`/`record_outcome`/`read_outcome`, `idempotency_keys` table | K3 |
 | `sb/kernel/db/{pool,data_plane,migrations}.py` | `DBUnavailable(ConnectionError)`, `transaction()`/`checked_acquire()`, `assert_data_plane`, `verify_applied_checksums`/`MigrationDrift` | K3 |
-| `kernel/interaction/{request,resolve,result,errors,predicates}.py` | `ResolveRequest`, `ActorRef` (**must add `member_tier` — RC-12**), `resolve`, `Result`, `from_exception`, `resolve_reply_visibility`, `SurfaceResponder` port | K8 |
+| `sb/spec/events.py` | **`DeliveryClass{AT_LEAST_ONCE,BEST_EFFORT}`** (canonical home) + `EventSpec.delivery` [S] field — 07 imports it, no local copy (RC-17) | K4 |
+| `kernel/interaction/{request,resolve,result,errors,predicates}.py` | `ResolveRequest`, `ActorRef` (**`actor_type` added — RC-18 applied; still must add `member_tier` — RC-12**), `Surface` (**gains the background `MAINTENANCE` member — RC-19**), `resolve`, `Result`, `from_exception` (**`target: TargetRef \| None` — RC-19**), `resolve_reply_visibility`, `SurfaceResponder` port; **pending: the `ChannelEmitter` send-egress port — RC-21/Q-D26** | K8 |
 | `kernel/authority/{owner,decision,resolve,channel_access,transparency}.py` | `owner_override_holds`, `AuthorityRequest`/`AuthorityDecision`/`ChannelAccessDecision`/`AccessMode`/`TransparencyAudit`, `resolve_authority`, `resolve_channel_access`, `build_transparency_audit` + **`TransparencySink` port** | K6 |
 | `sb/adapters/discord/member_tier.py` | `member_tier_from_member(member, guild_owner_id) -> str` — the **only** module that reads discord perms for authority (ports `visibility_rules.py:44`) | K8 |
 | `sb/adapters/discord/transparency_sink.py` | concrete `TransparencySink` (bot-log + server-log + owner-DM digest) | logging band |

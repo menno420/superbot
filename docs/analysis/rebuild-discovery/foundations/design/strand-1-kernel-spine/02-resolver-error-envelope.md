@@ -17,6 +17,14 @@
 > `services/lifecycle/contracts.py:48–52`; the shipped **message-pipeline** stage contract is
 > `StageResult` (`core/runtime/message_pipeline.py:181`) — the passive on-message substrate, **not**
 > a `resolve()` dispatch return (§3.6). Spot-verify both before building.
+> **Cross-strand seam corrections absorbed (PIN-3 / PIN-4).** Two additive cross-spec fields land in
+> this spec's leaves: (PIN-3) `ActorRef` carries `actor_type: str = "user"` (§3.1) — K7 maps
+> `ctx.actor.actor_type → AuthorityRequest.actor_type`, and the reserved non-user values
+> `"system"` (09's `SYSTEM_ACTOR`) / `"backfill"` (11's `SWEEP_ACTOR`) hit `resolve_authority`'s
+> step-1 scripted-bypass (§②.3); (PIN-4) the interaction `Surface` enum gains ONE background member
+> `MAINTENANCE` (§3.1) — the single token both 09 scheduler-fires **and** 11 invariant sweep-repairs
+> classify under, and `from_exception`'s `target` widens to `TargetRef | None` so a headless fire
+> passes `target=None` (§3.3). Both are additive: they change no existing field and no classifier core.
 > **Buildable-depth test:** a fresh agent builds this from this spec + the frozen upstream contracts
 > making zero further design decisions; every unclosable fork is in §8 (owner-gated ones as
 > options+recommendation, never decided). **The four resolver-facing grammar fields this design reads
@@ -143,6 +151,10 @@ class Surface(enum.Enum):
     SLASH = "slash"; PREFIX = "prefix"
     COMPONENT = "component"; MODAL = "modal"
     NL_INTENT = "nl_intent"; NL_ORCHESTRATION = "nl_orchestration"
+    MAINTENANCE = "maintenance"        # PIN-4: the ONE background/headless surface — covers 09
+    #   scheduler fires AND 11 invariant sweep-repairs (both classify their fire/repair/compensation
+    #   exceptions through from_exception with surface=MAINTENANCE, target=None). NOT a per-sibling
+    #   "scheduler"/"maintenance" split (that string-drift is exactly what the shared vocab kills).
 
 class DeferMode(enum.Enum):             # frozen [S] on PanelActionSpec (§2.6); optional [S] on
     AUTO = "auto"; MODAL = "modal"; NONE = "none"   # CommandSpec/SelectorSpec via §3.0
@@ -153,6 +165,12 @@ class ActorRef:                        # normalized by the adapter (generalizes 
     is_guild_operator: bool            # owner / administrator / manage_guild (shipped _is_guild_operator)
     is_bot_owner: bool                 # platform-owner override candidate (config.is_platform_owner)
     is_dm: bool
+    actor_type: str = "user"           # PIN-3: "user" | "system" | "backfill" | "setup_delegate"
+    #   (vocab §⑩ / AuthorityRequest §②.3). Default "user" for EVERY interaction surface. K7 maps
+    #   ctx.actor.actor_type → AuthorityRequest.actor_type when it builds the request, so the reserved
+    #   non-user values — SYSTEM_ACTOR="system" (09 scheduler fires), SWEEP_ACTOR="backfill" (11
+    #   invariant sweep-repairs) — hit resolve_authority's step-1 scripted-bypass (allowed=True, not
+    #   authority-gated). Last field with a default so the four non-default fields keep their order.
 
 @dataclass(frozen=True)
 class TargetRef:
@@ -210,7 +228,7 @@ async def resolve(req: ResolveRequest) -> Result: ...
 | # | Step | What runs | Deny → |
 |---|---|---|---|
 | 0 | **admission** | `lifecycle.can_accept_commands()` (K5). Draining ⇒ every surface stops, **silent** (no ack) — generalizes the shipped `lifecycle.is_shutting_down()` gate (*invoked at* `message_pipeline.py:277`) to all surfaces | `BLOCKED`, reason `DRAINING`, `user_message=None` |
-| 1 | **authority** | resolve `target.spec.authority_ref` (ONE ref, Q-0237d) via the authority engine (K6) → `AuthorityDecision{allowed, lane, denial_copy, override_applied, base_allowed}`; owner-override applied **once here** (scope owner-gated §8-b). The returned **`lane` feeds the ACK-boundary defer visibility and §3.4** | `BLOCKED`, reason `AUTHORITY`, `error_class=denied`, `user_message=decision.denial_copy` |
+| 1 | **authority** | resolve `target.spec.authority_ref` (ONE ref, Q-0237d) via the authority engine (K6) → `AuthorityDecision{allowed, lane, denial_copy, override_applied, base_allowed}`; owner-override applied **once here** (scope owner-gated §8-b). The resolver builds the `AuthorityRequest` carrying `req.actor.actor_type` (PIN-3) — always `"user"` on an interaction surface, so no scripted-bypass fires here; the reserved `"system"`/`"backfill"` bypass values reach `resolve_authority` **only** via the headless K7/09/11 path. The returned **`lane` feeds the ACK-boundary defer visibility and §3.4** | `BLOCKED`, reason `AUTHORITY`, `error_class=denied`, `user_message=decision.denial_copy` |
 | 2 | **validate** | (a) per-guild **enablement/visibility** — evaluate `target.spec.enabled_when` (+ subsystem-visibility + the folded-in channel-access lane; for component/selector surfaces **also** re-evaluate `visible_when`) → deny reason `DISABLED`/`VISIBILITY`/`CHANNEL`; (b) **argument** validation against the spec's ParamSpecs → deny reason `USER_ERROR`, `error_class=user_error` | `BLOCKED` (reason per above) |
 | — | **ACK boundary** | steps 0–2 are cached/in-memory (well < Discord's 3 s). A denial in 0–2 responds **directly** via `responder.deny(message, ephemeral=True)` (the denial is its own ack; always ephemeral — pre-ack, nothing frozen). If all passed, resolve `defer_mode` (`CommandSpec`/`SelectorSpec`: `None`⇒ **surface-derived default** — SLASH+`route=PanelRef`⇒`NONE` (the panel render is the ack), SLASH+`route=HandlerRef`⇒`AUTO`, PREFIX/message⇒`NONE`, COMPONENT/SELECT⇒`AUTO`, MODAL-submit⇒`NONE`; `PanelActionSpec`: its frozen `defer_mode`). `AUTO` ⇒ `responder.ack(ephemeral = V==EPHEMERAL)` where **`V = target.spec.reply_visibility or lane_default(decision.lane)`** — this commits (freezes) the visibility for all post-defer renders (§3.4). `MODAL` ⇒ `open_modal` (the modal is the ack); `NONE` ⇒ the handler's first send / panel render acks. Message surfaces: `ack` is a no-op. An `eager_defer` surface flag (bounded escape hatch, defers before step 0 at `V` for a known-slow gate) is **not** the default | — |
 | 3 | **cooldown** | charge `target.spec.cooldown: CooldownSpec` (CONSUMED); for NL rungs also charge the **distinct AI-throttle axis** (CONSUMED). Over-limit ⇒ deny | `BLOCKED`, reason `COOLDOWN`/`AI_THROTTLE`, `retryable=True`, retry-after in `user_message` |
@@ -262,8 +280,21 @@ class ErrorEnvelope:
     outcome: str               # the §2.7 constant this class maps to (§3.6)
 
 def from_exception(exc: BaseException, *, surface: Surface,
-                   target: TargetRef, section_label: str | None = None) -> ErrorEnvelope: ...
+                   target: TargetRef | None, section_label: str | None = None) -> ErrorEnvelope: ...
 ```
+
+**`surface`/`target` only enrich `user_message` — the classifier core is surface/target-independent
+(PIN-4).** The core mapping `exc → error_class → reason → outcome → retryable` reads **only the
+exception type** (the table below); `surface` and `target` feed *nothing but* the `user_message`
+derivation (the wizard section fold-in, the `!help <cmd>` argument hint, the missing-permission name).
+Because of that separation, a **headless background fire has no interaction target and discards the
+copy**: the scheduler (09) and the invariant sweep (11) call
+`from_exception(exc, surface=Surface.MAINTENANCE, target=None)` to classify every
+fire/repair/compensation exception through the *same* function, taking `error_class`/`reason`/`outcome`
+for their audit trail and dropping the (target-less) `user_message`. `target is None` is therefore
+valid input: `user_message` derivation skips the target-keyed hints and returns the class's canonical
+copy verbatim. `MAINTENANCE` is the ONE background `Surface` both siblings share (§3.1) — never a
+`"scheduler"`-vs-`"maintenance"` per-sibling split.
 
 **Exception → class → reason table (the buildable mapping):**
 
@@ -443,7 +474,10 @@ async def request_from_intent(intent: ResolvedIntent, *, responder, origin,
 
 # rung 4 — orchestration: N intents → N ResolveRequests sharing one minted orchestration_id,
 #   resolve()'d sequentially via the task supervisor (INV-T); stop on first non-SUCCESS
-#   (or a declared policy, §9); each step audited under the shared id.  (Closes the NL_ORCHESTRATION
+#   (or a declared policy, §9); each step audited under the shared id.  A mid-sequence failure is
+#   reported as ONE aggregate PARTIAL (§2.7 vocab, via classify_outcome §3.6) carrying the completed
+#   prefix: the steps before the stop ran and succeeded, the failing step's error_class/reason is
+#   surfaced, and the untried suffix did not run.  (Closes the NL_ORCHESTRATION
 #   "no producer" nit — this adapter is the producer that sets surface=NL_ORCHESTRATION.)
 async def request_from_plan_step(step: PlanStep, *, plan_id: str, responder, origin,
                                  guild_id, channel_id, actor) -> ResolveRequest:
@@ -612,10 +646,11 @@ they are presented, never decided. Each is also in the structured `open_decision
 - **Fuzzy safety classification** — which fuzzy AUTO-corrections are safe to auto-run is derived from
   the manifest `effect` field (Tier-3 batch C2-Q5), not a hand-list. *Reason:* consumed from the
   manifest; the `fuzzy` adapter reads it.
-- **Rung-4 orchestration failure policy** — stop-on-first-non-SUCCESS is the default; a per-plan
+- **Rung-4 orchestration failure policy** — stop-on-first-non-SUCCESS is the default, and a
+  mid-sequence stop reports **one aggregate `PARTIAL` with the completed prefix** (§3.7); a per-plan
   policy (continue/compensate) is bounded to the AI/knowledge band (Phase 4 band 6). *Reason:* the
-  orchestration corpus is not yet enumerated; the sequential seam + shared `orchestration_id` are
-  designed now.
+  orchestration corpus is not yet enumerated; the sequential seam + shared `orchestration_id` +
+  the `PARTIAL`-with-prefix aggregate reporting are designed now.
 
 ---
 

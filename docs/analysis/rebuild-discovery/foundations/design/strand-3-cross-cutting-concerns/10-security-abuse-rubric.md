@@ -163,8 +163,17 @@ to a counter that lands later (T2-15):
   additionally asserts `quota_ref` resolves to a **registered** counter (the K1 reservation is now
   backed by an implementation). Until then the name-reservation + FAIL_CLOSED interim holds.
 
-The cardinality leg is **already** `check_metric_cardinality` (⚙️, 05 §3.3). *Victim: the payer /
-availability.*
+The cardinality leg is **already** `check_metric_cardinality` (⚙️, 05 §3.3).
+
+**Bound scope — the per-actor spend gap, acknowledged (not silently unbounded):** the `cost_posture`
+quota tiers bound spend at **per-guild** (`PER_GUILD_QUOTA`) and **global** (`BUDGET_CAP`) granularity
+only — there is **no per-user / per-actor *spend* share**. A single member draining the whole guild
+quota (an intra-guild spend-DoS that denies the guild's other members) is bounded today **only by the
+per-user *rate* axis** — the step-3 `CooldownSpec` + the distinct AI-throttle (spec 02 §3.2) — not by a
+spend budget. A finer bound would land as an additional `PER_ACTOR_QUOTA` posture member keyed on the
+**same `quota_ref` counter** (a per-subject sub-budget under the per-guild total), sequenced with the
+T2-15 spend-counter build; flagged here so the scope is explicit rather than an unstated hole. *Victim:
+the payer / availability.*
 
 **### 12. Privacy / retention / erasure — 🔧 checker (build) · 🧠 partial (PII-in-prompt judgment)**
 **Probe:** *What personal data does this touch, where does it flow and rest, how long is it kept,
@@ -199,8 +208,13 @@ is a `WorkflowRef` (a bare `HandlerRef` bypassing the audited seam is a `SEMANTI
 vocab ③.4 — erasure IS an auditable mutation). A member-data store with no erasure hook is **CI-red**.
 
 The **member-erasure executor** (R-1/R-2 — the mechanic concern ⑪ and ⑫ both defer *to this class*):
-a K7 workflow, reusing concern ⑪'s exact audited+idempotent pattern (once() + `run_ref` +
-`emit_audit_action`), owned **here** rather than a phantom "presentation-strand build" (findings §8.3):
+a K7 workflow, reusing concern ⑪'s **exact** audited+idempotent pattern (the 09 `_fire_one` shape,
+concern ⑪ §2.2) — the executor owns the `db.transaction()`, the `once()` guard, and `record_outcome`,
+and each per-store leg runs via `run_ref(store.erasure_ref, ctx, conn=conn)` in **07 §3.2 external-conn
+mode** (pure-DB legs + one central audit row + any `AT_LEAST_ONCE` notice on the executor's conn; **no**
+inner txn / `once()` / EFFECT legs). Owned **here** rather than a phantom "presentation-strand build"
+(findings §8.3). Pinned to buildable depth — **how it enumerates, what it deletes vs tombstones, and
+how it proves completeness**:
 
 ```python
 # sb/kernel/privacy/erasure.py  (owned by rubric-class-12's mechanic; design depth here, wiring at Stage-3)
@@ -208,12 +222,57 @@ class ErasureTrigger(StrEnum):
     GUILD_LEAVE     = "guild_leave"      # on_guild_remove ⇒ erase THAT guild's member rows (R-1)
     SUBJECT_REQUEST = "subject_request"  # a member/operator erasure request (R-2)
 
+class ErasureDisposition(StrEnum):       # the DELETE-vs-TOMBSTONE axis — what a per-store leg did
+    ERASED     = "erased"      # rows hard-DELETEd (the subject's keyed rows removed)
+    TOMBSTONED = "tombstoned"  # PII columns scrubbed in place, value/audit skeleton KEPT (value stores)
+    ABSENT     = "absent"      # the store held no row for this subject (a valid terminal leg)
+
+@dataclass(frozen=True)
+class ErasureLegResult:
+    store: str                           # StoreSpec.table
+    disposition: ErasureDisposition
+    rows_affected: int
+    mutation_id: str                     # the emit_audit_action row this leg wrote (audited seam)
+
+@dataclass(frozen=True)
+class ErasureResult:
+    complete: bool                       # True IFF every data_class!=NONE store reported a TERMINAL leg
+    legs: tuple[ErasureLegResult, ...]
+    unreached: tuple[str, ...] = ()      # stores whose leg failed/could-not-run ⇒ complete=False, RETRYABLE
+
 async def run_erasure(trigger: ErasureTrigger, *, guild_id: int, subject_id: int | None, conn) -> ErasureResult:
-    ...  # walk every StoreSpec where data_class != NONE (the machine-complete inventory) → invoke its
-         # erasure_ref (audited K7 WorkflowRef) → idempotent via once(IdempotencyKey("privacy.erasure", …))
-         # → one emit_audit_action per store. Caches (cache_scope) and the idempotency store are in the walk;
-         # the container-snapshot copy leg (FJ §4 #11) interlocks with concern ⑫/⑬ (§6).
+    ...  # (1) ENUMERATE — iterate the COMPILED StoreSpec registry (the manifest `stores` facet, the same
+         #     snapshot the compiler builds), filter `data_class != NONE`. The slice is machine-COMPLETE by CI
+         #     construction: check_data_lifecycle CI-reds any member-data store lacking a StoreSpec + data_class
+         #     + erasure_ref, so no member-data store exists OUTSIDE this walk (proof, not a hand-kept list).
+         # (2) DELETE vs TOMBSTONE — decided PER STORE, encoded in its erasure_ref (executor stays store-agnostic;
+         #     the StoreSpec grammar constrains which choice is legal):
+         #       • value/audit store (checkpoint_class ∈ {ledger, aggregate}; bears_value in 09's extension) ⇒
+         #         TOMBSTONE: scrub the PII columns in place (null display_name/username/message_text/avatar),
+         #         KEEP the value skeleton (mutation_id, amount, ts). A hard delete would break concern ⑪'s
+         #         invariant fence + concern ⑬'s LEDGER reverse-import — this IS R-3's "money/audit families retain."
+         #       • non-value store (session/dedup, member_id config, caches) ⇒ ERASED: hard-DELETE the subject's
+         #         keyed rows (":"-joined key columns in the StoreSpec's declared order). Caches (cache_scope) and
+         #         the idempotency store are non-value ⇒ pruned — this IS R-3's "message-dedup families prune."
+         # (3) AUDITED + IDEMPOTENT per store — run_ref(store.erasure_ref, …) ⇒ one emit_audit_action; each leg
+         #     guarded by once(IdempotencyKey("privacy.erasure", guild_id, f"{store}:{subject_id}:{trigger_epoch}"))
+         #     so a crash mid-walk RESUMES and finishes and a re-run is a per-store no-op.
+         # (4) PROVE COMPLETENESS — aggregate one ErasureLegResult per enumerated store; complete=True IFF EVERY
+         #     data_class!=NONE store reported a terminal leg (ERASED/TOMBSTONED/ABSENT). Any failed/unreached store
+         #     ⇒ complete=False + `unreached` — a durable, resumable, AUDITED partial, never a silent gap.
+         # The container-snapshot copy leg (FJ §4 #11) is OUTSIDE the in-DB/cache inventory ⇒ interlocks with
+         # concern ⑫/⑬ (§6); this executor supplies the machine-walkable inventory those cuts erase against.
 ```
+
+**The `StoreSpec.erasure_ref` completeness contract (why the walk provably cannot miss a store).**
+`check_data_lifecycle` makes a non-empty `erasure_ref` a Gate-0 requirement on **every** `data_class !=
+NONE` store, and a member-data store with **no** `StoreSpec` is unrepresentable in the compiled manifest
+— so the enumeration is exhaustive **by construction**. Completeness is then structural, not audited by
+inspection: **(a)** the inventory = the full `data_class != NONE` slice of the registry; **(b)** one
+terminal `ErasureLegResult` per store, or the aggregate `ErasureResult.complete` is `False` and the run
+is retryable; **(c)** `once()`-per-store makes the whole walk idempotent-resumable, so a partial erasure
+is a durable resumable state that finishes on re-fire — the money/audit lane (tombstoned) and the
+message-dedup lane (pruned) both terminate, and neither is left half-erased.
 
 PII-in-prompts stays a judgment probe (🧠) — trace it. *Victim: the member / data-subject.*
 
@@ -245,7 +304,11 @@ class TrustLevel(StrEnum):                   # [S] the content-trust tag — def
 #   it depends on the default. (COVERED — the pass asserts default-deny, does not add a primitive.)
 
 # Surface 2 — SEND egress (service-initiated channel.send — the X-1 vector): NOT reachable by
-#   SurfaceResponder. A NEW named primitive (proposed as a spec-02/K8 seam correction, §8.1):
+#   SurfaceResponder. A NEW kernel/interaction PORT — this is a spec-02/K8 SEAM CORRECTION, and MUST be
+#   registered in the RECONCILIATION LAYER (question-register Q-D26 → a pending seam-consistency-matrix RC,
+#   PARALLEL to RC-12/F-5's two additive ActorRef fields), NOT left buried in this dossier's owner table.
+#   Disposition is DECIDED (Q-D26 = "add the port"; owner-VISIBLE since it touches a frozen module, not
+#   owner-BLOCKED) — a kernel builder wiring K8 sees it where it looks for every other cross-spec seam. §8.1:
 # kernel/interaction/egress.py
 @dataclass(frozen=True)
 class OutboundContent:
@@ -259,11 +322,16 @@ class ChannelEmitter(Protocol):                   # the send-egress port (siblin
 #   (trust, allow_mentions): UNTRUSTED ⇒ AllowedMentions.none() + markdown-escape; TRUSTED/SYSTEM ⇒ the allowlist only.
 ```
 
-**The AST fence gets a concrete referent:** a raw `discord.abc.Messageable.send`/`channel.send`/`.reply`
-**outside `adapters/discord/responders.py`** is a `SEMANTIC_VIOLATION` — every service-initiated send
-routes through `ChannelEmitter.send`, so the `automation_executor.py:220` mass-ping becomes
-`emitter.send(cid, OutboundContent(body=template), guild_id=g)` and `@everyone` from user-authored
-template text is structurally impossible. Other mechanized legs that already exist or are Gate-0-bound:
+**The X-1 closure is buildable — one egress AST fence + one emit seam.** *The AST fence (concrete
+referent):* a raw `discord.abc.Messageable.send`/`channel.send`/`.reply` **outside
+`adapters/discord/responders.py`** is a `SEMANTIC_VIOLATION` (a `check_architecture` egress rule). *The
+single emit seam:* every service-initiated send routes through the **one** `ChannelEmitter.send` port
+(concrete `DiscordChannelEmitter` in that same adapter — the only module that constructs `AllowedMentions`),
+so the `automation_executor.py:220` mass-ping becomes
+`emitter.send(cid, OutboundContent(body=template), guild_id=g)`; the `UNTRUSTED` default ⇒
+`AllowedMentions.none()`, and `@everyone` from user-authored template text is structurally impossible. The
+port itself is registered as the Q-D26 matrix RC above (§8.1), so this closure is visible to the K8 builder,
+not stranded in an owner-decision row. Other mechanized legs that already exist or are Gate-0-bound:
 the `emit_audit_action` **audit fence** (⚙️, vocab ③.4), the single `is_platform_owner` **AST fence**
 (⚙️, spec 04), the **namespace registry** collision reject (⚙️, K1). The credential-lifecycle (N-1),
 supply-chain (N-2), and permission-override-survival (N-3) legs are **lenses here**; their fixes live
@@ -337,8 +405,8 @@ recommendation), so Stage-1 need not be re-walked 43×.
 | Victim-axis orthogonality + **total precedence 13>12>11** | rubric v2 **"Applying the rubric"** section | makes Q-0236 one-class-per-issue scoring deterministic for multi-victim chains (the §6.10 Vallespir fix) |
 | The adversarial-abuse pass | a **Gate-0 checklist line** ("run the pass; every ⚑ is a Gate-0 edit") + **this dossier §2.B as its saved procedure** | Gate-0 cannot ratify with an open ⚑ (arch decision, §4 T-4) |
 | Class-11 cost/quota mechanic | **`CommandSpec.cost_posture` + `quota_ref`** (frozen ref-bearing home, findings §8.4) + `check_cost_posture` (🔧, two-phase, §2.A); cardinality leg → existing `check_metric_cardinality` (05 §3.3) | an `effect="external"` ref with no posture, or a paid posture with no counter and no FAIL_CLOSED, is CI-red |
-| Class-12 retention/erasure mechanic | **`StoreSpec.{data_class, erasure_ref, cache_scope}`** (§2.8 additive) + `check_data_lifecycle` (🔧, **defined here**) + the **member-erasure executor** `sb/kernel/privacy/erasure.py` (designed here, wired Stage-3) | a `data_class!=NONE` store with no `erasure_ref`, or a member-data cache not `GUILD`-scoped, is CI-red; the executor walks the machine-complete inventory |
-| Class-13 output-binding mechanic | **reply** = the frozen `SurfaceResponder.render/deny` default-deny (spec 02); **send** = the **new `ChannelEmitter`** port + `OutboundContent`/`TrustLevel` (`kernel/interaction/egress.py`, spec-02/K8 seam correction §8.1) + the AST fence on raw sends; secret leg = `SecretSpec.redact` (05 §3.2) | a raw `channel.send` outside `adapters/discord/responders.py` is an AST-fence violation; both ports default-deny mentions |
+| Class-12 retention/erasure mechanic | **`StoreSpec.{data_class, erasure_ref, cache_scope}`** (§2.8 additive) + `check_data_lifecycle` (🔧, **defined here**) + the **member-erasure executor** `sb/kernel/privacy/erasure.py` (designed here to buildable depth — enumerate / DELETE-vs-TOMBSTONE / prove-complete, §2.A; wired Stage-3) | a `data_class!=NONE` store with no `erasure_ref`, or a member-data cache not `GUILD`-scoped, is CI-red; the executor walks the machine-complete registry slice, hard-deletes non-value stores + tombstones value stores, and returns `complete=False`/retryable unless **every** store reported a terminal leg |
+| Class-13 output-binding mechanic | **reply** = the frozen `SurfaceResponder.render/deny` default-deny (spec 02); **send** = the **new `ChannelEmitter`** port + `OutboundContent`/`TrustLevel` (`kernel/interaction/egress.py`), **registered as a pending 02/K8 seam correction — question-register Q-D26 → a matrix RC parallel to RC-12/F-5** (§8.1) + the AST fence on raw sends; secret leg = `SecretSpec.redact` (05 §3.2) | a raw `channel.send` outside `adapters/discord/responders.py` is an AST-fence violation; both ports default-deny mentions; the new port is visible in the reconciliation layer, not buried in T-7 |
 | Class-13 owner-axis mechanic | the authority engine's single owner predicate + AST fence + `TransparencySink` (spec 04 §2.3/§2.5, **already frozen**) — the pass **asserts**, does not redesign | 04's AST fence forbids any other `is_platform_owner` authorizer |
 | Class-13 non-functional legs N-1/N-2/N-3 (lenses) | the **fixes** land in **concern ⑫** (N-1 credential lifecycle, N-2 supply chain) and **concern ⑭** (N-3 permission-override census) — this class is the standing lens they cite | each sibling cites "concern ⑩ class-13 N-x, the lens; this is the fix" — the cross-reference is now reciprocal (§8.5) |
 
@@ -358,7 +426,7 @@ rubric edits are **proposed, not self-applied** (Q-0233 froze the ten).
 | **T-4** | Pass output → Gate-0 binding? | arch (design) | binding checklist vs advisory report | **Binding** — every ⚑ hole is a Gate-0 checklist item under V-3; Gate-0 cannot ratify with an open ⚑. *Decided by design (flagged).* |
 | **T-5** | The three mechanization tags (11=🔧, 12=🔧, 13=🧠+legs) | arch (design) | — | **As tagged** — matches the existing rubric's own build/human split; the checkable legs (`check_cost_posture`, `check_data_lifecycle`, cardinality, audit fence, egress AST fence) route to CI, the adversarial judgment stays human. *Decided by design (flagged).* |
 | **T-6** | The orthogonality rule **+ total precedence 13>12>11** (§2.A) | arch (design) | — | **Adopt** — resolves 11↔12↔13 "abuse" *and* makes multi-victim chains deterministic (the same fix owed for 5/6/7); most-severe-victim-wins is the natural severity order. *Decided by design (flagged).* |
-| **T-7** | The **send-egress primitive** (`ChannelEmitter` + `OutboundContent`/`TrustLevel`, §2.A/§8.1) — extend the frozen K8 egress surface? | arch (design), **but touches spec 02's `kernel/interaction`** → propose as a **seam correction** | (a) a new `ChannelEmitter` port sibling to `SurfaceResponder`, default-deny, AST-fenced · (b) leave service sends un-primitived (X-1 stands) | **(a)** — the X-1 mass-ping vector is real shipped source and reachable by no frozen primitive; (b) is the status quo hole. Route as a **spec 02 / K8 seam correction** (owner-visible since it adds a frozen-module port), findings §8.1 |
+| **T-7** | The **send-egress primitive** (`ChannelEmitter` + `OutboundContent`/`TrustLevel`, §2.A/§8.1) — extend the frozen K8 egress surface? | **REGISTERED — a pending 02/K8 seam correction, NOT an open owner gate.** It touches spec 02's frozen `kernel/interaction`, so it is owner-*visible*; the register (Q-D26) dispositions it **"No — owner-visible seam correction"** | (a) a new `ChannelEmitter` port sibling to `SurfaceResponder`, default-deny, AST-fenced · (b) leave service sends un-primitived (X-1 stands) | **(a) — decided.** The X-1 mass-ping vector is real shipped source, reachable by no frozen primitive. Now carried as **question-register Q-D26 → a pending seam-consistency-matrix RC (parallel to RC-12/F-5)** so a kernel builder sees the new port in the reconciliation layer; what remains is the K8 build, not an owner ruling (§8.1) |
 
 ---
 
@@ -441,7 +509,14 @@ prior "strand-3 presentation concern" pointer is retired — findings §8.3).
    (a spec-02/K8 **seam correction**, owner-visible via T-7), concrete in
    `adapters/discord/responders.py`, with the AST fence referent "a raw `channel.send` outside the
    responders adapter is a `SEMANTIC_VIOLATION`." **The reply half is not re-invented; the send half is
-   named at a real home.**
+   named at a real home.** **Registered in the reconciliation layer (the corrected disposition):** because
+   the port adds a sibling to a **frozen `kernel/interaction` module**, it must not live only in this
+   strand-3 dossier's owner-decision T-7 — it is carried as **question-register Q-D26** and must land as a
+   **pending seam-consistency-matrix RC (02/K8)**, parallel to how RC-12 / F-5 register the two additive
+   `ActorRef` fields. So a builder wiring the K8 kernel sees the new egress port in the **matrix RC ledger /
+   question register** — the same place it looks for every other cross-spec seam — rather than discovering
+   it buried in an owner-decision table. The disposition is *decided* (add the port); only the K8 build and
+   the `DiscordChannelEmitter` adapter defer (§6).
 2. **`StoreSpec` field set is additive, not closed.** Design-spec §2.8 enumerates
    `table`/`sole_writer`/`retention`; §5.3 adds `invariant_tag`; concern ⑪ adds `bears_value`; concern
    ⑬ adds `rollback_class`. This class adds `data_class`/`erasure_ref`/`cache_scope` on the **same
@@ -473,11 +548,24 @@ prior "strand-3 presentation concern" pointer is retired — findings §8.3).
    **vs** minimal `PanelActionSpec` + a panel-owned derived cooldown/audit path). The input-axis
    assertion and I-5 are re-phrased to require only that a **cooldown/audit step EXIST**, whichever fork
    resolves it — SF-a's resolution stays owned in the frozen vocab, not decided here.
+7. **`ChannelEmitter` egress port routed to the reconciliation layer (cross-strand seam pass).** The
+   prior revision named the new `ChannelEmitter` + `OutboundContent`/`TrustLevel` port only in §2.A and the
+   owner-decision **T-7** row — so a builder wiring the K8 kernel would not find a NEW `kernel/interaction`
+   port where they look for cross-spec seams (the seam-consistency-matrix RC ledger + the question register).
+   Corrected: the port is a **decided, owner-visible 02/K8 seam correction** carried as **question-register
+   Q-D26** and must land as a **pending matrix RC parallel to RC-12/F-5** (the two additive `ActorRef`
+   fields). T-7 is re-scoped from "open owner gate" to "registered pending seam correction"; §2.A, the
+   Landing Site (§3), and the X-1 closure now name the AST fence + the single `ChannelEmitter.send` emit
+   seam so the closure is buildable and reconciliation-visible, not buried. The class-12 erasure executor is
+   likewise pinned to buildable depth (enumerate the compiled StoreSpec registry slice · DELETE non-value vs
+   TOMBSTONE value stores · prove completeness via one terminal leg per store + `once()`-resume, §2.A).
 
 *Authored 2026-07-04 for the strand-3 cross-cutting concerns; **revised same day** to close the
 critic findings (egress-primitive seam §8.1; `check_data_lifecycle`/erasure-executor ownership §8.3;
 victim-axis total precedence §2.A; `check_cost_posture` two-phase + `CommandSpec` home §2.A/§8.4; SF-a
-fork-agnostic §8.6; §7/§8 added). Consumes `shared-vocabulary.md` (②③④⑥ + `SurfaceResponder` §⑩),
+fork-agnostic §8.6; §7/§8 added), and **reconciled same day** by the cross-strand seam pass (Q-D26
+`ChannelEmitter` port routed to the matrix-RC reconciliation layer §8.7 / T-7; erasure executor pinned to
+enumerate/delete-vs-tombstone/prove-complete depth §2.A; class-11 per-actor spend-bound scope acknowledged). Consumes `shared-vocabulary.md` (②③④⑥ + `SurfaceResponder` §⑩),
 specs 04/05, and reciprocates concerns ⑪/⑫/⑭. Spot-verified this session against shipped source:
 `services/audit_events.py:52` (11-field `emit_audit_action`), `services/automation_executor.py:220`
 (`await channel.send(template)`, the service-initiated mass-ping vector reachable by no frozen

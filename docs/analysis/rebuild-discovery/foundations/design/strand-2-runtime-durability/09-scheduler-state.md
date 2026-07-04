@@ -16,7 +16,8 @@
 > Q-0120):** K7 workflow engine (`07-workflow-engine.md` — `run()`/`run_ref(ref, ctx, *, conn)`/`apply()`/
 > `IdempotencyPosture`/the `atomic_db_only` fence), K9 draft pipeline (`06-draft-pipeline.md` — the
 > `select_expired` janitor it hands me), and **the outbox relay (⑥, `08-event-outbox.md` — now WRITTEN)**,
-> which owns its own supervised `RELAY_TASK` loop; I neither host nor boot-reconcile it (§4/§11).
+> whose `OutboxRelayLane` + `OutboxReaperLane` I **HOST** as `PollLane`s on my one `PollSupervisor` at the
+> 5s cadence (08 §3.4 registers them on my supervisor; §4/§11).
 
 ---
 
@@ -44,10 +45,14 @@ still forfeits real money (L-1).
   through `run_ref` on **my** conn; I **consume** it as the fire target (§4).
 - The **draft `select_expired` sweep** is owned by `06-draft-pipeline.md` §3.3/§6; it "rides the
   scheduler's janitor lane" — I **host** it as a registered `PollLane`, I do not re-implement it.
-- The **outbox relay** (`08-event-outbox.md`) is owned by ⑥ as its **own** supervised `RELAY_TASK`
-  `ManagedTaskSpec(Interval 1s)` (08 §3.4). I do **not** host or reconcile it — it is a peer supervised
-  task on the same K5 host, self-reconciling (08 §8 fork E). I only supply the `ManagedTaskSpec`
-  *durability grammar* it (and every other declared task) is written in.
+- The **outbox relay** (`08-event-outbox.md`) is owned by ⑥ as its delivery **logic**, but it is **not** a
+  standalone loop: ⑥ registers its `OutboxRelayLane` + `OutboxReaperLane` (both `PollLane`s) on **my** one
+  `PollSupervisor` (08 §3.4). I **host** them — they ride my 5s poll cadence, my RUNNING/drain gate, and my
+  per-lane exception isolation; ⑥ owns only *what one delivery/prune cycle does* and its (no-op) boot
+  reconcile (08 §8 fork E: the first post-`/ready` tick IS the reconcile). I also supply the
+  `ManagedTaskSpec` *durability grammar* every declared task is written in. Under ⑥'s `AT_LEAST_ONCE` audit
+  delivery, leaving this lane unhosted would silently lose the operator audit trail on every restart — so
+  hosting it is a correctness requirement, not a convenience.
 
 **The genuinely undesigned gap this spec closes (all ⑦-owned):**
 
@@ -78,7 +83,7 @@ the K7 workflow-engine port, the K5 lifecycle port; **never** views/cogs):
 | `sb/spec/scheduler.py` | leaf: `TaskDurability`, `MisfirePolicy`, `TriggerKind`, `TaskScope`, `ErrorPolicy` enums; `Interval`/`Cron`/`OneShot`/`EventTrigger`; the **durability-extended `ManagedTaskSpec`**. Imports **no** kernel module (leaf — the `IdempotencyPosture` inversion is retired, §12 #2). |
 | `sb/spec/versioning.py` | leaf: `VersionPolicy`, `CheckpointClass` enums; `VersionedRow`; the **version-extended `StoreSpec`** (adds `payload_version` / `bears_value` / `version_policy` / `active_rows_ref` / `retire_ref` / `upcast_ref` / `compensation_ref`) |
 | `sb/kernel/db/scheduler.py` | DB primitive (asyncpg only): `sb_due_queue` CRUD — `arm` / `claim_due` (SKIP LOCKED) / `mark_fired` / `mark_failed` / `mark_dead` / `reap_expired_leases` / `select_overdue` (read-only diagnostic) / `cancel` / `cancel_scope` |
-| `sb/kernel/scheduler/poll.py` | `PollSupervisor` (one supervised loop) + `PollLane` port + `LaneTickResult`; the shared poll host the **due-queue lane + the draft janitor lane** register on (the outbox relay is a *peer* supervised task, not a lane here — §4/§11) |
+| `sb/kernel/scheduler/poll.py` | `PollSupervisor` (one supervised loop) + `PollLane` port + `LaneTickResult`; the shared poll host every `PollLane` registers on — a **non-exhaustive** roster: the **due-queue lane + draft janitor lane + outbox relay/reaper lanes** today (§3.6/§4), with the invariant sweep (11) + credential-rotation lanes as declared future riders |
 | `sb/kernel/scheduler/due_queue.py` | `DueQueueLane` (a `PollLane`): `tick` (claim→fire) + `reconcile_on_boot` (reap→claim-loop→misfire→fire) + `arm_declared_tasks` (first-boot arming); `_fire` (the `once()`-guarded fire); `arm_task`/`arm_one_shot`/`cancel_task`; the `SYSTEM_ACTOR` fire sentinel |
 | `sb/kernel/scheduler/misfire.py` | `apply_misfire(timer, now) -> MisfireDecision` — pure; the coalesce/fire_all/skip decision + the recurring next-slot advance |
 | `sb/kernel/versioning/resolve.py` | `resolve_versioned_load(spec, row, …) -> LoadDisposition` — the load-time upcast/compensate/drop/quarantine primitive; `run_recovery(store_spec, …)` — the generated recovery sweep replacing per-cog branches |
@@ -303,7 +308,11 @@ class DueTimer:
 MAX_FIRE_ATTEMPTS = 12    # transient re-claim cap for one fire_epoch → DEAD + operator finding (mirrors the outbox)
 
 async def arm(timer: DueTimer, *, conn) -> None
-#   recurring: INSERT … ON CONFLICT (task_key, guild_id) WHERE recurring DO NOTHING  (idempotent — a live/advanced slot is NOT reset)
+#   recurring: INSERT … ON CONFLICT (task_key, COALESCE(guild_id, 0)) WHERE recurring DO NOTHING  (idempotent — a live/advanced slot is NOT reset)
+#     ↑ the conflict target is the COALESCE(guild_id, 0) partial expression index (§5), NOT bare guild_id. A GLOBAL task stores guild_id=NULL, and
+#       Postgres treats NULLs as DISTINCT in a plain UNIQUE — so bare (task_key, guild_id) would let a GLOBAL task RE-ARM a second row on EVERY boot
+#       (and both workers insert under dual-instance) → GLOBAL double-arm → double-fire. COALESCE folds NULL→0 so the slot is unique and AGREES with
+#       the fire key's `guild_id or 0` (§3.7). (Alt, not chosen: store guild_id=0 for GLOBAL so table + key agree without COALESCE.)
 #   one-shot : plain INSERT (one-shots free-multi; no slot key)
 async def claim_due(now: datetime, *, limit: int, lease_s: int, instance_id: str, conn) -> tuple[DueTimer, ...]
 async def mark_fired(timer: DueTimer, next_fire_at: datetime | None, *, conn) -> None
@@ -347,7 +356,7 @@ class PollLane(Protocol):
 
 class PollSupervisor:
     def __init__(self, *, lifecycle, clock=SYSTEM_CLOCK) -> None: ...  # K5 lifecycle port (RUNNING/drain), a clock
-    def register_lane(self, lane: PollLane) -> None: ...               # composition root registers DueQueueLane + ExpiryJanitorLane
+    def register_lane(self, lane: PollLane) -> None: ...               # composition root registers DueQueueLane + ExpiryJanitorLane + OutboxRelayLane + OutboxReaperLane (roster non-exhaustive)
     async def run_forever(self, *, poll_interval_s: int = 5) -> None: ...
     #  - ALWAYS-ON: spawned by the K5 task supervisor as ONE supervised task; NO enablement flag (retires OFF-by-default)
     #  - waits for lifecycle RUNNING before the FIRST reconcile_on_boot (vocab §⑤.5 ready-gate)
@@ -356,11 +365,13 @@ class PollSupervisor:
 ```
 
 **Construction / wiring.** The composition root (under K5) builds `PollSupervisor(lifecycle, clock)`,
-constructs `DueQueueLane(engine, scheduler_db, refs, clock, instance_id)` and the draft
-`ExpiryJanitorLane(draft_store, clock)` (06 §3.3), `register_lane`s both, and hands
-`supervisor.run_forever` to the K5 task supervisor. **The outbox `RELAY_TASK` is NOT registered here** —
-it is ⑥'s own supervised `ManagedTaskSpec(Interval 1s)` on the same K5 host, at its own cadence (08 §3.4).
-The two share only the K5 RUNNING/drain gate, not this supervisor.
+constructs `DueQueueLane(engine, scheduler_db, refs, clock, instance_id)`, the draft
+`ExpiryJanitorLane(draft_store, clock)` (06 §3.3), and ⑥'s `OutboxRelayLane` + `OutboxReaperLane`
+(08 §3.4), `register_lane`s **all of them**, and hands `supervisor.run_forever` to the K5 task supervisor.
+**The outbox relay/reaper lanes ARE registered here** — they are `PollLane`s on this one supervisor,
+sharing its **5s** cadence + RUNNING/drain gate + per-lane isolation; ⑥ owns only their per-cycle body
+(08 §3.4). This lane roster is **non-exhaustive**: the invariant sweep (11) and a credential-rotation lane
+are declared future riders on the same supervisor. There is **no** separate 1s relay loop.
 
 ### 3.7 `sb/kernel/scheduler/due_queue.py` — the `DueQueueLane` + the fire
 
@@ -449,12 +460,20 @@ engine/economy (§8), and (b) two instances booting concurrently cannot double-c
 **`arm_declared_tasks` (first-boot arming — the missing manifest path).** `sb_due_queue` is a fresh table;
 boot-reconcile fires only *existing* rows, so a declared `DURABLE` recurring `ManagedTaskSpec` (GC sweeps,
 digests) needs a first-ever arm. For each such spec in the manifest: `arm_task` if no live slot exists —
-`arm`'s `INSERT … ON CONFLICT (task_key, guild_id) WHERE recurring DO NOTHING` makes this **idempotent**:
+`arm`'s `INSERT … ON CONFLICT (task_key, COALESCE(guild_id, 0)) WHERE recurring DO NOTHING` makes this **idempotent**:
 on the first boot ever it inserts with `fire_at = _next_slot(now)`; on every later boot a live (possibly
 already-advanced) slot exists → the arm is a no-op, so a fire that advanced the slot is never reset. (An
 `arm_one_shot` from a producer is armed by the producer when the timer is created — never here.)
 
 ### 3.8 Error / failure modes (classified through `from_exception` ①)
+
+Every scheduler-fire / compensation exception is classified through the frozen `from_exception` (spec 02
+§3.3) as a **headless background** fire: `from_exception(exc, surface=Surface.MAINTENANCE, target=None)`.
+`MAINTENANCE` is the **frozen** background `Surface` member (02 §3.1, PIN-4) — the ONE token both 09
+scheduler-fires **and** 11 invariant sweep-repairs classify under — **not** a local `"scheduler"` string;
+and a headless fire has no interaction `TargetRef`, so `target=None` (02 widened `from_exception`'s
+`target` to `TargetRef | None` for exactly this). `surface`/`target` only enrich `user_message`, which a
+headless fire discards — the `error_class` → outcome routing below is unchanged by them.
 
 | Failure | `error_class` / outcome | Behavior |
 |---|---|---|
@@ -474,12 +493,12 @@ already-advanced) slot exists → the arm is a no-op, so a fire that advanced th
 
 | Shape | Where | Consumers |
 |---|---|---|
-| `ManagedTaskSpec` durability/misfire/catch-up fields (completes design §2.8) | `sb/spec/scheduler.py` | every subsystem declaring a durable task; **the outbox `RELAY_TASK` is written in this grammar (08 §3.4)**; the compiler fence |
+| `ManagedTaskSpec` durability/misfire/catch-up fields (completes design §2.8) | `sb/spec/scheduler.py` | every subsystem declaring a durable task (GC sweeps, digests, automation rules); the compiler fence |
 | `StoreSpec` `version_policy`/`active_rows_ref`/`retire_ref`/`upcast_ref`/`compensation_ref` (completes design §2.8) | `sb/spec/versioning.py` | every persisted-payload store (game_state, tournament, escrow); the fence |
 | `VersionedRow` + `resolve_versioned_load` + `run_recovery` — the load-time upcast/compensate/drop/quarantine primitive | `sb/kernel/versioning/resolve.py` | RPS/blackjack/game_state recovery; any cog-load or boot restore of a versioned payload |
 | the **durable due-queue** schema + `claim_due` (SKIP LOCKED lease) + `arm`/`arm_one_shot`/`arm_declared_tasks` | `sb/kernel/db/scheduler.py` + `due_queue.py` | the automation feature; the game one-shot timers; every `DURABLE` recurring `ManagedTaskSpec` |
 | **boot-reconcile-fires-overdue-exactly-once** (completes vocab §⑤.5) | `due_queue.py::reconcile_on_boot` | the whole restart-safety pattern |
-| the **shared poll host** `PollSupervisor` + `PollLane` port | `sb/kernel/scheduler/poll.py` | the **due-queue lane**, the **draft `select_expired` janitor (06)** — both register as lanes |
+| the **shared poll host** `PollSupervisor` + `PollLane` port | `sb/kernel/scheduler/poll.py` | the **due-queue lane**, the **draft `select_expired` janitor (06)**, and ⑥'s **`OutboxRelayLane` + `OutboxReaperLane` (08 §3.4)** — all register as lanes; roster **non-exhaustive** (invariant sweep 11 + credential rotation are future riders) |
 | the per-fire idempotency `dedup_token` def (completes vocab §④.2 "scheduler fire"): `f"{task_id}:{fire_epoch}"` | `due_queue.py::_fire_one` | the K3 idempotency substrate |
 | `SYSTEM_ACTOR` (the system-fire `ActorRef` sentinel, `actor_type="system"`) | `due_queue.py` | any headless kernel fire needing the authority scripted-bypass |
 
@@ -491,13 +510,13 @@ already-advanced) slot exists → the arm is a no-op, so a fire that advanced th
 | **`WorkflowEngine.run_ref(ref, ctx, *, conn) -> WorkflowResult`** | K7 / `07-workflow-engine.md` §3.2 | **PROVIDED and named "the scheduler `_fire` target (09:299)".** External-conn mode: resolves the `WorkflowRef`→`CompoundOpSpec` (registry), runs the **DB legs + one central audit row + `AT_LEAST_ONCE` enqueue on MY `conn`**, opens **no** txn, calls **no** `once()`/`record_outcome` (I own dedup), runs **no** EFFECT/`BEST_EFFORT` legs (I own commit). `WorkflowResult.outcome` on the frozen §2.7 five; `result.mutation_id` present. The `atomic_db_only` fence (07 §3.6) guarantees a scheduler-fired spec is pure-DB — so wrapping the fire + `once()` + `mark_fired` in **my** one txn is sound (§3.7). Discord output rides an `AT_LEAST_ONCE` outbox emit (07 writes the row on my conn; ⑥ delivers it), **not** an EFFECT leg. |
 | `IdempotencyPosture` enum | K7 / `07-workflow-engine.md` §3.1 | consumed only on the *fired workflow's* `CompoundOpSpec` (07 owns it); **09 does not reference it** (the leaf inversion is retired, §3.1/§12 #2) |
 | `resolve_authority` scripted-bypass | K6 / spec 04 (frozen ②.3) | K7 builds `AuthorityRequest(spec.authority_ref, actor…)` and **maps `AuthorityRequest.actor_type = ctx.actor.actor_type`** (seam-correction §12 #1). `SYSTEM_ACTOR.actor_type="system"` ⇒ step-1 scripted bypass ⇒ `allowed=True`; scheduled tasks are not authority-gated. |
-| `from_exception(exc,*,surface,target)->ErrorEnvelope` + `Result` | K8 / spec 02 (frozen ①) | every fire/compensation exception classified through it; `error_class`→outcome per the frozen table; `surface="scheduler"` (a new `Surface` member is optional-additive) |
+| `from_exception(exc,*,surface,target)->ErrorEnvelope` + `Result` | K8 / spec 02 (frozen ①/PIN-4) | every fire/compensation exception classified through it; `error_class`→outcome per the frozen table; a headless fire passes `surface=Surface.MAINTENANCE, target=None` — `MAINTENANCE` is the **frozen** background `Surface` member (02 §3.1), NOT a local `"scheduler"` string, and `target` is `TargetRef \| None` (02 widened it for headless fires). Both 09 and 11 classify under `MAINTENANCE`. |
 | `emit_audit_action` (11 fields) | shipped `audit_events.py:52` (③) | the fire's mutation audits **inside** K7's `run_ref` (the central row, on my conn); the due-queue's own arm/claim/fire bookkeeping is scheduler-internal state (like draft staging), **not** an auditable mutation |
 | `ActorRef` gains `actor_type: str = "user"` | K8 / spec 02 (frozen ⑩) | `ActorRef` today carries `{user_id, is_guild_operator, is_bot_owner, is_dm, member_tier}` and no `actor_type`. It **must add `actor_type: str = "user"`** so `SYSTEM_ACTOR` can carry `"system"` into K7's `AuthorityRequest` — the same additive-field cross-spec correction RC-12 made for `member_tier` (§12 #1). |
 | `active_rows_ref` / `retire_ref` / `compensation_ref` / `upcast_ref` resolution | K2 ref table + the store's domain | `refs.resolve_provider(active_rows_ref) -> reader`; `refs.resolve(retire_ref/compensation_ref/upcast_ref) -> CompoundOpSpec`. The domain registers each; the kernel never guesses a store schema. |
 | the draft `ExpiryJanitorLane` (a `PollLane`) | draft sibling 06 §3.3/§6 | wraps `draft.store.select_expired(now)` (READ) → `update_status(EXPIRED)`; and the stuck-`APPLYING` sweep (06 §6). Registered on my supervisor (06 §11 confirms 09 hosts it). |
-| the outbox `RELAY_TASK` `ManagedTaskSpec(Interval 1s)` | outbox sibling ⑥ / `08-event-outbox.md` §3.4 | ⑥'s relay is its **own** supervised task on the K5 host — NOT a lane on my supervisor, NOT boot-reconciled by me (08 §8 fork E: "the first post-`/ready` poll IS the reconcile"). I supply only the durability grammar it is declared in; I neither poll it nor own its 1s cadence. |
-| `lifecycle.can_accept_commands()` / RUNNING predicate + the task supervisor host | K5 / spec 05 (frozen ⑤.2/⑤.5) | RUNNING-only before first reconcile; DRAINING ⇒ stop claiming; K5 spawns `PollSupervisor.run_forever` **and** ⑥'s `RELAY_TASK` as two supervised tasks |
+| the outbox `OutboxRelayLane` + `OutboxReaperLane` (both `PollLane`s) | outbox sibling ⑥ / `08-event-outbox.md` §3.4 | ⑥'s relay/reaper are `PollLane`s **I HOST** on my `PollSupervisor` — they ride my 5s tick, my RUNNING/drain gate, and my per-lane isolation. Their `reconcile_on_boot` is a no-op (08 §8 fork E: "the first post-`/ready` tick IS the reconcile"); ⑥ owns only each lane's per-cycle body. I own the loop + cadence; ⑥ runs **no** separate 1s loop. |
+| `lifecycle.can_accept_commands()` / RUNNING predicate + the task supervisor host | K5 / spec 05 (frozen ⑤.2/⑤.5) | RUNNING-only before first reconcile; DRAINING ⇒ stop claiming; K5 spawns `PollSupervisor.run_forever` as **one** supervised task — the due-queue, draft-janitor, and outbox relay/reaper lanes all ride that single loop |
 | base `ManagedTaskSpec` / base `StoreSpec` fields | design-spec §2.8 | I extend, not replace — the 5/6 base fields are verbatim |
 
 ---
@@ -536,8 +555,27 @@ sb_due_queue
   INDEX (status, fire_at)                                  -- claim_due / select_overdue hot path
   INDEX (status, lease_expires_at) WHERE status='claimed'  -- reap_expired_leases
   INDEX (guild_id) WHERE guild_id IS NOT NULL              -- cancel_scope (guild-leave reclaim)
-  UNIQUE (task_key, guild_id) WHERE recurring              -- one live slot per recurring task; arm's ON CONFLICT DO NOTHING rides it; one-shots free-multi
+  -- one live slot per recurring task: the partial unique index below (COALESCE(guild_id,0), NOT bare guild_id); one-shots free-multi
 ```
+
+**The recurring-slot unique index (exact DDL) — GLOBAL-collision-proof.** A GLOBAL task stores
+`guild_id = NULL`, and Postgres treats `NULL`s as **distinct** in a plain `UNIQUE`, so a bare
+`UNIQUE (task_key, guild_id) WHERE recurring` would let `arm_declared_tasks` insert a *second* GLOBAL row
+on **every boot** (and both workers insert under dual-instance) — a GLOBAL double-arm, hence a double-fire,
+because the slot key (`guild_id`) never collides while the fire key (`guild_id or 0`, §3.7) folds `NULL→0`,
+so table and key **disagree**. Folding `NULL → 0` in the index makes the slot key **agree** with the fire
+key and collide as intended:
+
+```sql
+CREATE UNIQUE INDEX sb_due_queue_recurring_slot
+    ON sb_due_queue (task_key, COALESCE(guild_id, 0))
+    WHERE recurring;
+```
+
+`arm`'s upsert infers this exact partial expression index:
+`INSERT … ON CONFLICT (task_key, COALESCE(guild_id, 0)) WHERE recurring DO NOTHING` (§3.5). (Equivalent
+alternative, not chosen: store `guild_id = 0` for GLOBAL so table and key agree without `COALESCE`;
+`cancel_scope(guild_id)` never passes 0, so guild-leave reclaim is unaffected either way.)
 
 **Status lifecycle.** A one-shot's success is a **DELETE** (no terminal status); a recurring timer's
 success is an **advance** back to `pending` with a future `fire_at` (so `select`/`claim_due`, which key on
@@ -565,8 +603,8 @@ to import — they simply become durable from cutover forward.
 
 | Concern | Behavior |
 |---|---|
-| **Durable timers** | `DURABLE` tasks are DB rows in `sb_due_queue` — survive a merge=deploy restart. `IN_MEMORY` tasks reset (matches shipped; declared, never implicitly lossy — vocab §⑤.1). ⑥'s `RELAY_TASK` is `IN_MEMORY` (its durability is the `event_outbox` rows, not a timer) — a peer supervised task, not in my due-queue. |
-| **First-boot arming** | `arm_declared_tasks` arms every manifest-declared `DURABLE` recurring `ManagedTaskSpec` that has no live slot (idempotent via `ON CONFLICT (task_key,guild_id) WHERE recurring DO NOTHING`), so GC sweeps / digests exist as rows before the first reconcile. Runs first in `reconcile_on_boot`. |
+| **Durable timers** | `DURABLE` tasks are DB rows in `sb_due_queue` — survive a merge=deploy restart. `IN_MEMORY` tasks reset (matches shipped; declared, never implicitly lossy — vocab §⑤.1). ⑥'s relay/reaper carry **no** timer — their durability is the `event_outbox` rows, not the due-queue; they are `PollLane`s on my supervisor, not `sb_due_queue` rows. |
+| **First-boot arming** | `arm_declared_tasks` arms every manifest-declared `DURABLE` recurring `ManagedTaskSpec` that has no live slot (idempotent via `ON CONFLICT (task_key, COALESCE(guild_id,0)) WHERE recurring DO NOTHING` — `COALESCE` so a GLOBAL `guild_id=NULL` task cannot re-arm a second row each boot), so GC sweeps / digests exist as rows before the first reconcile. Runs first in `reconcile_on_boot`. |
 | **Boot reconcile** | On boot, **after `/ready` reports 200 (RUNNING)** (vocab §⑤.5): `arm_declared_tasks` → `reap_expired_leases` (recover crashed-mid-fire timers) → a **bounded `claim_due(limit)` loop** (SKIP LOCKED, drains the overdue backlog in batches — never a stampede, dual-instance-safe) → `apply_misfire` per timer → `_fire` each under `once()`. Recurring slots advance **inside** each fire txn. |
 | **Exactly-once fire** | Every fire is guarded by `once(IdempotencyKey(task_key, guild_id, f"{task_id}:{fire_epoch}"))` **inside** the fire's `db.transaction()` (vocab §④.1). The K7 effect + central audit (`run_ref` on my conn) + `once()` + `mark_fired`/advance commit **together**. A timer overdue across a restart, or claimed by both instances in the fast-release overlap, fires **exactly once**; the second attempt `read_outcome`s and no-ops. |
 | **Dual-instance overlap** | Both workers poll sub-second during fast-release. `claim_due`'s `FOR UPDATE SKIP LOCKED` means each row is claimed by exactly one instance; `once()` is the belt-and-braces if a lease is double-granted (lease expiry mid-fire). This is the concrete fix for the uuid4-defeated `claim_run` (§1). |
@@ -611,7 +649,7 @@ to import — they simply become durable from cutover forward.
 |---|---|---|---|
 | **Claim/lease** | (a) uuid-random idempotency key [shipped, defeated] · (b) `FOR UPDATE SKIP LOCKED` lease + deterministic `dedup_token` + `once()` | **(b)** | (a)'s `uuid.uuid4()` (`automation_scheduler.py:275`) makes the UNIQUE-key claim collide **never** across instances → double-fire. SKIP LOCKED gives single-claim; deterministic `f"{task_id}:{fire_epoch}"` + `once()` gives exactly-once even under lease-expiry re-claim. |
 | **Kernel loop enablement** | (a) env-gated, OFF by default [shipped] · (b) **always-on** | **(b)** | Restart-safety is a kernel invariant, not an opt-in. The shipped OFF default is why "the only durable poller is inert." Individual *feature* lanes (a user automation) may still be independently gated; the poll loop itself is not. |
-| **Poll topology** | (a) one supervised loop per feature · (b) **one `PollSupervisor` hosting the due-queue lane + the draft janitor lane; the outbox relay is a peer supervised task** | **(b)** | One host = one lifecycle/drain gate + per-lane isolation for the two *durable-due-queue-adjacent* lanes. The outbox relay chose its **own** `RELAY_TASK(Interval 1s)` (08 §3.4, self-reconciling); source-wins, I do not host it — the 1s vs 5s cadence conflict dissolves because it is not my lane. |
+| **Poll topology** | (a) one supervised loop per feature · (b) **one `PollSupervisor` hosting a non-exhaustive roster of `PollLane`s: due-queue + draft janitor + outbox relay/reaper (+ future invariant sweep / credential rotation)** | **(b)** | One host = one lifecycle/drain gate + per-lane exception isolation for every durable poll. 08 §3.4 registers `OutboxRelayLane` + `OutboxReaperLane` on THIS supervisor (both consume my `PollLane` port); they ride the shared **5s** cadence — there is no separate 1s relay loop, so the old 1s-vs-5s cadence fork dissolves into one loop. Any later background poll (11's invariant sweep, credential rotation) registers as one more lane, never a new loop. |
 | **Misfire default (A#7)** | (a) fire_all · (b) **coalesce** · (c) skip | **(b) coalesce** | A#7 Tier-3 default; accrual-safe (a timer down 3 days fires once, not 72×). `fire_all`/`skip` are declared opt-ins for count-exact / latest-snapshot tasks. |
 | **One-shot timers** | (a) in-memory `asyncio.sleep` [shipped] · (b) **durable `OneShot` ManagedTask** | **(b)** | The shipped sleeps (`blackjack_cog.py:410,572`, `rps _helpers.py:126,192`) are lost every deploy. `OneShot` persists + boot-reconciles; an overdue one-shot fires exactly once. |
 | **Where the version policy lives** | (a) cog-delegated branch [shipped] · (b) **declared `StoreSpec` field + one kernel primitive** | **(b)** | (a) is exactly the L-1 hazard — `game_state_service.py:68-72` tells each cog to hand-write resume-vs-refund, and RPS got it wrong. One declared policy + `resolve_versioned_load` makes the branch generated and uniform; DROP-on-value is a compile violation. |
@@ -682,8 +720,8 @@ All deferrals sit behind a designed seam; none blocks building the due-queue + t
 - The **durable due-queue + version policy** land in the **strand-2 durability band (K9-peer)** — after
   **K3** (`once`/`db.transaction()`), **K5** (the `/ready` gate + supervised host), and **K7** (the
   `run_ref` fire target). It is a **peer of the outbox (⑥) and the draft pipeline (06)** — all three
-  consume K3; the draft janitor registers a `PollLane` on my supervisor, while the outbox relay runs its
-  own supervised `RELAY_TASK`.
+  consume K3; the draft janitor **and** the outbox relay/reaper all register `PollLane`s on my
+  `PollSupervisor` (06 §11, 08 §3.4).
 
 **Depends on (must land first):** K3 (idempotency + transaction) · K5 (lifecycle RUNNING/drain +
 supervised host) · K6 (authority scripted-bypass for system fires) · K7 (`run_ref` — the audited fire
@@ -691,9 +729,9 @@ target, **provided** at 07 §3.2) · K8 (error envelope; **`ActorRef.actor_type`
 K1 (`task_key` `task_prefix` reservation + the `once()` namespaces) · K2 (the ref table resolving
 `active_rows_ref`/`retire_ref`/`compensation_ref`/`upcast_ref`).
 
-**Peers (share the K3 substrate; poll topology per §8):** the **outbox relay (⑥)** runs its own
-`RELAY_TASK(Interval 1s)` supervised task (08 §3.4); the **draft pipeline (06)** registers
-`ExpiryJanitorLane` on **my** `PollSupervisor` (06 §11).
+**Peers (share the K3 substrate; poll topology per §8):** the **outbox relay (⑥)** registers its
+`OutboxRelayLane` + `OutboxReaperLane` on **my** `PollSupervisor` (08 §3.4); the **draft pipeline (06)**
+registers `ExpiryJanitorLane` on **my** `PollSupervisor` (06 §11). All ride the shared 5s loop.
 
 **Internal build order:** (1) `sb/spec/scheduler.py` + `sb/spec/versioning.py` leaves (incl. `VersionedRow`)
 → (2) `sb/kernel/db/scheduler.py` + migration `000N_due_queue.sql` → (3) `sb/kernel/scheduler/poll.py`
@@ -713,8 +751,9 @@ K1 (`task_key` `task_prefix` reservation + the `once()` namespaces) · K2 (the r
 - **The draft-expiry janitor (06 §3.3/§6)** — `select_expired` + stuck-`APPLYING` sweep ride my lane.
 - **Safe cross-deploy persisted state for any `bears_value` store** — the version policy is the gate.
 
-*(The outbox relay is **not** blocked on me — it ships its own supervised loop and reconciles itself
-(08 §8 fork E); it only reuses the `ManagedTaskSpec` durability grammar this spec authors.)*
+*(The outbox relay's per-cycle **delivery logic** is ⑥'s and independent, but its lanes **do** depend on
+my `PollSupervisor` + `PollLane` port to run at all — ⑥ registers `OutboxRelayLane` + `OutboxReaperLane`
+on my supervisor (08 §3.4) and owns only their per-cycle body + no-op boot reconcile (08 §8 fork E).)*
 
 ---
 
@@ -745,14 +784,21 @@ K1 (`task_key` `task_prefix` reservation + the `once()` namespaces) · K2 (the r
    fence (07 §3.6). **Correction:** 09's `_fire` targets that exact entry (§3.7); the refund+retire
    atomicity (§3.3) is **real**, not a degraded fallback, and there is **no open decision** attached to it
    (removed from §8.1). 06 §12 note 4 independently confirms "09 already assumes exactly this entry."
-4. **Outbox topology reconciled to the WRITTEN ⑥ (was "not yet written").** The earlier 09 modelled the
-   outbox relay as an `OutboxRelayLane` `PollLane` on my `PollSupervisor` (5s). `08-event-outbox.md` is now
-   written and models the relay as its **own** `RELAY_TASK = ManagedTaskSpec(trigger=Interval(1s))`
-   supervised by K5, **self-reconciling** (08 §3.4/§8 fork E: "the first post-`/ready` poll IS the
-   reconcile"). **Correction:** I do **not** host or boot-reconcile it, and I do **not** own its 1s cadence;
-   it is a peer supervised task that merely reuses the `ManagedTaskSpec` durability grammar this spec
-   authors. My `PollSupervisor` hosts only the due-queue lane + the draft `ExpiryJanitorLane` (06 §11). The
-   "not yet written" text and the 5s-lane assumption are withdrawn.
+4. **Outbox topology reconciled to the WRITTEN ⑥ — registered lanes, not a standalone loop (fork F-1
+   closed, PIN-1).** An intermediate 09 draft had modelled the outbox relay as ⑥'s **own** `RELAY_TASK =
+   ManagedTaskSpec(trigger=Interval(1s))` self-reconciling on K5, which **directly contradicted** the
+   written `08-event-outbox.md` (a fork, not a reconciliation). **Resolved (PIN-1, source-wins Q-0120):**
+   08 §3.4 models the relay as an `OutboxRelayLane` **and** an `OutboxReaperLane` — both `PollLane`s
+   **registered on my one `PollSupervisor`**, driven by `run_forever(poll_interval_s=5)`, each with a no-op
+   `reconcile_on_boot` (08 §8 fork E: the first post-`/ready` tick IS the reconcile). **Correction:** I
+   **HOST** those two lanes — I own the loop, the **5s** cadence, the RUNNING/drain gate, and per-lane
+   isolation; ⑥ owns only each lane's per-cycle body. There is **no** 1s relay loop and **no** peer
+   supervised relay task; the "own `RELAY_TASK` / Interval(1s) / not-my-lane / self-reconciling" language is
+   withdrawn everywhere in this spec. My `PollSupervisor`'s lane roster is explicitly **non-exhaustive**:
+   due-queue + draft `ExpiryJanitorLane` (06 §11) + outbox relay/reaper (08 §3.4) today, with the invariant
+   sweep (11) and a credential-rotation lane as declared future riders. Leaving the relay unhosted would
+   strand ⑥'s `AT_LEAST_ONCE` audit delivery — a silent **total loss of the operator audit trail on every
+   restart** — so hosting it is a correctness requirement, not a convenience.
 5. **Read-list cite drift — the in-memory one-shot timers.** The brief cited `rps_tournament_cog.py:274`
    and `blackjack_cog.py:572,410`. Verified real locations: the one-shot `asyncio.sleep`s are
    `blackjack_cog.py:410` (reaction-join window) + `:572` (`sleep(duration_mins*60)` tournament
@@ -780,6 +826,6 @@ reconciled against the three WRITTEN strand-2 siblings (`06-draft-pipeline.md`, 
 `utils/db/automation.py:150-295`, `rps_tournament/_persistence.py:80-276`, `rps_tournament/_helpers.py:126,192`,
 `blackjack_cog.py:123-300,410,572`, `game_state_service.py:1-120`, `game_state_cleanup.py:40-84`. Sibling
 seams verified against the written specs: `07 §3.2` (`run_ref(ref, ctx, *, conn)` + `atomic_db_only` §3.6),
-`08 §3.4` (`RELAY_TASK` `ManagedTaskSpec(Interval 1s)`, §8 fork E self-reconcile), `06 §3.3/§11`
+`08 §3.4` (`OutboxRelayLane` + `OutboxReaperLane` registered on 09's `PollSupervisor` at 5s, §8 fork E no-op reconcile), `06 §3.3/§11`
 (`ExpiryJanitorLane` on 09's supervisor). **NOT SOURCE OF TRUTH for runtime** — a Phase-B design contract
 for the strand-2 build to execute against.*

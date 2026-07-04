@@ -25,8 +25,10 @@ polls that table and delivers to the bus with at-least-once + handler-dedup sema
 **Already designed (anti-pad — I do NOT re-derive these):**
 - **The producer seam** `outbox.enqueue_all(spec.emits, ctx, result, *, conn)`, `EventEmitSpec`, and the
   `DeliveryClass{AT_LEAST_ONCE, BEST_EFFORT}` split are **declared by the K7 workflow-engine spec**
-  (`07-workflow-engine.md:99-119,192,236`, §8 fork F). I **own the delivery-side implementation** of that
-  seam **and its return protocol** (§3.3, §12 seam-correction 5 — 07's single-call/step-6 text must change);
+  (`07-workflow-engine.md:99-119`, §8 fork F). I **own the delivery-side implementation** of that
+  seam **and its return protocol** (§3.3, §12 seam-correction 5 — **confirmed consistent with 07**: its
+  `run()` §3.3 step 4e makes the in-txn `enqueue_all` call and captures the returned `BestEffortBatch`,
+  step 6 calls `emit_after_commit()` post-commit — the two-call protocol, no change needed);
   I do not re-derive the enum's two members.
 - The idempotency primitives `IdempotencyKey`/`once`/`record_outcome`/`read_outcome` + `idempotency_keys`
   + `db.transaction()` are **owned by K3** (spec 05, vocab §④). I **consume** them — the outbox row's
@@ -189,7 +191,7 @@ async def enqueue_audit_action(          # the DURABLE TWIN of the shipped emit_
 #   bus payload audit_events.py:87 exactly, so the relayed event is byte-identical to what
 #   server_logging._on_audit_action already receives); correlation_id = uuid(mutation_id).
 
-async def enqueue_all(                   # the K7 seam (07-workflow-engine.md:192,236) — I own the body + return protocol
+async def enqueue_all(                   # the K7 seam (07-workflow-engine.md §3.3 step 4e/6) — I own the body + return protocol
     emits: tuple[EventEmitSpec, ...], ctx: "WorkflowContext", result: "WorkflowResult", *,
     conn: Connection,                    # ← called IN-TXN (K7 step 4), never post-commit (§12.5)
 ) -> "BestEffortBatch": ...
@@ -205,7 +207,7 @@ class BestEffortBatch:
     _events: list[tuple[str, Mapping[str, object]]]
     async def emit_after_commit(self) -> int: ...   # bus.emit each, POST-commit; the K7 caller invokes this
                                                      # AFTER the txn exits (step 6). Dropping it = best-effort
-                                                     # events never emit (the 07:192/236 bug — §12.5).
+                                                     # events never emit — 07 §3.3 step 6 DOES invoke it (§12.5).
 ```
 
 **The two-call protocol (finding 3 / §12.5 — pinned).** `enqueue_all` is a **single in-txn call at K7
@@ -213,8 +215,9 @@ step 4** that ① writes every `AT_LEAST_ONCE` row on `conn` immediately and ②
 The K7 caller **captures that return** and, **after the `async with db.transaction()` block commits (step
 6)**, calls `batch.emit_after_commit()`. It is **not** one call at step 6 (the conn is already committed
 there — the in-txn row write would be impossible) and **not** a fire-and-drop (the best-effort events would
-never emit). `07-workflow-engine.md:192,236` currently makes a single call and drops the return — **07 must
-change** to this protocol (flagged §12.5).
+never emit). **07 §3.3 already implements exactly this:** step 4e is `batch = await
+outbox.enqueue_all(spec.emits, ctx, pending, conn=conn)` (the in-txn call, capturing the return) and step 6
+is `await batch.emit_after_commit()` (post-commit) — **confirmed consistent with 07, no change needed** (§12.5).
 
 - **Enqueue name-guard is HARD (fork D §8).** `enqueue`/`enqueue_audit_action` raise
   `UnknownEventError(name)` if `event_name ∉ KNOWN_EVENTS` — in-txn, so a mis-named guaranteed event
@@ -319,7 +322,7 @@ row present, relay eventually delivers).
 |---|---|
 | `DeliveryClass` + `EventSpec.delivery` [S] | every manifest author; K7's `EventEmitSpec.delivery` (imports this enum — §12.1); the `delivery_declared` compile fence |
 | `enqueue(conn,…)` / `enqueue_audit_action(conn,…)` | every `*_mutation.py` on the direct lane (settings, governance, role, moderation, …) that opts an event into `AT_LEAST_ONCE` (via the §12.6 conn-accepting form) |
-| `enqueue_all(emits, ctx, result, *, conn) -> BestEffortBatch` | **K7 workflow engine** (`07-workflow-engine.md:192,236`) — its `run()` **step-4 in-txn call**; the returned `BestEffortBatch.emit_after_commit()` at **step 6, post-commit** (§3.3, §12.5) |
+| `enqueue_all(emits, ctx, result, *, conn) -> BestEffortBatch` | **K7 workflow engine** (`07-workflow-engine.md` §3.3 step 4e/6) — its `run()` **step-4e in-txn call**; the returned `BestEffortBatch.emit_after_commit()` at **step 6, post-commit** (§3.3, §12.5 — confirmed consistent) |
 | `OutboxRelayLane` / `OutboxReaperLane` (both `PollLane`) + the `event_outbox` StoreSpec | the composition root (registers them on ⑦'s `PollSupervisor`); the operator dashboard (a read-only projection of pending/dead rows) |
 | the **exactly-once-capture / at-least-once-relay / handler-dedup** contract (§6) + the reserved `_outbox_dedup_key`/`_outbox_correlation_id` delivery keys | every effectful subscriber (must self-dedup on `_outbox_dedup_key`); every observability subscriber (tolerates dup, ignores the reserved keys via `**kwargs`) |
 
@@ -592,10 +595,11 @@ K5, though it is *authored* in the K4 band.
 5. **canary:** make `audit.action_recorded` `AT_LEAST_ONCE`; write the kill-before-relay oracle (§6.6).
 
 **What ⑥ blocks / unblocks:**
-- **K7 workflow engine** — its `run()` **step-4 in-txn** `outbox.enqueue_all(…, conn=conn)` + **step-6
+- **K7 workflow engine** — its `run()` **step-4e in-txn** `outbox.enqueue_all(…, conn=conn)` + **step-6
   post-commit** `batch.emit_after_commit()` need this seam (§3.3); spec 07's §4 "v1 fallback: a thin
-  implementation that `bus.emit`s after commit" is **replaced by this durable implementation** — but 07's
-  **single-call/step-6 text must change** to the two-call protocol or best-effort events never emit (§12.5).
+  implementation that `bus.emit`s after commit" is **replaced by this durable implementation**. 07's §3.3
+  **already implements** the two-call protocol (step 4e in-txn call + step 6 `emit_after_commit()`) —
+  **confirmed consistent, no change needed** (§12.5).
 - **The scheduler ⑦** — provides the `PollSupervisor` the relay lane rides; peers via the shared K3 substrate.
 - **The durable audit + reward paths** — `settings_mutation`, `xp_service`, `economy_service`, and every
   `audited=True, delivery=AT_LEAST_ONCE` event (each needs the §12.6 conn-accepting form to move in-txn).
@@ -640,14 +644,17 @@ K5, though it is *authored* in the K4 band.
    `record_operator_finding` inside `tick` + supervisor-caught+logged lane exceptions (the `PollLane` model
    has **no** per-lane `error_policy` — the earlier `error_policy="escalate_finding"` string is dropped, and
    09 §3.1's `ErrorPolicy` enum is a `ManagedTaskSpec` field, not a `PollLane` one).
-5. **`enqueue_all` is a two-call protocol; `07:192,236` must change.** The outbox owns the `enqueue_all`
-   body **and its return protocol** (07 says so: "I own the body"). It is **one in-txn call at K7 step 4**
-   that writes the `AT_LEAST_ONCE` rows and *returns* a `BestEffortBatch`; the caller invokes
-   `batch.emit_after_commit()` **after commit (step 6)**. `07-workflow-engine.md:192` makes a single call
-   and its §4 Consumes row (`:236`) drops the return — under 07's own text the best-effort events **never
-   emit**, and its "step-6 call" phrasing mis-locates the in-txn write to a committed conn. **07 must adopt
-   the two-call protocol** (in-txn `enqueue_all` at step 4; `emit_after_commit()` at step 6). This doc's §3.3
-   / §4 Provides state the corrected shape; 07's §3.3 step 6 + §4 Consumes are the loser text.
+5. **`enqueue_all` is a two-call protocol — confirmed consistent with 07, no change needed.** The outbox
+   owns the `enqueue_all` body **and its return protocol** (07 agrees: "I own the body"). It is **one in-txn
+   call at K7 step 4** that writes the `AT_LEAST_ONCE` rows and *returns* a `BestEffortBatch`; the caller
+   invokes `batch.emit_after_commit()` **after commit (step 6)**. **07 §3.3 already implements exactly
+   this:** step 4e is `batch = await outbox.enqueue_all(spec.emits, ctx, pending, conn=conn)` (the single
+   in-txn call, capturing the return) and step 6 is `await batch.emit_after_commit()` (post-commit). This
+   doc's §3.3 / §4 Provides and 07's §3.3 step 4e/6 state the **same** shape — they agree. *(An earlier
+   draft of this doc cited stale `07:192,236` line numbers and flagged "07 must change" to the two-call
+   protocol; a re-check against the **current** 07 §3.3 shows the protocol is already in place — the flag is
+   **downgraded to "no change needed."** Source-wins Q-0120: a builder must not be sent to "fix" code that
+   is already correct.)*
 6. **Moving the direct-lane emits in-txn requires a conn-accepting producer form (verified prerequisite).**
    The retirement asserts `settings_mutation`'s and `xp_service`'s post-commit emits "move inside the txn."
    Verified: `settings_audit.set_value_with_audit` (called `settings_mutation.py:338`) and `db.add_xp`
@@ -680,5 +687,6 @@ behavior change). One decision is genuinely owner-gated and is surfaced here as 
 `services/xp_service.py:120-150`, `core/events.py:100-152`, `services/server_logging.py:773-787,1856`;
 design-spec §2.8/§5.3/§6). **NOT SOURCE OF TRUTH for runtime** — a design contract for K4/K7 and the durable
 audit+reward paths to build ON. Relay integration adopts the scheduler's `PollLane` port (§12.4); the
-`enqueue_all` two-call protocol and the direct-lane conn-threading prerequisite flag changes 07 and the K3
-producers must absorb (§12.5, §12.6).*
+`enqueue_all` two-call protocol is **confirmed consistent with 07 §3.3 (step 4e/6) — no change needed**
+(§12.5), and the direct-lane conn-threading prerequisite is the one change the K3 producers must absorb
+(§12.6).*
