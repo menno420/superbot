@@ -135,6 +135,33 @@ class TestPreFilter:
         await message_pipeline.dispatch(MagicMock(), _make_message(has_guild=False))
         assert s.calls == []
 
+    @pytest.mark.asyncio
+    async def test_draining_instance_runs_no_stages(self):
+        # LP-4 deploy-handoff double-fire guard: a draining instance releases
+        # the runtime lock before it finishes draining, so the incoming replica
+        # processes the same MESSAGE_CREATE.  Running stages here would
+        # double-apply additive effects (XP, counting, ...).  A draining
+        # instance must run no stages.
+        s = _SpyStage(name="x", order=10)
+        message_pipeline.register(s)
+        with patch.object(
+            message_pipeline.lifecycle, "is_shutting_down", return_value=True
+        ):
+            await message_pipeline.dispatch(MagicMock(), _make_message())
+        assert s.calls == []
+
+    @pytest.mark.asyncio
+    async def test_running_instance_runs_stages(self):
+        # Guard is scoped to draining only — a RUNNING instance dispatches
+        # normally (regression fence so the guard can't silently kill traffic).
+        s = _SpyStage(name="x", order=10)
+        message_pipeline.register(s)
+        with patch.object(
+            message_pipeline.lifecycle, "is_shutting_down", return_value=False
+        ):
+            await message_pipeline.dispatch(MagicMock(), _make_message())
+        assert len(s.calls) == 1
+
 
 # ---------------------------------------------------------------------------
 # Stage iteration

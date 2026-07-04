@@ -32,6 +32,14 @@ a per-command judgment call.
 (`/balance` = your own, `/leaderboard` = the main board). A **destructive or ambiguous** action
 (ban, purge, delete) **never** has a default that acts — it requires explicit arguments.
 
+> **⚑ AMENDED by Q-0237(e/f), 2026-07-03 (owner, final-judgment sitting):** **(e)** the surface is
+> **slash-common + prefix long-tail** — the K1 shared-verb computation budgets against Discord's
+> 100 top-level / 25 sub / 1-nest caps (the 271-corpus does not force every command to slash).
+> **(f)** hub deep-link names: `!admin`/`!games` (one per node) are **canonical**; the shipped
+> `!adminmenu`/`!modmenu`/`!economymenu` become **hidden aliases**; K1 reserves both, and the
+> nav-node commands are enumerated into the corpus **before** the shared-verb computation runs
+> (judgment L-14).
+
 **Consumes:** the shared-verb computation is a concrete Stage-2 input (run it over the corpus and
 publish the flat-vs-grouped list per subsystem). Feeds K1's reservation set.
 
@@ -150,6 +158,12 @@ their servers.
 
 Consistent with Q-0212 (already the current bot's decision); this pins it as a rebuild grammar
 contract and adds the verification + transparency clauses.
+
+> **⚑ AMENDED by Q-0237(d), 2026-07-03 (owner, final-judgment sitting):** the "single declared
+> authority label" is canonicalized as **one `authority_ref` per command**; Gate-0 owns the internal
+> mapping to either a governance capability or a domain audience tier. This resolves the design-spec
+> two-lane (`capability_required`/`audience_tier`) vs one-label conflict (judgment L-13) — Stage-2
+> authors fill **one** authority column, not a choice between two fields.
 
 ---
 
