@@ -437,6 +437,13 @@ Current broad captures:
   sector and warn if its `current-state/SN-*.md` doesn't mention a headline PR. Sibling of the open-PR
   staleness classifier (same stdlib/advisory/disposable shape).
   Sector S3/S4. Disposable (Q-0105).
+- [`ledger-fragmentation-linter-2026-07-04.md`](./ledger-fragmentation-linter-2026-07-04.md) —
+  **captured by the band-#1710 reconciliation pass (2026-07-04):** a warn-only linter (in `check_docs`
+  or a small disposable) that flags a run of N ≥ 3 consecutive Recently-shipped bullets sharing a
+  session-branch/date + theme-prefix/Q-arc signal, so a reconciler consolidates them into one grouped
+  entry instead of the fragmentation surviving every pass (this band's #1683–#1688 were six bullets for
+  one Phase-A arc). Mechanizes the grouped-entry convention the ledger depends on (Q-0194 friction →
+  guard). Sector S4. Disposable (Q-0105).
 - [`band-queue-hit-rate-metric-2026-06-22.md`](./band-queue-hit-rate-metric-2026-06-22.md) —
   **captured by the band-#1320 reconciliation pass (2026-06-22):** every pass plans a ~30-slice next band, and
   almost every subsequent pass records "the buffer became the band" in prose only — no number. Extend

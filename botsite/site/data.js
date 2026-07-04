@@ -466,6 +466,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -1844,6 +1848,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -2022,6 +2030,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -2066,6 +2078,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -3430,6 +3446,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -4418,6 +4438,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -4511,6 +4535,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -4598,6 +4626,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -4816,6 +4848,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -4836,6 +4872,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -4852,6 +4892,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -4872,6 +4916,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -4888,6 +4936,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -5460,6 +5512,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
       {
         "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
@@ -6854,6 +6910,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
+      },
+      {
+        "status": "idea",
         "title": "Channel-deployed component-menu primitive (role menus · starboard ·…"
       }
     ]
@@ -7476,7 +7536,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "ad476ea2",
+    "build": "b4dd8f22",
     "title": "New public bot website",
     "changes": [
       {
@@ -7488,7 +7548,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "ad476ea2",
+    "build": "b4dd8f22",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7500,7 +7560,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "ad476ea2",
+    "build": "b4dd8f22",
     "title": "Command-alias suggestions",
     "changes": [
       {

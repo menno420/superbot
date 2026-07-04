@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-04T09:19:01Z",
+    "generated_at": "2026-07-04T10:35:51Z",
     "build": {
-      "commit": "3a7bf967",
-      "subject": "Merge pull request #1709 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-04T09:19:01Z"
+      "commit": "b4dd8f22",
+      "subject": "Session start: born-red card + claim — 34th Q-0107 reconciliation pass (band-#1710, issue #1711)",
+      "committed_at": "2026-07-04T10:35:51Z"
     },
     "counts": {
       "functions": 43,
@@ -2937,6 +2937,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-04-reconcile.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Thirty-fourth Q-0107 reconciliation pass (band-#1710)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-ultracode-quicklaunch.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Ultracode quick-launch prompts + durable-home verification",
@@ -3407,14 +3415,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-karma-reaction-to-thank.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Karma reaction-to-thank (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
