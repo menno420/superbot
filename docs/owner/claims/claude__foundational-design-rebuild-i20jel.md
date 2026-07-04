@@ -1,0 +1,1 @@
+- `claude/foundational-design-rebuild-i20jel` · **S3 rebuild — prepare the Gate-0 grammar-freeze + Phase-B L0 ultracode brief** — author the next-session paste-ready prompt (consolidate the pinned grammar, resolve the register, owner-decision packet, L0 build order) · `docs/planning/rebuild-gate0-grammar-freeze-opus-brief-2026-07-04.md` · 2026-07-04 · PR pending (born-red)
