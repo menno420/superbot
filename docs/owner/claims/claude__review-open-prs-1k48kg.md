@@ -1,0 +1,1 @@
+- `claude/review-open-prs-1k48kg` · **open-PR review + merge sweep** — review all 13 open PRs (#1509 codex audit · #1555–#1560 dependabot · #1695–#1699 codex rebuild reviews), verify against source, improve where needed, drive each to merged/closed · `docs/` `requirements.txt` · 2026-07-04 · in-progress
