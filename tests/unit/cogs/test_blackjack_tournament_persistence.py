@@ -151,11 +151,17 @@ async def test_recover_blackjack_tournament_refunds_each_row():
 
 
 @pytest.mark.asyncio
-async def test_recover_blackjack_tournament_drops_version_mismatch_without_refund():
-    """A version-mismatch row's bet field may be in a foreign schema —
-    we drop the row but do NOT refund (the value might be wrong).
-    Operators investigating ``economy_audit_log`` see no spurious
-    blackjack_tournament:restart_refund entries for unrecognised data.
+async def test_recover_blackjack_tournament_refunds_version_mismatch():
+    """A VERSION bump must NOT forfeit live tournament entry fees.
+
+    The entry fee was debited at launch and is owed regardless of the
+    state-schema version, so recovery refunds the row's ``bet`` (guarded
+    by the int>0 sanity check) and then clears it even when the saved
+    version differs from the current one.  Owner decision 2026-07-03:
+    the money is really lost in the common case where ``bet`` is
+    unchanged, and whoever bumps the version owns keeping ``bet`` = the
+    entry fee (or updating this handler).  Previously the mismatch branch
+    cleared the row without refunding.
     """
     from cogs.blackjack_cog import BlackjackCog
 
@@ -177,7 +183,13 @@ async def test_recover_blackjack_tournament_drops_version_mismatch_without_refun
         ) as mock_refund,
     ):
         await cog._recover_blackjack_tournament()
-    mock_refund.assert_not_called()
+    mock_refund.assert_awaited_once()
+    assert mock_refund.await_args.kwargs["user_id"] == 222
+    assert mock_refund.await_args.kwargs["amount"] == 999
+    assert (
+        mock_refund.await_args.kwargs["reason"]
+        == "blackjack_tournament:restart_refund"
+    )
     mock_clear.assert_awaited_once_with(7)
 
 

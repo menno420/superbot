@@ -1,0 +1,101 @@
+# rebuild-amendments.yml
+#
+# Provenance: SuperBot rebuild · Gate-0 grammar-freeze consolidation (2026-07-04).
+# Minted per the design authority in
+#   docs/analysis/rebuild-discovery/foundations/design/strand-1-kernel-spine/01-compiler-snapshot-amendments.md §3.7
+# Canonical family/name enumeration re-verified against
+#   docs/analysis/rebuild-discovery/new-bot-capability-audit/findings/FINAL-REVIEW.md §3
+#   (buckets a/b/c/d) and the design-spec addendum (G-1…G-6 §-refs). Source wins (Q-0120).
+#
+# This file is THE SOLE amendment-ID minting authority (spec 01 §3.7). A lane/session
+# proposing a grammar family mints its next-free G-/R-/P- id HERE, in the same PR, and cites it.
+# Gate-0 consumes it and flips pending-gate-0 -> in-spec + sets spec_ref.
+# Rules (enforced by tools/check_amendments.py): next-free-number only; append-only;
+# a refuted name is never reused; every in-spec spec_ref resolves in the design corpus.
+#
+# STATUS VOCAB:
+#   in-spec        — grammar is frozen in the design corpus (spec_ref set)
+#   pending-gate-0 — family is ratified-as-real but its grammar/§ is not yet frozen (spec_ref: null)
+#   spike          — (source tag) folded during the 2026-07-02 linchpin spike
+
+version: 1
+
+# The files an in-spec `spec_ref` may resolve against (checker resolves §/named refs across this set).
+# spec 01 §3.7 sketched a single-file `spec` arg; Gate-0 generalizes it to the corpus because
+# ratified grammar now lives across the merged spec + the foundational specs + the Gate-0 freeze.
+spec_corpus:
+  - docs/planning/rebuild-design-spec-2026-07-02.md
+  - docs/analysis/rebuild-discovery/foundations/design/            # the 14 foundational-design specs
+  - docs/analysis/rebuild-discovery/foundations/gate-0/            # the Gate-0 L0 grammar freeze
+
+amendments:            # G-n — grammar families
+
+  # --- G-1…G-6: folded during the 2026-07-02 linchpin spike (design-spec addendum lines 42-47) ---
+  G-1:  {name: GatewayListenerSpec,            status: in-spec, spec_ref: "§2.8",     consumers: [logging, karma, blackjack],                    source: spike}
+  G-2:  {name: list-valued SettingSpec,        status: in-spec, spec_ref: "§2.5",     consumers: [],                                             source: spike, note: "list-valued settings; cross-cutting"}
+  G-3:  {name: AnnouncementRouteSpec,          status: in-spec, spec_ref: "§2.8",     consumers: [announcements],                                source: spike}
+  G-4:  {name: CommandSpec.cooldown,           status: in-spec, spec_ref: "§2.2",     consumers: [],                                             source: spike, note: "cross-cutting CommandSpec field"}
+  G-5:  {name: declarative validator bounds,   status: in-spec, spec_ref: "§2.5",     consumers: [],                                             source: spike, note: "cross-cutting SettingSpec bounds"}
+  G-6:  {name: per-kind command-pool scoping,  status: in-spec, spec_ref: "§2.2/§3.1", consumers: [],                                            source: spike, note: "cross-cutting namespace (K1) scoping"}
+
+  # --- G-7…G-8: Lane D knowledge/AI facets, already present in the merged spec (FINAL-REVIEW §3.1) ---
+  G-7:  {name: KnowledgeDomainSpec,            status: in-spec, spec_ref: "§2.8",     consumers: [ai, btd6, project_moon],                       source: "Lane D", note: "facet core in-spec; residual deltas -> R-13"}
+  G-8:  {name: TaskProfileSpec,                status: in-spec, spec_ref: "§2.8",     consumers: [ai, btd6, project_moon],                       source: "Lane D", note: "AI task profile; referenced by KnowledgeDomainSpec"}
+
+  # --- G-9…G-24: the FINAL-REVIEW §3.2 bucket-(b) ratified new-family set ---
+  # Status rule (spec 01 §3.7): pending-gate-0 EXCEPT where this Gate-0 fold ratifies to in-spec.
+  # THIS fold flips G-10 only (L-24 presentation riders design ratifies ModalSpec). All other
+  # G-9…G-24 are domain-grammar folds whose owning K-step / Phase-4 port is not yet built —
+  # each mints its spec_ref when its fold ships. Substrate notes recorded where a kernel spec
+  # already provides the mechanism (flip candidates for the fold to confirm).
+  G-9:  {name: DeferredActionSpec,             status: pending-gate-0, spec_ref: null, consumers: [proof, utility, security],                    source: "D+A",   note: "one-shot timed task + recovery; substrate exists as spec 09 TriggerKind.ONE_SHOT + DURABLE due-queue (flip candidate)"}
+  G-10: {name: ModalFormSpec,                  status: in-spec,        spec_ref: "gate-0/l24-presentation-riders.md §4 (ModalSpec; frozen-l0-grammar row 86; amendment-registry §5)", consumers: [settings, moderation, roles, btd6], source: "D+A", note: "GATE-0 FLIP: L-24 presentation-riders design ratifies ModalSpec to declared-field depth"}
+  G-11: {name: MessagePipelineStageSpec,       status: pending-gate-0, spec_ref: null, consumers: [automod, cleanup, counting, chain, xp],       source: "A+C+B", note: "ordered fail-open short-circuiting on_message stage-as-data (11 stages repo-wide)"}
+  G-12: {name: EconomyTransactionSpec,         status: pending-gate-0, spec_ref: null, consumers: [economy, treasury, mining, farm, fishing, inventory], source: "B", note: "atomic multi-write money moves; substrate exists as spec 07 CompoundOpSpec + IdempotencyPosture (flip candidate)"}
+  G-13: {name: ProgressionSpec,                status: pending-gate-0, spec_ref: null, consumers: [economy, xp, mining, fishing, creature, farm], source: "B"}
+  G-14: {name: ShopSpec,                       status: pending-gate-0, spec_ref: null, consumers: [economy, mining, fishing, farm],              source: "B"}
+  G-15: {name: ItemCatalog-audited-ops,        status: pending-gate-0, spec_ref: null, consumers: [inventory, mining, fishing, creature, economy], source: "B", note: "extends existing ItemCatalogSpec with audited/atomic/unique-fenced grant/consume/has"}
+  G-16: {name: ChannelMatchSpec,               status: pending-gate-0, spec_ref: null, consumers: [counting, chain],                             source: "C"}
+  G-17: {name: TournamentLobbySpec,            status: pending-gate-0, spec_ref: null, consumers: [blackjack, rps],                              source: "C", note: "lobby+pot choreography only; bracket topology stays tier-3 (adversarially narrowed)"}
+  G-18: {name: ResourceLifecycleSpec,          status: pending-gate-0, spec_ref: null, consumers: [channel, role],                               source: "A"}
+  G-19: {name: WizardSectionSpec,              status: pending-gate-0, spec_ref: null, consumers: [cleanup, role, ticket],                       source: "A", note: "+ SubsystemManifest.wizard_sections facet"}
+  G-20: {name: InstanceLifecycleSpec,          status: pending-gate-0, spec_ref: null, consumers: [ticket],                                      source: "A"}
+  G-21: {name: RecordTableSpec,                status: pending-gate-0, spec_ref: null, consumers: [role],                                        source: "A", note: "recurrence 1 today; ship-in-pass, lower priority"}
+  G-22: {name: StagedBuilderSpec,              status: pending-gate-0, spec_ref: null, consumers: [role],                                        source: "A", note: "owner decision embedded: standardize vs bless three staging lanes"}
+  G-23: {name: CommandSpec-arg-schema,         status: pending-gate-0, spec_ref: null, consumers: [channel],                                     source: "A", note: "typed/bounded/resolved args + EntityResolverRef; prefix back-compat lane"}
+  G-24: {name: PreviewConfirmApplySpec,        status: pending-gate-0, spec_ref: null, consumers: [cleanup],                                     source: "A", note: "Gate-0: compose from §2.7 MutationPreview+ConfirmationSpec first; mint only if composition fails (spec 01 §8 fork 7)"}
+
+riders:                # R-n — soft riders (field/vocab additions; batch into the same fold PR)
+  R-1:  {desc: "GatewayListenerSpec.handler: WorkflowRef | HandlerRef (was HandlerRef-only)", consumers: [welcome], source: "A"}
+  R-2:  {desc: "Two-lane authority extension: legacy_permission_floor + resource-owner clause", consumers: [moderation, ticket, admin, channel], source: "A"}
+  R-3:  {desc: "value_type=template multi-variant text settings (placeholders + random-variant pick)", consumers: [welcome], source: "A"}
+  R-4:  {desc: "storage=typed_column generation-contract elaboration", consumers: [ticket], source: "A"}
+  R-5:  {desc: "LeaderboardSpec enrichment: stat_source / value_template / card_theme", consumers: [leaderboard], source: "C"}
+  R-6:  {desc: "ChallengeSessionSpec max_seats / lobby_policy (optional)", consumers: [casino], source: "B"}
+  R-7:  {desc: "ManagedTaskSpec.error_policy += per_target_backoff", consumers: [counters], source: "B"}
+  R-8:  {desc: "IdleAccrualSpec invariants: settle_before_mutate + idempotent remainder-preserving settle + fresh-state normalization", consumers: [farm], source: "B"}
+  R-9:  {desc: "ProviderRef projection-args (sort/filter/page re-invocation); check TableSpec overlap first", consumers: [inventory], source: "B"}
+  R-10: {desc: "allowed_values kernel enforcement at the mutation seam (today a widget hint only)", consumers: [moderation], source: "A"}
+  R-11: {desc: "HelpEntrySpec.dropdown_target: PanelRef (declared cross-subsystem navigation)", consumers: [help], source: "A"}
+  R-12: {desc: "Shared-seed world-position store convention (not a dataclass)", consumers: [mining, fishing], source: "B"}
+  R-13: {desc: "G-7/G-8 residual deltas: declared refusal/denial per intent; AIProviderGatewaySpec", consumers: [ai, btd6, project_moon], source: "D"}
+  R-14: {desc: "HubPanelSpec spec clarification (source: registry-filter | named entries; cross_links; governance_filter)", consumers: [games, community, utility], source: "C"}
+  R-15: {desc: "Column-scoped ownership notes on StoreSpec (shared-writer columns)", consumers: [xp, fishing], source: "B"}
+
+provisional:           # P-n — held; ratify-condition recorded (FINAL-REVIEW §3.3)
+  P-1: {name: EventFeedProjectionSpec, ratify_when: "second instance found (check Lane E feed-shaped plans)", note: "read-side analog of G-3; one instance today"}
+  P-2: {name: "GatewayListenerSpec.catchup_policy", ratify_when: "restart-window replay need materializes", note: "high-water mark + bounded replay + dedup; merging IS deploying so restart windows recur"}
+  P-3: {name: UserMemorySpec, ratify_when: "the L2/L4 ADD needing it is scheduled", note: "Q-0184 per-user product-AI-memory policy + knowledge-domain carryover"}
+  P-4: {name: "IdentityScopeSpec/TransferPolicySpec", ratify_when: "the cross-server ADD needing it is scheduled", note: "answered Q-0091 cross-server identity + conservation-based transfer"}
+
+refuted:               # do-not-re-propose; one-line refutation (FINAL-REVIEW §3.4)
+  LootTableSpec:             {reason: "4 distinct roll engines are not one family; weighted-RNG rolls stay tier-3", source: "Lane B refute"}
+  MultiSeatTableSessionSpec: {reason: "-> R-6 fold; 68% casino lift unsupported (corrected to 24%)", source: "Lane B"}
+  ReadModelProjectionSpec:   {reason: "-> R-9 fold", source: "Lane B"}
+  ParticipationPrefSpec:     {reason: "user-scoped SettingSpecs cover 3 of 4 concerns", source: "Lane B"}
+  ManagedProjectionSpec:     {reason: "-> R-7 fold", source: "Lane B"}
+  SettingsPresetSpec:        {reason: "-> existing presets + kernel WorkflowRef; 'atomic apply' claim was false", source: "Lane B"}
+  AutoResponderSpec:         {reason: "-> G-1 + ProviderRef + one-off tier-3 handler; no configurable autoresponder exists to generalize", source: "Lane B"}
+  RegistryHubSpec:           {reason: "community proves registry hubs are 100% tier-1 already", source: "Lane C"}
+  TournamentBracketSpec:     {reason: "split — lobby ratified as G-17, bracket topology stays tier-3", source: "Lane C"}
+  PaginatedBlockSpec:        {reason: "NOT refuted — already covered by merged spec Table/List + BrowserView; recorded so it is not re-minted", source: "Lane A"}
