@@ -1,6 +1,6 @@
 # Rebuild verification review — parity, benchmarks, live sign-off, and CI gates (2026-07-03)
 
-> **Status:** `review` — Codex verification review of whether the rebuild planning now has a
+> **Status:** `audit` — Codex verification review of whether the rebuild planning now has a
 > strong enough proving story before Phase B. This is a findings document, not approval to build.
 > **Scope:** parity goldens, competitor benchmarks, live co-tests, generated checkers, owner
 > sign-off, command/cutover integration, and CI gates across the 43-subsystem rebuild plan.
@@ -12,6 +12,15 @@
 > `tools/grammar_spike/`, and relevant scripts/tests. Source wins over this review (Q-0120).
 
 ---
+
+> **Post-review status (2026-07-04, open-PR merge sweep):** written 2026-07-03, before the
+> foundational kernel **design bridge** (#1708) and the **Gate-0 grammar-freeze + Phase-B L0
+> build-order** (#1716, `docs/analysis/rebuild-discovery/foundations/gate-0/`) landed — this
+> review was not in main when those ran. The §3 missing-oracle/checker classes, the §4 acceptance-
+> criteria rewrites, and the §6 "block Phase B until checker/oracle *specs* exist" list are
+> therefore **unconsumed review input**: check each against the frozen L0 grammar + amendment
+> registry + owner-decision packet, and fold whatever is still missing into the Phase-B plan
+> template before Phase-B subsystem plans are written.
 
 ## 1. Verification maturity verdict
 
