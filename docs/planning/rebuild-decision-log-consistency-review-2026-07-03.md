@@ -1,6 +1,6 @@
 # Rebuild decision-log consistency review (2026-07-03)
 
-> **Status:** `review` — read-only consistency review of the 2026-07-03 rebuild decision logs,
+> **Status:** `audit` — read-only consistency review of the 2026-07-03 rebuild decision logs,
 > requested after Stage-1/conventions/hub-navigation/rubric/foundational-mechanics planning. This
 > document records contradictions, missing durable homes, vocabulary risks, and owner questions. It
 > does **not** approve implementation, redesign the rebuild, or supersede owner decisions.
@@ -18,6 +18,16 @@
 >
 > **PR #1691 note:** PR #1691 was still open when reviewed. Treat it as pending evidence until it is
 > merged or explicitly accepted by the owner as usable pending input.
+
+> **Post-review status (2026-07-04, open-PR merge sweep):** written 2026-07-03, before the
+> foundational kernel **design bridge** (#1708) and the **Gate-0 grammar-freeze + Phase-B L0
+> build-order** (#1716, `docs/analysis/rebuild-discovery/foundations/gate-0/`) landed — neither had
+> this review in main when they ran, so the §2 conflict table's "Gate-0 blocker" rows, the §3
+> durable-home routes, and the §5 owner questions were **not** folded into that freeze by this doc.
+> PR #1691 has since **merged**. Before acting on any row here, check it against the frozen L0
+> grammar, the amendment registry (G-1…G-24), and the owner-decision packet — several rows (e.g.
+> authority vocabulary, C-1 resolver contract, preset semantics) may already be resolved there;
+> whatever is *not* covered there is still-live review input.
 
 ## 1. Decision consistency verdict
 
