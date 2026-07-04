@@ -5,6 +5,7 @@
 
 > **Unit:** `utility` · **Type:** server-fn · **Family:** platform
 > **State:** ◐ assessed · **Assessed:** 2026-06-29 · **Certified:** —
+> **Deepened:** 2026-07-01 (dispatch run) — punch #1/#2/#3 cleared + #4 advanced (see punch-list).
 > Source: `disbot/cogs/utility_cog.py` (`!utilitymenu`/`/utility` + member commands) ·
 > `_UtilityPanelView` (hub + General/420 child forwarding) · folio `docs/subsystems/` general
 
@@ -76,14 +77,20 @@
 - [ ] **Owner ✔** — pending → punch #7.
 
 ## Punch-list (clear these to certify)
-1. **Resolve `utility.tool.ping`** *(offline, minor)* — either implement a user-tier ping alias in utility
-   or drop the declared-but-unimplemented capability from the registry.
-2. **Command-behavior tests** *(offline, minor)* — smoke tests for info/avatar/poll(modal)/remind(spawn)/
-   invite(one-use)/clear, incl. validation/error paths.
-3. **Authority tests** *(offline, minor)* — assert `clear` (manage_messages) + `invite`
-   (create_instant_invite) enforcement.
-4. **Best-in-class commands** *(offline/owner, deepening)* — consider roleinfo / channelinfo / botinfo /
-   membercount (benchmark vs Carl-bot/MEE6 to prioritise).
+1. **✅ DONE 2026-07-01 (dispatch run) — Resolve `utility.tool.ping`.** Implemented a real **user-tier
+   `!ping`** in the utility cog (gateway + message round-trip). The `ping` alias was **re-homed off**
+   diagnostic's admin-tier `!latency` (diagnostic keeps `!latency`), so ordinary members finally have a
+   ping; registry `entry_points` updated on both sides (utility gains `ping`; diagnostic `ping`→`latency`).
+   Collision-checked first (BUG-0030 lesson) — `ping` was only diagnostic's alias, so freeing it was safe.
+2. **✅ DONE 2026-07-01 (dispatch run) — Command-behavior tests.** `tests/unit/cogs/test_utility_commands.py`
+   covers info/avatar/poll(≥2/≤10)/remind(spawn+reject)/clear(bounds+purge)/ping/botinfo/membercount +
+   the `_format_uptime` helper.
+3. **✅ DONE 2026-07-01 (dispatch run) — Authority tests.** Same file: `clear` (manage_messages) + `invite`
+   (create_instant_invite) each denied for a member without the permission, allowed with it **and** for
+   the platform owner (Q-0212 owner bypass).
+4. **◐ ADVANCED 2026-07-01 (dispatch run) — Best-in-class commands.** Added `!botinfo` (`about`) and
+   `!membercount` (`members`); roleinfo/channelinfo/userinfo already exist (#1561). Remaining optional
+   deepening: math/calc (owner call on whether it belongs in utility vs a dedicated cog).
 5. **Feedback consistency** *(offline, minor)* — uniform tone/format across success + denial paths.
 6. **Live walkthrough** *(owner / live-bot)* — `/verify-bot` boot + each command + the child-panel
    forwarding, with screenshots.

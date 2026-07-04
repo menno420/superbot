@@ -18,6 +18,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
+from core.runtime.permission_checks import member_has_perms_or_owner
 from utils.emoji_tokens import parse_emotes
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
@@ -33,8 +34,8 @@ _MODE_LABEL = {
 
 
 def _can_manage(interaction: discord.Interaction) -> bool:
-    perms = getattr(interaction.user, "guild_permissions", None)
-    return bool(perms is not None and (perms.manage_roles or perms.administrator))
+    # Owner OR manage_roles (admins implicitly hold manage_roles). Q-0212.
+    return member_has_perms_or_owner(interaction.user, manage_roles=True)
 
 
 async def _deny(interaction: discord.Interaction) -> None:
@@ -306,6 +307,7 @@ class ReactionRolesPanel(BaseView):
             view=view,
         )
         view.message = interaction.message
+        view._panel_interaction = interaction
 
     @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.grey, row=1)
     async def refresh_btn(

@@ -237,8 +237,9 @@ def _non_default_value_for(spec: Any) -> Any:
         return allowed[0]
     if spec.value_type is str:
         # The trailing csv-subset candidates cover constrained free-form str
-        # specs (e.g. moderation ``dm_actions``, a comma-separated allow-list)
-        # whose validator rejects the arbitrary first picks.
+        # specs (e.g. moderation ``dm_actions``, a comma-separated allow-list;
+        # logging ``ignored_channels``/``ignored_users``, a comma-separated id
+        # list) whose validator rejects the arbitrary first picks.
         for candidate in (
             "round-trip-test",
             "alt-value",
@@ -246,6 +247,8 @@ def _non_default_value_for(spec: Any) -> Any:
             "y",
             "warn,timeout",
             "warn",
+            "123456789012345678,234567890123456789",  # numeric id CSV
+            "123456789012345678",
         ):
             if candidate != spec.default and _validator_accepts(spec, candidate):
                 return candidate

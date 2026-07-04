@@ -52,6 +52,7 @@ from cogs.btd6._embeds import (
 from cogs.btd6._embeds import response_to_embed as _response_to_embed
 from cogs.btd6._reply import reply_ephemeral
 from core.runtime.interaction_helpers import safe_defer, safe_followup
+from core.runtime.permission_checks import perms_or_owner
 from services import btd6_ai_service
 from utils.discord_permissions import is_administrator_member, is_staff_member
 from views.btd6 import strategy_browse
@@ -183,6 +184,26 @@ async def tower_slash(interaction: discord.Interaction, name: str) -> None:
 @btd6_prefix.command(name="tower")  # type: ignore[arg-type]
 async def tower_prefix(ctx: commands.Context, *, name: str) -> None:
     await ctx.send(embed=await _builders.build_tower_embed(name))
+
+
+# --- estimate --------------------------------------------------------------
+
+
+@btd6_app.command(
+    name="estimate",
+    description="Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+)
+@app_commands.describe(
+    query="e.g. 'super monkey 0-4-0 vs bloonarius t5' or 'counters bloonarius'",
+)
+async def estimate_slash(interaction: discord.Interaction, query: str) -> None:
+    await reply_ephemeral(interaction, _builders.build_estimate_embed(query))
+
+
+@btd6_prefix.command(name="estimate")  # type: ignore[arg-type]
+async def estimate_prefix(ctx: commands.Context, *, query: str = "") -> None:
+    """Estimate a boss fight: `<tower> vs <boss> [tier]`, or `counters <boss>`."""
+    await ctx.send(embed=await _builders.build_estimate_embed(query))
 
 
 # --- hero ------------------------------------------------------------------
@@ -485,7 +506,7 @@ async def strat_pending_slash(
 
 
 @strat_prefix.command(name="pending")  # type: ignore[arg-type]
-@commands.has_guild_permissions(manage_guild=True)
+@perms_or_owner(manage_guild=True)
 async def strat_pending_prefix(ctx: commands.Context, limit: int = 5) -> None:
     """List pending strategy submissions with review buttons (staff-only)."""
     if not ctx.guild:
@@ -916,7 +937,7 @@ async def events_refresh_source_slash(
 
 
 @events_prefix.command(name="refresh-source")  # type: ignore[arg-type]
-@commands.has_guild_permissions(manage_guild=True)
+@perms_or_owner(manage_guild=True)
 async def events_refresh_source_prefix(
     ctx: commands.Context,
     source_key: str,

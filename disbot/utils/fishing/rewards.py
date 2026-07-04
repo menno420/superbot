@@ -14,6 +14,7 @@ from __future__ import annotations
 import random
 
 from utils.fishing.fish import SHORE_VENUE, Catch, FishSpecies, unlocked_species
+from utils.fishing.venue import DEEPWATER, normalize
 from utils.fishing.weight import roll_weight
 
 
@@ -57,15 +58,26 @@ def roll_catch(
 BONUS_CATCH_CHANCE = 0.10
 
 
-def roll_bonus_catch(rng: random.Random | None = None) -> bool:
-    """Roll the lucky-double-catch bonus — ``True`` ≈ :data:`BONUS_CATCH_CHANCE`.
+def roll_bonus_catch(
+    rng: random.Random | None = None,
+    *,
+    chance: float | None = None,
+) -> bool:
+    """Roll the lucky-double-catch bonus — ``True`` ≈ *chance*.
 
     Rolled at commit time (only a *landed* catch can double), separate from the
     species roll so the bonus is a clean, independently-tunable knob. State-in
     (an explicit ``random.Random`` for seed-determinism in tests), return-out.
+
+    *chance* defaults to :data:`BONUS_CATCH_CHANCE` (so every existing caller is
+    byte-identical). A built **Fishery** structure raises it — see
+    ``services.fishing_workflow.commit_catch`` — and it is clamped to ``[0, 1]`` so
+    an over-large bonus can never exceed certainty.
     """
+    effective = BONUS_CATCH_CHANCE if chance is None else chance
+    effective = min(1.0, max(0.0, effective))
     r = rng or random.Random()
-    return r.random() < BONUS_CATCH_CHANCE
+    return r.random() < effective
 
 
 #: The dedicated **rare crafting material** a successful reel can also yield — a
@@ -109,3 +121,45 @@ def roll_pearl_drop(size_rank: int, rng: random.Random | None = None) -> bool:
     """
     r = rng or random.Random()
     return r.random() < pearl_drop_chance(size_rank)
+
+
+#: A **second** dedicated rare crafting material — "coral" — a reel byproduct like
+#: the pearl, but **deepwater-only**: coral is a reef find, so only a cast made in
+#: the boat/deepwater venue (``utils.fishing.venue.DEEPWATER``) can yield it.  This
+#: gives the deepwater venue (the boat, #1340) a *unique* reward the shore can't
+#: earn — a reason to sail beyond the tougher minigame.  Coral's sole sink is the
+#: cosmetic **curio** collection (``utils.fishing.curios``): a completionist set of
+#: carvings you craft from coral, never a bait (that is the pearl's lane).  Stored
+#: in the shared ``mining_inventory``; never a catch-log / dex / trophy row.
+#: Byte-identical economics when no coral drops.  Numbers sim-pinned in
+#: ``docs/planning/fishing-coral-numbers-2026-07-01.md``.
+CORAL_ITEM = "coral"
+
+#: Per-reel coral-drop chance in the **deepwater** venue (flat — coral is a reef
+#: find, not size-scaled like the pearl).  A shore cast never drops coral.
+CORAL_DROP_CHANCE = 0.06
+
+
+def coral_drop_chance(venue: str) -> float:
+    """The coral-drop probability for a landed catch made in *venue*.
+
+    :data:`CORAL_DROP_CHANCE` in the deepwater venue, ``0.0`` everywhere else —
+    coral is a reef find, exclusive to the boat/deepwater venue.
+    """
+    return CORAL_DROP_CHANCE if normalize(venue) == DEEPWATER else 0.0
+
+
+def roll_coral_drop(venue: str, rng: random.Random | None = None) -> bool:
+    """Roll a coral drop for a landed catch made in *venue* — ``True`` ≈ its chance.
+
+    Rolled at commit time (only a *landed* catch can drop coral), separate from
+    the species / bonus-catch / pearl rolls so the material is a clean,
+    independently-tunable knob.  Always ``False`` outside the deepwater venue.
+    State-in (an explicit ``random.Random`` for seed-determinism in tests),
+    return-out.
+    """
+    chance = coral_drop_chance(venue)
+    if chance <= 0.0:
+        return False
+    r = rng or random.Random()
+    return r.random() < chance

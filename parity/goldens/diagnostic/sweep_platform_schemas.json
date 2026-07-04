@@ -1,0 +1,103 @@
+{
+ "case_id": "sweep.platform_schemas",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1772111125,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 5793266,
+        "description": "19 registered  ·  bindings=17  ·  settings=100  ·  resources=15",
+        "fields": [
+         {
+          "inline": false,
+          "name": "By subsystem",
+          "value": "`ai` — b=1 s=10 r=0 v=1\n`automod` — b=0 s=11 r=0 v=1\n`blackjack` — b=0 s=1 r=0 v=1\n`btd6` — b=2 s=0 r=0 v=1\n`cleanup` — b=0 s=1 r=0 v=1\n`counters` — b=0 s=7 r=0 v=1\n`deathmatch` — b=0 s=1 r=0 v=1\n`economy` — b=1 s=0 r=1 v=1\n`help` — b=0 s=0 r=0 v=1\n`image_moderation` — b=0 s=8 r=0 v=1\n`karma` — b=0 s=4 r=0 v=1\n`logging` — b=11 s=12 r=11 v=5\n`moderation` — b=0 s=15 r=1 v=7\n`proof_channel` — b=1 s=0 r=1 v=1\n`role` — b=0 s=3 r=0 v=1\n`rps_tournament` — b=0 s=1 r=0 v=1\n`security` — b=0 s=11 r=0 v=1\n`welcome` — b=0 s=12 r=0 v=1\n`xp` — b=1 s=3 r=1 v=1"
+         }
+        ],
+        "flags": 0,
+        "title": "📐 Subsystem schemas",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!platform schemas",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "diagnostic"
+}

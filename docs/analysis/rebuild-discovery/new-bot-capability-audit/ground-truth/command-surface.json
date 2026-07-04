@@ -1,0 +1,2381 @@
+[
+  {
+    "name": "adminmenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 38
+  },
+  {
+    "name": "admin",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 57
+  },
+  {
+    "name": "serverstats",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 77
+  },
+  {
+    "name": "cog",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 99
+  },
+  {
+    "name": "loadall",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 126
+  },
+  {
+    "name": "unloadall",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 149
+  },
+  {
+    "name": "coglist",
+    "aliases": [
+      "cogs",
+      "listcogs",
+      "cogslist"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 182
+  },
+  {
+    "name": "syncslash",
+    "aliases": [
+      "syncs"
+    ],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 200
+  },
+  {
+    "name": "slashes",
+    "aliases": [
+      "slashlist"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 297
+  },
+  {
+    "name": "restart",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 367
+  },
+  {
+    "name": "loglevel",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/admin_cog.py",
+    "lineno": 395
+  },
+  {
+    "name": "ai",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/ai_cog.py",
+    "lineno": 367
+  },
+  {
+    "name": "aimenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/ai_cog.py",
+    "lineno": 519
+  },
+  {
+    "name": "aimenu",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/ai_cog.py",
+    "lineno": 777
+  },
+  {
+    "name": "aireview",
+    "aliases": [],
+    "kind": "group",
+    "perm": "manage_guild",
+    "cog_file": "cogs/ai_review_cog.py",
+    "lineno": 174
+  },
+  {
+    "name": "automod",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/automod_cog.py",
+    "lineno": 119
+  },
+  {
+    "name": "blackjack",
+    "aliases": [
+      "bj"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/blackjack_cog.py",
+    "lineno": 432
+  },
+  {
+    "name": "bjtournament",
+    "aliases": [
+      "bjtourn"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/blackjack_cog.py",
+    "lineno": 518
+  },
+  {
+    "name": "bjstart",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/blackjack_cog.py",
+    "lineno": 579
+  },
+  {
+    "name": "bjstatus",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/blackjack_cog.py",
+    "lineno": 590
+  },
+  {
+    "name": "btd6menu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/btd6_cog.py",
+    "lineno": 172
+  },
+  {
+    "name": "btd6menu",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/btd6_cog.py",
+    "lineno": 183
+  },
+  {
+    "name": "btd6events",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/btd6_events_cog.py",
+    "lineno": 44
+  },
+  {
+    "name": "btd6ops",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/btd6_ops_cog.py",
+    "lineno": 48
+  },
+  {
+    "name": "btd6ref",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/btd6_reference_cog.py",
+    "lineno": 43
+  },
+  {
+    "name": "btd6strat",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/btd6_strategy_cog.py",
+    "lineno": 45
+  },
+  {
+    "name": "casino",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/casino_cog.py",
+    "lineno": 41
+  },
+  {
+    "name": "poker",
+    "aliases": [
+      "holdem"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/casino_cog.py",
+    "lineno": 47
+  },
+  {
+    "name": "chain",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/chain_cog.py",
+    "lineno": 70
+  },
+  {
+    "name": "chainmenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/chain_cog.py",
+    "lineno": 255
+  },
+  {
+    "name": "channelmenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 196
+  },
+  {
+    "name": "set",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 214
+  },
+  {
+    "name": "evt",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 237
+  },
+  {
+    "name": "create",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 282
+  },
+  {
+    "name": "bulkdelete",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 333
+  },
+  {
+    "name": "del",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 384
+  },
+  {
+    "name": "list",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 409
+  },
+  {
+    "name": "clone",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 441
+  },
+  {
+    "name": "move",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 474
+  },
+  {
+    "name": "lock",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 500
+  },
+  {
+    "name": "unlock",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 516
+  },
+  {
+    "name": "channelinfo",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 535
+  },
+  {
+    "name": "rename",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 574
+  },
+  {
+    "name": "slowmode",
+    "aliases": [
+      "slow"
+    ],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 606
+  },
+  {
+    "name": "topic",
+    "aliases": [
+      "settopic"
+    ],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 646
+  },
+  {
+    "name": "permissions",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 677
+  },
+  {
+    "name": "bulkcreate",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "admin",
+    "cog_file": "cogs/channel_cog.py",
+    "lineno": 708
+  },
+  {
+    "name": "cleanuphistory",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_messages",
+    "cog_file": "cogs/cleanup_cog.py",
+    "lineno": 325
+  },
+  {
+    "name": "word",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/cleanup_cog.py",
+    "lineno": 488
+  },
+  {
+    "name": "wordmenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/cleanup_cog.py",
+    "lineno": 554
+  },
+  {
+    "name": "cleanup",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/cleanup_cog.py",
+    "lineno": 563
+  },
+  {
+    "name": "community",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/community_cog.py",
+    "lineno": 42
+  },
+  {
+    "name": "community",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/community_cog.py",
+    "lineno": 59
+  },
+  {
+    "name": "spotlight",
+    "aliases": [
+      "activity"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/community_spotlight_cog.py",
+    "lineno": 304
+  },
+  {
+    "name": "counters",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/counters_cog.py",
+    "lineno": 159
+  },
+  {
+    "name": "counterpreset",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/counters_cog.py",
+    "lineno": 173
+  },
+  {
+    "name": "counters",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "manage_guild",
+    "cog_file": "cogs/counters_cog.py",
+    "lineno": 227
+  },
+  {
+    "name": "countingmenu",
+    "aliases": [
+      "cm"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 181
+  },
+  {
+    "name": "start_match",
+    "aliases": [
+      "sm"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 198
+  },
+  {
+    "name": "end_match",
+    "aliases": [
+      "em"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 385
+  },
+  {
+    "name": "reset_count",
+    "aliases": [
+      "rc"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 434
+  },
+  {
+    "name": "toggle_turns",
+    "aliases": [
+      "tt"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 489
+  },
+  {
+    "name": "count_info",
+    "aliases": [
+      "ci"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 518
+  },
+  {
+    "name": "counttop",
+    "aliases": [
+      "ct",
+      "counting_top"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 573
+  },
+  {
+    "name": "count_rules",
+    "aliases": [
+      "cr"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 605
+  },
+  {
+    "name": "set_skip_numbers",
+    "aliases": [
+      "ssn"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 637
+  },
+  {
+    "name": "toggle_reset_on_wrong_count",
+    "aliases": [
+      "trwc"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/counting_cog.py",
+    "lineno": 688
+  },
+  {
+    "name": "cbattle",
+    "aliases": [
+      "creaturebattle"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/creature_battle_cog.py",
+    "lineno": 73
+  },
+  {
+    "name": "cbrecord",
+    "aliases": [
+      "battlerecord"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/creature_battle_cog.py",
+    "lineno": 90
+  },
+  {
+    "name": "cbattletop",
+    "aliases": [
+      "pvptop",
+      "battletop"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/creature_battle_cog.py",
+    "lineno": 97
+  },
+  {
+    "name": "catch",
+    "aliases": [
+      "hunt"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/creature_cog.py",
+    "lineno": 59
+  },
+  {
+    "name": "creatures",
+    "aliases": [
+      "creaturemenu",
+      "pets"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/creature_cog.py",
+    "lineno": 70
+  },
+  {
+    "name": "dex",
+    "aliases": [
+      "collection"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/creature_cog.py",
+    "lineno": 79
+  },
+  {
+    "name": "dextop",
+    "aliases": [
+      "topcatchers"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/creature_cog.py",
+    "lineno": 86
+  },
+  {
+    "name": "dm_challenge",
+    "aliases": [
+      "deathmatch",
+      "challenge",
+      "dm"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/deathmatch_cog.py",
+    "lineno": 445
+  },
+  {
+    "name": "dm_help",
+    "aliases": [
+      "deathmatch_help"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/deathmatch_cog.py",
+    "lineno": 498
+  },
+  {
+    "name": "platform",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic/platform_group.py",
+    "lineno": 112
+  },
+  {
+    "name": "diagnostics",
+    "aliases": [
+      "diag"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 57
+  },
+  {
+    "name": "lifecycle",
+    "aliases": [
+      "lc"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 64
+  },
+  {
+    "name": "platform",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 116
+  },
+  {
+    "name": "list_commands_detailed",
+    "aliases": [
+      "listcmds"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 137
+  },
+  {
+    "name": "find_command",
+    "aliases": [
+      "findcmd"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 148
+  },
+  {
+    "name": "validate_json_files",
+    "aliases": [
+      "validatejson"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 183
+  },
+  {
+    "name": "check_database",
+    "aliases": [
+      "checkdb"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 190
+  },
+  {
+    "name": "diagnostic_bot_status",
+    "aliases": [
+      "diag_status"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 201
+  },
+  {
+    "name": "latency",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 208
+  },
+  {
+    "name": "system_info",
+    "aliases": [
+      "sysinfo"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 220
+  },
+  {
+    "name": "query_logs",
+    "aliases": [
+      "querylogs"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 231
+  },
+  {
+    "name": "recent_errors",
+    "aliases": [
+      "errors"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 238
+  },
+  {
+    "name": "test_notification",
+    "aliases": [
+      "testnotify"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/diagnostic_cog.py",
+    "lineno": 245
+  },
+  {
+    "name": "economymenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/economy_cog.py",
+    "lineno": 66
+  },
+  {
+    "name": "economy",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/economy_cog.py",
+    "lineno": 85
+  },
+  {
+    "name": "daily",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/economy_cog.py",
+    "lineno": 218
+  },
+  {
+    "name": "work",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/economy_cog.py",
+    "lineno": 284
+  },
+  {
+    "name": "shop",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/economy_cog.py",
+    "lineno": 326
+  },
+  {
+    "name": "balance",
+    "aliases": [
+      "bal",
+      "wallet"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/economy_cog.py",
+    "lineno": 335
+  },
+  {
+    "name": "setlogchannel",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/economy_cog.py",
+    "lineno": 353
+  },
+  {
+    "name": "joblist",
+    "aliases": [
+      "jobs"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/economy_cog.py",
+    "lineno": 365
+  },
+  {
+    "name": "farm",
+    "aliases": [
+      "chickenfarm",
+      "coop"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/farm_cog.py",
+    "lineno": 44
+  },
+  {
+    "name": "fish",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 76
+  },
+  {
+    "name": "fishing",
+    "aliases": [
+      "fishmenu"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 87
+  },
+  {
+    "name": "forecast",
+    "aliases": [
+      "fishforecast",
+      "fishingweather"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 98
+  },
+  {
+    "name": "sail",
+    "aliases": [
+      "setsail"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 117
+  },
+  {
+    "name": "fishlog",
+    "aliases": [
+      "fishdex"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 131
+  },
+  {
+    "name": "fishtop",
+    "aliases": [
+      "topfishers"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 145
+  },
+  {
+    "name": "trophies",
+    "aliases": [
+      "bigfish",
+      "fishtrophy"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 172
+  },
+  {
+    "name": "rod",
+    "aliases": [
+      "rodshop",
+      "buyrod"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 197
+  },
+  {
+    "name": "bait",
+    "aliases": [
+      "baitshop",
+      "buybait"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 208
+  },
+  {
+    "name": "craftbait",
+    "aliases": [
+      "baitcraft"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 222
+  },
+  {
+    "name": "craftcharm",
+    "aliases": [
+      "charmcraft"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 246
+  },
+  {
+    "name": "craftrod",
+    "aliases": [
+      "rodcraft"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 272
+  },
+  {
+    "name": "rodrecipes",
+    "aliases": [
+      "rodrecipe",
+      "rrecipes"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 283
+  },
+  {
+    "name": "craftpearl",
+    "aliases": [
+      "pearlcraft"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 289
+  },
+  {
+    "name": "curios",
+    "aliases": [
+      "curio",
+      "carvings"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 319
+  },
+  {
+    "name": "tidepool",
+    "aliases": [
+      "reef",
+      "tidepools"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 350
+  },
+  {
+    "name": "dock",
+    "aliases": [
+      "pier",
+      "fishingdock"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 362
+  },
+  {
+    "name": "boathouse",
+    "aliases": [
+      "moorings",
+      "boat"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 374
+  },
+  {
+    "name": "fishery",
+    "aliases": [
+      "hatchery",
+      "fishfarm"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 386
+  },
+  {
+    "name": "craftcurio",
+    "aliases": [
+      "carve",
+      "curiocraft"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/fishing_cog.py",
+    "lineno": 399
+  },
+  {
+    "name": "420",
+    "aliases": [
+      "fourtwenty",
+      "fourtwenty420"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/four_twenty_cog.py",
+    "lineno": 186
+  },
+  {
+    "name": "games",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/games_cog.py",
+    "lineno": 39
+  },
+  {
+    "name": "world",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/games_cog.py",
+    "lineno": 45
+  },
+  {
+    "name": "worldcard",
+    "aliases": [
+      "mystats"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/games_cog.py",
+    "lineno": 59
+  },
+  {
+    "name": "games",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/games_cog.py",
+    "lineno": 84
+  },
+  {
+    "name": "generalmenu",
+    "aliases": [
+      "gmenu"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/general_cog.py",
+    "lineno": 87
+  },
+  {
+    "name": "fact",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/general_cog.py",
+    "lineno": 113
+  },
+  {
+    "name": "joke",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/general_cog.py",
+    "lineno": 125
+  },
+  {
+    "name": "quote",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/general_cog.py",
+    "lineno": 137
+  },
+  {
+    "name": "trivia",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/general_cog.py",
+    "lineno": 152
+  },
+  {
+    "name": "motivate",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/general_cog.py",
+    "lineno": 171
+  },
+  {
+    "name": "eightball",
+    "aliases": [
+      "8ball"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/general_cog.py",
+    "lineno": 184
+  },
+  {
+    "name": "greet",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/general_cog.py",
+    "lineno": 191
+  },
+  {
+    "name": "help",
+    "aliases": [
+      "hilfe"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/help_cog.py",
+    "lineno": 284
+  },
+  {
+    "name": "help",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/help_cog.py",
+    "lineno": 370
+  },
+  {
+    "name": "bugreport",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/hermes_cog.py",
+    "lineno": 107
+  },
+  {
+    "name": "dispatch",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/hermes_cog.py",
+    "lineno": 170
+  },
+  {
+    "name": "imagemod",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/image_moderation_cog.py",
+    "lineno": 123
+  },
+  {
+    "name": "inventory",
+    "aliases": [
+      "inv"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/inventory_cog.py",
+    "lineno": 563
+  },
+  {
+    "name": "thanks",
+    "aliases": [
+      "rep",
+      "thank"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/karma_cog.py",
+    "lineno": 210
+  },
+  {
+    "name": "karma",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/karma_cog.py",
+    "lineno": 225
+  },
+  {
+    "name": "karma",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/karma_cog.py",
+    "lineno": 254
+  },
+  {
+    "name": "leaderboard",
+    "aliases": [
+      "lb",
+      "rankings",
+      "minelb",
+      "miningleaderboard",
+      "fishlb",
+      "dm_leaderboard",
+      "dm_lb",
+      "rpslb",
+      "farmlb",
+      "countlb",
+      "counting_leaderboard"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/leaderboard_cog.py",
+    "lineno": 216
+  },
+  {
+    "name": "logging",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/logging_cog.py",
+    "lineno": 315
+  },
+  {
+    "name": "minemenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 57
+  },
+  {
+    "name": "mine",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 91
+  },
+  {
+    "name": "fastmine",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 102
+  },
+  {
+    "name": "chop",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 118
+  },
+  {
+    "name": "mineinv",
+    "aliases": [
+      "mineinventory"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 137
+  },
+  {
+    "name": "minestats",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 150
+  },
+  {
+    "name": "build",
+    "aliases": [
+      "craft"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 193
+  },
+  {
+    "name": "buildlist",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 209
+  },
+  {
+    "name": "buildable",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 240
+  },
+  {
+    "name": "explore",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 265
+  },
+  {
+    "name": "use",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 281
+  },
+  {
+    "name": "cook",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 292
+  },
+  {
+    "name": "equip",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 315
+  },
+  {
+    "name": "unequip",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 326
+  },
+  {
+    "name": "gear",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 338
+  },
+  {
+    "name": "loadout",
+    "aliases": [
+      "loadouts"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 361
+  },
+  {
+    "name": "character",
+    "aliases": [
+      "profile",
+      "char"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 411
+  },
+  {
+    "name": "descend",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 441
+  },
+  {
+    "name": "ascend",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 458
+  },
+  {
+    "name": "mineworld",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 474
+  },
+  {
+    "name": "sell",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 501
+  },
+  {
+    "name": "sellall",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 516
+  },
+  {
+    "name": "buy",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 522
+  },
+  {
+    "name": "market",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 535
+  },
+  {
+    "name": "vault",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 571
+  },
+  {
+    "name": "stash",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 585
+  },
+  {
+    "name": "unstash",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 605
+  },
+  {
+    "name": "vaultupgrade",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 625
+  },
+  {
+    "name": "skills",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 637
+  },
+  {
+    "name": "skill",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 651
+  },
+  {
+    "name": "titles",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 674
+  },
+  {
+    "name": "forge",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 690
+  },
+  {
+    "name": "home",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 706
+  },
+  {
+    "name": "workshop",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 722
+  },
+  {
+    "name": "repair",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 735
+  },
+  {
+    "name": "quickcraft",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 750
+  },
+  {
+    "name": "reset_inventory",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/mining_cog.py",
+    "lineno": 758
+  },
+  {
+    "name": "modmenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 79
+  },
+  {
+    "name": "moderation",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "moderate_members",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 98
+  },
+  {
+    "name": "warn",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 128
+  },
+  {
+    "name": "timeout",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 155
+  },
+  {
+    "name": "kick",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 181
+  },
+  {
+    "name": "ban",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 213
+  },
+  {
+    "name": "unban",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 246
+  },
+  {
+    "name": "clearwarnings",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 277
+  },
+  {
+    "name": "modlogs",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/moderation_cog.py",
+    "lineno": 292
+  },
+  {
+    "name": "paragon",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/paragon_cog.py",
+    "lineno": 27
+  },
+  {
+    "name": "pm",
+    "aliases": [
+      "limbus",
+      "projectmoon"
+    ],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/project_moon_cog.py",
+    "lineno": 79
+  },
+  {
+    "name": "pm",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/project_moon_cog.py",
+    "lineno": 179
+  },
+  {
+    "name": "+prize",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_channels",
+    "cog_file": "cogs/proof_channel_cog.py",
+    "lineno": 121
+  },
+  {
+    "name": "-prize",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_channels",
+    "cog_file": "cogs/proof_channel_cog.py",
+    "lineno": 138
+  },
+  {
+    "name": "prizestatus",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_channels",
+    "cog_file": "cogs/proof_channel_cog.py",
+    "lineno": 152
+  },
+  {
+    "name": "prizemenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_channels",
+    "cog_file": "cogs/proof_channel_cog.py",
+    "lineno": 169
+  },
+  {
+    "name": "timedprize",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_channels",
+    "cog_file": "cogs/proof_channel_cog.py",
+    "lineno": 184
+  },
+  {
+    "name": "setup",
+    "aliases": [
+      "quicksetup",
+      "essentialsetup"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/quicksetup_cog.py",
+    "lineno": 34
+  },
+  {
+    "name": "setup",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/quicksetup_cog.py",
+    "lineno": 47
+  },
+  {
+    "name": "roles",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 355
+  },
+  {
+    "name": "rolesettings",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 371
+  },
+  {
+    "name": "roleinfo",
+    "aliases": [
+      "ri"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 381
+  },
+  {
+    "name": "rolemenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 419
+  },
+  {
+    "name": "rolecreator",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_roles",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 429
+  },
+  {
+    "name": "assignroles",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 439
+  },
+  {
+    "name": "createrole",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_roles",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 450
+  },
+  {
+    "name": "deleterole",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_roles",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 489
+  },
+  {
+    "name": "setrole",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 510
+  },
+  {
+    "name": "unsetrole",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 543
+  },
+  {
+    "name": "debugroles",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 573
+  },
+  {
+    "name": "refreshmembers",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 584
+  },
+  {
+    "name": "reactroles",
+    "aliases": [
+      "reaktionsrollen"
+    ],
+    "kind": "prefix",
+    "perm": "manage_roles",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 653
+  },
+  {
+    "name": "removereactrole",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_roles",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 691
+  },
+  {
+    "name": "listreactroles",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_roles",
+    "cog_file": "cogs/role_cog.py",
+    "lineno": 711
+  },
+  {
+    "name": "temprole",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_roles",
+    "cog_file": "cogs/role_grants_cog.py",
+    "lineno": 65
+  },
+  {
+    "name": "temproles",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/role_grants_cog.py",
+    "lineno": 108
+  },
+  {
+    "name": "rpsregister",
+    "aliases": [
+      "rpsreg"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/rps_tournament_cog.py",
+    "lineno": 199
+  },
+  {
+    "name": "rpsstart",
+    "aliases": [
+      "rpsbegin"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/rps_tournament_cog.py",
+    "lineno": 369
+  },
+  {
+    "name": "rpsbot",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/rps_tournament_cog.py",
+    "lineno": 411
+  },
+  {
+    "name": "rpsmatchup",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/rps_tournament_cog.py",
+    "lineno": 424
+  },
+  {
+    "name": "rpshelp",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/rps_tournament_cog.py",
+    "lineno": 724
+  },
+  {
+    "name": "rpssettings",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/rps_tournament_cog.py",
+    "lineno": 741
+  },
+  {
+    "name": "rps",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/rps_tournament_cog.py",
+    "lineno": 772
+  },
+  {
+    "name": "security",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/security_cog.py",
+    "lineno": 115
+  },
+  {
+    "name": "servermanagement",
+    "aliases": [
+      "servermenu",
+      "guildmenu"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/server_management_cog.py",
+    "lineno": 45
+  },
+  {
+    "name": "server-management",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/server_management_cog.py",
+    "lineno": 80
+  },
+  {
+    "name": "settings",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/settings_cog.py",
+    "lineno": 127
+  },
+  {
+    "name": "settings",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/settings_cog.py",
+    "lineno": 200
+  },
+  {
+    "name": "setupadvanced",
+    "aliases": [
+      "advancedsetup"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 88
+  },
+  {
+    "name": "setup-advanced",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 114
+  },
+  {
+    "name": "setupdescribe",
+    "aliases": [
+      "describesetup"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 128
+  },
+  {
+    "name": "setup-describe",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 155
+  },
+  {
+    "name": "setup-hub",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 173
+  },
+  {
+    "name": "setup-depth",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 241
+  },
+  {
+    "name": "setup-skip",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 320
+  },
+  {
+    "name": "setup-unskip",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 343
+  },
+  {
+    "name": "setup-reset",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 419
+  },
+  {
+    "name": "setup-delegate",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 493
+  },
+  {
+    "name": "setup-undelegate",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 522
+  },
+  {
+    "name": "setup-status",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/setup_cog.py",
+    "lineno": 546
+  },
+  {
+    "name": "starboard",
+    "aliases": [],
+    "kind": "group",
+    "perm": "manage_guild",
+    "cog_file": "cogs/starboard_cog.py",
+    "lineno": 153
+  },
+  {
+    "name": "ticket",
+    "aliases": [],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/ticket_cog.py",
+    "lineno": 135
+  },
+  {
+    "name": "ticketpanel",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/ticket_cog.py",
+    "lineno": 238
+  },
+  {
+    "name": "ticketsetup",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/ticket_cog.py",
+    "lineno": 245
+  },
+  {
+    "name": "ticketlimit",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/ticket_cog.py",
+    "lineno": 277
+  },
+  {
+    "name": "ticketblacklist",
+    "aliases": [],
+    "kind": "group",
+    "perm": "manage_guild",
+    "cog_file": "cogs/ticket_cog.py",
+    "lineno": 289
+  },
+  {
+    "name": "treasury",
+    "aliases": [
+      "bank",
+      "pool"
+    ],
+    "kind": "group",
+    "perm": "member",
+    "cog_file": "cogs/treasury_cog.py",
+    "lineno": 47
+  },
+  {
+    "name": "utilitymenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 82
+  },
+  {
+    "name": "utility",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 99
+  },
+  {
+    "name": "myprofile",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 116
+  },
+  {
+    "name": "myprofile",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 135
+  },
+  {
+    "name": "clear",
+    "aliases": [
+      "purge"
+    ],
+    "kind": "prefix",
+    "perm": "manage_messages",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 162
+  },
+  {
+    "name": "info",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 181
+  },
+  {
+    "name": "serverinfo",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 251
+  },
+  {
+    "name": "userinfo",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 260
+  },
+  {
+    "name": "avatar",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 269
+  },
+  {
+    "name": "remind",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 277
+  },
+  {
+    "name": "invite",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "create_invite",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 292
+  },
+  {
+    "name": "poll",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 298
+  },
+  {
+    "name": "ping",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 316
+  },
+  {
+    "name": "botinfo",
+    "aliases": [
+      "about"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 334
+  },
+  {
+    "name": "membercount",
+    "aliases": [
+      "members"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/utility_cog.py",
+    "lineno": 374
+  },
+  {
+    "name": "uxlab",
+    "aliases": [
+      "interfacelab"
+    ],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/ux_lab_cog.py",
+    "lineno": 57
+  },
+  {
+    "name": "uxlab",
+    "aliases": [],
+    "kind": "slash",
+    "perm": "admin",
+    "cog_file": "cogs/ux_lab_cog.py",
+    "lineno": 68
+  },
+  {
+    "name": "welcome",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "manage_guild",
+    "cog_file": "cogs/welcome_cog.py",
+    "lineno": 162
+  },
+  {
+    "name": "xpmenu",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/xp_cog.py",
+    "lineno": 92
+  },
+  {
+    "name": "rank",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/xp_cog.py",
+    "lineno": 120
+  },
+  {
+    "name": "givexp",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/xp_cog.py",
+    "lineno": 179
+  },
+  {
+    "name": "resetxp",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/xp_cog.py",
+    "lineno": 197
+  },
+  {
+    "name": "xpconfig",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/xp_cog.py",
+    "lineno": 210
+  },
+  {
+    "name": "xpimport",
+    "aliases": [],
+    "kind": "prefix",
+    "perm": "member",
+    "cog_file": "cogs/xp_cog.py",
+    "lineno": 218
+  }
+]

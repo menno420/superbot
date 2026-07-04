@@ -15,10 +15,11 @@
 > leavers, and optionally grants an entry role, with placeholder templates and an optional PIL card.
 > It is **fail-safe and fully audited** (greeting faults swallowed; entry-role via the audited
 > `role_automation.apply`; all config through `SettingsMutationPipeline`), with strong unit coverage.
-> The two honest gaps against the server-fn rubric: it has **no bespoke command panel** (config is the
-> generic `!settings → Welcome` widget group + a read-only `!welcome` status embed), and it is missing
-> a few **best-in-class welcome options** (DM greeting · multiple/random messages · join-delay
-> age-gating). Both are owner-paced.
+> The remaining honest gap against the server-fn rubric is the **no bespoke command panel** item
+> (config is the generic `!settings → Welcome` widget group + a read-only `!welcome` status embed) plus
+> the owner walkthrough/sign-off. The **best-in-class welcome options are now complete** (2026-06-30:
+> DM greeting · multiple/random messages · join-delay age-gating · ping-then-delete) — punch-list #2 is
+> CLOSED.
 
 ## Rubric (server function)
 
@@ -26,10 +27,17 @@
 - [x] **Core promise delivered** — join greeting + leave farewell (embed, avatar thumbnail, placeholder
       template) + optional entry-role grant (`welcome_service.py` `handle_member_join`/`handle_member_leave`/
       `_grant_entry_role`). Bots filtered at the listener (`welcome_cog.py:48`).
-- [ ] **Every best-in-class sub-option exists** — ❌ **partial.** Has: channel greeting, farewell,
-      autorole, custom template (3 placeholders `{user}/{server}/{count}`), embed, image card (phase 2).
-      **Missing vs Carl-bot/MEE6/Dyno:** DM greeting variant · multiple/random welcome messages ·
-      ping-then-delete · join-delay age-gating. → punch-list #2.
+- [x] **Every best-in-class sub-option exists** — ✅ **closed 2026-06-30.** Has: channel greeting,
+      farewell, autorole, custom template (3 placeholders `{user}/{server}/{count}`), embed, image card
+      (phase 2), **multiple/random welcome+farewell+DM messages** (`---`-separated variants, one picked
+      at random per greeting — `welcome_config.split_message_variants`/`pick_message`, 2026-06-30), an
+      **opt-in DM greeting** (`dm_enabled`/`dm_message`, fail-safe on closed DMs — 2026-06-30), a
+      **join-delay age gate** (`min_account_age_days` — anti-raid: skip greeting/DM/entry-role for
+      accounts younger than N days, default 0 = off; `welcome_config.account_is_too_young`), and
+      **ping-then-delete** (`delete_after_seconds` — auto-delete the channel greeting/farewell after N
+      seconds via discord.py's native `delete_after`, default 0 = keep). The two 2026-06-30 additions
+      close the last named gaps vs Carl-bot/MEE6/Dyno; both default-off and byte-identical for existing
+      configs.
 - [x] **Failure modes honest / fail-safe** — no channel → suppress greeting (entry-role still
       proceeds); send `Forbidden`/`HTTPException` classified + logged, never raised; policy-load fault
       caught + swallowed; unknown placeholders render literally (injection-safe `str.replace`,
@@ -114,9 +122,15 @@
    `!settings` · back to Community/Help), so Welcome matches the server-fn panel bar instead of
    relying on the generic settings group. *(Or the owner waives this — the settings group + setup step
    may be deemed sufficient for an admin-tier config function.)*
-2. **Best-in-class options (rubric A)** *(owner-paced, deepening)* — DM greeting variant · multiple /
-   random welcome messages · join-delay age-gating · ping-then-delete. Each is a discrete additive
-   slice on the existing policy model.
+2. **Best-in-class options (rubric A)** *(owner-paced, deepening)* — ~~multiple / random welcome
+   messages~~ ✅ **shipped 2026-06-30** (PR #1579 — `---`-separated variants on the join, leave **and**
+   DM message, one chosen at random per greeting; migration-free, single-message configs
+   byte-identical) · ~~DM greeting~~ ✅ **shipped 2026-06-30** (PR #1579 — opt-in `dm_enabled` +
+   dedicated `dm_message`; DMs the joiner the greeting, fail-safe on closed DMs, independent of the
+   channel greeting) · ~~join-delay age-gating~~ ✅ **shipped 2026-06-30** (`min_account_age_days` — skip
+   greeting/DM/entry-role for accounts younger than N days, default 0 = off; anti-raid) · ~~ping-then-delete~~
+   ✅ **shipped 2026-06-30** (`delete_after_seconds` — auto-delete the channel greeting/farewell after N
+   seconds, default 0 = keep). **Punch-list #2 CLOSED** — every named best-in-class option now exists.
 3. **Channel/role via the binding pipeline** *(offline, consistency)* — consider routing the channel +
    entry-role pointers through `BindingMutationPipeline` (the canonical resource-pointer seam) rather
    than id-bearing settings specs.

@@ -329,11 +329,14 @@ reputation; per-user totals + a leaderboard category on an audited mutation seam
 7. **dedicated_panel_command**: `none` (card-style embed, no interactive hub yet).
 8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (the viewer's card).
 9. **existing_SettingSpec_declarations**: `enabled`, `cooldown_seconds`,
-   `daily_cap` (`disbot/cogs/karma/schemas.py`). Defaults + bounds are the single
-   source of truth in `disbot/services/karma_config.py`.
+   `daily_cap`, `reaction_emoji` (`disbot/cogs/karma/schemas.py`). Defaults + bounds
+   are the single source of truth in `disbot/services/karma_config.py`. The
+   `reaction_emoji` trigger (empty = off) drives the react-to-thank listener in
+   `karma_cog` — reacting with it grants karma through the same audited seam.
 10. **existing_settings_keys**: `KARMA_ENABLED`, `KARMA_COOLDOWN`,
-    `KARMA_DAILY_CAP` (`disbot/utils/settings_keys/karma.py`). Stored as scalar
-    guild settings — schema-declared, with the two karma tables in migration 093.
+    `KARMA_DAILY_CAP`, `KARMA_REACTION_EMOJI` (`disbot/utils/settings_keys/karma.py`).
+    Stored as scalar guild settings — schema-declared, with the two karma tables in
+    migration 093.
 11. **existing_BindingSpec_entries**: none.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=user`; grant/card are
@@ -868,12 +871,17 @@ chokepoint); actions route through `moderation_service` (no parallel audit path)
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: none yet (governance owns
-    cleanup_policies; cleanup-level scalars are roadmap work in S8 v2/v3).
-10. **existing_settings_keys**: none — the legacy
-    `CLEANUP_WHITELIST_CHANNELS` env list was removed (channel exemption is
-    now a per-channel cleanup policy set to `Off`); only the ignored-channel
-    CSV in legacy KV remains to be migrated.
+9. **existing_SettingSpec_declarations**: `spam_window_seconds` — the
+    `!cleanuphistory` spam-duplicate detection window, a scalar with a
+    `numeric_presets` config-input widget (completion-cert punch #4,
+    `disbot/cogs/cleanup/schemas.py`; default 15s, bounds 1..300, capability
+    `cleanup.policy.configure`). Governance still owns cleanup_policies; the
+    deeper cleanup-level scalars stay roadmap work in S8 v2/v3.
+10. **existing_settings_keys**: `CLEANUP_SPAM_WINDOW_SECONDS`
+    (`disbot/utils/settings_keys/cleanup.py`) — a scalar guild setting, **no
+    migration**. The legacy `CLEANUP_WHITELIST_CHANNELS` env list was removed
+    (channel exemption is now a per-channel cleanup policy set to `Off`); only
+    the ignored-channel CSV in legacy KV remains to be migrated.
 11. **existing_BindingSpec_entries**: none. **Cleanup must not own a
     duplicate `cleanup_log_channel` binding** — the logging subsystem owns
     `cleanup_channel`; cleanup deep-links to it.
@@ -999,14 +1007,25 @@ through `services/role_automation.py` (audited — no parallel role/audit path).
 8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (policy summary).
 9. **existing_SettingSpec_declarations**: `enabled`, `join_enabled`,
    `leave_enabled`, `channel`, `join_message`, `leave_message`, `entry_role`,
-   `card_enabled` (`disbot/cogs/welcome/schemas.py`). The master flag defaults
-   OFF; defaults are the single source of truth in
+   `card_enabled`, `dm_enabled`, `dm_message`, `min_account_age_days`,
+   `delete_after_seconds` (`disbot/cogs/welcome/schemas.py`).
+   The master flag defaults OFF; defaults are the single source of truth in
    `disbot/services/welcome_config.py`. `card_enabled` is the welcome **phase 2**
    (Q-0110) toggle — attaches a rendered PIL greeting card to the join embed,
-   off by default, degrading to embed-only when Pillow is unavailable.
+   off by default, degrading to embed-only when Pillow is unavailable. The
+   `join_message`/`leave_message`/`dm_message` templates accept multiple
+   `---`-separated **random variants** (one picked per greeting); `dm_enabled`
+   also DMs the joiner the greeting (off by default, silently skipped when DMs
+   are closed). `min_account_age_days` is the **join-delay age gate** (anti-raid:
+   skip greeting/DM/entry-role for accounts younger than N days, `0` = off) and
+   `delete_after_seconds` is **ping-then-delete** (auto-delete the channel
+   greeting/farewell after N seconds, `0` = keep) — both default-off `int`
+   settings with `numeric_presets` hints.
 10. **existing_settings_keys**: `WELCOME_ENABLED`, `WELCOME_JOIN_ENABLED`,
     `WELCOME_LEAVE_ENABLED`, `WELCOME_CHANNEL`, `WELCOME_JOIN_MESSAGE`,
-    `WELCOME_LEAVE_MESSAGE`, `WELCOME_ENTRY_ROLE`, `WELCOME_CARD_ENABLED`
+    `WELCOME_LEAVE_MESSAGE`, `WELCOME_ENTRY_ROLE`, `WELCOME_CARD_ENABLED`,
+    `WELCOME_DM_ENABLED`, `WELCOME_DM_MESSAGE`, `WELCOME_MIN_ACCOUNT_AGE_DAYS`,
+    `WELCOME_DELETE_AFTER_SECONDS`
     (`disbot/utils/settings_keys/welcome.py`). Stored as scalar guild settings —
     **no migration**. The `channel`/`entry_role` settings carry
     `input_hint="channel"`/`"role"` (channel-id-as-str duality).
@@ -2094,7 +2113,18 @@ deliberately absent — no external calls, no PII stored.
    `allowed_values=("combined", "per_category")`, default `combined`)
    selecting one-channel vs per-category routing.  The
    `messages_enabled` hint carries the deleted-message privacy
-   disclosure.
+   disclosure.  **Exclusion lists (schema v4, completion cert punch #1)**
+   add `ignored_channels` and `ignored_users` (str, comma-separated id
+   CSV, default empty, tolerant `parse_id_csv` read / loud write
+   validator) — a passive event whose channel or subject id is listed is
+   never logged, for every category.
+   **Server event logging v2 (schema v5, audit-log integration)** adds four
+   more category gates: `moderation_enabled` / `channels_enabled` /
+   `server_enabled` (bool, default False — audit-log-sourced groups sharing
+   the combined `events_channel` route, requiring the bot's View-Audit-Log
+   permission) and `voice_enabled` (bool, default False — passive
+   `on_voice_state_update` join/leave/move logging, bots excluded).  The
+   `roles` category is repurposed to the audit-log path so it names the actor.
 10. **existing_settings_keys**: `LOGGING_ENABLED`,
     `LOGGING_AUTO_CREATE_CHANNELS` from `utils.settings_keys.logging`.
     The two channel-id keys (`LOGGING_MOD_CHANNEL`,
@@ -2102,7 +2132,12 @@ deliberately absent — no external calls, no PII stored.
     bindings in S7b.  Server event logging v1 adds
     `LOGGING_MESSAGES_ENABLED`, `LOGGING_MEMBERS_ENABLED`,
     `LOGGING_ROLES_ENABLED`, and `LOGGING_EVENT_ROUTING` (all legacy
-    KV keys, no migration).
+    KV keys, no migration).  Schema v4 adds `LOGGING_IGNORED_CHANNELS`
+    and `LOGGING_IGNORED_USERS` (legacy KV, no migration) for the
+    exclusion lists.  Schema v5 (audit-log v2) adds
+    `LOGGING_MODERATION_ENABLED`, `LOGGING_CHANNELS_ENABLED`,
+    `LOGGING_SERVER_ENABLED`, and `LOGGING_VOICE_ENABLED` (legacy KV, no
+    migration) for the new audit-log-sourced + voice categories.
 11. **existing_BindingSpec_entries**: `mod_channel`, `cleanup_channel`
     — both `BindingKind.CHANNEL`, optional.  Declared in S7a; S7b
     wires the mutation path through `BindingMutationPipeline`.

@@ -40,7 +40,12 @@ class MenuTheme:
 
 @dataclass(frozen=True)
 class MenuTemplate:
-    """A ready-made starter message an operator picks then tweaks."""
+    """A ready-made starter message an operator picks then tweaks.
+
+    ``mode`` / ``show_counts`` let a template pre-pick the assignment behaviour
+    that fits its shape (e.g. the RSVP template is button + ``unique`` + counts),
+    so the right config is one tap away — the operator can still change any of it.
+    """
 
     key: str
     label: str  # gallery button text, e.g. "🎮 Game roles"
@@ -48,6 +53,8 @@ class MenuTemplate:
     description: str
     theme: str = DEFAULT_THEME_KEY
     style: str = "dropdown"
+    mode: str = "normal"
+    show_counts: bool = False
 
 
 # Ordered so the builder renders them deterministically.  Colours reference
@@ -121,8 +128,8 @@ _TEMPLATES: tuple[MenuTemplate, ...] = (
             "Selecting a new colour replaces your current one."
         ),
         theme="pastel",
-        # A colour menu is naturally single-choice — the builder pre-selects
-        # unique mode when this template is chosen.
+        # A colour menu is naturally single-choice.
+        mode="unique",
     ),
     MenuTemplate(
         "verify",
@@ -134,6 +141,24 @@ _TEMPLATES: tuple[MenuTemplate, ...] = (
         ),
         theme="minimal",
         style="button",
+        mode="verify",
+    ),
+    MenuTemplate(
+        "event_rsvp",
+        "📣 Event RSVP",
+        title="📣 Event RSVP",
+        description=(
+            "**Are you in?** Tap an option below — pick **one**, and you can "
+            "change your mind anytime.\n\n"
+            "The live count beside each option updates as people respond, so "
+            "everyone can see who's coming at a glance."
+        ),
+        theme="announcement",
+        # Buttons (one per option) + unique (one answer each) + the live counter:
+        # a self-updating RSVP poll — pair with the 📣 Event RSVP role pack.
+        style="button",
+        mode="unique",
+        show_counts=True,
     ),
 )
 

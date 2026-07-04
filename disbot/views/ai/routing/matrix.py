@@ -27,8 +27,10 @@ _TIMEOUT_SECONDS = 180
 
 
 def _admin(user: Any) -> bool:
-    perms = getattr(user, "guild_permissions", None)
-    return perms is not None and getattr(perms, "administrator", False)
+    # Canonical admin gate — honours the platform owner (Q-0212).
+    from views.base import member_is_admin
+
+    return member_is_admin(user)
 
 
 async def _preset_lookup() -> dict[int, str]:

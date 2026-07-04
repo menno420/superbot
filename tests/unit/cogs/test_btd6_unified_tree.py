@@ -25,6 +25,7 @@ _FLAT_LOOKUPS = {
     "relic",
     "ct",
     "ask",
+    "estimate",
     "status",
     "diagnostics",
     "test-intent",

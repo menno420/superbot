@@ -90,6 +90,49 @@ def test_route_display_order_covers_every_route():
     assert set(_ROUTE_DISPLAY_ORDER) == set(_ROUTE_TO_BINDING)
 
 
+def test_route_labels_cover_every_kind():
+    """Every route kind must have an explicit human label in BOTH view modules.
+
+    Regression guard for the Routes "Set Channel" crash: the Q-0109 event
+    routes (``events`` / ``message_log`` / ``member_log`` / ``role_log``) were
+    added to ``_KIND_TO_BINDING`` but not to ``select_view._KIND_TO_LABEL``, so
+    ``_LogChannelSelect`` raised ``KeyError`` building its placeholder and the
+    view surfaced the generic "An error occurred" ephemeral. The existing
+    binding-table pin (:func:`test_route_tables_are_in_sync_across_modules`)
+    never caught it because it checks ``_KIND_TO_BINDING`` only — this closes
+    the gap for the label map too.
+    """
+    from cogs.logging.provision_view import _KIND_TO_LABEL as PROVISION_LABELS
+    from cogs.logging.select_view import _KIND_TO_LABEL as SELECT_LABELS
+    from services.server_logging import _ROUTE_TO_BINDING
+
+    for kind in _ROUTE_TO_BINDING:
+        assert kind in SELECT_LABELS, f"select_view._KIND_TO_LABEL missing {kind!r}"
+        assert (
+            kind in PROVISION_LABELS
+        ), f"provision_view._KIND_TO_LABEL missing {kind!r}"
+
+
+@pytest.mark.parametrize(
+    "kind", ["mod", "cleanup", "events", "message_log", "member_log", "role_log"],
+)
+def test_select_view_constructs_for_every_route(kind: str):
+    """The Routes 'Set Channel' path must build the picker without raising.
+
+    Repro for the live crash: picking an event route and clicking Set Channel
+    ran ``_open_select`` → ``LogChannelSelectView(user, kind)`` →
+    ``_LogChannelSelect(kind)``, which indexed ``_KIND_TO_LABEL[kind]`` and
+    raised ``KeyError`` for the four event routes. Constructing the view for
+    every route must now succeed with a non-empty placeholder.
+    """
+    from cogs.logging.select_view import LogChannelSelectView
+
+    view = LogChannelSelectView(_author(), kind)
+    selects = [c for c in view.children if isinstance(c, discord.ui.ChannelSelect)]
+    assert selects, "expected a ChannelSelect child"
+    assert selects[0].placeholder and "channel" in selects[0].placeholder.lower()
+
+
 # ---------------------------------------------------------------------------
 # Routes embed
 # ---------------------------------------------------------------------------
@@ -203,9 +246,7 @@ async def test_set_delegates_to_open_select_with_chosen_kind():
         for c in view.children
         if isinstance(c, discord.ui.Button) and c.custom_id == "logging_routes.set"
     )
-    with patch(
-        "cogs.logging.panel._open_select", new_callable=AsyncMock
-    ) as fake_open:
+    with patch("cogs.logging.panel._open_select", new_callable=AsyncMock) as fake_open:
         await btn.callback(interaction)  # type: ignore[union-attr,misc]
     fake_open.assert_awaited_once()
     _args, kwargs = fake_open.call_args
@@ -223,7 +264,7 @@ async def test_create_delegates_to_open_provision_with_chosen_kind():
         if isinstance(c, discord.ui.Button) and c.custom_id == "logging_routes.create"
     )
     with patch(
-        "cogs.logging.panel._open_provision", new_callable=AsyncMock
+        "cogs.logging.panel._open_provision", new_callable=AsyncMock,
     ) as fake_open:
         await btn.callback(interaction)  # type: ignore[union-attr,misc]
     fake_open.assert_awaited_once()

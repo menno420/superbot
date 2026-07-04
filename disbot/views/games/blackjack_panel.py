@@ -82,8 +82,20 @@ def build_blackjack_challenge_picker_embed() -> discord.Embed:
     return discord.Embed(
         title="🃏 Blackjack — Challenge Player",
         description=(
-            "Pick the player you want to challenge. They'll see an "
-            "Accept / Decline prompt."
+            "Pick the player you want to challenge, then choose a stake. "
+            "They'll see an Accept / Decline prompt."
+        ),
+        color=GAME_COLOR,
+    )
+
+
+def build_blackjack_challenge_bet_embed(opponent: discord.Member) -> discord.Embed:
+    return discord.Embed(
+        title="🃏 Blackjack — Challenge Bet",
+        description=(
+            f"Choose the stake for your challenge against {opponent.mention}. "
+            "Free play is no-stakes; a bet escrows coins from both players at "
+            "accept and pays the winner."
         ),
         color=GAME_COLOR,
     )
@@ -330,21 +342,155 @@ class _BlackjackOpponentSelect(discord.ui.UserSelect):
                 ephemeral=True,
             )
             return
-        bet = 0  # PvP bet picker deferred to a future PR
-        embed, view, error = build_blackjack_challenge_view(
-            challenger,
-            opponent,
-            interaction.guild_id or 0,
-            bet,
-        )
-        if error or view is None:
+        # Validate the target before showing a stake picker — surface the
+        # same "can't challenge yourself / a bot" copy as the challenge
+        # builder, so the picker only appears for a playable opponent.
+        if opponent.id == challenger.id:
             await interaction.response.send_message(
-                error or "Could not start challenge.",
+                "You can't challenge yourself.",
                 ephemeral=True,
             )
             return
-        await interaction.response.edit_message(embed=embed, view=view)
-        view.message = interaction.message
+        if opponent.bot:
+            await interaction.response.send_message(
+                "You can't challenge a bot to PvP.",
+                ephemeral=True,
+            )
+            return
+        back_target: BackTarget | None = getattr(self.view, "_back_target", None)
+        await interaction.response.edit_message(
+            embed=build_blackjack_challenge_bet_embed(opponent),
+            view=_BlackjackChallengeBetView(
+                challenger,
+                opponent,
+                back_target=back_target,
+            ),
+        )
+
+
+class _BlackjackChallengeBetView(HubView):
+    """PvP stake picker shown after an opponent is selected.
+
+    Free play + 10/25/50/100 presets + Custom, mirroring the Solo Bet
+    picker so the cross-mode UX is consistent. Closes the panel's
+    command-only PvP gap — "Challenge Player" used to start every PvP
+    match at bet=0.
+    """
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        opponent: discord.Member,
+        back_target: BackTarget | None = None,
+    ) -> None:
+        super().__init__(author)
+        self.add_item(_BlackjackChallengeBetButton(opponent, 0, label="Free play"))
+        for preset in _BET_PRESETS:
+            self.add_item(_BlackjackChallengeBetButton(opponent, preset))
+        self.add_item(_BlackjackChallengeCustomBetButton(opponent))
+        self.add_item(_make_blackjack_back_button(grandparent=back_target))
+        if back_target is not None:
+            attach_back_target(self, back_target)
+
+
+class _BlackjackChallengeBetButton(discord.ui.Button):
+    def __init__(
+        self,
+        opponent: discord.Member,
+        bet: int,
+        *,
+        label: str | None = None,
+        row: int = 0,
+    ) -> None:
+        super().__init__(
+            label=label or f"{bet} 🪙",
+            style=(
+                discord.ButtonStyle.success if bet == 0 else discord.ButtonStyle.primary
+            ),
+            custom_id=f"blackjack_panel:challenge_bet:{bet}",
+            row=row,
+        )
+        self._opponent = opponent
+        self._bet = bet
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await _spawn_pvp(interaction, self._opponent, self._bet)
+
+
+class _BlackjackChallengeCustomBetButton(discord.ui.Button):
+    def __init__(self, opponent: discord.Member, *, row: int = 1) -> None:
+        super().__init__(
+            label="Custom",
+            style=discord.ButtonStyle.secondary,
+            custom_id="blackjack_panel:challenge_bet:custom",
+            row=row,
+        )
+        self._opponent = opponent
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await interaction.response.send_modal(
+            _BlackjackChallengeCustomBetModal(self._opponent),
+        )
+
+
+class _BlackjackChallengeCustomBetModal(discord.ui.Modal, title="Custom Challenge Bet"):
+    bet_input: discord.ui.TextInput = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Bet (🪙 coins)",
+        placeholder="Enter a positive integer (or 0 for free play)",
+        required=True,
+        max_length=10,
+    )
+
+    def __init__(self, opponent: discord.Member) -> None:
+        super().__init__()
+        self._opponent = opponent
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        raw = (self.bet_input.value or "").strip()
+        try:
+            bet = int(raw)
+        except ValueError:
+            await interaction.response.send_message(
+                "Bet must be an integer.",
+                ephemeral=True,
+            )
+            return
+        if bet < 0:
+            await interaction.response.send_message(
+                "Bet must be 0 or positive.",
+                ephemeral=True,
+            )
+            return
+        await _spawn_pvp(interaction, self._opponent, bet)
+
+
+async def _spawn_pvp(
+    interaction: discord.Interaction,
+    opponent: discord.Member,
+    bet: int,
+) -> None:
+    """Shared PvP-challenge spawn path for the panel's preset/custom bets."""
+    challenger = interaction.user
+    if not isinstance(challenger, discord.Member):
+        await interaction.response.send_message(
+            "Challenger must be a server member.",
+            ephemeral=True,
+        )
+        return
+    embed, view, error = build_blackjack_challenge_view(
+        challenger,
+        opponent,
+        interaction.guild_id or 0,
+        bet,
+    )
+    if error or view is None:
+        await interaction.response.send_message(
+            error or "Could not start challenge.",
+            ephemeral=True,
+        )
+        return
+    await interaction.response.edit_message(embed=embed, view=view)
+    view.message = interaction.message
 
 
 class _BlackjackTournamentSubView(HubView):
@@ -512,8 +658,9 @@ class BlackjackPanelView(HubView):
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
-        guild_perms = getattr(interaction.user, "guild_permissions", None)
-        is_admin = bool(guild_perms and guild_perms.administrator)
+        from views.base import member_is_admin
+
+        is_admin = member_is_admin(interaction.user)
         guild_id = interaction.guild_id or 0
         has_active = get_active_tournament(guild_id) is not None
         back_target: BackTarget | None = getattr(self, "_back_target", None)

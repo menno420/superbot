@@ -87,6 +87,35 @@ _CATALOG: dict[str, ItemDef] = {
         value=20,
         tags=frozenset({"luck"}),
     ),
+    # Fishing curios (2026-07-01) — cosmetic carvings crafted from coral (the
+    # deepwater rare drop, utils/fishing/curios.py). TREASURE = high-value find
+    # with no crafting use → never sellable (sell_price only sells RESOURCE), no
+    # gameplay effect; the reward is the collection. Values are for inventory
+    # net-worth display only.
+    "coral shell": ItemDef(
+        "coral shell",
+        ItemKind.TREASURE,
+        value=30,
+        tags=frozenset({"curio"}),
+    ),
+    "coral seahorse": ItemDef(
+        "coral seahorse",
+        ItemKind.TREASURE,
+        value=60,
+        tags=frozenset({"curio"}),
+    ),
+    "coral idol": ItemDef(
+        "coral idol",
+        ItemKind.TREASURE,
+        value=120,
+        tags=frozenset({"curio"}),
+    ),
+    "coral leviathan": ItemDef(
+        "coral leviathan",
+        ItemKind.TREASURE,
+        value=240,
+        tags=frozenset({"curio"}),
+    ),
     # Food / boosters — eaten via mining_workflow.use_item to refill mining
     # energy (utils/mining/energy.py RESTORE_VALUES). Buyable from the market
     # (a coin sink that lets active players keep digging past the passive regen).

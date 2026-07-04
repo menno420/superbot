@@ -40,9 +40,12 @@
 
 ### C. Convenience
 - [x] **Pagination** — 8 items/page with boundary-disabled nav; hub previews first 3 + count per category.
-- [ ] **Sort/filter** — ❌ no name/qty/rarity sort or type filter; fixed order only. → punch #5.
-- [x] **Clear feedback** — empty state + page footer; ⚠ item-detail line is dense (emoji·name·qty·rarity·
-      type on one line) — readability degrades for large inventories. → punch #4.
+- [x] **Sort/filter** — ✅ **DONE 2026-06-29:** the category detail view has a `🔀 Sort:` cycle
+      (Rarity / Quantity / Name, footer shows the active mode) **and** a `Filter by type…` select
+      (shown only when the category mixes >1 type; "All types" restores). → punch #5 cleared.
+- [x] **Clear feedback** — empty state + page footer; item-detail density addressed (✅ punch #4,
+      2026-07-01): in the default rarity sort the page renders as a dedicated field per rarity tier
+      (Epic/Rare/Uncommon/Common), so a large inventory reads cleanly instead of one dense block.
 
 ### D. Authority & safety
 - [x] **Authority re-checked at callback** — view ownership enforced by `BaseView.interaction_check`
@@ -82,12 +85,25 @@
 ## Punch-list (clear these to certify)
 1. **Item actions** *(owner, deepening)* — decide + build use / sell / trade / gift / equip (today the
    browser is read-only). Biggest completeness gap.
-2. **Audit item grants** *(offline/owner, deepening)* — have `add_item` / mining `apply_inventory_deltas`
-   emit an item-grant audit event so the item trail matches the coin trail.
+2. **Audit item grants** *(owner-decision-first, deepening)* — the item-grant primitives
+   (`utils/db/inventory.add_item` / mining `apply_inventory_deltas`) emit no audit event. ⚠ **Needs an
+   owner granularity call before building** (flagged 2026-06-29, dispatch run): the *coin* trail is the
+   high-frequency `EVT_BALANCE_CHANGED` economy log, **not** the admin `audit.action_recorded` bus — so
+   "match the coin trail" must NOT mean firing `audit.action_recorded` on every ore dug / fish caught
+   (that would flood the server-log audit channel). The real question is *which* trail + *what*
+   granularity (a dedicated item-event analogous to the balance-change log? only admin/operator grants?).
+   Deferred rather than barreled into a hot-path change with the wrong shape. (Contrast BUG-0029: XP
+   *role* grants legitimately belong on the audited role seam — they are operator-visible, low-frequency.)
 3. **Capability enforcement** *(owner, minor)* — either enforce the declared `inventory.*` capabilities or
    remove the aspirational ones from the registry until their features exist.
-4. **Item-detail density** *(offline, minor)* — multi-line / dedicated fields for large inventories.
-5. **Sort / filter UI** *(offline, deepening)* — sort by qty/name/rarity, filter by type.
+4. ~~**Item-detail density**~~ ✅ **DONE 2026-07-01 (#1595, dispatch run)** — in the default rarity
+   sort the category detail page renders a **dedicated embed field per rarity tier**
+   (`_group_page_by_rarity` + `_item_line`, pure helpers) instead of one dense description block, so
+   a large inventory reads cleanly; the explicit quantity/name sorts keep the flat ordered list so the
+   grouping never fights the chosen order. +4 tests.
+5. ~~**Sort / filter UI**~~ ✅ **DONE 2026-06-29 (dispatch run)** — `🔀 Sort:` cycle (Rarity /
+   Quantity / Name, pure `_sort_items`) **and** a `Filter by type…` select (`_apply` recomputes the
+   shown slice + pages, page-clamped) on the category view; +15 tests. (Sort + filter both shipped.)
 6. **Server configuration** *(owner, minor)* — decide whether items should be per-guild configurable; if
    so, add a SubsystemSchema.
 7. ~~**Display-logic tests**~~ ✅ **DONE 2026-06-29 (dispatch run)** — `test_inventory_display_logic.py`
@@ -98,7 +114,8 @@
 
 ## Evidence
 - **Tests:** `tests/unit/views/test_economy_inventory_edit.py` (navigation lifecycle) ·
-  `tests/unit/cogs/test_inventory_display_logic.py` (display logic — 10 cases, punch #7) ·
+  `tests/unit/cogs/test_inventory_display_logic.py` (display logic — 29 cases: punch #7 merge/sort/
+  group/pagination + punch #5 sort cycle + type filter + punch #4 per-rarity-tier fields) ·
   `tests/unit/invariants/test_no_view_level_purchase_writes.py`
 - **Walkthrough:** pending (punch #8)
 - **Owner sign-off:** pending (punch #9)

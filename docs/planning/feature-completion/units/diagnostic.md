@@ -39,8 +39,9 @@
 - [x] **Reachable every natural way** — entries `diagnostics`/`ping`/`platform` + two Help hooks
       (`build_help_menu_view` + `build_platform_help_menu_view`) + Admin-hub child.
 - [N/A] **Integrated into Setup** — observational tool, not onboarding config.
-- [ ] **Return navigation** — ✓ "↩ Back" on sub-panels; ⚠ dense platform subviews (consistency/findings)
-      lack pagination (known UX follow-up). → punch #2.
+- [x] **Return navigation** — ✓ "↩ Back" on sub-panels; the dense `!platform consistency` / `!platform
+      findings` command output now paginates (◀ Prev / Next ▶, `_PaginatorView`) instead of dropping
+      trailing sections / capping rows — punch #2 DONE 2026-06-30 (PR #1584).
 - [x] **In-place, not spammy** — `safe_defer`+`safe_edit` throughout.
 
 ### C. Convenience
@@ -83,17 +84,30 @@
 - [ ] **Owner ✔** — pending → punch #4.
 
 ## Punch-list (clear these to certify)
-1. **Platform-hub completeness claim** *(offline, minor)* — `startup`/`findings` are typed-only by design;
-   either add them to the hub category selects or correct the panel docstring + the smoke checklist's
-   stale `!platform diagnostics` reference.
-2. **Pagination for dense subviews** *(owner, minor/deepening)* — apply the existing `_PaginatorView` to
-   long findings/consistency output.
+1. ✅ **Platform-hub completeness claim** — DONE 2026-06-30 (PR #1575). `startup` + `findings` (both
+   read-only health reports) are now grouped into the `!platform` hub's **Runtime/status** category
+   select (audience-preserving `_dispatch` branches; `findings` shows the default `open` status, the
+   typed `!platform findings <status>` keeps the status filter). The panel docstring + the lockstep
+   hub-view test were updated together; the `finding` *lifecycle mutation* stays excluded from the
+   read-only Selects (the segregated Mutations row is the only write surface).
+2. ✅ **Pagination for dense subviews** — DONE 2026-06-30 (PR #1584). `!platform consistency` and
+   `!platform findings` now render through `build_consistency_pages` / `build_findings_pages` and send
+   the existing `_PaginatorView` when there is more than one page, so the full report is reachable via
+   ◀ Prev / Next ▶ instead of `build_consistency_embed` *dropping* trailing sections / `build_findings_embed`
+   capping to `_HEALTH_FINDINGS_SHOWN` rows (single-page output is byte-identical to before). The findings
+   fetch was raised 15 → 60 so the extra pages have content. (The `!platform` hub-*panel* keeps its
+   single-embed select navigation by design.)
 3. **Maintainer live health walk** *(needs-live-bot / owner)* — boot, `!platform health` as admin vs owner
    (redaction), findings lifecycle → audit, grouped-findings, recurrence across restarts, the owner AI
    health tool, with screenshots.
 4. **Owner sign-off** — maintainer confirms "it does its job the most convenient way."
-5. **Health metrics reconcile** *(offline, minor)* — implement the planned collection-duration/source-
-   failure counters or mark them deferred.
+5. ✅ **Health metrics reconcile** — DONE 2026-06-30 (PR #1584). The bot-awareness plan §3.6
+   collection-observability metrics are now implemented (not deferred): `health_snapshot_collection_seconds`
+   (Histogram, `lane=sync|async`), `health_snapshot_source_failure_total` (Counter, `source`), and
+   `health_snapshot_redaction_total` (Counter, `audience`) in `services/metrics.py`, wired at the snapshot
+   seams — duration in `collect_snapshot`/`collect_cached_snapshot`, source-failure in `_safe`/`_safe_async`,
+   redaction-outcome in `project_for_audience`. Low-cardinality labels only (the unbounded source values
+   are bounded by the fixed adapter set).
 
 ## Evidence
 - **Tests:** `tests/unit/services/test_health_snapshot_service.py` · `…/test_health_findings_service.py` ·
@@ -106,6 +120,7 @@
 Diagnostics is a **structurally complete, fully-audited, read-only** health surface — a deterministic
 per-source-isolated redaction-aware snapshot, 30+ platform routes, and a sole-writer findings lifecycle
 with audit + daily retention, comprehensively tested (incl. real-Postgres + an AST sole-writer guard).
-It is **not yet `✔ certified`**: the gaps are a hub-completeness/smoke-doc fix (#1), dense-subview
-pagination (#2), a metrics reconcile (#5), and the owner-led live health walk/sign-off (#3/#4). No
-safety/audit/dead-end issues found.
+It is **not yet `✔ certified`**, but the **offline** punch-list is now CLOSED — hub-completeness (#1,
+#1575), dense-subview pagination (#2, #1584), and the metrics reconcile (#5, #1584) are all done. The
+only remaining gaps are the **owner-led live health walk + sign-off** (#3/#4, `[needs-live-bot]`/`[owner]`).
+No safety/audit/dead-end issues found.

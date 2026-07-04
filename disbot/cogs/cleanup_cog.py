@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import datetime as dt
 import logging
 import re
 
@@ -12,9 +13,11 @@ from core.runtime.message_pipeline import (
     MessagePipelineContext,
     StageResult,
 )
+from core.runtime.permission_checks import admin_or_owner, perms_or_owner
 from services import governance_service, moderation_service
 from services.governance_service import GovernanceContext
 from services.history_cleanup import (
+    HISTORY_CLEANUP_MODES,
     apply_history_cleanup_plan,
     build_history_cleanup_plan,
 )
@@ -29,7 +32,6 @@ CLEANUP_STAGE_NAME = "cleanup"
 # stage-order table in core/runtime/message_pipeline.py.
 CLEANUP_STAGE_ORDER = 10
 MAX_CLEANUP_HISTORY_LIMIT = 1000
-SPAM_DUPLICATE_WINDOW_SECONDS = 15
 HELPER_DELETE_DELAY_SECONDS = 3
 # How long the "commands aren't allowed here" notice stays before self-deleting.
 _BLOCKED_COMMAND_NOTICE_SECONDS = 8
@@ -46,6 +48,50 @@ def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
             )
             return rest.lower() if rest else None
     return None
+
+
+_DURATION_UNIT_SECONDS = {"s": 1, "m": 60, "h": 3600, "d": 86400}
+
+
+def _parse_duration_seconds(raw: str) -> int | None:
+    """Parse a short duration like ``7d`` / ``12h`` / ``30m`` / ``45s`` / ``90``.
+
+    Returns the duration in seconds, or ``None`` if *raw* is not a positive
+    duration. A bare integer is read as seconds. Used by the ``!cleanuphistory``
+    ``older:<duration>`` age gate.
+    """
+    raw = raw.strip().lower()
+    if not raw:
+        return None
+    unit_seconds = 1
+    if raw[-1] in _DURATION_UNIT_SECONDS:
+        unit_seconds = _DURATION_UNIT_SECONDS[raw[-1]]
+        raw = raw[:-1]
+    if not raw.isdigit():
+        return None
+    value = int(raw)
+    if value <= 0:
+        return None
+    return value * unit_seconds
+
+
+async def _resolve_spam_window(guild_id: int) -> int:
+    """Resolve the per-guild ``!cleanuphistory`` spam-duplicate window (seconds).
+
+    Reads the ``cleanup_spam_window_seconds`` scalar setting via the canonical
+    :func:`services.settings_resolution.resolve_value`, which falls back to the
+    declared :class:`SettingSpec` default (15s) when unset or malformed — so a
+    fresh guild behaves byte-identically to the old hardcoded constant.
+    """
+    from cogs.cleanup.schemas import DEFAULT_SPAM_WINDOW_SECONDS
+    from services.settings_resolution import resolve_value
+
+    return await resolve_value(
+        guild_id,
+        "cleanup",
+        "spam_window_seconds",
+        DEFAULT_SPAM_WINDOW_SECONDS,
+    )
 
 
 class CleanupStage:
@@ -274,10 +320,15 @@ class Cleanup(commands.Cog):
         self._strict_cache.pop(guild.id, None)
 
     @commands.command(name="cleanuphistory")
-    @commands.has_permissions(manage_messages=True)
+    @perms_or_owner(manage_messages=True)
     @commands.cooldown(1, 10, commands.BucketType.channel)
     async def cleanup_history(self, ctx, limit: int = 100, *, keyword: str = None):
-        """Clean matching channel history by keyword, commands, or prohibited words."""
+        """Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.
+
+        Modes: `keyword <text>` · `commands` · `prohibited` (default) · `spam` ·
+        `embeds` · `links` · `attachments`. Add `older:<duration>` (e.g.
+        `older:7d`, `older:12h`) to restrict the sweep to messages at least that old.
+        """
         if limit <= 0:
             await ctx.send(
                 "Please provide a positive number of messages to scan.",
@@ -295,15 +346,35 @@ class Cleanup(commands.Cog):
             )
 
         raw_filter = (keyword or "").strip()
-        parts = raw_filter.split(maxsplit=1) if raw_filter else []
+        tokens = raw_filter.split() if raw_filter else []
+
+        # Pull out an optional `older:<duration>` age gate (e.g. `older:7d`),
+        # composable with any mode. It is removed from the tokens before the
+        # mode/keyword are resolved so it never leaks into a keyword search.
+        older_than: dt.datetime | None = None
+        kept_tokens: list[str] = []
+        for token in tokens:
+            if token.lower().startswith("older:"):
+                seconds = _parse_duration_seconds(token.split(":", 1)[1])
+                if seconds is None:
+                    await ctx.send(
+                        "Usage: `older:<duration>` like `older:7d`, `older:12h`, "
+                        "`older:30m` (units d/h/m/s, or plain seconds).",
+                        delete_after=7,
+                    )
+                    return
+                older_than = discord.utils.utcnow() - dt.timedelta(seconds=seconds)
+            else:
+                kept_tokens.append(token)
+
         mode = "prohibited"
         query: str | None = None
-        if parts and parts[0].lower() in {"keyword", "commands", "prohibited", "spam"}:
-            mode = parts[0].lower()
-            query = parts[1] if len(parts) > 1 else None
-        elif raw_filter:
+        if kept_tokens and kept_tokens[0].lower() in HISTORY_CLEANUP_MODES:
+            mode = kept_tokens[0].lower()
+            query = " ".join(kept_tokens[1:]) or None
+        elif kept_tokens:
             mode = "keyword"
-            query = raw_filter
+            query = " ".join(kept_tokens)
 
         if mode == "keyword" and not query:
             await ctx.send(
@@ -322,6 +393,7 @@ class Cleanup(commands.Cog):
             return
 
         prohibited_words = await db.get_prohibited_words(ctx.guild.id)
+        spam_window = await _resolve_spam_window(ctx.guild.id)
         plan = await build_history_cleanup_plan(
             ctx.channel,
             limit=effective_limit,
@@ -330,7 +402,8 @@ class Cleanup(commands.Cog):
             command_prefixes=self.command_prefixes,
             prohibited_words=prohibited_words,
             exclude_message_ids={ctx.message.id},
-            spam_duplicate_window_seconds=SPAM_DUPLICATE_WINDOW_SECONDS,
+            spam_duplicate_window_seconds=spam_window,
+            older_than=older_than,
         )
         final_msg = None
         confirmation_msg = None
@@ -411,7 +484,7 @@ class Cleanup(commands.Cog):
                 self.logger.warning("cleanuphistory helper delete failed: %s", exc)
 
     @commands.group(name="word", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_cmd(self, ctx):
         """Manage prohibited words. Subcommands: add, remove, list."""
         guild_id = ctx.guild.id
@@ -425,7 +498,7 @@ class Cleanup(commands.Cog):
             await ctx.send("No prohibited words are currently set.", delete_after=10)
 
     @word_cmd.command(name="add")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_add(self, ctx, *, word: str):
         """Adds a word to the prohibited words list."""
         word = word.lower()
@@ -444,7 +517,7 @@ class Cleanup(commands.Cog):
             )
 
     @word_cmd.command(name="remove")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_remove(self, ctx, *, word: str):
         """Removes a word from the prohibited words list."""
         word = word.lower()
@@ -463,7 +536,7 @@ class Cleanup(commands.Cog):
             )
 
     @word_cmd.command(name="list")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_list(self, ctx):
         """Shows all prohibited words."""
         guild_id = ctx.guild.id
@@ -477,7 +550,7 @@ class Cleanup(commands.Cog):
             await ctx.send("No prohibited words are currently set.", delete_after=10)
 
     @commands.command(name="wordmenu")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def word_menu(self, ctx):
         """Open the interactive prohibited words management panel."""
         if ctx.guild.id not in self._word_cache:
@@ -486,7 +559,7 @@ class Cleanup(commands.Cog):
         await send_panel(ctx, embed=view.build_embed(), view=view)
 
     @commands.command(name="cleanup")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def cleanup_menu(self, ctx):
         """Open the Cleanup hub panel — overview + routing to subviews."""
         from cogs.cleanup.panel import CleanupPanelView

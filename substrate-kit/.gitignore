@@ -4,3 +4,9 @@
 !dist/
 dist/*
 !dist/bootstrap.py
+
+# pip/setuptools build artifacts (a local `pip install ./substrate-kit` run
+# must never dirty the tree).
+build/
+src/*.egg-info/
+__pycache__/

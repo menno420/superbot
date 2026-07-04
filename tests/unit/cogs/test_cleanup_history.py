@@ -322,3 +322,81 @@ async def test_cleanuphistory_spam_mode_duplicate_window():
     oldest.delete.assert_not_called()
     middle.delete.assert_not_called()
     newest.delete.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_cleanuphistory_embeds_mode_routes_to_builder():
+    cog = Cleanup(MagicMock())
+    ctx = _ctx([_msg("x")])
+    confirm = MagicMock(id=100)
+    confirm.add_reaction = AsyncMock()
+    confirm.delete = AsyncMock()
+    ctx.send.side_effect = [confirm, _reply()]
+    with (
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+        ),
+        patch(
+            "cogs.cleanup_cog.build_history_cleanup_plan",
+            new=AsyncMock(
+                return_value=SimpleNamespace(scanned=1, matched=[_msg("x")]),
+            ),
+        ) as planner,
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
+    ):
+        await cog.cleanup_history.callback(cog, ctx, 100, keyword="embeds")
+    assert planner.await_args.kwargs["mode"] == "embeds"
+    assert planner.await_args.kwargs["older_than"] is None
+
+
+@pytest.mark.asyncio
+async def test_cleanuphistory_older_than_token_sets_cutoff_and_strips_from_query():
+    cog = Cleanup(MagicMock())
+    ctx = _ctx([_msg("x")])
+    confirm = MagicMock(id=100)
+    confirm.add_reaction = AsyncMock()
+    confirm.delete = AsyncMock()
+    ctx.send.side_effect = [confirm, _reply()]
+    before = discord.utils.utcnow()
+    with (
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+        ),
+        patch(
+            "cogs.cleanup_cog.build_history_cleanup_plan",
+            new=AsyncMock(
+                return_value=SimpleNamespace(scanned=1, matched=[_msg("x")]),
+            ),
+        ) as planner,
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
+    ):
+        await cog.cleanup_history.callback(cog, ctx, 100, keyword="links older:7d")
+    kwargs = planner.await_args.kwargs
+    assert kwargs["mode"] == "links"
+    # older:7d → a cutoff ~7 days before now (the `older:` token never leaks
+    # into the keyword query).
+    assert kwargs["keyword"] is None
+    cutoff = kwargs["older_than"]
+    assert cutoff is not None
+    delta = (before - cutoff).total_seconds()
+    assert 7 * 86400 - 60 <= delta <= 7 * 86400 + 60
+
+
+@pytest.mark.asyncio
+async def test_cleanuphistory_invalid_older_than_stops_early():
+    cog = Cleanup(MagicMock())
+    ctx = _ctx([_msg("x")])
+    with patch(
+        "cogs.cleanup_cog.build_history_cleanup_plan", new=AsyncMock(),
+    ) as planner:
+        await cog.cleanup_history.callback(cog, ctx, 100, keyword="links older:soon")
+    planner.assert_not_awaited()
+    assert "older:" in ctx.send.await_args_list[-1].args[0]

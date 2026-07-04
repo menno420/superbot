@@ -74,6 +74,9 @@ def _message(*, content: str = "hi", bot: bool = False) -> MagicMock:
     author = MagicMock()
     author.id = 7
     author.bot = bot
+    author.display_name = "AuthorName"
+    author.display_avatar = MagicMock()
+    author.display_avatar.url = "https://cdn.example/author.png"
     msg.author = author
     msg.content = content
     channel = MagicMock(spec=discord.TextChannel)
@@ -92,6 +95,9 @@ def _member(*, bot: bool = False, roles: list | None = None) -> MagicMock:
     member.created_at = datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
     member.joined_at = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
     member.roles = roles if roles is not None else [_role(1, "@everyone", default=True)]
+    member.display_name = "MemberName"
+    member.display_avatar = MagicMock()
+    member.display_avatar.url = "https://cdn.example/member.png"
     member.__str__ = lambda self: "TestUser"  # type: ignore[assignment]
     return member
 
@@ -173,7 +179,17 @@ async def test_load_policy_rejects_unknown_routing(monkeypatch):
 
 
 def test_category_route_map_in_sync_with_config_categories():
-    assert set(server_logging._CATEGORY_TO_ROUTE) == set(
+    # v1 (Q-0109) categories each have a dedicated per-category route.
+    # v2 (audit-log integration) categories deliberately have NO dedicated
+    # route — they resolve to the combined ``events`` channel via
+    # ``resolve_event_channel``'s fallback, so they must NOT appear here.
+    assert set(server_logging._CATEGORY_TO_ROUTE) == {
+        server_logging_config.CATEGORY_MESSAGES,
+        server_logging_config.CATEGORY_MEMBERS,
+        server_logging_config.CATEGORY_ROLES,
+    }
+    # No orphan routes: every mapped category is a real config category.
+    assert set(server_logging._CATEGORY_TO_ROUTE) <= set(
         server_logging_config.CATEGORIES,
     )
 
@@ -247,6 +263,43 @@ def test_role_change_embed_shows_added_and_removed():
     names = {f.name for f in embed.fields}
     assert "➕ Added" in names
     assert "➖ Removed" in names
+
+
+# ---------------------------------------------------------------------------
+# Subject avatar in the embed author slot (a face per log entry)
+# ---------------------------------------------------------------------------
+
+
+def test_message_embeds_set_subject_avatar_in_author_slot():
+    # The message author's avatar + name ride the embed author slot (the "who"
+    # at a glance), while the structured fields are unchanged.
+    deleted = server_logging.format_message_delete_embed(_message(content="x"))
+    assert deleted.author.name == "AuthorName"
+    assert deleted.author.icon_url == "https://cdn.example/author.png"
+    edited = server_logging.format_message_edit_embed(_message(), _message())
+    assert edited.author.name == "AuthorName"
+    assert edited.author.icon_url == "https://cdn.example/author.png"
+
+
+def test_member_and_role_embeds_set_subject_avatar_in_author_slot():
+    for embed in (
+        server_logging.format_member_join_embed(_member()),
+        server_logging.format_member_leave_embed(_member()),
+        server_logging.format_role_change_embed(_member(), [_role(3, "Added")], []),
+    ):
+        assert embed.author.name == "MemberName"
+        assert embed.author.icon_url == "https://cdn.example/member.png"
+
+
+def test_set_subject_author_is_defensive_on_partial_object():
+    # A subject with no display_name / name → no author line, never a raise
+    # (keeps the fail-safe handler honest for a partial/odd object).
+    class _Bare:
+        pass
+
+    embed = discord.Embed()
+    server_logging._set_subject_author(embed, _Bare())
+    assert embed.author.name is None
 
 
 # ---------------------------------------------------------------------------
@@ -340,6 +393,121 @@ async def test_handler_counts_missing_channel():
         sent = await server_logging.log_member_join(_member())
     assert sent is False
     assert server_logging.counters_snapshot()["counters"]["event_missing_channel"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Ignore lists (completion cert punch #1)
+# ---------------------------------------------------------------------------
+
+
+def test_is_ignored_gate():
+    pol = EventLoggingPolicy(
+        ignored_channel_ids=frozenset({42}),
+        ignored_user_ids=frozenset({7}),
+    )
+    # Channel match.
+    assert pol.is_ignored(channel_id=42, user_id=99) is True
+    # User match.
+    assert pol.is_ignored(channel_id=1, user_id=7) is True
+    # Neither → not ignored.
+    assert pol.is_ignored(channel_id=1, user_id=2) is False
+    # None ids never match (a channel-less member event with no user match).
+    assert pol.is_ignored(channel_id=None, user_id=None) is False
+    # Empty policy ignores nothing.
+    assert EventLoggingPolicy().is_ignored(channel_id=42, user_id=7) is False
+
+
+@pytest.mark.asyncio
+async def test_load_policy_parses_ignore_lists(monkeypatch):
+    stored = {
+        "ignored_channels": "42, 43 ,bad",  # tolerant: 'bad' dropped
+        "ignored_users": "7",
+    }
+
+    async def fake_resolve(guild_id, subsystem, name, fallback):
+        return stored.get(name, fallback)
+
+    import services.settings_resolution as sr
+
+    monkeypatch.setattr(sr, "resolve_value", fake_resolve)
+
+    pol = await server_logging_config.load_policy(guild_id=1)
+    assert pol.ignored_channel_ids == frozenset({42, 43})
+    assert pol.ignored_user_ids == frozenset({7})
+    # Unset lists default empty (no exclusion).
+    assert EventLoggingPolicy().ignored_channel_ids == frozenset()
+
+
+@pytest.mark.asyncio
+async def test_handler_skips_when_channel_ignored():
+    # A deleted message in an ignored channel is not logged even though the
+    # messages category is on.
+    msg = _message(content="hi")
+    msg.channel.id = 42
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(
+            enabled=True,
+            messages_enabled=True,
+            ignored_channel_ids=frozenset({42}),
+        ),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=_channel(),
+    ) as resolve:
+        sent = await server_logging.log_message_delete(msg)
+    assert sent is False
+    resolve.assert_not_awaited()  # gated out before any channel work
+    assert server_logging.counters_snapshot()["counters"]["event_skipped_ignored"] == 1
+
+
+@pytest.mark.asyncio
+async def test_handler_skips_when_user_ignored():
+    # A join from an ignored user is not logged even though the members
+    # category is on and there is no channel context.
+    member = _member()  # id == 11
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(
+            enabled=True,
+            members_enabled=True,
+            ignored_user_ids=frozenset({11}),
+        ),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=_channel(),
+    ) as resolve:
+        sent = await server_logging.log_member_join(member)
+    assert sent is False
+    resolve.assert_not_awaited()
+    assert server_logging.counters_snapshot()["counters"]["event_skipped_ignored"] == 1
+
+
+@pytest.mark.asyncio
+async def test_handler_sends_when_ids_not_ignored():
+    # Ignore lists present but the event's ids are not on them → logs normally.
+    channel = _channel()
+    member = _member()  # id == 11
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(
+            enabled=True,
+            members_enabled=True,
+            ignored_user_ids=frozenset({999}),
+        ),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
+    ):
+        sent = await server_logging.log_member_join(member)
+    assert sent is True
+    assert server_logging.counters_snapshot()["counters"]["event_skipped_ignored"] == 0
 
 
 @pytest.mark.asyncio

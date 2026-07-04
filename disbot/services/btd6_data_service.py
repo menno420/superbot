@@ -2235,6 +2235,105 @@ def round_composition(
     return out
 
 
+def round_range_bloon_roster(
+    round_start: int,
+    round_end: int,
+    roundset: str = "default",
+) -> dict[str, Any]:
+    """Distinct bloon TYPES that appear across an inclusive round range.
+
+    The "which bloons show up between rounds X and Y" primitive — the roster
+    complement of :func:`round_composition` (which caps its per-round detail at
+    :data:`_ROUND_DETAIL_CAP` and collapses modifiers). Walks **every** round in
+    the range (so a wide span never truncates a type out of the roster) and
+    returns each base bloon type once, in first-appearance order, with the round
+    it first/last appears, how many rounds carry it, and its total spawn count.
+    Modifiers (Regrow / Fortified / Camo) are gathered as the set seen across the
+    range rather than split into per-variant rows, since a modifier is an
+    attribute of a bloon, not a separate bloon.
+
+    Fixes the "list all the bloons from r29 till r63" miss: the NL resolver only
+    extracts the two endpoint round numbers, so the grounding/answer path saw
+    just rounds 29 and 63. This engine enumerates the whole span deterministically
+    for the round-range list floor. ``found: False`` (never a silent default) when
+    the set or range is unknown, mirroring the sibling round primitives.
+    """
+    resolved = resolve_roundset(roundset)
+    if resolved is None:
+        return {
+            "found": False,
+            "note": f"unknown round set: {roundset!r} (default or alternate/abr)",
+        }
+    lo = round_start
+    hi = round_end
+    if lo > hi:
+        lo, hi = hi, lo
+    all_rounds = _rounds_for_set(resolved)
+    set_label = "standard" if resolved == "default" else "alternate (ABR)"
+    if not all_rounds:
+        return {"found": False, "note": f"no {set_label} round data is loaded"}
+    rounds = sorted(
+        (r for r in all_rounds if lo <= r.round_number <= hi),
+        key=lambda r: r.round_number,
+    )
+    if not rounds:
+        return {
+            "found": False,
+            "note": f"no {set_label} rounds in {lo}-{hi} (valid 1-140)",
+        }
+
+    roster: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    modifiers_seen: dict[str, None] = {}  # insertion-ordered set
+    for entry in rounds:
+        number = entry.round_number
+        seen_this_round: set[str] = set()
+        for group in entry.groups:
+            bid = str(group.get("bloon_id", "") or "")
+            if not bid:
+                continue
+            count = int(group.get("count", 0) or 0)
+            for modifier in group.get("modifiers", ()) or ():
+                modifiers_seen.setdefault(str(modifier).capitalize(), None)
+            record = roster.get(bid)
+            if record is None:
+                bloon = get_bloon(bid)
+                record = {
+                    "bloon_id": bid,
+                    "bloon": bloon.canonical if bloon is not None else bid.title(),
+                    "category": bloon.category if bloon is not None else "",
+                    "first_round": number,
+                    "last_round": number,
+                    "rounds_present": 0,
+                    "total": 0,
+                }
+                roster[bid] = record
+                order.append(bid)
+            record["last_round"] = number
+            record["total"] += count
+            if bid not in seen_this_round:
+                record["rounds_present"] += 1
+                seen_this_round.add(bid)
+
+    out: dict[str, Any] = {
+        "found": True,
+        "round_start": lo,
+        "round_end": hi,
+        "roundset": resolved,
+        "roundset_label": set_label,
+        "rounds_in_range": len(rounds),
+        "roster": [roster[bid] for bid in order],
+        "modifiers_seen": list(modifiers_seen),
+        "total_bloons_entering": sum(
+            int(g.get("count", 0) or 0) for r in rounds for g in r.groups
+        ),
+        "total_rbe": sum(r.rbe or 0 for r in rounds),
+    }
+    if resolved == "alternate":
+        out["note"] = _ABR_NOTE
+    return out
+
+
 # Medium-difficulty standard starting cash — the cumulative-cash baseline.
 # rounds.json stores cumulative_cash as $650 + the running per-round total
 # (pinned by tests/unit/services/test_btd6_round_cash.py); this constant lets a

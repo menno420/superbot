@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 import discord
 
 from core.runtime.ai.contracts import AITask
+from core.runtime.permission_checks import member_has_perms_or_owner
 from utils.btd6.body_coerce import coerce_body as _coerce_body
 from utils.btd6.coverage import (
     AREA_BOSS,
@@ -484,6 +485,62 @@ async def build_tower_embed(name: str) -> discord.Embed:
         return _response_to_embed(btd6_ai_service.deterministic_answer(intent))
     embed = _response_to_embed(for_tower(fact))
     return append_context_footer(embed, f"btd6_tower:{tower.id}")
+
+
+# ---------------------------------------------------------------------------
+# estimate (deterministic boss-fight estimator)
+# ---------------------------------------------------------------------------
+
+
+async def build_estimate_embed(query: str) -> discord.Embed:
+    """Render the boss-fight estimate embed (deterministic HP/DPS/cost).
+
+    ``<tower> vs <boss> [tier]`` → a single estimate; ``[counters] <boss> [tier]``
+    → the most cost-efficient towers. All arithmetic is done deterministically by
+    ``services.btd6_estimator_service`` so the surface estimates instead of guessing.
+    """
+    from services import btd6_estimator_service as est
+
+    title = "🎯 BTD6 boss-fight estimate"
+    text = (query or "").strip()
+    if not text:
+        body = (
+            "Estimate a boss fight from grounded HP/DPS/cost:\n"
+            "• `<tower> vs <boss> [tier]` — e.g. `super monkey 0-4-0 vs bloonarius t5`\n"
+            "• `counters <boss> [tier]` — the most cost-efficient towers"
+        )
+        return discord.Embed(
+            title=title,
+            description=body,
+            color=discord.Color.blurple(),
+        )
+
+    req = est.parse_request(text)
+    if req.mode == "single":
+        estimate = est.resolve_and_estimate(
+            req.tower_query,
+            req.boss_query,
+            req.tier,
+            req.map_query,
+        )
+        if estimate is not None:
+            body = est.format_estimate_text(estimate)
+        else:
+            body = (
+                "I couldn't resolve that — try `<tower> vs <boss> [tier]`. "
+                f"(Read tower=`{req.tower_query}`, boss=`{req.boss_query}`, tier {req.tier}.)"
+            )
+    else:
+        boss = est.find_boss(req.boss_query)
+        if boss is None:
+            body = (
+                f"I don't have a boss matching `{req.boss_query}`. "
+                "Bosses: Bloonarius, Lych, Vortex, Dreadbloon, Blastapopoulos, Phayze, Diamondback."
+            )
+        else:
+            rows = est.cheapest_counters(boss.id, req.tier, limit=5)
+            body = est.format_counters_text(rows, boss.canonical or boss.id, req.tier)
+    return discord.Embed(title=title, description=body, color=discord.Color.blurple())
 
 
 # ---------------------------------------------------------------------------
@@ -1004,9 +1061,7 @@ async def handle_ctteam(
     guild_id = guild.id
     action = (arg or "").strip()
     author = getattr(ctx, "author", None)
-    can_manage = bool(
-        getattr(getattr(author, "guild_permissions", None), "manage_guild", False),
-    )
+    can_manage = member_has_perms_or_owner(author, manage_guild=True)
     if action:
         if not can_manage:
             return (

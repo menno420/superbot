@@ -28,8 +28,10 @@ _MAX_AUDIT_ROWS_IN_REPORT = 10
 
 
 def _admin(user: Any) -> bool:
-    perms = getattr(user, "guild_permissions", None)
-    return perms is not None and getattr(perms, "administrator", False)
+    # Canonical admin gate — honours the platform owner (config.BOT_OWNER_USER_ID).
+    from views.base import member_is_admin
+
+    return member_is_admin(user)
 
 
 async def build_support_report_draft(

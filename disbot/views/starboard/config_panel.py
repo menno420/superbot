@@ -26,6 +26,10 @@ STAR_COLOR = discord.Color.gold()
 
 
 def _can_manage(interaction: discord.Interaction) -> bool:
+    from config import is_platform_owner
+
+    if is_platform_owner(getattr(interaction.user, "id", None)):
+        return True
     perms = getattr(interaction.user, "guild_permissions", None)
     return bool(perms is not None and (perms.manage_guild or perms.administrator))
 

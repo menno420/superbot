@@ -117,6 +117,55 @@ async def test_update_menu_persists_card_columns(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_create_menu_persists_show_counts(monkeypatch):
+    """The sign-up-counter flag (migration 102) flows into the INSERT params."""
+    captured: dict[str, object] = {}
+
+    async def _fetchone(sql, params=()):
+        captured["sql"] = sql
+        captured["params"] = params
+        return {"menu_id": 11}
+
+    monkeypatch.setattr(role_menus.pool, "fetchone", AsyncMock(side_effect=_fetchone))
+
+    await role_menus.create_menu(
+        1,
+        2,
+        title="Pick",
+        description=None,
+        show_counts=True,
+    )
+
+    assert "show_counts" in captured["sql"]
+    assert True in captured["params"]
+
+
+@pytest.mark.asyncio
+async def test_update_menu_persists_show_counts(monkeypatch):
+    captured: dict[str, object] = {}
+
+    async def _execute(sql, params=()):
+        captured["sql"] = sql
+        captured["params"] = params
+
+    monkeypatch.setattr(role_menus.pool, "execute", AsyncMock(side_effect=_execute))
+
+    await role_menus.update_menu(
+        9,
+        title="Pick",
+        description=None,
+        style="dropdown",
+        mode="normal",
+        max_roles=0,
+        theme="default",
+        show_counts=True,
+    )
+
+    assert "show_counts=$10" in captured["sql"]
+    assert True in captured["params"]
+
+
+@pytest.mark.asyncio
 async def test_add_option_upserts(monkeypatch):
     captured: dict[str, str] = {}
 

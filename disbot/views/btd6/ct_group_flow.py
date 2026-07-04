@@ -27,6 +27,10 @@ logger = logging.getLogger("bot.views.btd6.ct_group_flow")
 
 
 def _manage_guild(user: object) -> bool:
+    from config import is_platform_owner
+
+    if is_platform_owner(getattr(user, "id", None)):
+        return True
     perms = getattr(user, "guild_permissions", None)
     return bool(perms is not None and getattr(perms, "manage_guild", False))
 

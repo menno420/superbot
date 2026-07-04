@@ -9,6 +9,68 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-fourth Q-0107 reconciliation pass** (band-#1710, issue #1711 —
+  [pass record](../planning/reconciliation-pass-2026-07-04-band1710.md)): reconciled the ledger
+  (band #1681–#1710 — three grouped entries, headlined by the **S3 rebuild foundations audit →
+  Fable-5 judgment → design-prep arc** #1689/#1690/#1691/#1693/#1700/#1701/#1703/#1704/#1705 — the
+  engine-room (PROMPT A) + surface/proving (PROMPT B) foundations audits, the **two confirmed prod
+  loss-path fixes** #1693, and the Fable-5 capstone judgment's **7 Tier-1 owner decisions** (Q-0237)
+  — plus the 33rd-pass docs PR #1682 and the per-merge dashboard refreshes
+  #1692/#1694/#1702/#1706/#1707/#1709/#1710), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed), disposed 13 open PRs (**none a stale
+  session PR** — #1708 is the active in-flight foundational-design session; #1509 + five codex review
+  docs #1695–#1699 left for the owner; six dependabot bumps runtime-not-docs), confirmed **ROUTINE_PAT
+  set / loop self-fires** (issue #1711 authored by `menno420`), carried the forward queue intact
+  (still deep, no THIN flag — the rebuild Stage-2/design phase dominates), refreshed the dashboard
+  export (Q-0167), reset the marker #1680 → #1710.
+- **Thirty-third Q-0107 reconciliation pass** (band-#1680, issue #1681 —
+  [pass record](../planning/reconciliation-pass-2026-07-03-band1680.md)): reconciled the ledger
+  (band #1651–#1680 — four grouped entries, headlined by the **S3 rebuild new-bot capability audit →
+  frozen BUILD-PLAN** #1662…#1668/#1674/#1677 (verdict **GO-with-amendments**, measured all-43 fit
+  **85.1%**) and the owner-live **Phase-A conventions freeze** #1679/#1680 — plus the 32nd-pass +
+  Q-0102 review/brainstorm routine sessions #1652/#1653/#1657/#1658/#1659/#1661/#1669/#1672/#1673 and
+  the per-merge dashboard refreshes #1656/#1660/#1670/#1671/#1675/#1676/#1678), trimmed Recently-shipped
+  to 20 (`trim_recently_shipped.py --apply`, moved 5 oldest bullets, floor recomputed), disposed 7 open
+  PRs (none a stale session PR: #1509 owner audit + six dependabot bumps), confirmed **ROUTINE_PAT set /
+  loop self-fires** (issue #1681 authored by `menno420`), carried the forward queue intact (still deep,
+  no THIN flag — the rebuild planning phase dominates), refreshed the dashboard export (Q-0167), reset
+  the marker #1650 → #1680.
+- **Thirty-second Q-0107 reconciliation pass** (band-#1650, issue #1651 —
+  [pass record](../planning/reconciliation-pass-2026-07-02-band1650.md)): reconciled the ledger
+  (band #1621–#1650 — six grouped entries, headlined by the **S3 fresh-rebuild arc** — the Fable 5
+  Phase-2 design spec, fresh-rebuild strategy + Codex map fold #1634/#1642, parallel-execution schedule
+  #1644/#1645, the memory-retention/context-economy plan #1643/#1647/#1648 (Q-0214) and the linchpin
+  validation #1639 — plus **server-logging v2 audit-log** #1624, **fishing Fishery** #1626, **BTD6
+  Layout B** #1621, and the 31st-pass+dashboard docs band), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed — moved 7 oldest bullets), disposed 8 open PRs
+  (none a stale session PR: #1649 memory-substrate in flight, #1509 left for owner, six dependabot
+  bumps), confirmed **ROUTINE_PAT set / loop self-fires** (issue #1651 authored by `menno420`), carried
+  the forward queue intact (still deep, no THIN flag), refreshed the dashboard export (Q-0167), reset
+  the marker #1620 → #1650.
+- **Thirty-first Q-0107 reconciliation pass** (band-#1620, issue #1622 —
+  [pass record](../planning/reconciliation-pass-2026-07-01-band1620.md)): reconciled the ledger
+  (band #1591–#1620 — seven grouped entries, headlined by the **S1 completion-deepening lane** —
+  fishing coral structures #1596…#1605, reaction-roles slim builder #1608…#1615, XP import #1607/#1610,
+  server-logging depth #1594/#1618/#1619 — plus the **bot-owner permission-gate bypass** #1602 and a
+  **boot smoke-test CI guard** #1601), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed), disposed 8 open PRs (none a stale session PR:
+  #1621 in flight, #1509 left for owner per the prior pass, six dependabot bumps), confirmed
+  **ROUTINE_PAT set / loop self-fires** (issue #1622 authored by `menno420`), carried the forward queue
+  intact (still deep, no THIN flag), refreshed the dashboard export (Q-0167), reset the marker
+  #1590 → #1620.
+- **Thirtieth Q-0107 reconciliation pass** (band-#1590, issue #1591 —
+  [pass record](../planning/reconciliation-pass-2026-06-30-band1590.md)): reconciled the ledger
+  (band #1561–#1590 — seven grouped entries, headlined by the **bot-owner platform-admin override**
+  #1573/#1577/#1582, the **S1 certification deepening** #1565/#1566/#1568/#1575/#1588, and the
+  **owner fresh-rebuild vision capture** #1589/#1590), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed), reflected the **owner re-elevation of the
+  AI-memory substrate-kit** to top focus (S3), confirmed **ROUTINE_PAT set / loop self-fires** (issue
+  #1591 authored by `menno420`), carried the forward queue intact (still deep, no THIN flag), reset
+  the marker #1560 → #1590.
+- **Twenty-ninth Q-0107 reconciliation pass** (band-#1560, issue #1563 —
+  [pass record](../planning/reconciliation-pass-2026-06-29-band1560.md)): reconciled the ledger
+  (band #1531–#1560), trimmed Recently-shipped to 20, carried the forward queue intact, reset the
+  marker #1530 → #1560.
 - **Twenty-eighth Q-0107 reconciliation pass** (band-#1530, issue #1531 —
   [pass record](../planning/reconciliation-pass-2026-06-28-band1530.md)): reconciled the ledger
   (band #1502–#1530 — six grouped entries, headlined by the **fishing acquisition-depth + gear arc**
@@ -39,10 +101,31 @@
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
 
 **▶ Next:**
-- **Next reconciliation pass due once merged PRs cross #1560** (every multiple of 30, Q-0134) —
+- **▶ Rebuild — the review-then-plan phase (owner-directed 2026-07-03; capstone #1674 merged):** the
+  new-bot capability audit is complete — verdict **GO-with-amendments** (measured all-43 fit 85.1%),
+  and [`NEW-BOT-BUILD-PLAN.md`](../analysis/rebuild-discovery/new-bot-capability-audit/findings/NEW-BOT-BUILD-PLAN.md)
+  is the **frozen reference**. Next: (A) one more owner-led **content review pass** over the whole
+  surface (commands / functions / methods), then (B) **one 100%-complete design plan per step**
+  before any code. Process + next-session goal:
+  [`planning/rebuild-planning-phase-2026-07-03.md`](../planning/rebuild-planning-phase-2026-07-03.md).
+  Still behind the Phase-3 owner gate (design-spec ratification); no new-repo code yet.
+- **▶ SuperBot retention application — startable (owner-directed brainstorm, PR #1643; Q-0214):** the
+  **kit-native** context-economy engine already shipped in **#1649** (`substrate-kit/src/engine/economy/`);
+  what remains here is applying retention to SuperBot's *own* docs via a `check_retention.py`
+  checker/actuator (which consumes that engine) —
+  [`planning/memory-retention-and-context-economy-plan-2026-07-02.md`](../planning/memory-retention-and-context-economy-plan-2026-07-02.md)
+  — per-class delete/archive windows + hard caps, sim-derived numbers
+  (`tools/sim/retention_policy_sim.py`). 3 PRs; PR 1 (checker, no real deletions) is the
+  startable slice. Companion: the still-unexecuted
+  [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
+  (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
+- **Next reconciliation pass due once merged PRs cross #1740** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).
+- **Owner steer (2026-06-30):** the fresh-rebuild vision re-elevates the **AI-memory substrate-kit**
+  to top focus — S3's forward queue leads with PR 2 remainder + PR 3; the full rebuild stays
+  idea-stage (gated on Fable 5 + owner keep/change spec).
 
 **Cadence note:** a manually-started session does **not** run the reconciliation pass; pursue the
 work it was started for. The recon marker + Recently-shipped ledger live in

@@ -3,8 +3,9 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime.permission_checks import member_has_perms_or_owner
 from utils.ui_constants import ROLE_COLOR
-from views.base import BaseView
+from views.base import BaseView, interaction_is_admin
 
 
 class RoleHubView(BaseView):
@@ -37,7 +38,7 @@ class RoleHubView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, manage_roles=True):
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.",
                 ephemeral=True,
@@ -58,7 +59,7 @@ class RoleHubView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
+        if not member_has_perms_or_owner(interaction.user, manage_roles=True):
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.",
                 ephemeral=True,
@@ -79,7 +80,7 @@ class RoleHubView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.",
                 ephemeral=True,
@@ -102,7 +103,7 @@ class RoleHubView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.",
                 ephemeral=True,
@@ -142,7 +143,7 @@ class RoleHubView(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+        if not interaction_is_admin(interaction):
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.",
                 ephemeral=True,

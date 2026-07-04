@@ -7,14 +7,22 @@ import discord
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim
-from services import xp_service
+from core.runtime.permission_checks import admin_or_owner
+from services import xp_migration, xp_service
 from services.rank_providers import get_provider
-from services.xp_helpers import _STAT_TYPES, RANK_CARD_FILENAME, build_rank_response
+from services.xp_helpers import (
+    _STAT_TYPES,
+    RANK_CARD_FILENAME,
+    build_rank_response,
+    fetch_avatar_png,
+)
 from utils import embeds as em
+from utils import xp_migration as xpm
 from utils.rank_render import render_rank_card
-from utils.ui_constants import ECONOMY_COLOR
+from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
 from views.base import send_panel
 from views.xp.config_panel import XpConfigView
+from views.xp.import_panel import XpImportView
 from views.xp.main_panel import _XpHubView
 from views.xp.rank_view import _RankView
 
@@ -54,6 +62,7 @@ async def _build_rank_provider_response(
         subtitle=provider.display_title,
         stats=[("Rank", f"#{rank_pos}"), (provider.select_label, rendered)],
         theme=provider.card_theme,
+        avatar_png=await fetch_avatar_png(member),
     )
     if png is None:
         return embed, None
@@ -166,7 +175,7 @@ class XpCog(commands.Cog):
             view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="givexp")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def givexp(self, ctx: commands.Context, member: discord.Member, amount: int):
         """Give XP to a user (admin only)."""
         if amount <= 0:
@@ -184,7 +193,7 @@ class XpCog(commands.Cog):
         )
 
     @commands.command(name="resetxp")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def resetxp(self, ctx: commands.Context, member: discord.Member):
         """Reset a user's XP to zero (admin only)."""
         await xp_service.reset(
@@ -197,12 +206,119 @@ class XpCog(commands.Cog):
         await ctx.send(f"✅ Reset XP for {member.mention}.")
 
     @commands.command(name="xpconfig")
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def xpconfig(self, ctx: commands.Context):
         """Open the XP configuration panel (admin only)."""
         view = XpConfigView(ctx)
         msg = await ctx.send(embed=await view.build_embed(), view=view)
         view.message = msg
+
+    @commands.command(name="xpimport")
+    @admin_or_owner()
+    async def xpimport(self, ctx: commands.Context, *args: str):
+        """Import XP/levels from another bot by reading its level-up channel.
+
+        Works by scanning the **dedicated level-up channel** another leveling
+        bot posts in (the "so-and-so reached level N" announcements) and copying
+        the highest level it announced for each member. Also reachable as the
+        **📥 Import from another bot** button on ``!xpconfig``.
+
+        Usage: ``!xpimport [source] [#channel] [limit]`` (admin only).
+
+        * ``source``  — which bot posted the announcements: ``arcane`` (default),
+          ``mee6``, ``superbot``, or ``generic``.
+        * ``#channel`` — that bot's level-up channel (defaults to here).
+        * ``limit``    — max messages to scan (defaults to the whole channel).
+
+        Keeps the **highest** level announced per member and opens a preview to
+        confirm before writing. The import is **raise-only** — it never lowers a
+        member — so it is safe to re-run. Run ``!xpimport help`` for the list of
+        supported bots.
+        """
+        source_key: str | None = None
+        channel: discord.TextChannel | None = None
+        limit: int | None = None
+        for arg in args:
+            lowered = arg.lower()
+            if lowered in {"help", "formats", "list"}:
+                await ctx.send(embed=self._formats_embed())
+                return
+            if xpm.get_format(lowered) is not None:
+                source_key = lowered
+                continue
+            if arg.isdigit():
+                limit = int(arg)
+                continue
+            try:
+                channel = await commands.TextChannelConverter().convert(ctx, arg)
+                continue
+            except commands.BadArgument:
+                pass  # unknown token — ignore; preview shows what was scanned
+
+        fmt = xpm.get_format(source_key or xpm.DEFAULT_FORMAT)
+        assert fmt is not None  # noqa: S101 — DEFAULT_FORMAT is always a valid key
+        target: discord.TextChannel = channel or ctx.channel  # type: ignore[assignment]
+
+        status = await ctx.send(
+            embed=discord.Embed(
+                title="📥 Scanning…",
+                description=f"Reading {target.mention} for **{fmt.label}** level-ups…",
+                color=UTILITY_COLOR,
+            ),
+        )
+
+        plan = await xp_migration.scan_channel(ctx.guild, target, fmt, limit)
+        if plan is None:
+            await status.edit(
+                embed=em.error(
+                    f"I can't read message history in {target.mention}. "
+                    "Grant me **Read Message History** there and try again.",
+                ),
+            )
+            return
+        if not plan.records:
+            await status.edit(
+                embed=discord.Embed(
+                    title="Nothing to import",
+                    description=(
+                        f"Scanned **{plan.scanned_messages}** message(s) in "
+                        f"{target.mention} but found no **{fmt.label}** level-up "
+                        "announcements. Try a different `source` or `#channel` — "
+                        "`!xpimport help` lists the formats."
+                    ),
+                    color=UTILITY_COLOR,
+                ),
+            )
+            return
+
+        view = XpImportView(ctx, plan)
+        view.message = await status.edit(embed=view.build_embed(), view=view)
+
+    @staticmethod
+    def _formats_embed() -> discord.Embed:
+        embed = discord.Embed(
+            title="📥 Import XP from another bot",
+            description=(
+                "SuperBot can copy the levels members earned under a **different "
+                "leveling bot** by reading that bot's **dedicated level-up "
+                "channel** — the channel where it posts *“so-and-so reached level "
+                "N”* — and keeping the highest level per member (raise-only, "
+                "preview first).\n\n"
+                "Use the **📥 Import from another bot** button on `!xpconfig`, or "
+                "`!xpimport [source] [#channel] [limit]`. Supported bots:"
+            ),
+            color=UTILITY_COLOR,
+        )
+        for key in xpm.format_keys():
+            fmt = xpm.get_format(key)
+            assert fmt is not None  # noqa: S101 — iterating the registry's own keys
+            default = " *(default)*" if key == xpm.DEFAULT_FORMAT else ""
+            embed.add_field(name=f"`{key}`{default}", value=fmt.label, inline=True)
+        embed.set_footer(
+            text="Needs the other bot's level-up channel — the one with its "
+            "“reached level N” messages.",
+        )
+        return embed
 
 
 async def setup(bot: commands.Bot):

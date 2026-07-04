@@ -73,6 +73,62 @@ def test_button_menu_builds_one_button_per_role():
     }
 
 
+def _roster_ids(view) -> list[str]:
+    return [
+        c.custom_id
+        for c in view.children
+        if getattr(c, "custom_id", "") == "role_menu:1:roster"
+    ]
+
+
+def test_no_roster_button_without_show_counts():
+    assert _roster_ids(rmv.RoleMenuView(_menu("dropdown"), _opts())) == []
+
+
+def test_dropdown_with_counts_adds_roster_button():
+    menu = _menu("dropdown")
+    menu["show_counts"] = True
+    assert _roster_ids(rmv.RoleMenuView(menu, _opts())) == ["role_menu:1:roster"]
+
+
+def test_button_menu_with_counts_adds_roster_button():
+    menu = _menu("button")
+    menu["show_counts"] = True
+    assert _roster_ids(rmv.RoleMenuView(menu, _opts())) == ["role_menu:1:roster"]
+
+
+def test_full_button_menu_skips_roster_for_component_budget():
+    menu = _menu("button")
+    menu["show_counts"] = True
+    opts = [{"role_id": 100 + i, "label": f"R{i}", "emoji": None} for i in range(25)]
+    view = rmv.RoleMenuView(menu, opts)
+    # 25 role buttons exhaust Discord's 25-component cap → roster is omitted.
+    assert len(view.children) == 25
+    assert _roster_ids(view) == []
+
+
+@pytest.mark.asyncio
+async def test_handle_roster_sends_ephemeral_embed():
+    menu = _menu("dropdown")
+    menu["show_counts"] = True
+    view = rmv.RoleMenuView(menu, _opts())
+    sentinel = discord.Embed(title="roster")
+    interaction = MagicMock()
+    interaction.guild = MagicMock()
+    interaction.response.send_message = AsyncMock()
+    with patch.object(
+        rmv.role_menu_counter,
+        "build_roster_embed",
+        return_value=sentinel,
+    ) as build:
+        await rmv._handle_roster(interaction, view)
+    build.assert_called_once()
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs["embed"] is sentinel
+    assert kwargs["ephemeral"] is True
+
+
 def test_select_bounds_honour_mode():
     assert rmv._select_bounds("unique", 0, 5) == (0, 1)
     assert rmv._select_bounds("normal", 3, 10) == (0, 3)
@@ -87,6 +143,44 @@ def test_build_menu_embed_uses_theme_colour():
     # Roles field lists the live mentions.
     roles_field = next(f for f in embed.fields if f.name == "Roles")
     assert "<@&10>" in roles_field.value
+
+
+class _MemberWithRoles:
+    def __init__(self, *role_ids: int) -> None:
+        self.roles = [FakeRole(r) for r in role_ids]
+
+
+class _GuildWithMembers(FakeGuild):
+    def __init__(self, roles: list[FakeRole], members: list[_MemberWithRoles]) -> None:
+        super().__init__(roles)
+        self.members = members
+
+
+def test_build_menu_embed_without_show_counts_has_no_counter():
+    guild = FakeGuild([FakeRole(10, "Gamer"), FakeRole(20, "Artist")])
+    embed = rmv.build_menu_embed(_menu(), _opts(), guild)
+    roles_field = next(f for f in embed.fields if f.name == "Roles")
+    assert "👥" not in roles_field.value
+    assert "signed up" not in (embed.footer.text or "")
+
+
+def test_build_menu_embed_with_show_counts_renders_per_role_and_total():
+    guild = _GuildWithMembers(
+        [FakeRole(10, "Going"), FakeRole(20, "Maybe")],
+        # role 10 held by 2 members (one of them also holds 20); role 20 by 1.
+        # Distinct members holding any menu role = 2 (never double-counted).
+        [_MemberWithRoles(10), _MemberWithRoles(10, 20)],
+    )
+    menu = _menu()
+    menu["show_counts"] = True
+    embed = rmv.build_menu_embed(menu, _opts(), guild)
+    roles_field = next(f for f in embed.fields if f.name == "Roles")
+    lines = roles_field.value.splitlines()
+    # Each option line carries its own live holder count …
+    assert lines[0].endswith("👥 2")  # role 10 → 2 holders
+    assert lines[1].endswith("👥 1")  # role 20 → 1 holder
+    # … and the footer shows the distinct-member total (no double count).
+    assert "👥 2 people signed up" in embed.footer.text
 
 
 def test_build_menu_message_without_card_has_no_files_or_image():

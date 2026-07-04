@@ -71,19 +71,25 @@
 - [x] **Behavior tests** — `test_treasury_service.py` (10 cases): both legs on one conn + emit-after-
       commit, insufficient-funds rollback (no emit), underfunded pool writes nothing, non-positive
       rejected before I/O.
-- [x] **Authority tests** — disburse records the manager as actor (service test); `manage_guild` gate at
-      the command (cog-level test missing → punch #1).
+- [x] **Authority tests** — disburse records the manager as actor (service test); the `manage_guild`
+      gate at the command is now pinned by `test_treasury_cog.py` (denied without / allowed with /
+      owner-bypass) — punch #1 CLEARED.
 - [x] **Mutation-seam tests** — emit-only-after-commit + no-op-on-exception pinned in the service tests.
 - [x] **View tests** — `test_economy_treasury_button.py` (3 cases): button present, edits in place,
-      attaches back-to-economy.
+      attaches back-to-economy; plus `test_treasury_contribute_modal.py` (Contribute-modal parse edge
+      cases) — punch #2 CLEARED.
 - [ ] **Live walkthrough recorded** — pending → punch #5.
 - [ ] **Owner ✔** — pending → punch #6.
 
 ## Punch-list (clear these to certify)
-1. **Cog-level command tests** *(offline, minor)* — `test_treasury_cog.py` exercising `!treasury
-   contribute` / `!treasury grant` end-to-end (context, embed, `manage_guild` gate).
-2. **Modal-parse tests** *(offline, minor)* — Contribute modal `on_submit` edge cases (non-int, negative,
-   zero, very large).
+1. **✅ DONE 2026-07-01 (dispatch run) — Cog-level command tests.** `tests/unit/cogs/test_treasury_cog.py`
+   (13 cases) exercises `!treasury` (panel open), `contribute` (calls service / rejects non-positive), and
+   `grant` (disburse + mention-on-success, rejects non-positive, and the `manage_guild`/owner authority
+   gate — denied without, allowed with, owner-bypass).
+2. **✅ DONE 2026-07-01 (dispatch run) — Modal-parse tests.**
+   `tests/unit/views/test_treasury_contribute_modal.py` (6 cases) covers `_ContributeModal.on_submit`:
+   non-int / empty / negative / zero → ephemeral error + no write; valid (incl. large + whitespace) →
+   `treasury_service.contribute` + in-place redraw.
 3. **Document the economy soft-dependency** *(owner, minor)* — record + test the "panel opens read-only
    when economy is disabled" fallback.
 4. **Help-actionability note** *(offline, minor)* — note that economy children aren't subject to the

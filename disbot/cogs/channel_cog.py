@@ -21,7 +21,9 @@ from discord.ext import commands
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim
+from core.runtime.permission_checks import member_has_perms_or_owner
 from services.channel_lifecycle_service import (
+    MAX_SLOWMODE_SECONDS,
     ChannelLifecycleRequest,
     ChannelLifecycleService,
 )
@@ -74,7 +76,7 @@ class ChannelCog(commands.Cog):
 
         async def predicate(ctx):
             return (
-                ctx.author.guild_permissions.administrator
+                member_has_perms_or_owner(ctx.author, administrator=True)
                 or ctx.author.id == ctx.guild.owner_id
             )
 
@@ -590,6 +592,81 @@ class ChannelCog(commands.Cog):
         else:
             await ctx.send(
                 f'❌ Could not rename "{old}": {self._channel_result_error(result)}',
+            )
+
+    @commands.command(
+        name="slowmode",
+        aliases=["slow"],
+        help=(
+            "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> "
+            "(0 disables; max 21600 = 6h)"
+        ),
+    )
+    @is_admin_or_owner()
+    async def set_slowmode(self, ctx, channel_name: str, seconds: int):
+        channel = self._resolve_channel(ctx.guild, channel_name)
+        if not channel:
+            await ctx.send(f'"{channel_name}" not found.')
+            return
+        if seconds < 0:
+            await ctx.send("Slowmode must be 0 or more seconds.")
+            return
+        if seconds > MAX_SLOWMODE_SECONDS:
+            await ctx.send(
+                f"Slowmode caps at {MAX_SLOWMODE_SECONDS} seconds (6 hours).",
+            )
+            return
+        result = await ChannelLifecycleService().apply(
+            ctx.guild,
+            ChannelLifecycleRequest(
+                operation="set_slowmode",
+                channel_ids=(channel.id,),
+                slowmode_seconds=seconds,
+            ),
+            ctx.author,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
+            if seconds == 0:
+                await ctx.send(f'Slowmode disabled in "{channel.name}".')
+            else:
+                await ctx.send(f'Slowmode set to **{seconds}s** in "{channel.name}".')
+        else:
+            await ctx.send(
+                f'❌ Could not set slowmode in "{channel.name}": '
+                f"{self._channel_result_error(result)}",
+            )
+
+    @commands.command(
+        name="topic",
+        aliases=["settopic"],
+        help="Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+    )
+    @is_admin_or_owner()
+    async def set_topic(self, ctx, channel_name: str, *, text: str = ""):
+        channel = self._resolve_channel(ctx.guild, channel_name)
+        if not channel:
+            await ctx.send(f'"{channel_name}" not found.')
+            return
+        result = await ChannelLifecycleService().apply(
+            ctx.guild,
+            ChannelLifecycleRequest(
+                operation="set_topic",
+                channel_ids=(channel.id,),
+                topic=text,
+            ),
+            ctx.author,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
+            if text.strip():
+                await ctx.send(f'Topic updated for "{channel.name}".')
+            else:
+                await ctx.send(f'Topic cleared for "{channel.name}".')
+        else:
+            await ctx.send(
+                f'❌ Could not update topic for "{channel.name}": '
+                f"{self._channel_result_error(result)}",
             )
 
     @commands.command(

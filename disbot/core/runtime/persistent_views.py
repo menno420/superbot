@@ -118,6 +118,19 @@ class PersistentView(discord.ui.View):
         if not interaction.message:
             return True
 
+        # Ephemeral messages are private to the user who triggered them — Discord
+        # guarantees nobody else can see or click them, so ownership is implicit
+        # and there is no anchor row to verify against (ephemerals are never
+        # anchored). Allow before the fail-closed branch: otherwise a
+        # FAIL_CLOSED_ON_MISSING_ANCHOR panel surfaced through an ephemeral
+        # help/nav path (e.g. /help → Roles, which renders RoleHubPanelView via
+        # role_cog.build_help_menu_view) would deny its own opener with
+        # "This panel can no longer be verified". A shared/public panel still
+        # has no ephemeral flag, so its anchor check is unchanged.
+        flags = getattr(interaction.message, "flags", None)
+        if flags is not None and getattr(flags, "ephemeral", False):
+            return True
+
         anchor = await message_anchor_manager.get_by_message_id(interaction.message.id)
         if anchor is None:
             if self.FAIL_CLOSED_ON_MISSING_ANCHOR:

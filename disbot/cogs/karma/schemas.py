@@ -22,8 +22,10 @@ from services.karma_config import (
     DEFAULT_COOLDOWN_SECONDS,
     DEFAULT_DAILY_CAP,
     DEFAULT_ENABLED,
+    DEFAULT_REACTION_EMOJI,
     MAX_COOLDOWN_SECONDS,
     MAX_DAILY_CAP,
+    MAX_REACTION_EMOJI_LEN,
     MIN_COOLDOWN_SECONDS,
     MIN_DAILY_CAP,
 )
@@ -31,6 +33,7 @@ from utils.settings_keys import (
     KARMA_COOLDOWN,
     KARMA_DAILY_CAP,
     KARMA_ENABLED,
+    KARMA_REACTION_EMOJI,
 )
 
 _KARMA_CAPABILITY = "karma.settings.configure"
@@ -55,6 +58,17 @@ def _validate_cooldown(value: object) -> None:
 
 def _validate_daily_cap(value: object) -> None:
     _bounded_int(value, MIN_DAILY_CAP, MAX_DAILY_CAP)
+
+
+def _validate_reaction_emoji(value: object) -> None:
+    # A free-text emoji trigger: a single unicode emoji or a custom
+    # ``<:name:id>`` form.  Empty string = OFF (the default).  We keep the
+    # check permissive (Discord validates the actual reaction at add-time);
+    # the guard is only against absurd lengths / wrong type.
+    if not isinstance(value, str):
+        raise ValueError(f"expected str, got {value!r}")
+    if len(value) > MAX_REACTION_EMOJI_LEN:
+        raise ValueError(f"emoji must be at most {MAX_REACTION_EMOJI_LEN} characters")
 
 
 KARMA_SETTINGS: tuple[SettingSpec, ...] = (
@@ -94,6 +108,19 @@ KARMA_SETTINGS: tuple[SettingSpec, ...] = (
         validator=_validate_daily_cap,
         input_hint="numeric_presets",
         presets=(5, 10, 25),
+    ),
+    SettingSpec(
+        name="reaction_emoji",
+        value_type=str,
+        default=DEFAULT_REACTION_EMOJI,
+        settings_key=KARMA_REACTION_EMOJI,
+        capability_required=_KARMA_CAPABILITY,
+        hint=(
+            "React-to-thank: set an emoji (e.g. ✨) and reacting with it on a "
+            "message grants karma to that message's author — same cooldown and "
+            "daily cap as !thanks. Leave empty to disable (the default)."
+        ),
+        validator=_validate_reaction_emoji,
     ),
 )
 

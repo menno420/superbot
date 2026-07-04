@@ -53,6 +53,16 @@ _KIND_TO_LABEL: dict[str, str] = {
     "warning": "warning log",
     "error": "error log",
     "audit": "audit log",
+    # Server event logging v1 (Q-0109) — passive-event routes. Kept in sync
+    # with ``_KIND_TO_BINDING`` (and ``provision_view._KIND_TO_LABEL``) by
+    # ``test_logging_routes_panel.test_route_labels_cover_every_kind``. These
+    # were missing until the Routes "Set Channel" crash: ``_LogChannelSelect``
+    # indexed ``_KIND_TO_LABEL[kind]`` for the placeholder and raised KeyError
+    # for every event route, surfacing as the generic view-error ephemeral.
+    "events": "server event log",
+    "message_log": "message event log",
+    "member_log": "member event log",
+    "role_log": "role event log",
 }
 
 
@@ -61,6 +71,20 @@ def _binding_name_for(kind: str) -> str:
     if binding_name is None:
         raise ValueError(f"unknown logging channel kind: {kind!r}")
     return binding_name
+
+
+def _label_for(kind: str) -> str:
+    """Human label for *kind* — **total**, never raises.
+
+    Falls back to a derived ``"<kind> log"`` for any route not explicitly
+    named, so a future route added to ``_KIND_TO_BINDING`` can never crash the
+    channel picker the way the Q-0109 event routes did (added to the binding
+    map but not this label map → KeyError at the ``_LogChannelSelect``
+    placeholder). The pin test still requires an explicit, nicer label for
+    every known kind — this is the defence-in-depth backstop, not a licence to
+    skip the map.
+    """
+    return _KIND_TO_LABEL.get(kind, f"{kind.replace('_', ' ')} log")
 
 
 class _LogChannelSelect(discord.ui.ChannelSelect):  # type: ignore[type-arg]
@@ -72,7 +96,7 @@ class _LogChannelSelect(discord.ui.ChannelSelect):  # type: ignore[type-arg]
         _binding_name_for(kind)
         self.kind = kind
         super().__init__(
-            placeholder=f"Pick the {_KIND_TO_LABEL[kind]} channel…",
+            placeholder=f"Pick the {_label_for(kind)} channel…",
             min_values=1,
             max_values=1,
             channel_types=[discord.ChannelType.text],
@@ -198,14 +222,14 @@ async def _commit_selection(
             exc,
         )
         await interaction.response.send_message(
-            f"❌ Could not bind {_KIND_TO_LABEL[kind]} channel: "
+            f"❌ Could not bind {_label_for(kind)} channel: "
             f"`{type(exc).__name__}`: {exc!s:.200}",
             ephemeral=True,
         )
         return
 
     embed = discord.Embed(
-        title=f"✅ {_KIND_TO_LABEL[kind].title()} channel bound",
+        title=f"✅ {_label_for(kind).title()} channel bound",
         description=(
             f"Bound `logging.{binding_name}` → {target.mention}.\n"
             f"Status: `{result.new_status.value}`."
@@ -260,14 +284,14 @@ async def _commit_clear(
             exc,
         )
         await interaction.response.send_message(
-            f"❌ Could not clear {_KIND_TO_LABEL[kind]} channel: "
+            f"❌ Could not clear {_label_for(kind)} channel: "
             f"`{type(exc).__name__}`: {exc!s:.200}",
             ephemeral=True,
         )
         return
 
     embed = discord.Embed(
-        title=f"✅ {_KIND_TO_LABEL[kind].title()} channel cleared",
+        title=f"✅ {_label_for(kind).title()} channel cleared",
         description=(
             f"Cleared `logging.{binding_name}`.  Falls back to "
             "the legacy scalar key (or, for cleanup, to the mod "

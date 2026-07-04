@@ -21,11 +21,12 @@ from discord import app_commands
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import safe_defer, safe_followup
-from services import karma_service
+from services import karma_config, karma_service
 from services.karma_service import (
     KarmaCooldownError,
     KarmaDailyCapError,
     KarmaDisabledError,
+    KarmaError,
     SelfKarmaError,
 )
 from utils import embeds as em
@@ -88,6 +89,65 @@ class KarmaCog(commands.Cog):
         )
         embed = _karma_card(interaction.guild, interaction.user, record)
         return embed, HubView(interaction.user)
+
+    # --------------------------------------------------------------- reaction
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(
+        self,
+        payload: discord.RawReactionActionEvent,
+    ) -> None:
+        """React-to-thank: reacting with the guild's configured emoji grants
+        karma to the reacted message's author.
+
+        Opt-in per guild (``karma.reaction_emoji`` — empty by default, so a
+        server that never configures it behaves exactly as before). The grant
+        flows through the same audited :func:`karma_service.give` seam as
+        ``!thanks``, so the self-give guard, per-recipient cooldown, and daily
+        cap all apply. Blocked grants are swallowed silently — a reaction must
+        never spam the channel with error messages.
+        """
+        if payload.guild_id is None:
+            return
+        member = payload.member  # set for guild reaction-adds (the reactor)
+        if member is None or member.bot:
+            return
+
+        # Fast gate: one settings read (like the starboard listener). Bail
+        # unless react-to-thank is enabled and this is the trigger emoji —
+        # true for the vast majority of reactions, before any message fetch.
+        policy = await karma_config.load_policy(payload.guild_id)
+        if not policy.enabled or not policy.reaction_emoji:
+            return
+        if str(payload.emoji) != policy.reaction_emoji:
+            return
+
+        channel = self.bot.get_channel(payload.channel_id)
+        if not isinstance(channel, discord.abc.Messageable):
+            return
+        try:
+            message = await channel.fetch_message(payload.message_id)
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+            return
+
+        author = message.author
+        # Can't thank a bot; a self-reaction is a no-op (the service guards it
+        # too, but skip the write path entirely).
+        if author.bot or author.id == payload.user_id:
+            return
+
+        try:
+            await karma_service.give(
+                payload.guild_id,
+                from_user=payload.user_id,
+                to_user=author.id,
+                source="reaction",
+                reason=None,
+                policy=policy,  # reuse the policy already loaded above
+            )
+        except KarmaError:
+            # Disabled / self / cooldown / daily-cap — stay silent.
+            return
 
     # ------------------------------------------------------------------ grant
 

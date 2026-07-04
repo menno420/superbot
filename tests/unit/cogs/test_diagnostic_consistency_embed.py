@@ -241,3 +241,58 @@ def test_build_embed_description_includes_counts_and_timestamp():
 def test_soft_cap_under_discord_hard_limit():
     """Soft cap must leave headroom under Discord's 6000-char hard limit."""
     assert _EMBED_SOFT_CAP < 6000
+
+
+# ---------------------------------------------------------------------------
+# Pagination — build_consistency_pages (diagnostic cert punch #2)
+# ---------------------------------------------------------------------------
+
+
+from cogs.diagnostic._platform_embeds import build_consistency_pages  # noqa: E402
+
+
+def _big_section(name: str, status: SectionStatus) -> SectionResult:
+    """A section large enough that ~5 of them fill one page near the soft cap."""
+    return SectionResult(
+        name=name,
+        status=status,
+        summary="X" * 600,
+        details=("d" * 120, "e" * 120, "f" * 120),
+        suggested_actions=("a" * 120, "b" * 120),
+    )
+
+
+def test_pages_single_when_report_fits_one_embed():
+    pages = build_consistency_pages(
+        _report(
+            _section("a", SectionStatus.CLEAN),
+            _section("b", SectionStatus.WARNING),
+        ),
+    )
+    assert len(pages) == 1
+    # Single page carries no "Page i/N" prefix.
+    assert not (pages[0].footer.text or "").startswith("Page ")
+
+
+def test_pages_split_keep_every_section_no_drop():
+    sections = [_big_section(f"s{i}", SectionStatus.WARNING) for i in range(30)]
+    pages = build_consistency_pages(_report(*sections))
+    assert len(pages) > 1
+    # No section is dropped: total fields across pages == section count.
+    total_fields = sum(len(p.fields) for p in pages)
+    assert total_fields == 30
+    # Each page footer is labelled Page i/N and every page is under the hard limit.
+    n = len(pages)
+    for i, page in enumerate(pages, start=1):
+        assert (page.footer.text or "").startswith(f"Page {i}/{n}")
+        assert len(page.fields) <= _FIELD_HARD_CAP
+        size = len(page.title or "") + len(page.description or "")
+        size += len(page.footer.text or "")
+        size += sum(len(f.name or "") + len(f.value or "") for f in page.fields)
+        assert size < 6000
+
+
+def test_pages_empty_report_returns_one_summary_page():
+    pages = build_consistency_pages(_report())
+    assert len(pages) == 1
+    assert pages[0].fields == []

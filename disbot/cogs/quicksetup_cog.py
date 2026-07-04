@@ -19,6 +19,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from core.runtime.permission_checks import admin_or_owner, app_admin_or_owner
+
 
 class QuickSetupCog(commands.Cog):
     """Opens Essential Setup (the short, jargon-free guided spine) as ``!setup``."""
@@ -28,7 +30,7 @@ class QuickSetupCog(commands.Cog):
 
     @commands.command(name="setup", aliases=["quicksetup", "essentialsetup"])
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def setup_cmd(self, ctx: commands.Context) -> None:
         """Open Essential Setup — a few simple steps, each saved instantly."""
         from views.setup.essential_setup import open_essential_setup_prefix
@@ -40,7 +42,7 @@ class QuickSetupCog(commands.Cog):
         description="Guided setup — a few simple steps, no jargon.",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     @app_commands.guild_only()
     async def setup_slash(self, interaction: discord.Interaction) -> None:
         """Slash front door for Essential Setup (admin-gated)."""

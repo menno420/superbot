@@ -14,6 +14,7 @@ import logging
 import discord
 from discord.ext import commands, tasks
 
+from core.runtime.permission_checks import member_has_perms_or_owner, perms_or_owner
 from services import role_grants_service
 from utils import role_feasibility
 from utils.duration import format_duration, parse_duration
@@ -60,7 +61,7 @@ class RoleGrantsCog(commands.Cog):
 
     # ------------------------------------------------------------------ command
     @commands.command(name="temprole")
-    @commands.has_permissions(manage_roles=True)
+    @perms_or_owner(manage_roles=True)
     async def temprole(
         self,
         ctx: commands.Context,
@@ -113,9 +114,7 @@ class RoleGrantsCog(commands.Cog):
         author = ctx.author
         target = member or author
         is_self = target.id == author.id
-        author_is_staff = (
-            isinstance(author, discord.Member) and author.guild_permissions.manage_roles
-        )
+        author_is_staff = member_has_perms_or_owner(author, manage_roles=True)
         if not is_self and not author_is_staff:
             await ctx.send(
                 "❌ You can only view your own temp roles — viewing another "

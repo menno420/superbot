@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-29T14:38:55Z",
+    "generated_at": "2026-07-04T10:35:51Z",
     "build": {
-      "commit": "6b110fa",
-      "subject": "projmoon: open born-red session — Limbus combat-mechanics layer",
-      "committed_at": "2026-06-29T14:38:55Z"
+      "commit": "b4dd8f22",
+      "subject": "Session start: born-red card + claim — 34th Q-0107 reconciliation pass (band-#1710, issue #1711)",
+      "committed_at": "2026-07-04T10:35:51Z"
     }
   },
   "counts": {
-    "commands": 460,
+    "commands": 484,
     "features": 43,
     "games": 12
   },
@@ -765,8 +765,13 @@
       "description": "Slash front door for the Admin hub — ephemeral, admin-only.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -779,8 +784,13 @@
       "description": "Open the interactive admin control panel.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -795,6 +805,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -838,6 +856,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -884,6 +910,14 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -928,6 +962,14 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -985,8 +1027,13 @@
       "description": "Load, unload, or reload a cog by name (underscores and _cog suffix optional).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1005,8 +1052,13 @@
       "examples": [
         "!cog"
       ],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1021,6 +1073,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -1056,6 +1112,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1099,6 +1163,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1175,6 +1247,14 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1218,6 +1298,14 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1250,16 +1338,16 @@
     },
     {
       "name": "latency",
-      "aliases": [
-        "ping"
-      ],
+      "aliases": [],
       "category": "admin",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Report the bot's WebSocket latency.",
-      "description": "Report the bot's WebSocket latency.",
+      "usage": "Report the bot's WebSocket latency (admin detail view).",
+      "description": "Report the bot's WebSocket latency (admin detail view).",
       "use_cases": null,
-      "examples": [],
+      "examples": [
+        "!ping"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
@@ -1310,8 +1398,13 @@
       "description": "Load all unloaded cogs, skipping already-loaded ones.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1326,6 +1419,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -1343,8 +1440,13 @@
       "description": "Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1375,6 +1477,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1418,6 +1528,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1462,6 +1580,14 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1504,6 +1630,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1564,6 +1698,14 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -1606,6 +1748,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1665,8 +1815,13 @@
       "examples": [
         "!restart"
       ],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1681,6 +1836,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -1700,6 +1859,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1743,6 +1910,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1815,8 +1990,13 @@
       "description": "Display server statistics.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1831,6 +2011,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -1850,6 +2034,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1893,6 +2085,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -1980,8 +2180,13 @@
       "description": "List currently-registered slash commands (admin only).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -1996,6 +2201,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -2040,6 +2253,14 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -2083,6 +2304,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
+        {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
         }
@@ -2101,6 +2326,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -2145,6 +2378,14 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
+        {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
         },
@@ -2187,8 +2428,13 @@
       "description": "Sync the app-command tree for slash commands (owner only).",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -2219,6 +2465,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
@@ -2252,8 +2502,13 @@
       "description": "Unload all loaded cogs except this one.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Central admin guild + central logging guild — the bot's HQ (2026-07-02)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -2324,6 +2579,14 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "Frequency-driven preset suggestions from the review log",
+          "status": "ideas"
+        },
         {
           "title": "Session follow-up ideas — visual engine + AI-setup wedge arc (2026-06-23)",
           "status": "ideas"
@@ -2458,12 +2721,60 @@
       "notes": null
     },
     {
+      "name": "counterpreset",
+      "aliases": [],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Apply a curated counter name-template preset (sets all three templates at once). Run without a name to list the presets.",
+      "description": "Apply one of the curated template presets through the audited seam.",
+      "use_cases": null,
+      "examples": [
+        "!settings"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Safety & Community — one operator landing",
+          "status": "ideas"
+        },
+        {
+          "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "counters",
       "aliases": [],
       "category": "community",
       "cooldown": null,
       "permissions": "administrator",
       "usage": "Show the current server-counter channels for this server.",
+      "description": "Render the effective counter policy (admin/manage-guild only).",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Safety & Community — one operator landing",
+          "status": "ideas"
+        },
+        {
+          "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "counters",
+      "aliases": [],
+      "category": "community",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show this server's live counter channels (members / humans / bots).",
       "description": "Render the effective counter policy (admin/manage-guild only).",
       "use_cases": null,
       "examples": [],
@@ -3914,6 +4225,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -3952,6 +4267,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -3994,6 +4313,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -4033,6 +4356,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -4071,6 +4398,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -4181,6 +4512,32 @@
       "notes": null
     },
     {
+      "name": "boathouse",
+      "aliases": [
+        "moorings",
+        "boat"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Build a Boathouse — the coral+wood structure that refills energy faster.",
+      "description": "Build a Boathouse — the coral+wood structure that refills energy faster.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!tidepool",
+        "!dock"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "browse",
       "aliases": [],
       "category": "games",
@@ -4192,6 +4549,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -4231,6 +4592,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -4271,6 +4636,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -4310,6 +4679,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -4348,6 +4721,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -4390,6 +4767,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -4430,6 +4811,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -4472,6 +4857,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -4512,6 +4901,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -4554,6 +4947,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -4594,6 +4991,10 @@
       ],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -4801,6 +5202,32 @@
       "notes": null
     },
     {
+      "name": "craftcurio",
+      "aliases": [
+        "carve",
+        "curiocraft"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+      "description": "Carve a cosmetic curio from coral — the deepwater rare-material sink.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!craftcurio coral idol",
+        "!curios"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "craftpearl",
       "aliases": [
         "pearlcraft"
@@ -4903,6 +5330,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -4941,6 +5372,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -4981,6 +5416,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5020,6 +5459,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5041,6 +5484,31 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "curios",
+      "aliases": [
+        "curio",
+        "carvings"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show the coral-carving collection + your coral and craft progress.",
+      "description": "Show the coral-carving collection + your coral and craft progress.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!craftcurio <name>"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
       ],
@@ -5146,6 +5614,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5184,6 +5656,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -5246,6 +5722,31 @@
       "notes": null
     },
     {
+      "name": "dock",
+      "aliases": [
+        "pier",
+        "fishingdock"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Build a Dock — the cheap coral+wood structure that makes fish bite faster.",
+      "description": "Build a Dock — the cheap coral+wood structure that makes fish bite faster.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!tidepool"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "ego",
       "aliases": [
         "grade"
@@ -5283,6 +5784,92 @@
       "notes": null
     },
     {
+      "name": "estimate",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Estimate a boss fight from HP/DPS/cost (tower vs boss, or counters).",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "estimate",
+      "aliases": [],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Estimate a boss fight: `<tower> vs <boss> [tier]`, or `counters <boss>`.",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+          "status": "ideas"
+        },
+        {
+          "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a generated \"deterministic floor catalogue\" index",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+          "status": "ideas"
+        },
+        {
+          "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "event",
       "aliases": [],
       "category": "games",
@@ -5294,6 +5881,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -5333,6 +5924,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -5375,6 +5970,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5414,6 +6013,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5452,6 +6055,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -5506,6 +6113,33 @@
       "description": "Cast a line — wait for the bite, then reel it in before it gets away.",
       "use_cases": null,
       "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "fishery",
+      "aliases": [
+        "hatchery",
+        "fishfarm"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Build a Fishery — the coral+wood structure that lands more double catches.",
+      "description": "Build a Fishery — the coral+wood structure that lands more double catches.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!tidepool",
+        "!dock",
+        "!boathouse"
+      ],
       "status": "in-progress",
       "linked_ideas": [
         {
@@ -5659,6 +6293,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5697,6 +6335,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -5737,6 +6379,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5776,6 +6422,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5815,6 +6465,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5853,6 +6507,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -5893,6 +6551,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -5931,6 +6593,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -5971,6 +6637,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6009,6 +6679,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -6049,6 +6723,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6087,6 +6765,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -6127,6 +6809,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6166,6 +6852,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6204,6 +6894,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -6279,6 +6973,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6318,6 +7016,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6356,6 +7058,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -6440,6 +7146,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6478,6 +7188,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -6518,6 +7232,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6557,6 +7275,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6595,6 +7317,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -6657,6 +7383,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6696,6 +7426,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6734,6 +7468,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -6831,6 +7569,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6869,6 +7611,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -6909,6 +7655,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6948,6 +7698,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -6987,6 +7741,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -7025,6 +7783,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7065,6 +7827,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -7103,6 +7869,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7143,6 +7913,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -7182,6 +7956,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -7221,6 +7999,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -7259,6 +8041,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7341,6 +8127,28 @@
       "notes": null
     },
     {
+      "name": "rodrecipes",
+      "aliases": [
+        "rodrecipe",
+        "rrecipes"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Browse every fish→rod recipe and your live progress toward each tier.",
+      "description": "Browse every fish→rod recipe and your live progress toward each tier.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
       "name": "round",
       "aliases": [],
       "category": "games",
@@ -7352,6 +8160,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7391,6 +8203,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7430,6 +8246,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7607,6 +8427,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -7646,6 +8470,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -7684,6 +8512,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7714,14 +8546,13 @@
     {
       "name": "sail",
       "aliases": [
-        "setsail",
-        "dock"
+        "setsail"
       ],
       "category": "games",
       "cooldown": null,
       "permissions": "user",
-      "usage": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
-      "description": "Set sail for deepwater (or dock back on shore) — toggles your fishing venue.",
+      "usage": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
+      "description": "Set sail for deepwater (or return to shore) — toggles your fishing venue.",
       "use_cases": null,
       "examples": [
         "!fish"
@@ -7747,6 +8578,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7786,6 +8621,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7825,6 +8664,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -7940,6 +8783,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -7978,6 +8825,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8018,6 +8869,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8057,6 +8912,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8096,6 +8955,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8134,6 +8997,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8174,6 +9041,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8213,6 +9084,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8251,6 +9126,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8291,6 +9170,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8329,6 +9212,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8368,6 +9255,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8424,6 +9315,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8462,6 +9357,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8524,6 +9423,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8563,6 +9466,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8602,6 +9509,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8640,6 +9551,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8680,6 +9595,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8719,6 +9638,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8757,6 +9680,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8797,6 +9724,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8835,6 +9766,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8875,6 +9810,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8913,6 +9852,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -8953,6 +9896,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -8991,6 +9938,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -9031,6 +9982,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -9069,6 +10024,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -9109,6 +10068,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -9130,6 +10093,31 @@
         },
         {
           "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "tidepool",
+      "aliases": [
+        "reef",
+        "tidepools"
+      ],
+      "category": "games",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+      "description": "Build a Tide Pool — the deepwater-coral structure that pulls rarer catches.",
+      "use_cases": null,
+      "examples": [
+        "!sail",
+        "!curios"
+      ],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "The Explore hub — a federated open world (one world, each subsystem its own game)",
           "status": "ideas"
         }
       ],
@@ -9180,6 +10168,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -9219,6 +10211,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -9257,6 +10253,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -9319,6 +10319,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -9358,6 +10362,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
+        {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
         },
@@ -9396,6 +10404,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "\"Compute, don't refuse\" — a capability sweep over the review log",
+          "status": "ideas"
+        },
         {
           "title": "BTD6 runtime/simulation mechanics — extract straight from the game",
           "status": "ideas"
@@ -9488,6 +10500,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -9592,6 +10608,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -9610,6 +10630,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -9643,6 +10667,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -9690,6 +10718,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -9754,6 +10786,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -9773,6 +10809,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -9791,6 +10831,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -9825,6 +10869,35 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
+          "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "roleinfo",
+      "aliases": [
+        "ri"
+      ],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Show a role's details. Usage: !roleinfo <@role|name|id>",
+      "description": "Read-only role detail card — the role sibling of !channelinfo / !info user.",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -9843,6 +10916,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -9863,6 +10940,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -9881,6 +10962,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -9915,10 +11000,46 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
       ],
+      "notes": null
+    },
+    {
+      "name": "slowmode",
+      "aliases": [
+        "slow"
+      ],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "topic",
+      "aliases": [
+        "settopic"
+      ],
+      "category": "management",
+      "cooldown": null,
+      "permissions": "administrator",
+      "usage": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
+      "description": null,
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
       "notes": null
     },
     {
@@ -9947,6 +11068,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -10066,8 +11191,8 @@
       "category": "moderation",
       "cooldown": null,
       "permissions": "administrator",
-      "usage": "Clean matching channel history by keyword, commands, or prohibited words.",
-      "description": "Clean matching channel history by keyword, commands, or prohibited words.",
+      "usage": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
+      "description": "Clean channel history by keyword, commands, prohibited words, spam, embeds, links, or attachments.",
       "use_cases": null,
       "examples": [],
       "status": "finished",
@@ -10453,6 +11578,22 @@
       "notes": null
     },
     {
+      "name": "add",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Author a preset: ``!aireview preset add \"<question>\" <answer>``.",
+      "description": "Author a preset: !aireview preset add \"<question>\" <answer>.",
+      "use_cases": null,
+      "examples": [
+        "!aireview preset add \"<question>\" <answer>"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "aireview",
       "aliases": [],
       "category": "other",
@@ -10745,6 +11886,24 @@
       "notes": null
     },
     {
+      "name": "export",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Dump the backlog as a JSON file for triage.",
+      "description": "Dump the backlog as a JSON file for triage.",
+      "use_cases": null,
+      "examples": [
+        "!aireview export",
+        "!aireview export unknown",
+        "!aireview export all"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "finding",
       "aliases": [],
       "category": "other",
@@ -10819,6 +11978,22 @@
       "notes": null
     },
     {
+      "name": "from",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Author a preset from a logged question: ``!aireview preset from <id> <answer>``.",
+      "description": "Author a preset from a logged question: !aireview preset from <id> <answer>.",
+      "use_cases": null,
+      "examples": [
+        "!aireview preset from <id> <answer>"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "health",
       "aliases": [],
       "category": "other",
@@ -10881,6 +12056,22 @@
       "cooldown": null,
       "permissions": "",
       "usage": "List recent entries: ``!aireview list [unknown|correction] [n]``.",
+      "description": "List recent entries: !aireview list [unknown|correction] [n].",
+      "use_cases": null,
+      "examples": [
+        "!aireview list [unknown|correction] [n]"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "list",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "List stored presets: ``!aireview preset list [n]``.",
       "description": "List recent entries: !aireview list [unknown|correction] [n].",
       "use_cases": null,
       "examples": [
@@ -11019,6 +12210,20 @@
       "notes": null
     },
     {
+      "name": "preset",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Manage vetted answer presets (served with zero model call).",
+      "description": "Manage vetted answer presets (served with zero model call).",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "provisioning",
       "aliases": [],
       "category": "other",
@@ -11028,6 +12233,22 @@
       "description": "Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5).",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "remove",
+      "aliases": [],
+      "category": "other",
+      "cooldown": null,
+      "permissions": "",
+      "usage": "Delete a preset: ``!aireview preset remove <id>``.",
+      "description": "Delete a preset: !aireview preset remove <id>.",
+      "use_cases": null,
+      "examples": [
+        "!aireview preset remove <id>"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null
@@ -11621,8 +12842,13 @@
         "!farmlb",
         "!countlb"
       ],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Idea: leaderboard row avatars (the Arcane-defining visual)",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -11698,6 +12924,24 @@
       "notes": null
     },
     {
+      "name": "xpimport",
+      "aliases": [],
+      "category": "progression",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Import XP/levels from another bot by reading its level-up channel.",
+      "description": "Import XP/levels from another bot by reading its level-up channel.",
+      "use_cases": null,
+      "examples": [
+        "!xpconfig",
+        "!xpimport [source] [#channel] [limit]",
+        "!xpimport help"
+      ],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "xpmenu",
       "aliases": [],
       "category": "progression",
@@ -11736,6 +12980,22 @@
       "permissions": "user",
       "usage": "Display a user's avatar.",
       "description": "Display a user's avatar.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "botinfo",
+      "aliases": [
+        "about"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show information about the bot — servers, uptime, latency, version.",
+      "description": "Show information about the bot — servers, uptime, latency, version.",
       "use_cases": null,
       "examples": [],
       "status": "finished",
@@ -11891,6 +13151,22 @@
       "notes": null
     },
     {
+      "name": "membercount",
+      "aliases": [
+        "members"
+      ],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Show this server's member count — humans, bots, and total.",
+      "description": "Show this server's member count — humans, bots, and total.",
+      "use_cases": null,
+      "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
       "name": "motivate",
       "aliases": [],
       "category": "utility",
@@ -11928,6 +13204,22 @@
       "description": "View your per-server profile card.",
       "use_cases": null,
       "examples": [],
+      "status": "finished",
+      "linked_ideas": [],
+      "notes": null
+    },
+    {
+      "name": "ping",
+      "aliases": [],
+      "category": "utility",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Check the bot's responsiveness — gateway + message round-trip.",
+      "description": "Check the bot's responsiveness — gateway + message round-trip.",
+      "use_cases": null,
+      "examples": [
+        "!latency"
+      ],
       "status": "finished",
       "linked_ideas": [],
       "notes": null

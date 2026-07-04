@@ -23,6 +23,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
+from core.runtime.permission_checks import perms_or_owner
 from services import welcome_config
 from utils.ui_constants import GENERAL_COLOR
 
@@ -90,36 +91,62 @@ class WelcomeCog(commands.Cog):
             "",
             f"👋 **Greet on join** — {_flag(policy.join_enabled)}",
             f"🚪 **Farewell on leave** — {_flag(policy.leave_enabled)}",
+            f"✉️ **DM on join** — {_flag(policy.dm_enabled)}",
             f"📢 **Channel:** {channel_str}",
             f"🎟️ **Entry role:** {role_str}",
         ]
+        if policy.age_gate_enabled:
+            lines.append(
+                "🛡️ **Min account age:** "
+                f"{policy.min_account_age_days}d "
+                "(younger accounts skipped — anti-raid)",
+            )
+        if policy.greeting_delete_after is not None:
+            lines.append(
+                f"🧹 **Auto-delete greeting after:** {policy.delete_after_seconds}s",
+            )
         embed = discord.Embed(
             title="👋 Welcome",
             description="\n".join(lines),
             color=GENERAL_COLOR,
         )
         # Show the rendered templates with a sample member/count so the
-        # operator sees exactly what posts, placeholders expanded.
+        # operator sees exactly what posts, placeholders expanded.  When the
+        # message holds multiple "---"-separated variants, preview the first
+        # and note that one is chosen at random per greeting.
         sample_count = max(guild.member_count or 1, 1)
-        embed.add_field(
-            name="Join message preview",
-            value=welcome_config.render_template(
-                policy.join_message,
-                member_name="@NewMember",
+
+        def _preview(template: str, sample_name: str) -> tuple[str, str]:
+            variants = welcome_config.split_message_variants(template) or [template]
+            rendered = welcome_config.render_template(
+                variants[0],
+                member_name=sample_name,
                 guild_name=guild.name,
                 member_count=sample_count,
-            ),
+            )
+            suffix = (
+                f" (1 of {len(variants)} random variants)" if len(variants) > 1 else ""
+            )
+            return rendered, suffix
+
+        join_preview, join_suffix = _preview(policy.join_message, "@NewMember")
+        embed.add_field(
+            name=f"Join message preview{join_suffix}",
+            value=join_preview,
             inline=False,
         )
         if policy.leave_enabled:
+            leave_preview, leave_suffix = _preview(policy.leave_message, "NewMember")
             embed.add_field(
-                name="Leave message preview",
-                value=welcome_config.render_template(
-                    policy.leave_message,
-                    member_name="NewMember",
-                    guild_name=guild.name,
-                    member_count=sample_count,
-                ),
+                name=f"Leave message preview{leave_suffix}",
+                value=leave_preview,
+                inline=False,
+            )
+        if policy.dm_enabled:
+            dm_preview, dm_suffix = _preview(policy.dm_message, "@NewMember")
+            embed.add_field(
+                name=f"DM message preview{dm_suffix}",
+                value=dm_preview,
                 inline=False,
             )
         embed.set_footer(text="Configure in !settings → Welcome.")
@@ -131,7 +158,7 @@ class WelcomeCog(commands.Cog):
         extras={"classification": "primary_entrypoint"},
     )
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @perms_or_owner(manage_guild=True)
     async def welcome_status(self, ctx: commands.Context) -> None:
         """Render the effective welcome policy (admin/manage-guild only)."""
         policy = await welcome_config.load_policy(ctx.guild.id)

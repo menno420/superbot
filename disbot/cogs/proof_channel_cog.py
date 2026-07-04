@@ -8,6 +8,7 @@ from discord.ext import commands
 
 from core.runtime import resources, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
+from core.runtime.permission_checks import member_has_perms_or_owner, perms_or_owner
 from utils.helpers import _parse_member
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
 from views.base import HubView, send_panel
@@ -116,7 +117,7 @@ class ProofChannelCog(commands.Cog):
         )
 
     @commands.command(name="+prize")
-    @commands.has_permissions(manage_channels=True)
+    @perms_or_owner(manage_channels=True)
     async def start_prize_claim(self, ctx, winner: discord.Member):
         """Grant a winner exclusive access to #proof.  Usage: +prize @winner"""
         ch = await self.get_proof_channel(ctx.guild)
@@ -133,7 +134,7 @@ class ProofChannelCog(commands.Cog):
         )
 
     @commands.command(name="-prize")
-    @commands.has_permissions(manage_channels=True)
+    @perms_or_owner(manage_channels=True)
     async def end_prize_claim(self, ctx):
         """End the prize session and make #proof read-only again.  Usage: -prize"""
         ch = await self.get_proof_channel(ctx.guild)
@@ -147,7 +148,7 @@ class ProofChannelCog(commands.Cog):
         await ctx.send(f"{ch.mention} is now read-only for everyone.", delete_after=10)
 
     @commands.command(name="prizestatus")
-    @commands.has_permissions(manage_channels=True)
+    @perms_or_owner(manage_channels=True)
     async def prize_status(self, ctx):
         """Show current #proof channel permissions."""
         ch = await self.get_proof_channel(ctx.guild)
@@ -164,7 +165,7 @@ class ProofChannelCog(commands.Cog):
 
     @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(name="prizemenu")
-    @commands.has_permissions(manage_channels=True)
+    @perms_or_owner(manage_channels=True)
     async def prize_menu(self, ctx):
         """Open the interactive prize channel management panel."""
         view = _PrizeManagerView(ctx, self)
@@ -179,7 +180,7 @@ class ProofChannelCog(commands.Cog):
         return await view.build_embed(), view
 
     @commands.command(name="timedprize")
-    @commands.has_permissions(manage_channels=True)
+    @perms_or_owner(manage_channels=True)
     async def start_timed_prize_claim(self, ctx, winner: discord.Member, duration: int):
         """Grant timed access to #proof; auto-unlocks after duration minutes.  Usage: timedprize @winner <minutes>"""
         ch = await self.get_proof_channel(ctx.guild)
@@ -387,8 +388,10 @@ def _actor_has_manage_channels(interaction: discord.Interaction) -> bool:
     Defensive: a missing member / permissions object degrades to ``False``
     (deny), never raises.
     """
-    perms = getattr(getattr(interaction, "user", None), "guild_permissions", None)
-    return bool(getattr(perms, "manage_channels", False))
+    return member_has_perms_or_owner(
+        getattr(interaction, "user", None),
+        manage_channels=True,
+    )
 
 
 async def _reject_without_manage_channels(interaction: discord.Interaction) -> bool:

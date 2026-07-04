@@ -528,6 +528,82 @@ def build_consistency_embed(report: ConsistencyReport) -> discord.Embed:
     return embed
 
 
+def build_consistency_pages(report: ConsistencyReport) -> list[discord.Embed]:
+    """Render a ConsistencyReport across one *or more* embeds (punch #2).
+
+    Unlike :func:`build_consistency_embed` (which collapses then *drops*
+    trailing sections to fit a single embed), this keeps **every** section
+    reachable by chunking them across pages: sections are packed greedily so
+    each page stays under ``_EMBED_SOFT_CAP`` and ``_FIELD_HARD_CAP`` fields.
+    A ``Page i/N`` line is added to the footer only when there is more than
+    one page; a report that fits one embed returns ``[single_embed]``.
+    """
+    overall = report.overall_status
+    counts = {s: 0 for s in SectionStatus}
+    informational_warnings = 0
+    runtime_warnings = 0
+    for section in report.sections:
+        counts[section.status] = counts.get(section.status, 0) + 1
+        if section.status == SectionStatus.WARNING:
+            if section.informational:
+                informational_warnings += 1
+            else:
+                runtime_warnings += 1
+
+    generated = report.generated_at.strftime("%Y-%m-%d %H:%M:%SZ")
+    description = (
+        f"{counts[SectionStatus.CLEAN]} clean · "
+        f"{counts[SectionStatus.WARNING]} warning · "
+        f"{counts[SectionStatus.FATAL]} fatal · "
+        f"{counts[SectionStatus.SKIPPED]} skipped · "
+        f"generated {generated}"
+    )
+    base_footer = (
+        f"{runtime_warnings} runtime warning · "
+        f"{informational_warnings} informational"
+    )
+
+    # Pre-format every section value once, then greedily pack into pages.
+    rendered = [(section, _format_field_value(section)) for section in report.sections]
+    base_size = len(description) + len(base_footer) + 40  # title + headroom
+    pages_sections: list[list[tuple[SectionResult, str]]] = []
+    current: list[tuple[SectionResult, str]] = []
+    current_size = base_size
+    for section, value in rendered:
+        field_size = len(section.name) + len(value) + 4
+        over_size = current and current_size + field_size > _EMBED_SOFT_CAP
+        over_fields = len(current) >= _FIELD_HARD_CAP
+        if over_size or over_fields:
+            pages_sections.append(current)
+            current = []
+            current_size = base_size
+        current.append((section, value))
+        current_size += field_size
+    if current:
+        pages_sections.append(current)
+    if not pages_sections:  # no sections at all — still emit one summary page
+        pages_sections.append([])
+
+    page_count = len(pages_sections)
+    color = _STATUS_COLOR.get(overall, discord.Color.light_grey())
+    pages: list[discord.Embed] = []
+    for page_no, page in enumerate(pages_sections, start=1):
+        embed = discord.Embed(
+            title=f"🛡 Platform consistency · {overall.value.upper()}",
+            description=description,
+            color=color,
+        )
+        for section, value in page:
+            icon = _STATUS_ICON.get(section.status, "•")
+            embed.add_field(name=f"{icon} {section.name}", value=value, inline=False)
+        footer = base_footer
+        if page_count > 1:
+            footer = f"Page {page_no}/{page_count} · {footer}"
+        embed.set_footer(text=footer)
+        pages.append(embed)
+    return pages
+
+
 def build_schemas_embed() -> discord.Embed:
     """Build the embed for ``!platform schemas`` (Phase 1a)."""
     from services import diagnostics_service
@@ -974,6 +1050,24 @@ def build_startup_health_embed(snapshot: HealthSnapshot) -> discord.Embed:
     )
 
 
+def _finding_line(row: dict, *, is_owner: bool) -> str:
+    """Render one persistent-finding row as a display line.
+
+    Owner-only hints (``file_hint``) are appended only when ``is_owner``.
+    Shared by the single-embed and paginated renders so they never diverge.
+    """
+    sev = str(row.get("severity", "info"))
+    count = int(row.get("occurrence_count", 1) or 1)
+    count_suffix = f" (×{count})" if count > 1 else ""
+    line = (
+        f"{_FINDING_EMOJI.get(sev, '•')} `{row.get('status', 'open')}` "
+        f"**{row.get('category', '?')}** — {row.get('message', '')}{count_suffix}"
+    )
+    if is_owner and row.get("file_hint"):
+        line += f"\n  ↳ {row['file_hint']}"
+    return line
+
+
 def build_findings_embed(
     rows: list[dict],
     *,
@@ -1005,18 +1099,9 @@ def build_findings_embed(
         embed.add_field(name="Findings", value="*(none)*", inline=False)
         return clamp_embed(embed)
 
-    lines: list[str] = []
-    for row in rows[:_HEALTH_FINDINGS_SHOWN]:
-        sev = str(row.get("severity", "info"))
-        count = int(row.get("occurrence_count", 1) or 1)
-        count_suffix = f" (×{count})" if count > 1 else ""
-        line = (
-            f"{_FINDING_EMOJI.get(sev, '•')} `{row.get('status', 'open')}` "
-            f"**{row.get('category', '?')}** — {row.get('message', '')}{count_suffix}"
-        )
-        if is_owner and row.get("file_hint"):
-            line += f"\n  ↳ {row['file_hint']}"
-        lines.append(line)
+    lines = [
+        _finding_line(row, is_owner=is_owner) for row in rows[:_HEALTH_FINDINGS_SHOWN]
+    ]
     embed.add_field(
         name=f"Findings ({len(rows)} shown)",
         value=_health_block(lines),
@@ -1029,6 +1114,70 @@ def build_findings_embed(
         ),
     )
     return clamp_embed(embed)
+
+
+# Rows rendered per findings page when paginating (punch #2). Matches the
+# single-embed `_HEALTH_FINDINGS_SHOWN` ceiling so each page block stays
+# comfortably under Discord's per-field 1024-char limit.
+_FINDINGS_PER_PAGE = _HEALTH_FINDINGS_SHOWN
+
+
+def build_findings_pages(
+    rows: list[dict],
+    *,
+    status: str,
+    counts: dict,
+    is_owner: bool = False,
+) -> list[discord.Embed]:
+    """Render persistent findings across one *or more* embeds (punch #2).
+
+    Unlike :func:`build_findings_embed` (which shows only the first
+    ``_HEALTH_FINDINGS_SHOWN`` rows), this chunks **all** ``rows`` into
+    pages of ``_FINDINGS_PER_PAGE`` so dense output stays reachable via the
+    paginator. With 0–``_FINDINGS_PER_PAGE`` rows the result is a single
+    page identical in spirit to the legacy embed; a ``Page i/N`` footer is
+    added only when there is more than one page.
+    """
+    if len(rows) <= _FINDINGS_PER_PAGE:
+        return [
+            build_findings_embed(rows, status=status, counts=counts, is_owner=is_owner),
+        ]
+
+    from core.runtime.interaction_helpers import clamp_embed
+
+    total = sum(int(v) for v in counts.values()) if counts else 0
+    summary = (
+        f"open {counts.get('open', 0)} · resolved {counts.get('resolved', 0)} · "
+        f"ignored {counts.get('ignored', 0)} · {total} total"
+    )
+    chunks = [
+        rows[i : i + _FINDINGS_PER_PAGE]
+        for i in range(0, len(rows), _FINDINGS_PER_PAGE)
+    ]
+    page_count = len(chunks)
+    view_label = "owner view" if is_owner else "admin view (redacted)"
+    pages: list[discord.Embed] = []
+    for page_no, chunk in enumerate(chunks, start=1):
+        embed = discord.Embed(
+            title=f"🩺 Health findings — {status}",
+            description=summary,
+            color=discord.Color.orange(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        lines = [_finding_line(row, is_owner=is_owner) for row in chunk]
+        embed.add_field(
+            name=f"Findings ({len(rows)} total)",
+            value=_health_block(lines),
+            inline=False,
+        )
+        embed.set_footer(
+            text=(
+                f"Page {page_no}/{page_count} · persistent findings · "
+                f"recurrence survives restarts · {view_label}"
+            ),
+        )
+        pages.append(clamp_embed(embed))
+    return pages
 
 
 _EMBED_FIELD_CAP = 24  # Discord hard limit is 25; reserve 1 for overflow note.
@@ -2405,8 +2554,10 @@ __all__ = [
     "build_caches_embed",
     "build_command_access_diagnostic_embed",
     "build_consistency_embed",
+    "build_consistency_pages",
     "build_customization_embed",
     "build_economy_flow_embed",
+    "build_findings_pages",
     "build_flags_embed",
     "build_health_embed",
     "build_identity_embed",

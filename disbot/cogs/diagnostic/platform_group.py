@@ -29,9 +29,9 @@ from cogs.diagnostic._platform_embeds import (
     build_anchors_embed,
     build_bindings_embed,
     build_caches_embed,
-    build_consistency_embed,
+    build_consistency_pages,
     build_customization_embed,
-    build_findings_embed,
+    build_findings_pages,
     build_flags_embed,
     build_health_embed,
     build_identity_embed,
@@ -53,8 +53,31 @@ from cogs.diagnostic._platform_embeds import (
     build_tasks_embed,
     build_views_embed,
 )
+from core.runtime.permission_checks import admin_or_owner
 from views.base import send_panel
 from views.diagnostic import _PlatformHubView, build_platform_hub_embed
+
+
+async def _send_paginated(ctx, pages: list[discord.Embed]) -> None:
+    """Send a list of embed pages, attaching the prev/next paginator when >1.
+
+    A single page is sent as a plain embed (no view) so the common case is
+    byte-identical to the pre-pagination behaviour; multi-page output gets a
+    ``_PaginatorView`` so dense findings/consistency reports stay fully
+    reachable (diagnostic cert punch #2).
+    """
+    if not pages:  # defensive — builders always return at least one page
+        return
+    if len(pages) == 1:
+        await ctx.send(embed=pages[0])
+        return
+    # Local import: keep the module-load import surface lean and mirror the
+    # diagnostic-cog paginator-send pattern.
+    from views.diagnostic.paginator import _PaginatorView
+
+    view = _PaginatorView(pages, ctx.author)
+    view.message = await ctx.send(embed=pages[0], view=view)
+
 
 if TYPE_CHECKING:
     # Under type-checking the mixin is a ``Cog`` so the ``@commands.group`` /
@@ -85,7 +108,7 @@ class PlatformCommandsMixin(_MixinBase):
     # ────────────────────────────────────────────────────────────────
 
     @commands.group(name="platform", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_grp(self, ctx):
         """Runtime introspection group.
 
@@ -104,13 +127,13 @@ class PlatformCommandsMixin(_MixinBase):
         await send_panel(ctx, embed=build_platform_hub_embed(), view=view)
 
     @platform_grp.command(name="status")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_status(self, ctx):
         """High-level platform status: uptime, cogs, governance, scheduler."""
         await ctx.send(embed=build_status_embed(self.bot))
 
     @platform_grp.command(name="setup-readiness", aliases=["readiness", "ready"])  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_setup_readiness(self, ctx):
         """Per-guild setup-readiness inventory (PR H).
 
@@ -129,13 +152,13 @@ class PlatformCommandsMixin(_MixinBase):
         await ctx.send(embed=embed)
 
     @platform_grp.command(name="anchors")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_anchors(self, ctx):
         """Show last restoration outcome and active anchor counts per subsystem."""
         await ctx.send(embed=await build_anchors_embed())
 
     @platform_grp.command(name="identity")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_identity(self, ctx, mode: str = ""):
         """Run the identity-contract validator and show findings.
 
@@ -152,13 +175,13 @@ class PlatformCommandsMixin(_MixinBase):
     # ────────────────────────────────────────────────────────────────
 
     @platform_grp.command(name="runtime")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_runtime(self, ctx):
         """High-level runtime snapshot: every registered diagnostic provider."""
         await ctx.send(embed=build_runtime_embed())
 
     @platform_grp.command(name="health")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_health(self, ctx):
         """Deterministic operational health snapshot (admin-gated, redacted).
 
@@ -180,7 +203,7 @@ class PlatformCommandsMixin(_MixinBase):
         await ctx.send(embed=build_health_embed(snapshot))
 
     @platform_grp.command(name="startup")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_startup(self, ctx):
         """Settled-startup health report (extension load, gateway, DB, …).
 
@@ -207,7 +230,7 @@ class PlatformCommandsMixin(_MixinBase):
         await ctx.send(embed=build_startup_health_embed(snapshot))
 
     @platform_grp.command(name="findings")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_findings(self, ctx, status: str = "open"):
         """Persistent operational-health findings (open / resolved / ignored / all).
 
@@ -226,11 +249,12 @@ class PlatformCommandsMixin(_MixinBase):
         is_owner = audience is HealthAudience.PLATFORM_OWNER
         rows = await health_findings_service.list_by_status(
             None if wanted == "all" else wanted,
-            limit=15,
+            limit=60,
         )
         counts = await health_findings_service.count_by_status()
-        await ctx.send(
-            embed=build_findings_embed(
+        await _send_paginated(
+            ctx,
+            build_findings_pages(
                 rows,
                 status=wanted,
                 counts=counts,
@@ -239,7 +263,7 @@ class PlatformCommandsMixin(_MixinBase):
         )
 
     @platform_grp.command(name="finding")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_finding(self, ctx, action: str, *, fingerprint: str):
         """Transition a persistent finding: `resolve` / `ignore` / `reopen` <fingerprint>.
 
@@ -287,19 +311,19 @@ class PlatformCommandsMixin(_MixinBase):
             )
 
     @platform_grp.command(name="lifecycle")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_lifecycle(self, ctx):
         """Lifecycle state: phase, pending request, recent events."""
         await ctx.send(embed=build_lifecycle_embed())
 
     @platform_grp.command(name="caches")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_caches(self, ctx):
         """Cache state: F-1 guild_config + governance.cache."""
         await ctx.send(embed=build_caches_embed())
 
     @platform_grp.command(name="media")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_media(self, ctx):
         """Content-free media (YouTube) diagnostics.
 
@@ -312,7 +336,7 @@ class PlatformCommandsMixin(_MixinBase):
         await ctx.send(embed=await build_media_embed())
 
     @platform_grp.command(name="economy", aliases=["coinflow"])  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_economy(self, ctx, days: int | None = None):
         """Faucet/sink coin-economy view (`!platform economy [days]`): minted
         vs. drained, net, ratio + verdict, per reason. Window N days or omit
@@ -323,7 +347,7 @@ class PlatformCommandsMixin(_MixinBase):
         await ctx.send(embed=await build_economy_flow_embed(ctx.guild.id, days=days))
 
     @platform_grp.command(name="economytrend", aliases=["coinflowtrend"])  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_economy_trend(self, ctx, days: int | None = None):
         """Per-day coin-flow trend (`!platform economytrend [days]`): the daily
         minted/drained/net series + a net sparkline + a rising/falling read, so
@@ -335,31 +359,31 @@ class PlatformCommandsMixin(_MixinBase):
         await ctx.send(embed=await build_economy_trend_embed(ctx.guild.id, days=days))
 
     @platform_grp.command(name="locks")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_locks(self, ctx, prefix: str = ""):
         """scope_locks snapshot; pass a prefix to filter (e.g. `counting`)."""
         await ctx.send(embed=build_locks_embed(prefix))
 
     @platform_grp.command(name="tasks")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_tasks(self, ctx):
         """Managed background-task snapshot (core.runtime.tasks)."""
         await ctx.send(embed=build_tasks_embed())
 
     @platform_grp.command(name="views")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_views(self, ctx):
         """Registered PersistentView classes (by subsystem)."""
         await ctx.send(embed=build_views_embed())
 
     @platform_grp.command(name="slow")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_slow(self, ctx, limit: int = 10):
         """Show the most recent slow-path entries (S3.2 ring buffer)."""
         await ctx.send(embed=build_slow_embed(limit))
 
     @platform_grp.command(name="automation")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_automation(self, ctx):
         """Open the automation management + diagnostics panel.
 
@@ -374,7 +398,7 @@ class PlatformCommandsMixin(_MixinBase):
         await send_panel(ctx, embed=embed, view=view)
 
     @platform_grp.command(name="sessions")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_sessions(self, ctx, subsystem: str = ""):
         """Active session counts (DB-backed); optionally filtered by subsystem."""
         embed, error = await build_sessions_embed(subsystem)
@@ -388,19 +412,19 @@ class PlatformCommandsMixin(_MixinBase):
     # ────────────────────────────────────────────────────────────────
 
     @platform_grp.command(name="schemas")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_schemas(self, ctx):
         """Registered SubsystemSchema instances (Phase 1a)."""
         await ctx.send(embed=build_schemas_embed())
 
     @platform_grp.command(name="settings-registry")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_settings_registry(self, ctx):
         """Declared SettingSpec catalogue + this guild's current values (S1)."""
         await ctx.send(embed=await build_settings_registry_embed(ctx.guild))
 
     @platform_grp.command(name="setting")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_setting(self, ctx, subsystem: str, name: str):
         """Explain one scalar setting for this guild.
 
@@ -414,49 +438,49 @@ class PlatformCommandsMixin(_MixinBase):
         )
 
     @platform_grp.command(name="customization")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_customization(self, ctx):
         """Customization catalogue across subsystems (S2)."""
         await ctx.send(embed=build_customization_embed())
 
     @platform_grp.command(name="provisioning")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_provisioning(self, ctx):
         """Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5)."""
         await ctx.send(embed=build_provisioning_embed())
 
     @platform_grp.command(name="participation-schemas")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_participation_schemas(self, ctx):
         """Registered ParticipationSchema instances (Phase 1b)."""
         await ctx.send(embed=build_participation_schemas_embed())
 
     @platform_grp.command(name="resource-requirements")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_resource_requirements(self, ctx):
         """Declared ResourceRequirement entries across subsystems (Phase 1c)."""
         await ctx.send(embed=build_resource_requirements_embed())
 
     @platform_grp.command(name="bindings")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_bindings(self, ctx):
         """Subsystem bindings (Phase 2b) — taxonomy + per-guild histograms."""
         await ctx.send(embed=await build_bindings_embed(ctx.guild))
 
     @platform_grp.command(name="resources")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_resources(self, ctx):
         """Resource runtime (Phase 2a) — taxonomy + cached status histogram."""
         await ctx.send(embed=await build_resources_embed(ctx.guild))
 
     @platform_grp.command(name="flags")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_flags(self, ctx):
         """Feature flags: declarations + Phase 2d evaluator state per flag."""
         await ctx.send(embed=await build_flags_embed(ctx.guild))
 
     @platform_grp.command(name="flag")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_flag_manager(self, ctx):
         """Open the editable per-guild flag manager (Phase 6.5a).
 
@@ -479,22 +503,22 @@ class PlatformCommandsMixin(_MixinBase):
         )
 
     @platform_grp.command(name="migrations")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_migrations(self, ctx):
         """Platform migration checkpoints (Phase 2 PR-5) — status + summary."""
         await ctx.send(embed=await build_migrations_embed(ctx.guild))
 
     @platform_grp.command(name="consistency")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_consistency(self, ctx):
         """Unified platform readiness diagnostic — read-only (Phase 2 PR-10)."""
         from services.platform_consistency import collect_report
 
         report = await collect_report(bot=self.bot, guild=ctx.guild)
-        await ctx.send(embed=build_consistency_embed(report))
+        await _send_paginated(ctx, build_consistency_pages(report))
 
     @platform_grp.command(name="backfill")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_backfill(self, ctx, action: str = "") -> None:
         """Dry-run (default) or `apply` the legacy-pointer → binding backfill."""
         from cogs.diagnostic._backfill import handle_platform_backfill
@@ -505,7 +529,7 @@ class PlatformCommandsMixin(_MixinBase):
         name="command-access",
         aliases=["commandaccess"],
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_command_access(
         self,
         ctx,
@@ -531,7 +555,7 @@ class PlatformCommandsMixin(_MixinBase):
         await ctx.send(embed=embed)
 
     @platform_grp.command(name="access", aliases=["whyhere"])  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_access(
         self,
         ctx,
@@ -558,7 +582,7 @@ class PlatformCommandsMixin(_MixinBase):
         name="cleanup-preview",
         aliases=["cleanuppreview", "cleanup-policy"],
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_cleanup_preview(
         self,
         ctx,
@@ -592,7 +616,7 @@ class PlatformCommandsMixin(_MixinBase):
         name="counting-health",
         aliases=["countinghealth"],
     )
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def platform_counting_health(self, ctx):
         """Surface counting persistence health from task_outcome_total (IL-3).
 

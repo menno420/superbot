@@ -5,10 +5,15 @@ no subcommand. It groups the read-only ``!platform <subcommand>``
 families into four category Selects (Runtime/status, Catalogues,
 Resources/rollout, Validation), an Overview button that returns
 to the category listing, and a Flag manager button that opens the
-editable per-guild flag manager. Not every subcommand is grouped:
-``startup``/``findings`` (and other later additions) remain
-typed-only until deliberately added to a category — keep this list
-honest when extending (health readiness map, P2 sweep 2026-06-12).
+editable per-guild flag manager. The read-only health family —
+``health``/``startup``/``findings`` — is grouped under Runtime/status
+(``findings`` shows the default ``open`` status; the typed
+``!platform findings <status>`` keeps the status filter). The
+``finding`` *lifecycle mutation* is deliberately NOT grouped here: the
+four category Selects are strictly read-only, so the only write surface
+is the segregated Mutations row. Keep this list honest when extending
+(diagnostic completion cert punch #1, 2026-06-30; health readiness map,
+P2 sweep 2026-06-12).
 
 Selects update the panel in place via ``safe_defer`` +
 ``safe_edit``, identical to ``_DiagnosticsHubView`` and
@@ -39,6 +44,7 @@ from services.diagnostic_embeds import (
     build_caches_embed,
     build_consistency_embed,
     build_customization_embed,
+    build_findings_embed,
     build_flags_embed,
     build_health_embed,
     build_identity_embed,
@@ -56,6 +62,7 @@ from services.diagnostic_embeds import (
     build_settings_registry_embed,
     build_setup_readiness_embed,
     build_slow_embed,
+    build_startup_health_embed,
     build_status_embed,
     build_tasks_embed,
     build_views_embed,
@@ -64,6 +71,8 @@ from views.base import HubView
 
 _RUNTIME_OPTIONS = (
     ("health", "🩺", "Deterministic operational health snapshot (redacted)"),
+    ("startup", "🚀", "Settled-startup health report (extension load, gateway, DB)"),
+    ("findings", "📋", "Persistent operational-health findings (open, redacted)"),
     ("status", "🛠", "Uptime, cogs, guilds, scheduler, failed subsystems"),
     ("runtime", "🛰", "snapshot_all roll-up across every provider"),
     ("lifecycle", "♻️", "Lifecycle phase, pending requests, recent events"),
@@ -182,6 +191,38 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
         )
         snapshot = await health_snapshot_service.collect_snapshot(request, bot=bot)
         return build_health_embed(snapshot)
+    if name == "startup":
+        from services import health_snapshot_service
+        from services.health_contracts import HealthSnapshotRequest
+
+        audience = await health_snapshot_service.resolve_audience(bot, interaction.user)
+        stored = health_snapshot_service.get_last_startup_snapshot()
+        if stored is not None:
+            snapshot = health_snapshot_service.project_for_audience(stored, audience)
+        else:
+            snapshot = await health_snapshot_service.collect_snapshot(
+                HealthSnapshotRequest(
+                    purpose="startup",
+                    audience=audience,
+                    guild_id=guild.id if guild is not None else None,
+                ),
+                bot=bot,
+            )
+        return build_startup_health_embed(snapshot)
+    if name == "findings":
+        from services import health_findings_service, health_snapshot_service
+        from services.health_contracts import HealthAudience
+
+        audience = await health_snapshot_service.resolve_audience(bot, interaction.user)
+        is_owner = audience is HealthAudience.PLATFORM_OWNER
+        rows = await health_findings_service.list_by_status("open", limit=15)
+        counts = await health_findings_service.count_by_status()
+        return build_findings_embed(
+            rows,
+            status="open",
+            counts=counts,
+            is_owner=is_owner,
+        )
     if name == "status":
         return build_status_embed(bot)  # type: ignore[arg-type]
     if name == "runtime":
@@ -361,9 +402,15 @@ class _PlatformHubView(HubView):
             FlagManagerView,
             build_flag_manager_overview_embed,
         )
+        from views.navigation import carry_back
 
         guild_id = interaction.guild.id if interaction.guild else None
         manager = FlagManagerView(self._author, guild_id=guild_id)
+        # Carry the externally-attached back (↩ Back to Admin, added by the
+        # admin-hub opener) onto the fresh Flag Manager so the grandparent link
+        # is not dropped entering it (the same fresh-instance back-loss class as
+        # the logging Routes round-trip).
+        carry_back(self, manager)
         await safe_edit(
             interaction,
             embed=build_flag_manager_overview_embed(),

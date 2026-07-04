@@ -1,48 +1,59 @@
-"""Pin every historical ``btd6:*`` custom_id on the persistent panel.
+"""Pin the ``btd6:*`` custom_ids on the persistent panel (menu Layout B).
 
 Discord does not re-render existing anchor messages at restart — the
-rendered button row is whatever was posted historically; routing
-matches by ``custom_id``. So even after the PR 2 hub refactor, every
-legacy custom_id must still be present on :class:`BTD6PanelView` or
-clicks on old anchors fall through to "interaction failed".
+rendered button row is whatever was posted historically; routing matches
+by ``custom_id``. So the ids reused from the old flat layout must stay
+present on :class:`BTD6PanelView` or clicks on old anchors fall through
+to "interaction failed".
 
-This regression test catches accidental removal during future layout
-changes.
+The 2026-07-01 Layout-B redesign (category hub — design study
+``docs/btd6/btd6-menu-layout-design-2026-07-01.md``) **kept** the ids that map
+cleanly (ask / events / maps / strategy / status / admin) and **retired** the
+Layout-A leaf ids that were folded into ephemeral sub-panels (towers / heroes /
+modes / leaderboards / paragon / ct). Retiring those is an intentional
+back-compat break: an old anchor still showing those buttons needs a one-time
+re-post (``!btd6menu``). This test pins the new contract and the retired set so
+the drop stays deliberate and documented.
 """
 
 from __future__ import annotations
 
 from views.btd6.panel import BTD6PanelView
 
-# Legacy custom_ids that exist on production anchors. NEVER remove
-# without a migration that re-renders all anchor messages.
-_LEGACY_CUSTOM_IDS = frozenset(
+# Reused from the old flat layout — keep these so existing anchors keep routing.
+_KEPT_CUSTOM_IDS = frozenset(
     {
         "btd6:ask",
-        "btd6:towers",
-        "btd6:heroes",
-        "btd6:modes",
+        "btd6:events",
+        "btd6:maps",
+        "btd6:strategy",
         "btd6:status",
         "btd6:admin",
     },
 )
 
-# New custom_ids introduced by PR 2.
+# Introduced by Layout B (the two new subdivision buttons + the universal Help
+# control auto-attached to every SUBSYSTEM panel by
+# views.navigation.attach_standard_nav — btd6 is a top-level hub with no
+# parent_hub, so it gets Help but no Back-to-hub button).
 _NEW_CUSTOM_IDS = frozenset(
     {
-        "btd6:events",
+        "btd6:units",
+        "btd6:rounds",
+        "nav:help",
+    },
+)
+
+# Retired in Layout B — folded into the Units / Live Events / Maps & Modes
+# sub-panels. Deliberately absent from the top level (see module docstring).
+_RETIRED_CUSTOM_IDS = frozenset(
+    {
+        "btd6:towers",
+        "btd6:heroes",
+        "btd6:modes",
         "btd6:leaderboards",
         "btd6:paragon",
         "btd6:ct",
-        "btd6:maps",
-        # Strategy browse — added 2026-06-23 (discoverability audit U4) so the
-        # !btd6strat strategy memory is reachable by clicking through the BTD6 hub.
-        "btd6:strategy",
-        # Universal Help control auto-attached to every SUBSYSTEM panel by
-        # views.navigation.attach_standard_nav (the "never stranded" contract,
-        # owner directive 2026-06-23). btd6 is a top-level hub (no parent_hub),
-        # so it gets the Help button but no Back-to-hub button.
-        "nav:help",
     },
 )
 
@@ -60,18 +71,30 @@ def test_zero_arg_construction() -> None:
     assert view is not None
 
 
-def test_every_legacy_custom_id_present() -> None:
+def test_every_kept_custom_id_present() -> None:
     ids = _view_custom_ids()
-    missing = _LEGACY_CUSTOM_IDS - ids
+    missing = _KEPT_CUSTOM_IDS - ids
     assert (
         not missing
-    ), f"Removed legacy custom_ids would break existing anchors: {missing}"
+    ), f"Removed a reused custom_id would break existing anchors: {missing}"
 
 
 def test_every_new_custom_id_present() -> None:
     ids = _view_custom_ids()
     missing = _NEW_CUSTOM_IDS - ids
-    assert not missing, f"Missing PR 2 custom_ids: {missing}"
+    assert not missing, f"Missing Layout-B custom_ids: {missing}"
+
+
+def test_retired_ids_are_absent() -> None:
+    # The retirement is intentional (folded into sub-panels). If one reappears,
+    # either it was re-added by accident or the layout changed again — make the
+    # decision explicit rather than silent.
+    ids = _view_custom_ids()
+    present = _RETIRED_CUSTOM_IDS & ids
+    assert not present, (
+        f"Retired Layout-A custom_ids reappeared on the top-level panel: "
+        f"{present}. They belong in the hub sub-panels now."
+    )
 
 
 def test_subsystem_name_pinned() -> None:
@@ -81,11 +104,11 @@ def test_subsystem_name_pinned() -> None:
 
 
 def test_no_unknown_custom_ids() -> None:
-    # Any new ID introduced after PR 2 should be explicitly added to
-    # the regression sets above so future readers see the scope grow.
+    # Any new ID should be explicitly added to the sets above so future
+    # readers see the scope change.
     ids = _view_custom_ids()
-    extra = ids - (_LEGACY_CUSTOM_IDS | _NEW_CUSTOM_IDS)
+    extra = ids - (_KEPT_CUSTOM_IDS | _NEW_CUSTOM_IDS)
     assert not extra, (
         f"Undeclared custom_ids on BTD6PanelView: {extra}. Add them to "
-        "_LEGACY_CUSTOM_IDS or _NEW_CUSTOM_IDS in this test file."
+        "_KEPT_CUSTOM_IDS or _NEW_CUSTOM_IDS in this test file."
     )

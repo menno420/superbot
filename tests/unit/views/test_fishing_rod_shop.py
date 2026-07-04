@@ -72,6 +72,31 @@ async def test_craft_button_calls_craft_rod_and_rerenders():
 
 
 @pytest.mark.asyncio
+async def test_recipes_button_opens_the_recipe_browser():
+    from views.fishing.rod_recipe_browser import RodRecipeBrowserView
+
+    view = RodShopView(_author(7), 1, at_max=False)
+    interaction = _interaction(7)
+    with (
+        patch(
+            "views.fishing.rod_recipe_browser.db.get_rod_tier",
+            AsyncMock(return_value=0),
+        ),
+        patch(
+            "views.fishing.rod_recipe_browser.db.get_mining_inventory",
+            AsyncMock(return_value={}),
+        ),
+        patch("views.fishing.rod_shop.safe_defer", AsyncMock(return_value=True)),
+        patch("views.fishing.rod_shop.safe_edit", AsyncMock()) as edit,
+    ):
+        await type(view).recipes_btn(view, interaction, MagicMock())
+
+    edit.assert_awaited_once()
+    _, kwargs = edit.await_args
+    assert isinstance(kwargs["view"], RodRecipeBrowserView)
+
+
+@pytest.mark.asyncio
 async def test_back_button_returns_to_the_fishing_menu():
     # The menu self.stop()s when it opens the shop, so the back button must mint
     # a fresh, fully-navigable FishingMenuView (punch-list #1, the trapped-view fix).

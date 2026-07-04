@@ -31,6 +31,207 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`rebuild-release-testing-loop-2026-07-03.md`](./rebuild-release-testing-loop-2026-07-03.md) —
+  **owner idea (2026-07-03):** the in-server **release → test → verify loop** — a boot/release
+  announcer of what changed (so members know what to test), per-command "tested-since-its-change"
+  coverage from real usage, a dedicated **test/debug mode** (full traces to a channel, actions
+  self-explain), and an **explain-then-approve button** that doubles as the `verified_live`
+  sign-off. Closes judgment gaps #5/#7/#8 and is the missing *mechanism* for the decided Q-0234
+  oracle + Q-0222 CUT-1 live co-test. Routes as new Stage-2 capabilities; A/C could ship in the
+  current bot now.
+- [`rebuild-websites-cutover-role-2026-07-03.md`](./rebuild-websites-cutover-role-2026-07-03.md) —
+  **owner idea (2026-07-03):** give the off-Discord **botsite + dev dashboard** a rebuild
+  disposition (they die at cutover today — judgment #4), repoint their producer at the new repo's
+  manifest, and use them **during the switch** as the public changelog/cutover-comms surface and a
+  **rebuild-progress + verified_live dashboard** (the owner-consumable visual artifact judgment #16
+  flagged missing). Pairs with the release-loop idea.
+- [`fleet-structured-output-placeholder-guard-2026-07-03.md`](./fleet-structured-output-placeholder-guard-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, final-judgment PR #1701):** reject placeholder values
+  (`test`, `t/e/f`, `TODO`) in required evidence/reasoning fields of fleet structured outputs, with
+  one retry — schema validation passed twice on the same day while shipping degenerate content
+  (audit A row 221's `"test"` verdict; audit B's three `t/e/f` ledger rows, one HIGH). Few lines at
+  one seam; protects the whole Gate-V/audit-fleet trust chain.
+- [`ultracode-audit-consolidation-stage-2026-07-03.md`](./ultracode-audit-consolidation-stage-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, surface+proving audit PR #1691):** add a semantic
+  **consolidation/dedup stage** between the completeness loop and synthesis in the reusable
+  ultracode-audit pattern — the completeness-critic's missing twin ("what did we say twice?" vs
+  "what did we forget?"). This session's completeness loop grew the inventory to 46 mechanics with
+  several near-duplicates that only exact-name dedup let through; a semantic-cluster merge makes the
+  inventory (and its headline count) honest by construction and lets the loop terminate on
+  "nothing *semantically* new."
+- [`rebuild-layout-success-simulator-2026-07-03.md`](./rebuild-layout-success-simulator-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089/Q-0235, PR #1687):** one instruction-driven layout-success
+  simulator (deterministic + AI user models) that scores any generated hub/menu by task success
+  rate ("create roles" → does the user reach the node?), unifying the 5 bespoke UX-layout sims.
+  Quantifies the "self-explanatory" half of the Q-0234 oracle; sim defines settings, live co-test
+  is the final review.
+- [`rebuild-critical-review-checkers-2026-07-03.md`](./rebuild-critical-review-checkers-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, critical-review-rubric PR #1685):** mechanize the rubric's
+  finding-classes into checkers — extend `check_plan_staleness.py` for un-anchored `NN%` claims now
+  (the class that misled twice on the substrate kit), and build dep-order / thin-step /
+  fragmentation / verification-hole / nav-contract checkers against the rebuild's declared
+  manifests. The enforce-don't-exhort arm of Q-0233.
+- [`owner-decision-packet-renderer-2026-07-04.md`](./owner-decision-packet-renderer-2026-07-04.md) —
+  **session idea (2026-07-04, Q-0089, Gate-0 brief-prep PR #1713):** a reusable renderer/skill
+  (`/decision-packet`) that turns a question-register (options+recommendation rows) into an
+  owner-consumable **visual decision packet** — markdown v1 now, an Artifact-HTML v2 later. Closes FJ
+  gap #13 ("nothing renders decisions visually for a non-coding owner"); first consumer is the Gate-0
+  session's 12 owner-only rows.
+- [`rebuild-design-cite-checker-2026-07-04.md`](./rebuild-design-cite-checker-2026-07-04.md) —
+  **session idea (2026-07-04, Q-0089, foundational-design PR #1708):** a `check_doc_cites.py` that
+  validates every `path.py:NNN` source citation in an analysis/design doc resolves to a real file
+  (+ line-in-bounds). Kills the fabricated-cite class at authoring time — the exact
+  `core/contracts.py:48-52` bug (FJ L-25) that threaded a correction through ~11 design specs this
+  session. Stdlib, disposable (Q-0105), sibling of `check_docs`; missing-file → strict, line-bounds →
+  advisory.
+- [`rebuild-navigation-completeness-check-2026-07-03.md`](./rebuild-navigation-completeness-check-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, hub/navigation PR #1684):** a CI golden that walks every
+  generated panel state and asserts Back+Home are present/working (the enforcement arm of the
+  Q-0231 navigation contract) + a preset-coverage assertion (every feature in ≥1 preset). Enforce,
+  don't exhort; routed to Gate-0 NavigationSpec.
+- [`rebuild-invocation-ladder-centralization-2026-07-03.md`](./rebuild-invocation-ladder-centralization-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, conventions-freeze PR #1680):** the invocation-stack
+  centralization set C-1…C-7 (one command resolver, one draft pipeline with two producers, a
+  template primitive, one response grammar, one fuzzy engine, one cooldown engine, one description
+  surface) — the second-consumer rule applied where it has the most consumers. Proposed (Q-0228),
+  pending owner reaction; routed to Gate-0 K8.
+- [`rebuild-schema-growth-ledger-2026-07-03.md`](./rebuild-schema-growth-ledger-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, Stage-1 global review PR #1679):** enforce the Q-0219
+  schema-growth guardrail mechanically in the new repo — every grammar field addition mints a
+  same-PR ledger entry naming the ≥2 consumers that justified it (else: handler), with a CI diff
+  check; kills the inner-platform creep one-field-at-a-time failure mode. Routed to the Gate-0/K2
+  grammar plan.
+- [`golden-recapture-on-bugfix-2026-07-03.md`](./golden-recapture-on-bugfix-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, rebuild-planning-phase session):** a one-line protocol —
+  every current-bot behavior fix must **re-capture its `parity/` golden** (or record "pre-capture,
+  no golden yet") — so the rebuild's parity oracle never green-lights a *fixed* bug's old buggy
+  behavior. The six audit-routed bugs are the first candidates; applies through cutover.
+- [`rebuild-amendment-registry-2026-07-03.md`](./rebuild-amendment-registry-2026-07-03.md) —
+  **session idea (2026-07-03, Q-0089, capability-audit capstone #1674):** one committed registry
+  file as the **sole minting authority** for rebuild grammar-amendment IDs (G-n families, R-n
+  riders, P-n provisional, the refuted set) — Lanes B/C/D independently minted colliding G-7…G-9
+  and the capstone reconciled the numbering by hand; the rebuild's namespace discipline applied
+  to its own meta-artifacts. The Gate-0 spec pass consumes it and stamps `in-spec`.
+- [`convergent-amendment-discovery-signal-2026-07-02.md`](./convergent-amendment-discovery-signal-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, Lane A capability-audit session):** when a multi-agent audit
+  fans out N independent workers over disjoint scope, count and surface **independent
+  rediscoveries** of the same proposed fix/amendment as a confidence-ranking signal during
+  synthesis — the Lane A audit found 2 grammar amendments each rediscovered 3-4× by unrelated
+  subsystem workers with no cross-talk, which is stronger evidence than any single agent's
+  argument. Cheap, tooling-free synthesis-step convention for the next multi-lane reconciliation.
+- [`central-admin-and-logging-guilds-2026-07-02.md`](./central-admin-and-logging-guilds-2026-07-02.md) —
+  **owner idea (2026-07-02, in-chat):** a dedicated **admin guild** (manage any server's bot config
+  via a cross-guild selector — Q-0212's authority without the "must be in the guild" clause) + a
+  **central logging guild** (all-server logging + platform feeds). Ops lane buildable; the
+  member-content mirror is owner-gated on a privacy policy; **the Railway-alerts feed was restored
+  live same-session** (`#railway-alerts` in the test guild; rule updated in place).
+- [`substrate-kit-review-followups-2026-07-02.md`](./substrate-kit-review-followups-2026-07-02.md) —
+  **review capture (2026-07-02):** the two deferred findings from the independent review of #1649
+  (10 of 12 confirmed defects were fixed at root that session) — make `JsonStateBackend.transaction`
+  re-entrant so `apply_review_verdict` is atomic (its own PR, changes core semantics), and a
+  verified-low-risk `confirm_slot` floor note. Buildable follow-up.
+- [`tried-before-ledger-2026-07-02.md`](./tried-before-ledger-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, owner-requested harvest):** a greppable negative-results
+  ledger (`docs/operations/tried-before.md`) for abandoned operational experiments — born from the
+  wait-for-CI near-miss, where one line of owner history ("kept failing") beat a correct-looking
+  fresh analysis and existed nowhere in the repo. Candidate substrate-kit template.
+- [`wire-level-live-bot-loop-2026-07-02.md`](./wire-level-live-bot-loop-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, harvest):** boot the bot under the verified Galaxy-Bot test
+  token and drive it over the real Discord gateway in a test guild — dissolves the
+  `[needs-live-bot]` startability gate and *is* the Phase-0.5 golden-harness Discord driver;
+  complements (not duplicates) the in-process `bot-self-test-walker`.
+- [`context-cost-telemetry-2026-07-02.md`](./context-cost-telemetry-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, retention-policy design session):** parse session transcripts
+  to measure *real* per-session docs-words-read (boot tax, grep-hit class split) — recalibrates the
+  retention simulator's assumption-grade constants and supplies the rebuild's §5.2 footprint KPI;
+  enforce-with-measurements applied to the memory system's own biggest claim.
+- [`continuously-verified-backups-2026-07-02.md`](./continuously-verified-backups-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, harvest):** the restore drill as a *scheduled* workflow
+  (service-container Postgres + restore newest artifact + substance asserts) — pg_dump is now the
+  only backup layer (Railway backups plan-gated), and a backup that never restores is a hope.
+- [`shadow-clone-rehearsal-2026-07-02.md`](./shadow-clone-rehearsal-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, harvest):** agent-operated Railway shadow of the current bot
+  (Galaxy Bot + snapshot-restored Postgres) — rehearses the Phase-5 cutover choreography, proves
+  restore end-to-end, and gives the golden harness a consequence-free capture target. Real spend →
+  flag before running.
+- [`no-transcript-secret-plumbing-2026-07-02.md`](./no-transcript-secret-plumbing-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, harvest):** `scripts/secret_plumb.py` — secrets move
+  store-to-store (Railway ↔ GitHub secrets) process-to-process with hash-receipt output, never
+  through transcripts — the missing safety half of the Q-0213 full-automation grant.
+- [`railway-deploy-alerts-discord-webhook-2026-07-02.md`](./railway-deploy-alerts-discord-webhook-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the Railway automation-grant session):** point a Railway
+  project webhook at Discord so failed `worker` deploys push-alert the owner — today a broken
+  deploy is only discovered by looking; platform-side, no bot code, works even when the bot itself
+  failed to boot. Agent-executable under Q-0213 (confirm the destination channel first).
+- [`railway-config-drift-checker-2026-07-02.md`](./railway-config-drift-checker-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the Railway audit):** a read-only checker + weekly
+  routine diffing live Railway deploy config (wait-for-CI flags, healthchecks, backup schedules,
+  watch paths, variable *names*) against a committed expected-state file — the audit found
+  deploys-don't-wait-for-CI and zero DB backup schedules precisely because nothing watches the
+  dashboard; a checker makes the fixes regression-proof.
+- [`owner-gate-docs-plain-language-rule-2026-07-02.md`](./owner-gate-docs-plain-language-rule-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the design-spec revision):** every owner-gate deliverable
+  must open with a `## Plain-language summary` (the approving reader is the non-coder owner), backed
+  by a ~10-line `check_docs` rule keyed on an `owner-gate` status token — the design spec needed a
+  full revision PR to retrofit exactly this, and the miss was structurally predictable.
+- [`judge-panel-as-saved-workflow-2026-07-02.md`](./judge-panel-as-saved-workflow-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the rebuild-design-spec session):** encode the proven
+  judge-panel method (N forced-diverse designs + cross-model design → lens-diverse judges → best-of
+  synthesis → multi-lens adversarial review incl. a live non-Claude GPT reviewer → source-verifying
+  reviser) as one **saved, parameterized workflow** so every future owner-gate-grade deliverable
+  (Phase-3 spine designs, harness architecture) reuses it instead of re-authoring the orchestration.
+- [`rebuild-doc-set-start-here-index-2026-07-02.md`](./rebuild-doc-set-start-here-index-2026-07-02.md) —
+  **session idea (2026-07-02, Q-0089, from the thirty-second reconciliation pass):** the fresh-rebuild
+  initiative (top-focus S3 lane) has accreted **nine** `docs/planning/rebuild-*`/`*-substrate-*` docs with
+  no single ordered entry point; add one "START HERE" index that orders them into a reading path with each
+  doc's **role + gate-state** (start-gate §B vs commit-gate §F), so the queued K0 executor starts cold
+  without re-deriving the map — paired with plan-homing so a new `rebuild-*` doc must join the index.
+- [`audit-log-catchup-on-reconnect-2026-07-01.md`](./audit-log-catchup-on-reconnect-2026-07-01.md) —
+  **session idea (2026-07-01, Q-0089, from the server-logging-v2 audit-log pass):** replay missed
+  Discord audit-log entries on `on_ready`/`on_resume` so moderation/server logging is **gap-free
+  across restarts and deploys** (every merge redeploys `worker`). A per-guild high-water mark (last
+  posted entry id) bounds the replay and dedups against live gateway delivery.
+- [`leaderboard-row-avatars-2026-07-01.md`](./leaderboard-row-avatars-2026-07-01.md) —
+  **session idea (2026-07-01, Q-0089, from the Arcane/MEE6 card-polish pass):** add a per-row avatar
+  thumbnail to the `!leaderboard` image (the Arcane-defining visual) — the `avatar_disc` primitive +
+  `fetch_avatar_png` seam shipped this session make it pure-additive; needs bounded concurrent avatar
+  fetches + a small in-process avatar LRU so re-renders don't re-hit the CDN.
+- [`superbot-fresh-rebuild-vision-2026-06-30.md`](./superbot-fresh-rebuild-vision-2026-06-30.md) —
+  **maintainer vision (2026-06-30, in-chat, captured verbatim + Claude's verified counter-research):**
+  a full rebuild of SuperBot as a fresh repo — keep all working code, port it incrementally against the
+  current repo as a frozen reference, separate the bot from the AI-memory project, design the question
+  router and architecture once from accumulated knowledge instead of incrementally. **Not approved for
+  execution** — explicitly gated on finishing the portable substrate-kit, a large multi-agent
+  planning/review pass, the maintainer's own keep/change spec, and (per the maintainer) Fable 5
+  availability — **research finding: Fable 5 has been generally available via the API since
+  2026-06-09**, so that gate may already be clear. Carries Claude's full verification trail (router
+  archive status, the historical-docs-value audit, the portable-kit's real ~60%-built state, zero
+  code-coupling between `substrate-kit/` and `disbot/`, concrete evidence for code-level debt) — read
+  the doc for the reconciled position, not just the proposal.
+- [`orientation-doc-linecap-guard-2026-06-30.md`](./orientation-doc-linecap-guard-2026-06-30.md) —
+  **reconciliation idea (2026-06-30, Q-0089, band-#1590 pass, from the fresh-rebuild-vision audit):**
+  enforce each read-path doc's **own stated line/char budget** (`AGENT_ORIENTATION.md` is 2× its declared
+  ~250-line cap, unenforced) with a warn-first `check_docs` extension that reads the cap from the doc
+  itself — makes the #1586 orientation-cost cut **durable** instead of a one-time win that silently
+  regrows. Friction→guard (Q-0194). Subsystem: docs-system (S3/S4).
+- [`compute-dont-refuse-capability-sweep-2026-06-30.md`](./compute-dont-refuse-capability-sweep-2026-06-30.md) —
+  **session idea (2026-06-30, Q-0089, from building the BTD6 boss-fight estimator #1574):** mine the
+  `ai_review_log` for refusals that are actually **computable** (the bot has the grounded data, it just
+  refused or confabulated — boss fights, economy projections, XP-to-level, …) and build a deterministic
+  compute tool per recurring class. Generalizes `deterministic_btd6_list_reply` / the round-cash workflow /
+  the new estimator. Adds a `computable` triage disposition. Subsystem: ai, btd6.
+- [`review-log-frequency-preset-suggestions-2026-06-30.md`](./review-log-frequency-preset-suggestions-2026-06-30.md) —
+  **session idea (2026-06-30, Q-0089, from building the AI review-log answer loop #1569):** when the *same
+  normalized question* recurs as an `unknown` N times in a window, push a one-line "author a preset?" nudge
+  to the review channel — turning the review log into a **demand-ranked** worklist (vs. the chronological
+  `!aireview list`). Reads existing redacted rows + the shared `normalize_question` key; no new table; pairs
+  with a preset hit-counter. Completes the operator-pull loop with a bot-push direction. Subsystem: ai.
+- [`command-collision-checker-2026-06-29.md`](./command-collision-checker-2026-06-29.md) —
+  **captured 2026-06-29 (band-#1560 reconciliation pass, Q-0089):** a `check_command_collisions.py` (offline,
+  stdlib AST, CI-wired) that fails when two cogs register the same top-level command name/alias — turning the
+  band's `give`-collision **prod boot-crash** (#1541/#1544, statically detectable yet it reached production)
+  into a red PR. The cheapest-tier (CI) half of the Q-0194 friction→guard escalation; pairs with #1544's
+  runtime boot guard. Subsystem: none (agent-workflow / build hygiene).
 - [`knowledge-domain-conversation-carryover-2026-06-29.md`](./knowledge-domain-conversation-carryover-2026-06-29.md) —
   **session idea (2026-06-29, Q-0089, from building the Project Moon combat-mechanics layer #1549):** a
   short-lived per-(channel, author) domain-context memory so a bare follow-up ("how does clashing work?")
@@ -241,7 +442,21 @@ Current broad captures:
   age/label/CI). A small stdlib classifier would bucket open PRs into *active in-flight* / *parked carve-out* /
   *genuinely stale*, so the reconciler only decides on the stale bucket — the one the routine warns is
   easiest to miss (#766 sat red 21h). Sibling of the band-status classifier (#1181) + trim actuator (#1206).
+- [`reconcile-headline-sector-currency-check-2026-07-03.md`](./reconcile-headline-sector-currency-check-2026-07-03.md) —
+  **captured by the band-#1680 reconciliation pass (2026-07-03):** the recon routine reliably updates its
+  home **S4** docs-sector file but can leave the band's *headline* sector (S1/S2/S3) stale — the file a
+  dispatcher actually reads for the hot lane. This pass found `current-state/S3-ai-memory.md` next-action
+  lagging the rebuild arc that dominated the band. A tiny advisory checker would infer the band's dominant
+  sector and warn if its `current-state/SN-*.md` doesn't mention a headline PR. Sibling of the open-PR
+  staleness classifier (same stdlib/advisory/disposable shape).
   Sector S3/S4. Disposable (Q-0105).
+- [`ledger-fragmentation-linter-2026-07-04.md`](./ledger-fragmentation-linter-2026-07-04.md) —
+  **captured by the band-#1710 reconciliation pass (2026-07-04):** a warn-only linter (in `check_docs`
+  or a small disposable) that flags a run of N ≥ 3 consecutive Recently-shipped bullets sharing a
+  session-branch/date + theme-prefix/Q-arc signal, so a reconciler consolidates them into one grouped
+  entry instead of the fragmentation surviving every pass (this band's #1683–#1688 were six bullets for
+  one Phase-A arc). Mechanizes the grouped-entry convention the ledger depends on (Q-0194 friction →
+  guard). Sector S4. Disposable (Q-0105).
 - [`band-queue-hit-rate-metric-2026-06-22.md`](./band-queue-hit-rate-metric-2026-06-22.md) —
   **captured by the band-#1320 reconciliation pass (2026-06-22):** every pass plans a ~30-slice next band, and
   almost every subsequent pass records "the buffer became the band" in prose only — no number. Extend
@@ -414,6 +629,11 @@ Current broad captures:
   the opaque merge-commit PRs (this pass hand-`git show --stat`'d 11 of them). The next mechanisation of the
   reconciliation routine after the trim actuator + callout prune. Stdlib, disposable (Q-0105). → relates
   `scripts/band_pr_status.py` · the reconciliation routine STEP 2.
+- [`band-themes-show-pr-subject-2026-07-01.md`](./band-themes-show-pr-subject-2026-07-01.md) —
+  follow-on to the classifier above: `--themes` buckets by **touched dir** and omits each PR's **subject**,
+  so the agent still hand-greps `git log` titles to regroup (the band-#1620 pass did exactly this). Print
+  the PR subject on every skeleton line (from the git log the helper already runs) so themes are readable
+  without re-fetching. Additive, offline, disposable (Q-0105). → relates `scripts/band_pr_status.py`.
 - [`band-pr-merge-status-helper-2026-06-19.md`](./band-pr-merge-status-helper-2026-06-19.md) —
   **SHIPPED 2026-06-20** as `scripts/band_pr_status.py` + `tests/unit/scripts/test_band_pr_status.py`,
   wired into the reconciliation routine's STEP 2. A stdlib

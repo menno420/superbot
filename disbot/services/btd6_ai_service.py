@@ -52,6 +52,7 @@ from services.btd6_response_builder import (
     BTD6Response,
     for_bloon,
     for_hero,
+    for_list_reply,
     for_map,
     for_mode,
     for_reference_facts,
@@ -140,6 +141,24 @@ def deterministic_answer(intent: ResolvedIntent) -> BTD6Response:
     return for_unresolved(intent)
 
 
+def _deterministic_list_floor(text: str) -> BTD6Response | None:
+    """The BUG-0009 / round-range list floor, wrapped for the Ask surfaces.
+
+    Returns a :class:`BTD6Response` when ``btd6_context_service`` owns a labelled
+    list/range answer for ``text`` (the same floor the conversational stage serves
+    as raw text), else ``None`` so the caller keeps its normal entity path.
+    Best-effort — a floor build failure never breaks the reply.
+    """
+    try:
+        from services import btd6_context_service
+
+        reply = btd6_context_service.deterministic_btd6_list_reply(text)
+    except Exception:  # noqa: BLE001 — never block on the floor
+        logger.debug("btd6_ai_service: list floor unavailable", exc_info=True)
+        return None
+    return for_list_reply(reply) if reply else None
+
+
 async def answer_question(
     text: str,
     *,
@@ -160,6 +179,15 @@ async def answer_question(
     already sanitised + provenance-labelled before reaching this layer.
     """
     intent = resolve(text)
+    # Deterministic list/range floor FIRST: it owns labelled list answers the
+    # entity resolver can't assemble — notably a round RANGE, which the resolver
+    # only sees as two endpoint round numbers ("list all the bloons from r29 till
+    # r63" grounded just rounds 29 + 63). Serving it here gives the Ask modal /
+    # `!btd6 ask` the same authoritative floor the conversational stage already
+    # uses; best-effort, never blocks the normal entity path.
+    floor = _deterministic_list_floor(text)
+    if floor is not None:
+        return floor
     response = deterministic_answer(intent)
     response = await _attach_live_grounding(text, response)
     if response.title == UNRESOLVED_TITLE and response.live_facts:

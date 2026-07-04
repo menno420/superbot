@@ -23,6 +23,7 @@ The cog (:mod:`cogs.welcome_cog`) is glue: it filters bots and delegates to
 from __future__ import annotations
 
 import logging
+import random
 from typing import Any
 
 import discord
@@ -48,10 +49,17 @@ def format_join_embed(
     member: discord.Member,
     policy: welcome_config.WelcomePolicy,
     member_count: int,
+    *,
+    rng: random.Random | None = None,
 ) -> discord.Embed:
-    """Build the greeting embed for a joining ``member``."""
+    """Build the greeting embed for a joining ``member``.
+
+    When the join message holds multiple ``---``-separated variants, one is
+    chosen at random (``rng`` injectable for deterministic tests); a
+    single-variant message renders identically.
+    """
     description = welcome_config.render_template(
-        policy.join_message,
+        welcome_config.pick_message(policy.join_message, rng=rng),
         member_name=member.mention,
         guild_name=member.guild.name,
         member_count=member_count,
@@ -63,18 +71,44 @@ def format_join_embed(
     return embed
 
 
+def format_dm_embed(
+    member: discord.Member,
+    policy: welcome_config.WelcomePolicy,
+    member_count: int,
+    *,
+    rng: random.Random | None = None,
+) -> discord.Embed:
+    """Build the direct-message greeting embed for a joining ``member``.
+
+    Mirrors :func:`format_join_embed` but renders the dedicated ``dm_message``
+    template (which supports the same ``---`` random variants).  No avatar
+    thumbnail — a DM already shows the recipient who they are.
+    """
+    description = welcome_config.render_template(
+        welcome_config.pick_message(policy.dm_message, rng=rng),
+        member_name=member.mention,
+        guild_name=member.guild.name,
+        member_count=member_count,
+    )
+    return discord.Embed(description=description, color=_JOIN_COLOR)
+
+
 def format_leave_embed(
     member: discord.Member,
     policy: welcome_config.WelcomePolicy,
     member_count: int,
+    *,
+    rng: random.Random | None = None,
 ) -> discord.Embed:
     """Build the farewell embed for a departing ``member``.
 
     Uses the plain name (not a mention) — the member has left, so a mention
     would render as a raw id for anyone who never shared a mutual server.
+    Multiple ``---``-separated farewell variants pick one at random (``rng``
+    injectable for tests); a single-variant message renders identically.
     """
     description = welcome_config.render_template(
-        policy.leave_message,
+        welcome_config.pick_message(policy.leave_message, rng=rng),
         member_name=member.display_name,
         guild_name=member.guild.name,
         member_count=member_count,
@@ -131,13 +165,21 @@ async def _post(
     channel: discord.abc.Messageable,
     embed: discord.Embed,
     file: discord.File | None = None,
+    *,
+    delete_after: float | None = None,
 ) -> bool:
-    """Send ``embed`` (plus optional ``file``) — fail-safe (logs, never raises)."""
+    """Send ``embed`` (plus optional ``file``) — fail-safe (logs, never raises).
+
+    ``delete_after`` (ping-then-delete) is forwarded to discord.py's native
+    ``send`` so the message self-deletes after that many seconds; ``None`` keeps
+    it.  Only ``None`` is passed to ``send`` when unset so the call shape is
+    unchanged for every existing config.
+    """
     try:
         if file is not None:
-            await channel.send(embed=embed, file=file)
+            await channel.send(embed=embed, file=file, delete_after=delete_after)
         else:
-            await channel.send(embed=embed)
+            await channel.send(embed=embed, delete_after=delete_after)
     except discord.Forbidden:
         logger.warning("welcome: missing send permission in greeting channel")
         return False
@@ -148,6 +190,26 @@ async def _post(
         logger.exception("welcome: unexpected error posting greeting")
         return False
     return True
+
+
+async def _send_dm(member: discord.Member, embed: discord.Embed) -> None:
+    """DM the joining ``member`` the greeting — fail-safe (logs, never raises).
+
+    A closed-DM member raises :class:`discord.Forbidden`; that (and any other
+    send fault) is swallowed so a DM that can't be delivered never affects the
+    channel greeting, the entry-role grant, or the join dispatch.
+    """
+    try:
+        await member.send(embed=embed)
+    except discord.Forbidden:
+        logger.info(
+            "welcome: member %s has DMs closed — skipping DM greeting",
+            member.id,
+        )
+    except discord.HTTPException as exc:
+        logger.warning("welcome: HTTP error sending DM greeting: %s", exc)
+    except Exception:  # noqa: BLE001 — fail-safe wrapper
+        logger.exception("welcome: unexpected error sending DM greeting")
 
 
 async def _grant_entry_role(member: discord.Member, role_id: int) -> None:
@@ -214,10 +276,10 @@ async def _emit_greeted(member: discord.Member) -> None:
 async def handle_member_join(member: discord.Member) -> None:
     """Greet a joining member + grant the entry role, per the guild policy.
 
-    Fully fail-safe: a fault loading the policy, granting the role, or posting
-    the greeting is logged and swallowed so the join dispatch always completes.
-    The two actions are independent — a role-grant failure does not skip the
-    greeting and vice versa.
+    Fully fail-safe: a fault loading the policy, granting the role, posting the
+    channel greeting, or sending the optional DM greeting is logged and
+    swallowed so the join dispatch always completes.  The actions are
+    independent — any one failing does not skip the others.
     """
     guild = getattr(member, "guild", None)
     if guild is None:
@@ -231,21 +293,45 @@ async def handle_member_join(member: discord.Member) -> None:
     if not policy.any_action_enabled:
         return
 
+    # Join-delay age-gating (anti-raid): a member whose account is younger than
+    # the configured threshold gets NO greeting, NO DM, and NO entry role.
+    # Off (skipped) when the gate is unset, so existing configs are unchanged.
+    if policy.age_gate_enabled and _account_too_young(member, policy):
+        logger.info(
+            "welcome: member %s account too young (< %d days) — skipping "
+            "greeting/DM/entry-role in guild %s",
+            member.id,
+            policy.min_account_age_days,
+            guild.id,
+        )
+        return
+
     if policy.assigns_entry_role and policy.entry_role_id is not None:
         await _grant_entry_role(member, policy.entry_role_id)
+
+    # The channel greeting and the optional DM greeting are independent — a
+    # member with closed DMs still gets the channel greeting and vice versa.
+    count = _member_count(guild)
 
     if policy.greet_on_join:
         channel = _resolve_text_channel(guild, policy.channel_id)
         if channel is not None:
-            count = _member_count(guild)
             embed = format_join_embed(member, policy, count)
             file: discord.File | None = None
             if policy.show_join_card:
                 file = render_join_card(member, count)
                 if file is not None:
                     embed.set_image(url=f"attachment://{_WELCOME_CARD_FILENAME}")
-            if await _post(channel, embed, file):
+            if await _post(
+                channel,
+                embed,
+                file,
+                delete_after=policy.greeting_delete_after,
+            ):
                 await _emit_greeted(member)
+
+    if policy.dm_on_join:
+        await _send_dm(member, format_dm_embed(member, policy, count))
 
 
 async def handle_member_leave(member: discord.Member) -> None:
@@ -268,7 +354,23 @@ async def handle_member_leave(member: discord.Member) -> None:
     channel = _resolve_text_channel(guild, policy.channel_id)
     if channel is not None:
         embed = format_leave_embed(member, policy, _member_count(guild))
-        await _post(channel, embed)
+        await _post(channel, embed, delete_after=policy.greeting_delete_after)
+
+
+def _account_too_young(
+    member: discord.Member,
+    policy: welcome_config.WelcomePolicy,
+) -> bool:
+    """True when ``member``'s account is below the policy's age gate.
+
+    Thin wrapper over the pure :func:`welcome_config.account_is_too_young` that
+    supplies the current time; fail-open (greets) on a missing ``created_at``.
+    """
+    return welcome_config.account_is_too_young(
+        getattr(member, "created_at", None),
+        min_age_days=policy.min_account_age_days,
+        now=discord.utils.utcnow(),
+    )
 
 
 def _member_count(guild: Any) -> int:

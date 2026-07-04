@@ -47,10 +47,16 @@ from core.runtime.subsystem_schema import (
     SubsystemSchema,
 )
 from services.server_logging_config import (
+    DEFAULT_CHANNELS_ENABLED,
     DEFAULT_EVENT_ROUTING,
+    DEFAULT_IGNORED_CHANNELS,
+    DEFAULT_IGNORED_USERS,
     DEFAULT_MEMBERS_ENABLED,
     DEFAULT_MESSAGES_ENABLED,
+    DEFAULT_MODERATION_ENABLED,
     DEFAULT_ROLES_ENABLED,
+    DEFAULT_SERVER_ENABLED,
+    DEFAULT_VOICE_ENABLED,
     ROUTING_COMBINED,
     ROUTING_PER_CATEGORY,
     VALID_ROUTING,
@@ -61,6 +67,28 @@ from utils.settings_keys import logging as _log_keys
 def _validate_bool(value: object) -> None:
     if not isinstance(value, bool):
         raise ValueError(f"expected bool, got {type(value).__name__}: {value!r}")
+
+
+def _validate_id_csv(value: object) -> None:
+    """Reject non-numeric tokens so a typo'd ignore list fails loudly.
+
+    Mirrors the automod/image-moderation exempt-list validator: the
+    tolerant :func:`services.automod_config.parse_id_csv` that powers the
+    read model must never raise, so this is the *write*-time gate that
+    gives the operator feedback instead of silently dropping a bad id.
+    """
+    if not isinstance(value, str):
+        raise ValueError(f"expected a comma-separated id string, got {value!r}")
+    for token in value.split(","):
+        token = token.strip()
+        if not token:
+            continue
+        try:
+            int(token)
+        except ValueError:
+            raise ValueError(
+                f"'{token}' is not a numeric id — use comma-separated ids",
+            ) from None
 
 
 def _validate_routing(value: object) -> None:
@@ -147,6 +175,66 @@ LOGGING_SETTINGS: tuple[SettingSpec, ...] = (
         hint="Log role grants and revocations on members (which roles were added/removed).",
         validator=_validate_bool,
     ),
+    # -- Server event logging v2 (Discord audit-log integration) ---------
+    # New categories sourced from the Discord audit log — they capture
+    # administrative actions taken by *anyone* (native UI, another bot, or
+    # SuperBot), with the actor named, closing the "Dyno catches things we
+    # don't" gap. `voice` is a passive gateway event (not audit-log). All
+    # default OFF and require the bot to hold **View Audit Log** (except
+    # voice); see `!logging status`.
+    SettingSpec(
+        name="moderation_enabled",
+        value_type=bool,
+        default=DEFAULT_MODERATION_ENABLED,
+        settings_key=_log_keys.LOGGING_MODERATION_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log moderation actions from the Discord audit log — bans, unbans, "
+            "kicks, timeouts, prunes, and voice disconnects/moves — taken by "
+            "anyone (native UI, another bot, or SuperBot), with the actor "
+            "named.  Requires the bot's **View Audit Log** permission."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="channels_enabled",
+        value_type=bool,
+        default=DEFAULT_CHANNELS_ENABLED,
+        settings_key=_log_keys.LOGGING_CHANNELS_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log channel and permission changes from the audit log — channel "
+            "create/delete/update, permission overwrites, threads, and stages.  "
+            "Requires the bot's **View Audit Log** permission."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="server_enabled",
+        value_type=bool,
+        default=DEFAULT_SERVER_ENABLED,
+        settings_key=_log_keys.LOGGING_SERVER_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log server-structure changes from the audit log — server settings, "
+            "role definitions (create/rename/delete), emojis, stickers, "
+            "webhooks, integrations, and invites.  Requires the bot's **View "
+            "Audit Log** permission."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="voice_enabled",
+        value_type=bool,
+        default=DEFAULT_VOICE_ENABLED,
+        settings_key=_log_keys.LOGGING_VOICE_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log voice-channel joins, leaves, and moves (bots excluded).  "
+            "Passive gateway event — no audit-log permission needed."
+        ),
+        validator=_validate_bool,
+    ),
     SettingSpec(
         name="event_routing",
         value_type=str,
@@ -161,6 +249,36 @@ LOGGING_SETTINGS: tuple[SettingSpec, ...] = (
         ),
         validator=_validate_routing,
         allowed_values=(ROUTING_COMBINED, ROUTING_PER_CATEGORY),
+    ),
+    # -- Exclusion lists (completion cert punch #1) ---------------------
+    # Comma-separated id CSV; a passive event whose channel/subject id is
+    # listed is never logged, for every category. Both default empty (no
+    # exclusion) so every existing guild is byte-identical.
+    SettingSpec(
+        name="ignored_channels",
+        value_type=str,
+        default=DEFAULT_IGNORED_CHANNELS,
+        settings_key=_log_keys.LOGGING_IGNORED_CHANNELS,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Comma-separated channel ids the event log ignores — an event "
+            "in one of these channels is never logged (e.g. a staff-testing "
+            "or bot-command channel).  Leave empty to log every channel."
+        ),
+        validator=_validate_id_csv,
+    ),
+    SettingSpec(
+        name="ignored_users",
+        value_type=str,
+        default=DEFAULT_IGNORED_USERS,
+        settings_key=_log_keys.LOGGING_IGNORED_USERS,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Comma-separated user ids the event log ignores — edits/deletes, "
+            "joins/leaves, and role changes for these members are never "
+            "logged (e.g. other bots).  Leave empty to log every member."
+        ),
+        validator=_validate_id_csv,
     ),
 )
 
@@ -447,7 +565,13 @@ LOGGING_CONFIG_SCHEMA = SubsystemSchema(
     # roles category flags + event_routing mode setting, the
     # events/message/member/role channel bindings, and their RECOMMENDED
     # resource requirements.
-    version=3,
+    # v4 (completion cert punch #1): added the ignored_channels /
+    # ignored_users exclusion-list scalar settings.
+    # v5 (server event logging v2 — audit-log integration): added the
+    # moderation / channels / server / voice category flags. The audit-log
+    # categories reuse the combined `events_channel` route (no new bindings);
+    # `roles` is repurposed to the audit-log path for actor attribution.
+    version=5,
 )
 
 

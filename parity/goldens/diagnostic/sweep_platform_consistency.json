@@ -1,0 +1,161 @@
+{
+ "case_id": "sweep.platform_consistency",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1833382764,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15844367,
+        "description": "9 clean · 2 warning · 0 fatal · 1 skipped · generated <ts>",
+        "fields": [
+         {
+          "inline": false,
+          "name": "🟢 Identity contract",
+          "value": "No identity-contract findings."
+         },
+         {
+          "inline": false,
+          "name": "🟢 Feature flags",
+          "value": "8 flag(s) declared; evaluator healthy."
+         },
+         {
+          "inline": false,
+          "name": "🟢 Rollout / audit",
+          "value": "audit table reachable; 0 row(s)."
+         },
+         {
+          "inline": false,
+          "name": "🟢 Bindings",
+          "value": "no broken bindings in guild <guild>.\n• bound=0 unresolved=0 missing=0 invalid=0 (total=0)"
+         },
+         {
+          "inline": false,
+          "name": "⚪ Binding backfill",
+          "value": "no `binding_backfill` checkpoint rows."
+         },
+         {
+          "inline": false,
+          "name": "🟡 Config arbitration",
+          "value": "calls_total=304; fallback=0; missing=304.\n• Non-zero fallback/missing — the arbiter is degrading to legacy reads. Offending keys:\n• xp/announce_channel (legacy=xp_announce_channel) src=missing flag=on binding=unresolved\n• economy/log_channel (legacy=economy_log_channel) src=missing flag=on binding=unresolved"
+         },
+         {
+          "inline": false,
+          "name": "🟢 Participation",
+          "value": "participation storage / providers / events all reachable.\n• user_participation present=True user_participation_audit present=True\n• events present=['participation.changed', 'subscription.changed', 'user_preference.changed', 'user_visibility.changed']"
+         },
+         {
+          "inline": false,
+          "name": "🟢 Migrations",
+          "value": "ladder contiguous 001 → 103; all applied.\n• filesystem: lowest=1 highest=103 count=103\n• db-applied: count=103 highest=103"
+         },
+         {
+          "inline": false,
+          "name": "🟢 Runtime providers",
+          "value": "32 provider(s) registered; all returned OK."
+         },
+         {
+          "inline": false,
+          "name": "🟢 Lifecycle",
+          "value": "bot is STARTING; on_ready has not fired yet.\n• phase: STARTING"
+         },
+         {
+          "inline": false,
+          "name": "🟡 Setup readiness",
+          "value": "ℹ️ Roadmap/informational — not a runtime health failure.\n2/11 roadmap blocker(s) resolved (informational; not a runtime health failure).\n• command_surface_ledger: pending\n• panel_registry: resolved\n• settings_registry: pending\n→ See `docs/archive/phase-2-completion-readiness.md` for unlock order."
+         },
+         {
+          "inline": false,
+          "name": "🟢 Wizard finalization",
+          "value": "ℹ️ Roadmap/informational — not a runtime health failure.\n3/4 finalization step(s) landed; rest deferred.\n• fallback_attribution [PR1]: resolved\n• ai_advisor_review [PR3]: resolved\n• preflight_gate_visible [PR3]: resolved"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "1 runtime warning · 1 informational"
+        },
+        "title": "🛡 Platform consistency · WARNING",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!platform consistency",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "diagnostic"
+}

@@ -7772,12 +7772,812 @@ distinct command, untouched.
 `tests/unit/invariants/test_extension_integrity.py`:
 - `test_no_banned_command_tokens_anywhere` — fails the build if any command/alias named `give` is ever
   re-added (`BANNED_COMMAND_TOKENS = {"give"}`; recurses into group subcommands).
-- `test_no_duplicate_top_level_command_names_across_cogs` — the broader root-cause guard: catches **any**
-  duplicate top-level command name/alias across cogs at CI time. The runtime `command_surface_ledger`
-  only sees duplicates *after* every cog loads — which a collision prevents — so it could never catch
-  this class; the static check can.
+- `test_no_duplicate_top_level_command_tokens` — the broader root-cause guard: catches **any**
+  top-level command name/alias claimed by two distinct commands at CI time, **same-cog or cross-cog**
+  (broadened + renamed from `…_across_cogs` on 2026-07-01 after the fishing `dock`/`sail` *same-cog*
+  collision crash-looped boot — PR #1600 — which the original, de-duplicating claimants by cog, missed).
+  The runtime `command_surface_ledger` only sees duplicates *after* every cog loads — which a collision
+  prevents — so it could never catch this class; the static check can.
 
 **Home:** this Q-block (canonical) + `tests/unit/invariants/test_extension_integrity.py` (enforcement) +
 `.claude/CLAUDE.md` § Helpers "Exact-name guard (Q-0200)" (the sibling same-module guard this extends
 cross-cog). Related: **Q-0200** (exact-name collision guard), **Q-0194** (friction → guard), **Q-0132**
 (enforce, don't exhort).
+
+### Q-0212 — DECIDED: bot owner has full bot-config authority in any guild they're in (2026-06-30)
+
+> **Context.** Owner request: *"as bot owner I always have full bot permissions in any server that I'm
+> in, even if I don't actually have permissions there — not to alter the server, but to make sure the
+> bot is properly set up and has the right settings enabled, like the AI and which channels it can do
+> certain things in."* Research found the bot already treats the configured owner
+> (`config.BOT_OWNER_USER_ID`, the `PermissionTier.PLATFORM_OWNER` allowlist) specially for **AI scope**
+> (`_derive_scope` → `AIScope.PLATFORM_OWNER`), **global settings** (owner-only), and a
+> **bootstrap-command channel bypass** — but there was **no** override for *per-guild configuration
+> authority*: a bot owner who is a plain member of a guild resolved to `tier="user"` and was denied by
+> every guild-config seam, so they could *open* `!settings`/`!setup` but not actually apply AI / channel
+> / setup changes.
+
+**Area:** Governance / authority · **Type:** Owner directive (durable policy) · **Status:** Answered
+(live, in-session) — applied + routed to a single-source helper + tests + `capability-authority.md`.
+
+**The decision.** The configured bot owner holds **full bot-*configuration* authority in any guild they
+are a member of**, even without Discord permissions there (set the bot up, AI policy, command channels,
+settings, governance writes). This is *configuration* authority, not "moderate/alter the server" — it
+exists so the owner can always make the bot work correctly.
+
+**Implementation — one source of truth, wired into every authority seam.** A single helper
+`config.is_platform_owner(user_id)` (config is a layer-free leaf importable everywhere) is the only
+thing each seam keys on:
+- **Governance:** `capability.actor_holds_capability` (step 3, after target-guild membership, before the
+  revoke overlay — see `capability-authority.md` §1), `resolver._resolve_member_tier` (elevates to the
+  `owner` visibility tier → feeds `resolve_visibility` / `resolve_execution` / `can_execute`),
+  `writes._validate_authority` (governance writes = per-channel subsystem visibility).
+- **Services:** the five duplicated `_check_admin` gates (`ai_policy` / `ai_instruction` /
+  `ai_orchestration` / `btd6_source` / `help_overlay`) + `setup_access` (`is_setup_admin` /
+  `can_apply_setup` / `can_apply_setup_by_id`).
+- **Views:** the canonical `base.interaction_is_admin` + new `base.member_is_admin`, with the inline raw
+  `guild_permissions` config gates (AI panel/behavior/tools, settings command-access, essential_setup)
+  routed through them — so the owner can *see & use* the config UI, not just pass the mutation check.
+- Consolidated the pre-existing inline `== BOT_OWNER_USER_ID` checks (settings global scope, `ai_tools`,
+  `bot_knowledge_service`, `_derive_scope`) onto the same helper.
+
+**Scope boundary / safety (agent judgment, recorded for review).** Purely **additive** — only ever
+*grants* the one configured owner id; one-user blast radius; no existing user loses access. The
+governance override sits **after** the "actor must be a member of the target guild" check, so it does
+**not** weaken the cross-guild invariant ("authority bound to the write target"). It deliberately does
+**not** broaden command-access beyond the existing bootstrap bypass, and does **not** touch
+feature/game-admin moderation gates (e.g. starboard/tickets/moderation/game panels) — the directive is
+*bot configuration*, not "run everything everywhere." If the owner ever wants this off, unset
+`BOT_OWNER_USER_ID` (the same switch that governs every other owner power).
+
+**Home:** `disbot/config.py` (`is_platform_owner`, single source) + `docs/capability-authority.md` §1
+step 3 (canonical authority contract) + `disbot/governance/permission_tiers.py` PLATFORM_OWNER docstring
++ `tests/unit/test_platform_owner_override.py` (every seam). Related: **Q-0098** (setup-delegate apply
+authority — the sibling below-floor grant), **Q-0048** (read-only AI tool posture), **Q-0200** (exact-name
+helper guard — `is_platform_owner` is the canonical owner-check that supersedes the inline duplicates).
+
+**Completeness follow-up — #1577 (2026-06-30).** #1573's view sweep was **incomplete** (a grep
+truncated at 50 results), so the owner *still* hit "❌ Administrator permission required." on the AI
+policy/routing panels (owner-reported, with screenshot). Two whole gate classes were missed and are now
+fixed: **(1)** the `views/ai/policy/*` + `views/ai/routing/matrix.py` + `views/{xp,roles}/main_panel.py`
+`interaction_check`s (now routed through `views.base.interaction_is_admin` / `member_is_admin`), and
+**(2)** the cog command **decorators** — `@commands.has_permissions(administrator=True)` (101) +
+`@app_commands.checks.has_permissions(administrator=True)` (28), which gate `!ai`, `/setup`, etc. *before*
+the body runs. A new seam, **`core/runtime/permission_checks.py`** (`admin_or_owner` / `app_admin_or_owner`
+— administrator OR `is_platform_owner`, raising the same `MissingPermissions` for non-owners), replaced
+**every** `administrator=True` decorator bot-wide. The feature-admin **view** gates the #1573 note said it
+left alone (starboard / tickets / btd6 event flow / blackjack admin toggle) were **also** made owner-aware
+this pass — so the refined scope boundary is: the owner now passes **every `administrator`-tier gate**
+(commands + views) and the moderation panel (via `can_execute` → owner tier); still **untouched** are
+`manage_roles` gates (server-*role* mutation = "altering the server", outside the directive) and the bot's
+own-capability checks (`me.guild_permissions`). **Enforce, don't exhort (Q-0194):** two CI guards now fail
+the build on a re-introduction —
+`tests/unit/invariants/test_owner_override_guards.py::{test_no_raw_admin_in_view_interaction_check,
+test_no_admin_only_command_decorator}` — the exact miss-class #1573 shipped.
+
+**Third extension — #1602 (2026-07-01): owner bypasses ALL permission gates, not just administrator.**
+Owner directive *"make sure that I can do everything with this bot as owner"* (screenshot: `/help → Roles
+→ Role Menus → New Menu` → "You need the Manage Roles permission to do that"). #1573/#1577 covered only
+`administrator`; specific-permission gates (`manage_roles`, `manage_guild`, `manage_channels`,
+`manage_messages`, `moderate_members`, `create_instant_invite`) still denied the owner. This **resolves the
+original scope tension** (Q-0212 first read as "config, not alter the server"; the owner has now made it
+explicit — *everything*). `core.runtime.permission_checks` is generalized to any permission
+(`member_has_perms_or_owner(user, **perms)` / `perms_or_owner(**perms)` / `app_perms_or_owner(**perms)`;
+`admin_or_owner` etc. become thin wrappers), and **every** `has_permissions(...)` decorator (49 across 18
+cogs) + inline `guild_permissions.<perm>` user-gate (18 across ~12 cogs/views — role menus, role hub,
+mining, channel, proof-channel, btd6, role-grants) now routes through it. **Untouched by design:** the
+bot's own-capability checks (`me.guild_permissions`), informational reads, and the moderation surfaces
+(the owner already passes those via the `can_execute` governance path → owner tier). **Enforcement:** the
+decorator guard is generalized to *any* `has_permissions(...)` and a new `test_role_surface_gates_are_owner_aware`
+pins the role views — completeness is machine-checked, not scoped by judgment (the fix for the three
+narrow-scope round-trips #1573→#1577→#1602). Home: `disbot/core/runtime/permission_checks.py` +
+`tests/unit/invariants/test_owner_override_guards.py`.
+
+### Q-0213 — DIRECTED: full-access Railway token + credential set is deliberate — the whole project runs fully automated (2026-07-02)
+
+> **Context.** After the Railway audit session (#1638) recommended scoped project tokens + account-token
+> rotation, the owner directed in-chat: *"it has been deliberate that this token has full access, claude
+> is the only one that has access to it and also the main editor of the repo, I want it this way so you
+> don't have to rely on me to enter certain values or create extra workers or any of those things, you
+> also have a test bot token and access to API keys … so the whole project can be completely automated."*
+
+**Decision (owner-directed):**
+
+1. **The full-access Railway account token stays in agent containers by design.** Claude is its sole
+   holder and the repo's main editor. The #1638 custody recommendation (scoped project tokens + rotate
+   the account token) is **DECLINED** — recorded as a conscious, accepted risk, not an oversight.
+2. **The credential set exists to remove owner-dependency:** Railway account token, the test-bot Discord
+   token (application **"Galaxy Bot"**, id `1298426054636994611` — note the env var is misleadingly named
+   `DISCORD_BOT_TOKEN_PRODUCTION` in agent containers), and provider API keys (`OPENAI_API_KEY` verified
+   present; Anthropic key lives in the Railway worker vars). Agents should **use** these — entering
+   values, creating services/workers, wiring environments — rather than routing such steps to the owner.
+3. **Re-scopes the Q-0130 envelope:** agents may now operate the **Railway control plane** directly —
+   service/environment configuration, variables, deploy-affecting settings, creating services — with
+   read-back verification and a session-log record of every change. The old "deploy/restart/scale/
+   rollback stay the maintainer's" line is superseded for *routine* operations.
+4. **The standing safety brake is unchanged** (this is the automation grant's boundary, per the working
+   agreement's irreversibility rule): destructive or hard-to-reverse operations — `*Delete` mutations,
+   backup/volume **restores**, anything that can lose data, plan/billing changes — remain **ask-first**,
+   every time. Convention: no automation ever calls a delete/restore mutation.
+5. **Recorded operational history (same exchange):** Railway's *wait-for-CI* deploy gating was tried
+   before and **"kept failing due to the fast merges"** — R1 of the Railway plan is dropped; do not
+   re-enable on the current repo. (Mechanism + the new-repo design condition live in
+   `docs/planning/railway-setup-plan-2026-07-02.md` §6.)
+
+**Executed under this grant (2026-07-02, PR #1640, each read-back-verified):** dashboard + botsite
+watch-paths; botsite healthcheck `/healthz`; a $15/month **soft** usage alert (email-only, no hard
+limit). **Discovered:** Railway-native volume backups (schedules *and* manual) return `Not Authorized`
+on the Hobby plan — plan-gated, not token-gated — so the pg_dump workflow gained a monthly 400-day
+retention tier as the compensating layer (owner one-time step: raise the repo's artifact-retention
+setting to 400 days). Homes: `docs/planning/railway-setup-plan-2026-07-02.md` (plan + statuses),
+`docs/operations/production-deployment.md` (envelope + backups), `.github/workflows/backup-db.yml`.
+
+### Q-0214 — DECIDED: the finalised memory system's four structural retention choices (2026-07-02)
+
+> **Decided — owner picked all four live via the in-chat question panel (2026-07-02).**
+> Context: the owner-directed retention/context-economy design session (PR #1643,
+> [`docs/planning/memory-retention-and-context-economy-plan-2026-07-02.md`](../planning/memory-retention-and-context-economy-plan-2026-07-02.md))
+> converged on a sim-tested, adversarially-reviewed policy and surfaced four decisions the evidence
+> could not settle — pure owner-values calls (the sim proved each safe either way). Asked live via
+> the in-chat question panel; the owner picked the recommended option on all four.
+
+**Area:** AI-memory / docs system / substrate-kit · **Type:** Owner decisions (structural, durable)
+· **Status:** Answered (live, in-session, 2026-07-02).
+
+**The four decisions (verbatim options chosen):**
+
+1. **Session-log retention mode = "Delete + tombstones."** The kit's default posture is
+   delete-with-tombstones (bounded corpus by construction; one grep-visible index line per pruned
+   log; bodies one `git show` away), not archive-everything — the lean-by-construction tiebreak
+   applied, exactly as the plan's §6.2 framed it. Harvest-gating (per-file committed evidence) is
+   the safety condition that makes this posture acceptable unattended.
+2. **Owner inbox = "Website feed."** The `/updates` feed is the canonical surface for ⚑
+   owner-facing lines. Implementation consequence (binding on the plan's PR 2):
+   `scripts/export_dashboard_data.py` must read **pass-record harvest tables** in addition to raw
+   logs, so pruning never blanks the feed; the 14-day log-window floor may be revisited once the
+   harvest-fed feed is proven.
+3. **Shrink duty = "Checker + routine."** No new per-session shrink ritual: mechanical prunes via
+   checker+actuator, judgment prunes via the retention-debt routine issue. This **answers
+   orientation-plan Workstream D** (the proposed standing shrink ender): the owner chose the
+   mechanical/escalation design over a per-session ritual — the DISCUSS block Workstream D planned
+   is superseded by this decision; growth-side enders (Q-0089/Q-0102) are unchanged.
+4. **Rebuilt-repo decision-ledger depth = "Verdict + short why."** Each decided question keeps its
+   ruling line + 2–3 lines of rationale + provenance link in `decisions.md`; full deliberation
+   lives in git/PR history. (This repo's router keeps Q-0210 semantics unchanged — this decision
+   shapes the **kit/rebuild** ledger format only.)
+
+**Homes:** the retention plan (policy + PR specs, updated same session) ·
+`docs/planning/fresh-rebuild-strategy-2026-07-02.md` §5.2 slot (context-economy engine) ·
+orientation-cost-reduction plan Workstream D (superseded by decision 3).
+
+### Q-0215 — DIRECTED: generalize presets-plus-manual-entry from numeric-only to every settings class in the rebuild grammar (2026-07-02)
+
+> **Context.** A daily-review/brainstorm session asked the owner to re-confirm an architectural
+> gap before Phase 3 starts: "every text-based function should have presets you can choose from —
+> you should never have to write something yourself, but a custom-input option should exist
+> wherever useful." Research showed this exact posture was **already decided** as Q-0070
+> (2026-06-10) — presets + preset-then-edit + always-available manual entry, for *every* setting
+> class including authored text (DM templates, AI instruction bodies) — but the rebuild design
+> spec (`rebuild-design-spec-2026-07-02.md` §2.5) had only carried the shipped **numeric**-presets
+> mechanism forward verbatim, without generalizing it in the grammar itself. The owner confirmed
+> the posture stands and asked for it to be folded into the spec rather than left as a
+> settings-audit-only convention.
+
+**Decision:** `SettingSpec` gains a `preset_kind: enum {none, numeric, text} = none` field (§2.5).
+`text` extends the shipped numeric-presets UX (pick a preset, edit from it, or write your own) to
+any `str`-typed setting. Compile rule: a `str`-typed spec with a non-empty `presets` tuple must
+declare `preset_kind="text"`, and manual entry can never be the *only* path removed by a preset
+list — the grammar enforces Q-0070's three-requirement posture mechanically instead of relying on
+each port remembering it.
+
+**Scope boundary:** this decides the **grammar primitive** only — it does not re-open Q-0070's
+deferred "AI-suggested template/preset advisor" idea
+(`docs/ideas/settings-presets-and-ai-template-advisor.md`), which stays captured-only behind the
+AI per-exposure gates.
+
+**Homes:** `docs/planning/rebuild-design-spec-2026-07-02.md` §2.5 (new field + compile rule) and
+top-of-doc addendum; supersedes nothing — extends Q-0070's already-decided posture into the new
+repo's grammar.
+
+### Q-0216 — DIRECTED: multi-select promoted from bot-code convention to a rebuild-grammar compile rule (2026-07-02)
+
+> **Context.** Same brainstorm session, second architectural question: "multi-select menus should
+> also be the standard wherever possible." Research found this was **already owner-directed** for
+> the current bot as Q-0205 (2026-06-24) — "multi-select is the preferred idiom for 'pick which of
+> these to turn on'" — and applied in specific PRs (Essential Setup logging-channel step, the
+> block-spam toggle row), but never promoted into the rebuild's manifest grammar as a default rule
+> new ported/generated selectors would inherit automatically. Current-bot count at the time of
+> research: ~125 `Select` menus, only ~20 genuinely multi-select (~5:1 single-select-by-default),
+> confirming the gap is real, not just a preference already satisfied everywhere.
+
+**Decision:** `SelectorSpec` (§2.4) gets a compile-time default rule: when a selector's `on_select`
+target is a `BindingSpec` with `multiplicity > 1`, or otherwise backs a "pick which of these apply"
+choice, `max_values` defaults to that multiplicity (or full option count for unbounded pick-many)
+instead of Discord's single-select default. A single-select override requires explicit
+justification — the grammar treats "one at a time" as the exception for a naturally multi-valued
+choice, not the default. Scalar pickers (channel/role/member selectors backing a true
+single-value `SettingSpec` or a `multiplicity=1` binding) are unaffected.
+
+**Homes:** `docs/planning/rebuild-design-spec-2026-07-02.md` §2.4 (new compile rule) and
+top-of-doc addendum; extends Q-0205's already-directed idiom from the current codebase into the
+new repo's grammar as a mechanical default rather than a per-PR judgment call.
+
+### Q-0217 — EXECUTED: the linchpin-validation's six grammar amendments + five spec corrections folded into the design spec (2026-07-02)
+
+> **Context.** The linchpin-validation spike (#1639, `rebuild-linchpin-validation-2026-07-02.md`)
+> already recommended **GO — proceed to Phase 3, with the six grammar amendments folded into the
+> design spec first (a half-day docs pass, no re-design)**. This was not a fresh decision — the
+> owner asked in this session which plan steps are still left and which must happen before Phase 3
+> starts; the answer surfaced that the already-approved fold-in had not actually been executed yet,
+> and the owner asked for it to be done now.
+
+**Executed, source-verified against the spike doc's §2.3/§3 tables:**
+
+1. **G-1 — `GatewayListenerSpec`** (§2.8): the load-bearing one — raw Discord gateway listeners
+   (server-logging's 8, karma's react-to-thank, blackjack's reaction-join) had no grammar primitive.
+2. **G-2 — list-valued settings** (§2.5): `value_type="list[int]"` etc. + kernel add/remove/clear
+   workflows, covering the shipped exclusion-list pattern (#1594) and its recurrences.
+3. **G-3 — `AnnouncementRouteSpec`** (§2.8): event-class → template → bound-channel as data.
+4. **G-4 — `CommandSpec.cooldown`** (§2.2): declares the shipped `@commands.cooldown` rate limit,
+   previously silently dropped by the grammar at port time.
+5. **G-5 — declarative validator `bounds`** (§2.5): `(lo, hi)`/`max_len` fields replacing trivial
+   tier-3 validator refs.
+6. **G-6 — command-pool kind-scoping** (§2.2, §3.1): prefix/slash are disjoint Discord namespaces;
+   the pool is now partitioned per `CommandSpec.kind`, not one flat pool.
+7. **Harness-mechanism naming** (§6): corrected from "testcontainers + dpytest" to what `parity/`
+   actually is — fake HTTP over the real discord.py state machine, local Postgres, no new deps.
+8. **Evals/harness composition** (§6): evals stay the AI-answer oracle; the golden harness owns the
+   deterministic command/panel surface; they compose, they do not merge into one asset.
+9. **K10 CI requirement** (§6): `golden-parity` needs a real Postgres service container in the new
+   repo's CI — this repo's own `code-quality` runs none, which is why the harness skips there today.
+10. **Determinism-pinning budget** (§6): eight nondeterminism classes were pinned for command
+    capture; scheduled-loop capture will pay a comparable cost again — budgeted, not assumed free.
+11. **Clock + RNG as injectable kernel services** (§1.2): a new kernel requirement the spike
+    surfaced — unseeded RNG, real-TTL caches, and `datetime.now()`-derived ids are all
+    AST-fenced violations outside `kernel/clock`/`kernel/rng`, making every surface golden-testable.
+
+**Status:** the `rebuild-design-spec-2026-07-02.md` no longer has an outstanding fold-in debt
+against the linchpin-validation verdict. Remaining pre-Phase-3 items are unchanged from the
+strategy doc's §3: owner sign-off on the design spec, and the Phase 2.5 cold-start proof (not yet
+run).
+
+**Homes:** `docs/planning/rebuild-design-spec-2026-07-02.md` §1.2/§2.2/§2.5/§2.8/§3.1/§6 + top-of-doc
+addendum; source: `docs/planning/rebuild-linchpin-validation-2026-07-02.md` §2.3/§3.
+
+### Q-0218 — DIRECTED: commit the multi-agent-workflow usage-consent flag so fleet sessions stop re-prompting (2026-07-02)
+
+> **Context.** The owner reported that every remote fleet session (ultracode) prompts him for permission
+> before starting a `Workflow`, asked whether that is a recently-added Anthropic requirement, and asked to
+> add it to the always-allowed list. Investigated against the *running* CLI binary (`/opt/claude-code/bin/claude`,
+> not memory — Q-0120).
+
+**Finding (verified in the binary).** The prompt is the **multi-agent-workflow usage-consent gate**
+(`skipWorkflowUsageWarning` / `recordWorkflowUsageConsent` / `workflowNeedsUsageConsentPrompt`; telemetry
+`tengu_workflow_usage_warning`), **not** a tool permission. It ships with the newer Workflow/ultracode
+feature. On *accept*, the runtime persists `skipWorkflowUsageWarning: true` to `~/.claude/settings.json`
+(**user** scope); ephemeral remote containers wipe that each session, so it re-prompts on every boot
+(this container started with no `~/.claude/settings.json`). It is a *usage acknowledgement*, so it is **not**
+in `permissions.allow` and adding `Workflow`/`Task`/`Agent` there cannot silence it — and `defaultMode` is
+already `bypassPermissions`, so those tools are already permission-allowed.
+
+**The scope catch.** The consent reader honors the flag only from **user / local / flag / policy** settings —
+**never committed *project* settings** (`.claude/settings.json`). So the flag cannot go in the shared project
+settings (it would be silently ignored). The one repo-committable scope it reads is
+**`localSettings` = `.claude/settings.local.json`**, previously gitignored.
+
+**Decision (owner-directed in-session; the Q-0106 executable-config exception applies — the maintainer is the
+live reviewer, so applied directly with this provenance Q).** Make `.claude/settings.local.json` a **tracked,
+shared** file carrying `{ "skipWorkflowUsageWarning": true }`, and un-gitignore it (with an explanatory
+comment at `.gitignore`). Every fresh fleet clone now boots pre-consented. Reversible in one commit.
+
+**Cleaner long-term alternative (offered, not applied).** Set the flag once at the code.claude.com
+**environment** level (env config / setup script → `flagSettings`/`userSettings` at boot), which keeps
+`settings.local.json` personal/gitignored. If the owner adopts that, revert the un-gitignore.
+
+**Homes:** `.claude/settings.local.json` (the flag) · `.gitignore` (the tracked-on-purpose comment) ·
+`.sessions/2026-07-02-workflow-consent-fleet-config.md` (session log).
+
+---
+
+### Q-0219 — DECIDED: the engine/declaration/seam standard — how "plug-and-play for any future function" reconciles with centralization (2026-07-03)
+
+> **Context.** Rebuild Phase-A **Stage-1 global review** (owner-live session, PR #1679). The owner
+> stated the generalization requirement for the new bot: *"every foundational function becomes a
+> plug and play entry for any possible new function that may be added in the future… something
+> that defines the base structure, but is steered by the actual function calling it"* — and
+> himself flagged the tension: *"the way I'm explaining it it sounds like the methods would live
+> in multiple places, which would conflict with the centralization idea."* Discussed live; the
+> owner escalated the session to Fable 5 max specifically to review + lock this standard.
+
+**Decision (owner-agreed, escalated-review sharpened):** **what varies per caller is data, not
+code.** One engine per domain in exactly one place; callers steer it with **explicit
+declarations**; three steering tiers (declarative params → composition → **named registered
+handler seam** as the only per-caller code); **handlers are leaves** (compute + return, never
+orchestrate — counted under the escape-hatch ratchet); steering is **never by call-site
+identity** (user/authority context arrives as explicit request data, not caller inspection);
+**second-consumer rule** — build the general engine only when a real second consumer exists now
+or clearly imminent, otherwise keep logic specific **behind a clean seam** ("plug-and-play ready"
+= the seam discipline, so later generalization refactors the inside without moving callers);
+**schema-growth guardrail** — a declaration needing conditionals is the signal for a Tier-3
+handler, never for growing the schema into a language; schema fields are added only on ≥2
+recurring consumers.
+
+**Binding for:** every Phase-B plan, applied to every foundational function.
+**Homes:** `docs/planning/rebuild-stage1-global-review-2026-07-03.md` §2 S-1 (full statement);
+design-spec §2.9/§2.10 are the shipped shape it binds to; enforcement idea
+`docs/ideas/rebuild-schema-growth-ledger-2026-07-03.md`.
+
+---
+
+### Q-0220 — DECIDED: foundation-before-consumer build ordering; card engine promoted + welcome re-homed as its acceptance test (2026-07-03)
+
+> **Context.** Same Stage-1 session. The review found the frozen BUILD-PLAN's welcome row (L1b)
+> depends on both the visual card engine (L1c — a later band) and role (three slots later in the
+> same band). Owner ruling on the class: *"the foundation is correct first — that should be the
+> standard practice for every function"*; and the card engine specifically *"must not hold only
+> one focus — an elaborate system that can create custom cards on the run."*
+
+**Decision:** **S-2 ordering rule** — an **engine-class** dependency (one-to-many foundation
+engine) always ports before its first consumer; a **peer-class** dependency (feature consuming
+another feature's content) may ship as a **declared-seam deferral** (seam in the manifest day
+one, dormant, labeled activation). Applied dispositions: **welcome moves out of the L1b spine to
+L1c immediately after the card engine** (fixing both of its inversions; it becomes the engine's
+first-consumer acceptance test, mirroring mining-last); **deathmatch-gear and explore-mining stay
+put via declared-seam deferrals; mining-last stands.** The card engine is a first-class S-1
+engine (CardTemplateSpec declarations; 5+ consumers) with the **image-source seam declared from
+day one** (static/asset at L1c; generated images activate with Q-0221's provider at L4). Every
+Phase-B layer plan runs an explicit internal-order dependency check against S-2.
+
+**Homes:** decisions log §2 S-2 / §3 (audit table) / §4 D-1; Gate-0 folds the reorder.
+
+---
+
+### Q-0221 — DECIDED: media generation (prompt→image) added to the capability corpus (2026-07-03)
+
+> **Context.** Same Stage-1 session. The owner: *"I was also thinking about using an API key to
+> create real looking images based on prompts, which could be used to display the contents of a
+> story for the dungeons and dragons story game etc."* Nowhere in the 43-subsystem corpus — a
+> genuinely forgotten capability caught by the review.
+
+**Decision:** add a **`MediaGenerationSpec`** capability in the **L4 AI band**: provider call =
+egress escape hatch behind a **provider-agnostic adapter**; consumed via the card engine's
+image-source seam (Q-0220). **Mandatory cost/abuse posture at declaration time** (free-mission =
+owner pays): per-guild quota + global budget cap + cache-by-prompt-hash + owner kill switch +
+**default-OFF per guild** (image_moderation precedent); prompt content-safety filter before
+egress; no user PII in prompts. Feasibility grounded: `OPENAI_API_KEY` already in agent
+containers (Q-0213). **The D&D-style story game itself is NOT scheduled** — recorded on the
+known-options menu as a named future consumer only.
+
+**Homes:** decisions log §4 D-2; Gate-0 adds the corpus row + spec section.
+
+---
+
+### Q-0222 — DECIDED: the cutover model — 3-phase, container-first, manifest-driven import (2026-07-03)
+
+> **Context.** Same Stage-1 session. The BUILD-PLAN's cutover story was its thinnest area. Owner:
+> *"first only test the new bot directly through the agent's own environment… every session
+> should live test what it's built when I'm present, so we can go over every new command one by
+> one… installed something that allows us to export the data from the old bot but only the data
+> that's actually requested by the new bot… after that we can switch to superbot's token and
+> discontinue the old bot entirely."* Verified live: the test-bot token (Galaxy Bot, Q-0213) +
+> `DATABASE_URL` are present in agent containers — CUT-1 has zero setup prerequisite.
+
+**Decision:** **CUT-1 container-only live testing** — new bot runs only in the agent container on
+the test token in the test server; per-command owner sign-off ("passes when it beats the old
+bot"); kernel rails from day one: guild allowlist, single-instance lock, and a **per-command
+`verified_live` sign-off registry generated from the manifest** (the live-test checklist is an
+artifact). **CUT-2 manifest-driven selective import** — every StoreSpec declares an `import`
+mapping (old→new or `fresh-start`+reason); the importer walks the manifest snapshot, copies only
+declared needs, and emits a **full-coverage disposition report over every old-DB table** (every
+"not copied" is a decision, never an oversight); every Phase-B component plan gains a mandatory
+Import-mapping section. **CUT-3 token swap** — telemetry/golden capture before any freeze → short
+freeze → final import → real-token swap → old bot retired, kept runnable through a rollback
+window (N set at Stage 3). Concretizes design-spec §5.2's "fresh chain + one-time importer";
+amends §5.4.
+
+**Homes:** decisions log §4 D-3; Gate-0 replaces the thin cutover text.
+
+---
+
+### Q-0223 — DECIDED: substrate-kit fully completed before new-repo bootstrap (stale figure corrected); 43-subsystem return is not automatic — Stage-2 triage verdicts (2026-07-03)
+
+> **Context.** Same Stage-1 session, two rulings. (1) Owner on the substrate-kit: *"that should
+> definitely be fully completed and I was led to believe that it was already complete."* Session
+> verification: the strategy doc's ~45–55% figure is **stale** (predates #1649) — the `loop/`
+> nervous system + all five hooks + real mode branching are shipped, **422 kit tests green**,
+> packaging present; honest state ~90–95% with a named tail. (2) Owner on the corpus: *"some
+> features may not need to be reintroduced, or at least not yet until we have those planned to
+> completion as well… some features might be outdated or misplaced."*
+
+**Decision:** **(a)** Kit completion is a **named pre-bootstrap gate** (parallel to Stages 2–3,
+binding only the new-repo bootstrap), tail = ① re-entrant `transaction` → atomic
+`apply_review_verdict` (own PR; the one real correctness bug), ② standalone extraction-proof CI,
+③ extraction + owner-named rename. **(b)** Stage 2 assigns **every** BUILD-PLAN §1.1 row a triage
+verdict — `bring back` / `defer until planned to completion` / `drop` / `re-place` — with
+one-line reasons; `defer`/`drop` rows leave the Phase-B queue and their dependents re-check under
+S-2 (Q-0220).
+
+**Homes:** decisions log §4 D-4/D-5 + §5 (corrections);
+`docs/ideas/substrate-kit-review-followups-2026-07-02.md` (tail item ①, now scheduled).
+
+---
+
+### Q-0224 — DECIDED: command naming — namespace by shared verb (computed from the corpus), flat otherwise, with safe defaults (2026-07-03)
+
+> **Context.** Rebuild Phase-A conventions freeze (owner-live, PR #1680). Deciding the K1 registry's
+> input scheme before the subsystem walk. Owner: a hybrid that *"only uses explicit subcommands for
+> commands that need to be reused across multiple instances,"* with *"a proper rule for this to
+> prevent this becoming a liability,"* and *"most of those commands work with a standard default if
+> there is a clear usecase that gets primarily used by users."*
+
+**Decision:** a command takes the grouped form `/area verb` **only when its verb is shared across
+2+ subsystems**; a uniquely-used verb stays a flat top-level command. **The shared-verb set is
+computed once at design time from the known 271-command corpus** — so no collision is discovered at
+runtime and no flat command is ever force-renamed later (the liability); K1 permanently reserves
+each flat name. Commands with an obvious primary use **work with no arguments** (sensible default),
+**except** destructive/ambiguous actions, which never default to acting.
+
+**Homes:** `docs/planning/rebuild-conventions-invocation-authority-2026-07-03.md` §1; Stage-2 runs
+the corpus computation; Gate-0 folds the rule into the naming grammar.
+
+---
+
+### Q-0225 — DECIDED: the four-rung invocation ladder + additive custom triggers + the fuzzy typo matcher + AI orchestration (2026-07-03)
+
+> **Context.** Same session. The owner specified: both slash and prefix **plus** a Dank-Memer-style
+> configurable trigger (`pls <command>`) settable per guild/user/channel and **additive** (*"if one
+> word is set for a channel it should not mean that a word set for the whole guild wouldn't work
+> there… it just gets an extra option"*); **silent on non-matches** (*"never give error responses
+> for wrong commands… does not spam the chat"*); the **fuzzy matcher** that *"decides when a typo is
+> a real command"* (the thing he first called "the global parser"); and expanding the AI parser so
+> it can *find the right commands* and *"initiate commands gated by a confirm/deny prompt"* — e.g.
+> *"create 10 game channels for a D&D tournament for teams of 4"* → AI drafts a template → previews
+> the outcome → user presses Accept → it runs.
+
+**Decision:** one invocation engine, four front-ends resolving to the same declared commands:
+**(1) exact** (slash + prefix + additive union of global/guild/channel/user custom triggers,
+validated when set — min length, common-word blocklist, per-scope cap — and **silently ignored on
+no-match**); **(2) fuzzy** typo matcher, deterministic/AI-free, **three tiers** (very-close+safe →
+run directly; close → private "did you mean"; far → silent); **(3) NL intent** (language → one
+command; the existing central NL stage elevated to mainstream, router **generated from the
+manifests**); **(4) NL orchestration** (goal → multi-step **draft** → preview → Accept → atomic
+audited apply). Rungs 1–2 need no AI (deterministic-first preserved; the parser is never a
+dependency of a core command). Rung 4 **is the already-designed draft lane with the AI as a second
+producer** — one pipe, human or AI. **Default posture = hybrid:** answer freely, require a clear
+signal (mention/reply/channel) before acting; destructive AI-reached actions always confirm.
+
+**Homes:** conventions log §2; Gate-0 (interaction runtime K8); the D&D example is the
+compound-composition canary (FINAL-REVIEW uncertainty).
+
+---
+
+### Q-0226 — DECIDED: moderator actions declared as data (resolves the ModerationActionSpec uncertainty → envelope) (2026-07-03)
+
+> **Context.** Same session. Owner: *"whatever is the best option, I think declaring as data was
+> the better option to make it testable."*
+
+**Decision:** a mod action (warn/timeout/kick/ban) is a **declarative envelope** (target,
+hierarchy check, DM, cleanup, audit, log route) the engine runs; only the escalation decision stays
+a small Tier-3 handler. Chosen for testability (declared = simulable + golden-testable). Resolves
+the FINAL-REVIEW `ModerationActionSpec` uncertainty **in favor of the envelope**; grammar-level, so
+decided before the Gate-0 freeze, with the plan's ~1-hour spot-check (express one real action
+against the grammar) as the pre-freeze confirmation.
+
+**Homes:** conventions log §3; Gate-0 grammar plan.
+
+---
+
+### Q-0227 — DECIDED: one authority layer + a global bot-owner override with a verification test and transparent audit (2026-07-03)
+
+> **Context.** Same session. Owner: one authority layer *"but it should also include the bot owner
+> ID, like in the current bot, and it should be verified that every command works for the bot owner
+> in every server, so I can help my friends set up commands that may normally only be able to work
+> for server owners, like the setup."*
+
+**Decision:** every action carries a **single declared authority label** mapped to roles/Discord
+permissions in one place, re-checked at execution time; **on top sits a global bot-owner override**
+(by ID, per Q-0212) — the bot owner can run any command in any server, including server-owner-gated
+ones. Two clauses added: **(a)** a mechanical parity test — "bot-owner can run everything,
+everywhere" walks every command; **(b)** transparency — a bot-owner action in another server is
+**loudly audited to that server's log**, never silent. Pins Q-0212 as a rebuild grammar contract.
+
+**Homes:** conventions log §4; Gate-0 authority (K6).
+
+---
+
+### Q-0228 — ENDORSED (owner-confirmed as foundations to document + decide): invocation-stack centralizations (2026-07-03)
+
+> **Context.** Same session, owner asked *"are there any other things related to this we could
+> centralize?"* → then confirmed: *"yes all the things you mentioned are good candidates to
+> further think about and properly decide upon, your recommendations are good foundations and
+> should be documented."* So C-1…C-7 are **endorsed directions** (documented, to be decided in
+> detail at Gate-0) — not yet frozen contracts, but no longer merely speculative proposals.
+
+**Proposed (agent-recommended):** **C-1** one command **resolver** all four rungs funnel through
+(authority + arg validation + cooldown + audit — the convergence point, strongest recommend);
+**C-2** one **preview/confirm/apply draft pipeline** shared by AI drafts, fuzzy-corrected
+destructive actions, NL actions, and human setup (one pipe, two producers); **C-3** one **template
+primitive** (named reusable draft, human- or AI-instantiated; unifies the scattered setup/role/
+channel templates + serves the D&D example); **C-4** one **response/result grammar**
+(`WorkflowResult`); **C-5** one **fuzzy/"did-you-mean" engine** (fold the scattered `difflib`
+uses); **C-6** one **cooldown/rate-limit engine** (also the abuse-posture home); **C-7** one
+**description surface** feeding slash/help/NL-router/fuzzy/suggestions.
+
+**Homes:** conventions log §6. **▶ Next:** each C-item's *detailed* decision (scope, contract
+shape) lands in its Gate-0 / Phase-B plan; the owner endorsed all seven as worth building toward
+(C-1 the command resolver is the load-bearing one — without it the four invocation rungs
+re-implement authority and drift, a safety bug).
+
+---
+
+### Q-0229 — DIRECTED: broaden the `.claude/settings.json` allowlist with whole-MCP-server entries to cut permission prompts (2026-07-03)
+
+> **Context.** Owner reported recurring permission prompts in sessions — including this one, for
+> `send_later` "and some other things" — and asked *"how we can improve the always allowlist… I
+> really never deny any requests, so isn't there a universal way to allow all actions you can
+> do?"* Investigated the actual config (Q-0120: check ground truth, not memory).
+
+**Findings.** `permissions.defaultMode` is **already** `bypassPermissions` and
+`skipDangerousModePermissionPrompt` is already true — the file already *requests* universal allow.
+The prompts persist because **on the Claude Code web/remote surface a project-file
+`bypassPermissions` is not fully honored** (it's treated as advisory for safety); the surface
+instead consults the explicit **`allow`** list, and MCP tools from the `Claude_Code_Remote` /
+`github` servers weren't on it. `AskUserQuestion` "prompting" is **by design** (it *is* the
+question UI, not a permission gate) — not fixable via the allowlist.
+
+**Decision (owner-directed in-session; Q-0106 executable-config exception — owner is the live
+reviewer, applied directly with this provenance Q).** Add **whole-MCP-server** allow entries —
+`mcp__Claude_Code_Remote`, `mcp__github`, `mcp__codegraph`, `mcp__context7` (bare `mcp__<server>`
+matches every tool on that server) — to `.claude/settings.json`. The destructive-ops **`ask`**
+brake (rm -r, force-push, railway, sudo, psql, docker, …) is **left intact** — it deliberately
+overrides bypass, matching the Q-0213 "destructive/irreversible stays ask-first" boundary.
+
+**The truly universal lever, for the record:** the only switch above the `allow` list is the
+**environment-level** permission mode on code.claude.com (or the in-session mode toggle) — the
+file can't force it on the web because the surface downgrades project-scope bypass by design. If
+the owner wants zero prompts for a class the allowlist can't cover, that's the place to set it.
+
+**Homes:** `.claude/settings.json` (the four entries) · this Q (provenance) ·
+`.sessions/2026-07-03-permission-allowlist-and-endorse.md`.
+
+---
+
+### Q-0230 — DECIDED: one unified help hub; admin is a permission-gated node inside it (2026-07-03)
+
+> **Context.** Rebuild Phase-A hub-topology discussion (owner-live, PR #1684). Owner: *"everything
+> should function as one help panel, but admin should be locked unless you have the right
+> permissions, and admin should ideally be a button that opens a full admin help menu, which
+> should also directly open with a `!admin` command."* Broadly agreed with the five working
+> top-level buckets (Games/World · You · Community · Knowledge/AI · Admin), wants them refined.
+
+**Decision:** a **single unified help hub** (not two player/operator trees); **admin is a
+permission-gated node inside it** — a button locked unless the viewer has the authority (Q-0227
+label, **re-checked at click time**, not at open), opening a full admin menu, also directly
+openable via `!admin`. Top-level bucket set is a working spine; exact buckets + per-subsystem
+placement are Stage-2 work.
+
+**Homes:** `docs/planning/rebuild-hub-navigation-presets-2026-07-03.md` §1; Gate-0 PanelSpec/hub.
+
+---
+
+### Q-0231 — DECIDED: the navigation contract — Back+Home everywhere, persistent restart-safe panels, every node directly openable (2026-07-03)
+
+> **Context.** Same session. Owner: *"every panel everywhere should have a back to help and back
+> to parent hub available during all their stages, no matter how many times the panel got updated,
+> and we should try to make the panels resistant against timing out too soon."*
+
+**Decision (framework-guaranteed, injected into every rendered state — never per-panel
+discipline):** **(1)** two distinct controls on every state at every depth across unlimited
+re-renders — **Back** (pop the real navigation stack, contextual) and **Home** (jump to help root,
+absolute); **(2)** every hub/sub-hub **directly openable by its own command** (generalizes
+`!admin` to all nodes, S-1); **(3)** each panel **declares its semantic parent** so Back has a
+target on direct entry; **(4)** panels are **persistent + restart-safe** (no per-instance timeout,
+versioned custom_id, generated-from-state) — which *also* solves surviving the merge=deploy
+redeploys (Q-0193): "don't time out too soon" and "survive constant redeploys" are the same fix,
+free from the generated model.
+
+**Homes:** hub-navigation log §2; Gate-0 NavigationSpec + persistent-view/versioned-custom_id
+(design-spec decision 6).
+
+---
+
+### Q-0232 — DECIDED: per-guild interface presets with live preview; the existing (fragmented) surface is improved + centralized (2026-07-03)
+
+> **Context.** Same session. Owner: the interface should be *"very easily customizable… include a
+> couple of presets to fit any server"* (e.g. a game server needing btd6 info + moderation + server
+> functions + message levels + light games), *"easily adjusted during the setup steps, with clear
+> previews and logical presets… either go with a safe default"* — and *"this function already
+> exists and works, but it should be improved and centralized."* Verified in source: setup
+> `preset_select` (+ `preview_preset`) and the help overlay editor/projection exist and work;
+> presets are reimplemented ≥7 times across services/views.
+
+**Decision:** the hub is **customizable per guild**; **presets** (named bundles of per-guild
+visibility config) reshape it, chosen at setup with a **live preview** (the preview *is* the
+generated hub — no mockup), following the Q-0215/Q-0070 pick→edit→manual pattern with a
+safe-default preset. **This is the preset primitive (Q-0215) + template primitive (C-3, Q-0228)
+pointed at the hub — improve + centralize the existing working-but-fragmented surface** (setup
+preset_select + help editor + ~7 domain preset impls → one primitive, one generated hub; the
+existing code is the prior art to port). **Features declare their own preset membership**
+(anti-drift). Presets ≠ triage (visibility per guild vs existence in the bot).
+
+**⚠ Open sub-decision (owner):** preset exclusion = **hidden-but-runnable** vs **disabled
+entirely**? Agent leaning: hidden = off by default, with a hide-without-disable toggle. Resolve
+before §3 freezes.
+
+**Homes:** hub-navigation log §3–4; Gate-0 preset primitive unification + setup wizard.
+
+---
+
+### Q-0233 — DIRECTED: build a critical-review rubric that finds the gap-classes we spot by instinct (2026-07-03)
+
+> **Context.** After a session of reviewing the rebuild plan, the owner: *"do you now understand
+> what I meant earlier with the forgotten steps, missing features and proper goals etc? I think it
+> would be a good idea to create a rule or system that finds exactly the kind of things that we
+> have been spotting today, to make it easier to review the rest of the bot in the same critical
+> way."*
+
+**Decision:** extract the session's findings into a reusable **critical-review rubric** — ten
+finding-classes (dependency-order inversion · forgotten capability · thin/underspecified step ·
+stale un-anchored state claim · fragmentation/reinvention · under-generalization · missing
+cross-cutting standard · verification hole · UX/lifecycle-contract gap · naming/visibility/
+collision), each a probing question with the day's real example and a mechanization tag
+(human-probe / existing checker / build). Run it against **every subsystem in the Stage-2 walk** and
+**every plan in Phase B** (it *is* the adversarial-completeness pass's checklist). The common thread:
+*an artifact tells you what it does, never whether it's complete, correctly-ordered, non-duplicated,
+verifiable, and consistent* — the rubric asks the questions the artifact can't self-report.
+**Enforce-don't-exhort:** the mechanizable classes become checkers (extend
+`check_plan_staleness.py` for un-anchored `NN%` now; build dep-order / thin-step / fragmentation /
+verification-hole / UX-contract checkers against the rebuild's declared manifests); the judgment
+classes stay human probes with the rubric as their guard.
+
+**Homes:** `docs/planning/rebuild-critical-review-rubric-2026-07-03.md` (the rubric) ·
+`docs/ideas/rebuild-critical-review-checkers-2026-07-03.md` (the mechanization backlog) ·
+`.sessions/2026-07-03-critical-review-rubric.md`.
+
+---
+
+### Q-0234 — DECIDED: the new-feature correctness oracle + the plan-verification-fleet gate + the repo-as-artifact migration framing (2026-07-03)
+
+> **Context.** Owner, resolving the rubric's class-8 verification hole and laying out the meta-plan:
+> *"the way we prove a function is correct is we compare it against known bots and we personally
+> test it together in the test server, so we can find out how it works and if it is logical and
+> self explanatory to use. I intend to run this entire plan against multiple verification and
+> research agents once it's fully done, to find out the final bits of improvements before moving on
+> to the step by step planning and then the migration to the new repo, which is also a big plan of
+> its own. My idea is to turn the current repo into an artifact that provides exactly the what the
+> why and the how, and our new repo becomes the clean source of truth that makes it all real with a
+> proper start that prevents reintroducing old mistakes."*
+
+**Decision (three parts):**
+1. **New-feature correctness oracle (resolves rubric class 8).** Two halves: **ported features** →
+   parity goldens (match the old bot); **new features** → **competitor-benchmark + live co-test in
+   the test server** asserting *works · logical · self-explanatory to use*, reusing the Q-0222
+   `verified_live` per-command sign-off. Each feature declares its named competitor + specific
+   behaviors + its live-co-test sign-off. "Self-explanatory" is a first-class acceptance criterion
+   (only a human driving it live can measure it).
+2. **GATE V — the verification-fleet pass.** When the plan is fully done, run it past **multiple
+   verification/research agents** for the final improvements **before Phase B**, using the
+   ten-class critical-review rubric (Q-0233) as their shared lens. Sits between Phase A and Phase B.
+3. **Migration is its own big plan; repo-as-artifact framing.** Current repo → the **artifact**
+   (what/why/how — the decision logs + rubric are its "why"); new repo → the clean **source of
+   truth** with a proper start that prevents reintroducing old mistakes. The Q-0222 container-first
+   cutover is this migration's execution arm.
+
+**Homes:** rubric §class-8 (resolved) · `rebuild-planning-phase-2026-07-03.md` (Gate V + Migration
+in the phase sequence) · `.sessions/2026-07-03-oracle-and-verification-strategy.md`.
+
+---
+
+### Q-0235 — DIRECTED: unify the UX-layout sims into one instruction-driven layout-success simulator; it defines settings, live co-test is the final review (2026-07-03)
+
+> **Context.** Extending the hub/arrangement discussion, the owner: *"this is exactly a step where
+> the simulations come into play, we could create deterministic or AI driven mockup menus to test
+> and see which of the layouts have the biggest success rate when given a simple instruction like
+> 'create roles' or 'play the mining game'"* — then, on the fragmentation: *"I even believe this
+> exists in multiple places… that's one of the reasons this should become centralized quickly, so
+> it can properly define the proper settings for everything, with a final review in the live bot
+> testing."* Verified: five bespoke UX-layout sims exist (`claim_layout_sim`,
+> `help_menu_grouping_sim`, `role_menu_layout_sim`, `settings_order_sim`, `setup_wizard_sim`).
+
+**Decision:** build **one** layout-success simulator over the manifest that scores any generated
+layout by **instruction-driven task success rate** (given only "create roles", does a user model
+reach the right node?), with **deterministic** (CI/regression) *and* **AI-driven** (naive-user,
+catches label ambiguity) user models — unifying the five existing sims. It **quantifies the
+"self-explanatory" half of the Q-0234 oracle** and is the mechanism behind "the sim optimizes
+arrangement" (Q-0230). **Pipeline:** the centralized sim **defines the proper settings/layout for
+everything** (arrangement, grouping, defaults, order) → the **live bot co-test is the final
+review** (the human signs off works·logical·self-explanatory on the sim's winner). The instruction
+corpus is reused to test the NL router (invocation rung 3). Extends the simulation-driven-design
+standing rule; ties fragmentation-cleanup urgency to the sim being able to tune bot-wide.
+
+**Homes:** `docs/ideas/rebuild-layout-success-simulator-2026-07-03.md` ·
+`docs/planning/simulation-driven-design-2026-07-02.md` (the standing rule) ·
+`.sessions/2026-07-03-layout-success-simulator.md`.
+
+---
+
+### Q-0236 — DIRECTED: prepare (not run) two parallel ultracode sessions to brainstorm+audit the foundational mechanics against today's decisions (2026-07-03)
+
+> **Context.** After the 2026-07-03 rebuild-decisions session, the owner: *"the correct thing to be
+> doing now is sending out 2 ultracode sessions… NOT in this current session, this should be a
+> preparation so that I can send out these 2 sessions in parallel to discover and document any
+> possible related issues to everything we discovered today. Those 2 sessions should brainstorm
+> thoroughly about any foundational mechanic and method we could possibly use and are using now."*
+> Asked to research what a dedicated ultracode session can do first (done — official docs).
+
+**Decision:** produce **two paste-ready, parallel-safe ultracode prompts** (this session prepares;
+it does NOT launch them). Split by domain to avoid overlap: **Session A = the engine room**
+(runtime/logic — grammar, namespace, invocation ladder, resolver, authority, audited-mutation/draft
+pipeline, composition, events, lifecycle, persistence, cooldowns, DB/import, settings, substrate-
+kit); **Session B = the surface + the proving** (hub/navigation, panel rendering, card+media
+engine, presets/templates, help/description projection, response grammar, suggestion surface, the
+rubric, the oracle, the layout-success simulator). Each prompt carries an explicit scope boundary,
+the shared method (per-mechanic find-now-in-source + research-alternatives + pressure-test →
+adversarial-verify vs source → completeness-critic loop → synthesize), the 10-class rubric as its
+scoring lens, and a rubric-scored issues-ledger deliverable; each claims its own lane + own PR.
+Owner-gated items are surfaced, not decided.
+
+**Homes:** `docs/planning/rebuild-foundational-mechanics-ultracode-brief-2026-07-03.md` (the two
+prompts + launch instructions) · `.sessions/2026-07-03-foundational-mechanics-ultracode-brief.md`.
+
+---
+
+### Q-0237 — DECIDED: the 7 Tier-1 rebuild decisions from the Fable-5 final-judgment sitting (2026-07-03)
+
+> **Context.** After the Fable-5 capstone judgment (PR #1701,
+> `docs/analysis/rebuild-discovery/foundations/final-judgment-fable5-2026-07-03.md`) tiered the
+> ~58-item owner queue and named **7 Tier-1 decisions** as the ones that block the Stage-2
+> subsystem walk or a spec freeze, the owner answered all seven in one sitting via the question
+> panel. Provenance for each is this sitting. Six matched the judgment's recommendation; the admin
+> one (c) deviated and is recorded as an explicit amendment to Q-0230.
+
+**Decisions (a–g):**
+
+- **(a) Preset exclusion = visibility-only, never execution-off.** When a per-guild interface preset
+  excludes a feature/bucket, it is **hidden from the hub/help but still runnable** — preserving the
+  shipped, drift-tested **Q-0055/HLP-4** invariant that display-hide is presentation-only. A guild
+  may *additionally* opt to disable via an explicit per-preset toggle, but exclusion alone never
+  disables. **Resolves the Q-0232 §3 open sub-decision** (the doc's in-line "hidden = off"
+  recommendation is rejected). Vocabulary: keep **visibility** (hub surfacing) and **activation**
+  (can-run) as distinct axes (Codex-2's split).
+- **(b) Back-path = in-session real stack + semantic-parent fallback after restart.** "Back = pop
+  the real path you took" holds **within a live session** via the in-memory stack; after a
+  merge=deploy redeploy, Back **falls back to each panel's declared semantic parent**. No persisted
+  back-trail is required. **Amends the Q-0231 "versioned custom_id" wording** to the two-population
+  reality (static hub ids stable/unversioned; dynamic session ids versioned) and pins the medium
+  before the NavigationSpec/PanelSpec freeze.
+- **(c) Admin = a HIDDEN node INSIDE the one unified hub (amends Q-0230).** The admin/operator area
+  stays **inside the single hub** (Q-0230's one-front-door model is kept), but is **hidden from
+  those without permission** rather than shown-locked. This **amends Q-0230's "gated *visible*
+  node" to "hidden node"** — a viewer sees only the operator surface(s) they hold the tier for
+  (moderator slice for mods, full admin for admins), and nothing where they hold nothing. Q-0230's
+  "one unified hub, not two separate player/operator trees" headline is preserved.
+- **(d) Authority = one `authority_ref` per command.** Stage-2 authors declare a **single authority
+  label**; Gate-0 owns the internal mapping to either a governance capability or a domain audience
+  tier. **Resolves the design-spec two-lane (`capability_required`/`audience_tier`) vs
+  conventions-freeze one-label conflict** (judgment X-8 / L-13) in favor of one public concept;
+  the owner override applies once at the C-1 resolver.
+- **(e) Slash-cap = slash-common + prefix long-tail.** The common/discoverable set gets slash
+  commands; the long tail stays prefix-only. **The K1 shared-verb computation budgets against
+  Discord's 100 top-level / 25 sub / 1-nest caps** (feeds Q-0224). D-5 triage shrinks the corpus
+  further before the final count.
+- **(f) Deep-link names = decided names canonical, shipped names become hidden aliases.**
+  `!admin` / `!games` (and one command per hub node) are the **canonical** deep-links; the shipped
+  `!adminmenu` / `!modmenu` / `!economymenu` become **hidden aliases** so nothing breaks for current
+  users; **K1 reserves both** (feeds Q-0224/Q-0231).
+- **(g) Stage-2 contract = adopt Codex review 4's kit as-is.** The Stage-2 subsystem walk uses
+  **Codex review 4's per-row template** (command surface / invocation / hub placement / triage
+  verdict / oracle / 10-rubric-probes) + the **normalized verdict vocabulary**
+  (`keep/improve/merge/redesign/drop/defer/re-place/add`) + a **Lane-0 normalization owner**. It is
+  the only artifact that operationalizes D-5 and the rubric per row and already carries
+  `prompt-a-issue`/`prompt-b-issue` tags so the judgment's ledger binds to rows.
+
+**Effect.** All 7 Tier-1 blockers from the judgment §6 are cleared; combined with the RPS refund
+fix (judgment V-1) and the findings-closure rule (V-3), **the Stage-2 subsystem walk is unblocked**.
+Tier-2/Tier-3 queue items (~47) remain for Gate-0 with their recommended defaults.
+
+**Homes:** `docs/analysis/rebuild-discovery/foundations/final-judgment-fable5-2026-07-03.md` §6
+(Tier-1 rows marked RESOLVED) · amendment pointers in
+`rebuild-hub-navigation-presets-2026-07-03.md` (a/c), `rebuild-conventions-invocation-authority-2026-07-03.md`
+(d/e/f), `rebuild-stage1-global-review-2026-07-03.md` (Stage-2 §6 g) ·
+`.sessions/2026-07-03-tier1-owner-decisions.md`.

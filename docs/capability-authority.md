@@ -39,7 +39,16 @@ cycle-avoidance pattern.
    member of the **target** `guild` (`actor.guild.id == guild.id`). Authority is
    bound to the write target, so being privileged in guild A cannot authorize a
    write to guild B.
-3. **Administrator floor, keyed on the declared capability.** The required tier is
+3. **Platform-owner override (Q-0212).** If the actor is the configured bot owner
+   (`config.is_platform_owner` / `config.BOT_OWNER_USER_ID` — the
+   `PermissionTier.PLATFORM_OWNER` deploy allowlist), the mutation is **allowed**
+   regardless of Discord tier (`member_tier` reported as `"owner"`), so the bot
+   owner can configure the bot in **any guild they are a member of** even without
+   Discord permissions there. Placed **after** step 2 (so it composes with the
+   target-guild membership invariant — no cross-guild escalation) and **before** the
+   revoke overlay (so a guild cannot revoke the platform owner). Single source:
+   `config.is_platform_owner`, the same helper every other authority seam keys on.
+4. **Administrator floor, keyed on the declared capability.** The required tier is
    `administrator` (`_DEFAULT_REQUIRED_TIER`), computed against the **target**
    guild's owner via `utils.visibility_rules.get_member_visibility_tier`. An
    **empty** `capability_required` resolves to this same floor — it does **not**
@@ -50,7 +59,7 @@ cycle-avoidance pattern.
      non-administrator) member via `/setup-delegate`. It is authorized here like
      `system` / `backfill`, but deliberately **not** at step 1: a delegate must
      still pass step 2 (target-guild membership) and **stays subject to** the
-     step-4 revoke overlay. The token is minted **only** by
+     step-5 revoke overlay. The token is minted **only** by
      `services.setup_operations.apply_operations`, which re-verifies the live
      `setup_access.can_apply_setup` against a fresh `SetupSession` before doing so
      (a stale view gate is never trusted), and the delegated write is **audited as
@@ -58,7 +67,7 @@ cycle-avoidance pattern.
      AST fence (`tests/unit/invariants/test_setup_delegate_actor_boundary.py`)
      confines the token to that minter, the resolver here, and the three pipelines'
      allow-sets.
-4. **Revoke-only per-guild overlay.** For a declared (non-empty) capability, an
+5. **Revoke-only per-guild overlay.** For a declared (non-empty) capability, an
    explicit `allowed = False` row in `capability_execution_overrides` (read via
    `governance.execution.get_capability_override`, which reuses the existing cache —
    no new SQL path) turns an otherwise-allowed actor **off**. An explicit
@@ -70,6 +79,16 @@ cycle-avoidance pattern.
 > `CapabilityDecision.required_tier` field is shaped so a future per-capability
 > tier matrix (capability → required tier) can replace the constant without
 > touching the pipelines. That is the documented next step (see §5).
+
+> **Platform-owner override spans more than this resolver (Q-0212).** Step 3 covers the
+> *capability resolver* (settings / binding / provisioning mutations). The same
+> `config.is_platform_owner` check also gates the **command decorators**
+> (`core.runtime.permission_checks.admin_or_owner` / `app_admin_or_owner`, replacing
+> `has_permissions(administrator=True)` bot-wide) and the **view** authority gates
+> (`views.base.interaction_is_admin` / `member_is_admin`), so the bot owner passes every
+> `administrator`-tier gate in any guild they are a member of. Two CI guards
+> (`tests/unit/invariants/test_owner_override_guards.py`) keep a raw admin gate from
+> re-locking the owner out (the #1573 → #1577 miss-class). Full record: router Q-0212.
 
 ---
 

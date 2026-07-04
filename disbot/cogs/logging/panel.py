@@ -178,10 +178,15 @@ class LoggingPanelView(HubView):
             LoggingRoutesView,
             build_routes_embed,
         )
+        from views.navigation import carry_back
 
         if not await safe_defer(interaction):
             return
         view = LoggingRoutesView(interaction.user)
+        # Carry any externally-attached back (↩ Back to Settings / Help, added
+        # by the opener) onto the fresh Routes view so it survives the round
+        # trip — without this the panel loses its parent-nav going into Routes.
+        carry_back(self, view)
         embed = await build_routes_embed(interaction.guild)
         await safe_edit(interaction, embed=embed, view=view)
 

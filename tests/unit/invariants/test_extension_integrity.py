@@ -44,21 +44,30 @@ def test_extension_is_importable_with_coroutine_setup(extension: str) -> None:
     )
 
 
-def _top_level_command_tokens() -> dict[str, list[str]]:
-    """Map every top-level prefix-command token -> the cogs that declare it.
+def _top_level_command_claims() -> dict[str, list[str]]:
+    """Map every top-level prefix-command token -> the *commands* that claim it.
 
     A "token" is a command's ``name`` or one of its ``aliases``. discord.py's
     ``Bot`` keeps a single global namespace for top-level prefix commands
-    (``Bot.all_commands`` is keyed by name *and* every alias), so two cogs that
-    each claim the same token collide. Group **subcommands** live in their
-    group's own namespace (e.g. ``!karma add`` is scoped to the ``karma`` group,
-    not the global table), so only commands with no parent are global and are
-    counted here.
+    (``Bot.all_commands`` is keyed by name *and* every alias), so two *distinct
+    commands* that each claim the same token collide at ``add_cog`` — whether
+    they live in the same cog or in two different cogs. Group **subcommands**
+    live in their group's own namespace (e.g. ``!karma add`` is scoped to the
+    ``karma`` group, not the global table), so only commands with no parent are
+    global and are counted here.
+
+    Each claimant is labelled ``"<CogName>.<command>"`` and de-duplicated by
+    command **identity** (``id``), so a single command claiming a token through
+    both its name and one of its own aliases counts once (no false
+    self-collision), while two *different* commands claiming the same token —
+    the crash class — surface as two labels.
 
     Read from each cog's class-level ``__cog_commands__`` via ``importlib`` —
     no Discord runtime, no DB, no cog instantiation.
     """
-    tokens: dict[str, list[str]] = defaultdict(list)
+    # token -> {id(command): "<CogName>.<command>"} — identity-deduped claimants,
+    # so name+alias on one command is a single claim but two commands are two.
+    claims: dict[str, dict[int, str]] = defaultdict(dict)
     for extension in config.INITIAL_EXTENSIONS:
         module = importlib.import_module(extension)
         for _name, obj in inspect.getmembers(module, inspect.isclass):
@@ -71,36 +80,51 @@ def _top_level_command_tokens() -> dict[str, list[str]]:
             for cmd in getattr(obj, "__cog_commands__", ()):
                 if getattr(cmd, "parent", None) is not None:
                     continue  # subcommand — namespaced under its group
+                label = f"{obj.__name__}.{cmd.name}"
                 for token in (cmd.name, *(cmd.aliases or ())):
-                    tokens[token].append(obj.__name__)
-    return tokens
+                    claims[token][id(cmd)] = label
+    return {token: sorted(labels.values()) for token, labels in claims.items()}
 
 
-def test_no_duplicate_top_level_command_names_across_cogs() -> None:
-    """No two cogs may claim the same top-level prefix command name/alias.
+def test_no_duplicate_top_level_command_tokens() -> None:
+    """No two distinct commands may claim the same top-level prefix token.
 
-    The "bot offline" class (2026-06-29): two cogs each declared a top-level
-    ``give`` (economy's peer-transfer vs mining's admin grant). At boot the
-    second ``add_cog`` raised ``CommandRegistrationError: The command give is
-    already an existing command or alias``, so the whole cog failed to load,
-    its declared entry points went missing, and the STRICT identity-contract
-    check aborted startup — a crash loop, never reaching the gateway.
+    (Formerly ``test_no_duplicate_top_level_command_names_across_cogs``;
+    broadened 2026-07-01 to also catch *same-cog* collisions — the fishing
+    ``dock`` incident below.)
+
+    The "bot offline" class has two shapes, both of which crash
+    ``bot.load_extension`` at boot with the *same*
+    ``CommandRegistrationError: The command <x> is already an existing command
+    or alias`` → the cog's declared entry points go missing → STRICT
+    identity-contract aborts startup → crash loop, never reaching the gateway:
+
+    * **cross-cog** (2026-06-29): two cogs each declared a top-level ``give``
+      (economy peer-transfer vs mining admin grant).
+    * **same-cog** (2026-07-01): inside ``FishingCog`` the new ``!dock``
+      structure command's *name* collided with the pre-existing ``dock``
+      *alias* of ``!sail``. The first guard version de-duplicated claimants by
+      **cog**, so one cog claiming a token twice looked like a single claimant
+      and slipped through — the exact hole this version closes by counting
+      distinct **commands**. (Q-0200's exact-name guard is same-*module* only
+      and matches ``def`` names, so it too missed a name-vs-alias clash.)
 
     The runtime ``command_surface_ledger`` only sees duplicates *after* every
     cog has loaded, which is exactly what a collision prevents — so it cannot
-    catch this. This static check does, pre-merge. A failure here means the
-    bot would crash on boot: rename or remove one side of each listed clash.
+    catch either shape. This static check does, pre-merge. A failure here means
+    the bot would crash on boot: rename or remove one side of each listed clash.
     """
     collisions = {
-        token: sorted(set(cogs))
-        for token, cogs in _top_level_command_tokens().items()
-        if len(set(cogs)) > 1
+        token: claimants
+        for token, claimants in _top_level_command_claims().items()
+        if len(claimants) > 1
     }
     assert not collisions, (
-        "Top-level prefix command name/alias claimed by more than one cog — "
+        "Top-level prefix command token claimed by more than one command — "
         "this crashes bot.load_extension at boot (CommandRegistrationError):\n"
         + "\n".join(
-            f"  !{token}: {', '.join(cogs)}" for token, cogs in sorted(collisions.items())
+            f"  !{token}: {', '.join(claimants)}"
+            for token, claimants in sorted(collisions.items())
         )
     )
 
@@ -119,7 +143,7 @@ def _walk_cog_commands(cog_cls: type) -> list[object]:
 
     ``__cog_commands__`` holds the cog's top-level commands; a group's children
     are reached via the group's ``commands`` attribute. Unlike
-    :func:`_top_level_command_tokens` (global-namespace collisions only), the ban
+    :func:`_top_level_command_claims` (global-namespace collisions only), the ban
     applies to **every** command including subcommands like ``!karma give``.
     """
     out: list[object] = []

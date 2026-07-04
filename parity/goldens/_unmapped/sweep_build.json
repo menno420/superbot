@@ -1,0 +1,99 @@
+{
+ "case_id": "sweep.build",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1960471167,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3066993,
+        "description": "**Pickaxe**: Requires wood: 2, stone: 3\n**Iron Pickaxe**: Requires iron: 3, wood: 2\n**Torch**: Requires wood: 2\n**Lantern**: Requires iron: 2, gold: 1\n**Sword**: Requires wood: 1, stone: 2\n**Iron Sword**: Requires iron: 2, wood: 1\n**Shield**: Requires wood: 6, iron: 1\n**Stone Hut**: Requires stone: 5\n**Wooden House**: Requires wood: 8\n**Gold Statue**: Requires gold: 4\n**Diamond Throne**: Requires diamond: 6\n**Giant Fortress**: Requires stone: 50, wood: 30, iron: 10\n**Gold Pickaxe**: Requires gold: 4, wood: 2\n**Diamond Pickaxe**: Requires diamond: 3, gold: 1, wood: 2\n**Diamond Lantern**: Requires diamond: 2, iron: 2\n**Diamond Sword**: Requires diamond: 2, wood: 1\n**Bronze Sword**: Requires bronze: 2, wood: 1\n**Silver Sword**: Requires silver: 2, wood: 1\n**Gold Sword**: Requires gold: 2, wood: 1\n**Bronze Shield**: Requires bronze: 2, wood: 2\n**Iron Shield**: Requires iron: 2, wood: 2\n**Silver Shield**: Requires silver: 2, wood: 2\n**Gold Shield**: Requires gold: 2, wood: 2\n**Diamond Shield**: Requires diamond: 2, wood: 2\n**Bronze Helmet**: Requires bronze: 3\n**Iron Helmet**: Requires iron: 3\n**Silver Helmet**: Requires silver: 3\n**Gold Helmet**: Requires gold: 3\n**Diamond Helmet**: Requires diamond: 3\n**Bronze Chestplate**: Requires bronze: 5\n**Iron Chestplate**: Requires iron: 5\n**Silver Chestplate**: Requires silver: 5\n**Gold Chestplate**: Requires gold: 5\n**Diamond Chestplate**: Requires diamond: 5\n**Bronze Leggings**: Requires bronze: 4\n**Iron Leggings**: Requires iron: 4\n**Silver Leggings**: Requires silver: 4\n**Gold Leggings**: Requires gold: 4\n**Diamond Leggings**: Requires diamond: 4\n**Bronze Boots**: Requires bronze: 2\n**Iron Boots**: Requires iron: 2\n**Silver Boots**: Requires silver: 2\n**Gold Boots**: Requires gold: 2\n**Diamond Boots**: Requires diamond: 2",
+        "flags": 0,
+        "footer": {
+         "text": "Tip: !minemenu → 📖 Recipes browses and crafts by category."
+        },
+        "title": "Available Structures",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!build",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "_unmapped"
+}

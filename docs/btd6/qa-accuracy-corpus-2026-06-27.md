@@ -251,12 +251,46 @@ bot to confirm, and are **not** done:
 - [ ] **A couple of golden rubrics look stale** (e.g. `knowledge.btd6_lead` expects "Sharp Shots lets
       Dart pop Lead" — it's +pierce, not lead-popping). Verify + fix the rubrics, not the bot.
 
+## Production review-log finding (2026-06-30, the answer loop's first export)
+
+The owner ran `!aireview export` (the AI review-log answer loop, #1569) and pasted the live backlog.
+The one genuine wrong answer in it **confirms the #1492 concern in production**: for *"how to deal
+with DDTs"* the model (**claude-haiku-4-5**) confabulated a specific counter-tower list —
+**Ice Monkey 2-0-0, Monkey Ace 0-2-5, Sniper 0-4-0** — every one of which **cannot actually counter a
+DDT** (base Ice can't damage MOAB-class until Embrittlement 4-x-x; Ace's explosions can't pop Black;
+Sniper 0-4-0 has no camo detection). The user 👎-reacted it.
+
+The important part: **the grounding was correct.** `btd6_probe.py --route "how to deal with ddts"`
+returns the right `[btd6_interaction]` fact, which *explicitly* ends with *"the bot does not auto-list
+specific counter towers — recommend by these rules."* The model **ignored that instruction** and
+invented the list anyway. So this is a **model-faithfulness gap, not a data/grounding gap** — and it
+is exactly why the auto-derived list was reverted (#1492). Mitigations, in order of durability:
+
+1. **Vetted preset** (the #1569 preset layer) — author the correct rules-based answer below so the bot
+   serves it with zero model call for the common phrasings. Exact-match, so seed the canonical spelling.
+2. **Stronger model for `btd6.answer`** — haiku-4.5 is the weakest allocated model (Q-0095) and the most
+   prone to overriding grounding; a stronger model is likely to honour the "recommend by rules" instruction.
+3. **A deterministic DDT-strategy floor** (like `deterministic_btd6_list_reply`) — global, but needs a
+   careful question-shape matcher to avoid over-triggering; revisit with the deferred tower-rec task.
+
+### Verified rules-based DDT answer (the vetted preset / deterministic-floor source) `[dump ✓ / wiki]`
+
+> **Dealing with DDTs (Dark Dirigible Titans).** A DDT is a fast MOAB-class blimp with **Camo + Lead +
+> Black** (400 HP). A tower needs **all three** of these at once to pop one: **(1) camo detection** —
+> without it nothing can target a DDT (innate camo, a camo crosspath, a Village Radar Scanner 0-2-0
+> aura, Geraldo, etc.); **(2) a damage type it doesn't resist** — Fire, Plasma, Normal, Acid, or
+> Glacier (Sharp, Shatter, Cold, Energy, and Explosion are all **blocked** by Lead + Black); and **(3)
+> the ability to damage MOAB-class** — most damage towers have this, but base **Ice** can't until
+> **Embrittlement (4-x-x)** and base **Glue** needs **MOAB Glue (0-0-3)**. So "pops Lead and sees Camo"
+> is necessary but **not sufficient** — the tower must also hit MOAB-class. Pick any tower (or a
+> Village-camo + damage-tower combo) that satisfies all three rules.
+
 ## Open follow-ups (next sessions)
 
-- **Tower recommendations for "how do I deal with X" — DEFERRED (owner decision 2026-06-27).** The
-  auto-derivation was reverted (above); the owner chose to leave the **rules-based** guidance (camo +
-  non-resisted damage + must hit MOAB-class) for now and revisit specific tower recommendations later as
-  its own focused task. To do it correctly later we need MOAB-class targeting + config quality, which
+- **Tower recommendations for "how do I deal with X" — DEFERRED (owner decision 2026-06-27;
+  production-confirmed 2026-06-30, above).** The auto-derivation was reverted (above); the owner chose
+  to leave the **rules-based** guidance (camo + non-resisted damage + must hit MOAB-class) for now and
+  revisit specific tower recommendations later as its own focused task. To do it correctly later we need MOAB-class targeting + config quality, which
   aren't in the dump — so it will be a hand-curated, wiki-verified (or owner-supplied) list, not an
   auto-derivation. (The over-refusal on a bare "which tower?" ask may return until then; that's accepted.)
 - **Broaden the live corpus** with strategy/opinion questions graded by `llm_judge` rubrics.

@@ -26,8 +26,9 @@
       events (edit/delete/join/leave/role) routed per category; severity routes declared (publisher
       pending).
 - [ ] **Every best-in-class sub-option** — ⚠ **partial.** Per-category toggles + per-category channels +
-      combined/per-category routing + fallback chain present; **missing** vs Carl-bot/Dyno: ignored
-      channels/users, channel create/delete/rename events, voice events. → punch #1/#2.
+      combined/per-category routing + fallback chain + **ignored channels/users exclusion lists** (✅
+      punch #1, 2026-07-01) present; **missing** vs Carl-bot/Dyno: channel create/delete/rename events,
+      voice events. → punch #2.
 - [x] **Failure modes honest** — every send path counts (`permission_error`/`send_error`/
       `auto_create_error`) + swallows; never re-raises to the bus.
 - [x] **Idempotent** — `setup(bot)` guarded by a subscribe latch; routing degrade falls back deterministically.
@@ -64,7 +65,7 @@
       11 channel-route bindings + scalar toggles via the pipelines.
 - [x] **config-input widgets** — set/create panels, the routes subpage, channel select, provision preview.
 - [x] **Everything configurable that should be** — which events (master + per-category), which channels
-      (11 slots), routing mode, auto-create; ignored lists are the one gap → punch #1.
+      (11 slots), routing mode, auto-create, **ignored channels/users** (✅ punch #1, 2026-07-01).
 
 ### F. Wiring & discoverability
 - [x] **Registry** — key `logging`, `parent_hub: moderation`, entry `logging`, capabilities
@@ -82,8 +83,12 @@
 - [ ] **Owner ✔** — pending → punch #6.
 
 ## Punch-list (clear these to certify)
-1. **Ignored channels / users** *(offline, deepening)* — exclusion lists per category (e.g., log all
-   joins except #bot-testing).
+1. ~~**Ignored channels / users**~~ ✅ **DONE 2026-07-01 (#1594, dispatch run)** — two per-guild scalar
+   settings (`logging_ignored_channels` / `logging_ignored_users`, comma-separated id CSV, default
+   empty, no migration) resolved into `EventLoggingPolicy.ignored_channel_ids`/`ignored_user_ids`
+   (tolerant `parse_id_csv`) + an `is_ignored(channel_id, user_id)` gate wired into the shared
+   `_log_event_if_enabled` (counter `event_skipped_ignored`), so a passive event whose channel or
+   subject is listed is skipped for every category (e.g. log all deletes except #bot-testing). +8 tests.
 2. **Channel + voice event categories** *(owner, deepening)* — `on_guild_channel_*` + `on_voice_state_update`
    logging (note voice volume needs tuning).
 3. **In-panel presets** *(offline, minor)* — surface the logging presets / a bulk event-toggle in the panel.
@@ -104,6 +109,6 @@
 Logging is a **structurally complete, fail-safe, fully-audited** unit — EventBus-driven mod/audit/passive
 event logging to category channels (combined or per-category, with a fallback chain), config-driven and
 defaults-OFF, bindings through the audited pipeline, with a Setup step and a strong test suite. It is
-**not yet `✔ certified`**: the gaps are **best-in-class breadth** — ignored lists (#1) and channel/voice
-events (#2) — in-panel presets (#3), and the live walkthrough/sign-off (#5/#6). No safety/audit/dead-end
-issues found.
+**not yet `✔ certified`**: the remaining gaps are **best-in-class breadth** — channel/voice
+events (#2) — in-panel presets (#3), and the live walkthrough/sign-off (#5/#6). Ignored channels/users
+lists (#1) shipped 2026-07-01. No safety/audit/dead-end issues found.

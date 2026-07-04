@@ -109,6 +109,18 @@ def seconds_until(
     return max(0, needed * regen_seconds - remainder)
 
 
+def regen_seconds_for(regen_mult: float, *, base: int = REGEN_SECONDS) -> int:
+    """The effective regen interval when a structure speeds regen by *regen_mult*.
+
+    A built **Boathouse** (``utils.mining.structures.boathouse_regen_mult``) grants a
+    multiplier ≤ 1.0 (lower = faster refill); this turns it into the ``regen_seconds``
+    the :func:`settle` / :func:`spend` / :func:`seconds_until` calls use. ``regen_mult``
+    of ``1.0`` (unbuilt) returns exactly *base* ⇒ byte-identical energy. Never below 1
+    (a 0-second interval would divide-by-zero the regen math).
+    """
+    return max(1, round(base * regen_mult))
+
+
 def bar(current: int, max_energy: int = MAX_ENERGY, *, width: int = 10) -> str:
     """A compact ``⚡ 42/60 [▰▰▰▰▰▰▰▱▱▱]`` energy gauge for the fishing panel."""
     current = max(0, min(max_energy, current))

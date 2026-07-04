@@ -5,7 +5,7 @@ import logging
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import MissingPermissions, has_permissions
+from discord.ext.commands import MissingPermissions
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim
@@ -13,6 +13,7 @@ from core.runtime.message_pipeline import (
     MessagePipelineContext,
     StageResult,
 )
+from core.runtime.permission_checks import admin_or_owner
 from services import chain_service, moderation_service
 from utils import db
 from views.base import HubView, interaction_is_admin, send_panel
@@ -76,7 +77,7 @@ class ChainCog(commands.Cog):
         )
 
     @chain.command(name="create")  # type: ignore[arg-type]
-    @has_permissions(administrator=True)
+    @admin_or_owner()
     async def create_chain(
         self,
         ctx,
@@ -131,7 +132,7 @@ class ChainCog(commands.Cog):
             logger.error(f"Error in create_chain command: {error}")
 
     @chain.command(name="delete")  # type: ignore[arg-type]
-    @has_permissions(administrator=True)
+    @admin_or_owner()
     async def delete_chain(self, ctx, channel: discord.TextChannel = None):
         """Delete a chain from a specified channel or the current channel if none is provided.
 
@@ -164,7 +165,7 @@ class ChainCog(commands.Cog):
             logger.error(f"Error in delete_chain command: {error}")
 
     @chain.command(name="setlimit")  # type: ignore[arg-type]
-    @has_permissions(administrator=True)
+    @admin_or_owner()
     async def set_limit(
         self,
         ctx,
@@ -213,7 +214,7 @@ class ChainCog(commands.Cog):
             logger.error(f"Error in set_limit command: {error}")
 
     @chain.command(name="removelimit")  # type: ignore[arg-type]
-    @has_permissions(administrator=True)
+    @admin_or_owner()
     async def remove_limit(self, ctx, channel: discord.TextChannel = None):
         """Remove the word limit from a specified channel or the current channel if none is provided.
 
@@ -250,7 +251,7 @@ class ChainCog(commands.Cog):
 
     @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(name="chainmenu")
-    @has_permissions(administrator=True)
+    @admin_or_owner()
     async def chain_menu(self, ctx):
         """Open the interactive chain management panel."""
         view = _ChainMenuView(ctx, self)

@@ -20,8 +20,10 @@ _TIMEOUT_SECONDS = 180
 
 
 def _admin(user: Any) -> bool:
-    perms = getattr(user, "guild_permissions", None)
-    return perms is not None and getattr(perms, "administrator", False)
+    # Canonical admin gate — honours the platform owner (config.BOT_OWNER_USER_ID).
+    from views.base import member_is_admin
+
+    return member_is_admin(user)
 
 
 # ---------------------------------------------------------------------------

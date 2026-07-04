@@ -133,6 +133,7 @@ from typing import Any, Protocol, runtime_checkable
 import discord
 from discord.ext import commands
 
+from core.runtime import lifecycle
 from services import metrics
 
 logger = logging.getLogger("bot.runtime.message_pipeline")
@@ -263,6 +264,18 @@ async def dispatch(bot: commands.Bot, message: discord.Message) -> None:
     See module docstring for the pre-filter rules, error-isolation
     semantics, and moderation-routing hook.
     """
+    # Deploy-handoff double-fire guard (LP-4).  main() releases the runtime
+    # lock BEFORE bot.close() drains, so the incoming replica connects while
+    # this instance is still draining.  Discord delivers MESSAGE_CREATE to
+    # BOTH gateway connections during the overlap; running the stages here
+    # would double-apply every additive side effect (db.add_xp is additive
+    # with no per-message idempotency → double XP; same class for counting /
+    # chain / rps / four_twenty / btd6).  A draining instance runs no stages
+    # — the incoming replica owns ongoing traffic.  This does not regress the
+    # LP-4 fast lock release; it only stops the OUTGOING instance from acting
+    # during the handoff overlap.
+    if lifecycle.is_shutting_down():
+        return
     if message.author.bot:
         return
     if message.guild is None:

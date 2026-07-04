@@ -22,6 +22,7 @@ from cogs.diagnostic._helpers import (
 # which now lives on ``PlatformCommandsMixin`` (``cogs/diagnostic/platform_group.py``).
 from cogs.diagnostic._platform_embeds import build_lifecycle_embed
 from cogs.diagnostic.platform_group import PlatformCommandsMixin
+from core.runtime.permission_checks import admin_or_owner, app_admin_or_owner
 from views.base import send_panel
 from views.diagnostic import (
     _DiagnosticsHubView,
@@ -52,14 +53,14 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
 
     @commands.cooldown(rate=2, per=15, type=commands.BucketType.user)
     @commands.command(name="diagnostics", aliases=["diag"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def diagnostics_hub(self, ctx):
         """Open the interactive diagnostics hub panel."""
         view = _DiagnosticsHubView(ctx.author)
         await send_panel(ctx, embed=view.build_embed(), view=view)
 
     @commands.command(name="lifecycle", aliases=["lc"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def lifecycle_shortcut(self, ctx):
         """Lifecycle state (phase, pending request, recent events).
 
@@ -111,7 +112,7 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
         description="Open the Platform / Diagnostics hub (administrator only).",
     )
     @app_commands.default_permissions(administrator=True)
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_admin_or_owner()
     async def platform_slash(self, interaction: discord.Interaction) -> None:
         """Slash front door for the Platform hub — ephemeral, admin-only.
 
@@ -132,7 +133,7 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.command(name="list_commands_detailed", aliases=["listcmds"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def list_commands_detailed(self, ctx):
         """List all registered commands with details, paginated by cog."""
         pages = build_command_list_pages(self.bot)
@@ -143,7 +144,7 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
         view.message = await ctx.send(embed=pages[0], view=view)
 
     @commands.command(name="find_command", aliases=["findcmd"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def find_command_cmd(self, ctx, keyword: str):
         """Search for commands by keyword in their name or description."""
         embed = discord.Embed(
@@ -178,14 +179,14 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.command(name="validate_json_files", aliases=["validatejson"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def validate_json_files(self, ctx):
         """Validate the structure of all JSON files in the data directory."""
         embed = build_validate_json_embed()
         await ctx.send(embed=embed)
 
     @commands.command(name="check_database", aliases=["checkdb"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def check_database(self, ctx):
         """Verify that all expected PostgreSQL tables exist."""
         embed = await build_check_database_embed()
@@ -196,21 +197,26 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.command(name="diagnostic_bot_status", aliases=["diag_status"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def diagnostic_bot_status(self, ctx):
         """Display bot health and performance metrics."""
         embed = build_bot_status_embed(self.bot)
         await ctx.send(embed=embed)
 
-    @commands.command(name="latency", aliases=["ping"])
-    @commands.has_permissions(administrator=True)
+    @commands.command(name="latency")
+    @admin_or_owner()
     async def latency(self, ctx):
-        """Report the bot's WebSocket latency."""
+        """Report the bot's WebSocket latency (admin detail view).
+
+        The user-facing ``!ping`` lives in the utility cog (user tier); this is
+        the admin-tier readout. The ``ping`` alias was re-homed to utility so
+        ordinary members have a ping (registry capability ``utility.tool.ping``).
+        """
         embed = build_latency_embed(self.bot)
         await ctx.send(embed=embed)
 
     @commands.command(name="system_info", aliases=["sysinfo"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def system_info(self, ctx):
         """Display system-level stats."""
         embed = build_system_info_embed()
@@ -221,21 +227,21 @@ class DiagnosticCog(PlatformCommandsMixin, commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.command(name="query_logs", aliases=["querylogs"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def query_logs(self, ctx, event_type: str = None, limit: int = 10):
         """Query recent logs from the logs table.  !query_logs [INFO|ERROR|...] [limit]"""
         embed = await build_query_logs_embed(event_type=event_type, limit=limit)
         await ctx.send(embed=embed)
 
     @commands.command(name="recent_errors", aliases=["errors"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def recent_errors(self, ctx, limit: int = 10):
         """Retrieve the most recent ERROR-level log entries."""
         embed = await build_query_logs_embed(event_type="ERROR", limit=limit)
         await ctx.send(embed=embed)
 
     @commands.command(name="test_notification", aliases=["testnotify"])
-    @commands.has_permissions(administrator=True)
+    @admin_or_owner()
     async def test_notification(self, ctx):
         """Send a test notification via the webhook reporter."""
         embed = await build_test_notification_embed(self.bot)

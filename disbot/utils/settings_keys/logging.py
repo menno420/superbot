@@ -44,12 +44,52 @@ LOGGING_MESSAGES_ENABLED = "logging_messages_enabled"
 LOGGING_MEMBERS_ENABLED = "logging_members_enabled"
 LOGGING_ROLES_ENABLED = "logging_roles_enabled"
 
+# ---------------------------------------------------------------------------
+# Server event logging v2 — Discord audit-log integration
+# ---------------------------------------------------------------------------
+#
+# v1 (Q-0109) only heard five gateway events on non-bot subjects, so anything
+# done via Discord's UI or another bot (a ban, a channel edit, a role rename)
+# was invisible.  v2 adds a single ``on_audit_log_entry_create`` listener that
+# maps Discord's audit-log actions to embeds — every administrative action, by
+# anyone, with the actor named.  These four category flags gate the new groups;
+# each is still gated by the master ``LOGGING_ENABLED`` switch *and* its own
+# flag, and all default OFF so an existing guild is byte-identical until it opts
+# a group in.
+#
+# * ``moderation`` — bans / unbans / kicks / timeouts / prunes / voice-kicks
+#   (audit-log). Distinct from ``logging.mod_channel``, which only receives
+#   actions taken *through SuperBot's own commands*; this catches the same
+#   actions taken by anyone.
+# * ``channels``   — channel + permission-overwrite create / delete / update.
+# * ``server``     — guild settings, role definitions, emoji / sticker / webhook
+#   / integration changes, and invite create / delete.
+# * ``voice``      — voice-channel join / leave / move (passive gateway event,
+#   ``on_voice_state_update`` — not audit-log-sourced).
+#
+# The existing ``roles`` category is repurposed to the audit-log path in v2 so
+# it can finally name *who* granted/revoked the role (the phase-2 gap called out
+# in docs/server-logging.md).
+LOGGING_MODERATION_ENABLED = "logging_moderation_enabled"
+LOGGING_CHANNELS_ENABLED = "logging_channels_enabled"
+LOGGING_SERVER_ENABLED = "logging_server_enabled"
+LOGGING_VOICE_ENABLED = "logging_voice_enabled"
+
 # Channel routing layout: ``"combined"`` (every category to one channel)
 # or ``"per_category"`` (each category to its own channel, falling back to
 # the combined events channel when a category channel is unset).  The
 # owner-configurable choice from Q-0109; the ``mock_logging_routing`` UX
 # exhibit renders both modes.
 LOGGING_EVENT_ROUTING = "logging_event_routing"
+
+# Exclusion lists (Logging completion cert punch #1) — comma-separated id
+# CSV.  A passive event whose *channel* id is in ``LOGGING_IGNORED_CHANNELS``
+# or whose *subject* (author/member) id is in ``LOGGING_IGNORED_USERS`` is
+# never logged, for every category.  Both default empty (no exclusion), so a
+# fresh guild — and every existing guild — behaves exactly as before.  The
+# parse is tolerant (bad tokens dropped); the write-time validator is loud.
+LOGGING_IGNORED_CHANNELS = "logging_ignored_channels"
+LOGGING_IGNORED_USERS = "logging_ignored_users"
 
 # Default channel names used by ``ensure_log_channel`` for the new event
 # routes when auto-creation is enabled.

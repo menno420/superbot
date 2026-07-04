@@ -34,18 +34,20 @@ async def create_menu(
     theme: str = "default",
     card_template: str | None = None,
     card_text: str | None = None,
+    show_counts: bool = False,
 ) -> int:
     """Insert a new (unposted) menu; return its generated ``menu_id``.
 
     ``message_id`` is left NULL until the menu message is posted — the caller
     sends the message, then calls :func:`set_menu_message`. ``card_template`` /
     ``card_text`` (migration 089) are NULL unless the menu carries a banner card.
+    ``show_counts`` (migration 103) toggles the member-facing live sign-up counter.
     """
     row = await pool.fetchone(
         """INSERT INTO role_menus
                (guild_id, channel_id, title, description, style, mode, max_roles,
-                theme, card_template, card_text)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                theme, card_template, card_text, show_counts)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
            RETURNING menu_id""",
         (
             guild_id,
@@ -58,6 +60,7 @@ async def create_menu(
             theme,
             card_template,
             card_text,
+            show_counts,
         ),
     )
     if row is None:  # pragma: no cover — RETURNING always yields a row on INSERT
@@ -97,17 +100,19 @@ async def update_menu(
     theme: str,
     card_template: str | None = None,
     card_text: str | None = None,
+    show_counts: bool = False,
 ) -> None:
     """Edit a menu's presentation/behaviour fields in place (plan §4.6a).
 
     The caller re-renders and edits the existing message afterward, so the
     posted menu and the row stay in step without a repost. ``card_template`` /
     ``card_text`` are overwritten too (``None`` clears the banner card).
+    ``show_counts`` toggles the live sign-up counter (migration 103).
     """
     await pool.execute(
         """UPDATE role_menus
               SET title=$2, description=$3, style=$4, mode=$5, max_roles=$6, theme=$7,
-                  card_template=$8, card_text=$9
+                  card_template=$8, card_text=$9, show_counts=$10
             WHERE menu_id=$1""",
         (
             menu_id,
@@ -119,6 +124,7 @@ async def update_menu(
             theme,
             card_template,
             card_text,
+            show_counts,
         ),
     )
 

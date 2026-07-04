@@ -2511,7 +2511,9 @@ async def open_essential_setup(interaction: discord.Interaction) -> None:
     if guild is None or not isinstance(member, discord.Member):
         await interaction.response.send_message(_NOT_IN_SERVER, ephemeral=True)
         return
-    if not member.guild_permissions.administrator:
+    from views.base import member_is_admin
+
+    if not member_is_admin(member):
         await interaction.response.send_message(_NOT_ADMIN, ephemeral=True)
         return
 
@@ -2553,7 +2555,9 @@ async def open_essential_setup_prefix(ctx: object) -> None:
     if guild is None or not isinstance(member, discord.Member):
         await send(_NOT_IN_SERVER)
         return
-    if not member.guild_permissions.administrator:
+    from views.base import member_is_admin
+
+    if not member_is_admin(member):
         await send(_NOT_ADMIN)
         return
 

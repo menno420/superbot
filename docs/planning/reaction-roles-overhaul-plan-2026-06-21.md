@@ -102,6 +102,54 @@
 > safe because discord.py fully caches roles (a `None` resolve = genuinely deleted). The manual 🧹 button
 > still covers bindings on messages that never get reacted on.
 >
+> **▶ Refinement (2026-06-30, owner-directed — PR #1570):** **live sign-up counter on role menus**
+> (the event-RSVP ask from the Discord screenshots — "a counter that keeps track of how many people
+> pressed the button"). An **opt-in** per-menu flag (migration **103** `role_menus.show_counts`,
+> default off → existing menus byte-identical) renders a **live participant headcount** beside each
+> role on the public menu embed + a distinct-member footer total. Semantics = **current holders**
+> (`guild.members` ∩ the menu's roles), not a cumulative tally — so it drops when someone un-signs or
+> leaves and never drifts (deliberately distinct from the operator-only cumulative
+> `role_menu_pickup_stats`, §10). New `views/roles/role_menu_counter.py` owns the one-pass count
+> (`collect_counts` — per-role + distinct total, no double-count) and a **debounced**
+> `schedule_count_refresh` (trailing-edge ~2.5 s → ≤1 message edit per window, so a click-storm can't
+> rate-limit). The owner clarified it should support **multiple options** (Going / Maybe / Can't make
+> it) — the menu already renders one button per role, so a **📣 Event RSVP** starter template (button
+> + `unique` + counts on) and a matching **📣 Event RSVP** role pack (`utils/role_packs`) make the
+> multi-option live poll two taps away. Builder gains a **📊 Counts** toggle; threaded through the
+> audited `create_menu`/`update_menu` seam. No new commands.
+>
+> **▶ Refinement (2026-06-30, owner-directed — PR #1571):** **RSVP roster — "Who's in?"** The follow-on
+> to the counter (the idea flagged in #1570's session log, owner-approved). Counted menus gain a
+> persistent **👥 Who's in?** button (`role_menu:{menu_id}:roster`) whose callback posts an **ephemeral**
+> roster — one field per option listing the members who currently hold it (`build_roster_embed` in
+> `role_menu_counter`, member names truncated to fit the field cap with a "…and N more" tail). Gated on
+> the same opt-in `show_counts` and added only when the view has component room (a full 25-role button
+> menu has none). Read-only (`role.members`, no storage) — exposes nothing beyond Discord's own member
+> list, deliberately distinct from the per-user pickup history kept private in §9. No migration, no new
+> commands.
+>
+> **▶ Bug fix (2026-06-30, owner bug report from a live recording — PR #1608):** **the builder preview
+> never re-rendered.** The reaction-roles hub is **ephemeral**, and `RoleMenuBuilder._rerender()` used
+> `self.message.edit()` — which silently no-ops on an ephemeral message (only the interaction/webhook
+> token can edit one). So every draft mutation (style/roles/channel/counts) applied and posted correctly,
+> but the *preview* froze on its first render, making the builder look broken. Fix: store
+> `_panel_interaction` and route `_rerender()` + `_show_parent()` through the shipped
+> `interaction_helpers.safe_edit`, refreshing the token at each panel-open + direct interaction (the
+> sub-flow pickers already funnel through `_rerender`, so they're fixed at the choke point); the sibling
+> `RoleMenuListView._rerender` got the same one-liner (stale list after delete/repost). Lesson for any
+> ephemeral multi-step panel: **never refresh via `Message.edit()` — use the interaction token.**
+>
+> **▶ Refinement (2026-07-01, owner-directed — the "slim" builder, sim #1612/#1613 → PR):** the builder
+> was **14 buttons over 3 rows** and felt dense in a live test. A layout optimizer
+> (`tools/sim/role_menu_layout_sim.py`) modelled the buttons + weighted operator journeys + a UX cost
+> model and recommended a **lean two-row layout** — adopted here: **row 0** = Template · Packs · Roles ·
+> **Style** · Text (the hot content path; Style stays first-screen per owner directive — dropdown-vs-
+> buttons is a primary choice); **row 1** = Colours · Channel · **⚙️ Advanced** · Post · Back. The five
+> rarely-tapped knobs (Theme / Card / Counts / Mode / Limit) fold into a new **`_AdvancedView`** sub-panel
+> (their current values still show on the main preview, which updates live). Reuses the existing pickers/
+> modals; `_LimitModal` + the folded Counts toggle refresh the **main** preview via the builder's stored
+> panel interaction (`_rerender`), not their own sub-panel interaction. No behaviour change to what posts.
+>
 > **One-line goal:** bring SuperBot's self-assignable-role surface to **parity-plus** with
 > Carl-bot — lead with native **buttons + dropdown menus** (Carl's are a secondary/premium
 > add; emoji reactions are its core), keep emoji reaction-roles working for compatibility,

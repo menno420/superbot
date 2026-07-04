@@ -14,6 +14,14 @@ are independently unit-testable; the audited writes live in
 
 from __future__ import annotations
 
+from utils.fishing.curios import (
+    CURIO_CATALOG,
+    CURIO_ITEMS,
+    CURIO_KEYS,
+    Curio,
+    collection_progress,
+    curio_by_key,
+)
 from utils.fishing.fish import (
     FISH_PER_LEVEL,
     MAX_LEVEL,
@@ -30,10 +38,14 @@ from utils.fishing.fish import (
 )
 from utils.fishing.rewards import (
     BONUS_CATCH_CHANCE,
+    CORAL_DROP_CHANCE,
+    CORAL_ITEM,
     PEARL_ITEM,
+    coral_drop_chance,
     pearl_drop_chance,
     roll_bonus_catch,
     roll_catch,
+    roll_coral_drop,
     roll_pearl_drop,
 )
 from utils.fishing.venue import (
@@ -54,6 +66,11 @@ from utils.fishing.weight import nominal_weight, roll_weight
 __all__ = [
     "BONUS_CATCH_CHANCE",
     "CONDITIONS",
+    "CORAL_DROP_CHANCE",
+    "CORAL_ITEM",
+    "CURIO_CATALOG",
+    "CURIO_ITEMS",
+    "CURIO_KEYS",
     "DEEPWATER",
     "FISH_PER_LEVEL",
     "MAX_LEVEL",
@@ -62,9 +79,13 @@ __all__ = [
     "SHORE_VENUE",
     "SPECIES",
     "Catch",
+    "Curio",
     "FishSpecies",
     "VenueProfile",
     "Weather",
+    "collection_progress",
+    "coral_drop_chance",
+    "curio_by_key",
     "current_weather",
     "fish_names",
     "max_size_rank_for_level",
@@ -73,6 +94,7 @@ __all__ = [
     "profile_for",
     "roll_bonus_catch",
     "roll_catch",
+    "roll_coral_drop",
     "roll_pearl_drop",
     "roll_weight",
     "species_by_name",

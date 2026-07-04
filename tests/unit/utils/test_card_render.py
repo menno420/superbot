@@ -42,6 +42,23 @@ def test_mix_blends_and_clamps():
     assert card_render.mix((10, 20, 30), (30, 60, 90), 0.5) == (20, 40, 60)
 
 
+def test_image_safe_strips_emoji_but_keeps_renderable_punctuation():
+    # Emoji the bundled font can't draw are removed and the leftover spacing is
+    # tidied, so a card never shows a tofu box.
+    assert card_render.image_safe("🏆 XP Leaderboard") == "XP Leaderboard"
+    assert card_render.image_safe("8,473 🪙") == "8,473"
+    assert card_render.image_safe("🎉Name") == "Name"
+    # Punctuation the cards actually draw ("→", "·", "…") is preserved.
+    kept = "Level 13 → 14 · 44/1595 XP…"
+    assert card_render.image_safe(kept) == kept
+    # Emoji-free text is returned verbatim (intentional spacing preserved).
+    assert card_render.image_safe("plain  text") == "plain  text"
+
+
+def test_image_safe_all_emoji_collapses_to_empty():
+    assert card_render.image_safe("🎉🏆🪙") == ""
+
+
 def test_get_theme_resolves_known_and_falls_back():
     assert card_render.get_theme("ember").name == "ember"
     # Unknown / None never raises — it returns the default skin.
@@ -107,6 +124,34 @@ def test_initials_disc_renders_centered_label():
     assert canvas is not None
     canvas.initials_disc((60, 60), 40, "AS")
     assert isinstance(canvas.to_png(), bytes)
+
+
+def _sample_png_bytes(color=(200, 120, 60), size=64) -> bytes:
+    import io
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (size, size), color).save(buf, format="PNG")
+    return buf.getvalue()
+
+
+@pillow
+def test_avatar_disc_composites_real_avatar_bytes():
+    # A decodable avatar composites (returns True) — the real-avatar look.
+    canvas = card_render.new_canvas(160, 160, card_render.get_theme("midnight"))
+    assert canvas is not None
+    assert canvas.avatar_disc((80, 80), 50, _sample_png_bytes()) is True
+    assert isinstance(canvas.to_png(), bytes)
+
+
+@pillow
+def test_avatar_disc_returns_false_on_undecodable_bytes():
+    # Garbage bytes → False, so the caller falls back to the initials disc and
+    # never ships a broken card.
+    canvas = card_render.new_canvas(160, 160, card_render.get_theme("midnight"))
+    assert canvas is not None
+    assert canvas.avatar_disc((80, 80), 50, b"not-an-image") is False
 
 
 @pillow

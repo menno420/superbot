@@ -58,9 +58,10 @@ def build_menu_embed(
             "bite, reel it in, and fight the big ones; then level up and buy "
             "better rods.\n\n"
             "**🎣 Cast** — wait → bite → reel\n"
-            "**⛵ Set sail / 🏖️ Dock** — shore ↔ deepwater\n"
+            "**⛵ Set sail** — shore ↔ deepwater\n"
             "**🎒 Rod** — view & upgrade your rod\n"
             "**🪱 Bait** — load a lure for rarer catches\n"
+            "**🏗 Structures** — build coral structures\n"
             "**📖 Fishdex** — your collection"
         ),
         color=GAME_COLOR,
@@ -281,6 +282,29 @@ class FishingMenuView(HubView):
         shop = BaitShopView(self._author, self.guild_id)
         await interaction.response.edit_message(embed=embed, view=shop)
         shop.message = interaction.message
+        self.stop()
+
+    @discord.ui.button(
+        label="Structures",
+        emoji="🏗",
+        style=discord.ButtonStyle.secondary,
+    )
+    async def structures_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # One button opens the structures sub-hub (🪸 Tide Pool · ⚓ Dock · …),
+        # keeping the menu lean as more coral structures land.
+        from views.fishing.structures_hub import (
+            StructuresView,
+            build_structures_embed,
+        )
+
+        embed = await build_structures_embed(self._author.id, self.guild_id)
+        view = StructuresView(self._author, self.guild_id)
+        await interaction.response.edit_message(embed=embed, view=view)
+        view.message = interaction.message
         self.stop()
 
     @discord.ui.button(label="Fishdex", emoji="📖", style=discord.ButtonStyle.secondary)

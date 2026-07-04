@@ -16,6 +16,148 @@
 > evidence + owner sign-off. Soft default — the owner greenlights brand-new units freely.
 
 **Recently shipped (this sector):**
+- **Karma react-to-thank** (PR #1620, completion-first deepening — closes the Karma cert's rubric-C
+  "React-to-thank" box) — an **opt-in per-guild trigger emoji** (`karma.reaction_emoji`, empty = off, the
+  4th karma setting-spec). When set, reacting with it on a message grants karma to that message's author
+  through the **existing audited `karma_service.give(source="reaction")` seam** — no new mutation path; the
+  self-give guard, per-(giver→receiver) cooldown, and per-giver daily cap all apply. An `on_raw_reaction_add`
+  listener in `karma_cog` (starboard-style fast gate: bot pre-filter → one policy read → emoji match →
+  message fetch). Silent (no channel spam); blocked grants swallowed; **byte-identical when unset** (no
+  existing guild's reactions silently mint karma). +11 tests; no migration; self-merge on green.
+- **Reaction-roles builder — "slim" lean layout** (owner-directed, from the layout sim #1612/#1613) —
+  the role-menu builder went from **14 buttons / 3 rows** (felt dense in a live test) to a **lean 2-row**
+  layout the optimizer recommended: row 0 = Template · Packs · Roles · **Style** · Text; row 1 = Colours ·
+  Channel · **⚙️ Advanced** · Post · Back. The five rarely-tapped knobs (Theme/Card/Counts/Mode/Limit)
+  fold into a new `_AdvancedView` sub-panel (values still shown live on the main preview). Style stays
+  first-screen per owner directive. Reuses the existing pickers; the folded Limit modal + Counts toggle
+  refresh the **main** preview via the stored panel interaction. No change to what posts; +3 tests,
+  consistency allowlist updated.
+- **Utility — user-tier `!ping` + `!botinfo`/`!membercount` + first command/authority tests** (PR #1609,
+  completion-first deepening, Utility cert punch #1/#2/#3 CLOSED + #4 advanced) — resolved the
+  declared-but-unimplemented `utility.tool.ping` capability by adding a real **user-tier `!ping`** (gateway
+  + round-trip) and **re-homing the `ping` alias off** diagnostic's admin-tier `!latency` (diagnostic keeps
+  `!latency`); registry `entry_points` updated on both sides (collision-checked first per the BUG-0030
+  same-day lesson). Added `!botinfo`/`!membercount` (Carl-bot/MEE6 parity) and the unit's first
+  command-behaviour + `clear`/`invite` authority test coverage (21 tests). Remaining Utility gaps: punch #5
+  tone polish (offline) + #6/#7 owner live walk/sign-off. Self-merge on green.
+- **Role-menu builder live-preview fix** (PR #1608, owner bug report from a live recording) — the
+  builder's preview panel never re-rendered, so Style/Pack/Channel/Counts changes didn't show even
+  though they took effect (the menu posted correctly). **Root cause:** the reaction-roles hub is
+  **ephemeral**, and `RoleMenuBuilder._rerender()` used `self.message.edit()` — which silently no-ops on
+  an ephemeral message (only the interaction/webhook token can edit it). Fix: store `_panel_interaction`
+  and route `_rerender`/`_show_parent` through the shipped `interaction_helpers.safe_edit`
+  (`response.edit_message`/`followup.edit_message`), fallback to `Message.edit` for non-ephemeral;
+  set/refresh the token at every panel-open + direct interaction; same one-liner for the sibling
+  `RoleMenuListView._rerender` (stale list after delete/repost). No migration; +3 routing tests.
+- **Inventory — item-detail density (per-rarity-tier fields)** (PR #1595, completion-first deepening,
+  Inventory cert **punch #4 CLOSED**) — the category detail page's dense single-line item list became,
+  in the default rarity sort, a **dedicated embed field per rarity tier** (Epic/Rare/Uncommon/Common)
+  via pure `_group_page_by_rarity` + `_item_line` helpers, so a large inventory reads cleanly; the
+  explicit quantity/name sorts keep the flat ordered list so grouping never fights the chosen sort.
+  Pure display logic, no migration; +4 tests (29 on the unit). Self-merge on green.
+- **Logging — ignored channels/users exclusion lists** (PR #1594, completion-first deepening, Logging
+  cert **punch #1 CLOSED**) — the named best-in-class gap vs Carl-bot/Dyno. Two per-guild scalar
+  settings (`logging_ignored_channels` / `logging_ignored_users`, comma-separated id CSV, default
+  empty, **no migration**) resolved into `EventLoggingPolicy.ignored_channel_ids`/`ignored_user_ids`
+  via the tolerant `parse_id_csv` (reused from `automod_config`, the one-source pattern
+  `image_moderation_config` already imports) + an `is_ignored(channel_id, user_id)` gate wired into
+  the shared `_log_event_if_enabled` (new `event_skipped_ignored` counter). A passive event whose
+  channel or subject id is listed is skipped for **every** category (e.g. log all deletes except in
+  #bot-testing). Schema v3→v4, loud write-time `_validate_id_csv`; byte-identical for every existing
+  guild (empty lists ⇒ no exclusion). +8 tests; self-merge on green.
+- **Cleanup — spam-duplicate window → real per-guild setting** (PR #1588, completion-first deepening,
+  Cleanup cert punch #4 — **Cleanup's offline punch-list now CLOSED**) — the hardcoded
+  `SPAM_DUPLICATE_WINDOW_SECONDS = 15` constant (used by the `!cleanuphistory` spam sweep) became the
+  `cleanup.spam_window_seconds` scalar `SettingSpec` (settings key `CLEANUP_SPAM_WINDOW_SECONDS`, no
+  migration) with a `numeric_presets` config-input widget (presets 10/15/30, bounds 1..300, capability
+  `cleanup.policy.configure`). `!cleanuphistory` resolves it per-guild via
+  `settings_resolution.resolve_value`, falling back to the declared default — **byte-identical** for
+  every existing guild. +13 tests; cleanup is now a scalar+panel Settings group. Self-merge on green.
+- **Fishing — rod-recipe browser with live craft progress** (PR #1585, the named "next offline
+  successor" on the fish→rod craft seam) — the rod shop already advertised a recipe's bare
+  requirement ("10 fish, size ≤ 6") but never showed how close the player already was. A new
+  **📋 Recipes** panel (a button off the rod shop + standalone `!rodrecipes`) lists every craftable
+  tier with the player's **live eligible-fish count** against the requirement, owned/next/locked
+  status, and a Craft button for the immediate next tier. `services/fishing_workflow.py` gained a
+  public `eligible_fish_total()` (extracted from the existing `_plan_fish_spend` planner,
+  behavior-preserving) for the progress readout. +18 tests; no migration; self-merge on green.
+- **Diagnostics completion deepening — pagination + metrics reconcile** (PR #1584, completion-first
+  deepening, Diagnostics cert punch #2 + #5 — both offline punch items CLOSED) — `!platform consistency`
+  and `!platform findings` now render through `build_consistency_pages` / `build_findings_pages` and
+  attach the existing `_PaginatorView` when there is more than one page, so the **full** report is
+  reachable (◀ Prev / Next ▶) instead of `build_consistency_embed` *dropping* trailing sections /
+  `build_findings_embed` capping rows (single-page output byte-identical; findings fetch raised 15 → 60).
+  Plus the bot-awareness §3.6 **collection-observability metrics** (`health_snapshot_collection_seconds`
+  Histogram + `health_snapshot_source_failure_total` / `health_snapshot_redaction_total` Counters) wired
+  at the snapshot seams — the production-readiness map's last "Not Done" health-metrics row. Diagnostics'
+  offline punch-list is now closed; only the owner live walk + sign-off (#3/#4) remain. +21 tests; no
+  migration; self-merge on green.
+- **Welcome — join-delay age-gating + ping-then-delete** (PR #1581, completion-first deepening,
+  Welcome cert punch-list #2 remainder — **#2 now CLOSED**) — the last two best-in-class options vs
+  Carl-bot/MEE6/Dyno. **Join-delay age gate:** a `min_account_age_days` setting (default 0 = off) — a
+  joining member whose Discord account is younger than the threshold gets **no greeting, no DM, no
+  entry role** (anti-raid; pure `welcome_config.account_is_too_young`, fail-open on unknown age).
+  **Ping-then-delete:** a `delete_after_seconds` setting (default 0 = keep) — the channel
+  greeting/farewell auto-deletes after N seconds via discord.py's native `delete_after` (the DM is
+  never deleted). Both are additive default-off `int` settings (`numeric_presets` hints) on the
+  existing scalar welcome policy model — **no migration**, byte-identical for existing configs; +18
+  tests; self-merged on green.
+- **Welcome — random greeting messages + opt-in DM greeting** (PR #1579, completion-first deepening,
+  Welcome cert punch-list #2) — two best-in-class options in one batch (Carl-bot / MEE6 / Dyno parity).
+  **(1) Multiple/random messages:** an operator stores several greeting / farewell / DM variants in one
+  message setting separated by a `---` line; the bot picks one **at random** per greeting (pure
+  `welcome_config.split_message_variants` / `pick_message`, seeded-rng-testable; embed builders select a
+  variant; validator caps per-variant length + ≤10 variants; `!welcome` preview shows "1 of N random
+  variants"). **(2) DM greeting:** opt-in `dm_enabled` + dedicated `dm_message` also DMs the joiner the
+  greeting — independent of the channel greeting, **fail-safe on closed DMs** (`discord.Forbidden`
+  swallowed). **Migration-free** (welcome settings are scalar KV) and **byte-identical** for every
+  existing config (single message = one variant; DM off by default). +51 welcome tests; regenerated
+  dashboard/site artifacts + command-map doc for the new keys; self-merge on green. Welcome cert #2
+  narrowed (remaining: join-delay age-gating · ping-then-delete).
+- **Reaction-roles RSVP roster ("Who's in?")** (PR #1571, owner-directed follow-on to #1570) — counted
+  menus gain a persistent **👥 Who's in?** button that posts an **ephemeral** roster listing the members
+  who currently hold each option (`build_roster_embed` in `role_menu_counter`; member names truncated to
+  the field cap with a "…and N more" tail). Gated on the same opt-in `show_counts` + a component-budget
+  check; read-only `role.members` (no storage, exposes nothing beyond Discord's member list). No
+  migration, no new commands; +12 tests.
+- **Reaction-roles live sign-up counter** (PR #1570, owner-directed deepening) — the event-RSVP
+  counter from the Discord screenshots: an **opt-in `📊 Counts`** per-menu flag (migration 103
+  `role_menus.show_counts`, default off) that renders a **live participant headcount** beside each
+  role on the public menu embed + a distinct-member footer total. Counts **current holders**
+  (`guild.members` ∩ roles — self-correcting, drops on un-sign/leave; distinct from the operator-only
+  cumulative `role_menu_pickup_stats`), refreshed by a **debounced** message edit (≤1 per ~2.5 s
+  window → rate-limit-safe). New `views/roles/role_menu_counter.py` (one-pass `collect_counts` +
+  `schedule_count_refresh`); a **📣 Event RSVP** starter template (button + `unique` + counts) and
+  matching role pack make the multi-option "Going / Maybe / Can't make it" live poll two taps away.
+  Threaded through the audited `create_menu`/`update_menu` seam; +35 tests; no new commands; self-merge
+  on green ([plan](../planning/reaction-roles-overhaul-plan-2026-06-21.md)).
+- **Counters completion deepening** (PR #1568, completion-first deepening) — closed the Counters
+  completion cert's offline punch-list #1/#2/#4/#5. Added a curated `{count}` **template preset** catalog
+  (`TEMPLATE_PRESETS`: default/minimal/brackets/bullet) + `!counterpreset [name]` (lists them, or applies
+  all three templates at once **through the audited `SettingsMutationPipeline`** — re-checks
+  `counters.settings.configure`); a `/counters` **slash status** parity surface (ephemeral,
+  manage-guild-gated, reuses `_policy_embed`); **channel-type coverage** (voice/text/category all rename,
+  DM skipped — parametrized tests); and a **real end-to-end integration test** (stored settings →
+  `load_policy` → `sync_guild` → `counters.updated`). Pure additions, no migration; +18 tests
+  (~35 total on the unit). Remaining: #3 loop backoff (stateful) + owner walkthrough/sign-off.
+- **Cleanup history filters — content-type modes + age gate** (#1566, completion-first deepening) —
+  closed the Cleanup completion cert's buildable punch-list (#2/#3). `!cleanuphistory` gained three
+  content-type sweep modes (`embeds` / `links` / `attachments`, Carl-bot/MEE6/Dyno parity) and an
+  `older:<duration>` age gate (e.g. `older:7d`) composable with every mode — both in the pure
+  `services/history_cleanup.py` (`HISTORY_CLEANUP_MODES`, `older_than` cutoff) with cog-side
+  `older:`-token parsing + a `_parse_duration_seconds` helper. Found punch-list #1 (panel
+  authority-recheck) **already covered** by `test_apply_button_requires_admin` — corrected the stale
+  cert note. #4 (configurable spam window) honestly deferred (needs a config-input widget, not a
+  constant rename). +12 tests; no migration; self-merged on green.
+- **Operator command gaps — `!slowmode` · `!topic` · `!roleinfo`** (#1561, completion-first deepening) —
+  the assessment punch-list's named *"best-in-class command gaps (channel slowmode/topic, utility
+  roleinfo)"*. `!slowmode <ch> <secs>` (alias `!slow`) + `!topic <ch> <text>` (alias `!settopic`) are
+  channel *mutations* so they ship through the audited `ChannelLifecycleService` seam (two REVERSIBLE ops
+  `set_slowmode`/`set_topic`, clamped to Discord's 6h/1024-char caps) — each fires the audit companion +
+  `channel.lifecycle_changed` event like `!rename`. `!roleinfo <@role|name|id>` (alias `!ri`) is a
+  read-only role detail card (colour/members/position/flags/notable permissions) rendered in
+  `views/roles/role_info.py` (extracted to keep `role_cog` under the 800-LOC decomposition threshold).
+  +44 tests; no migration; self-merged on green.
 - **Farm leaderboard provider** (#1542, completion-first deepening win) — the idle chicken farm now
   appears in the unified `!leaderboard` hub + select menu (`FarmProvider`, ranked by **flock size**,
   coop level as the tie-break), reusing a new `db.top_farmers` primitive. Mirrors `FishingProvider`;
@@ -107,12 +249,54 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   reached via `!creatures` + both cogs' Help hooks, the **interactive dex browser** (element filter),
   the `entry_points` fix, and a **battle settle-once** guard — cert #1/#2/#3/#5 cleared (#4 was a
   no-op). **▶ Next turn-key picks:** **Creatures game panel for Welcome's missing command panel** is a
-  separate unit; the Mining how-to button (the ✔-ready candidate's last build gap) **shipped #1548**, so
-  within games the **Blackjack split/insurance/surrender** engine work remains; server-fn deepening picks
-  are listed in the assessments bullet below. **✅ DONE 2026-06-29 (#1550): Proof Channel** punch #1 + #2 —
+  separate unit; the Mining how-to button (the ✔-ready candidate's last build gap) **shipped #1548**.
+  **✅ DONE 2026-06-30 (#1565): Blackjack** punch #2 + #3 — the panel's PvP path now has a Free/preset/Custom
+  **stake picker** (was command-only / hardcoded bet=0) and the three named **edge paths are tested**
+  (tournament-timeout forfeit · guild-removal cleanup · natural-blackjack auto-payout); only the owner /
+  live-bot items remain (#1 split/insurance/surrender product call, #4 walkthrough, #5 sign-off).
+  server-fn deepening picks are listed in the assessments bullet below.
+  **✅ DONE 2026-06-29 (#1550): Proof Channel** punch #1 + #2 —
   the lock/unlock now audit (`prize_access_grant`/`revoke`) and every mutation callback re-checks
-  `manage_channels` authority; cert advanced (only the binding-write UI + owner walkthrough remain). (Creatures' `◐ → ✔` still needs the owner live walkthrough +
+  `manage_channels` authority; cert advanced (only the binding-write UI + owner walkthrough remain).
+  **✅ DONE 2026-06-29 (PR #1553): Inventory punch #5 (sort + filter) CLOSED** — the category detail view
+  gained a `🔀 Sort:` cycle (Rarity / Quantity / Name, pure `_sort_items`) **and** a `Filter by type…`
+  select (shown only when a category mixes >1 type; `_apply` recomputes the shown slice + pages,
+  page-clamped); +15 tests. Inventory's remaining gaps are now the **owner-gated** ones (#1 item actions ·
+  #2 item-grant audit — *needs an owner call on audit-trail granularity, see note below* · #3 capability
+  cleanup) + live walkthrough. **Also shipped this PR: the registry↔completion-ledger parity guard**
+  (`scripts/check_completion_ledger_parity.py`, the Q-0089 follow-up the README flagged) — every
+  certifiable registry subsystem has exactly one ledger row + cert, enforced by a pytest regression. (Creatures' `◐ → ✔` still needs the owner live walkthrough +
   sign-off, punch-list #6/#7.)
+  **✅ DONE 2026-06-30 (#1566): Cleanup punch #2 + #3 CLOSED** — `!cleanuphistory` gained three
+  content-type sweep modes (`embeds`/`links`/`attachments`, Carl-bot/MEE6/Dyno parity) + an
+  `older:<duration>` age gate composable with every mode (`HISTORY_CLEANUP_MODES` + `older_than`
+  cutoff in the pure `services/history_cleanup.py`; +12 tests). Punch #1 (panel authority re-check)
+  found **already covered** (stale cert note corrected). Cleanup #4 (spam-window setting) **✅ DONE
+  2026-06-30 (#1588)** — see below; Cleanup's only remaining gaps are now the owner walkthrough/sign-off (#5/#6).
+  **✅ DONE 2026-06-30 (#1575): Diagnostics punch #1 + Counters punch #3.** Diagnostics #1 (hub
+  completeness) — `startup` + `findings` (read-only health reports) grouped into the `!platform` hub's
+  Runtime/status select (audience-preserving `_dispatch`; the `finding` mutation stays out of the
+  read-only Selects). Counters #3 (loop backoff) — `GuildSyncBackoff` (pure tick-based exponential
+  backoff, capped) wired into the rename loop so a persistently-failing guild is skipped for a growing
+  number of ticks but never dropped forever. **▶ Next turn-key picks:** ~~Diagnostics list pagination
+  (punch #2) + #5 (health-metrics reconcile)~~ **✅ DONE 2026-06-30 (#1584)** — Diagnostics' offline
+  punch-list is now closed (only the owner live walk #3/#4 remains) · ~~Cleanup #4 (spam-window setting
+  *with* a Settings widget)~~ **✅ DONE 2026-06-30 (#1588)** — `cleanup.spam_window_seconds` scalar with
+  a `numeric_presets` config-input widget; **Cleanup's offline punch-list is now CLOSED**. *(Counters punch
+  #1/#2/#4/#5 ✅ #1568; #3 ✅ #1575.)*
+  **✅ DONE 2026-06-30 (#1579 + #1581): Welcome punch #2 (best-in-class options) — ALL 4 CLOSED.**
+  **Multiple/random messages** + **opt-in DM greeting** (#1579), then **join-delay age-gating**
+  (`min_account_age_days` — skip greeting/DM/entry-role for accounts younger than N days, anti-raid;
+  pure `welcome_config.account_is_too_young`, fail-open on unknown age) **+ ping-then-delete**
+  (`delete_after_seconds` — auto-delete the channel greeting/farewell after N seconds via discord.py's
+  native `delete_after`; DM never deleted) (#1581). Both 2026-06-30 additions are default-off `int`
+  settings (`numeric_presets` hints), migration-free, byte-identical for existing configs; +18 tests.
+  **Welcome punch-list #2 is now CLOSED** — every named best-in-class option exists. Remaining Welcome
+  gaps: #1 bespoke panel (or owner waiver) · #3 binding-seam · #4 cog-tests · #5/#6 owner walkthrough.
+  **▶ Next turn-key picks (other units):** ~~Diagnostics list pagination (#2) + #5 (health-metrics
+  reconcile)~~ **✅ #1584** · ~~Cleanup #4 (spam-window setting *with* a Settings widget)~~ **✅ #1588**.
+  Both units' offline punch-lists are now CLOSED. Next offline deepening: Inventory item-grant audit +
+  capability cleanup · Proof-channel lock/unlock audit + modal authority re-check (the named weak spots).
 - `[owner]` **Feature-completion assessments — ALL 36 UNITS ◐ ASSESSED (100%; 0 certified).** The
   completion-first arc (Q-0209). The `▢ → ◐` assessment sweep is **COMPLETE** — every game + server-fn
   now has a rubric-filled, source-grounded certificate under
@@ -127,8 +311,10 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   the arc is now `◐ → ✔` certification work, which is **`[owner]`/`[needs-live-bot]`** by definition (each
   unit needs a `/verify-bot` live walkthrough + owner sign-off). **Offline deepening picks** from the
   punch-lists: Inventory item-grant audit + capability cleanup · Proof-channel lock/unlock audit + modal
-  re-check · logging ignored-lists/channel+voice events · the AI BUG-0019 #1 owner decision · best-in-class
-  command gaps (channel slowmode/topic, utility roleinfo/channelinfo). The Blackjack/Casino/Word-Chain
+  re-check · logging ~~ignored-lists~~ **✅ #1594** / channel+voice events (punch #2, owner) · the AI BUG-0019 #1 owner decision · ~~best-in-class
+  command gaps (channel slowmode/topic, utility roleinfo)~~ **✅ DONE 2026-06-29 (#1561): `!slowmode` +
+  `!topic` (audited ChannelLifecycleService seam) + `!roleinfo` (read-only)** — `channelinfo`/`userinfo`
+  already existed; these closed the remaining named gaps. The Blackjack/Casino/Word-Chain
   leaderboards still need persisted per-player tracking first (a feature, not a provider).
   **✅ (2) DONE 2026-06-28 (#1529):** the **"no-dead-end" arch guard** shipped — a warn-tier
   `no_dead_end` rule in `scripts/check_architecture.py` (config + allowlist in
@@ -138,8 +324,9 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   now `historical`). **✅ DONE
   2026-06-28 (#1527):** the Deathmatch PvP trapped views (+ the panel-PvP `ctx=None` crash, BUG-0028)
   **and** the RPS PvP-result dead-end were both fixed — `_PvpDuelResultView` / `_RpsPvpResultView` with
-  standard nav + rematch/back; both certs advanced toward ✔. The next turn-key gap is **Blackjack
-  punch-list #1** (split/insurance/surrender — bigger engine work, owner-paced). **▶ Owner decisions
+  standard nav + rematch/back; both certs advanced toward ✔. Blackjack's offline punch-list (#2 stake
+  picker + #3 edge tests) **shipped #1565**; its remaining **#1** (split/insurance/surrender — bigger
+  engine work) is **owner-paced** (the product call to implement-or-waive). **▶ Owner decisions
   waiting:** Word Chain re-classify, Counting XP/coin reward, Deathmatch optional coin-staking, plus
   every assessed unit's `◐ → ✔` live-walkthrough sign-off
   (`[needs-live-bot]`/`[owner]`).
@@ -167,10 +354,63 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   fish recipe — a pure coin sink today): `!craftpearl` + a bait-shop "Craft from pearls" select spend
   `bait.PEARL_BAIT_RECIPES` pearls via `fishing_workflow.craft_pearl_bait`; coins stay the fast
   alternative. No DB migration (pearls reuse the generic `mining_inventory` store), sim-pinned
-  ([pearl numbers](../planning/fishing-pearl-numbers-2026-06-28.md)). ▶ **Next offline successor:**
-  a **fish-loot rare *material*-drop variant** (a dedicated craft material that feeds a *new* craft
-  target rather than the premium bait — e.g. a "kelp"/"driftwood" that crafts a cosmetic or a
-  structure) **or** the **rod-ladder recipe browser** UI. Pure + sim-pinnable, self-mergeable.
+  ([pearl numbers](../planning/fishing-pearl-numbers-2026-06-28.md)). **The rod-ladder recipe browser
+  UI SHIPPED 2026-06-30 (PR #1585):** a 📋 Recipes panel (rod shop button + `!rodrecipes`) shows every
+  craftable tier with the player's live eligible-fish progress, not just the bare requirement — see
+  Recently shipped above. **The fish-loot rare *material*-drop variant SHIPPED 2026-07-01 (dispatch
+  run):** **coral 🪸** — a **deepwater-only** rare reel-drop (gives the boat venue #1340 a unique
+  payoff) whose sink is a *new, non-bait* craft target: cosmetic **curios** (`utils/fishing/curios.py`
+  — carvings crafted from coral, `ItemKind.TREASURE` → non-sellable, a completionist collection shown
+  by the existing inventory browser; `!curios` / `!craftcurio`). Mirrors the pearl pattern; no
+  migration, no minigame mechanic wiring; also catalogued the previously-uncatalogued pearl for clean
+  display (fix-on-sight). Sim-pinned ([coral numbers](../planning/fishing-coral-numbers-2026-07-01.md)).
+  **The structure-target variant SHIPPED 2026-07-01 (dispatch run, PR #1598):** the **Tide Pool** 🪸 —
+  coral's first *functional* sink (alongside the cosmetic curios). A coral-built structure on the
+  generic `mining_structures` table (no migration) whose rarity-pull bonus folds into `begin_cast` as
+  the cast's **5th "how-well" knob** (rod × bait × weather × gear × **tide pool**), default ×1.0 when
+  unbuilt ⇒ byte-identical. Reuses the Forge/Home/Campfire pattern end-to-end (registry entry + audited
+  `mining_workflow.build_structure` + `views/fishing/tide_pool.py` panel + `!tidepool` + a menu button).
+  Sim-pinned ([tide-pool numbers](../planning/fishing-tide-pool-numbers-2026-07-01.md)).
+  **Its sibling the Dock SHIPPED 2026-07-01 (dispatch run, PR #1599):** the **Dock** ⚓ — a second,
+  *entry* coral structure (cheaper, coral + **wood**) whose payoff is **bite-speed** (faster bites)
+  rather than rarity-pull, so a coral investment is a genuine *choice* — faster fishing vs. rarer
+  fish — and coral now has **three** distinct sinks (cosmetic curios · rarity Tide Pool · speed
+  Dock). Same pattern (registry entry + audited `build_structure` + a bite-speed knob fold +
+  `views/fishing/dock.py` + `!dock` + a menu button); byte-identical when unbuilt. Sim-pinned
+  ([dock numbers](../planning/fishing-dock-numbers-2026-07-01.md)).
+  **The structures sub-hub + a second curio tier SHIPPED 2026-07-01 (dispatch run, PR #1603):** the
+  **🏗 Structures** child (`views/fishing/structures_hub.py`) folds the two menu structure buttons
+  (Tide Pool + Dock) into one sub-hub so the fishing menu stays lean (menu → structures → panel; the
+  panels' ↩ back now returns to the sub-hub), **and** the cosmetic curio collection gained a Legendary
+  top tier — the **Coral Leviathan** 🐉 (16 coral, net-worth 240; doubling long-tail 2→4→8→16). Both
+  pure/offline, no migration.
+  **The third structure the Boathouse SHIPPED 2026-07-01 (dispatch run, PR #1605):** the **Boathouse**
+  🛖 — a coral + **wood** structure whose payoff is **faster fishing energy regen** (endurance), the
+  genuinely-distinct *third* axis so coral now has **four** sinks (cosmetic curios · rarity Tide Pool ·
+  speed Dock · endurance Boathouse). Each level shortens the passive energy-refill interval via a
+  `regen` multiplier ≤ 1.0 (`boathouse_regen_mult`) turned into an effective `regen_seconds` by
+  `utils/fishing/energy.regen_seconds_for` and threaded into `begin_cast` / `get_energy`. Same pattern
+  (registry entry + audited `build_structure` + `views/fishing/boathouse.py` + a 🛖 button in the
+  Structures sub-hub + `!boathouse`); byte-identical energy when unbuilt. Sim-pinned
+  ([boathouse numbers](../planning/fishing-boathouse-numbers-2026-07-01.md)).
+  **The fourth structure the Fishery SHIPPED 2026-07-01 (dispatch run, PR #1626):** the **Fishery**
+  🐟 — a coral + **wood** structure whose payoff is a higher **lucky double-catch chance** (yield /
+  abundance), the genuinely-distinct *fourth* axis so coral now has **five** sinks (cosmetic curios ·
+  rarity Tide Pool · speed Dock · endurance Boathouse · **yield Fishery**). A built Fishery raises the
+  double-catch chance above the base `rewards.BONUS_CATCH_CHANCE` (`fishery_bonus_chance`, +0.05/level),
+  computed once in `begin_cast` and threaded onto `Cast.double_catch_chance` so `commit_catch` stays
+  DB-free; byte-identical when unbuilt. Same pattern (registry entry + audited `build_structure` +
+  `views/fishing/fishery.py` + a 🐟 button in the Structures sub-hub + `!fishery`). Sim-pinned
+  ([fishery numbers](../planning/fishing-fishery-numbers-2026-07-01.md)). **Bundled bugs-first root fix
+  (BUG-0031):** `mining_workflow.build_structure` indexed a hand-maintained `_STRUCTURE_BUILD_REASON`
+  map that never got a `boathouse` entry (#1605) → `!boathouse` build crashed with `KeyError`; now
+  derives the audit reason generically (`market.structure_build_reason`) + a regression test over every
+  registered structure.
+  ▶ **Next offline successor:** a *fifth* fishing structure would need yet another fresh lever (the
+  four axes quality/throughput/endurance/yield are covered — e.g. a **coin-yield "Fish Market"** sell
+  bonus, which crosses into the mining sell path), or the fishing **open-world expansion**
+  ([plan](../planning/fishing-open-world-expansion-plan-2026-06-18.md) Phase 2: boat-as-structure /
+  travel-timer / destinations) — both pure + self-mergeable.
 - `[needs-live-bot]` **Essential Setup spine — PR 1 COMPLETE + polished, incl. step 0, + CUT OVER as the primary `!setup`
   (owner-directed, 2026-06-24).** A new plain-language, button/dropdown/multi-select-only quick-setup flow
   (**7 steps**: what kind of server is this · greet · moderators · block spam · choose a log channel ·

@@ -1,0 +1,130 @@
+{
+ "case_id": "sweep.btd6_diagnostics",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "btd6.answer",
+     "task": "btd6.answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 1963225680,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [],
+      "content": null,
+      "embeds": [
+       {
+        "color": 3066993,
+        "fields": [
+         {
+          "inline": false,
+          "name": "Towers",
+          "value": "Dart Monkey, Boomerang Monkey, Bomb Shooter, Tack Shooter, Ice Monkey, Glue Gunner, Desperado, Sniper Monkey, Monkey Sub, Monkey Buccaneer, Monkey Ace, Heli Pilot, Mortar Monkey, Dartling Gunner, Wizard Monkey, Super Monkey, Ninja Monkey, Alchemist, Druid, Mermonkey, Banana Farm, Spike Factory, Monkey Village, Engineer Monkey, Beast Handler"
+         },
+         {
+          "inline": false,
+          "name": "Heroes",
+          "value": "Quincy, Gwendolin, Striker Jones, Obyn Greenfoot, Captain Churchill, Benjamin, Ezili, Pat Fusty, Adora, Admiral Brickell, Etienne, Sauda, Psi, Geraldo, Corvus, Rosalia, Silas"
+         },
+         {
+          "inline": false,
+          "name": "Maps",
+          "value": "86 loaded — Beginner 26 · Intermediate 25 · Advanced 22 · Expert 13 (full list: the 🗺️ Maps panel)"
+         },
+         {
+          "inline": false,
+          "name": "Modes",
+          "value": "Easy, Medium, Hard, Standard, Primary Only, Deflation, Military Only, Apopalypse, Reverse, Magic Monkeys Only, Double HP MOABs, Half Cash, Alternate Bloons Rounds, Impoppable, CHIMPS, Sandbox, Double Cash Mode, Fast Track"
+         },
+         {
+          "inline": false,
+          "name": "Rounds tracked",
+          "value": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140"
+         },
+         {
+          "inline": false,
+          "name": "Data source",
+          "value": "`local:disbot/data/btd6` · available: **True**"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "ctx=btd6_diagnostics:catalog"
+        },
+        "title": "🐵 BTD6 Assistant — Diagnostics",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!btd6 diagnostics",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "btd6"
+}

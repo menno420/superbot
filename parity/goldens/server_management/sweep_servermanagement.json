@@ -1,0 +1,217 @@
+{
+ "case_id": "sweep.servermanagement",
+ "db_delta": {
+  "ai_decision_audit": {
+   "added": [
+    {
+     "category_id": null,
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "decision": "denied",
+     "expires_at": null,
+     "guild_id": "<guild>",
+     "id": 1,
+     "instruction_profile_ids": null,
+     "message_id": "<msg:1>",
+     "model": null,
+     "policy_snapshot_hash": "60e6674506d21a48",
+     "provider": null,
+     "reason_code": "guild_not_configured",
+     "route": "general.nl_answer",
+     "task": "general.nl_answer",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "panel_anchors": {
+   "added": [
+    {
+     "anchor_id": "<uuid>",
+     "channel_id": "<#general>",
+     "created_at": "<ts>",
+     "guild_id": "<guild>",
+     "is_stale": false,
+     "last_updated_at": "<ts>",
+     "message_id": "<msg:2>",
+     "subsystem": "server_management",
+     "user_id": "<@admin>"
+    }
+   ]
+  },
+  "xp": {
+   "added": [
+    {
+     "coins": 0,
+     "guild_id": "<guild>",
+     "last_xp": 2027579843,
+     "level": 0,
+     "messages": 1,
+     "user_id": "<@admin>",
+     "xp": 25
+    }
+   ]
+  }
+ },
+ "harness_version": 1,
+ "notes": "mechanical breadth sweep (admin persona)",
+ "seed": 42,
+ "steps": [
+  {
+   "calls": [
+    {
+     "args": {
+      "channel_id": "<#general>"
+     },
+     "method": "send_message",
+     "payload": {
+      "components": [
+       {
+        "components": [
+         {
+          "custom_id": "server_management:moderation",
+          "disabled": false,
+          "label": "🛡️ Moderation",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "server_management:channels",
+          "disabled": false,
+          "label": "📺 Channels",
+          "style": 1,
+          "type": 2
+         },
+         {
+          "custom_id": "server_management:roles",
+          "disabled": false,
+          "label": "🎭 Roles",
+          "style": 1,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "server_management:cleanup",
+          "disabled": false,
+          "label": "🧹 Cleanup",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "server_management:setup",
+          "disabled": false,
+          "label": "🧩 Setup",
+          "style": 3,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "server_management:access_map",
+          "disabled": false,
+          "label": "🔓 Access Map",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "server_management:help_preview",
+          "disabled": false,
+          "label": "👁 Help Preview",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "server_management:help_editor",
+          "disabled": false,
+          "label": "✏️ Help editor",
+          "style": 2,
+          "type": 2
+         },
+         {
+          "custom_id": "server_management:refresh",
+          "disabled": false,
+          "label": "🔄 Refresh",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       },
+       {
+        "components": [
+         {
+          "custom_id": "help:back",
+          "disabled": false,
+          "label": "↩ Back to Help",
+          "style": 2,
+          "type": 2
+         }
+        ],
+        "type": 1
+       }
+      ],
+      "content": null,
+      "embeds": [
+       {
+        "color": 15158332,
+        "description": "Your single entry point to the server's operator tools. Pick a manager below — the badges are a read-only health summary.",
+        "fields": [
+         {
+          "inline": false,
+          "name": "Managers",
+          "value": "🟢 🛡️ **Moderation** — Can ban, kick and timeout members\n🟢 📺 **Channels** — Can create, rename, move and delete channels\n🟡 🎭 **Roles** — No roles are below the bot — move its role higher\n🟢 🧹 **Cleanup** — No cleanup-policy issues detected\n🟡 🧩 **Setup** — Not configured yet — run setup"
+         },
+         {
+          "inline": false,
+          "name": "Overall configuration health",
+          "value": "🟢 No configuration issues need attention"
+         }
+        ],
+        "flags": 0,
+        "footer": {
+         "text": "Read-only summary · click a manager to open it"
+        },
+        "title": "🧭 Server Management Hub",
+        "type": "rich"
+       }
+      ],
+      "tts": false
+     }
+    },
+    {
+     "args": {
+      "channel_id": "<#general>",
+      "message_id": "<msg:1>",
+      "reason": null
+     },
+     "method": "delete_message"
+    }
+   ],
+   "events": [
+    {
+     "event": "xp.awarded",
+     "payload": {
+      "delta": 25,
+      "guild_id": "<guild>",
+      "new_level": 0,
+      "new_xp": 25,
+      "source": "chat",
+      "user_id": "<@admin>"
+     }
+    }
+   ],
+   "input": {
+    "content": "!servermanagement",
+    "kind": "command",
+    "persona": "admin"
+   }
+  }
+ ],
+ "subsystem": "server_management"
+}

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import datetime
 import logging
+import time
 
 import discord
 from discord import app_commands
@@ -9,6 +11,7 @@ from discord.ext import commands
 
 from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
+from core.runtime.permission_checks import perms_or_owner
 from utils import embeds as em
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
 from views.base import HubView, send_panel
@@ -155,7 +158,7 @@ class UtilityCog(commands.Cog):
         )
 
     @commands.command(name="clear", aliases=["purge"])
-    @commands.has_permissions(manage_messages=True)
+    @perms_or_owner(manage_messages=True)
     async def clear(self, ctx, amount: int = 5):
         """Purge messages. Max 100."""
         if amount <= 0:
@@ -285,7 +288,7 @@ class UtilityCog(commands.Cog):
         )
 
     @commands.command(name="invite")
-    @commands.has_permissions(create_instant_invite=True)
+    @perms_or_owner(create_instant_invite=True)
     async def invite(self, ctx):
         """Generate a one-use server invite."""
         invite = await ctx.channel.create_invite(max_uses=1, unique=True)
@@ -308,6 +311,101 @@ class UtilityCog(commands.Cog):
         poll_msg = await ctx.send(embed=embed)
         for i in range(len(options)):
             await poll_msg.add_reaction(f"{i+1}\N{COMBINING ENCLOSING KEYCAP}")
+
+    @commands.command(name="ping")
+    async def ping(self, ctx):
+        """Check the bot's responsiveness — gateway + message round-trip.
+
+        The user-tier ping (registry capability ``utility.tool.ping``). The
+        admin-tier ``!latency`` in the diagnostic cog reports the same
+        WebSocket figure with more surrounding detail; this is the friendly
+        member-facing version every mainstream bot exposes.
+        """
+        ws_ms = self.bot.latency * 1000
+        before = time.perf_counter()
+        msg = await ctx.send(embed=discord.Embed(title="🏓 Pong!", color=INFO_COLOR))
+        rtt_ms = (time.perf_counter() - before) * 1000
+        embed = discord.Embed(title="🏓 Pong!", color=INFO_COLOR)
+        embed.add_field(name="Gateway", value=f"{ws_ms:.0f} ms", inline=True)
+        embed.add_field(name="Round-trip", value=f"{rtt_ms:.0f} ms", inline=True)
+        await msg.edit(embed=embed)
+
+    @commands.command(name="botinfo", aliases=["about"])
+    async def botinfo(self, ctx):
+        """Show information about the bot — servers, uptime, latency, version."""
+        bot = self.bot
+        embed = discord.Embed(
+            title=f"🤖 {bot.user.name if bot.user else 'Bot'}",
+            description="Bot information and statistics",
+            color=INFO_COLOR,
+        )
+        if bot.user is not None:
+            embed.set_thumbnail(url=bot.user.display_avatar.url)
+        embed.add_field(name="Servers", value=str(len(bot.guilds)), inline=True)
+        embed.add_field(
+            name="Users",
+            value=str(sum(g.member_count or 0 for g in bot.guilds)),
+            inline=True,
+        )
+        embed.add_field(
+            name="Commands",
+            value=str(len(set(bot.walk_commands()))),
+            inline=True,
+        )
+        embed.add_field(
+            name="Gateway",
+            value=f"{bot.latency * 1000:.0f} ms",
+            inline=True,
+        )
+        started = getattr(bot, "uptime", None)
+        if started is not None:
+            elapsed = datetime.datetime.now(tz=datetime.timezone.utc) - started
+            embed.add_field(name="Uptime", value=_format_uptime(elapsed), inline=True)
+        embed.add_field(
+            name="Library",
+            value=f"discord.py {discord.__version__}",
+            inline=True,
+        )
+        embed.set_footer(text=f"Requested by {ctx.author}")
+        await ctx.send(embed=embed)
+
+    @commands.command(name="membercount", aliases=["members"])
+    @commands.guild_only()
+    async def membercount(self, ctx):
+        """Show this server's member count — humans, bots, and total."""
+        guild = ctx.guild
+        total = guild.member_count or 0
+        # ``guild.members`` is only fully populated with the members intent; fall
+        # back to the total when the human/bot split can't be computed locally.
+        bots = sum(1 for m in guild.members if m.bot)
+        humans = len(guild.members) - bots
+        embed = discord.Embed(
+            title=f"👥 {guild.name} — Members",
+            color=INFO_COLOR,
+        )
+        embed.add_field(name="Total", value=str(total), inline=True)
+        if guild.members:
+            embed.add_field(name="Humans", value=str(humans), inline=True)
+            embed.add_field(name="Bots", value=str(bots), inline=True)
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
+        embed.set_footer(text=f"Requested by {ctx.author}")
+        await ctx.send(embed=embed)
+
+
+def _format_uptime(delta: datetime.timedelta) -> str:
+    """Human-readable ``Dd Hh Mm`` uptime string (largest two non-zero units)."""
+    total = int(delta.total_seconds())
+    days, rem = divmod(total, 86400)
+    hours, rem = divmod(rem, 3600)
+    minutes, _ = divmod(rem, 60)
+    parts: list[str] = []
+    if days:
+        parts.append(f"{days}d")
+    if hours:
+        parts.append(f"{hours}h")
+    parts.append(f"{minutes}m")
+    return " ".join(parts)
 
 
 # ---------------------------------------------------------------------------
