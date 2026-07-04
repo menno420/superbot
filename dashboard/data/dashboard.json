@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-04T19:24:28Z",
+    "generated_at": "2026-07-04T23:08:50Z",
     "build": {
-      "commit": "85dc9e58",
-      "subject": "Merge pull request #1717 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-04T19:24:28Z"
+      "commit": "ab3c44bd",
+      "subject": "Merge pull request #1556 from menno420/dependabot/pip/python-minor-patch-cddc5e1523",
+      "committed_at": "2026-07-04T23:08:50Z"
     },
     "counts": {
       "functions": 43,
@@ -2977,6 +2977,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-04-gate0-grammar-freeze.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Gate-0 grammar-freeze + Phase-B L0 build-order",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-04-gate0-brief-prep.md",
       "date": "2026-07-04",
       "title": "2026-07-04 — Prepare the Gate-0 grammar-freeze + Phase-B L0 ultracode brief",
@@ -3430,14 +3438,6 @@
       "title": "2026-07-01 — Role-menu builder \"slim\" lean layout",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-reconcile.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — thirty-first Q-0107 reconciliation pass (band-#1620)",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": true
     }
   ],
