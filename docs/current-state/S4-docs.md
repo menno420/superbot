@@ -9,6 +9,20 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-fourth Q-0107 reconciliation pass** (band-#1710, issue #1711 —
+  [pass record](../planning/reconciliation-pass-2026-07-04-band1710.md)): reconciled the ledger
+  (band #1681–#1710 — three grouped entries, headlined by the **S3 rebuild foundations audit →
+  Fable-5 judgment → design-prep arc** #1689/#1690/#1691/#1693/#1700/#1701/#1703/#1704/#1705 — the
+  engine-room (PROMPT A) + surface/proving (PROMPT B) foundations audits, the **two confirmed prod
+  loss-path fixes** #1693, and the Fable-5 capstone judgment's **7 Tier-1 owner decisions** (Q-0237)
+  — plus the 33rd-pass docs PR #1682 and the per-merge dashboard refreshes
+  #1692/#1694/#1702/#1706/#1707/#1709/#1710), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed), disposed 13 open PRs (**none a stale
+  session PR** — #1708 is the active in-flight foundational-design session; #1509 + five codex review
+  docs #1695–#1699 left for the owner; six dependabot bumps runtime-not-docs), confirmed **ROUTINE_PAT
+  set / loop self-fires** (issue #1711 authored by `menno420`), carried the forward queue intact
+  (still deep, no THIN flag — the rebuild Stage-2/design phase dominates), refreshed the dashboard
+  export (Q-0167), reset the marker #1680 → #1710.
 - **Thirty-third Q-0107 reconciliation pass** (band-#1680, issue #1681 —
   [pass record](../planning/reconciliation-pass-2026-07-03-band1680.md)): reconciled the ledger
   (band #1651–#1680 — four grouped entries, headlined by the **S3 rebuild new-bot capability audit →
@@ -105,7 +119,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #1710** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1740** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

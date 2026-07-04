@@ -86,6 +86,39 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1623 + 7 dashboard refreshes (2026-07-01/02, docs — thirty-first Q-0107 pass + dashboard)** — the
+  **thirty-first Q-0107 reconciliation pass** (band-#1620,
+  [pass record](planning/reconciliation-pass-2026-07-01-band1620.md), #1623); plus seven per-source-merge
+  **dashboard-data refreshes** (#1625 · #1627 · #1628 · #1629 · #1636 · #1646 · #1650, Q-0167).
+- **#1591 + 5 dashboard refreshes (2026-06-30/07-01, docs — thirtieth Q-0107 pass + dashboard)** — the
+  **thirtieth Q-0107 reconciliation pass** (band-#1590,
+  [pass record](planning/reconciliation-pass-2026-06-30-band1590.md), #1591); plus five per-source-merge
+  **dashboard-data refreshes** (#1593 · #1597 · #1604 · #1606 · #1616, Q-0167).
+- **#1596 · #1598 · #1603 · #1605 (2026-06-30/07-01, S1 fishing — coral structures arc)** — a coral
+  deepwater rare-material drop → cosmetic curio collectibles (#1596), the **Dock** bite-speed coral
+  structure (#1598) and the **Boathouse** energy-regen structure (#1605), folded together with the
+  Tide Pool into a 🏗 **Structures sub-hub** (#1603).
+- **#1608 · #1612 · #1613 · #1615 (2026-07-01, S1 reaction-roles menu builder)** — fixed the role-menu
+  builder preview never updating on its ephemeral panel (#1608) and adopted the layout-sim's **slim/lean
+  2-row menu-builder layout** (#1612/#1613/#1615, owner-directed after the 14-button builder felt dense).
+- **#1607 · #1610 (2026-07-01, S1 XP import/migration)** — **XP/level migration from other bots** via an
+  Arcane level-up-channel scan (#1607) plus a button entry point and generic "import from another bot"
+  framing (#1610).
+- **#1594 · #1618 · #1619 (2026-06-30/07-01, S1 server-logging depth)** — ignored-channels/users
+  **exclusion lists** (#1594), a **subject avatar in every log embed** (#1618), and a per-route
+  binding-crash + disappearing-back-button + settings-order simulation fix (#1619).
+- **#1602 · #1599/#1600/#1601 · #1595 · #1609 · #1614 · #1620 · #1611 (2026-06-30/07-01, S1 completion + owner override + boot guard)** —
+  the bot owner now **bypasses ALL permission gates**, not just `administrator` (#1602); a **boot
+  smoke-test CI guard** fails the build when a cog won't load, defense-in-depth after the #1599/#1600
+  cog-load outage (#1601); plus completion-first punches — inventory rarity-tier detail fields (#1595),
+  user-tier `!ping`/`!botinfo`/`!membercount` + command tests (#1609), rank/leaderboard **visual polish**
+  out-reading Arcane/MEE6 (#1614), **karma reaction-to-thank** (#1620), and treasury-cog tests (#1611).
+- **#1617 (2026-07-01, S2 BTD6)** — a **BTD6 menu layout simulator** + a round-range NL answer fix; the
+  owner picked Layout B and the panel-hub implementation is in flight (#1621).
+- **#1564 + 6 dashboard refreshes (2026-06-29/30, docs — twenty-ninth Q-0107 pass + dashboard)** — the
+  **twenty-ninth Q-0107 reconciliation pass** (band-#1560,
+  [pass record](planning/reconciliation-pass-2026-06-29-band1560.md), #1564); plus six per-source-merge
+  **dashboard-data refreshes** (#1562 · #1567 · #1576 · #1580 · #1583 · #1587, Q-0167).
 - **#1573 · #1577 · #1582 (2026-06-30, bot-owner platform-admin override)** — full bot-config authority
   in any guild for the bot owner (#1573), a completeness follow-on extending the override to view gates +
   admin command decorators (#1577), and an ephemeral persistent-panel ownership **fail-close** fix (#1582).
