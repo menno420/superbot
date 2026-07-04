@@ -251,15 +251,19 @@ class BlackjackCog(commands.Cog):
                 version = row.get("version")
                 if version != BLACKJACK_TOURNAMENT_VERSION:
                     logger.info(
-                        "blackjack_tournament recovery: dropping "
-                        "version-mismatch row id=%s (saved=%s, current=%s)",
+                        "blackjack_tournament recovery: version-mismatch row "
+                        "id=%s (saved=%s, current=%s) — refunding the entry "
+                        "fee before dropping",
                         row["id"],
                         version,
                         BLACKJACK_TOURNAMENT_VERSION,
                     )
-                    await game_state_service.clear_by_id(row["id"])
-                    cleared += 1
-                    continue
+                # The entry fee was debited at launch and is owed regardless
+                # of the state-schema version: a VERSION bump on the
+                # merge=deploy restart must NOT forfeit live tournament fees
+                # (the previous code cleared version-mismatch rows without
+                # refunding).  `bet` is a stable top-level int in state, so
+                # refund it whenever present, then clear the row either way.
                 state = row.get("state") or {}
                 bet = state.get("bet")
                 if isinstance(bet, int) and bet > 0:

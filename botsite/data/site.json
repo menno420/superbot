@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T14:08:10Z",
+    "generated_at": "2026-07-04T10:35:51Z",
     "build": {
-      "commit": "ad476ea2",
-      "subject": "Merge pull request #1680 from menno420/claude/bot-plan-review-stage-1-4o9c6w",
-      "committed_at": "2026-07-03T14:08:10Z"
+      "commit": "b4dd8f22",
+      "subject": "Session start: born-red card + claim — 34th Q-0107 reconciliation pass (band-#1710, issue #1711)",
+      "committed_at": "2026-07-04T10:35:51Z"
     }
   },
   "counts": {
@@ -10501,6 +10501,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -10604,6 +10608,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -10622,6 +10630,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -10655,6 +10667,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -10702,6 +10718,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -10766,6 +10786,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -10785,6 +10809,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -10803,6 +10831,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -10837,6 +10869,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -10858,6 +10894,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -10876,6 +10916,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -10896,6 +10940,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
+        {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
         }
@@ -10914,6 +10962,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -10947,6 +10999,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"
@@ -11012,6 +11068,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+          "status": "ideas"
+        },
         {
           "title": "Channel-deployed component-menu primitive (role menus · starboard · polls)",
           "status": "ideas"

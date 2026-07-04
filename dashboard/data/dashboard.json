@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-03T16:54:58Z",
+    "generated_at": "2026-07-04T19:24:28Z",
     "build": {
-      "commit": "41d84854",
-      "subject": "Foundations audit: the engine room (runtime/logic mechanics) — PROMPT A (#1690)",
-      "committed_at": "2026-07-03T16:54:58Z"
+      "commit": "85dc9e58",
+      "subject": "Merge pull request #1717 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-04T19:24:28Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 184,
+      "ideas": 191,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,38 @@
   ],
   "ideas": [
     {
+      "file": "ledger-fragmentation-linter-2026-07-04.md",
+      "title": "Idea — ledger-fragmentation linter (consolidate same-arc Recently-shipped bullets)",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "The `current-state.md` § Recently-shipped ledger is soft-ratcheted at 20 and relies on the",
+      "subsystems": null
+    },
+    {
+      "file": "owner-decision-packet-renderer-2026-07-04.md",
+      "title": "Idea — an owner-decision-packet renderer (register rows → a visual decision artifact)",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "The final judgment's surviving gap #13: *\"every binding checkpoint hands prose walls / JSON to a",
+      "subsystems": null
+    },
+    {
+      "file": "rebuild-design-cite-checker-2026-07-04.md",
+      "title": "Idea — `check_doc_cites.py`: validate source citations in analysis/design docs",
+      "status": "ideas",
+      "date": "2026-07-04",
+      "summary": "Analysis and design docs cite shipped source by `path.py:NNN` constantly, and a **wrong cite",
+      "subsystems": null
+    },
+    {
+      "file": "fleet-structured-output-placeholder-guard-2026-07-03.md",
+      "title": "Idea — reject placeholder values in fleet structured outputs (workflow-layer guard)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "Two independent multi-agent audits shipped **placeholder junk inside otherwise-validated",
+      "subsystems": null
+    },
+    {
       "file": "golden-recapture-on-bugfix-2026-07-03.md",
       "title": "Golden recapture on current-bot bug fix — a protocol so parity never preserves a bug",
       "status": "ideas",
@@ -1213,6 +1245,14 @@
       "subsystems": null
     },
     {
+      "file": "rebuild-release-testing-loop-2026-07-03.md",
+      "title": "Idea — the in-server release → test → verify loop (announce · coverage · test-mode · approve)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The Fable-5 judgment flagged, as gaps that survived the whole planning day: **no user-facing",
+      "subsystems": null
+    },
+    {
       "file": "rebuild-schema-growth-ledger-2026-07-03.md",
       "title": "Idea — rebuild schema-growth ledger (enforce the second-consumer rule mechanically)",
       "status": "ideas",
@@ -1221,11 +1261,27 @@
       "subsystems": null
     },
     {
+      "file": "rebuild-websites-cutover-role-2026-07-03.md",
+      "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The shipped **public bot site** (`botsite/` — marketing, `/changelog`, interactive command",
+      "subsystems": null
+    },
+    {
       "file": "reconcile-headline-sector-currency-check-2026-07-03.md",
       "title": "Idea — reconcile-pass headline-sector currency check",
       "status": "ideas",
       "date": "2026-07-03",
       "summary": "The reconciliation routine reliably updates the **S4 docs sector file** (`current-state/S4-docs.md`)",
+      "subsystems": null
+    },
+    {
+      "file": "ultracode-audit-consolidation-stage-2026-07-03.md",
+      "title": "Idea — a consolidation/dedup stage for the ultracode multi-agent audit pattern (2026-07-03)",
+      "status": "ideas",
+      "date": "2026-07-03",
+      "summary": "The PROMPT-B audit workflow ran the brief's method verbatim: fan-out finders → adversarial-verify →",
       "subsystems": null
     },
     {
@@ -2905,9 +2961,49 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-04-reconcile.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Thirty-fourth Q-0107 reconciliation pass (band-#1710)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-rebuild-foundational-design.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Rebuild foundational-DESIGN (AUDITED → Gate-0 / L0-plannable)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-gate0-brief-prep.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Prepare the Gate-0 grammar-freeze + Phase-B L0 ultracode brief",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-ultracode-quicklaunch.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Ultracode quick-launch prompts + durable-home verification",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-tier1-owner-decisions.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Tier-1 owner decisions recorded (Q-0237)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-surface-proving-mechanics-ultracode.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Surface + proving foundations audit (PROMPT B, ultracode)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2953,9 +3049,33 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-03-prep-fable5-final-review.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare (not execute) a Fable-5 ultracode final-judgment prompt",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-phase-a-final-judgment.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Phase-A final judgment (Fable-5 ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-03-permission-allowlist-and-endorse.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Permission allowlist fix + Q-0228 centralization endorsement (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-owner-ideas-release-loop-websites.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Capture 2 owner ideas: release→test→verify loop + websites cutover-role",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2988,6 +3108,22 @@
       "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-foundational-design-opus-brief.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare the Opus-4.8 foundational-DESIGN overnight prompt",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-fix-prod-loss-paths.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Fix two confirmed prod loss paths (from the engine-room audit)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3300,86 +3436,6 @@
       "file": "2026-07-01-reconcile.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — thirty-first Q-0107 reconciliation pass (band-#1620)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-owner-bypass-all-permission-gates.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Owner bypasses ALL permission gates (not just administrator)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-logging-ignored-lists.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Logging: ignored channels/users exclusion lists (completion deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-karma-reaction-to-thank.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Karma reaction-to-thank (completion-first deepening)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-inventory-density.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Inventory: item-detail density (rarity-tier fields) — completion deepening",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-fishing-tide-pool-structure.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing Tide Pool structure (coral structure-target sink)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-fishing-structures-subhub.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing structures sub-hub (🏗 Structures child) + Legendary curio tier",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-fishing-dock-structure.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing Dock structure (bite-speed coral sink, Tide Pool sibling)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-fishing-dock-sail-alias-crash.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — PROD hotfix: fishing `dock` command collided with `sail`'s `dock` alias (crash loop)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-fishing-coral-curios.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing: coral 🪸 deepwater rare-material drop → cosmetic curio collectibles",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-fishing-boathouse-structure.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Fishing Boathouse (third coral structure — energy-regen payoff)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
