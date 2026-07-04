@@ -14,6 +14,14 @@
 > correction: there is **no** `WorkflowResult`/`disbot/core/contracts.py:48-52` — that name is
 > design-spec-only; the shipped dispatch-result analogue is **`StageResult`** at
 > `disbot/core/runtime/message_pipeline.py:181`.)
+>
+> **▶ EXECUTED 2026-07-04 (PR #1708).** The deliverable lands under
+> [`docs/analysis/rebuild-discovery/foundations/design/`](../analysis/rebuild-discovery/foundations/design/README.md)
+> — 14 buildable specs (3 strands) + the frozen [`shared-vocabulary.md`](../analysis/rebuild-discovery/foundations/design/shared-vocabulary.md),
+> the [seam-consistency matrix](../analysis/rebuild-discovery/foundations/design/seam-consistency-matrix.md),
+> the V-3 [retirement-coverage map](../analysis/rebuild-discovery/foundations/design/retirement-coverage-map.md)
+> (96 rows, **0 evaporations**), and the 31-decision
+> [question register](../analysis/rebuild-discovery/foundations/design/question-register.md).
 
 ---
 
