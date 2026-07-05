@@ -8616,3 +8616,64 @@ fast on this repo; else **(B)** with a warn-first period.
 `.claude/CLAUDE.md` § Session workflow (the born-red-gate rule) · the journal Rule that currently
 carries the behavioral half. **Until decided:** the journal Rule stands (wait for CodeQL before the
 card flip). Provenance: `.sessions/2026-07-05-next-session-prep.md`.
+
+> **Update (2026-07-05, CI-setup redesign PR #1737 — refined recommendation → option (C)).** The
+> 18-agent CI-setup design found a **third option that dominates both (A) and (B)**: a **CodeQL
+> code-scanning *merge-protection ruleset*** (branch ruleset, `code_scanning` rule, High-or-higher,
+> advanced setup). Unlike a bare *required status check* (option A), a merge-protection ruleset
+> **holds** the merge while CodeQL is in-progress and **blocks** when it is unconfigured — it does
+> **not** create the "required status that never reports → pending-forever" deadlock a required
+> CodeQL check would (the failure mode that makes (A) risky). It is GitHub-native (no `check_session_gate`
+> API-call/threshold logic to maintain, so cleaner than (B)). **Prerequisite:** flip `codeql.yml` →
+> `cancel-in-progress: false` first (today it is `${{ github.ref != 'refs/heads/main' }}`, i.e. it
+> *cancels* CodeQL on PR refs — verified). **Residual hole to bound:** the ruleset does not cover a
+> CodeQL run that *starts then errors/hangs*, so pair it with a stuck-scan watchdog leg in
+> `ci-rerun-watchdog.yml`. **Corrected fork wording:** rulesets scope by *base* branch, not head
+> origin — fork risk is *mitigated* (advanced setup + admin bypass + near-zero fork traffic), not
+> *eliminated*. **Tradeoff:** merges now proceed at CodeQL's pace (minutes) not `code-quality`'s (~35s).
+> This is **decision G1** in
+> [`../planning/ci-setup-redesign-2026-07-05.md`](../planning/ci-setup-redesign-2026-07-05.md) §F.
+> **Recommendation: APPROVE (C)** over (A)/(B). Owner-gated (branch-protection config). Provenance:
+> `.sessions/2026-07-05-ci-setup-redesign.md`.
+
+### Q-0239 — DISCUSS: ratify the CI-setup target-state migration (one required `ci-gate` context, workflow consolidation, checker promotions) — proposed 2026-07-05
+
+> **Context.** The owner-directed "best-possible CI" session (PR #1737) produced a target-state design
+> + phased, reversible migration:
+> [`../planning/ci-setup-redesign-2026-07-05.md`](../planning/ci-setup-redesign-2026-07-05.md). Its
+> **Phase A** is safe-additive and ships without sign-off (build the new workflows non-required
+> *alongside* the old ones; add the guard scripts). Its **Phase B** changes executable config
+> (required contexts, workflow deletions, `settings.json` hooks) and needs owner ratification. This
+> Q-block carries the Phase-B decisions **G2–G8** (G1 is the Q-0238 update above). Each is item-by-item
+> approvable; each only fires **after** the corresponding Phase-A build proves parity across a band of PRs.
+
+**The decisions (recommended defaults in the design doc §F):**
+- **G2 — Atomic required-context swap** `code-quality` → **`ci-gate`** (one `if: always()` fan-in job
+  that treats a `cancelled`/`failure` leg as a hard block and a path-skipped leg as a pass), reshaping
+  `code-quality.yml` → a reusable `_python-quality.yml`. **Must be one atomic change** or PRs stick at
+  "Waiting for status to be reported" forever. *(Alt: name the fan-in check `code-quality` to avoid the
+  branch-protection edit entirely.)* **Rec: APPROVE the swap once A8 proves parity.**
+- **G3 — Delete six folded workflows** (`dashboard-ci`, `botsite-ci`, `tool-pins`, `design-system-ci`,
+  `pr-auto-update`, `pr-conflict-guard`) after a full dual-run parity band. **Rec: APPROVE after parity.**
+- **G4 — Promote to gating:** `check_workflow_concurrency` (new, shipped as advisory in #1737) A→G, and
+  drop `continue-on-error` on `check_audit_seam` once built + proven. Also promotes `check_architecture
+  --strict` + `check_tool_pins` + `check_session_slug_unique` into the gate (these are inside G2's build,
+  A6). **Rec: APPROVE — low-FP invariants that can silently reach `main` today.**
+- **G5 — `settings.json` Stop-hook rewires:** a `check_consistency` Stop mirror (cheap AST); optional
+  changed-module fast-pytest on Stop. **Rec: APPROVE the consistency mirror; defer fast-pytest.** (Hook
+  wiring is owner-gated, Q-0106.)
+- **G6 — "Require branches up to date before merging."** **Rec: LEAVE OFF** — `pr-freshness` +
+  `ci-gate`-on-final-head cover it; it serializes merges.
+- **G7 — Delete `check_doc_freshness`** (dormant/unwired, no operational caller — Q-0105 disposability);
+  **keep `check_plan_staleness`** (unique recon-band + idea-shipped signals). **Rec: APPROVE the single delete.**
+- **G8 — the #794-class content-completeness merge race** (close-out docs pushed after the first green
+  head already merged): accept it stays *advisory* (badge=G, docs=A), or add a narrow "close-out docs
+  present when the badge flips" G check. **Rec: ACCEPT ADVISORY + document it** — a session legitimately
+  editing the ledger is common; a presence gate risks false-blocks. Revisit if #794 recurs.
+
+**Why it needs the owner.** Every G2–G8 item changes how future PRs merge or deletes/rewires executable
+config (workflows / branch protection / `settings.json`) — owner-gated per the autonomy boundary
+(Q-0106). **Until decided:** Phase A ships (safe-additive); the current `code-quality` gate stays the
+required context; nothing is deleted. **Homes (on decision):** `.github/workflows/` + branch-protection +
+`.claude/settings.json` + `.claude/CLAUDE.md` § CI/Session workflow. Provenance:
+`.sessions/2026-07-05-ci-setup-redesign.md`.

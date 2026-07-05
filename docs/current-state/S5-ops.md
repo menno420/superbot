@@ -26,13 +26,19 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". S5 is the executor outlier — most items are owner/Hermes-run.)*
-- **📍 OWNER-DIRECTED NEXT SESSION — the "best-possible CI setup" redesign:**
-  [`../planning/ci-setup-redesign-brief-2026-07-05.md`](../planning/ci-setup-redesign-brief-2026-07-05.md).
-  Scoped end-to-end (17 Actions workflows + 40 `check_*.py` + hooks); optimize for **reliability +
-  cost**; consolidate where it kills flakiness/minutes, add genuine gaps (Q-0238, the two checker
-  ideas). The brief carries the full inventory + method; the session produces the target-state design
-  + a phased, **owner-gated** migration (CI/hooks/branch-protection are executable config — propose
-  before ripping out). `[offline]` to *design + propose*; `[owner]` to *apply* destructive changes.
+- **✅ CI-setup redesign DELIVERED (PR #1737, 2026-07-05)** — the target-state design + phased,
+  reversible migration:
+  [`../planning/ci-setup-redesign-2026-07-05.md`](../planning/ci-setup-redesign-2026-07-05.md) +
+  the authoritative [`../operations/ci-what-runs-where.md`](../operations/ci-what-runs-where.md) map.
+  Headline: **one required `ci-gate` context** (fan-in, `cancelled`=hard-fail) + a **CodeQL
+  merge-protection ruleset** (closes the Q-0238 race) + **ruff replaces black/isort** + 17→14
+  workflows + `check_ci_coverage` self-silencing fix + `check_workflow_concurrency.py` (shipped,
+  advisory). Corrected the brief: repo is PUBLIC → minutes free (cost = latency/clutter/contention);
+  all app-CI already path-filtered; no push+PR double-fire; merge-queue unavailable (personal account).
+  **▶ `[owner]` remaining = ratify the Phase-B executable-config changes (router Q-0238 (C) + Q-0239
+  G2–G8);** Phase A is safe-additive (build new workflows non-required alongside the old). Fresh-repo
+  divergence answered (§D: converge on the contract + `parity/`; diverge on the grammar-integrity stack;
+  build at kernel K10).
 - `[owner]` **Website two-site split rollout** — v1 is code-complete + reviewed; what remains is the
   owner-paced rollout (provision `botsite/` + submissions DB, domain cutover)
   ([handoff](../operations/website-split-next-steps-2026-06-19.md)).

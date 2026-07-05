@@ -59,3 +59,24 @@ changes). A natural pickup for the next execution session — likely worth runni
 as a `python3.10 -c` one-liner even before formalizing it as a committed script, just to see the
 hit list across the rest of the bot (mining/fishing/casino all have timer-shaped mechanics per
 earlier rebuild-discovery audits and are strong candidates for the same gap).
+
+## Calibration (2026-07-05, CI-setup redesign PR #1737 — for the session that builds this)
+
+Measured against source so the build starts calibrated (Q-0105):
+
+- **Raw `asyncio.sleep` is far too broad:** 23 files in `disbot/` call it, most of them NOT deferred
+  one-shot mutations — retry/backoff (`btd6_fetch_service`, `btd6_ingestion_supervisor`), infra loops
+  (`runtime`, `session_gc`, `live_update_scheduler`), and **inline UX animations** (`poker_table`,
+  `cast_view`, the channel panels do `sleep` + message edits *awaited inline* within an interaction,
+  which are NOT fire-and-forget deferred locks).
+- **The discriminating signal is the *spawn*, not the sleep.** The true bug shape is a callable
+  **scheduled as a background task** (`tasks.spawn` / `asyncio.ensure_future` / `asyncio.create_task`)
+  from a command/listener body — fire-and-forget, outliving the interaction — whose body contains
+  `asyncio.sleep(...)` **then** a Discord state mutation (slowmode/permission/role edit). The confirmed
+  true positives both match: `security_service._hold_then_lift` (via `tasks.spawn`) and
+  `proof_channel_cog`'s prize-unlock timer (via `tasks.spawn`); `utility_cog:61`'s reminder is the
+  milder third consumer (a missed send, not a stuck lock). So: **key the AST match on the spawned
+  target, resolve the callee, and flag spawn-target = (sleep + state-mutation) that lacks a
+  persisted-deadline write + a boot-time reconcile (`on_ready`/startup sweep).** Warn-only; the
+  file:line punch list is the deliverable. Not shipped in #1737 (raw-sleep would be 20+ FPs); the
+  precise signal is now recorded here + in the redesign doc §C.5.
