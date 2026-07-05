@@ -101,9 +101,41 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 47 | L4 | utility | D | `utility_cog.py` | mapped | not-started | — | MERGE pack; also hosts `/myprofile` — see row 28 |
 | 48 | L4 | general | D | `general_cog.py` | mapped | not-started | — | MERGE pack |
 | 49 | L5 | web dashboard + live editor (ADD/REDESIGN) | — | `botsite/app.py` + `dashboard/app.py` (both read-only FastAPI, not a cog) | mapped | not-started | — | ⚠ **PARTIAL CAPSTONE CONTRADICTION** — two read-only dashboards already ship; genuinely new is only the write-capable live editor. See §3.6. |
-| 50 | L5 | boards family (ADD) | — | none (new; `hermes_cog.py`'s admin-only dispatch bridge is a **dropped** near-neighbor, not a current implementation of this row) | mapped | not-started | — | one tagged-board primitive; likely P-1 2nd instance. **Owner-decided requirement (2026-07-05, replacing the dropped hermes_cog):** must include an AI-assisted, user-facing (not admin-gated) way for any member to report a bug or suggest an improvement about the bot, landing in this board. Shape (NL-only vs. NL+command) pending — see settings-row question panel. |
+| 50 | L5 | boards family (ADD) | — | none (new; `hermes_cog.py`'s admin-only dispatch bridge is a **dropped** near-neighbor, not a current implementation of this row) | mapped | not-started | — | one tagged-board primitive; likely P-1 2nd instance. **Owner-decided requirement (2026-07-05, replacing the dropped hermes_cog):** must include an AI-assisted, user-facing (not admin-gated) way for any member to report a bug or suggest an improvement about the bot, landing in this board. **Shape decided:** NL + a lightweight direct command (e.g. `/suggest`/`/feedback`) both land in the same board — owner-decided 2026-07-05. |
 | 51 | L5 | bot-migration assistant (ADD) | — | none (new) | mapped | not-started | — | the anti-MEE6/Carl/Dyno wedge |
 | 52 | L5 | Railway / ops control-plane (ADD, owner-gated) | — | none — `hermes_cog.py` does **not** map here (confirmed) | mapped | not-started | — | Railway/ops control-plane means drift-checker/deploy-alerts/shadow-clone/backups for the bot's *own hosting*; `hermes_cog.py` is a distinct thing (see non-cog queue) — no current cog implements this row |
+
+## 3.7 Cross-cutting findings (recurring across rows — track once, don't re-litigate)
+
+Findings that surface at multiple rows are platform-level, not per-subsystem. Tracked here once;
+per-row records point back here instead of repeating the analysis.
+
+- **Back/Home is not yet stack-aware.** Confirmed at rows 1 (settings) and 3 (help): "Back" is a
+  fixed single jump or a shallow, non-persisted closure chain (`views/navigation.py` `BackTarget`/
+  `chain_back`), not a real navigation-history stack, despite Q-0231 requiring contextual Back at
+  every depth. "Home" (the universal 📚 Help button) **is** already fully solved — click-time
+  re-resolved, works from anywhere. This is **Phase-B nav-engine work**, not any one subsystem's
+  fix — no further owner decision needed per-row; every future row should just note "same known
+  gap" rather than re-describing it.
+- **Preset/template fragmentation, ≥7 reimplementations bot-wide.** Confirmed at row 1 (settings'
+  numeric-presets widget) and row 3 (help has no preset concept at the hub level at all — only the
+  unrelated setup-wizard `preset_select`). Already tracked pre-session as **C-3** (Q-0228). Stage-2's
+  job per row is just to note "this row is a future C-3 consumer," not to design C-3 itself.
+- **The `build_help_menu_view` dynamic-dispatch pattern (`get_cog`+`getattr`) is the entire
+  cross-subsystem navigation backbone today** — confirmed used by 43 of 58 loaded extensions
+  (`docs/help-command-surface-map.md`), and reached from **views-layer files** in at least 4 places
+  (`views/settings/subsystem_view.py`, `views/hub_children.py`, `views/games/deathmatch_panel.py`,
+  `views/games/rps_panel.py`) plus `views/navigation.py` itself importing `cogs.help_cog`/
+  `cogs.help.panels` directly — a real `views → cogs` architecture-boundary violation, invisible to
+  `scripts/check_architecture.py --mode strict` because every import is function-local/deferred.
+  This is exactly what the already-ratified **R-11** (`HelpEntrySpec.dropdown_target: PanelRef`)
+  retires. Not an owner decision — R-11 already exists as the fix; flagged here as concrete
+  evidence for why R-11 matters, and as a candidate for this session's mandatory new-idea slot
+  (improving the architecture checker to catch deferred cross-layer imports), not as rebuild scope.
+- **G-10 (`ModalFormSpec`) breadth reconfirmed.** Help's own overlay editor uses 4 more hand-written
+  `discord.ui.Modal` subclasses (`_RenameModal`, `_RedescribeModal`, `_TitleModal`, `_BodyModal`),
+  consistent with the already-ratified 48-file G-10 count in `FINAL-REVIEW.md`. No new decision
+  needed — reconfirms an existing ratified amendment applies here too.
 
 ## 4. Non-cog / platform capability queue (preserved separately per task instructions)
 
