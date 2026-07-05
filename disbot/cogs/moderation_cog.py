@@ -7,8 +7,8 @@ from discord import Member, app_commands
 from discord.ext import commands
 
 from core.runtime import panel_manager
-from core.runtime.permission_checks import app_perms_or_owner
-from core.runtime.ui_permissions import can_execute_ctx
+from core.runtime.permission_checks import member_has_perms_or_owner
+from core.runtime.ui_permissions import can_execute, can_execute_ctx
 from services import moderation_service
 from services.moderation_helpers import (
     _build_mod_panel_embed,
@@ -52,6 +52,29 @@ def _require_mod(capability: str, perm_attr: str):
     return commands.check(predicate)
 
 
+def _require_mod_slash(capability: str, perm_attr: str):
+    """Slash-command check — the app-command analogue of :func:`_require_mod`.
+
+    Admits on the Discord *perm_attr* (or platform owner) **or** the governance
+    *capability* (e.g. a configured moderator role — ADR-008). This is the fix
+    for the slash bug: ``/moderation`` previously gated on
+    ``app_perms_or_owner`` alone, which never consulted governance, so a
+    configured-moderator-role holder without the raw Discord permission was
+    denied the slash while ``!modmenu`` and the panel admitted them. Raises
+    :class:`app_commands.MissingPermissions` on denial so the existing slash
+    denial UX is unchanged.
+    """
+
+    async def predicate(interaction: discord.Interaction) -> bool:
+        if member_has_perms_or_owner(interaction.user, **{perm_attr: True}):
+            return True
+        if await can_execute(interaction, capability):
+            return True
+        raise app_commands.MissingPermissions([perm_attr])
+
+    return app_commands.check(predicate)
+
+
 class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -93,8 +116,13 @@ class ModerationCog(commands.Cog):
         name="moderation",
         description="Open the Moderation hub (moderator only).",
     )
-    @app_commands.default_permissions(moderate_members=True)
-    @app_perms_or_owner(moderate_members=True)
+    # No @default_permissions gate: that is a Discord *client-side* visibility
+    # hide keyed on the raw moderate_members permission, which would hide
+    # /moderation from exactly the configured-moderator-role holders this fix
+    # is meant to admit (they lack the raw permission → can't invoke what they
+    # can't see). Authority is the runtime check below — mirroring !modmenu and
+    # the Help-reachable panel, both of which are runtime-gated only.
+    @_require_mod_slash("moderation.warn.apply", "moderate_members")
     async def moderation_slash(self, interaction: discord.Interaction) -> None:
         """Slash front door for the Moderation hub — ephemeral, mod-only.
 

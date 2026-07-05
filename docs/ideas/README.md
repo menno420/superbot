@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`audit-seam-coverage-checker-2026-07-05.md`](./audit-seam-coverage-checker-2026-07-05.md) —
+  **session idea (2026-07-05, Q-0089, "save fixes" PR #1728):** a general (AST + `architecture_rules/`
+  allowlist) checker that flags any function performing a state mutation (Discord `edit/delete/…`,
+  a DB write outside `utils/db/`, a known mutation-table helper) whose success path never reaches
+  `emit_audit_action` — generalizing the narrow `test_no_direct_channel_mutations` invariant. Four
+  of this session's eight bug fixes (#3/#5/#6) were exactly this "unaudited mutation" class; it would
+  catch them at authoring time instead of at a subsystem walk. Start advisory (Q-0105), graduate on
+  proof.
 - [`deferred-action-restart-recovery-checker-2026-07-05.md`](./deferred-action-restart-recovery-checker-2026-07-05.md) —
   **session idea (2026-07-05, Q-0089, rebuild Stage-2 walk PR #1725):** a warn-only checker for
   one-shot deferred actions (`asyncio.sleep`+`tasks.spawn`) with no persisted deadline / boot

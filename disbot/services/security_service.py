@@ -39,6 +39,10 @@ import discord
 
 from core.runtime import resources as guild_resources
 from services import security_config
+from services.channel_lifecycle_service import (
+    ChannelLifecycleRequest,
+    ChannelLifecycleService,
+)
 
 logger = logging.getLogger("bot.services.security")
 
@@ -184,10 +188,23 @@ async def _post_alert(
 
 
 async def _apply_slowmode(channel: discord.abc.GuildChannel, seconds: int) -> None:
+    # Route through the audited ChannelLifecycleService seam (the same one
+    # ``!slowmode`` uses) so the raid-lockdown slowmode is audited rather than a
+    # bare ``channel.edit()``. Automated raid response → no human actor.
+    guild = getattr(channel, "guild", None)
+    if guild is None:
+        return
     try:
-        await channel.edit(  # type: ignore[attr-defined]
-            slowmode_delay=seconds,
-            reason="Security: raid lockdown",
+        await ChannelLifecycleService().apply(
+            guild,
+            ChannelLifecycleRequest(
+                operation="set_slowmode",
+                channel_ids=(channel.id,),
+                slowmode_seconds=seconds,
+                reason="Security: raid lockdown",
+            ),
+            None,  # automated raid response — no human actor
+            actor_type="system",
         )
     except Exception:  # noqa: BLE001 — slowmode is best-effort; never crash the join
         logger.exception("security: failed to set slowmode on channel %s", channel.id)
@@ -200,10 +217,19 @@ async def _lift_lockdown(
 ) -> None:
     """Restore a channel's prior slowmode and clear the guild's lockdown flag."""
     try:
-        await channel.edit(  # type: ignore[attr-defined]
-            slowmode_delay=prior_slowmode,
-            reason="Security: raid lockdown lifted",
-        )
+        guild = getattr(channel, "guild", None)
+        if guild is not None:
+            await ChannelLifecycleService().apply(
+                guild,
+                ChannelLifecycleRequest(
+                    operation="set_slowmode",
+                    channel_ids=(channel.id,),
+                    slowmode_seconds=prior_slowmode,
+                    reason="Security: raid lockdown lifted",
+                ),
+                None,  # automated raid response — no human actor
+                actor_type="system",
+            )
     except Exception:  # noqa: BLE001 — best-effort restore
         logger.exception(
             "security: failed to restore slowmode on channel %s",

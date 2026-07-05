@@ -14,7 +14,9 @@ from cogs.admin.cog_manager import (  # noqa: F401 — re-exported for back-comp
     _do_load,
     _do_reload,
     _do_unload,
+    _emit_admin_runtime_audit,
     _find_module,
+    _LogLevelModal,
 )
 from core.runtime import lifecycle, resources
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edit
@@ -114,12 +116,13 @@ class AdminCog(commands.Cog):
         if not module:
             await ctx.send(f"❌ No cog found matching `{cog_name}`.")
             return
+        actor_id = getattr(ctx.author, "id", None)
         if action == "load":
-            await ctx.send(await _do_load(self.bot, module))
+            await ctx.send(await _do_load(self.bot, module, actor_id=actor_id))
         elif action == "unload":
-            await ctx.send(await _do_unload(self.bot, module))
+            await ctx.send(await _do_unload(self.bot, module, actor_id=actor_id))
         else:  # action == "reload"
-            await ctx.send(await _do_reload(self.bot, module))
+            await ctx.send(await _do_reload(self.bot, module, actor_id=actor_id))
 
     @commands.command(name="loadall")
     @commands.is_owner()
@@ -382,6 +385,13 @@ class AdminCog(commands.Cog):
         if accepted:
             await ctx.send("♻️ Restart requested. Bot is closing for restart.")
             logging.info("Restart requested by %s", ctx.author)
+            await _emit_admin_runtime_audit(
+                "restart",
+                "runtime:process",
+                None,
+                "!restart",
+                getattr(ctx.author, "id", None),
+            )
         else:
             await ctx.send(
                 "⚠️ A shutdown or restart is already in progress — request coalesced.",
@@ -400,8 +410,16 @@ class AdminCog(commands.Cog):
                 f"❌ Unknown level `{level}`. Choose from: DEBUG, INFO, WARNING, ERROR, CRITICAL",
             )
             return
+        old_level = logging.getLevelName(logging.getLogger().level)
         logging.getLogger().setLevel(level_int)
         await ctx.send(f"✅ Log level set to `{level.upper()}`.")
+        await _emit_admin_runtime_audit(
+            "set_log_level",
+            "logging:root",
+            old_level,
+            level.upper(),
+            getattr(ctx.author, "id", None),
+        )
 
     # ------------------------------------------------------------------
     # Startup message
@@ -409,7 +427,7 @@ class AdminCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         for guild in self.bot.guilds:
-            channel = resources.resolve_channel(guild, name="bot_spam")
+            channel = resources.resolve_channel(guild, name="bot-spam")
             if channel and channel.permissions_for(guild.me).send_messages:
                 try:
                     await channel.send(
@@ -758,36 +776,6 @@ class _AdminPanelView(HubView):
             view=sub_view,
             attachments=help_nav_attachments(sub_view),
         )
-
-
-class _LogLevelModal(discord.ui.Modal, title="Set Log Level"):  # type: ignore[call-arg]
-    level = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="Log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)",
-        placeholder="INFO",
-        max_length=10,
-    )
-
-    def __init__(self, panel: _AdminPanelView):
-        super().__init__()
-        self.panel = panel
-
-    async def on_submit(self, interaction: discord.Interaction):
-        level_int = getattr(logging, self.level.value.upper(), None)
-        if not isinstance(level_int, int):
-            await interaction.response.send_message(
-                f"❌ Unknown level `{self.level.value.upper()}`. "
-                "Choose from: DEBUG, INFO, WARNING, ERROR, CRITICAL",
-                ephemeral=True,
-            )
-            return
-        logging.getLogger().setLevel(level_int)
-        embed = discord.Embed(
-            title="📝 Log Level Updated",
-            description=f"Log level set to `{self.level.value.upper()}`.",
-            color=SUCCESS_COLOR,
-        )
-        embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self.panel)
 
 
 async def setup(bot):

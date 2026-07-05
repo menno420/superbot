@@ -307,3 +307,35 @@ async def delete_reaction_modes_for_guild(guild_id: int) -> int:
         (guild_id,),
     )
     return len(rows)
+
+
+async def delete_role_thresholds_for_guild(guild_id: int) -> int:
+    """Drop every ``role_thresholds`` row for a departed guild (teardown)."""
+    rows = await pool.fetchall(
+        "DELETE FROM role_thresholds WHERE guild_id=$1 RETURNING role_name",
+        (guild_id,),
+    )
+    return len(rows)
+
+
+async def delete_role_exemptions_for_guild(guild_id: int) -> int:
+    """Drop every ``role_automation_exemptions`` row for a departed guild (teardown)."""
+    rows = await pool.fetchall(
+        "DELETE FROM role_automation_exemptions WHERE guild_id=$1 RETURNING role_id",
+        (guild_id,),
+    )
+    return len(rows)
+
+
+async def delete_reaction_roles_for_guild(guild_id: int) -> int:
+    """Drop every ``reaction_roles`` row for a departed guild (teardown).
+
+    ``reaction_roles`` is guild-scoped (PK ``guild_id, message_id, emoji``) and
+    does NOT self-clean on message delete — no message-delete handler removes its
+    rows — so guild-leave needs an explicit purge.
+    """
+    rows = await pool.fetchall(
+        "DELETE FROM reaction_roles WHERE guild_id=$1 RETURNING message_id",
+        (guild_id,),
+    )
+    return len(rows)

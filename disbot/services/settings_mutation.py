@@ -151,6 +151,13 @@ class SettingsMutationResult:
 
     ``event_emitted`` is ``False`` when the post-commit ``settings.changed``
     emission raised; the DB state is still correct.
+
+    ``projection_committed`` is ``False`` only for an ``ai`` subsystem write
+    whose typed-policy projection (into ``ai_guild_policy``, which the runtime
+    resolver reads) failed after retries — the legacy KV write + audit still
+    committed, so this flags the silent-drift window rather than swallowing it
+    (Stage-2 walk bug #1). ``True`` for every non-``ai`` write and every
+    successful projection.
     """
 
     mutation_id: str
@@ -164,6 +171,7 @@ class SettingsMutationResult:
     new_value_raw: str
     committed_at: datetime
     event_emitted: bool
+    projection_committed: bool = True
 
 
 # ---------------------------------------------------------------------------
@@ -363,21 +371,42 @@ class SettingsMutationPipeline:
 
         # Post-PR-#310 hardening: AI subsystem scalars project into the
         # typed ai_guild_policy table so the runtime resolver (which
-        # reads only the typed row) tracks UI mutations. Best-effort —
-        # failure is logged at WARNING with structured fields by the
-        # projection helper and the legacy KV write stays authoritative.
-        # Skipped for a global write — the AI runtime resolver is per-guild
-        # (it reads ``ai_guild_policy`` by guild_id), so a guild_id=0
-        # projection would only create a phantom row that nothing reads.
+        # reads only the typed row) tracks UI mutations. The projection is a
+        # *separate* write from the (already committed) legacy-KV write above;
+        # the projection helper retries transient failures and returns ``None``
+        # only after exhausting them. We surface that ``None`` here rather than
+        # discarding it — a failed projection means the audit says "changed"
+        # while the runtime policy silently didn't, so we flag it loudly on the
+        # result (``projection_committed=False``) instead of swallowing the
+        # drift (Stage-2 walk bug #1). Skipped for a global write — the AI
+        # runtime resolver is per-guild (it reads ``ai_guild_policy`` by
+        # guild_id), so a guild_id=0 projection would only create a phantom row
+        # that nothing reads.
+        projection_committed = True
         if subsystem == "ai" and not is_global:
             from services import ai_policy_mutation
 
             if spec.settings_key in ai_policy_mutation.projectable_keys():
-                await ai_policy_mutation.project_from_legacy_settings(
-                    effective_guild_id,
-                    actor,
-                    mutation_id=mutation_id,
+                projection_result = (
+                    await ai_policy_mutation.project_from_legacy_settings(
+                        effective_guild_id,
+                        actor,
+                        mutation_id=mutation_id,
+                    )
                 )
+                projection_committed = projection_result is not None
+                if not projection_committed:
+                    logger.error(
+                        "settings_mutation: AI typed-policy projection FAILED "
+                        "after retries (guild=%d, subsystem=%r, name=%r, key=%r, "
+                        "mutation_id=%s); the legacy KV write + audit committed "
+                        "but the runtime resolver row is now stale — DRIFT.",
+                        effective_guild_id,
+                        subsystem,
+                        name,
+                        spec.settings_key,
+                        mutation_id,
+                    )
 
         # Phase 9c.2: companion ``audit.action_recorded`` event emitted
         # via the shared publisher. Best-effort; failure is logged
@@ -420,6 +449,7 @@ class SettingsMutationPipeline:
             new_value_raw=new_value_raw,
             committed_at=committed_at,
             event_emitted=event_emitted,
+            projection_committed=projection_committed,
         )
 
     # ------------------------------------------------------------------

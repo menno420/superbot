@@ -14,11 +14,10 @@ from core.runtime.message_pipeline import (
     StageResult,
 )
 from core.runtime.permission_checks import admin_or_owner, perms_or_owner
-from services import governance_service, moderation_service
+from services import governance_service, moderation_service, prohibited_words_service
 from services.governance_service import GovernanceContext
 from services.history_cleanup import (
     HISTORY_CLEANUP_MODES,
-    apply_history_cleanup_plan,
     build_history_cleanup_plan,
 )
 from utils import db
@@ -443,8 +442,16 @@ class Cleanup(commands.Cog):
             )
             if str(reaction.emoji) == "✅":
                 # Delete mechanics live in the cleanup service (one source of
-                # truth shared with the moderation post-action sweep).
-                apply_result = await apply_history_cleanup_plan(plan)
+                # truth shared with the moderation post-action sweep); route
+                # through the audited seam so the bulk delete is recorded
+                # (Stage-2 walk bug #6).
+                apply_result = await moderation_service.apply_channel_cleanup(
+                    plan,
+                    guild_id=ctx.guild.id,
+                    channel_id=ctx.channel.id,
+                    actor_id=ctx.author.id,
+                    mode=mode,
+                )
                 deleted = apply_result.deleted
                 failed = apply_result.failed
                 final_msg = await ctx.send(
@@ -502,7 +509,11 @@ class Cleanup(commands.Cog):
     async def word_add(self, ctx, *, word: str):
         """Adds a word to the prohibited words list."""
         word = word.lower()
-        added = await db.add_prohibited_word(ctx.guild.id, word)
+        added = await prohibited_words_service.add_prohibited_word(
+            ctx.guild.id,
+            word,
+            actor_id=ctx.author.id,
+        )
         if added:
             await self._load_guild(ctx.guild.id)
             await ctx.send(
@@ -521,7 +532,11 @@ class Cleanup(commands.Cog):
     async def word_remove(self, ctx, *, word: str):
         """Removes a word from the prohibited words list."""
         word = word.lower()
-        removed = await db.remove_prohibited_word(ctx.guild.id, word)
+        removed = await prohibited_words_service.remove_prohibited_word(
+            ctx.guild.id,
+            word,
+            actor_id=ctx.author.id,
+        )
         if removed:
             await self._load_guild(ctx.guild.id)
             await ctx.send(
@@ -598,7 +613,11 @@ class _AddWordModal(discord.ui.Modal, title="Add Prohibited Word"):  # type: ign
 
     async def on_submit(self, interaction: discord.Interaction):
         word = self.word_input.value.lower().strip()
-        added = await db.add_prohibited_word(interaction.guild_id, word)
+        added = await prohibited_words_service.add_prohibited_word(
+            interaction.guild_id,
+            word,
+            actor_id=interaction.user.id,
+        )
         if added:
             await self.cog._load_guild(interaction.guild_id)
             await interaction.response.send_message(
@@ -621,7 +640,11 @@ class _RemoveWordModal(discord.ui.Modal, title="Remove Prohibited Word"):  # typ
 
     async def on_submit(self, interaction: discord.Interaction):
         word = self.word_input.value.lower().strip()
-        removed = await db.remove_prohibited_word(interaction.guild_id, word)
+        removed = await prohibited_words_service.remove_prohibited_word(
+            interaction.guild_id,
+            word,
+            actor_id=interaction.user.id,
+        )
         if removed:
             await self.cog._load_guild(interaction.guild_id)
             await interaction.response.send_message(
@@ -702,7 +725,11 @@ class _WordMenuView(HubView):
         """Toggle obfuscation-resistant matching for this guild."""
         guild_id = self.ctx.guild.id
         new_value = not await self.cog._get_strict(guild_id)
-        await db.set_wordfilter_strict(guild_id, new_value)
+        await prohibited_words_service.set_wordfilter_strict(
+            guild_id,
+            new_value,
+            actor_id=interaction.user.id,
+        )
         self.cog._strict_cache[guild_id] = new_value
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 

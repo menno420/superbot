@@ -16,6 +16,7 @@ it stays in ``subsystem_bindings`` under the M1 BindingSpec.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import uuid
 from dataclasses import dataclass
@@ -472,33 +473,46 @@ async def project_from_legacy_settings(
         current.get("guild_instruction_profile_id") if current else None
     )
 
-    try:
-        return await set_guild_policy(
-            guild_id,
-            enabled=bool(resolved.get("enabled", False)),
-            natural_language_enabled=bool(
-                resolved.get("natural_language_enabled", False),
-            ),
-            default_provider=str(
-                resolved.get("default_provider", "deterministic") or "deterministic",
-            ),
-            default_model=str(resolved.get("default_model", "") or ""),
-            minimum_level_default=int(resolved.get("minimum_level_default", 2)),
-            cooldown_seconds=int(resolved.get("cooldown_seconds", 30)),
-            fresh_user_mention_allowance=int(
-                resolved.get("fresh_user_mention_allowance", 1),
-            ),
-            guild_instruction_profile_id=instruction_profile_id,
-            actor=actor,
-        )
-    except Exception as exc:  # noqa: BLE001 — see structured log below
-        await _log_projection_failure(
-            guild_id=guild_id,
-            settings_key=None,
-            mutation_id=mutation_id,
-            exc=exc,
-        )
-        return None
+    # Bounded retry: the projection is a *separate* write from the (already
+    # committed) legacy-KV settings write, so a transient failure here would
+    # otherwise become durable silent drift — the audit says "changed" but the
+    # typed ``ai_guild_policy`` row the runtime resolver reads keeps the old
+    # value. Retrying self-heals the dominant failure mode (a transient DB blip);
+    # a persistent failure still surfaces to the caller as a ``None`` return so
+    # the settings pipeline can flag it (Stage-2 walk bug #1).
+    _backoffs = (0.05, 0.2)
+    for attempt in range(len(_backoffs) + 1):
+        try:
+            return await set_guild_policy(
+                guild_id,
+                enabled=bool(resolved.get("enabled", False)),
+                natural_language_enabled=bool(
+                    resolved.get("natural_language_enabled", False),
+                ),
+                default_provider=str(
+                    resolved.get("default_provider", "deterministic")
+                    or "deterministic",
+                ),
+                default_model=str(resolved.get("default_model", "") or ""),
+                minimum_level_default=int(resolved.get("minimum_level_default", 2)),
+                cooldown_seconds=int(resolved.get("cooldown_seconds", 30)),
+                fresh_user_mention_allowance=int(
+                    resolved.get("fresh_user_mention_allowance", 1),
+                ),
+                guild_instruction_profile_id=instruction_profile_id,
+                actor=actor,
+            )
+        except Exception as exc:  # noqa: BLE001 — see structured log below
+            if attempt >= len(_backoffs):
+                await _log_projection_failure(
+                    guild_id=guild_id,
+                    settings_key=None,
+                    mutation_id=mutation_id,
+                    exc=exc,
+                )
+                return None
+            await asyncio.sleep(_backoffs[attempt])
+    return None  # pragma: no cover — loop always returns on the final attempt
 
 
 def _legacy_key_to_spec_name(legacy_key: str) -> str:
