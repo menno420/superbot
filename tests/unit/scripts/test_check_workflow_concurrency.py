@@ -70,11 +70,10 @@ def test_non_merge_relevant_never_flagged():
     assert wc.check({"dashboard-data-refresh.yml": _wf("true")}) == []
 
 
-def test_real_repo_flags_codeql_only(tmp_path):
-    # Ground truth against the live workflows dir: codeql.yml is flagged (expression),
-    # code-quality.yml (false) is not.
-    workflows = wc.load_workflows(wc.WORKFLOWS_DIR)
-    problems = wc.check(workflows)
-    flagged = {p.split(":")[0] for p in problems}
-    assert "codeql.yml" in flagged
-    assert "code-quality.yml" not in flagged
+def test_real_repo_all_merge_relevant_safe():
+    # Ground truth against the live workflows dir: after PR #1739 flipped codeql.yml to
+    # cancel-in-progress: false, EVERY merge-relevant workflow is safe → no findings. This test is
+    # also the guard's own gate (it runs as a required step in code-quality.yml), so if a future edit
+    # reintroduces a cancelling merge-relevant workflow, both this test AND the CI step go red.
+    problems = wc.check(wc.load_workflows(wc.WORKFLOWS_DIR))
+    assert problems == [], f"merge-relevant workflow(s) can cancel a head run: {problems}"

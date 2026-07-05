@@ -80,6 +80,22 @@ jobs:
       - name: Run doc hygiene (check_docs)
         run: python3 scripts/check_docs.py --strict
 
+      # Tool-pin drift is a HARD gate (CI-setup redesign PR #1739, decision G4). The pins must match
+      # across code-quality.yml / requirements-dev.txt / .pre-commit-config.yaml (CLAUDE.md rule #3); a
+      # Dependabot bump of one alone silently desynced them and reached main (#1315). tool-pins.yml runs
+      # this too, but as a non-required workflow it only showed red — this step makes it BLOCK. Pure
+      # stdlib, runs on every PR (incl. docs-only). Disposable (Q-0105): drop this step if it misfires.
+      - name: Tool-pin drift (check_tool_pins)
+        run: python3 scripts/check_tool_pins.py
+
+      # Merge-relevant workflows must never cancel a head run (the #1275 cancellation race). A HARD gate
+      # (CI-setup redesign PR #1739, decision G4): a future workflow shipping `cancel-in-progress: true`
+      # (or the expression form that cancels on PR refs) would silently re-open the race, and a warn-only
+      # check can't prevent that. Pure stdlib YAML parse over .github/workflows/, ~0 FP. Disposable
+      # (Q-0105): drop this step + scripts/check_workflow_concurrency.py if it ever misfires.
+      - name: Workflow concurrency guard (check_workflow_concurrency)
+        run: python3 scripts/check_workflow_concurrency.py
+
       # Stale-claim surfacing (owner decision Q-0206, option 2). WARN-ONLY:
       # surfaces any orphan claim file in docs/owner/claims/ (a session that
       # forgot to delete its own claim at close) so it doesn't linger across
@@ -154,6 +170,18 @@ jobs:
       - name: Run consistency linter (graduated rules)
         if: steps.changes.outputs.code == 'true'
         run: python scripts/check_consistency.py --mode strict
+
+      # Architecture layer-boundary invariants are now a HARD gate (CI-setup redesign PR #1739,
+      # decision G4). This was the #1 coverage gap: `check_architecture --mode strict` ran only on the
+      # local Stop hook, so a layer violation (e.g. a new services/ -> views/ import — the zero-tolerance
+      # rule) could reach main whenever the hook was skipped. `--mode strict` exits 1 only on a NEW
+      # (non-allowlisted) *error*; known violations tracked in architecture_rules/ YAML pass, and warnings
+      # never fail (verified green on main). Needs PyYAML (from requirements.txt), so it runs in the
+      # deps-installed block; the code-only gate is correct (architecture only matters when code changed).
+      # Disposable (Q-0105): drop this step if it ever false-blocks.
+      - name: Architecture layer boundaries (check_architecture)
+        if: steps.changes.outputs.code == 'true'
+        run: python scripts/check_architecture.py --mode strict
 
       - name: Cache mypy incremental cache
         if: steps.changes.outputs.code == 'true'
