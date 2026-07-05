@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-05T21:47:24Z",
+    "generated_at": "2026-07-05T23:48:44Z",
     "build": {
-      "commit": "f5b50161",
-      "subject": "Merge pull request #1733 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-05T21:47:24Z"
+      "commit": "d99f5e80",
+      "subject": "Merge pull request #1736 from menno420/claude/save-fixes-implementation-8v1ziy",
+      "committed_at": "2026-07-05T23:48:44Z"
     },
     "counts": {
       "functions": 43,
@@ -3009,6 +3009,22 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-05-next-session-prep.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — Next-session prep + docs banking (owner-directed)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-ci-setup-brief.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — CI-setup redesign brief (owner-directed prep)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-04-review-open-prs.md",
       "date": "2026-07-04",
       "title": "2026-07-04 — Open-PR review + merge sweep",
@@ -3446,22 +3462,6 @@
       "title": "2026-07-01 — Treasury completion tests (cog + modal)",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-settings-order-sim-and-binding-back-button-bugs.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Server-logging: per-route binding crash + disappearing back button + settings-order sim",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-server-logging-v2-audit-log.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Server event logging v2: Discord audit-log integration (Dyno parity)",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
