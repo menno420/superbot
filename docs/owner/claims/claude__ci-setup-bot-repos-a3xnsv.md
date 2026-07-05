@@ -1,0 +1,1 @@
+- `claude/ci-setup-bot-repos-a3xnsv` · **CI-setup redesign** — best-possible CI for current bot + fresh-repo divergence analysis; what-runs-where matrix, target-state design, phased owner-gated migration · `.github/workflows/` `scripts/check_*.py` `.claude/settings.json` `docs/planning/` `docs/operations/` · 2026-07-05 · design + safe-additive (owner-gated destructive → propose)
