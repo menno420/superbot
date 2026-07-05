@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-05T16:02:09Z",
+    "generated_at": "2026-07-05T16:22:41Z",
     "build": {
-      "commit": "12fb40e7",
-      "subject": "Merge pull request #1728 from menno420/claude/save-fixes-implementation-8v1ziy",
-      "committed_at": "2026-07-05T16:02:09Z"
+      "commit": "48a0170a",
+      "subject": "Merge pull request #1730 from menno420/claude/save-fixes-implementation-8v1ziy",
+      "committed_at": "2026-07-05T16:22:41Z"
     },
     "counts": {
       "functions": 43,
@@ -2993,6 +2993,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-05-save-fixes-codeql-followup.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — Save-fixes follow-up: CodeQL log-injection hardening",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-05-rebuild-stage2-subsystem-walk.md",
       "date": "2026-07-05",
       "title": "2026-07-05 — Rebuild Phase-A Stage-2 subsystem walk (owner-led)",
@@ -3452,14 +3460,6 @@
       "file": "2026-07-01-server-logging-v2-audit-log.md",
       "date": "2026-07-01",
       "title": "2026-07-01 — Server event logging v2: Discord audit-log integration (Dyno parity)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-server-log-avatar.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Server-log embeds: a face per entry (avatar in the author slot)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
